@@ -63,7 +63,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 
 | ID | Tính năng | Mô tả / tiêu chí hoàn thành | Ưu tiên | Phase | H |
 |---|---|---|---|---|---|
-| IDX-01 | Chọn thư mục nhạc | Thêm và bỏ nhiều thư mục gốc; mặc định gợi ý `$XDG_MUSIC_DIR` | P0 | 1 | H |
+| IDX-01 | Chọn thư mục nhạc | Lần đầu mở app (thư viện chưa có nguồn) hiện màn chọn nguồn nhạc trước khi vào thư viện; sau đó thêm và bỏ nhiều thư mục gốc trong Settings → Nguồn; mặc định gợi ý `$XDG_MUSIC_DIR` | P0 | 1 | H |
 | IDX-02 | Quét lần đầu | Quét đệ quy, đọc tag song song trên isolate/Rust, có thanh tiến độ, UI không bị đơ. Mục tiêu: 10.000 bài dưới 60 giây trên SSD | P0 | 1 | H |
 | IDX-03 | Quét lại tăng dần | So `mtime` + kích thước, chỉ đọc lại file đã đổi; xoá bản ghi của file đã mất | P0 | 1 | H |
 | IDX-04 | Theo dõi thư mục | Dùng inotify để tự cập nhật khi thêm/xoá/sửa file lúc app đang chạy | P1 | 1 | |
@@ -72,6 +72,12 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | IDX-07 | Bài lỗi / không đọc được | Liệt kê file có tag lỗi hoặc định dạng không hỗ trợ để người dùng xử lý | P2 | 1 | |
 | IDX-08 | CUE sheet | Tách một file FLAC/APE + `.cue` thành nhiều track ảo | P2 | 4 | |
 | IDX-09 | Phát file ngoài thư viện | Mở file/thư mục bằng dòng lệnh, kéo thả hoặc "Open with" mà không cần thêm vào thư viện | P1 | 1 | H |
+
+**Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. Khi đó:
+- Đường phát nhạc (`PlayerService.openTracks`, hàng đợi, player bar) vẫn giữ nguyên; màn thư viện dùng lại nó.
+- `isAudioFile` / `scanFolder` trong `lib/features/player/open_media.dart` chuyển sang `lib/core/indexer/`.
+- `file_selector` vẫn dùng cho hộp thoại chọn thư mục nguồn.
+- Phát file ngoài thư viện đi qua IDX-09 / SYS-07 (dòng lệnh, kéo thả, "Open with"), không qua nút.
 
 ## 4. Metadata & artwork
 
