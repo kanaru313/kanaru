@@ -7,7 +7,8 @@ import '../../core/player/player_service.dart';
 /// Seek step for the arrow keys.
 const _seekStep = Duration(seconds: 5);
 
-/// App-wide playback keys: Space plays/pauses, ←/→ seek by 5 s.
+/// App-wide playback keys: Space plays/pauses, ←/→ seek by 5 s, Ctrl+S
+/// toggles shuffle, Ctrl+R cycles repeat.
 ///
 /// Sits between the app's default shortcuts and every route, so key events
 /// bubbling up from the focused widget reach it before the default
@@ -30,6 +31,7 @@ class PlayerShortcuts extends ConsumerWidget {
   KeyEventResult _onKey(WidgetRef ref, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
     final keyboard = HardwareKeyboard.instance;
+    if (_onControlKey(ref, event, keyboard) case final result?) return result;
     if (keyboard.isControlPressed ||
         keyboard.isAltPressed ||
         keyboard.isMetaPressed ||
@@ -56,6 +58,35 @@ class PlayerShortcuts extends ConsumerWidget {
       player.seekBy(
         key == LogicalKeyboardKey.arrowLeft ? -_seekStep : _seekStep,
       );
+    }
+    return KeyEventResult.handled;
+  }
+
+  /// Ctrl+S and Ctrl+R; `null` for any other key, left to [_onKey].
+  KeyEventResult? _onControlKey(
+    WidgetRef ref,
+    KeyEvent event,
+    HardwareKeyboard keyboard,
+  ) {
+    if (!keyboard.isControlPressed ||
+        keyboard.isAltPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isShiftPressed) {
+      return null;
+    }
+    final key = event.logicalKey;
+    if (key != LogicalKeyboardKey.keyS && key != LogicalKeyboardKey.keyR) {
+      return null;
+    }
+    if (_inTextField() || ref.read(playerServiceProvider).queue.isEmpty) {
+      return KeyEventResult.ignored;
+    }
+    // One toggle per press, not one per auto-repeat.
+    if (event is KeyDownEvent) {
+      final player = ref.read(playerServiceProvider.notifier);
+      key == LogicalKeyboardKey.keyS
+          ? player.toggleShuffle()
+          : player.cycleRepeat();
     }
     return KeyEventResult.handled;
   }

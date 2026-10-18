@@ -43,8 +43,8 @@ class AppShell extends ConsumerWidget {
     final history = ref.read(navigationHistoryProvider.notifier);
 
     final page = Expanded(child: navigationShell);
-    // Spans the full width, below the sidebar too; its seek strip is the
-    // border with the page. Hidden with nothing to play.
+    // Spans the full width, below the sidebar too, with its own border on
+    // top. Hidden with nothing to play.
     final playerBar = ref.watch(playerBarVisibleProvider)
         ? const PlayerBar()
         : null;

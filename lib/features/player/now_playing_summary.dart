@@ -8,10 +8,7 @@ import 'open_media.dart';
 /// Left side of the player bar: cover, title and artist of the current
 /// track, or progress while a folder is being scanned.
 class NowPlayingSummary extends ConsumerWidget {
-  const NowPlayingSummary({super.key, this.showCover = true});
-
-  /// Left out on narrow windows, where the title needs the room.
-  final bool showCover;
+  const NowPlayingSummary({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,24 +36,30 @@ class NowPlayingSummary extends ConsumerWidget {
 
     if (track == null) return const SizedBox.shrink();
 
+    final titleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.bold,
+    );
+    final artistStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
     return Row(
       spacing: 12,
       children: [
-        if (showCover)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: ColoredBox(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: SizedBox.square(
-                dimension: 64,
-                child: Icon(
-                  Icons.music_note_rounded,
-                  size: 32,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: ColoredBox(
+            color: theme.colorScheme.surfaceContainerHighest,
+            child: SizedBox.square(
+              dimension: 64,
+              child: Icon(
+                Icons.music_note_rounded,
+                size: 32,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ),
+        ),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -66,18 +69,14 @@ class NowPlayingSummary extends ConsumerWidget {
                 track.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: titleStyle,
               ),
               if (track.artist case final artist?)
                 Text(
                   artist,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                  style: artistStyle,
                 ),
             ],
           ),

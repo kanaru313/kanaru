@@ -14,7 +14,8 @@ const playerIconSize = 28.0;
 class PlaybackControls extends ConsumerWidget {
   const PlaybackControls({super.key, this.compact = false});
 
-  /// Leaves out shuffle and repeat on narrow windows.
+  /// Only play/pause and next, for narrow windows; the rest stays on the
+  /// keyboard.
   final bool compact;
 
   @override
@@ -37,7 +38,7 @@ class PlaybackControls extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 4,
       children: [
-        if (!compact)
+        if (!compact) ...[
           IconButton(
             icon: const Icon(Icons.shuffle_rounded),
             iconSize: playerIconSize,
@@ -45,12 +46,13 @@ class PlaybackControls extends ConsumerWidget {
             isSelected: shuffled,
             onPressed: when(player.toggleShuffle),
           ),
-        IconButton(
-          icon: const Icon(Icons.skip_previous_rounded),
-          iconSize: playerIconSize,
-          tooltip: l10n.playerPrevious,
-          onPressed: hasPrevious ? player.previous : null,
-        ),
+          IconButton(
+            icon: const Icon(Icons.skip_previous_rounded),
+            iconSize: playerIconSize,
+            tooltip: l10n.playerPrevious,
+            onPressed: hasPrevious ? player.previous : null,
+          ),
+        ],
         IconButton.filledTonal(
           icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
           iconSize: 36,

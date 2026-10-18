@@ -12,7 +12,8 @@ import 'playback_controls.dart';
 const _scrollStep = 5.0;
 
 /// Click mutes/unmutes. Hovering (or a long press on touch) shows a vertical
-/// slider above the button; scrolling on either changes the volume.
+/// slider above the button, the volume in percent on top; scrolling on
+/// either changes the volume.
 class VolumeButton extends ConsumerStatefulWidget {
   const VolumeButton({super.key});
 
@@ -106,20 +107,36 @@ class _VolumeSlider extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 3,
       child: SizedBox(
         width: 48,
-        height: 160,
-        child: RotatedBox(
-          quarterTurns: 3,
-          child: Slider(
-            value: volume.clamp(0, 100),
-            max: 100,
-            label: context.l10n.playerVolume,
-            semanticFormatterCallback: (value) => '${value.round()}%',
-            onChanged: ref.read(playerServiceProvider.notifier).setVolume,
-          ),
+        height: 184,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                '${volume.round()}%',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+            Expanded(
+              child: RotatedBox(
+                quarterTurns: 3,
+                child: Slider(
+                  value: volume.clamp(0, 100),
+                  max: 100,
+                  label: context.l10n.playerVolume,
+                  semanticFormatterCallback: (value) => '${value.round()}%',
+                  onChanged: ref.read(playerServiceProvider.notifier).setVolume,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

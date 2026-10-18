@@ -6,7 +6,11 @@ import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/player_bar.dart';
+import 'package:kanaru/features/player/seek_bar.dart';
+import 'package:kanaru/features/player/seek_gesture_area.dart';
 import 'package:kanaru/features/player/seek_strip.dart';
+import 'package:kanaru/features/player/volume_button.dart';
+import 'package:kanaru/features/player/wavy_track_painter.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -22,13 +26,19 @@ void main() {
 
   PlayerService player() => container.read(playerServiceProvider.notifier);
 
+  /// Animations are off unless asked for: the seek bar's wave never
+  /// settles while music plays.
   Future<void> pumpApp(
     WidgetTester tester, {
     Size size = const Size(1280, 800),
+    bool animations = false,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        FakeAccessibilityFeatures(disableAnimations: !animations);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     backend = FakeAudioBackend();
     container = ProviderContainer(
       overrides: [audioBackendProvider.overrideWithValue(backend)],
@@ -73,14 +83,18 @@ void main() {
     expect(find.text('Second Song'), findsOneWidget);
   });
 
-  testWidgets('shows the time label and repeat state', (tester) async {
+  testWidgets('shows the times around the seek bar and repeat state', (
+    tester,
+  ) async {
     await pumpApp(tester);
     await openSongs(tester);
     backend.emitDuration.add(const Duration(minutes: 3, seconds: 5));
     backend.emitPosition.add(const Duration(seconds: 42));
     await tester.pump();
 
-    expect(find.text('0:42 / 3:05'), findsOneWidget);
+    final bar = tester.getRect(find.byType(SeekGestureArea));
+    expect(tester.getCenter(find.text('0:42')).dx, lessThan(bar.left));
+    expect(tester.getCenter(find.text('3:05')).dx, greaterThan(bar.right));
 
     await tester.tap(find.byTooltip('Repeat off'));
     await tester.pump();
@@ -156,6 +170,83 @@ void main() {
         'seek(${const Duration(seconds: 20)})',
       ]);
     });
+
+    testWidgets('Ctrl+S shuffles and Ctrl+R cycles repeat', (tester) async {
+      await pumpApp(tester);
+      await openSongs(tester);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyS);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pump();
+
+      final queue = container.read(playerServiceProvider).queue;
+      expect(queue.shuffled, isTrue);
+      expect(queue.repeat.name, 'all');
+    });
+  });
+
+  testWidgets('a drag that outlives its track does not seek the next one', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await openSongs(tester);
+    backend.emitDuration.add(const Duration(seconds: 100));
+    await tester.pump();
+
+    final strip = tester.getRect(find.byType(SeekGestureArea));
+    final drag = await tester.startGesture(
+      Offset(strip.left + strip.width / 4, strip.center.dy),
+      kind: PointerDeviceKind.mouse,
+    );
+    await drag.moveBy(const Offset(40, 0));
+    await tester.pump();
+    // The engine moves on mid-drag; the new duration is not known yet.
+    backend.advance();
+    await tester.pump();
+    await drag.moveBy(const Offset(40, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
+
+    expect(backend.calls.where((c) => c.startsWith('seek')), isEmpty);
+
+    // The strip is not stuck: the next drag on the new track seeks.
+    backend.emitDuration.add(const Duration(seconds: 200));
+    await tester.pump();
+    final again = await tester.startGesture(
+      Offset(strip.left + strip.width / 4, strip.center.dy),
+      kind: PointerDeviceKind.mouse,
+    );
+    await again.moveBy(const Offset(40, 0));
+    await again.up();
+    await tester.pumpAndSettle();
+    expect(backend.calls.where((c) => c.startsWith('seek')), hasLength(1));
+  });
+
+  testWidgets('narrow windows keep one row with play/pause and next', (
+    tester,
+  ) async {
+    await pumpApp(tester, size: const Size(480, 640));
+    await openSongs(tester);
+
+    expect(find.byTooltip('Pause'), findsOneWidget);
+    expect(find.byTooltip('Next'), findsOneWidget);
+    for (final tooltip in ['Shuffle', 'Previous', 'Repeat off', 'Mute']) {
+      expect(find.byTooltip(tooltip), findsNothing);
+    }
+    expect(find.byType(VolumeButton), findsNothing);
+    expect(
+      tester.getCenter(find.byTooltip('Pause')).dy,
+      moreOrLessEquals(tester.getCenter(find.text('First Song')).dy),
+    );
+
+    // What left the bar stays on the keyboard.
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyS);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+    expect(container.read(playerServiceProvider).queue.shuffled, isTrue);
   });
 
   testWidgets('a broken track shows a snack bar', (tester) async {
@@ -215,10 +306,96 @@ void main() {
     expect(button(Icons.skip_next_rounded).onPressed, isNotNull);
   });
 
-  testWidgets('the grown seek bar takes clicks along its whole height', (
+  testWidgets('narrow windows seek on a thin strip on the top edge', (
     tester,
   ) async {
+    await pumpApp(tester, size: const Size(480, 640));
+    await openSongs(tester);
+    expect(find.byType(SeekStrip), findsOneWidget);
+    expect(find.byType(SeekBar), findsNothing);
+    expect(
+      tester.getRect(find.byType(SeekStrip)).top,
+      tester.getRect(find.byType(PlayerBar)).top,
+    );
+  });
+
+  testWidgets('wide windows seek under the controls', (tester) async {
     await pumpApp(tester);
+    await openSongs(tester);
+    expect(find.byType(SeekStrip), findsNothing);
+    expect(
+      tester.getCenter(find.byType(SeekBar)).dy,
+      greaterThan(tester.getCenter(find.byTooltip('Pause')).dy),
+    );
+    expect(
+      tester.getCenter(find.byType(SeekBar)).dx,
+      moreOrLessEquals(tester.getCenter(find.byTooltip('Pause')).dx),
+    );
+  });
+
+  group('wave', () {
+    WavyTrackPainter painter(WidgetTester tester) =>
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(SeekBar),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter!
+            as WavyTrackPainter;
+
+    testWidgets('travels while playing and lies flat when paused', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(painter(tester).amplitude.value, 1);
+      final phase = painter(tester).phase.value;
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(painter(tester).phase.value, isNot(phase));
+
+      await tester.tap(find.byTooltip('Pause'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(painter(tester).amplitude.value, 0);
+      // Once the button's ripple is gone too, nothing draws any more.
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('lies flat with animations turned off', (tester) async {
+      await pumpApp(tester);
+      await openSongs(tester);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+
+      expect(find.byTooltip('Pause'), findsOneWidget);
+      expect(painter(tester).amplitude.value, 0);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+  });
+
+  testWidgets('the volume popup shows the volume in percent', (tester) async {
+    await pumpApp(tester);
+    await openSongs(tester);
+    await player().setVolume(37);
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(tester.getCenter(find.byType(VolumeButton)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('37%'), findsOneWidget);
+  });
+
+  testWidgets('the grown seek strip takes clicks along its whole height', (
+    tester,
+  ) async {
+    await pumpApp(tester, size: const Size(480, 640));
     await openSongs(tester);
     backend.emitDuration.add(const Duration(seconds: 100));
     await tester.pump();
