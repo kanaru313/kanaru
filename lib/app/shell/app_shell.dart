@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../features/player/player_bar.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
 import 'sidebar/sidebar.dart';
@@ -13,7 +14,8 @@ import 'top_bar.dart';
 const _sidebarBreakpoint = 720.0;
 
 /// App frame around every top-level page: sidebar on the left, top bar above
-/// the page. On narrow windows the sidebar opens as a drawer instead.
+/// the page, player bar along the bottom while something is queued. On narrow
+/// windows the sidebar opens as a drawer instead.
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
 
@@ -41,11 +43,17 @@ class AppShell extends ConsumerWidget {
     final history = ref.read(navigationHistoryProvider.notifier);
 
     final page = Expanded(child: navigationShell);
+    // Spans the full width, below the sidebar too; its seek strip is the
+    // border with the page. Hidden with nothing to play.
+    final playerBar = ref.watch(playerBarVisibleProvider)
+        ? const PlayerBar()
+        : null;
 
     return Listener(
       onPointerDown: (event) => _onPointerDown(event, history),
       child: wide
           ? Scaffold(
+              bottomNavigationBar: playerBar,
               body: Row(
                 children: [
                   _CollapsibleSidebar(
@@ -67,6 +75,7 @@ class AppShell extends ConsumerWidget {
               ),
             )
           : Scaffold(
+              bottomNavigationBar: playerBar,
               drawer: Builder(
                 builder: (context) => Drawer(
                   width: sidebarWidth,

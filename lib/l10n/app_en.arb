@@ -49,5 +49,29 @@
   },
   "searchNotReadyMessage": "Search will work once your library has been scanned.",
 
+  "playerOpenMenu": "Open music",
+  "playerOpenFiles": "Open files…",
+  "playerOpenFolder": "Open folder…",
+  "playerScanning": "Scanning folder…",
+  "playerNoAudioFound": "No audio files found",
+  "playerPlaybackError": "Couldn't play {title}",
+  "@playerPlaybackError": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "playerPlay": "Play",
+  "playerPause": "Pause",
+  "playerPrevious": "Previous",
+  "playerNext": "Next",
+  "playerShuffle": "Shuffle",
+  "playerRepeatOff": "Repeat off",
+  "playerRepeatAll": "Repeat all",
+  "playerRepeatOne": "Repeat one",
+  "playerMute": "Mute",
+  "playerUnmute": "Unmute",
+  "playerVolume": "Volume",
+  "playerSeek": "Seek",
+
   "settingsEmptyMessage": "Nothing to configure yet."
 }
