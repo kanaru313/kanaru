@@ -20,7 +20,8 @@ class MediaKitBackend implements AudioBackend {
     // Through the chain, so the end of the last track is not reported after
     // the user picked another one.
     _forwardCompleted = _player.stream.completed.listen((done) {
-      if (!done) return;
+      // Judged on arrival: an `open` queued by then replaces what ended.
+      if (!done || _opensPending > 0) return;
       unawaited(
         _serial(() async {
           if (_opensPending == 0) _completed.add(true);
@@ -32,6 +33,7 @@ class MediaKitBackend implements AudioBackend {
     // failed.
     _forwardError = _player.stream.error.listen((m) => _lastError = m);
     _forwardDuration = _player.stream.duration.listen((duration) {
+      _duration.add(duration);
       if (duration > Duration.zero) unawaited(_markLoaded());
     });
     // The value is ignored: the handler reads the position again once it
@@ -40,7 +42,10 @@ class MediaKitBackend implements AudioBackend {
         .observeProperty('playlist-playing-pos', (_) async {
           unawaited(_serial(_onPlayingPosition));
         })
-        .catchError((Object _) {});
+        .catchError((Object error) {
+          // Without it no track change or failure is ever reported.
+          debugPrint('Could not observe the mpv playlist: $error');
+        });
   }
 
   final Player _player;
@@ -54,6 +59,7 @@ class MediaKitBackend implements AudioBackend {
   final _advanced = StreamController<Track>.broadcast();
   final _completed = StreamController<bool>.broadcast();
   final _failed = StreamController<PlaybackError>.broadcast();
+  final _duration = StreamController<Duration>.broadcast();
 
   /// mpv entry ids that loaded, i.e. reported a duration. An entry left
   /// without loading is a track that failed.
@@ -135,6 +141,9 @@ class MediaKitBackend implements AudioBackend {
     _nextId = null;
     _loaded.removeWhere((loaded) => loaded < id);
     _advanced.add(track);
+    // The track loaded before its change was reported, so its duration came
+    // first too; listeners reset it on the change, so send it again.
+    if (_loaded.contains(id)) _duration.add(_player.state.duration);
   }
 
   Future<void> _onPlayingPosition() async {
@@ -240,7 +249,7 @@ class MediaKitBackend implements AudioBackend {
   Stream<Duration> get position => _player.stream.position;
 
   @override
-  Stream<Duration> get duration => _player.stream.duration;
+  Stream<Duration> get duration => _duration.stream;
 
   @override
   Stream<double> get volume => _player.stream.volume;
@@ -267,5 +276,6 @@ class MediaKitBackend implements AudioBackend {
     await _advanced.close();
     await _completed.close();
     await _failed.close();
+    await _duration.close();
   }
 }

@@ -47,12 +47,12 @@ class PlayQueue {
   bool get isEmpty => original.isEmpty;
   Track? get current => isEmpty ? null : tracks[index];
 
-  /// Index a manual "next" goes to, or `null` at the end of the queue with
-  /// repeat off. Repeat-one still moves on, like with repeat-all.
+  /// Index a manual "next" goes to, or `null` on the last track unless the
+  /// whole queue repeats. Repeat-one still moves on within the queue.
   int? get nextIndex {
     if (isEmpty) return null;
     if (index < order.length - 1) return index + 1;
-    return repeat == RepeatMode.off ? null : 0;
+    return repeat == RepeatMode.all ? 0 : null;
   }
 
   /// Index a manual "previous" goes to, or `null` on the first track unless

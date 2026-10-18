@@ -35,10 +35,10 @@ void main() {
       expect(last.copyWith(index: 0).previousIndex, 4);
     });
 
-    test('repeat one still moves on manually', () {
+    test('repeat one moves on manually but does not wrap', () {
       final queue = PlayQueue(original: five, index: 1, repeat: RepeatMode.one);
       expect(queue.nextIndex, 2);
-      expect(queue.copyWith(index: 4).nextIndex, 0);
+      expect(queue.copyWith(index: 4).nextIndex, isNull);
       expect(queue.copyWith(index: 0).previousIndex, isNull);
     });
 
