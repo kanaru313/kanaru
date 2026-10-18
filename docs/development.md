@@ -1,0 +1,165 @@
+# Development setup
+
+Kanaru currently targets **GNU/Linux** first. Windows, macOS, Android and iOS instructions will be added in phase 2.
+
+## What you need
+
+| Tool | Version | Why |
+|---|---|---|
+| Flutter (stable) | ≥ 3.47 (Dart ≥ 3.13) | App framework |
+| Clang, CMake, Ninja, pkg-config | any recent | Flutter Linux desktop toolchain |
+| GTK 3 (dev headers) | ≥ 3.24 | Flutter Linux embedder |
+| libmpv (dev headers) | ≥ 0.36 | Audio playback (`media_kit`) |
+| libsecret, jsoncpp (dev headers) | any recent | Credential storage (`flutter_secure_storage`) |
+| SQLite (dev headers) | ≥ 3.35 | Library database (`drift`) |
+| Rust (stable) + Cargo | ≥ 1.80 | Tag reading (`lofty` via `flutter_rust_bridge`) |
+| libclang | any recent | Needed by `flutter_rust_bridge_codegen` / `ffigen` |
+| `flutter_rust_bridge_codegen` | 2.x | Generates Dart ↔ Rust bindings |
+
+Pick the section for your system, then continue with [Verify](#verify).
+
+---
+
+## Nix / NixOS (recommended)
+
+The repo ships a `flake.nix` dev shell with everything above pinned via `flake.lock`.
+
+```bash
+# one-off
+nix develop
+
+# or automatically on cd (requires direnv + nix-direnv)
+direnv allow
+```
+
+Notes:
+- Flakes must be enabled (`experimental-features = nix-command flakes`).
+- Flutter from nixpkgs cannot `flutter upgrade` itself. Update tools with `nix flake update`.
+
+## Debian / Ubuntu
+
+```bash
+sudo apt update
+sudo apt install -y \
+  curl git unzip xz-utils zip \
+  clang cmake ninja-build pkg-config \
+  libgtk-3-dev liblzma-dev libstdc++-12-dev \
+  libmpv-dev mpv \
+  libsecret-1-dev libjsoncpp-dev \
+  libsqlite3-dev libclang-dev
+```
+
+Ubuntu ≥ 22.04 / Debian ≥ 12 is recommended. Older releases ship a libmpv that is too old.
+
+## Fedora
+
+```bash
+sudo dnf install -y \
+  git curl unzip xz zip \
+  clang clang-devel cmake ninja-build pkgconf-pkg-config \
+  gtk3-devel xz-devel \
+  mpv mpv-devel \
+  libsecret-devel jsoncpp-devel \
+  sqlite-devel
+```
+
+If `mpv-devel` is not found on your release, enable [RPM Fusion](https://rpmfusion.org/Configuration) first.
+
+## Arch Linux / Manjaro
+
+```bash
+sudo pacman -S --needed \
+  base-devel git curl unzip zip \
+  clang cmake ninja pkgconf \
+  gtk3 mpv libsecret jsoncpp sqlite
+```
+
+Flutter is available from the AUR (`flutter-bin`), or install it manually as below.
+
+## Installing Flutter (non-Nix)
+
+Choose one:
+
+- **Manual (official):** follow <https://docs.flutter.dev/get-started/install/linux/desktop>.
+  Download the stable tarball, extract it (for example to `~/development/flutter`), then add `flutter/bin` to your `PATH`.
+- **Snap:** `sudo snap install flutter --classic`
+- **[fvm](https://fvm.app)** if you juggle several Flutter versions.
+
+Then enable the Linux desktop target:
+
+```bash
+flutter config --enable-linux-desktop
+```
+
+## Installing Rust (non-Nix)
+
+Use [rustup](https://rustup.rs) rather than distro packages, which are often too old:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+cargo install flutter_rust_bridge_codegen
+```
+
+If codegen fails with *"Unable to find libclang"*, point it to your libclang directory:
+
+```bash
+export LIBCLANG_PATH=/usr/lib/llvm-18/lib   # adjust to your system
+```
+
+---
+
+## Verify
+
+```bash
+flutter doctor            # "Linux toolchain" must be ✓ (Android/Chrome can be ignored for now)
+pkg-config --modversion gtk+-3.0 mpv libsecret-1 jsoncpp sqlite3
+rustc --version
+flutter_rust_bridge_codegen --version
+```
+
+Every `pkg-config` line should print a version number. If one prints *"Package … was not found"*, its `-dev`/`-devel` package is missing.
+
+## Running
+
+```bash
+flutter pub get
+flutter run -d linux
+```
+
+### Code generation
+
+Run code generation again after changing drift tables, Riverpod annotations or Rust APIs:
+
+```bash
+# Dart (drift, riverpod, freezed…)
+dart run build_runner build --delete-conflicting-outputs
+
+# Rust bindings
+flutter_rust_bridge_codegen generate
+```
+
+### Tests & lints
+
+```bash
+flutter analyze
+flutter test
+cargo test --manifest-path rust/Cargo.toml
+```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `CMake Error: ... gtk+-3.0 not found` | Install the GTK 3 dev package (`libgtk-3-dev` / `gtk3-devel`). |
+| `libmpv.so: cannot open shared object file` at runtime | Install the mpv runtime package (`mpv` / `libmpv2`). On Nix, run inside the dev shell. |
+| No sound, or mpv errors about locale | Make sure your locale is valid (`locale` shows no errors). `media_kit` sets `LC_NUMERIC` itself. |
+| `flutter_secure_storage` fails to read or write | A Secret Service provider must be running (GNOME Keyring, KWallet ≥ 5.97, or KeePassXC with Secret Service enabled). |
+| `Unable to find libclang` during Rust codegen | Install `libclang-dev` / `clang-devel` and set `LIBCLANG_PATH`. |
+
+## End-user runtime dependencies
+
+Users of release builds do **not** need any of the above. AppImage and Flatpak builds bundle libmpv. `.deb` and `.rpm` packages declare `libmpv2` and `libsecret-1-0` as dependencies.
+
+## AI agent tooling (optional)
+
+`.mcp.json` registers the official Dart/Flutter MCP server through `tool/dart-mcp.sh`. The script uses `dart` from your PATH, or the Nix dev shell if `dart` is not on PATH. MCP-capable agents such as Claude Code then get analyze, format, tests, pub, hot reload and widget inspection.

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dart": {
+      "command": "./tool/dart-mcp.sh",
+      "args": []
+    }
+  }
+}
