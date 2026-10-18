@@ -65,6 +65,11 @@ static void my_application_activate(GApplication* application) {
   gdk_rgba_parse(&background_color, "#000000");
   fl_view_set_background_color(view, &background_color);
   gtk_widget_show(GTK_WIDGET(view));
+  // Smallest window the layout supports, matching setUpDesktopWindow() in
+  // lib/app/shell/window/desktop_window.dart. GTK reports the view's size
+  // request to the compositor as the window's minimum size; the hints
+  // window_manager sets on the GdkWindow get replaced by GTK's own.
+  gtk_widget_set_size_request(GTK_WIDGET(view), 480, 360);
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
 
   // Show the window when Flutter renders.
