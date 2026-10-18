@@ -55,3 +55,4 @@ result-*
 # Claude Code: agent config is local to each developer
 /.claude/
 /CLAUDE.md
+plans/

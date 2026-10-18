@@ -1,80 +1,115 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Window width at which the bottom navigation bar becomes a side rail.
-const _railBreakpoint = 600.0;
+import 'app_destination.dart';
+import 'navigation_history.dart';
+import 'sidebar/sidebar.dart';
+import 'sidebar/sidebar_toggle.dart';
+import 'top_bar.dart';
 
-class _Destination {
-  const _Destination(this.label, this.icon, this.selectedIcon);
+/// Window width below which the sidebar moves into a drawer.
+const _sidebarBreakpoint = 720.0;
 
-  final String label;
-  final IconData icon;
-  final IconData selectedIcon;
-}
-
-/// Must match the branch order in `router.dart`.
-const _destinations = [
-  _Destination('Library', Icons.library_music_outlined, Icons.library_music),
-  _Destination('Search', Icons.search_outlined, Icons.search),
-  _Destination('Playlists', Icons.queue_music_outlined, Icons.queue_music),
-  _Destination('Settings', Icons.settings_outlined, Icons.settings),
-];
-
-/// App frame around every top-level screen: a navigation rail on wide
-/// windows (desktop), a bottom navigation bar on narrow ones (mobile).
-class AppShell extends StatelessWidget {
+/// App frame around every top-level page: sidebar on the left, top bar above
+/// the page. On narrow windows the sidebar opens as a drawer instead.
+class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
-  void _onDestinationSelected(int index) {
-    // Tapping the current destination again returns to its root page.
+  void _select(AppDestination destination) {
+    final index = destination.index;
+    // Selecting the current destination again returns to its root page.
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
     );
   }
 
+  /// Mouse back/forward side buttons move through the history.
+  void _onPointerDown(PointerDownEvent event, NavigationHistory history) {
+    if (event.buttons & kBackMouseButton != 0) history.back();
+    if (event.buttons & kForwardMouseButton != 0) history.forward();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wide = MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
+    final selected = AppDestination.values[navigationShell.currentIndex];
+    final history = ref.read(navigationHistoryProvider.notifier);
+
+    final page = Expanded(child: navigationShell);
+
+    return Listener(
+      onPointerDown: (event) => _onPointerDown(event, history),
+      child: wide
+          ? Scaffold(
+              body: Row(
+                children: [
+                  _CollapsibleSidebar(
+                    expanded: ref.watch(sidebarExpandedProvider),
+                    child: Sidebar(selected: selected, onSelected: _select),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Column(children: [const TopBar(), page]),
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: SidebarToggle(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Scaffold(
+              drawer: Builder(
+                builder: (context) => Drawer(
+                  width: sidebarWidth,
+                  child: Sidebar(
+                    selected: selected,
+                    onSelected: (destination) {
+                      Navigator.of(context).pop();
+                      _select(destination);
+                    },
+                  ),
+                ),
+              ),
+              body: Builder(
+                builder: (context) => Column(
+                  children: [
+                    TopBar(onMenuPressed: Scaffold.of(context).openDrawer),
+                    page,
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+/// Animates the sidebar (and its divider) between full width and the icon
+/// rail. The sidebar picks its layout from the width it gets.
+class _CollapsibleSidebar extends StatelessWidget {
+  const _CollapsibleSidebar({required this.expanded, required this.child});
+
+  final bool expanded;
+  final Widget child;
+
   @override
   Widget build(BuildContext context) {
-    final wide = MediaQuery.sizeOf(context).width >= _railBreakpoint;
-
-    if (wide) {
-      return Scaffold(
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: _onDestinationSelected,
-              labelType: NavigationRailLabelType.all,
-              destinations: [
-                for (final d in _destinations)
-                  NavigationRailDestination(
-                    icon: Icon(d.icon),
-                    selectedIcon: Icon(d.selectedIcon),
-                    label: Text(d.label),
-                  ),
-              ],
-            ),
-            const VerticalDivider(width: 1),
-            Expanded(child: navigationShell),
-          ],
-        ),
-      );
-    }
-
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: _onDestinationSelected,
-        destinations: [
-          for (final d in _destinations)
-            NavigationDestination(
-              icon: Icon(d.icon),
-              selectedIcon: Icon(d.selectedIcon),
-              label: d.label,
-            ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOutCubic,
+      width: (expanded ? sidebarWidth : sidebarCompactWidth) + 1,
+      child: Row(
+        children: [
+          Expanded(child: child),
+          const VerticalDivider(width: 1),
         ],
       ),
     );

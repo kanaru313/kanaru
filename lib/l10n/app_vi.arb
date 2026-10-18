@@ -1,0 +1,48 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Kanaru",
+
+  "navHome": "Trang chủ",
+  "navSongs": "Bài hát",
+  "navAlbums": "Album",
+  "navArtists": "Nghệ sĩ",
+  "navFolders": "Thư mục",
+  "navFavorites": "Yêu thích",
+  "navRecentlyPlayed": "Phát gần đây",
+  "navSearch": "Tìm kiếm",
+  "navSettings": "Cài đặt",
+
+  "sidebarPlaylists": "Playlist",
+  "sidebarNoPlaylists": "Chưa có playlist nào",
+  "sidebarNewPlaylist": "Playlist mới",
+  "sidebarExpand": "Mở rộng",
+  "sidebarCollapse": "Thu gọn",
+  "sidebarShrink": "Thu gọn thanh bên",
+  "sidebarGrow": "Mở rộng thanh bên",
+
+  "topBarBack": "Quay lại",
+  "topBarForward": "Tiến tới",
+  "topBarSearchHint": "Tìm bài hát, album, nghệ sĩ",
+
+  "windowMinimize": "Thu nhỏ",
+  "windowMaximize": "Phóng to",
+  "windowRestore": "Khôi phục",
+  "windowClose": "Đóng",
+
+  "homeGreetingMorning": "Chào buổi sáng",
+  "homeGreetingAfternoon": "Chào buổi chiều",
+  "homeGreetingEvening": "Chào buổi tối",
+  "homeSubtitle": "Nghe tiếp những gì bạn yêu thích",
+
+  "libraryEmptyTitle": "Thư viện của bạn đang trống",
+  "libraryEmptyMessage": "Thêm thư mục nhạc để bắt đầu tạo thư viện.",
+  "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
+  "recentlyPlayedEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
+
+  "searchEmptyTitle": "Tìm trong thư viện",
+  "searchEmptyMessage": "Tìm bài hát, album và nghệ sĩ.",
+  "searchResultsTitle": "Kết quả cho “{query}”",
+  "searchNotReadyMessage": "Tìm kiếm sẽ hoạt động khi thư viện đã được quét.",
+
+  "settingsEmptyMessage": "Chưa có gì để cài đặt."
+}
