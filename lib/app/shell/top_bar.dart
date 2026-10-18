@@ -1,0 +1,127 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../l10n/l10n.dart';
+import 'app_destination.dart';
+import 'navigation_history.dart';
+import 'window/desktop_window.dart';
+import 'window/window_buttons.dart';
+import 'window/window_drag_area.dart';
+
+const topBarHeight = 64.0;
+
+/// Header above every page: back/forward, search, settings and, when the app
+/// draws its own title bar, the window buttons. Empty space drags the window.
+class TopBar extends ConsumerWidget {
+  const TopBar({super.key, this.onMenuPressed});
+
+  /// Opens the sidebar drawer on narrow windows. `null` hides the button.
+  final VoidCallback? onMenuPressed;
+
+  void _search(BuildContext context, String text) {
+    final query = text.trim();
+    context.go(
+      Uri(
+        path: AppDestination.search.path,
+        queryParameters: query.isEmpty ? null : {'q': query},
+      ).toString(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final history = ref.watch(navigationHistoryProvider);
+    final historyNotifier = ref.read(navigationHistoryProvider.notifier);
+
+    return WindowDragArea(
+      child: SizedBox(
+        height: topBarHeight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            spacing: 8,
+            children: [
+              if (onMenuPressed != null)
+                IconButton(
+                  icon: const Icon(Icons.menu),
+                  tooltip: MaterialLocalizations.of(context)
+                      .openAppDrawerTooltip,
+                  onPressed: onMenuPressed,
+                ),
+              TopBarButton(
+                icon: Icons.chevron_left,
+                tooltip: l10n.topBarBack,
+                onPressed: history.canGoBack ? historyNotifier.back : null,
+              ),
+              TopBarButton(
+                icon: Icons.chevron_right,
+                tooltip: l10n.topBarForward,
+                onPressed: history.canGoForward
+                    ? historyNotifier.forward
+                    : null,
+              ),
+              // Takes all free space so the buttons after it stay at the right
+              // edge; the field itself never grows past 320.
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: SearchBar(
+                      hintText: l10n.topBarSearchHint,
+                      leading: const Icon(Icons.search, size: 20),
+                      elevation: const WidgetStatePropertyAll(0),
+                      constraints: const BoxConstraints(minHeight: 40),
+                      padding: const WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      onSubmitted: (text) => _search(context, text),
+                    ),
+                  ),
+                ),
+              ),
+              TopBarButton(
+                icon: Icons.settings_outlined,
+                tooltip: l10n.navSettings,
+                onPressed: () => context.go(AppDestination.settings.path),
+              ),
+              if (ref.watch(customTitleBarProvider)) ...[
+                const SizedBox(width: 8),
+                const WindowButtons(),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Round tonal icon button used across the top bar, so every button there
+/// has the same size as the window buttons.
+class TopBarButton extends StatelessWidget {
+  const TopBarButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.iconSize = 20,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filledTonal(
+      icon: Icon(icon, size: iconSize),
+      tooltip: tooltip,
+      onPressed: onPressed,
+      visualDensity: VisualDensity.compact,
+    );
+  }
+}

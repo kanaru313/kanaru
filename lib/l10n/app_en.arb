@@ -1,0 +1,53 @@
+{
+  "@@locale": "en",
+  "appTitle": "Kanaru",
+
+  "navHome": "Home",
+  "navSongs": "Songs",
+  "navAlbums": "Albums",
+  "navArtists": "Artists",
+  "navFolders": "Folders",
+  "navFavorites": "Favorites",
+  "navRecentlyPlayed": "Recently played",
+  "navSearch": "Search",
+  "navSettings": "Settings",
+
+  "sidebarPlaylists": "Playlists",
+  "sidebarNoPlaylists": "No playlists yet",
+  "sidebarNewPlaylist": "New playlist",
+  "sidebarExpand": "Expand",
+  "sidebarCollapse": "Collapse",
+  "sidebarShrink": "Collapse sidebar",
+  "sidebarGrow": "Expand sidebar",
+
+  "topBarBack": "Back",
+  "topBarForward": "Forward",
+  "topBarSearchHint": "Search songs, albums, artists",
+
+  "windowMinimize": "Minimize",
+  "windowMaximize": "Maximize",
+  "windowRestore": "Restore",
+  "windowClose": "Close",
+
+  "homeGreetingMorning": "Good morning",
+  "homeGreetingAfternoon": "Good afternoon",
+  "homeGreetingEvening": "Good evening",
+  "homeSubtitle": "Pick up where the music left off",
+
+  "libraryEmptyTitle": "Your library is empty",
+  "libraryEmptyMessage": "Add a music folder to start building your library.",
+  "favoritesEmptyMessage": "Songs you like will show up here.",
+  "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
+
+  "searchEmptyTitle": "Search your library",
+  "searchEmptyMessage": "Find songs, albums and artists.",
+  "searchResultsTitle": "Results for “{query}”",
+  "@searchResultsTitle": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "searchNotReadyMessage": "Search will work once your library has been scanned.",
+
+  "settingsEmptyMessage": "Nothing to configure yet."
+}

@@ -2,7 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
+import 'app/shell/window/desktop_window.dart';
 
-void main() {
-  runApp(const ProviderScope(child: KanaruApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final customTitleBar = await setUpDesktopWindow();
+
+  runApp(
+    ProviderScope(
+      overrides: [customTitleBarProvider.overrideWithValue(customTitleBar)],
+      child: const KanaruApp(),
+    ),
+  );
 }
