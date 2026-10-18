@@ -152,6 +152,7 @@ cargo test --manifest-path rust/Cargo.toml
 |---|---|
 | `CMake Error: ... gtk+-3.0 not found` | Install the GTK 3 dev package (`libgtk-3-dev` / `gtk3-devel`). |
 | `libmpv.so: cannot open shared object file` at runtime | Install the mpv runtime package (`mpv` / `libmpv2`). On Nix, run inside the dev shell. |
+| App aborts with `No GSettings schemas are installed on the system` when opening files | GTK's file chooser needs compiled schemas. Distros ship them with GTK 3; on Nix, run inside the dev shell, which adds them to `XDG_DATA_DIRS`. |
 | No sound, or mpv errors about locale | Make sure your locale is valid (`locale` shows no errors). `media_kit` sets `LC_NUMERIC` itself. |
 | `flutter_secure_storage` fails to read or write | A Secret Service provider must be running (GNOME Keyring, KWallet ≥ 5.97, or KeePassXC with Secret Service enabled). |
 | `Unable to find libclang` during Rust codegen | Install `libclang-dev` / `clang-devel` and set `LIBCLANG_PATH`. |
