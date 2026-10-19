@@ -22,6 +22,20 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+
+  // A second launch (or the primary's own re-activation) reuses the existing
+  // window. Before the first frame the window is still hidden and
+  // first_frame_cb shows it; presenting it now would flash a black window.
+  GList* windows = gtk_application_get_windows(GTK_APPLICATION(application));
+  if (windows != nullptr) {
+    GtkWindow* existing = GTK_WINDOW(windows->data);
+    if (gtk_widget_get_visible(GTK_WIDGET(existing))) {
+      gtk_window_deiconify(existing);
+      gtk_window_present(existing);
+    }
+    return;
+  }
+
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -88,15 +102,24 @@ static gboolean my_application_local_command_line(GApplication* application,
                                                   gchar*** arguments,
                                                   int* exit_status) {
   MyApplication* self = MY_APPLICATION(application);
-  // Strip out the first argument as it is the binary name.
-  self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
-
   g_autoptr(GError) error = nullptr;
   if (!g_application_register(application, nullptr, &error)) {
     g_warning("Failed to register: %s", error->message);
     *exit_status = 1;
     return TRUE;
   }
+
+  // Another instance owns the application ID: ask it to show its window and
+  // exit without creating a Flutter engine. Arguments are dropped here.
+  if (g_application_get_is_remote(application)) {
+    g_message("Kanaru is already running; activating it.");
+    g_application_activate(application);
+    *exit_status = 0;
+    return TRUE;
+  }
+
+  // Strip out the first argument as it is the binary name.
+  self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
 
   g_application_activate(application);
   *exit_status = 0;
@@ -147,7 +170,20 @@ MyApplication* my_application_new() {
   // the application to be recognized beyond its binary name.
   g_set_prgname(APPLICATION_ID);
 
+#ifndef NDEBUG
+  // Debug: `flutter run` must start next to an installed instance.
+  GApplicationFlags flags = G_APPLICATION_NON_UNIQUE;
+#else
+  // Profile/Release: one instance per session, a second launch activates it.
+  // G_APPLICATION_DEFAULT_FLAGS only exists since GLib 2.74.
+#if GLIB_CHECK_VERSION(2, 74, 0)
+  GApplicationFlags flags = G_APPLICATION_DEFAULT_FLAGS;
+#else
+  GApplicationFlags flags = G_APPLICATION_FLAGS_NONE;
+#endif
+#endif
+
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID, "flags",
-                                     G_APPLICATION_NON_UNIQUE, nullptr));
+                                     flags, nullptr));
 }
