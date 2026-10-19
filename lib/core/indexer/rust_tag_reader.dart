@@ -22,12 +22,15 @@ class RustTagReader implements TagReader {
   }
 
   /// Initialises the bridge once. A failed attempt is forgotten so a later
-  /// call can retry instead of replaying the same error forever.
+  /// call can retry instead of replaying the same error forever. Skips the
+  /// init when something else already did it: the bridge throws if
+  /// initialised twice.
   Future<void> _ensureLoaded() {
+    if (RustLib.instance.initialized) return Future<void>.value();
     return _ready ??= RustLib.init().catchError((Object error, StackTrace st) {
       _log.severe('Cannot load the native tag reader', error, st);
       _ready = null;
-      throw error;
+      Error.throwWithStackTrace(error, st);
     });
   }
 }

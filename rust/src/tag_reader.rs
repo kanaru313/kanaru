@@ -5,7 +5,7 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 
 use lofty::config::{ParseOptions, ParsingMode};
-use lofty::file::{AudioFile, FileType, TaggedFileExt};
+use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::probe::Probe;
 
 use crate::api::tags::TrackTags;
@@ -53,13 +53,14 @@ fn read_checked(path: &str) -> Result<TrackTags, String> {
     let options = ParseOptions::new()
         .read_cover_art(false)
         .parsing_mode(ParsingMode::BestAttempt);
-    let mut probe = Probe::open(file_path)
+    // Sniff the content instead of trusting the extension: `.oga` may hold
+    // Opus or Speex, `.alac` is MP4, and files are often mislabeled. The
+    // extension is only the fallback when the content is not recognised.
+    let probe = Probe::open(file_path)
         .map_err(|e| e.to_string())?
-        .options(options);
-    // lofty has no mapping for `.oga`; it is always Ogg Vorbis in practice.
-    if extension == "oga" {
-        probe = probe.set_file_type(FileType::Vorbis);
-    }
+        .options(options)
+        .guess_file_type()
+        .map_err(|e| e.to_string())?;
     let tagged = probe.read().map_err(|e| e.to_string())?;
 
     let mut tags = TrackTags {

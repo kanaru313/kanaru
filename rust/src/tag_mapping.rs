@@ -51,14 +51,20 @@ pub fn apply_properties(out: &mut TrackTags, props: &FileProperties) {
     out.channels = props.channels().filter(|v| *v > 0);
 }
 
-/// All track artists joined with [`ARTIST_SEPARATOR`]; falls back to the
-/// single `artist()` value for formats without a multi-value artist key.
+/// All track artists joined with [`ARTIST_SEPARATOR`]. Prefers the explicit
+/// multi-value `TrackArtists` key; otherwise collects every `TrackArtist`
+/// value (repeated Vorbis `ARTIST=` fields, null-separated ID3v2.4 `TPE1`).
 fn artists(tag: &Tag) -> Option<String> {
-    let all: Vec<&str> = tag
-        .get_strings(ItemKey::TrackArtists)
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .collect();
+    let collect = |key: ItemKey| -> Vec<&str> {
+        tag.get_strings(key)
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .collect()
+    };
+    let mut all = collect(ItemKey::TrackArtists);
+    if all.is_empty() {
+        all = collect(ItemKey::TrackArtist);
+    }
     if all.is_empty() {
         non_empty(tag.artist())
     } else {
@@ -103,6 +109,20 @@ mod tests {
             ItemKey::TrackArtists,
             lofty::tag::ItemValue::Text("B".into()),
         ));
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        assert_eq!(out.artist.as_deref(), Some("A; B"));
+    }
+
+    #[test]
+    fn repeated_artist_fields_are_joined() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        for name in ["A", " B ", ""] {
+            tag.push(lofty::tag::TagItem::new(
+                ItemKey::TrackArtist,
+                lofty::tag::ItemValue::Text(name.into()),
+            ));
+        }
         let mut out = TrackTags::default();
         apply_tag(&mut out, &tag);
         assert_eq!(out.artist.as_deref(), Some("A; B"));

@@ -12,7 +12,7 @@ Kanaru currently targets **GNU/Linux** first. Windows, macOS, Android and iOS in
 | libmpv (dev headers) | ≥ 0.36 | Audio playback (`media_kit`) |
 | libsecret, jsoncpp (dev headers) | any recent | Credential storage (`flutter_secure_storage`) |
 | SQLite (dev headers) | ≥ 3.35 | Library database (`drift`) |
-| Rust (stable) + Cargo | ≥ 1.80 | Tag reading (`lofty` via `flutter_rust_bridge`) |
+| Rust (stable) + Cargo | ≥ 1.89 | Tag reading (`lofty` via `flutter_rust_bridge`) |
 | libclang | any recent | Needed by `flutter_rust_bridge_codegen` / `ffigen` |
 | `flutter_rust_bridge_codegen` | 2.x | Generates Dart ↔ Rust bindings |
 
@@ -145,8 +145,8 @@ Notes on the Rust side:
 
 - **Pinned codegen**: the Dart `flutter_rust_bridge` package, the crate and `flutter_rust_bridge_codegen` must all be 2.13.0 (`flutter_rust_bridge_codegen --version`). The dev shell provides the codegen binary; outside Nix, `cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked`.
 - **`RUSTC_BOOTSTRAP=1`**: codegen runs `cargo expand`, which needs nightly features. The variable lets the stable toolchain do it. The dev shell ships `cargo-expand`; elsewhere `cargo install cargo-expand`.
-- **`rustup` shim (Nix only)**: the build glue (cargokit) calls `rustup toolchain list`, `rustup target list --installed` and `rustup run <toolchain> cargo`. Nix provides one fixed toolchain and no rustup, so the dev shell has a tiny `rustup` script that answers those three calls. Without it `flutter run` fails while building the Rust crate.
-- **Rust builds** happen inside `flutter run` / `flutter build` (always `--release` for the crate). The first build is slow, and each git worktree has its own `rust/` build output.
+- **`rustup` shim (Nix only)**: the build glue (cargokit) calls `rustup toolchain list`, `rustup target list --installed` and `rustup run <toolchain> cargo`. Nix provides one fixed toolchain and no rustup, so the dev shell has a tiny `rustup` script that answers exactly those three calls and fails on anything else. Without it `flutter run` fails while building the Rust crate. Cargokit looks for `~/.cargo/bin/rustup` before `PATH`, so a real rustup install bypasses the shim.
+- **Rust builds** happen inside `flutter run` / `flutter build` (cargokit builds the crate in debug for debug app builds and in release otherwise). The first build is slow, and each git worktree has its own `rust/` build output.
 - **Tests**: `cargo test --locked --manifest-path rust/Cargo.toml` (`--locked` fails if `Cargo.lock` is out of date).
 
 ### Instances and media controls

@@ -63,6 +63,60 @@ fn fully_tagged_formats_map_every_field() {
 }
 
 #[test]
+fn bitrate_is_reported_in_kbps() {
+    // The MP3 fixture is encoded at 32 kbps.
+    let bitrate = read(&fixture("sample_v23.mp3")).bitrate.expect("bitrate");
+    assert!((24..=48).contains(&bitrate), "bitrate {bitrate}");
+}
+
+#[test]
+fn id3v23_year_comes_from_tyer() {
+    let tags = read(&fixture("sample_v23.mp3"));
+    assert_eq!(tags.error, None);
+    assert_eq!(tags.year, Some(2019));
+    assert_eq!(tags.title.as_deref(), Some("Test_Title"));
+    assert_eq!(tags.track_no, Some(3));
+}
+
+#[test]
+fn file_type_comes_from_content_not_extension() {
+    // Opus stream in an `.oga` container, ALAC with an unmapped extension and
+    // an M4A named `.mp3`.
+    for name in ["opus_in_ogg.oga", "sample.alac", "m4a_named.mp3"] {
+        let tags = read(&fixture(name));
+        assert_eq!(tags.error, None, "{name}");
+        assert_eq!(tags.title.as_deref(), Some("Test_Title"), "{name}");
+        assert_eq!(tags.artist.as_deref(), Some("Artist_One"), "{name}");
+        assert!(tags.duration_ms.is_some(), "{name}");
+    }
+}
+
+#[test]
+fn id3v24_multi_value_artist_is_joined() {
+    use lofty::config::WriteOptions;
+    use lofty::file::TaggedFileExt;
+    use lofty::prelude::*;
+    use lofty::tag::{ItemKey, Tag, TagType};
+
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("multi.mp3");
+    fs::copy(fixture("sample.mp3"), &path).unwrap();
+    let mut tag = Tag::new(TagType::Id3v2);
+    tag.insert_text(ItemKey::TrackArtist, "First\0Second".to_owned());
+    tag.set_comment("Written_Note".to_owned());
+    tag.save_to_path(&path, WriteOptions::default()).unwrap();
+    // Confirm the writer produced the layout the test is about.
+    assert!(lofty::read_from_path(&path)
+        .unwrap()
+        .primary_tag()
+        .is_some());
+
+    let tags = read(&path.to_string_lossy());
+    assert_eq!(tags.artist.as_deref(), Some("First; Second"));
+    assert_eq!(tags.comment.as_deref(), Some("Written_Note"));
+}
+
+#[test]
 fn wav_and_aiff_are_readable_with_basic_tags() {
     for name in ["sample.wav", "sample.aiff"] {
         let tags = read(&fixture(name));
