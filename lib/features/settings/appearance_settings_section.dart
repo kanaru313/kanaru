@@ -72,6 +72,17 @@ class AppearanceSettingsSection extends ConsumerWidget {
             initialSelection: languageCode,
             requestFocusOnTap: false,
             enableFilter: false,
+            leadingIcon: const Icon(Icons.translate, size: 18),
+            // As tall and round as the segmented buttons beside it.
+            textStyle: Theme.of(context).textTheme.labelLarge,
+            inputDecorationTheme: InputDecorationThemeData(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+              constraints: const BoxConstraints.tightFor(height: 40),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
             dropdownMenuEntries: [
               DropdownMenuEntry(
                 value: _systemLanguage,
@@ -95,14 +106,17 @@ class AppearanceSettingsSection extends ConsumerWidget {
             segments: [
               ButtonSegment(
                 value: TitleBarPreference.kanaru,
+                icon: const Icon(Icons.web_asset),
                 label: Text(l10n.settingsTitleBarKanaru),
               ),
               ButtonSegment(
                 value: TitleBarPreference.system,
+                icon: const Icon(Icons.desktop_windows_outlined),
                 label: Text(l10n.settingsTitleBarSystem),
               ),
               ButtonSegment(
                 value: TitleBarPreference.none,
+                icon: const Icon(Icons.crop_free),
                 label: Text(l10n.settingsTitleBarNone),
               ),
             ],
