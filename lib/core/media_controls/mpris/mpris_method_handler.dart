@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:dbus/dbus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../player/player_service.dart';
 import '../../player/player_state.dart';
 import 'mpris_properties.dart';
+
+final _log = Logger('mpris');
 
 /// Turns MPRIS method calls and property writes into [PlayerService]
 /// commands. Checks every signature and value range first, replies at once
@@ -63,7 +65,7 @@ class MprisMethodHandler {
     // `sync` also catches a command that throws before returning a future.
     unawaited(
       Future<void>.sync(command).catchError((Object error, StackTrace stack) {
-        debugPrint('MPRIS $label failed: $error\n$stack');
+        _log.severe('$label failed', error, stack);
       }),
     );
   }

@@ -153,6 +153,22 @@ playerctl -p kanaru position 30       # absolute; "10+" / "10-" for relative
 playerctl -p kanaru metadata --follow
 ```
 
+### Logs
+
+Kanaru writes its log to `$XDG_CACHE_HOME/kanaru/logs/kanaru.log` (`~/.cache/kanaru/logs` when `XDG_CACHE_HOME` is unset or not an absolute path). Debug builds also print every line to the console.
+
+- **Rotation**: each start moves `kanaru.log` to `kanaru.log.1` and so on, keeping 5 files (`kanaru.log` + `.1`–`.4`). A file that grows past 10 MB during a session rotates right away and starts with the session header again. If `~/.cache/kanaru` is deleted while Kanaru runs, the directory and lock are made again at the next rotation.
+- **Several instances**: the first one holds a lock on `kanaru.lock` and owns `kanaru.log`. Another instance running at the same time (e.g. `flutter run` next to an installed build) writes `kanaru-<pid>.log` instead and rotates nothing else (at 10 MB it moves its file to `kanaru-<pid>.log.1`). The owner keeps the files of the 4 newest pids. Anything that reads the log directory must skip `kanaru.lock`: closing a handle to it drops the lock.
+- **Level**: Debug logs everything (`ALL`), Profile/Release log `INFO` and above. Override with `KANARU_LOG_LEVEL` using a `package:logging` level name, in any case (`FINE`, `info`, `warning`…). An unknown value keeps the default and logs a warning. The first line of each session shows the version, OS, pid and level. mpv messages are always forwarded from `warn` up, whatever the level.
+- **Version**: set it for release builds with `--dart-define=KANARU_VERSION=<version>` (otherwise `dev`).
+- Uncaught errors (framework, async, providers) are logged with their stack trace and do not stop the app. They are written whatever `KANARU_LOG_LEVEL` says, and Release builds do not print them to the console (the journal). When the log file cannot be opened, warnings and errors go to stderr instead.
+- Credentials in URLs, JSON, `key=value` pairs and auth headers are masked as a safety net (also when percent-encoded); still keep them out of log messages. A record is cut at 16 KB.
+
+```bash
+tail -f ~/.cache/kanaru/logs/kanaru.log
+KC=$(mktemp -d) && KANARU_LOG_LEVEL=fine XDG_CACHE_HOME=$KC flutter run -d linux   # throwaway log dir
+```
+
 ### Tests & lints
 
 ```bash

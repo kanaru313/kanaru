@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:dbus/dbus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:logging/logging.dart';
 
 import 'mpris_media_controls_test.dart' show dbusError;
 import 'mpris_test_harness.dart';
@@ -67,17 +67,21 @@ Future<void> withTimerLog(
 
 void main() {
   late MprisHarness h;
-  late List<String> logs;
-  final originalDebugPrint = debugPrint;
+  late List<LogRecord> logs;
+  late StreamSubscription<LogRecord> logSubscription;
+  late Level previousLevel;
 
   setUp(() async {
     h = MprisHarness();
     await h.setUp();
     logs = [];
-    debugPrint = (message, {wrapWidth}) => logs.add(message ?? '');
+    previousLevel = Logger.root.level;
+    Logger.root.level = Level.ALL;
+    logSubscription = Logger.root.onRecord.listen(logs.add);
   });
   tearDown(() async {
-    debugPrint = originalDebugPrint;
+    await logSubscription.cancel();
+    Logger.root.level = previousLevel;
     await h.tearDown();
   });
 
@@ -146,7 +150,7 @@ void main() {
 
       app.container.dispose();
       // The call may reach the bus before or after the name is gone; either
-      // way it must not drive the disposed player or log a failure.
+      // way it must not drive the disposed player or log a problem.
       try {
         await h.call('PlayPause');
       } on DBusMethodResponseException {
@@ -155,7 +159,13 @@ void main() {
       await h.waitForName(mprisName, gone: true);
 
       expect(app.backend.calls, isEmpty);
-      expect(logs.where((l) => l.contains('failed')), isEmpty);
+      expect(
+        logs.where((r) => r.loggerName == 'mpris' && r.level >= Level.WARNING),
+        isEmpty,
+      );
+      // The capture works: a record sent now is seen.
+      Logger('mpris').severe('probe');
+      expect(logs.last.message, 'probe');
     });
   });
 
