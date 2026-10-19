@@ -22,7 +22,7 @@ Future<void> main() async {
         mediaControlsProvider.overrideWith((ref) {
           final controls = MprisMediaControls(
             ref,
-            DBusClient.session(),
+            DBusClient.session,
             onRaise: raiseDesktopWindow,
           );
           ref.onDispose(controls.dispose);
@@ -30,9 +30,8 @@ Future<void> main() async {
         }),
     ],
   );
-  // Media controls live for the whole session. A container listener, unlike
-  // a widget's watch, is never paused, so the provider's own state listener
-  // keeps publishing changes even when the UI is not ticking.
+  // Nothing in the UI reads the provider, so this listener is what creates
+  // the media controls at startup. It also keeps them for the whole session.
   container.listen(mediaControlsProvider, (_, _) {});
 
   runApp(

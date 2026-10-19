@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dbus/dbus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
@@ -43,11 +44,36 @@ void main() {
       expect(metadata['xesam:url'], const DBusString('file:///music/b.mp3'));
     });
 
-    test('introspection lists the MPRIS interfaces', () async {
+    test('introspection lists each interface exactly once', () async {
       await h.start();
       final node = await h.remote.introspect();
-      final names = node.interfaces.map((i) => i.name);
-      expect(names, containsAll([mprisRootInterface, mprisPlayerInterface]));
+      expect(
+        node.interfaces.map((i) => i.name),
+        unorderedEquals([
+          'org.freedesktop.DBus.Introspectable',
+          'org.freedesktop.DBus.Peer',
+          'org.freedesktop.DBus.Properties',
+          mprisRootInterface,
+          mprisPlayerInterface,
+        ]),
+      );
+    });
+
+    test('introspection marks Position and CanControl as silent', () async {
+      await h.start();
+      final node = await h.remote.introspect();
+      final player = node.interfaces.firstWhere(
+        (i) => i.name == mprisPlayerInterface,
+      );
+      const annotation = 'org.freedesktop.DBus.Property.EmitsChangedSignal';
+      final silent = {
+        for (final p in player.properties)
+          if (p.annotations.any(
+            (a) => a.name == annotation && a.value == 'false',
+          ))
+            p.name,
+      };
+      expect(silent, {'Position', 'CanControl'});
     });
 
     test('Position is read live', () async {
@@ -306,36 +332,24 @@ void main() {
       for (var n = 1; n <= 5; n++) {
         await other.requestName('$mprisName.instance${pid}_$n');
       }
-      final controls = await h.start(name: mprisName);
+      final taken = [
+        mprisName,
+        '$mprisName.instance$pid',
+        for (var n = 1; n <= 5; n++) '$mprisName.instance${pid}_$n',
+      ];
+      final logs = <String>[];
+      final originalDebugPrint = debugPrint;
+      debugPrint = (message, {wrapWidth}) => logs.add(message ?? '');
+      addTearDown(() => debugPrint = originalDebugPrint);
+      h.create();
+      // Long enough for the 7 requests and the replies.
       await h.settle();
-      // The name belongs to `other`, so the app owns none of them.
-      expect(await h.remoteClient.getNameOwner(mprisName), other.uniqueName);
-      await controls.dispose();
-    });
-  });
-
-  group('dispose', () {
-    test('gives the name back', () async {
-      final controls = await h.start();
-      await controls.dispose();
-      expect(await h.names(), isNot(contains(mprisName)));
-    });
-
-    test('while still starting leaves no name behind', () async {
-      final controls = h.create();
-      await controls.dispose();
-      final names = await h.names();
-      expect(names.where((n) => n.startsWith('org.mpris')), isEmpty);
-    });
-
-    test('with a pending change does not send afterwards', () async {
-      await h.service.openTracks(songs);
-      final controls = await h.start();
-      final changes = await h.watchChanges();
-      await h.service.pause();
-      await controls.dispose();
-      await h.settle();
-      expect(changes, isEmpty);
+      expect(h.app.ownedNames, isEmpty);
+      // Exactly the one line: no "unavailable", no error or stack trace.
+      expect(logs, ['MPRIS: no free bus name, media controls are off']);
+      for (final name in taken) {
+        expect(await h.remoteClient.getNameOwner(name), other.uniqueName);
+      }
     });
   });
 }

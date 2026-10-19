@@ -2,6 +2,7 @@ import 'package:dbus/dbus.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../player/player_state.dart';
+import 'mpris_introspection.dart';
 import 'mpris_method_handler.dart';
 import 'mpris_properties.dart';
 
@@ -9,12 +10,15 @@ import 'mpris_properties.dart';
 /// catch what a handler throws, which leaves the caller waiting for a reply
 /// that never comes, so every entry point turns errors into `Failed`.
 class MprisObject extends DBusObject {
-  MprisObject(this._handler, this._state, this._ids)
+  MprisObject(this._handler, this._state, this._ids, this._isActive)
     : super(DBusObjectPath(mprisObjectPath));
 
   final MprisMethodHandler _handler;
   final PlayerState Function() _state;
   final MprisTrackIds _ids;
+
+  /// False once the owner is disposed; the player state is then out of reach.
+  final bool Function() _isActive;
 
   /// Properties of [interface], or `null` for an interface we do not have.
   Map<String, DBusValue>? _properties(String interface) {
@@ -34,6 +38,7 @@ class MprisObject extends DBusObject {
     String what,
     DBusMethodResponse Function() body,
   ) async {
+    if (!_isActive()) return DBusMethodErrorResponse.failed();
     try {
       return body();
     } catch (error, stack) {
@@ -93,90 +98,5 @@ class MprisObject extends DBusObject {
   });
 
   @override
-  List<DBusIntrospectInterface> introspect() => [
-    DBusIntrospectInterface(
-      mprisRootInterface,
-      methods: [DBusIntrospectMethod('Raise'), DBusIntrospectMethod('Quit')],
-      properties: [
-        _read('CanQuit', 'b'),
-        _read('Fullscreen', 'b'),
-        _read('CanSetFullscreen', 'b'),
-        _read('CanRaise', 'b'),
-        _read('HasTrackList', 'b'),
-        _read('Identity', 's'),
-        _read('DesktopEntry', 's'),
-        _read('SupportedUriSchemes', 'as'),
-        _read('SupportedMimeTypes', 'as'),
-      ],
-    ),
-    DBusIntrospectInterface(
-      mprisPlayerInterface,
-      methods: [
-        for (final name in [
-          'Next',
-          'Previous',
-          'Pause',
-          'PlayPause',
-          'Stop',
-          'Play',
-        ])
-          DBusIntrospectMethod(name),
-        DBusIntrospectMethod('Seek', args: [_in('x', 'Offset')]),
-        DBusIntrospectMethod(
-          'SetPosition',
-          args: [_in('o', 'TrackId'), _in('x', 'Position')],
-        ),
-        DBusIntrospectMethod('OpenUri', args: [_in('s', 'Uri')]),
-      ],
-      signals: [
-        DBusIntrospectSignal(
-          'Seeked',
-          args: [
-            DBusIntrospectArgument(
-              DBusSignature('x'),
-              DBusArgumentDirection.out,
-              name: 'Position',
-            ),
-          ],
-        ),
-      ],
-      properties: [
-        _read('PlaybackStatus', 's'),
-        _write('LoopStatus', 's'),
-        _write('Rate', 'd'),
-        _write('Shuffle', 'b'),
-        _read('Metadata', 'a{sv}'),
-        _write('Volume', 'd'),
-        _read('Position', 'x'),
-        _read('MinimumRate', 'd'),
-        _read('MaximumRate', 'd'),
-        for (final name in [
-          'CanGoNext',
-          'CanGoPrevious',
-          'CanPlay',
-          'CanPause',
-          'CanSeek',
-          'CanControl',
-        ])
-          _read(name, 'b'),
-      ],
-    ),
-  ];
-
-  static DBusIntrospectProperty _read(String name, String type) =>
-      DBusIntrospectProperty(
-        name,
-        DBusSignature(type),
-        access: DBusPropertyAccess.read,
-      );
-
-  static DBusIntrospectProperty _write(String name, String type) =>
-      DBusIntrospectProperty(name, DBusSignature(type));
-
-  static DBusIntrospectArgument _in(String type, String name) =>
-      DBusIntrospectArgument(
-        DBusSignature(type),
-        DBusArgumentDirection.in_,
-        name: name,
-      );
+  List<DBusIntrospectInterface> introspect() => mprisIntrospection();
 }

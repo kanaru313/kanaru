@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dbus/dbus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanaru/core/media_controls/media_controls_provider.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_media_controls.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
@@ -34,6 +35,8 @@ class MprisHarness {
   final clients = <DBusClient>[];
   MprisMediaControls? controls;
 
+  DBusAddress get address => _address;
+
   PlayerService get service => container.read(playerServiceProvider.notifier);
 
   Future<void> setUp() async {
@@ -56,21 +59,58 @@ class MprisHarness {
   }
 
   /// Creates the controls on the app client without waiting for the bus.
-  MprisMediaControls create({String name = mprisName}) {
+  /// [factory] replaces the client; [from] the container they read.
+  MprisMediaControls create({
+    String name = mprisName,
+    DBusClient? client,
+    DBusClient Function()? factory,
+    ProviderContainer? from,
+  }) {
     final provider = Provider(
       (ref) => MprisMediaControls(
         ref,
-        app,
+        factory ?? () => client ?? app,
         onRaise: () async => raised.add(raised.length),
       ),
     );
-    controls = container.read(provider);
+    controls = (from ?? container).read(provider);
+    pointRemoteAt(name);
+    return controls!;
+  }
+
+  /// Aims [remote] at the service with [name].
+  void pointRemoteAt([String name = mprisName]) {
     remote = DBusRemoteObject(
       remoteClient,
       name: name,
       path: DBusObjectPath(mprisObjectPath),
     );
-    return controls!;
+  }
+
+  /// A container wired like `main.dart`: the MPRIS controls are provided by
+  /// an override on [app] and disposed with the container. [keepAlive]
+  /// adds the container-level listener `main.dart` holds.
+  ({ProviderContainer container, FakeAudioBackend backend}) appContainer({
+    bool keepAlive = true,
+  }) {
+    final appBackend = FakeAudioBackend();
+    final appContainer = ProviderContainer(
+      overrides: [
+        audioBackendProvider.overrideWithValue(appBackend),
+        mediaControlsProvider.overrideWith((ref) {
+          final controls = MprisMediaControls(
+            ref,
+            () => app,
+            onRaise: () async => raised.add(raised.length),
+          );
+          ref.onDispose(controls.dispose);
+          return controls;
+        }),
+      ],
+    );
+    if (keepAlive) appContainer.listen(mediaControlsProvider, (_, _) {});
+    pointRemoteAt();
+    return (container: appContainer, backend: appBackend);
   }
 
   /// Creates the controls and waits for [name] to appear.
@@ -82,12 +122,12 @@ class MprisHarness {
 
   Future<List<String>> names() => remoteClient.listNames();
 
-  Future<void> waitForName(String name) async {
+  Future<void> waitForName(String name, {bool gone = false}) async {
     for (var i = 0; i < 100; i++) {
-      if ((await names()).contains(name)) return;
+      if ((await names()).contains(name) != gone) return;
       await Future<void>.delayed(const Duration(milliseconds: 20));
     }
-    throw StateError('$name never appeared: ${await names()}');
+    throw StateError('$name ${gone ? 'never left' : 'never appeared'}');
   }
 
   /// Collects `PropertiesChanged` of the player interface.

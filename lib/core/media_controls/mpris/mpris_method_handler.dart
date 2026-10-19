@@ -125,9 +125,11 @@ class MprisMethodHandler {
         final volume = value.value.clamp(0, 1).toDouble() * 100;
         _run('Volume', () => _player.setVolume(volume));
       case 'Rate':
-        if (value is! DBusDouble || value.value != 1) {
+        if (value is! DBusDouble || (value.value != 1 && value.value != 0)) {
           return DBusMethodErrorResponse.invalidArgs();
         }
+        // Only 1.0 is supported; the spec says 0.0 means Pause.
+        if (value.value == 0) _run('Rate', () => _player.pause());
       case _ when playerProperties(_state, _ids).containsKey(name):
         return DBusMethodErrorResponse.propertyReadOnly();
       default:
