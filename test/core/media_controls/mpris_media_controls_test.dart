@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dbus/dbus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
+import 'package:logging/logging.dart';
 
 import 'mpris_test_harness.dart';
 
@@ -337,16 +337,28 @@ void main() {
         '$mprisName.instance$pid',
         for (var n = 1; n <= 5; n++) '$mprisName.instance${pid}_$n',
       ];
-      final logs = <String>[];
-      final originalDebugPrint = debugPrint;
-      debugPrint = (message, {wrapWidth}) => logs.add(message ?? '');
-      addTearDown(() => debugPrint = originalDebugPrint);
+      final logs = <LogRecord>[];
+      final previousLevel = Logger.root.level;
+      Logger.root.level = Level.ALL;
+      final subscription = Logger.root.onRecord
+          .where((r) => r.loggerName == 'mpris')
+          .listen(logs.add);
+      addTearDown(() async {
+        await subscription.cancel();
+        Logger.root.level = previousLevel;
+      });
       h.create();
       // Long enough for the 7 requests and the replies.
       await h.settle();
       expect(h.app.ownedNames, isEmpty);
       // Exactly the one line: no "unavailable", no error or stack trace.
-      expect(logs, ['MPRIS: no free bus name, media controls are off']);
+      expect(logs, hasLength(1));
+      final record = logs.single;
+      expect(record.loggerName, 'mpris');
+      expect(record.level, Level.WARNING);
+      expect(record.message, 'No free bus name, media controls are off');
+      expect(record.error, isNull);
+      expect(record.stackTrace, isNull);
       for (final name in taken) {
         expect(await h.remoteClient.getNameOwner(name), other.uniqueName);
       }

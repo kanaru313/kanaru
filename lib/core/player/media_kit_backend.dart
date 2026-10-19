@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 
 import 'audio_backend.dart';
@@ -12,6 +12,9 @@ import 'track.dart';
 // current/next, failure detection) only makes sense next to the command chain
 // that keeps it consistent, so it stays in one file.
 
+final _log = Logger('player');
+final _mpvLog = Logger('mpv');
+
 /// [AudioBackend] on top of a media_kit (libmpv) [Player].
 ///
 /// mpv's playlist holds at most the current entry and the next one. Playlist
@@ -19,8 +22,13 @@ import 'track.dart';
 /// `state.playlist`, which lags behind mpv. Entries are told apart by mpv's
 /// entry ids, so the same file queued twice, or an event that arrives after
 /// the playlist changed again, cannot be mistaken for a track change.
+
 class MediaKitBackend implements AudioBackend {
-  MediaKitBackend() : _player = Player() {
+  MediaKitBackend()
+    : _player = Player(
+        // Fixed, not tied to KANARU_LOG_LEVEL: below `warn` mpv is too noisy.
+        configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
+      ) {
     // mpv's default today, set so gapless does not depend on it. `weak` joins
     // tracks only when their audio format matches; `yes` would resample a
     // track to the format of the one before it. Through the chain, so it
@@ -28,7 +36,7 @@ class MediaKitBackend implements AudioBackend {
     unawaited(
       _serial(() => _native.setProperty('gapless-audio', 'weak'))
           .catchError((Object error) {
-            debugPrint('Could not enable gapless audio: $error');
+            _log.warning('Could not enable gapless audio', error);
           }),
     );
     // Through the chain, so the end of the last track is not reported after
@@ -46,6 +54,15 @@ class MediaKitBackend implements AudioBackend {
     // so they only supply the message; [_reportIfFailed] decides which track
     // failed.
     _forwardError = _player.stream.error.listen((m) => _lastError = m);
+    // No de-duplication here or in media_kit: its `distinct` compares
+    // `PlayerLog` objects, which have no `==`, so every line gets through.
+    _forwardLog = _player.stream.log.listen((entry) {
+      final level = switch (entry.level) {
+        'error' || 'fatal' => Level.SEVERE,
+        _ => Level.WARNING,
+      };
+      _mpvLog.log(level, '${entry.prefix}: ${entry.text}');
+    });
     _forwardDuration = _player.stream.duration.listen((duration) {
       _duration.add(duration);
       if (duration > Duration.zero) unawaited(_markLoaded());
@@ -58,13 +75,14 @@ class MediaKitBackend implements AudioBackend {
         })
         .catchError((Object error) {
           // Without it no track change or failure is ever reported.
-          debugPrint('Could not observe the mpv playlist: $error');
+          _log.warning('Could not observe the mpv playlist', error);
         });
   }
 
   final Player _player;
   late final StreamSubscription<bool> _forwardCompleted;
   late final StreamSubscription<String> _forwardError;
+  late final StreamSubscription<PlayerLog> _forwardLog;
   late final StreamSubscription<Duration> _forwardDuration;
 
   /// Registration of the playlist observer, which waits for the player to
@@ -141,7 +159,7 @@ class MediaKitBackend implements AudioBackend {
   void _reportIfFailed() {
     final track = _current;
     if (track == null || _loaded.contains(_currentId)) return;
-    debugPrint('Playback failed: ${track.uri}: $_lastError');
+    _log.warning('Playback failed: ${track.uri}: $_lastError');
     _failed.add(PlaybackError(track, _lastError));
     _lastError = '';
   }
@@ -296,6 +314,7 @@ class MediaKitBackend implements AudioBackend {
     }
     await _forwardCompleted.cancel();
     await _forwardError.cancel();
+    await _forwardLog.cancel();
     await _forwardDuration.cancel();
     await _pending;
     await _player.dispose();

@@ -1,7 +1,9 @@
 import 'dart:io' as io;
 
 import 'package:dbus/dbus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
+
+final _log = Logger('mpris');
 
 const _busName = 'org.mpris.MediaPlayer2.kanaru';
 
@@ -29,11 +31,11 @@ Future<String?> acquireMprisBusName(
     if (reply == DBusRequestNameReply.primaryOwner ||
         reply == DBusRequestNameReply.alreadyOwner) {
       if (name != _busName) {
-        debugPrint('MPRIS: $_busName is taken, using $name');
+        _log.info('$_busName is taken, using $name');
       }
       return name;
     }
   }
-  debugPrint('MPRIS: no free bus name, media controls are off');
+  _log.warning('No free bus name, media controls are off');
   return null;
 }
