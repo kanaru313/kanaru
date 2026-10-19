@@ -7,9 +7,3 @@ import 'media_controls.dart';
 final mediaControlsProvider = Provider<MediaControls>(
   (ref) => NoopMediaControls(),
 );
-
-/// What a "raise the window" request from the desktop does. The app
-/// overrides it; by default there is no window to raise.
-final mediaControlsRaiseProvider = Provider<Future<void> Function()>(
-  (ref) => () async {},
-);
