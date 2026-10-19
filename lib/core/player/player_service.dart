@@ -11,6 +11,7 @@ import 'player_state.dart';
 import 'repeat_mode.dart';
 import 'track.dart';
 
+part 'player_queue_commands.dart';
 part 'player_settings_commands.dart';
 part 'player_transport_commands.dart';
 
@@ -30,7 +31,10 @@ final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
 /// gets the current track plus the one that should follow, and reports back
 /// when it moved on to that one by itself.
 class PlayerService extends Notifier<PlayerState>
-    with _PlayerSettingsCommands, _PlayerTransportCommands {
+    with
+        _PlayerSettingsCommands,
+        _PlayerTransportCommands,
+        _PlayerQueueCommands {
   PlayerService({this._random});
 
   @override
@@ -39,8 +43,11 @@ class PlayerService extends Notifier<PlayerState>
   late AudioBackend _backend;
   late StreamController<PlaybackError> _errors;
 
-  /// Queue position of the track handed to the engine as "next".
-  int? _nextIndex;
+  /// Entries (indexes into `PlayQueue.original`) handed to the engine as
+  /// "next" since it last started or advanced, oldest first. The engine can
+  /// still move on to an older one while a newer `setNext` is in flight.
+  @override
+  final _handedNext = <int>[];
 
   /// Playback stopped after the last track; play starts the queue over.
   @override
@@ -52,6 +59,7 @@ class PlayerService extends Notifier<PlayerState>
   int _failuresInRow = 0;
 
   /// Every track in the queue failed since the last one that played.
+  @override
   bool get _allFailed => _failuresInRow >= state.queue.order.length;
 
   /// How close to the end the last tick must be, and how close to the start
@@ -115,31 +123,6 @@ class PlayerService extends Notifier<PlayerState>
     if (looped) _seeked.add(Duration.zero);
   }
 
-  void _onAdvanced(Track track) {
-    final queue = state.queue;
-    var index = _nextIndex;
-    // The queue may have changed after the engine got its next track.
-    if (index == null || index >= queue.order.length) index = -1;
-    if (index < 0 || queue.tracks[index] != track) {
-      index = queue.tracks.indexOf(track);
-      if (index < 0) return;
-    }
-    state = state.copyWith(
-      queue: queue.copyWith(index: index),
-      position: Duration.zero,
-      duration: Duration.zero,
-    );
-    _lastTick = Duration.zero;
-    // The engine skips broken files on its own; with repeat all it would go
-    // round the queue forever. Queuing nothing lets it stop after this one.
-    if (_allFailed) {
-      _nextIndex = null;
-      _backend.setNext(null);
-    } else {
-      _queueNext();
-    }
-  }
-
   /// The engine stopped. With a track still to come, the current one failed
   /// or the engine ran out of tracks before it got the next one: go on.
   void _onCompleted() {
@@ -161,21 +144,23 @@ class PlayerService extends Notifier<PlayerState>
   @override
   Future<void> _queueNext() {
     final queue = state.queue;
-    _nextIndex = queue.nextIndex;
-    final next = _nextIndex;
+    final next = queue.nextIndex;
+    if (next != null) _handedNext.add(queue.order[next]);
     return _backend.setNext(next == null ? null : queue.tracks[next]);
   }
 
   @override
-  Future<void> _play(int index) async {
+  Future<void> _play(int index, {bool play = true}) async {
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
-    _nextIndex = queue.nextIndex;
-    final next = _nextIndex;
+    final next = queue.nextIndex;
+    _handedNext.clear();
+    if (next != null) _handedNext.add(queue.order[next]);
+    // A track loaded without playing is paused, not stopped.
     state = state.copyWith(
       queue: queue,
-      playing: true,
+      playing: play,
       stopped: false,
       position: Duration.zero,
       duration: Duration.zero,
@@ -184,6 +169,7 @@ class PlayerService extends Notifier<PlayerState>
     await _backend.open(
       queue.tracks[index],
       next: next == null ? null : queue.tracks[next],
+      play: play,
     );
   }
 }

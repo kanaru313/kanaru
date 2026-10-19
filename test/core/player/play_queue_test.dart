@@ -98,4 +98,195 @@ void main() {
       expect(queue.shuffle(Random(1)).unshuffle().repeat, RepeatMode.one);
     });
   });
+
+  group('move', () {
+    final five = tracks(5);
+    List<int> uris(PlayQueue q) => q.order;
+
+    test(
+      'a track from before the current one to after it shifts the index',
+      () {
+        final queue = PlayQueue(original: five, index: 2).move(0, 4);
+        expect(uris(queue), [1, 2, 3, 4, 0]);
+        expect(queue.index, 1);
+        expect(queue.current, five[2]);
+      },
+    );
+
+    test(
+      'a track from after the current one to before it shifts the index',
+      () {
+        final queue = PlayQueue(original: five, index: 2).move(4, 0);
+        expect(uris(queue), [4, 0, 1, 2, 3]);
+        expect(queue.index, 3);
+        expect(queue.current, five[2]);
+      },
+    );
+
+    test('dragging the current track takes the index along', () {
+      final queue = PlayQueue(original: five, index: 1).move(1, 3);
+      expect(uris(queue), [0, 2, 3, 1, 4]);
+      expect(queue.index, 3);
+      expect(queue.current, five[1]);
+    });
+
+    test('moves that do not cross the current track keep the index', () {
+      final queue = PlayQueue(original: five, index: 2).move(3, 4).move(0, 1);
+      expect(queue.index, 2);
+      expect(queue.current, five[2]);
+    });
+
+    test('ignores no-op and out-of-range moves', () {
+      final queue = PlayQueue(original: five, index: 2);
+      expect(queue.move(1, 1), same(queue));
+      expect(queue.move(-1, 2), same(queue));
+      expect(queue.move(0, 5), same(queue));
+    });
+
+    test('never touches original', () {
+      final queue = PlayQueue(original: five).move(0, 3);
+      expect(queue.original, same(five));
+    });
+
+    test('while shuffled leaves the order shuffle returns to alone', () {
+      final shuffled = PlayQueue(original: five).shuffle(Random(1));
+      final moved = shuffled.move(0, 2);
+      expect(moved.unshuffledOrder, [0, 1, 2, 3, 4]);
+    });
+  });
+
+  group('removeAt', () {
+    final five = tracks(5);
+
+    test('before the current track shifts the index down', () {
+      final queue = PlayQueue(original: five, index: 3).removeAt(1);
+      expect(queue.index, 2);
+      expect(queue.current, five[3]);
+      expect(queue.order, [0, 2, 3, 4]);
+    });
+
+    test('after the current track keeps the index', () {
+      final queue = PlayQueue(original: five, index: 1).removeAt(3);
+      expect(queue.index, 1);
+      expect(queue.current, five[1]);
+    });
+
+    test('the current track lets the next one slide in', () {
+      final queue = PlayQueue(original: five, index: 1).removeAt(1);
+      expect(queue.index, 1);
+      expect(queue.current, five[2]);
+    });
+
+    test('the last track goes to the new last, or the first on repeat all', () {
+      final last = PlayQueue(original: five, index: 4);
+      expect(last.removeAt(4).current, five[3]);
+      expect(last.removeAt(4).index, 3);
+      final all = last.copyWith(repeat: RepeatMode.all);
+      expect(all.removeAt(4).index, 0);
+    });
+
+    test('the only track empties the queue and keeps original', () {
+      final queue = PlayQueue(original: tracks(1)).removeAt(0);
+      expect(queue.isEmpty, isTrue);
+      expect(queue.current, isNull);
+      expect(queue.index, 0);
+      expect(queue.original, hasLength(1));
+      expect(queue.nextIndex, isNull);
+    });
+
+    test('ignores an out-of-range position', () {
+      final queue = PlayQueue(original: five);
+      expect(queue.removeAt(5), same(queue));
+      expect(queue.removeAt(-1), same(queue));
+    });
+
+    test('removes only the chosen copy of a file queued twice', () {
+      final song = Track.fromPath('/music/a.flac');
+      final other = Track.fromPath('/music/b.flac');
+      final queue = PlayQueue(original: [song, other, song], index: 2);
+      final edited = queue.removeAt(0);
+      expect(edited.order, [1, 2]);
+      expect(edited.current, song);
+      expect(edited.index, 1);
+    });
+
+    test('drops the track from the order shuffle returns to', () {
+      final shuffled = PlayQueue(original: five).shuffle(Random(1));
+      final removed = shuffled.removeAt(2);
+      expect(removed.unshuffledOrder, hasLength(4));
+      expect(removed.unshuffledOrder!.toSet(), removed.order.toSet());
+    });
+  });
+
+  group('keepOnlyCurrent', () {
+    final five = tracks(5);
+
+    test('keeps just the playing track', () {
+      final queue = PlayQueue(original: five, index: 3).keepOnlyCurrent();
+      expect(queue.order, [3]);
+      expect(queue.index, 0);
+      expect(queue.current, five[3]);
+      expect(queue.original, same(five));
+    });
+
+    test('while shuffled also resets the order shuffle returns to', () {
+      final queue = PlayQueue(
+        original: five,
+        index: 3,
+      ).shuffle(Random(1)).keepOnlyCurrent();
+      expect(queue.shuffled, isTrue);
+      expect(queue.unshuffledOrder, [3]);
+      expect(queue.unshuffle().order, [3]);
+    });
+
+    test('does nothing to an empty queue', () {
+      final empty = PlayQueue();
+      expect(empty.keepOnlyCurrent(), same(empty));
+    });
+  });
+
+  group('unshuffle after edits', () {
+    final six = tracks(6);
+
+    test('drops what was removed and keeps the current track', () {
+      final shuffled = PlayQueue(original: six, index: 2).shuffle(Random(4));
+      final removed = shuffled.removeAt(shuffled.order.indexOf(5));
+      final restored = removed.unshuffle();
+      expect(restored.order, [0, 1, 2, 3, 4]);
+      expect(restored.current, six[2]);
+    });
+
+    test('loses the drag done while shuffled', () {
+      final shuffled = PlayQueue(original: six).shuffle(Random(4));
+      final dragged = shuffled.move(0, 5).move(1, 3);
+      expect(dragged.unshuffle().order, [0, 1, 2, 3, 4, 5]);
+    });
+
+    test('keeps the drag done before shuffling', () {
+      final dragged = PlayQueue(original: six).move(0, 5);
+      final back = dragged.shuffle(Random(4)).unshuffle();
+      expect(back.order, [1, 2, 3, 4, 5, 0]);
+      expect(back.current, dragged.current);
+    });
+
+    test('falls back to the opened order without a saved one', () {
+      final queue = PlayQueue(
+        original: six,
+        order: [3, 1, 2],
+        index: 1,
+        shuffled: true,
+      );
+      final restored = queue.unshuffle();
+      expect(restored.order, [1, 2, 3]);
+      expect(restored.current, six[1]);
+    });
+
+    test('order[index] stays put when another track is edited', () {
+      final queue = PlayQueue(original: six, index: 3);
+      final entry = queue.order[queue.index];
+      for (final edited in [queue.removeAt(0), queue.move(5, 0)]) {
+        expect(edited.order[edited.index], entry);
+      }
+    });
+  });
 }

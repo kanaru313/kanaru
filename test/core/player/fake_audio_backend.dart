@@ -33,7 +33,9 @@ class FakeAudioBackend implements AudioBackend {
   @override
   Future<void> open(Track track, {Track? next, bool play = true}) async {
     this.next = next;
-    calls.add('open(${track.title}, next: ${next?.title})');
+    calls.add(
+      'open(${track.title}, next: ${next?.title}${play ? '' : ', paused'})',
+    );
   }
 
   @override

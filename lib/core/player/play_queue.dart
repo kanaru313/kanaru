@@ -6,8 +6,11 @@ import 'track.dart';
 /// Immutable play queue: the tracks as opened, the order they play in, the
 /// current position, shuffle and repeat. Every change returns a new queue.
 ///
-/// The play order is kept as indexes into [original], so turning shuffle off
-/// finds the current track again even when the same file is queued twice.
+/// The play order is kept as indexes into [original]. [original] never changes
+/// after the queue is opened, so an index is never reused: removing a track
+/// only drops its index from [order]. That keeps UI keys and MPRIS track ids
+/// stable, and finds the current track again when the same file is queued
+/// twice.
 class PlayQueue {
   PlayQueue({
     this.original = const [],
@@ -15,6 +18,7 @@ class PlayQueue {
     this.index = 0,
     this.shuffled = false,
     this.repeat = RepeatMode.off,
+    this.unshuffledOrder,
   }) : order = order ?? List.generate(original.length, (i) => i);
 
   /// Queue for freshly opened [tracks], starting at [start]. Keeps the given
@@ -30,10 +34,11 @@ class PlayQueue {
     return shuffled ? queue.shuffle(random) : queue;
   }
 
-  /// Tracks as they were opened.
+  /// Tracks as they were opened. Never edited, even by remove and clear.
   final List<Track> original;
 
   /// Play order: `order[i]` is the index in [original] of the i-th track.
+  /// Has no repeats; indexes of removed tracks are missing.
   final List<int> order;
 
   /// Position of the current track in [tracks].
@@ -41,10 +46,15 @@ class PlayQueue {
   final bool shuffled;
   final RepeatMode repeat;
 
+  /// While [shuffled]: the order that comes back when shuffle is turned off
+  /// (same entries as [order]). `null` when not shuffled, as [order] is then
+  /// the order the user arranged.
+  final List<int>? unshuffledOrder;
+
   /// Tracks in play order, the same order as the engine's playlist.
   late final List<Track> tracks = [for (final i in order) original[i]];
 
-  bool get isEmpty => original.isEmpty;
+  bool get isEmpty => order.isEmpty;
   Track? get current => isEmpty ? null : tracks[index];
 
   /// Index a manual "next" goes to, or `null` on the last track unless the
@@ -74,10 +84,78 @@ class PlayQueue {
     index: index ?? this.index,
     shuffled: shuffled ?? this.shuffled,
     repeat: repeat ?? this.repeat,
+    unshuffledOrder: unshuffledOrder,
   );
 
+  /// Moves the track at play position [from] so it ends up at [to]. The
+  /// current track keeps playing; only its position follows. Out-of-range
+  /// positions and `from == to` leave the queue as it is.
+  PlayQueue move(int from, int to) {
+    final length = order.length;
+    if (from < 0 || from >= length || to < 0 || to >= length || from == to) {
+      return this;
+    }
+    final moved = [...order]..removeAt(from);
+    moved.insert(to, order[from]);
+    var newIndex = index;
+    if (from == index) {
+      newIndex = to;
+    } else if (from < index && to >= index) {
+      newIndex = index - 1;
+    } else if (from > index && to <= index) {
+      newIndex = index + 1;
+    }
+    return copyWith(order: moved, index: newIndex);
+  }
+
+  /// Drops the track at play position [at]. When it is the current track the
+  /// next one slides into its position; past the end, repeat all wraps to
+  /// the first and otherwise the new last track becomes current.
+  PlayQueue removeAt(int at) {
+    if (at < 0 || at >= order.length) return this;
+    final entry = order[at];
+    final rest = [...order]..removeAt(at);
+    var newIndex = index;
+    if (at < index) {
+      newIndex = index - 1;
+    } else if (at == index) {
+      if (index >= rest.length) {
+        newIndex = repeat == RepeatMode.all || rest.isEmpty
+            ? 0
+            : rest.length - 1;
+      }
+    }
+    final unshuffled = unshuffledOrder;
+    return PlayQueue(
+      original: original,
+      order: rest,
+      index: newIndex,
+      shuffled: shuffled,
+      repeat: repeat,
+      unshuffledOrder: unshuffled == null
+          ? null
+          : [
+              for (final e in unshuffled)
+                if (e != entry) e,
+            ],
+    );
+  }
+
+  /// Drops every track but the current one.
+  PlayQueue keepOnlyCurrent() {
+    if (isEmpty) return this;
+    final only = [order[index]];
+    return PlayQueue(
+      original: original,
+      order: only,
+      shuffled: shuffled,
+      repeat: repeat,
+      unshuffledOrder: shuffled ? [...only] : null,
+    );
+  }
+
   /// Moves the current track to the front and shuffles the rest
-  /// (Fisher–Yates).
+  /// (Fisher–Yates). The order before is kept for [unshuffle].
   PlayQueue shuffle([Random? random]) {
     if (isEmpty) return copyWith(shuffled: true);
     random ??= Random();
@@ -88,13 +166,25 @@ class PlayQueue {
       rest[i] = rest[j];
       rest[j] = swap;
     }
-    return copyWith(order: [order[index], ...rest], index: 0, shuffled: true);
+    return PlayQueue(
+      original: original,
+      order: [order[index], ...rest],
+      shuffled: true,
+      repeat: repeat,
+      unshuffledOrder: unshuffledOrder ?? order,
+    );
   }
 
-  /// Back to the opened order, still on the current track.
-  PlayQueue unshuffle() => PlayQueue(
-    original: original,
-    index: isEmpty ? 0 : order[index],
-    repeat: repeat,
-  );
+  /// Back to the order from before shuffling (minus removed tracks), still on
+  /// the current track. Dragging done while shuffled is lost. Without a saved
+  /// order the opened order is used.
+  PlayQueue unshuffle() {
+    final restored = unshuffledOrder ?? ([...order]..sort());
+    return PlayQueue(
+      original: original,
+      order: restored,
+      index: isEmpty ? 0 : restored.indexOf(order[index]),
+      repeat: repeat,
+    );
+  }
 }

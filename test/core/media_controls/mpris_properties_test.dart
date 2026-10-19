@@ -155,6 +155,40 @@ void main() {
     });
   });
 
+  group('queue edits', () {
+    test('removing another track keeps the playing track id', () {
+      final queue = PlayQueue(original: tracks, index: 1);
+      final ids = MprisTrackIds()..observe(queue);
+      final before = metadata(stateOf(queue), ids)['mpris:trackid'];
+
+      final edited = queue.removeAt(0);
+      ids.observe(edited);
+      expect(edited.current, tracks[1]);
+      expect(metadata(stateOf(edited), ids)['mpris:trackid'], before);
+
+      final moved = queue.move(0, 2);
+      ids.observe(moved);
+      expect(metadata(stateOf(moved), ids)['mpris:trackid'], before);
+    });
+
+    test('a removed track id is not reused by the one after it', () {
+      final queue = PlayQueue(original: tracks);
+      final ids = MprisTrackIds()..observe(queue);
+      final first = metadata(stateOf(queue), ids)['mpris:trackid'];
+      final edited = queue.removeAt(0);
+      ids.observe(edited);
+      expect(metadata(stateOf(edited), ids)['mpris:trackid'], isNot(first));
+    });
+
+    test('CanGoNext follows the queue after the last track is removed', () {
+      final queue = PlayQueue(original: tracks, index: 1);
+      expect(props(stateOf(queue))['CanGoNext'], const DBusBoolean(true));
+      final edited = queue.removeAt(2);
+      expect(props(stateOf(edited))['CanGoNext'], const DBusBoolean(false));
+      expect(props(stateOf(edited))['CanGoPrevious'], const DBusBoolean(true));
+    });
+  });
+
   group('metadata', () {
     final queue = PlayQueue(
       original: [
