@@ -28,11 +28,13 @@ class NowPlayingCompactPage extends ConsumerWidget {
             .clamp(0.0, windowHeight * 0.45)
             .toDouble();
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
           child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight - 16),
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 24),
+            // Sits on the bottom edge, where the footer is on wide windows,
+            // rather than floating in the middle of a tall window.
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
               spacing: 8,
               children: [
                 // Heart and playlist sit by the title here, not in a footer.

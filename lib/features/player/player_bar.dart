@@ -145,7 +145,7 @@ class _OneRow extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [QueueButton(), VolumeButton()],
+                  children: [VolumeButton(), QueueButton()],
                 ),
               ),
             ),

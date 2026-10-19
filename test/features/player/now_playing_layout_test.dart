@@ -9,6 +9,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_footer.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
+import 'package:kanaru/features/player/seek_bar.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
 import '../../core/player/fake_audio_backend.dart';
@@ -96,7 +97,7 @@ void main() {
     testWidgets('has the three footer groups', (tester) async {
       await pumpOpen(tester, const Size(1280, 800));
       final footer = tester.getRect(find.byType(NowPlayingFooter));
-      expect(footer.height, 80);
+      expect(footer.height, 96);
       expect(footer.bottom, 800);
 
       Rect at(String tooltip) =>
@@ -231,6 +232,25 @@ void main() {
             .page,
         0,
       );
+      // On the queue page the queue button turns into a way back.
+      expect(inScreen(find.byTooltip('Open queue')), findsNothing);
+      await tester.tap(inScreen(find.byTooltip('Back to Now Playing')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<PageView>(inScreen(find.byType(PageView)))
+            .controller!
+            .page,
+        1,
+      );
+      expect(inScreen(find.byTooltip('Open queue')), findsOneWidget);
+    });
+
+    testWidgets('keeps the playing page on the bottom edge', (tester) async {
+      await pumpOpen(tester, const Size(600, 900));
+
+      final seek = tester.getRect(inScreen(find.byType(SeekBar)));
+      expect(seek.bottom, greaterThan(900 - 48));
     });
 
     testWidgets('swiping reveals the queue page', (tester) async {

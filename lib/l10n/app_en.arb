@@ -183,6 +183,7 @@
   "nowPlayingComingSoon": "Coming soon",
   "nowPlayingTabQueue": "Queue",
   "nowPlayingTabTrack": "Now Playing",
+  "nowPlayingBackToTrack": "Back to Now Playing",
   "nowPlayingLyricsOnly": "Lyrics only",
   "queueOpen": "Open queue",
   "queueTitle": "Queue",

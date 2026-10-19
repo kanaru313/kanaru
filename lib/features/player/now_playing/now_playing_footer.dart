@@ -14,6 +14,9 @@ const nowPlayingHeaderHeight = 64.0;
 /// Widest the controls and seek bar column gets.
 const _centerMaxWidth = 480.0;
 
+/// Air between the controls and the window's bottom edge.
+const _bottomGap = 16.0;
+
 /// Room each side group keeps at the least.
 const _sideMinWidth = 160.0;
 
@@ -28,9 +31,9 @@ class NowPlayingFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: nowPlayingFooterHeight,
+      height: nowPlayingFooterHeight + _bottomGap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
+        padding: const EdgeInsets.fromLTRB(30, 0, 30, _bottomGap),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final center = (constraints.maxWidth - 2 * _sideMinWidth).clamp(

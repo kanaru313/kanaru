@@ -347,6 +347,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingTabTrack => 'Đang phát';
 
   @override
+  String get nowPlayingBackToTrack => 'Quay lại bài đang phát';
+
+  @override
   String get nowPlayingLyricsOnly => 'Chỉ hiện lời bài hát';
 
   @override

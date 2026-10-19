@@ -348,6 +348,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingTabTrack => 'Now Playing';
 
   @override
+  String get nowPlayingBackToTrack => 'Back to Now Playing';
+
+  @override
   String get nowPlayingLyricsOnly => 'Lyrics only';
 
   @override

@@ -75,7 +75,15 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         NowPlayingCloseButton(onPressed: widget.onClose),
-                        QueueButton(onPressed: () => _select(_Tab.queue)),
+                        // On the queue page the same spot leads back.
+                        if (_page == _Tab.queue.index)
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_rounded),
+                            tooltip: l10n.nowPlayingBackToTrack,
+                            onPressed: () => _select(_Tab.track),
+                          )
+                        else
+                          QueueButton(onPressed: () => _select(_Tab.queue)),
                       ],
                     ),
                   ),

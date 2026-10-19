@@ -674,6 +674,12 @@ abstract class AppLocalizations {
   /// **'Now Playing'**
   String get nowPlayingTabTrack;
 
+  /// No description provided for @nowPlayingBackToTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Now Playing'**
+  String get nowPlayingBackToTrack;
+
   /// No description provided for @nowPlayingLyricsOnly.
   ///
   /// In en, this message translates to:
