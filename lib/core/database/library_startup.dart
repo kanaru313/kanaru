@@ -18,6 +18,26 @@ final _log = Logger('library');
 /// `LibraryDatabase(NativeDatabase.memory())`.
 final libraryDatabaseProvider = Provider<LibraryDatabase?>((ref) => null);
 
+/// Whether at least one library root exists; the router uses it to show the
+/// first-run source picker. Seeded from [LibraryStartup.hasRoots]; whoever
+/// adds the first root calls [LibraryHasRoots.markPresent]. Lives here, next
+/// to the database provider, so `LibraryStartup.overrides` can seed it
+/// without `core/database` importing `core/indexer`.
+class LibraryHasRoots extends Notifier<bool> {
+  LibraryHasRoots([this._initial = false]);
+
+  final bool _initial;
+
+  @override
+  bool build() => _initial;
+
+  void markPresent() => state = true;
+}
+
+final libraryHasRootsProvider = NotifierProvider<LibraryHasRoots, bool>(
+  LibraryHasRoots.new,
+);
+
 /// Outcome of [openLibraryAtStartup].
 class LibraryStartup {
   const LibraryStartup({this.db, this.hasRoots = false, this.error});
@@ -34,6 +54,7 @@ class LibraryStartup {
   /// Provider overrides to pass to the root `ProviderContainer`.
   List<Override> get overrides => [
     libraryDatabaseProvider.overrideWithValue(db),
+    libraryHasRootsProvider.overrideWith(() => LibraryHasRoots(hasRoots)),
   ];
 }
 

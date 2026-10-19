@@ -63,6 +63,6 @@ void main() {
     final second = await openLibraryAtStartup(env);
     addTearDown(() => second.db?.close());
     expect(second.hasRoots, isTrue);
-    expect(second.overrides, hasLength(1));
+    expect(second.overrides, hasLength(2));
   });
 }

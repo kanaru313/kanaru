@@ -4,21 +4,12 @@ import 'package:file_selector/file_selector.dart' as picker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/indexer/audio_file_types.dart';
 import '../../core/player/player_service.dart';
 import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
 
-/// File extensions the player offers to open, lower case.
-const audioExtensions = [
-  'mp3', 'flac', 'm4a', 'aac', 'alac', 'ogg', 'oga', 'opus', //
-  'wav', 'aif', 'aiff', 'ape', 'wv', 'dsf', 'dff',
-];
-
-bool isAudioFile(String path) {
-  final dot = path.lastIndexOf('.');
-  return dot >= 0 &&
-      audioExtensions.contains(path.substring(dot + 1).toLowerCase());
-}
+export '../../core/indexer/audio_file_types.dart';
 
 /// Every audio file under [path], recursively, sorted by path. Lists the
 /// folder asynchronously so the UI keeps running on large folders.
