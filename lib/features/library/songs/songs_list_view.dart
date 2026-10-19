@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart' show TrackListItem;
-import '../../../core/player/player_service.dart';
-import '../../../core/player/track.dart';
+import '../play_tracks.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
@@ -35,18 +32,14 @@ class SongsListView extends ConsumerWidget {
   void _play(WidgetRef ref, List<TrackListItem> songs, int index) {
     final tracks = [
       for (final s in songs)
-        Track(
-          uri: s.path,
+        trackFromItem(
+          path: s.path,
           title: s.title,
           artist: s.artist,
-          duration: s.durationMs == null
-              ? null
-              : Duration(milliseconds: s.durationMs!),
+          durationMs: s.durationMs,
         ),
     ];
-    unawaited(
-      ref.read(playerServiceProvider.notifier).openTracks(tracks, start: index),
-    );
+    playTracks(ref, tracks, index);
   }
 
   @override

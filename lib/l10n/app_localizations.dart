@@ -488,6 +488,150 @@ abstract class AppLocalizations {
   /// **'See the log for details'**
   String get libraryScanFailedDetails;
 
+  /// No description provided for @sortTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortTooltip;
+
+  /// No description provided for @sortAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get sortAscending;
+
+  /// No description provided for @sortDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get sortDescending;
+
+  /// No description provided for @sortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get sortTitle;
+
+  /// No description provided for @sortArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get sortArtist;
+
+  /// No description provided for @sortAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get sortAlbum;
+
+  /// No description provided for @sortYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get sortYear;
+
+  /// No description provided for @sortDateAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Date added'**
+  String get sortDateAdded;
+
+  /// No description provided for @sortDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get sortDuration;
+
+  /// No description provided for @sortName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sortName;
+
+  /// No description provided for @sortSongCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get sortSongCount;
+
+  /// No description provided for @sortAlbumCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get sortAlbumCount;
+
+  /// No description provided for @albumsGridView.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get albumsGridView;
+
+  /// No description provided for @albumsListView.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get albumsListView;
+
+  /// No description provided for @albumsNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get albumsNoRootsMessage;
+
+  /// No description provided for @albumsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No albums yet'**
+  String get albumsEmptyTitle;
+
+  /// No description provided for @albumsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs with an album tag show up here as albums.'**
+  String get albumsEmptyMessage;
+
+  /// No description provided for @albumsUnknownArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown artist'**
+  String get albumsUnknownArtist;
+
+  /// No description provided for @albumsSongCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}}'**
+  String albumsSongCount(int count);
+
+  /// No description provided for @albumsPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get albumsPlay;
+
+  /// No description provided for @albumsDisc.
+  ///
+  /// In en, this message translates to:
+  /// **'Disc {number}'**
+  String albumsDisc(int number);
+
+  /// No description provided for @albumsUnknownDisc.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown disc'**
+  String get albumsUnknownDisc;
+
+  /// No description provided for @albumsNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Album not found'**
+  String get albumsNotFound;
+
+  /// No description provided for @albumsNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been removed or renamed by a rescan.'**
+  String get albumsNotFoundMessage;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:

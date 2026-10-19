@@ -249,6 +249,89 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryScanFailedDetails => 'Xem chi tiết trong nhật ký';
 
   @override
+  String get sortTooltip => 'Sắp xếp';
+
+  @override
+  String get sortAscending => 'Tăng dần';
+
+  @override
+  String get sortDescending => 'Giảm dần';
+
+  @override
+  String get sortTitle => 'Tên';
+
+  @override
+  String get sortArtist => 'Nghệ sĩ';
+
+  @override
+  String get sortAlbum => 'Album';
+
+  @override
+  String get sortYear => 'Năm';
+
+  @override
+  String get sortDateAdded => 'Ngày thêm';
+
+  @override
+  String get sortDuration => 'Thời lượng';
+
+  @override
+  String get sortName => 'Tên';
+
+  @override
+  String get sortSongCount => 'Số bài';
+
+  @override
+  String get sortAlbumCount => 'Số album';
+
+  @override
+  String get albumsGridView => 'Lưới';
+
+  @override
+  String get albumsListView => 'Danh sách';
+
+  @override
+  String get albumsNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get albumsEmptyTitle => 'Chưa có album';
+
+  @override
+  String get albumsEmptyMessage =>
+      'Bài hát có tag album sẽ hiện ở đây theo album.';
+
+  @override
+  String get albumsUnknownArtist => 'Nghệ sĩ không rõ';
+
+  @override
+  String albumsSongCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get albumsPlay => 'Phát';
+
+  @override
+  String albumsDisc(int number) {
+    return 'Đĩa $number';
+  }
+
+  @override
+  String get albumsUnknownDisc => 'Đĩa không rõ';
+
+  @override
+  String get albumsNotFound => 'Không tìm thấy album';
+
+  @override
+  String get albumsNotFoundMessage =>
+      'Có thể album đã bị xoá hoặc đổi tên sau lần quét lại.';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override

@@ -88,22 +88,31 @@ String songsOrderSql(SongOrder order, {bool descending = false}) {
 /// Songs list. Every one re-runs when `tracks` changes.
 extension LibraryBrowseQueries on LibraryDatabase {
   /// Every album with a title, in no particular order.
-  Stream<List<AlbumSummary>> watchAlbums() =>
-      _watch(albumsSql, const [], (row) {
-        return AlbumSummary(
-          key: AlbumKey(row.read<String>('ak'), row.read<String>('tk')),
-          title: row.read<String>('title'),
-          artist: row.readNullable<String>('artist'),
-          year: row.readNullable<int>('year'),
-          trackCount: row.read<int>('n'),
-          durationMs: row.readNullable<int>('duration'),
-          addedAt: row.read<int>('added'),
-        );
-      });
+  Stream<List<AlbumSummary>> watchAlbums() => _albums().watch();
+
+  /// [watchAlbums] once, for a throttled refresh.
+  Future<List<AlbumSummary>> albums() => _albums().get();
 
   /// One row per distinct `artist` value; the feature splits them into names.
-  Stream<List<ArtistCredit>> watchArtistCredits() =>
-      _watch(artistCreditsSql, const [], (row) {
+  Stream<List<ArtistCredit>> watchArtistCredits() => _artistCredits().watch();
+
+  /// [watchArtistCredits] once, for a throttled refresh.
+  Future<List<ArtistCredit>> artistCredits() => _artistCredits().get();
+
+  Selectable<AlbumSummary> _albums() => _query(albumsSql, const [], (row) {
+    return AlbumSummary(
+      key: AlbumKey(row.read<String>('ak'), row.read<String>('tk')),
+      title: row.read<String>('title'),
+      artist: row.readNullable<String>('artist'),
+      year: row.readNullable<int>('year'),
+      trackCount: row.read<int>('n'),
+      durationMs: row.readNullable<int>('duration'),
+      addedAt: row.read<int>('added'),
+    );
+  });
+
+  Selectable<ArtistCredit> _artistCredits() =>
+      _query(artistCreditsSql, const [], (row) {
         final keys = row.readNullable<String>('album_keys');
         return ArtistCredit(
           artist: row.read<String>('artist'),
@@ -151,11 +160,13 @@ extension LibraryBrowseQueries on LibraryDatabase {
     String sql,
     List<Variable> variables,
     T Function(QueryRow row) map,
-  ) => customSelect(
-    sql,
-    variables: variables,
-    readsFrom: {tracks},
-  ).watch().map((rows) => [for (final row in rows) map(row)]);
+  ) => _query(sql, variables, map).watch();
+
+  Selectable<T> _query<T>(
+    String sql,
+    List<Variable> variables,
+    T Function(QueryRow row) map,
+  ) => customSelect(sql, variables: variables, readsFrom: {tracks}).map(map);
 }
 
 AlbumKey _parseAlbumKey(String joined) {

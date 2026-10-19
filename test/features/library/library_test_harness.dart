@@ -10,6 +10,7 @@ import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/directory_picker_provider.dart';
+import 'package:kanaru/features/library/library_browse_refresh.dart';
 import 'package:kanaru/features/library/onboarding/suggested_music_folder_provider.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -71,6 +72,8 @@ class LibraryHarness {
           picker ?? () async => picks.isEmpty ? null : picks.removeAt(0),
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
+        // Albums and artists reload as soon as the library changes.
+        libraryBrowseRefreshIntervalProvider.overrideWithValue(Duration.zero),
         ...overrides,
       ],
     );

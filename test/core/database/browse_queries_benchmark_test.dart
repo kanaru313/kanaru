@@ -12,6 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/database/throttled_tracks_query.dart';
+
+/// How the albums query is listened to during a timed scan.
+enum _Listener { none, watch, throttled }
 
 const _total = 100000;
 
@@ -157,42 +161,76 @@ void main() {
       await db.close();
       dir.deleteSync(recursive: true);
 
-      // A first scan into an empty database, without and with a listener.
-      Future<int> scanInto({
-        required bool watching,
+      for (final e in results.entries) {
+        print('${e.key}: median ${e.value.$1} ms, rows ${e.value.$2}');
+      }
+
+      // A first scan into an empty database, with the albums query listened
+      // to in different ways. Runs alternate so machine load hits all alike.
+      Future<int> scanInto(
+        _Listener listener, {
         Duration readTime = Duration.zero,
       }) async {
         final scanDir = Directory.systemTemp.createTempSync('kanaru_bench');
         final scanDb = _open(scanDir);
         final scanRows = _rows((await scanDb.addRoots(['/m'], now: 1)).single);
         var emits = 0;
-        final sub = watching
-            ? scanDb.watchAlbums().listen((_) => emits++)
-            : null;
+        final loadTime = Stopwatch();
+        Future<List<AlbumSummary>> timedLoad() async {
+          loadTime.start();
+          try {
+            return await scanDb.albums();
+          } finally {
+            loadTime.stop();
+          }
+        }
+
+        final sub = switch (listener) {
+          _Listener.none => null,
+          _Listener.watch => scanDb.watchAlbums().listen((_) => emits++),
+          _Listener.throttled => throttledTracksQuery(
+            scanDb,
+            timedLoad,
+            interval: const Duration(seconds: 2),
+          ).listen((_) => emits++),
+        };
         final ms = await _scan(scanDb, scanRows, readTime: readTime);
         await sub?.cancel();
         await scanDb.close();
         scanDir.deleteSync(recursive: true);
-        if (watching) {
-          print('albums watch emitted $emits times during the scan');
+        if (sub != null) {
+          print(
+            '  ${listener.name}: $emits results, '
+            '${loadTime.elapsedMilliseconds} ms in throttled loads',
+          );
         }
         return ms;
       }
 
-      for (final e in results.entries) {
-        print('${e.key}: median ${e.value.$1} ms, rows ${e.value.$2}');
-      }
+      int median(List<int> runs) => (runs.toList()..sort())[runs.length ~/ 2];
+      String slower(int ms, int base) =>
+          '${((ms / base - 1) * 100).toStringAsFixed(0)}%';
+
       for (final readTime in const [
         Duration.zero,
-        Duration(milliseconds: 200),
+        Duration(milliseconds: 15),
       ]) {
-        final without = await scanInto(watching: false, readTime: readTime);
-        final withWatch = await scanInto(watching: true, readTime: readTime);
+        final alone = <int>[];
+        final throttled = <int>[];
+        for (var i = 0; i < 3; i++) {
+          alone.add(await scanInto(_Listener.none, readTime: readTime));
+          throttled.add(
+            await scanInto(_Listener.throttled, readTime: readTime),
+          );
+        }
+        final watched = await scanInto(_Listener.watch, readTime: readTime);
+        final base = median(alone);
         print(
-          'scan of $_total in batches of $_batch, ${readTime.inMilliseconds} ms '
-          'tag read per batch: $without ms without watch, $withWatch ms with '
-          'an albums watch '
-          '(${((withWatch / without - 1) * 100).toStringAsFixed(0)}% slower)',
+          'scan of $_total in batches of $_batch, '
+          '${readTime.inMilliseconds} ms tag read per batch: alone $alone '
+          '(median $base ms); albums throttled $throttled (median '
+          '${median(throttled)} ms, ${slower(median(throttled), base)}); '
+          'albums watch $watched ms (${slower(watched, base)})',
         );
       }
     },
