@@ -181,7 +181,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | UI-04 | Màu hệ thống               | Dùng accent color của hệ điều hành (`dynamic_color`) hoặc màu tự chọn                   | P1      | 1     |     |
 | UI-05 | Responsive                 | Bố cục desktop (navigation rail/drawer) và mobile (bottom bar); co giãn từ 360px tới 4K | P0      | 1     | H   |
 | UI-06 | Animation                  | Chuyển trang, danh sách, hover có animation; có tuỳ chọn giảm chuyển động               | P1      | 1     | H   |
-| UI-07 | Thanh tiêu đề riêng        | Title bar tự vẽ trên desktop, hỗ trợ cả title bar hệ thống (Wayland/X11)                | P2      | 1     |     |
+| UI-07 | Thanh tiêu đề riêng        | Chọn title bar tự vẽ, của hệ thống (Wayland: header bar GTK) hoặc không có (tiling WM)  | P2      | 1     |     |
 | UI-08 | AMOLED đen tuyệt đối       | Chế độ tối dùng nền `#000000`                                                           | P2      | 1     |     |
 | UI-09 | Font & cỡ chữ              | Chọn font, scale cỡ chữ                                                                 | P3      | 1     |     |
 | UI-10 | Đa ngôn ngữ                | i18n (`flutter_localizations` + ARB); bắt đầu với tiếng Anh và tiếng Việt               | P1      | 1     | H   |
