@@ -17,6 +17,16 @@ class _GatedClient extends DBusClient {
   final entered = Completer<void>();
   final gate = Completer<void>();
 
+  /// Names given back explicitly. `close()` drops the rest on its own, so
+  /// only this tells whether dispose released the name itself.
+  final released = <String>[];
+
+  @override
+  Future<DBusReleaseNameReply> releaseName(String name) {
+    released.add(name);
+    return super.releaseName(name);
+  }
+
   @override
   Future<DBusRequestNameReply> requestName(
     String name, {
@@ -97,6 +107,7 @@ void main() {
       client.gate.complete();
       await disposing;
 
+      expect(client.released, [mprisName]);
       expect(await h.names(), isNot(contains(mprisName)));
     });
 

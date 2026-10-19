@@ -22,8 +22,9 @@ Future<bool> setUpDesktopWindow() async {
 }
 
 /// Brings the window back when the desktop asks (MPRIS `Raise`): shows it if
-/// hidden, then un-minimizes and presents it. Wayland compositors may only
-/// mark it as wanting attention.
+/// hidden, then un-minimizes and presents it. On Wayland compositors that
+/// require xdg-activation (niri, for one) this has no visible effect: there
+/// is no activation token to present with (SYS-15).
 Future<void> raiseDesktopWindow() async {
   await windowManager.show();
   await windowManager.restore();

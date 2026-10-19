@@ -15,6 +15,10 @@ Future<void> main() async {
   MediaKit.ensureInitialized();
   final customTitleBar = await setUpDesktopWindow();
 
+  // Unlike ProviderScope, a container made here does not route uncaught
+  // provider errors to FlutterError.reportError (its onError is internal);
+  // they reach the root zone instead. Hook PlatformDispatcher.onError too
+  // when error reporting is added.
   final container = ProviderContainer(
     overrides: [
       customTitleBarProvider.overrideWithValue(customTitleBar),
