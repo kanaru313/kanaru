@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app_settings.dart';
 import 'settings_file.dart';
 
 export 'app_settings.dart';
-export 'settings_file.dart' show SettingsFile;
+export 'settings_file.dart' show SettingsFile, settingsFileFor;
 
 /// The settings as loaded at startup. `main()` overrides it with the file's
 /// contents. Also tells the UI which settings need a restart: those whose
@@ -63,6 +64,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 
   /// Completes when every change made so far is on disk.
+  @visibleForTesting
   Future<void> flush() => _writes;
 
   void _update(AppSettings next) {

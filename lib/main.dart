@@ -10,7 +10,6 @@ import 'app/shell/window/desktop_window.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
-import 'core/settings/settings_file.dart';
 import 'core/settings/settings_provider.dart';
 
 Future<void> main() async {
