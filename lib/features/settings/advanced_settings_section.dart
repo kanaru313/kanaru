@@ -3,8 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
-import 'app_directories_provider.dart';
-import 'open_external.dart';
 import 'settings_section.dart';
 
 class AdvancedSettingsSection extends ConsumerWidget {
@@ -13,7 +11,6 @@ class AdvancedSettingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final paths = ref.watch(appDirectoryPathsProvider);
     final file = ref.watch(settingsFileProvider);
     final saveFailed = ref.watch(settingsSaveFailedProvider);
 
@@ -28,9 +25,6 @@ class AdvancedSettingsSection extends ConsumerWidget {
             ),
             title: Text(l10n.settingsReadOnly(file.path)),
           ),
-        _DirectoryTile(title: l10n.settingsConfigDirectory, path: paths.config),
-        _DirectoryTile(title: l10n.settingsDataDirectory, path: paths.data),
-        _DirectoryTile(title: l10n.settingsCacheDirectory, path: paths.cache),
         ListTile(
           leading: const Icon(Icons.restart_alt),
           title: Text(l10n.settingsReset),
@@ -64,40 +58,5 @@ class AdvancedSettingsSection extends ConsumerWidget {
     if (confirmed != true) return;
     notifier.reset();
     messenger.showSnackBar(SnackBar(content: Text(l10n.settingsResetDone)));
-  }
-}
-
-class _DirectoryTile extends ConsumerWidget {
-  const _DirectoryTile({required this.title, required this.path});
-
-  final String title;
-  final String? path;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final path = this.path;
-
-    return ListTile(
-      title: Text(title),
-      subtitle: SelectableText(path ?? l10n.settingsDirectoryUnknown),
-      trailing: path == null
-          ? null
-          : IconButton(
-              icon: const Icon(Icons.folder_open_outlined),
-              tooltip: l10n.settingsOpenDirectory,
-              onPressed: () async {
-                final messenger = ScaffoldMessenger.of(context);
-                final opened = await openDirectory(
-                  path,
-                  open: ref.read(openExternalProvider),
-                );
-                if (opened) return;
-                messenger.showSnackBar(
-                  SnackBar(content: Text(l10n.settingsOpenFailed(path))),
-                );
-              },
-            ),
-    );
   }
 }

@@ -82,36 +82,4 @@ void main() {
 
     expect(opened, isTrue);
   });
-
-  test('creates the directory before opening it', () async {
-    final root = Directory.systemTemp.createTempSync('kanaru_open_');
-    addTearDown(() => root.deleteSync(recursive: true));
-    final target = '${root.path}/a/b';
-    String? opened;
-
-    final ok = await openDirectory(
-      target,
-      open: (path) async {
-        opened = path;
-        return true;
-      },
-    );
-
-    expect(ok, isTrue);
-    expect(opened, target);
-    expect(Directory(target).existsSync(), isTrue);
-  });
-
-  test('returns false when the directory cannot be created', () async {
-    final root = Directory.systemTemp.createTempSync('kanaru_open_');
-    addTearDown(() => root.deleteSync(recursive: true));
-    final blocker = File('${root.path}/file')..writeAsStringSync('x');
-
-    final ok = await openDirectory(
-      '${blocker.path}/sub',
-      open: (path) async => fail('must not open'),
-    );
-
-    expect(ok, isFalse);
-  });
 }

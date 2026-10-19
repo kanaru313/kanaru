@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/settings/app_directories_provider.dart';
 import 'package:kanaru/features/settings/open_external.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -16,11 +15,6 @@ late ProviderContainer container;
 /// Pumps the whole app (no forced locale) on the settings page.
 Future<void> pumpSettings(
   WidgetTester tester, {
-  AppDirectoryPaths paths = const AppDirectoryPaths(
-    config: '/cfg/kanaru',
-    data: '/data/kanaru',
-    cache: '/cache/kanaru',
-  ),
   Future<bool> Function(String) open = _alwaysOpens,
   SettingsFile? file,
 }) async {
@@ -32,7 +26,6 @@ Future<void> pumpSettings(
   container = ProviderContainer(
     overrides: [
       audioBackendProvider.overrideWithValue(FakeAudioBackend()),
-      appDirectoryPathsProvider.overrideWithValue(paths),
       openExternalProvider.overrideWithValue(open),
       settingsFileProvider.overrideWithValue(file),
     ],
@@ -102,56 +95,17 @@ void main() {
     expect(find.text('Applies after restart'), findsNothing);
   });
 
-  testWidgets('shows directories and opens one', (tester) async {
-    final opened = <String>[];
-    await pumpSettings(
-      tester,
-      open: (target) async {
-        opened.add(target);
-        return true;
-      },
-    );
-    expect(find.text('/cfg/kanaru'), findsOneWidget);
-
-    // The directory does not exist: use a real temp path for the open.
-    final dir = Directory.systemTemp.createTempSync('kanaru_settings_');
-    addTearDown(() => dir.deleteSync(recursive: true));
-    await tester.pumpWidget(const SizedBox());
-    await pumpSettings(
-      tester,
-      paths: AppDirectoryPaths(config: '${dir.path}/c'),
-      open: (target) async {
-        opened.add(target);
-        return true;
-      },
-    );
-    await tester.runAsync(() async {
-      await tester.tap(find.byTooltip('Open folder'));
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    });
-    await tester.pump();
-
-    expect(opened, ['${dir.path}/c']);
-    expect(find.text('Unknown'), findsNWidgets(2));
-    expect(find.byTooltip('Open folder'), findsOneWidget);
-  });
-
   testWidgets('a failed open shows an error snackbar', (tester) async {
-    final dir = Directory.systemTemp.createTempSync('kanaru_settings_');
-    addTearDown(() => dir.deleteSync(recursive: true));
-    await pumpSettings(
-      tester,
-      paths: AppDirectoryPaths(data: '${dir.path}/d'),
-      open: (_) async => false,
-    );
+    await pumpSettings(tester, open: (_) async => false);
 
-    await tester.runAsync(() async {
-      await tester.tap(find.byTooltip('Open folder'));
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    });
+    await tester.ensureVisible(find.text('Source code'));
+    await tester.tap(find.text('Source code'));
     await tester.pump();
 
-    expect(find.text("Couldn't open ${dir.path}/d"), findsOneWidget);
+    expect(
+      find.text("Couldn't open https://github.com/kanaru313/kanaru"),
+      findsOneWidget,
+    );
   });
 
   testWidgets('warns when settings are read-only', (tester) async {

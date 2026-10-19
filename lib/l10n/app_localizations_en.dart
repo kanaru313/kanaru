@@ -217,21 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAdvanced => 'Advanced';
 
   @override
-  String get settingsConfigDirectory => 'Config folder';
-
-  @override
-  String get settingsDataDirectory => 'Data folder';
-
-  @override
-  String get settingsCacheDirectory => 'Cache folder';
-
-  @override
-  String get settingsDirectoryUnknown => 'Unknown';
-
-  @override
-  String get settingsOpenDirectory => 'Open folder';
-
-  @override
   String settingsReadOnly(String path) {
     return 'Settings can\'t be saved this session ($path)';
   }

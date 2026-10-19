@@ -500,36 +500,6 @@ abstract class AppLocalizations {
   /// **'Advanced'**
   String get settingsAdvanced;
 
-  /// No description provided for @settingsConfigDirectory.
-  ///
-  /// In en, this message translates to:
-  /// **'Config folder'**
-  String get settingsConfigDirectory;
-
-  /// No description provided for @settingsDataDirectory.
-  ///
-  /// In en, this message translates to:
-  /// **'Data folder'**
-  String get settingsDataDirectory;
-
-  /// No description provided for @settingsCacheDirectory.
-  ///
-  /// In en, this message translates to:
-  /// **'Cache folder'**
-  String get settingsCacheDirectory;
-
-  /// No description provided for @settingsDirectoryUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown'**
-  String get settingsDirectoryUnknown;
-
-  /// No description provided for @settingsOpenDirectory.
-  ///
-  /// In en, this message translates to:
-  /// **'Open folder'**
-  String get settingsOpenDirectory;
-
   /// No description provided for @settingsReadOnly.
   ///
   /// In en, this message translates to:

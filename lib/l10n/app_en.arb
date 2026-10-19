@@ -86,11 +86,6 @@
   "settingsTitleBarNone": "None",
   "settingsRestartRequired": "Applies after restart",
   "settingsAdvanced": "Advanced",
-  "settingsConfigDirectory": "Config folder",
-  "settingsDataDirectory": "Data folder",
-  "settingsCacheDirectory": "Cache folder",
-  "settingsDirectoryUnknown": "Unknown",
-  "settingsOpenDirectory": "Open folder",
   "settingsReadOnly": "Settings can't be saved this session ({path})",
   "@settingsReadOnly": {
     "placeholders": {

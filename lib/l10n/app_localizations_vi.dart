@@ -217,21 +217,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsAdvanced => 'Nâng cao';
 
   @override
-  String get settingsConfigDirectory => 'Thư mục cấu hình';
-
-  @override
-  String get settingsDataDirectory => 'Thư mục dữ liệu';
-
-  @override
-  String get settingsCacheDirectory => 'Thư mục bộ nhớ đệm';
-
-  @override
-  String get settingsDirectoryUnknown => 'Không xác định';
-
-  @override
-  String get settingsOpenDirectory => 'Mở thư mục';
-
-  @override
   String settingsReadOnly(String path) {
     return 'Không lưu được cài đặt trong phiên này ($path)';
   }
