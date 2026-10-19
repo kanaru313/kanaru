@@ -27,16 +27,18 @@ class NowPlayingCompactPage extends ConsumerWidget {
         final art = (constraints.maxWidth - 48)
             .clamp(0.0, windowHeight * 0.45)
             .toDouble();
+        // The controls sit on the bottom edge, where the footer is on wide
+        // windows, and the cover block in the middle of the room above them:
+        // `spaceBetween` with an empty first child leaves equal space above
+        // and below the block. A window too short for both scrolls instead.
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight - 24),
-            // Sits on the bottom edge, where the footer is on wide windows,
-            // rather than floating in the middle of a tall window.
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              spacing: 8,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const SizedBox.shrink(),
                 // Heart and playlist sit by the title here, not in a footer.
                 NowPlayingTrackInfo(
                   track: track,
@@ -50,11 +52,19 @@ class NowPlayingCompactPage extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: PlaybackControls(),
+                const Column(
+                  spacing: 8,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: PlaybackControls(),
+                      ),
+                    ),
+                    SeekBar(),
+                  ],
                 ),
-                const SeekBar(),
               ],
             ),
           ),

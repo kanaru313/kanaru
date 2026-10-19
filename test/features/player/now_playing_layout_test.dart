@@ -253,6 +253,18 @@ void main() {
       expect(seek.bottom, greaterThan(900 - 48));
     });
 
+    testWidgets('centers the cover block above the controls', (tester) async {
+      await pumpOpen(tester, const Size(480, 900));
+
+      final cover = tester.getRect(inScreen(find.byType(TrackArtwork)));
+      final artist = tester.getRect(inScreen(find.text('Some Artist')));
+      final controls = tester.getRect(inScreen(find.byTooltip('Pause')));
+      final block = cover.expandToInclude(artist);
+      // Room between the header and the controls row, block in its middle.
+      final roomCenter = (64 + controls.top) / 2;
+      expect(block.center.dy, closeTo(roomCenter, 24));
+    });
+
     testWidgets('swiping reveals the queue page', (tester) async {
       await pumpOpen(tester, const Size(600, 700));
       final pages = inScreen(find.byType(PageView));
