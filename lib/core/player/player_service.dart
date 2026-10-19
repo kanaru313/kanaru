@@ -145,7 +145,11 @@ class PlayerService extends Notifier<PlayerState>
   Future<void> _queueNext() {
     final queue = state.queue;
     final next = queue.nextIndex;
-    if (next != null) _handedNext.add(queue.order[next]);
+    if (next != null) {
+      final entry = queue.order[next];
+      // Edits that keep the same next track would otherwise pile it up.
+      if (_handedNext.lastOrNull != entry) _handedNext.add(entry);
+    }
     return _backend.setNext(next == null ? null : queue.tracks[next]);
   }
 

@@ -10,26 +10,15 @@ class NowPlayingTrackInfo extends StatelessWidget {
     super.key,
     required this.track,
     required this.artworkSize,
-    this.centered = true,
-    this.titleTrailing,
   });
 
   final Track track;
   final double artworkSize;
 
-  /// Centers the text under the cover; otherwise it starts at the left.
-  final bool centered;
-
-  /// Placed at the end of the title line, e.g. action buttons.
-  final Widget? titleTrailing;
-
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: centered
-          ? CrossAxisAlignment.center
-          : CrossAxisAlignment.stretch,
       spacing: 24,
       children: [
         Center(
@@ -39,11 +28,7 @@ class NowPlayingTrackInfo extends StatelessWidget {
             radius: 32,
           ),
         ),
-        NowPlayingTitle(
-          track: track,
-          centered: centered,
-          trailing: titleTrailing,
-        ),
+        NowPlayingTitle(track: track),
       ],
     );
   }

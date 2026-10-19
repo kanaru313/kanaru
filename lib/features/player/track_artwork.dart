@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
@@ -52,8 +53,11 @@ class TrackArtwork extends StatelessWidget {
                 fit: BoxFit.cover,
                 // Decode no larger than shown: a big cover would otherwise
                 // sit in the image cache at full size.
-                cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
-                    .round(),
+                // At least 1: the image asserts a positive size.
+                cacheWidth: max(
+                  1,
+                  (size * MediaQuery.devicePixelRatioOf(context)).round(),
+                ),
                 // No blank frame between one track's cover and the next.
                 gaplessPlayback: true,
                 errorBuilder: (_, _, _) => placeholder,
