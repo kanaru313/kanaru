@@ -1,0 +1,69 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/library/artists/artist_tile.dart';
+import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:material_ui/material_ui.dart';
+
+import 'browse_test_data.dart';
+import 'library_test_harness.dart';
+
+const _tracks = [
+  TestTrack('a1', artist: 'Ann', album: 'A'),
+  TestTrack('a2', artist: 'Ann; Guest', album: 'A'),
+  TestTrack('b1', artist: 'Bob', album: 'B', albumArtist: 'Various Artists'),
+  TestTrack('b2', artist: 'Bob'),
+  TestTrack('b3', artist: 'Bob'),
+];
+
+void main() {
+  testWidgets('lists every credited artist with counts, sorted', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/artists');
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+
+    expect(find.byType(ArtistTile), findsNWidgets(3));
+    expect(find.text('Various Artists'), findsNothing);
+    expect(find.text('1 album · 2 songs'), findsNWidgets(1));
+    expect(find.text('1 album · 3 songs'), findsOneWidget);
+    expect(find.text('1 album · 1 song'), findsOneWidget);
+    expect(top('Ann'), lessThan(top('Bob')));
+    expect(top('Bob'), lessThan(top('Guest')));
+
+    await tester.tap(find.widgetWithText(TextButton, 'Name'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(MenuItemButton, 'Songs'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Songs'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(MenuItemButton, 'Descending'));
+    await tester.pumpAndSettle();
+
+    expect(top('Bob'), lessThan(top('Ann')));
+    expect(top('Ann'), lessThan(top('Guest')));
+    expect(
+      h.container.read(settingsProvider).artistSort,
+      const SortChoice(ArtistSortField.songCount, descending: true),
+    );
+  });
+
+  testWidgets('tapping an artist opens their page', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/artists');
+
+    await tester.tap(find.text('Guest'));
+    await tester.pumpAndSettle();
+
+    expect(location(h), artistLocation('guest'));
+    expect(find.text('Appears on'), findsOneWidget);
+  });
+
+  testWidgets('no artists yet', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack('nobody'),
+    ], location: '/artists');
+    expect(find.text('No artists yet'), findsOneWidget);
+  });
+}

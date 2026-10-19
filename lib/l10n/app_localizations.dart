@@ -632,6 +632,66 @@ abstract class AppLocalizations {
   /// **'It may have been removed or renamed by a rescan.'**
   String get albumsNotFoundMessage;
 
+  /// No description provided for @artistsNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get artistsNoRootsMessage;
+
+  /// No description provided for @artistsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No artists yet'**
+  String get artistsEmptyTitle;
+
+  /// No description provided for @artistsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs with an artist tag show up here by artist.'**
+  String get artistsEmptyMessage;
+
+  /// No description provided for @artistsAlbumCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 album} other{{count} albums}}'**
+  String artistsAlbumCount(int count);
+
+  /// No description provided for @artistsAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get artistsAlbums;
+
+  /// No description provided for @artistsSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get artistsSongs;
+
+  /// No description provided for @artistsAppearsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Appears on'**
+  String get artistsAppearsOn;
+
+  /// No description provided for @artistsPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get artistsPlay;
+
+  /// No description provided for @artistsNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist not found'**
+  String get artistsNotFound;
+
+  /// No description provided for @artistsNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Their songs may have been removed or retagged.'**
+  String get artistsNotFoundMessage;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:

@@ -334,6 +334,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'It may have been removed or renamed by a rescan.';
 
   @override
+  String get artistsNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get artistsEmptyTitle => 'No artists yet';
+
+  @override
+  String get artistsEmptyMessage =>
+      'Songs with an artist tag show up here by artist.';
+
+  @override
+  String artistsAlbumCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count albums',
+      one: '1 album',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get artistsAlbums => 'Albums';
+
+  @override
+  String get artistsSongs => 'Songs';
+
+  @override
+  String get artistsAppearsOn => 'Appears on';
+
+  @override
+  String get artistsPlay => 'Play';
+
+  @override
+  String get artistsNotFound => 'Artist not found';
+
+  @override
+  String get artistsNotFoundMessage =>
+      'Their songs may have been removed or retagged.';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override

@@ -332,6 +332,45 @@ class AppLocalizationsVi extends AppLocalizations {
       'Có thể album đã bị xoá hoặc đổi tên sau lần quét lại.';
 
   @override
+  String get artistsNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get artistsEmptyTitle => 'Chưa có nghệ sĩ';
+
+  @override
+  String get artistsEmptyMessage =>
+      'Bài hát có tag nghệ sĩ sẽ hiện ở đây theo nghệ sĩ.';
+
+  @override
+  String artistsAlbumCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count album',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get artistsAlbums => 'Album';
+
+  @override
+  String get artistsSongs => 'Bài hát';
+
+  @override
+  String get artistsAppearsOn => 'Xuất hiện trong';
+
+  @override
+  String get artistsPlay => 'Phát';
+
+  @override
+  String get artistsNotFound => 'Không tìm thấy nghệ sĩ';
+
+  @override
+  String get artistsNotFoundMessage =>
+      'Có thể bài hát của nghệ sĩ đã bị xoá hoặc đổi tag.';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override

@@ -74,37 +74,67 @@ class AlbumGridTile extends StatelessWidget {
   }
 }
 
-/// [albums] as a grid of tiles at most 200 px wide, rows sized to fit the
-/// artwork and two lines of text.
+/// Side padding of album grids.
+const albumGridPadding = 24.0;
+
+const _maxTileWidth = 200.0;
+
+/// Columns of tiles at most 200 px wide filling [width], rows sized to fit
+/// the artwork and two lines of text.
+SliverGridDelegate albumGridDelegate(BuildContext context, double width) {
+  final columns = (width / _maxTileWidth).ceil().clamp(1, 1 << 20);
+  final tileWidth = width / columns;
+  return SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: columns,
+    mainAxisExtent:
+        AlbumGridTile.heightFor(context, tileWidth - _padding * 2) +
+        _padding * 2,
+  );
+}
+
+/// [albums] as a scrolling grid.
 class AlbumGrid extends StatelessWidget {
   const AlbumGrid({super.key, required this.albums, required this.onTap});
 
   final List<AlbumTileData> albums;
   final void Function(AlbumTileData album) onTap;
 
-  static const _maxTileWidth = 200.0;
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, constraints) {
-        const sidePadding = 24.0;
-        final width = constraints.maxWidth - sidePadding * 2;
-        final columns = (width / _maxTileWidth).ceil().clamp(1, 1 << 20);
-        final tileWidth = width / columns;
-        return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: sidePadding),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisExtent:
-                AlbumGridTile.heightFor(context, tileWidth - _padding * 2) +
-                _padding * 2,
-          ),
+      builder: (context, constraints) => GridView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: albumGridPadding),
+        gridDelegate: albumGridDelegate(
+          context,
+          constraints.maxWidth - albumGridPadding * 2,
+        ),
+        itemCount: albums.length,
+        itemBuilder: (context, i) =>
+            AlbumGridTile(data: albums[i], onTap: () => onTap(albums[i])),
+      ),
+    );
+  }
+}
+
+/// [albums] as a grid inside a [CustomScrollView].
+class SliverAlbumGrid extends StatelessWidget {
+  const SliverAlbumGrid({super.key, required this.albums, required this.onTap});
+
+  final List<AlbumTileData> albums;
+  final void Function(AlbumTileData album) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: albumGridPadding),
+      sliver: SliverLayoutBuilder(
+        builder: (context, constraints) => SliverGrid.builder(
+          gridDelegate: albumGridDelegate(context, constraints.crossAxisExtent),
           itemCount: albums.length,
           itemBuilder: (context, i) =>
               AlbumGridTile(data: albums[i], onTap: () => onTap(albums[i])),
-        );
-      },
+        ),
+      ),
     );
   }
 }

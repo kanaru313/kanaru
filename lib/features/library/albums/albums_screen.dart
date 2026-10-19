@@ -10,6 +10,7 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
 import '../widgets/library_sort_button.dart';
+import '../widgets/page_material.dart';
 import 'album_grid_tile.dart';
 import 'album_list_tile.dart';
 import 'album_tile_data.dart';
@@ -44,57 +45,62 @@ class AlbumsScreen extends ConsumerWidget {
     final settings = ref.read(settingsProvider.notifier);
     void open(AlbumKey key) => context.go(albumLocation(key));
 
-    return PageScaffold(
-      title: l10n.navAlbums,
-      body: LibraryBrowseBody<AlbumSummary>(
-        items: ref.watch(sortedAlbumsProvider),
-        icon: Icons.album_outlined,
-        noRootsMessage: l10n.albumsNoRootsMessage,
-        emptyTitle: l10n.albumsEmptyTitle,
-        emptyMessage: l10n.albumsEmptyMessage,
-        toolbar: Row(
-          children: [
-            LibrarySortButton<AlbumSortField>(
-              choice: sort,
-              fields: AlbumSortField.values,
-              label: albumSortLabel,
-              onChanged: settings.setAlbumSort,
+    return PageMaterial(
+      child: PageScaffold(
+        title: l10n.navAlbums,
+        body: LibraryBrowseBody<AlbumSummary>(
+          items: ref.watch(sortedAlbumsProvider),
+          icon: Icons.album_outlined,
+          noRootsMessage: l10n.albumsNoRootsMessage,
+          emptyTitle: l10n.albumsEmptyTitle,
+          emptyMessage: l10n.albumsEmptyMessage,
+          toolbar: Row(
+            children: [
+              LibrarySortButton<AlbumSortField>(
+                choice: sort,
+                fields: AlbumSortField.values,
+                label: albumSortLabel,
+                onChanged: settings.setAlbumSort,
+              ),
+              const Spacer(),
+              SegmentedButton<AlbumsView>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: AlbumsView.grid,
+                    icon: const Icon(Icons.grid_view),
+                    tooltip: l10n.albumsGridView,
+                  ),
+                  ButtonSegment(
+                    value: AlbumsView.list,
+                    icon: const Icon(Icons.view_list),
+                    tooltip: l10n.albumsListView,
+                  ),
+                ],
+                selected: {view},
+                onSelectionChanged: (selected) =>
+                    settings.setAlbumsView(selected.single),
+              ),
+            ],
+          ),
+          builder: (albums) => switch (view) {
+            AlbumsView.grid => AlbumGrid(
+              albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
+              onTap: (album) => open(album.key),
             ),
-            const Spacer(),
-            SegmentedButton<AlbumsView>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(
-                  value: AlbumsView.grid,
-                  icon: const Icon(Icons.grid_view),
-                  tooltip: l10n.albumsGridView,
-                ),
-                ButtonSegment(
-                  value: AlbumsView.list,
-                  icon: const Icon(Icons.view_list),
-                  tooltip: l10n.albumsListView,
-                ),
-              ],
-              selected: {view},
-              onSelectionChanged: (selected) =>
-                  settings.setAlbumsView(selected.single),
+            AlbumsView.list => ListView.builder(
+              prototypeItem: AlbumListTile(
+                album: _prototypeAlbum,
+                onTap: () {},
+              ),
+              itemCount: albums.length,
+              itemBuilder: (context, i) => AlbumListTile(
+                album: albums[i],
+                onTap: () => open(albums[i].key),
+              ),
             ),
-          ],
+          },
         ),
-        builder: (albums) => switch (view) {
-          AlbumsView.grid => AlbumGrid(
-            albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
-            onTap: (album) => open(album.key),
-          ),
-          AlbumsView.list => ListView.builder(
-            prototypeItem: AlbumListTile(album: _prototypeAlbum, onTap: () {}),
-            itemCount: albums.length,
-            itemBuilder: (context, i) => AlbumListTile(
-              album: albums[i],
-              onTap: () => open(albums[i].key),
-            ),
-          ),
-        },
       ),
     );
   }

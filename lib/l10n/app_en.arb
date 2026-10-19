@@ -175,6 +175,22 @@
   "albumsNotFound": "Album not found",
   "albumsNotFoundMessage": "It may have been removed or renamed by a rescan.",
 
+  "artistsNoRootsMessage": "Add a music folder in Songs.",
+  "artistsEmptyTitle": "No artists yet",
+  "artistsEmptyMessage": "Songs with an artist tag show up here by artist.",
+  "artistsAlbumCount": "{count, plural, =1{1 album} other{{count} albums}}",
+  "@artistsAlbumCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "artistsAlbums": "Albums",
+  "artistsSongs": "Songs",
+  "artistsAppearsOn": "Appears on",
+  "artistsPlay": "Play",
+  "artistsNotFound": "Artist not found",
+  "artistsNotFoundMessage": "Their songs may have been removed or retagged.",
+
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 
