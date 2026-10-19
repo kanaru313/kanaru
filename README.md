@@ -22,6 +22,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 ## Features
 
 ### Core (offline-first)
+
 - 🎵 Plays almost anything — MP3, FLAC, ALAC, AAC/M4A, OGG Vorbis, Opus, WAV, APE, WavPack… (powered by libmpv)
 - 📚 Library browsing by albums, artists, album artists, genres, years, folders
 - 🔍 Fast full-text search
@@ -32,19 +33,21 @@ all merge into **one library**, with offline caching so it keeps playing when th
 - 🔒 Works fully offline, no account required, no telemetry
 
 ### Remote sources (planned)
-| Source | Auth | Notes |
-|---|---|---|
-| **Subsonic / OpenSubsonic** (Navidrome, Gonic, Airsonic…) | Username + password / token | Server-side metadata, artwork & transcoding — no scanning needed |
-| **WebDAV** (Nextcloud, ownCloud, Synology, rclone…) | Basic / Digest | |
-| **S3-compatible** (AWS S3, Cloudflare R2, Backblaze B2, MinIO, Wasabi…) | Access key + secret | Custom endpoint, path-style or virtual-host |
-| **SFTP** | Password / key | |
-| **Google Drive** | OAuth 2.0 | Bring-your-own client ID supported |
+
+| Source                                                                  | Auth                        | Notes                                                            |
+| ----------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------- |
+| **Subsonic / OpenSubsonic** (Navidrome, Gonic, Airsonic…)               | Username + password / token | Server-side metadata, artwork & transcoding — no scanning needed |
+| **WebDAV** (Nextcloud, ownCloud, Synology, rclone…)                     | Basic / Digest              |                                                                  |
+| **S3-compatible** (AWS S3, Cloudflare R2, Backblaze B2, MinIO, Wasabi…) | Access key + secret         | Custom endpoint, path-style or virtual-host                      |
+| **SFTP**                                                                | Password / key              |                                                                  |
+| **Google Drive**                                                        | OAuth 2.0                   | Bring-your-own client ID supported                               |
 
 - ⚡ Remote tag reading via HTTP range requests — no full downloads to index
 - 🔄 Incremental rescans (ETag / mtime / Drive Changes API)
 - 💾 Transparent disk cache + "download for offline"
 
 ### Premium (planned)
+
 Kanaru is open source and fully usable for free. Some extra features will be available with a premium license
 to support development. The exact list is not final.
 
@@ -73,27 +76,30 @@ local proxy handles authentication, request signing, token refresh, range reques
 source means implementing one `StorageProvider` interface.
 
 ### Tech stack
-| Area | Choice |
-|---|---|
-| UI | Flutter, Material Design 3, `dynamic_color`, `material_color_utilities` |
-| State / routing | Riverpod, go_router |
-| Playback | `media_kit` (libmpv) |
-| Database | `drift` (SQLite + FTS5) |
-| Tag reading | `lofty` (Rust) via `flutter_rust_bridge` |
-| Media controls | MPRIS (D-Bus), `smtc_windows`, `audio_service` |
-| Credentials | `flutter_secure_storage` (libsecret / Keychain / Keystore) |
-| Local proxy | `shelf` |
+
+| Area            | Choice                                                                  |
+| --------------- | ----------------------------------------------------------------------- |
+| UI              | Flutter, Material Design 3, `dynamic_color`, `material_color_utilities` |
+| State / routing | Riverpod, go_router                                                     |
+| Playback        | `media_kit` (libmpv)                                                    |
+| Database        | `drift` (SQLite + FTS5)                                                 |
+| Tag reading     | `lofty` (Rust) via `flutter_rust_bridge`                                |
+| Media controls  | MPRIS (D-Bus), `smtc_windows`, `audio_service`                          |
+| Credentials     | `flutter_secure_storage` (libsecret / Keychain / Keystore)              |
+| Local proxy     | `shelf`                                                                 |
 
 ## Roadmap
 
 Detailed feature list with IDs, priorities and acceptance criteria: **[docs/features.md](docs/features.md)**.
 
 **Phase 0 — Foundation** · Linux
-- [ ] Project scaffold, M3 theme, CI
-- [ ] Play a local file with `media_kit`
+
+- [x] Project scaffold, M3 theme, CI
+- [x] Play a local file with `media_kit`
 - [ ] MPRIS integration
 
 **Phase 1 — Offline local player** · Linux
+
 - [ ] Folder scanning & tag reading, embedded / folder artwork
 - [ ] Library database & browsing (albums, artists, genres, folders)
 - [ ] Now Playing, mini player, queue, shuffle / repeat
@@ -103,10 +109,12 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [ ] Packaging: AppImage, Flatpak, `.deb`
 
 **Phase 2 — More platforms**
+
 - [ ] Windows, macOS
 - [ ] Android, iOS (background playback, media session)
 
 **Phase 3 — Remote sources & streaming**
+
 - [ ] `StorageProvider` abstraction + local proxy + disk cache
 - [ ] Subsonic / OpenSubsonic (Navidrome)
 - [ ] WebDAV
@@ -116,6 +124,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [ ] Google Drive
 
 **Phase 4 — Juicy**
+
 - [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade, sleep timer
