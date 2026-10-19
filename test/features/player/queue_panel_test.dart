@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/app/shell/navigation_history.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
@@ -168,6 +170,53 @@ void main() {
       expect(inSheet(), isFalse);
     });
 
+    Future<void> pressMouseBack(WidgetTester tester) async {
+      final mouse = await tester.createGesture(
+        kind: PointerDeviceKind.mouse,
+        buttons: kBackMouseButton,
+      );
+      await mouse.down(const Offset(100, 300));
+      await mouse.up();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the mouse back button closes the shell sheet only', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tester.tap(find.text('Artists'));
+      await tester.pumpAndSettle();
+      await openSheet(tester);
+
+      await pressMouseBack(tester);
+      expect(find.byType(QueuePanel), findsNothing);
+      // The page was not left: back went to the sheet, not the history.
+      expect(find.text('Artists'), findsWidgets);
+      expect(container.read(navigationHistoryProvider).canGoForward, isFalse);
+    });
+
+    testWidgets('the mouse back button closes the Now Playing sheet first', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      container.read(nowPlayingOpenProvider.notifier).open();
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NowPlayingScreen),
+          matching: find.byTooltip('Open queue'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await pressMouseBack(tester);
+      expect(find.byType(QueuePanel), findsNothing);
+      expect(find.byType(NowPlayingScreen), findsOneWidget);
+
+      await pressMouseBack(tester);
+      expect(find.byType(NowPlayingScreen), findsNothing);
+    });
+
     testWidgets('opens from the Now Playing footer, and Esc closes only it', (
       tester,
     ) async {
@@ -291,6 +340,24 @@ void main() {
       );
       expect(number('1'), findsOneWidget);
       expect(number('4'), findsOneWidget);
+    });
+
+    testWidgets('tapping the playing row does nothing', (tester) async {
+      await pumpApp(tester);
+      await openSheet(tester);
+      final playing = current()!.title;
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(QueuePanel),
+          matching: find.text(playing),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(current()!.title, playing);
+      expect(backend.calls, isEmpty);
+      expect(find.byType(QueuePanel), findsOneWidget);
     });
 
     testWidgets('tapping a row plays it and keeps the panel open', (

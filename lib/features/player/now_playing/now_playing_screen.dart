@@ -82,6 +82,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           },
           // The chrome stays while the queue sheet is open.
           child: QueueSheetHost(
+            onMouseBack: _close,
             onOpenChanged: (open) => open ? _chrome.pin() : _chrome.unpin(),
             child: Scaffold(
               body: wide

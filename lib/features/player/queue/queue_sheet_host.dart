@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'queue_panel.dart';
@@ -29,9 +30,20 @@ abstract interface class QueueSheetController {
 /// While open, focus moves into the sheet (Esc closes it, Tab stays inside)
 /// and returns to where it was once the sheet has slid away.
 class QueueSheetHost extends StatefulWidget {
-  const QueueSheetHost({super.key, required this.child, this.onOpenChanged});
+  const QueueSheetHost({
+    super.key,
+    required this.child,
+    this.onOpenChanged,
+    this.onMouseBack,
+    this.onMouseForward,
+  });
 
   final Widget child;
+
+  /// The mouse back and forward side buttons when the sheet is closed. While
+  /// it is open, back closes it (like Esc) and forward does nothing.
+  final VoidCallback? onMouseBack;
+  final VoidCallback? onMouseForward;
 
   /// Called when the sheet starts opening (`true`) or closing (`false`).
   final ValueChanged<bool>? onOpenChanged;
@@ -142,14 +154,25 @@ class _QueueSheetHostState extends State<QueueSheetHost>
     final showing = _open || !_animation.isDismissed;
     return _QueueSheetScope(
       controller: this,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          widget.child,
-          if (showing) Positioned.fill(child: _buildSheet(context)),
-        ],
+      child: Listener(
+        onPointerDown: _onPointerDown,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            widget.child,
+            if (showing) Positioned.fill(child: _buildSheet(context)),
+          ],
+        ),
       ),
     );
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (event.buttons & kBackMouseButton != 0) {
+      _open ? close() : widget.onMouseBack?.call();
+    } else if (event.buttons & kForwardMouseButton != 0 && !_open) {
+      widget.onMouseForward?.call();
+    }
   }
 
   Widget _buildSheet(BuildContext context) {

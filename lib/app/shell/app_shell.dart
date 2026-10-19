@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -36,20 +35,6 @@ class AppShell extends ConsumerWidget {
     );
   }
 
-  /// Mouse back/forward side buttons move through the history. While Now
-  /// Playing is open, back closes it instead and forward does nothing.
-  void _onPointerDown(PointerDownEvent event, WidgetRef ref) {
-    if (ref.read(nowPlayingOpenProvider)) {
-      if (event.buttons & kBackMouseButton != 0) {
-        ref.read(nowPlayingOpenProvider.notifier).close();
-      }
-      return;
-    }
-    final history = ref.read(navigationHistoryProvider.notifier);
-    if (event.buttons & kBackMouseButton != 0) history.back();
-    if (event.buttons & kForwardMouseButton != 0) history.forward();
-  }
-
   /// Header of Now Playing with the window drag area and buttons, which
   /// features cannot reach themselves.
   Widget _nowPlayingTitleBar(Widget header, bool customTitleBar) {
@@ -81,7 +66,13 @@ class AppShell extends ConsumerWidget {
         ? const PlayerBar()
         : null;
 
+    final history = ref.read(navigationHistoryProvider.notifier);
+    // The mouse side buttons move through the history, unless the queue
+    // sheet is open (back closes it). While Now Playing is open the shell
+    // gets no pointer events; Now Playing handles them itself.
     final shell = QueueSheetHost(
+      onMouseBack: history.back,
+      onMouseForward: history.forward,
       child: wide
           ? Scaffold(
               bottomNavigationBar: playerBar,
@@ -130,28 +121,25 @@ class AppShell extends ConsumerWidget {
             ),
     );
 
-    return Listener(
-      onPointerDown: (event) => _onPointerDown(event, ref),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Behind Now Playing nothing may take focus, be read out or run
-          // animations; the page state is kept for when it closes.
-          ExcludeFocus(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Behind Now Playing nothing may take focus, be read out or run
+        // animations; the page state is kept for when it closes.
+        ExcludeFocus(
+          excluding: nowPlayingOpen,
+          child: ExcludeSemantics(
             excluding: nowPlayingOpen,
-            child: ExcludeSemantics(
-              excluding: nowPlayingOpen,
-              child: IgnorePointer(
-                ignoring: nowPlayingOpen,
-                child: TickerMode(enabled: !nowPlayingOpen, child: shell),
-              ),
+            child: IgnorePointer(
+              ignoring: nowPlayingOpen,
+              child: TickerMode(enabled: !nowPlayingOpen, child: shell),
             ),
           ),
-          NowPlayingOverlay(
-            titleBar: (header) => _nowPlayingTitleBar(header, customTitleBar),
-          ),
-        ],
-      ),
+        ),
+        NowPlayingOverlay(
+          titleBar: (header) => _nowPlayingTitleBar(header, customTitleBar),
+        ),
+      ],
     );
   }
 }

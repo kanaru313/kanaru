@@ -79,7 +79,9 @@ class QueueTile extends ConsumerWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
-              onTap: () => player.jump(position),
+              // The playing row does nothing: tapping it must not restart
+              // the track.
+              onTap: current ? null : () => player.jump(position),
               child: Row(
                 children: [
                   ReorderableDragStartListener(
