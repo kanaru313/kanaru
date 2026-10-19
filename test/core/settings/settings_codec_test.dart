@@ -22,6 +22,10 @@ void main() {
       theme: ThemePreference.dark,
       languageCode: 'vi',
       titleBar: TitleBarPreference.none,
+      songSort: SortChoice(SongSortField.duration, descending: true),
+      albumSort: SortChoice(AlbumSortField.year),
+      artistSort: SortChoice(ArtistSortField.albumCount, descending: true),
+      albumsView: AlbumsView.list,
     );
 
     final json = encodeSettings(settings);
@@ -85,5 +89,128 @@ void main() {
       decodeSettings(<String, Object?>{'version': 0}).version,
       settingsSchemaVersion,
     );
+  });
+
+  group('library sort', () {
+    test('a file without the sort keys gives the defaults', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'version': 1,
+        'theme': 'dark',
+        'language': 'vi',
+        'titleBar': 'system',
+      });
+
+      expect(
+        decoded.settings,
+        const AppSettings(
+          theme: ThemePreference.dark,
+          languageCode: 'vi',
+          titleBar: TitleBarPreference.system,
+        ),
+      );
+      expect(decoded.settings.songSort, const SortChoice(SongSortField.title));
+      expect(decoded.settings.albumsView, AlbumsView.grid);
+      expect(decoded.librarySortExtra, isEmpty);
+    });
+
+    test('writes the documented shape', () {
+      final json = encodeSettings(
+        const AppSettings(
+          albumSort: SortChoice(AlbumSortField.artist, descending: true),
+        ),
+      );
+
+      expect(json['librarySort'], {
+        'songs': {'by': 'title', 'descending': false},
+        'albums': {'by': 'artist', 'descending': true},
+        'artists': {'by': 'name', 'descending': false},
+      });
+      expect(json['albumsView'], 'grid');
+      expect(json['version'], 1);
+    });
+
+    test('each wrong part falls back on its own', () {
+      final settings = decodeSettings(<String, Object?>{
+        'librarySort': {
+          'songs': {'by': 'playCount', 'descending': 'yes'},
+          'albums': {'by': 7, 'descending': true},
+          'artists': 'name',
+        },
+        'albumsView': 'carousel',
+      }).settings;
+
+      expect(settings.songSort, const SortChoice(SongSortField.title));
+      expect(
+        settings.albumSort,
+        const SortChoice(AlbumSortField.title, descending: true),
+      );
+      expect(settings.artistSort, const SortChoice(ArtistSortField.name));
+      expect(settings.albumsView, AlbumsView.grid);
+    });
+
+    test('librarySort that is not an object gives the defaults', () {
+      for (final value in [null, 3, 'albums', <Object?>[]]) {
+        final decoded = decodeSettings(<String, Object?>{'librarySort': value});
+        expect(decoded.settings, const AppSettings(), reason: '$value');
+        expect(decoded.librarySortExtra, isEmpty);
+        expect(decoded.unknownKeys, isEmpty);
+      }
+    });
+
+    test('keeps screens it does not know and writes them back', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'librarySort': {
+          'folders': {'by': 'path', 'descending': true},
+          'songs': {'by': 'year', 'descending': false},
+        },
+        'replayGain': 'album',
+      });
+
+      expect(decoded.librarySortExtra.keys, ['folders']);
+      final json = encodeSettings(
+        decoded.settings,
+        unknownKeys: decoded.unknownKeys,
+        librarySortExtra: decoded.librarySortExtra,
+      );
+      final sorts = json['librarySort']! as Map<String, Object?>;
+      expect(sorts['folders'], {'by': 'path', 'descending': true});
+      expect(sorts['songs'], {'by': 'year', 'descending': false});
+      expect(json['replayGain'], 'album');
+    });
+
+    test('known screens win over unknown screens of the same name', () {
+      final json = encodeSettings(
+        const AppSettings(),
+        librarySortExtra: {
+          'songs': {'by': 'duration'},
+        },
+      );
+
+      expect((json['librarySort']! as Map)['songs'], {
+        'by': 'title',
+        'descending': false,
+      });
+    });
+
+    test('withLanguage keeps the library fields', () {
+      const settings = AppSettings(
+        songSort: SortChoice(SongSortField.album, descending: true),
+        albumSort: SortChoice(AlbumSortField.dateAdded),
+        artistSort: SortChoice(ArtistSortField.songCount),
+        albumsView: AlbumsView.list,
+      );
+
+      final changed = settings.withLanguage('vi');
+
+      expect(changed.songSort, settings.songSort);
+      expect(changed.albumSort, settings.albumSort);
+      expect(changed.artistSort, settings.artistSort);
+      expect(changed.albumsView, settings.albumsView);
+      expect(changed.withLanguage(null), settings);
+    });
+
+    test('the schema version stays 1', () {
+      expect(settingsSchemaVersion, 1);
+    });
   });
 }

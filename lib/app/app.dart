@@ -18,8 +18,11 @@ class KanaruApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    final settings = ref.watch(settingsProvider);
-    final languageCode = settings.languageCode;
+    // Only what the app shell uses, so changing a library sort does not
+    // rebuild MaterialApp.
+    final (theme, languageCode) = ref.watch(
+      settingsProvider.select((s) => (s.theme, s.languageCode)),
+    );
     // A saved code without a translation falls back to the system locale.
     final savedLocale =
         AppLocalizations.supportedLocales.any(
@@ -36,7 +39,7 @@ class KanaruApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         theme: buildTheme(lightDynamic, Brightness.light),
         darkTheme: buildTheme(darkDynamic, Brightness.dark),
-        themeMode: switch (settings.theme) {
+        themeMode: switch (theme) {
           ThemePreference.system => ThemeMode.system,
           ThemePreference.light => ThemeMode.light,
           ThemePreference.dark => ThemeMode.dark,

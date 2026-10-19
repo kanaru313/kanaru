@@ -1,3 +1,7 @@
+import 'library_sort.dart';
+
+export 'library_sort.dart';
+
 /// Light or dark theme, or whatever the desktop uses.
 enum ThemePreference { system, light, dark }
 
@@ -23,6 +27,10 @@ class AppSettings {
     this.theme = ThemePreference.system,
     this.languageCode,
     this.titleBar = TitleBarPreference.kanaru,
+    this.songSort = const SortChoice(SongSortField.title),
+    this.albumSort = const SortChoice(AlbumSortField.title),
+    this.artistSort = const SortChoice(ArtistSortField.name),
+    this.albumsView = AlbumsView.grid,
   });
 
   final ThemePreference theme;
@@ -33,31 +41,67 @@ class AppSettings {
 
   final TitleBarPreference titleBar;
 
+  /// Sort of each library screen, remembered separately.
+  final SortChoice<SongSortField> songSort;
+  final SortChoice<AlbumSortField> albumSort;
+  final SortChoice<ArtistSortField> artistSort;
+
+  final AlbumsView albumsView;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
+    SortChoice<SongSortField>? songSort,
+    SortChoice<AlbumSortField>? albumSort,
+    SortChoice<ArtistSortField>? artistSort,
+    AlbumsView? albumsView,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
     titleBar: titleBar ?? this.titleBar,
+    songSort: songSort ?? this.songSort,
+    albumSort: albumSort ?? this.albumSort,
+    artistSort: artistSort ?? this.artistSort,
+    albumsView: albumsView ?? this.albumsView,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
-  AppSettings withLanguage(String? languageCode) =>
-      AppSettings(theme: theme, languageCode: languageCode, titleBar: titleBar);
+  AppSettings withLanguage(String? languageCode) => AppSettings(
+    theme: theme,
+    languageCode: languageCode,
+    titleBar: titleBar,
+    songSort: songSort,
+    albumSort: albumSort,
+    artistSort: artistSort,
+    albumsView: albumsView,
+  );
 
   @override
   bool operator ==(Object other) =>
       other is AppSettings &&
       other.theme == theme &&
       other.languageCode == languageCode &&
-      other.titleBar == titleBar;
+      other.titleBar == titleBar &&
+      other.songSort == songSort &&
+      other.albumSort == albumSort &&
+      other.artistSort == artistSort &&
+      other.albumsView == albumsView;
 
   @override
-  int get hashCode => Object.hash(theme, languageCode, titleBar);
+  int get hashCode => Object.hash(
+    theme,
+    languageCode,
+    titleBar,
+    songSort,
+    albumSort,
+    artistSort,
+    albumsView,
+  );
 
   @override
   String toString() =>
       'AppSettings(theme: ${theme.name}, language: $languageCode, '
-      'titleBar: ${titleBar.name})';
+      'titleBar: ${titleBar.name}, songSort: $songSort, '
+      'albumSort: $albumSort, artistSort: $artistSort, '
+      'albumsView: ${albumsView.name})';
 }
