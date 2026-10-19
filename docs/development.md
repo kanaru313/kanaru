@@ -134,9 +134,20 @@ Run code generation again after changing drift tables, Riverpod annotations or R
 # Dart (drift, riverpod, freezed…)
 dart run build_runner build --delete-conflicting-outputs
 
-# Rust bindings
-flutter_rust_bridge_codegen generate
+# Rust bindings (after changing rust/src/api)
+RUSTC_BOOTSTRAP=1 flutter_rust_bridge_codegen generate
+
+# After bumping schemaVersion in the library database: new migration step + test
+dart run drift_dev make-migrations
 ```
+
+Notes on the Rust side:
+
+- **Pinned codegen**: the Dart `flutter_rust_bridge` package, the crate and `flutter_rust_bridge_codegen` must all be 2.13.0 (`flutter_rust_bridge_codegen --version`). The dev shell provides the codegen binary; outside Nix, `cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked`.
+- **`RUSTC_BOOTSTRAP=1`**: codegen runs `cargo expand`, which needs nightly features. The variable lets the stable toolchain do it. The dev shell ships `cargo-expand`; elsewhere `cargo install cargo-expand`.
+- **`rustup` shim (Nix only)**: the build glue (cargokit) calls `rustup toolchain list`, `rustup target list --installed` and `rustup run <toolchain> cargo`. Nix provides one fixed toolchain and no rustup, so the dev shell has a tiny `rustup` script that answers those three calls. Without it `flutter run` fails while building the Rust crate.
+- **Rust builds** happen inside `flutter run` / `flutter build` (always `--release` for the crate). The first build is slow, and each git worktree has its own `rust/` build output.
+- **Tests**: `cargo test --locked --manifest-path rust/Cargo.toml` (`--locked` fails if `Cargo.lock` is out of date).
 
 ### Instances and media controls
 
@@ -174,7 +185,8 @@ KC=$(mktemp -d) && KANARU_LOG_LEVEL=fine XDG_CACHE_HOME=$KC flutter run -d linux
 ```bash
 flutter analyze
 flutter test
-cargo test --manifest-path rust/Cargo.toml
+cargo test --locked --manifest-path rust/Cargo.toml
+cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 ```
 
 ## Troubleshooting
