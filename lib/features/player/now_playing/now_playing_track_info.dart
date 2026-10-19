@@ -25,14 +25,56 @@ class NowPlayingTrackInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: centered
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.stretch,
+      spacing: 24,
+      children: [
+        Center(
+          child: TrackArtwork(
+            artUri: track.artUri,
+            size: artworkSize,
+            radius: 32,
+          ),
+        ),
+        NowPlayingTitle(
+          track: track,
+          centered: centered,
+          trailing: titleTrailing,
+        ),
+      ],
+    );
+  }
+}
+
+/// Title (bold, up to two lines) and artist, as under the large cover.
+class NowPlayingTitle extends StatelessWidget {
+  const NowPlayingTitle({
+    super.key,
+    required this.track,
+    this.centered = true,
+    this.trailing,
+  });
+
+  final Track track;
+
+  /// Centers the text; otherwise it starts at the left.
+  final bool centered;
+
+  /// Placed at the end of the title line, e.g. action buttons.
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final align = centered ? TextAlign.center : TextAlign.start;
     final artist = track.artist;
     final title = Text(
       track.title,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      textAlign: align,
+      textAlign: centered ? TextAlign.center : TextAlign.start,
       style: theme.textTheme.headlineSmall?.copyWith(
         fontSize: 26,
         fontWeight: FontWeight.bold,
@@ -45,20 +87,12 @@ class NowPlayingTrackInfo extends StatelessWidget {
           : CrossAxisAlignment.stretch,
       spacing: 8,
       children: [
-        Center(
-          child: TrackArtwork(
-            artUri: track.artUri,
-            size: artworkSize,
-            radius: 32,
-          ),
-        ),
-        const SizedBox(height: 8),
-        titleTrailing == null
+        trailing == null
             ? title
             : Row(
                 children: [
                   Expanded(child: title),
-                  titleTrailing!,
+                  trailing!,
                 ],
               ),
         if (artist != null)

@@ -249,20 +249,25 @@ void main() {
     testWidgets('keeps the playing page on the bottom edge', (tester) async {
       await pumpOpen(tester, const Size(600, 900));
 
-      final seek = tester.getRect(inScreen(find.byType(SeekBar)));
-      expect(seek.bottom, greaterThan(900 - 48));
+      final play = tester.getRect(inScreen(find.byTooltip('Pause')));
+      expect(play.bottom, greaterThan(900 - 48));
     });
 
-    testWidgets('centers the cover block above the controls', (tester) async {
+    testWidgets('puts the cover alone in the middle, the rest at the bottom', (
+      tester,
+    ) async {
       await pumpOpen(tester, const Size(480, 900));
 
       final cover = tester.getRect(inScreen(find.byType(TrackArtwork)));
-      final artist = tester.getRect(inScreen(find.text('Some Artist')));
-      final controls = tester.getRect(inScreen(find.byTooltip('Pause')));
-      final block = cover.expandToInclude(artist);
-      // Room between the header and the controls row, block in its middle.
-      final roomCenter = (64 + controls.top) / 2;
-      expect(block.center.dy, closeTo(roomCenter, 24));
+      final title = tester.getRect(inScreen(find.text('First Song')));
+      final seek = tester.getRect(inScreen(find.byType(SeekBar)));
+      final play = tester.getRect(inScreen(find.byTooltip('Pause')));
+      // Footer order: title, seek bar, then the buttons on the bottom edge.
+      expect(title.bottom, lessThan(seek.top));
+      expect(seek.bottom, lessThanOrEqualTo(play.top));
+      expect(play.bottom, greaterThan(900 - 48));
+      // The cover in the middle of the room between header and footer.
+      expect(cover.center.dy, closeTo((64 + title.top) / 2, 24));
     });
 
     testWidgets('swiping reveals the queue page', (tester) async {

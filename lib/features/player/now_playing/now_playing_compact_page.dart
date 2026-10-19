@@ -5,6 +5,7 @@ import '../../../core/player/player_service.dart';
 import '../playback_controls.dart';
 import '../seek_bar.dart';
 import 'now_playing_actions.dart';
+import '../track_artwork.dart';
 import 'now_playing_track_info.dart';
 
 /// Now Playing page of a narrow window: cover, title and artist, then the
@@ -27,10 +28,10 @@ class NowPlayingCompactPage extends ConsumerWidget {
         final art = (constraints.maxWidth - 48)
             .clamp(0.0, windowHeight * 0.45)
             .toDouble();
-        // The controls sit on the bottom edge, where the footer is on wide
-        // windows, and the cover block in the middle of the room above them:
-        // `spaceBetween` with an empty first child leaves equal space above
-        // and below the block. A window too short for both scrolls instead.
+        // The cover alone in the middle; title, seek bar and controls form
+        // a footer on the bottom edge, as on wide windows. `spaceBetween`
+        // with an empty first child leaves equal space above and below the
+        // cover. A window too short for both scrolls instead.
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
           child: ConstrainedBox(
@@ -39,30 +40,35 @@ class NowPlayingCompactPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const SizedBox.shrink(),
-                // Heart and playlist sit by the title here, not in a footer.
-                NowPlayingTrackInfo(
-                  track: track,
-                  artworkSize: art,
-                  centered: false,
-                  titleTrailing: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NowPlayingFavoriteButton(),
-                      NowPlayingPlaylistButton(),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: TrackArtwork(
+                    artUri: track.artUri,
+                    size: art,
+                    radius: 32,
                   ),
                 ),
-                const Column(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   spacing: 8,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 8),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: PlaybackControls(),
+                    // Heart and playlist sit by the title here.
+                    NowPlayingTitle(
+                      track: track,
+                      centered: false,
+                      trailing: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          NowPlayingFavoriteButton(),
+                          NowPlayingPlaylistButton(),
+                        ],
                       ),
                     ),
-                    SeekBar(),
+                    const SeekBar(),
+                    const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: PlaybackControls(),
+                    ),
                   ],
                 ),
               ],
