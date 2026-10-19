@@ -107,6 +107,7 @@
   "nowPlayingComingSoon": "Sắp có",
   "nowPlayingTabQueue": "Hàng đợi",
   "nowPlayingTabTrack": "Đang phát",
+  "nowPlayingLyricsOnly": "Chỉ hiện lời bài hát",
   "queueOpen": "Mở hàng đợi",
   "queueTitle": "Hàng đợi",
   "queueTrackCount": "{count, plural, other{{count} bài}}",
@@ -114,6 +115,7 @@
   "queueRemove": "Xoá khỏi hàng đợi",
   "queueReorder": "Kéo để sắp xếp lại",
   "queueShowCurrent": "Đang phát",
+  "queueClose": "Đóng hàng đợi",
 
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",

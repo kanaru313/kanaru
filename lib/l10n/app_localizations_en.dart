@@ -348,6 +348,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingTabTrack => 'Now Playing';
 
   @override
+  String get nowPlayingLyricsOnly => 'Lyrics only';
+
+  @override
   String get queueOpen => 'Open queue';
 
   @override
@@ -375,6 +378,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueShowCurrent => 'Now playing';
+
+  @override
+  String get queueClose => 'Close queue';
 
   @override
   String get settingsAppearance => 'Appearance';

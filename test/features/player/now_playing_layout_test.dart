@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/app/shell/window/desktop_window.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
@@ -28,7 +29,11 @@ void main() {
   PlayerService player() => container.read(playerServiceProvider.notifier);
   final screen = find.byType(NowPlayingScreen);
 
-  Future<void> pumpOpen(WidgetTester tester, Size size) async {
+  Future<void> pumpOpen(
+    WidgetTester tester,
+    Size size, {
+    bool customTitleBar = false,
+  }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -38,7 +43,10 @@ void main() {
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     backend = FakeAudioBackend();
     container = ProviderContainer(
-      overrides: [audioBackendProvider.overrideWithValue(backend)],
+      overrides: [
+        audioBackendProvider.overrideWithValue(backend),
+        customTitleBarProvider.overrideWithValue(customTitleBar),
+      ],
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(
@@ -167,6 +175,62 @@ void main() {
       expect(inScreen(find.byTooltip('Pause')), findsOneWidget);
       expect(inScreen(find.byTooltip('Add to favorites')), findsOneWidget);
       expect(inScreen(find.byTooltip('Open queue')), findsOneWidget);
+    });
+
+    testWidgets('has no volume button and no bottom buttons row', (
+      tester,
+    ) async {
+      await pumpOpen(tester, const Size(600, 700));
+
+      expect(inScreen(find.byTooltip('Mute')), findsNothing);
+      expect(inScreen(find.byIcon(Icons.volume_up_rounded)), findsNothing);
+      // Close and queue are in the header, close together at the left.
+      final close = tester.getRect(
+        inScreen(find.byTooltip('Close Now Playing')),
+      );
+      final queue = tester.getRect(inScreen(find.byTooltip('Open queue')));
+      expect(close.top, lessThan(64));
+      expect(queue.top, lessThan(64));
+      expect(close.left, lessThan(queue.left));
+      expect(queue.left - close.right, lessThan(16));
+      expect(queue.right, lessThan(150));
+    });
+
+    testWidgets('centers the dots on the whole window', (tester) async {
+      for (final width in [600.0, 480.0]) {
+        await pumpOpen(tester, Size(width, 700));
+        final queue = tester.getRect(inScreen(find.byTooltip('Queue')));
+        final track = tester.getRect(inScreen(find.byTooltip('Now Playing')));
+        final dots = queue.expandToInclude(track);
+        expect(dots.center.dx, closeTo(width / 2, 1));
+        expect(dots.top, lessThan(64));
+      }
+    });
+
+    testWidgets('keeps the dots centered beside the window buttons', (
+      tester,
+    ) async {
+      await pumpOpen(tester, const Size(480, 360), customTitleBar: true);
+
+      final queue = tester.getRect(inScreen(find.byTooltip('Queue')));
+      final track = tester.getRect(inScreen(find.byTooltip('Now Playing')));
+      expect(queue.expandToInclude(track).center.dx, closeTo(240, 1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the header queue button opens the queue page', (tester) async {
+      await pumpOpen(tester, const Size(600, 700));
+
+      await tester.tap(inScreen(find.byTooltip('Open queue')));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<PageView>(inScreen(find.byType(PageView)))
+            .controller!
+            .page,
+        0,
+      );
     });
 
     testWidgets('swiping reveals the queue page', (tester) async {

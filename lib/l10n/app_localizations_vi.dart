@@ -347,6 +347,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingTabTrack => 'Đang phát';
 
   @override
+  String get nowPlayingLyricsOnly => 'Chỉ hiện lời bài hát';
+
+  @override
   String get queueOpen => 'Mở hàng đợi';
 
   @override
@@ -373,6 +376,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueShowCurrent => 'Đang phát';
+
+  @override
+  String get queueClose => 'Đóng hàng đợi';
 
   @override
   String get settingsAppearance => 'Giao diện';

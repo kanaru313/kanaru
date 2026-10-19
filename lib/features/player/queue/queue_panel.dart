@@ -4,15 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
-import '../../../l10n/l10n.dart';
+import 'queue_panel_header.dart';
+import 'queue_sheet_host.dart';
 import 'queue_tile.dart';
 
 /// The play queue, editable: drag a row by its handle to reorder, remove a
 /// row, play one by tapping it. Only the rows on screen are built, so a
-/// queue of tens of thousands of tracks stays light. Used in a drawer and,
-/// on narrow windows, as a page of its own.
+/// queue of tens of thousands of tracks stays light. Used in the side sheet
+/// and, on narrow windows, as a page of its own.
 class QueuePanel extends ConsumerStatefulWidget {
-  const QueuePanel({super.key});
+  const QueuePanel({super.key, this.onClose});
+
+  /// Shows a close button in the header; `null` on the narrow page.
+  final VoidCallback? onClose;
 
   @override
   ConsumerState<QueuePanel> createState() => _QueuePanelState();
@@ -56,38 +60,25 @@ class _QueuePanelState extends ConsumerState<QueuePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
     // Not the whole player state: the position ticks must not rebuild rows.
     final queue = ref.watch(playerServiceProvider.select((s) => s.queue));
     final player = ref.read(playerServiceProvider.notifier);
     final tracks = queue.tracks;
-    // An emptied queue leaves nothing to show: close the drawer it is in.
+    // An emptied queue leaves nothing to show: close the sheet it is in.
     ref.listen(playerServiceProvider.select((s) => s.queue.isEmpty), (
       _,
       empty,
     ) {
-      if (empty) Scaffold.maybeOf(context)?.closeEndDrawer();
+      if (empty) QueueSheetHost.maybeOf(context)?.close();
     });
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            spacing: 12,
-            children: [
-              Text(l10n.queueTitle, style: theme.textTheme.titleLarge),
-              Text(
-                l10n.queueTrackCount(tracks.length),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
+        QueuePanelHeader(
+          trackCount: tracks.length,
+          onClear: tracks.length > 1 ? player.clearQueue : null,
+          onShowCurrent: _showCurrent,
+          onClose: widget.onClose,
         ),
         Expanded(
           child: ReorderableListView.builder(
@@ -106,34 +97,6 @@ class _QueuePanelState extends ConsumerState<QueuePanel> {
               current: position == queue.index,
               played: position < queue.index,
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // The playing track stays, so there is nothing to confirm.
-              // Flexible so a narrow panel or a long translation shrinks the
-              // labels instead of overflowing.
-              Flexible(
-                child: TextButton.icon(
-                  icon: const Icon(Icons.clear_all_rounded),
-                  label: Text(l10n.queueClear, overflow: TextOverflow.ellipsis),
-                  onPressed: tracks.length > 1 ? player.clearQueue : null,
-                ),
-              ),
-              Flexible(
-                child: TextButton.icon(
-                  icon: const Icon(Icons.my_location_rounded),
-                  label: Text(
-                    l10n.queueShowCurrent,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onPressed: _showCurrent,
-                ),
-              ),
-            ],
           ),
         ),
       ],

@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../queue/queue_button.dart';
+import 'now_playing_actions.dart';
 import 'now_playing_compact_page.dart';
 import 'now_playing_footer.dart' show nowPlayingHeaderHeight;
 
@@ -10,7 +12,8 @@ enum _Tab { queue, track }
 const _pageDuration = Duration(milliseconds: 300);
 
 /// Narrow layout: dot tabs on top over horizontally swiped pages, the queue
-/// on the left and the playing track (the start page) on the right.
+/// on the left and the playing track (the start page) on the right. Close
+/// and queue buttons sit at the top left of the header.
 class NowPlayingTabs extends StatefulWidget {
   const NowPlayingTabs({
     super.key,
@@ -55,33 +58,52 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
     };
     return Column(
       children: [
-        widget.wrapHeader(
-          SizedBox(
-            height: nowPlayingHeaderHeight,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (final tab in _Tab.values)
-                  _Dot(
-                    label: labels[tab]!,
-                    selected: _page == tab.index,
-                    onTap: () => _select(tab),
+        // The wrapper adds the window buttons beside the header, so the dots
+        // are laid over the whole row instead of inside it: they then center
+        // on the window. The dots' Center only hit-tests the dots themselves,
+        // so the rest of the strip still drags the window.
+        Stack(
+          children: [
+            widget.wrapHeader(
+              SizedBox(
+                height: nowPlayingHeaderHeight,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        NowPlayingCloseButton(onPressed: widget.onClose),
+                        QueueButton(onPressed: () => _select(_Tab.queue)),
+                      ],
+                    ),
                   ),
-              ],
+                ),
+              ),
             ),
-          ),
+            Positioned.fill(
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final tab in _Tab.values)
+                      _Dot(
+                        label: labels[tab]!,
+                        selected: _page == tab.index,
+                        onTap: () => _select(tab),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         Expanded(
           child: PageView(
             controller: _controller,
             onPageChanged: (page) => setState(() => _page = page),
-            children: [
-              widget.queuePage,
-              NowPlayingCompactPage(
-                onClose: widget.onClose,
-                onShowQueue: () => _select(_Tab.queue),
-              ),
-            ],
+            children: [widget.queuePage, const NowPlayingCompactPage()],
           ),
         ),
       ],

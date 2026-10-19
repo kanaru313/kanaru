@@ -1,14 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/player/player_service.dart';
-import '../queue/queue_drawer.dart';
 import '../queue/queue_panel.dart';
+import '../queue/queue_sheet_host.dart';
 import 'now_playing_auto_hide.dart';
 import 'now_playing_footer.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_tabs.dart';
-import 'now_playing_track_info.dart';
+import 'now_playing_wide_body.dart';
 
 /// Window width below which Now Playing becomes one column with tabs.
 const _wideBreakpoint = 720.0;
@@ -16,14 +15,16 @@ const _wideBreakpoint = 720.0;
 /// The full-window Now Playing page. Its own [Scaffold], a sibling of the
 /// shell's rather than nested in it, so snack bars show on top of it.
 class NowPlayingScreen extends ConsumerStatefulWidget {
-  const NowPlayingScreen({super.key, this.titleBar, this.hasLyrics = false});
+  const NowPlayingScreen({super.key, this.titleBar, this.lyrics});
 
   /// See `NowPlayingOverlay.titleBar`.
   final Widget Function(Widget header)? titleBar;
 
-  /// Whether lyrics share the page with the cover block (not built yet, so
-  /// always `false`): the block then takes half the width.
-  final bool hasLyrics;
+  /// Lyrics view (none exists yet, so `null`). With it the cover block takes
+  /// half the width and the header shows the lyrics-only toggle.
+  final Widget? lyrics;
+
+  bool get hasLyrics => lyrics != null;
 
   @override
   ConsumerState<NowPlayingScreen> createState() => _NowPlayingScreenState();
@@ -32,6 +33,7 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
 class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   final _focus = FocusNode(debugLabel: 'Now Playing');
   final _chrome = AutoHideController();
+  bool _lyricsOnly = false;
 
   @override
   void initState() {
@@ -78,19 +80,18 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             _chrome.poke();
             return KeyEventResult.ignored;
           },
-          child: Scaffold(
-            endDrawer: const QueueDrawer(),
-            endDrawerEnableOpenDragGesture: false,
-            // The chrome stays while the drawer is open.
-            onEndDrawerChanged: (open) =>
-                open ? _chrome.pin() : _chrome.unpin(),
-            body: wide
-                ? AutoHideRegion(controller: _chrome, child: _wide())
-                : NowPlayingTabs(
-                    wrapHeader: _wrapHeader,
-                    queuePage: const QueuePanel(),
-                    onClose: _close,
-                  ),
+          // The chrome stays while the queue sheet is open.
+          child: QueueSheetHost(
+            onOpenChanged: (open) => open ? _chrome.pin() : _chrome.unpin(),
+            child: Scaffold(
+              body: wide
+                  ? AutoHideRegion(controller: _chrome, child: _wide())
+                  : NowPlayingTabs(
+                      wrapHeader: _wrapHeader,
+                      queuePage: const QueuePanel(),
+                      onClose: _close,
+                    ),
+            ),
           ),
         ),
       ),
@@ -102,59 +103,27 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       children: [
         AutoHide(
           controller: _chrome,
-          child: _wrapHeader(const SizedBox(height: nowPlayingHeaderHeight)),
+          child: _wrapHeader(
+            NowPlayingWideHeader(
+              height: nowPlayingHeaderHeight,
+              hasLyrics: widget.hasLyrics,
+              lyricsOnly: _lyricsOnly,
+              onToggleLyricsOnly: () =>
+                  setState(() => _lyricsOnly = !_lyricsOnly),
+            ),
+          ),
         ),
-        Expanded(child: _WideBody(hasLyrics: widget.hasLyrics)),
+        Expanded(
+          child: NowPlayingWideBody(
+            lyrics: widget.lyrics,
+            lyricsOnly: _lyricsOnly,
+          ),
+        ),
         AutoHide(
           controller: _chrome,
           child: NowPlayingFooter(onClose: _close),
         ),
       ],
-    );
-  }
-}
-
-/// Cover block in the middle of the space between header and footer.
-class _WideBody extends ConsumerWidget {
-  const _WideBody({required this.hasLyrics});
-
-  final bool hasLyrics;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final track = ref.watch(
-      playerServiceProvider.select((s) => s.queue.current),
-    );
-    if (track == null) return const SizedBox.shrink();
-    final windowHeight = MediaQuery.sizeOf(context).height;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final blockWidth = hasLyrics
-            ? constraints.maxWidth / 2
-            : constraints.maxWidth;
-        // 70% of the block, at most half the window, and leaving room for
-        // the title and artist below.
-        final art = [
-          blockWidth * 0.7,
-          windowHeight * 0.5,
-          constraints.maxHeight - 140,
-        ].reduce((a, b) => a < b ? a : b).clamp(96.0, double.infinity);
-        return Row(
-          children: [
-            SizedBox(
-              width: blockWidth,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: NowPlayingTrackInfo(track: track, artworkSize: art),
-                ),
-              ),
-            ),
-            if (hasLyrics) const Expanded(child: SizedBox.shrink()),
-          ],
-        );
-      },
     );
   }
 }

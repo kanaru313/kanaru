@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../features/player/now_playing/now_playing_overlay.dart';
 import '../../features/player/player_bar.dart';
-import '../../features/player/queue/queue_drawer.dart';
+import '../../features/player/queue/queue_sheet_host.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
 import 'sidebar/sidebar.dart';
@@ -81,56 +81,54 @@ class AppShell extends ConsumerWidget {
         ? const PlayerBar()
         : null;
 
-    final shell = wide
-        ? Scaffold(
-            bottomNavigationBar: playerBar,
-            endDrawer: const QueueDrawer(),
-            endDrawerEnableOpenDragGesture: false,
-            body: Row(
-              children: [
-                _CollapsibleSidebar(
-                  expanded: ref.watch(sidebarExpandedProvider),
-                  child: Sidebar(selected: selected, onSelected: _select),
-                ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Column(children: [const TopBar(), page]),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: SidebarToggle(),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          )
-        : Scaffold(
-            bottomNavigationBar: playerBar,
-            endDrawer: const QueueDrawer(),
-            endDrawerEnableOpenDragGesture: false,
-            drawer: Builder(
-              builder: (context) => Drawer(
-                width: sidebarWidth,
-                child: Sidebar(
-                  selected: selected,
-                  onSelected: (destination) {
-                    Navigator.of(context).pop();
-                    _select(destination);
-                  },
-                ),
-              ),
-            ),
-            body: Builder(
-              builder: (context) => Column(
+    final shell = QueueSheetHost(
+      child: wide
+          ? Scaffold(
+              bottomNavigationBar: playerBar,
+              body: Row(
                 children: [
-                  TopBar(onMenuPressed: Scaffold.of(context).openDrawer),
-                  page,
+                  _CollapsibleSidebar(
+                    expanded: ref.watch(sidebarExpandedProvider),
+                    child: Sidebar(selected: selected, onSelected: _select),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Column(children: [const TopBar(), page]),
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: SidebarToggle(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
+            )
+          : Scaffold(
+              bottomNavigationBar: playerBar,
+              drawer: Builder(
+                builder: (context) => Drawer(
+                  width: sidebarWidth,
+                  child: Sidebar(
+                    selected: selected,
+                    onSelected: (destination) {
+                      Navigator.of(context).pop();
+                      _select(destination);
+                    },
+                  ),
+                ),
+              ),
+              body: Builder(
+                builder: (context) => Column(
+                  children: [
+                    TopBar(onMenuPressed: Scaffold.of(context).openDrawer),
+                    page,
+                  ],
+                ),
+              ),
             ),
-          );
+    );
 
     return Listener(
       onPointerDown: (event) => _onPointerDown(event, ref),

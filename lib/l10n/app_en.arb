@@ -183,6 +183,7 @@
   "nowPlayingComingSoon": "Coming soon",
   "nowPlayingTabQueue": "Queue",
   "nowPlayingTabTrack": "Now Playing",
+  "nowPlayingLyricsOnly": "Lyrics only",
   "queueOpen": "Open queue",
   "queueTitle": "Queue",
   "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",
@@ -195,6 +196,7 @@
   "queueRemove": "Remove from queue",
   "queueReorder": "Drag to reorder",
   "queueShowCurrent": "Now playing",
+  "queueClose": "Close queue",
 
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",

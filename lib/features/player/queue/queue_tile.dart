@@ -66,10 +66,17 @@ class QueueTile extends ConsumerWidget {
         child: Opacity(
           opacity: played ? 0.6 : 1,
           child: Material(
+            // A card: low-alpha fill so the dimmed screen behind the sheet
+            // shows through; the playing one is tinted and outlined.
             color: current
-                ? colors.primary.withValues(alpha: 0.08)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+                ? colors.primary.withValues(alpha: 0.12)
+                : colors.surfaceContainerHighest.withValues(alpha: 0.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: current
+                  ? BorderSide(color: colors.primary.withValues(alpha: 0.6))
+                  : BorderSide.none,
+            ),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => player.jump(position),
@@ -127,7 +134,7 @@ class QueueTile extends ConsumerWidget {
                       ),
                     ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded),
+                    icon: const Icon(Icons.delete_rounded),
                     iconSize: 20,
                     tooltip: l10n.queueRemove,
                     onPressed: () => player.removeTrack(position),

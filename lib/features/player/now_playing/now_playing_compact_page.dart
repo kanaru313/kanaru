@@ -3,26 +3,16 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
 import '../playback_controls.dart';
-import '../queue/queue_button.dart';
 import '../seek_bar.dart';
-import '../volume_button.dart';
 import 'now_playing_actions.dart';
 import 'now_playing_track_info.dart';
 
 /// Now Playing page of a narrow window: cover, title and artist, then the
-/// controls, the seek bar and close/queue. Scrolls rather than overflowing
-/// in a very short window.
+/// controls and the seek bar (close and queue are in the header, and volume
+/// is left to the system on a narrow window). Scrolls rather than
+/// overflowing in a very short window.
 class NowPlayingCompactPage extends ConsumerWidget {
-  const NowPlayingCompactPage({
-    super.key,
-    required this.onClose,
-    required this.onShowQueue,
-  });
-
-  final VoidCallback onClose;
-
-  /// Switches to the queue page rather than opening a drawer.
-  final VoidCallback onShowQueue;
+  const NowPlayingCompactPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,26 +48,11 @@ class NowPlayingCompactPage extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: FittedBox(
-                        alignment: Alignment.centerLeft,
-                        fit: BoxFit.scaleDown,
-                        child: PlaybackControls(),
-                      ),
-                    ),
-                    const VolumeButton(),
-                  ],
+                const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: PlaybackControls(),
                 ),
                 const SeekBar(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    NowPlayingCloseButton(onPressed: onClose),
-                    QueueButton(onPressed: onShowQueue),
-                  ],
-                ),
               ],
             ),
           ),

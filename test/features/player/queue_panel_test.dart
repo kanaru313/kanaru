@@ -56,7 +56,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openDrawer(WidgetTester tester) async {
+  Future<void> openSheet(WidgetTester tester) async {
     await tester.tap(find.byTooltip('Open queue'));
     await tester.pumpAndSettle();
   }
@@ -85,37 +85,87 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('drawer', () {
+  group('sheet', () {
     testWidgets('opens from the player bar with a title and count', (
       tester,
     ) async {
       await pumpApp(tester);
       expect(find.byType(QueuePanel), findsNothing);
 
-      await openDrawer(tester);
+      await openSheet(tester);
 
       expect(find.byType(QueuePanel), findsOneWidget);
       expect(find.text('Queue'), findsOneWidget);
       expect(find.text('4 tracks'), findsOneWidget);
       expect(find.byType(QueueTile), findsNWidgets(4));
-      expect(tester.getSize(find.byType(Drawer)).width, 400);
+      expect(tester.getSize(find.byType(QueuePanel)).width, 400);
+      // Rows are cards with the remove icon filled.
+      expect(find.byIcon(Icons.delete_rounded), findsNWidgets(4));
+      expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
+      // Clear and show-current live in the header, as icons.
+      expect(find.byTooltip('Clear queue'), findsOneWidget);
+      expect(find.byTooltip('Now playing'), findsOneWidget);
+      expect(find.byType(TextButton), findsNothing);
     });
 
     testWidgets('counts one track in the singular', (tester) async {
       await pumpApp(tester, count: 1);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       expect(find.text('1 track'), findsOneWidget);
     });
 
     testWidgets('tapping outside closes it', (tester) async {
       await pumpApp(tester);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await tester.tapAt(const Offset(100, 300));
       await tester.pumpAndSettle();
 
       expect(find.byType(QueuePanel), findsNothing);
+    });
+
+    testWidgets('the close button closes it', (tester) async {
+      await pumpApp(tester);
+      await openSheet(tester);
+
+      await tester.tap(find.byTooltip('Close queue'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsNothing);
+    });
+
+    testWidgets('Esc closes the shell sheet', (tester) async {
+      await pumpApp(tester);
+      await openSheet(tester);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsNothing);
+    });
+
+    testWidgets('focus moves into the sheet and leaves it on close', (
+      tester,
+    ) async {
+      bool inSheet() {
+        final focus = FocusManager.instance.primaryFocus;
+        if (focus == null) return false;
+        return [
+          focus,
+          ...focus.ancestors,
+        ].any((n) => n.debugLabel == 'Queue sheet');
+      }
+
+      await pumpApp(tester);
+      expect(inSheet(), isFalse);
+
+      await openSheet(tester);
+      expect(inSheet(), isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(inSheet(), isFalse);
     });
 
     testWidgets('opens from the Now Playing footer, and Esc closes only it', (
@@ -175,9 +225,33 @@ void main() {
       expect(find.byType(QueueTile), findsNWidgets(4));
     });
 
+    testWidgets('keeps the chrome of Now Playing shown while open', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      container.read(nowPlayingOpenProvider.notifier).open();
+      await tester.pumpAndSettle();
+      final screen = find.byType(NowPlayingScreen);
+      await tester.tap(
+        find.descendant(of: screen, matching: find.byTooltip('Open queue')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.pump(const Duration(seconds: 10));
+
+      final header = find.descendant(
+        of: screen,
+        matching: find.byType(AnimatedOpacity),
+      );
+      expect(
+        tester.widgetList<AnimatedOpacity>(header).map((o) => o.opacity),
+        everyElement(1),
+      );
+    });
+
     testWidgets('closes itself when the queue is emptied', (tester) async {
       await pumpApp(tester, count: 1);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await tester.tap(remove(0));
       await tester.pumpAndSettle();
@@ -191,7 +265,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester, start: 2);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       Opacity opacity(int row) => tester.widget<Opacity>(
         find
@@ -223,7 +297,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await tester.tap(find.text('t2'));
       await tester.pumpAndSettle();
@@ -236,7 +310,7 @@ void main() {
     testWidgets('follow the shuffled order', (tester) async {
       await pumpApp(tester, count: 8, start: 3);
       await player().setShuffle(true);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       final shown = [
         for (final tile in tester.widgetList<QueueTile>(find.byType(QueueTile)))
@@ -252,7 +326,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await dragHandle(tester, handle(0), 128);
 
@@ -266,7 +340,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await dragHandle(tester, handle(3), -128);
 
@@ -278,7 +352,7 @@ void main() {
 
     testWidgets('removing another row requeues the next track', (tester) async {
       await pumpApp(tester);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await tester.tap(remove(1));
       await tester.pumpAndSettle();
@@ -290,7 +364,7 @@ void main() {
 
     testWidgets('removing the playing row plays the next one', (tester) async {
       await pumpApp(tester);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       await tester.tap(remove(0));
       await tester.pumpAndSettle();
@@ -302,9 +376,9 @@ void main() {
 
     testWidgets('clearing keeps the playing track playing', (tester) async {
       await pumpApp(tester, start: 1);
-      await openDrawer(tester);
+      await openSheet(tester);
 
-      await tester.tap(find.text('Clear queue'));
+      await tester.tap(find.byTooltip('Clear queue'));
       await tester.pumpAndSettle();
 
       expect(titles(), ['t1']);
@@ -314,10 +388,10 @@ void main() {
       // Nothing else to clear.
       expect(
         tester
-            .widget<TextButton>(
+            .widget<IconButton>(
               find.ancestor(
-                of: find.text('Clear queue'),
-                matching: find.byType(TextButton),
+                of: find.byIcon(Icons.delete_sweep_rounded),
+                matching: find.byType(IconButton),
               ),
             )
             .onPressed,
@@ -341,7 +415,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester, count: 10000, start: 5000);
-      await openDrawer(tester);
+      await openSheet(tester);
 
       expect(find.byType(QueueTile).evaluate().length, lessThan(50));
       // The playing track is the second row.
@@ -355,7 +429,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester, count: 200);
-      await openDrawer(tester);
+      await openSheet(tester);
       await tester.drag(
         find.byType(ReorderableListView),
         const Offset(0, -2000),
@@ -367,7 +441,7 @@ void main() {
       );
       expect(row('t0'), findsNothing);
 
-      await tester.tap(find.text('Now playing'));
+      await tester.tap(find.byTooltip('Now playing'));
       await tester.pumpAndSettle();
 
       expect(row('t0'), findsOneWidget);

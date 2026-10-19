@@ -674,6 +674,12 @@ abstract class AppLocalizations {
   /// **'Now Playing'**
   String get nowPlayingTabTrack;
 
+  /// No description provided for @nowPlayingLyricsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics only'**
+  String get nowPlayingLyricsOnly;
+
   /// No description provided for @queueOpen.
   ///
   /// In en, this message translates to:
@@ -715,6 +721,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Now playing'**
   String get queueShowCurrent;
+
+  /// No description provided for @queueClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close queue'**
+  String get queueClose;
 
   /// No description provided for @settingsAppearance.
   ///

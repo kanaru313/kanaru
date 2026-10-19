@@ -84,3 +84,41 @@ class NowPlayingTrackInfo extends StatelessWidget {
     );
   }
 }
+
+/// Title (bold) and artist, small and centered: what stays on top of the
+/// lyrics in the lyrics-only view. The album joins once tracks carry one.
+class NowPlayingCompactInfo extends StatelessWidget {
+  const NowPlayingCompactInfo({super.key, required this.track});
+
+  final Track track;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final artist = track.artist;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          track.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        if (artist != null)
+          Text(
+            artist,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+      ],
+    );
+  }
+}
