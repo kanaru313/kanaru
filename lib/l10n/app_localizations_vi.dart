@@ -350,6 +350,31 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueOpen => 'Mở hàng đợi';
 
   @override
+  String get queueTitle => 'Hàng đợi';
+
+  @override
+  String queueTrackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get queueClear => 'Xoá hàng đợi';
+
+  @override
+  String get queueRemove => 'Xoá khỏi hàng đợi';
+
+  @override
+  String get queueReorder => 'Kéo để sắp xếp lại';
+
+  @override
+  String get queueShowCurrent => 'Đang phát';
+
+  @override
   String get settingsAppearance => 'Giao diện';
 
   @override

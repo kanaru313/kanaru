@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
+import '../queue/queue_drawer.dart';
+import '../queue/queue_panel.dart';
 import 'now_playing_auto_hide.dart';
 import 'now_playing_footer.dart';
 import 'now_playing_open_provider.dart';
@@ -77,11 +79,16 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             return KeyEventResult.ignored;
           },
           child: Scaffold(
+            endDrawer: const QueueDrawer(),
+            endDrawerEnableOpenDragGesture: false,
+            // The chrome stays while the drawer is open.
+            onEndDrawerChanged: (open) =>
+                open ? _chrome.pin() : _chrome.unpin(),
             body: wide
                 ? AutoHideRegion(controller: _chrome, child: _wide())
                 : NowPlayingTabs(
                     wrapHeader: _wrapHeader,
-                    queuePage: const SizedBox.shrink(),
+                    queuePage: const QueuePanel(),
                     onClose: _close,
                   ),
           ),

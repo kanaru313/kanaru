@@ -108,6 +108,12 @@
   "nowPlayingTabQueue": "Hàng đợi",
   "nowPlayingTabTrack": "Đang phát",
   "queueOpen": "Mở hàng đợi",
+  "queueTitle": "Hàng đợi",
+  "queueTrackCount": "{count, plural, other{{count} bài}}",
+  "queueClear": "Xoá hàng đợi",
+  "queueRemove": "Xoá khỏi hàng đợi",
+  "queueReorder": "Kéo để sắp xếp lại",
+  "queueShowCurrent": "Đang phát",
 
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",

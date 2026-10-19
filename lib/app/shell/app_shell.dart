@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../features/player/now_playing/now_playing_overlay.dart';
 import '../../features/player/player_bar.dart';
+import '../../features/player/queue/queue_drawer.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
 import 'sidebar/sidebar.dart';
@@ -83,6 +84,8 @@ class AppShell extends ConsumerWidget {
     final shell = wide
         ? Scaffold(
             bottomNavigationBar: playerBar,
+            endDrawer: const QueueDrawer(),
+            endDrawerEnableOpenDragGesture: false,
             body: Row(
               children: [
                 _CollapsibleSidebar(
@@ -105,6 +108,8 @@ class AppShell extends ConsumerWidget {
           )
         : Scaffold(
             bottomNavigationBar: playerBar,
+            endDrawer: const QueueDrawer(),
+            endDrawerEnableOpenDragGesture: false,
             drawer: Builder(
               builder: (context) => Drawer(
                 width: sidebarWidth,

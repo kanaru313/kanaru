@@ -351,6 +351,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueOpen => 'Open queue';
 
   @override
+  String get queueTitle => 'Queue';
+
+  @override
+  String queueTrackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tracks',
+      one: '1 track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get queueClear => 'Clear queue';
+
+  @override
+  String get queueRemove => 'Remove from queue';
+
+  @override
+  String get queueReorder => 'Drag to reorder';
+
+  @override
+  String get queueShowCurrent => 'Now playing';
+
+  @override
   String get settingsAppearance => 'Appearance';
 
   @override

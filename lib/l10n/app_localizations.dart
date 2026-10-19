@@ -680,6 +680,42 @@ abstract class AppLocalizations {
   /// **'Open queue'**
   String get queueOpen;
 
+  /// No description provided for @queueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get queueTitle;
+
+  /// No description provided for @queueTrackCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 track} other{{count} tracks}}'**
+  String queueTrackCount(int count);
+
+  /// No description provided for @queueClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear queue'**
+  String get queueClear;
+
+  /// No description provided for @queueRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from queue'**
+  String get queueRemove;
+
+  /// No description provided for @queueReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get queueReorder;
+
+  /// No description provided for @queueShowCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing'**
+  String get queueShowCurrent;
+
   /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:

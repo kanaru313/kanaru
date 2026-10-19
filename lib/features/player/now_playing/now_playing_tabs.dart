@@ -77,7 +77,10 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
             onPageChanged: (page) => setState(() => _page = page),
             children: [
               widget.queuePage,
-              NowPlayingCompactPage(onClose: widget.onClose),
+              NowPlayingCompactPage(
+                onClose: widget.onClose,
+                onShowQueue: () => _select(_Tab.queue),
+              ),
             ],
           ),
         ),

@@ -13,9 +13,16 @@ import 'now_playing_track_info.dart';
 /// controls, the seek bar and close/queue. Scrolls rather than overflowing
 /// in a very short window.
 class NowPlayingCompactPage extends ConsumerWidget {
-  const NowPlayingCompactPage({super.key, required this.onClose});
+  const NowPlayingCompactPage({
+    super.key,
+    required this.onClose,
+    required this.onShowQueue,
+  });
 
   final VoidCallback onClose;
+
+  /// Switches to the queue page rather than opening a drawer.
+  final VoidCallback onShowQueue;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,7 +75,7 @@ class NowPlayingCompactPage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     NowPlayingCloseButton(onPressed: onClose),
-                    const QueueButton(),
+                    QueueButton(onPressed: onShowQueue),
                   ],
                 ),
               ],

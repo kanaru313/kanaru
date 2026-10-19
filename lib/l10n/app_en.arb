@@ -184,6 +184,17 @@
   "nowPlayingTabQueue": "Queue",
   "nowPlayingTabTrack": "Now Playing",
   "queueOpen": "Open queue",
+  "queueTitle": "Queue",
+  "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",
+  "@queueTrackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "queueClear": "Clear queue",
+  "queueRemove": "Remove from queue",
+  "queueReorder": "Drag to reorder",
+  "queueShowCurrent": "Now playing",
 
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
