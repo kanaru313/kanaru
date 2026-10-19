@@ -102,6 +102,12 @@
 
   "nowPlayingOpen": "Mở màn hình đang phát",
   "nowPlayingClose": "Đóng màn hình đang phát",
+  "nowPlayingFavorite": "Thêm vào yêu thích",
+  "nowPlayingAddToPlaylist": "Thêm vào playlist",
+  "nowPlayingComingSoon": "Sắp có",
+  "nowPlayingTabQueue": "Hàng đợi",
+  "nowPlayingTabTrack": "Đang phát",
+  "queueOpen": "Mở hàng đợi",
 
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",

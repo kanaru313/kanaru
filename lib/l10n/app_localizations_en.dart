@@ -333,6 +333,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingClose => 'Close Now Playing';
 
   @override
+  String get nowPlayingFavorite => 'Add to favorites';
+
+  @override
+  String get nowPlayingAddToPlaylist => 'Add to playlist';
+
+  @override
+  String get nowPlayingComingSoon => 'Coming soon';
+
+  @override
+  String get nowPlayingTabQueue => 'Queue';
+
+  @override
+  String get nowPlayingTabTrack => 'Now Playing';
+
+  @override
+  String get queueOpen => 'Open queue';
+
+  @override
   String get settingsAppearance => 'Appearance';
 
   @override

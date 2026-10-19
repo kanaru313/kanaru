@@ -1,0 +1,86 @@
+import 'package:material_ui/material_ui.dart';
+
+import '../../../core/player/track.dart';
+import '../track_artwork.dart';
+
+/// Large cover, title and artist, centered. The album is not shown: tracks
+/// carry no album yet.
+class NowPlayingTrackInfo extends StatelessWidget {
+  const NowPlayingTrackInfo({
+    super.key,
+    required this.track,
+    required this.artworkSize,
+    this.centered = true,
+    this.titleTrailing,
+  });
+
+  final Track track;
+  final double artworkSize;
+
+  /// Centers the text under the cover; otherwise it starts at the left.
+  final bool centered;
+
+  /// Placed at the end of the title line, e.g. action buttons.
+  final Widget? titleTrailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final align = centered ? TextAlign.center : TextAlign.start;
+    final artist = track.artist;
+    final title = Text(
+      track.title,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      textAlign: align,
+      style: theme.textTheme.headlineSmall?.copyWith(
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: centered
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.stretch,
+      spacing: 8,
+      children: [
+        Center(
+          child: TrackArtwork(
+            artUri: track.artUri,
+            size: artworkSize,
+            radius: 32,
+          ),
+        ),
+        const SizedBox(height: 8),
+        titleTrailing == null
+            ? title
+            : Row(
+                children: [
+                  Expanded(child: title),
+                  titleTrailing!,
+                ],
+              ),
+        if (artist != null)
+          Opacity(
+            opacity: 0.7,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 4,
+              children: [
+                const Icon(Icons.person_rounded, size: 20),
+                Flexible(
+                  child: Text(
+                    artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}

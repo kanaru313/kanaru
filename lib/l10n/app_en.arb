@@ -178,6 +178,12 @@
 
   "nowPlayingOpen": "Open Now Playing",
   "nowPlayingClose": "Close Now Playing",
+  "nowPlayingFavorite": "Add to favorites",
+  "nowPlayingAddToPlaylist": "Add to playlist",
+  "nowPlayingComingSoon": "Coming soon",
+  "nowPlayingTabQueue": "Queue",
+  "nowPlayingTabTrack": "Now Playing",
+  "queueOpen": "Open queue",
 
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",

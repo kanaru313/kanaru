@@ -332,6 +332,24 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingClose => 'Đóng màn hình đang phát';
 
   @override
+  String get nowPlayingFavorite => 'Thêm vào yêu thích';
+
+  @override
+  String get nowPlayingAddToPlaylist => 'Thêm vào playlist';
+
+  @override
+  String get nowPlayingComingSoon => 'Sắp có';
+
+  @override
+  String get nowPlayingTabQueue => 'Hàng đợi';
+
+  @override
+  String get nowPlayingTabTrack => 'Đang phát';
+
+  @override
+  String get queueOpen => 'Mở hàng đợi';
+
+  @override
   String get settingsAppearance => 'Giao diện';
 
   @override

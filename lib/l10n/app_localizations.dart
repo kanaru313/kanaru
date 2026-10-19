@@ -644,6 +644,42 @@ abstract class AppLocalizations {
   /// **'Close Now Playing'**
   String get nowPlayingClose;
 
+  /// No description provided for @nowPlayingFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get nowPlayingFavorite;
+
+  /// No description provided for @nowPlayingAddToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist'**
+  String get nowPlayingAddToPlaylist;
+
+  /// No description provided for @nowPlayingComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get nowPlayingComingSoon;
+
+  /// No description provided for @nowPlayingTabQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get nowPlayingTabQueue;
+
+  /// No description provided for @nowPlayingTabTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Now Playing'**
+  String get nowPlayingTabTrack;
+
+  /// No description provided for @queueOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open queue'**
+  String get queueOpen;
+
   /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:

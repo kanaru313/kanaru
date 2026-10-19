@@ -5,6 +5,7 @@ import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
 import 'now_playing/now_playing_open_cover.dart';
 import 'open_media.dart';
+import 'track_artwork.dart';
 
 /// Left side of the player bar: cover, title and artist of the current
 /// track, or progress while a folder is being scanned.
@@ -47,21 +48,8 @@ class NowPlayingSummary extends ConsumerWidget {
     return Row(
       spacing: 12,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: NowPlayingOpenCover(
-            child: ColoredBox(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: SizedBox.square(
-                dimension: 64,
-                child: Icon(
-                  Icons.music_note_rounded,
-                  size: 32,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
+        NowPlayingOpenCover(
+          child: TrackArtwork(artUri: track.artUri, size: 64),
         ),
         Expanded(
           child: Column(
