@@ -11,6 +11,9 @@ import 'player_state.dart';
 import 'repeat_mode.dart';
 import 'track.dart';
 
+part 'player_settings_commands.dart';
+part 'player_transport_commands.dart';
+
 /// Audio engine for the app session. Tests override it with a fake so they
 /// never load libmpv.
 final audioBackendProvider = Provider<AudioBackend>((ref) {
@@ -26,10 +29,13 @@ final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
 /// Owns the play queue and drives the [AudioBackend] from it: the engine
 /// gets the current track plus the one that should follow, and reports back
 /// when it moved on to that one by itself.
-class PlayerService extends Notifier<PlayerState> {
+class PlayerService extends Notifier<PlayerState>
+    with _PlayerSettingsCommands, _PlayerTransportCommands {
   PlayerService({this._random});
 
+  @override
   final Random? _random;
+  @override
   late AudioBackend _backend;
   late StreamController<PlaybackError> _errors;
 
@@ -37,29 +43,48 @@ class PlayerService extends Notifier<PlayerState> {
   int? _nextIndex;
 
   /// Playback stopped after the last track; play starts the queue over.
+  @override
   bool _ended = false;
 
   /// Broken tracks in a row, so a queue of broken files is not retried
   /// forever. Cleared by a track that loads and by anything the user plays.
+  @override
   int _failuresInRow = 0;
 
   /// Every track in the queue failed since the last one that played.
   bool get _allFailed => _failuresInRow >= state.queue.order.length;
 
+  /// How close to the end the last tick must be, and how close to the start
+  /// the next one, for it to count as repeat one starting the track over.
+  static const _loopJump = Duration(seconds: 2);
+
+  @override
+  late StreamController<Duration> _seeked;
+
+  /// Position of the last engine tick, to tell repeat one looping the track
+  /// from a tick that merely arrives out of order.
+  @override
+  Duration _lastTick = Duration.zero;
+
   /// Tracks the engine could not play, one event per track.
   Stream<PlaybackError> get errors => _errors.stream;
+
+  /// The playback position jumped: once per [seek], and when repeat one
+  /// loops the track (to zero). Plain progress never shows up here.
+  Stream<Duration> get seeked => _seeked.stream;
 
   @override
   PlayerState build() {
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
+    _seeked = StreamController.broadcast();
     final subscriptions = [
       _backend.advanced.listen(_onAdvanced),
       _backend.playing.listen((v) => state = state.copyWith(playing: v)),
       _backend.completed.listen((done) {
         if (done) _onCompleted();
       }),
-      _backend.position.listen((v) => state = state.copyWith(position: v)),
+      _backend.position.listen(_onPosition),
       _backend.duration.listen((v) {
         if (v > Duration.zero) _failuresInRow = 0;
         state = state.copyWith(duration: v);
@@ -72,8 +97,22 @@ class PlayerService extends Notifier<PlayerState> {
         subscription.cancel();
       }
       _errors.close();
+      _seeked.close();
     });
     return PlayerState();
+  }
+
+  void _onPosition(Duration position) {
+    // Only a tick from the end of a known-length track can be followed by a
+    // loop; stale ticks after a track change, seek or stop never qualify.
+    final looped =
+        state.queue.repeat == RepeatMode.one &&
+        state.duration > Duration.zero &&
+        state.duration - _lastTick < _loopJump &&
+        position < _loopJump;
+    _lastTick = position;
+    state = state.copyWith(position: position);
+    if (looped) _seeked.add(Duration.zero);
   }
 
   void _onAdvanced(Track track) {
@@ -90,6 +129,7 @@ class PlayerService extends Notifier<PlayerState> {
       position: Duration.zero,
       duration: Duration.zero,
     );
+    _lastTick = Duration.zero;
     // The engine skips broken files on its own; with repeat all it would go
     // round the queue forever. Queuing nothing lets it stop after this one.
     if (_allFailed) {
@@ -109,7 +149,7 @@ class PlayerService extends Notifier<PlayerState> {
       return;
     }
     _ended = true;
-    state = state.copyWith(playing: false);
+    state = state.copyWith(playing: false, stopped: true);
   }
 
   void _onFailed(PlaybackError error) {
@@ -118,6 +158,7 @@ class PlayerService extends Notifier<PlayerState> {
   }
 
   /// Hands the engine the track that follows the current one.
+  @override
   Future<void> _queueNext() {
     final queue = state.queue;
     _nextIndex = queue.nextIndex;
@@ -125,27 +166,7 @@ class PlayerService extends Notifier<PlayerState> {
     return _backend.setNext(next == null ? null : queue.tracks[next]);
   }
 
-  /// Replaces the queue with [tracks] and plays from [start]. Shuffle and
-  /// repeat stay as they were.
-  Future<void> openTracks(List<Track> tracks, {int start = 0}) async {
-    if (tracks.isEmpty) return;
-    final queue = PlayQueue.open(
-      tracks,
-      start,
-      repeat: state.queue.repeat,
-      shuffled: state.queue.shuffled,
-      random: _random,
-    );
-    state = state.copyWith(queue: queue);
-    await jump(queue.index);
-  }
-
-  /// Plays the track at [index] in play order, as picked by the user.
-  Future<void> jump(int index) {
-    _failuresInRow = 0;
-    return _play(index);
-  }
-
+  @override
   Future<void> _play(int index) async {
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
@@ -155,90 +176,14 @@ class PlayerService extends Notifier<PlayerState> {
     state = state.copyWith(
       queue: queue,
       playing: true,
+      stopped: false,
       position: Duration.zero,
       duration: Duration.zero,
     );
+    _lastTick = Duration.zero;
     await _backend.open(
       queue.tracks[index],
       next: next == null ? null : queue.tracks[next],
     );
-  }
-
-  Future<void> playPause() async {
-    if (state.queue.isEmpty) return;
-    if (_ended) return jump(0);
-    final play = !state.playing;
-    state = state.copyWith(playing: play);
-    await (play ? _backend.play() : _backend.pause());
-  }
-
-  Future<void> next() async {
-    final index = state.queue.nextIndex;
-    if (index != null) await jump(index);
-  }
-
-  /// Goes to the previous track; does nothing on the first one unless the
-  /// whole queue repeats.
-  Future<void> previous() async {
-    final index = state.queue.previousIndex;
-    if (index != null) await jump(index);
-  }
-
-  Future<void> seek(Duration position) async {
-    if (state.queue.isEmpty) return;
-    // Seeking back into a finished track resumes it rather than the queue.
-    if (state.duration > Duration.zero) _ended = false;
-    state = state.copyWith(position: position);
-    await _backend.seek(position);
-  }
-
-  /// Seeks relative to the current position, kept inside the track.
-  Future<void> seekBy(Duration offset) {
-    var target = state.position + offset;
-    if (target < Duration.zero) target = Duration.zero;
-    if (state.duration > Duration.zero && target > state.duration) {
-      target = state.duration;
-    }
-    return seek(target);
-  }
-
-  /// Sets the volume (0–100). Changing it while muted unmutes.
-  Future<void> setVolume(double volume) async {
-    final value = volume.clamp(0, 100).toDouble();
-    state = state.copyWith(volume: value, volumeBeforeMute: () => null);
-    await _backend.setVolume(value);
-  }
-
-  Future<void> toggleMute() async {
-    final restore = state.volumeBeforeMute;
-    if (restore != null) {
-      await setVolume(restore);
-    } else {
-      final before = state.volume;
-      state = state.copyWith(volume: 0, volumeBeforeMute: () => before);
-      await _backend.setVolume(0);
-    }
-  }
-
-  /// Turns shuffle on or off. The current track keeps playing; only the
-  /// engine's next track changes.
-  Future<void> toggleShuffle() async {
-    final current = state.queue;
-    state = state.copyWith(
-      queue: current.shuffled ? current.unshuffle() : current.shuffle(_random),
-    );
-    if (!state.queue.isEmpty) await _queueNext();
-  }
-
-  /// Off → all → one → off.
-  Future<void> cycleRepeat() async {
-    final repeat = switch (state.queue.repeat) {
-      RepeatMode.off => RepeatMode.all,
-      RepeatMode.all => RepeatMode.one,
-      RepeatMode.one => RepeatMode.off,
-    };
-    state = state.copyWith(queue: state.queue.copyWith(repeat: repeat));
-    await _backend.setRepeat(repeat);
-    if (!state.queue.isEmpty) await _queueNext();
   }
 }

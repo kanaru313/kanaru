@@ -138,6 +138,21 @@ dart run build_runner build --delete-conflicting-outputs
 flutter_rust_bridge_codegen generate
 ```
 
+### Instances and media controls
+
+- **Debug builds run side by side** with an installed or running Kanaru, so `flutter run` always starts. **Profile and Release builds are single-instance**: launching again only brings the running window forward. As a consequence, `flutter run --profile` / `--release` does not open while a Release build is running; close it first.
+- **Hot restart crashes the app** (SIGSEGV inside libmpv while `media_kit` tears down the previous player). This is a `media_kit` issue that only affects development. Hot reload (`r`) is fine; after changing startup or provider initialization code, quit and run again.
+- **Known limitation, Wayland focus**: on compositors that require xdg-activation (verified on niri), launching Kanaru a second time or calling MPRIS `Raise` does not bring the window forward or mark it urgent. GTK 3 gets no activation token to present with. Tracked as SYS-15 in [features](features.md).
+- **MPRIS**: the app registers `org.mpris.MediaPlayer2.kanaru` on the session bus. A second instance (e.g. Debug next to Release) falls back to `org.mpris.MediaPlayer2.kanaru.instance<pid>` and logs it. Try it from the dev shell, which ships `playerctl`:
+
+```bash
+playerctl -l                          # kanaru (and kanaru.instance<pid> if two run)
+playerctl -p kanaru status
+playerctl -p kanaru play-pause | next | previous | stop
+playerctl -p kanaru position 30       # absolute; "10+" / "10-" for relative
+playerctl -p kanaru metadata --follow
+```
+
 ### Tests & lints
 
 ```bash

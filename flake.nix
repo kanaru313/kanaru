@@ -57,6 +57,9 @@
             rust-analyzer
             flutter_rust_bridge_codegen
 
+            # Poking the MPRIS service by hand
+            playerctl
+
             # Packaging
             appimage-run
             flatpak-builder

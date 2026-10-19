@@ -5,6 +5,7 @@ class PlayerState {
   PlayerState({
     PlayQueue? queue,
     this.playing = false,
+    this.stopped = false,
     this.position = Duration.zero,
     this.duration = Duration.zero,
     this.volume = 100,
@@ -13,6 +14,10 @@ class PlayerState {
 
   final PlayQueue queue;
   final bool playing;
+
+  /// Playback was stopped, by the user or by the queue running out, as
+  /// opposed to paused. Cleared by playing, jumping, seeking or a new queue.
+  final bool stopped;
   final Duration position;
   final Duration duration;
 
@@ -27,6 +32,7 @@ class PlayerState {
   PlayerState copyWith({
     PlayQueue? queue,
     bool? playing,
+    bool? stopped,
     Duration? position,
     Duration? duration,
     double? volume,
@@ -34,6 +40,7 @@ class PlayerState {
   }) => PlayerState(
     queue: queue ?? this.queue,
     playing: playing ?? this.playing,
+    stopped: stopped ?? this.stopped,
     position: position ?? this.position,
     duration: duration ?? this.duration,
     volume: volume ?? this.volume,

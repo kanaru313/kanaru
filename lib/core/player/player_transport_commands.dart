@@ -1,0 +1,102 @@
+part of 'player_service.dart';
+
+/// Opening, play, pause, stop, seek and track changes. [play] and [pause] are
+/// absolute, for external controllers that must not flip the state by
+/// accident.
+mixin _PlayerTransportCommands on Notifier<PlayerState> {
+  AudioBackend get _backend;
+  bool get _ended;
+  set _ended(bool ended);
+  set _lastTick(Duration position);
+  StreamController<Duration> get _seeked;
+  Random? get _random;
+  set _failuresInRow(int count);
+  Future<void> _play(int index);
+
+  Future<void> playPause() async {
+    if (state.queue.isEmpty) return;
+    if (_ended) return jump(0);
+    final play = !state.playing;
+    state = state.copyWith(
+      playing: play,
+      stopped: play ? false : state.stopped,
+    );
+    await (play ? _backend.play() : _backend.pause());
+  }
+
+  Future<void> play() async {
+    if (!state.playing) await playPause();
+  }
+
+  Future<void> pause() async {
+    if (state.playing) await playPause();
+  }
+
+  /// Pauses and rewinds to the start but keeps the queue; [play] then plays
+  /// the current track from the beginning. Rewinds the engine directly, not
+  /// through [seek], which would announce a jump and clear `stopped`.
+  Future<void> stop() async {
+    if (state.queue.isEmpty) return;
+    state = state.copyWith(
+      playing: false,
+      stopped: true,
+      position: Duration.zero,
+    );
+    _lastTick = Duration.zero;
+    await _backend.pause();
+    await _backend.seek(Duration.zero);
+  }
+
+  Future<void> seek(Duration position) async {
+    if (state.queue.isEmpty) return;
+    // Seeking back into a finished track resumes it rather than the queue.
+    if (state.duration > Duration.zero) _ended = false;
+    state = state.copyWith(position: position, stopped: false);
+    _lastTick = position;
+    await _backend.seek(position);
+    _seeked.add(position);
+  }
+
+  /// Seeks relative to the current position, kept inside the track.
+  Future<void> seekBy(Duration offset) {
+    var target = state.position + offset;
+    if (target < Duration.zero) target = Duration.zero;
+    if (state.duration > Duration.zero && target > state.duration) {
+      target = state.duration;
+    }
+    return seek(target);
+  }
+
+  /// Replaces the queue with [tracks] and plays from [start]. Shuffle and
+  /// repeat stay as they were.
+  Future<void> openTracks(List<Track> tracks, {int start = 0}) async {
+    if (tracks.isEmpty) return;
+    final queue = PlayQueue.open(
+      tracks,
+      start,
+      repeat: state.queue.repeat,
+      shuffled: state.queue.shuffled,
+      random: _random,
+    );
+    state = state.copyWith(queue: queue);
+    await jump(queue.index);
+  }
+
+  /// Plays the track at [index] in play order, as picked by the user.
+  Future<void> jump(int index) {
+    _failuresInRow = 0;
+    return _play(index);
+  }
+
+  Future<void> next() async {
+    final index = state.queue.nextIndex;
+    if (index != null) await jump(index);
+  }
+
+  /// Goes to the previous track; does nothing on the first one unless the
+  /// whole queue repeats.
+  Future<void> previous() async {
+    final index = state.queue.previousIndex;
+    if (index != null) await jump(index);
+  }
+}

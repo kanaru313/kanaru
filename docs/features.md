@@ -205,6 +205,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | SYS-12 | Android | Phát nền, `MediaStyle` notification, màn hình khoá, Android Auto (P3), tạm dừng khi rút tai nghe | P1 | 2 | H |
 | SYS-13 | iOS | Phát nền, Control Center, CarPlay (P3) | P1 | 2 | H |
 | SYS-14 | Chạy portable | Lưu toàn bộ dữ liệu cạnh file chạy (AppImage/Windows portable) | P3 | 1 | H |
+| SYS-15 | Đưa cửa sổ lên trên Wayland | Mở lần hai / MPRIS `Raise` đưa cửa sổ lên trước trên compositor Wayland (niri, Sway…) qua xdg-activation: instance thứ hai chuyển `XDG_ACTIVATION_TOKEN` sang instance chính. MPRIS `Raise` không mang token nên chỉ sửa được đường mở lần hai. Đã kiểm: niri không lên, không urgent; GNOME/KDE Wayland chưa kiểm | P2 | 1 | |
 
 ## 12. Dịch vụ bên ngoài
 

@@ -96,7 +96,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 
 - [x] Project scaffold, M3 theme, CI
 - [x] Play a local file with `media_kit`
-- [ ] MPRIS integration
+- [x] MPRIS integration
 
 **Phase 1 — Offline local player** · Linux
 
