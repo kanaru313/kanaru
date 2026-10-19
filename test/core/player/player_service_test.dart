@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/playback_error.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/player_state.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
 
@@ -278,5 +279,243 @@ void main() {
     backend.emitPosition.add(const Duration(seconds: 2));
     await service().seekBy(const Duration(seconds: -5));
     expect(backend.calls.last, 'seek(${Duration.zero})');
+  });
+
+  group('absolute commands', () {
+    test('setShuffle and setRepeat ignore the value already set', () async {
+      await service().openTracks(songs, start: 2);
+      backend.calls.clear();
+
+      await service().setShuffle(false);
+      await service().setRepeat(RepeatMode.off);
+      expect(backend.calls, isEmpty);
+
+      await service().setShuffle(true);
+      final order = container.read(playerServiceProvider).queue.order;
+      await service().setShuffle(true);
+      expect(container.read(playerServiceProvider).queue.order, order);
+      expect(backend.calls, hasLength(1));
+
+      await service().setRepeat(RepeatMode.one);
+      await service().setRepeat(RepeatMode.one);
+      expect(backend.calls.where((c) => c.startsWith('setRepeat')), [
+        'setRepeat(one)',
+      ]);
+    });
+
+    test('setRepeat jumps straight to a mode', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      expect(
+        container.read(playerServiceProvider).queue.repeat,
+        RepeatMode.one,
+      );
+    });
+
+    test('play and pause do not flip the state', () async {
+      await service().openTracks(songs);
+      backend.calls.clear();
+
+      await service().play(); // already playing
+      expect(backend.calls, isEmpty);
+
+      await service().pause();
+      await service().pause();
+      expect(backend.calls, ['pause']);
+      expect(playing(), isFalse);
+
+      await service().play();
+      await service().play();
+      expect(backend.calls, ['pause', 'play']);
+      expect(playing(), isTrue);
+    });
+  });
+
+  group('stop', () {
+    PlayerState current() => container.read(playerServiceProvider);
+
+    test('rewinds, keeps the queue, and play restarts the track', () async {
+      await service().openTracks(songs, start: 1);
+      backend.emitPosition.add(const Duration(seconds: 30));
+      backend.calls.clear();
+
+      await service().stop();
+
+      expect(current().playing, isFalse);
+      expect(current().stopped, isTrue);
+      expect(current().position, Duration.zero);
+      expect(current().queue.current, songs[1]);
+      expect(backend.calls, ['pause', 'seek(${Duration.zero})']);
+
+      await service().play();
+      expect(backend.calls.last, 'play');
+      expect(current().playing, isTrue);
+      expect(current().stopped, isFalse);
+      expect(current().queue.current, songs[1]);
+    });
+
+    test('does nothing without a queue', () async {
+      await service().stop();
+      expect(backend.calls, isEmpty);
+      expect(current().stopped, isFalse);
+    });
+
+    test('stays stopped after next immediately followed by stop', () async {
+      await service().openTracks(songs);
+      backend.calls.clear();
+
+      final moving = service().next();
+      final stopping = service().stop();
+      await Future.wait([moving, stopping]);
+
+      expect(backend.calls, [
+        'open(b, next: c)',
+        'pause',
+        'seek(${Duration.zero})',
+      ]);
+      expect(current().playing, isFalse);
+      expect(current().stopped, isTrue);
+      expect(current().queue.current, songs[1]);
+    });
+
+    test('the queue running out counts as stopped', () async {
+      await service().openTracks(songs, start: 3);
+      backend.emitCompleted.add(true);
+      expect(current().stopped, isTrue);
+    });
+
+    test('jumping, seeking and opening clear it', () async {
+      await service().openTracks(songs);
+      for (final resume in <Future<void> Function()>[
+        () => service().jump(2),
+        () => service().seek(const Duration(seconds: 5)),
+        () => service().openTracks(songs),
+      ]) {
+        await service().stop();
+        expect(current().stopped, isTrue);
+        await resume();
+        expect(current().stopped, isFalse);
+      }
+    });
+  });
+
+  group('seeked', () {
+    late List<Duration> seeks;
+    setUp(() {
+      seeks = [];
+    });
+
+    test('fires once per seek, whatever the engine reports', () async {
+      await service().openTracks(songs);
+      service().seeked.listen(seeks.add);
+      backend.emitPosition.add(const Duration(seconds: 50));
+
+      await service().seek(const Duration(seconds: 10));
+      // Stale tick from before the seek, then the real one.
+      backend.emitPosition.add(const Duration(seconds: 50));
+      backend.emitPosition.add(const Duration(seconds: 10));
+      backend.emitPosition.add(const Duration(seconds: 11));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, [const Duration(seconds: 10)]);
+    });
+
+    test('seekBy fires once too', () async {
+      await service().openTracks(songs);
+      service().seeked.listen(seeks.add);
+      backend.emitPosition.add(const Duration(seconds: 20));
+
+      await service().seekBy(const Duration(seconds: 5));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, [const Duration(seconds: 25)]);
+    });
+
+    test('repeat one starting the track over fires seeked(0)', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      service().seeked.listen(seeks.add);
+
+      backend.emitDuration.add(const Duration(seconds: 180));
+      await Future<void>.delayed(Duration.zero);
+      backend.emitPosition.add(const Duration(seconds: 179));
+      backend.emitPosition.add(const Duration(seconds: 180));
+      backend.emitPosition.add(Duration.zero);
+      backend.emitPosition.add(const Duration(seconds: 1));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, [Duration.zero]);
+    });
+
+    test('plain progress and other repeat modes stay silent', () async {
+      await service().openTracks(songs);
+      service().seeked.listen(seeks.add);
+
+      backend.emitPosition.add(const Duration(seconds: 180));
+      backend.emitPosition.add(Duration.zero); // repeat off: not a loop
+      backend.emitPosition.add(const Duration(seconds: 1));
+      await service().setRepeat(RepeatMode.one);
+      backend.emitPosition.add(const Duration(seconds: 2));
+      backend.emitPosition.add(const Duration(seconds: 3));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, isEmpty);
+    });
+
+    test('a new track starting at zero is not a loop', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      service().seeked.listen(seeks.add);
+
+      backend.emitPosition.add(const Duration(seconds: 180));
+      await service().next();
+      backend.emitPosition.add(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, isEmpty);
+    });
+
+    group('stale ticks under repeat one', () {
+      setUp(() async {
+        await service().openTracks(songs);
+        await service().setRepeat(RepeatMode.one);
+        service().seeked.listen(seeks.add);
+        backend.emitDuration.add(const Duration(seconds: 180));
+        await Future<void>.delayed(Duration.zero);
+      });
+
+      test('after next', () async {
+        backend.emitPosition.add(const Duration(seconds: 179));
+        await service().next();
+        backend.emitPosition.add(const Duration(seconds: 179)); // stale
+        backend.emitDuration.add(const Duration(seconds: 200));
+        backend.emitPosition.add(Duration.zero);
+        backend.emitPosition.add(const Duration(seconds: 1));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(seeks, isEmpty);
+      });
+
+      test('after seeking near the start', () async {
+        backend.emitPosition.add(const Duration(seconds: 100));
+        await service().seek(const Duration(seconds: 1));
+        backend.emitPosition.add(const Duration(seconds: 100)); // stale
+        backend.emitPosition.add(const Duration(seconds: 1));
+        await Future<void>.delayed(Duration.zero);
+
+        // Only the seek itself.
+        expect(seeks, [const Duration(seconds: 1)]);
+      });
+
+      test('after stop', () async {
+        backend.emitPosition.add(const Duration(seconds: 100));
+        await service().stop();
+        backend.emitPosition.add(const Duration(seconds: 100)); // stale
+        backend.emitPosition.add(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(seeks, isEmpty);
+      });
+    });
   });
 }

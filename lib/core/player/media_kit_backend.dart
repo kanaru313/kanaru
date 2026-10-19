@@ -8,6 +8,10 @@ import 'playback_error.dart';
 import 'repeat_mode.dart';
 import 'track.dart';
 
+// Over the usual 200 lines on purpose: the playlist bookkeeping (entry ids,
+// current/next, failure detection) only makes sense next to the command chain
+// that keeps it consistent, so it stays in one file.
+
 /// [AudioBackend] on top of a media_kit (libmpv) [Player].
 ///
 /// mpv's playlist holds at most the current entry and the next one. Playlist
@@ -191,6 +195,13 @@ class MediaKitBackend implements AudioBackend {
   Future<void> open(Track track, {Track? next, bool play = true}) {
     _opensPending++;
     return _serial(() async {
+      // A newer `open` is queued behind this one and would replace it, so
+      // running it only delays that one. Skipped before anything changes, so
+      // the bookkeeping stays what the last `open` that ran left.
+      if (_opensPending > 1) {
+        _opensPending--;
+        return;
+      }
       try {
         _loaded.clear();
         _lastError = '';
@@ -226,24 +237,29 @@ class MediaKitBackend implements AudioBackend {
     }
   });
 
+  // Transport commands go through the chain too, so one sent after an `open`
+  // acts on the track that `open` starts, not the one it replaces.
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() => _serial(_player.play);
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() => _serial(_player.pause);
 
   @override
-  Future<void> stop() => _player.stop();
+  Future<void> stop() => _serial(_player.stop);
 
   @override
-  Future<void> seek(Duration position) => _player.seek(position);
+  Future<void> seek(Duration position) => _serial(() => _player.seek(position));
 
   @override
-  Future<void> setVolume(double volume) => _player.setVolume(volume);
+  Future<void> setVolume(double volume) =>
+      _serial(() => _player.setVolume(volume));
 
   @override
-  Future<void> setRepeat(RepeatMode mode) => _player.setPlaylistMode(
-    mode == RepeatMode.one ? PlaylistMode.single : PlaylistMode.none,
+  Future<void> setRepeat(RepeatMode mode) => _serial(
+    () => _player.setPlaylistMode(
+      mode == RepeatMode.one ? PlaylistMode.single : PlaylistMode.none,
+    ),
   );
 
   @override
