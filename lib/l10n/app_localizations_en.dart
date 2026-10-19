@@ -122,5 +122,61 @@ class AppLocalizationsEn extends AppLocalizations {
       'Search will work once your library has been scanned.';
 
   @override
+  String get playerOpenMenu => 'Open music';
+
+  @override
+  String get playerOpenFiles => 'Open files…';
+
+  @override
+  String get playerOpenFolder => 'Open folder…';
+
+  @override
+  String get playerScanning => 'Scanning folder…';
+
+  @override
+  String get playerNoAudioFound => 'No audio files found';
+
+  @override
+  String playerPlaybackError(String title) {
+    return 'Couldn\'t play $title';
+  }
+
+  @override
+  String get playerPlay => 'Play';
+
+  @override
+  String get playerPause => 'Pause';
+
+  @override
+  String get playerPrevious => 'Previous';
+
+  @override
+  String get playerNext => 'Next';
+
+  @override
+  String get playerShuffle => 'Shuffle';
+
+  @override
+  String get playerRepeatOff => 'Repeat off';
+
+  @override
+  String get playerRepeatAll => 'Repeat all';
+
+  @override
+  String get playerRepeatOne => 'Repeat one';
+
+  @override
+  String get playerMute => 'Mute';
+
+  @override
+  String get playerUnmute => 'Unmute';
+
+  @override
+  String get playerVolume => 'Volume';
+
+  @override
+  String get playerSeek => 'Seek';
+
+  @override
   String get settingsEmptyMessage => 'Nothing to configure yet.';
 }

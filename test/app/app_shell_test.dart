@@ -2,7 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/app/shell/sidebar/sidebar.dart';
+import 'package:kanaru/core/player/player_service.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../core/player/fake_audio_backend.dart';
 
 Future<void> pumpApp(
   WidgetTester tester,
@@ -12,7 +15,12 @@ Future<void> pumpApp(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(ProviderScope(child: KanaruApp(locale: locale)));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [audioBackendProvider.overrideWithValue(FakeAudioBackend())],
+      child: KanaruApp(locale: locale),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 

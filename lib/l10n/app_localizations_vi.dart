@@ -122,5 +122,61 @@ class AppLocalizationsVi extends AppLocalizations {
       'Tìm kiếm sẽ hoạt động khi thư viện đã được quét.';
 
   @override
+  String get playerOpenMenu => 'Mở nhạc';
+
+  @override
+  String get playerOpenFiles => 'Mở file…';
+
+  @override
+  String get playerOpenFolder => 'Mở thư mục…';
+
+  @override
+  String get playerScanning => 'Đang quét thư mục…';
+
+  @override
+  String get playerNoAudioFound => 'Không tìm thấy file nhạc nào';
+
+  @override
+  String playerPlaybackError(String title) {
+    return 'Không phát được $title';
+  }
+
+  @override
+  String get playerPlay => 'Phát';
+
+  @override
+  String get playerPause => 'Tạm dừng';
+
+  @override
+  String get playerPrevious => 'Bài trước';
+
+  @override
+  String get playerNext => 'Bài tiếp';
+
+  @override
+  String get playerShuffle => 'Phát ngẫu nhiên';
+
+  @override
+  String get playerRepeatOff => 'Không lặp';
+
+  @override
+  String get playerRepeatAll => 'Lặp tất cả';
+
+  @override
+  String get playerRepeatOne => 'Lặp một bài';
+
+  @override
+  String get playerMute => 'Tắt tiếng';
+
+  @override
+  String get playerUnmute => 'Bật tiếng';
+
+  @override
+  String get playerVolume => 'Âm lượng';
+
+  @override
+  String get playerSeek => 'Tua';
+
+  @override
   String get settingsEmptyMessage => 'Chưa có gì để cài đặt.';
 }

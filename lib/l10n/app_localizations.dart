@@ -314,6 +314,114 @@ abstract class AppLocalizations {
   /// **'Search will work once your library has been scanned.'**
   String get searchNotReadyMessage;
 
+  /// No description provided for @playerOpenMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Open music'**
+  String get playerOpenMenu;
+
+  /// No description provided for @playerOpenFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Open files…'**
+  String get playerOpenFiles;
+
+  /// No description provided for @playerOpenFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open folder…'**
+  String get playerOpenFolder;
+
+  /// No description provided for @playerScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning folder…'**
+  String get playerScanning;
+
+  /// No description provided for @playerNoAudioFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio files found'**
+  String get playerNoAudioFound;
+
+  /// No description provided for @playerPlaybackError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play {title}'**
+  String playerPlaybackError(String title);
+
+  /// No description provided for @playerPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get playerPlay;
+
+  /// No description provided for @playerPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get playerPause;
+
+  /// No description provided for @playerPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get playerPrevious;
+
+  /// No description provided for @playerNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get playerNext;
+
+  /// No description provided for @playerShuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get playerShuffle;
+
+  /// No description provided for @playerRepeatOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat off'**
+  String get playerRepeatOff;
+
+  /// No description provided for @playerRepeatAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat all'**
+  String get playerRepeatAll;
+
+  /// No description provided for @playerRepeatOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat one'**
+  String get playerRepeatOne;
+
+  /// No description provided for @playerMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get playerMute;
+
+  /// No description provided for @playerUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get playerUnmute;
+
+  /// No description provided for @playerVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get playerVolume;
+
+  /// No description provided for @playerSeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek'**
+  String get playerSeek;
+
   /// No description provided for @settingsEmptyMessage.
   ///
   /// In en, this message translates to:
