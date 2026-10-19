@@ -16,6 +16,7 @@ class PlaybackControls extends ConsumerWidget {
     super.key,
     this.compact = false,
     this.spread = false,
+    this.spacing = 4,
   });
 
   /// Only play/pause and next, for narrow windows; the rest stays on the
@@ -26,6 +27,10 @@ class PlaybackControls extends ConsumerWidget {
   /// repeat 24, previous and next 36, play/pause 40 in a 60 circle. For the
   /// narrow Now Playing page, where the row is the main control.
   final bool spread;
+
+  /// Gap between buttons when not [spread]: tight in the player bar, roomier
+  /// in the Now Playing footer.
+  final double spacing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,7 +55,7 @@ class PlaybackControls extends ConsumerWidget {
       mainAxisAlignment: spread
           ? MainAxisAlignment.spaceBetween
           : MainAxisAlignment.start,
-      spacing: spread ? 0 : 4,
+      spacing: spread ? 0 : spacing,
       children: [
         if (!compact) ...[
           IconButton(

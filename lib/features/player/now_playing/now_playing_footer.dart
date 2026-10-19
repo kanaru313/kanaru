@@ -52,7 +52,7 @@ class NowPlayingFooter extends StatelessWidget {
                   width: center,
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [PlaybackControls(), SeekBar()],
+                    children: [PlaybackControls(spacing: 20), SeekBar()],
                   ),
                 ),
                 const Expanded(
