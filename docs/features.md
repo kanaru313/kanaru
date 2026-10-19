@@ -263,7 +263,7 @@ Mỗi nguồn implement `StorageProvider` trong `lib/core/storage/<name>/`. Play
 | ID | Tính năng | Mô tả / tiêu chí hoàn thành | Ưu tiên | Phase |
 |---|---|---|---|---|
 | SET-01 | Màn hình cài đặt | Nhóm: Thư viện, Phát nhạc, Giao diện, Lời bài hát, Nguồn, Tích hợp, Nâng cao, Giới thiệu | P0 | 1 |
-| SET-02 | Lưu theo chuẩn XDG | Config ở `$XDG_CONFIG_HOME/kanaru`, DB ở `$XDG_DATA_HOME/kanaru`, cache ở `$XDG_CACHE_HOME/kanaru` | P0 | 1 |
+| SET-02 | Lưu theo chuẩn XDG | Config ở `$XDG_CONFIG_HOME/kanaru`, DB ở `$XDG_DATA_HOME/kanaru`, cache ở `$XDG_CACHE_HOME/kanaru`, log ở `$XDG_CACHE_HOME/kanaru/logs` (không có biến thì `~/.cache/kanaru/logs`) | P0 | 1 |
 | SET-03 | Sao lưu / khôi phục | Xuất và nhập một file chứa cài đặt, playlist, rating, play count (không chứa credential) | P2 | 4 |
 | SET-04 | Đồng bộ giữa thiết bị | Đồng bộ playlist, rating, cài đặt qua một nguồn của người dùng (WebDAV/S3) | P3 | 4 |
 | SET-05 | Đặt lại | Xoá thư viện và quét lại; đặt lại toàn bộ cài đặt | P1 | 1 |
