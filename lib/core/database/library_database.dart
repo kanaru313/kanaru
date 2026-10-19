@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
 
+export 'library_browse_rows.dart';
 export 'library_rows.dart';
 
 part 'library_database.g.dart';
