@@ -17,6 +17,16 @@ import 'track.dart';
 /// the playlist changed again, cannot be mistaken for a track change.
 class MediaKitBackend implements AudioBackend {
   MediaKitBackend() : _player = Player() {
+    // mpv's default today, set so gapless does not depend on it. `weak` joins
+    // tracks only when their audio format matches; `yes` would resample a
+    // track to the format of the one before it. Through the chain, so it
+    // applies before the first `open`.
+    unawaited(
+      _serial(() => _native.setProperty('gapless-audio', 'weak'))
+          .catchError((Object error) {
+            debugPrint('Could not enable gapless audio: $error');
+          }),
+    );
     // Through the chain, so the end of the last track is not reported after
     // the user picked another one.
     _forwardCompleted = _player.stream.completed.listen((done) {
