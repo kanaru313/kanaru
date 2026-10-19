@@ -178,5 +178,60 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerSeek => 'Tua';
 
   @override
-  String get settingsEmptyMessage => 'Chưa có gì để cài đặt.';
+  String get settingsAppearance => 'Giao diện';
+
+  @override
+  String get settingsTheme => 'Chủ đề';
+
+  @override
+  String get settingsThemeSystem => 'Hệ thống';
+
+  @override
+  String get settingsThemeLight => 'Sáng';
+
+  @override
+  String get settingsThemeDark => 'Tối';
+
+  @override
+  String get settingsLanguage => 'Ngôn ngữ';
+
+  @override
+  String get settingsLanguageSystem => 'Hệ thống';
+
+  @override
+  String get settingsTitleBar => 'Thanh tiêu đề';
+
+  @override
+  String get settingsTitleBarKanaru => 'Kanaru';
+
+  @override
+  String get settingsTitleBarSystem => 'Hệ thống';
+
+  @override
+  String get settingsTitleBarNone => 'Không có';
+
+  @override
+  String get settingsRestartRequired => 'Áp dụng sau khi khởi động lại';
+
+  @override
+  String settingsReadOnly(String path) {
+    return 'Không lưu được cài đặt trong phiên này ($path)';
+  }
+
+  @override
+  String get settingsAbout => 'Giới thiệu';
+
+  @override
+  String get settingsVersion => 'Phiên bản';
+
+  @override
+  String get settingsLicense => 'Giấy phép';
+
+  @override
+  String get settingsSourceCode => 'Mã nguồn';
+
+  @override
+  String settingsOpenFailed(String target) {
+    return 'Không mở được $target';
+  }
 }

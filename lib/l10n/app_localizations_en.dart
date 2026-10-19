@@ -178,5 +178,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerSeek => 'Seek';
 
   @override
-  String get settingsEmptyMessage => 'Nothing to configure yet.';
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLanguageSystem => 'System';
+
+  @override
+  String get settingsTitleBar => 'Title bar';
+
+  @override
+  String get settingsTitleBarKanaru => 'Kanaru';
+
+  @override
+  String get settingsTitleBarSystem => 'System';
+
+  @override
+  String get settingsTitleBarNone => 'None';
+
+  @override
+  String get settingsRestartRequired => 'Applies after restart';
+
+  @override
+  String settingsReadOnly(String path) {
+    return 'Settings can\'t be saved this session ($path)';
+  }
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsLicense => 'License';
+
+  @override
+  String get settingsSourceCode => 'Source code';
+
+  @override
+  String settingsOpenFailed(String target) {
+    return 'Couldn\'t open $target';
+  }
 }

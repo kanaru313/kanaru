@@ -10,19 +10,28 @@ import 'app/shell/window/desktop_window.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
+import 'core/settings/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // First, so startup errors are logged too. Never throws.
   setUpLogging().installErrorHandlers();
   MediaKit.ensureInitialized();
-  final customTitleBar = await setUpDesktopWindow();
+
+  // Settings come first: the title bar choice is applied while the window is
+  // set up. Loading never throws; a missing or broken file means defaults.
+  final settingsFile = settingsFileFor(Platform.environment);
+  final settings = settingsFile?.load() ?? const AppSettings();
+
+  final customTitleBar = await setUpDesktopWindow(titleBar: settings.titleBar);
 
   // Unlike ProviderScope, a container made here does not route uncaught
   // provider errors to FlutterError.reportError (its onError is internal);
   // they reach the root zone, where PlatformDispatcher.onError logs them.
   final container = ProviderContainer(
     overrides: [
+      initialSettingsProvider.overrideWithValue(settings),
+      settingsFileProvider.overrideWithValue(settingsFile),
       customTitleBarProvider.overrideWithValue(customTitleBar),
       if (Platform.isLinux)
         mediaControlsProvider.overrideWith((ref) {

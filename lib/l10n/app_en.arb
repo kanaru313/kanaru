@@ -73,5 +73,32 @@
   "playerVolume": "Volume",
   "playerSeek": "Seek",
 
-  "settingsEmptyMessage": "Nothing to configure yet."
+  "settingsAppearance": "Appearance",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System",
+  "settingsTitleBar": "Title bar",
+  "settingsTitleBarKanaru": "Kanaru",
+  "settingsTitleBarSystem": "System",
+  "settingsTitleBarNone": "None",
+  "settingsRestartRequired": "Applies after restart",
+  "settingsReadOnly": "Settings can't be saved this session ({path})",
+  "@settingsReadOnly": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "settingsAbout": "About",
+  "settingsVersion": "Version",
+  "settingsLicense": "License",
+  "settingsSourceCode": "Source code",
+  "settingsOpenFailed": "Couldn't open {target}",
+  "@settingsOpenFailed": {
+    "placeholders": {
+      "target": { "type": "String" }
+    }
+  }
 }

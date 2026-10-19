@@ -422,11 +422,113 @@ abstract class AppLocalizations {
   /// **'Seek'**
   String get playerSeek;
 
-  /// No description provided for @settingsEmptyMessage.
+  /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:
-  /// **'Nothing to configure yet.'**
-  String get settingsEmptyMessage;
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLanguageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsLanguageSystem;
+
+  /// No description provided for @settingsTitleBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Title bar'**
+  String get settingsTitleBar;
+
+  /// No description provided for @settingsTitleBarKanaru.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru'**
+  String get settingsTitleBarKanaru;
+
+  /// No description provided for @settingsTitleBarSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsTitleBarSystem;
+
+  /// No description provided for @settingsTitleBarNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get settingsTitleBarNone;
+
+  /// No description provided for @settingsRestartRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies after restart'**
+  String get settingsRestartRequired;
+
+  /// No description provided for @settingsReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings can\'t be saved this session ({path})'**
+  String settingsReadOnly(String path);
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersion;
+
+  /// No description provided for @settingsLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'License'**
+  String get settingsLicense;
+
+  /// No description provided for @settingsSourceCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Source code'**
+  String get settingsSourceCode;
+
+  /// No description provided for @settingsOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open {target}'**
+  String settingsOpenFailed(String target);
 }
 
 class _AppLocalizationsDelegate
