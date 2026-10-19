@@ -278,6 +278,216 @@ abstract class AppLocalizations {
   /// **'Add a music folder to start building your library.'**
   String get libraryEmptyMessage;
 
+  /// No description provided for @onboardingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Kanaru'**
+  String get onboardingTitle;
+
+  /// No description provided for @onboardingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the folders that hold your music. Kanaru scans them and builds your library.'**
+  String get onboardingMessage;
+
+  /// No description provided for @onboardingSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get onboardingSuggested;
+
+  /// No description provided for @onboardingNoFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No folder chosen yet.'**
+  String get onboardingNoFolders;
+
+  /// No description provided for @onboardingAddFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add folder…'**
+  String get onboardingAddFolder;
+
+  /// No description provided for @onboardingRemoveFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get onboardingRemoveFolder;
+
+  /// No description provided for @onboardingLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get onboardingLater;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get onboardingStart;
+
+  /// No description provided for @libraryUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the library'**
+  String get libraryUnavailableTitle;
+
+  /// No description provided for @libraryUnavailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback still works. The log has the details.'**
+  String get libraryUnavailableMessage;
+
+  /// No description provided for @libraryChooseFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose music folder'**
+  String get libraryChooseFolder;
+
+  /// No description provided for @libraryNoTracksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No songs found'**
+  String get libraryNoTracksTitle;
+
+  /// No description provided for @libraryNoTracksMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add music to your folders, then rescan.'**
+  String get libraryNoTracksMessage;
+
+  /// No description provided for @libraryRescan.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescan'**
+  String get libraryRescan;
+
+  /// No description provided for @libraryScanDiscovering.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for music files…'**
+  String get libraryScanDiscovering;
+
+  /// No description provided for @libraryScanReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading tags {done} / {total}'**
+  String libraryScanReading(int done, int total);
+
+  /// No description provided for @libraryScanDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan complete'**
+  String get libraryScanDoneTitle;
+
+  /// No description provided for @libraryScanWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan complete, with warnings'**
+  String get libraryScanWarningTitle;
+
+  /// No description provided for @libraryScanFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan failed'**
+  String get libraryScanFailedTitle;
+
+  /// No description provided for @libraryScanNoChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes'**
+  String get libraryScanNoChanges;
+
+  /// No description provided for @libraryScanAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String libraryScanAdded(int count);
+
+  /// No description provided for @libraryScanUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} updated'**
+  String libraryScanUpdated(int count);
+
+  /// No description provided for @libraryScanRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} removed'**
+  String libraryScanRemoved(int count);
+
+  /// No description provided for @libraryScanFailedTags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 file couldn\'t be read} other{{count} files couldn\'t be read}}'**
+  String libraryScanFailedTags(int count);
+
+  /// No description provided for @libraryScanRootMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} was not found'**
+  String libraryScanRootMissing(String path);
+
+  /// No description provided for @libraryScanRootEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} is empty, library kept as it was'**
+  String libraryScanRootEmpty(String path);
+
+  /// No description provided for @libraryRootNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} was not found'**
+  String libraryRootNotFound(String path);
+
+  /// No description provided for @libraryRootNotDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} is not a folder'**
+  String libraryRootNotDirectory(String path);
+
+  /// No description provided for @libraryRootDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} is already added'**
+  String libraryRootDuplicate(String path);
+
+  /// No description provided for @libraryRootNested.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} overlaps a folder that is already added'**
+  String libraryRootNested(String path);
+
+  /// No description provided for @libraryRootUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The library is not available'**
+  String get libraryRootUnavailable;
+
+  /// No description provided for @libraryRootTooBroad.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} is too broad to be a music folder'**
+  String libraryRootTooBroad(String path);
+
+  /// No description provided for @libraryRootWriteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save {path}. See the log for details.'**
+  String libraryRootWriteFailed(String path);
+
+  /// No description provided for @libraryUnexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. See the log for details.'**
+  String get libraryUnexpectedError;
+
+  /// No description provided for @libraryScanFailedDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'See the log for details'**
+  String get libraryScanFailedDetails;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/features/player/format_duration.dart';
+import 'package:kanaru/shared/format_duration.dart';
 import 'package:kanaru/features/player/open_media.dart';
 
 void main() {

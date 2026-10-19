@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          databases:
+            library_db: lib/core/database/library_database.dart

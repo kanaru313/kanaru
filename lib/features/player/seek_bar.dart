@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/player_service.dart';
-import 'format_duration.dart';
+import '../../shared/format_duration.dart';
 import 'seek_gesture_area.dart';
 import 'wavy_track_painter.dart';
 

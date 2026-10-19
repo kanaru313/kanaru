@@ -7,6 +7,7 @@ import 'package:media_kit/media_kit.dart';
 
 import 'app/app.dart';
 import 'app/shell/window/desktop_window.dart';
+import 'core/database/library_startup.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
@@ -24,6 +25,9 @@ Future<void> main() async {
   final settings = settingsFile?.load() ?? const AppSettings();
 
   final customTitleBar = await setUpDesktopWindow(titleBar: settings.titleBar);
+  // Library database. Never throws: on failure the library is unavailable but
+  // playback still works.
+  final library = await openLibraryAtStartup(Platform.environment);
 
   // Unlike ProviderScope, a container made here does not route uncaught
   // provider errors to FlutterError.reportError (its onError is internal);
@@ -33,6 +37,7 @@ Future<void> main() async {
       initialSettingsProvider.overrideWithValue(settings),
       settingsFileProvider.overrideWithValue(settingsFile),
       customTitleBarProvider.overrideWithValue(customTitleBar),
+      ...library.overrides,
       if (Platform.isLinux)
         mediaControlsProvider.overrideWith((ref) {
           final controls = MprisMediaControls(
