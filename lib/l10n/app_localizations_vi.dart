@@ -214,31 +214,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsRestartRequired => 'Áp dụng sau khi khởi động lại';
 
   @override
-  String get settingsAdvanced => 'Nâng cao';
-
-  @override
   String settingsReadOnly(String path) {
     return 'Không lưu được cài đặt trong phiên này ($path)';
   }
-
-  @override
-  String get settingsReset => 'Đặt lại toàn bộ cài đặt';
-
-  @override
-  String get settingsResetConfirmTitle => 'Đặt lại toàn bộ cài đặt?';
-
-  @override
-  String get settingsResetConfirmMessage =>
-      'Chủ đề, ngôn ngữ và thanh tiêu đề sẽ về mặc định.';
-
-  @override
-  String get settingsResetConfirm => 'Đặt lại';
-
-  @override
-  String get settingsCancel => 'Huỷ';
-
-  @override
-  String get settingsResetDone => 'Đã đặt lại cài đặt';
 
   @override
   String get settingsAbout => 'Giới thiệu';

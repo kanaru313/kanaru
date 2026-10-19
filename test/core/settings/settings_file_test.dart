@@ -132,20 +132,16 @@ void main() {
     expect(File(path).readAsStringSync(), content);
   });
 
-  test('unknown keys survive a save, unless asked to drop them', () async {
+  test('unknown keys survive a save', () async {
     writeFile(path, '{"version": 1, "theme": "dark", "future": {"a": [1]}}');
     final file = SettingsFile(path)..load();
 
     await file.save(dark);
-    var json = jsonDecode(File(path).readAsStringSync()) as Map;
+    final json = jsonDecode(File(path).readAsStringSync()) as Map;
     expect(json['future'], {
       'a': [1],
     });
     expect(json['language'], 'vi');
-
-    await file.save(dark, keepUnknown: false);
-    json = jsonDecode(File(path).readAsStringSync()) as Map;
-    expect(json.containsKey('future'), isFalse);
   });
 
   group('symlink', () {

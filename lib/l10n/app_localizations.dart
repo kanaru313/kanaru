@@ -494,53 +494,11 @@ abstract class AppLocalizations {
   /// **'Applies after restart'**
   String get settingsRestartRequired;
 
-  /// No description provided for @settingsAdvanced.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get settingsAdvanced;
-
   /// No description provided for @settingsReadOnly.
   ///
   /// In en, this message translates to:
   /// **'Settings can\'t be saved this session ({path})'**
   String settingsReadOnly(String path);
-
-  /// No description provided for @settingsReset.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset all settings'**
-  String get settingsReset;
-
-  /// No description provided for @settingsResetConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset all settings?'**
-  String get settingsResetConfirmTitle;
-
-  /// No description provided for @settingsResetConfirmMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme, language and title bar go back to their defaults.'**
-  String get settingsResetConfirmMessage;
-
-  /// No description provided for @settingsResetConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset'**
-  String get settingsResetConfirm;
-
-  /// No description provided for @settingsCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get settingsCancel;
-
-  /// No description provided for @settingsResetDone.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings were reset'**
-  String get settingsResetDone;
 
   /// No description provided for @settingsAbout.
   ///

@@ -80,14 +80,13 @@ class SettingsFile {
     }
   }
 
-  /// Writes [settings]. With [keepUnknown] false, keys this version does not
-  /// know are dropped too. Never throws; failures are logged.
+  /// Writes [settings], keeping keys this version does not know. Never
+  /// throws; failures are logged.
   ///
   /// Returns `false` when writing failed. A read-only file skips the write
   /// and returns `true`: [readOnly] reports that case.
-  Future<bool> save(AppSettings settings, {bool keepUnknown = true}) async {
+  Future<bool> save(AppSettings settings) async {
     if (_readOnly) return true;
-    if (!keepUnknown) _unknownKeys = const {};
     File? temporary;
     try {
       final target = await FileSystemEntity.isLink(path)

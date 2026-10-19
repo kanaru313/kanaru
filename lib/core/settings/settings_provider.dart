@@ -57,12 +57,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setTitleBar(TitleBarPreference titleBar) =>
       _update(state.copyWith(titleBar: titleBar));
 
-  /// Back to defaults, dropping keys from other Kanaru versions too.
-  void reset() {
-    state = const AppSettings();
-    _save(keepUnknown: false);
-  }
-
   /// Completes when every change made so far is on disk.
   @visibleForTesting
   Future<void> flush() => _writes;
@@ -73,13 +67,13 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _save();
   }
 
-  void _save({bool keepUnknown = true}) {
+  void _save() {
     final file = _file;
     if (file == null) return;
     final settings = state;
     // SettingsFile.save never throws, so the chain never breaks.
     _writes = _writes.then((_) async {
-      final saved = await file.save(settings, keepUnknown: keepUnknown);
+      final saved = await file.save(settings);
       if (ref.mounted) {
         ref.read(settingsSaveFailedProvider.notifier).set(!saved);
       }

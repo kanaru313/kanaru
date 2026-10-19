@@ -42,11 +42,11 @@ Future<void> pumpSettings(
 Future<bool> _alwaysOpens(String _) async => true;
 
 void main() {
-  testWidgets('shows the three sections', (tester) async {
+  testWidgets('shows the sections, without a save warning', (tester) async {
     await pumpSettings(tester);
 
     expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Advanced'), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
     expect(find.text('About'), findsWidgets);
     expect(find.text('GPL-3.0-or-later'), findsOneWidget);
   });
@@ -120,27 +120,6 @@ void main() {
       find.text("Settings can't be saved this session ($path)"),
       findsOneWidget,
     );
-  });
-
-  testWidgets('reset asks first, then restores defaults', (tester) async {
-    await pumpSettings(tester);
-    container.read(settingsProvider.notifier).setTheme(ThemePreference.dark);
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(find.text('Reset all settings'));
-    await tester.tap(find.text('Reset all settings'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(container.read(settingsProvider).theme, ThemePreference.dark);
-
-    await tester.tap(find.text('Reset all settings'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Reset').last);
-    await tester.pumpAndSettle();
-
-    expect(container.read(settingsProvider), const AppSettings());
-    expect(find.text('Settings were reset'), findsOneWidget);
   });
 
   testWidgets('source code link opens the repository', (tester) async {

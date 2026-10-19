@@ -214,31 +214,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsRestartRequired => 'Applies after restart';
 
   @override
-  String get settingsAdvanced => 'Advanced';
-
-  @override
   String settingsReadOnly(String path) {
     return 'Settings can\'t be saved this session ($path)';
   }
-
-  @override
-  String get settingsReset => 'Reset all settings';
-
-  @override
-  String get settingsResetConfirmTitle => 'Reset all settings?';
-
-  @override
-  String get settingsResetConfirmMessage =>
-      'Theme, language and title bar go back to their defaults.';
-
-  @override
-  String get settingsResetConfirm => 'Reset';
-
-  @override
-  String get settingsCancel => 'Cancel';
-
-  @override
-  String get settingsResetDone => 'Settings were reset';
 
   @override
   String get settingsAbout => 'About';

@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'about_settings_section.dart';
-import 'advanced_settings_section.dart';
 import 'appearance_settings_section.dart';
+import 'settings_save_warning.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,8 +23,8 @@ class SettingsScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 720),
               child: const Column(
                 children: [
+                  SettingsSaveWarning(),
                   AppearanceSettingsSection(),
-                  AdvancedSettingsSection(),
                   AboutSettingsSection(),
                 ],
               ),
