@@ -1,0 +1,159 @@
+import 'package:drift/drift.dart';
+
+import 'library_rows.dart';
+import 'library_tables.dart';
+
+export 'library_rows.dart';
+
+part 'library_database.g.dart';
+
+/// Most ids per `DELETE ... IN (...)`; keeps statements far below SQLite's
+/// variable limit.
+const deleteChunkSize = 500;
+
+/// The music library: source folders and the tracks found in them.
+@DriftDatabase(tables: [LibraryRoots, Tracks])
+class LibraryDatabase extends _$LibraryDatabase {
+  LibraryDatabase(super.e);
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    // Also set in the file database's setup; this covers other connections
+    // (for example in-memory ones in tests).
+    beforeOpen: (details) => customStatement('PRAGMA foreign_keys = ON'),
+  );
+
+  // Roots
+
+  /// Adds every path in one transaction: if one fails (for example a
+  /// duplicate path) none is written and the error is rethrown. Returns the
+  /// new ids in the order of [paths].
+  Future<List<int>> addRoots(List<String> paths, {required int now}) {
+    return transaction(() async {
+      final ids = <int>[];
+      for (final path in paths) {
+        ids.add(
+          await into(libraryRoots)
+              .insert(LibraryRootsCompanion.insert(path: path, addedAt: now)),
+        );
+      }
+      return ids;
+    });
+  }
+
+  Future<List<LibraryRoot>> roots() =>
+      (select(libraryRoots)..orderBy([(r) => OrderingTerm.asc(r.id)])).get();
+
+  Stream<List<LibraryRoot>> watchRoots() =>
+      (select(libraryRoots)..orderBy([(r) => OrderingTerm.asc(r.id)])).watch();
+
+  Future<bool> hasLibraryRoots() async {
+    final row =
+        await (selectOnly(libraryRoots)
+              ..addColumns([libraryRoots.id])
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
+  Future<void> markRootScanned(int rootId, int now) =>
+      (update(libraryRoots)..where((r) => r.id.equals(rootId))).write(
+        LibraryRootsCompanion(lastScanAt: Value(now)),
+      );
+
+  // Tracks
+
+  /// `(id, path, mtime, size)` of every track under [rootId], for diffing a
+  /// rescan.
+  Future<List<TrackSnapshot>> trackSnapshot(int rootId) async {
+    final query = selectOnly(tracks)
+      ..addColumns([tracks.id, tracks.path, tracks.mtimeMs, tracks.sizeBytes])
+      ..where(tracks.rootId.equals(rootId));
+    final rows = await query.get();
+    return [
+      for (final row in rows)
+        TrackSnapshot(
+          id: row.read(tracks.id)!,
+          path: row.read(tracks.path)!,
+          mtimeMs: row.read(tracks.mtimeMs)!,
+          sizeBytes: row.read(tracks.sizeBytes)!,
+        ),
+    ];
+  }
+
+  /// Inserts new tracks and updates known ones, matched by `path`, in one
+  /// transaction. An update keeps the row's `id`, `addedAt` and `rootId`
+  /// (hence no `INSERT OR REPLACE`, which would assign a new id).
+  Future<void> upsertTracks(List<TracksCompanion> rows) {
+    if (rows.isEmpty) return Future.value();
+    return transaction(() async {
+      await batch((b) {
+        for (final row in rows) {
+          b.insert(
+            tracks,
+            row,
+            onConflict: DoUpdate(
+              (_) => row.copyWith(
+                id: const Value.absent(),
+                rootId: const Value.absent(),
+                addedAt: const Value.absent(),
+              ),
+              target: [tracks.path],
+            ),
+          );
+        }
+      });
+    });
+  }
+
+  /// Deletes tracks by id in chunks of [deleteChunkSize], in one transaction.
+  Future<void> deleteTracksById(Iterable<int> ids) {
+    final all = ids.toList();
+    if (all.isEmpty) return Future.value();
+    return transaction(() async {
+      for (var i = 0; i < all.length; i += deleteChunkSize) {
+        final end = i + deleteChunkSize < all.length
+            ? i + deleteChunkSize
+            : all.length;
+        await (delete(
+          tracks,
+        )..where((t) => t.id.isIn(all.sublist(i, end)))).go();
+      }
+    });
+  }
+
+  /// All tracks with only the columns a list row needs, ordered by title
+  /// (case-insensitive) then id so equal titles keep a stable order.
+  Stream<List<TrackListItem>> watchTrackListItems() {
+    final query = selectOnly(tracks)
+      ..addColumns([
+        tracks.id,
+        tracks.path,
+        tracks.title,
+        tracks.artist,
+        tracks.album,
+        tracks.durationMs,
+      ])
+      ..orderBy([
+        OrderingTerm(expression: tracks.title.collate(Collate.noCase)),
+        OrderingTerm.asc(tracks.id),
+      ]);
+    return query.watch().map(
+      (rows) => [
+        for (final row in rows)
+          TrackListItem(
+            id: row.read(tracks.id)!,
+            path: row.read(tracks.path)!,
+            title: row.read(tracks.title)!,
+            artist: row.read(tracks.artist),
+            album: row.read(tracks.album),
+            durationMs: row.read(tracks.durationMs),
+          ),
+      ],
+    );
+  }
+}

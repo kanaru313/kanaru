@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   dbus: ^0.8.0
+  drift: ^2.35.2
   dynamic_color: ^2.1.0
   file_selector: ^1.1.0
   flutter:
@@ -45,6 +46,7 @@ dependencies:
   media_kit_libs_audio: ^1.0.7
   rust_lib_kanaru:
     path: rust_builder
+  sqlite3: ^3.7.1
   window_manager: ^0.5.2
 
 dev_dependencies:
@@ -57,6 +59,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  drift_dev: ^2.35.1
+  build_runner: ^2.16.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
