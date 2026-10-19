@@ -51,6 +51,12 @@ void main() {
     );
   });
 
+  test('does not double the slash for a root base', () {
+    expect(resolveCacheDirectory({'XDG_CACHE_HOME': '/'}), '/kanaru');
+    expect(resolveConfigDirectory({'HOME': '/'}), '/.config/kanaru');
+    expect(resolveDataDirectory({'HOME': '//'}), '/.local/share/kanaru');
+  });
+
   test('is null without a usable HOME', () {
     expect(resolveConfigDirectory({}), isNull);
     expect(resolveDataDirectory({'XDG_DATA_HOME': 'rel'}), isNull);

@@ -38,9 +38,11 @@ String? _resolve(
   return null;
 }
 
+/// Drops trailing slashes so joining never doubles them; the root `/`
+/// becomes empty, giving `/kanaru` rather than `//kanaru`.
 String _trimSlashes(String path) {
   var end = path.length;
-  while (end > 1 && path[end - 1] == '/') {
+  while (end > 0 && path[end - 1] == '/') {
     end--;
   }
   return path.substring(0, end);
