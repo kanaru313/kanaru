@@ -1,0 +1,27 @@
+[package]
+name = "rust_lib_kanaru"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+
+[lib]
+# cdylib is loaded by Flutter; staticlib is for future platforms; rlib lets the
+# integration tests under tests/ link the crate.
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+# The generated Dart code must come from the same codegen version, so the crate
+# pins the exact version (see flutter_rust_bridge.yaml and pubspec.yaml).
+flutter_rust_bridge = "=2.13.0"
+lofty = "=0.25.4"
+rayon = "1"
+
+[dev-dependencies]
+tempfile = "3"
+
+# Panics inside one file's tag parser are caught per file (catch_unwind), which
+# only works with the default `panic = "unwind"`. Do not set `panic = "abort"`
+# in any profile.
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

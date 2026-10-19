@@ -1,0 +1,3 @@
+# Always build the crate from source. Without this, cargokit defaults to
+# downloading precompiled binaries whenever it cannot find rustup.
+use_precompiled_binaries: false

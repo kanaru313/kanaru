@@ -56,6 +56,20 @@
             clippy
             rust-analyzer
             flutter_rust_bridge_codegen
+            # flutter_rust_bridge_codegen shells out to `cargo expand`
+            # (run it with RUSTC_BOOTSTRAP=1 on the stable toolchain).
+            cargo-expand
+            # Cargokit (flutter_rust_bridge's build glue) always calls rustup.
+            # Nix gives one stable toolchain, so answer the three calls it
+            # makes for that one.
+            (writeShellScriptBin "rustup" ''
+              case "$1" in
+                toolchain) echo "stable-${stdenv.hostPlatform.rust.rustcTarget} (default)" ;;
+                target) echo "${stdenv.hostPlatform.rust.rustcTarget}" ;;
+                run) shift 2; exec "$@" ;;
+                *) echo "rustup shim: unsupported: $*" >&2; exit 1 ;;
+              esac
+            '')
 
             # Poking the MPRIS service by hand
             playerctl
