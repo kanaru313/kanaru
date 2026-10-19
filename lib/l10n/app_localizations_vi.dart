@@ -178,5 +178,100 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerSeek => 'Tua';
 
   @override
-  String get settingsEmptyMessage => 'Chưa có gì để cài đặt.';
+  String get settingsAppearance => 'Giao diện';
+
+  @override
+  String get settingsTheme => 'Chủ đề';
+
+  @override
+  String get settingsThemeSystem => 'Hệ thống';
+
+  @override
+  String get settingsThemeLight => 'Sáng';
+
+  @override
+  String get settingsThemeDark => 'Tối';
+
+  @override
+  String get settingsLanguage => 'Ngôn ngữ';
+
+  @override
+  String get settingsLanguageSystem => 'Hệ thống';
+
+  @override
+  String get settingsTitleBar => 'Thanh tiêu đề';
+
+  @override
+  String get settingsTitleBarKanaru => 'Kanaru';
+
+  @override
+  String get settingsTitleBarSystem => 'Hệ thống';
+
+  @override
+  String get settingsTitleBarNone => 'Không có';
+
+  @override
+  String get settingsRestartRequired => 'Áp dụng sau khi khởi động lại';
+
+  @override
+  String get settingsAdvanced => 'Nâng cao';
+
+  @override
+  String get settingsConfigDirectory => 'Thư mục cấu hình';
+
+  @override
+  String get settingsDataDirectory => 'Thư mục dữ liệu';
+
+  @override
+  String get settingsCacheDirectory => 'Thư mục bộ nhớ đệm';
+
+  @override
+  String get settingsDirectoryUnknown => 'Không xác định';
+
+  @override
+  String get settingsOpenDirectory => 'Mở thư mục';
+
+  @override
+  String settingsReadOnly(String path) {
+    return 'Không lưu được cài đặt trong phiên này ($path)';
+  }
+
+  @override
+  String get settingsReset => 'Đặt lại toàn bộ cài đặt';
+
+  @override
+  String get settingsResetConfirmTitle => 'Đặt lại toàn bộ cài đặt?';
+
+  @override
+  String get settingsResetConfirmMessage =>
+      'Chủ đề, ngôn ngữ và thanh tiêu đề sẽ về mặc định.';
+
+  @override
+  String get settingsResetConfirm => 'Đặt lại';
+
+  @override
+  String get settingsCancel => 'Huỷ';
+
+  @override
+  String get settingsResetDone => 'Đã đặt lại cài đặt';
+
+  @override
+  String get settingsAbout => 'Giới thiệu';
+
+  @override
+  String get settingsVersion => 'Phiên bản';
+
+  @override
+  String get settingsLicense => 'Giấy phép';
+
+  @override
+  String get settingsSourceCode => 'Mã nguồn';
+
+  @override
+  String get settingsOpenSourceLicenses => 'Giấy phép mã nguồn mở';
+
+  @override
+  String settingsOpenFailed(String target) {
+    return 'Không mở được $target';
+  }
 }

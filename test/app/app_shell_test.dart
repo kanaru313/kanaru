@@ -112,7 +112,7 @@ void main() {
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Nothing to configure yet.'), findsOneWidget);
+    expect(find.text('Appearance'), findsOneWidget);
   });
 
   testWidgets('keeps the top bar buttons at the right edge', (tester) async {

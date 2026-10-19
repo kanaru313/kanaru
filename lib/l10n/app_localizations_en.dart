@@ -178,5 +178,100 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerSeek => 'Seek';
 
   @override
-  String get settingsEmptyMessage => 'Nothing to configure yet.';
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLanguageSystem => 'System';
+
+  @override
+  String get settingsTitleBar => 'Title bar';
+
+  @override
+  String get settingsTitleBarKanaru => 'Kanaru';
+
+  @override
+  String get settingsTitleBarSystem => 'System';
+
+  @override
+  String get settingsTitleBarNone => 'None';
+
+  @override
+  String get settingsRestartRequired => 'Applies after restart';
+
+  @override
+  String get settingsAdvanced => 'Advanced';
+
+  @override
+  String get settingsConfigDirectory => 'Config folder';
+
+  @override
+  String get settingsDataDirectory => 'Data folder';
+
+  @override
+  String get settingsCacheDirectory => 'Cache folder';
+
+  @override
+  String get settingsDirectoryUnknown => 'Unknown';
+
+  @override
+  String get settingsOpenDirectory => 'Open folder';
+
+  @override
+  String settingsReadOnly(String path) {
+    return 'Settings can\'t be saved this session ($path)';
+  }
+
+  @override
+  String get settingsReset => 'Reset all settings';
+
+  @override
+  String get settingsResetConfirmTitle => 'Reset all settings?';
+
+  @override
+  String get settingsResetConfirmMessage =>
+      'Theme, language and title bar go back to their defaults.';
+
+  @override
+  String get settingsResetConfirm => 'Reset';
+
+  @override
+  String get settingsCancel => 'Cancel';
+
+  @override
+  String get settingsResetDone => 'Settings were reset';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsLicense => 'License';
+
+  @override
+  String get settingsSourceCode => 'Source code';
+
+  @override
+  String get settingsOpenSourceLicenses => 'Open source licenses';
+
+  @override
+  String settingsOpenFailed(String target) {
+    return 'Couldn\'t open $target';
+  }
 }
