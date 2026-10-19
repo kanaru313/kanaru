@@ -10,7 +10,7 @@ class ArtistSummary {
     required this.albumCount,
   });
 
-  /// The name lower-cased by SQL; identifies the artist page.
+  /// `artistKey(name)`; identifies the artist page.
   final String key;
 
   /// The first spelling met among the tracks.
@@ -21,8 +21,8 @@ class ArtistSummary {
   final int albumCount;
 }
 
-/// Splits each `artist` value into names (guests included) and merges them
-/// by key: a track counts once per name even if the name repeats in it, and
+/// Splits each `artist` value into names (guests included, see
+/// `splitArtists`) and merges them by key: a track counts once per name, and
 /// the albums of every value are united. Names only found as album artist
 /// are not artists here.
 List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) {
@@ -30,15 +30,10 @@ List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) {
   final songs = <String, int>{};
   final albums = <String, Set<AlbumKey>>{};
   for (final credit in credits) {
-    final display = splitArtists(credit.artist);
-    final keys = splitArtists(credit.artistKey);
-    // lower() keeps "; " in place, so both lists line up.
-    if (display.length != keys.length) continue;
-    final seen = <String>{};
-    for (var i = 0; i < keys.length; i++) {
-      final key = keys[i];
-      if (!seen.add(key)) continue;
-      names.putIfAbsent(key, () => display[i]);
+    // splitArtists already drops repeated names within one value.
+    for (final name in splitArtists(credit.artist)) {
+      final key = artistKey(name);
+      names.putIfAbsent(key, () => name);
       songs[key] = (songs[key] ?? 0) + credit.trackCount;
       (albums[key] ??= {}).addAll(credit.albumKeys);
     }

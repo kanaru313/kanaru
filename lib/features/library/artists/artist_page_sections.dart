@@ -16,26 +16,24 @@ class ArtistPageSections {
     required this.appearsOn,
   });
 
-  factory ArtistPageSections.fromTracks(
-    String artistKey,
-    List<BrowseTrack> tracks,
-  ) {
+  factory ArtistPageSections.fromTracks(String key, List<BrowseTrack> tracks) {
     final byAlbum = <AlbumKey, List<BrowseTrack>>{};
     for (final track in tracks) {
-      final key = track.albumKey;
-      if (key != null) (byAlbum[key] ??= []).add(track);
+      final albumKey = track.albumKey;
+      if (albumKey != null) (byAlbum[albumKey] ??= []).add(track);
     }
     final albums = <AlbumTileData>[];
     final appearsOn = <AlbumTileData>[];
-    for (final MapEntry(:key, value: albumTracks) in byAlbum.entries) {
-      final tile = _tileData(key, albumTracks);
-      (splitArtists(key.artistKey).contains(artistKey) ? albums : appearsOn)
-          .add(tile);
+    for (final MapEntry(key: albumKey, value: albumTracks) in byAlbum.entries) {
+      final tile = _tileData(albumKey, albumTracks);
+      (splitArtists(albumKey.artistKey).contains(key) ? albums : appearsOn).add(
+        tile,
+      );
     }
     albums.sort(_byYearThenTitle);
     appearsOn.sort(_byYearThenTitle);
     return ArtistPageSections(
-      name: _displayName(artistKey, tracks) ?? artistKey,
+      name: _displayName(key, tracks) ?? key,
       albums: albums,
       songs: tracks,
       appearsOn: appearsOn,
@@ -52,14 +50,12 @@ class ArtistPageSections {
   int get albumCount => albums.length + appearsOn.length;
 }
 
-/// The name at the position of [artistKey] in the first track's artists:
-/// `artist` and its lower-cased form split the same way.
-String? _displayName(String artistKey, List<BrowseTrack> tracks) {
+/// The spelling of [key] in the first track that credits it.
+String? _displayName(String key, List<BrowseTrack> tracks) {
   for (final track in tracks) {
-    final keys = splitArtists(track.artistKeys);
-    final names = splitArtists(track.artist);
-    final i = keys.indexOf(artistKey);
-    if (i >= 0 && i < names.length) return names[i];
+    for (final name in splitArtists(track.artist)) {
+      if (artistKey(name) == key) return name;
+    }
   }
   return null;
 }

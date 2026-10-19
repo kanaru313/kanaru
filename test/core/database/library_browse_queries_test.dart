@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_sql_functions.dart';
 
 late int _rootId;
 var _next = 0;
@@ -43,7 +44,9 @@ void main() {
   late LibraryDatabase db;
 
   setUp(() async {
-    db = LibraryDatabase(NativeDatabase.memory());
+    db = LibraryDatabase(
+      NativeDatabase.memory(setup: registerLibrarySqlFunctions),
+    );
     _rootId = (await db.addRoots(['/m'], now: 1)).single;
   });
   tearDown(() => db.close());
@@ -73,7 +76,7 @@ void main() {
       expect(all[const AlbumKey('various artists', 'y')]!.trackCount, 2);
     });
 
-    test('splits same titles of different artists, folds ASCII case', () async {
+    test('splits same titles of different artists, folds case', () async {
       await db.upsertTracks([
         row(artist: 'A', album: 'Same'),
         row(artist: 'B', album: 'Same'),
@@ -88,13 +91,10 @@ void main() {
       final abbey = all[const AlbumKey('beatles', 'abbey road')]!;
       expect(abbey.trackCount, 2);
       expect(abbey.title, 'Abbey Road');
-      // lower() is ASCII only: the Unicode spellings stay apart.
-      final unicode = all.values.where((a) => a.key.artistKey == 'c');
-      expect(unicode, hasLength(2));
-      for (final album in unicode) {
-        final tracks = await db.watchAlbumTracks(album.key).first;
-        expect(tracks.single.album, album.title);
-      }
+      // Keys use Dart's Unicode lower case: these spellings merge too.
+      final unicode = all[const AlbumKey('c', 'ánh')]!;
+      expect(unicode.trackCount, 2);
+      expect(await db.watchAlbumTracks(unicode.key).first, hasLength(2));
     });
 
     test(
@@ -155,7 +155,7 @@ void main() {
   });
 
   group('artists', () {
-    test('credits come from the artist column with SQL keys', () async {
+    test('credits come from the artist column only', () async {
       await db.upsertTracks([
         row(artist: 'Ann; Bob', album: 'X'),
         row(artist: 'Ann; Bob', album: 'X'),
@@ -168,10 +168,8 @@ void main() {
       };
       expect(credits.keys, {'Ann; Bob', 'ÁNN'});
       final ann = credits['Ann; Bob']!;
-      expect(ann.artistKey, 'ann; bob');
       expect(ann.trackCount, 3);
       expect(ann.albumKeys, {const AlbumKey('ann', 'x')});
-      expect(credits['ÁNN']!.artistKey, 'Ánn');
       expect(credits['ÁNN']!.albumKeys, {
         const AlbumKey('various artists', 'y'),
       });
@@ -189,13 +187,56 @@ void main() {
       expect(ann.map((t) => t.title), unorderedEquals(['ann', 'guest']));
       final withAlbum = ann.firstWhere((t) => t.title == 'ann');
       expect(withAlbum.albumKey, const AlbumKey('ann', 'x'));
-      expect(withAlbum.artistKeys, 'ann');
       expect(ann.firstWhere((t) => t.title == 'guest').albumKey, isNull);
 
       final wild = await db.watchArtistTracks("50% _off's").first;
       expect(wild.single.title, 'wild');
       expect(await db.watchArtistTracks('%').first, isEmpty);
       expect(await db.watchArtistTracks('_').first, isEmpty);
+    });
+  });
+
+  group('real tags', () {
+    test('several artists in one tag, however written', () async {
+      await db.upsertTracks([
+        row(
+          title: 'Khi Cô Đơn Em Nhớ Đến Ai',
+          artist: 'Ban nhạc Hương Mùa Hè;SUNI Hạ Linh',
+        ),
+        row(
+          title: 'one',
+          artist: 'Chau Khai Phong',
+          album: 'Châu Khải Phong Best Collection',
+        ),
+        row(
+          title: 'two',
+          artist: 'Chau Khai Phong feat. Trịnh Đình Quang',
+          album: 'Châu Khải Phong Best Collection',
+        ),
+        row(title: 'acdc', artist: 'AC/DC feat. X', album: 'Live'),
+      ]);
+      final all = await albums();
+      final best = all.values.singleWhere(
+        (a) => a.title == 'Châu Khải Phong Best Collection',
+      );
+      expect(best.trackCount, 2, reason: 'a feat. track stays in the album');
+      expect(best.key.artistKey, 'chau khai phong');
+      expect(best.artist, 'Chau Khai Phong');
+      expect(all.keys, contains(const AlbumKey('ac/dc', 'live')));
+
+      final suni = await db.watchArtistTracks('suni hạ linh').first;
+      expect(suni.single.title, 'Khi Cô Đơn Em Nhớ Đến Ai');
+      final guest = await db.watchArtistTracks('trịnh đình quang').first;
+      expect(guest.single.title, 'two');
+      expect(await db.watchArtistTracks('suni').first, isEmpty);
+    });
+
+    test('an album artist naming several artists keys them all', () async {
+      await db.upsertTracks([
+        row(artist: 'A', album: 'Duo', albumArtist: 'A / B'),
+        row(artist: 'B', album: 'Duo', albumArtist: 'A/B'),
+      ]);
+      expect((await albums()).keys, [const AlbumKey('a; b', 'duo')]);
     });
   });
 

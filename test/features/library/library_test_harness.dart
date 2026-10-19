@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/database/library_sql_functions.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/directory_picker_provider.dart';
@@ -37,7 +38,9 @@ class LibraryHarness {
   /// Replaces the fake picker (which answers from [picks]).
   final DirectoryPicker? picker;
 
-  late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
+  late final LibraryDatabase db = LibraryDatabase(
+    NativeDatabase.memory(setup: registerLibrarySqlFunctions),
+  );
 
   /// Folders the fake picker returns, in order; empty means cancelled.
   final picks = <String>[];

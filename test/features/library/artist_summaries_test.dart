@@ -2,20 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/features/library/artists/artist_summaries.dart';
 
-/// Keys as SQL's lower() makes them: ASCII only.
-String _asciiLower(String s) =>
-    s.replaceAllMapped(RegExp('[A-Z]'), (m) => m[0]!.toLowerCase());
-
 ArtistCredit credit(
   String artist,
   int tracks, [
   List<AlbumKey> albums = const [],
-]) => ArtistCredit(
-  artist: artist,
-  artistKey: _asciiLower(artist),
-  trackCount: tracks,
-  albumKeys: albums.toSet(),
-);
+]) =>
+    ArtistCredit(artist: artist, trackCount: tracks, albumKeys: albums.toSet());
 
 void main() {
   Map<String, ArtistSummary> build(List<ArtistCredit> credits) => {
@@ -44,11 +36,25 @@ void main() {
     expect(all['ann']!.songCount, 4);
   });
 
-  test('ASCII case merges; the first spelling is shown', () {
-    final all = build([credit('ANN', 1), credit('Ann', 1), credit('Ánn', 1)]);
+  test('case merges, Unicode too; the first spelling is shown', () {
+    final all = build([credit('ANN', 1), credit('Ann', 1), credit('ĐEN', 1)]);
     expect(all['ann']!.name, 'ANN');
     expect(all['ann']!.songCount, 2);
-    expect(all['Ánn']!.songCount, 1);
+    expect(build([credit('ĐEN', 1), credit('Đen', 2)])['đen']!.songCount, 3);
+  });
+
+  test('splits on every separator the tags use', () {
+    final all = build([
+      credit('Ban nhạc Hương Mùa Hè;SUNI Hạ Linh', 1),
+      credit('Chau Khai Phong feat. Trịnh Đình Quang', 2),
+    ]);
+    expect(all.keys, {
+      'ban nhạc hương mùa hè',
+      'suni hạ linh',
+      'chau khai phong',
+      'trịnh đình quang',
+    });
+    expect(all['suni hạ linh']!.name, 'SUNI Hạ Linh');
   });
 
   test('empty parts are dropped', () {

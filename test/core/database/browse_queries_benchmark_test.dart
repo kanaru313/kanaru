@@ -26,7 +26,8 @@ final _enabled = Platform.environment['KANARU_BENCH'] == '1';
 
 /// 100k rows like the indexer writes: ~8.3k albums, long and non-ASCII
 /// names, a quarter of the tracks with a guest artist, a third of the albums
-/// without album artist, some tracks without album.
+/// without album artist, some tracks without album. Guests are joined in
+/// the ways real tags do (`; `, `;`, ` feat. `, ` / `).
 List<TracksCompanion> _rows(int rootId) {
   final rnd = Random(1);
   const accents = ['Ánh', 'Sơn Tùng', 'Mỹ Tâm', 'Ünïcødé', '漢字', 'Ølsen'];
@@ -37,11 +38,14 @@ List<TracksCompanion> _rows(int rootId) {
         final aa = albumNo % 2000;
         final name =
             '${accents[aa % accents.length]} Artist $aa'
-            '${aa % 50 == 0 ? ' with a very long name' * 10 : ''}';
+            '${aa % 50 == 0 ? ' and a very long name' * 10 : ''}';
         final compilation = albumNo % 25 == 0;
         final artist = compilation
             ? 'Solo ${rnd.nextInt(5000)}'
-            : (i % 4 == 0 ? '$name; Guest ${rnd.nextInt(3000)}' : name);
+            : (i % 4 == 0
+                  ? '$name${const ['; ', ';', ' feat. ', ' / '][i % 16 ~/ 4]}'
+                        'Guest ${rnd.nextInt(3000)}'
+                  : name);
         return TracksCompanion.insert(
           rootId: rootId,
           path: '/m/$aa/$albumNo/$i.flac',

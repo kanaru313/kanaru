@@ -78,7 +78,7 @@ class _AlbumPage extends ConsumerWidget {
     final artistKey = splitArtists(albumKey.artistKey).firstOrNull;
     final linked =
         artistKey != null &&
-        tracks.any((t) => splitArtists(t.artistKeys).contains(artistKey));
+        tracks.any((t) => artistKeys(t.artist).contains(artistKey));
 
     return CustomScrollView(
       slivers: [

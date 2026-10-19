@@ -1,10 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_sql_functions.dart';
 import 'package:kanaru/features/library/artists/artist_page_sections.dart';
 
 var _id = 0;
 
-/// A row as the artist query returns it; keys computed like SQL (ASCII).
+/// A row as the artist query returns it, keys made by the shared rules.
 BrowseTrack track(
   String title, {
   required String artist,
@@ -12,7 +13,6 @@ BrowseTrack track(
   String? albumArtist,
   int? year,
 }) {
-  final first = artist.split('; ').first;
   return BrowseTrack(
     id: _id++,
     path: '/$title',
@@ -23,8 +23,7 @@ BrowseTrack track(
     year: year,
     albumKey: album == null
         ? null
-        : AlbumKey((albumArtist ?? first).toLowerCase(), album.toLowerCase()),
-    artistKeys: artist.toLowerCase(),
+        : AlbumKey(albumArtistKey(albumArtist, artist), albumTitleKey(album)),
   );
 }
 

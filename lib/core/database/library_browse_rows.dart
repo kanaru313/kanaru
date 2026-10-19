@@ -1,6 +1,6 @@
-/// Identifies an album while there is no albums table: the lower-cased album
-/// artist (else the first track artist) and the lower-cased album title, both
-/// computed in SQL and cut to 256 characters.
+/// Identifies an album while there is no albums table: the keys of its album
+/// artists (else of the first track artist) and its lower-cased title, made
+/// by the rules in `artist_names.dart` and cut to 256 characters.
 class AlbumKey {
   const AlbumKey(this.artistKey, this.titleKey);
 
@@ -52,20 +52,18 @@ class AlbumSummary {
   final int addedAt;
 }
 
-/// The tracks that share one exact `artist` value: the value as shown, its
-/// lower-cased form from SQL, how many tracks carry it and which albums they
-/// belong to (tracks without an album add no key).
+/// The tracks that share one exact `artist` value: the value, how many
+/// tracks carry it and which albums they belong to (tracks without an album
+/// add no key).
 class ArtistCredit {
   const ArtistCredit({
     required this.artist,
-    required this.artistKey,
     required this.trackCount,
     required this.albumKeys,
   });
 
-  /// Joined with `"; "` when the track has several artists.
+  /// Possibly several artists; see `splitArtists`.
   final String artist;
-  final String artistKey;
   final int trackCount;
   final Set<AlbumKey> albumKeys;
 }
@@ -84,7 +82,6 @@ class BrowseTrack {
     this.trackNo,
     this.durationMs,
     this.albumKey,
-    this.artistKeys,
   });
 
   final int id;
@@ -100,9 +97,6 @@ class BrowseTrack {
 
   /// The key of its album; null when it has no album.
   final AlbumKey? albumKey;
-
-  /// [artist] lower-cased in SQL, so its parts match the artist keys.
-  final String? artistKeys;
 }
 
 /// What the Songs list can be ordered by.

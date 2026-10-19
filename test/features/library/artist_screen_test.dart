@@ -137,6 +137,40 @@ void main() {
     // Lets drift's zero-delay stream cleanup timer run.
     await tester.pump(const Duration(milliseconds: 1));
   });
+
+  testWidgets('real tags: a joined artist has their own page and songs', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack(
+        'Khi Cô Đơn Em Nhớ Đến Ai',
+        artist: 'Ban nhạc Hương Mùa Hè;SUNI Hạ Linh',
+      ),
+      TestTrack(
+        'one',
+        artist: 'Chau Khai Phong',
+        album: 'Châu Khải Phong Best Collection',
+      ),
+      TestTrack(
+        'two',
+        artist: 'Chau Khai Phong feat. Trịnh Đình Quang',
+        album: 'Châu Khải Phong Best Collection',
+      ),
+    ], location: '/artists');
+
+    expect(find.text('Ban nhạc Hương Mùa Hè'), findsOneWidget);
+    expect(find.text('Trịnh Đình Quang'), findsOneWidget);
+    await tester.tap(find.text('SUNI Hạ Linh'));
+    await tester.pumpAndSettle();
+    expect(location(h), artistLocation('suni hạ linh'));
+    expect(find.text('Khi Cô Đơn Em Nhớ Đến Ai'), findsOneWidget);
+
+    goTo(tester, h, artistLocation('chau khai phong'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 album · 2 songs'), findsOneWidget);
+    expect(find.text('Châu Khải Phong Best Collection'), findsOneWidget);
+  });
 }
 
 /// The label of the sidebar item drawn as selected.
