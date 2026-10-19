@@ -100,6 +100,9 @@
   "playerVolume": "Âm lượng",
   "playerSeek": "Tua",
 
+  "nowPlayingOpen": "Mở màn hình đang phát",
+  "nowPlayingClose": "Đóng màn hình đang phát",
+
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",
   "settingsThemeSystem": "Hệ thống",

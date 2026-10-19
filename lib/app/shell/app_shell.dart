@@ -3,12 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../features/player/now_playing/now_playing_open_provider.dart';
+import '../../features/player/now_playing/now_playing_overlay.dart';
 import '../../features/player/player_bar.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
 import 'sidebar/sidebar.dart';
 import 'sidebar/sidebar_toggle.dart';
 import 'top_bar.dart';
+import 'window/desktop_window.dart';
+import 'window/window_buttons.dart';
+import 'window/window_drag_area.dart';
 
 /// Window width below which the sidebar moves into a drawer.
 const _sidebarBreakpoint = 720.0;
@@ -30,17 +35,43 @@ class AppShell extends ConsumerWidget {
     );
   }
 
-  /// Mouse back/forward side buttons move through the history.
-  void _onPointerDown(PointerDownEvent event, NavigationHistory history) {
+  /// Mouse back/forward side buttons move through the history. While Now
+  /// Playing is open, back closes it instead and forward does nothing.
+  void _onPointerDown(PointerDownEvent event, WidgetRef ref) {
+    if (ref.read(nowPlayingOpenProvider)) {
+      if (event.buttons & kBackMouseButton != 0) {
+        ref.read(nowPlayingOpenProvider.notifier).close();
+      }
+      return;
+    }
+    final history = ref.read(navigationHistoryProvider.notifier);
     if (event.buttons & kBackMouseButton != 0) history.back();
     if (event.buttons & kForwardMouseButton != 0) history.forward();
+  }
+
+  /// Header of Now Playing with the window drag area and buttons, which
+  /// features cannot reach themselves.
+  Widget _nowPlayingTitleBar(Widget header, bool customTitleBar) {
+    return WindowDragArea(
+      child: Row(
+        children: [
+          Expanded(child: header),
+          if (customTitleBar)
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: WindowButtons(),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wide = MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
     final selected = AppDestination.values[navigationShell.currentIndex];
-    final history = ref.read(navigationHistoryProvider.notifier);
+    final nowPlayingOpen = ref.watch(nowPlayingOpenProvider);
+    final customTitleBar = ref.watch(customTitleBarProvider);
 
     final page = Expanded(child: navigationShell);
     // Spans the full width, below the sidebar too, with its own border on
@@ -49,54 +80,75 @@ class AppShell extends ConsumerWidget {
         ? const PlayerBar()
         : null;
 
-    return Listener(
-      onPointerDown: (event) => _onPointerDown(event, history),
-      child: wide
-          ? Scaffold(
-              bottomNavigationBar: playerBar,
-              body: Row(
-                children: [
-                  _CollapsibleSidebar(
-                    expanded: ref.watch(sidebarExpandedProvider),
-                    child: Sidebar(selected: selected, onSelected: _select),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Column(children: [const TopBar(), page]),
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: SidebarToggle(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : Scaffold(
-              bottomNavigationBar: playerBar,
-              drawer: Builder(
-                builder: (context) => Drawer(
-                  width: sidebarWidth,
-                  child: Sidebar(
-                    selected: selected,
-                    onSelected: (destination) {
-                      Navigator.of(context).pop();
-                      _select(destination);
-                    },
+    final shell = wide
+        ? Scaffold(
+            bottomNavigationBar: playerBar,
+            body: Row(
+              children: [
+                _CollapsibleSidebar(
+                  expanded: ref.watch(sidebarExpandedProvider),
+                  child: Sidebar(selected: selected, onSelected: _select),
+                ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Column(children: [const TopBar(), page]),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: SidebarToggle(),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              body: Builder(
-                builder: (context) => Column(
-                  children: [
-                    TopBar(onMenuPressed: Scaffold.of(context).openDrawer),
-                    page,
-                  ],
+              ],
+            ),
+          )
+        : Scaffold(
+            bottomNavigationBar: playerBar,
+            drawer: Builder(
+              builder: (context) => Drawer(
+                width: sidebarWidth,
+                child: Sidebar(
+                  selected: selected,
+                  onSelected: (destination) {
+                    Navigator.of(context).pop();
+                    _select(destination);
+                  },
                 ),
               ),
             ),
+            body: Builder(
+              builder: (context) => Column(
+                children: [
+                  TopBar(onMenuPressed: Scaffold.of(context).openDrawer),
+                  page,
+                ],
+              ),
+            ),
+          );
+
+    return Listener(
+      onPointerDown: (event) => _onPointerDown(event, ref),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Behind Now Playing nothing may take focus, be read out or run
+          // animations; the page state is kept for when it closes.
+          ExcludeFocus(
+            excluding: nowPlayingOpen,
+            child: ExcludeSemantics(
+              excluding: nowPlayingOpen,
+              child: IgnorePointer(
+                ignoring: nowPlayingOpen,
+                child: TickerMode(enabled: !nowPlayingOpen, child: shell),
+              ),
+            ),
+          ),
+          NowPlayingOverlay(
+            titleBar: (header) => _nowPlayingTitleBar(header, customTitleBar),
+          ),
+        ],
+      ),
     );
   }
 }

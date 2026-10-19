@@ -632,6 +632,18 @@ abstract class AppLocalizations {
   /// **'Seek'**
   String get playerSeek;
 
+  /// No description provided for @nowPlayingOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Now Playing'**
+  String get nowPlayingOpen;
+
+  /// No description provided for @nowPlayingClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Now Playing'**
+  String get nowPlayingClose;
+
   /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:

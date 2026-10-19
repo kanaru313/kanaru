@@ -326,6 +326,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerSeek => 'Tua';
 
   @override
+  String get nowPlayingOpen => 'Mở màn hình đang phát';
+
+  @override
+  String get nowPlayingClose => 'Đóng màn hình đang phát';
+
+  @override
   String get settingsAppearance => 'Giao diện';
 
   @override

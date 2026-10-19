@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
+import 'now_playing/now_playing_open_cover.dart';
 import 'open_media.dart';
 
 /// Left side of the player bar: cover, title and artist of the current
@@ -48,14 +49,16 @@ class NowPlayingSummary extends ConsumerWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: ColoredBox(
-            color: theme.colorScheme.surfaceContainerHighest,
-            child: SizedBox.square(
-              dimension: 64,
-              child: Icon(
-                Icons.music_note_rounded,
-                size: 32,
-                color: theme.colorScheme.onSurfaceVariant,
+          child: NowPlayingOpenCover(
+            child: ColoredBox(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: SizedBox.square(
+                dimension: 64,
+                child: Icon(
+                  Icons.music_note_rounded,
+                  size: 32,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),

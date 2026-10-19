@@ -176,6 +176,9 @@
   "playerVolume": "Volume",
   "playerSeek": "Seek",
 
+  "nowPlayingOpen": "Open Now Playing",
+  "nowPlayingClose": "Close Now Playing",
+
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
   "settingsThemeSystem": "System",
