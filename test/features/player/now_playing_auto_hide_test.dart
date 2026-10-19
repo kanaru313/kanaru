@@ -129,6 +129,31 @@ void main() {
     expect(footerOpacity(tester), 0);
   });
 
+  testWidgets('a footer that leaves under the pointer does not keep it', (
+    tester,
+  ) async {
+    await pumpOpen(tester);
+    final gesture = await mouse(tester);
+    await gesture.moveTo(
+      tester.getCenter(find.byType(NowPlayingFooter)) + const Offset(300, 0),
+    );
+    await tester.pump();
+
+    // Narrow while the pointer rests on the footer: the footer goes away
+    // without the pointer ever leaving it.
+    tester.view.physicalSize = const Size(600, 800);
+    await tester.pumpAndSettle();
+    expect(find.byType(NowPlayingFooter), findsNothing);
+    await gesture.moveTo(const Offset(300, 300));
+    await tester.pump();
+
+    tester.view.physicalSize = const Size(1280, 800);
+    await tester.pump();
+    await gesture.moveTo(const Offset(310, 300));
+    await tester.pump(const Duration(milliseconds: 3100));
+    expect(footerOpacity(tester), 0);
+  });
+
   testWidgets('hides at once when the pointer leaves the window', (
     tester,
   ) async {
