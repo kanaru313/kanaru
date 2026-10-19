@@ -17,6 +17,20 @@ final initialSettingsProvider = Provider<AppSettings>(
 /// in memory only.
 final settingsFileProvider = Provider<SettingsFile?>((ref) => null);
 
+/// Whether the last attempt to write the settings file failed. A read-only
+/// file is not a failure here: `SettingsFile.readOnly` reports that.
+class SettingsSaveFailedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool failed) => state = failed;
+}
+
+final settingsSaveFailedProvider =
+    NotifierProvider<SettingsSaveFailedNotifier, bool>(
+      SettingsSaveFailedNotifier.new,
+    );
+
 /// The current settings. Every change is saved right away, in order.
 ///
 /// There is no debounce: there is no hook to flush one when the window
@@ -62,9 +76,12 @@ class SettingsNotifier extends Notifier<AppSettings> {
     if (file == null) return;
     final settings = state;
     // SettingsFile.save never throws, so the chain never breaks.
-    _writes = _writes.then(
-      (_) => file.save(settings, keepUnknown: keepUnknown),
-    );
+    _writes = _writes.then((_) async {
+      final saved = await file.save(settings, keepUnknown: keepUnknown);
+      if (ref.mounted) {
+        ref.read(settingsSaveFailedProvider.notifier).set(!saved);
+      }
+    });
   }
 }
 

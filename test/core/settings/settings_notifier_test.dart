@@ -128,4 +128,32 @@ void main() {
 
     expect(container.read(settingsProvider), const AppSettings());
   });
+
+  test(
+    'a failed save is reported until a later save works',
+    () async {
+      final blocked = Directory('${root.path}/blocked')..createSync();
+      Process.runSync('chmod', ['555', blocked.path]);
+      addTearDown(() => Process.runSync('chmod', ['755', blocked.path]));
+      path = '${blocked.path}/sub/settings.json';
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+      expect(container.read(settingsSaveFailedProvider), isFalse);
+
+      notifier.setTheme(ThemePreference.dark);
+      await notifier.flush();
+      expect(container.read(settingsSaveFailedProvider), isTrue);
+
+      Process.runSync('chmod', ['755', blocked.path]);
+      notifier.setTheme(ThemePreference.light);
+      await notifier.flush();
+      expect(container.read(settingsSaveFailedProvider), isFalse);
+      expect(stored(), containsPair('theme', 'light'));
+    },
+    skip: Platform.isLinux && _isRoot()
+        ? 'root ignores directory modes'
+        : false,
+  );
 }
+
+bool _isRoot() => Process.runSync('id', ['-u']).stdout.toString().trim() == '0';

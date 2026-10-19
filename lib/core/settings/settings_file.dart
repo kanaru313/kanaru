@@ -48,7 +48,9 @@ class SettingsFile {
 
       final Object? json;
       try {
-        json = jsonDecode(utf8.decode(File(path).readAsBytesSync()));
+        json = jsonDecode(
+          _withoutBom(utf8.decode(File(path).readAsBytesSync())),
+        );
       } on FormatException {
         _quarantine(isLink: type == FileSystemEntityType.link);
         return const AppSettings();
@@ -80,8 +82,11 @@ class SettingsFile {
 
   /// Writes [settings]. With [keepUnknown] false, keys this version does not
   /// know are dropped too. Never throws; failures are logged.
-  Future<void> save(AppSettings settings, {bool keepUnknown = true}) async {
-    if (_readOnly) return;
+  ///
+  /// Returns `false` when writing failed. A read-only file skips the write
+  /// and returns `true`: [readOnly] reports that case.
+  Future<bool> save(AppSettings settings, {bool keepUnknown = true}) async {
+    if (_readOnly) return true;
     if (!keepUnknown) _unknownKeys = const {};
     File? temporary;
     try {
@@ -96,6 +101,7 @@ class SettingsFile {
         flush: true,
       );
       await temporary.rename(target);
+      return true;
     } catch (error) {
       _log.warning('Could not save settings.json (${_describe(error)})');
       try {
@@ -103,6 +109,7 @@ class SettingsFile {
       } on FileSystemException {
         // Never created, or already renamed.
       }
+      return false;
     }
   }
 
@@ -135,3 +142,7 @@ String _describe(Object error) => switch (error) {
   FileSystemException(:final osError?) => osError.message,
   _ => error.runtimeType.toString(),
 };
+
+/// Editors on some systems prepend a byte order mark, which JSON rejects.
+String _withoutBom(String text) =>
+    text.startsWith('\uFEFF') ? text.substring(1) : text;

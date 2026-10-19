@@ -11,12 +11,6 @@ class _FakeProcess implements Process {
   final Future<int> exitCode;
 
   @override
-  Stream<List<int>> get stdout => const Stream.empty();
-
-  @override
-  Stream<List<int>> get stderr => const Stream.empty();
-
-  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

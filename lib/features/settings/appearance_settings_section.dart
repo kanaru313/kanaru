@@ -3,10 +3,21 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import 'setting_row.dart';
 import 'settings_section.dart';
 
 /// Language names stay in their own language so they can always be found.
-const _languages = [('en', 'English'), ('vi', 'Tiếng Việt')];
+/// A translation missing here is listed by its language code.
+const _nativeNames = {'en': 'English', 'vi': 'Tiếng Việt'};
+
+/// One entry per translation the app ships, so a new one shows up by itself.
+final _languages = [
+  for (final locale in AppLocalizations.supportedLocales)
+    (
+      locale.languageCode,
+      _nativeNames[locale.languageCode] ?? locale.languageCode,
+    ),
+];
 
 /// Dropdown value for "follow the system language".
 const _systemLanguage = '';
@@ -27,9 +38,9 @@ class AppearanceSettingsSection extends ConsumerWidget {
     return SettingsSection(
       title: l10n.settingsAppearance,
       children: [
-        ListTile(
-          title: Text(l10n.settingsTheme),
-          trailing: SegmentedButton<ThemePreference>(
+        SettingRow(
+          title: l10n.settingsTheme,
+          control: SegmentedButton<ThemePreference>(
             showSelectedIcon: false,
             segments: [
               ButtonSegment(
@@ -52,9 +63,9 @@ class AppearanceSettingsSection extends ConsumerWidget {
             onSelectionChanged: (s) => notifier.setTheme(s.single),
           ),
         ),
-        ListTile(
-          title: Text(l10n.settingsLanguage),
-          trailing: DropdownMenu<String>(
+        SettingRow(
+          title: l10n.settingsLanguage,
+          control: DropdownMenu<String>(
             // Rebuilt when the value or the UI language changes, since
             // initialSelection is only read once.
             key: ValueKey('$languageCode-${Localizations.localeOf(context)}'),
@@ -74,12 +85,12 @@ class AppearanceSettingsSection extends ConsumerWidget {
             ),
           ),
         ),
-        ListTile(
-          title: Text(l10n.settingsTitleBar),
+        SettingRow(
+          title: l10n.settingsTitleBar,
           subtitle: settings.titleBar != initial.titleBar
-              ? Text(l10n.settingsRestartRequired)
+              ? l10n.settingsRestartRequired
               : null,
-          trailing: SegmentedButton<TitleBarPreference>(
+          control: SegmentedButton<TitleBarPreference>(
             showSelectedIcon: false,
             segments: [
               ButtonSegment(

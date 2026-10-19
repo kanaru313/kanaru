@@ -33,19 +33,18 @@ class AppSettings {
 
   final TitleBarPreference titleBar;
 
-  AppSettings copyWith({ThemePreference? theme, TitleBarPreference? titleBar}) =>
-      AppSettings(
-        theme: theme ?? this.theme,
-        languageCode: languageCode,
-        titleBar: titleBar ?? this.titleBar,
-      );
+  AppSettings copyWith({
+    ThemePreference? theme,
+    TitleBarPreference? titleBar,
+  }) => AppSettings(
+    theme: theme ?? this.theme,
+    languageCode: languageCode,
+    titleBar: titleBar ?? this.titleBar,
+  );
 
   /// Separate from [copyWith] because `null` is a valid language here.
-  AppSettings withLanguage(String? languageCode) => AppSettings(
-    theme: theme,
-    languageCode: languageCode,
-    titleBar: titleBar,
-  );
+  AppSettings withLanguage(String? languageCode) =>
+      AppSettings(theme: theme, languageCode: languageCode, titleBar: titleBar);
 
   @override
   bool operator ==(Object other) =>

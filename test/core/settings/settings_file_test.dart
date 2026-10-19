@@ -186,6 +186,27 @@ void main() {
       },
     );
   });
+
+  test('a UTF-8 byte order mark is ignored', () {
+    writeFile(path, [0xEF, 0xBB, 0xBF, ...utf8.encode('{"theme": "dark"}')]);
+
+    final file = SettingsFile(path);
+
+    expect(file.load().theme, ThemePreference.dark);
+    expect(file.readOnly, isFalse);
+    expect(File('$path.invalid').existsSync(), isFalse);
+  });
+
+  test('save reports whether it wrote the file', () async {
+    final file = SettingsFile(path);
+    expect(await file.save(dark), isTrue);
+
+    // A directory where the file should go makes the rename fail.
+    File(path).deleteSync();
+    Directory(path).createSync();
+    expect(await file.save(dark), isFalse);
+    Directory(path).deleteSync();
+  });
 }
 
 bool _isRoot() => Process.runSync('id', ['-u']).stdout.toString().trim() == '0';

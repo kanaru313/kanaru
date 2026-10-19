@@ -15,11 +15,12 @@ class AdvancedSettingsSection extends ConsumerWidget {
     final l10n = context.l10n;
     final paths = ref.watch(appDirectoryPathsProvider);
     final file = ref.watch(settingsFileProvider);
+    final saveFailed = ref.watch(settingsSaveFailedProvider);
 
     return SettingsSection(
       title: l10n.settingsAdvanced,
       children: [
-        if (file != null && file.readOnly)
+        if (file != null && (file.readOnly || saveFailed))
           ListTile(
             leading: Icon(
               Icons.warning_amber_outlined,
@@ -42,6 +43,7 @@ class AdvancedSettingsSection extends ConsumerWidget {
   Future<void> _confirmReset(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
+    final notifier = ref.read(settingsProvider.notifier);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -60,7 +62,7 @@ class AdvancedSettingsSection extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-    ref.read(settingsProvider.notifier).reset();
+    notifier.reset();
     messenger.showSnackBar(SnackBar(content: Text(l10n.settingsResetDone)));
   }
 }
