@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io' as io;
 
 import 'package:dbus/dbus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../player/player_service.dart';
@@ -12,6 +12,8 @@ import 'mpris_bus_name.dart';
 import 'mpris_method_handler.dart';
 import 'mpris_object.dart';
 import 'mpris_properties.dart';
+
+final _log = Logger('mpris');
 
 /// Changes within this window go out as one `PropertiesChanged`. A track
 /// change moves several properties, and the length arrives after the title.
@@ -109,13 +111,13 @@ class MprisMediaControls implements MediaControls {
     } on DBusMethodResponseException catch (error) {
       _unavailable(error);
     } catch (error, stack) {
-      debugPrint('MPRIS unavailable: $error\n$stack');
+      _log.severe('MPRIS unavailable', error, stack);
     }
   }
 
   /// The usual reasons for not starting (no session bus, bus refused us):
   /// one line, no stack trace.
-  void _unavailable(Object error) => debugPrint('MPRIS unavailable: $error');
+  void _unavailable(Object error) => _log.warning('MPRIS unavailable', error);
 
   /// Follows `PlayerService.seeked`. The service makes a new stream when its
   /// provider rebuilds and closes the old one, so a finished stream means:
@@ -128,7 +130,7 @@ class MprisMediaControls implements MediaControls {
     try {
       stream = _ref.read(playerServiceProvider.notifier).seeked;
     } catch (error) {
-      debugPrint('MPRIS: not following seeks: $error');
+      _log.warning('Not following seeks', error);
       return;
     }
     if (stream == _seekedStream) return;
@@ -175,7 +177,7 @@ class MprisMediaControls implements MediaControls {
         if (_emitFailed) return;
         _emitFailed = true;
         _active = false;
-        debugPrint('MPRIS: lost the bus, no more updates: $error');
+        _log.warning('Lost the bus, no more updates', error);
       }),
     );
   }
@@ -204,7 +206,7 @@ class MprisMediaControls implements MediaControls {
     try {
       await future.timeout(_closeTimeout);
     } catch (error) {
-      debugPrint('MPRIS: $what on shutdown failed: $error');
+      _log.warning('$what on shutdown failed', error);
     }
   }
 }

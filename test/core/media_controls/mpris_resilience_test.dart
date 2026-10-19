@@ -1,26 +1,30 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:logging/logging.dart';
 
 import '../player/fake_audio_backend.dart';
 import 'mpris_test_harness.dart';
 
 void main() {
   late MprisHarness h;
-  late List<String> logs;
-  final originalDebugPrint = debugPrint;
+  late List<LogRecord> logs;
+  late StreamSubscription<LogRecord> logSubscription;
+  late Level previousLevel;
 
   setUp(() async {
     h = MprisHarness();
     await h.setUp();
     logs = [];
-    debugPrint = (message, {wrapWidth}) => logs.add(message ?? '');
+    previousLevel = Logger.root.level;
+    Logger.root.level = Level.ALL;
+    logSubscription = Logger.root.onRecord.listen(logs.add);
   });
   tearDown(() async {
-    debugPrint = originalDebugPrint;
+    await logSubscription.cancel();
+    Logger.root.level = previousLevel;
     await h.tearDown();
   });
 
@@ -32,7 +36,13 @@ void main() {
       );
       await h.settle(const Duration(milliseconds: 100));
 
-      expect(logs, ['MPRIS unavailable: FormatException: bad address']);
+      expect(logs, hasLength(1));
+      final record = logs.single;
+      expect(record.loggerName, 'mpris');
+      expect(record.level, Level.WARNING);
+      expect(record.message, 'MPRIS unavailable');
+      expect('${record.error}', 'FormatException: bad address');
+      expect(record.stackTrace, isNull);
       expect(await h.names(), isNot(contains(mprisName)));
       await controls.dispose();
       expect(logs, hasLength(1));

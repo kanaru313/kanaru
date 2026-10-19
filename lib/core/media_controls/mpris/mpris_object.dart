@@ -1,10 +1,12 @@
 import 'package:dbus/dbus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 
 import '../../player/player_state.dart';
 import 'mpris_introspection.dart';
 import 'mpris_method_handler.dart';
 import 'mpris_properties.dart';
+
+final _log = Logger('mpris');
 
 /// `/org/mpris/MediaPlayer2` with the two MPRIS interfaces. `dbus` does not
 /// catch what a handler throws, which leaves the caller waiting for a reply
@@ -42,7 +44,7 @@ class MprisObject extends DBusObject {
     try {
       return body();
     } catch (error, stack) {
-      debugPrint('MPRIS $what failed: $error\n$stack');
+      _log.severe('$what failed', error, stack);
       return DBusMethodErrorResponse.failed();
     }
   }

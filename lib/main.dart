@@ -7,18 +7,20 @@ import 'package:media_kit/media_kit.dart';
 
 import 'app/app.dart';
 import 'app/shell/window/desktop_window.dart';
+import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // First, so startup errors are logged too. Never throws.
+  setUpLogging().installErrorHandlers();
   MediaKit.ensureInitialized();
   final customTitleBar = await setUpDesktopWindow();
 
   // Unlike ProviderScope, a container made here does not route uncaught
   // provider errors to FlutterError.reportError (its onError is internal);
-  // they reach the root zone instead. Hook PlatformDispatcher.onError too
-  // when error reporting is added.
+  // they reach the root zone, where PlatformDispatcher.onError logs them.
   final container = ProviderContainer(
     overrides: [
       customTitleBarProvider.overrideWithValue(customTitleBar),
