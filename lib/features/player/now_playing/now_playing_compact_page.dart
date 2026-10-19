@@ -48,9 +48,10 @@ class NowPlayingCompactPage extends ConsumerWidget {
                     radius: 32,
                   ),
                 ),
+                // Spacing as on SPlayer's phone layout: 24 under the title,
+                // 30 under the seek bar, 30 under the buttons.
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: 8,
                   children: [
                     // Heart and playlist sit by the title here.
                     NowPlayingTitle(
@@ -58,17 +59,26 @@ class NowPlayingCompactPage extends ConsumerWidget {
                       centered: false,
                       trailing: const Row(
                         mainAxisSize: MainAxisSize.min,
+                        spacing: 8,
                         children: [
                           NowPlayingFavoriteButton(),
                           NowPlayingPlaylistButton(),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 24),
                     const SeekBar(),
-                    const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: PlaybackControls(),
+                    const SizedBox(height: 30),
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: PlaybackControls(spread: true),
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 14),
                   ],
                 ),
               ],

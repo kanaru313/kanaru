@@ -268,6 +268,12 @@ void main() {
       expect(play.bottom, greaterThan(900 - 48));
       // The cover in the middle of the room between header and footer.
       expect(cover.center.dy, closeTo((64 + title.top) / 2, 24));
+      // Buttons spread over the row, play/pause a 60 circle in the middle.
+      expect(play.size, const Size.square(60));
+      expect(play.center.dx, closeTo(240, 1));
+      final shuffle = tester.getRect(inScreen(find.byTooltip('Shuffle')));
+      final repeat = tester.getRect(inScreen(find.byTooltip('Repeat off')));
+      expect(repeat.right - shuffle.left, greaterThan(360));
     });
 
     testWidgets('swiping reveals the queue page', (tester) async {
