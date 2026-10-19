@@ -49,6 +49,7 @@ class AlbumsScreen extends ConsumerWidget {
       child: PageScaffold(
         title: l10n.navAlbums,
         body: LibraryBrowseBody<AlbumSummary>(
+          state: ref.watch(albumsProvider),
           items: ref.watch(sortedAlbumsProvider),
           icon: Icons.album_outlined,
           noRootsMessage: l10n.albumsNoRootsMessage,

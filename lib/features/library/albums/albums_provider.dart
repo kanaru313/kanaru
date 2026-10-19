@@ -22,10 +22,10 @@ final albumsProvider = StreamProvider<List<AlbumSummary>>((ref) {
 });
 
 /// [albumsProvider] in the saved sort. Changing the sort re-sorts in memory
-/// without querying again.
-final sortedAlbumsProvider = Provider<AsyncValue<List<AlbumSummary>>>((ref) {
+/// without querying again. Null until the first list loaded.
+final sortedAlbumsProvider = Provider<List<AlbumSummary>?>((ref) {
   final sort = ref.watch(settingsProvider.select((s) => s.albumSort));
-  return ref
-      .watch(albumsProvider)
-      .whenData((albums) => sortAlbums(albums, sort));
+  // `value` keeps the last list through a failed or running reload.
+  final list = ref.watch(albumsProvider).value;
+  return list == null ? null : sortAlbums(list, sort);
 });

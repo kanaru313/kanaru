@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'stable_hash.dart';
+import 'placeholder_colors.dart';
 
 /// Round placeholder for an artist: the first letter of [name] on a color
 /// picked from [artistKey], the same on every launch. Artist pictures will
@@ -19,13 +19,10 @@ class ArtistAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final pairs = [
-      (scheme.primaryContainer, scheme.onPrimaryContainer),
-      (scheme.secondaryContainer, scheme.onSecondaryContainer),
-      (scheme.tertiaryContainer, scheme.onTertiaryContainer),
-    ];
-    final (background, foreground) = pairs[fnv1a(artistKey) % pairs.length];
+    final (background, foreground) = placeholderColors(
+      Theme.of(context).colorScheme,
+      artistKey,
+    );
     final initial = name.characters.firstOrNull?.toUpperCase() ?? '';
 
     return CircleAvatar(

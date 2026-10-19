@@ -3,9 +3,11 @@ import '../../../core/database/library_database.dart';
 import '../albums/album_header.dart' show AlbumInfo;
 import '../albums/album_tile_data.dart';
 import '../sort_compare.dart';
+import 'artist_summaries.dart' show preferredSpelling;
 
 /// What an artist page lists, from the tracks crediting the artist:
-/// - [albums]: albums whose album artist (else first track artist) is them,
+/// - [albums]: albums the artist owns (one of its album artists, else its
+///   first track artist),
 /// - [songs]: every one of those tracks, in query order,
 /// - [appearsOn]: the other albums those tracks belong to.
 class ArtistPageSections {
@@ -26,9 +28,7 @@ class ArtistPageSections {
     final appearsOn = <AlbumTileData>[];
     for (final MapEntry(key: albumKey, value: albumTracks) in byAlbum.entries) {
       final tile = _tileData(albumKey, albumTracks);
-      (splitArtists(albumKey.artistKey).contains(key) ? albums : appearsOn).add(
-        tile,
-      );
+      (albumKey.artistKeys.contains(key) ? albums : appearsOn).add(tile);
     }
     albums.sort(_byYearThenTitle);
     appearsOn.sort(_byYearThenTitle);
@@ -40,7 +40,7 @@ class ArtistPageSections {
     );
   }
 
-  /// The spelling of the first track that credits the artist.
+  /// The artist's name, chosen by [preferredSpelling] like in the list.
   final String name;
   final List<AlbumTileData> albums;
   final List<BrowseTrack> songs;
@@ -50,14 +50,15 @@ class ArtistPageSections {
   int get albumCount => albums.length + appearsOn.length;
 }
 
-/// The spelling of [key] in the first track that credits it.
+/// The preferred spelling of [key] among the tracks that credit it.
 String? _displayName(String key, List<BrowseTrack> tracks) {
+  String? best;
   for (final track in tracks) {
     for (final name in splitArtists(track.artist)) {
-      if (artistKey(name) == key) return name;
+      if (artistKey(name) == key) best = preferredSpelling(best, name);
     }
   }
-  return null;
+  return best;
 }
 
 /// Album details from the tracks at hand (only this artist's, so the tile

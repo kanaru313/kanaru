@@ -43,6 +43,7 @@ class ArtistsScreen extends ConsumerWidget {
       child: PageScaffold(
         title: l10n.navArtists,
         body: LibraryBrowseBody<ArtistSummary>(
+          state: ref.watch(artistsProvider),
           items: ref.watch(sortedArtistsProvider),
           icon: Icons.person_outline,
           noRootsMessage: l10n.artistsNoRootsMessage,

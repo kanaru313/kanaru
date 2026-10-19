@@ -110,4 +110,27 @@ void main() {
     expect(find.text('Disc 1'), findsNothing);
     expect(h.container.exists(albumTracksProvider(_key)), isFalse);
   });
+
+  testWidgets('tracks without a disc come last under "Unknown disc"', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack('nodisc', artist: 'Cy', album: 'Mixed'),
+      TestTrack('first', artist: 'Cy', album: 'Mixed', disc: 1, track: 1),
+    ], location: albumLocation(const AlbumKey('cy', 'mixed')));
+
+    expect(find.text('Disc 1'), findsOneWidget);
+    expect(find.text('Unknown disc'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Disc 1')).dy,
+      lessThan(tester.getTopLeft(find.text('Unknown disc')).dy),
+    );
+
+    await tester.tap(find.text('nodisc'));
+    await tester.pump();
+    final queue = h.container.read(playerServiceProvider).queue;
+    expect(queueTitles(h), ['first', 'nodisc']);
+    expect(queue.current?.title, 'nodisc');
+  });
 }

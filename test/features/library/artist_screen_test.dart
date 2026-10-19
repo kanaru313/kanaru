@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/shell/sidebar/sidebar_item.dart';
-import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/library/artists/artist_tracks_provider.dart';
 import 'package:kanaru/features/library/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
@@ -65,9 +66,37 @@ void main() {
     );
     expect(queue.current?.title, 'guest');
 
+    // Something else is queued, then Play queues the whole section again.
+    await h.container.read(playerServiceProvider.notifier).openTracks([
+      Track.fromPath('/other.mp3'),
+    ]);
     await tester.tap(find.widgetWithText(FilledButton, 'Play'));
     await tester.pump();
-    expect(h.container.read(playerServiceProvider).queue.current?.title, 'own');
+    final played = h.container.read(playerServiceProvider).queue;
+    expect(
+      [for (final t in played.original) t.title],
+      ['own', 'guest', 'loose'],
+    );
+    expect(played.current?.title, 'own');
+  });
+
+  testWidgets('empty sections are hidden', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: artistLocation('x'));
+    Finder onPage(String text) => find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.text(text),
+    );
+    // X owns "Theirs" and appears nowhere else.
+    expect(onPage('Albums'), findsOneWidget);
+    expect(onPage('Appears on'), findsNothing);
+
+    goTo(tester, h, artistLocation('anna'));
+    await tester.pumpAndSettle();
+    // Anna has a song without album: neither album section.
+    expect(onPage('Albums'), findsNothing);
+    expect(onPage('Appears on'), findsNothing);
+    expect(onPage('Songs'), findsOneWidget);
   });
 
   testWidgets('an album opens inside the Artists branch', (tester) async {

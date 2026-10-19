@@ -21,10 +21,11 @@ final artistsProvider = StreamProvider<List<ArtistSummary>>((ref) {
   ).map(buildArtistSummaries);
 });
 
-/// [artistsProvider] in the saved sort, re-sorted in memory.
-final sortedArtistsProvider = Provider<AsyncValue<List<ArtistSummary>>>((ref) {
+/// [artistsProvider] in the saved sort, re-sorted in memory. Null until the
+/// first list loaded.
+final sortedArtistsProvider = Provider<List<ArtistSummary>?>((ref) {
   final sort = ref.watch(settingsProvider.select((s) => s.artistSort));
-  return ref
-      .watch(artistsProvider)
-      .whenData((artists) => sortArtists(artists, sort));
+  // `value` keeps the last list through a failed or running reload.
+  final list = ref.watch(artistsProvider).value;
+  return list == null ? null : sortArtists(list, sort);
 });

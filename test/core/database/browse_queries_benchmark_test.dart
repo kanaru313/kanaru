@@ -11,11 +11,12 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_sql_functions.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/throttled_tracks_query.dart';
 
 /// How the albums query is listened to during a timed scan.
-enum _Listener { none, watch, throttled }
+enum _Listener { none, watch, throttled, albumPage }
 
 const _total = 100000;
 
@@ -180,21 +181,33 @@ void main() {
         final scanRows = _rows((await scanDb.addRoots(['/m'], now: 1)).single);
         var emits = 0;
         final loadTime = Stopwatch();
-        Future<List<AlbumSummary>> timedLoad() async {
+        Future<T> timed<T>(Future<T> Function() load) async {
           loadTime.start();
           try {
-            return await scanDb.albums();
+            return await load();
           } finally {
             loadTime.stop();
           }
         }
+
+        // An album of the scan (row 101 has one), as its open page asks.
+        final page = scanRows[101];
+        final pageKey = AlbumKey(
+          albumArtistKey(page.albumArtist.value, page.artist.value),
+          albumTitleKey(page.album.value!),
+        );
 
         final sub = switch (listener) {
           _Listener.none => null,
           _Listener.watch => scanDb.watchAlbums().listen((_) => emits++),
           _Listener.throttled => throttledTracksQuery(
             scanDb,
-            timedLoad,
+            () => timed(scanDb.albums),
+            interval: const Duration(seconds: 2),
+          ).listen((_) => emits++),
+          _Listener.albumPage => throttledTracksQuery(
+            scanDb,
+            () => timed(() => scanDb.albumTracks(pageKey)),
             interval: const Duration(seconds: 2),
           ).listen((_) => emits++),
         };
@@ -221,10 +234,14 @@ void main() {
       ]) {
         final alone = <int>[];
         final throttled = <int>[];
+        final albumPage = <int>[];
         for (var i = 0; i < 3; i++) {
           alone.add(await scanInto(_Listener.none, readTime: readTime));
           throttled.add(
             await scanInto(_Listener.throttled, readTime: readTime),
+          );
+          albumPage.add(
+            await scanInto(_Listener.albumPage, readTime: readTime),
           );
         }
         final watched = await scanInto(_Listener.watch, readTime: readTime);
@@ -234,11 +251,13 @@ void main() {
           '${readTime.inMilliseconds} ms tag read per batch: alone $alone '
           '(median $base ms); albums throttled $throttled (median '
           '${median(throttled)} ms, ${slower(median(throttled), base)}); '
+          'album page throttled $albumPage (median ${median(albumPage)} ms, '
+          '${slower(median(albumPage), base)}); '
           'albums watch $watched ms (${slower(watched, base)})',
         );
       }
     },
     skip: !_enabled,
-    timeout: const Timeout(Duration(minutes: 10)),
+    timeout: const Timeout(Duration(minutes: 15)),
   );
 }

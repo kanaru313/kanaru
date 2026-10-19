@@ -3,13 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/library_browse_queries.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/throttled_tracks_query.dart';
+import '../library_browse_refresh.dart';
 
-/// The tracks crediting one artist (by key), live. Disposed when its page
-/// closes.
+/// The tracks crediting one artist (by key), reloaded at most every
+/// [libraryBrowseRefreshIntervalProvider] while the library changes.
+/// Disposed when its page closes.
 final artistTracksProvider = StreamProvider.autoDispose
     .family<List<BrowseTrack>, String>((ref, artistKey) {
       final db = ref.watch(libraryDatabaseProvider);
-      return db == null
-          ? Stream.value(const [])
-          : db.watchArtistTracks(artistKey);
+      if (db == null) return Stream.value(const []);
+      return throttledTracksQuery(
+        db,
+        () => db.artistTracks(artistKey),
+        interval: ref.watch(libraryBrowseRefreshIntervalProvider),
+      );
     });

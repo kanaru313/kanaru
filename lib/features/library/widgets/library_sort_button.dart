@@ -3,9 +3,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/settings/library_sort.dart';
 import '../../../l10n/l10n.dart';
 
-/// "Sort by" menu of a library screen: one entry per field, then ascending
-/// and descending. Shows the current field and direction.
-class LibrarySortButton<F extends Enum> extends StatelessWidget {
+/// "Sort by" menu of a library screen: one radio entry per field, then
+/// ascending and descending. Shows the current field and direction; focus
+/// goes back to the button when the menu closes.
+class LibrarySortButton<F extends Enum> extends StatefulWidget {
   const LibrarySortButton({
     super.key,
     required this.choice,
@@ -20,41 +21,55 @@ class LibrarySortButton<F extends Enum> extends StatelessWidget {
   final ValueChanged<SortChoice<F>> onChanged;
 
   @override
+  State<LibrarySortButton<F>> createState() => _LibrarySortButtonState<F>();
+}
+
+class _LibrarySortButtonState<F extends Enum>
+    extends State<LibrarySortButton<F>> {
+  final _buttonFocus = FocusNode(debugLabel: 'Sort button');
+
+  @override
+  void dispose() {
+    _buttonFocus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    Widget check(bool selected) => selected
-        ? const Icon(Icons.check)
-        : const SizedBox.square(dimension: 24);
+    final choice = widget.choice;
 
     return MenuAnchor(
+      childFocusNode: _buttonFocus,
       menuChildren: [
-        for (final field in fields)
-          MenuItemButton(
-            leadingIcon: check(field == choice.field),
-            onPressed: () => onChanged(choice.copyWith(field: field)),
-            child: Text(label(l10n, field)),
+        for (final field in widget.fields)
+          RadioMenuButton<F>(
+            value: field,
+            groupValue: choice.field,
+            onChanged: (field) =>
+                widget.onChanged(choice.copyWith(field: field)),
+            child: Text(widget.label(l10n, field)),
           ),
         const Divider(),
-        MenuItemButton(
-          leadingIcon: check(!choice.descending),
-          onPressed: () => onChanged(choice.copyWith(descending: false)),
-          child: Text(l10n.sortAscending),
-        ),
-        MenuItemButton(
-          leadingIcon: check(choice.descending),
-          onPressed: () => onChanged(choice.copyWith(descending: true)),
-          child: Text(l10n.sortDescending),
-        ),
+        for (final descending in const [false, true])
+          RadioMenuButton<bool>(
+            value: descending,
+            groupValue: choice.descending,
+            onChanged: (descending) =>
+                widget.onChanged(choice.copyWith(descending: descending)),
+            child: Text(descending ? l10n.sortDescending : l10n.sortAscending),
+          ),
       ],
       builder: (context, controller, child) => Tooltip(
         message: l10n.sortTooltip,
         child: TextButton.icon(
+          focusNode: _buttonFocus,
           onPressed: () =>
               controller.isOpen ? controller.close() : controller.open(),
           icon: Icon(
             choice.descending ? Icons.arrow_downward : Icons.arrow_upward,
           ),
-          label: Text(label(l10n, choice.field)),
+          label: Text(widget.label(l10n, choice.field)),
         ),
       ),
     );

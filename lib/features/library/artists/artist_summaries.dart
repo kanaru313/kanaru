@@ -13,7 +13,7 @@ class ArtistSummary {
   /// `artistKey(name)`; identifies the artist page.
   final String key;
 
-  /// The first spelling met among the tracks.
+  /// The [preferredSpelling] among the tracks.
   final String name;
   final int songCount;
 
@@ -33,7 +33,7 @@ List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) {
     // splitArtists already drops repeated names within one value.
     for (final name in splitArtists(credit.artist)) {
       final key = artistKey(name);
-      names.putIfAbsent(key, () => name);
+      names[key] = preferredSpelling(names[key], name);
       songs[key] = (songs[key] ?? 0) + credit.trackCount;
       (albums[key] ??= {}).addAll(credit.albumKeys);
     }
@@ -48,3 +48,9 @@ List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) {
       ),
   ];
 }
+
+/// Of two spellings of one artist (same key), the one shown: the smallest
+/// by code units, like album titles. Any track order gives the same name,
+/// on the list and on the artist page.
+String preferredSpelling(String? current, String candidate) =>
+    current == null || candidate.compareTo(current) < 0 ? candidate : current;

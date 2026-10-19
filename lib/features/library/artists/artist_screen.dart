@@ -8,11 +8,10 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
+import '../library_detail_body.dart';
 import '../library_route_keys.dart';
 import '../play_tracks.dart';
-import '../widgets/page_material.dart';
 import '../songs/song_tile.dart';
-import '../songs/songs_empty_view.dart';
 import '../widgets/artist_avatar.dart';
 import 'artist_page_sections.dart';
 import 'artist_tracks_provider.dart';
@@ -29,28 +28,14 @@ class ArtistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final artistKey = decodeArtistRouteKey(routeKey);
-    if (artistKey == null) return const PageMaterial(child: _ArtistNotFound());
-
-    return PageMaterial(
-      child: ref
-          .watch(artistTracksProvider(artistKey))
-          .when(
-            skipLoadingOnReload: true,
-            loading: () => const Center(
-              child: SizedBox.square(
-                dimension: 28,
-                child: CircularProgressIndicator(strokeWidth: 3),
-              ),
-            ),
-            error: (error, stackTrace) =>
-                const SongsEmptyView(kind: SongsEmptyKind.unavailable),
-            data: (tracks) => tracks.isEmpty
-                ? const _ArtistNotFound()
-                : _ArtistPage(
-                    artistKey: artistKey,
-                    sections: ArtistPageSections.fromTracks(artistKey, tracks),
-                  ),
-          ),
+    return LibraryDetailBody(
+      tracks: artistKey == null ? null : artistTracksProvider(artistKey),
+      what: 'the artist',
+      notFound: const _ArtistNotFound(),
+      builder: (tracks) => _ArtistPage(
+        artistKey: artistKey!,
+        sections: ArtistPageSections.fromTracks(artistKey, tracks),
+      ),
     );
   }
 }
@@ -66,15 +51,7 @@ class _ArtistPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final songs = sections.songs;
-    final queue = [
-      for (final t in songs)
-        trackFromItem(
-          path: t.path,
-          title: t.title,
-          artist: t.artist,
-          durationMs: t.durationMs,
-        ),
-    ];
+    final queue = [for (final t in songs) trackFromBrowse(t)];
     void openAlbum(AlbumTileData album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
     Widget heading(String text) => SliverToBoxAdapter(

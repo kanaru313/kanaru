@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/settings/settings_provider.dart';
 import '../play_tracks.dart';
+import '../widgets/library_loading.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
@@ -81,12 +82,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
         .watch(songsListProvider)
         .when(
           skipLoadingOnReload: true,
-          loading: () => const Center(
-            child: SizedBox.square(
-              dimension: 28,
-              child: CircularProgressIndicator(strokeWidth: 3),
-            ),
-          ),
+          loading: () => const LibraryLoading(),
           error: (error, stackTrace) =>
               const SongsEmptyView(kind: SongsEmptyKind.unavailable),
           data: (songs) {

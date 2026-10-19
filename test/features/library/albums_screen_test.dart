@@ -58,6 +58,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the sort menu marks the current choice and refocuses', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/albums');
+    final button = find.widgetWithText(TextButton, 'Title');
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+
+    RadioMenuButton<T> radio<T>(String text) =>
+        tester.widget(find.widgetWithText(RadioMenuButton<T>, text));
+    final title = radio<AlbumSortField>('Title');
+    expect(title.groupValue, title.value, reason: 'Title is checked');
+    final year = radio<AlbumSortField>('Year');
+    expect(year.groupValue, isNot(year.value));
+    final ascending = radio<bool>('Ascending');
+    expect(ascending.groupValue, ascending.value);
+    expect(
+      tester.getSemantics(
+        find.widgetWithText(RadioMenuButton<AlbumSortField>, 'Title'),
+      ),
+      isSemantics(isChecked: true),
+    );
+
+    await tester.tap(find.text('Year'));
+    await tester.pumpAndSettle();
+    final focus = tester
+        .widget<TextButton>(find.widgetWithText(TextButton, 'Year'))
+        .focusNode!;
+    expect(focus.hasFocus, isTrue, reason: 'focus returns to the button');
+  });
+
   testWidgets('switches to the list view and saves it', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/albums');

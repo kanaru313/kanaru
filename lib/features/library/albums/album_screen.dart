@@ -7,10 +7,9 @@ import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
+import '../library_detail_body.dart';
 import '../library_route_keys.dart';
 import '../play_tracks.dart';
-import '../widgets/page_material.dart';
-import '../songs/songs_empty_view.dart';
 import 'album_disc_groups.dart';
 import 'album_header.dart';
 import 'album_track_tile.dart';
@@ -27,25 +26,11 @@ class AlbumScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final key = decodeAlbumRouteKey(routeKey);
-    if (key == null) return const PageMaterial(child: _AlbumNotFound());
-
-    return PageMaterial(
-      child: ref
-          .watch(albumTracksProvider(key))
-          .when(
-            skipLoadingOnReload: true,
-            loading: () => const Center(
-              child: SizedBox.square(
-                dimension: 28,
-                child: CircularProgressIndicator(strokeWidth: 3),
-              ),
-            ),
-            error: (error, stackTrace) =>
-                const SongsEmptyView(kind: SongsEmptyKind.unavailable),
-            data: (tracks) => tracks.isEmpty
-                ? const _AlbumNotFound()
-                : _AlbumPage(albumKey: key, tracks: tracks),
-          ),
+    return LibraryDetailBody(
+      tracks: key == null ? null : albumTracksProvider(key),
+      what: 'the album',
+      notFound: const _AlbumNotFound(),
+      builder: (tracks) => _AlbumPage(albumKey: key!, tracks: tracks),
     );
   }
 }
@@ -61,21 +46,18 @@ class _AlbumPage extends ConsumerWidget {
     final l10n = context.l10n;
     final info = AlbumInfo.fromTracks(tracks);
     final groups = groupByDisc(tracks);
-    final queue = [
-      for (final t in tracks)
-        trackFromItem(
-          path: t.path,
-          title: t.title,
-          artist: t.artist,
-          durationMs: t.durationMs,
-        ),
-    ];
-    // Positions in [tracks] follow the display order: groups keep it.
-    var index = 0;
+    final queue = [for (final t in tracks) trackFromBrowse(t)];
+    // Where each group starts in [tracks]: groups keep the display order.
+    final starts = <int>[];
+    var count = 0;
+    for (final group in groups) {
+      starts.add(count);
+      count += group.tracks.length;
+    }
     // Links to the album artist's page only when a track here credits them:
     // a name found only as album artist (for example "Various Artists") has
     // no artist page.
-    final artistKey = splitArtists(albumKey.artistKey).firstOrNull;
+    final artistKey = albumKey.artistKeys.firstOrNull;
     final linked =
         artistKey != null &&
         tracks.any((t) => artistKeys(t.artist).contains(artistKey));
@@ -95,7 +77,7 @@ class _AlbumPage extends ConsumerWidget {
                 : null,
           ),
         ),
-        for (final group in groups) ...[
+        for (final (g, group) in groups.indexed) ...[
           if (groups.length > 1)
             SliverToBoxAdapter(
               child: Padding(
@@ -108,18 +90,14 @@ class _AlbumPage extends ConsumerWidget {
                 ),
               ),
             ),
-          () {
-            final start = index;
-            index += group.tracks.length;
-            return SliverList.builder(
-              itemCount: group.tracks.length,
-              itemBuilder: (context, i) => AlbumTrackTile(
-                track: group.tracks[i],
-                albumArtist: info.artist,
-                onTap: () => playTracks(ref, queue, start + i),
-              ),
-            );
-          }(),
+          SliverList.builder(
+            itemCount: group.tracks.length,
+            itemBuilder: (context, i) => AlbumTrackTile(
+              track: group.tracks[i],
+              albumArtist: info.artist,
+              onTap: () => playTracks(ref, queue, starts[g] + i),
+            ),
+          ),
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],

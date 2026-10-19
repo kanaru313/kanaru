@@ -7,6 +7,7 @@ import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/empty_state.dart';
 import 'songs/songs_empty_view.dart';
+import 'widgets/library_loading.dart';
 
 /// The states shared by the Albums and Artists screens: library unavailable,
 /// no music folder yet (only a hint: adding folders happens in Songs),
@@ -14,6 +15,7 @@ import 'songs/songs_empty_view.dart';
 class LibraryBrowseBody<T> extends ConsumerWidget {
   const LibraryBrowseBody({
     super.key,
+    required this.state,
     required this.items,
     required this.icon,
     required this.noRootsMessage,
@@ -23,7 +25,12 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
     required this.builder,
   });
 
-  final AsyncValue<List<T>> items;
+  /// The load state of the list (loading, failed).
+  final AsyncValue<Object?> state;
+
+  /// The latest list, sorted; null until one loaded. Kept when a later
+  /// reload fails (the screen logs the error).
+  final List<T>? items;
   final IconData icon;
   final String noRootsMessage;
   final String emptyTitle;
@@ -48,37 +55,26 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
       libraryIndexerProvider.select((s) => s is IndexerScanning),
     );
 
-    return items.when(
-      skipLoadingOnReload: true,
-      loading: () => const Center(
-        child: SizedBox.square(
-          dimension: 28,
-          child: CircularProgressIndicator(strokeWidth: 3),
+    final list = items;
+    if (list == null) {
+      return state.hasError
+          ? const SongsEmptyView(kind: SongsEmptyKind.unavailable)
+          : const LibraryLoading();
+    }
+    if (list.isEmpty) {
+      return scanning
+          ? const SizedBox.shrink()
+          : EmptyState(icon: icon, title: emptyTitle, message: emptyMessage);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+          child: toolbar,
         ),
-      ),
-      error: (error, stackTrace) =>
-          const SongsEmptyView(kind: SongsEmptyKind.unavailable),
-      data: (list) {
-        if (list.isEmpty) {
-          return scanning
-              ? const SizedBox.shrink()
-              : EmptyState(
-                  icon: icon,
-                  title: emptyTitle,
-                  message: emptyMessage,
-                );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-              child: toolbar,
-            ),
-            Expanded(child: builder(list)),
-          ],
-        );
-      },
+        Expanded(child: builder(list)),
+      ],
     );
   }
 }

@@ -76,4 +76,22 @@ void main() {
     ]);
     expect(page.name, 'ANNA');
   });
+
+  test('an owner with a cut key still owns the album', () {
+    final long = 'n' * 300;
+    final tracks = [
+      track('t', artist: long, album: 'Big', albumArtist: '$long; B'),
+    ];
+    final page = ArtistPageSections.fromTracks('n' * 256, tracks);
+    expect([for (final a in page.albums) a.title], ['Big']);
+    final b = ArtistPageSections.fromTracks('b', tracks);
+    expect([for (final a in b.albums) a.title], ['Big']);
+  });
+
+  test('the name does not depend on the track order', () {
+    final a = track('a', artist: 'ann');
+    final b = track('b', artist: 'ANN');
+    expect(ArtistPageSections.fromTracks('ann', [a, b]).name, 'ANN');
+    expect(ArtistPageSections.fromTracks('ann', [b, a]).name, 'ANN');
+  });
 }

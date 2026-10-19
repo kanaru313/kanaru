@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart' show AlbumKey;
-import 'stable_hash.dart';
+import 'placeholder_colors.dart';
 
 /// Square cover of an album. A colored placeholder for now: the color is
 /// picked from the album key, so an album keeps its color across launches.
@@ -14,15 +14,10 @@ class AlbumArtwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final pairs = [
-      (scheme.primaryContainer, scheme.onPrimaryContainer),
-      (scheme.secondaryContainer, scheme.onSecondaryContainer),
-      (scheme.tertiaryContainer, scheme.onTertiaryContainer),
-    ];
-    final (background, foreground) =
-        pairs[fnv1a('${albumKey.artistKey}\u0000${albumKey.titleKey}') %
-            pairs.length];
+    final (background, foreground) = placeholderColors(
+      Theme.of(context).colorScheme,
+      '${albumKey.artistKey}\u0000${albumKey.titleKey}',
+    );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(size < 64 ? 4 : 8),

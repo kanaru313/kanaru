@@ -39,6 +39,8 @@ void main() {
   test('case merges, Unicode too; the first spelling is shown', () {
     final all = build([credit('ANN', 1), credit('Ann', 1), credit('ĐEN', 1)]);
     expect(all['ann']!.name, 'ANN');
+    final reversed = build([credit('Ann', 1), credit('ANN', 1)]);
+    expect(reversed['ann']!.name, 'ANN', reason: 'same name in any order');
     expect(all['ann']!.songCount, 2);
     expect(build([credit('ĐEN', 1), credit('Đen', 2)])['đen']!.songCount, 3);
   });

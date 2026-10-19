@@ -7,9 +7,12 @@ import '../../core/database/library_database.dart' show AlbumKey;
 const albumsPath = '/albums';
 const artistsPath = '/artists';
 
-/// Longest route key accepted: keys are cut to 256 characters in SQL, so a
-/// longer one was not made by this app.
-const _maxRouteKeyLength = 2048;
+/// Longest route key accepted. Each key part holds at most 256 characters
+/// (an album artist key may join several), and the worst characters (4-byte
+/// UTF-8, or control characters JSON escapes as 6 bytes) grow 4/3 in base64:
+/// 256 + 256 emoji give about 2 740 characters. 8192 leaves room for a few
+/// album artists while still refusing absurd input.
+const _maxRouteKeyLength = 8192;
 
 /// `base64Url(utf8(json([...parts])))` without padding: no `/ ? # % =`,
 /// never empty, decoded once by go_router and kept intact in the history.
@@ -46,7 +49,7 @@ String? decodeArtistRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
 /// An album page in the Albums branch.
 String albumLocation(AlbumKey key) => '$albumsPath/${encodeAlbumRouteKey(key)}';
 
-/// An artist page; [artistKey] is a lower-cased name from SQL.
+/// An artist page; [artistKey] comes from `artistKey` in `artist_names.dart`.
 String artistLocation(String artistKey) =>
     '$artistsPath/${encodeArtistRouteKey(artistKey)}';
 

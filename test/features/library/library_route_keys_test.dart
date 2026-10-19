@@ -54,9 +54,21 @@ void main() {
     expect(decodeArtistRouteKey('!!'), isNull);
   });
 
-  test('keys over 2048 characters are refused', () {
-    final long = encodeArtistRouteKey('n' * 2000);
-    expect(long.length, greaterThan(2048));
+  test('the largest keys the app makes still open', () {
+    // Keys are cut to 256 characters; emoji and escaped control characters
+    // are the longest in UTF-8 JSON.
+    for (final char in ['😀', '漢', '\u0001']) {
+      final key = AlbumKey(char * 256, char * 256);
+      final encoded = encodeAlbumRouteKey(key);
+      expect(decodeAlbumRouteKey(encoded), key, reason: '${encoded.length}');
+    }
+    final artist = '😀' * 256;
+    expect(decodeArtistRouteKey(encodeArtistRouteKey(artist)), artist);
+  });
+
+  test('keys over 8192 characters are refused', () {
+    final long = encodeArtistRouteKey('n' * 7000);
+    expect(long.length, greaterThan(8192));
     expect(decodeArtistRouteKey(long), isNull);
   });
 
