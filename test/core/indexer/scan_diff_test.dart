@@ -6,8 +6,19 @@ import 'package:kanaru/core/indexer/walk_audio_files.dart';
 WalkedFile file(String path, {int mtime = 1, int size = 10}) =>
     WalkedFile(path: path, mtimeMs: mtime, sizeBytes: size);
 
-TrackSnapshot row(int id, String path, {int mtime = 1, int size = 10}) =>
-    TrackSnapshot(id: id, path: path, mtimeMs: mtime, sizeBytes: size);
+TrackSnapshot row(
+  int id,
+  String path, {
+  int mtime = 1,
+  int size = 10,
+  bool error = false,
+}) => TrackSnapshot(
+  id: id,
+  path: path,
+  mtimeMs: mtime,
+  sizeBytes: size,
+  hasScanError: error,
+);
 
 void main() {
   test('new file is read and counted as added', () {
@@ -89,5 +100,27 @@ void main() {
     expect(diff.rootEmpty, isFalse);
     expect(diff.toRead, isEmpty);
     expect(diff.toDelete, isEmpty);
+  });
+
+  test('an empty folder keeps what was stored below it', () {
+    final diff = diffScan(
+      WalkResult(files: [file('/m/a.mp3')], emptyDirs: ['/m/nas']),
+      [
+        row(1, '/m/a.mp3'),
+        row(2, '/m/nas/deep/x.mp3'),
+        row(3, '/m/nas2/y.mp3'),
+      ],
+    );
+    expect(diff.toDelete, [3]);
+  });
+
+  test('an unchanged file with a scan error is read again, not "updated"', () {
+    final diff = diffScan(
+      WalkResult(files: [file('/m/a.mp3'), file('/m/b.mp3')]),
+      [row(1, '/m/a.mp3', error: true), row(2, '/m/b.mp3')],
+    );
+    expect(diff.toRead.map((f) => f.path), ['/m/a.mp3']);
+    expect(diff.added, 0);
+    expect(diff.updated, 0);
   });
 }

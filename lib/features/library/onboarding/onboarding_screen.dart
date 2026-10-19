@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/indexer/indexer_providers.dart';
@@ -11,6 +12,8 @@ import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
 import 'onboarding_folder_list.dart';
 import 'suggested_music_folder_provider.dart';
+
+final _log = Logger('library');
 
 /// Routes this screen leaves to. Literals because features must not import
 /// `app/`; they are the paths of `AppDestination.songs` and `.home`.
@@ -34,11 +37,9 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final List<String> _folders = [];
   bool _suggestionSelected = true;
-  bool _suggestionDone = false;
   bool _busy = false;
 
-  String? get _suggestion =>
-      _suggestionDone ? null : ref.watch(suggestedMusicFolderProvider).value;
+  String? get _suggestion => ref.watch(suggestedMusicFolderProvider).value;
 
   /// Folders that will become roots: the checked suggestion and the added ones.
   List<String> _selection(String? suggestion) => [
@@ -73,32 +74,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _folders.add(path!));
   }
 
+  /// Stores the chosen folders and scans them. When some folders were
+  /// refused but others stored, goes on to Songs anyway (the stored ones must
+  /// not be stranded without a scan) and reports the refusals there.
   Future<void> _start() async {
-    final suggestion = _suggestion;
-    final chosen = _selection(suggestion);
-    if (chosen.isEmpty || _busy) return;
+    if (_busy) return;
+    final chosen = _selection(ref.read(suggestedMusicFolderProvider).value);
+    if (chosen.isEmpty) return;
     final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
-    final result = await ref
-        .read(libraryRootsControllerProvider)
-        .addRoots(chosen);
-    if (!mounted) return;
-    if (result.rejected.isNotEmpty) {
-      // Folders stored before the refusal must not be offered again.
-      setState(() {
-        _busy = false;
-        if (suggestion != null && !result.rejected.containsKey(suggestion)) {
-          _suggestionDone = true;
-        }
-        _folders.removeWhere((f) => !result.rejected.containsKey(f));
-      });
-      final first = result.rejected.entries.first;
-      _message(rootRejectionMessage(l10n, first.key, first.value));
-      return;
+    try {
+      final result = await ref
+          .read(libraryRootsControllerProvider)
+          .addRoots(chosen);
+      if (!mounted) return;
+      final refusals = rootRejectionsMessage(l10n, result.rejected);
+      if (result.added.isEmpty) {
+        _message(refusals);
+        return;
+      }
+      // Errors end up in the indexer state, never in the zone.
+      unawaited(ref.read(libraryIndexerProvider.notifier).scan());
+      context.go(_songsPath);
+      if (result.rejected.isNotEmpty) {
+        // The root messenger outlives this screen.
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(refusals)));
+      }
+    } catch (error, stackTrace) {
+      _log.severe('Starting the first scan failed', error, stackTrace);
+      if (mounted) _message(l10n.libraryUnexpectedError);
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    // Errors end up in the indexer state, never in the zone.
-    unawaited(ref.read(libraryIndexerProvider.notifier).scan());
-    context.go(_songsPath);
   }
 
   @override

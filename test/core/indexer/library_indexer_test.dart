@@ -49,7 +49,7 @@ void main() {
   Future<int> idOf(String rel) async =>
       (await tracks()).firstWhere((t) => t.path == '$root/$rel').id;
 
-  test('first scan stores every file; second scan reads nothing', () async {
+  test('first scan stores every file; second reads only failed ones', () async {
     touch('a.mp3');
     touch('sub/b.flac');
     touch('bad.mp3');
@@ -66,8 +66,12 @@ void main() {
     reader.reset();
     await scan();
 
-    expect(reader.readCount, 0);
+    expect(reader.batches.expand((b) => b), [
+      '$root/bad.mp3',
+    ], reason: 'a failed read is retried, unchanged files are not');
     expect(summary().added, 0);
+    expect(summary().updated, 0);
+    expect(summary().failedTags, 1);
     expect((await tracks()), hasLength(3));
   });
 
@@ -178,5 +182,38 @@ void main() {
 
     expect(bare.read(libraryIndexerProvider), isA<IndexerIdle>());
     expect(reader.batches, isEmpty);
+  });
+
+  test('a scan requested while scanning runs one more pass', () async {
+    touch('a.mp3');
+    final notifier = container.read(libraryIndexerProvider.notifier);
+
+    final first = notifier.scan();
+    // A root added mid-scan is not in the roots the running pass read.
+    final other = Directory('${tmp.resolveSymbolicLinksSync()}/other')
+      ..createSync();
+    File('${other.path}/b.mp3').writeAsStringSync('x');
+    await db.addRoots([other.path], now: 2);
+    final second = notifier.scan();
+    await Future.wait([first, second]);
+
+    expect((await tracks()).map((t) => t.path).toSet(), {
+      '$root/a.mp3',
+      '${other.path}/b.mp3',
+    });
+    expect(state(), isA<IndexerFinished>());
+  });
+
+  test('finished and failed states carry the time they ended', () async {
+    touch('a.mp3');
+    final before = DateTime.now();
+    await scan();
+    final at = (state() as IndexerFinished).at;
+    expect(at.isBefore(before), isFalse);
+
+    reader.throwOnRead = StateError('x');
+    touch('c.mp3');
+    await scan();
+    expect((state() as IndexerFailed).at.isBefore(at), isFalse);
   });
 }

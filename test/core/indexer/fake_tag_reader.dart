@@ -6,16 +6,24 @@ class FakeTagReader implements TagReader {
   final List<List<String>> batches = [];
   Object? throwOnRead;
 
+  /// Throws on the n-th call of [readBatch] counted from 1 (since the last
+  /// [reset]); the earlier calls succeed.
+  int? failOnBatch;
+
   /// Total paths read so far.
   int get readCount => batches.fold(0, (sum, b) => sum + b.length);
 
-  void reset() => batches.clear();
+  void reset() {
+    batches.clear();
+    failOnBatch = null;
+  }
 
   @override
   Future<List<TrackTags>> readBatch(List<String> paths) async {
     batches.add(List.of(paths));
     final error = throwOnRead;
     if (error != null) throw error;
+    if (failOnBatch == batches.length) throw StateError('batch failed');
     return [
       for (final path in paths)
         path.split('/').last.startsWith('bad')

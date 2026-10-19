@@ -53,13 +53,23 @@ class IndexerScanning extends IndexerState {
 }
 
 class IndexerFinished extends IndexerState {
-  const IndexerFinished(this.summary);
+  /// [at] defaults to now.
+  IndexerFinished(this.summary, {DateTime? at}) : at = at ?? DateTime.now();
 
   final ScanSummary summary;
+
+  /// When the scan ended, so a screen can tell a fresh result from an old
+  /// one it only now gets to see.
+  final DateTime at;
 }
 
 class IndexerFailed extends IndexerState {
-  const IndexerFailed(this.message);
+  /// [at] defaults to now.
+  IndexerFailed(this.message, {DateTime? at}) : at = at ?? DateTime.now();
 
+  /// Technical detail for the log, not for display.
   final String message;
+
+  /// When the scan failed; see [IndexerFinished.at].
+  final DateTime at;
 }

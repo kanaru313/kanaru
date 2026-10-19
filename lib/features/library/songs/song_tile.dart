@@ -3,9 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../shared/format_duration.dart';
 
-/// Height of a song row. Fixed so the list can lay out without measuring.
-const songTileExtent = 64.0;
-
 /// One row of the songs list: title, "artist · album" and the duration.
 class SongTile extends StatelessWidget {
   const SongTile({super.key, required this.song, required this.onTap});

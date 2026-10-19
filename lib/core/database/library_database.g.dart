@@ -1669,7 +1669,7 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
   );
   late final Index tracksTitle = Index(
     'tracks_title',
-    'CREATE INDEX tracks_title ON tracks (title)',
+    'CREATE INDEX tracks_title ON tracks (title COLLATE NOCASE)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>

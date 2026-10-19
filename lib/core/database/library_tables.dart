@@ -16,7 +16,9 @@ class LibraryRoots extends Table {
 /// One row per audio file found under a root. Artist and album are plain
 /// text columns for now; no separate album or artist tables yet.
 @TableIndex(name: 'tracks_root', columns: {#rootId})
-@TableIndex(name: 'tracks_title', columns: {#title})
+// Matches the list order (`ORDER BY title COLLATE NOCASE`); a plain index on
+// `title` is BINARY and cannot serve it.
+@TableIndex.sql('CREATE INDEX tracks_title ON tracks (title COLLATE NOCASE)')
 class Tracks extends Table {
   IntColumn get id => integer().autoIncrement()();
 

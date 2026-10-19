@@ -111,16 +111,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onboardingSuggested => 'Gợi ý';
 
   @override
-  String get onboardingAdded => 'Thư mục của bạn';
-
-  @override
   String get onboardingNoFolders => 'Chưa chọn thư mục nào.';
 
   @override
   String get onboardingAddFolder => 'Thêm thư mục…';
 
   @override
-  String get onboardingRemoveFolder => 'Bỏ';
+  String get onboardingRemoveFolder => 'Bỏ thư mục này';
 
   @override
   String get onboardingLater => 'Để sau';
@@ -133,7 +130,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get libraryUnavailableMessage =>
-      'Bạn vẫn phát nhạc bình thường. Chi tiết nằm trong log.';
+      'Bạn vẫn có thể phát nhạc. Xem chi tiết trong nhật ký.';
 
   @override
   String get libraryChooseFolder => 'Chọn thư mục nhạc';
@@ -183,12 +180,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String libraryScanUpdated(int count) {
-    return '$count cập nhật';
+    return '$count bài đã cập nhật';
   }
 
   @override
   String libraryScanRemoved(int count) {
-    return '$count đã xoá';
+    return '$count bài đã xoá';
   }
 
   @override
@@ -228,11 +225,28 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String libraryRootNested(String path) {
-    return '$path trùng lặp với một thư mục đã thêm';
+    return '$path nằm trong hoặc chứa một thư mục đã thêm';
   }
 
   @override
   String get libraryRootUnavailable => 'Thư viện không khả dụng';
+
+  @override
+  String libraryRootTooBroad(String path) {
+    return '$path quá rộng để làm thư mục nhạc';
+  }
+
+  @override
+  String libraryRootWriteFailed(String path) {
+    return 'Không lưu được $path. Xem chi tiết trong nhật ký.';
+  }
+
+  @override
+  String get libraryUnexpectedError =>
+      'Đã xảy ra lỗi. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get libraryScanFailedDetails => 'Xem chi tiết trong nhật ký';
 
   @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';

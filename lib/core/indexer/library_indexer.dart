@@ -23,15 +23,38 @@ const tagBatchSize = 512;
 /// batches of a root, so quitting mid-scan loses nothing.
 class LibraryIndexer extends Notifier<IndexerState> {
   Future<void>? _running;
+  bool _rescanRequested = false;
 
   @override
   IndexerState build() => const IndexerIdle();
 
-  /// Starts a scan, or returns the one already running. Never throws: a
-  /// failure becomes [IndexerFailed]. Does nothing without a database.
-  Future<void> scan() => _running ??= _scan().whenComplete(() {
-    _running = null;
-  });
+  /// Starts a scan, or asks the running one for a follow-up pass and returns
+  /// its future (which completes after that pass). The extra pass makes sure
+  /// a root added while scanning is scanned too. Never throws: a failure
+  /// becomes [IndexerFailed]. Does nothing without a database.
+  Future<void> scan() {
+    final running = _running;
+    if (running != null) {
+      _rescanRequested = true;
+      return running;
+    }
+    return _running = _scanWithFollowUp().whenComplete(() {
+      _running = null;
+    });
+  }
+
+  Future<void> _scanWithFollowUp() async {
+    do {
+      _rescanRequested = false;
+      await _scan();
+    } while (_rescanRequested && ref.mounted);
+  }
+
+  /// Publishes [next] unless the container is already disposed (the app quit
+  /// while scanning).
+  void _publish(IndexerState next) {
+    if (ref.mounted) state = next;
+  }
 
   Future<void> _scan() async {
     final db = ref.read(libraryDatabaseProvider);
@@ -42,9 +65,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
     final walkTime = Stopwatch(), tagTime = Stopwatch(), dbTime = Stopwatch();
     try {
       for (final root in await db.roots()) {
-        state = IndexerScanning(
-          phase: ScanPhase.discovering,
-          rootPath: root.path,
+        _publish(
+          IndexerScanning(phase: ScanPhase.discovering, rootPath: root.path),
         );
         walkTime.start();
         final walk = await walkAudioFilesInIsolate(root.path);
@@ -65,29 +87,32 @@ class LibraryIndexer extends Notifier<IndexerState> {
         added += diff.added;
         updated += diff.updated;
         final total = diff.toRead.length;
+        IndexerScanning reading(int done) => IndexerScanning(
+          phase: ScanPhase.reading,
+          rootPath: root.path,
+          done: done,
+          total: total,
+        );
+        if (total > 0) _publish(reading(0));
         for (var i = 0; i < total; i += tagBatchSize) {
-          state = IndexerScanning(
-            phase: ScanPhase.reading,
-            rootPath: root.path,
-            done: i,
-            total: total,
-          );
           final end = i + tagBatchSize < total ? i + tagBatchSize : total;
           final batch = diff.toRead.sublist(i, end);
           tagTime.start();
           final tags = await reader.readBatch([for (final f in batch) f.path]);
           tagTime.stop();
-          failedTags += tags.where((t) => t.error != null).length;
-          dbTime.start();
-          await db.upsertTracks(
-            tracksFromTags(
-              root.id,
-              batch,
-              tags,
-              DateTime.now().millisecondsSinceEpoch,
-            ),
+          final rows = tracksFromTags(
+            root.id,
+            batch,
+            tags,
+            DateTime.now().millisecondsSinceEpoch,
           );
+          // Counted from the rows: a path the reader returned nothing for is
+          // stored with an error too.
+          failedTags += rows.where((r) => r.scanError.value != null).length;
+          dbTime.start();
+          await db.upsertTracks(rows);
           dbTime.stop();
+          _publish(reading(end));
         }
         dbTime.start();
         await db.deleteTracksById(diff.toDelete);
@@ -112,10 +137,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
         'tags ${tagTime.elapsedMilliseconds} ms, '
         'db ${dbTime.elapsedMilliseconds} ms',
       );
-      state = IndexerFinished(summary);
+      _publish(IndexerFinished(summary));
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
-      state = IndexerFailed(error.toString());
+      _publish(IndexerFailed(error.toString()));
     }
   }
 }

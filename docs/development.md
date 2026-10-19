@@ -141,6 +141,8 @@ RUSTC_BOOTSTRAP=1 flutter_rust_bridge_codegen generate
 dart run drift_dev make-migrations
 ```
 
+In the Nix dev shell, `dart run` cannot find the Flutter SDK ("flutter_test from sdk which doesn't exist"). Use `flutter pub run build_runner build --delete-conflicting-outputs` and `flutter pub run drift_dev make-migrations` there instead.
+
 Notes on the Rust side:
 
 - **Pinned codegen**: the Dart `flutter_rust_bridge` package, the crate and `flutter_rust_bridge_codegen` must all be 2.13.0 (`flutter_rust_bridge_codegen --version`). The dev shell provides the codegen binary; outside Nix, `cargo install flutter_rust_bridge_codegen --version 2.13.0 --locked`.

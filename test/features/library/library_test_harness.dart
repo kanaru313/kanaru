@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -22,10 +23,18 @@ class LibraryHarness {
     this.hasDatabase = true,
     this.suggestion,
     FakeTagReader? reader,
+    this.overrides = const [],
+    this.picker,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
   final String? suggestion;
+
+  /// Extra provider overrides, applied last.
+  final List<Override> overrides;
+
+  /// Replaces the fake picker (which answers from [picks]).
+  final DirectoryPicker? picker;
 
   late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
 
@@ -59,9 +68,10 @@ class LibraryHarness {
         tagReaderProvider.overrideWithValue(reader),
         audioBackendProvider.overrideWithValue(backend),
         directoryPickerProvider.overrideWithValue(
-          () async => picks.isEmpty ? null : picks.removeAt(0),
+          picker ?? () async => picks.isEmpty ? null : picks.removeAt(0),
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
+        ...overrides,
       ],
     );
     addTearDown(() async {
@@ -84,9 +94,10 @@ class LibraryHarness {
 /// Lets real I/O (directory checks, the walk isolate) finish, then settles
 /// the UI. The widget tester's clock does not run file system futures, and
 /// each step of a chain (pick, check, store, scan) starts only after the
-/// previous one was pumped, so alternate pumping and real waiting.
-Future<void> settleIo(WidgetTester tester) async {
-  for (var i = 0; i < 4; i++) {
+/// previous one was pumped, so alternate pumping and real waiting, [rounds]
+/// times (more for a longer chain).
+Future<void> settleIo(WidgetTester tester, {int rounds = 4}) async {
+  for (var i = 0; i < rounds; i++) {
     await tester.pump();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 150)),

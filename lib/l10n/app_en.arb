@@ -39,7 +39,6 @@
   "onboardingTitle": "Welcome to Kanaru",
   "onboardingMessage": "Choose the folders that hold your music. Kanaru scans them and builds your library.",
   "onboardingSuggested": "Suggested",
-  "onboardingAdded": "Your folders",
   "onboardingNoFolders": "No folder chosen yet.",
   "onboardingAddFolder": "Add folder…",
   "onboardingRemoveFolder": "Remove",
@@ -125,6 +124,20 @@
     }
   },
   "libraryRootUnavailable": "The library is not available",
+  "libraryRootTooBroad": "{path} is too broad to be a music folder",
+  "@libraryRootTooBroad": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryRootWriteFailed": "Couldn't save {path}. See the log for details.",
+  "@libraryRootWriteFailed": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryUnexpectedError": "Something went wrong. See the log for details.",
+  "libraryScanFailedDetails": "See the log for details",
 
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "recentlyPlayedEmptyMessage": "Songs you play will show up here.",

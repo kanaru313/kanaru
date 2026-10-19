@@ -111,9 +111,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSuggested => 'Suggested';
 
   @override
-  String get onboardingAdded => 'Your folders';
-
-  @override
   String get onboardingNoFolders => 'No folder chosen yet.';
 
   @override
@@ -234,6 +231,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryRootUnavailable => 'The library is not available';
+
+  @override
+  String libraryRootTooBroad(String path) {
+    return '$path is too broad to be a music folder';
+  }
+
+  @override
+  String libraryRootWriteFailed(String path) {
+    return 'Couldn\'t save $path. See the log for details.';
+  }
+
+  @override
+  String get libraryUnexpectedError =>
+      'Something went wrong. See the log for details.';
+
+  @override
+  String get libraryScanFailedDetails => 'See the log for details';
 
   @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';

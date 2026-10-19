@@ -35,16 +35,37 @@ void main() {
     expect(result.rootMissing, isFalse);
   });
 
-  test('takes symlinks to files, skips broken links', () {
-    touch('real.mp3');
-    Link('${tmp.path}/link.mp3').createSync('${tmp.path}/real.mp3');
-    Link('${tmp.path}/broken.mp3').createSync('${tmp.path}/nowhere.mp3');
+  test(
+    'takes symlinks to files, reports broken audio links as unstattable',
+    () {
+      touch('real.mp3');
+      Link('${tmp.path}/link.mp3').createSync('${tmp.path}/real.mp3');
+      Link('${tmp.path}/broken.mp3').createSync('${tmp.path}/nowhere.mp3');
 
-    final result = walkAudioFiles(tmp.path);
+      final result = walkAudioFiles(tmp.path);
 
-    expect(names(result), {'real.mp3', 'link.mp3'});
-    expect(result.unstattable, isEmpty);
-  });
+      expect(names(result), {'real.mp3', 'link.mp3'});
+      expect(result.unstattable, ['${tmp.path}/broken.mp3']);
+    },
+  );
+
+  test(
+    'reports an empty subfolder but not the root or a folder with files',
+    () {
+      touch('full/a.mp3');
+      Directory('${tmp.path}/nas').createSync();
+      Directory('${tmp.path}/parent/child').createSync(recursive: true);
+
+      final result = walkAudioFiles(tmp.path);
+
+      expect(
+        result.emptyDirs,
+        unorderedEquals(['${tmp.path}/nas', '${tmp.path}/parent/child']),
+      );
+      expect(walkAudioFiles('${tmp.path}/full').emptyDirs, isEmpty);
+      expect(walkAudioFiles('${tmp.path}/nas').emptyDirs, isEmpty);
+    },
+  );
 
   test('does not follow folder symlinks, even loops', () {
     touch('music/a.mp3');

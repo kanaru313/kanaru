@@ -11,6 +11,13 @@ enum RootRejection {
 
   /// The library database is not available.
   libraryUnavailable,
+
+  /// The file system root: scanning it would walk every mounted drive and
+  /// pseudo file system.
+  tooBroad,
+
+  /// The database refused the write (disk full, read-only, busy).
+  writeFailed,
 }
 
 /// [path] without trailing slashes; `/` stays `/`.
@@ -40,7 +47,7 @@ RootRejection? conflictWith(String candidate, Iterable<String> others) {
 
 /// Resolves symlinks and strips the trailing slash of [path], which must be
 /// an existing folder. Returns the canonical path or the reason it is not
-/// usable (`notFound`, `notDirectory`).
+/// usable (`notFound`, `notDirectory`, `tooBroad` for `/`).
 Future<({String? path, RootRejection? rejection})> canonicalizeRoot(
   String path,
 ) async {
@@ -50,6 +57,9 @@ Future<({String? path, RootRejection? rejection})> canonicalizeRoot(
     if (await FileSystemEntity.type(canonical) !=
         FileSystemEntityType.directory) {
       return (path: null, rejection: RootRejection.notDirectory);
+    }
+    if (canonical == '/') {
+      return (path: null, rejection: RootRejection.tooBroad);
     }
     return (path: canonical, rejection: null);
   } on FileSystemException {

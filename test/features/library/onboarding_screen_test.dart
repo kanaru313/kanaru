@@ -2,12 +2,19 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
-import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/indexer/indexer_providers.dart';
+import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/features/library/onboarding/onboarding_screen.dart';
 import 'package:kanaru/features/library/songs/songs_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'library_test_harness.dart';
+
+class _ThrowingRootsController implements LibraryRootsController {
+  @override
+  Future<AddRootsResult> addRoots(List<String> paths) =>
+      Future.error(StateError('boom'));
+}
 
 void main() {
   Finder start() => find.widgetWithText(FilledButton, 'Start');
@@ -105,6 +112,63 @@ void main() {
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(find.text('$music was not found'), findsOneWidget);
     expect(await tester.runAsync(h.db.roots), isEmpty);
+  });
+
+  testWidgets('with one folder stored and one refused it still scans', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    final music = h.folder('music');
+    final gone = h.folder('gone');
+    h.touch(music, 'a.mp3');
+    h.picks.addAll([music, gone]);
+    await h.pump(tester);
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.text('Add folder…'));
+      await settleIo(tester);
+    }
+    // One folder disappears before Start.
+    await tester.runAsync(() async => Directory(gone).deleteSync());
+
+    await tester.tap(start());
+    await settleIo(tester, rounds: 12);
+
+    expect((await tester.runAsync(h.db.roots))!.single.path, music);
+    expect(find.byType(SongsScreen), findsOneWidget);
+    expect(h.reader.readCount, 1, reason: 'the stored folder is scanned');
+    expect(find.text('$gone was not found'), findsOneWidget);
+  });
+
+  testWidgets('an unexpected error re-enables the buttons and says so', (
+    tester,
+  ) async {
+    final h = LibraryHarness(
+      overrides: [
+        libraryRootsControllerProvider.overrideWithValue(
+          _ThrowingRootsController(),
+        ),
+      ],
+    );
+    h.picks.add(h.folder('music'));
+    await h.pump(tester);
+    await tester.tap(find.text('Add folder…'));
+    await settleIo(tester);
+
+    await tester.tap(start());
+    await settleIo(tester);
+
+    expect(find.byType(OnboardingScreen), findsOneWidget);
+    expect(
+      find.text('Something went wrong. See the log for details.'),
+      findsOneWidget,
+    );
+    expect(tester.widget<FilledButton>(start()).onPressed, isNotNull);
+    expect(
+      tester
+          .widget<TextButton>(find.widgetWithText(TextButton, 'Later'))
+          .onPressed,
+      isNotNull,
+    );
   });
 
   testWidgets('Later goes to Home and leaves the library empty', (

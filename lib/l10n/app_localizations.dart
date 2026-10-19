@@ -296,12 +296,6 @@ abstract class AppLocalizations {
   /// **'Suggested'**
   String get onboardingSuggested;
 
-  /// No description provided for @onboardingAdded.
-  ///
-  /// In en, this message translates to:
-  /// **'Your folders'**
-  String get onboardingAdded;
-
   /// No description provided for @onboardingNoFolders.
   ///
   /// In en, this message translates to:
@@ -469,6 +463,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The library is not available'**
   String get libraryRootUnavailable;
+
+  /// No description provided for @libraryRootTooBroad.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} is too broad to be a music folder'**
+  String libraryRootTooBroad(String path);
+
+  /// No description provided for @libraryRootWriteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save {path}. See the log for details.'**
+  String libraryRootWriteFailed(String path);
+
+  /// No description provided for @libraryUnexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. See the log for details.'**
+  String get libraryUnexpectedError;
+
+  /// No description provided for @libraryScanFailedDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'See the log for details'**
+  String get libraryScanFailedDetails;
 
   /// No description provided for @favoritesEmptyMessage.
   ///

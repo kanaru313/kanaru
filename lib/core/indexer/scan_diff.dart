@@ -17,7 +17,8 @@ class ScanDiff {
   /// Ids of tracks that are gone for sure.
   final List<int> toDelete;
 
-  /// How many of [toRead] are new, and how many replace a known track.
+  /// How many of [toRead] are new, and how many replace a changed track.
+  /// Unchanged tracks read again after an earlier failure are in neither.
   final int added;
   final int updated;
 
@@ -30,14 +31,16 @@ class ScanDiff {
 ///
 /// A file is unchanged when both mtime and size match. A stored track that
 /// the walk did not see is deleted only when it is certainly gone: not under
-/// an unreadable folder, not unstattable, the root is present, and the walk
-/// found at least one file. A missing root deletes nothing and reads nothing.
+/// an unreadable or empty folder (an unmounted mount point lists as empty),
+/// not unstattable, the root is present, and the walk found at least one
+/// file. A missing root deletes nothing and reads nothing. An unchanged file
+/// whose tags failed to read last time is read again.
 ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
   if (walk.rootMissing) return const ScanDiff();
 
   final known = {for (final track in existing) track.path: track};
   final toRead = <WalkedFile>[];
-  var added = 0;
+  var added = 0, updated = 0;
   for (final file in walk.files) {
     final track = known[file.path];
     if (track == null) {
@@ -45,6 +48,9 @@ ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
       toRead.add(file);
     } else if (track.mtimeMs != file.mtimeMs ||
         track.sizeBytes != file.sizeBytes) {
+      updated++;
+      toRead.add(file);
+    } else if (track.hasScanError) {
       toRead.add(file);
     }
   }
@@ -55,7 +61,9 @@ ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
 
   final seen = {for (final file in walk.files) file.path};
   final unstattable = walk.unstattable.toSet();
-  final blockedDirs = [for (final dir in walk.unreadableDirs) '$dir/'];
+  final blockedDirs = [
+    for (final dir in [...walk.unreadableDirs, ...walk.emptyDirs]) '$dir/',
+  ];
   final toDelete = <int>[];
   for (final track in existing) {
     if (seen.contains(track.path) || unstattable.contains(track.path)) {
@@ -68,6 +76,6 @@ ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
     toRead: toRead,
     toDelete: toDelete,
     added: added,
-    updated: toRead.length - added,
+    updated: updated,
   );
 }

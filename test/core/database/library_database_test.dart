@@ -121,4 +121,33 @@ void main() {
       },
     );
   });
+
+  group('title order', () {
+    test('the list query is served by the NOCASE title index', () async {
+      final plan = await db
+          .customSelect(
+            'EXPLAIN QUERY PLAN SELECT id, path, title FROM tracks '
+            'ORDER BY title COLLATE NOCASE, id',
+          )
+          .get();
+      final details = plan.map((r) => r.read<String>('detail')).join('\n');
+
+      expect(details, contains('tracks_title'));
+      expect(details, isNot(contains('TEMP B-TREE')));
+    });
+
+    test('snapshots flag rows whose tags failed to read', () async {
+      final id = (await db.addRoots(['/m'], now: 1)).single;
+      await db.upsertTracks([
+        track(id, '/m/ok.mp3'),
+        track(id, '/m/bad.mp3').copyWith(scanError: const Value('x')),
+      ]);
+
+      final byPath = {
+        for (final t in await db.trackSnapshot(id)) t.path: t.hasScanError,
+      };
+
+      expect(byPath, {'/m/ok.mp3': false, '/m/bad.mp3': true});
+    });
+  });
 }

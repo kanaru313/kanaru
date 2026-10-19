@@ -395,14 +395,9 @@
       "data": {
         "on": 1,
         "name": "tracks_title",
-        "sql": null,
+        "sql": "CREATE INDEX tracks_title ON tracks (title COLLATE NOCASE)",
         "unique": false,
-        "columns": [
-          {
-            "column": "title",
-            "order_by": null
-          }
-        ]
+        "columns": []
       }
     }
   ],
@@ -439,7 +434,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE INDEX tracks_title ON tracks (title)"
+          "sql": "CREATE INDEX tracks_title ON tracks (title COLLATE NOCASE)"
         }
       ]
     }

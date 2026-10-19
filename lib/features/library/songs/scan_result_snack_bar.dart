@@ -6,11 +6,29 @@ import '../../../l10n/l10n.dart';
 /// How a finished scan went, which picks the icon and title.
 enum _Outcome { done, warning, failed }
 
+/// How long a finished or failed scan is still news.
+const scanResultMaxAge = Duration(seconds: 10);
+
+/// Whether [state] is a scan result worth announcing: it ended less than
+/// [scanResultMaxAge] before [now]. A screen that only gets to see an old
+/// result (it was hidden, or mounted later) stays quiet.
+bool isFreshScanResult(IndexerState state, {DateTime? now}) {
+  final at = switch (state) {
+    IndexerFinished(:final at) => at,
+    IndexerFailed(:final at) => at,
+    _ => null,
+  };
+  return at != null &&
+      (now ?? DateTime.now()).difference(at) < scanResultMaxAge;
+}
+
 /// Floating snack bar that reports a finished or failed scan: a status icon,
 /// a short title and one line of details. Uses a surface container color
 /// rather than the default inverse surface, so it sits quietly on the page in
-/// both themes. Returns `null` for states that need no report.
+/// both themes. Returns `null` for states that need no report, and for a
+/// result that is no longer fresh ([isFreshScanResult]).
 SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
+  if (!isFreshScanResult(state)) return null;
   final l10n = context.l10n;
   final (outcome, details) = switch (state) {
     IndexerFinished(:final summary) => (
@@ -19,7 +37,8 @@ SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
           : _Outcome.done,
       _summaryDetails(l10n, summary),
     ),
-    IndexerFailed(:final message) => (_Outcome.failed, message),
+    // The technical message goes to the log, not to the user.
+    IndexerFailed() => (_Outcome.failed, l10n.libraryScanFailedDetails),
     _ => (null, null),
   };
   if (outcome == null || details == null) return null;

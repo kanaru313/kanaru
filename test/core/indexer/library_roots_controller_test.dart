@@ -9,6 +9,15 @@ import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/core/indexer/root_path.dart';
 
+/// A database whose writes of roots fail.
+class _WriteFailingDb extends LibraryDatabase {
+  _WriteFailingDb(super.e);
+
+  @override
+  Future<List<int>> addRoots(List<String> paths, {required int now}) =>
+      Future.error(StateError('disk full'));
+}
+
 void main() {
   late Directory tmp;
   late String base;
@@ -91,5 +100,35 @@ void main() {
     ]);
 
     expect(result.rejected, {'$base/music': RootRejection.libraryUnavailable});
+  });
+
+  test('/ is refused as too broad', () async {
+    final result = await controller().addRoots(['/', '$base/other']);
+
+    expect(result.rejected, {'/': RootRejection.tooBroad});
+    expect(result.added, ['$base/other']);
+  });
+
+  test('a failing write refuses every path and does not throw', () async {
+    final failing = _WriteFailingDb(NativeDatabase.memory());
+    addTearDown(failing.close);
+    final c = ProviderContainer(
+      overrides: LibraryStartup(db: failing).overrides,
+    );
+    addTearDown(c.dispose);
+
+    final result = await c.read(libraryRootsControllerProvider).addRoots([
+      '$base/music',
+      '$base/other',
+      '$base/missing',
+    ]);
+
+    expect(result.added, isEmpty);
+    expect(result.rejected, {
+      '$base/music': RootRejection.writeFailed,
+      '$base/other': RootRejection.writeFailed,
+      '$base/missing': RootRejection.notFound,
+    });
+    expect(c.read(libraryHasRootsProvider), isFalse);
   });
 }

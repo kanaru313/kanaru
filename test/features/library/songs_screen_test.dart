@@ -112,7 +112,12 @@ void main() {
     await scan(tester);
 
     expect(find.text('Scan failed'), findsOneWidget);
-    expect(find.textContaining('boom'), findsOneWidget);
+    expect(
+      find.text('See the log for details'),
+      findsOneWidget,
+      reason: 'the raw error stays in the log',
+    );
+    expect(find.textContaining('boom'), findsNothing);
     expect(find.byIcon(Icons.error_rounded), findsOneWidget);
   });
 

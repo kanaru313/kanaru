@@ -22,6 +22,7 @@ class WalkResult {
     this.files = const [],
     this.unreadableDirs = const [],
     this.unstattable = const [],
+    this.emptyDirs = const [],
     this.rootMissing = false,
   });
 
@@ -30,8 +31,14 @@ class WalkResult {
   /// Folders that could not be listed; what lies below them is unknown.
   final List<String> unreadableDirs;
 
-  /// Audio-looking entries whose `stat` failed; they may still exist.
+  /// Audio-looking entries whose `stat` failed, including links whose target
+  /// is unreachable (an unplugged drive); they may still exist.
   final List<String> unstattable;
+
+  /// Folders below the root that listed with no entry at all. An unmounted
+  /// mount point looks exactly like this, so what the database holds below
+  /// them is unknown, like for [unreadableDirs].
+  final List<String> emptyDirs;
 
   /// The root itself is gone or cannot be listed (unplugged drive, bad
   /// permissions).
@@ -40,8 +47,9 @@ class WalkResult {
 
 /// Every regular audio file under [root], recursively, with mtime and size.
 ///
-/// Symlinks to files count (`stat` follows them); FIFOs, sockets, devices and
-/// broken links do not, since opening some of them blocks forever. Symlinked
+/// Symlinks to files count (`stat` follows them); FIFOs, sockets and devices
+/// do not, since opening some of them blocks forever. Broken links are not
+/// files but are reported as unstattable, so their stored rows survive. Symlinked
 /// folders are not followed, so link loops cannot trap the walk. Failures are
 /// reported in the result, never thrown.
 ///
@@ -51,6 +59,7 @@ WalkResult walkAudioFiles(String root) {
   final files = <WalkedFile>[];
   final unreadable = <String>[];
   final unstattable = <String>[];
+  final empty = <String>[];
   final pending = <String>[root];
   while (pending.isNotEmpty) {
     final dir = pending.removeLast();
@@ -62,6 +71,7 @@ WalkResult walkAudioFiles(String root) {
       unreadable.add(dir);
       continue;
     }
+    if (entries.isEmpty && dir != root) empty.add(dir);
     for (final entry in entries) {
       if (entry is Directory) {
         pending.add(entry.path);
@@ -77,8 +87,9 @@ WalkResult walkAudioFiles(String root) {
             sizeBytes: stat.size,
           ),
         );
-      } else if (stat.type == FileSystemEntityType.notFound && entry is! Link) {
-        // Listed but not stat-able: do not treat it as deleted.
+      } else if (stat.type == FileSystemEntityType.notFound) {
+        // Listed but not stat-able (raced away, broken link, unplugged
+        // target): do not treat it as deleted.
         unstattable.add(entry.path);
       }
     }
@@ -87,6 +98,7 @@ WalkResult walkAudioFiles(String root) {
     files: files,
     unreadableDirs: unreadable,
     unstattable: unstattable,
+    emptyDirs: empty,
   );
 }
 

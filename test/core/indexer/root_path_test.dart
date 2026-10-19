@@ -49,6 +49,16 @@ void main() {
       expect((await canonicalizeRoot('${tmp.path}/link/')).path, expected);
     });
 
+    test('rejects / as too broad, also through a link', () async {
+      Link('${tmp.path}/rootlink').createSync('/');
+
+      expect((await canonicalizeRoot('/')).rejection, RootRejection.tooBroad);
+      expect(
+        (await canonicalizeRoot('${tmp.path}/rootlink')).rejection,
+        RootRejection.tooBroad,
+      );
+    });
+
     test('rejects missing paths and files', () async {
       File('${tmp.path}/f.txt').writeAsStringSync('x');
 
