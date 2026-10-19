@@ -3,6 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart' show TrackListItem;
+import '../../../core/settings/settings_provider.dart';
 import '../play_tracks.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
@@ -24,12 +25,31 @@ const _prototypeSong = TrackListItem(
 /// result, the "unavailable" message when reading failed, and the "no songs"
 /// message for an empty library unless a scan is still [scanning]. Tapping a
 /// song plays the whole list from it.
-class SongsListView extends ConsumerWidget {
+///
+/// Changing the sort keeps the current rows until the re-sorted list
+/// arrives, then scrolls back to the top.
+class SongsListView extends ConsumerStatefulWidget {
   const SongsListView({super.key, required this.scanning});
 
   final bool scanning;
 
-  void _play(WidgetRef ref, List<TrackListItem> songs, int index) {
+  @override
+  ConsumerState<SongsListView> createState() => _SongsListViewState();
+}
+
+class _SongsListViewState extends ConsumerState<SongsListView> {
+  final _scroll = ScrollController();
+
+  /// The sort changed and the list has not been re-sorted yet.
+  bool _resorting = false;
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _play(List<TrackListItem> songs, int index) {
     final tracks = [
       for (final s in songs)
         trackFromItem(
@@ -43,16 +63,24 @@ class SongsListView extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    ref.listen(settingsProvider.select((s) => s.songSort), (_, _) {
+      _resorting = true;
+    });
     ref.listen(songsListProvider, (previous, next) {
       if (next.hasError) {
         _log.severe('Reading the songs failed', next.error, next.stackTrace);
+      }
+      if (_resorting && next.hasValue && !next.isLoading) {
+        _resorting = false;
+        if (_scroll.hasClients) _scroll.jumpTo(0);
       }
     });
 
     return ref
         .watch(songsListProvider)
         .when(
+          skipLoadingOnReload: true,
           loading: () => const Center(
             child: SizedBox.square(
               dimension: 28,
@@ -63,16 +91,17 @@ class SongsListView extends ConsumerWidget {
               const SongsEmptyView(kind: SongsEmptyKind.unavailable),
           data: (songs) {
             if (songs.isEmpty) {
-              return scanning
+              return widget.scanning
                   ? const SizedBox.shrink()
                   : const SongsEmptyView(kind: SongsEmptyKind.noTracks);
             }
             return ListView.builder(
+              controller: _scroll,
               // Measured from a row, so larger text sizes do not clip rows.
               prototypeItem: SongTile(song: _prototypeSong, onTap: () {}),
               itemCount: songs.length,
               itemBuilder: (context, i) =>
-                  SongTile(song: songs[i], onTap: () => _play(ref, songs, i)),
+                  SongTile(song: songs[i], onTap: () => _play(songs, i)),
             );
           },
         );

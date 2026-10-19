@@ -9,8 +9,10 @@ import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
+import '../../../core/settings/settings_provider.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
+import '../widgets/library_sort_button.dart';
 import 'scan_progress_bar.dart';
 import 'scan_result_snack_bar.dart';
 import 'songs_empty_view.dart';
@@ -18,8 +20,8 @@ import 'songs_list_view.dart';
 
 final _log = Logger('library');
 
-/// The scanned library as a flat list, with scan progress and a rescan
-/// button. Tapping a song plays the whole list from it.
+/// The scanned library as a flat list in the saved sort, with scan progress
+/// and a rescan button. Tapping a song plays the whole list from it.
 class SongsScreen extends ConsumerStatefulWidget {
   /// [pickDirectory] opens the folder picker; defaults to
   /// [directoryPickerProvider].
@@ -101,6 +103,13 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             padding: const EdgeInsets.fromLTRB(32, 0, 32, 8),
             child: Row(
               children: [
+                LibrarySortButton<SongSortField>(
+                  choice: ref.watch(settingsProvider.select((s) => s.songSort)),
+                  fields: SongSortField.values,
+                  label: songSortLabel,
+                  onChanged: ref.read(settingsProvider.notifier).setSongSort,
+                ),
+                const SizedBox(width: 16),
                 Expanded(
                   child: scan is IndexerScanning
                       ? ScanProgressBar(state: scan)
