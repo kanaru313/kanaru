@@ -57,4 +57,29 @@ void main() {
     expect(artistKey('😀' * 300).runes.length, maxKeyLength);
     expect(artistKeys('Đen feat. SUNI Hạ Linh'), ['đen', 'suni hạ linh']);
   });
+
+  test('slash exceptions match whole names only', () {
+    expect(splitArtists('Shellac/DC Talk'), ['Shellac', 'DC Talk']);
+    expect(splitArtists('DC Talk/AC/DC'), ['DC Talk', 'AC/DC']);
+    expect(splitArtists('X / AC/DC / Y'), ['X', 'AC/DC', 'Y']);
+    expect(splitArtists('AC/DCX'), ['AC', 'DCX']);
+  });
+
+  test('any whitespace around featuring words splits the same way', () {
+    for (final tag in ['A\tfeat. B', 'A\u00a0feat.\u00a0B', 'A  ft  B']) {
+      expect(splitArtists(tag), ['A', 'B'], reason: tag);
+    }
+  });
+
+  test('control characters become spaces and never reach keys', () {
+    // Looks like an internal placeholder; must not crash.
+    expect(splitArtists('A\u00000\u0000B'), ['A 0 B']);
+    expect(splitArtists('A\u001e;B\u001f'), ['A', 'B']);
+    for (final tag in ['A\u001eB', 'X\u001f; Y\u0000', '\u0000']) {
+      for (final key in artistKeys(tag)) {
+        expect(key.codeUnits.every((u) => u >= 0x20), isTrue, reason: tag);
+      }
+    }
+    expect(textKey('Ti\u001ftle'), 'ti tle');
+  });
 }

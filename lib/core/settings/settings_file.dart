@@ -83,8 +83,7 @@ class SettingsFile {
   }
 
   /// Writes [settings], keeping keys (and library sort screens) this version
-  /// does not know. Never
-  /// throws; failures are logged.
+  /// does not know. Never throws; failures are logged.
   ///
   /// Returns `false` when writing failed. A read-only file skips the write
   /// and returns `true`: [readOnly] reports that case.

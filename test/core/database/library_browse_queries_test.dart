@@ -240,6 +240,50 @@ void main() {
     });
   });
 
+  group('hostile tags', () {
+    test('delimiter characters in tags do not break the queries', () async {
+      await db.upsertTracks([
+        row(artist: 'A\u001eB', album: 'X\u001fY'),
+        row(artist: 'Z\u00000\u0000', album: 'Q'),
+      ]);
+      final credits = await db.watchArtistCredits().first;
+      expect(credits, hasLength(2));
+      final keys = {for (final c in credits) ...c.albumKeys};
+      expect(keys, contains(const AlbumKey('a b', 'x y')));
+      expect(
+        await db.watchAlbumTracks(const AlbumKey('a b', 'x y')).first,
+        hasLength(1),
+      );
+      expect((await albums()).keys, contains(const AlbumKey('z 0', 'q')));
+    });
+
+    test('album artists with long names keep every key whole', () async {
+      final long = 'n' * 300;
+      await db.upsertTracks([
+        row(artist: 'B', album: 'Duo', albumArtist: '$long; B'),
+      ]);
+      final key = (await albums()).keys.single;
+      expect(key.artistKeys, ['n' * 256, 'b']);
+      expect(await db.watchArtistTracks('b').first, hasLength(1));
+    });
+  });
+
+  test('the artist page keeps each album together', () async {
+    await db.upsertTracks([
+      row(title: 'z1', artist: 'A', album: 'Zeta', year: 2000, track: 1),
+      row(title: 'e1', artist: 'A', album: 'Éclair', year: 2000, track: 1),
+      row(title: 'z2', artist: 'A', album: 'zeta', year: 2000, track: 2),
+      row(title: 'e2', artist: 'A', album: 'éclair', year: 2000, track: 2),
+      // ASCII lower() would sort Ñu between Éclair and éclair.
+      row(title: 'n1', artist: 'A', album: 'Ñu', year: 2000, track: 1),
+    ]);
+    final titles = [
+      for (final t in await db.watchArtistTracks('a').first) t.title,
+    ];
+    // Ordered by the Unicode title key, so case variants stay adjacent.
+    expect(titles, ['z1', 'z2', 'e1', 'e2', 'n1']);
+  });
+
   group('songs', () {
     setUp(() async {
       await db.upsertTracks([

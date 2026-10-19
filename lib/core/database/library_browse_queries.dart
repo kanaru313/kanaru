@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
+import 'library_sql_functions.dart' show artistKeysDelimiter;
 
 // The kanaru_* functions come from `registerLibrarySqlFunctions`: every key
 // is made by the Dart rules in `artist_names.dart`, never by SQL's lower().
@@ -99,9 +100,10 @@ WHERE t.artist IN (
   FROM (
     SELECT DISTINCT artist FROM tracks WHERE artist IS NOT NULL LIMIT -1
   )
-  WHERE instr(kanaru_artist_keys(artist), ';' || ?1 || ';') > 0
+  WHERE instr(kanaru_artist_keys(artist),
+    '$artistKeysDelimiter' || ?1 || '$artistKeysDelimiter') > 0
 )
-ORDER BY year IS NULL, year, album IS NULL, lower(album), $discTrackOrderSql''';
+ORDER BY year IS NULL, year, tk IS NULL, tk, ak, $discTrackOrderSql''';
 
 /// ORDER BY of the Songs list. Unknown values go last in both directions;
 /// [descending] flips only the main key; ties fall back to title then id.
@@ -159,16 +161,29 @@ extension LibraryBrowseQueries on LibraryDatabase {
       });
 
   /// The tracks of one album, by disc then track.
-  Stream<List<BrowseTrack>> watchAlbumTracks(AlbumKey key) => _watch(
-    albumTracksSql,
-    [Variable(key.artistKey), Variable(key.titleKey)],
-    _browseTrack,
-  );
+  Stream<List<BrowseTrack>> watchAlbumTracks(AlbumKey key) =>
+      _albumTracks(key).watch();
+
+  /// [watchAlbumTracks] once, for a throttled refresh.
+  Future<List<BrowseTrack>> albumTracks(AlbumKey key) =>
+      _albumTracks(key).get();
 
   /// The tracks crediting [artistKey] (see `artistKey` in
   /// `artist_names.dart`), by year, album, disc and track.
   Stream<List<BrowseTrack>> watchArtistTracks(String artistKey) =>
-      _watch(artistTracksSql, [Variable(artistKey)], _browseTrack);
+      _artistTracks(artistKey).watch();
+
+  /// [watchArtistTracks] once, for a throttled refresh.
+  Future<List<BrowseTrack>> artistTracks(String artistKey) =>
+      _artistTracks(artistKey).get();
+
+  Selectable<BrowseTrack> _albumTracks(AlbumKey key) => _query(albumTracksSql, [
+    Variable(key.artistKey),
+    Variable(key.titleKey),
+  ], _browseTrack);
+
+  Selectable<BrowseTrack> _artistTracks(String artistKey) =>
+      _query(artistTracksSql, [Variable(artistKey)], _browseTrack);
 
   /// All tracks for the Songs list. The default order is the same as
   /// [LibraryDatabase.watchTrackListItems].

@@ -1,12 +1,21 @@
+/// Joins the artist keys in [AlbumKey.artistKey]. Never inside a key: `;`
+/// always separates artist names.
+const albumArtistKeySeparator = '; ';
+
 /// Identifies an album while there is no albums table: the keys of its album
 /// artists (else of the first track artist) and its lower-cased title, made
-/// by the rules in `artist_names.dart` and cut to 256 characters.
+/// by the rules in `artist_names.dart`, each key cut to 256 characters.
 class AlbumKey {
   const AlbumKey(this.artistKey, this.titleKey);
 
-  /// Empty when the album has neither an album artist nor a track artist.
+  /// The keys of its album artists joined by [albumArtistKeySeparator], or
+  /// of its first track artist. Empty when the album has neither.
   final String artistKey;
   final String titleKey;
+
+  /// The artist keys in [artistKey]: the artists who own the album.
+  List<String> get artistKeys =>
+      artistKey.isEmpty ? const [] : artistKey.split(albumArtistKeySeparator);
 
   @override
   bool operator ==(Object other) =>

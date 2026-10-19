@@ -63,6 +63,10 @@ void main() {
     }
     expect(albumArtistKey(null, 'X feat. Y'), 'x');
     expect(albumArtistKey('A / B', 'X'), 'a; b');
+    // Each key is cut, the joined string is not: every owner stays whole.
+    final long = 'n' * 300;
+    final joined = albumArtistKey('$long; Other', null);
+    expect(joined.split('; '), ['n' * 256, 'other']);
     expect(albumArtistKey(null, null), '');
     expect(sql('kanaru_album_title_key(?)', ['Ánh Best']), 'ánh best');
     expect(sql('kanaru_album_title_key(NULL)'), isNull);

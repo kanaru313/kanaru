@@ -1,6 +1,7 @@
 import 'package:sqlite3/sqlite3.dart';
 
 import 'artist_names.dart';
+import 'library_browse_rows.dart';
 
 /// Separates artist keys in [artistKeysSql] results; never inside a key, as
 /// `;` always splits names.
@@ -14,8 +15,9 @@ const artistKeysDelimiter = ';';
 ///   `instr(…, ';' || ?key || ';') > 0`; NULL when there is none.
 /// - `kanaru_first_artist(artist)`: the first artist name; NULL if none.
 /// - `kanaru_album_artist_key(album_artist, artist)`: album key, artist
-///   part: the keys of the album artists joined by `"; "`, else the key of
-///   the first track artist, else `''`.
+///   part: the keys of the album artists joined by
+///   [albumArtistKeySeparator], else the key of the first track artist,
+///   else `''`.
 /// - `kanaru_album_title_key(album)`: album key, title part (lower case,
 ///   cut like artist keys); NULL for NULL.
 void registerLibrarySqlFunctions(Database rawDb) {
@@ -52,15 +54,17 @@ void registerLibrarySqlFunctions(Database rawDb) {
   });
 }
 
-/// Artist part of an album key; see [registerLibrarySqlFunctions].
+/// Artist part of an album key; see [registerLibrarySqlFunctions]. Each
+/// artist key is already cut; the joined string is not, so
+/// [AlbumKey.artistKeys] gets every key back whole.
 String albumArtistKey(String? albumArtist, String? artist) {
   final owners = artistKeys(albumArtist);
-  if (owners.isNotEmpty) return cutKey(owners.join('; '));
+  if (owners.isNotEmpty) return owners.join(albumArtistKeySeparator);
   return artistKeys(artist).firstOrNull ?? '';
 }
 
 /// Title part of an album key.
-String albumTitleKey(String album) => cutKey(album.toLowerCase());
+String albumTitleKey(String album) => textKey(album);
 
 // Tags repeat across the tracks of an album and an artist, so results are
 // cached by input. A cache is cleared when large, which keeps memory bounded
