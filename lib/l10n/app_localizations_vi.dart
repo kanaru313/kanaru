@@ -268,9 +268,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsSourceCode => 'Mã nguồn';
 
   @override
-  String get settingsOpenSourceLicenses => 'Giấy phép mã nguồn mở';
-
-  @override
   String settingsOpenFailed(String target) {
     return 'Không mở được $target';
   }

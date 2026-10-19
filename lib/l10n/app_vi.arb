@@ -92,6 +92,5 @@
   "settingsVersion": "Phiên bản",
   "settingsLicense": "Giấy phép",
   "settingsSourceCode": "Mã nguồn",
-  "settingsOpenSourceLicenses": "Giấy phép mã nguồn mở",
   "settingsOpenFailed": "Không mở được {target}"
 }

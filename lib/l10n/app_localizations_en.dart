@@ -268,9 +268,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSourceCode => 'Source code';
 
   @override
-  String get settingsOpenSourceLicenses => 'Open source licenses';
-
-  @override
   String settingsOpenFailed(String target) {
     return 'Couldn\'t open $target';
   }

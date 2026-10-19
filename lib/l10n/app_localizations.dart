@@ -596,12 +596,6 @@ abstract class AppLocalizations {
   /// **'Source code'**
   String get settingsSourceCode;
 
-  /// No description provided for @settingsOpenSourceLicenses.
-  ///
-  /// In en, this message translates to:
-  /// **'Open source licenses'**
-  String get settingsOpenSourceLicenses;
-
   /// No description provided for @settingsOpenFailed.
   ///
   /// In en, this message translates to:

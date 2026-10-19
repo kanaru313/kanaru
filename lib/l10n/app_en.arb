@@ -107,7 +107,6 @@
   "settingsVersion": "Version",
   "settingsLicense": "License",
   "settingsSourceCode": "Source code",
-  "settingsOpenSourceLicenses": "Open source licenses",
   "settingsOpenFailed": "Couldn't open {target}",
   "@settingsOpenFailed": {
     "placeholders": {

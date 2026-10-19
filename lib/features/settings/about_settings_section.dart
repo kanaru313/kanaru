@@ -39,16 +39,6 @@ class AboutSettingsSection extends ConsumerWidget {
             );
           },
         ),
-        ListTile(
-          title: Text(l10n.settingsOpenSourceLicenses),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => showLicensePage(
-            context: context,
-            applicationName: l10n.appTitle,
-            applicationVersion: kanaruVersion,
-            applicationLegalese: _licenseName,
-          ),
-        ),
       ],
     );
   }

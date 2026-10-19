@@ -205,16 +205,4 @@ void main() {
 
     expect(opened, ['https://github.com/kanaru313/kanaru']);
   });
-
-  testWidgets('open source licenses opens the license page', (tester) async {
-    await pumpSettings(tester);
-
-    await tester.ensureVisible(find.text('Open source licenses'));
-    await tester.tap(find.text('Open source licenses'));
-    for (var i = 0; i < 5; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-
-    expect(find.byType(LicensePage), findsOneWidget);
-  });
 }
