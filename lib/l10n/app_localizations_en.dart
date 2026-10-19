@@ -101,6 +101,124 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add a music folder to start building your library.';
 
   @override
+  String get onboardingTitle => 'Welcome to Kanaru';
+
+  @override
+  String get onboardingMessage =>
+      'Choose the folders that hold your music. Kanaru scans them and builds your library.';
+
+  @override
+  String get onboardingSuggested => 'Suggested';
+
+  @override
+  String get onboardingAdded => 'Your folders';
+
+  @override
+  String get onboardingNoFolders => 'No folder chosen yet.';
+
+  @override
+  String get onboardingAddFolder => 'Add folder…';
+
+  @override
+  String get onboardingRemoveFolder => 'Remove';
+
+  @override
+  String get onboardingLater => 'Later';
+
+  @override
+  String get onboardingStart => 'Start';
+
+  @override
+  String get libraryUnavailableTitle => 'Couldn\'t open the library';
+
+  @override
+  String get libraryUnavailableMessage =>
+      'Playback still works. The log has the details.';
+
+  @override
+  String get libraryChooseFolder => 'Choose music folder';
+
+  @override
+  String get libraryNoTracksTitle => 'No songs found';
+
+  @override
+  String get libraryNoTracksMessage =>
+      'Add music to your folders, then rescan.';
+
+  @override
+  String get libraryRescan => 'Rescan';
+
+  @override
+  String get libraryScanDiscovering => 'Looking for music files…';
+
+  @override
+  String libraryScanReading(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Reading tags $doneString / $totalString';
+  }
+
+  @override
+  String libraryScanFinished(int added, int updated, int removed) {
+    return 'Added $added, updated $updated, removed $removed';
+  }
+
+  @override
+  String libraryScanFailedTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files couldn\'t be read',
+      one: '1 file couldn\'t be read',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String libraryScanRootMissing(String path) {
+    return '$path was not found';
+  }
+
+  @override
+  String libraryScanRootEmpty(String path) {
+    return '$path is empty, library kept as it was';
+  }
+
+  @override
+  String libraryScanFailed(String message) {
+    return 'Scan failed: $message';
+  }
+
+  @override
+  String libraryRootNotFound(String path) {
+    return '$path was not found';
+  }
+
+  @override
+  String libraryRootNotDirectory(String path) {
+    return '$path is not a folder';
+  }
+
+  @override
+  String libraryRootDuplicate(String path) {
+    return '$path is already added';
+  }
+
+  @override
+  String libraryRootNested(String path) {
+    return '$path overlaps a folder that is already added';
+  }
+
+  @override
+  String get libraryRootUnavailable => 'The library is not available';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override

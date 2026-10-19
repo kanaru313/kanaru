@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/player/player_service.dart';
 import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
-import 'format_duration.dart';
+import '../../shared/format_duration.dart';
 
 /// Keyboard and assistive-tech seek step.
 const _step = Duration(seconds: 5);

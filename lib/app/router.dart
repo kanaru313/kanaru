@@ -2,18 +2,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/database/library_startup.dart';
 import '../features/home/home_screen.dart';
 import '../features/library/library_section_screen.dart';
+import '../features/library/onboarding/onboarding_screen.dart';
+import '../features/library/songs/songs_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../l10n/l10n.dart';
 import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
 
+/// First-run source picker, outside the shell (no sidebar or player bar).
+const _welcomePath = '/welcome';
+
 final routerProvider = Provider<GoRouter>((ref) {
+  // Read once: the first-run screen only matters when the app opens. Without
+  // a database the library is unavailable and there is nothing to set up.
+  final showWelcome =
+      ref.read(libraryDatabaseProvider) != null &&
+      !ref.read(libraryHasRootsProvider);
   return GoRouter(
-    initialLocation: AppDestination.home.path,
+    initialLocation: showWelcome ? _welcomePath : AppDestination.home.path,
     routes: [
+      GoRoute(
+        path: _welcomePath,
+        // Back or a typed URL must not return to onboarding once a folder
+        // exists.
+        redirect: (context, state) =>
+            ref.read(libraryHasRootsProvider) ? AppDestination.home.path : null,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),
@@ -51,7 +70,7 @@ Widget _buildPage(
 
   return switch (destination) {
     AppDestination.home => const HomeScreen(),
-    AppDestination.songs ||
+    AppDestination.songs => const SongsScreen(),
     AppDestination.albums ||
     AppDestination.artists ||
     AppDestination.folders => section(l10n.libraryEmptyMessage),

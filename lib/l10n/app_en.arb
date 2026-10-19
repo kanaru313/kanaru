@@ -36,6 +36,88 @@
 
   "libraryEmptyTitle": "Your library is empty",
   "libraryEmptyMessage": "Add a music folder to start building your library.",
+  "onboardingTitle": "Welcome to Kanaru",
+  "onboardingMessage": "Choose the folders that hold your music. Kanaru scans them and builds your library.",
+  "onboardingSuggested": "Suggested",
+  "onboardingAdded": "Your folders",
+  "onboardingNoFolders": "No folder chosen yet.",
+  "onboardingAddFolder": "Add folder…",
+  "onboardingRemoveFolder": "Remove",
+  "onboardingLater": "Later",
+  "onboardingStart": "Start",
+
+  "libraryUnavailableTitle": "Couldn't open the library",
+  "libraryUnavailableMessage": "Playback still works. The log has the details.",
+  "libraryChooseFolder": "Choose music folder",
+  "libraryNoTracksTitle": "No songs found",
+  "libraryNoTracksMessage": "Add music to your folders, then rescan.",
+  "libraryRescan": "Rescan",
+  "libraryScanDiscovering": "Looking for music files…",
+  "libraryScanReading": "Reading tags {done} / {total}",
+  "@libraryScanReading": {
+    "placeholders": {
+      "done": { "type": "int", "format": "decimalPattern" },
+      "total": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "libraryScanFinished": "Added {added}, updated {updated}, removed {removed}",
+  "@libraryScanFinished": {
+    "placeholders": {
+      "added": { "type": "int" },
+      "updated": { "type": "int" },
+      "removed": { "type": "int" }
+    }
+  },
+  "libraryScanFailedTags": "{count, plural, one{1 file couldn't be read} other{{count} files couldn't be read}}",
+  "@libraryScanFailedTags": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "libraryScanRootMissing": "{path} was not found",
+  "@libraryScanRootMissing": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryScanRootEmpty": "{path} is empty, library kept as it was",
+  "@libraryScanRootEmpty": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryScanFailed": "Scan failed: {message}",
+  "@libraryScanFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "libraryRootNotFound": "{path} was not found",
+  "@libraryRootNotFound": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryRootNotDirectory": "{path} is not a folder",
+  "@libraryRootNotDirectory": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryRootDuplicate": "{path} is already added",
+  "@libraryRootDuplicate": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryRootNested": "{path} overlaps a folder that is already added",
+  "@libraryRootNested": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryRootUnavailable": "The library is not available",
+
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 

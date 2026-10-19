@@ -101,6 +101,123 @@ class AppLocalizationsVi extends AppLocalizations {
       'Thêm thư mục nhạc để bắt đầu tạo thư viện.';
 
   @override
+  String get onboardingTitle => 'Chào mừng đến với Kanaru';
+
+  @override
+  String get onboardingMessage =>
+      'Chọn các thư mục chứa nhạc của bạn. Kanaru sẽ quét chúng và tạo thư viện.';
+
+  @override
+  String get onboardingSuggested => 'Gợi ý';
+
+  @override
+  String get onboardingAdded => 'Thư mục của bạn';
+
+  @override
+  String get onboardingNoFolders => 'Chưa chọn thư mục nào.';
+
+  @override
+  String get onboardingAddFolder => 'Thêm thư mục…';
+
+  @override
+  String get onboardingRemoveFolder => 'Bỏ';
+
+  @override
+  String get onboardingLater => 'Để sau';
+
+  @override
+  String get onboardingStart => 'Bắt đầu';
+
+  @override
+  String get libraryUnavailableTitle => 'Không mở được thư viện';
+
+  @override
+  String get libraryUnavailableMessage =>
+      'Bạn vẫn phát nhạc bình thường. Chi tiết nằm trong log.';
+
+  @override
+  String get libraryChooseFolder => 'Chọn thư mục nhạc';
+
+  @override
+  String get libraryNoTracksTitle => 'Không tìm thấy bài nào';
+
+  @override
+  String get libraryNoTracksMessage =>
+      'Thêm nhạc vào các thư mục rồi quét lại.';
+
+  @override
+  String get libraryRescan => 'Quét lại';
+
+  @override
+  String get libraryScanDiscovering => 'Đang tìm file nhạc…';
+
+  @override
+  String libraryScanReading(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Đang đọc tag $doneString / $totalString';
+  }
+
+  @override
+  String libraryScanFinished(int added, int updated, int removed) {
+    return 'Thêm $added, cập nhật $updated, xoá $removed';
+  }
+
+  @override
+  String libraryScanFailedTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count file không đọc được tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String libraryScanRootMissing(String path) {
+    return 'Không tìm thấy $path';
+  }
+
+  @override
+  String libraryScanRootEmpty(String path) {
+    return '$path đang trống, giữ nguyên thư viện';
+  }
+
+  @override
+  String libraryScanFailed(String message) {
+    return 'Quét thất bại: $message';
+  }
+
+  @override
+  String libraryRootNotFound(String path) {
+    return 'Không tìm thấy $path';
+  }
+
+  @override
+  String libraryRootNotDirectory(String path) {
+    return '$path không phải thư mục';
+  }
+
+  @override
+  String libraryRootDuplicate(String path) {
+    return '$path đã được thêm';
+  }
+
+  @override
+  String libraryRootNested(String path) {
+    return '$path trùng lặp với một thư mục đã thêm';
+  }
+
+  @override
+  String get libraryRootUnavailable => 'Thư viện không khả dụng';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override
