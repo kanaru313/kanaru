@@ -57,10 +57,16 @@ void main() {
     expect(find.text('Artist'), findsNWidgets(2));
     expect(find.text('0:01'), findsNWidgets(2));
     expect(
-      find.text('Added 2, updated 0, removed 0'),
+      find.text('Scan complete'),
       findsOneWidget,
       reason: 'the finished scan is announced',
     );
+    expect(
+      find.text('2 new'),
+      findsOneWidget,
+      reason: 'zero counts are left out',
+    );
+    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
 
     await tester.tap(find.text('B.MP3'));
     await tester.pump();
@@ -105,7 +111,9 @@ void main() {
     await openSongs(tester, h, folder: music);
     await scan(tester);
 
-    expect(find.textContaining('Scan failed'), findsOneWidget);
+    expect(find.text('Scan failed'), findsOneWidget);
+    expect(find.textContaining('boom'), findsOneWidget);
+    expect(find.byIcon(Icons.error_rounded), findsOneWidget);
   });
 
   testWidgets('reports unreadable files and a root that was not found', (
@@ -121,6 +129,8 @@ void main() {
 
     expect(find.textContaining('1 file couldn\'t be read'), findsOneWidget);
     expect(find.textContaining('$gone was not found'), findsOneWidget);
+    expect(find.text('Scan complete, with warnings'), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
   });
 
   testWidgets('says so when the library is unavailable', (tester) async {

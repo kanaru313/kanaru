@@ -13,8 +13,8 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
-import 'scan_messages.dart';
 import 'scan_progress_bar.dart';
+import 'scan_result_snack_bar.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
@@ -75,12 +75,11 @@ class SongsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     ref.listen(libraryIndexerProvider, (previous, next) {
-      final text = switch (next) {
-        IndexerFinished(:final summary) => scanSummaryMessage(l10n, summary),
-        IndexerFailed(:final message) => l10n.libraryScanFailed(message),
-        _ => null,
-      };
-      if (text != null) _showMessage(context, text);
+      final snackBar = scanResultSnackBar(context, next);
+      if (snackBar == null) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
     });
 
     final hasDb = ref.watch(libraryDatabaseProvider) != null;

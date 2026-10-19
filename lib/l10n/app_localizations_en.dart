@@ -165,8 +165,30 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String libraryScanFinished(int added, int updated, int removed) {
-    return 'Added $added, updated $updated, removed $removed';
+  String get libraryScanDoneTitle => 'Scan complete';
+
+  @override
+  String get libraryScanWarningTitle => 'Scan complete, with warnings';
+
+  @override
+  String get libraryScanFailedTitle => 'Scan failed';
+
+  @override
+  String get libraryScanNoChanges => 'No changes';
+
+  @override
+  String libraryScanAdded(int count) {
+    return '$count new';
+  }
+
+  @override
+  String libraryScanUpdated(int count) {
+    return '$count updated';
+  }
+
+  @override
+  String libraryScanRemoved(int count) {
+    return '$count removed';
   }
 
   @override
@@ -188,11 +210,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String libraryScanRootEmpty(String path) {
     return '$path is empty, library kept as it was';
-  }
-
-  @override
-  String libraryScanFailed(String message) {
-    return 'Scan failed: $message';
   }
 
   @override

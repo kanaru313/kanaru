@@ -380,11 +380,47 @@ abstract class AppLocalizations {
   /// **'Reading tags {done} / {total}'**
   String libraryScanReading(int done, int total);
 
-  /// No description provided for @libraryScanFinished.
+  /// No description provided for @libraryScanDoneTitle.
   ///
   /// In en, this message translates to:
-  /// **'Added {added}, updated {updated}, removed {removed}'**
-  String libraryScanFinished(int added, int updated, int removed);
+  /// **'Scan complete'**
+  String get libraryScanDoneTitle;
+
+  /// No description provided for @libraryScanWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan complete, with warnings'**
+  String get libraryScanWarningTitle;
+
+  /// No description provided for @libraryScanFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan failed'**
+  String get libraryScanFailedTitle;
+
+  /// No description provided for @libraryScanNoChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes'**
+  String get libraryScanNoChanges;
+
+  /// No description provided for @libraryScanAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String libraryScanAdded(int count);
+
+  /// No description provided for @libraryScanUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} updated'**
+  String libraryScanUpdated(int count);
+
+  /// No description provided for @libraryScanRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} removed'**
+  String libraryScanRemoved(int count);
 
   /// No description provided for @libraryScanFailedTags.
   ///
@@ -403,12 +439,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{path} is empty, library kept as it was'**
   String libraryScanRootEmpty(String path);
-
-  /// No description provided for @libraryScanFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan failed: {message}'**
-  String libraryScanFailed(String message);
 
   /// No description provided for @libraryRootNotFound.
   ///

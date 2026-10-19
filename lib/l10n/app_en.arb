@@ -60,12 +60,26 @@
       "total": { "type": "int", "format": "decimalPattern" }
     }
   },
-  "libraryScanFinished": "Added {added}, updated {updated}, removed {removed}",
-  "@libraryScanFinished": {
+  "libraryScanDoneTitle": "Scan complete",
+  "libraryScanWarningTitle": "Scan complete, with warnings",
+  "libraryScanFailedTitle": "Scan failed",
+  "libraryScanNoChanges": "No changes",
+  "libraryScanAdded": "{count} new",
+  "@libraryScanAdded": {
     "placeholders": {
-      "added": { "type": "int" },
-      "updated": { "type": "int" },
-      "removed": { "type": "int" }
+      "count": { "type": "int" }
+    }
+  },
+  "libraryScanUpdated": "{count} updated",
+  "@libraryScanUpdated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "libraryScanRemoved": "{count} removed",
+  "@libraryScanRemoved": {
+    "placeholders": {
+      "count": { "type": "int" }
     }
   },
   "libraryScanFailedTags": "{count, plural, one{1 file couldn't be read} other{{count} files couldn't be read}}",
@@ -84,12 +98,6 @@
   "@libraryScanRootEmpty": {
     "placeholders": {
       "path": { "type": "String" }
-    }
-  },
-  "libraryScanFailed": "Scan failed: {message}",
-  "@libraryScanFailed": {
-    "placeholders": {
-      "message": { "type": "String" }
     }
   },
   "libraryRootNotFound": "{path} was not found",

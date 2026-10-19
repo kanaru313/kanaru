@@ -165,8 +165,30 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String libraryScanFinished(int added, int updated, int removed) {
-    return 'Thêm $added, cập nhật $updated, xoá $removed';
+  String get libraryScanDoneTitle => 'Đã quét xong';
+
+  @override
+  String get libraryScanWarningTitle => 'Đã quét xong, có cảnh báo';
+
+  @override
+  String get libraryScanFailedTitle => 'Quét thất bại';
+
+  @override
+  String get libraryScanNoChanges => 'Không có thay đổi';
+
+  @override
+  String libraryScanAdded(int count) {
+    return '$count bài mới';
+  }
+
+  @override
+  String libraryScanUpdated(int count) {
+    return '$count cập nhật';
+  }
+
+  @override
+  String libraryScanRemoved(int count) {
+    return '$count đã xoá';
   }
 
   @override
@@ -187,11 +209,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String libraryScanRootEmpty(String path) {
     return '$path đang trống, giữ nguyên thư viện';
-  }
-
-  @override
-  String libraryScanFailed(String message) {
-    return 'Quét thất bại: $message';
   }
 
   @override
