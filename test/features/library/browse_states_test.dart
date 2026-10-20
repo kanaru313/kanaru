@@ -155,17 +155,11 @@ void main() {
     expect(find.text('No albums yet'), findsOneWidget);
 
     unawaited(h.container.read(libraryIndexerProvider.notifier).scan());
-    for (var i = 0; i < 4; i++) {
-      await tester.pump();
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 150)),
-      );
-    }
-    await tester.pump();
+    await waitForScanReading(tester, h);
     expect(find.text('No albums yet'), findsNothing);
     expect(find.byType(AlbumGridTile), findsNothing);
 
     gated.release.complete();
-    await settleIo(tester);
+    await settleIo(tester, h);
   });
 }

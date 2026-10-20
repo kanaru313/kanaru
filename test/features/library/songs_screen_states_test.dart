@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/core/database/library_database.dart' show TrackListItem;
-import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 import 'package:material_ui/material_ui.dart';
@@ -66,20 +65,14 @@ void main() {
   testWidgets('an unexpected error while adding a folder is reported', (
     tester,
   ) async {
-    final h = LibraryHarness(
-      overrides: [
-        libraryRootsControllerProvider.overrideWithValue(
-          _ThrowingRootsController(),
-        ),
-      ],
-    );
+    final h = LibraryHarness(rootsController: _ThrowingRootsController());
     h.picks.add(h.folder('music'));
     await h.pump(tester);
     h.container.read(routerProvider).go('/songs');
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Choose music folder'));
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect(
       find.text('Something went wrong. See the log for details.'),

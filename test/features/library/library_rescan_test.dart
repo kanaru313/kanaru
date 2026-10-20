@@ -36,7 +36,7 @@ void main() {
 
     expect(find.byType(FloatingActionButton), findsOneWidget);
     await tester.tap(find.byTooltip('Rescan'));
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect(find.text('Scan complete'), findsOneWidget);
     // A second copy would be queued behind the first one.
@@ -228,7 +228,7 @@ void main() {
       );
 
       await tester.tap(rescanLibrary());
-      await settleIo(tester);
+      await settleIo(tester, h);
 
       expect(find.text('Scan complete'), findsOneWidget);
       expect(tester.widget<FilledButton>(rescanLibrary()).onPressed, isNotNull);
