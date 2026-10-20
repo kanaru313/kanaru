@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -69,6 +70,38 @@ void main() {
     await add();
     expect(find.text('$music is already added'), findsOneWidget);
     expect(find.text(music), findsOneWidget);
+  });
+
+  testWidgets('a second click while the picker is open is ignored', (
+    tester,
+  ) async {
+    final opened = <Completer<String?>>[];
+    final h = LibraryHarness(
+      picker: () {
+        final completer = Completer<String?>();
+        opened.add(completer);
+        return completer.future;
+      },
+    );
+    final music = h.folder('music');
+    await h.pump(tester);
+
+    await tester.tap(find.text('Add folder…'));
+    await tester.pump();
+    await tester.tap(find.text('Add folder…'), warnIfMissed: false);
+    await tester.pump();
+    expect(opened, hasLength(1));
+
+    opened.single.complete(music);
+    await settleIo(tester);
+    expect(find.text(music), findsOneWidget);
+
+    // Once done, the button works again.
+    await tester.tap(find.text('Add folder…'));
+    await tester.pump();
+    expect(opened, hasLength(2));
+    opened.last.complete(null);
+    await settleIo(tester);
   });
 
   testWidgets('Start stores the root, scans and opens Songs', (tester) async {

@@ -39,6 +39,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _suggestionSelected = true;
   bool _busy = false;
 
+  /// The picker is open or its answer is being checked.
+  bool _picking = false;
+
   String? get _suggestion => ref.watch(suggestedMusicFolderProvider).value;
 
   /// Folders that will become roots: the checked suggestion and the added ones.
@@ -54,6 +57,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _addFolder() async {
+    if (_picking) return;
+    setState(() => _picking = true);
+    try {
+      await _pickAndAdd();
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+  }
+
+  Future<void> _pickAndAdd() async {
     final DirectoryPicker pick =
         widget.pickDirectory ?? ref.read(directoryPickerProvider);
     final picked = await pick();
@@ -162,7 +175,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: _busy ? null : _addFolder,
+                    onPressed: _busy || _picking ? null : _addFolder,
                     icon: const Icon(Icons.create_new_folder_outlined),
                     label: Text(l10n.onboardingAddFolder),
                   ),
