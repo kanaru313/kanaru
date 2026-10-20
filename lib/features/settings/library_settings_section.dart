@@ -61,12 +61,19 @@ class _RescanButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final progress = this.progress;
+    // One line, cut short in a narrow row with large text: the button
+    // keeps its fixed height.
+    final label = Text(
+      l10n.libraryRescan,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
     if (progress == null) {
       return FilledButton.tonalIcon(
         style: settingButtonStyle(),
         onPressed: onPressed,
         icon: const Icon(Icons.refresh),
-        label: Text(l10n.libraryRescan),
+        label: label,
       );
     }
 
@@ -76,7 +83,7 @@ class _RescanButton extends StatelessWidget {
         style: settingButtonStyle(),
         onPressed: onPressed,
         icon: ScanProgressRing(scan: progress, size: 18, strokeWidth: 2),
-        label: Text(l10n.libraryRescan),
+        label: label,
       ),
     );
   }

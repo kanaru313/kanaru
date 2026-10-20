@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
@@ -116,6 +117,25 @@ Future<void> _checkLayout(
       reason: '${control.widget.runtimeType}',
     );
   }
+
+  // The rescan label is drawn whole inside its button, however narrow the
+  // button gets: wrapped or cut short with an ellipsis, never clipped.
+  final rescan = tester.getRect(find.byType(FilledButton));
+  final rescanLabel = find.descendant(
+    of: find.byType(FilledButton),
+    matching: find.text(l10n.libraryRescan),
+  );
+  final labelRect = tester.getRect(rescanLabel);
+  expect(labelRect.left, greaterThanOrEqualTo(rescan.left));
+  expect(labelRect.right, lessThanOrEqualTo(rescan.right));
+  expect(labelRect.top, greaterThanOrEqualTo(rescan.top));
+  expect(labelRect.bottom, lessThanOrEqualTo(rescan.bottom));
+  final paragraph = tester.renderObject<RenderParagraph>(rescanLabel);
+  expect(
+    paragraph.getMinIntrinsicHeight(paragraph.size.width),
+    lessThanOrEqualTo(paragraph.size.height + 0.5),
+    reason: 'rescan label not clipped',
+  );
 
   final rowWidth = tester.getSize(find.byType(SettingRow).first).width;
   final wideRows = rowWidth >= _wideRowFrom;
