@@ -387,4 +387,32 @@ void main() {
 
     expect(toggles, hasLength(1));
   });
+
+  testWidgets('a drag whose release never arrives leaves later clicks '
+      'working', (tester) async {
+    final toggles = <int>[];
+    final drags = <int>[];
+    await pumpArea(tester, toggles: toggles, drags: drags);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+
+    // The window manager swallows the release: no up, no cancel.
+    final lost = TestPointer(99, PointerDeviceKind.mouse);
+    await tester.sendEventToBinding(lost.down(at, timeStamp: clicker.now));
+    await tester.sendEventToBinding(
+      lost.move(at + const Offset(20, 0), timeStamp: clicker.now),
+    );
+    await tester.sendEventToBinding(
+      lost.move(at + const Offset(40, 0), timeStamp: clicker.now),
+    );
+    expect(drags, hasLength(1));
+
+    await clicker.wait(const Duration(milliseconds: 100));
+    await clicker.click(at);
+    await clicker.wait(const Duration(milliseconds: 60));
+    await clicker.click(at);
+
+    expect(toggles, hasLength(1));
+    expect(drags, hasLength(1));
+  });
 }

@@ -47,14 +47,10 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
   /// Where and when each pressed primary-button pointer went down.
   final _downs = <int, ({Offset position, Duration time})>{};
 
-  /// Pointers that already started a window drag; their release is not a click.
-  final _dragged = <int>{};
-
   /// The last completed click, which a second one may pair with.
   ({Offset position, Duration time})? _lastClick;
 
   void _onPointerDown(PointerDownEvent event) {
-    _dragged.remove(event.pointer);
     // Only a plain primary press can start a drag or be half of a double click.
     if (event.buttons == kPrimaryButton) {
       _downs[event.pointer] = (position: event.position, time: event.timeStamp);
@@ -65,25 +61,22 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
 
   void _onPointerMove(PointerMoveEvent event) {
     final down = _downs[event.pointer];
-    if (down == null ||
-        _excluded.contains(event.pointer) ||
-        _dragged.contains(event.pointer)) {
-      return;
-    }
+    if (down == null || _excluded.contains(event.pointer)) return;
     if ((event.position - down.position).distance <= _dragSlop) return;
-    _dragged.add(event.pointer);
+    // Forget the press: the window manager takes the pointer and may swallow
+    // the release, so nothing may wait for it. Without a press on record, the
+    // release (if it comes) is not a click and later moves do nothing.
+    _downs.remove(event.pointer);
     ref.read(startWindowDragProvider)();
   }
 
   void _onPointerUp(PointerUpEvent event) {
     final down = _downs.remove(event.pointer);
     final taken = _excluded.remove(event.pointer);
-    final dragged = _dragged.remove(event.pointer);
     if (!widget.doubleClickMaximizes) return;
     // A drag is not a click; neither is a click on an interactive child.
     if (down == null ||
         taken ||
-        dragged ||
         (event.position - down.position).distance > _dragSlop) {
       _lastClick = null;
       return;
@@ -103,7 +96,6 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
   void _onPointerCancel(PointerCancelEvent event) {
     _excluded.remove(event.pointer);
     _downs.remove(event.pointer);
-    _dragged.remove(event.pointer);
     _lastClick = null;
   }
 
