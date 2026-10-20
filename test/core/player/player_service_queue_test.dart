@@ -107,6 +107,21 @@ void main() {
       expect(state().playing, isTrue);
     });
 
+    test(
+      'the playing track keeps playing when the engine already reported a stop',
+      () async {
+        await service().openTracks([a, b, c, d], start: 1);
+        // mpv can turn `playing` off while idle, before it reports the end.
+        backend.emitPlaying.add(false);
+        backend.calls.clear();
+
+        await service().removeTrack(1);
+
+        expect(backend.calls, ['open(c, next: d)']);
+        expect(state().playing, isTrue);
+      },
+    );
+
     test('while paused the next track loads but stays paused', () async {
       await service().openTracks([a, b, c, d], start: 1);
       await service().pause();

@@ -54,7 +54,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
       return _backend.stop();
     }
     state = state.copyWith(queue: rest);
-    await _play(rest.index, play: state.playing);
+    await _play(rest.index, play: _wantsPlaying);
   }
 
   /// Removes every track but the playing one, without interrupting it.
