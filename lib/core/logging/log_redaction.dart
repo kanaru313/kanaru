@@ -14,41 +14,64 @@ const maxRecordChars = 16 * 1024;
 /// A secret that only shows up percent-encoded (a proxied URL in `?url=`) is
 /// found in a decoded copy; the record is then logged decoded.
 String redactSecrets(String text) {
-  final out = _redactPlain(_cap(text));
+  var end = text.length;
+  if (end > maxRecordChars) {
+    end = maxRecordChars;
+    // Do not cut a surrogate pair in half.
+    if (_isHighSurrogate(text.codeUnitAt(end - 1))) end--;
+  }
+  final out = _postMask(_pipeline(text.substring(0, end)));
+  if (end == text.length) return out;
+  // The marker is appended last: it is not part of a secret.
+  return '${_maskLastWord(out)}…[truncated ${text.length - end} chars]';
+}
+
+/// The rules, then the percent-decoded copy when it holds more to mask.
+String _pipeline(String text) {
+  final out = _redactPlain(text);
   if (!out.contains('%')) return out;
   final decoded = _percentDecode(out);
   final redacted = _redactPlain(decoded);
   return redacted == decoded ? out : redacted;
 }
 
-String _cap(String text) {
-  if (text.length <= maxRecordChars) return text;
-  var end = maxRecordChars;
-  // Do not cut a surrogate pair in half.
-  if (_isHighSurrogate(text.codeUnitAt(end - 1))) end--;
-  // Mask before the marker is appended: the marker is not part of a secret.
-  return '${_maskCutFragment(text.substring(0, end))}'
-      '…[truncated ${text.length - end} chars]';
+/// Masking applied to the finished output, plain and percent-decoded. It runs
+/// after every other rule so it can only remove text: run before them, it
+/// would swallow the name of a secret (`&p=hunt@x`) and leave the value
+/// behind for no rule to find.
+String _postMask(String out) {
+  if (out.contains('@')) {
+    out = out.replaceAllMapped(_longUserInfo, _maskLongUserInfo);
+  }
+  if (!out.contains('%')) return out;
+  final decoded = _percentDecode(out);
+  if (!decoded.contains('@')) return out;
+  final masked = decoded.replaceAllMapped(_longUserInfo, _maskLongUserInfo);
+  return masked == decoded ? out : masked;
 }
 
 /// A secret cut in half by the cap (`https://u:secr`) has no `@` or
-/// separator left for the rules to find, so the unterminated last word is
-/// masked from its `://` (or, without one, from its last `:`) on. Prefers
-/// masking too much (a cut `file.dart:12` becomes `file.dart:***`).
-String _maskCutFragment(String cut) {
+/// separator left for the rules to find. Runs on the redacted result: the
+/// last word is masked from its first `:`, `=`, `@` or `%` on, which keeps
+/// whatever the rules would have masked in the uncut word. Prefers masking
+/// too much (a cut `file.dart:12` becomes `file.dart:***`).
+String _maskLastWord(String cut) {
   var start = cut.length;
   while (start > 0 && !_isSpace(cut.codeUnitAt(start - 1))) {
     start--;
   }
-  final scheme = cut.lastIndexOf('://');
-  if (scheme >= start) return '${cut.substring(0, scheme + 3)}***';
-  final colon = cut.lastIndexOf(':');
-  if (colon > start) return '${cut.substring(0, colon + 1)}***';
+  for (var i = start; i < cut.length; i++) {
+    if (_isCutMarker(cut.codeUnitAt(i))) return '${cut.substring(0, i + 1)}***';
+  }
   return cut;
 }
 
-/// Same set as the `\s` of the patterns below, for the ASCII whitespace that
-/// ends a word in a log line.
+bool _isCutMarker(int unit) =>
+    unit == 0x3a || unit == 0x3d || unit == 0x40 || unit == 0x25; // : = @ %
+
+/// Ends a word in a log line: ASCII whitespace and no-break space. Unicode
+/// spaces that `\s` also matches are not included, so a word may be taken as
+/// longer than the patterns see it, which only masks more.
 bool _isSpace(int unit) =>
     unit == 0x20 || (unit >= 0x09 && unit <= 0x0d) || unit == 0xa0;
 
@@ -77,7 +100,6 @@ String _redactPlain(String text) {
   if (text.contains('@')) {
     // Trigger '@': both user info forms end in it.
     out = out.replaceAll(_userInfo, '://***@');
-    out = out.replaceAllMapped(_longUserInfo, _maskLongUserInfo);
     // Trigger ':' as well: `user:pass@`.
     if (text.contains(':')) out = out.replaceAll(_bareUserInfo, '***@');
   }
@@ -114,7 +136,8 @@ final _userInfo = RegExp(r'://(?!/)\S{0,128}@');
 
 /// A word whose user info is longer than the bound of [_userInfo]: from the
 /// first `://` that has more than 128 characters after it to the end of the
-/// word. Matches do not overlap, so a word is scanned once.
+/// word. Matches do not overlap, so a word is scanned once. Used by
+/// [_postMask] only.
 final _longUserInfo = RegExp(r'://(?!/)\S{129,}');
 
 /// Masks up to the last `@` of the word, as [_userInfo] does. A word with no
@@ -155,15 +178,7 @@ final _jwt = RegExp(r'\beyJ[\w\-]{5,512}\.[\w\-]{1,512}\.[\w\-]{1,512}');
 /// inside the value of another parameter (`?url=https://h/?t=x`) is found.
 /// Group 1 is the separator that opens a URL parameter, group 2 the name.
 final _pair = RegExp(
-  r'([?&#;])?(?<![\w.\-])'
-  // Only names that [_isSecretName] can accept: one with a secret word in
-  // it, `x-amz-...`, or one of the short exact names. Without this, every
-  // `name:` of a long log line would come back to Dart just to be dropped.
-  r'(?=[\w.\-]{0,127}?(?:'
-  r'token|secret|pass|pwd|key|sig|auth|session|sessid|code|jwt|credential|'
-  r'ticket|otp)|x-amz-|(?:p|t|s|pw|sid)(?![\w.\-]))'
-  r"""([\w.\-]{1,128})["']?\s{0,3}[:=]\s{0,3}""",
-  caseSensitive: false,
+  r'''([?&#;])?(?<![\w.\-])([\w.\-]{1,128})["']?\s{0,3}[:=]\s{0,3}''',
 );
 
 /// Value of a URL parameter: up to the next separator or space.
