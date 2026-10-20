@@ -235,6 +235,89 @@ void main() {
 
       expect(backend.calls.last, 'open(b, next: c)');
     });
+
+    test('a broken track loaded paused is skipped without playing', () async {
+      final three = songs.take(3).toList();
+      await service().openTracks(three);
+      await service().pause();
+      await service().removeTrack(0);
+      expect(backend.calls.last, 'open(b, next: c, paused)');
+
+      backend.fail(three[1]);
+      backend.emitCompleted.add(true);
+
+      expect(backend.calls.last, 'open(c, next: null, paused)');
+      expect(playing(), isFalse);
+    });
+
+    test('play after a paused load brings back auto-skip', () async {
+      await service().openTracks(songs);
+      await service().pause();
+      await service().removeTrack(0);
+      expect(backend.calls.last, 'open(b, next: c, paused)');
+
+      await service().play();
+      backend.fail(songs[1]);
+      backend.emitCompleted.add(true);
+
+      expect(backend.calls.last, 'open(c, next: d)');
+      expect(playing(), isTrue);
+    });
+
+    test(
+      'a paused load that advances to a removed track stays paused',
+      () async {
+        await service().openTracks(songs);
+        await service().pause();
+        await service().removeTrack(0);
+        expect(backend.calls.last, 'open(b, next: c, paused)');
+        await service().removeTrack(1); // c, already handed to the engine
+
+        backend.fail(songs[1]);
+        // The engine had c queued and moves on to it anyway.
+        backend.emitAdvanced.add(songs[2]);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(backend.calls.last, 'open(d, next: null, paused)');
+        expect(playing(), isFalse);
+      },
+    );
+
+    test('pausing during a load keeps the next track paused', () async {
+      await service().openTracks(songs);
+      await service().pause();
+
+      backend.fail(songs[0]);
+      backend.emitCompleted.add(true);
+
+      expect(backend.calls.last, 'open(b, next: c, paused)');
+      expect(playing(), isFalse);
+    });
+
+    test('a broken track keeps playing when it was playing', () async {
+      await service().openTracks(songs);
+
+      backend.fail(songs[0]);
+      backend.emitCompleted.add(true);
+
+      expect(backend.calls.last, 'open(b, next: c)');
+      expect(playing(), isTrue);
+    });
+
+    test('every missing track with repeat off stops on the last one', () async {
+      final three = songs.take(3).toList();
+      await service().openTracks(three);
+      for (final track in three) {
+        backend.fail(track);
+        backend.emitCompleted.add(true);
+      }
+
+      expect(backend.calls.where((c) => c.startsWith('open')), hasLength(3));
+      final state = container.read(playerServiceProvider);
+      expect(state.stopped, isTrue);
+      expect(state.playing, isFalse);
+      expect(state.queue.index, 2);
+    });
   });
 
   test('seeking into the finished last track resumes it on play', () async {

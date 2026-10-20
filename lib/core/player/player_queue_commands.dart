@@ -10,6 +10,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   set _lastTick(Duration position);
   set _failuresInRow(int count);
   bool get _allFailed;
+  bool get _wantsPlaying;
   List<int> get _handedNext;
   Future<void> _queueNext();
   Future<void> _play(int index, {bool play = true});
@@ -128,10 +129,11 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   }
 
   /// The engine moved on to a track that was removed after it was handed
-  /// over: carry on with the queue as it is now, or stop when it ran out.
+  /// over: carry on with the queue as it is now, playing or paused as asked
+  /// last, or stop when it ran out.
   Future<void> _advancedToRemoved() {
     final next = state.queue.nextIndex;
-    if (next != null) return _play(next);
+    if (next != null) return _play(next, play: _wantsPlaying);
     state = state.copyWith(
       playing: false,
       stopped: true,

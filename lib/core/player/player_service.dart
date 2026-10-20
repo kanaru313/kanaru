@@ -58,6 +58,14 @@ class PlayerService extends Notifier<PlayerState>
   @override
   int _failuresInRow = 0;
 
+  /// What was last asked for: playing, or paused. A track that fails moves
+  /// on in that state, so a track loaded paused (or paused while it was
+  /// still loading) never starts playing on its own. Kept apart from
+  /// `state.playing`, which the engine may turn off on its own before it
+  /// reports that it stopped.
+  @override
+  bool _wantsPlaying = false;
+
   /// Every track in the queue failed since the last one that played.
   @override
   bool get _allFailed => _failuresInRow >= state.queue.order.length;
@@ -128,7 +136,7 @@ class PlayerService extends Notifier<PlayerState>
   void _onCompleted() {
     final next = state.queue.nextIndex;
     if (next != null && !_allFailed) {
-      _play(next);
+      _play(next, play: _wantsPlaying);
       return;
     }
     _ended = true;
@@ -158,6 +166,7 @@ class PlayerService extends Notifier<PlayerState>
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
+    _wantsPlaying = play;
     final next = queue.nextIndex;
     _handedNext.clear();
     if (next != null) _handedNext.add(queue.order[next]);

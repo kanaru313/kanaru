@@ -11,12 +11,14 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   StreamController<Duration> get _seeked;
   Random? get _random;
   set _failuresInRow(int count);
+  set _wantsPlaying(bool wanted);
   Future<void> _play(int index);
 
   Future<void> playPause() async {
     if (state.queue.isEmpty) return;
     if (_ended) return jump(0);
     final play = !state.playing;
+    _wantsPlaying = play;
     state = state.copyWith(
       playing: play,
       stopped: play ? false : state.stopped,
@@ -37,6 +39,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   /// through [seek], which would announce a jump and clear `stopped`.
   Future<void> stop() async {
     if (state.queue.isEmpty) return;
+    _wantsPlaying = false;
     state = state.copyWith(
       playing: false,
       stopped: true,
