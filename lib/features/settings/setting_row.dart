@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:material_ui/material_ui.dart';
 
 import 'full_or_compact_control.dart';
@@ -28,25 +26,42 @@ ButtonStyle settingButtonStyle() => const ButtonStyle(
 /// Share of the row a control may take, so the title always keeps a part.
 const _controlMaxShare = 0.6;
 
-/// A settings row: [title] with an optional [subtitle], and at its right the
-/// control built by [control].
+/// A settings row: [title] with an optional [subtitle], and at its right
+/// a control.
 ///
-/// The control always stays on the title's line. A narrow row asks for a
-/// compact control and gives it a fixed width shared by all rows (less only
-/// when the row is very narrow); a wide row lets the full control take its
-/// own width, or falls back to the compact one when the full one does not
-/// fit (long labels, large text). A long title wraps to a second line.
+/// The control always stays on the title's line. A narrow row shows the
+/// compact control at a fixed width shared by all rows (less only when the
+/// row is very narrow); a wide row lets the full control take its own width,
+/// or falls back to the compact one when the full one does not fit (long
+/// labels, large text). A long title wraps to a second line.
+///
+/// Both kinds of row build the same widgets, so a control keeps its state
+/// (a running animation, focus, an open menu) when the window is resized
+/// across the threshold.
 class SettingRow extends StatelessWidget {
+  /// A row whose control has a full and a compact form, built by [control].
   const SettingRow({
     super.key,
     required this.title,
-    required this.control,
+    required Widget Function(bool compact) control,
     this.subtitle,
-  });
+  }) : _buildControl = control,
+       _singleControl = null;
+
+  /// A row whose [control] has a single form: built once, and narrowed to
+  /// the compact width where a compact control would be shown.
+  const SettingRow.single({
+    super.key,
+    required this.title,
+    required Widget control,
+    this.subtitle,
+  }) : _buildControl = null,
+       _singleControl = control;
 
   final String title;
   final String? subtitle;
-  final Widget Function(bool compact) control;
+  final Widget Function(bool compact)? _buildControl;
+  final Widget? _singleControl;
 
   @override
   Widget build(BuildContext context) {
@@ -92,19 +107,14 @@ class SettingRow extends StatelessWidget {
   }
 
   Widget _control(double rowWidth) {
-    final maxWidth = rowWidth * _controlMaxShare;
-    if (rowWidth < _compactBelow) {
-      return SizedBox(
-        width: math.min(_compactControlWidth, maxWidth),
-        child: control(true),
-      );
-    }
+    final build = _buildControl;
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth),
+      constraints: BoxConstraints(maxWidth: rowWidth * _controlMaxShare),
       child: FullOrCompactControl(
-        full: control(false),
-        compact: control(true),
+        full: build == null ? _singleControl! : build(false),
+        compact: build?.call(true),
         compactWidth: _compactControlWidth,
+        forceCompact: rowWidth < _compactBelow,
       ),
     );
   }

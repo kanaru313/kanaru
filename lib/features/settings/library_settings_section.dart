@@ -28,9 +28,9 @@ class LibrarySettingsSection extends ConsumerWidget {
     return SettingsSection(
       title: l10n.settingsLibrary,
       children: [
-        SettingRow(
+        SettingRow.single(
           title: l10n.settingsRescanLibrary,
-          control: (_) => ScanProgressBuilder(
+          control: ScanProgressBuilder(
             scan: ref.watch(libraryIndexerProvider),
             builder: (context, progress) => _RescanButton(
               progress: progress,

@@ -75,6 +75,14 @@ class SettingDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leadingIcon = this.leadingIcon;
+    // Made outside the layout builder, so a relayout at another width (see
+    // FullOrCompactControl) hands the dropdown the same objects: it refreshes
+    // itself after the frame when they change, which would relayout again.
+    final leading = leadingIcon == null ? null : Icon(leadingIcon, size: 18);
+    final entries = [
+      for (final option in options)
+        DropdownMenuEntry(value: option.value, label: option.label),
+    ];
 
     return LayoutBuilder(
       builder: (context, constraints) => DropdownMenu<T>(
@@ -85,7 +93,7 @@ class SettingDropdown<T> extends StatelessWidget {
         initialSelection: selected,
         requestFocusOnTap: false,
         enableFilter: false,
-        leadingIcon: leadingIcon == null ? null : Icon(leadingIcon, size: 18),
+        leadingIcon: leading,
         textStyle: Theme.of(context).textTheme.labelLarge,
         inputDecorationTheme: InputDecorationThemeData(
           isDense: true,
@@ -95,10 +103,7 @@ class SettingDropdown<T> extends StatelessWidget {
           ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
         ),
-        dropdownMenuEntries: [
-          for (final option in options)
-            DropdownMenuEntry(value: option.value, label: option.label),
-        ],
+        dropdownMenuEntries: entries,
         onSelected: (value) {
           if (value != null) onSelected(value);
         },
