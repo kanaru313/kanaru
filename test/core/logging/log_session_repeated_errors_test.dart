@@ -38,25 +38,27 @@ void main() {
     );
     await session.close();
     final lines = File(path).readAsLinesSync();
-    expect(lines.where((l) => l.contains('Bad state: boom')), hasLength(1));
+    expect(lines.where((l) => l == '  Bad state: boom'), hasLength(1));
     expect(
       lines.last,
       endsWith(
-        'SEVERE app: Uncaught error repeated ×99: StateError #0 build (w.dart:1)',
+        'SEVERE app: Uncaught error repeated ×99: '
+        'StateError #0 build (w.dart:1) | Bad state: boom',
       ),
     );
   });
 
-  test('another error is written in full and flushes the count', () {
+  test('another error is written in full; the count comes on close', () async {
     raise(StateError('a'), '#0 one (a.dart:1)');
     raise(StateError('a'), '#0 one (a.dart:1)');
     raise(ArgumentError('b'), '#0 two (b.dart:1)');
     final text = File(path).readAsStringSync();
-    expect(text, contains('Uncaught error repeated ×1: StateError #0 one'));
     expect(text, contains('Invalid argument(s): b'));
+    expect(text, isNot(contains('repeated')));
+    await session.close();
     expect(
-      text.indexOf('repeated ×1'),
-      lessThan(text.indexOf('Invalid argument')),
+      File(path).readAsStringSync(),
+      contains('Uncaught error repeated ×1: StateError #0 one'),
     );
   });
 
@@ -74,5 +76,17 @@ void main() {
     expect(summary, contains(r'\r'));
     expect(summary, contains(r'\u2028'));
     expect(summary, isNot(contains('\r')));
+  });
+
+  test('errors that alternate are folded, not written every time', () async {
+    for (var i = 0; i < 20; i++) {
+      raise(StateError('a'), '#0 one (a.dart:1)');
+      raise(StateError('b'), '#0 two (b.dart:1)');
+    }
+    await session.close();
+    final lines = File(path).readAsLinesSync();
+    expect(lines.where((l) => l == '  Bad state: a'), hasLength(1));
+    expect(lines.where((l) => l == '  Bad state: b'), hasLength(1));
+    expect(lines.where((l) => l.contains('repeated ×19')), hasLength(2));
   });
 }
