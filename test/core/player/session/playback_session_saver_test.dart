@@ -14,10 +14,13 @@ class _RecordingFile extends PlaybackSessionFile {
 
   final saves = <PlaybackSession>[];
 
+  /// Whether the next writes report success, like a full disk would not.
+  bool succeeds = true;
+
   @override
   Future<bool> save(PlaybackSession session) async {
     saves.add(session);
-    return true;
+    return succeeds;
   }
 }
 
@@ -170,6 +173,43 @@ void main() {
     emit(state.copyWith(volume: 60));
     emit(state.copyWith(volume: 50));
     fireAll(PlaybackSessionSaver.coalesceDelay);
+
+    expect(file.saves, hasLength(1));
+  });
+
+  test('a failed write is written again by the next save', () async {
+    file.succeeds = false;
+    emit(state.copyWith(playing: true));
+    emit(state.copyWith(position: const Duration(seconds: 42)));
+    emit(state.copyWith(playing: false));
+    expect(file.saves, hasLength(1));
+    await Future<void>.delayed(Duration.zero);
+
+    file.succeeds = true;
+    saver.onSeeked(const Duration(seconds: 42));
+    expect(file.saves, hasLength(2));
+    expect(file.saves.last, file.saves.first);
+  });
+
+  test('dispose writes a snapshot whose write failed', () async {
+    file.succeeds = false;
+    emit(state.copyWith(playing: true));
+    emit(state.copyWith(playing: false));
+    await Future<void>.delayed(Duration.zero);
+
+    file.succeeds = true;
+    saver.dispose();
+
+    expect(file.saves, hasLength(2));
+    expect(file.saves.last, file.saves.first);
+  });
+
+  test('a written snapshot is not written again by dispose', () async {
+    emit(state.copyWith(playing: true));
+    emit(state.copyWith(playing: false));
+    await Future<void>.delayed(Duration.zero);
+
+    saver.dispose();
 
     expect(file.saves, hasLength(1));
   });

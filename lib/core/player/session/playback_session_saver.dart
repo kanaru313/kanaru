@@ -47,7 +47,8 @@ class PlaybackSessionSaver {
   final PlaybackSessionFile _file;
   final SessionTimerFactory _timer;
 
-  /// Last snapshot loaded or written: an equal one is never written again.
+  /// Last snapshot loaded or written successfully: an equal one is never
+  /// written again.
   PlaybackSession? _written;
   PlayerState? _state;
   Duration _position;
@@ -135,8 +136,13 @@ class PlaybackSessionSaver {
     final snapshot = PlaybackSession.fromState(state, position: _position);
     if (snapshot == _written) return;
     _written = snapshot;
-    // Never throws; a failed write is logged and retried with the next one.
-    unawaited(_file.save(snapshot));
+    // Never throws. A failed write counts as not written, so the next save
+    // (or dispose) writes the same snapshot again.
+    unawaited(
+      _file.save(snapshot).then((saved) {
+        if (!saved && identical(_written, snapshot)) _written = null;
+      }),
+    );
   }
 }
 
