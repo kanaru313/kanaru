@@ -452,6 +452,18 @@ abstract class AppLocalizations {
   /// **'{path} is empty, library kept as it was'**
   String libraryScanRootEmpty(String path);
 
+  /// No description provided for @libraryScanRootTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} took too long, stopped; try again later'**
+  String libraryScanRootTimedOut(String path);
+
+  /// No description provided for @libraryScanRootReaderStuck.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} was not read: an earlier read is stuck, restart Kanaru'**
+  String libraryScanRootReaderStuck(String path);
+
   /// No description provided for @libraryRootNotFound.
   ///
   /// In en, this message translates to:

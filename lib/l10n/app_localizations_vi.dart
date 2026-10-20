@@ -229,6 +229,16 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String libraryScanRootTimedOut(String path) {
+    return '$path mất quá nhiều thời gian nên đã dừng, hãy thử lại sau';
+  }
+
+  @override
+  String libraryScanRootReaderStuck(String path) {
+    return 'Chưa đọc $path: một lần đọc trước đó bị treo, hãy khởi động lại Kanaru';
+  }
+
+  @override
   String libraryRootNotFound(String path) {
     return 'Không tìm thấy $path';
   }

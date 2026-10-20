@@ -108,6 +108,18 @@
       "path": { "type": "String" }
     }
   },
+  "libraryScanRootTimedOut": "{path} took too long, stopped; try again later",
+  "@libraryScanRootTimedOut": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "libraryScanRootReaderStuck": "{path} was not read: an earlier read is stuck, restart Kanaru",
+  "@libraryScanRootReaderStuck": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
   "libraryRootNotFound": "{path} was not found",
   "@libraryRootNotFound": {
     "placeholders": {

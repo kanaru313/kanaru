@@ -66,6 +66,8 @@
   "libraryScanFailedTags": "{count, plural, other{{count} file không đọc được tag}}",
   "libraryScanRootMissing": "Không tìm thấy {path}",
   "libraryScanRootEmpty": "{path} đang trống, giữ nguyên thư viện",
+  "libraryScanRootTimedOut": "{path} mất quá nhiều thời gian nên đã dừng, hãy thử lại sau",
+  "libraryScanRootReaderStuck": "Chưa đọc {path}: một lần đọc trước đó bị treo, hãy khởi động lại Kanaru",
   "libraryRootNotFound": "Không tìm thấy {path}",
   "libraryRootNotDirectory": "{path} không phải thư mục",
   "libraryRootDuplicate": "{path} đã được thêm",

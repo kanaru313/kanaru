@@ -230,6 +230,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String libraryScanRootTimedOut(String path) {
+    return '$path took too long, stopped; try again later';
+  }
+
+  @override
+  String libraryScanRootReaderStuck(String path) {
+    return '$path was not read: an earlier read is stuck, restart Kanaru';
+  }
+
+  @override
   String libraryRootNotFound(String path) {
     return '$path was not found';
   }

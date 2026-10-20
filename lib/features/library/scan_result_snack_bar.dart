@@ -80,6 +80,8 @@ String _summaryDetails(AppLocalizations l10n, ScanSummary summary) {
       switch (entry.value) {
         SkipReason.missing => l10n.libraryScanRootMissing(entry.key),
         SkipReason.empty => l10n.libraryScanRootEmpty(entry.key),
+        SkipReason.timedOut => l10n.libraryScanRootTimedOut(entry.key),
+        SkipReason.readerStuck => l10n.libraryScanRootReaderStuck(entry.key),
       },
   ].join('\n');
 }
