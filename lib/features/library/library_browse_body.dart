@@ -11,7 +11,8 @@ import 'widgets/library_loading.dart';
 
 /// The states shared by the Albums and Artists screens: library unavailable,
 /// no music folder yet (only a hint: adding folders happens in Songs),
-/// loading, nothing found, or the [toolbar] above the [builder] content.
+/// loading, nothing found, or the [builder] content. The screen shows its
+/// sort controls in the page title row.
 class LibraryBrowseBody<T> extends ConsumerWidget {
   const LibraryBrowseBody({
     super.key,
@@ -21,7 +22,6 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
     required this.noRootsMessage,
     required this.emptyTitle,
     required this.emptyMessage,
-    required this.toolbar,
     required this.builder,
   });
 
@@ -35,7 +35,6 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
   final String noRootsMessage;
   final String emptyTitle;
   final String emptyMessage;
-  final Widget toolbar;
   final Widget Function(List<T> items) builder;
 
   @override
@@ -66,15 +65,6 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
           ? const SizedBox.shrink()
           : EmptyState(icon: icon, title: emptyTitle, message: emptyMessage);
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-          child: toolbar,
-        ),
-        Expanded(child: builder(list)),
-      ],
-    );
+    return builder(list);
   }
 }

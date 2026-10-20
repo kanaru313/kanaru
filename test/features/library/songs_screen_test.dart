@@ -245,7 +245,7 @@ void main() {
           lessThan(tester.getTopLeft(find.text('s38')).dy),
         );
 
-        await chooseSort(tester, 'Duration', 'Descending');
+        await chooseSort(tester, 'Ascending', 'Descending');
         await tester.pumpAndSettle();
         expect(find.text('s00'), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);

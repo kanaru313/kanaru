@@ -4,12 +4,13 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
+import '../../../core/database/library_startup.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
-import '../widgets/library_sort_button.dart';
+import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'album_grid_tile.dart';
 import 'album_list_tile.dart';
@@ -43,11 +44,40 @@ class AlbumsScreen extends ConsumerWidget {
     final sort = ref.watch(settingsProvider.select((s) => s.albumSort));
     final view = ref.watch(settingsProvider.select((s) => s.albumsView));
     final settings = ref.read(settingsProvider.notifier);
+    final showActions =
+        ref.watch(libraryDatabaseProvider) != null &&
+        ref.watch(libraryHasRootsProvider);
     void open(AlbumKey key) => context.go(albumLocation(key));
 
     return PageMaterial(
       child: PageScaffold(
         title: l10n.navAlbums,
+        actions: [
+          if (showActions) ...[
+            // Shows the current view; a tap switches to the other one.
+            IconButton(
+              tooltip: switch (view) {
+                AlbumsView.grid => l10n.albumsGridView,
+                AlbumsView.list => l10n.albumsListView,
+              },
+              icon: Icon(switch (view) {
+                AlbumsView.grid => Icons.grid_view,
+                AlbumsView.list => Icons.view_list,
+              }),
+              onPressed: () => settings.setAlbumsView(switch (view) {
+                AlbumsView.grid => AlbumsView.list,
+                AlbumsView.list => AlbumsView.grid,
+              }),
+            ),
+            const SizedBox(width: 8),
+            LibrarySortControls<AlbumSortField>(
+              choice: sort,
+              fields: AlbumSortField.values,
+              label: albumSortLabel,
+              onChanged: settings.setAlbumSort,
+            ),
+          ],
+        ],
         body: LibraryBrowseBody<AlbumSummary>(
           state: ref.watch(albumsProvider),
           items: ref.watch(sortedAlbumsProvider),
@@ -55,35 +85,6 @@ class AlbumsScreen extends ConsumerWidget {
           noRootsMessage: l10n.albumsNoRootsMessage,
           emptyTitle: l10n.albumsEmptyTitle,
           emptyMessage: l10n.albumsEmptyMessage,
-          toolbar: Row(
-            children: [
-              LibrarySortButton<AlbumSortField>(
-                choice: sort,
-                fields: AlbumSortField.values,
-                label: albumSortLabel,
-                onChanged: settings.setAlbumSort,
-              ),
-              const Spacer(),
-              SegmentedButton<AlbumsView>(
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(
-                    value: AlbumsView.grid,
-                    icon: const Icon(Icons.grid_view),
-                    tooltip: l10n.albumsGridView,
-                  ),
-                  ButtonSegment(
-                    value: AlbumsView.list,
-                    icon: const Icon(Icons.view_list),
-                    tooltip: l10n.albumsListView,
-                  ),
-                ],
-                selected: {view},
-                onSelectionChanged: (selected) =>
-                    settings.setAlbumsView(selected.single),
-              ),
-            ],
-          ),
           builder: (albums) => switch (view) {
             AlbumsView.grid => AlbumGrid(
               albums: [for (final a in albums) AlbumTileData.fromSummary(a)],

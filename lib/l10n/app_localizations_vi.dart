@@ -249,7 +249,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryScanFailedDetails => 'Xem chi tiết trong nhật ký';
 
   @override
-  String get sortTooltip => 'Sắp xếp';
+  String get sortBy => 'Sắp xếp:';
+
+  @override
+  String get sortOrder => 'Thứ tự:';
 
   @override
   String get sortAscending => 'Tăng dần';

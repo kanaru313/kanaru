@@ -39,7 +39,7 @@ void main() {
       const SortChoice(AlbumSortField.year),
     );
 
-    await tester.tap(find.widgetWithText(TextButton, 'Year'));
+    await tester.tap(find.widgetWithText(TextButton, 'Ascending'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(MenuItemButton, 'Descending'));
     await tester.pumpAndSettle();
@@ -58,7 +58,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the sort menu marks the current choice and refocuses', (
+  testWidgets('the sort menus mark the current choice and refocus', (
     tester,
   ) async {
     final h = LibraryHarness();
@@ -73,8 +73,6 @@ void main() {
     expect(title.groupValue, title.value, reason: 'Title is checked');
     final year = radio<AlbumSortField>('Year');
     expect(year.groupValue, isNot(year.value));
-    final ascending = radio<bool>('Ascending');
-    expect(ascending.groupValue, ascending.value);
     expect(
       tester.getSemantics(
         find.widgetWithText(RadioMenuButton<AlbumSortField>, 'Title'),
@@ -88,18 +86,67 @@ void main() {
         .widget<TextButton>(find.widgetWithText(TextButton, 'Year'))
         .focusNode!;
     expect(focus.hasFocus, isTrue, reason: 'focus returns to the button');
+
+    await tester.tap(find.widgetWithText(TextButton, 'Ascending'));
+    await tester.pumpAndSettle();
+    final ascending = radio<bool>('Ascending');
+    expect(ascending.groupValue, ascending.value);
+    final descending = radio<bool>('Descending');
+    expect(descending.groupValue, isNot(descending.value));
+  });
+
+  testWidgets('the title row shows the sort labels when wide', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/albums');
+
+    expect(find.text('Sort by:'), findsOneWidget);
+    expect(find.text('Order:'), findsOneWidget);
+    final titleY = tester.getCenter(find.text('Albums').last).dy;
+    expect(
+      tester.getCenter(find.widgetWithText(TextButton, 'Title')).dy,
+      moreOrLessEquals(titleY, epsilon: 1),
+      reason: 'the sort sits on the title row',
+    );
+  });
+
+  testWidgets('a narrow title row drops the labels and fits', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/albums');
+    // The smallest window.
+    tester.view.physicalSize = const Size(480, 720);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sort by:'), findsNothing);
+    expect(find.text('Order:'), findsNothing);
+    expect(find.widgetWithText(TextButton, 'Title'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Ascending'), findsOneWidget);
+    expect(find.byTooltip('Grid'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // An overflow would fail the test with a layout error.
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('switches to the list view and saves it', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/albums');
 
-    await tester.tap(find.byTooltip('List'));
+    // The icon shows the current view; a tap switches to the other one.
+    await tester.tap(find.byTooltip('Grid'));
     await tester.pumpAndSettle();
 
     expect(find.byType(AlbumListTile), findsNWidgets(3));
     expect(find.text('Amy · 2005 · 1 song'), findsOneWidget);
     expect(h.container.read(settingsProvider).albumsView, AlbumsView.list);
+    expect(find.byTooltip('List'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('List'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlbumGridTile), findsNWidgets(3));
+    expect(h.container.read(settingsProvider).albumsView, AlbumsView.grid);
   });
 
   testWidgets('a new album shows up after the library changes', (tester) async {
@@ -126,6 +173,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add a music folder in Songs.'), findsOneWidget);
     expect(find.byType(FilledButton), findsNothing);
+    expect(find.text('Sort by:'), findsNothing, reason: 'no sort without roots');
   });
 
   testWidgets('no albums yet', (tester) async {

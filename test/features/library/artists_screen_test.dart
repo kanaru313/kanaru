@@ -35,7 +35,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(MenuItemButton, 'Songs'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Songs'));
+    await tester.tap(find.widgetWithText(TextButton, 'Ascending'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(MenuItemButton, 'Descending'));
     await tester.pumpAndSettle();

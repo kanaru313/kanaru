@@ -12,7 +12,7 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
-import '../widgets/library_sort_button.dart';
+import '../widgets/library_sort_controls.dart';
 import 'scan_progress_bar.dart';
 import 'scan_result_snack_bar.dart';
 import 'songs_empty_view.dart';
@@ -103,13 +103,6 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             padding: const EdgeInsets.fromLTRB(32, 0, 32, 8),
             child: Row(
               children: [
-                LibrarySortButton<SongSortField>(
-                  choice: ref.watch(settingsProvider.select((s) => s.songSort)),
-                  fields: SongSortField.values,
-                  label: songSortLabel,
-                  onChanged: ref.read(settingsProvider.notifier).setSongSort,
-                ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: scan is IndexerScanning
                       ? ScanProgressBar(state: scan)
@@ -133,6 +126,18 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
       );
     }
 
-    return PageScaffold(title: l10n.navSongs, body: body);
+    return PageScaffold(
+      title: l10n.navSongs,
+      actions: [
+        if (hasDb && hasRoots)
+          LibrarySortControls<SongSortField>(
+            choice: ref.watch(settingsProvider.select((s) => s.songSort)),
+            fields: SongSortField.values,
+            label: songSortLabel,
+            onChanged: ref.read(settingsProvider.notifier).setSongSort,
+          ),
+      ],
+      body: body,
+    );
   }
 }
