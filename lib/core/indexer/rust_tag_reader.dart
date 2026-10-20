@@ -18,7 +18,7 @@ class RustTagReader implements TagReader {
   @override
   Future<List<TrackTags>> readBatch(List<String> paths) async {
     await _ensureLoaded();
-    return native.readTagsBatch(paths: paths);
+    return native.readTagsBatch(paths: paths, coverDir: '');
   }
 
   /// Initialises the bridge once. A failed attempt is forgotten so a later

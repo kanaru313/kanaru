@@ -1,6 +1,6 @@
 import '../../src/rust/api/tags.dart';
 
-export '../../src/rust/api/tags.dart' show TrackTags;
+export '../../src/rust/api/tags.dart' show CoverStatus, TrackTags;
 
 /// Reads audio tags for the library indexer. Kept as an interface so the scan
 /// pipeline can be tested with a fake instead of the native library.

@@ -8,14 +8,29 @@ class _FakeTagReader implements TagReader {
   Future<List<TrackTags>> readBatch(List<String> paths) async => [
     for (final path in paths)
       path.endsWith('.bad')
-          ? TrackTags(path: path, error: 'unsupported')
-          : TrackTags(path: path, title: 'Song', durationMs: 1500, year: 2019),
+          ? TrackTags(
+              coverStatus: CoverStatus.skipped,
+              path: path,
+              error: 'unsupported',
+            )
+          : TrackTags(
+              coverStatus: CoverStatus.skipped,
+              path: path,
+              title: 'Song',
+              durationMs: 1500,
+              year: 2019,
+            ),
   ];
 }
 
 void main() {
   test('generated TrackTags is constructible without the native library', () {
-    const tags = TrackTags(path: '/music/a.flac', title: 'A', trackNo: 3);
+    const tags = TrackTags(
+      coverStatus: CoverStatus.skipped,
+      path: '/music/a.flac',
+      title: 'A',
+      trackNo: 3,
+    );
 
     expect(tags.path, '/music/a.flac');
     expect(tags.title, 'A');
@@ -24,7 +39,12 @@ void main() {
     expect(tags.error, isNull);
     expect(
       tags,
-      const TrackTags(path: '/music/a.flac', title: 'A', trackNo: 3),
+      const TrackTags(
+        coverStatus: CoverStatus.skipped,
+        path: '/music/a.flac',
+        title: 'A',
+        trackNo: 3,
+      ),
     );
   });
 

@@ -7,15 +7,53 @@ import '../frb_generated.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `eq`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`
 
 /// Reads the tags of every file in `paths`, in parallel.
 ///
 /// The result has exactly one entry per input path, in the same order. A file
 /// that fails to read yields an entry with `error` set; it never fails the
 /// batch.
-Future<List<TrackTags>> readTagsBatch({required List<String> paths}) =>
-    RustLib.instance.api.crateApiTagsReadTagsBatch(paths: paths);
+///
+/// `cover_dir` is the thumbnail folder (size included, e.g. `.../covers/512`).
+/// When it is empty no cover is looked for and every entry is
+/// [`CoverStatus::Skipped`]; otherwise each file's cover thumbnail is written
+/// there and its key returned in [`TrackTags::cover`]. Image bytes never cross
+/// to Dart here.
+Future<List<TrackTags>> readTagsBatch({
+  required List<String> paths,
+  required String coverDir,
+}) => RustLib.instance.api.crateApiTagsReadTagsBatch(
+  paths: paths,
+  coverDir: coverDir,
+);
+
+/// The original bytes of the cover of the audio file at `path`, chosen the
+/// same way the scan chooses (embedded first, then sidecar images), for views
+/// that need more than the thumbnail. Nothing is decoded or written to disk.
+/// `None` when the file has no usable cover or cannot be read.
+Future<Uint8List?> readOriginalCover({required String path}) =>
+    RustLib.instance.api.crateApiTagsReadOriginalCover(path: path);
+
+/// What happened when looking for a file's cover.
+enum CoverStatus {
+  /// Covers were not requested (empty cover folder).
+  skipped,
+
+  /// A cover was found and its thumbnail is in the cache.
+  found,
+
+  /// Every source was checked and none holds a usable image. Reading again
+  /// gives the same answer.
+  none,
+
+  /// Something went wrong that may pass (the cache could not be written, the
+  /// cover code crashed). Worth trying again on the next scan.
+  failed;
+
+  static Future<CoverStatus> default_() =>
+      RustLib.instance.api.crateApiTagsCoverStatusDefault();
+}
 
 /// Tags and audio properties of one file. Flat on purpose so flutter_rust_bridge
 /// generates a plain Dart class. A field is `None` when the file does not say.
@@ -51,6 +89,11 @@ class TrackTags {
   /// Why the file could not be read; `None` on success.
   final String? error;
 
+  /// Cache key of the cover thumbnail, `<ab>/<hash>.jpg` relative to the
+  /// cover folder; `hash` is the blake3 of the original image bytes.
+  final String? cover;
+  final CoverStatus coverStatus;
+
   const TrackTags({
     required this.path,
     this.title,
@@ -71,6 +114,8 @@ class TrackTags {
     this.bitDepth,
     this.channels,
     this.error,
+    this.cover,
+    required this.coverStatus,
   });
 
   static Future<TrackTags> default_() =>
@@ -105,7 +150,9 @@ class TrackTags {
       sampleRate.hashCode ^
       bitDepth.hashCode ^
       channels.hashCode ^
-      error.hashCode;
+      error.hashCode ^
+      cover.hashCode ^
+      coverStatus.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -130,5 +177,7 @@ class TrackTags {
           sampleRate == other.sampleRate &&
           bitDepth == other.bitDepth &&
           channels == other.channels &&
-          error == other.error;
+          error == other.error &&
+          cover == other.cover &&
+          coverStatus == other.coverStatus;
 }

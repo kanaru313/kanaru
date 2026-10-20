@@ -12,6 +12,7 @@ void main() {
       [_file],
       [
         const TrackTags(
+          coverStatus: CoverStatus.skipped,
           path: '/m/Song One.flac',
           title: 'Tagged',
           artist: 'A; B',
@@ -43,7 +44,12 @@ void main() {
     final row = tracksFromTags(
       1,
       [_file],
-      [const TrackTags(path: '/m/Song One.flac')],
+      [
+        const TrackTags(
+          coverStatus: CoverStatus.skipped,
+          path: '/m/Song One.flac',
+        ),
+      ],
       1,
     ).single;
 
@@ -57,7 +63,13 @@ void main() {
     final row = tracksFromTags(
       1,
       [_file],
-      [const TrackTags(path: '/m/Song One.flac', error: 'unsupported')],
+      [
+        const TrackTags(
+          coverStatus: CoverStatus.skipped,
+          path: '/m/Song One.flac',
+          error: 'unsupported',
+        ),
+      ],
       1,
     ).single;
 

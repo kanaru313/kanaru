@@ -27,8 +27,13 @@ class FakeTagReader implements TagReader {
     return [
       for (final path in paths)
         path.split('/').last.startsWith('bad')
-            ? TrackTags(path: path, error: 'unsupported')
+            ? TrackTags(
+                coverStatus: CoverStatus.skipped,
+                path: path,
+                error: 'unsupported',
+              )
             : TrackTags(
+                coverStatus: CoverStatus.skipped,
                 path: path,
                 title: path.split('/').last.toUpperCase(),
                 artist: 'Artist',
