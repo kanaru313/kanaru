@@ -61,20 +61,33 @@ class RepeatedErrorFilter {
   /// by the cut and escape the rules. Digit and hex runs in the text are
   /// replaced by a placeholder, so errors that differ only in an index, an id
   /// or a hash code share a key. Use [labelFor] for the text to log.
-  static String keyFor(Object error, StackTrace? stack) {
-    final text = _cleanText(error)
-        .replaceAll(_hexRuns, '#')
-        .replaceAll(_digitRuns, '#');
-    return _compose(error, stack, text);
-  }
+  static String keyFor(Object error, StackTrace? stack) =>
+      describe(error, stack).key;
 
   /// What a summary shows for an error: like [keyFor] but with the numbers of
   /// the first occurrence kept. Redacted before it is cut.
   static String labelFor(Object error, StackTrace? stack) =>
-      _compose(error, stack, _cleanText(error));
+      describe(error, stack).label;
 
-  static String _compose(Object error, StackTrace? stack, String text) {
+  /// Key and label of an error from one redaction of its text and one lookup
+  /// of its call site, for callers that need both.
+  static ({String key, String label}) describe(
+    Object error,
+    StackTrace? stack,
+  ) {
+    final text = _cleanText(error);
     final frame = stack == null ? '' : _callSite(stack.toString());
+    return (
+      key: _compose(
+        error,
+        frame,
+        text.replaceAll(_hexRuns, '#').replaceAll(_digitRuns, '#'),
+      ),
+      label: _compose(error, frame, text),
+    );
+  }
+
+  static String _compose(Object error, String frame, String text) {
     if (text.length > _maxTextChars) {
       text = '${text.substring(0, _maxTextChars)}…';
     }

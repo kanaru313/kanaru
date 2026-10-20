@@ -95,10 +95,8 @@ class LogSession {
   /// is written.
   bool _isNew(Object error, StackTrace? stack) {
     try {
-      return _repeats.shouldWrite(
-        RepeatedErrorFilter.keyFor(error, stack),
-        label: RepeatedErrorFilter.labelFor(error, stack),
-      );
+      final (:key, :label) = RepeatedErrorFilter.describe(error, stack);
+      return _repeats.shouldWrite(key, label: label);
     } catch (_) {
       return true;
     }
