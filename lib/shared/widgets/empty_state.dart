@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Centered icon + title + optional message, for screens with nothing to show.
+/// Centered icon + title + optional message and [action] button, for
+/// screens with nothing to show.
 ///
 /// Scrolls when the height it is given is too short for it (a small window
 /// with large text) rather than overflowing.
@@ -10,11 +11,16 @@ class EmptyState extends StatelessWidget {
     required this.icon,
     required this.title,
     this.message,
+    this.action,
   });
 
   final IconData icon;
   final String title;
   final String? message;
+
+  /// Shown under the message, inside the scrolled content so it never
+  /// overflows either.
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +44,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+          if (action != null) ...[const SizedBox(height: 16), action!],
         ],
       ),
     );

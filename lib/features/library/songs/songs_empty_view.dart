@@ -38,21 +38,14 @@ class SongsEmptyView extends StatelessWidget {
         title: l10n.libraryNoTracksTitle,
         message: l10n.libraryNoTracksMessage,
       ),
-      SongsEmptyKind.noRoots => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            EmptyState(
-              icon: Icons.music_note_outlined,
-              title: l10n.libraryEmptyTitle,
-              message: l10n.libraryEmptyMessage,
-            ),
-            FilledButton.icon(
-              onPressed: onChooseFolder,
-              icon: const Icon(Icons.folder_open_outlined),
-              label: Text(l10n.libraryChooseFolder),
-            ),
-          ],
+      SongsEmptyKind.noRoots => EmptyState(
+        icon: Icons.music_note_outlined,
+        title: l10n.libraryEmptyTitle,
+        message: l10n.libraryEmptyMessage,
+        action: FilledButton.icon(
+          onPressed: onChooseFolder,
+          icon: const Icon(Icons.folder_open_outlined),
+          label: Text(l10n.libraryChooseFolder),
         ),
       ),
     };
