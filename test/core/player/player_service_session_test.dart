@@ -137,6 +137,22 @@ void main() {
     expect(backend.calls.last, 'open(b, next: c, paused, at 0:01:10.000000)');
   });
 
+  test('a rebuild while playing restores the track paused', () async {
+    live = launch();
+    await service().openTracks([a, b, c], start: 1);
+    expect(state().playing, isTrue);
+    backend.calls.clear();
+
+    live!.invalidate(playerServiceProvider);
+    expect(state().queue.current, b);
+    await settle();
+
+    expect(backend.calls.where((call) => call.startsWith('open')), [
+      'open(b, next: c, paused)',
+    ]);
+    expect(state().playing, isFalse);
+  });
+
   test('a session that ended comes back on its last track at 0:00', () async {
     live = launch();
     await service().openTracks([a, b]);

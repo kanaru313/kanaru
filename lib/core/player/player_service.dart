@@ -95,6 +95,14 @@ class PlayerService extends Notifier<PlayerState>
 
   @override
   PlayerState build() {
+    // Riverpod keeps this object when the provider rebuilds: what the old
+    // build asked for must not leak into the new one, or the restored track
+    // would start playing on its own.
+    _wantsPlaying = false;
+    _ended = false;
+    _failuresInRow = 0;
+    _handedNext.clear();
+    _lastTick = Duration.zero;
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
     _seeked = StreamController.broadcast();
