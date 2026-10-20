@@ -270,18 +270,65 @@ void main() {
       expect(backend.calls, ['pause']);
     });
 
-    testWidgets('the shell below ignores pointers', (tester) async {
-      await pumpApp(tester);
-      await openSongs(tester);
-      await openNowPlaying(tester);
-
-      // Taps on the shell's settings button and sidebar land on the overlay.
-      await tester.tapAt(tester.getCenter(find.byTooltip('Settings')));
-      await tester.pumpAndSettle();
-      expect(find.text('Appearance'), findsNothing);
-      await tester.tapAt(tester.getCenter(find.text('Artists')));
-      await tester.pumpAndSettle();
+    /// Taps [target] in the shell, which must still be drawn, and expects no
+    /// navigation. [coveredByScreen] tells whether the sliding screen is
+    /// expected to sit over the target (its own surface blocks the tap) or
+    /// clear of it (only the shell ignoring pointers blocks it).
+    Future<void> tapShell(
+      WidgetTester tester,
+      Finder target, {
+      required bool coveredByScreen,
+    }) async {
+      expect(target, findsOneWidget, reason: 'the shell is still drawn');
+      final at = tester.getCenter(target);
+      final screenTop = tester.getRect(screen).top;
+      expect(screenTop < at.dy, coveredByScreen);
+      await tester.tapAt(at);
+      await tester.pump();
       expect(container.read(navigationHistoryProvider).canGoBack, isFalse);
+    }
+
+    Future<void> slideIn(WidgetTester tester, Duration elapsed) async {
+      container.read(nowPlayingOpenProvider.notifier).open();
+      await tester.pump();
+      await tester.pump(elapsed);
+    }
+
+    Future<void> slideOut(WidgetTester tester, Duration elapsed) async {
+      await slideIn(tester, const Duration(seconds: 1));
+      container.read(nowPlayingOpenProvider.notifier).close();
+      await tester.pump();
+      await tester.pump(elapsed);
+    }
+
+    // The settings button and the sidebar item stand for the shell parts the
+    // screen has not reached yet and those it already covers.
+    final settings = find.byTooltip('Settings');
+    final artists = find.text('Artists');
+
+    testWidgets('the shell below ignores pointers while sliding in', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await openSongs(tester);
+
+      await slideIn(tester, const Duration(milliseconds: 100));
+      await tapShell(tester, settings, coveredByScreen: false);
+
+      await tester.pump(const Duration(milliseconds: 300));
+      await tapShell(tester, artists, coveredByScreen: true);
+    });
+
+    testWidgets('the shell below ignores pointers while sliding out', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await openSongs(tester);
+
+      await slideOut(tester, const Duration(milliseconds: 100));
+      // Only the part under the screen: the shell is open to pointers again
+      // as soon as closing starts, so the part clear of it is not blocked.
+      await tapShell(tester, artists, coveredByScreen: true);
     });
 
     testWidgets('a playback error shows over Now Playing', (tester) async {

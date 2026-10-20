@@ -6,6 +6,7 @@ import '../queue/queue_sheet_host.dart';
 import 'now_playing_auto_hide.dart';
 import 'now_playing_footer.dart';
 import 'now_playing_open_provider.dart';
+import 'now_playing_title_bar.dart';
 import 'now_playing_tabs.dart';
 import 'now_playing_wide_body.dart';
 
@@ -18,7 +19,7 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   const NowPlayingScreen({super.key, this.titleBar, this.lyrics});
 
   /// See `NowPlayingOverlay.titleBar`.
-  final Widget Function(Widget header)? titleBar;
+  final NowPlayingTitleBar? titleBar;
 
   /// Lyrics view (none exists yet, so `null`). With it the cover block takes
   /// half the width and the header shows the lyrics-only toggle.
@@ -55,7 +56,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
 
   void _close() => ref.read(nowPlayingOpenProvider.notifier).close();
 
-  Widget _wrapHeader(Widget header) => widget.titleBar?.call(header) ?? header;
+  NowPlayingDragExclusion get _exclude =>
+      widget.titleBar?.excludeFromDrag ?? noDragExclusion;
+
+  Widget _wrapHeader(Widget header) =>
+      widget.titleBar?.wrapHeader(header) ?? header;
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +94,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                   ? AutoHideRegion(controller: _chrome, child: _wide())
                   : NowPlayingTabs(
                       wrapHeader: _wrapHeader,
+                      excludeFromDrag: _exclude,
                       queuePage: const QueuePanel(),
                       onClose: _close,
                     ),
@@ -107,6 +113,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           child: _wrapHeader(
             NowPlayingWideHeader(
               height: nowPlayingHeaderHeight,
+              excludeFromDrag: _exclude,
               hasLyrics: widget.hasLyrics,
               lyricsOnly: _lyricsOnly,
               onToggleLyricsOnly: () =>
