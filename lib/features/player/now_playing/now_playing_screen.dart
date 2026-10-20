@@ -122,7 +122,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         ),
         AutoHide(
           controller: _chrome,
-          child: NowPlayingFooter(onClose: _close),
+          child: NowPlayingFooter(
+            onClose: _close,
+            onVolumePopupChanged: (open) =>
+                open ? _chrome.pin() : _chrome.unpin(),
+          ),
         ),
       ],
     );
