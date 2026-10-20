@@ -147,6 +147,8 @@ class PlayerService extends Notifier<PlayerState>
 
   /// The engine stopped. With a track still to come, the current one failed
   /// or the engine ran out of tracks before it got the next one: go on.
+  /// Otherwise playback is over and nothing is wanted playing any more, so
+  /// a later queue edit loads its track paused.
   void _onCompleted() {
     final next = state.queue.nextIndex;
     if (next != null && !_allFailed) {
@@ -154,6 +156,7 @@ class PlayerService extends Notifier<PlayerState>
       return;
     }
     _ended = true;
+    _wantsPlaying = false;
     state = state.copyWith(playing: false, stopped: true);
   }
 

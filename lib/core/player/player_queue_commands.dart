@@ -11,6 +11,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   set _failuresInRow(int count);
   bool get _allFailed;
   bool get _wantsPlaying;
+  set _wantsPlaying(bool wanted);
   List<int> get _handedNext;
   Future<void> _queueNext();
   Future<void> _play(int index, {bool play = true});
@@ -83,9 +84,11 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     return _backend.stop();
   }
 
-  /// Playback ended on the last track: play starts the queue over.
+  /// Playback ended on the last track: play starts the queue over, and
+  /// until then a queue edit loads its track paused.
   void _endPlayback() {
     _ended = true;
+    _wantsPlaying = false;
     _handedNext.clear();
     _lastTick = Duration.zero;
   }
