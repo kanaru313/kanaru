@@ -72,8 +72,6 @@ Future<void> _checkLayout(
     UncontrolledProviderScope(container: container, child: const KanaruApp()),
   );
   await tester.pumpAndSettle();
-  // Only Settings is checked here.
-  tester.takeException();
   await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
   await tester.pumpAndSettle();
 
