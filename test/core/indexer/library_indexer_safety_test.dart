@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
@@ -45,7 +46,7 @@ void main() {
   Future<void> scan() => container.read(libraryIndexerProvider.notifier).scan();
   IndexerState state() => container.read(libraryIndexerProvider);
   ScanSummary summary() => (state() as IndexerFinished).summary;
-  Future<List<TrackListItem>> tracks() => db.watchTrackListItems().first;
+  Future<List<TrackListItem>> tracks() => db.songs();
 
   group('data safety', () {
     final fixedMtime = DateTime.fromMillisecondsSinceEpoch(1700000000000);

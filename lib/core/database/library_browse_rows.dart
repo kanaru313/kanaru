@@ -66,20 +66,22 @@ class AlbumSummary {
   final String? coverKey;
 }
 
-/// The tracks that share one exact `artist` value: the value, how many
-/// tracks carry it and which albums they belong to (tracks without an album
-/// add no key).
+/// One artist of the Artists list, from the `track_artists` rows: the key
+/// (`artistKey` in `artist_names.dart`), the shown spelling (the smallest
+/// among its tracks), how many tracks credit it and on how many distinct
+/// albums (tracks without an album add none).
 class ArtistCredit {
   const ArtistCredit({
-    required this.artist,
+    required this.key,
+    required this.name,
     required this.trackCount,
-    required this.albumKeys,
+    required this.albumCount,
   });
 
-  /// Possibly several artists; see `splitArtists`.
-  final String artist;
+  final String key;
+  final String name;
   final int trackCount;
-  final Set<AlbumKey> albumKeys;
+  final int albumCount;
 }
 
 /// A track row for the album and artist pages.

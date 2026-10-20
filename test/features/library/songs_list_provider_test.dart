@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
-import 'package:kanaru/core/database/library_sql_functions.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/library_browse_refresh.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
@@ -29,9 +28,7 @@ void main() {
   test('a scan reloads the list at most once per refresh interval', () async {
     const interval = Duration(milliseconds: 150);
     const batches = 40;
-    final db = LibraryDatabase(
-      NativeDatabase.memory(setup: registerLibrarySqlFunctions),
-    );
+    final db = LibraryDatabase(NativeDatabase.memory());
     final container = ProviderContainer(
       overrides: [
         libraryDatabaseProvider.overrideWithValue(db),
@@ -78,9 +75,7 @@ void main() {
   });
 
   test('changing the sort reloads at once, not after the interval', () async {
-    final db = LibraryDatabase(
-      NativeDatabase.memory(setup: registerLibrarySqlFunctions),
-    );
+    final db = LibraryDatabase(NativeDatabase.memory());
     final container = ProviderContainer(
       overrides: [
         libraryDatabaseProvider.overrideWithValue(db),

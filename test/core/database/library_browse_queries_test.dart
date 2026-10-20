@@ -3,7 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/core/database/library_sql_functions.dart';
+import 'package:kanaru/core/database/text_keys.dart';
 
 late int _rootId;
 var _next = 0;
@@ -46,15 +46,13 @@ void main() {
   late LibraryDatabase db;
 
   setUp(() async {
-    db = LibraryDatabase(
-      NativeDatabase.memory(setup: registerLibrarySqlFunctions),
-    );
+    db = LibraryDatabase(NativeDatabase.memory());
     _rootId = (await db.addRoots(['/m'], now: 1)).single;
   });
   tearDown(() => db.close());
 
   Future<Map<AlbumKey, AlbumSummary>> albums() async => {
-    for (final a in await db.watchAlbums().first) a.key: a,
+    for (final a in await db.albums()) a.key: a,
   };
 
   group('albums', () {
@@ -96,7 +94,7 @@ void main() {
       // Keys use Dart's Unicode lower case: these spellings merge too.
       final unicode = all[const AlbumKey('c', 'ánh')]!;
       expect(unicode.trackCount, 2);
-      expect(await db.watchAlbumTracks(unicode.key).first, hasLength(2));
+      expect(await db.albumTracks(unicode.key), hasLength(2));
     });
 
     test(
@@ -136,7 +134,7 @@ void main() {
         final album = (await albums()).values.single;
         expect(album.key.titleKey, 'l' * 256);
         expect(album.key.artistKey, 'l' * 256);
-        expect(await db.watchAlbumTracks(album.key).first, hasLength(2));
+        expect(await db.albumTracks(album.key), hasLength(2));
       },
     );
   });
@@ -150,31 +148,40 @@ void main() {
       row(title: 'd1t1', artist: 'A', album: 'X', disc: 1, track: 1),
     ]);
     const expected = ['d1t1', 'd1t2', 't-null', 'd2t1', 'd-null'];
-    final album = await db.watchAlbumTracks(const AlbumKey('a', 'x')).first;
+    final album = await db.albumTracks(const AlbumKey('a', 'x'));
     expect(album.map((t) => t.title), expected);
-    final artist = await db.watchArtistTracks('a').first;
+    final artist = await db.artistTracks('a');
     expect(artist.map((t) => t.title), expected);
   });
 
   group('artists', () {
-    test('credits come from the artist column only', () async {
+    test('credits come from the artist column, split into names', () async {
       await db.upsertTracks([
         row(artist: 'Ann; Bob', album: 'X'),
         row(artist: 'Ann; Bob', album: 'X'),
         row(artist: 'Ann; Bob'),
         row(artist: 'ÁNN', album: 'Y', albumArtist: 'Various Artists'),
+        row(artist: 'Ann', album: 'Y'),
         row(album: 'Z', albumArtist: 'Only Album Artist'),
       ]);
-      final credits = {
-        for (final c in await db.watchArtistCredits().first) c.artist: c,
-      };
-      expect(credits.keys, {'Ann; Bob', 'ÁNN'});
-      final ann = credits['Ann; Bob']!;
-      expect(ann.trackCount, 3);
-      expect(ann.albumKeys, {const AlbumKey('ann', 'x')});
-      expect(credits['ÁNN']!.albumKeys, {
-        const AlbumKey('various artists', 'y'),
-      });
+      final credits = {for (final c in await db.artistCredits()) c.key: c};
+      // 'ÁNN' and 'Ann' are two artists: accents are kept in keys.
+      expect(credits.keys, {'ann', 'bob', 'ánn'});
+      final ann = credits['ann']!;
+      expect(ann.name, 'Ann');
+      expect(ann.trackCount, 4);
+      expect(ann.albumCount, 2);
+      expect(credits['bob']!.trackCount, 3);
+      expect(credits['bob']!.albumCount, 1);
+      expect(credits['ánn']!.name, 'ÁNN');
+      expect(credits['ánn']!.albumCount, 1);
+    });
+
+    test('an artist named twice in one tag counts each track once', () async {
+      await db.upsertTracks([row(artist: 'Ann; ANN', album: 'X')]);
+      final credit = (await db.artistCredits()).single;
+      expect(credit.trackCount, 1);
+      expect(credit.name, 'Ann', reason: 'the first spelling on the track');
     });
 
     test('artist tracks match whole names in the artist column only', () async {
@@ -185,16 +192,16 @@ void main() {
         row(title: 'aa', artist: 'Z', albumArtist: 'Ann', album: 'Y'),
         row(title: 'wild', artist: '50% _Off\'s'),
       ]);
-      final ann = await db.watchArtistTracks('ann').first;
+      final ann = await db.artistTracks('ann');
       expect(ann.map((t) => t.title), unorderedEquals(['ann', 'guest']));
       final withAlbum = ann.firstWhere((t) => t.title == 'ann');
       expect(withAlbum.albumKey, const AlbumKey('ann', 'x'));
       expect(ann.firstWhere((t) => t.title == 'guest').albumKey, isNull);
 
-      final wild = await db.watchArtistTracks("50% _off's").first;
+      final wild = await db.artistTracks("50% _off's");
       expect(wild.single.title, 'wild');
-      expect(await db.watchArtistTracks('%').first, isEmpty);
-      expect(await db.watchArtistTracks('_').first, isEmpty);
+      expect(await db.artistTracks('%'), isEmpty);
+      expect(await db.artistTracks('_'), isEmpty);
     });
   });
 
@@ -226,11 +233,11 @@ void main() {
       expect(best.artist, 'Chau Khai Phong');
       expect(all.keys, contains(const AlbumKey('ac/dc', 'live')));
 
-      final suni = await db.watchArtistTracks('suni hạ linh').first;
+      final suni = await db.artistTracks('suni hạ linh');
       expect(suni.single.title, 'Khi Cô Đơn Em Nhớ Đến Ai');
-      final guest = await db.watchArtistTracks('trịnh đình quang').first;
+      final guest = await db.artistTracks('trịnh đình quang');
       expect(guest.single.title, 'two');
-      expect(await db.watchArtistTracks('suni').first, isEmpty);
+      expect(await db.artistTracks('suni'), isEmpty);
     });
 
     test('an album artist naming several artists keys them all', () async {
@@ -248,14 +255,9 @@ void main() {
         row(artist: 'A\u001eB', album: 'X\u001fY'),
         row(artist: 'Z\u00000\u0000', album: 'Q'),
       ]);
-      final credits = await db.watchArtistCredits().first;
+      final credits = await db.artistCredits();
       expect(credits, hasLength(2));
-      final keys = {for (final c in credits) ...c.albumKeys};
-      expect(keys, contains(const AlbumKey('a b', 'x y')));
-      expect(
-        await db.watchAlbumTracks(const AlbumKey('a b', 'x y')).first,
-        hasLength(1),
-      );
+      expect(await db.albumTracks(const AlbumKey('a b', 'x y')), hasLength(1));
       expect((await albums()).keys, contains(const AlbumKey('z 0', 'q')));
     });
 
@@ -266,7 +268,7 @@ void main() {
       ]);
       final key = (await albums()).keys.single;
       expect(key.artistKeys, ['n' * 256, 'b']);
-      expect(await db.watchArtistTracks('b').first, hasLength(1));
+      expect(await db.artistTracks('b'), hasLength(1));
     });
   });
 
@@ -276,14 +278,12 @@ void main() {
       row(title: 'e1', artist: 'A', album: 'Éclair', year: 2000, track: 1),
       row(title: 'z2', artist: 'A', album: 'zeta', year: 2000, track: 2),
       row(title: 'e2', artist: 'A', album: 'éclair', year: 2000, track: 2),
-      // ASCII lower() would sort Ñu between Éclair and éclair.
       row(title: 'n1', artist: 'A', album: 'Ñu', year: 2000, track: 1),
     ]);
-    final titles = [
-      for (final t in await db.watchArtistTracks('a').first) t.title,
-    ];
-    // Ordered by the Unicode title key, so case variants stay adjacent.
-    expect(titles, ['z1', 'z2', 'e1', 'e2', 'n1']);
+    final titles = [for (final t in await db.artistTracks('a')) t.title];
+    // Ordered by the album's sort key: case variants stay adjacent and
+    // accented names sit in their alphabet position (Éclair, Ñu, Zeta).
+    expect(titles, ['e1', 'e2', 'n1', 'z1', 'z2']);
   });
 
   group('songs', () {
@@ -304,8 +304,7 @@ void main() {
     });
 
     Future<List<String>> titles(SongOrder order, {bool desc = false}) async => [
-      for (final t in await db.watchSongs(order: order, descending: desc).first)
-        t.title,
+      for (final t in await db.songs(order: order, descending: desc)) t.title,
     ];
 
     test('orders by each field, unknown values last both ways', () async {
@@ -331,14 +330,6 @@ void main() {
         'C',
         'd',
       ]);
-    });
-
-    test('the default order matches watchTrackListItems', () async {
-      final songs = await db.watchSongs().first;
-      final items = await db.watchTrackListItems().first;
-      expect(songs.map((t) => t.id), items.map((t) => t.id));
-      expect(songs.first.artist, items.first.artist);
-      expect(songs.first.path, items.first.path);
     });
   });
 
@@ -366,24 +357,142 @@ void main() {
         for (final (title, key) in rows) title: key,
       };
       const expected = {'With': 'ab/ab.jpg', 'Without': null};
-      final songs = await db.watchSongs().first;
+      final songs = await db.songs();
       expect(byTitle(songs.map((t) => (t.title, t.coverKey))), expected);
       final album = await db.albumTracks(const AlbumKey('a', 'x'));
       expect(byTitle(album.map((t) => (t.title, t.coverKey))), expected);
       final artist = await db.artistTracks('a');
       expect(byTitle(artist.map((t) => (t.title, t.coverKey))), expected);
-      final items = await db.watchTrackListItems().first;
-      expect(byTitle(items.map((t) => (t.title, t.coverKey))), expected);
     });
   });
 
-  test('watchers re-emit when tracks change', () async {
-    final emitted = <int>[];
-    final sub = db.watchAlbums().listen((a) => emitted.add(a.length));
-    await pumpEventQueue();
-    await db.upsertTracks([row(artist: 'A', album: 'X')]);
-    await pumpEventQueue();
-    await sub.cancel();
-    expect(emitted, [0, 1]);
+  group('write path', () {
+    Future<List<(String, String)>> credited(int trackId) async => [
+      for (final r
+          in await db
+              .customSelect(
+                'SELECT artist_key, artist_name FROM track_artists '
+                'WHERE track_id = ? ORDER BY artist_key',
+                variables: [Variable.withInt(trackId)],
+              )
+              .get())
+        (r.read<String>('artist_key'), r.read<String>('artist_name')),
+    ];
+
+    test('a new track is stored with keys and credits', () async {
+      await db.upsertTracks([
+        row(title: 'Đen', artist: 'The Ánh; ĐEN', album: 'The Best'),
+      ]);
+      final t = await db.select(db.tracks).getSingle();
+      expect(t.keysVersion, textKeysVersion);
+      expect(t.titleSort, 'den');
+      expect(t.artistSort, 'anh; den');
+      expect(t.albumSort, 'best');
+      expect(t.albumArtistKey, 'the ánh');
+      expect(t.albumTitleKey, 'the best');
+      expect(t.albumDisplayArtist, 'The Ánh');
+      expect(await credited(t.id), [('the ánh', 'The Ánh'), ('đen', 'ĐEN')]);
+    });
+
+    test('a rescan that changes the tags re-keys the track', () async {
+      final first = row(title: 'Old', artist: 'Ann; Bob', album: 'X');
+      await db.upsertTracks([first]);
+      final id = (await db.select(db.tracks).getSingle()).id;
+
+      // Same path, new tags: as a rescan of a re-tagged file writes it.
+      await db.upsertTracks([
+        first.copyWith(
+          title: const Value('Émile'),
+          artist: const Value('Cat'),
+          album: const Value('Y'),
+        ),
+      ]);
+
+      final t = await db.select(db.tracks).getSingle();
+      expect(t.id, id);
+      expect(t.titleSort, 'emile');
+      expect(t.artistSort, 'cat');
+      expect(t.albumTitleKey, 'y');
+      expect(t.albumArtistKey, 'cat');
+      expect(await credited(id), [('cat', 'Cat')]);
+      expect((await db.albums()).map((a) => a.key), [
+        const AlbumKey('cat', 'y'),
+      ]);
+      expect(await db.artistTracks('bob'), isEmpty);
+    });
+
+    test('dropping the artist and album clears their keys', () async {
+      final first = row(artist: 'Ann', album: 'X');
+      await db.upsertTracks([first]);
+      await db.upsertTracks([
+        first.copyWith(artist: const Value(null), album: const Value(null)),
+      ]);
+      final t = await db.select(db.tracks).getSingle();
+      expect(t.artistSort, isNull);
+      expect(t.albumTitleKey, isNull);
+      expect(await credited(t.id), isEmpty);
+    });
+
+    test('deleting a track deletes its credits', () async {
+      await db.upsertTracks([row(artist: 'Ann; Bob')]);
+      final id = (await db.select(db.tracks).getSingle()).id;
+      await db.deleteTracksById([id]);
+      expect(await credited(id), isEmpty);
+    });
+  });
+
+  group('query plans', () {
+    Future<String> plan(String sql, [List<Variable> vars = const []]) async {
+      final rows = await db
+          .customSelect('EXPLAIN QUERY PLAN $sql', variables: vars)
+          .get();
+      return rows.map((r) => r.read<String>('detail')).join('\n');
+    }
+
+    test('albums group over the album key index, no temp tree', () async {
+      final details = await plan(albumsSql);
+      expect(details, contains('USING INDEX tracks_album_key'));
+      expect(details, isNot(contains('TEMP B-TREE')));
+    });
+
+    test('an album page searches the album key index', () async {
+      final details = await plan(albumTracksSql, [
+        Variable.withString('a'),
+        Variable.withString('x'),
+      ]);
+      expect(details, contains('SEARCH t USING INDEX tracks_album_key'));
+      expect(details, contains('album_artist_key=?'));
+      expect(details, contains('album_title_key=?'));
+    });
+
+    test('an artist page searches track_artists by key', () async {
+      final details = await plan(artistTracksSql, [Variable.withString('a')]);
+      expect(details, contains('SEARCH ta USING'));
+      expect(details, contains('artist_key=?'));
+      expect(details, contains('SEARCH t USING INTEGER PRIMARY KEY'));
+    });
+
+    test('the artist list walks track_artists in key order', () async {
+      final details = await plan(artistCreditsSql);
+      expect(details, contains('SCAN ta USING'));
+    });
+
+    test('Songs by title walk the title_sort index, no temp tree', () async {
+      final details = await plan(songsSql(SongOrder.title));
+      expect(details, contains('tracks_title_sort'));
+      expect(details, isNot(contains('TEMP B-TREE')));
+    });
+
+    test('no browse query calls a custom function', () {
+      for (final sql in [
+        albumsSql,
+        artistCreditsSql,
+        albumTracksSql,
+        artistTracksSql,
+        for (final order in SongOrder.values) songsSql(order),
+      ]) {
+        expect(sql, isNot(contains('kanaru_')));
+      }
+    });
   });
 }

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/core/database/library_sql_functions.dart';
+import 'package:kanaru/core/database/track_keys.dart';
 import 'package:kanaru/features/library/artists/artist_page_sections.dart';
 
 var _id = 0;

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_browse_queries.dart';
 
 TracksCompanion track(
   int rootId,
@@ -108,27 +109,21 @@ void main() {
       expect(await db.select(db.tracks).get(), isEmpty);
     });
 
-    test(
-      'watchTrackListItems orders by title ignoring case, then id',
-      () async {
-        await db.upsertTracks([
-          track(rootId, '/m/1.mp3', title: 'beta'),
-          track(rootId, '/m/2.mp3', title: 'Alpha'),
-          track(rootId, '/m/3.mp3', title: 'alpha'),
-        ]);
-        final items = await db.watchTrackListItems().first;
-        expect(items.map((i) => i.path), ['/m/2.mp3', '/m/3.mp3', '/m/1.mp3']);
-      },
-    );
+    test('songs order by title ignoring case, then id', () async {
+      await db.upsertTracks([
+        track(rootId, '/m/1.mp3', title: 'beta'),
+        track(rootId, '/m/2.mp3', title: 'Alpha'),
+        track(rootId, '/m/3.mp3', title: 'alpha'),
+      ]);
+      final items = await db.songs();
+      expect(items.map((i) => i.path), ['/m/2.mp3', '/m/3.mp3', '/m/1.mp3']);
+    });
   });
 
   group('title order', () {
     test('the title order is served by the title_sort index', () async {
       final plan = await db
-          .customSelect(
-            'EXPLAIN QUERY PLAN SELECT id, path, title FROM tracks '
-            'ORDER BY title_sort, id',
-          )
+          .customSelect('EXPLAIN QUERY PLAN ${songsSql(SongOrder.title)}')
           .get();
       final details = plan.map((r) => r.read<String>('detail')).join('\n');
 

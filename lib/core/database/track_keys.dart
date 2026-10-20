@@ -1,5 +1,5 @@
 import 'artist_names.dart';
-import 'library_sql_functions.dart' show albumArtistKey, albumTitleKey;
+import 'library_browse_rows.dart' show albumArtistKeySeparator;
 import 'text_keys.dart';
 
 /// The stored keys of one track, derived from its tags. The only place that
@@ -52,3 +52,16 @@ TrackKeys trackKeysFor({
     artists: [for (final name in names) (key: artistKey(name), name: name)],
   );
 }
+
+/// Artist part of an album key: the keys of the album artists joined by
+/// [albumArtistKeySeparator], else the key of the first track artist, else
+/// `''`. Each artist key is whole; the joined string is not cut, so
+/// `AlbumKey.artistKeys` gets every key back.
+String albumArtistKey(String? albumArtist, String? artist) {
+  final owners = artistKeys(albumArtist);
+  if (owners.isNotEmpty) return owners.join(albumArtistKeySeparator);
+  return artistKeys(artist).firstOrNull ?? '';
+}
+
+/// Title part of an album key.
+String albumTitleKey(String album) => groupKey(album);

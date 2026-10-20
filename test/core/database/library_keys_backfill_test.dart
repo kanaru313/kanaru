@@ -27,6 +27,14 @@ Future<void> _insert(LibraryDatabase db, int n, {String? artist}) async {
         updatedAt: 1,
       ),
   ]);
+  // A scan keys what it writes; these tests need a library as the previous
+  // schema left it, with no keys and no credits.
+  await db.customStatement(
+    "UPDATE tracks SET keys_version = 0, title_sort = '', "
+    'artist_sort = NULL, album_sort = NULL, album_artist_key = NULL, '
+    'album_title_key = NULL, album_display_artist = NULL',
+  );
+  await db.customStatement('DELETE FROM track_artists');
 }
 
 Future<List<int>> _versions(LibraryDatabase db) async => [

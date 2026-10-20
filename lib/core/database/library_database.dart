@@ -4,6 +4,8 @@ import 'library_database.steps.dart';
 import 'library_migration_v3.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
+import 'text_keys.dart';
+import 'track_keys.dart';
 
 export 'library_browse_rows.dart';
 export 'library_rows.dart';
@@ -109,16 +111,43 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// Inserts new tracks and updates known ones, matched by `path`, in one
   /// transaction. An update keeps the row's `id`, `addedAt` and `rootId`
   /// (hence no `INSERT OR REPLACE`, which would assign a new id).
+  ///
+  /// Every row is written with its keys (`trackKeysFor`, `keys_version =
+  /// textKeysVersion`) and its `track_artists` rows are replaced in the same
+  /// transaction, on insert and on update alike, so a rescan that changes a
+  /// title or an artist re-keys the track. [rows] carry the tags (title,
+  /// artist, album, album artist) the keys come from.
   Future<void> upsertTracks(List<TracksCompanion> rows) {
     if (rows.isEmpty) return Future.value();
+    final keyed = [
+      for (final row in rows)
+        (
+          row: row,
+          keys: trackKeysFor(
+            title: row.title.value,
+            artist: row.artist.value,
+            album: row.album.value,
+            albumArtist: row.albumArtist.value,
+          ),
+        ),
+    ];
     return transaction(() async {
       await batch((b) {
-        for (final row in rows) {
+        for (final (:row, :keys) in keyed) {
+          final withKeys = row.copyWith(
+            albumArtistKey: Value(keys.albumArtistKey),
+            albumTitleKey: Value(keys.albumTitleKey),
+            albumDisplayArtist: Value(keys.albumDisplayArtist),
+            titleSort: Value(keys.titleSort),
+            artistSort: Value(keys.artistSort),
+            albumSort: Value(keys.albumSort),
+            keysVersion: const Value(textKeysVersion),
+          );
           b.insert(
             tracks,
-            row,
+            withKeys,
             onConflict: DoUpdate(
-              (_) => row.copyWith(
+              (_) => withKeys.copyWith(
                 id: const Value.absent(),
                 rootId: const Value.absent(),
                 addedAt: const Value.absent(),
@@ -126,6 +155,20 @@ class LibraryDatabase extends _$LibraryDatabase {
               target: [tracks.path],
             ),
           );
+          final path = row.path.value;
+          b.customStatement(
+            'DELETE FROM track_artists '
+            'WHERE track_id = (SELECT id FROM tracks WHERE path = ?)',
+            [path],
+          );
+          for (final artist in keys.artists) {
+            b.customStatement(
+              'INSERT OR IGNORE INTO track_artists '
+              '(track_id, artist_key, artist_name) '
+              'SELECT id, ?, ? FROM tracks WHERE path = ?',
+              [artist.key, artist.name, path],
+            );
+          }
         }
       });
     });
@@ -175,38 +218,5 @@ class LibraryDatabase extends _$LibraryDatabase {
         );
       }
     });
-  }
-
-  /// All tracks with only the columns a list row needs, ordered by title
-  /// (case-insensitive) then id so equal titles keep a stable order.
-  Stream<List<TrackListItem>> watchTrackListItems() {
-    final query = selectOnly(tracks)
-      ..addColumns([
-        tracks.id,
-        tracks.path,
-        tracks.title,
-        tracks.artist,
-        tracks.album,
-        tracks.durationMs,
-        tracks.coverKey,
-      ])
-      ..orderBy([
-        OrderingTerm(expression: tracks.title.collate(Collate.noCase)),
-        OrderingTerm.asc(tracks.id),
-      ]);
-    return query.watch().map(
-      (rows) => [
-        for (final row in rows)
-          TrackListItem(
-            id: row.read(tracks.id)!,
-            path: row.read(tracks.path)!,
-            title: row.read(tracks.title)!,
-            artist: row.read(tracks.artist),
-            album: row.read(tracks.album),
-            durationMs: row.read(tracks.durationMs),
-            coverKey: row.read(tracks.coverKey),
-          ),
-      ],
-    );
   }
 }

@@ -1,4 +1,3 @@
-import '../../../core/database/artist_names.dart';
 import '../../../core/database/library_database.dart';
 
 /// One artist of the Artists list.
@@ -21,33 +20,16 @@ class ArtistSummary {
   final int albumCount;
 }
 
-/// Splits each `artist` value into names (guests included, see
-/// `splitArtists`) and merges them by key: a track counts once per name, and
-/// the albums of every value are united. Names only found as album artist
-/// are not artists here.
-List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) {
-  final names = <String, String>{};
-  final songs = <String, int>{};
-  final albums = <String, Set<AlbumKey>>{};
-  for (final credit in credits) {
-    // splitArtists already drops repeated names within one value.
-    for (final name in splitArtists(credit.artist)) {
-      final key = artistKey(name);
-      names[key] = preferredSpelling(names[key], name);
-      songs[key] = (songs[key] ?? 0) + credit.trackCount;
-      (albums[key] ??= {}).addAll(credit.albumKeys);
-    }
-  }
-  return [
-    for (final MapEntry(:key, value: name) in names.entries)
-      ArtistSummary(
-        key: key,
-        name: name,
-        songCount: songs[key]!,
-        albumCount: albums[key]!.length,
-      ),
-  ];
-}
+/// The list rows for [credits], one per artist key.
+List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) => [
+  for (final credit in credits)
+    ArtistSummary(
+      key: credit.key,
+      name: credit.name,
+      songCount: credit.trackCount,
+      albumCount: credit.albumCount,
+    ),
+];
 
 /// Of two spellings of one artist (same key), the one shown: the smallest
 /// by code units, like album titles. Any track order gives the same name,

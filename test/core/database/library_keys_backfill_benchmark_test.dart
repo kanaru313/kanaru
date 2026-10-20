@@ -17,6 +17,17 @@ import 'package:kanaru/core/database/track_keys.dart';
 const _total = 100000;
 final _enabled = Platform.environment['KANARU_BENCH'] == '1';
 
+/// A scan keys what it writes; the benchmark needs a library as the previous
+/// schema left it, with no keys and no credits.
+Future<void> _unkey(LibraryDatabase db) async {
+  await db.customStatement(
+    "UPDATE tracks SET keys_version = 0, title_sort = '', "
+    'artist_sort = NULL, album_sort = NULL, album_artist_key = NULL, '
+    'album_title_key = NULL, album_display_artist = NULL',
+  );
+  await db.customStatement('DELETE FROM track_artists');
+}
+
 void main() {
   test('key computation for one 2000-row chunk', () {
     for (var round = 0; round < 4; round++) {
@@ -59,6 +70,7 @@ void main() {
           updatedAt: 1,
         ),
     ]);
+    await _unkey(db);
     final watch = Stopwatch()..start();
     var last = 0;
     final chunks = <int>[];
@@ -110,6 +122,7 @@ void main() {
         ]);
       }
 
+      await _unkey(db);
       final watch = Stopwatch()..start();
       var lastDone = 0;
       await runKeysBackfillInBackground(db, (done, total) => lastDone = done);
