@@ -12,18 +12,21 @@ use crate::tag_reader::read_one;
 /// 8 MiB a normal main thread gets.
 const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
 
-/// At most this many files are read at once. With covers on, lofty holds every
-/// picture of a file in memory and a thumbnail decode may take up to
-/// [`MAX_DECODE_BYTES`](crate::cover_thumbnail::MAX_DECODE_BYTES), so the
-/// thread count is what bounds peak memory.
-const MAX_THREADS: usize = 4;
+/// Number of tag threads for a machine with `cpus` hardware threads: half of
+/// them, so a scan leaves room for playback and the UI, and at least two.
+///
+/// Each thread reads one file at a time. With covers on, lofty holds every
+/// picture of that file in memory and a thumbnail decode may take up to
+/// [`MAX_DECODE_BYTES`](crate::cover_thumbnail::MAX_DECODE_BYTES), so peak
+/// memory grows with this count.
+fn thread_count(cpus: usize) -> usize {
+    (cpus / 2).max(2)
+}
 
 /// Dedicated pool so tag reading never competes with other rayon users and
 /// always runs with [`WORKER_STACK_BYTES`]. `Err` holds why it could not start.
 static POOL: LazyLock<Result<rayon::ThreadPool, String>> = LazyLock::new(|| {
-    let threads = std::thread::available_parallelism()
-        .map_or(1, usize::from)
-        .min(MAX_THREADS);
+    let threads = thread_count(std::thread::available_parallelism().map_or(1, usize::from));
     rayon::ThreadPoolBuilder::new()
         .num_threads(threads)
         .stack_size(WORKER_STACK_BYTES)
@@ -42,5 +45,17 @@ pub fn read_batch(paths: Vec<String>, covers: Option<&CoverSink>) -> Vec<TrackTa
             .into_iter()
             .map(|path| TrackTags::failed(path, reason.clone()))
             .collect(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::thread_count;
+
+    #[test]
+    fn uses_half_the_cpus_and_at_least_two() {
+        for (cpus, threads) in [(1, 2), (2, 2), (3, 2), (8, 4), (16, 8)] {
+            assert_eq!(thread_count(cpus), threads, "{cpus} cpus");
+        }
     }
 }

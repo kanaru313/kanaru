@@ -11,8 +11,9 @@ use crate::cover_art::MAX_COVER_SIDE;
 /// (`covers/512` on the Dart side), so a new size never mixes with old files.
 pub const THUMBNAIL_SIDE: u32 = 512;
 
-/// Upper bound on what one decode may allocate. With at most four tag threads
-/// this caps decode memory at about 256 MiB.
+/// Upper bound on what one decode may allocate. Each tag thread runs one decode
+/// at a time, so total decode memory grows with the thread count chosen in
+/// `tag_batch`.
 pub const MAX_DECODE_BYTES: u64 = 64 * 1024 * 1024;
 
 const JPEG_QUALITY: u8 = 85;
