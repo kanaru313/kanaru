@@ -15,8 +15,19 @@ import 'walk_audio_files.dart';
 
 final _log = Logger('indexer');
 
-/// Files whose tags are read and written per round trip.
-const tagBatchSize = 512;
+/// Bounds of the files whose tags are read and written per round trip: at
+/// least enough to keep the native reader's threads busy, at most what one
+/// transaction should hold.
+const minTagBatchSize = 32, maxTagBatchSize = 512;
+
+/// Progress updates a root aims for while its tags are read.
+const _progressSteps = 20;
+
+/// Batch size for [total] files to read, so the progress ring moves in
+/// about [_progressSteps] steps instead of jumping from empty to full when
+/// a whole library fits in one batch.
+int tagBatchSizeFor(int total) =>
+    (total / _progressSteps).ceil().clamp(minTagBatchSize, maxTagBatchSize);
 
 /// Scans every library root: walk, diff against the database, read tags of
 /// new or changed files, write them, then delete what is gone.
@@ -120,8 +131,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
           total: total,
         );
         if (total > 0) _publish(reading(0));
-        for (var i = 0; i < total; i += tagBatchSize) {
-          final end = i + tagBatchSize < total ? i + tagBatchSize : total;
+        final batchSize = tagBatchSizeFor(total);
+        for (var i = 0; i < total; i += batchSize) {
+          final end = i + batchSize < total ? i + batchSize : total;
           final batch = diff.toRead.sublist(i, end);
           tagTime.start();
           final tags = await reader.readBatch([for (final f in batch) f.path]);

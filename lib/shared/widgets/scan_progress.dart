@@ -41,8 +41,9 @@ class _ScanProgressBuilderState extends State<ScanProgressBuilder> {
   }
 }
 
-/// Progress ring of a scan, [size] square: determinate while tags are read,
-/// spinning while files are still being looked for.
+/// Progress ring of a scan, [size] square: spinning while files are still
+/// being looked for and until the first batch of tags is read, then
+/// determinate.
 class ScanProgressRing extends StatelessWidget {
   const ScanProgressRing({
     super.key,
@@ -67,6 +68,6 @@ class ScanProgressRing extends StatelessWidget {
 
 /// Says how far [scan] got, for a tooltip.
 String scanProgressTooltip(AppLocalizations l10n, IndexerScanning scan) =>
-    scan.progress == null
+    scan.phase == ScanPhase.discovering
     ? l10n.libraryScanDiscovering
     : l10n.libraryScanReading(scan.done, scan.total);

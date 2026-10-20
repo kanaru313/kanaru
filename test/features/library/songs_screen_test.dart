@@ -110,8 +110,8 @@ void main() {
     expect(ring, findsOneWidget);
     expect(
       tester.widget<CircularProgressIndicator>(ring).value,
-      0,
-      reason: 'determinate while tags are read',
+      isNull,
+      reason: 'spins until the first batch is read: a ring at 0 is empty',
     );
     expect(find.byTooltip('Reading tags 0 / 1'), findsOneWidget);
     expect(rescanButton(tester).onPressed, isNull);

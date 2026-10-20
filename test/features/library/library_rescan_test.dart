@@ -146,6 +146,14 @@ void main() {
     await tester.pump();
     expect(find.byTooltip('Looking for music files…'), findsOneWidget);
 
+    // Until the first batch is read the ring spins: at 0 it would be empty.
+    indexer.emit(
+      const IndexerScanning(phase: ScanPhase.reading, rootPath: '/m', total: 4),
+    );
+    await tester.pump();
+    expect(find.byTooltip('Reading tags 0 / 4'), findsOneWidget);
+    expect(tester.widget<CircularProgressIndicator>(ring).value, isNull);
+
     indexer.emit(
       const IndexerScanning(
         phase: ScanPhase.reading,

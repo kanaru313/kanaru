@@ -7,6 +7,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/core/indexer/library_indexer.dart';
 
 import 'fake_tag_reader.dart';
 
@@ -73,7 +74,7 @@ void main() {
         expect(rows, hasLength(600), reason: 'the vanished row survives');
         expect(
           rows.where((r) => r.mtimeMs == fixedMtime.millisecondsSinceEpoch),
-          hasLength(512),
+          hasLength(tagBatchSizeFor(599)),
           reason: 'batch 1 stays written',
         );
 

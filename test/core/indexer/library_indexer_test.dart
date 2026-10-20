@@ -7,6 +7,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/core/indexer/library_indexer.dart';
 
 import 'fake_tag_reader.dart';
 
@@ -161,15 +162,28 @@ void main() {
     expect(reader.batches, hasLength(1));
   });
 
-  test('reads in sequential batches of at most 512', () async {
+  test('reads in sequential batches sized by the amount of work', () async {
     for (var i = 0; i < 520; i++) {
       touch('t$i.mp3', '');
     }
 
     await scan();
 
-    expect(reader.batches.map((b) => b.length).toList()..sort(), [8, 512]);
+    // 520 / 20 steps is 26, raised to the 32 minimum: 16 full batches + 8.
+    expect(reader.batches.map((b) => b.length).toList()..sort(), [
+      8,
+      for (var i = 0; i < 16; i++) 32,
+    ]);
     expect(await tracks(), hasLength(520));
+  });
+
+  test('batch size aims for 20 steps within 32 to 512 files', () {
+    expect(tagBatchSizeFor(0), minTagBatchSize);
+    expect(tagBatchSizeFor(1), minTagBatchSize);
+    expect(tagBatchSizeFor(483), minTagBatchSize);
+    expect(tagBatchSizeFor(2000), 100);
+    expect(tagBatchSizeFor(2001), 101);
+    expect(tagBatchSizeFor(20000), maxTagBatchSize);
   });
 
   test('without a database it does nothing', () async {
