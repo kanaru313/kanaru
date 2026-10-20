@@ -21,7 +21,10 @@ class SettingsScreen extends StatelessWidget {
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
+              // Stretched so every section starts at the same left edge,
+              // whatever its rows' own width.
               child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SettingsSaveWarning(),
                   AppearanceSettingsSection(),

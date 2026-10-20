@@ -12,8 +12,13 @@ import 'window/window_drag_area.dart';
 
 const topBarHeight = 64.0;
 
+/// Top bar width below which back/forward are hidden, so the search field
+/// gets their space. Mouse side buttons still move through the history.
+const _historyButtonsMinWidth = 560.0;
+
 /// Header above every page: back/forward, search, open music, settings and,
 /// when the app draws its own title bar, the window buttons. Empty space drags the window.
+/// On narrow bars back/forward are left out.
 class TopBar extends ConsumerWidget {
   const TopBar({super.key, this.onMenuPressed});
 
@@ -39,67 +44,71 @@ class TopBar extends ConsumerWidget {
     return WindowDragArea(
       child: SizedBox(
         height: topBarHeight,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            spacing: 8,
-            children: [
-              if (onMenuPressed != null)
-                IconButton(
-                  icon: const Icon(Icons.menu),
-                  tooltip: MaterialLocalizations.of(context)
-                      .openAppDrawerTooltip,
-                  onPressed: onMenuPressed,
-                ),
-              TopBarButton(
-                icon: Icons.chevron_left,
-                tooltip: l10n.topBarBack,
-                onPressed: history.canGoBack ? historyNotifier.back : null,
-              ),
-              TopBarButton(
-                icon: Icons.chevron_right,
-                tooltip: l10n.topBarForward,
-                onPressed: history.canGoForward
-                    ? historyNotifier.forward
-                    : null,
-              ),
-              // Takes all free space so the buttons after it stay at the right
-              // edge; the field itself never grows past 320.
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 320),
-                    child: SearchBar(
-                      hintText: l10n.topBarSearchHint,
-                      leading: const Icon(Icons.search, size: 20),
-                      elevation: const WidgetStatePropertyAll(0),
-                      constraints: const BoxConstraints(minHeight: 40),
-                      padding: const WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 12),
+        child: LayoutBuilder(
+          builder: (context, constraints) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              spacing: 8,
+              children: [
+                if (onMenuPressed != null)
+                  IconButton(
+                    icon: const Icon(Icons.menu),
+                    tooltip: MaterialLocalizations.of(context)
+                        .openAppDrawerTooltip,
+                    onPressed: onMenuPressed,
+                  ),
+                if (constraints.maxWidth >= _historyButtonsMinWidth) ...[
+                  TopBarButton(
+                    icon: Icons.chevron_left,
+                    tooltip: l10n.topBarBack,
+                    onPressed: history.canGoBack ? historyNotifier.back : null,
+                  ),
+                  TopBarButton(
+                    icon: Icons.chevron_right,
+                    tooltip: l10n.topBarForward,
+                    onPressed: history.canGoForward
+                        ? historyNotifier.forward
+                        : null,
+                  ),
+                ],
+                // Takes all free space so the buttons after it stay at the right
+                // edge; the field itself never grows past 320.
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 320),
+                      child: SearchBar(
+                        hintText: l10n.topBarSearchHint,
+                        leading: const Icon(Icons.search, size: 20),
+                        elevation: const WidgetStatePropertyAll(0),
+                        constraints: const BoxConstraints(minHeight: 40),
+                        padding: const WidgetStatePropertyAll(
+                          EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                        onSubmitted: (text) => _search(context, text),
                       ),
-                      onSubmitted: (text) => _search(context, text),
                     ),
                   ),
                 ),
-              ),
-              OpenMediaMenu(
-                builder: (tooltip, onPressed) => TopBarButton(
-                  icon: Icons.library_music_outlined,
-                  tooltip: tooltip,
-                  onPressed: onPressed,
+                OpenMediaMenu(
+                  builder: (tooltip, onPressed) => TopBarButton(
+                    icon: Icons.library_music_outlined,
+                    tooltip: tooltip,
+                    onPressed: onPressed,
+                  ),
                 ),
-              ),
-              TopBarButton(
-                icon: Icons.settings_outlined,
-                tooltip: l10n.navSettings,
-                onPressed: () => context.go(AppDestination.settings.path),
-              ),
-              if (ref.watch(customTitleBarProvider)) ...[
-                const SizedBox(width: 8),
-                const WindowButtons(),
+                TopBarButton(
+                  icon: Icons.settings_outlined,
+                  tooltip: l10n.navSettings,
+                  onPressed: () => context.go(AppDestination.settings.path),
+                ),
+                if (ref.watch(customTitleBarProvider)) ...[
+                  const SizedBox(width: 8),
+                  const WindowButtons(),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

@@ -1,14 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 
 /// Tile width from which the control sits beside the title. Narrower tiles
-/// (or longer translations) put it under the title instead, so a wide control
-/// such as a segmented button never squeezes the text or overflows.
+/// (or longer translations) put it under the title instead and ask for a
+/// compact control (a dropdown rather than a segmented button), so it never
+/// squeezes the text or overflows.
 const _inlineMinWidth = 720.0;
 
-/// A settings row: [title] with an optional [subtitle] and a [control].
+/// A settings row: [title] with an optional [subtitle] and a control built by
+/// [control].
 ///
-/// The control is on the same line when there is room and below the title
-/// otherwise, shrunk to fit if it is still too wide.
+/// The control is on the same line when there is room. Otherwise it is built
+/// compact, below the title, and shrunk to fit if it is still too wide.
 class SettingRow extends StatelessWidget {
   const SettingRow({
     super.key,
@@ -19,7 +21,7 @@ class SettingRow extends StatelessWidget {
 
   final String title;
   final String? subtitle;
-  final Widget control;
+  final Widget Function(bool compact) control;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class SettingRow extends StatelessWidget {
           return ListTile(
             title: Text(title),
             subtitle: subtitleText,
-            trailing: control,
+            trailing: control(false),
           );
         }
         final theme = Theme.of(context);
@@ -50,7 +52,7 @@ class SettingRow extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 8),
-              FittedBox(fit: BoxFit.scaleDown, child: control),
+              FittedBox(fit: BoxFit.scaleDown, child: control(true)),
             ],
           ),
         );

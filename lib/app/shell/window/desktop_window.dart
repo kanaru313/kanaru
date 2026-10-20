@@ -27,7 +27,7 @@ Future<bool> setUpDesktopWindow({required TitleBarPreference titleBar}) async {
     TitleBarPreference.kanaru ||
     TitleBarPreference.none => TitleBarStyle.hidden,
   });
-  await windowManager.setMinimumSize(const Size(480, 360));
+  await windowManager.setMinimumSize(const Size(480, 720));
   return titleBar == TitleBarPreference.kanaru;
 }
 

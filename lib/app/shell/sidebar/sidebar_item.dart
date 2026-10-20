@@ -1,8 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'sidebar_tooltip.dart';
+
 /// One navigation row in the sidebar. The selected row gets an accent-tinted
 /// background with an accent bar on its left edge. In [compact] mode (the
-/// collapsed rail) only the icon is shown and the label becomes a tooltip.
+/// collapsed rail) only the icon is shown and the label becomes a tooltip
+/// on its right.
 class SidebarItem extends StatelessWidget {
   const SidebarItem({
     super.key,
@@ -92,6 +95,6 @@ class SidebarItem extends StatelessWidget {
       ),
     );
 
-    return compact ? Tooltip(message: label, child: item) : item;
+    return compact ? SidebarTooltip(message: label, child: item) : item;
   }
 }

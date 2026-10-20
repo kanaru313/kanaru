@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/settings/setting_choice.dart';
+import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -15,6 +17,7 @@ void main() {
       testWidgets(
         'settings fit a ${size.width.toInt()} px window in $language',
         (tester) async {
+          final l10n = lookupAppLocalizations(Locale(language));
           tester.view.physicalSize = size;
           tester.view.devicePixelRatio = 1;
           addTearDown(tester.view.reset);
@@ -40,26 +43,71 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(tester.takeException(), isNull);
-          final segments = find.byType(SegmentedButton<ThemePreference>);
-          expect(segments.hitTestable(), findsOneWidget);
 
-          // Every segment can be tapped, and the choice is applied.
-          await tester.tap(
-            find.descendant(
-              of: segments,
-              matching: find.byIcon(Icons.dark_mode_outlined),
-            ),
+          // Sections start at the same left edge whatever their rows' width.
+          expect(
+            tester.getTopLeft(find.text(l10n.settingsAbout)).dx,
+            tester.getTopLeft(find.text(l10n.settingsAppearance)).dx,
           );
-          await tester.pumpAndSettle();
+
+          final wideRows = size.width >= 1280;
+          final theme = find.byType(SettingChoice<ThemePreference>);
+          expect(
+            find.descendant(
+              of: theme,
+              matching: find.byType(SegmentedButton<ThemePreference>),
+            ),
+            wideRows ? findsOneWidget : findsNothing,
+          );
+          expect(
+            find.descendant(
+              of: theme,
+              matching: find.byType(DropdownMenu<ThemePreference>),
+            ),
+            wideRows ? findsNothing : findsOneWidget,
+          );
+
+          await _choose(tester, theme, l10n.settingsThemeDark);
           expect(container.read(settingsProvider).theme, ThemePreference.dark);
 
-          final titleBar = find.byType(SegmentedButton<TitleBarPreference>);
+          final titleBar = find.byType(SettingChoice<TitleBarPreference>);
           await tester.ensureVisible(titleBar);
           await tester.pumpAndSettle();
           expect(titleBar.hitTestable(), findsOneWidget);
+          await _choose(tester, titleBar, l10n.settingsTitleBarNone);
+          expect(
+            container.read(settingsProvider).titleBar,
+            TitleBarPreference.none,
+          );
           expect(tester.takeException(), isNull);
         },
       );
     }
   }
+}
+
+/// Picks an option of a [SettingChoice] by its label, from its segment or
+/// its dropdown menu.
+Future<void> _choose(WidgetTester tester, Finder choice, String label) async {
+  final segments = find.descendant(
+    of: choice,
+    matching: find.byWidgetPredicate((w) => w is SegmentedButton),
+  );
+  if (segments.evaluate().isNotEmpty) {
+    await tester.tap(find.descendant(of: segments, matching: find.text(label)));
+  } else {
+    await tester.tap(
+      find.descendant(of: choice, matching: find.byType(TextField)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(MenuItemButton),
+            matching: find.text(label),
+          )
+          .hitTestable(),
+    );
+  }
+  await tester.pumpAndSettle();
 }

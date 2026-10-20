@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
@@ -19,7 +20,7 @@ final _languages = [
     ),
 ];
 
-/// Dropdown value for "follow the system language".
+/// Language value for "follow the system language".
 const _systemLanguage = '';
 
 class AppearanceSettingsSection extends ConsumerWidget {
@@ -40,60 +41,44 @@ class AppearanceSettingsSection extends ConsumerWidget {
       children: [
         SettingRow(
           title: l10n.settingsTheme,
-          control: SegmentedButton<ThemePreference>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
+          control: (compact) => SettingChoice<ThemePreference>(
+            compact: compact,
+            options: [
+              SettingOption(
                 value: ThemePreference.system,
-                icon: const Icon(Icons.brightness_auto_outlined),
-                label: Text(l10n.settingsThemeSystem),
+                icon: Icons.brightness_auto_outlined,
+                label: l10n.settingsThemeSystem,
               ),
-              ButtonSegment(
+              SettingOption(
                 value: ThemePreference.light,
-                icon: const Icon(Icons.light_mode_outlined),
-                label: Text(l10n.settingsThemeLight),
+                icon: Icons.light_mode_outlined,
+                label: l10n.settingsThemeLight,
               ),
-              ButtonSegment(
+              SettingOption(
                 value: ThemePreference.dark,
-                icon: const Icon(Icons.dark_mode_outlined),
-                label: Text(l10n.settingsThemeDark),
+                icon: Icons.dark_mode_outlined,
+                label: l10n.settingsThemeDark,
               ),
             ],
-            selected: {settings.theme},
-            onSelectionChanged: (s) => notifier.setTheme(s.single),
+            selected: settings.theme,
+            onSelected: notifier.setTheme,
           ),
         ),
         SettingRow(
           title: l10n.settingsLanguage,
-          control: DropdownMenu<String>(
-            // Rebuilt when the value or the UI language changes, since
-            // initialSelection is only read once.
-            key: ValueKey('$languageCode-${Localizations.localeOf(context)}'),
-            initialSelection: languageCode,
-            requestFocusOnTap: false,
-            enableFilter: false,
-            leadingIcon: const Icon(Icons.translate, size: 18),
-            // As tall and round as the segmented buttons beside it.
-            textStyle: Theme.of(context).textTheme.labelLarge,
-            inputDecorationTheme: InputDecorationThemeData(
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-              constraints: const BoxConstraints.tightFor(height: 40),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            dropdownMenuEntries: [
-              DropdownMenuEntry(
+          control: (_) => SettingDropdown<String>(
+            leadingIcon: Icons.translate,
+            options: [
+              SettingOption(
                 value: _systemLanguage,
                 label: l10n.settingsLanguageSystem,
               ),
               for (final (code, name) in _languages)
-                DropdownMenuEntry(value: code, label: name),
+                SettingOption(value: code, label: name),
             ],
-            onSelected: (code) => notifier.setLanguage(
-              code == null || code == _systemLanguage ? null : code,
-            ),
+            selected: languageCode,
+            onSelected: (code) =>
+                notifier.setLanguage(code == _systemLanguage ? null : code),
           ),
         ),
         SettingRow(
@@ -101,27 +86,27 @@ class AppearanceSettingsSection extends ConsumerWidget {
           subtitle: settings.titleBar != initial.titleBar
               ? l10n.settingsRestartRequired
               : null,
-          control: SegmentedButton<TitleBarPreference>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
+          control: (compact) => SettingChoice<TitleBarPreference>(
+            compact: compact,
+            options: [
+              SettingOption(
                 value: TitleBarPreference.kanaru,
-                icon: const Icon(Icons.web_asset),
-                label: Text(l10n.settingsTitleBarKanaru),
+                icon: Icons.web_asset,
+                label: l10n.settingsTitleBarKanaru,
               ),
-              ButtonSegment(
+              SettingOption(
                 value: TitleBarPreference.system,
-                icon: const Icon(Icons.desktop_windows_outlined),
-                label: Text(l10n.settingsTitleBarSystem),
+                icon: Icons.desktop_windows_outlined,
+                label: l10n.settingsTitleBarSystem,
               ),
-              ButtonSegment(
+              SettingOption(
                 value: TitleBarPreference.none,
-                icon: const Icon(Icons.crop_free),
-                label: Text(l10n.settingsTitleBarNone),
+                icon: Icons.crop_free,
+                label: l10n.settingsTitleBarNone,
               ),
             ],
-            selected: {settings.titleBar},
-            onSelectionChanged: (s) => notifier.setTitleBar(s.single),
+            selected: settings.titleBar,
+            onSelected: notifier.setTitleBar,
           ),
         ),
       ],
