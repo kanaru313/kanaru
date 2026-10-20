@@ -87,9 +87,10 @@ class SettingDropdown<T> extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => DropdownMenu<T>(
         width: constraints.hasBoundedWidth ? constraints.maxWidth : null,
-        // Rebuilt when the value or the UI language changes, since
-        // initialSelection is only read once.
-        key: ValueKey('$selected-${Localizations.localeOf(context)}'),
+        // Rebuilt when the UI language changes, so the shown label follows it.
+        // Not keyed on the value: remounting on a choice would drop keyboard
+        // focus; the menu follows a new initialSelection by itself.
+        key: ValueKey(Localizations.localeOf(context)),
         initialSelection: selected,
         requestFocusOnTap: false,
         enableFilter: false,
