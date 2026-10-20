@@ -26,7 +26,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final showWelcome =
       ref.read(libraryDatabaseProvider) != null &&
       !ref.read(libraryHasRootsProvider);
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: showWelcome ? _welcomePath : AppDestination.home.path,
     routes: [
       GoRoute(
@@ -81,6 +81,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+  return router;
 });
 
 Widget _buildPage(

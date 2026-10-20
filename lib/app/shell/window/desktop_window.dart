@@ -11,6 +11,22 @@ import '../../../core/settings/settings_provider.dart';
 /// `main()` overrides it with the result of [setUpDesktopWindow].
 final customTitleBarProvider = Provider<bool>((ref) => false);
 
+/// Maximizes the window, or restores it when it already is. Shared by the
+/// title bar double click and the maximize button.
+Future<void> toggleMaximize() async {
+  if (await windowManager.isMaximized()) {
+    await windowManager.unmaximize();
+  } else {
+    await windowManager.maximize();
+  }
+}
+
+/// What a title bar double click runs. Tests override it so they never reach
+/// the window plugin.
+final toggleMaximizeProvider = Provider<Future<void> Function()>(
+  (ref) => toggleMaximize,
+);
+
 /// Sets up the window for the chosen title bar and returns whether the app
 /// must draw its own. Only [TitleBarPreference.kanaru] does.
 ///

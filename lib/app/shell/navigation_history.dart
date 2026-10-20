@@ -13,6 +13,9 @@ class NavigationHistoryState {
   bool get canGoForward => index < entries.length - 1;
 }
 
+/// Most locations kept; the oldest are dropped beyond it.
+const navigationHistoryLimit = 100;
+
 /// Records every location the router visits so the top bar's back and
 /// forward buttons can move across pages. go_router only knows how to pop
 /// within one stack, not how to go forward again.
@@ -33,11 +36,33 @@ class NavigationHistory extends Notifier<NavigationHistoryState> {
       .uri
       .toString();
 
+  /// Index [back] or [forward] is moving to while the router has not reported
+  /// where it landed yet.
+  int? _pendingIndex;
+
   void _visit(String location) {
-    // Already there, e.g. because back() or forward() just moved the index.
+    final pending = _pendingIndex;
+    if (pending != null) {
+      // The router may have redirected; keep what it actually reached so the
+      // forward stack is not mistaken for a new visit.
+      _pendingIndex = null;
+      _replaceAt(pending, location);
+      return;
+    }
+    // Already there, e.g. because the router reported the same page twice.
     if (location == state.entries[state.index]) return;
-    final entries = [...state.entries.take(state.index + 1), location];
+    var entries = [...state.entries.take(state.index + 1), location];
+    if (entries.length > navigationHistoryLimit) {
+      // A new list: the previous state's entries stay as they were.
+      entries = entries.sublist(entries.length - navigationHistoryLimit);
+    }
     state = NavigationHistoryState(entries, entries.length - 1);
+  }
+
+  void _replaceAt(int index, String location) {
+    if (state.entries[index] == location) return;
+    final entries = [...state.entries]..[index] = location;
+    state = NavigationHistoryState(entries, state.index);
   }
 
   void back() {
@@ -49,8 +74,14 @@ class NavigationHistory extends Notifier<NavigationHistoryState> {
   }
 
   void _moveTo(int index) {
+    final target = state.entries[index];
     state = NavigationHistoryState(state.entries, index);
-    ref.read(routerProvider).go(state.entries[index]);
+    _pendingIndex = index;
+    ref.read(routerProvider).go(target);
+    // Going to where the router already is notifies nobody.
+    if (_pendingIndex == index && _currentLocation() == target) {
+      _pendingIndex = null;
+    }
   }
 }
 

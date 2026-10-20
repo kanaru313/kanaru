@@ -39,9 +39,11 @@ class AppShell extends ConsumerWidget {
   }
 
   /// Header of Now Playing with the window drag area and buttons, which
-  /// features cannot reach themselves.
+  /// features cannot reach themselves. The header holds buttons this layer
+  /// cannot mark as interactive, so a double click there must not maximize.
   Widget _nowPlayingTitleBar(Widget header, bool customTitleBar) {
     return WindowDragArea(
+      doubleClickMaximizes: false,
       child: Row(
         children: [
           Expanded(child: header),
