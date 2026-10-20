@@ -146,6 +146,26 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryRescan => 'Quét lại';
 
   @override
+  String get libraryKeysUpdatingTitle => 'Đang cập nhật thư viện…';
+
+  @override
+  String get libraryKeysUpdatingMessage =>
+      'Đang sắp xếp nhạc của bạn. Bạn vẫn có thể phát nhạc.';
+
+  @override
+  String libraryKeysUpdatingProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString / $totalString';
+  }
+
+  @override
   String get libraryScanDiscovering => 'Đang tìm file nhạc…';
 
   @override

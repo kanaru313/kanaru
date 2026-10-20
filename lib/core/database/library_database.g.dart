@@ -605,6 +605,85 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _albumArtistKeyMeta = const VerificationMeta(
+    'albumArtistKey',
+  );
+  @override
+  late final GeneratedColumn<String> albumArtistKey = GeneratedColumn<String>(
+    'album_artist_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _albumTitleKeyMeta = const VerificationMeta(
+    'albumTitleKey',
+  );
+  @override
+  late final GeneratedColumn<String> albumTitleKey = GeneratedColumn<String>(
+    'album_title_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _albumDisplayArtistMeta =
+      const VerificationMeta('albumDisplayArtist');
+  @override
+  late final GeneratedColumn<String> albumDisplayArtist =
+      GeneratedColumn<String>(
+        'album_display_artist',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _titleSortMeta = const VerificationMeta(
+    'titleSort',
+  );
+  @override
+  late final GeneratedColumn<String> titleSort = GeneratedColumn<String>(
+    'title_sort',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _artistSortMeta = const VerificationMeta(
+    'artistSort',
+  );
+  @override
+  late final GeneratedColumn<String> artistSort = GeneratedColumn<String>(
+    'artist_sort',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _albumSortMeta = const VerificationMeta(
+    'albumSort',
+  );
+  @override
+  late final GeneratedColumn<String> albumSort = GeneratedColumn<String>(
+    'album_sort',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _keysVersionMeta = const VerificationMeta(
+    'keysVersion',
+  );
+  @override
+  late final GeneratedColumn<int> keysVersion = GeneratedColumn<int>(
+    'keys_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -634,6 +713,13 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     scanError,
     coverKey,
     coverScanVersion,
+    albumArtistKey,
+    albumTitleKey,
+    albumDisplayArtist,
+    titleSort,
+    artistSort,
+    albumSort,
+    keysVersion,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -826,6 +912,60 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         ),
       );
     }
+    if (data.containsKey('album_artist_key')) {
+      context.handle(
+        _albumArtistKeyMeta,
+        albumArtistKey.isAcceptableOrUnknown(
+          data['album_artist_key']!,
+          _albumArtistKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('album_title_key')) {
+      context.handle(
+        _albumTitleKeyMeta,
+        albumTitleKey.isAcceptableOrUnknown(
+          data['album_title_key']!,
+          _albumTitleKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('album_display_artist')) {
+      context.handle(
+        _albumDisplayArtistMeta,
+        albumDisplayArtist.isAcceptableOrUnknown(
+          data['album_display_artist']!,
+          _albumDisplayArtistMeta,
+        ),
+      );
+    }
+    if (data.containsKey('title_sort')) {
+      context.handle(
+        _titleSortMeta,
+        titleSort.isAcceptableOrUnknown(data['title_sort']!, _titleSortMeta),
+      );
+    }
+    if (data.containsKey('artist_sort')) {
+      context.handle(
+        _artistSortMeta,
+        artistSort.isAcceptableOrUnknown(data['artist_sort']!, _artistSortMeta),
+      );
+    }
+    if (data.containsKey('album_sort')) {
+      context.handle(
+        _albumSortMeta,
+        albumSort.isAcceptableOrUnknown(data['album_sort']!, _albumSortMeta),
+      );
+    }
+    if (data.containsKey('keys_version')) {
+      context.handle(
+        _keysVersionMeta,
+        keysVersion.isAcceptableOrUnknown(
+          data['keys_version']!,
+          _keysVersionMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -943,6 +1083,34 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         DriftSqlType.int,
         data['${effectivePrefix}cover_scan_version'],
       )!,
+      albumArtistKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_artist_key'],
+      ),
+      albumTitleKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_title_key'],
+      ),
+      albumDisplayArtist: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_display_artist'],
+      ),
+      titleSort: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title_sort'],
+      )!,
+      artistSort: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}artist_sort'],
+      ),
+      albumSort: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_sort'],
+      ),
+      keysVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}keys_version'],
+      )!,
     );
   }
 
@@ -1003,6 +1171,26 @@ class Track extends DataClass implements Insertable<Track> {
   /// cover was never looked for. A lower value makes a rescan read the file
   /// again even when it is unchanged.
   final int coverScanVersion;
+
+  /// Artist part of the album key; null when the track has no album.
+  final String? albumArtistKey;
+
+  /// Title part of the album key; null when the track has no album.
+  final String? albumTitleKey;
+
+  /// The album's artist as shown: the album artist tag, else the first track
+  /// artist.
+  final String? albumDisplayArtist;
+
+  /// Sort keys of the title, the artist tag and the album; the last two are
+  /// null with their text.
+  final String titleSort;
+  final String? artistSort;
+  final String? albumSort;
+
+  /// The `textKeysVersion` whose rules produced the keys above; 0 when they
+  /// were never computed.
+  final int keysVersion;
   const Track({
     required this.id,
     required this.rootId,
@@ -1031,6 +1219,13 @@ class Track extends DataClass implements Insertable<Track> {
     this.scanError,
     this.coverKey,
     required this.coverScanVersion,
+    this.albumArtistKey,
+    this.albumTitleKey,
+    this.albumDisplayArtist,
+    required this.titleSort,
+    this.artistSort,
+    this.albumSort,
+    required this.keysVersion,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1098,6 +1293,23 @@ class Track extends DataClass implements Insertable<Track> {
       map['cover_key'] = Variable<String>(coverKey);
     }
     map['cover_scan_version'] = Variable<int>(coverScanVersion);
+    if (!nullToAbsent || albumArtistKey != null) {
+      map['album_artist_key'] = Variable<String>(albumArtistKey);
+    }
+    if (!nullToAbsent || albumTitleKey != null) {
+      map['album_title_key'] = Variable<String>(albumTitleKey);
+    }
+    if (!nullToAbsent || albumDisplayArtist != null) {
+      map['album_display_artist'] = Variable<String>(albumDisplayArtist);
+    }
+    map['title_sort'] = Variable<String>(titleSort);
+    if (!nullToAbsent || artistSort != null) {
+      map['artist_sort'] = Variable<String>(artistSort);
+    }
+    if (!nullToAbsent || albumSort != null) {
+      map['album_sort'] = Variable<String>(albumSort);
+    }
+    map['keys_version'] = Variable<int>(keysVersion);
     return map;
   }
 
@@ -1164,6 +1376,23 @@ class Track extends DataClass implements Insertable<Track> {
           ? const Value.absent()
           : Value(coverKey),
       coverScanVersion: Value(coverScanVersion),
+      albumArtistKey: albumArtistKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumArtistKey),
+      albumTitleKey: albumTitleKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumTitleKey),
+      albumDisplayArtist: albumDisplayArtist == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumDisplayArtist),
+      titleSort: Value(titleSort),
+      artistSort: artistSort == null && nullToAbsent
+          ? const Value.absent()
+          : Value(artistSort),
+      albumSort: albumSort == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumSort),
+      keysVersion: Value(keysVersion),
     );
   }
 
@@ -1200,6 +1429,15 @@ class Track extends DataClass implements Insertable<Track> {
       scanError: serializer.fromJson<String?>(json['scanError']),
       coverKey: serializer.fromJson<String?>(json['coverKey']),
       coverScanVersion: serializer.fromJson<int>(json['coverScanVersion']),
+      albumArtistKey: serializer.fromJson<String?>(json['albumArtistKey']),
+      albumTitleKey: serializer.fromJson<String?>(json['albumTitleKey']),
+      albumDisplayArtist: serializer.fromJson<String?>(
+        json['albumDisplayArtist'],
+      ),
+      titleSort: serializer.fromJson<String>(json['titleSort']),
+      artistSort: serializer.fromJson<String?>(json['artistSort']),
+      albumSort: serializer.fromJson<String?>(json['albumSort']),
+      keysVersion: serializer.fromJson<int>(json['keysVersion']),
     );
   }
   @override
@@ -1233,6 +1471,13 @@ class Track extends DataClass implements Insertable<Track> {
       'scanError': serializer.toJson<String?>(scanError),
       'coverKey': serializer.toJson<String?>(coverKey),
       'coverScanVersion': serializer.toJson<int>(coverScanVersion),
+      'albumArtistKey': serializer.toJson<String?>(albumArtistKey),
+      'albumTitleKey': serializer.toJson<String?>(albumTitleKey),
+      'albumDisplayArtist': serializer.toJson<String?>(albumDisplayArtist),
+      'titleSort': serializer.toJson<String>(titleSort),
+      'artistSort': serializer.toJson<String?>(artistSort),
+      'albumSort': serializer.toJson<String?>(albumSort),
+      'keysVersion': serializer.toJson<int>(keysVersion),
     };
   }
 
@@ -1264,6 +1509,13 @@ class Track extends DataClass implements Insertable<Track> {
     Value<String?> scanError = const Value.absent(),
     Value<String?> coverKey = const Value.absent(),
     int? coverScanVersion,
+    Value<String?> albumArtistKey = const Value.absent(),
+    Value<String?> albumTitleKey = const Value.absent(),
+    Value<String?> albumDisplayArtist = const Value.absent(),
+    String? titleSort,
+    Value<String?> artistSort = const Value.absent(),
+    Value<String?> albumSort = const Value.absent(),
+    int? keysVersion,
   }) => Track(
     id: id ?? this.id,
     rootId: rootId ?? this.rootId,
@@ -1292,6 +1544,19 @@ class Track extends DataClass implements Insertable<Track> {
     scanError: scanError.present ? scanError.value : this.scanError,
     coverKey: coverKey.present ? coverKey.value : this.coverKey,
     coverScanVersion: coverScanVersion ?? this.coverScanVersion,
+    albumArtistKey: albumArtistKey.present
+        ? albumArtistKey.value
+        : this.albumArtistKey,
+    albumTitleKey: albumTitleKey.present
+        ? albumTitleKey.value
+        : this.albumTitleKey,
+    albumDisplayArtist: albumDisplayArtist.present
+        ? albumDisplayArtist.value
+        : this.albumDisplayArtist,
+    titleSort: titleSort ?? this.titleSort,
+    artistSort: artistSort.present ? artistSort.value : this.artistSort,
+    albumSort: albumSort.present ? albumSort.value : this.albumSort,
+    keysVersion: keysVersion ?? this.keysVersion,
   );
   Track copyWithCompanion(TracksCompanion data) {
     return Track(
@@ -1332,6 +1597,23 @@ class Track extends DataClass implements Insertable<Track> {
       coverScanVersion: data.coverScanVersion.present
           ? data.coverScanVersion.value
           : this.coverScanVersion,
+      albumArtistKey: data.albumArtistKey.present
+          ? data.albumArtistKey.value
+          : this.albumArtistKey,
+      albumTitleKey: data.albumTitleKey.present
+          ? data.albumTitleKey.value
+          : this.albumTitleKey,
+      albumDisplayArtist: data.albumDisplayArtist.present
+          ? data.albumDisplayArtist.value
+          : this.albumDisplayArtist,
+      titleSort: data.titleSort.present ? data.titleSort.value : this.titleSort,
+      artistSort: data.artistSort.present
+          ? data.artistSort.value
+          : this.artistSort,
+      albumSort: data.albumSort.present ? data.albumSort.value : this.albumSort,
+      keysVersion: data.keysVersion.present
+          ? data.keysVersion.value
+          : this.keysVersion,
     );
   }
 
@@ -1364,7 +1646,14 @@ class Track extends DataClass implements Insertable<Track> {
           ..write('updatedAt: $updatedAt, ')
           ..write('scanError: $scanError, ')
           ..write('coverKey: $coverKey, ')
-          ..write('coverScanVersion: $coverScanVersion')
+          ..write('coverScanVersion: $coverScanVersion, ')
+          ..write('albumArtistKey: $albumArtistKey, ')
+          ..write('albumTitleKey: $albumTitleKey, ')
+          ..write('albumDisplayArtist: $albumDisplayArtist, ')
+          ..write('titleSort: $titleSort, ')
+          ..write('artistSort: $artistSort, ')
+          ..write('albumSort: $albumSort, ')
+          ..write('keysVersion: $keysVersion')
           ..write(')'))
         .toString();
   }
@@ -1398,6 +1687,13 @@ class Track extends DataClass implements Insertable<Track> {
     scanError,
     coverKey,
     coverScanVersion,
+    albumArtistKey,
+    albumTitleKey,
+    albumDisplayArtist,
+    titleSort,
+    artistSort,
+    albumSort,
+    keysVersion,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1429,7 +1725,14 @@ class Track extends DataClass implements Insertable<Track> {
           other.updatedAt == this.updatedAt &&
           other.scanError == this.scanError &&
           other.coverKey == this.coverKey &&
-          other.coverScanVersion == this.coverScanVersion);
+          other.coverScanVersion == this.coverScanVersion &&
+          other.albumArtistKey == this.albumArtistKey &&
+          other.albumTitleKey == this.albumTitleKey &&
+          other.albumDisplayArtist == this.albumDisplayArtist &&
+          other.titleSort == this.titleSort &&
+          other.artistSort == this.artistSort &&
+          other.albumSort == this.albumSort &&
+          other.keysVersion == this.keysVersion);
 }
 
 class TracksCompanion extends UpdateCompanion<Track> {
@@ -1460,6 +1763,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
   final Value<String?> scanError;
   final Value<String?> coverKey;
   final Value<int> coverScanVersion;
+  final Value<String?> albumArtistKey;
+  final Value<String?> albumTitleKey;
+  final Value<String?> albumDisplayArtist;
+  final Value<String> titleSort;
+  final Value<String?> artistSort;
+  final Value<String?> albumSort;
+  final Value<int> keysVersion;
   const TracksCompanion({
     this.id = const Value.absent(),
     this.rootId = const Value.absent(),
@@ -1488,6 +1798,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.scanError = const Value.absent(),
     this.coverKey = const Value.absent(),
     this.coverScanVersion = const Value.absent(),
+    this.albumArtistKey = const Value.absent(),
+    this.albumTitleKey = const Value.absent(),
+    this.albumDisplayArtist = const Value.absent(),
+    this.titleSort = const Value.absent(),
+    this.artistSort = const Value.absent(),
+    this.albumSort = const Value.absent(),
+    this.keysVersion = const Value.absent(),
   });
   TracksCompanion.insert({
     this.id = const Value.absent(),
@@ -1517,6 +1834,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.scanError = const Value.absent(),
     this.coverKey = const Value.absent(),
     this.coverScanVersion = const Value.absent(),
+    this.albumArtistKey = const Value.absent(),
+    this.albumTitleKey = const Value.absent(),
+    this.albumDisplayArtist = const Value.absent(),
+    this.titleSort = const Value.absent(),
+    this.artistSort = const Value.absent(),
+    this.albumSort = const Value.absent(),
+    this.keysVersion = const Value.absent(),
   }) : rootId = Value(rootId),
        path = Value(path),
        mtimeMs = Value(mtimeMs),
@@ -1552,6 +1876,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Expression<String>? scanError,
     Expression<String>? coverKey,
     Expression<int>? coverScanVersion,
+    Expression<String>? albumArtistKey,
+    Expression<String>? albumTitleKey,
+    Expression<String>? albumDisplayArtist,
+    Expression<String>? titleSort,
+    Expression<String>? artistSort,
+    Expression<String>? albumSort,
+    Expression<int>? keysVersion,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1581,6 +1912,14 @@ class TracksCompanion extends UpdateCompanion<Track> {
       if (scanError != null) 'scan_error': scanError,
       if (coverKey != null) 'cover_key': coverKey,
       if (coverScanVersion != null) 'cover_scan_version': coverScanVersion,
+      if (albumArtistKey != null) 'album_artist_key': albumArtistKey,
+      if (albumTitleKey != null) 'album_title_key': albumTitleKey,
+      if (albumDisplayArtist != null)
+        'album_display_artist': albumDisplayArtist,
+      if (titleSort != null) 'title_sort': titleSort,
+      if (artistSort != null) 'artist_sort': artistSort,
+      if (albumSort != null) 'album_sort': albumSort,
+      if (keysVersion != null) 'keys_version': keysVersion,
     });
   }
 
@@ -1612,6 +1951,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Value<String?>? scanError,
     Value<String?>? coverKey,
     Value<int>? coverScanVersion,
+    Value<String?>? albumArtistKey,
+    Value<String?>? albumTitleKey,
+    Value<String?>? albumDisplayArtist,
+    Value<String>? titleSort,
+    Value<String?>? artistSort,
+    Value<String?>? albumSort,
+    Value<int>? keysVersion,
   }) {
     return TracksCompanion(
       id: id ?? this.id,
@@ -1641,6 +1987,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
       scanError: scanError ?? this.scanError,
       coverKey: coverKey ?? this.coverKey,
       coverScanVersion: coverScanVersion ?? this.coverScanVersion,
+      albumArtistKey: albumArtistKey ?? this.albumArtistKey,
+      albumTitleKey: albumTitleKey ?? this.albumTitleKey,
+      albumDisplayArtist: albumDisplayArtist ?? this.albumDisplayArtist,
+      titleSort: titleSort ?? this.titleSort,
+      artistSort: artistSort ?? this.artistSort,
+      albumSort: albumSort ?? this.albumSort,
+      keysVersion: keysVersion ?? this.keysVersion,
     );
   }
 
@@ -1728,6 +2081,27 @@ class TracksCompanion extends UpdateCompanion<Track> {
     if (coverScanVersion.present) {
       map['cover_scan_version'] = Variable<int>(coverScanVersion.value);
     }
+    if (albumArtistKey.present) {
+      map['album_artist_key'] = Variable<String>(albumArtistKey.value);
+    }
+    if (albumTitleKey.present) {
+      map['album_title_key'] = Variable<String>(albumTitleKey.value);
+    }
+    if (albumDisplayArtist.present) {
+      map['album_display_artist'] = Variable<String>(albumDisplayArtist.value);
+    }
+    if (titleSort.present) {
+      map['title_sort'] = Variable<String>(titleSort.value);
+    }
+    if (artistSort.present) {
+      map['artist_sort'] = Variable<String>(artistSort.value);
+    }
+    if (albumSort.present) {
+      map['album_sort'] = Variable<String>(albumSort.value);
+    }
+    if (keysVersion.present) {
+      map['keys_version'] = Variable<int>(keysVersion.value);
+    }
     return map;
   }
 
@@ -1760,7 +2134,289 @@ class TracksCompanion extends UpdateCompanion<Track> {
           ..write('updatedAt: $updatedAt, ')
           ..write('scanError: $scanError, ')
           ..write('coverKey: $coverKey, ')
-          ..write('coverScanVersion: $coverScanVersion')
+          ..write('coverScanVersion: $coverScanVersion, ')
+          ..write('albumArtistKey: $albumArtistKey, ')
+          ..write('albumTitleKey: $albumTitleKey, ')
+          ..write('albumDisplayArtist: $albumDisplayArtist, ')
+          ..write('titleSort: $titleSort, ')
+          ..write('artistSort: $artistSort, ')
+          ..write('albumSort: $albumSort, ')
+          ..write('keysVersion: $keysVersion')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TrackArtistsTable extends TrackArtists
+    with TableInfo<$TrackArtistsTable, TrackArtist> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TrackArtistsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _trackIdMeta = const VerificationMeta(
+    'trackId',
+  );
+  @override
+  late final GeneratedColumn<int> trackId = GeneratedColumn<int>(
+    'track_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tracks (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _artistKeyMeta = const VerificationMeta(
+    'artistKey',
+  );
+  @override
+  late final GeneratedColumn<String> artistKey = GeneratedColumn<String>(
+    'artist_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _artistNameMeta = const VerificationMeta(
+    'artistName',
+  );
+  @override
+  late final GeneratedColumn<String> artistName = GeneratedColumn<String>(
+    'artist_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [trackId, artistKey, artistName];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'track_artists';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TrackArtist> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('track_id')) {
+      context.handle(
+        _trackIdMeta,
+        trackId.isAcceptableOrUnknown(data['track_id']!, _trackIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_trackIdMeta);
+    }
+    if (data.containsKey('artist_key')) {
+      context.handle(
+        _artistKeyMeta,
+        artistKey.isAcceptableOrUnknown(data['artist_key']!, _artistKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_artistKeyMeta);
+    }
+    if (data.containsKey('artist_name')) {
+      context.handle(
+        _artistNameMeta,
+        artistName.isAcceptableOrUnknown(data['artist_name']!, _artistNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_artistNameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {artistKey, trackId};
+  @override
+  TrackArtist map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TrackArtist(
+      trackId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}track_id'],
+      )!,
+      artistKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}artist_key'],
+      )!,
+      artistName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}artist_name'],
+      )!,
+    );
+  }
+
+  @override
+  $TrackArtistsTable createAlias(String alias) {
+    return $TrackArtistsTable(attachedDatabase, alias);
+  }
+}
+
+class TrackArtist extends DataClass implements Insertable<TrackArtist> {
+  final int trackId;
+
+  /// `groupKey` of the name.
+  final String artistKey;
+
+  /// The spelling seen first on this track.
+  final String artistName;
+  const TrackArtist({
+    required this.trackId,
+    required this.artistKey,
+    required this.artistName,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['track_id'] = Variable<int>(trackId);
+    map['artist_key'] = Variable<String>(artistKey);
+    map['artist_name'] = Variable<String>(artistName);
+    return map;
+  }
+
+  TrackArtistsCompanion toCompanion(bool nullToAbsent) {
+    return TrackArtistsCompanion(
+      trackId: Value(trackId),
+      artistKey: Value(artistKey),
+      artistName: Value(artistName),
+    );
+  }
+
+  factory TrackArtist.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TrackArtist(
+      trackId: serializer.fromJson<int>(json['trackId']),
+      artistKey: serializer.fromJson<String>(json['artistKey']),
+      artistName: serializer.fromJson<String>(json['artistName']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'trackId': serializer.toJson<int>(trackId),
+      'artistKey': serializer.toJson<String>(artistKey),
+      'artistName': serializer.toJson<String>(artistName),
+    };
+  }
+
+  TrackArtist copyWith({int? trackId, String? artistKey, String? artistName}) =>
+      TrackArtist(
+        trackId: trackId ?? this.trackId,
+        artistKey: artistKey ?? this.artistKey,
+        artistName: artistName ?? this.artistName,
+      );
+  TrackArtist copyWithCompanion(TrackArtistsCompanion data) {
+    return TrackArtist(
+      trackId: data.trackId.present ? data.trackId.value : this.trackId,
+      artistKey: data.artistKey.present ? data.artistKey.value : this.artistKey,
+      artistName: data.artistName.present
+          ? data.artistName.value
+          : this.artistName,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrackArtist(')
+          ..write('trackId: $trackId, ')
+          ..write('artistKey: $artistKey, ')
+          ..write('artistName: $artistName')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(trackId, artistKey, artistName);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrackArtist &&
+          other.trackId == this.trackId &&
+          other.artistKey == this.artistKey &&
+          other.artistName == this.artistName);
+}
+
+class TrackArtistsCompanion extends UpdateCompanion<TrackArtist> {
+  final Value<int> trackId;
+  final Value<String> artistKey;
+  final Value<String> artistName;
+  final Value<int> rowid;
+  const TrackArtistsCompanion({
+    this.trackId = const Value.absent(),
+    this.artistKey = const Value.absent(),
+    this.artistName = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TrackArtistsCompanion.insert({
+    required int trackId,
+    required String artistKey,
+    required String artistName,
+    this.rowid = const Value.absent(),
+  }) : trackId = Value(trackId),
+       artistKey = Value(artistKey),
+       artistName = Value(artistName);
+  static Insertable<TrackArtist> custom({
+    Expression<int>? trackId,
+    Expression<String>? artistKey,
+    Expression<String>? artistName,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (trackId != null) 'track_id': trackId,
+      if (artistKey != null) 'artist_key': artistKey,
+      if (artistName != null) 'artist_name': artistName,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TrackArtistsCompanion copyWith({
+    Value<int>? trackId,
+    Value<String>? artistKey,
+    Value<String>? artistName,
+    Value<int>? rowid,
+  }) {
+    return TrackArtistsCompanion(
+      trackId: trackId ?? this.trackId,
+      artistKey: artistKey ?? this.artistKey,
+      artistName: artistName ?? this.artistName,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (trackId.present) {
+      map['track_id'] = Variable<int>(trackId.value);
+    }
+    if (artistKey.present) {
+      map['artist_key'] = Variable<String>(artistKey.value);
+    }
+    if (artistName.present) {
+      map['artist_name'] = Variable<String>(artistName.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrackArtistsCompanion(')
+          ..write('trackId: $trackId, ')
+          ..write('artistKey: $artistKey, ')
+          ..write('artistName: $artistName, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -1771,13 +2427,26 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
   $LibraryDatabaseManager get managers => $LibraryDatabaseManager(this);
   late final $LibraryRootsTable libraryRoots = $LibraryRootsTable(this);
   late final $TracksTable tracks = $TracksTable(this);
+  late final $TrackArtistsTable trackArtists = $TrackArtistsTable(this);
   late final Index tracksRoot = Index(
     'tracks_root',
     'CREATE INDEX tracks_root ON tracks (root_id)',
   );
-  late final Index tracksTitle = Index(
-    'tracks_title',
-    'CREATE INDEX tracks_title ON tracks (title COLLATE NOCASE)',
+  late final Index tracksTitleSort = Index(
+    'tracks_title_sort',
+    'CREATE INDEX tracks_title_sort ON tracks (title_sort, id)',
+  );
+  late final Index tracksAlbumKey = Index(
+    'tracks_album_key',
+    'CREATE INDEX tracks_album_key ON tracks (album_artist_key, album_title_key)',
+  );
+  late final Index tracksKeysVersion = Index(
+    'tracks_keys_version',
+    'CREATE INDEX tracks_keys_version ON tracks (keys_version)',
+  );
+  late final Index trackArtistsTrack = Index(
+    'track_artists_track',
+    'CREATE INDEX track_artists_track ON track_artists (track_id)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1786,8 +2455,12 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     libraryRoots,
     tracks,
+    trackArtists,
     tracksRoot,
-    tracksTitle,
+    tracksTitleSort,
+    tracksAlbumKey,
+    tracksKeysVersion,
+    trackArtistsTrack,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1797,6 +2470,13 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('tracks', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tracks',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('track_artists', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2110,6 +2790,13 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   Value<String?> scanError,
   Value<String?> coverKey,
   Value<int> coverScanVersion,
+  Value<String?> albumArtistKey,
+  Value<String?> albumTitleKey,
+  Value<String?> albumDisplayArtist,
+  Value<String> titleSort,
+  Value<String?> artistSort,
+  Value<String?> albumSort,
+  Value<int> keysVersion,
 });
 typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int> id,
@@ -2139,6 +2826,13 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<String?> scanError,
   Value<String?> coverKey,
   Value<int> coverScanVersion,
+  Value<String?> albumArtistKey,
+  Value<String?> albumTitleKey,
+  Value<String?> albumDisplayArtist,
+  Value<String> titleSort,
+  Value<String?> artistSort,
+  Value<String?> albumSort,
+  Value<int> keysVersion,
 });
 
 final class $$TracksTableReferences
@@ -2159,6 +2853,24 @@ final class $$TracksTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$TrackArtistsTable, List<TrackArtist>>
+  _trackArtistsRefsTable(_$LibraryDatabase db) => MultiTypedResultKey.fromTable(
+    db.trackArtists,
+    aliasName: 'tracks__id__track_artists__track_id',
+  );
+
+  $$TrackArtistsTableProcessedTableManager get trackArtistsRefs {
+    final manager = $$TrackArtistsTableTableManager(
+      $_db,
+      $_db.trackArtists,
+    ).filter((f) => f.trackId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_trackArtistsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -2302,6 +3014,41 @@ class $$TracksTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get albumArtistKey => $composableBuilder(
+    column: $table.albumArtistKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumTitleKey => $composableBuilder(
+    column: $table.albumTitleKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumDisplayArtist => $composableBuilder(
+    column: $table.albumDisplayArtist,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titleSort => $composableBuilder(
+    column: $table.titleSort,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get artistSort => $composableBuilder(
+    column: $table.artistSort,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumSort => $composableBuilder(
+    column: $table.albumSort,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get keysVersion => $composableBuilder(
+    column: $table.keysVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$LibraryRootsTableFilterComposer get rootId {
     final $$LibraryRootsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -2323,6 +3070,31 @@ class $$TracksTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> trackArtistsRefs(
+    Expression<bool> Function($$TrackArtistsTableFilterComposer f) f,
+  ) {
+    final $$TrackArtistsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.trackArtists,
+      getReferencedColumn: (t) => t.trackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TrackArtistsTableFilterComposer(
+            $db: $db,
+            $table: $db.trackArtists,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -2465,6 +3237,41 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get albumArtistKey => $composableBuilder(
+    column: $table.albumArtistKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumTitleKey => $composableBuilder(
+    column: $table.albumTitleKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumDisplayArtist => $composableBuilder(
+    column: $table.albumDisplayArtist,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titleSort => $composableBuilder(
+    column: $table.titleSort,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get artistSort => $composableBuilder(
+    column: $table.artistSort,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumSort => $composableBuilder(
+    column: $table.albumSort,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get keysVersion => $composableBuilder(
+    column: $table.keysVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$LibraryRootsTableOrderingComposer get rootId {
     final $$LibraryRootsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2586,6 +3393,37 @@ class $$TracksTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get albumArtistKey => $composableBuilder(
+    column: $table.albumArtistKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumTitleKey => $composableBuilder(
+    column: $table.albumTitleKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumDisplayArtist => $composableBuilder(
+    column: $table.albumDisplayArtist,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get titleSort =>
+      $composableBuilder(column: $table.titleSort, builder: (column) => column);
+
+  GeneratedColumn<String> get artistSort => $composableBuilder(
+    column: $table.artistSort,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumSort =>
+      $composableBuilder(column: $table.albumSort, builder: (column) => column);
+
+  GeneratedColumn<int> get keysVersion => $composableBuilder(
+    column: $table.keysVersion,
+    builder: (column) => column,
+  );
+
   $$LibraryRootsTableAnnotationComposer get rootId {
     final $$LibraryRootsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -2608,6 +3446,31 @@ class $$TracksTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> trackArtistsRefs<T extends Object>(
+    Expression<T> Function($$TrackArtistsTableAnnotationComposer a) f,
+  ) {
+    final $$TrackArtistsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.trackArtists,
+      getReferencedColumn: (t) => t.trackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TrackArtistsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.trackArtists,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TracksTableTableManager
@@ -2623,7 +3486,7 @@ class $$TracksTableTableManager
           $$TracksTableUpdateCompanionBuilder,
           (Track, $$TracksTableReferences),
           Track,
-          PrefetchHooks Function({bool rootId})
+          PrefetchHooks Function({bool rootId, bool trackArtistsRefs})
         > {
   $$TracksTableTableManager(_$LibraryDatabase db, $TracksTable table)
     : super(
@@ -2665,6 +3528,13 @@ class $$TracksTableTableManager
                 Value<String?> scanError = const Value.absent(),
                 Value<String?> coverKey = const Value.absent(),
                 Value<int> coverScanVersion = const Value.absent(),
+                Value<String?> albumArtistKey = const Value.absent(),
+                Value<String?> albumTitleKey = const Value.absent(),
+                Value<String?> albumDisplayArtist = const Value.absent(),
+                Value<String> titleSort = const Value.absent(),
+                Value<String?> artistSort = const Value.absent(),
+                Value<String?> albumSort = const Value.absent(),
+                Value<int> keysVersion = const Value.absent(),
               }) => TracksCompanion(
                 id: id,
                 rootId: rootId,
@@ -2693,6 +3563,13 @@ class $$TracksTableTableManager
                 scanError: scanError,
                 coverKey: coverKey,
                 coverScanVersion: coverScanVersion,
+                albumArtistKey: albumArtistKey,
+                albumTitleKey: albumTitleKey,
+                albumDisplayArtist: albumDisplayArtist,
+                titleSort: titleSort,
+                artistSort: artistSort,
+                albumSort: albumSort,
+                keysVersion: keysVersion,
               ),
           createCompanionCallback:
               ({
@@ -2723,6 +3600,13 @@ class $$TracksTableTableManager
                 Value<String?> scanError = const Value.absent(),
                 Value<String?> coverKey = const Value.absent(),
                 Value<int> coverScanVersion = const Value.absent(),
+                Value<String?> albumArtistKey = const Value.absent(),
+                Value<String?> albumTitleKey = const Value.absent(),
+                Value<String?> albumDisplayArtist = const Value.absent(),
+                Value<String> titleSort = const Value.absent(),
+                Value<String?> artistSort = const Value.absent(),
+                Value<String?> albumSort = const Value.absent(),
+                Value<int> keysVersion = const Value.absent(),
               }) => TracksCompanion.insert(
                 id: id,
                 rootId: rootId,
@@ -2751,6 +3635,13 @@ class $$TracksTableTableManager
                 scanError: scanError,
                 coverKey: coverKey,
                 coverScanVersion: coverScanVersion,
+                albumArtistKey: albumArtistKey,
+                albumTitleKey: albumTitleKey,
+                albumDisplayArtist: albumDisplayArtist,
+                titleSort: titleSort,
+                artistSort: artistSort,
+                albumSort: albumSort,
+                keysVersion: keysVersion,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -2760,10 +3651,10 @@ class $$TracksTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({rootId = false}) {
+          prefetchHooksCallback: ({rootId = false, trackArtistsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [],
+              explicitlyWatchedTables: [if (trackArtistsRefs) db.trackArtists],
               addJoins:
                   <
                     T extends TableManagerState<
@@ -2796,7 +3687,22 @@ class $$TracksTableTableManager
                     return state;
                   },
               getPrefetchedDataCallback: (items) async {
-                return [];
+                return [
+                  if (trackArtistsRefs)
+                    await $_getPrefetchedData<Track, $TracksTable, TrackArtist>(
+                      currentTable: table,
+                      referencedTable: $$TracksTableReferences
+                          ._trackArtistsRefsTable(db),
+                      managerFromTypedResult: (p0) => $$TracksTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).trackArtistsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.trackId == item.id),
+                      typedResults: items,
+                    ),
+                ];
               },
             );
           },
@@ -2816,7 +3722,288 @@ typedef $$TracksTableProcessedTableManager =
       $$TracksTableUpdateCompanionBuilder,
       (Track, $$TracksTableReferences),
       Track,
-      PrefetchHooks Function({bool rootId})
+      PrefetchHooks Function({bool rootId, bool trackArtistsRefs})
+    >;
+typedef $$TrackArtistsTableCreateCompanionBuilder =
+    TrackArtistsCompanion Function({
+      required int trackId,
+      required String artistKey,
+      required String artistName,
+      Value<int> rowid,
+    });
+typedef $$TrackArtistsTableUpdateCompanionBuilder =
+    TrackArtistsCompanion Function({
+      Value<int> trackId,
+      Value<String> artistKey,
+      Value<String> artistName,
+      Value<int> rowid,
+    });
+
+final class $$TrackArtistsTableReferences
+    extends BaseReferences<_$LibraryDatabase, $TrackArtistsTable, TrackArtist> {
+  $$TrackArtistsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TracksTable _trackIdTable(_$LibraryDatabase db) =>
+      db.tracks.createAlias('track_artists__track_id__tracks__id');
+
+  $$TracksTableProcessedTableManager get trackId {
+    final $_column = $_itemColumn<int>('track_id')!;
+
+    final manager = $$TracksTableTableManager(
+      $_db,
+      $_db.tracks,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_trackIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TrackArtistsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $TrackArtistsTable> {
+  $$TrackArtistsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get artistKey => $composableBuilder(
+    column: $table.artistKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get artistName => $composableBuilder(
+    column: $table.artistName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TracksTableFilterComposer get trackId {
+    final $$TracksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableFilterComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TrackArtistsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $TrackArtistsTable> {
+  $$TrackArtistsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get artistKey => $composableBuilder(
+    column: $table.artistKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get artistName => $composableBuilder(
+    column: $table.artistName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TracksTableOrderingComposer get trackId {
+    final $$TracksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableOrderingComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TrackArtistsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $TrackArtistsTable> {
+  $$TrackArtistsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get artistKey =>
+      $composableBuilder(column: $table.artistKey, builder: (column) => column);
+
+  GeneratedColumn<String> get artistName => $composableBuilder(
+    column: $table.artistName,
+    builder: (column) => column,
+  );
+
+  $$TracksTableAnnotationComposer get trackId {
+    final $$TracksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TrackArtistsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $TrackArtistsTable,
+          TrackArtist,
+          $$TrackArtistsTableFilterComposer,
+          $$TrackArtistsTableOrderingComposer,
+          $$TrackArtistsTableAnnotationComposer,
+          $$TrackArtistsTableCreateCompanionBuilder,
+          $$TrackArtistsTableUpdateCompanionBuilder,
+          (TrackArtist, $$TrackArtistsTableReferences),
+          TrackArtist,
+          PrefetchHooks Function({bool trackId})
+        > {
+  $$TrackArtistsTableTableManager(
+    _$LibraryDatabase db,
+    $TrackArtistsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TrackArtistsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TrackArtistsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TrackArtistsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> trackId = const Value.absent(),
+                Value<String> artistKey = const Value.absent(),
+                Value<String> artistName = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TrackArtistsCompanion(
+                trackId: trackId,
+                artistKey: artistKey,
+                artistName: artistName,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int trackId,
+                required String artistKey,
+                required String artistName,
+                Value<int> rowid = const Value.absent(),
+              }) => TrackArtistsCompanion.insert(
+                trackId: trackId,
+                artistKey: artistKey,
+                artistName: artistName,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TrackArtistsTable, TrackArtist>(table),
+                  $$TrackArtistsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({trackId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (trackId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.trackId,
+                        referencedTable: $$TrackArtistsTableReferences
+                            ._trackIdTable(db),
+                        referencedColumn: $$TrackArtistsTableReferences
+                            ._trackIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TrackArtistsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $TrackArtistsTable,
+      TrackArtist,
+      $$TrackArtistsTableFilterComposer,
+      $$TrackArtistsTableOrderingComposer,
+      $$TrackArtistsTableAnnotationComposer,
+      $$TrackArtistsTableCreateCompanionBuilder,
+      $$TrackArtistsTableUpdateCompanionBuilder,
+      (TrackArtist, $$TrackArtistsTableReferences),
+      TrackArtist,
+      PrefetchHooks Function({bool trackId})
     >;
 
 class $LibraryDatabaseManager {
@@ -2826,4 +4013,6 @@ class $LibraryDatabaseManager {
       $$LibraryRootsTableTableManager(_db, _db.libraryRoots);
   $$TracksTableTableManager get tracks =>
       $$TracksTableTableManager(_db, _db.tracks);
+  $$TrackArtistsTableTableManager get trackArtists =>
+      $$TrackArtistsTableTableManager(_db, _db.trackArtists);
 }

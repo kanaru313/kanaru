@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import 'library_database.steps.dart';
+import 'library_migration_v3.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
 
@@ -14,12 +15,12 @@ part 'library_database.g.dart';
 const deleteChunkSize = 500;
 
 /// The music library: source folders and the tracks found in them.
-@DriftDatabase(tables: [LibraryRoots, Tracks])
+@DriftDatabase(tables: [LibraryRoots, Tracks, TrackArtists])
 class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +32,7 @@ class LibraryDatabase extends _$LibraryDatabase {
         await m.addColumn(schema.tracks, schema.tracks.coverKey);
         await m.addColumn(schema.tracks, schema.tracks.coverScanVersion);
       },
+      from2To3: (m, schema) => migrateLibraryToSchema3(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).

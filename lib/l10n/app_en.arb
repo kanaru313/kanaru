@@ -51,6 +51,15 @@
   "libraryNoTracksTitle": "No songs found",
   "libraryNoTracksMessage": "Add music to your folders, then rescan.",
   "libraryRescan": "Rescan",
+  "libraryKeysUpdatingTitle": "Updating library…",
+  "libraryKeysUpdatingMessage": "Sorting your music. Playback keeps working.",
+  "libraryKeysUpdatingProgress": "{done} / {total}",
+  "@libraryKeysUpdatingProgress": {
+    "placeholders": {
+      "done": { "type": "int", "format": "decimalPattern" },
+      "total": { "type": "int", "format": "decimalPattern" }
+    }
+  },
   "libraryScanDiscovering": "Looking for music files…",
   "libraryScanReading": "Reading tags {done} / {total}",
   "@libraryScanReading": {

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../database/library_keys_provider.dart';
 import '../database/library_startup.dart';
 import 'cover_cache_cleanup.dart';
 import 'indexer_providers.dart';
@@ -45,7 +46,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
   bool _rescanRequested = false;
 
   @override
-  IndexerState build() => const IndexerIdle();
+  IndexerState build() {
+    // Starts keying the library in the background; see `LibraryKeys`.
+    ref.read(libraryKeysProvider);
+    return const IndexerIdle();
+  }
 
   /// Starts a scan, or asks the running one for a follow-up pass and returns
   /// its future (which completes after that pass). The extra pass makes sure

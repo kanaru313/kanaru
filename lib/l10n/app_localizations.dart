@@ -362,6 +362,24 @@ abstract class AppLocalizations {
   /// **'Rescan'**
   String get libraryRescan;
 
+  /// No description provided for @libraryKeysUpdatingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating library…'**
+  String get libraryKeysUpdatingTitle;
+
+  /// No description provided for @libraryKeysUpdatingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting your music. Playback keeps working.'**
+  String get libraryKeysUpdatingMessage;
+
+  /// No description provided for @libraryKeysUpdatingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} / {total}'**
+  String libraryKeysUpdatingProgress(int done, int total);
+
   /// No description provided for @libraryScanDiscovering.
   ///
   /// In en, this message translates to:

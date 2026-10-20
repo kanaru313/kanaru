@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_keys_provider.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
@@ -12,6 +13,7 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
+import '../widgets/library_keys_updating.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import 'songs_empty_view.dart';
@@ -88,6 +90,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         kind: SongsEmptyKind.noRoots,
         onChooseFolder: _choosing ? null : _chooseFolder,
       );
+    } else if (!ref.watch(keysReadyProvider)) {
+      body = const LibraryKeysUpdating();
     } else {
       body = SongsListView(scanning: scanning);
     }

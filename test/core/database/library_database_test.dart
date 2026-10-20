@@ -123,16 +123,16 @@ void main() {
   });
 
   group('title order', () {
-    test('the list query is served by the NOCASE title index', () async {
+    test('the title order is served by the title_sort index', () async {
       final plan = await db
           .customSelect(
             'EXPLAIN QUERY PLAN SELECT id, path, title FROM tracks '
-            'ORDER BY title COLLATE NOCASE, id',
+            'ORDER BY title_sort, id',
           )
           .get();
       final details = plan.map((r) => r.read<String>('detail')).join('\n');
 
-      expect(details, contains('tracks_title'));
+      expect(details, contains('tracks_title_sort'));
       expect(details, isNot(contains('TEMP B-TREE')));
     });
 
@@ -157,7 +157,7 @@ void main() {
     final row = await db.select(db.tracks).getSingle();
     expect(row.coverKey, isNull);
     expect(row.coverScanVersion, 0);
-    expect(db.schemaVersion, 2);
+    expect(db.schemaVersion, 3);
   });
 
   group('cover keys', () {
