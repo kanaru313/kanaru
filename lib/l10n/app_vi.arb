@@ -78,6 +78,7 @@
   "libraryRootWriteFailed": "Không lưu được {path}. Xem chi tiết trong nhật ký.",
   "libraryUnexpectedError": "Đã xảy ra lỗi. Xem chi tiết trong nhật ký.",
   "libraryScanFailedDetails": "Xem chi tiết trong nhật ký",
+  "songsTrackGone": "Bài hát này không còn trong thư viện.",
 
   "sortBy": "Sắp xếp:",
   "sortOrder": "Thứ tự:",

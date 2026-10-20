@@ -7,6 +7,7 @@ import 'package:kanaru/core/indexer/tag_reader.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/songs/song_tile.dart';
+import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:material_ui/material_ui.dart';
@@ -244,7 +245,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(h.container.exists(songsListProvider), isFalse);
+      expect(h.container.exists(songIdsProvider), isFalse);
     },
   );
 
@@ -315,25 +316,25 @@ void main() {
 
     testWidgets('no spinner while the re-sorted list loads', (tester) async {
       // Each sort gets a stream the test feeds by hand.
-      final streams = <StreamController<List<TrackListItem>>>[];
+      final streams = <StreamController<SongIds>>[];
       final h = LibraryHarness(
         overrides: [
-          songsListProvider.overrideWith((ref) {
+          songIdsProvider.overrideWith((ref) {
             ref.watch(settingsProvider.select((s) => s.songSort));
-            final controller = StreamController<List<TrackListItem>>();
+            final controller = StreamController<SongIds>();
             ref.onDispose(controller.close);
             streams.add(controller);
             return controller.stream;
           }),
         ],
       );
-      TrackListItem item(String title) =>
-          TrackListItem(id: title.hashCode, path: '/$title', title: title);
-      await tester.runAsync(() => h.db.addRoots(['/m'], now: 1));
+      await insertTracks(tester, h, const [TestTrack('a'), TestTrack('b')]);
+      final ids = (await tester.runAsync(h.db.songIds))!;
+      SongIds sorted(List<int> ids) => SongIds(ids, SongOrder.title, false);
       await h.pump(tester, hasRoots: true);
       goTo(tester, h, '/songs');
       await tester.pump();
-      streams.last.add([item('a'), item('b')]);
+      streams.last.add(sorted(ids));
       await tester.pumpAndSettle();
 
       await chooseSort(tester, 'Title', 'Year');
@@ -342,7 +343,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('a'), findsOneWidget, reason: 'old rows stay');
 
-      streams.last.add([item('b'), item('a')]);
+      streams.last.add(sorted(ids.reversed.toList()));
       await tester.pumpAndSettle();
       expect(
         tester.getTopLeft(find.text('b')).dy,

@@ -114,6 +114,29 @@ void main() {
     });
   });
 
+  group('songsPage and empty library', () {
+    test('no tracks, no ids and no rows', () async {
+      expect(await db.songIds(), isEmpty);
+      expect(await db.songsPage(), isEmpty);
+    });
+
+    test('the page is the start of songs() in every order', () async {
+      await insertMany(30);
+      for (final order in SongOrder.values) {
+        final all = await db.songs(order: order, descending: true);
+        final page = await db.songsPage(
+          order: order,
+          descending: true,
+          limit: 7,
+        );
+        expect(
+          [for (final t in page) t.id],
+          [for (final t in all.take(7)) t.id],
+        );
+      }
+    });
+  });
+
   group('songsByIds', () {
     test(
       'returns rows in the order of the ids and drops missing ids',

@@ -524,6 +524,12 @@ abstract class AppLocalizations {
   /// **'See the log for details'**
   String get libraryScanFailedDetails;
 
+  /// No description provided for @songsTrackGone.
+  ///
+  /// In en, this message translates to:
+  /// **'That song is no longer in the library.'**
+  String get songsTrackGone;
+
   /// No description provided for @sortBy.
   ///
   /// In en, this message translates to:

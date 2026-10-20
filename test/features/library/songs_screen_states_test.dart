@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
-import 'package:kanaru/core/database/library_database.dart' show TrackListItem;
 import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 import 'package:material_ui/material_ui.dart';
@@ -30,10 +29,10 @@ void main() {
   testWidgets(
     'shows a progress indicator, not the empty state, while loading',
     (tester) async {
-      final never = StreamController<List<TrackListItem>>();
+      final never = StreamController<SongIds>();
       addTearDown(never.close);
       final h = LibraryHarness(
-        overrides: [songsListProvider.overrideWith((ref) => never.stream)],
+        overrides: [songIdsProvider.overrideWith((ref) => never.stream)],
       );
       await tester.runAsync(() => h.db.addRoots([h.folder('music')], now: 1));
       await h.pump(tester, hasRoots: true);
@@ -51,8 +50,8 @@ void main() {
   ) async {
     final h = LibraryHarness(
       overrides: [
-        songsListProvider.overrideWith(
-          (ref) => Stream<List<TrackListItem>>.error(StateError('db gone')),
+        songIdsProvider.overrideWith(
+          (ref) => Stream<SongIds>.error(StateError('db gone')),
         ),
       ],
     );

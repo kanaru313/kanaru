@@ -289,6 +289,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryScanFailedDetails => 'Xem chi tiết trong nhật ký';
 
   @override
+  String get songsTrackGone => 'Bài hát này không còn trong thư viện.';
+
+  @override
   String get sortBy => 'Sắp xếp:';
 
   @override

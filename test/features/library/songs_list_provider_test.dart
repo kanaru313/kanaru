@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/library_browse_refresh.dart';
@@ -43,10 +44,10 @@ void main() {
 
     var loads = 0;
     final full = Completer<void>();
-    container.listen(songsListProvider, (_, next) {
+    container.listen(songIdsProvider, (_, next) {
       if (!next.hasValue) return;
       loads++;
-      if (next.requireValue.length == batches && !full.isCompleted) {
+      if (next.requireValue.ids.length == batches && !full.isCompleted) {
         full.complete();
       }
     });
@@ -71,7 +72,10 @@ void main() {
 
     final allowed = (scanTime.inMilliseconds / interval.inMilliseconds).ceil();
     expect(loads, lessThanOrEqualTo(allowed + 1));
-    expect(container.read(songsListProvider).requireValue, hasLength(batches));
+    expect(
+      container.read(songIdsProvider).requireValue.ids,
+      hasLength(batches),
+    );
   });
 
   test('changing the sort reloads at once, not after the interval', () async {
@@ -102,27 +106,30 @@ void main() {
         ),
     ]);
 
-    List<String> titles() => [
-      for (final t in container.read(songsListProvider).requireValue) t.title,
+    Future<List<String>> titles() async => [
+      for (final t in await db.songsByIds(
+        container.read(songIdsProvider).requireValue.ids,
+      ))
+        t.title,
     ];
     final first = Completer<void>();
     final reordered = Completer<void>();
-    container.listen(songsListProvider, (_, next) {
+    container.listen(songIdsProvider, (_, next) {
       if (!next.hasValue) return;
-      final names = [for (final t in next.requireValue) t.title];
+      final sort = next.requireValue;
       if (!first.isCompleted) {
         first.complete();
-      } else if (names.join() == 'cba' && !reordered.isCompleted) {
+      } else if (sort.descending && !reordered.isCompleted) {
         reordered.complete();
       }
     });
     await first.future.timeout(const Duration(seconds: 10));
-    expect(titles(), ['a', 'b', 'c']);
+    expect(await titles(), ['a', 'b', 'c']);
 
     container
         .read(settingsProvider.notifier)
         .setSongSort(const SortChoice(SongSortField.title, descending: true));
     await reordered.future.timeout(const Duration(seconds: 10));
-    expect(titles(), ['c', 'b', 'a']);
+    expect(await titles(), ['c', 'b', 'a']);
   });
 }

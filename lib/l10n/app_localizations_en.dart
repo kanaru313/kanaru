@@ -291,6 +291,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryScanFailedDetails => 'See the log for details';
 
   @override
+  String get songsTrackGone => 'That song is no longer in the library.';
+
+  @override
   String get sortBy => 'Sort by:';
 
   @override

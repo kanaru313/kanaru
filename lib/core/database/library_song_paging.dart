@@ -13,17 +13,34 @@ const _queueChunkSize = 2000;
 /// are read for the ids on screen. Orders match [LibraryBrowseQueries.songs].
 extension LibrarySongPaging on LibraryDatabase {
   /// The ids of every track in the order of `songs(order, descending)`.
+  /// Read as one concatenated value: building a result row per track costs
+  /// more in Dart than the query does.
   Future<List<int>> songIds({
     SongOrder order = SongOrder.title,
     bool descending = false,
   }) async {
-    final rows = await customSelect(
+    final row = await customSelect(
+      'SELECT group_concat(id) AS ids FROM ('
       'SELECT id FROM tracks '
-      'ORDER BY ${songsOrderSql(order, descending: descending)}',
+      'ORDER BY ${songsOrderSql(order, descending: descending)})',
       readsFrom: {tracks},
-    ).get();
-    return [for (final r in rows) r.read<int>('id')];
+    ).getSingle();
+    final ids = row.readNullable<String>('ids');
+    if (ids == null) return const [];
+    return [for (final id in ids.split(',')) int.parse(id)];
   }
+
+  /// The first [limit] rows in the order of `songs(order, descending)`.
+  Future<List<TrackListItem>> songsPage({
+    SongOrder order = SongOrder.title,
+    bool descending = false,
+    int limit = songPageSize,
+  }) => customSelect(
+    'SELECT $songColumns FROM tracks '
+    'ORDER BY ${songsOrderSql(order, descending: descending)} LIMIT ?',
+    variables: [Variable.withInt(limit)],
+    readsFrom: {tracks},
+  ).map(trackListItemFromRow).get();
 
   /// The rows of [ids], in the order of [ids]. Ids without a track are
   /// dropped. Reads [songPageSize] ids per query.

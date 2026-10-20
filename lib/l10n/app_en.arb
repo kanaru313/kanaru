@@ -165,6 +165,7 @@
   },
   "libraryUnexpectedError": "Something went wrong. See the log for details.",
   "libraryScanFailedDetails": "See the log for details",
+  "songsTrackGone": "That song is no longer in the library.",
 
   "sortBy": "Sort by:",
   "sortOrder": "Order:",

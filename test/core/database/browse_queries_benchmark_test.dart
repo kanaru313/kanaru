@@ -162,6 +162,9 @@ void main() {
           'Dart songs ${order.name}': await _median(
             () async => (await db.songs(order: order)).length,
           ),
+          'Dart songs page ${order.name}': await _median(
+            () async => (await db.songsPage(order: order)).length,
+          ),
           'Dart song ids ${order.name} + first page': await _median(() async {
             final ids = await db.songIds(order: order);
             return (await db.songsByIds(ids.take(songPageSize).toList()))
@@ -228,7 +231,7 @@ void main() {
           ).listen((_) => emits++),
           _Listener.songsThrottled => throttledTracksQuery(
             scanDb,
-            () => timed(scanDb.songs),
+            () => timed(scanDb.songIds),
             interval: const Duration(seconds: 2),
           ).listen((_) => emits++),
         };

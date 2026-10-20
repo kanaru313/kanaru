@@ -2,30 +2,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_database.dart' show TrackListItem;
+import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
+import '../../../l10n/l10n.dart';
 import '../play_tracks.dart';
 import '../widgets/library_loading.dart';
 import '../widgets/library_rescan_button.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
+import 'songs_windowed_list.dart';
 
 final _log = Logger('library');
-
-/// Row used to measure the list: two lines and a duration, the tallest a
-/// row gets, so rows without an artist are not squeezed.
-const _prototypeSong = TrackListItem(
-  id: 0,
-  path: '',
-  title: 'Title',
-  artist: 'Artist',
-  durationMs: 1000,
-);
 
 /// The stored songs as a list. Shows a progress indicator until the first
 /// result, the "unavailable" message when reading failed, and the "no songs"
@@ -56,19 +48,47 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
     super.dispose();
   }
 
-  void _play(List<TrackListItem> songs, int index) {
+  /// Plays the list in the sort [songs] was read in, from the track with
+  /// [trackId]. The queue and the start come from one read, so the start is
+  /// the position of that track in that queue even if a scan changed the
+  /// library meanwhile; when the track is gone nothing plays.
+  Future<void> _play(SongIds songs, int trackId) async {
+    final db = ref.read(libraryDatabaseProvider);
+    if (db == null) return;
     final covers = ref.read(coverCacheDirectoryProvider);
-    final tracks = [
-      for (final s in songs)
-        trackFromItem(
-          path: s.path,
-          title: s.title,
-          artist: s.artist,
-          durationMs: s.durationMs,
-          artPath: coverPath(covers, s.coverKey),
-        ),
-    ];
-    playTracks(ref, tracks, index);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      final (items, start) = await db.songQueueFrom(
+        trackId,
+        order: songs.order,
+        descending: songs.descending,
+      );
+      if (!mounted) return;
+      if (start == null) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(l10n.songsTrackGone)));
+        return;
+      }
+      playTracks(ref, [
+        for (final s in items)
+          trackFromItem(
+            path: s.path,
+            title: s.title,
+            artist: s.artist,
+            durationMs: s.durationMs,
+            artPath: coverPath(covers, s.coverKey),
+          ),
+      ], start);
+    } catch (error, stackTrace) {
+      _log.severe('Reading the play queue failed', error, stackTrace);
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.libraryUnexpectedError)),
+        );
+      }
+    }
   }
 
   @override
@@ -84,11 +104,11 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
     ) {
       if (wasScanning == true &&
           !scanning &&
-          (ref.read(songsListProvider).value?.isEmpty ?? false)) {
-        ref.invalidate(songsListProvider);
+          (ref.read(songIdsProvider).value?.ids.isEmpty ?? false)) {
+        ref.invalidate(songIdsProvider);
       }
     });
-    ref.listen(songsListProvider, (previous, next) {
+    ref.listen(songIdsProvider, (previous, next) {
       if (next.hasError && !(previous?.hasError ?? false)) {
         _log.severe('Reading the songs failed', next.error, next.stackTrace);
       }
@@ -98,29 +118,43 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
       }
     });
 
-    final async = ref.watch(songsListProvider);
+    final async = ref.watch(songIdsProvider);
     return async.when(
       skipLoadingOnReload: true,
-      loading: () => const LibraryLoading(),
+      loading: _firstRows,
       error: (error, stackTrace) =>
           const SongsEmptyView(kind: SongsEmptyKind.unavailable),
       data: (songs) {
-        if (songs.isEmpty) {
+        if (songs.ids.isEmpty) {
           // Still reloading after a scan: rows may be about to arrive.
           return widget.scanning || async.isLoading
               ? const SizedBox.shrink()
               : const SongsEmptyView(kind: SongsEmptyKind.noTracks);
         }
-        return ListView.builder(
+        return SongsWindowedList(
+          songs: songs,
           controller: _scroll,
-          padding: const EdgeInsets.only(bottom: libraryRescanClearance),
-          // Measured from a row, so larger text sizes do not clip rows.
-          prototypeItem: SongTile(song: _prototypeSong, onTap: () {}),
-          itemCount: songs.length,
-          itemBuilder: (context, i) =>
-              SongTile(song: songs[i], onTap: () => _play(songs, i)),
+          seed: ref.read(songsFirstPageProvider).value ?? const [],
+          onTap: (id) => _play(songs, id),
         );
       },
+    );
+  }
+
+  /// While the ids of a large library are read: its first page, so rows show
+  /// at once. Tapping one plays in the saved sort.
+  Widget _firstRows() {
+    final rows = ref.watch(songsFirstPageProvider).value;
+    if (rows == null || rows.isEmpty) return const LibraryLoading();
+    final sort = ref.read(settingsProvider).songSort;
+    final songs = SongIds(const [], songOrderFor(sort.field), sort.descending);
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+      prototypeItem: SongTile(song: prototypeSong, onTap: () {}),
+      itemCount: rows.length,
+      itemBuilder: (context, i) =>
+          SongTile(song: rows[i], onTap: () => _play(songs, rows[i].id)),
     );
   }
 }
