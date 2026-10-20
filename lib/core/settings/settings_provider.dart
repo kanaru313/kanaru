@@ -57,6 +57,18 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setTitleBar(TitleBarPreference titleBar) =>
       _update(state.copyWith(titleBar: titleBar));
 
+  void setSongSort(SortChoice<SongSortField> sort) =>
+      _update(state.copyWith(songSort: sort));
+
+  void setAlbumSort(SortChoice<AlbumSortField> sort) =>
+      _update(state.copyWith(albumSort: sort));
+
+  void setArtistSort(SortChoice<ArtistSortField> sort) =>
+      _update(state.copyWith(artistSort: sort));
+
+  void setAlbumsView(AlbumsView view) =>
+      _update(state.copyWith(albumsView: view));
+
   /// Completes when every change made so far is on disk.
   @visibleForTesting
   Future<void> flush() => _writes;

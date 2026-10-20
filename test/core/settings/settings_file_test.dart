@@ -144,6 +144,39 @@ void main() {
     expect(json['language'], 'vi');
   });
 
+  test('an old file loads sort defaults and a save keeps the rest', () async {
+    writeFile(
+      path,
+      '{"version": 1, "theme": "dark", "titleBar": "none", "future": 1, '
+      '"librarySort": {"folders": {"by": "path", "descending": true}}}',
+    );
+    final file = SettingsFile(path);
+    final loaded = file.load();
+    expect(loaded.songSort, const SortChoice(SongSortField.title));
+    expect(loaded.albumsView, AlbumsView.grid);
+
+    await file.save(
+      loaded.copyWith(
+        albumSort: const SortChoice(AlbumSortField.year, descending: true),
+      ),
+    );
+
+    final json = jsonDecode(File(path).readAsStringSync()) as Map;
+    expect(json['theme'], 'dark');
+    expect(json['titleBar'], 'none');
+    expect(json['future'], 1);
+    expect(json['librarySort'], {
+      'folders': {'by': 'path', 'descending': true},
+      'songs': {'by': 'title', 'descending': false},
+      'albums': {'by': 'year', 'descending': true},
+      'artists': {'by': 'name', 'descending': false},
+    });
+    expect(
+      SettingsFile(path).load().albumSort,
+      const SortChoice(AlbumSortField.year, descending: true),
+    );
+  });
+
   group('symlink', () {
     late String target;
 

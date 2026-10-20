@@ -4,6 +4,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/database/library_startup.dart';
 import '../features/home/home_screen.dart';
+import '../features/library/albums/album_screen.dart';
+import '../features/library/albums/albums_screen.dart';
+import '../features/library/artists/artist_screen.dart';
+import '../features/library/artists/artists_screen.dart';
 import '../features/library/library_section_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
@@ -44,6 +48,32 @@ final routerProvider = Provider<GoRouter>((ref) {
                   path: destination.path,
                   builder: (context, state) =>
                       _buildPage(context, state, destination),
+                  routes: switch (destination) {
+                    AppDestination.albums => [
+                      GoRoute(
+                        path: ':key',
+                        builder: (context, state) =>
+                            AlbumScreen(routeKey: state.pathParameters['key']!),
+                      ),
+                    ],
+                    AppDestination.artists => [
+                      GoRoute(
+                        path: ':key',
+                        builder: (context, state) => ArtistScreen(
+                          routeKey: state.pathParameters['key']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'album/:albumKey',
+                            builder: (context, state) => AlbumScreen(
+                              routeKey: state.pathParameters['albumKey']!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    _ => const [],
+                  },
                 ),
               ],
             ),
@@ -71,8 +101,8 @@ Widget _buildPage(
   return switch (destination) {
     AppDestination.home => const HomeScreen(),
     AppDestination.songs => const SongsScreen(),
-    AppDestination.albums ||
-    AppDestination.artists ||
+    AppDestination.albums => const AlbumsScreen(),
+    AppDestination.artists => const ArtistsScreen(),
     AppDestination.folders => section(l10n.libraryEmptyMessage),
     AppDestination.favorites => section(
       l10n.favoritesEmptyMessage,

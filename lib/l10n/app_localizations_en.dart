@@ -250,6 +250,130 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryScanFailedDetails => 'See the log for details';
 
   @override
+  String get sortTooltip => 'Sort';
+
+  @override
+  String get sortAscending => 'Ascending';
+
+  @override
+  String get sortDescending => 'Descending';
+
+  @override
+  String get sortTitle => 'Title';
+
+  @override
+  String get sortArtist => 'Artist';
+
+  @override
+  String get sortAlbum => 'Album';
+
+  @override
+  String get sortYear => 'Year';
+
+  @override
+  String get sortDateAdded => 'Date added';
+
+  @override
+  String get sortDuration => 'Duration';
+
+  @override
+  String get sortName => 'Name';
+
+  @override
+  String get sortSongCount => 'Songs';
+
+  @override
+  String get sortAlbumCount => 'Albums';
+
+  @override
+  String get albumsGridView => 'Grid';
+
+  @override
+  String get albumsListView => 'List';
+
+  @override
+  String get albumsNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get albumsEmptyTitle => 'No albums yet';
+
+  @override
+  String get albumsEmptyMessage =>
+      'Songs with an album tag show up here as albums.';
+
+  @override
+  String get albumsUnknownArtist => 'Unknown artist';
+
+  @override
+  String albumsSongCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get albumsPlay => 'Play';
+
+  @override
+  String albumsDisc(int number) {
+    return 'Disc $number';
+  }
+
+  @override
+  String get albumsUnknownDisc => 'Unknown disc';
+
+  @override
+  String get albumsNotFound => 'Album not found';
+
+  @override
+  String get albumsNotFoundMessage =>
+      'It may have been removed or renamed by a rescan.';
+
+  @override
+  String get artistsNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get artistsEmptyTitle => 'No artists yet';
+
+  @override
+  String get artistsEmptyMessage =>
+      'Songs with an artist tag show up here by artist.';
+
+  @override
+  String artistsAlbumCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count albums',
+      one: '1 album',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get artistsAlbums => 'Albums';
+
+  @override
+  String get artistsSongs => 'Songs';
+
+  @override
+  String get artistsAppearsOn => 'Appears on';
+
+  @override
+  String get artistsPlay => 'Play';
+
+  @override
+  String get artistsNotFound => 'Artist not found';
+
+  @override
+  String get artistsNotFoundMessage =>
+      'Their songs may have been removed or retagged.';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override

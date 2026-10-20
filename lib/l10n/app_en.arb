@@ -139,6 +139,58 @@
   "libraryUnexpectedError": "Something went wrong. See the log for details.",
   "libraryScanFailedDetails": "See the log for details",
 
+  "sortTooltip": "Sort",
+  "sortAscending": "Ascending",
+  "sortDescending": "Descending",
+  "sortTitle": "Title",
+  "sortArtist": "Artist",
+  "sortAlbum": "Album",
+  "sortYear": "Year",
+  "sortDateAdded": "Date added",
+  "sortDuration": "Duration",
+  "sortName": "Name",
+  "sortSongCount": "Songs",
+  "sortAlbumCount": "Albums",
+
+  "albumsGridView": "Grid",
+  "albumsListView": "List",
+  "albumsNoRootsMessage": "Add a music folder in Songs.",
+  "albumsEmptyTitle": "No albums yet",
+  "albumsEmptyMessage": "Songs with an album tag show up here as albums.",
+  "albumsUnknownArtist": "Unknown artist",
+  "albumsSongCount": "{count, plural, =1{1 song} other{{count} songs}}",
+  "@albumsSongCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "albumsPlay": "Play",
+  "albumsDisc": "Disc {number}",
+  "@albumsDisc": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "albumsUnknownDisc": "Unknown disc",
+  "albumsNotFound": "Album not found",
+  "albumsNotFoundMessage": "It may have been removed or renamed by a rescan.",
+
+  "artistsNoRootsMessage": "Add a music folder in Songs.",
+  "artistsEmptyTitle": "No artists yet",
+  "artistsEmptyMessage": "Songs with an artist tag show up here by artist.",
+  "artistsAlbumCount": "{count, plural, =1{1 album} other{{count} albums}}",
+  "@artistsAlbumCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "artistsAlbums": "Albums",
+  "artistsSongs": "Songs",
+  "artistsAppearsOn": "Appears on",
+  "artistsPlay": "Play",
+  "artistsNotFound": "Artist not found",
+  "artistsNotFoundMessage": "Their songs may have been removed or retagged.",
+
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 

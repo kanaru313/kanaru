@@ -80,6 +80,31 @@ void main() {
     expect(File(path).existsSync(), isFalse);
   });
 
+  test('library sort setters save, and the same value does not', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+    var notified = 0;
+    container.listen(settingsProvider, (_, _) => notified++);
+
+    notifier.setSongSort(const SortChoice(SongSortField.year));
+    notifier.setAlbumSort(const SortChoice(AlbumSortField.artist));
+    notifier.setArtistSort(
+      const SortChoice(ArtistSortField.songCount, descending: true),
+    );
+    notifier.setAlbumsView(AlbumsView.list);
+    await notifier.flush();
+    expect(notified, 4);
+    expect(SettingsFile(path).load(), container.read(settingsProvider));
+    expect(stored()['albumsView'], 'list');
+
+    File(path).deleteSync();
+    notifier.setSongSort(const SortChoice(SongSortField.year));
+    notifier.setAlbumsView(AlbumsView.list);
+    await notifier.flush();
+    expect(notified, 4);
+    expect(File(path).existsSync(), isFalse);
+  });
+
   test('several changes leave the file equal to the state', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

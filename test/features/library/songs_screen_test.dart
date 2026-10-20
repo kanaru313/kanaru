@@ -1,12 +1,18 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/core/indexer/tag_reader.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/library/songs/song_tile.dart';
+import 'package:kanaru/features/library/songs/songs_list_provider.dart';
+import 'package:kanaru/core/database/library_database.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/fake_tag_reader.dart';
+import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 
 /// A tag reader that waits for [release] so a test can look at a scan in
@@ -189,5 +195,108 @@ void main() {
 
     expect(find.text('No songs found'), findsOneWidget);
     expect(rescan(), findsOneWidget);
+  });
+
+  group('sort', () {
+    /// 40 songs: titles s00..s39, durations falling as titles rise.
+    final many = [
+      for (var i = 0; i < 40; i++)
+        TestTrack(
+          's${i.toString().padLeft(2, '0')}',
+          durationMs: (40 - i) * 1000,
+        ),
+    ];
+
+    Future<void> chooseSort(
+      WidgetTester tester,
+      String current,
+      String item,
+    ) async {
+      await tester.tap(find.widgetWithText(TextButton, current));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(MenuItemButton, item));
+    }
+
+    testWidgets(
+      're-sorts, keeps rows meanwhile, saves and plays the new order',
+      (tester) async {
+        final h = LibraryHarness();
+        await openWithTracks(tester, h, many, location: '/songs');
+        expect(find.text('s00'), findsOneWidget);
+
+        await tester.drag(find.text('s05'), const Offset(0, -600));
+        await tester.pumpAndSettle();
+        expect(find.text('s00'), findsNothing);
+
+        await chooseSort(tester, 'Title', 'Duration');
+        await tester.pump();
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.byType(SongTile), findsWidgets);
+        await tester.pumpAndSettle();
+
+        expect(
+          h.container.read(settingsProvider).songSort,
+          const SortChoice(SongSortField.duration),
+        );
+        // Shortest first, scrolled back to the top.
+        expect(find.text('s39'), findsOneWidget);
+        expect(
+          tester.getTopLeft(find.text('s39')).dy,
+          lessThan(tester.getTopLeft(find.text('s38')).dy),
+        );
+
+        await chooseSort(tester, 'Duration', 'Descending');
+        await tester.pumpAndSettle();
+        expect(find.text('s00'), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+
+        await tester.tap(find.text('s01'));
+        await tester.pump();
+        final queue = h.container.read(playerServiceProvider).queue;
+        expect(queue.original.take(3).map((t) => t.title), [
+          's00',
+          's01',
+          's02',
+        ]);
+        expect(queue.current?.title, 's01');
+      },
+    );
+
+    testWidgets('no spinner while the re-sorted list loads', (tester) async {
+      // Each sort gets a stream the test feeds by hand.
+      final streams = <StreamController<List<TrackListItem>>>[];
+      final h = LibraryHarness(
+        overrides: [
+          songsListProvider.overrideWith((ref) {
+            ref.watch(settingsProvider.select((s) => s.songSort));
+            final controller = StreamController<List<TrackListItem>>();
+            ref.onDispose(controller.close);
+            streams.add(controller);
+            return controller.stream;
+          }),
+        ],
+      );
+      TrackListItem item(String title) =>
+          TrackListItem(id: title.hashCode, path: '/$title', title: title);
+      await tester.runAsync(() => h.db.addRoots(['/m'], now: 1));
+      await h.pump(tester, hasRoots: true);
+      goTo(tester, h, '/songs');
+      await tester.pump();
+      streams.last.add([item('a'), item('b')]);
+      await tester.pumpAndSettle();
+
+      await chooseSort(tester, 'Title', 'Year');
+      await tester.pumpAndSettle();
+      expect(streams, hasLength(2));
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('a'), findsOneWidget, reason: 'old rows stay');
+
+      streams.last.add([item('b'), item('a')]);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.text('b')).dy,
+        lessThan(tester.getTopLeft(find.text('a')).dy),
+      );
+    });
   });
 }
