@@ -8,6 +8,7 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
+import '../albums/albums_provider.dart';
 import '../library_detail_body.dart';
 import '../library_route_keys.dart';
 import '../play_tracks.dart';
@@ -52,6 +53,10 @@ class _ArtistPage extends ConsumerWidget {
     final l10n = context.l10n;
     final songs = sections.songs;
     final queue = [for (final t in songs) trackFromBrowse(t)];
+    final covers = ref.watch(albumCoverKeysProvider);
+    List<AlbumTileData> withCovers(List<AlbumTileData> albums) => [
+      for (final album in albums) album.withCoverKey(covers[album.key]),
+    ];
     void openAlbum(AlbumTileData album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
     Widget heading(String text) => SliverToBoxAdapter(
@@ -109,7 +114,10 @@ class _ArtistPage extends ConsumerWidget {
         ),
         if (sections.albums.isNotEmpty) ...[
           heading(l10n.artistsAlbums),
-          SliverAlbumGrid(albums: sections.albums, onTap: openAlbum),
+          SliverAlbumGrid(
+            albums: withCovers(sections.albums),
+            onTap: openAlbum,
+          ),
         ],
         heading(l10n.artistsSongs),
         SliverList.builder(
@@ -122,13 +130,17 @@ class _ArtistPage extends ConsumerWidget {
               artist: songs[i].artist,
               album: songs[i].album,
               durationMs: songs[i].durationMs,
+              coverKey: songs[i].coverKey,
             ),
             onTap: () => playTracks(ref, queue, i),
           ),
         ),
         if (sections.appearsOn.isNotEmpty) ...[
           heading(l10n.artistsAppearsOn),
-          SliverAlbumGrid(albums: sections.appearsOn, onTap: openAlbum),
+          SliverAlbumGrid(
+            albums: withCovers(sections.appearsOn),
+            onTap: openAlbum,
+          ),
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],

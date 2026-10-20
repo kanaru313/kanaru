@@ -27,10 +27,14 @@ class LibraryHarness {
     FakeTagReader? reader,
     this.overrides = const [],
     this.picker,
+    this.coverCacheDirectory,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
   final String? suggestion;
+
+  /// The cover thumbnail folder; covers are off without one.
+  final String? coverCacheDirectory;
 
   /// Extra provider overrides, applied last.
   final List<Override> overrides;
@@ -68,6 +72,7 @@ class LibraryHarness {
         ...LibraryStartup(
           db: hasDatabase ? db : null,
           hasRoots: hasRoots,
+          coverCacheDirectory: coverCacheDirectory,
         ).overrides,
         tagReaderProvider.overrideWithValue(reader),
         audioBackendProvider.overrideWithValue(backend),

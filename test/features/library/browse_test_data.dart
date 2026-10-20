@@ -18,6 +18,7 @@ class TestTrack {
     this.track,
     this.durationMs = 1000,
     this.addedAt = 1,
+    this.coverKey,
   });
 
   final String title;
@@ -29,6 +30,7 @@ class TestTrack {
   final int? track;
   final int? durationMs;
   final int addedAt;
+  final String? coverKey;
 }
 
 /// Stores [tracks] under the root `/m` (added if missing), with paths
@@ -61,6 +63,7 @@ Future<void> insertTracks(
           durationMs: Value(t.durationMs),
           addedAt: t.addedAt,
           updatedAt: t.addedAt,
+          coverKey: Value(t.coverKey),
         ),
     ]);
   });

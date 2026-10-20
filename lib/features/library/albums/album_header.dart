@@ -15,6 +15,7 @@ class AlbumInfo {
     this.artist,
     this.year,
     this.durationMs,
+    this.coverKey,
   });
 
   factory AlbumInfo.fromTracks(List<BrowseTrack> tracks) {
@@ -38,6 +39,7 @@ class AlbumInfo {
       year: years.isEmpty ? null : years.reduce((a, b) => a > b ? a : b),
       trackCount: tracks.length,
       durationMs: durations.isEmpty ? null : durations.reduce((a, b) => a + b),
+      coverKey: smallest(tracks.map((t) => t.coverKey)),
     );
   }
 
@@ -46,6 +48,10 @@ class AlbumInfo {
   final int? year;
   final int trackCount;
   final int? durationMs;
+
+  /// The smallest cover key among the tracks: over the whole album's tracks
+  /// this is the album's cover, as in the albums query.
+  final String? coverKey;
 }
 
 /// Artwork, title, artist, "year · N songs · duration" and a Play button.
@@ -82,7 +88,7 @@ class AlbumHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          AlbumArtwork(albumKey: albumKey, size: 160),
+          AlbumArtwork(albumKey: albumKey, coverKey: info.coverKey, size: 160),
           const SizedBox(width: 24),
           Expanded(
             child: Column(

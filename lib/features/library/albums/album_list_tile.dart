@@ -22,7 +22,11 @@ class AlbumListTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
-      leading: AlbumArtwork(albumKey: album.key, size: 48),
+      leading: AlbumArtwork(
+        albumKey: album.key,
+        coverKey: album.coverKey,
+        size: 48,
+      ),
       title: Text(album.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(details, maxLines: 1, overflow: TextOverflow.ellipsis),
       onTap: onTap,
