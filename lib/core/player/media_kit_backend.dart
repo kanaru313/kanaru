@@ -39,6 +39,16 @@ class MediaKitBackend implements AudioBackend {
             _log.warning('Could not enable gapless audio', error);
           }),
     );
+    // media_kit turns on mpv's disk cache, but libmpv runs with config=no and
+    // has no cache directory, so every opened file logged "Failed to create
+    // file cache". Audio fits the RAM cache; remote streams will be cached by
+    // the local proxy, not by mpv.
+    unawaited(
+      _serial(() => _native.setProperty('cache-on-disk', 'no'))
+          .catchError((Object error) {
+            _log.warning('Could not turn off the mpv disk cache', error);
+          }),
+    );
     // Through the chain, so the end of the last track is not reported after
     // the user picked another one.
     _forwardCompleted = _player.stream.completed.listen((done) {
