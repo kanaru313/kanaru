@@ -3,8 +3,9 @@
 const albumArtistKeySeparator = '; ';
 
 /// Identifies an album while there is no albums table: the keys of its album
-/// artists (else of the first track artist) and its lower-cased title, made
-/// by the rules in `artist_names.dart`, each key cut to 256 characters.
+/// artists (else of the first track artist) and the group key of its title
+/// (`groupKey` in `text_keys.dart`: NFC, lower case, accents kept), each key
+/// cut to 256 characters.
 class AlbumKey {
   const AlbumKey(this.artistKey, this.titleKey);
 
@@ -41,6 +42,7 @@ class AlbumSummary {
     this.year,
     this.durationMs,
     this.coverKey,
+    this.titleSort,
   });
 
   final AlbumKey key;
@@ -64,6 +66,11 @@ class AlbumSummary {
   /// The smallest cover key among its tracks, so the choice is stable; null
   /// when none of its tracks has a cover.
   final String? coverKey;
+
+  /// Order of the title: the smallest stored album sort key among its
+  /// tracks (`artistSortKey`, without a leading "the "). Null for a row not
+  /// read from the database; then sort by `artistSortKey(title)`.
+  final String? titleSort;
 }
 
 /// One artist of the Artists list, from the `track_artists` rows: the key

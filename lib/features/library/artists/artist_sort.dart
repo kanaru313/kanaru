@@ -1,18 +1,20 @@
+import '../../../core/database/text_keys.dart';
 import '../../../core/settings/library_sort.dart';
 import '../sort_compare.dart';
 import 'artist_summaries.dart';
 
-/// An artist with the name lower-cased once, not on every comparison.
+/// An artist with the sort key of the name made once, not on every comparison.
 typedef _Keyed = ({ArtistSummary artist, String name});
 
 /// [artists] in the order of [sort]. Ties fall back to the name ascending
-/// (ignoring case), then to the key.
+/// (by `artistSortKey`: ignoring case, accents and a leading "The"), then to
+/// the key.
 List<ArtistSummary> sortArtists(
   List<ArtistSummary> artists,
   SortChoice<ArtistSortField> sort,
 ) {
   final keyed = <_Keyed>[
-    for (final a in artists) (artist: a, name: a.name.toLowerCase()),
+    for (final a in artists) (artist: a, name: artistSortKey(a.name)),
   ]..sort((a, b) => _compare(a, b, sort));
   return [for (final k in keyed) k.artist];
 }

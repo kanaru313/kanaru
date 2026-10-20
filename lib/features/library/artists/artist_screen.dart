@@ -10,12 +10,12 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
-import '../albums/albums_provider.dart';
 import '../library_detail_body.dart';
 import '../library_route_keys.dart';
 import '../play_tracks.dart';
 import '../songs/song_tile.dart';
 import '../widgets/artist_avatar.dart';
+import 'artist_albums_provider.dart';
 import 'artist_page_sections.dart';
 import 'artist_tracks_provider.dart';
 
@@ -35,33 +35,29 @@ class ArtistScreen extends ConsumerWidget {
       tracks: artistKey == null ? null : artistTracksProvider(artistKey),
       what: 'the artist',
       notFound: const _ArtistNotFound(),
-      builder: (tracks) => _ArtistPage(
-        artistKey: artistKey!,
-        sections: ArtistPageSections.fromTracks(artistKey, tracks),
-      ),
+      builder: (tracks) => _ArtistPage(artistKey: artistKey!, tracks: tracks),
     );
   }
 }
 
 class _ArtistPage extends ConsumerWidget {
-  const _ArtistPage({required this.artistKey, required this.sections});
+  const _ArtistPage({required this.artistKey, required this.tracks});
 
   final String artistKey;
-  final ArtistPageSections sections;
+  final List<BrowseTrack> tracks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    // Album tiles come from the albums query rows; they show once loaded.
+    final albums = ref.watch(artistAlbumsProvider(artistKey)).value ?? const [];
+    final sections = ArtistPageSections.fromTracks(artistKey, tracks, albums);
     final songs = sections.songs;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     final queue = [
       for (final t in songs)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
-    ];
-    final covers = ref.watch(albumCoverKeysProvider);
-    List<AlbumTileData> withCovers(List<AlbumTileData> albums) => [
-      for (final album in albums) album.withCoverKey(covers[album.key]),
     ];
     void openAlbum(AlbumTileData album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
@@ -120,10 +116,7 @@ class _ArtistPage extends ConsumerWidget {
         ),
         if (sections.albums.isNotEmpty) ...[
           heading(l10n.artistsAlbums),
-          SliverAlbumGrid(
-            albums: withCovers(sections.albums),
-            onTap: openAlbum,
-          ),
+          SliverAlbumGrid(albums: sections.albums, onTap: openAlbum),
         ],
         heading(l10n.artistsSongs),
         SliverList.builder(
@@ -143,10 +136,7 @@ class _ArtistPage extends ConsumerWidget {
         ),
         if (sections.appearsOn.isNotEmpty) ...[
           heading(l10n.artistsAppearsOn),
-          SliverAlbumGrid(
-            albums: withCovers(sections.appearsOn),
-            onTap: openAlbum,
-          ),
+          SliverAlbumGrid(albums: sections.appearsOn, onTap: openAlbum),
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],

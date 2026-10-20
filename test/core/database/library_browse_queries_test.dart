@@ -55,6 +55,40 @@ void main() {
     for (final a in await db.albums()) a.key: a,
   };
 
+  group('album rows', () {
+    setUp(() async {
+      await db.upsertTracks([
+        row(artist: 'Ann; Bob', album: 'The Duo', year: 1999, coverKey: 'b'),
+        row(artist: 'Ann', album: 'The Duo', year: 2003, coverKey: 'a'),
+        row(artist: 'Bob', album: 'Other'),
+      ]);
+    });
+
+    test('one album and the albums of an artist share the list rows', () async {
+      final list = {for (final a in await db.albums()) a.key: a};
+      const duo = AlbumKey('ann', 'the duo');
+
+      final one = (await db.album(duo))!;
+      expect(one.title, 'The Duo');
+      expect(one.artist, 'Ann');
+      expect(one.year, 2003);
+      expect(one.trackCount, 2);
+      expect(one.coverKey, 'a');
+      expect(one.titleSort, 'duo');
+      expect(one.titleSort, list[duo]!.titleSort);
+
+      // Bob's tracks reach both albums; each row counts every track.
+      final bobs = await db.artistAlbums('bob');
+      expect(
+        {for (final a in bobs) a.key},
+        {duo, const AlbumKey('bob', 'other')},
+      );
+      expect(bobs.firstWhere((a) => a.key == duo).trackCount, 2);
+      expect(await db.album(const AlbumKey('nobody', 'nothing')), isNull);
+      expect(await db.artistAlbums('nobody'), isEmpty);
+    });
+  });
+
   group('albums', () {
     test('keys by album artist, else the first track artist', () async {
       await db.upsertTracks([
@@ -506,6 +540,8 @@ void main() {
     test('no browse query calls a custom function', () {
       for (final sql in [
         albumsSql,
+        albumSql,
+        artistAlbumsSql,
         artistCreditsSql,
         albumTracksSql,
         artistTracksSql,

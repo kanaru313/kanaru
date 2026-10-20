@@ -6,16 +6,42 @@ import 'library_database.dart';
 // the `track_artists` rows, so grouping and ordering are index work in SQLite
 // and no Dart code runs per track.
 
-/// Albums: one row per (album artist key, album title key). The shown title,
-/// artist and year are aggregates over the stored columns, so the list and
-/// the album page agree whichever track order the database returns.
-const albumsSql = '''
-SELECT album_artist_key AS ak, album_title_key AS tk, min(album) AS title,
+/// The columns of an [AlbumSummary]: the shown title, artist and year are
+/// aggregates over the stored columns, so the list, the album page and the
+/// artist page agree whichever track order the database returns.
+const _albumColumns = '''
+album_artist_key AS ak, album_title_key AS tk, min(album) AS title,
   min(album_display_artist) AS artist, max(year) AS year, count(*) AS n,
   sum(duration_ms) AS duration, max(added_at) AS added,
-  min(cover_key) AS cover
+  min(cover_key) AS cover, min(album_sort) AS title_sort''';
+
+const _albumGroup = 'GROUP BY album_artist_key, album_title_key';
+
+/// Albums: one row per (album artist key, album title key).
+const albumsSql =
+    '''
+SELECT $_albumColumns
 FROM tracks WHERE album_title_key IS NOT NULL
-GROUP BY album_artist_key, album_title_key''';
+$_albumGroup''';
+
+/// `?1`, `?2`: the parts of an [AlbumKey]. At most one row.
+const albumSql =
+    '''
+SELECT $_albumColumns
+FROM tracks WHERE album_artist_key = ?1 AND album_title_key = ?2
+$_albumGroup''';
+
+/// `?1`: an artist key. The albums holding at least one of their tracks,
+/// each aggregated over all its tracks (not only the artist's).
+const artistAlbumsSql =
+    '''
+SELECT $_albumColumns
+FROM tracks WHERE album_title_key IS NOT NULL AND
+  (album_artist_key, album_title_key) IN (
+    SELECT t.album_artist_key, t.album_title_key
+    FROM track_artists AS ta JOIN tracks AS t ON t.id = ta.track_id
+    WHERE ta.artist_key = ?1 AND t.album_title_key IS NOT NULL)
+$_albumGroup''';
 
 /// One row per artist key, from `track_artists`: the shown spelling (the
 /// smallest), the tracks crediting it and the distinct albums they are on.
@@ -82,18 +108,18 @@ String songsOrderSql(SongOrder order, {bool descending = false}) {
 /// them in `throttledTracksQuery`.
 extension LibraryBrowseQueries on LibraryDatabase {
   /// Every album with a title, in no particular order.
-  Future<List<AlbumSummary>> albums() => _query(albumsSql, const [], (row) {
-    return AlbumSummary(
-      key: AlbumKey(row.read<String>('ak'), row.read<String>('tk')),
-      title: row.read<String>('title'),
-      artist: row.readNullable<String>('artist'),
-      year: row.readNullable<int>('year'),
-      trackCount: row.read<int>('n'),
-      durationMs: row.readNullable<int>('duration'),
-      addedAt: row.read<int>('added'),
-      coverKey: row.readNullable<String>('cover'),
-    );
-  }).get();
+  Future<List<AlbumSummary>> albums() =>
+      _query(albumsSql, const [], _albumSummary).get();
+
+  /// One album by key; null when it has no tracks.
+  Future<AlbumSummary?> album(AlbumKey key) => _query(albumSql, [
+    Variable(key.artistKey),
+    Variable(key.titleKey),
+  ], _albumSummary).getSingleOrNull();
+
+  /// The albums with a track crediting [artistKey], in no particular order.
+  Future<List<AlbumSummary>> artistAlbums(String artistKey) =>
+      _query(artistAlbumsSql, [Variable(artistKey)], _albumSummary).get();
 
   /// One row per artist key (see `artistKey` in `artist_names.dart`).
   Future<List<ArtistCredit>> artistCredits() =>
@@ -161,3 +187,15 @@ BrowseTrack _browseTrack(QueryRow row) {
     coverKey: row.readNullable<String>('cover_key'),
   );
 }
+
+AlbumSummary _albumSummary(QueryRow row) => AlbumSummary(
+  key: AlbumKey(row.read<String>('ak'), row.read<String>('tk')),
+  title: row.read<String>('title'),
+  artist: row.readNullable<String>('artist'),
+  year: row.readNullable<int>('year'),
+  trackCount: row.read<int>('n'),
+  durationMs: row.readNullable<int>('duration'),
+  addedAt: row.read<int>('added'),
+  coverKey: row.readNullable<String>('cover'),
+  titleSort: row.readNullable<String>('title_sort'),
+);

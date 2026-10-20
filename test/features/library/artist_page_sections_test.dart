@@ -27,22 +27,35 @@ BrowseTrack track(
   );
 }
 
+AlbumSummary albumRow(
+  String title, {
+  required String artist,
+  String? albumArtist,
+  int? year,
+  String? titleSort,
+}) => AlbumSummary(
+  key: AlbumKey(albumArtistKey(albumArtist, artist), albumTitleKey(title)),
+  title: title,
+  artist: albumArtist ?? artist,
+  year: year,
+  trackCount: 1,
+  addedAt: 1,
+  titleSort: titleSort,
+);
+
 void main() {
   test('own albums, songs and appearances of an artist', () {
     final tracks = [
-      track(
-        'own',
-        artist: 'Ann',
-        album: 'Mine',
-        albumArtist: 'Ann',
-        year: 2001,
-      ),
-      track('older', artist: 'Ann', album: 'First', year: 1990),
+      track('own', artist: 'Ann', album: 'Mine', albumArtist: 'Ann'),
       track('guest', artist: 'X; Ann', album: 'Theirs', albumArtist: 'X'),
-      track('shared', artist: 'Ann; Bob', album: 'Duo'),
       track('loose', artist: 'Ann'),
     ];
-    final page = ArtistPageSections.fromTracks('ann', tracks);
+    final page = ArtistPageSections.fromTracks('ann', tracks, [
+      albumRow('Mine', artist: 'Ann', albumArtist: 'Ann', year: 2001),
+      albumRow('First', artist: 'Ann', year: 1990),
+      albumRow('Duo', artist: 'Ann'),
+      albumRow('Theirs', artist: 'X; Ann', albumArtist: 'X'),
+    ]);
 
     expect(page.name, 'Ann');
     expect([for (final a in page.albums) a.title], ['First', 'Mine', 'Duo']);
@@ -52,28 +65,47 @@ void main() {
   });
 
   test('a second artist without album artist appears on the album', () {
-    final tracks = [track('shared', artist: 'Ann; Bob', album: 'Duo')];
-    final page = ArtistPageSections.fromTracks('bob', tracks);
+    final page = ArtistPageSections.fromTracks(
+      'bob',
+      [track('shared', artist: 'Ann; Bob', album: 'Duo')],
+      [albumRow('Duo', artist: 'Ann; Bob')],
+    );
 
     expect(page.name, 'Bob');
     expect(page.albums, isEmpty);
     expect([for (final a in page.appearsOn) a.title], ['Duo']);
   });
 
-  test('tiles take the album artist, else the first artist, and max year', () {
-    final page = ArtistPageSections.fromTracks('ann', [
-      track('a', artist: 'Ann; Bob', album: 'Duo', year: 1999),
-      track('b', artist: 'Ann', album: 'Duo', year: 2003),
-    ]);
+  test('tiles show the album row, not values derived from the tracks', () {
+    final page = ArtistPageSections.fromTracks(
+      'ann',
+      [track('a', artist: 'Ann; Bob', album: 'Duo', year: 1999)],
+      [albumRow('Duo', artist: 'Ann', year: 2003)],
+    );
     final tile = page.albums.single;
     expect(tile.artist, 'Ann');
     expect(tile.year, 2003);
   });
 
+  test('albums of one year sort by the title sort key, then by key', () {
+    final page = ArtistPageSections.fromTracks('ann', const [], [
+      albumRow('Zebra', artist: 'Ann', year: 2000),
+      albumRow('Ánh', artist: 'Ann', year: 2000),
+      albumRow('The Bee', artist: 'Ann', year: 2000),
+      albumRow('Anh', artist: 'Ann', year: 2000),
+      albumRow('Dated', artist: 'Ann', year: 1999),
+      albumRow('Undated', artist: 'Ann'),
+    ]);
+    expect(
+      [for (final a in page.albums) a.title],
+      ['Dated', 'Anh', 'Ánh', 'The Bee', 'Zebra', 'Undated'],
+    );
+  });
+
   test('the name is the spelling at the matching position', () {
     final page = ArtistPageSections.fromTracks('anna', [
       track('t', artist: 'Ann; ANNA'),
-    ]);
+    ], const []);
     expect(page.name, 'ANNA');
   });
 
@@ -82,16 +114,17 @@ void main() {
     final tracks = [
       track('t', artist: long, album: 'Big', albumArtist: '$long; B'),
     ];
-    final page = ArtistPageSections.fromTracks('n' * 256, tracks);
+    final rows = [albumRow('Big', artist: long, albumArtist: '$long; B')];
+    final page = ArtistPageSections.fromTracks('n' * 256, tracks, rows);
     expect([for (final a in page.albums) a.title], ['Big']);
-    final b = ArtistPageSections.fromTracks('b', tracks);
+    final b = ArtistPageSections.fromTracks('b', tracks, rows);
     expect([for (final a in b.albums) a.title], ['Big']);
   });
 
   test('the name does not depend on the track order', () {
     final a = track('a', artist: 'ann');
     final b = track('b', artist: 'ANN');
-    expect(ArtistPageSections.fromTracks('ann', [a, b]).name, 'ANN');
-    expect(ArtistPageSections.fromTracks('ann', [b, a]).name, 'ANN');
+    expect(ArtistPageSections.fromTracks('ann', [a, b], const []).name, 'ANN');
+    expect(ArtistPageSections.fromTracks('ann', [b, a], const []).name, 'ANN');
   });
 }

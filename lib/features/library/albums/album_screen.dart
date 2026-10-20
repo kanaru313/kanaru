@@ -14,6 +14,7 @@ import '../library_route_keys.dart';
 import '../play_tracks.dart';
 import 'album_disc_groups.dart';
 import 'album_header.dart';
+import 'album_summary_provider.dart';
 import 'album_track_tile.dart';
 import 'album_tracks_provider.dart';
 
@@ -46,7 +47,9 @@ class _AlbumPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final info = AlbumInfo.fromTracks(tracks);
+    // The details come from the albums query rows; until they arrive the
+    // page shows the tracks without a header.
+    final album = ref.watch(albumSummaryProvider(albumKey)).value;
     final groups = groupByDisc(tracks);
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     final queue = [
@@ -70,19 +73,20 @@ class _AlbumPage extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: AlbumHeader(
-            albumKey: albumKey,
-            info: info,
-            onPlay: () => playTracks(ref, queue, 0),
-            artist: linked && info.artist != null
-                ? _ArtistLink(
-                    name: info.artist!,
-                    onTap: () => context.go(artistLocation(artistKey)),
-                  )
-                : null,
+        if (album != null)
+          SliverToBoxAdapter(
+            child: AlbumHeader(
+              albumKey: albumKey,
+              album: album,
+              onPlay: () => playTracks(ref, queue, 0),
+              artist: linked && album.artist != null
+                  ? _ArtistLink(
+                      name: album.artist!,
+                      onTap: () => context.go(artistLocation(artistKey)),
+                    )
+                  : null,
+            ),
           ),
-        ),
         for (final (g, group) in groups.indexed) ...[
           if (groups.length > 1)
             SliverToBoxAdapter(
@@ -100,7 +104,7 @@ class _AlbumPage extends ConsumerWidget {
             itemCount: group.tracks.length,
             itemBuilder: (context, i) => AlbumTrackTile(
               track: group.tracks[i],
-              albumArtist: info.artist,
+              albumArtist: album?.artist,
               onTap: () => playTracks(ref, queue, starts[g] + i),
             ),
           ),

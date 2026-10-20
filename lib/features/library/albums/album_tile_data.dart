@@ -1,7 +1,7 @@
 import '../../../core/database/library_database.dart';
 
-/// What an album tile shows. No track count: on an artist page it is built
-/// from that artist's tracks only, which may not be the whole album.
+/// What an album tile shows. No track count: the artist page lists albums
+/// the artist is only part of.
 class AlbumTileData {
   const AlbumTileData({
     required this.key,
@@ -20,20 +20,11 @@ class AlbumTileData {
         coverKey: album.coverKey,
       );
 
-  /// This tile with [coverKey] as its cover.
-  AlbumTileData withCoverKey(String? coverKey) => AlbumTileData(
-    key: key,
-    title: title,
-    artist: artist,
-    year: year,
-    coverKey: coverKey,
-  );
-
   final AlbumKey key;
   final String title;
   final String? artist;
   final int? year;
 
-  /// Cover key of the whole album (not only of some of its tracks).
+  /// Cover key of the whole album.
   final String? coverKey;
 }

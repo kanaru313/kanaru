@@ -1,15 +1,19 @@
 import '../../../core/database/artist_names.dart';
 import '../../../core/database/library_database.dart';
-import '../albums/album_header.dart' show AlbumInfo;
+import '../../../core/database/text_keys.dart';
 import '../albums/album_tile_data.dart';
 import '../sort_compare.dart';
 import 'artist_summaries.dart' show preferredSpelling;
 
-/// What an artist page lists, from the tracks crediting the artist:
+/// What an artist page lists:
 /// - [albums]: albums the artist owns (one of its album artists, else its
 ///   first track artist),
-/// - [songs]: every one of those tracks, in query order,
-/// - [appearsOn]: the other albums those tracks belong to.
+/// - [songs]: every track crediting the artist, in query order,
+/// - [appearsOn]: the other albums holding those tracks.
+///
+/// Album details are the rows of the albums query, so a tile shows what the
+/// Albums list shows; both sections order by year (unknown last), then by
+/// the title sort key, then by album key.
 class ArtistPageSections {
   const ArtistPageSections({
     required this.name,
@@ -18,25 +22,25 @@ class ArtistPageSections {
     required this.appearsOn,
   });
 
-  factory ArtistPageSections.fromTracks(String key, List<BrowseTrack> tracks) {
-    final byAlbum = <AlbumKey, List<BrowseTrack>>{};
-    for (final track in tracks) {
-      final albumKey = track.albumKey;
-      if (albumKey != null) (byAlbum[albumKey] ??= []).add(track);
+  factory ArtistPageSections.fromTracks(
+    String key,
+    List<BrowseTrack> tracks,
+    List<AlbumSummary> albumRows,
+  ) {
+    final owned = <AlbumSummary>[];
+    final other = <AlbumSummary>[];
+    for (final album in albumRows) {
+      (album.key.artistKeys.contains(key) ? owned : other).add(album);
     }
-    final albums = <AlbumTileData>[];
-    final appearsOn = <AlbumTileData>[];
-    for (final MapEntry(key: albumKey, value: albumTracks) in byAlbum.entries) {
-      final tile = _tileData(albumKey, albumTracks);
-      (albumKey.artistKeys.contains(key) ? albums : appearsOn).add(tile);
-    }
-    albums.sort(_byYearThenTitle);
-    appearsOn.sort(_byYearThenTitle);
+    List<AlbumTileData> tiles(List<AlbumSummary> list) => [
+      for (final album in list..sort(_byYearThenTitle))
+        AlbumTileData.fromSummary(album),
+    ];
     return ArtistPageSections(
       name: _displayName(key, tracks) ?? key,
-      albums: albums,
+      albums: tiles(owned),
       songs: tracks,
-      appearsOn: appearsOn,
+      appearsOn: tiles(other),
     );
   }
 
@@ -61,20 +65,14 @@ String? _displayName(String key, List<BrowseTrack> tracks) {
   return best;
 }
 
-/// Album details from the tracks at hand (only this artist's, so the tile
-/// shows no track count).
-AlbumTileData _tileData(AlbumKey key, List<BrowseTrack> tracks) {
-  final info = AlbumInfo.fromTracks(tracks);
-  return AlbumTileData(
-    key: key,
-    title: info.title,
-    artist: info.artist,
-    year: info.year,
-  );
-}
-
-/// Year ascending (unknown last), then title ignoring case.
-int _byYearThenTitle(AlbumTileData a, AlbumTileData b) {
+/// Year ascending (unknown last), then the title sort key, then the key.
+int _byYearThenTitle(AlbumSummary a, AlbumSummary b) {
   final year = compareNullsLast(a.year, b.year);
-  return year != 0 ? year : compareText(a.title, b.title);
+  if (year != 0) return year;
+  final title = (a.titleSort ?? artistSortKey(a.title)).compareTo(
+    b.titleSort ?? artistSortKey(b.title),
+  );
+  if (title != 0) return title;
+  final artist = a.key.artistKey.compareTo(b.key.artistKey);
+  return artist != 0 ? artist : a.key.titleKey.compareTo(b.key.titleKey);
 }

@@ -12,12 +12,3 @@ int compareNullsLast<T extends Comparable<Object>>(
   final order = a.compareTo(b);
   return descending ? -order : order;
 }
-
-/// Case-insensitive text comparison, the same in both directions as
-/// [compareNullsLast].
-int compareText(String? a, String? b, {bool descending = false}) =>
-    compareNullsLast(
-      a?.toLowerCase(),
-      b?.toLowerCase(),
-      descending: descending,
-    );

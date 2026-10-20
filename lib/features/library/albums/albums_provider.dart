@@ -24,14 +24,6 @@ final albumsProvider = StreamProvider<List<AlbumSummary>>((ref) {
   );
 });
 
-/// The cover key of every album, from [albumsProvider], so pages that show
-/// an album from only some of its tracks (an artist page) use the same cover
-/// as the albums list. Empty until the first list loaded.
-final albumCoverKeysProvider = Provider<Map<AlbumKey, String?>>((ref) {
-  final list = ref.watch(albumsProvider).value ?? const [];
-  return {for (final album in list) album.key: album.coverKey};
-});
-
 /// [albumsProvider] in the saved sort. Changing the sort re-sorts in memory
 /// without querying again. Null until the first list loaded.
 final sortedAlbumsProvider = Provider<List<AlbumSummary>?>((ref) {
