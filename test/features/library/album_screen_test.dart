@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/library/albums/album_tracks_provider.dart';
+import 'package:kanaru/features/library/albums/album_page_data.dart';
 import 'package:kanaru/features/library/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -101,14 +101,14 @@ void main() {
     await openWithTracks(tester, h, _album, location: '/albums');
     await tester.tap(find.text('Two Discs'));
     await tester.pumpAndSettle();
-    expect(h.container.exists(albumTracksProvider(_key)), isTrue);
+    expect(h.container.exists(albumPageProvider(_key)), isTrue);
 
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
 
     expect(location(h), '/albums');
     expect(find.text('Disc 1'), findsNothing);
-    expect(h.container.exists(albumTracksProvider(_key)), isFalse);
+    expect(h.container.exists(albumPageProvider(_key)), isFalse);
   });
 
   testWidgets('tracks without a disc come last under "Unknown disc"', (

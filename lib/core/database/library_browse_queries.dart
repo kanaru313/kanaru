@@ -73,14 +73,14 @@ WHERE t.album_artist_key = ?1 AND t.album_title_key = ?2
 ORDER BY $discTrackOrderSql''';
 
 /// `?1`: an artist key. Matches the names credited in `artist` only (not
-/// `album_artist`). Albums stay together: ordered by year, then album.
+/// `album_artist`). Albums stay together, by album key then disc and track;
+/// the artist page puts the albums in the order of its tiles.
 const artistTracksSql =
     '''
 SELECT $_browseTrackColumns
 FROM track_artists AS ta JOIN tracks AS t ON t.id = ta.track_id
 WHERE ta.artist_key = ?1
-ORDER BY t.year IS NULL, t.year, t.album_sort IS NULL, t.album_sort,
-  t.album_title_key, t.album_artist_key, $discTrackOrderSql''';
+ORDER BY t.album_artist_key, t.album_title_key, $discTrackOrderSql''';
 
 /// The Songs list query in [order].
 String songsSql(SongOrder order, {bool descending = false}) =>
@@ -139,7 +139,7 @@ extension LibraryBrowseQueries on LibraryDatabase {
     _browseTrack,
   ).get();
 
-  /// The tracks crediting [artistKey], by year, album, disc and track.
+  /// The tracks crediting [artistKey], by album key, disc and track.
   Future<List<BrowseTrack>> artistTracks(String artistKey) =>
       _query(artistTracksSql, [Variable(artistKey)], _browseTrack).get();
 

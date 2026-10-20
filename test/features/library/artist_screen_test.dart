@@ -3,7 +3,7 @@ import 'package:kanaru/app/shell/sidebar/sidebar_item.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/library/artists/artist_tracks_provider.dart';
+import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/features/library/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -158,11 +158,11 @@ void main() {
   testWidgets('leaving the page disposes its query', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: _ann);
-    expect(h.container.exists(artistTracksProvider('ann')), isTrue);
+    expect(h.container.exists(artistPageProvider('ann')), isTrue);
 
     goTo(tester, h, '/artists');
     await tester.pumpAndSettle();
-    expect(h.container.exists(artistTracksProvider('ann')), isFalse);
+    expect(h.container.exists(artistPageProvider('ann')), isFalse);
     // Lets drift's zero-delay stream cleanup timer run.
     await tester.pump(const Duration(milliseconds: 1));
   });

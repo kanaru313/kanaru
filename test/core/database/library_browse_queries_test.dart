@@ -315,9 +315,9 @@ void main() {
       row(title: 'n1', artist: 'A', album: 'Ñu', year: 2000, track: 1),
     ]);
     final titles = [for (final t in await db.artistTracks('a')) t.title];
-    // Ordered by the album's sort key: case variants stay adjacent and
-    // accented names sit in their alphabet position (Éclair, Ñu, Zeta).
-    expect(titles, ['e1', 'e2', 'n1', 'z1', 'z2']);
+    // Ordered by the album key: case variants stay adjacent. The page puts
+    // the albums in the order of its tiles.
+    expect(titles, ['z1', 'z2', 'e1', 'e2', 'n1']);
   });
 
   group('songs', () {
@@ -508,6 +508,23 @@ void main() {
       expect(details, contains('USING INDEX tracks_album_key'));
       expect(details, isNot(contains('TEMP B-TREE')));
     });
+
+    test('one album searches the album key index', () async {
+      final details = await plan(albumSql, [
+        Variable.withString('a'),
+        Variable.withString('x'),
+      ]);
+      expect(details, contains('SEARCH tracks USING INDEX tracks_album_key'));
+    });
+
+    test(
+      'an artist\'s albums search track_artists, then the album keys',
+      () async {
+        final details = await plan(artistAlbumsSql, [Variable.withString('a')]);
+        expect(details, contains('SEARCH ta USING COVERING INDEX'));
+        expect(details, contains('tracks_album_key'));
+      },
+    );
 
     test('an album page searches the album key index', () async {
       final details = await plan(albumTracksSql, [

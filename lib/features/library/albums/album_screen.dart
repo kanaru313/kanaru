@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/artist_names.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
@@ -12,11 +11,9 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../library_detail_body.dart';
 import '../library_route_keys.dart';
 import '../play_tracks.dart';
-import 'album_disc_groups.dart';
 import 'album_header.dart';
-import 'album_summary_provider.dart';
 import 'album_track_tile.dart';
-import 'album_tracks_provider.dart';
+import 'album_page_data.dart';
 
 /// One album: header, then its tracks by disc. Tapping a track plays the
 /// album from it. [routeKey] comes from the URL; a broken key or an album
@@ -29,64 +26,50 @@ class AlbumScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final key = decodeAlbumRouteKey(routeKey);
-    return LibraryDetailBody(
-      tracks: key == null ? null : albumTracksProvider(key),
+    return LibraryDetailBody<AlbumPageData>(
+      page: key == null ? null : albumPageProvider(key),
       what: 'the album',
       notFound: const _AlbumNotFound(),
-      builder: (tracks) => _AlbumPage(albumKey: key!, tracks: tracks),
+      builder: (data) => _AlbumPage(albumKey: key!, data: data),
     );
   }
 }
 
 class _AlbumPage extends ConsumerWidget {
-  const _AlbumPage({required this.albumKey, required this.tracks});
+  const _AlbumPage({required this.albumKey, required this.data});
 
   final AlbumKey albumKey;
-  final List<BrowseTrack> tracks;
+  final AlbumPageData data;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    // The details come from the albums query rows; until they arrive the
-    // page shows the tracks without a header.
-    final album = ref.watch(albumSummaryProvider(albumKey)).value;
-    final groups = groupByDisc(tracks);
+    final album = data.album;
+    final tracks = data.tracks;
+    final groups = data.groups;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     final queue = [
       for (final t in tracks)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
-    // Where each group starts in [tracks]: groups keep the display order.
-    final starts = <int>[];
-    var count = 0;
-    for (final group in groups) {
-      starts.add(count);
-      count += group.tracks.length;
-    }
-    // Links to the album artist's page only when a track here credits them:
-    // a name found only as album artist (for example "Various Artists") has
-    // no artist page.
-    final artistKey = albumKey.artistKeys.firstOrNull;
-    final linked =
-        artistKey != null &&
-        tracks.any((t) => artistKeys(t.artist).contains(artistKey));
+    final starts = data.groupStarts;
+    final artistKey = data.linkedArtistKey;
 
     return CustomScrollView(
       slivers: [
-        if (album != null)
-          SliverToBoxAdapter(
-            child: AlbumHeader(
-              albumKey: albumKey,
-              album: album,
-              onPlay: () => playTracks(ref, queue, 0),
-              artist: linked && album.artist != null
-                  ? _ArtistLink(
-                      name: album.artist!,
-                      onTap: () => context.go(artistLocation(artistKey)),
-                    )
-                  : null,
-            ),
+        SliverToBoxAdapter(
+          child: AlbumHeader(
+            albumKey: albumKey,
+            album: album,
+            onPlay: () => playTracks(ref, queue, 0),
+            artist: artistKey != null && album.artist != null
+                ? _ArtistLink(
+                    name: album.artist!,
+                    onTap: () => context.go(artistLocation(artistKey)),
+                  )
+                : null,
           ),
+        ),
         for (final (g, group) in groups.indexed) ...[
           if (groups.length > 1)
             SliverToBoxAdapter(
@@ -104,7 +87,7 @@ class _AlbumPage extends ConsumerWidget {
             itemCount: group.tracks.length,
             itemBuilder: (context, i) => AlbumTrackTile(
               track: group.tracks[i],
-              albumArtist: album?.artist,
+              albumArtist: album.artist,
               onTap: () => playTracks(ref, queue, starts[g] + i),
             ),
           ),

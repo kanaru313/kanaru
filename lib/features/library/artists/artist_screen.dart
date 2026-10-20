@@ -15,9 +15,8 @@ import '../library_route_keys.dart';
 import '../play_tracks.dart';
 import '../songs/song_tile.dart';
 import '../widgets/artist_avatar.dart';
-import 'artist_albums_provider.dart';
+import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
-import 'artist_tracks_provider.dart';
 
 /// One artist: header, then their albums, their songs, and the albums they
 /// appear on. Tapping a song plays the Songs section from it. [routeKey]
@@ -31,28 +30,26 @@ class ArtistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final artistKey = decodeArtistRouteKey(routeKey);
-    return LibraryDetailBody(
-      tracks: artistKey == null ? null : artistTracksProvider(artistKey),
+    return LibraryDetailBody<ArtistPageSections>(
+      page: artistKey == null ? null : artistPageProvider(artistKey),
       what: 'the artist',
       notFound: const _ArtistNotFound(),
-      builder: (tracks) => _ArtistPage(artistKey: artistKey!, tracks: tracks),
+      builder: (sections) =>
+          _ArtistPage(artistKey: artistKey!, sections: sections),
     );
   }
 }
 
 class _ArtistPage extends ConsumerWidget {
-  const _ArtistPage({required this.artistKey, required this.tracks});
+  const _ArtistPage({required this.artistKey, required this.sections});
 
   final String artistKey;
-  final List<BrowseTrack> tracks;
+  final ArtistPageSections sections;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    // Album tiles come from the albums query rows; they show once loaded.
-    final albums = ref.watch(artistAlbumsProvider(artistKey)).value ?? const [];
-    final sections = ArtistPageSections.fromTracks(artistKey, tracks, albums);
     final songs = sections.songs;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     final queue = [

@@ -127,4 +127,50 @@ void main() {
     expect(ArtistPageSections.fromTracks('ann', [a, b], const []).name, 'ANN');
     expect(ArtistPageSections.fromTracks('ann', [b, a], const []).name, 'ANN');
   });
+
+  test('songs follow the album tiles, with the whole album year', () {
+    // The compilation holds a 1990 track of Ann but is a 2010 album: it
+    // comes after the 2000 album, as its tile does.
+    final comp = track(
+      'comp-old',
+      artist: 'Ann',
+      album: 'Comp',
+      albumArtist: 'Various',
+      year: 1990,
+    );
+    final solo2 = track('solo-2', artist: 'Ann', album: 'Solo', year: 2000);
+    final solo1 = track('solo-1', artist: 'Ann', album: 'Solo', year: 2000);
+    final loose = track('loose', artist: 'Ann');
+    final page = ArtistPageSections.fromTracks(
+      'ann',
+      [loose, comp, solo2, solo1],
+      [
+        albumRow('Comp', artist: 'Ann', albumArtist: 'Various', year: 2010),
+        albumRow('Solo', artist: 'Ann', year: 2000),
+      ],
+    );
+
+    expect([for (final a in page.albums) a.title], ['Solo']);
+    expect([for (final a in page.appearsOn) a.title], ['Comp']);
+    expect(
+      [for (final t in page.songs) t.title],
+      ['solo-1', 'solo-2', 'comp-old', 'loose'],
+    );
+  });
+
+  test('songs of "Anh" and "Ánh" albums follow the tile order', () {
+    final onAnh = track('on-anh', artist: 'Ann; Zed', album: 'Anh');
+    final onAcute = track('on-ánh', artist: 'Ann; Zed', album: 'Ánh');
+    final page = ArtistPageSections.fromTracks(
+      'ann',
+      [onAcute, onAnh],
+      [
+        albumRow('Ánh', artist: 'Ann; Zed'),
+        albumRow('Anh', artist: 'Ann; Zed'),
+      ],
+    );
+    final tiles = [for (final a in page.albums) a.title];
+    expect(tiles, ['Anh', 'Ánh']);
+    expect([for (final t in page.songs) t.title], ['on-anh', 'on-ánh']);
+  });
 }
