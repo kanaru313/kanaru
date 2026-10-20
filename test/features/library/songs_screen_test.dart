@@ -239,9 +239,17 @@ void main() {
 
       expect(find.text('A.MP3'), findsOneWidget);
 
-      // The list's hour-long refresh timer must not outlive the test.
-      await tester.pumpWidget(const SizedBox());
-      h.container.dispose();
+      // The list's hour-long refresh timer must not outlive the test. Keep
+      // the scope mounted: Riverpod disposes an unused autoDispose provider
+      // through the mounted scope, and never if the scope itself is gone.
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: h.container,
+          child: const SizedBox(),
+        ),
+      );
+      await tester.pump();
+      expect(h.container.exists(songsListProvider), isFalse);
     },
   );
 

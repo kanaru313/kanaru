@@ -42,6 +42,28 @@ class _Loads {
   void fail() => pending.removeAt(0).completeError(StateError('boom'));
 }
 
+/// A timer that reports once when it is cancelled before it fired.
+class _CountedTimer implements Timer {
+  _CountedTimer(this._timer, this._onCancel);
+
+  final Timer _timer;
+  final void Function() _onCancel;
+  var _cancelled = false;
+
+  @override
+  void cancel() {
+    if (!_cancelled && _timer.isActive) _onCancel();
+    _cancelled = true;
+    _timer.cancel();
+  }
+
+  @override
+  bool get isActive => _timer.isActive;
+
+  @override
+  int get tick => _timer.tick;
+}
+
 void main() {
   late LibraryDatabase db;
   late _Loads loads;
@@ -181,4 +203,32 @@ void main() {
       await sub.cancel();
     },
   );
+
+  test('cancelling a paused query leaves no cooldown timer', () async {
+    // Counts the timers that are still active.
+    var active = 0;
+    final spec = ZoneSpecification(
+      createTimer: (self, parent, zone, duration, f) {
+        late final Timer timer;
+        active++;
+        timer = parent.createTimer(zone, duration, () {
+          active--;
+          zone.runGuarded(f);
+        });
+        return _CountedTimer(timer, () => active--);
+      },
+    );
+    final sub = runZoned(
+      () => query(const Duration(hours: 1)).listen((_) {}),
+      zoneSpecification: spec,
+    );
+    await pumpEventQueue();
+    loads.finish();
+    await pumpEventQueue();
+    expect(active, 1, reason: 'the cooldown after the first load');
+
+    sub.pause();
+    await sub.cancel();
+    expect(active, 0);
+  });
 }
