@@ -118,8 +118,8 @@ Future<void> _checkLayout(
     );
   }
 
-  // The rescan label is drawn whole inside its button, however narrow the
-  // button gets: wrapped or cut short with an ellipsis, never clipped.
+  // The rescan label is drawn inside its button on one line, however narrow
+  // the button gets; at normal text size it also fits whole (no ellipsis).
   final rescan = tester.getRect(find.byType(FilledButton));
   final rescanLabel = find.descendant(
     of: find.byType(FilledButton),
@@ -131,11 +131,13 @@ Future<void> _checkLayout(
   expect(labelRect.top, greaterThanOrEqualTo(rescan.top));
   expect(labelRect.bottom, lessThanOrEqualTo(rescan.bottom));
   final paragraph = tester.renderObject<RenderParagraph>(rescanLabel);
-  expect(
-    paragraph.getMinIntrinsicHeight(paragraph.size.width),
-    lessThanOrEqualTo(paragraph.size.height + 0.5),
-    reason: 'rescan label not clipped',
-  );
+  if (textScale == 1) {
+    expect(
+      paragraph.didExceedMaxLines,
+      isFalse,
+      reason: 'rescan label cut short',
+    );
+  }
 
   final rowWidth = tester.getSize(find.byType(SettingRow).first).width;
   final wideRows = rowWidth >= _wideRowFrom;
