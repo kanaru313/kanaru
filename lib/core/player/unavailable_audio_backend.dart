@@ -33,9 +33,13 @@ class UnavailableAudioBackend implements AudioBackend {
   }) async {
     // After the call returns, so the caller has its state in place before the
     // events arrive, like with the real engine.
+    // Restoring a session at startup (`play == false`) is not a user action,
+    // so it stays quiet: only the paused state is reported.
     scheduleMicrotask(() {
       if (_failed.isClosed) return;
-      _failed.add(PlaybackError(track, 'audio engine unavailable'));
+      if (play) {
+        _failed.add(PlaybackError(track, 'audio engine unavailable'));
+      }
       _playing.add(false);
     });
   }

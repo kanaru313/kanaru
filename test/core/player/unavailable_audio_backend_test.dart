@@ -221,7 +221,7 @@ void main() {
 
     final state = container.read(playerServiceProvider);
     expect(counting.opens, lessThanOrEqualTo(1));
-    expect(errors.length, lessThanOrEqualTo(1));
+    expect(errors, isEmpty);
     expect(state.playing, isFalse);
     expect(state.queue.current, tracks[2]);
   });
