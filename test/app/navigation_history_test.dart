@@ -10,6 +10,7 @@ import 'package:kanaru/app/shell/navigation_history.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/library/library_browse_refresh.dart';
 
 import '../core/player/fake_audio_backend.dart';
 
@@ -63,6 +64,8 @@ Future<ProviderContainer> pumpApp(
       audioBackendProvider.overrideWithValue(FakeAudioBackend()),
       libraryDatabaseProvider.overrideWithValue(db),
       libraryHasRootsProvider.overrideWith(() => LibraryHasRoots(hasRoots)),
+      // Reload browse lists at once so no refresh timer outlives the test.
+      libraryBrowseRefreshIntervalProvider.overrideWithValue(Duration.zero),
     ],
   );
   addTearDown(container.dispose);
