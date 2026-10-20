@@ -211,6 +211,40 @@ void main() {
     expect(rescan(), findsOneWidget);
   });
 
+  testWidgets(
+    'a scan that ends while the list is empty never shows the empty message '
+    'before the new songs arrive, even with a long refresh interval',
+    (tester) async {
+      final gated = _GatedTagReader();
+      final h = LibraryHarness(
+        reader: gated,
+        refreshInterval: const Duration(hours: 1),
+      );
+      final music = h.folder('music');
+      h.touch(music, 'a.mp3');
+      await openSongs(tester, h, folder: music);
+      expect(find.text('No songs found'), findsOneWidget);
+
+      await tester.tap(rescan());
+      await tester.pump();
+      gated.release.complete();
+      for (var i = 0; i < 8; i++) {
+        await tester.pump();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 150)),
+        );
+        expect(find.text('No songs found'), findsNothing, reason: 'round $i');
+      }
+      await tester.pump();
+
+      expect(find.text('A.MP3'), findsOneWidget);
+
+      // The list's hour-long refresh timer must not outlive the test.
+      await tester.pumpWidget(const SizedBox());
+      h.container.dispose();
+    },
+  );
+
   group('sort', () {
     /// 40 songs: titles s00..s39, durations falling as titles rise.
     final many = [

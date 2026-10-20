@@ -10,8 +10,12 @@ import '../library_browse_refresh.dart';
 /// Every stored track in the saved Songs sort, reloaded at most every
 /// [libraryBrowseRefreshIntervalProvider] while the library changes. Empty
 /// when the library is unavailable. The whole list is loaded: fine for a
-/// minimal list, a windowed query comes with the full songs page. Dropped
-/// when the Songs page closes, so a scan elsewhere does not reload it.
+/// minimal list, a windowed query comes with the full songs page. The shell
+/// keeps the Songs branch mounted, so the provider stays alive when another
+/// tab is shown but is paused there (Riverpod pauses listeners under
+/// `TickerMode` false): a scan elsewhere does not reload it, and it reloads
+/// once on return if the library changed. It is disposed when the list
+/// leaves the widget tree.
 final songsListProvider = StreamProvider.autoDispose<List<TrackListItem>>((
   ref,
 ) {
