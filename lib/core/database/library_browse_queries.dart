@@ -85,11 +85,6 @@ ORDER BY t.album_artist_key, t.album_title_key, $discTrackOrderSql''';
 /// The columns of a [TrackListItem].
 const songColumns = 'id, path, title, artist, album, duration_ms, cover_key';
 
-/// The Songs list query in [order].
-String songsSql(SongOrder order, {bool descending = false}) =>
-    'SELECT $songColumns FROM tracks '
-    'ORDER BY ${songsOrderSql(order, descending: descending)}';
-
 /// ORDER BY of the Songs list. Unknown values go last in both directions;
 /// [descending] flips only the main key; ties fall back to title then id.
 String songsOrderSql(SongOrder order, {bool descending = false}) {
@@ -144,16 +139,6 @@ extension LibraryBrowseQueries on LibraryDatabase {
   /// The tracks crediting [artistKey], by album key, disc and track.
   Future<List<BrowseTrack>> artistTracks(String artistKey) =>
       _query(artistTracksSql, [Variable(artistKey)], _browseTrack).get();
-
-  /// All tracks for the Songs list.
-  Future<List<TrackListItem>> songs({
-    SongOrder order = SongOrder.title,
-    bool descending = false,
-  }) => _query(
-    songsSql(order, descending: descending),
-    const [],
-    trackListItemFromRow,
-  ).get();
 
   Selectable<T> _query<T>(
     String sql,

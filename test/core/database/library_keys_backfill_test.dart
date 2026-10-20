@@ -282,8 +282,7 @@ void main() {
       final sub = fileDb.tableUpdates().listen(notices.add);
       addTearDown(sub.cancel);
 
-      // The provider also notifies from this isolate after the run; this
-      // checks what the run itself sends.
+      // No provider here: only the notices the run itself sends are seen.
       await runKeysBackfillInBackground(fileDb, (_, _) {});
       await pumpEventQueue();
 

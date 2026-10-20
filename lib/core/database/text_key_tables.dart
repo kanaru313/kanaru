@@ -2,9 +2,10 @@
 /// accents, and the combining-mark classes needed to put marks in canonical
 /// order. Backs `text_keys.dart` without a Unicode dependency.
 ///
-/// Generated from Unicode 16.0.0 by a one-off script: every two-part canonical
-/// decomposition that recomposes, for U+00C0-U+024F, U+0370-U+03FF,
-/// U+0400-U+04FF, U+1E00-U+1EFF and U+3040-U+30FF. Do not edit by hand.
+/// Generated from Unicode 16.0.0 by `tool/generate_text_key_tables.py`:
+/// every two-part canonical decomposition that recomposes, for U+00C0-U+024F,
+/// U+0370-U+03FF, U+0400-U+04FF, U+1E00-U+1EFF and U+3040-U+30FF. Do not edit
+/// by hand.
 library;
 
 /// Flat triples: precomposed character, first part, combining mark. A first

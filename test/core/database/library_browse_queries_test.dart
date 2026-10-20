@@ -5,6 +5,8 @@ import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/text_keys.dart';
 
+import 'songs_reference_query.dart';
+
 late int _rootId;
 var _next = 0;
 

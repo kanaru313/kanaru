@@ -2,7 +2,8 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/core/database/library_browse_queries.dart';
+
+import 'songs_reference_query.dart';
 
 TracksCompanion track(
   int rootId,

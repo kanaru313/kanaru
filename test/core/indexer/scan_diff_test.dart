@@ -26,8 +26,8 @@ void main() {
   test('new file is read and counted as added', () {
     final diff = diffScan(WalkResult(files: [file('/m/a.mp3')]), []);
     expect(diff.toRead.map((f) => f.path), ['/m/a.mp3']);
-    expect(diff.added, 1);
-    expect(diff.updated, 0);
+    expect(diff.addedPaths, {'/m/a.mp3'});
+    expect(diff.updatedPaths, isEmpty);
   });
 
   test('changed mtime or size is read again as updated', () {
@@ -38,8 +38,8 @@ void main() {
       [row(1, '/m/a.mp3'), row(2, '/m/b.mp3')],
     );
     expect(diff.toRead, hasLength(2));
-    expect(diff.added, 0);
-    expect(diff.updated, 2);
+    expect(diff.addedPaths, isEmpty);
+    expect(diff.updatedPaths, {'/m/a.mp3', '/m/b.mp3'});
     expect(diff.toDelete, isEmpty);
   });
 
@@ -122,8 +122,8 @@ void main() {
       [row(1, '/m/a.mp3', error: true), row(2, '/m/b.mp3')],
     );
     expect(diff.toRead.map((f) => f.path), ['/m/a.mp3']);
-    expect(diff.added, 0);
-    expect(diff.updated, 0);
+    expect(diff.addedPaths, isEmpty);
+    expect(diff.updatedPaths, isEmpty);
   });
 
   group('cover rules', () {
@@ -136,8 +136,8 @@ void main() {
     test('an unchanged file looked at under older rules is read again', () {
       final diff = diffScan(walk, existing, coversEnabled: true);
       expect(diff.toRead.map((f) => f.path), ['/m/a.mp3']);
-      expect(diff.added, 0);
-      expect(diff.updated, 0);
+      expect(diff.addedPaths, isEmpty);
+      expect(diff.updatedPaths, isEmpty);
     });
 
     test('with covers off the rules version is ignored', () {

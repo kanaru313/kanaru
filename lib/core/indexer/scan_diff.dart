@@ -6,8 +6,8 @@ class ScanDiff {
   const ScanDiff({
     this.toRead = const [],
     this.toDelete = const [],
-    this.added = 0,
-    this.updated = 0,
+    this.addedPaths = const {},
+    this.updatedPaths = const {},
     this.rootEmpty = false,
   });
 
@@ -17,11 +17,11 @@ class ScanDiff {
   /// Ids of tracks that are gone for sure.
   final List<int> toDelete;
 
-  /// How many of [toRead] are new, and how many replace a changed track.
-  /// Unchanged tracks read again (after an earlier failure, or for their
-  /// cover) are in neither.
-  final int added;
-  final int updated;
+  /// The files of [toRead] that are new, and those that replace a changed
+  /// track. Unchanged tracks read again (after an earlier failure, or for
+  /// their cover) are in neither.
+  final Set<String> addedPaths;
+  final Set<String> updatedPaths;
 
   /// The walk found no audio file although the database has tracks of this
   /// root (for example an empty mount point). Nothing is deleted.
@@ -47,15 +47,15 @@ ScanDiff diffScan(
 
   final known = {for (final track in existing) track.path: track};
   final toRead = <WalkedFile>[];
-  var added = 0, updated = 0;
+  final addedPaths = <String>{}, updatedPaths = <String>{};
   for (final file in walk.files) {
     final track = known[file.path];
     if (track == null) {
-      added++;
+      addedPaths.add(file.path);
       toRead.add(file);
     } else if (track.mtimeMs != file.mtimeMs ||
         track.sizeBytes != file.sizeBytes) {
-      updated++;
+      updatedPaths.add(file.path);
       toRead.add(file);
     } else if (track.hasScanError ||
         (coversEnabled && track.coverScanVersion < coverScanVersion)) {
@@ -83,7 +83,7 @@ ScanDiff diffScan(
   return ScanDiff(
     toRead: toRead,
     toDelete: toDelete,
-    added: added,
-    updated: updated,
+    addedPaths: addedPaths,
+    updatedPaths: updatedPaths,
   );
 }

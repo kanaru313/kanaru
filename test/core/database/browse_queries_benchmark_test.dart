@@ -17,6 +17,8 @@ import 'package:kanaru/core/database/track_keys.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/throttled_tracks_query.dart';
 
+import 'songs_reference_query.dart';
+
 /// How the albums or Songs query is listened to during a timed scan.
 enum _Listener { none, throttled, albumPage, songsWatch, songsThrottled }
 

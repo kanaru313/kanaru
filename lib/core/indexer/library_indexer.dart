@@ -294,7 +294,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
     }
     dbTime.start();
     final snapshot = await db.trackSnapshot(root.id);
-    final known = {for (final t in snapshot) t.path: t};
     final diff = diffScan(walk, snapshot, coversEnabled: coverDir != null);
     dbTime.stop();
     if (diff.rootEmpty) {
@@ -377,11 +376,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
       await db.upsertTracks(rows);
       dbTime.stop();
       for (final file in batch) {
-        final old = known[file.path];
-        if (old == null) {
+        if (diff.addedPaths.contains(file.path)) {
           added++;
-        } else if (old.mtimeMs != file.mtimeMs ||
-            old.sizeBytes != file.sizeBytes) {
+        } else if (diff.updatedPaths.contains(file.path)) {
           updated++;
         }
       }

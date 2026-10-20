@@ -5,6 +5,8 @@ import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_song_paging.dart';
 
+import 'songs_reference_query.dart';
+
 TracksCompanion _row(
   int rootId,
   int n, {
