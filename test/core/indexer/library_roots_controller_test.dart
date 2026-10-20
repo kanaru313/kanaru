@@ -131,4 +131,43 @@ void main() {
     });
     expect(c.read(libraryHasRootsProvider), isFalse);
   });
+
+  group('overlapping calls', () {
+    test('the same folder twice is stored once and refused once', () async {
+      final results = await Future.wait([
+        controller().addRoots(['$base/music']),
+        controller().addRoots(['$base/music']),
+      ]);
+
+      expect((await db.roots()).map((r) => r.path), ['$base/music']);
+      expect(results[0].added, ['$base/music']);
+      expect(results[1].added, isEmpty);
+      expect(results[1].rejected, {'$base/music': RootRejection.duplicate});
+    });
+
+    test('a folder and its parent are not both stored', () async {
+      final results = await Future.wait([
+        controller().addRoots(['$base/music/rock']),
+        controller().addRoots(['$base/music']),
+      ]);
+
+      expect((await db.roots()).map((r) => r.path), ['$base/music/rock']);
+      expect(results[1].added, isEmpty);
+      expect(results[1].rejected, hasLength(1));
+    });
+
+    test('unrelated folders added together are all kept', () async {
+      await Future.wait([
+        controller().addRoots(['$base/music']),
+        controller().addRoots(['$base/other']),
+        controller().addRoots(['$base/music2']),
+      ]);
+
+      expect((await db.roots()).map((r) => r.path).toSet(), {
+        '$base/music',
+        '$base/other',
+        '$base/music2',
+      });
+    });
+  });
 }

@@ -24,6 +24,11 @@ class LibraryRootsController {
 
   final Ref _ref;
 
+  /// Tail of the calls so far: each call starts after the previous one is
+  /// done, so it checks against the roots that call stored (two overlapping
+  /// calls would both pass the check and store a duplicate or nested root).
+  Future<void> _queue = Future.value();
+
   /// Adds the valid [paths] in one transaction. A path is refused when it is
   /// not an existing folder, is `/`, or equals, contains or lies inside a
   /// stored root or another path of the same call. Paths are canonicalised
@@ -31,7 +36,14 @@ class LibraryRootsController {
   ///
   /// Never throws: when the database fails, every path not stored is refused
   /// with [RootRejection.writeFailed] and the error is logged.
-  Future<AddRootsResult> addRoots(List<String> paths) async {
+  Future<AddRootsResult> addRoots(List<String> paths) {
+    final result = _queue.then((_) => _addRoots(paths));
+    // _addRoots never throws, but keep the chain alive whatever happens.
+    _queue = result.then((_) {}, onError: (_) {});
+    return result;
+  }
+
+  Future<AddRootsResult> _addRoots(List<String> paths) async {
     final db = _ref.read(libraryDatabaseProvider);
     if (db == null) {
       return AddRootsResult(
