@@ -2,8 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/features/library/library_route_keys.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/indexer/indexer_providers.dart';
+import 'package:kanaru/core/indexer/indexer_state.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/indexer/scripted_indexer.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 
@@ -65,6 +68,61 @@ void main() {
     goTo(tester, h, artistLocation('ann'));
     await tester.pumpAndSettle();
     expect(find.byType(FloatingActionButton), findsNothing);
+  });
+
+  testWidgets('a quick scan keeps the ring for 300 ms, a long one shows '
+      'its progress', (tester) async {
+    final indexer = ScriptedIndexer();
+    final h = LibraryHarness(
+      overrides: [libraryIndexerProvider.overrideWith(() => indexer)],
+    );
+    await h.pump(tester, hasRoots: true);
+    goTo(tester, h, '/albums');
+    await tester.pumpAndSettle();
+    FloatingActionButton fab() =>
+        tester.widget(find.byType(FloatingActionButton));
+    final ring = find.descendant(
+      of: find.byType(FloatingActionButton),
+      matching: find.byType(CircularProgressIndicator),
+    );
+
+    await tester.tap(find.byTooltip('Rescan'));
+    expect(indexer.scans, 1);
+
+    indexer.emit(
+      const IndexerScanning(phase: ScanPhase.discovering, rootPath: '/m'),
+    );
+    await tester.pump();
+    expect(ring, findsOneWidget);
+    expect(fab().onPressed, isNull);
+
+    await tester.pump(const Duration(milliseconds: 50));
+    indexer.emit(IndexerFinished(const ScanSummary()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 249));
+    expect(ring, findsOneWidget, reason: 'at 299 ms');
+    expect(fab().onPressed, isNull, reason: 'disabled during the hold');
+
+    await tester.pump(const Duration(milliseconds: 2));
+    expect(ring, findsNothing, reason: 'at 301 ms');
+    expect(find.byIcon(Icons.refresh), findsOneWidget);
+    expect(fab().onPressed, isNotNull);
+
+    indexer.emit(
+      const IndexerScanning(
+        phase: ScanPhase.reading,
+        rootPath: '/m',
+        done: 1,
+        total: 4,
+      ),
+    );
+    await tester.pump();
+    expect(tester.widget<CircularProgressIndicator>(ring).value, 0.25);
+    await tester.pump(const Duration(milliseconds: 500));
+    indexer.emit(IndexerFinished(const ScanSummary()));
+    await tester.pump();
+    expect(ring, findsNothing, reason: 'a long scan ends at once');
+    await tester.pumpAndSettle(const Duration(seconds: 1));
   });
 
   testWidgets('no button without a music folder', (tester) async {
