@@ -61,9 +61,10 @@ void main() {
       throttledTracksQuery(db, loads.call, interval: interval);
 
   test('loads when listened to and never runs two loads at once', () async {
+    const interval = Duration(milliseconds: 10);
     loads.autoFinish = const Duration(milliseconds: 60);
     final values = <int>[];
-    final sub = query(const Duration(milliseconds: 10)).listen(values.add);
+    final sub = query(interval).listen(values.add);
     for (var i = 0; i < 20; i++) {
       await changed();
       await Future<void>.delayed(const Duration(milliseconds: 10));
@@ -73,7 +74,16 @@ void main() {
 
     expect(loads.maxRunning, 1);
     expect(values.first, 1);
-    expect(loads.calls, lessThan(8), reason: 'updates during a load merge');
+    expect(loads.calls, greaterThan(1), reason: 'changes led to reloads');
+    // Updates during a load merge: each load starts only after the previous
+    // one ended and the interval passed, whatever the machine load.
+    for (var i = 1; i < loads.startedAt.length; i++) {
+      expect(
+        loads.startedAt[i] - loads.endedAt[i - 1],
+        greaterThanOrEqualTo(interval),
+        reason: 'load ${i + 1}',
+      );
+    }
   });
 
   test('many changes during a load give exactly one more load', () async {
