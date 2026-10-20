@@ -62,9 +62,6 @@ class LibraryDatabase extends _$LibraryDatabase {
   Future<List<LibraryRoot>> roots() =>
       (select(libraryRoots)..orderBy([(r) => OrderingTerm.asc(r.id)])).get();
 
-  Stream<List<LibraryRoot>> watchRoots() =>
-      (select(libraryRoots)..orderBy([(r) => OrderingTerm.asc(r.id)])).watch();
-
   Future<bool> hasLibraryRoots() async {
     final row =
         await (selectOnly(libraryRoots)

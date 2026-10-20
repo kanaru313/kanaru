@@ -49,11 +49,6 @@ void main() {
       await db.markRootScanned(id, 50);
       expect((await db.roots()).single.lastScanAt, 50);
     });
-
-    test('watchRoots emits the current roots', () async {
-      await db.addRoots(['/a'], now: 1);
-      expect((await db.watchRoots().first).single.path, '/a');
-    });
   });
 
   group('tracks', () {
