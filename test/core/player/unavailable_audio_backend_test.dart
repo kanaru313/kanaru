@@ -1,9 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/audio_backend.dart';
 import 'package:kanaru/core/player/playback_error.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/repeat_mode.dart';
+import 'package:kanaru/core/player/session/playback_session.dart';
+import 'package:kanaru/core/player/session/playback_session_file.dart';
+import 'package:kanaru/core/player/session/playback_session_provider.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/player/unavailable_audio_backend.dart';
 
 import 'fake_audio_backend.dart';
@@ -13,9 +20,14 @@ class _CountingUnavailable extends UnavailableAudioBackend {
   int opens = 0;
 
   @override
-  Future<void> open(Track track, {Track? next, bool play = true}) {
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  }) {
     opens++;
-    return super.open(track, next: next, play: play);
+    return super.open(track, next: next, play: play, start: start);
   }
 }
 
@@ -161,5 +173,56 @@ void main() {
 
     expect(counting.opens, 1);
     expect(errors, hasLength(1));
+  });
+
+  test('restoring a saved session without an engine stays paused', () async {
+    final root = Directory.systemTemp.createTempSync('kanaru_unavailable_');
+    addTearDown(() => root.deleteSync(recursive: true));
+    final tracks = [
+      for (var i = 0; i < 5; i++) Track.fromPath('/music/$i.mp3'),
+    ];
+    final file = PlaybackSessionFile('${root.path}/playback-session.json');
+    await file.save(
+      PlaybackSession(
+        tracks: tracks,
+        order: const [0, 1, 2, 3, 4],
+        unshuffledOrder: const [0, 1, 2, 3, 4],
+        index: 2,
+        shuffled: false,
+        repeat: RepeatMode.all,
+        position: const Duration(seconds: 30),
+        volume: 80,
+        volumeBeforeMute: 80,
+      ),
+    );
+    await file.flush();
+
+    final counting = _CountingUnavailable();
+    final container = ProviderContainer(
+      overrides: [
+        audioBackendOverride(engineReady: true, create: () => counting),
+        settingsFileProvider.overrideWithValue(
+          SettingsFile('${root.path}/settings.json'),
+        ),
+      ],
+    );
+    addTearDown(() async {
+      final saved = container.read(playbackSessionFileProvider);
+      container.dispose();
+      await saved?.flush();
+    });
+    container.listen(playerServiceProvider, (_, _) {});
+    final errors = <PlaybackError>[];
+    container.read(playerServiceProvider.notifier).errors.listen(errors.add);
+
+    expect(container.read(playerServiceProvider).queue.tracks, tracks);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    final state = container.read(playerServiceProvider);
+    expect(counting.opens, lessThanOrEqualTo(1));
+    expect(errors.length, lessThanOrEqualTo(1));
+    expect(state.playing, isFalse);
+    expect(state.queue.current, tracks[2]);
   });
 }

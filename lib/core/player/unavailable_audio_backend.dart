@@ -22,11 +22,15 @@ class UnavailableAudioBackend implements AudioBackend {
   final _completed = StreamController<bool>.broadcast();
   final _position = StreamController<Duration>.broadcast();
   final _duration = StreamController<Duration>.broadcast();
-  final _volume = StreamController<double>.broadcast();
   final _failed = StreamController<PlaybackError>.broadcast();
 
   @override
-  Future<void> open(Track track, {Track? next, bool play = true}) async {
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  }) async {
     // After the call returns, so the caller has its state in place before the
     // events arrive, like with the real engine.
     scheduleMicrotask(() {
@@ -79,9 +83,6 @@ class UnavailableAudioBackend implements AudioBackend {
   Stream<Duration> get duration => _duration.stream;
 
   @override
-  Stream<double> get volume => _volume.stream;
-
-  @override
   Stream<PlaybackError> get failed => _failed.stream;
 
   @override
@@ -92,7 +93,6 @@ class UnavailableAudioBackend implements AudioBackend {
       _completed.close(),
       _position.close(),
       _duration.close(),
-      _volume.close(),
       _failed.close(),
     ]);
   }
