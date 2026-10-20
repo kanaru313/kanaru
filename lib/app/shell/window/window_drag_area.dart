@@ -1,13 +1,17 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'desktop_window.dart';
 
 /// Lets the user move the window by dragging [child] and maximize it with a
 /// double click, like a native title bar. Does nothing without a custom
 /// title bar.
+///
+/// The window drag starts only once the pointer moves past the click slop. A
+/// drag recognizer would win the gesture arena at pointer down and start the
+/// drag on every press; on Linux that hands the pointer to the window manager,
+/// which swallows the release, so no click could be counted.
 ///
 /// The double click is counted from raw pointer events, not with
 /// `GestureDetector.onDoubleTap`: that recognizer holds the gesture arena for
@@ -31,17 +35,6 @@ class WindowDragArea extends ConsumerStatefulWidget {
   ConsumerState<WindowDragArea> createState() => _WindowDragAreaState();
 }
 
-/// Whether a release [released] after a press at [pressed] ends a window
-/// drag rather than a click.
-///
-/// The pan recognizer is alone in its arena, so it wins at pointer down and
-/// every press starts a window drag; "the drag started" says nothing. On
-/// Linux the window manager then grabs the pointer and, once the user lets go,
-/// sends a synthetic release at the press position. Such a release looks like
-/// a click in place, but it comes long after the press.
-bool _isWindowDragRelease(Duration pressed, Duration released) =>
-    released - pressed > kLongPressTimeout;
-
 class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
   /// Pointers a [WindowDragExclusion] descendant took on pointer down.
   final _excluded = <int>{};
@@ -49,11 +42,15 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
   /// Where and when each pressed primary-button pointer went down.
   final _downs = <int, ({Offset position, Duration time})>{};
 
+  /// Pointers that already started a window drag; their release is not a click.
+  final _dragged = <int>{};
+
   /// The last completed click, which a second one may pair with.
   ({Offset position, Duration time})? _lastClick;
 
   void _onPointerDown(PointerDownEvent event) {
-    // Only a plain primary click can be half of a double click.
+    _dragged.remove(event.pointer);
+    // Only a plain primary press can start a drag or be half of a double click.
     if (event.buttons == kPrimaryButton) {
       _downs[event.pointer] = (position: event.position, time: event.timeStamp);
     } else {
@@ -61,19 +58,35 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
     }
   }
 
+  void _onPointerMove(PointerMoveEvent event) {
+    final down = _downs[event.pointer];
+    if (down == null ||
+        _excluded.contains(event.pointer) ||
+        _dragged.contains(event.pointer)) {
+      return;
+    }
+    final slop = computeHitSlop(
+      event.kind,
+      MediaQuery.maybeGestureSettingsOf(context),
+    );
+    if ((event.position - down.position).distance <= slop) return;
+    _dragged.add(event.pointer);
+    ref.read(startWindowDragProvider)();
+  }
+
   void _onPointerUp(PointerUpEvent event) {
     final down = _downs.remove(event.pointer);
     final taken = _excluded.remove(event.pointer);
+    final dragged = _dragged.remove(event.pointer);
     if (!widget.doubleClickMaximizes) return;
     final slop = computeHitSlop(
       event.kind,
       MediaQuery.maybeGestureSettingsOf(context),
     );
-    // A drag is not a click (see [_isWindowDragRelease]); neither is a click
-    // on an interactive child.
+    // A drag is not a click; neither is a click on an interactive child.
     if (down == null ||
         taken ||
-        _isWindowDragRelease(down.time, event.timeStamp) ||
+        dragged ||
         (event.position - down.position).distance > slop) {
       _lastClick = null;
       return;
@@ -93,6 +106,7 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
   void _onPointerCancel(PointerCancelEvent event) {
     _excluded.remove(event.pointer);
     _downs.remove(event.pointer);
+    _dragged.remove(event.pointer);
     _lastClick = null;
   }
 
@@ -105,13 +119,10 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
       child: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _onPointerDown,
+        onPointerMove: _onPointerMove,
         onPointerUp: _onPointerUp,
         onPointerCancel: _onPointerCancel,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onPanStart: (_) => windowManager.startDragging(),
-          child: widget.child,
-        ),
+        child: widget.child,
       ),
     );
   }

@@ -27,6 +27,12 @@ final toggleMaximizeProvider = Provider<Future<void> Function()>(
   (ref) => toggleMaximize,
 );
 
+/// What a title bar drag runs to hand the pointer to the window manager.
+/// Tests override it so they never reach the window plugin.
+final startWindowDragProvider = Provider<Future<void> Function()>(
+  (ref) => windowManager.startDragging,
+);
+
 /// Sets up the window for the chosen title bar and returns whether the app
 /// must draw its own. Only [TitleBarPreference.kanaru] does.
 ///

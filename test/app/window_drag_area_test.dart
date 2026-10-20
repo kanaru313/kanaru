@@ -10,11 +10,12 @@ const _button = Key('button');
 const _field = Key('field');
 
 /// Pumps a drag area with an empty region, a button and a text field, both
-/// wrapped in [WindowDragExclusion]. Window calls go to [toggles], never to
+/// wrapped in [WindowDragExclusion]. Window calls go to [toggles] and [drags], never to
 /// the window plugin.
 Future<void> pumpArea(
   WidgetTester tester, {
   required List<int> toggles,
+  List<int>? drags,
   VoidCallback? onButton,
   bool doubleClickMaximizes = true,
 }) async {
@@ -24,6 +25,9 @@ Future<void> pumpArea(
         customTitleBarProvider.overrideWithValue(true),
         toggleMaximizeProvider.overrideWithValue(
           () async => toggles.add(toggles.length),
+        ),
+        startWindowDragProvider.overrideWithValue(
+          () async => drags?.add(drags.length),
         ),
       ],
       child: MaterialApp(
@@ -226,7 +230,80 @@ void main() {
     expect(toggles, isEmpty);
   });
 
-  testWidgets('a release long after the press (window drag) is not a click', (
+  testWidgets('clicks without movement toggle once and never start a drag', (
+    tester,
+  ) async {
+    final toggles = <int>[];
+    final drags = <int>[];
+    await pumpArea(tester, toggles: toggles, drags: drags);
+
+    await doubleClick(tester, find.byKey(_empty));
+
+    expect(toggles, hasLength(1));
+    expect(drags, isEmpty);
+  });
+
+  testWidgets('a press that moves past the slop starts one drag and is not '
+      'a click', (tester) async {
+    final toggles = <int>[];
+    final drags = <int>[];
+    await pumpArea(tester, toggles: toggles, drags: drags);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+
+    final p = TestPointer(1, PointerDeviceKind.mouse);
+    await tester.sendEventToBinding(p.down(at, timeStamp: clicker.now));
+    await tester.sendEventToBinding(
+      p.move(at + const Offset(10, 0), timeStamp: clicker.now),
+    );
+    await tester.sendEventToBinding(
+      p.move(at + const Offset(20, 0), timeStamp: clicker.now),
+    );
+    await clicker.wait(const Duration(milliseconds: 40));
+    // The window manager's synthetic release lands back at the press point.
+    await tester.sendEventToBinding(p.up(timeStamp: clicker.now));
+    expect(drags, hasLength(1));
+
+    await clicker.wait(const Duration(milliseconds: 60));
+    await clicker.click(at);
+
+    expect(toggles, isEmpty);
+    expect(drags, hasLength(1));
+  });
+
+  testWidgets('a press that moves within the slop is still a click', (
+    tester,
+  ) async {
+    final toggles = <int>[];
+    final drags = <int>[];
+    await pumpArea(tester, toggles: toggles, drags: drags);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+
+    await clicker.click(at, moveBy: const Offset(0.5, 0));
+    await clicker.wait(const Duration(milliseconds: 60));
+    await clicker.click(at, moveBy: const Offset(0.5, 0));
+
+    expect(drags, isEmpty);
+    expect(toggles, hasLength(1));
+  });
+
+  testWidgets('moving a press that began on a button starts no drag', (
+    tester,
+  ) async {
+    final drags = <int>[];
+    await pumpArea(tester, toggles: [], drags: drags);
+    final clicker = Clicker(tester);
+
+    await clicker.click(
+      tester.getCenter(find.byKey(_button)),
+      moveBy: const Offset(0, 30),
+    );
+
+    expect(drags, isEmpty);
+  });
+
+  testWidgets('a long held press without movement is still a click', (
     tester,
   ) async {
     final toggles = <int>[];
@@ -234,8 +311,6 @@ void main() {
     final clicker = Clicker(tester);
     final at = tester.getCenter(find.byKey(_empty));
 
-    // The window manager ends a window drag, long after the press, with a
-    // release at the press position; that release is not a click.
     await clicker.click(
       at,
       hold: kLongPressTimeout + const Duration(seconds: 1),
@@ -243,7 +318,7 @@ void main() {
     await clicker.wait(const Duration(milliseconds: 100));
     await clicker.click(at);
 
-    expect(toggles, isEmpty);
+    expect(toggles, hasLength(1));
   });
 
   testWidgets('a mouse press that moved past the slop is not a click', (
