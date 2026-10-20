@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/indexer/indexer_state.dart';
-import '../../../l10n/l10n.dart';
+import '../../core/indexer/indexer_state.dart';
+import '../../l10n/l10n.dart';
 
 /// How a finished scan went, which picks the icon and title.
 enum _Outcome { done, warning, failed }

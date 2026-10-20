@@ -64,9 +64,9 @@ class AppearanceSettingsSection extends ConsumerWidget {
             onSelected: notifier.setTheme,
           ),
         ),
-        SettingRow(
+        SettingRow.single(
           title: l10n.settingsLanguage,
-          control: (_) => SettingDropdown<String>(
+          control: SettingDropdown<String>(
             leadingIcon: Icons.translate,
             options: [
               SettingOption(

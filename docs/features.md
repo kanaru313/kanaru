@@ -79,6 +79,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 - `isAudioFile` / `scanFolder` trong `lib/features/player/open_media.dart` chuyển sang `lib/core/indexer/`.
 - `file_selector` vẫn dùng cho hộp thoại chọn thư mục nguồn.
 - Phát file ngoài thư viện đi qua IDX-09 / SYS-07 (dòng lệnh, kéo thả, "Open with"), không qua nút.
+- Top bar cửa sổ hẹp (dưới 720 px, sidebar thành drawer): nút Back `‹` luôn hiện trước ô tìm kiếm (chỉ Back, không Forward; nút bên chuột vẫn đi tới), thành `☰ ‹ [Tìm kiếm] ⚙`. Hiện tại `‹ ›` bị ẩn khi top bar dưới 560 px. Settings `⚙` giữ ở góc phải ở mọi độ rộng, không gộp vào menu `⋮`, không chuyển xuống sidebar.
 
 ## 4. Metadata & artwork
 

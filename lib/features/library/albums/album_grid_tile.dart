@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../widgets/album_artwork.dart';
+import '../widgets/library_rescan_button.dart';
 import 'album_tile_data.dart';
 
 const _padding = 8.0;
@@ -92,7 +93,7 @@ SliverGridDelegate albumGridDelegate(BuildContext context, double width) {
   );
 }
 
-/// [albums] as a scrolling grid.
+/// [albums] as a scrolling grid, leaving room for the rescan button below.
 class AlbumGrid extends StatelessWidget {
   const AlbumGrid({super.key, required this.albums, required this.onTap});
 
@@ -103,7 +104,12 @@ class AlbumGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => GridView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: albumGridPadding),
+        padding: const EdgeInsets.fromLTRB(
+          albumGridPadding,
+          0,
+          albumGridPadding,
+          libraryRescanClearance,
+        ),
         gridDelegate: albumGridDelegate(
           context,
           constraints.maxWidth - albumGridPadding * 2,

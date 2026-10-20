@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_startup.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
-import '../widgets/library_sort_button.dart';
+import '../widgets/library_rescan_button.dart';
+import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'artist_summaries.dart';
 import 'artist_tile.dart';
@@ -38,33 +40,38 @@ class ArtistsScreen extends ConsumerWidget {
       }
     });
     final sort = ref.watch(settingsProvider.select((s) => s.artistSort));
+    final showActions =
+        ref.watch(libraryDatabaseProvider) != null &&
+        ref.watch(libraryHasRootsProvider);
 
     return PageMaterial(
       child: PageScaffold(
         title: l10n.navArtists,
-        body: LibraryBrowseBody<ArtistSummary>(
-          state: ref.watch(artistsProvider),
-          items: ref.watch(sortedArtistsProvider),
-          icon: Icons.person_outline,
-          noRootsMessage: l10n.artistsNoRootsMessage,
-          emptyTitle: l10n.artistsEmptyTitle,
-          emptyMessage: l10n.artistsEmptyMessage,
-          toolbar: Row(
-            children: [
-              LibrarySortButton<ArtistSortField>(
-                choice: sort,
-                fields: ArtistSortField.values,
-                label: artistSortLabel,
-                onChanged: ref.read(settingsProvider.notifier).setArtistSort,
+        actions: [
+          if (showActions)
+            LibrarySortControls<ArtistSortField>(
+              choice: sort,
+              fields: ArtistSortField.values,
+              label: artistSortLabel,
+              onChanged: ref.read(settingsProvider.notifier).setArtistSort,
+            ),
+        ],
+        body: LibraryRescanStack(
+          child: LibraryBrowseBody<ArtistSummary>(
+            state: ref.watch(artistsProvider),
+            items: ref.watch(sortedArtistsProvider),
+            icon: Icons.person_outline,
+            noRootsMessage: l10n.artistsNoRootsMessage,
+            emptyTitle: l10n.artistsEmptyTitle,
+            emptyMessage: l10n.artistsEmptyMessage,
+            builder: (artists) => ListView.builder(
+              padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+              prototypeItem: ArtistTile(artist: _prototypeArtist, onTap: () {}),
+              itemCount: artists.length,
+              itemBuilder: (context, i) => ArtistTile(
+                artist: artists[i],
+                onTap: () => context.go(artistLocation(artists[i].key)),
               ),
-            ],
-          ),
-          builder: (artists) => ListView.builder(
-            prototypeItem: ArtistTile(artist: _prototypeArtist, onTap: () {}),
-            itemCount: artists.length,
-            itemBuilder: (context, i) => ArtistTile(
-              artist: artists[i],
-              onTap: () => context.go(artistLocation(artists[i].key)),
             ),
           ),
         ),

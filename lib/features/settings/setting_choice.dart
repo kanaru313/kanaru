@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'setting_row.dart';
+
 /// One option of a [SettingChoice].
 class SettingOption<T> {
   const SettingOption({required this.value, required this.label, this.icon});
@@ -37,6 +39,7 @@ class SettingChoice<T> extends StatelessWidget {
     }
     return SegmentedButton<T>(
       showSelectedIcon: false,
+      style: settingButtonStyle(),
       segments: [
         for (final option in options)
           ButtonSegment(
@@ -52,7 +55,9 @@ class SettingChoice<T> extends StatelessWidget {
 }
 
 /// Dropdown styled as tall and round as a segmented button, so both kinds of
-/// control line up in the settings list.
+/// control line up in the settings list. Given a bounded width (a compact
+/// settings row), it fills it, so all such dropdowns are the same width;
+/// otherwise it takes the width of its longest option.
 class SettingDropdown<T> extends StatelessWidget {
   const SettingDropdown({
     super.key,
@@ -70,29 +75,39 @@ class SettingDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leadingIcon = this.leadingIcon;
+    // Made outside the layout builder, so a relayout at another width (see
+    // FullOrCompactControl) hands the dropdown the same objects: it refreshes
+    // itself after the frame when they change, which would relayout again.
+    final leading = leadingIcon == null ? null : Icon(leadingIcon, size: 18);
+    final entries = [
+      for (final option in options)
+        DropdownMenuEntry(value: option.value, label: option.label),
+    ];
 
-    return DropdownMenu<T>(
-      // Rebuilt when the value or the UI language changes, since
-      // initialSelection is only read once.
-      key: ValueKey('$selected-${Localizations.localeOf(context)}'),
-      initialSelection: selected,
-      requestFocusOnTap: false,
-      enableFilter: false,
-      leadingIcon: leadingIcon == null ? null : Icon(leadingIcon, size: 18),
-      textStyle: Theme.of(context).textTheme.labelLarge,
-      inputDecorationTheme: InputDecorationThemeData(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-        constraints: const BoxConstraints.tightFor(height: 40),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+    return LayoutBuilder(
+      builder: (context, constraints) => DropdownMenu<T>(
+        width: constraints.hasBoundedWidth ? constraints.maxWidth : null,
+        // Rebuilt when the value or the UI language changes, since
+        // initialSelection is only read once.
+        key: ValueKey('$selected-${Localizations.localeOf(context)}'),
+        initialSelection: selected,
+        requestFocusOnTap: false,
+        enableFilter: false,
+        leadingIcon: leading,
+        textStyle: Theme.of(context).textTheme.labelLarge,
+        inputDecorationTheme: InputDecorationThemeData(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+          constraints: const BoxConstraints.tightFor(
+            height: settingControlHeight,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        dropdownMenuEntries: entries,
+        onSelected: (value) {
+          if (value != null) onSelected(value);
+        },
       ),
-      dropdownMenuEntries: [
-        for (final option in options)
-          DropdownMenuEntry(value: option.value, label: option.label),
-      ],
-      onSelected: (value) {
-        if (value != null) onSelected(value);
-      },
     );
   }
 }

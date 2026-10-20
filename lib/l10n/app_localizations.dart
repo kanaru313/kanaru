@@ -488,11 +488,17 @@ abstract class AppLocalizations {
   /// **'See the log for details'**
   String get libraryScanFailedDetails;
 
-  /// No description provided for @sortTooltip.
+  /// No description provided for @sortBy.
   ///
   /// In en, this message translates to:
-  /// **'Sort'**
-  String get sortTooltip;
+  /// **'Sort by:'**
+  String get sortBy;
+
+  /// No description provided for @sortOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order:'**
+  String get sortOrder;
 
   /// No description provided for @sortAscending.
   ///
@@ -937,6 +943,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close queue'**
   String get queueClose;
+
+  /// No description provided for @settingsLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get settingsLibrary;
+
+  /// No description provided for @settingsRescanLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescan library'**
+  String get settingsRescanLibrary;
 
   /// No description provided for @settingsAppearance.
   ///

@@ -73,7 +73,8 @@
   "libraryUnexpectedError": "Đã xảy ra lỗi. Xem chi tiết trong nhật ký.",
   "libraryScanFailedDetails": "Xem chi tiết trong nhật ký",
 
-  "sortTooltip": "Sắp xếp",
+  "sortBy": "Sắp xếp:",
+  "sortOrder": "Thứ tự:",
   "sortAscending": "Tăng dần",
   "sortDescending": "Giảm dần",
   "sortTitle": "Tên",
@@ -155,6 +156,8 @@
   "queueShowCurrent": "Đang phát",
   "queueClose": "Đóng hàng đợi",
 
+  "settingsLibrary": "Thư viện",
+  "settingsRescanLibrary": "Quét lại thư viện",
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",
   "settingsThemeSystem": "Hệ thống",

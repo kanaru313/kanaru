@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
-import 'package:kanaru/features/library/songs/scan_result_snack_bar.dart';
+import 'package:kanaru/features/library/scan_result_snack_bar.dart';
 
 void main() {
   final ended = DateTime(2026, 10, 19, 12);

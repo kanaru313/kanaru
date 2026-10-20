@@ -40,7 +40,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder rescan() => find.widgetWithText(OutlinedButton, 'Rescan');
+  Finder rescan() => find.byTooltip('Rescan');
+
+  /// The floating rescan button, whatever its state.
+  FloatingActionButton rescanButton(WidgetTester tester) =>
+      tester.widget(find.byType(FloatingActionButton));
 
   Future<void> scan(WidgetTester tester) async {
     await tester.tap(rescan());
@@ -82,7 +86,7 @@ void main() {
     expect(h.backend.calls.any((c) => c.startsWith('open(B.MP3')), isTrue);
   });
 
-  testWidgets('shows progress and disables Rescan while scanning', (
+  testWidgets('the rescan button shows progress and is disabled meanwhile', (
     tester,
   ) async {
     final gated = _GatedTagReader();
@@ -99,14 +103,24 @@ void main() {
     }
     await tester.pump();
 
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(find.text('Reading tags 0 / 1'), findsOneWidget);
-    expect(tester.widget<OutlinedButton>(rescan()).onPressed, isNull);
+    final ring = find.descendant(
+      of: find.byType(FloatingActionButton),
+      matching: find.byType(CircularProgressIndicator),
+    );
+    expect(ring, findsOneWidget);
+    expect(
+      tester.widget<CircularProgressIndicator>(ring).value,
+      0,
+      reason: 'determinate while tags are read',
+    );
+    expect(find.byTooltip('Reading tags 0 / 1'), findsOneWidget);
+    expect(rescanButton(tester).onPressed, isNull);
 
     gated.release.complete();
     await settleIo(tester);
-    expect(find.byType(LinearProgressIndicator), findsNothing);
-    expect(tester.widget<OutlinedButton>(rescan()).onPressed, isNotNull);
+    expect(ring, findsNothing);
+    expect(rescan(), findsOneWidget);
+    expect(rescanButton(tester).onPressed, isNotNull);
   });
 
   testWidgets('reports a failed scan', (tester) async {
@@ -245,7 +259,7 @@ void main() {
           lessThan(tester.getTopLeft(find.text('s38')).dy),
         );
 
-        await chooseSort(tester, 'Duration', 'Descending');
+        await chooseSort(tester, 'Ascending', 'Descending');
         await tester.pumpAndSettle();
         expect(find.text('s00'), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);

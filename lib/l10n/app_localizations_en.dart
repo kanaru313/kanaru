@@ -250,7 +250,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryScanFailedDetails => 'See the log for details';
 
   @override
-  String get sortTooltip => 'Sort';
+  String get sortBy => 'Sort by:';
+
+  @override
+  String get sortOrder => 'Order:';
 
   @override
   String get sortAscending => 'Ascending';
@@ -508,6 +511,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueClose => 'Close queue';
+
+  @override
+  String get settingsLibrary => 'Library';
+
+  @override
+  String get settingsRescanLibrary => 'Rescan library';
 
   @override
   String get settingsAppearance => 'Appearance';
