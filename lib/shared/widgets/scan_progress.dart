@@ -41,8 +41,9 @@ class _ScanProgressBuilderState extends State<ScanProgressBuilder> {
   }
 }
 
-/// Progress ring of a scan, [size] square: determinate while tags are read,
-/// spinning while files are still being looked for.
+/// Progress ring of a scan, [size] square: spinning while files are still
+/// being looked for and until the first batch of tags is read, then
+/// determinate.
 class ScanProgressRing extends StatelessWidget {
   const ScanProgressRing({
     super.key,

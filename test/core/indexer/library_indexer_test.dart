@@ -178,6 +178,7 @@ void main() {
   });
 
   test('batch size aims for 20 steps within 32 to 512 files', () {
+    expect(tagBatchSizeFor(0), minTagBatchSize);
     expect(tagBatchSizeFor(1), minTagBatchSize);
     expect(tagBatchSizeFor(483), minTagBatchSize);
     expect(tagBatchSizeFor(2000), 100);
