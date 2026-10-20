@@ -220,7 +220,12 @@ class MediaKitBackend implements AudioBackend {
   }
 
   @override
-  Future<void> open(Track track, {Track? next, bool play = true}) {
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  }) {
     _opensPending++;
     return _serial(() async {
       // A newer `open` is queued behind this one and would replace it, so
@@ -233,7 +238,16 @@ class MediaKitBackend implements AudioBackend {
       try {
         _loaded.clear();
         _lastError = '';
-        await _player.open(Media(track.uri), play: play);
+        // media_kit applies `start` while this entry loads and clears it
+        // when it unloads, so the next entry, appended with a raw
+        // `loadfile`, still starts at zero. Its list of opened media is
+        // indexed by playlist position, which drifts once finished entries
+        // are removed; harmless, as nothing reloads an entry but `open`,
+        // which resets that list.
+        await _player.open(
+          Media(track.uri, start: start > Duration.zero ? start : null),
+          play: play,
+        );
         _current = track;
         _currentId = await _entryId(0);
         await _queueNext(next);

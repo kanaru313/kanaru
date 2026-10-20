@@ -13,9 +13,11 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   set _failuresInRow(int count);
   set _wantsPlaying(bool wanted);
   Future<void> _play(int index);
+  void _userActed();
 
   Future<void> playPause() async {
     if (state.queue.isEmpty) return;
+    _userActed();
     if (_ended) return jump(0);
     final play = !state.playing;
     _wantsPlaying = play;
@@ -39,6 +41,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   /// through [seek], which would announce a jump and clear `stopped`.
   Future<void> stop() async {
     if (state.queue.isEmpty) return;
+    _userActed();
     _wantsPlaying = false;
     state = state.copyWith(
       playing: false,
@@ -52,6 +55,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
 
   Future<void> seek(Duration position) async {
     if (state.queue.isEmpty) return;
+    _userActed();
     // Seeking back into a finished track resumes it rather than the queue.
     if (state.duration > Duration.zero) _ended = false;
     state = state.copyWith(position: position, stopped: false);
@@ -74,6 +78,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   /// repeat stay as they were.
   Future<void> openTracks(List<Track> tracks, {int start = 0}) async {
     if (tracks.isEmpty) return;
+    _userActed();
     final queue = PlayQueue.open(
       tracks,
       start,
@@ -87,6 +92,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
 
   /// Plays the track at [index] in play order, as picked by the user.
   Future<void> jump(int index) {
+    _userActed();
     _failuresInRow = 0;
     return _play(index);
   }

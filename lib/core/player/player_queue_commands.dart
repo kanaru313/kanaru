@@ -14,12 +14,14 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   List<int> get _handedNext;
   Future<void> _queueNext();
   Future<void> _play(int index, {bool play = true});
+  void _userActed();
 
   /// Moves the track at play position [from] to [to]. The playing track is
   /// never interrupted, even when it is the one dragged.
   Future<void> moveTrack(int from, int to) async {
     final moved = state.queue.move(from, to);
     if (identical(moved, state.queue)) return;
+    _userActed();
     _failuresInRow = 0;
     state = state.copyWith(queue: moved);
     await _queueNext();
@@ -31,6 +33,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   Future<void> removeTrack(int at) async {
     final queue = state.queue;
     if (at < 0 || at >= queue.order.length) return;
+    _userActed();
     _failuresInRow = 0;
     final rest = queue.removeAt(at);
     if (rest.isEmpty) return _clearPlayback();
@@ -58,6 +61,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// Removing that one too is what empties the queue.
   Future<void> clearQueue() async {
     if (state.queue.isEmpty) return;
+    _userActed();
     _failuresInRow = 0;
     state = state.copyWith(queue: state.queue.keepOnlyCurrent());
     await _queueNext();

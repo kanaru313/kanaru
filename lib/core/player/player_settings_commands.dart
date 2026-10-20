@@ -7,15 +7,18 @@ mixin _PlayerSettingsCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   Random? get _random;
   Future<void> _queueNext();
+  void _userActed();
 
   /// Sets the volume (0–100). Changing it while muted unmutes.
   Future<void> setVolume(double volume) async {
+    _userActed();
     final value = volume.clamp(0, 100).toDouble();
     state = state.copyWith(volume: value, volumeBeforeMute: () => null);
     await _backend.setVolume(value);
   }
 
   Future<void> toggleMute() async {
+    _userActed();
     final restore = state.volumeBeforeMute;
     if (restore != null) {
       await setVolume(restore);
@@ -31,6 +34,7 @@ mixin _PlayerSettingsCommands on Notifier<PlayerState> {
   Future<void> setShuffle(bool on) async {
     final current = state.queue;
     if (current.shuffled == on) return;
+    _userActed();
     state = state.copyWith(
       queue: on ? current.shuffle(_random) : current.unshuffle(),
     );
@@ -41,6 +45,7 @@ mixin _PlayerSettingsCommands on Notifier<PlayerState> {
 
   Future<void> setRepeat(RepeatMode repeat) async {
     if (state.queue.repeat == repeat) return;
+    _userActed();
     state = state.copyWith(queue: state.queue.copyWith(repeat: repeat));
     await _backend.setRepeat(repeat);
     if (!state.queue.isEmpty) await _queueNext();

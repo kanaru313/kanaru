@@ -9,9 +9,12 @@ import 'play_queue.dart';
 import 'playback_error.dart';
 import 'player_state.dart';
 import 'repeat_mode.dart';
+import 'session/playback_session_provider.dart';
+import 'session/playback_session_saver.dart';
 import 'track.dart';
 
 part 'player_queue_commands.dart';
+part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
 part 'player_transport_commands.dart';
 
@@ -34,7 +37,8 @@ class PlayerService extends Notifier<PlayerState>
     with
         _PlayerSettingsCommands,
         _PlayerTransportCommands,
-        _PlayerQueueCommands {
+        _PlayerQueueCommands,
+        _PlayerSessionCommands {
   PlayerService({this._random});
 
   @override
@@ -102,7 +106,10 @@ class PlayerService extends Notifier<PlayerState>
       }),
       _backend.position.listen(_onPosition),
       _backend.duration.listen((v) {
-        if (v > Duration.zero) _failuresInRow = 0;
+        if (v > Duration.zero) {
+          _failuresInRow = 0;
+          _sessionTrackLoaded();
+        }
         state = state.copyWith(duration: v);
       }),
       _backend.failed.listen(_onFailed),
@@ -114,7 +121,7 @@ class PlayerService extends Notifier<PlayerState>
       _errors.close();
       _seeked.close();
     });
-    return PlayerState();
+    return _startSession();
   }
 
   void _onPosition(Duration position) {
@@ -147,6 +154,9 @@ class PlayerService extends Notifier<PlayerState>
     _errors.add(error);
   }
 
+  @override
+  void _userActed() => _sessionUserActed();
+
   /// Hands the engine the track that follows the current one.
   @override
   Future<void> _queueNext() {
@@ -160,8 +170,13 @@ class PlayerService extends Notifier<PlayerState>
     return _backend.setNext(next == null ? null : queue.tracks[next]);
   }
 
+  /// Loads the track at [index], playing or paused, from [start].
   @override
-  Future<void> _play(int index, {bool play = true}) async {
+  Future<void> _play(
+    int index, {
+    bool play = true,
+    Duration start = Duration.zero,
+  }) async {
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
@@ -174,14 +189,15 @@ class PlayerService extends Notifier<PlayerState>
       queue: queue,
       playing: play,
       stopped: false,
-      position: Duration.zero,
+      position: start,
       duration: Duration.zero,
     );
-    _lastTick = Duration.zero;
+    _lastTick = start;
     await _backend.open(
       queue.tracks[index],
       next: next == null ? null : queue.tracks[next],
       play: play,
+      start: start,
     );
   }
 }

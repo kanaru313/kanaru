@@ -8,9 +8,15 @@ import 'track.dart';
 /// `PlayerService` can be tested with a fake instead of libmpv.
 abstract interface class AudioBackend {
   /// Starts [track] now, replacing whatever plays, with [next] queued behind
-  /// it. An open that is still queued may be skipped when a newer one is
-  /// queued after it.
-  Future<void> open(Track track, {Track? next, bool play = true});
+  /// it, from [start] into the track ([next] always starts at its
+  /// beginning). An open that is still queued may be skipped when a newer
+  /// one is queued after it.
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  });
 
   /// Replaces the track queued after the current one; `null` queues nothing.
   Future<void> setNext(Track? next);

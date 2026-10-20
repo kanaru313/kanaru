@@ -30,11 +30,16 @@ class FakeAudioBackend implements AudioBackend {
       emitFailed.add(PlaybackError(track, 'Failed to open'));
 
   @override
-  Future<void> open(Track track, {Track? next, bool play = true}) async {
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  }) async {
     this.next = next;
-    calls.add(
-      'open(${track.title}, next: ${next?.title}${play ? '' : ', paused'})',
-    );
+    final paused = play ? '' : ', paused';
+    final at = start > Duration.zero ? ', at $start' : '';
+    calls.add('open(${track.title}, next: ${next?.title}$paused$at)');
   }
 
   @override
