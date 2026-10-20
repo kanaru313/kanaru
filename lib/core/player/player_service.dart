@@ -181,6 +181,7 @@ class PlayerService extends Notifier<PlayerState>
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
     _wantsPlaying = play;
+    _openedSinceBuild = true;
     final next = queue.nextIndex;
     _handedNext.clear();
     if (next != null) _handedNext.add(queue.order[next]);

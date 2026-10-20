@@ -5,6 +5,7 @@ part of 'player_service.dart';
 mixin _PlayerSessionCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   StreamController<Duration> get _seeked;
+  bool get _wantsPlaying;
   Future<void> _play(
     int index, {
     bool play = true,
@@ -17,9 +18,9 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
   /// does nothing.
   Object? _sessionBuild;
 
-  /// The current build's restore of the track; `null` once it ran, or once
-  /// the user did something first, which then wins.
-  Object? _pendingRestore;
+  /// Whether a track was handed to the engine since this build. A track the
+  /// user opened before the restore ran wins over the restored one.
+  bool _openedSinceBuild = false;
 
   /// Loads the saved session and sets up saving. Returns the state the
   /// player starts in: the restored queue and volume, paused. The engine is
@@ -27,7 +28,7 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
   /// already show the restored session.
   PlayerState _startSession() {
     _sessionBuild = null;
-    _pendingRestore = null;
+    _openedSinceBuild = false;
     _saver = null;
     final file = ref.watch(playbackSessionFileProvider);
     if (file == null) return PlayerState();
@@ -49,8 +50,7 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
     final queue = session.toQueue();
     final token = Object();
     _sessionBuild = token;
-    _pendingRestore = token;
-    Future.microtask(() => _restoreEngine(token, queue, session.position));
+    Future.microtask(() => _restoreEngine(token));
     return PlayerState(
       queue: queue,
       position: session.hasTrack ? session.position : Duration.zero,
@@ -59,26 +59,25 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
     );
   }
 
-  /// Hands the restored session to the engine: volume and repeat always
-  /// (the engine starts at its own defaults), and the current track loaded
-  /// paused at the saved position unless the user already played something.
-  void _restoreEngine(Object token, PlayQueue restored, Duration start) {
+  /// Hands the restored session to the engine: volume and repeat (the
+  /// engine starts at its own defaults), then the current track at the
+  /// saved position, paused. Commands that ran first are kept: the volume,
+  /// queue and position they set are what gets loaded, playing when the user
+  /// pressed play; a track the user opened is left alone.
+  void _restoreEngine(Object token) {
     if (!ref.mounted || !identical(_sessionBuild, token)) return;
+    _sessionBuild = null;
     unawaited(_backend.setVolume(state.volume));
     unawaited(_backend.setRepeat(state.queue.repeat));
-    if (!identical(_pendingRestore, token)) return;
-    _pendingRestore = null;
-    if (restored.isEmpty || !identical(state.queue, restored)) return;
-    unawaited(_play(restored.index, play: false, start: start));
+    if (_openedSinceBuild || state.queue.isEmpty) return;
+    unawaited(
+      _play(state.queue.index, play: _wantsPlaying, start: state.position),
+    );
   }
 
   /// A track loaded: the restored session works, so saving can go on.
   void _sessionTrackLoaded() => _saver?.unfreeze();
 
-  /// The user (or an external controller) did something: it wins over a
-  /// restore not run yet, and saving goes on.
-  void _sessionUserActed() {
-    _pendingRestore = null;
-    _saver?.unfreeze();
-  }
+  /// The user (or an external controller) did something: saving goes on.
+  void _sessionUserActed() => _saver?.unfreeze();
 }

@@ -198,8 +198,10 @@ void main() {
     await store(session);
     live = launch();
     state();
-    await service().setVolume(70);
-    await service().openTracks([c]);
+    // Both run before the restore microtask gets a turn.
+    final volume = service().setVolume(70);
+    final open = service().openTracks([c]);
+    await Future.wait([volume, open]);
     await settle();
 
     expect(backend.calls.where((call) => call.startsWith('open')), [
@@ -211,6 +213,51 @@ void main() {
       backend.calls.where((call) => call.startsWith('setVolume')).toSet(),
       {'setVolume(70.0)'},
     );
+  });
+
+  group('a command sent before the restore ran', () {
+    Future<List<String>> opensAfter(
+      Future<void> Function(PlayerService) command,
+    ) async {
+      await store(session);
+      live = launch();
+      state();
+      await command(service());
+      await settle();
+      return [
+        for (final call in backend.calls)
+          if (call.startsWith('open')) call,
+      ];
+    }
+
+    test('a volume change still loads the restored track', () async {
+      final opens = await opensAfter((s) => s.setVolume(70));
+
+      expect(opens, ['open(b, next: a, paused, at 0:01:23.000000)']);
+      expect(backend.calls, contains('setVolume(70.0)'));
+    });
+
+    test('a seek loads the restored track where it seeked to', () async {
+      final opens = await opensAfter(
+        (s) => s.seek(const Duration(seconds: 10)),
+      );
+
+      expect(opens, ['open(b, next: a, paused, at 0:00:10.000000)']);
+    });
+
+    test('play loads the restored track playing', () async {
+      final opens = await opensAfter((s) => s.play());
+
+      expect(opens, ['open(b, next: a, at 0:01:23.000000)']);
+      expect(state().playing, isTrue);
+    });
+
+    test('a queue edit loads the current track of the edited queue', () async {
+      final opens = await opensAfter((s) => s.removeTrack(0));
+
+      expect(opens, ['open(b, next: a, paused, at 0:01:23.000000)']);
+      expect(state().queue.tracks, [b, a]);
+    });
   });
 
   group('any command lets a restored session be saved again', () {
