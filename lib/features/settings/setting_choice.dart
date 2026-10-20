@@ -89,7 +89,9 @@ class SettingDropdown<T> extends StatelessWidget {
         width: constraints.hasBoundedWidth ? constraints.maxWidth : null,
         // Rebuilt when the UI language changes, so the shown label follows it.
         // Not keyed on the value: remounting on a choice would drop keyboard
-        // focus; the menu follows a new initialSelection by itself.
+        // focus; the menu follows a new initialSelection by itself. Changing
+        // the language does remount it (the labels change), so focus is not
+        // kept for that one case; accepted.
         key: ValueKey(Localizations.localeOf(context)),
         initialSelection: selected,
         requestFocusOnTap: false,

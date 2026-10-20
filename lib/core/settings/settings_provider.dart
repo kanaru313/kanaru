@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import 'app_settings.dart';
 import 'settings_file.dart';
 
 export 'app_settings.dart';
 export 'settings_file.dart' show SettingsFile, settingsFileFor;
+
+final _log = Logger('settings');
 
 /// The settings as loaded at startup. `main()` overrides it with the file's
 /// contents. Also tells the UI which settings need a restart: those whose
@@ -42,7 +45,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
   SettingsFile? _file;
   Future<void>? _inFlight;
   AppSettings? _pending;
-  int _started = 0;
 
   /// Runs once. Never invalidate this provider: it would go back to the
   /// startup settings, not to the current ones.
@@ -92,7 +94,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void _save() {
     if (_file == null) return;
     _pending = state;
-    _inFlight ??= _drain();
+    // Started on a later event, so `_inFlight` is set before any of the drain
+    // runs (even if it finishes without awaiting) and is cleared after.
+    _inFlight ??= Future<void>(_drain);
   }
 
   Future<void> _drain() async {
@@ -101,12 +105,17 @@ class SettingsNotifier extends Notifier<AppSettings> {
       while (_pending != null) {
         final settings = _pending!;
         _pending = null;
-        final sequence = ++_started;
-        // SettingsFile.save never throws, so the loop always ends.
-        final saved = await file.save(settings);
-        // Only the latest started write decides the warning, so a slow older
-        // one never clears (or sets) what a newer one reported.
-        if (ref.mounted && sequence == _started) {
+        var saved = false;
+        try {
+          saved = await file.save(settings);
+        } catch (error, stack) {
+          // SettingsFile.save should not throw; if it does, treat it as a
+          // failed write and keep draining so later changes still get saved.
+          _log.warning('Saving settings threw', error, stack);
+        }
+        // Only the last write of a burst decides the warning, so a failure
+        // that a queued write is about to fix never flashes.
+        if (_pending == null && ref.mounted) {
           ref.read(settingsSaveFailedProvider.notifier).set(!saved);
         }
       }
