@@ -46,6 +46,14 @@ void main() {
     await pumpSettings(tester);
 
     expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Rescan library'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Rescan'))
+          .onPressed,
+      isNull,
+      reason: 'no library database in this test',
+    );
     expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
     expect(find.text('About'), findsWidgets);
     expect(find.text('GPL-3.0-or-later'), findsOneWidget);

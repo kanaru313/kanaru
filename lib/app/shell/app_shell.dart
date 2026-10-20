@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/indexer/indexer_providers.dart';
+import '../../features/library/scan_result_snack_bar.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../features/player/now_playing/now_playing_overlay.dart';
 import '../../features/player/player_bar.dart';
@@ -54,6 +56,16 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Announced here, once, wherever the scan was started from (a library
+    // page, Settings); the pages themselves stay mounted side by side.
+    ref.listen(libraryIndexerProvider, (previous, next) {
+      final snackBar = scanResultSnackBar(context, next);
+      if (snackBar == null) return;
+      // Queued, not replacing: a message shown right before (for example a
+      // folder refused on the welcome screen) must stay readable.
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    });
+
     final wide = MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
     final selected = AppDestination.values[navigationShell.currentIndex];
     final nowPlayingOpen = ref.watch(nowPlayingOpenProvider);

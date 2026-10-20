@@ -944,6 +944,18 @@ abstract class AppLocalizations {
   /// **'Close queue'**
   String get queueClose;
 
+  /// No description provided for @settingsLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get settingsLibrary;
+
+  /// No description provided for @settingsRescanLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescan library'**
+  String get settingsRescanLibrary;
+
   /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:

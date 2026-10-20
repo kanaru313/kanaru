@@ -513,6 +513,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueClose => 'Close queue';
 
   @override
+  String get settingsLibrary => 'Library';
+
+  @override
+  String get settingsRescanLibrary => 'Rescan library';
+
+  @override
   String get settingsAppearance => 'Appearance';
 
   @override

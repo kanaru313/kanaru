@@ -173,7 +173,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add a music folder in Songs.'), findsOneWidget);
     expect(find.byType(FilledButton), findsNothing);
-    expect(find.text('Sort by:'), findsNothing, reason: 'no sort without roots');
+    expect(
+      find.text('Sort by:'),
+      findsNothing,
+      reason: 'no sort without roots',
+    );
   });
 
   testWidgets('no albums yet', (tester) async {

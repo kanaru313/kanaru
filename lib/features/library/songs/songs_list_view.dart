@@ -6,6 +6,7 @@ import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/settings/settings_provider.dart';
 import '../play_tracks.dart';
 import '../widgets/library_loading.dart';
+import '../widgets/library_rescan_button.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
@@ -93,6 +94,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
             }
             return ListView.builder(
               controller: _scroll,
+              padding: const EdgeInsets.only(bottom: libraryRescanClearance),
               // Measured from a row, so larger text sizes do not clip rows.
               prototypeItem: SongTile(song: _prototypeSong, onTap: () {}),
               itemCount: songs.length,

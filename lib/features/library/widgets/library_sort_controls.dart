@@ -41,7 +41,9 @@ class LibrarySortControls<F extends Enum> extends StatelessWidget {
         _SortMenu<bool>(
           label: l10n.sortOrder,
           selected: choice.descending,
-          options: {for (final d in const [false, true]) d: order(d)},
+          options: {
+            for (final d in const [false, true]) d: order(d),
+          },
           onSelected: (descending) =>
               onChanged(choice.copyWith(descending: descending)),
         ),

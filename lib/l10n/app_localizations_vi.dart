@@ -509,6 +509,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueClose => 'Đóng hàng đợi';
 
   @override
+  String get settingsLibrary => 'Thư viện';
+
+  @override
+  String get settingsRescanLibrary => 'Quét lại thư viện';
+
+  @override
   String get settingsAppearance => 'Giao diện';
 
   @override

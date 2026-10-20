@@ -12,16 +12,15 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
+import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
-import 'scan_progress_bar.dart';
-import 'scan_result_snack_bar.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_view.dart';
 
 final _log = Logger('library');
 
-/// The scanned library as a flat list in the saved sort, with scan progress
-/// and a rescan button. Tapping a song plays the whole list from it.
+/// The scanned library as a flat list in the saved sort, with the floating
+/// rescan button. Tapping a song plays the whole list from it.
 class SongsScreen extends ConsumerStatefulWidget {
   /// [pickDirectory] opens the folder picker; defaults to
   /// [directoryPickerProvider].
@@ -75,18 +74,11 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    ref.listen(libraryIndexerProvider, (previous, next) {
-      final snackBar = scanResultSnackBar(context, next);
-      if (snackBar == null) return;
-      // Queued, not replacing: a message shown right before (for example a
-      // folder refused on the welcome screen) must stay readable.
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
-
     final hasDb = ref.watch(libraryDatabaseProvider) != null;
     final hasRoots = ref.watch(libraryHasRootsProvider);
-    final scan = ref.watch(libraryIndexerProvider);
-    final scanning = scan is IndexerScanning;
+    final scanning = ref.watch(
+      libraryIndexerProvider.select((s) => s is IndexerScanning),
+    );
 
     final Widget body;
     if (!hasDb) {
@@ -97,33 +89,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         onChooseFolder: _choosing ? null : _chooseFolder,
       );
     } else {
-      body = Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 32, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: scan is IndexerScanning
-                      ? ScanProgressBar(state: scan)
-                      : const SizedBox.shrink(),
-                ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: scanning
-                      ? null
-                      : () => unawaited(
-                          ref.read(libraryIndexerProvider.notifier).scan(),
-                        ),
-                  icon: const Icon(Icons.refresh),
-                  label: Text(l10n.libraryRescan),
-                ),
-              ],
-            ),
-          ),
-          Expanded(child: SongsListView(scanning: scanning)),
-        ],
-      );
+      body = SongsListView(scanning: scanning);
     }
 
     return PageScaffold(
@@ -137,7 +103,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             onChanged: ref.read(settingsProvider.notifier).setSongSort,
           ),
       ],
-      body: body,
+      body: LibraryRescanStack(child: body),
     );
   }
 }

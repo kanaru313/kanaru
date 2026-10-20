@@ -252,6 +252,8 @@
   "queueShowCurrent": "Now playing",
   "queueClose": "Close queue",
 
+  "settingsLibrary": "Library",
+  "settingsRescanLibrary": "Rescan library",
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
   "settingsThemeSystem": "System",

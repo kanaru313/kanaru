@@ -10,6 +10,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
+import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'album_grid_tile.dart';
@@ -78,30 +79,33 @@ class AlbumsScreen extends ConsumerWidget {
             ),
           ],
         ],
-        body: LibraryBrowseBody<AlbumSummary>(
-          state: ref.watch(albumsProvider),
-          items: ref.watch(sortedAlbumsProvider),
-          icon: Icons.album_outlined,
-          noRootsMessage: l10n.albumsNoRootsMessage,
-          emptyTitle: l10n.albumsEmptyTitle,
-          emptyMessage: l10n.albumsEmptyMessage,
-          builder: (albums) => switch (view) {
-            AlbumsView.grid => AlbumGrid(
-              albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
-              onTap: (album) => open(album.key),
-            ),
-            AlbumsView.list => ListView.builder(
-              prototypeItem: AlbumListTile(
-                album: _prototypeAlbum,
-                onTap: () {},
+        body: LibraryRescanStack(
+          child: LibraryBrowseBody<AlbumSummary>(
+            state: ref.watch(albumsProvider),
+            items: ref.watch(sortedAlbumsProvider),
+            icon: Icons.album_outlined,
+            noRootsMessage: l10n.albumsNoRootsMessage,
+            emptyTitle: l10n.albumsEmptyTitle,
+            emptyMessage: l10n.albumsEmptyMessage,
+            builder: (albums) => switch (view) {
+              AlbumsView.grid => AlbumGrid(
+                albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
+                onTap: (album) => open(album.key),
               ),
-              itemCount: albums.length,
-              itemBuilder: (context, i) => AlbumListTile(
-                album: albums[i],
-                onTap: () => open(albums[i].key),
+              AlbumsView.list => ListView.builder(
+                padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+                prototypeItem: AlbumListTile(
+                  album: _prototypeAlbum,
+                  onTap: () {},
+                ),
+                itemCount: albums.length,
+                itemBuilder: (context, i) => AlbumListTile(
+                  album: albums[i],
+                  onTap: () => open(albums[i].key),
+                ),
               ),
-            ),
-          },
+            },
+          ),
         ),
       ),
     );

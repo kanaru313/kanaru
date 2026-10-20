@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
+import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'artist_summaries.dart';
@@ -55,19 +56,22 @@ class ArtistsScreen extends ConsumerWidget {
               onChanged: ref.read(settingsProvider.notifier).setArtistSort,
             ),
         ],
-        body: LibraryBrowseBody<ArtistSummary>(
-          state: ref.watch(artistsProvider),
-          items: ref.watch(sortedArtistsProvider),
-          icon: Icons.person_outline,
-          noRootsMessage: l10n.artistsNoRootsMessage,
-          emptyTitle: l10n.artistsEmptyTitle,
-          emptyMessage: l10n.artistsEmptyMessage,
-          builder: (artists) => ListView.builder(
-            prototypeItem: ArtistTile(artist: _prototypeArtist, onTap: () {}),
-            itemCount: artists.length,
-            itemBuilder: (context, i) => ArtistTile(
-              artist: artists[i],
-              onTap: () => context.go(artistLocation(artists[i].key)),
+        body: LibraryRescanStack(
+          child: LibraryBrowseBody<ArtistSummary>(
+            state: ref.watch(artistsProvider),
+            items: ref.watch(sortedArtistsProvider),
+            icon: Icons.person_outline,
+            noRootsMessage: l10n.artistsNoRootsMessage,
+            emptyTitle: l10n.artistsEmptyTitle,
+            emptyMessage: l10n.artistsEmptyMessage,
+            builder: (artists) => ListView.builder(
+              padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+              prototypeItem: ArtistTile(artist: _prototypeArtist, onTap: () {}),
+              itemCount: artists.length,
+              itemBuilder: (context, i) => ArtistTile(
+                artist: artists[i],
+                onTap: () => context.go(artistLocation(artists[i].key)),
+              ),
             ),
           ),
         ),

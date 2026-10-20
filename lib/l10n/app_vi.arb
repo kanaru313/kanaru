@@ -156,6 +156,8 @@
   "queueShowCurrent": "Đang phát",
   "queueClose": "Đóng hàng đợi",
 
+  "settingsLibrary": "Thư viện",
+  "settingsRescanLibrary": "Quét lại thư viện",
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",
   "settingsThemeSystem": "Hệ thống",
