@@ -20,7 +20,6 @@ class FakeAudioBackend implements AudioBackend {
   final emitCompleted = StreamController<bool>.broadcast(sync: true);
   final emitPosition = StreamController<Duration>.broadcast(sync: true);
   final emitDuration = StreamController<Duration>.broadcast(sync: true);
-  final emitVolume = StreamController<double>.broadcast(sync: true);
   final emitFailed = StreamController<PlaybackError>.broadcast(sync: true);
 
   /// Mimics the engine moving on to the queued next track by itself.
@@ -78,9 +77,6 @@ class FakeAudioBackend implements AudioBackend {
 
   @override
   Stream<Duration> get duration => emitDuration.stream;
-
-  @override
-  Stream<double> get volume => emitVolume.stream;
 
   @override
   Stream<PlaybackError> get failed => emitFailed.stream;

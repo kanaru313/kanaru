@@ -20,7 +20,8 @@ abstract interface class AudioBackend {
   Future<void> stop();
   Future<void> seek(Duration position);
 
-  /// [volume] runs from 0 to 100.
+  /// [volume] runs from 0 to 100. The app owns the volume: the engine only
+  /// follows what it is told and never reports a volume of its own.
   Future<void> setVolume(double volume);
 
   /// Only [RepeatMode.one] matters to the engine (it loops the file); moving
@@ -37,7 +38,6 @@ abstract interface class AudioBackend {
   Stream<bool> get completed;
   Stream<Duration> get position;
   Stream<Duration> get duration;
-  Stream<double> get volume;
 
   /// Tracks the engine gave up on: it moved past them without loading them.
   /// One event per track, sent before the event that moves past it.

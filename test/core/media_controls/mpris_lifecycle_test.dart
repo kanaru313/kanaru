@@ -123,7 +123,7 @@ void main() {
         await l.settle();
         timers.clear();
 
-        l.backend.emitVolume.add(40);
+        unawaited(l.service.setVolume(40));
         expect(timers, hasLength(1));
         expect(timers.single.isActive, isTrue);
         await controls.dispose();
@@ -184,7 +184,7 @@ void main() {
         }
         expect(timers, isEmpty);
         // The timer would be armed by a change, so the zone does see them.
-        l.backend.emitVolume.add(40);
+        unawaited(l.service.setVolume(40));
         expect(timers, hasLength(1));
       }),
     );
@@ -197,7 +197,7 @@ void main() {
         l.create(client: dead);
         await l.settle();
         await l.service.openTracks(songs);
-        l.backend.emitVolume.add(40);
+        unawaited(l.service.setVolume(40));
         l.backend.emitPosition.add(const Duration(seconds: 1));
         await l.settle();
         expect(timers, isEmpty);

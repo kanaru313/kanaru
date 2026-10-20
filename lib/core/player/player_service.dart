@@ -105,7 +105,6 @@ class PlayerService extends Notifier<PlayerState>
         if (v > Duration.zero) _failuresInRow = 0;
         state = state.copyWith(duration: v);
       }),
-      _backend.volume.listen((v) => state = state.copyWith(volume: v)),
       _backend.failed.listen(_onFailed),
     ];
     ref.onDispose(() {

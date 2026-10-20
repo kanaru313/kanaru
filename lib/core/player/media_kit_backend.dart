@@ -315,9 +315,6 @@ class MediaKitBackend implements AudioBackend {
   Stream<Duration> get duration => _duration.stream;
 
   @override
-  Stream<double> get volume => _player.stream.volume;
-
-  @override
   Stream<PlaybackError> get failed => _failed.stream;
 
   @override
