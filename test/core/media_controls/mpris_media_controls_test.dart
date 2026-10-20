@@ -303,12 +303,16 @@ void main() {
       expect(await readVolume(), const DBusDouble(0));
     });
 
-    test('infinite values are refused and change nothing', () async {
+    test('non-finite values are refused and change nothing', () async {
       await h.service.openTracks(songs);
       await h.service.setVolume(60);
       await h.start();
 
-      for (final value in [double.infinity, double.negativeInfinity]) {
+      for (final value in [
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
         await expectLater(setVolume(value), dbusError('InvalidArgs'));
       }
       await h.settle();
