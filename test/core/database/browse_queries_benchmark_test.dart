@@ -12,6 +12,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/core/database/track_keys.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/throttled_tracks_query.dart';
@@ -161,6 +162,11 @@ void main() {
           'Dart songs ${order.name}': await _median(
             () async => (await db.songs(order: order)).length,
           ),
+          'Dart song ids ${order.name} + first page': await _median(() async {
+            final ids = await db.songIds(order: order);
+            return (await db.songsByIds(ids.take(songPageSize).toList()))
+                .length;
+          }),
         },
       };
       await db.close();

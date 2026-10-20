@@ -82,10 +82,12 @@ FROM track_artists AS ta JOIN tracks AS t ON t.id = ta.track_id
 WHERE ta.artist_key = ?1
 ORDER BY t.album_artist_key, t.album_title_key, $discTrackOrderSql''';
 
+/// The columns of a [TrackListItem].
+const songColumns = 'id, path, title, artist, album, duration_ms, cover_key';
+
 /// The Songs list query in [order].
 String songsSql(SongOrder order, {bool descending = false}) =>
-    'SELECT id, path, title, artist, album, duration_ms, cover_key '
-    'FROM tracks '
+    'SELECT $songColumns FROM tracks '
     'ORDER BY ${songsOrderSql(order, descending: descending)}';
 
 /// ORDER BY of the Songs list. Unknown values go last in both directions;
@@ -150,15 +152,7 @@ extension LibraryBrowseQueries on LibraryDatabase {
   }) => _query(
     songsSql(order, descending: descending),
     const [],
-    (row) => TrackListItem(
-      id: row.read<int>('id'),
-      path: row.read<String>('path'),
-      title: row.read<String>('title'),
-      artist: row.readNullable<String>('artist'),
-      album: row.readNullable<String>('album'),
-      durationMs: row.readNullable<int>('duration_ms'),
-      coverKey: row.readNullable<String>('cover_key'),
-    ),
+    trackListItemFromRow,
   ).get();
 
   Selectable<T> _query<T>(
@@ -167,6 +161,17 @@ extension LibraryBrowseQueries on LibraryDatabase {
     T Function(QueryRow row) map,
   ) => customSelect(sql, variables: variables, readsFrom: {tracks}).map(map);
 }
+
+/// Reads a row of [songColumns].
+TrackListItem trackListItemFromRow(QueryRow row) => TrackListItem(
+  id: row.read<int>('id'),
+  path: row.read<String>('path'),
+  title: row.read<String>('title'),
+  artist: row.readNullable<String>('artist'),
+  album: row.readNullable<String>('album'),
+  durationMs: row.readNullable<int>('duration_ms'),
+  coverKey: row.readNullable<String>('cover_key'),
+);
 
 BrowseTrack _browseTrack(QueryRow row) {
   final titleKey = row.readNullable<String>('tk');
