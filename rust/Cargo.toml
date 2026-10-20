@@ -28,5 +28,14 @@ tempfile = "3"
 # only works with the default `panic = "unwind"`. Do not set `panic = "abort"`
 # in any profile.
 
+# Debug app builds (`flutter run`) use the dev profile. Unoptimized image
+# decoding and resizing make cover thumbnails about 90 times slower, so a first
+# scan with covers would take many minutes. The crate itself is optimized too:
+# the generic `image` code it calls is compiled in this crate, so optimizing only
+# the dependencies leaves the scan about twice as slow. Debug info and debug
+# assertions stay on.
+[profile.dev]
+opt-level = 3
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
