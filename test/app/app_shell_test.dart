@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
@@ -80,6 +81,46 @@ void main() {
     await tester.tap(forward);
     await tester.pumpAndSettle();
     expect(find.text('Artists'), findsNWidgets(2));
+  });
+
+  testWidgets('the mouse side buttons move through visited pages', (
+    tester,
+  ) async {
+    await pumpApp(tester, wide);
+    await tester.tap(find.text('Artists'));
+    await tester.pumpAndSettle();
+
+    Future<void> press(int button) async {
+      final mouse = await tester.createGesture(
+        kind: PointerDeviceKind.mouse,
+        buttons: button,
+      );
+      await mouse.down(const Offset(600, 300));
+      await mouse.up();
+      await tester.pumpAndSettle();
+    }
+
+    bool enabled(String tooltip) =>
+        tester
+            .widget<IconButton>(
+              find.ancestor(
+                of: find.byIcon(
+                  tooltip == 'Back' ? Icons.chevron_left : Icons.chevron_right,
+                ),
+                matching: find.byType(IconButton),
+              ),
+            )
+            .onPressed !=
+        null;
+
+    expect(enabled('Back'), isTrue);
+    expect(enabled('Forward'), isFalse);
+    await press(kBackMouseButton);
+    expect(enabled('Back'), isFalse);
+    expect(enabled('Forward'), isTrue);
+    await press(kForwardMouseButton);
+    expect(enabled('Back'), isTrue);
+    expect(enabled('Forward'), isFalse);
   });
 
   testWidgets('back is disabled on the first page', (tester) async {

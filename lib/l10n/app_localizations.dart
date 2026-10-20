@@ -632,6 +632,108 @@ abstract class AppLocalizations {
   /// **'Seek'**
   String get playerSeek;
 
+  /// No description provided for @nowPlayingOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Now Playing'**
+  String get nowPlayingOpen;
+
+  /// No description provided for @nowPlayingClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Now Playing'**
+  String get nowPlayingClose;
+
+  /// No description provided for @nowPlayingFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get nowPlayingFavorite;
+
+  /// No description provided for @nowPlayingAddToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist'**
+  String get nowPlayingAddToPlaylist;
+
+  /// No description provided for @nowPlayingComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get nowPlayingComingSoon;
+
+  /// No description provided for @nowPlayingTabQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get nowPlayingTabQueue;
+
+  /// No description provided for @nowPlayingTabTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Now Playing'**
+  String get nowPlayingTabTrack;
+
+  /// No description provided for @nowPlayingBackToTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Now Playing'**
+  String get nowPlayingBackToTrack;
+
+  /// No description provided for @nowPlayingLyricsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics only'**
+  String get nowPlayingLyricsOnly;
+
+  /// No description provided for @queueOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open queue'**
+  String get queueOpen;
+
+  /// No description provided for @queueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get queueTitle;
+
+  /// No description provided for @queueTrackCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 track} other{{count} tracks}}'**
+  String queueTrackCount(int count);
+
+  /// No description provided for @queueClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear queue'**
+  String get queueClear;
+
+  /// No description provided for @queueRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from queue'**
+  String get queueRemove;
+
+  /// No description provided for @queueReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get queueReorder;
+
+  /// No description provided for @queueShowCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing'**
+  String get queueShowCurrent;
+
+  /// No description provided for @queueClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close queue'**
+  String get queueClose;
+
   /// No description provided for @settingsAppearance.
   ///
   /// In en, this message translates to:

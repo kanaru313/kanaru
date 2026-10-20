@@ -12,11 +12,25 @@ const playerIconSize = 28.0;
 /// queue is empty; previous and next also on the first and last track
 /// unless the queue repeats.
 class PlaybackControls extends ConsumerWidget {
-  const PlaybackControls({super.key, this.compact = false});
+  const PlaybackControls({
+    super.key,
+    this.compact = false,
+    this.spread = false,
+    this.spacing = 4,
+  });
 
   /// Only play/pause and next, for narrow windows; the rest stays on the
   /// keyboard.
   final bool compact;
+
+  /// Fills the width with the buttons spaced out, and bigger: shuffle and
+  /// repeat 24, previous and next 36, play/pause 40 in a 60 circle. For the
+  /// narrow Now Playing page, where the row is the main control.
+  final bool spread;
+
+  /// Gap between buttons when not [spread]: tight in the player bar, roomier
+  /// in the Now Playing footer.
+  final double spacing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,35 +47,43 @@ class PlaybackControls extends ConsumerWidget {
     );
     final player = ref.read(playerServiceProvider.notifier);
     VoidCallback? when(VoidCallback action) => empty ? null : action;
+    final modeSize = spread ? 24.0 : playerIconSize;
+    final skipSize = spread ? 36.0 : playerIconSize;
 
     return Row(
-      mainAxisSize: MainAxisSize.min,
-      spacing: 4,
+      mainAxisSize: spread ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisAlignment: spread
+          ? MainAxisAlignment.spaceBetween
+          : MainAxisAlignment.start,
+      spacing: spread ? 0 : spacing,
       children: [
         if (!compact) ...[
           IconButton(
             icon: const Icon(Icons.shuffle_rounded),
-            iconSize: playerIconSize,
+            iconSize: modeSize,
             tooltip: l10n.playerShuffle,
             isSelected: shuffled,
             onPressed: when(player.toggleShuffle),
           ),
           IconButton(
             icon: const Icon(Icons.skip_previous_rounded),
-            iconSize: playerIconSize,
+            iconSize: skipSize,
             tooltip: l10n.playerPrevious,
             onPressed: hasPrevious ? player.previous : null,
           ),
         ],
         IconButton.filledTonal(
           icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
-          iconSize: 36,
+          iconSize: spread ? 40 : 36,
+          style: spread
+              ? IconButton.styleFrom(minimumSize: const Size.square(60))
+              : null,
           tooltip: playing ? l10n.playerPause : l10n.playerPlay,
           onPressed: when(player.playPause),
         ),
         IconButton(
           icon: const Icon(Icons.skip_next_rounded),
-          iconSize: playerIconSize,
+          iconSize: skipSize,
           tooltip: l10n.playerNext,
           onPressed: hasNext ? player.next : null,
         ),
@@ -72,7 +94,7 @@ class PlaybackControls extends ConsumerWidget {
                   ? Icons.repeat_one_rounded
                   : Icons.repeat_rounded,
             ),
-            iconSize: playerIconSize,
+            iconSize: modeSize,
             tooltip: switch (repeat) {
               RepeatMode.off => l10n.playerRepeatOff,
               RepeatMode.all => l10n.playerRepeatAll,

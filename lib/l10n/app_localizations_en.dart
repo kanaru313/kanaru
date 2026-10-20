@@ -327,6 +327,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerSeek => 'Seek';
 
   @override
+  String get nowPlayingOpen => 'Open Now Playing';
+
+  @override
+  String get nowPlayingClose => 'Close Now Playing';
+
+  @override
+  String get nowPlayingFavorite => 'Add to favorites';
+
+  @override
+  String get nowPlayingAddToPlaylist => 'Add to playlist';
+
+  @override
+  String get nowPlayingComingSoon => 'Coming soon';
+
+  @override
+  String get nowPlayingTabQueue => 'Queue';
+
+  @override
+  String get nowPlayingTabTrack => 'Now Playing';
+
+  @override
+  String get nowPlayingBackToTrack => 'Back to Now Playing';
+
+  @override
+  String get nowPlayingLyricsOnly => 'Lyrics only';
+
+  @override
+  String get queueOpen => 'Open queue';
+
+  @override
+  String get queueTitle => 'Queue';
+
+  @override
+  String queueTrackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tracks',
+      one: '1 track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get queueClear => 'Clear queue';
+
+  @override
+  String get queueRemove => 'Remove from queue';
+
+  @override
+  String get queueReorder => 'Drag to reorder';
+
+  @override
+  String get queueShowCurrent => 'Now playing';
+
+  @override
+  String get queueClose => 'Close queue';
+
+  @override
   String get settingsAppearance => 'Appearance';
 
   @override

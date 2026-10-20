@@ -9,6 +9,7 @@ import '../../l10n/l10n.dart';
 import 'now_playing_summary.dart';
 import 'open_media.dart';
 import 'playback_controls.dart';
+import 'queue/queue_button.dart';
 import 'seek_bar.dart';
 import 'seek_strip.dart';
 import 'volume_button.dart';
@@ -142,7 +143,10 @@ class _OneRow extends StatelessWidget {
             const Expanded(
               child: Align(
                 alignment: Alignment.centerRight,
-                child: VolumeButton(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [VolumeButton(), QueueButton()],
+                ),
               ),
             ),
           ],

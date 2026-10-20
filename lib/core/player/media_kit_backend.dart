@@ -264,7 +264,16 @@ class MediaKitBackend implements AudioBackend {
   Future<void> pause() => _serial(_player.pause);
 
   @override
-  Future<void> stop() => _serial(_player.stop);
+  Future<void> stop() => _serial(() async {
+    // Forget the tracks first: stopping empties mpv's playlist, and the
+    // handler would otherwise report the unfinished current track as failed.
+    _current = null;
+    _currentId = null;
+    _next = null;
+    _nextId = null;
+    _loaded.clear();
+    await _player.stop();
+  });
 
   @override
   Future<void> seek(Duration position) => _serial(() => _player.seek(position));

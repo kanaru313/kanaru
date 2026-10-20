@@ -326,6 +326,64 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerSeek => 'Tua';
 
   @override
+  String get nowPlayingOpen => 'Mở màn hình đang phát';
+
+  @override
+  String get nowPlayingClose => 'Đóng màn hình đang phát';
+
+  @override
+  String get nowPlayingFavorite => 'Thêm vào yêu thích';
+
+  @override
+  String get nowPlayingAddToPlaylist => 'Thêm vào playlist';
+
+  @override
+  String get nowPlayingComingSoon => 'Sắp có';
+
+  @override
+  String get nowPlayingTabQueue => 'Hàng đợi';
+
+  @override
+  String get nowPlayingTabTrack => 'Đang phát';
+
+  @override
+  String get nowPlayingBackToTrack => 'Quay lại bài đang phát';
+
+  @override
+  String get nowPlayingLyricsOnly => 'Chỉ hiện lời bài hát';
+
+  @override
+  String get queueOpen => 'Mở hàng đợi';
+
+  @override
+  String get queueTitle => 'Hàng đợi';
+
+  @override
+  String queueTrackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get queueClear => 'Xoá hàng đợi';
+
+  @override
+  String get queueRemove => 'Xoá khỏi hàng đợi';
+
+  @override
+  String get queueReorder => 'Kéo để sắp xếp lại';
+
+  @override
+  String get queueShowCurrent => 'Đang phát';
+
+  @override
+  String get queueClose => 'Đóng hàng đợi';
+
+  @override
   String get settingsAppearance => 'Giao diện';
 
   @override

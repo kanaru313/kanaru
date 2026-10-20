@@ -29,8 +29,9 @@ Map<String, DBusValue> rootProperties() => {
 };
 
 /// Hands out track ids. An id is stable while the queue stays the one that
-/// was opened (shuffle only reorders it) and changes when a new queue is
-/// opened, so a client holding an old id cannot seek the wrong track.
+/// was opened (shuffle and queue edits keep `original`, and an index into it
+/// is never reused) and changes when a new queue is opened, so a client
+/// holding an old id cannot seek the wrong track.
 class MprisTrackIds {
   List<Track>? _original;
   int _generation = 0;

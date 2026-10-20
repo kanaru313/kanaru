@@ -176,6 +176,29 @@
   "playerVolume": "Volume",
   "playerSeek": "Seek",
 
+  "nowPlayingOpen": "Open Now Playing",
+  "nowPlayingClose": "Close Now Playing",
+  "nowPlayingFavorite": "Add to favorites",
+  "nowPlayingAddToPlaylist": "Add to playlist",
+  "nowPlayingComingSoon": "Coming soon",
+  "nowPlayingTabQueue": "Queue",
+  "nowPlayingTabTrack": "Now Playing",
+  "nowPlayingBackToTrack": "Back to Now Playing",
+  "nowPlayingLyricsOnly": "Lyrics only",
+  "queueOpen": "Open queue",
+  "queueTitle": "Queue",
+  "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",
+  "@queueTrackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "queueClear": "Clear queue",
+  "queueRemove": "Remove from queue",
+  "queueReorder": "Drag to reorder",
+  "queueShowCurrent": "Now playing",
+  "queueClose": "Close queue",
+
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
   "settingsThemeSystem": "System",
