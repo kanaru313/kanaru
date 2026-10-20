@@ -18,7 +18,7 @@ import 'widgets/library_loading.dart';
 class LibraryBrowseBody<T> extends ConsumerWidget {
   const LibraryBrowseBody({
     super.key,
-    required this.state,
+    required this.hasError,
     required this.items,
     required this.icon,
     required this.noRootsMessage,
@@ -27,8 +27,8 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
     required this.builder,
   });
 
-  /// The load state of the list (loading, failed).
-  final AsyncValue<Object?> state;
+  /// Whether loading the list failed.
+  final bool hasError;
 
   /// The latest list, sorted; null until one loaded. Kept when a later
   /// reload fails (the screen logs the error).
@@ -61,7 +61,7 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
 
     final list = items;
     if (list == null) {
-      return state.hasError
+      return hasError
           ? const SongsEmptyView(kind: SongsEmptyKind.unavailable)
           : const LibraryLoading();
     }

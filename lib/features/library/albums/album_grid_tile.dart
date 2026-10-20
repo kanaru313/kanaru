@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../widgets/album_artwork.dart';
 import '../widgets/library_rescan_button.dart';
@@ -98,11 +99,12 @@ SliverGridDelegate albumGridDelegate(BuildContext context, double width) {
 }
 
 /// [albums] as a scrolling grid, leaving room for the rescan button below.
+/// Tile data is made per visible tile, not for the whole list.
 class AlbumGrid extends StatelessWidget {
   const AlbumGrid({super.key, required this.albums, required this.onTap});
 
-  final List<AlbumTileData> albums;
-  final void Function(AlbumTileData album) onTap;
+  final List<AlbumSummary> albums;
+  final void Function(AlbumSummary album) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +121,10 @@ class AlbumGrid extends StatelessWidget {
           constraints.maxWidth - albumGridPadding * 2,
         ),
         itemCount: albums.length,
-        itemBuilder: (context, i) =>
-            AlbumGridTile(data: albums[i], onTap: () => onTap(albums[i])),
+        itemBuilder: (context, i) => AlbumGridTile(
+          data: AlbumTileData.fromSummary(albums[i]),
+          onTap: () => onTap(albums[i]),
+        ),
       ),
     );
   }
