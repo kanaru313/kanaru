@@ -41,7 +41,11 @@ class LibraryDetailBody<T extends Object> extends ConsumerWidget {
     } else {
       ref.listen(page, (previous, next) {
         if (next.hasError && !(previous?.hasError ?? false)) {
-          _log.severe('Reading $what failed', next.error, next.stackTrace);
+          _log.severe(
+            'Reading $what failed',
+            _underlying(next.error),
+            next.stackTrace,
+          );
         }
       });
       body = ref
@@ -57,4 +61,14 @@ class LibraryDetailBody<T extends Object> extends ConsumerWidget {
     }
     return PageMaterial(child: body);
   }
+}
+
+/// The errors a parallel read failed with (`(a, b).wait` wraps them), so the
+/// log shows the database error itself; both when both reads failed.
+Object? _underlying(Object? error) {
+  if (error is! ParallelWaitError) return error;
+  final errors = error.errors;
+  if (errors is! (Object?, Object?)) return error;
+  final failed = [errors.$1, errors.$2].nonNulls.toList();
+  return failed.length == 1 ? failed.single : failed;
 }

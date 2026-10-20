@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
+import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
@@ -48,7 +49,8 @@ class _AlbumPage extends ConsumerWidget {
     final tracks = data.tracks;
     final groups = data.groups;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
-    final queue = [
+    // Built when a track is tapped, not on every rebuild of a long page.
+    List<player.Track> queue() => [
       for (final t in tracks)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
@@ -61,7 +63,7 @@ class _AlbumPage extends ConsumerWidget {
           child: AlbumHeader(
             albumKey: albumKey,
             album: album,
-            onPlay: () => playTracks(ref, queue, 0),
+            onPlay: () => playTracks(ref, queue(), 0),
             artist: artistKey != null && album.artist != null
                 ? _ArtistLink(
                     name: album.artist!,
@@ -88,7 +90,7 @@ class _AlbumPage extends ConsumerWidget {
             itemBuilder: (context, i) => AlbumTrackTile(
               track: group.tracks[i],
               albumArtist: album.artist,
-              onTap: () => playTracks(ref, queue, starts[g] + i),
+              onTap: () => playTracks(ref, queue(), starts[g] + i),
             ),
           ),
         ],

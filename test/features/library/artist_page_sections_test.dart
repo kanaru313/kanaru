@@ -143,7 +143,7 @@ void main() {
     final loose = track('loose', artist: 'Ann');
     final page = ArtistPageSections.fromTracks(
       'ann',
-      [loose, comp, solo2, solo1],
+      [loose, solo1, solo2, comp],
       [
         albumRow('Comp', artist: 'Ann', albumArtist: 'Various', year: 2010),
         albumRow('Solo', artist: 'Ann', year: 2000),

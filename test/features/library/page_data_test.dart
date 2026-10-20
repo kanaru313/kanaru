@@ -1,3 +1,5 @@
+import 'dart:async' show ParallelWaitError;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/features/library/albums/albums_provider.dart';
@@ -60,6 +62,9 @@ void main() {
     expect(find.text("Couldn't open the library"), findsOneWidget);
     expect(find.text('first'), findsNothing);
     expect(severe.single.message, 'Reading the album failed');
+    // The database error itself, not the wrapper of the parallel reads.
+    expect(severe.single.error.toString(), contains('album_display_artist'));
+    expect(severe.single.error, isNot(isA<ParallelWaitError>()));
     // Leaves the page so its queries are disposed, then lets drift's
     // zero-delay stream cleanup timer run.
     goTo(tester, h, '/songs');

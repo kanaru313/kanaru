@@ -9,8 +9,8 @@ import 'artist_summaries.dart' show preferredSpelling;
 /// - [albums]: albums the artist owns (one of its album artists, else its
 ///   first track artist),
 /// - [songs]: every track crediting the artist, in the order of the album
-///   tiles (the albums, then those appeared on), each album by disc then
-///   track, tracks without an album last,
+///   tiles (the albums, then those appeared on), each album as the
+///   query orders it (disc, track, title), tracks without an album last,
 /// - [appearsOn]: the other albums holding those tracks.
 ///
 /// Album details are the rows of the albums query, so a tile shows what the
@@ -77,29 +77,18 @@ int _byYearThenTitle(AlbumSummary a, AlbumSummary b) {
   return artist != 0 ? artist : a.key.titleKey.compareTo(b.key.titleKey);
 }
 
-/// [tracks] grouped by the position of their album in [albums], then by
-/// disc, track, title sort key and id; unknown numbers last, and tracks
-/// whose album is not in [albums] after all others.
+/// [tracks] (already ordered by album key, disc, track, title and id, as
+/// the query returns them) grouped by the position of their album in
+/// [albums]; tracks whose album is not in [albums], or that have none, go
+/// last. One pass, each group keeps the query order.
 List<BrowseTrack> _inTileOrder(
   List<BrowseTrack> tracks,
   List<AlbumSummary> albums,
 ) {
   final position = {for (final (i, a) in albums.indexed) a.key: i};
-  final keyed = [
-    for (final t in tracks)
-      (
-        track: t,
-        album: position[t.albumKey] ?? albums.length,
-        title: sortKey(t.title),
-      ),
-  ];
-  int number(int? a, int? b) => compareNullsLast(a, b);
-  keyed.sort((a, b) {
-    var order = a.album.compareTo(b.album);
-    if (order == 0) order = number(a.track.discNo, b.track.discNo);
-    if (order == 0) order = number(a.track.trackNo, b.track.trackNo);
-    if (order == 0) order = a.title.compareTo(b.title);
-    return order != 0 ? order : a.track.id.compareTo(b.track.id);
-  });
-  return [for (final k in keyed) k.track];
+  final buckets = List.generate(albums.length + 1, (_) => <BrowseTrack>[]);
+  for (final track in tracks) {
+    buckets[position[track.albumKey] ?? albums.length].add(track);
+  }
+  return [for (final bucket in buckets) ...bucket];
 }
