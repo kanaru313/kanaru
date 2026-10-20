@@ -265,6 +265,27 @@ void main() {
     expect(failing.read(libraryIndexerProvider), isA<IndexerFinished>());
   });
 
+  test(
+    'a cover folder that cannot be created does not re-read the library',
+    () async {
+      File('${tmp.path}/blocked').writeAsStringSync('x');
+      final blocked = containerFor(db, coverDir: '${tmp.path}/blocked/covers');
+      addTearDown(blocked.dispose);
+      reader.coverDirectory = null;
+      touch('a.mp3');
+      touch('b.mp3');
+      final indexer = blocked.read(libraryIndexerProvider.notifier);
+      await indexer.scan();
+      expect((await stored('a.mp3')).coverScanVersion, 0);
+
+      reader.reset();
+      await indexer.scan();
+
+      expect(blocked.read(libraryIndexerProvider), isA<IndexerFinished>());
+      expect(reader.readCount, 0, reason: 'unchanged files are not read again');
+    },
+  );
+
   test('a scan that fails part way deletes no cover', () async {
     reader.coverByName['a.mp3'] = 'red';
     final a = touch('a.mp3');

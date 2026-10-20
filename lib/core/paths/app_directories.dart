@@ -22,9 +22,10 @@ String? resolveDataDirectory(Map<String, String> environment) =>
 String? resolveCacheDirectory(Map<String, String> environment) =>
     _resolve(environment, 'XDG_CACHE_HOME', '.cache');
 
-/// Longest side, in pixels, of the cover thumbnails the tag reader writes.
-/// Also the name of their cache folder, so thumbnails of another size never
-/// share a folder with these.
+/// Longest side, in pixels, of the cover thumbnails the tag reader writes
+/// (`THUMBNAIL_SIDE` in `rust/src/cover_thumbnail.rs`; change both together,
+/// with `coverScanVersion`). Also the name of their cache folder, so
+/// thumbnails of another size never share a folder with these.
 const coverThumbnailSize = 512;
 
 /// Folder of the cover thumbnails: `<cache>/covers/512`. Thumbnails can be

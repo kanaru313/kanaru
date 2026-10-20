@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -7,6 +8,7 @@ import '../database/library_startup.dart';
 import 'cover_cache_cleanup.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
+import 'tag_reader.dart' show CoverStatus;
 import 'scan_diff.dart';
 import 'tracks_from_tags.dart';
 import 'walk_audio_files.dart';
@@ -66,10 +68,14 @@ class LibraryIndexer extends Notifier<IndexerState> {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
     final reader = ref.read(tagReaderProvider);
-    // The same value the reader was built with, read once per scan.
-    final coverDir = ref.read(coverCacheDirectoryProvider);
+    // The folder the reader writes to. Null for this scan when covers are
+    // off or the folder cannot be created: then old cover rules do not make
+    // files be read again, and the cache is neither repaired nor cleaned.
+    final coverDir = await _usableCoverDirectory(
+      ref.read(coverCacheDirectoryProvider),
+    );
     final scanStartedAt = DateTime.now();
-    var added = 0, updated = 0, removed = 0, failedTags = 0;
+    var added = 0, updated = 0, removed = 0, failedTags = 0, failedCovers = 0;
     int? coversRepaired, coversRemoved;
     final skipped = <String, SkipReason>{};
     final walkTime = Stopwatch(), tagTime = Stopwatch(), dbTime = Stopwatch();
@@ -129,6 +135,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
           // Counted from the rows: a path the reader returned nothing for is
           // stored with an error too.
           failedTags += rows.where((r) => r.scanError.value != null).length;
+          failedCovers += tags
+              .where((t) => t.coverStatus == CoverStatus.failed)
+              .length;
           dbTime.start();
           await db.upsertTracks(rows);
           dbTime.stop();
@@ -159,7 +168,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _log.info(
         'Scan finished: $added added, $updated updated, $removed removed, '
         '$failedTags without tags, ${skipped.length} roots skipped; '
-        'covers ${coversRepaired ?? '-'} repaired, '
+        'covers ${coversRepaired ?? '-'} repaired, $failedCovers failed, '
         '${coversRemoved ?? '-'} orphans removed; '
         'walk ${walkTime.elapsedMilliseconds} ms, '
         'tags ${tagTime.elapsedMilliseconds} ms, '
@@ -169,6 +178,19 @@ class LibraryIndexer extends Notifier<IndexerState> {
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
       _publish(IndexerFailed(error.toString()));
+    }
+  }
+
+  /// [directory], created if needed, or null when it is null or cannot be
+  /// created (logged).
+  Future<String?> _usableCoverDirectory(String? directory) async {
+    if (directory == null) return null;
+    try {
+      await Directory(directory).create(recursive: true);
+      return directory;
+    } on FileSystemException catch (error) {
+      _log.warning('Cover cache unavailable, covers off for this scan', error);
+      return null;
     }
   }
 
