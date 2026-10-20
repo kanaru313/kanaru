@@ -72,7 +72,9 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     state = state.copyWith(position: target, stopped: false);
     _lastTick = target;
     await _backend.seek(target);
-    // The provider may have been disposed while the engine was seeking.
+    // Disposal closes the stream while the engine is seeking. Only that case
+    // is covered: a provider rebuild swaps in a new stream, which this write
+    // reaches.
     if (!_seeked.isClosed) _seeked.add(target);
   }
 

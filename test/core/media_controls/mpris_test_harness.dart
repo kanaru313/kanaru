@@ -80,6 +80,7 @@ class MprisHarness {
     DBusClient? client,
     DBusClient Function()? factory,
     ProviderContainer? from,
+    Duration coalesceWindow = harnessCoalesceWindow,
     Map<String, DBusValue> Function(PlayerState, MprisTrackIds)?
     buildProperties,
   }) {
@@ -88,7 +89,7 @@ class MprisHarness {
         ref,
         factory ?? () => client ?? app,
         onRaise: () async => raised.add(raised.length),
-        coalesceWindow: harnessCoalesceWindow,
+        coalesceWindow: coalesceWindow,
         buildProperties: buildProperties ?? playerProperties,
       ),
     );
@@ -134,8 +135,11 @@ class MprisHarness {
   }
 
   /// Creates the controls and waits for [name] to appear.
-  Future<MprisMediaControls> start({String name = mprisName}) async {
-    create(name: name);
+  Future<MprisMediaControls> start({
+    String name = mprisName,
+    Duration coalesceWindow = harnessCoalesceWindow,
+  }) async {
+    create(name: name, coalesceWindow: coalesceWindow);
     await waitForName(name);
     return controls!;
   }

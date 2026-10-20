@@ -115,7 +115,9 @@ void main() {
   testWidgets('the shell is not rebuilt or repainted while Now Playing is open '
       'and playing', (tester) async {
     await pumpPlayingApp(tester);
+    // Control: the shell does paint while Now Playing is closed.
     final closed = await measureShell(tester);
+    expect(closed.paints, greaterThan(0));
 
     container.read(nowPlayingOpenProvider.notifier).open();
     await tester.pump();
@@ -123,12 +125,6 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     final open = await measureShell(tester);
 
-    // ignore: avoid_print
-    print(
-      'shell work over $_frames frames: closed paints=${closed.paints} '
-      'rebuilds=${closed.rebuilds} ${closed.micros}us; open '
-      'paints=${open.paints} rebuilds=${open.rebuilds} ${open.micros}us',
-    );
     expect(open.rebuilds, 0);
     expect(open.paints, 0);
   });

@@ -17,6 +17,9 @@ Matcher dbusError(String name) => throwsA(
   ),
 );
 
+/// Wide enough that a slow test machine cannot split one burst in two.
+const _wideWindow = Duration(milliseconds: 40);
+
 void main() {
   late MprisHarness h;
 
@@ -91,7 +94,7 @@ void main() {
   group('commands and signals', () {
     test('each command changes the player and sends one signal', () async {
       await h.service.openTracks(songs);
-      await h.start();
+      await h.start(coalesceWindow: _wideWindow);
       final changes = await h.watchChanges();
 
       Future<Map<String, DBusValue>> after(Future<void> Function() act) async {
@@ -147,7 +150,7 @@ void main() {
     });
 
     test('a new track and its length arrive as one signal', () async {
-      await h.start();
+      await h.start(coalesceWindow: _wideWindow);
       final changes = await h.watchChanges();
 
       await h.changeAfter(() async {
