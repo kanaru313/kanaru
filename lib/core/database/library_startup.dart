@@ -39,9 +39,21 @@ final libraryHasRootsProvider = NotifierProvider<LibraryHasRoots, bool>(
   LibraryHasRoots.new,
 );
 
+/// Folder of the cover thumbnails, or `null` when covers are off. The only
+/// source of that folder: the tag reader writes there, the indexer repairs
+/// and cleans it, and the library views read from it. [LibraryStartup]
+/// supplies the real folder, so a test that does not override this never
+/// touches the user's cache.
+final coverCacheDirectoryProvider = Provider<String?>((ref) => null);
+
 /// Outcome of [openLibraryAtStartup].
 class LibraryStartup {
-  const LibraryStartup({this.db, this.hasRoots = false, this.error});
+  const LibraryStartup({
+    this.db,
+    this.hasRoots = false,
+    this.error,
+    this.coverCacheDirectory,
+  });
 
   /// The opened database; `null` when opening failed.
   final LibraryDatabase? db;
@@ -52,10 +64,14 @@ class LibraryStartup {
   /// Why the library is unavailable; `null` on success.
   final String? error;
 
+  /// Where cover thumbnails go; `null` turns covers off.
+  final String? coverCacheDirectory;
+
   /// Provider overrides to pass to the root `ProviderContainer`.
   List<Override> get overrides => [
     libraryDatabaseProvider.overrideWithValue(db),
     libraryHasRootsProvider.overrideWith(() => LibraryHasRoots(hasRoots)),
+    coverCacheDirectoryProvider.overrideWithValue(coverCacheDirectory),
   ];
 }
 
@@ -93,7 +109,11 @@ Future<LibraryStartup> openLibraryAtStartup(
       NativeDatabase.createInBackground(file, setup: applyLibraryPragmas),
     );
     final hasRoots = await opened.hasLibraryRoots().timeout(timeout);
-    return LibraryStartup(db: opened, hasRoots: hasRoots);
+    return LibraryStartup(
+      db: opened,
+      hasRoots: hasRoots,
+      coverCacheDirectory: resolveCoverCacheDirectory(environment),
+    );
   } catch (error, stackTrace) {
     _log.severe('Library database unavailable', error, stackTrace);
     if (db != null) {

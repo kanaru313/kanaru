@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:logging/logging.dart';
 
 import '../../src/rust/api/tags.dart' as native;
@@ -10,15 +12,36 @@ final _log = Logger('RustTagReader');
 ///
 /// The native library loads on the first read, not at app start, so a missing
 /// or broken library fails the scan that needs it instead of blocking startup.
+///
+/// With a [coverDirectory], the native side also finds each file's cover and
+/// writes its thumbnail there; without one, covers are skipped.
 class RustTagReader implements TagReader {
-  RustTagReader();
+  RustTagReader({this.coverDirectory});
+
+  final String? coverDirectory;
 
   Future<void>? _ready;
+  Future<String>? _coverDir;
 
   @override
   Future<List<TrackTags>> readBatch(List<String> paths) async {
     await _ensureLoaded();
-    return native.readTagsBatch(paths: paths, coverDir: '');
+    final coverDir = await (_coverDir ??= _prepareCoverDirectory());
+    return native.readTagsBatch(paths: paths, coverDir: coverDir);
+  }
+
+  /// Creates the cover folder once. If that fails covers are skipped (the
+  /// empty string tells the native side so) and the tags are still read.
+  Future<String> _prepareCoverDirectory() async {
+    final dir = coverDirectory;
+    if (dir == null) return '';
+    try {
+      await Directory(dir).create(recursive: true);
+      return dir;
+    } on FileSystemException catch (error) {
+      _log.warning('Cover cache unavailable, covers skipped', error);
+      return '';
+    }
   }
 
   /// Initialises the bridge once. A failed attempt is forgotten so a later

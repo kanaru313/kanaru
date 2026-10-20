@@ -87,6 +87,7 @@ class LibraryDatabase extends _$LibraryDatabase {
         tracks.mtimeMs,
         tracks.sizeBytes,
         tracks.scanError.isNotNull(),
+        tracks.coverScanVersion,
       ])
       ..where(tracks.rootId.equals(rootId));
     final rows = await query.get();
@@ -98,6 +99,7 @@ class LibraryDatabase extends _$LibraryDatabase {
           mtimeMs: row.read(tracks.mtimeMs)!,
           sizeBytes: row.read(tracks.sizeBytes)!,
           hasScanError: row.read(tracks.scanError.isNotNull())!,
+          coverScanVersion: row.read(tracks.coverScanVersion)!,
         ),
     ];
   }
@@ -139,6 +141,36 @@ class LibraryDatabase extends _$LibraryDatabase {
         await (delete(
           tracks,
         )..where((t) => t.id.isIn(all.sublist(i, end)))).go();
+      }
+    });
+  }
+
+  /// Every cover key some track points at.
+  Future<Set<String>> coverKeysInUse() async {
+    final query = selectOnly(tracks, distinct: true)
+      ..addColumns([tracks.coverKey])
+      ..where(tracks.coverKey.isNotNull());
+    return {for (final row in await query.get()) row.read(tracks.coverKey)!};
+  }
+
+  /// Forgets [keys] on every track that has one, so the next scan looks for
+  /// those covers again. Chunked like [deleteTracksById], in one transaction.
+  Future<void> resetCoverScan(Iterable<String> keys) {
+    final all = keys.toList();
+    if (all.isEmpty) return Future.value();
+    return transaction(() async {
+      for (var i = 0; i < all.length; i += deleteChunkSize) {
+        final end = i + deleteChunkSize < all.length
+            ? i + deleteChunkSize
+            : all.length;
+        await (update(
+          tracks,
+        )..where((t) => t.coverKey.isIn(all.sublist(i, end)))).write(
+          const TracksCompanion(
+            coverKey: Value(null),
+            coverScanVersion: Value(0),
+          ),
+        );
       }
     });
   }

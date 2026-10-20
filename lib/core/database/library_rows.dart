@@ -13,6 +13,7 @@ class TrackSnapshot {
     required this.mtimeMs,
     required this.sizeBytes,
     this.hasScanError = false,
+    this.coverScanVersion = 0,
   });
 
   final int id;
@@ -23,6 +24,10 @@ class TrackSnapshot {
   /// The last read of its tags failed; a rescan tries again even when the
   /// file is unchanged.
   final bool hasScanError;
+
+  /// The cover rules its cover was last looked for with; see the top-level
+  /// `coverScanVersion`.
+  final int coverScanVersion;
 }
 
 /// The few columns a track list row shows, so listing a big library does not

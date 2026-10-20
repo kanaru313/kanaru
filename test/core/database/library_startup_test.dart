@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 
@@ -63,6 +64,27 @@ void main() {
     final second = await openLibraryAtStartup(env);
     addTearDown(() => second.db?.close());
     expect(second.hasRoots, isTrue);
-    expect(second.overrides, hasLength(2));
+    expect(second.overrides, hasLength(3));
+  });
+
+  test('the cover folder comes from the cache directory', () async {
+    final result = await openLibraryAtStartup({
+      ...env,
+      'XDG_CACHE_HOME': '${tmp.path}/cache',
+    });
+    addTearDown(() => result.db?.close());
+    expect(result.coverCacheDirectory, '${tmp.path}/cache/kanaru/covers/512');
+    final container = ProviderContainer(overrides: result.overrides);
+    addTearDown(container.dispose);
+    expect(
+      container.read(coverCacheDirectoryProvider),
+      '${tmp.path}/cache/kanaru/covers/512',
+    );
+  });
+
+  test('covers are off unless the startup turns them on', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    expect(container.read(coverCacheDirectoryProvider), isNull);
   });
 }

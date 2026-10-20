@@ -18,7 +18,8 @@ class ScanDiff {
   final List<int> toDelete;
 
   /// How many of [toRead] are new, and how many replace a changed track.
-  /// Unchanged tracks read again after an earlier failure are in neither.
+  /// Unchanged tracks read again (after an earlier failure, or for their
+  /// cover) are in neither.
   final int added;
   final int updated;
 
@@ -34,8 +35,14 @@ class ScanDiff {
 /// an unreadable or empty folder (an unmounted mount point lists as empty),
 /// not unstattable, the root is present, and the walk found at least one
 /// file. A missing root deletes nothing and reads nothing. An unchanged file
-/// whose tags failed to read last time is read again.
-ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
+/// whose tags failed to read last time is read again, and so is one whose
+/// cover was looked for under older rules when [coversEnabled] (never when
+/// covers are off, or it would be read on every scan).
+ScanDiff diffScan(
+  WalkResult walk,
+  List<TrackSnapshot> existing, {
+  bool coversEnabled = false,
+}) {
   if (walk.rootMissing) return const ScanDiff();
 
   final known = {for (final track in existing) track.path: track};
@@ -50,7 +57,8 @@ ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
         track.sizeBytes != file.sizeBytes) {
       updated++;
       toRead.add(file);
-    } else if (track.hasScanError) {
+    } else if (track.hasScanError ||
+        (coversEnabled && track.coverScanVersion < coverScanVersion)) {
       toRead.add(file);
     }
   }

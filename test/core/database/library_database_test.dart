@@ -159,4 +159,47 @@ void main() {
     expect(row.coverScanVersion, 0);
     expect(db.schemaVersion, 2);
   });
+
+  group('cover keys', () {
+    Future<void> withCover(int rootId, String path, String? key) =>
+        db.upsertTracks([
+          track(rootId, path).copyWith(
+            coverKey: Value(key),
+            coverScanVersion: const Value(coverScanVersion),
+          ),
+        ]);
+
+    test('lists the distinct keys in use', () async {
+      final rootId = (await db.addRoots(['/m'], now: 1)).single;
+      await withCover(rootId, '/m/a', 'aa/a.jpg');
+      await withCover(rootId, '/m/b', 'aa/a.jpg');
+      await withCover(rootId, '/m/c', 'bb/b.jpg');
+      await withCover(rootId, '/m/d', null);
+      expect(await db.coverKeysInUse(), {'aa/a.jpg', 'bb/b.jpg'});
+    });
+
+    test('reset clears the key and the stamp of matching tracks', () async {
+      final rootId = (await db.addRoots(['/m'], now: 1)).single;
+      final keys = [for (var i = 0; i < 1200; i++) 'k/$i.jpg'];
+      await db.upsertTracks([
+        for (final (i, key) in keys.indexed)
+          track(rootId, '/m/$i').copyWith(
+            coverKey: Value(key),
+            coverScanVersion: const Value(coverScanVersion),
+          ),
+      ]);
+      await withCover(rootId, '/m/keep', 'keep.jpg');
+
+      await db.resetCoverScan(keys);
+
+      expect(await db.coverKeysInUse(), {'keep.jpg'});
+      final snapshot = await db.trackSnapshot(rootId);
+      final kept = snapshot.singleWhere((t) => t.path == '/m/keep');
+      expect(kept.coverScanVersion, coverScanVersion);
+      expect(
+        snapshot.where((t) => t.coverScanVersion == 0),
+        hasLength(keys.length),
+      );
+    });
+  });
 }

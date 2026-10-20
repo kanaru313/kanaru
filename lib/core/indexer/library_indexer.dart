@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../database/library_startup.dart';
+import 'cover_cache_cleanup.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
 import 'scan_diff.dart';
@@ -21,6 +22,11 @@ const tagBatchSize = 512;
 /// One scan at a time, no cancelling. Batches run one after another (read
 /// tags, write one transaction, next batch). Deleting happens only after all
 /// batches of a root, so quitting mid-scan loses nothing.
+///
+/// With a cover folder, a scan first resets tracks whose thumbnail is gone
+/// (so they are read again in that same scan) and, after every root scanned
+/// without error, deletes thumbnails no track uses. Neither step can fail
+/// the scan.
 class LibraryIndexer extends Notifier<IndexerState> {
   Future<void>? _running;
   bool _rescanRequested = false;
@@ -60,10 +66,20 @@ class LibraryIndexer extends Notifier<IndexerState> {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
     final reader = ref.read(tagReaderProvider);
+    // The same value the reader was built with, read once per scan.
+    final coverDir = ref.read(coverCacheDirectoryProvider);
+    final scanStartedAt = DateTime.now();
     var added = 0, updated = 0, removed = 0, failedTags = 0;
+    int? coversRepaired, coversRemoved;
     final skipped = <String, SkipReason>{};
     final walkTime = Stopwatch(), tagTime = Stopwatch(), dbTime = Stopwatch();
     try {
+      if (coverDir != null) {
+        coversRepaired = await _coverStep(
+          'repair',
+          () => repairMissingCovers(db, coverDir),
+        );
+      }
       for (final root in await db.roots()) {
         _publish(
           IndexerScanning(phase: ScanPhase.discovering, rootPath: root.path),
@@ -77,7 +93,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
           continue;
         }
         dbTime.start();
-        final diff = diffScan(walk, await db.trackSnapshot(root.id));
+        final diff = diffScan(
+          walk,
+          await db.trackSnapshot(root.id),
+          coversEnabled: coverDir != null,
+        );
         dbTime.stop();
         if (diff.rootEmpty) {
           skipped[root.path] = SkipReason.empty;
@@ -123,6 +143,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
         dbTime.stop();
         removed += diff.toDelete.length;
       }
+      if (coverDir != null) {
+        coversRemoved = await _coverStep(
+          'cleanup',
+          () => cleanCoverCache(db, coverDir, scanStartedAt),
+        );
+      }
       final summary = ScanSummary(
         added: added,
         updated: updated,
@@ -133,6 +159,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _log.info(
         'Scan finished: $added added, $updated updated, $removed removed, '
         '$failedTags without tags, ${skipped.length} roots skipped; '
+        'covers ${coversRepaired ?? '-'} repaired, '
+        '${coversRemoved ?? '-'} orphans removed; '
         'walk ${walkTime.elapsedMilliseconds} ms, '
         'tags ${tagTime.elapsedMilliseconds} ms, '
         'db ${dbTime.elapsedMilliseconds} ms',
@@ -141,6 +169,17 @@ class LibraryIndexer extends Notifier<IndexerState> {
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
       _publish(IndexerFailed(error.toString()));
+    }
+  }
+
+  /// Runs a cover cache step; any error is logged and gives `null`, since
+  /// the cache can always be rebuilt and must never fail a scan.
+  Future<int?> _coverStep(String name, Future<int?> Function() step) async {
+    try {
+      return await step();
+    } catch (error, stackTrace) {
+      _log.warning('Cover cache $name failed', error, stackTrace);
+      return null;
     }
   }
 }

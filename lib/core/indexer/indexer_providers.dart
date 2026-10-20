@@ -11,7 +11,11 @@ import 'tag_reader.dart';
 export '../database/library_startup.dart' show libraryHasRootsProvider;
 
 /// Reads tags with the Rust `lofty` bridge; tests override it with a fake.
-final tagReaderProvider = Provider<TagReader>((ref) => RustTagReader());
+/// Writes cover thumbnails into [coverCacheDirectoryProvider] when it is set.
+final tagReaderProvider = Provider<TagReader>(
+  (ref) =>
+      RustTagReader(coverDirectory: ref.watch(coverCacheDirectoryProvider)),
+);
 
 final libraryIndexerProvider = NotifierProvider<LibraryIndexer, IndexerState>(
   LibraryIndexer.new,
