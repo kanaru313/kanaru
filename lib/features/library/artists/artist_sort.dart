@@ -39,6 +39,6 @@ int _compare(_Keyed a, _Keyed b, SortChoice<ArtistSortField> sort) {
     ),
   };
   if (primary != 0) return primary;
-  final name = a.name.compareTo(b.name);
-  return name != 0 ? name : a.artist.key.compareTo(b.artist.key);
+  final name = compareCodePoints(a.name, b.name);
+  return name != 0 ? name : compareCodePoints(a.artist.key, b.artist.key);
 }

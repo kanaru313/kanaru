@@ -50,9 +50,11 @@ int _compare(_Keyed a, _Keyed b, SortChoice<AlbumSortField> sort) {
     ),
   };
   if (primary != 0) return primary;
-  final title = a.title.compareTo(b.title);
+  final title = compareCodePoints(a.title, b.title);
   if (title != 0) return title;
   final ak = a.album.key, bk = b.album.key;
-  final artistKey = ak.artistKey.compareTo(bk.artistKey);
-  return artistKey != 0 ? artistKey : ak.titleKey.compareTo(bk.titleKey);
+  final artistKey = compareCodePoints(ak.artistKey, bk.artistKey);
+  return artistKey != 0
+      ? artistKey
+      : compareCodePoints(ak.titleKey, bk.titleKey);
 }

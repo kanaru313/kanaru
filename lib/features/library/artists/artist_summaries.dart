@@ -1,4 +1,5 @@
 import '../../../core/database/library_database.dart';
+import '../sort_compare.dart';
 
 /// One artist of the Artists list.
 class ArtistSummary {
@@ -32,7 +33,9 @@ List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) => [
 ];
 
 /// Of two spellings of one artist (same key), the one shown: the smallest
-/// by code units, like album titles. Any track order gives the same name,
+/// by code point, like album titles. Any track order gives the same name,
 /// on the list and on the artist page.
 String preferredSpelling(String? current, String candidate) =>
-    current == null || candidate.compareTo(current) < 0 ? candidate : current;
+    current == null || compareCodePoints(candidate, current) < 0
+    ? candidate
+    : current;

@@ -69,12 +69,15 @@ String? _displayName(String key, List<BrowseTrack> tracks) {
 int _byYearThenTitle(AlbumSummary a, AlbumSummary b) {
   final year = compareNullsLast(a.year, b.year);
   if (year != 0) return year;
-  final title = (a.titleSort ?? artistSortKey(a.title)).compareTo(
+  final title = compareCodePoints(
+    a.titleSort ?? artistSortKey(a.title),
     b.titleSort ?? artistSortKey(b.title),
   );
   if (title != 0) return title;
-  final artist = a.key.artistKey.compareTo(b.key.artistKey);
-  return artist != 0 ? artist : a.key.titleKey.compareTo(b.key.titleKey);
+  final artist = compareCodePoints(a.key.artistKey, b.key.artistKey);
+  return artist != 0
+      ? artist
+      : compareCodePoints(a.key.titleKey, b.key.titleKey);
 }
 
 /// [tracks] (already ordered by album key, disc, track, title and id, as
