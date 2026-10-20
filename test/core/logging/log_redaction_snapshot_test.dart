@@ -170,8 +170,10 @@ Map<String, (String, int, int)> _hostile() => {
   'slash16k': ('://' * 5400, 16200, 87496565),
   'pct16k': ('%41' * 5400, 16200, 3113051013),
   'at16k': ('a:b@' * 4000, 16000, 1653930949),
-  'userinfo200': ('https://${'u' * 200}:pw@host/x', 218, 2258130746),
-  'cap-cut-plain': ('${'a' * 16380}://u:secretpw', 16404, 2626408466),
+  // Stricter than before: user info past the old 128-character bound.
+  'userinfo200': ('https://${'u' * 200}:pw@host/x', 18, 1172497365),
+  // Stricter than before: a secret cut by the cap is masked.
+  'cap-cut-plain': ('${'a' * 16380}://u:secretpw', 16406, 3233768083),
   'overlong': ('a' * 16500, 16406, 3456615000),
   'trace': ('#0  frame (package:x/x.dart:1:1)\n' * 480, 15840, 1103347045),
 };

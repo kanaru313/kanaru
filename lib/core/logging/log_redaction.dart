@@ -26,8 +26,31 @@ String _cap(String text) {
   var end = maxRecordChars;
   // Do not cut a surrogate pair in half.
   if (_isHighSurrogate(text.codeUnitAt(end - 1))) end--;
-  return '${text.substring(0, end)}…[truncated ${text.length - end} chars]';
+  // Mask before the marker is appended: the marker is not part of a secret.
+  return '${_maskCutFragment(text.substring(0, end))}'
+      '…[truncated ${text.length - end} chars]';
 }
+
+/// A secret cut in half by the cap (`https://u:secr`) has no `@` or
+/// separator left for the rules to find, so the unterminated last word is
+/// masked from its `://` (or, without one, from its last `:`) on. Prefers
+/// masking too much (a cut `file.dart:12` becomes `file.dart:***`).
+String _maskCutFragment(String cut) {
+  var start = cut.length;
+  while (start > 0 && !_isSpace(cut.codeUnitAt(start - 1))) {
+    start--;
+  }
+  final scheme = cut.lastIndexOf('://');
+  if (scheme >= start) return '${cut.substring(0, scheme + 3)}***';
+  final colon = cut.lastIndexOf(':');
+  if (colon > start) return '${cut.substring(0, colon + 1)}***';
+  return cut;
+}
+
+/// Same set as the `\s` of the patterns below, for the ASCII whitespace that
+/// ends a word in a log line.
+bool _isSpace(int unit) =>
+    unit == 0x20 || (unit >= 0x09 && unit <= 0x0d) || unit == 0xa0;
 
 bool _isHighSurrogate(int unit) => unit >= 0xd800 && unit <= 0xdbff;
 
@@ -43,17 +66,41 @@ String _percentDecode(String text) {
   }
 }
 
+/// One redaction pass. Each rule runs only when the text holds a literal that
+/// every match of that rule contains, so a long line that cannot match skips
+/// the regex scan. The triggers are checked on the text this pass receives:
+/// the decoded copy has its own `@`, `authorization`, and so on. Masking only
+/// removes text, so a trigger absent from the input cannot appear mid-pass.
 String _redactPlain(String text) {
-  var out = text.replaceAll(_userInfo, '://***@');
-  out = out.replaceAll(_bareUserInfo, '***@');
-  out = out.replaceAllMapped(_authorization, (m) {
-    final scheme = m[3];
-    return '${m[1]}${m[2]}${scheme == null ? '' : '$scheme '}***';
-  });
-  out = out.replaceAllMapped(_cookie, (m) => '${m[1]}${m[2]}***');
-  out = out.replaceAllMapped(_bearer, (m) => '${m[1]}${m[2]}***');
-  out = out.replaceAll(_jwt, '***');
-  return _maskPairs(out);
+  final lower = text.toLowerCase(); // Once per pass, for the name triggers.
+  var out = text;
+  if (text.contains('@')) {
+    // Trigger '@': both user info forms end in it.
+    out = out.replaceAll(_userInfo, '://***@');
+    out = out.replaceAllMapped(_longUserInfo, _maskLongUserInfo);
+    // Trigger ':' as well: `user:pass@`.
+    if (text.contains(':')) out = out.replaceAll(_bareUserInfo, '***@');
+  }
+  if (lower.contains('authorization')) {
+    // Trigger 'authorization': the header name is part of the match.
+    out = out.replaceAllMapped(_authorization, (m) {
+      final scheme = m[3];
+      return '${m[1]}${m[2]}${scheme == null ? '' : '$scheme '}***';
+    });
+  }
+  // Trigger 'cookie': `cookie`, `cookies` and `set-cookie` all hold it.
+  if (lower.contains('cookie')) {
+    out = out.replaceAllMapped(_cookie, (m) => '${m[1]}${m[2]}***');
+  }
+  // Trigger 'bearer': the word is part of the match.
+  if (lower.contains('bearer')) {
+    out = out.replaceAllMapped(_bearer, (m) => '${m[1]}${m[2]}***');
+  }
+  // Trigger 'eyJ': a JWT header, base64 of `{"`; the rule is case sensitive.
+  if (text.contains('eyJ')) out = out.replaceAll(_jwt, '***');
+  // Trigger ':' or '=': a pair needs its separator.
+  if (text.contains(':') || text.contains('=')) return _maskPairs(out);
+  return out;
 }
 
 /// `scheme://user:pass@host`: everything between `://` and the last `@` of
@@ -64,6 +111,19 @@ String _redactPlain(String text) {
 /// characters starts (the lookbehind). Otherwise every position of a long
 /// run would be tried, and the time would grow with the square of its length.
 final _userInfo = RegExp(r'://(?!/)\S{0,128}@');
+
+/// A word whose user info is longer than the bound of [_userInfo]: from the
+/// first `://` that has more than 128 characters after it to the end of the
+/// word. Matches do not overlap, so a word is scanned once.
+final _longUserInfo = RegExp(r'://(?!/)\S{129,}');
+
+/// Masks up to the last `@` of the word, as [_userInfo] does. A word with no
+/// `@` is not user info and stays.
+String _maskLongUserInfo(Match m) {
+  final word = m[0]!;
+  final at = word.lastIndexOf('@');
+  return at < 0 ? word : '://***${word.substring(at)}';
+}
 
 /// `user:pass@host` without a scheme.
 final _bareUserInfo = RegExp(r'(?<![\w.\-])[\w.\-]{1,64}:[^\s@/:]{1,128}@');
@@ -95,7 +155,15 @@ final _jwt = RegExp(r'\beyJ[\w\-]{5,512}\.[\w\-]{1,512}\.[\w\-]{1,512}');
 /// inside the value of another parameter (`?url=https://h/?t=x`) is found.
 /// Group 1 is the separator that opens a URL parameter, group 2 the name.
 final _pair = RegExp(
-  r'''([?&#;])?(?<![\w.\-])([\w.\-]{1,128})["']?\s{0,3}[:=]\s{0,3}''',
+  r'([?&#;])?(?<![\w.\-])'
+  // Only names that [_isSecretName] can accept: one with a secret word in
+  // it, `x-amz-...`, or one of the short exact names. Without this, every
+  // `name:` of a long log line would come back to Dart just to be dropped.
+  r'(?=[\w.\-]{0,127}?(?:'
+  r'token|secret|pass|pwd|key|sig|auth|session|sessid|code|jwt|credential|'
+  r'ticket|otp)|x-amz-|(?:p|t|s|pw|sid)(?![\w.\-]))'
+  r"""([\w.\-]{1,128})["']?\s{0,3}[:=]\s{0,3}""",
+  caseSensitive: false,
 );
 
 /// Value of a URL parameter: up to the next separator or space.
@@ -105,13 +173,38 @@ final _queryValue = RegExp(r'[^&#;\s]*');
 /// anything.
 final _looseValue = RegExp(r'''"[^"\r\n]*"?|'[^'\r\n]*'?|[^\s&#;,}\])"']*''');
 
+/// Cheap test that a text holds anything [_pair] could hand to
+/// [_isSecretName]: a secret word, `x-amz-`, or a short exact name followed
+/// by its separator. Every name [_isSecretName] accepts contains one of
+/// them, so a line without a hit skips the pair scan. Plain `contains` on a
+/// lowercased copy: a case-insensitive regex alternation is several times
+/// slower on long text.
+bool _mayHoldSecretPair(String text) {
+  final lower = text.toLowerCase();
+  for (final word in _hintWords) {
+    if (lower.contains(word)) return true;
+  }
+  return _shortNamePair.hasMatch(text);
+}
+
+const _hintWords = [
+  'token', 'secret', 'pass', 'pwd', 'key', 'sig', 'auth', 'session', //
+  'sessid', 'code', 'jwt', 'credential', 'ticket', 'otp', 'x-amz-',
+];
+
+final _shortNamePair = RegExp(
+  r'''(?<![\w.\-])(?:p|t|s|pw|sid)["']?\s{0,3}[:=]''',
+  caseSensitive: false,
+);
+
 String _maskPairs(String text) {
+  if (!_mayHoldSecretPair(text)) return text;
   final out = StringBuffer();
   var copied = 0;
   for (final pair in _pair.allMatches(text)) {
     if (pair.start < copied) continue; // Inside a value already masked.
     final inQuery = pair[1] != null;
-    if (!_isSecretName(pair[2]!.toLowerCase(), inQuery)) continue;
+    if (!_isSecretName(pair[2]!, inQuery)) continue;
     final value = (inQuery ? _queryValue : _looseValue).matchAsPrefix(
       text,
       pair.end,
@@ -129,38 +222,30 @@ String _maskPairs(String text) {
   return (out..write(text.substring(copied))).toString();
 }
 
-/// Words that mark a URL parameter as secret when they appear anywhere in
-/// its name.
-const _queryWords = [
-  'token', 'secret', 'pass', 'pwd', 'key', 'sig', 'auth', 'session', //
-  'sessid', 'code', 'jwt', 'credential', 'ticket', 'otp',
-];
-
-/// Subsonic's password, token and salt parameters.
-const _queryNames = {'p', 't', 's', 'pw', 'sid'};
+/// Secret names, matched against a name taken from [_pair] (ASCII only).
+/// One alternation per place, instead of a list of `contains` calls per pair.
+///
+/// Words that mark a URL parameter as secret when they appear anywhere in its
+/// name, Subsonic's password, token and salt parameters (`p`, `t`, `s`, `pw`,
+/// `sid`) and S3 presigned parameters.
+final _queryName = RegExp(
+  r'^(?:p|t|s|pw|sid)$|^x-amz-|token|secret|pass|pwd|key|sig|auth|session|'
+  r'sessid|code|jwt|credential|ticket|otp',
+  caseSensitive: false,
+);
 
 /// Narrower list for pairs found in prose, where `code: 404` and
 /// `signal: SIGTERM` are common.
-const _proseWords = [
-  'token', 'secret', 'passw', 'pwd', 'apikey', 'api_key', 'api-key', //
-  'accesskey', 'access_key', 'private_key', 'credential', 'jwt', //
-  'sessionid', 'session_id', 'sessid', 'signature',
-];
+final _proseName = RegExp(
+  r'^(?:pw|pass|otp|sid|ticket|key|auth)$|token|secret|passw|pwd|apikey|'
+  r'api_key|api-key|accesskey|access_key|private_key|credential|jwt|'
+  r'sessionid|session_id|sessid|signature',
+  caseSensitive: false,
+);
 
-const _proseNames = {'pw', 'pass', 'otp', 'sid', 'ticket', 'key', 'auth'};
+/// X-Api-Key, X-Plex-Token, X-MediaBrowser-Token and the like.
+final _headerName = RegExp(r'^x-.*(?:token|key|auth)', caseSensitive: false);
 
-bool _isSecretName(String name, bool inQuery) {
-  // S3 presigned URLs.
-  if (inQuery && name.startsWith('x-amz-')) return true;
-  // X-Api-Key, X-Plex-Token, X-MediaBrowser-Token and the like.
-  if (name.startsWith('x-') &&
-      (name.contains('token') ||
-          name.contains('key') ||
-          name.contains('auth'))) {
-    return true;
-  }
-  if (inQuery) {
-    return _queryNames.contains(name) || _queryWords.any(name.contains);
-  }
-  return _proseNames.contains(name) || _proseWords.any(name.contains);
-}
+bool _isSecretName(String name, bool inQuery) =>
+    _headerName.hasMatch(name) ||
+    (inQuery ? _queryName : _proseName).hasMatch(name);
