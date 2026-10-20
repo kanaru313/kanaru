@@ -1,6 +1,8 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'page_transition.dart';
+
 /// Seed color used when the platform does not provide a dynamic one.
 const kanaruSeedColor = Color(0xFF6750A4);
 
@@ -11,5 +13,14 @@ ThemeData buildTheme(ColorScheme? dynamicScheme, Brightness brightness) {
       dynamicScheme?.harmonized() ??
       ColorScheme.fromSeed(seedColor: kanaruSeedColor, brightness: brightness);
 
-  return ThemeData(colorScheme: colorScheme, useMaterial3: true);
+  return ThemeData(
+    colorScheme: colorScheme,
+    useMaterial3: true,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        for (final platform in TargetPlatform.values)
+          platform: const SlideUpPageTransitionsBuilder(),
+      },
+    ),
+  );
 }
