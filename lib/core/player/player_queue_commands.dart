@@ -130,7 +130,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     final length = queue.order.length;
     for (var step = 1; step <= length; step++) {
       final at = (queue.index + step) % length;
-      if (queue.tracks[at] == track) return at;
+      if (queue.trackAt(at) == track) return at;
     }
     return null;
   }

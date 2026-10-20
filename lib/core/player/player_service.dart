@@ -181,7 +181,7 @@ class PlayerService extends Notifier<PlayerState>
       // Edits that keep the same next track would otherwise pile it up.
       if (_handedNext.lastOrNull != entry) _handedNext.add(entry);
     }
-    return _backend.setNext(next == null ? null : queue.tracks[next]);
+    return _backend.setNext(next == null ? null : queue.trackAt(next));
   }
 
   /// Loads the track at [index], playing or paused, from [start].
@@ -209,8 +209,8 @@ class PlayerService extends Notifier<PlayerState>
     );
     _lastTick = start;
     await _backend.open(
-      queue.tracks[index],
-      next: next == null ? null : queue.tracks[next],
+      queue.trackAt(index),
+      next: next == null ? null : queue.trackAt(next),
       play: play,
       start: start,
     );
