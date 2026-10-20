@@ -44,6 +44,30 @@ void main() {
     expect(backend.calls, isEmpty);
   });
 
+  group('opening with a start outside the tracks', () {
+    for (final start in [-1, 4]) {
+      for (final shuffled in [false, true]) {
+        test('start $start${shuffled ? ', shuffled' : ''} '
+            'throws and keeps what plays', () async {
+          await service().openTracks(songs.sublist(0, 2), start: 1);
+          if (shuffled) await service().toggleShuffle();
+          backend.calls.clear();
+          final before = container.read(playerServiceProvider);
+
+          await expectLater(
+            service().openTracks(songs, start: start),
+            throwsArgumentError,
+          );
+
+          final after = container.read(playerServiceProvider);
+          expect(backend.calls, isEmpty);
+          expect(after.queue, same(before.queue));
+          expect(after.queue.current, songs[1]);
+        });
+      }
+    }
+  });
+
   test('the last track queues nothing with repeat off', () async {
     await service().openTracks(songs, start: 3);
     expect(backend.calls, ['open(d, next: null)']);

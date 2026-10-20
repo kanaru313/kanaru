@@ -78,9 +78,11 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   }
 
   /// Replaces the queue with [tracks] and plays from [start]. Shuffle and
-  /// repeat stay as they were.
+  /// repeat stay as they were. Opening nothing does nothing; a [start]
+  /// outside [tracks] throws [ArgumentError] and leaves playback as it was.
   Future<void> openTracks(List<Track> tracks, {int start = 0}) async {
     if (tracks.isEmpty) return;
+    RangeError.checkValidIndex(start, tracks, 'start');
     _userActed();
     final queue = PlayQueue.open(
       tracks,

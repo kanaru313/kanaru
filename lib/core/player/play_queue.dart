@@ -30,6 +30,7 @@ class PlayQueue {
     bool shuffled = false,
     Random? random,
   }) {
+    assert(start >= 0 && start < tracks.length, 'start $start out of range');
     final queue = PlayQueue(original: tracks, index: start, repeat: repeat);
     return shuffled ? queue.shuffle(random) : queue;
   }

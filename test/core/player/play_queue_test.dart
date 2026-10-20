@@ -15,6 +15,11 @@ void main() {
     expect(Track.fromPath('/music/.hidden').title, '.hidden');
   });
 
+  test('opening at a start outside the tracks is a programming error', () {
+    expect(() => PlayQueue.open(tracks(3), 3), throwsA(isA<AssertionError>()));
+    expect(() => PlayQueue.open(tracks(3), -1), throwsA(isA<AssertionError>()));
+  });
+
   group('next and previous', () {
     final five = tracks(5);
 
