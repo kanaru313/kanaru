@@ -542,6 +542,23 @@ void main() {
       expect(seeks, [Duration.zero]);
     });
 
+    test('a track shorter than the loop window fires once per loop', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      service().seeked.listen(seeks.add);
+
+      backend.emitDuration.add(const Duration(milliseconds: 1500));
+      await Future<void>.delayed(Duration.zero);
+      for (var loop = 0; loop < 3; loop++) {
+        for (var ms = 0; ms <= 1500; ms += 50) {
+          backend.emitPosition.add(Duration(milliseconds: ms));
+        }
+      }
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, [Duration.zero, Duration.zero]);
+    });
+
     test('plain progress and other repeat modes stay silent', () async {
       await service().openTracks(songs);
       service().seeked.listen(seeks.add);

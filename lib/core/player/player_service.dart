@@ -135,9 +135,12 @@ class PlayerService extends Notifier<PlayerState>
   void _onPosition(Duration position) {
     // Only a tick from the end of a known-length track can be followed by a
     // loop; stale ticks after a track change, seek or stop never qualify.
+    // The jump back matters for a track shorter than the window, where every
+    // tick is both near the end and near the start.
     final looped =
         state.queue.repeat == RepeatMode.one &&
         state.duration > Duration.zero &&
+        position < _lastTick &&
         state.duration - _lastTick < _loopJump &&
         position < _loopJump;
     _lastTick = position;
