@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import 'audio_backend.dart';
 import 'media_kit_backend.dart';
@@ -17,6 +18,8 @@ part 'player_queue_commands.dart';
 part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
 part 'player_transport_commands.dart';
+
+final _log = Logger('player');
 
 /// Audio engine for the app session. Tests override it with a fake so they
 /// never load libmpv.
@@ -155,12 +158,14 @@ class PlayerService extends Notifier<PlayerState>
   void _onCompleted() {
     final next = state.queue.nextIndex;
     if (next != null && !_allFailed) {
-      _play(next, play: _wantsPlaying);
+      _followEngine(
+        'continue after the engine stopped',
+        () => _play(next, play: _wantsPlaying),
+      );
       return;
     }
-    _ended = true;
-    _wantsPlaying = false;
-    state = state.copyWith(playing: false, stopped: true);
+    // Position and duration stay so the user can seek back into the track.
+    _markStopped(ended: true, resetPosition: false);
   }
 
   void _onFailed(PlaybackError error) {

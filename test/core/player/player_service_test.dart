@@ -548,6 +548,55 @@ void main() {
       expect(current().stopped, isTrue);
     });
 
+    test('a natural end keeps the finished track to seek back into', () async {
+      await service().openTracks(songs, start: 3);
+      backend.emitDuration.add(const Duration(seconds: 100));
+      backend.emitPosition.add(const Duration(seconds: 99));
+      backend.emitCompleted.add(true);
+
+      expect(current().stopped, isTrue);
+      expect(current().position, const Duration(seconds: 99));
+      expect(current().duration, const Duration(seconds: 100));
+
+      await service().seek(const Duration(seconds: 10));
+      expect(current().stopped, isFalse);
+      expect(backend.calls.last, 'seek(0:00:10.000000)');
+    });
+
+    test(
+      'a natural end forgets the last tick, so no loop is signalled',
+      () async {
+        await service().openTracks(songs, start: 3);
+        backend.emitDuration.add(const Duration(seconds: 100));
+        backend.emitPosition.add(const Duration(seconds: 99));
+        backend.emitCompleted.add(true);
+        final seeks = <Duration>[];
+        service().seeked.listen(seeks.add);
+
+        await service().setRepeat(RepeatMode.one);
+        backend.emitPosition.add(const Duration(milliseconds: 500));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(seeks, isEmpty);
+      },
+    );
+
+    test('ends stopped and not playing after a late play echo', () async {
+      await service().openTracks(songs);
+      await service().pause();
+      await service().play();
+      await service().stop();
+
+      // A brief playing+stopped overlap before the engine's pause echo is
+      // accepted; only the final state matters.
+      // The engine reports play's result, then the pause that followed it.
+      backend.emitPlaying.add(true);
+      backend.emitPlaying.add(false);
+
+      expect(current().stopped, isTrue);
+      expect(current().playing, isFalse);
+    });
+
     test('jumping, seeking and opening clear it', () async {
       await service().openTracks(songs);
       for (final resume in <Future<void> Function()>[
