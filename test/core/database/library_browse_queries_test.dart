@@ -433,6 +433,26 @@ void main() {
       expect(await credited(t.id), isEmpty);
     });
 
+    test('a tag left out of the row is stored empty, keys included', () async {
+      final first = row(artist: 'Ann', album: 'X');
+      await db.upsertTracks([first]);
+      await db.upsertTracks([
+        TracksCompanion.insert(
+          rootId: first.rootId.value,
+          path: first.path.value,
+          mtimeMs: 1,
+          sizeBytes: 1,
+          title: 'Again',
+          addedAt: 1,
+          updatedAt: 1,
+        ),
+      ]);
+      final t = await db.select(db.tracks).getSingle();
+      expect(t.artist, isNull);
+      expect(t.artistSort, isNull);
+      expect(t.albumTitleKey, isNull);
+    });
+
     test('deleting a track deletes its credits', () async {
       await db.upsertTracks([row(artist: 'Ann; Bob')]);
       final id = (await db.select(db.tracks).getSingle()).id;

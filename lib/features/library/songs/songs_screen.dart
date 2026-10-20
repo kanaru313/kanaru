@@ -14,6 +14,7 @@ import '../../../core/settings/settings_provider.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
 import '../widgets/library_keys_updating.dart';
+import '../widgets/library_loading.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import 'songs_empty_view.dart';
@@ -90,8 +91,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         kind: SongsEmptyKind.noRoots,
         onChooseFolder: _choosing ? null : _chooseFolder,
       );
-    } else if (!ref.watch(keysReadyProvider)) {
+    } else if (ref.watch(keysUpdatingProvider)) {
       body = const LibraryKeysUpdating();
+    } else if (!ref.watch(keysReadyProvider)) {
+      body = const LibraryLoading();
     } else {
       body = SongsListView(scanning: scanning);
     }

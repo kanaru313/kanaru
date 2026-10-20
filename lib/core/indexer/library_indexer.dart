@@ -196,6 +196,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _log.severe('Scan failed', error, stackTrace);
       _publish(IndexerFailed(error.toString()));
     }
+    // A row the first run skipped stays hidden from Albums and Artists, and a
+    // rescan does not rewrite unchanged files: key what is left, quietly.
+    if (ref.mounted) {
+      unawaited(ref.read(libraryKeysProvider.notifier).keyStaleRows());
+    }
   }
 
   /// Scans one root. Returns why it was left unfinished instead of throwing

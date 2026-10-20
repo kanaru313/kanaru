@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
@@ -37,4 +39,46 @@ void main() {
       expect(h.container.read(keysReadyProvider), isTrue);
     });
   }
+
+  testWidgets('before the count is back nothing flashes, then albums load', (
+    tester,
+  ) async {
+    final count = Completer<void>();
+    final h = LibraryHarness(
+      overrides: [
+        libraryKeysRunnerProvider.overrideWithValue((db, onProgress) async {
+          await count.future;
+        }),
+      ],
+    );
+    await tester.runAsync(() async {
+      await h.db.addRoots([h.folder('music')], now: 1);
+      await h.db.upsertTracks([
+        TracksCompanion.insert(
+          rootId: 1,
+          path: '/m/a.flac',
+          mtimeMs: 1,
+          sizeBytes: 1,
+          title: 'T',
+          artist: const Value('Ann'),
+          album: const Value('Album One'),
+          albumArtist: const Value(null),
+          addedAt: 1,
+          updatedAt: 1,
+        ),
+      ]);
+    });
+    await h.pump(tester, hasRoots: true);
+    h.container.read(routerProvider).go('/albums');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('No albums yet'), findsNothing);
+    expect(find.text('Updating library…'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+    count.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Album One'), findsOneWidget);
+  });
 }

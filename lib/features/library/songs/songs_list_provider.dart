@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/library_browse_queries.dart';
 import '../../../core/database/library_database.dart';
+import '../../../core/database/library_keys_provider.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../core/settings/settings_provider.dart';
@@ -22,6 +23,8 @@ final songsListProvider = StreamProvider.autoDispose<List<TrackListItem>>((
   final db = ref.watch(libraryDatabaseProvider);
   final sort = ref.watch(settingsProvider.select((s) => s.songSort));
   if (db == null) return Stream.value(const []);
+  // Wait for the keys: becoming ready rebuilds this and loads afresh.
+  if (!ref.watch(keysReadyProvider)) return const Stream.empty();
   return throttledTracksQuery(
     db,
     () =>

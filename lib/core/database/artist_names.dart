@@ -1,6 +1,6 @@
 /// How artist tags name several artists in one string, and the keys that
-/// identify an artist. The only source of these rules: SQL reaches them
-/// through the functions in `library_sql_functions.dart`.
+/// identify an artist. The only source of these rules: the scan and the key
+/// backfill store the results through `trackKeysFor` (`track_keys.dart`).
 library;
 
 import 'text_keys.dart';

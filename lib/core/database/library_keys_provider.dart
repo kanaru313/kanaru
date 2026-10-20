@@ -12,13 +12,31 @@ import 'text_keys.dart';
 
 final _log = Logger('library.keys');
 
-/// Where the key backfill stands.
-class LibraryKeysStatus {
-  const LibraryKeysStatus({this.ready = false, this.done = 0, this.total = 0});
+/// Where the first key backfill of the session stands.
+enum KeysPhase {
+  /// The count of rows needing keys is not back yet. Lists must not query
+  /// (they would read unkeyed rows) and show their ordinary loading state.
+  unknown,
+
+  /// Rows are being keyed: lists show the "Updating library" state.
+  updating,
 
   /// Every track has current keys (or the backfill gave up); lists that sort
   /// and group by the keys can be shown.
-  final bool ready;
+  ready,
+}
+
+/// Where the key backfill stands.
+class LibraryKeysStatus {
+  const LibraryKeysStatus({
+    this.phase = KeysPhase.unknown,
+    this.done = 0,
+    this.total = 0,
+  });
+
+  final KeysPhase phase;
+  bool get ready => phase == KeysPhase.ready;
+  bool get updating => phase == KeysPhase.updating;
 
   /// Tracks keyed so far and tracks that needed keys when the run began; both
   /// 0 until the first count is known.
@@ -52,28 +70,71 @@ const keysAttempts = 3;
 /// library indexer is, which is when the app shell first builds, after the
 /// first frame; startup never waits for it. Playback does not depend on it.
 ///
-/// Starts ready: a library with nothing to key (every start after the first)
-/// never shows the updating state. It turns not ready only once the run
-/// reports stale rows.
+/// Starts [KeysPhase.unknown]: the browse lists wait (loading) until the
+/// first count of stale rows is back, so they never read unkeyed rows. A
+/// library with nothing to key (every start after the first) goes straight
+/// to ready and never shows the updating state.
 class LibraryKeys extends Notifier<LibraryKeysStatus> {
+  bool _running = false;
+
   @override
   LibraryKeysStatus build() {
     final db = ref.watch(libraryDatabaseProvider);
-    if (db == null) return const LibraryKeysStatus(ready: true);
-    unawaited(Future.microtask(() => _run(db)));
-    return const LibraryKeysStatus(ready: true);
+    if (db == null) return const LibraryKeysStatus(phase: KeysPhase.ready);
+    unawaited(Future.microtask(() => _run(db, first: true)));
+    return const LibraryKeysStatus();
   }
 
-  Future<void> _run(LibraryDatabase db) async {
+  /// Keys rows a scan left without current keys (a row the first run
+  /// skipped, or one it gave up on), without touching the lists' state. Call
+  /// when a scan finishes; does nothing when every row is keyed or a run is
+  /// already going.
+  Future<void> keyStaleRows() async {
+    final db = ref.read(libraryDatabaseProvider);
+    if (db == null || _running || !state.ready) return;
+    try {
+      if (await countStaleKeys(db, textKeysVersion) == 0) return;
+    } catch (error, stackTrace) {
+      _log.warning('Counting unkeyed tracks failed', error, stackTrace);
+      return;
+    }
+    if (ref.mounted && !_running) await _run(db, first: false);
+  }
+
+  /// [first]: the run that decides the phase of the lists. Later runs keep
+  /// the lists as they are and only refresh them when they end.
+  Future<void> _run(LibraryDatabase db, {required bool first}) async {
+    _running = true;
+    try {
+      await _attempts(db, first: first);
+    } finally {
+      _running = false;
+    }
+    if (!ref.mounted) return;
+    // Also after giving up, so the app stays usable on what is stored.
+    if (first) {
+      state = LibraryKeysStatus(
+        phase: KeysPhase.ready,
+        done: state.total,
+        total: state.total,
+      );
+    }
+  }
+
+  Future<void> _attempts(LibraryDatabase db, {required bool first}) async {
     final delay = ref.read(libraryKeysRetryDelayProvider);
     for (var attempt = 1; attempt <= keysAttempts; attempt++) {
       try {
         await ref.read(libraryKeysRunnerProvider)(db, (done, total) {
-          if (!ref.mounted || total == 0) return;
+          if (!first || !ref.mounted || total == 0) return;
           // Rows added during the run can push done past the first count.
-          state = LibraryKeysStatus(done: min(done, total), total: total);
+          state = LibraryKeysStatus(
+            phase: KeysPhase.updating,
+            done: min(done, total),
+            total: total,
+          );
         });
-        break;
+        return;
       } catch (error, stackTrace) {
         _log.severe(
           'Keying the library failed (attempt $attempt of $keysAttempts)',
@@ -84,14 +145,6 @@ class LibraryKeys extends Notifier<LibraryKeysStatus> {
         if (!ref.mounted) return;
       }
     }
-    // Also after giving up, so the app stays usable on what is stored.
-    if (ref.mounted) {
-      state = LibraryKeysStatus(
-        ready: true,
-        done: state.total,
-        total: state.total,
-      );
-    }
   }
 }
 
@@ -99,9 +152,16 @@ final libraryKeysProvider = NotifierProvider<LibraryKeys, LibraryKeysStatus>(
   LibraryKeys.new,
 );
 
-/// Whether the browse lists may show; see [LibraryKeysStatus.ready].
+/// Whether the browse lists may query and show; see
+/// [LibraryKeysStatus.ready]. Lists watch it, so becoming ready starts a
+/// fresh load.
 final keysReadyProvider = Provider<bool>(
   (ref) => ref.watch(libraryKeysProvider.select((s) => s.ready)),
+);
+
+/// Whether the "Updating library" state shows (not the plain loading state).
+final keysUpdatingProvider = Provider<bool>(
+  (ref) => ref.watch(libraryKeysProvider.select((s) => s.updating)),
 );
 
 /// Stale rows up to which the backfill runs in place, in chunks of

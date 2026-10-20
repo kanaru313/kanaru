@@ -221,7 +221,7 @@ void main() {
       c.listen(libraryKeysProvider, (_, next) => seen.add(next));
 
       await _untilStatus(c, (s) => s.ready && s.done == 5);
-      expect(seen.first.ready, isFalse);
+      expect(seen.first.updating, isTrue);
       expect(seen.last.done, 5);
       expect(seen.last.total, 5);
       expect(seen.last.fraction, 1.0);
@@ -243,11 +243,83 @@ void main() {
       await _insert(db, 3);
       await backfillLibraryKeys(db);
       final c = container();
-      final seen = <bool>[];
-      c.listen(keysReadyProvider, (_, ready) => seen.add(ready));
-      expect(c.read(keysReadyProvider), isTrue);
+      final seen = <KeysPhase>[];
+      c.listen(libraryKeysProvider, (_, s) => seen.add(s.phase));
+      // Not known yet: lists wait instead of reading unkeyed rows.
+      expect(c.read(keysReadyProvider), isFalse);
+      await _untilStatus(c, (s) => s.ready);
+      expect(seen, [KeysPhase.ready]);
+    });
+
+    test('the lists wait while the count of stale rows is pending', () async {
+      final count = Completer<void>();
+      final c = container(
+        runner: (_, _) async {
+          await count.future;
+        },
+      );
+      expect(c.read(libraryKeysProvider).phase, KeysPhase.unknown);
+      expect(c.read(keysReadyProvider), isFalse);
+      expect(c.read(keysUpdatingProvider), isFalse);
       await pumpEventQueue();
-      expect(seen, isEmpty);
+      expect(c.read(keysReadyProvider), isFalse);
+      count.complete();
+      await _untilStatus(c, (s) => s.ready);
+    });
+
+    test('the end of a run reaches listeners on this isolate', () async {
+      final dir = Directory.systemTemp.createTempSync('kanaru_keys_notice');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final fileDb = LibraryDatabase(
+        NativeDatabase.createInBackground(
+          File('${dir.path}/library.db'),
+          setup: applyLibraryPragmas,
+        ),
+      );
+      addTearDown(fileDb.close);
+      await _insert(fileDb, keysInPlaceLimit + 50, artist: 'Solo');
+      final notices = <Set<TableUpdate>>[];
+      final sub = fileDb.tableUpdates().listen(notices.add);
+      addTearDown(sub.cancel);
+
+      // The provider also notifies from this isolate after the run; this
+      // checks what the run itself sends.
+      await runKeysBackfillInBackground(fileDb, (_, _) {});
+      await pumpEventQueue();
+
+      expect(await _versions(fileDb), everyElement(1));
+      expect(
+        notices.expand((n) => n).where((u) => u.table == 'tracks'),
+        isNotEmpty,
+      );
+    });
+
+    test('rows left unkeyed are keyed after a scan, quietly', () async {
+      await _insert(db, 3);
+      final c = container();
+      c.read(libraryKeysProvider);
+      await _untilStatus(c, (s) => s.ready);
+      // A row the first run could not key: back to unkeyed.
+      await db.customStatement('UPDATE tracks SET keys_version = 0');
+      final seen = <KeysPhase>[];
+      c.listen(libraryKeysProvider, (_, s) => seen.add(s.phase));
+
+      await c.read(libraryKeysProvider.notifier).keyStaleRows();
+
+      expect(await _versions(db), everyElement(1));
+      expect(seen, isEmpty, reason: 'the lists keep showing');
+    });
+
+    test('keying after a scan does nothing when all rows are keyed', () async {
+      var calls = 0;
+      final c = container(
+        runner: (_, _) async {
+          calls++;
+        },
+      );
+      await _untilStatus(c, (s) => s.ready);
+      await c.read(libraryKeysProvider.notifier).keyStaleRows();
+      expect(calls, 1, reason: 'only the first run');
     });
 
     test('a failing run is retried, then lets the lists show', () async {

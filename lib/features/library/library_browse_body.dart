@@ -52,7 +52,9 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
         message: noRootsMessage,
       );
     }
-    if (!ref.watch(keysReadyProvider)) return const LibraryKeysUpdating();
+    if (ref.watch(keysUpdatingProvider)) return const LibraryKeysUpdating();
+    // Not counted yet: the lists have not queried, so this is a plain load.
+    if (!ref.watch(keysReadyProvider)) return const LibraryLoading();
     final scanning = ref.watch(
       libraryIndexerProvider.select((s) => s is IndexerScanning),
     );

@@ -119,13 +119,22 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// textKeysVersion`) and its `track_artists` rows are replaced in the same
   /// transaction, on insert and on update alike, so a rescan that changes a
   /// title or an artist re-keys the track. [rows] carry the tags (title,
-  /// artist, album, album artist) the keys come from.
+  /// artist, album, album artist) the keys come from. [rows] must name them
+  /// all, as `tracksFromTags` builds them: a tag left out (absent) is
+  /// written as empty, so the keys never disagree with the stored text, and
+  /// a rescan clears it.
   Future<void> upsertTracks(List<TracksCompanion> rows) {
     if (rows.isEmpty) return Future.value();
     final keyed = [
       for (final row in rows)
         (
-          row: row,
+          row: row.copyWith(
+            artist: Value(row.artist.present ? row.artist.value : null),
+            album: Value(row.album.present ? row.album.value : null),
+            albumArtist: Value(
+              row.albumArtist.present ? row.albumArtist.value : null,
+            ),
+          ),
           keys: trackKeysFor(
             title: row.title.value,
             artist: row.artist.value,
