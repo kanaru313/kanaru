@@ -2,6 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/settings/applied_appearance_provider.dart';
 import '../core/settings/settings_provider.dart';
 import '../features/player/player_shortcuts.dart';
 import '../l10n/l10n.dart';
@@ -19,10 +20,8 @@ class KanaruApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     // Only what the app shell uses, so changing a library sort does not
-    // rebuild MaterialApp.
-    final (theme, languageCode) = ref.watch(
-      settingsProvider.select((s) => (s.theme, s.languageCode)),
-    );
+    // rebuild MaterialApp; and settled, so quick clicks do not flash it.
+    final (:theme, :languageCode) = ref.watch(appliedAppearanceProvider);
     // A saved code without a translation falls back to the system locale.
     final savedLocale =
         AppLocalizations.supportedLocales.any(
