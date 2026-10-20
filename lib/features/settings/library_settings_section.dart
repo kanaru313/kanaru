@@ -13,7 +13,7 @@ import 'settings_section.dart';
 
 /// Library settings: for now only a rescan. The button is disabled while
 /// the library is unavailable, has no music folder yet, or is being
-/// scanned (it then shows a progress bar). The result is announced by the
+/// scanned (it then shows a progress ring). The result is announced by the
 /// shell.
 class LibrarySettingsSection extends ConsumerWidget {
   const LibrarySettingsSection({super.key});
@@ -49,9 +49,10 @@ class LibrarySettingsSection extends ConsumerWidget {
   }
 }
 
-/// The rescan button. While [busy], its icon and label give way to a
-/// progress bar (determinate while tags are read) in the same frame, so the
-/// row does not move; the tooltip says how far the scan got.
+/// The rescan button. While [busy], its icon turns into the scan's progress
+/// ring (determinate while tags are read), like the library's floating
+/// rescan button; the ring has the icon's size, so the row does not move.
+/// The tooltip says how far the scan got.
 class _RescanButton extends StatelessWidget {
   const _RescanButton({
     required this.scan,
@@ -66,23 +67,17 @@ class _RescanButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // Hidden but still laid out, so the button keeps its size.
-    final button = FilledButton.tonalIcon(
-      style: settingButtonStyle(),
-      onPressed: onPressed,
-      icon: Visibility.maintain(
-        visible: !busy,
-        child: const Icon(Icons.refresh),
-      ),
-      label: Visibility.maintain(
-        visible: !busy,
-        child: Text(l10n.libraryRescan),
-      ),
-    );
-    if (!busy) return button;
+    if (!busy) {
+      return FilledButton.tonalIcon(
+        style: settingButtonStyle(),
+        onPressed: onPressed,
+        icon: const Icon(Icons.refresh),
+        label: Text(l10n.libraryRescan),
+      );
+    }
 
     final scan = this.scan;
-    // Past the end of a quick scan, the bar just keeps moving.
+    // Past the end of a quick scan, the ring just spins.
     final reading =
         scan is IndexerScanning &&
         scan.phase == ScanPhase.reading &&
@@ -91,24 +86,17 @@ class _RescanButton extends StatelessWidget {
       message: reading
           ? l10n.libraryScanReading(scan.done, scan.total)
           : l10n.libraryScanDiscovering,
-      child: Stack(
-        // A compact row gives the button a fixed width: pass it through.
-        fit: StackFit.passthrough,
-        children: [
-          button,
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: LinearProgressIndicator(
-                  value: reading ? scan.done / scan.total : null,
-                  minHeight: 4,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+      child: FilledButton.tonalIcon(
+        style: settingButtonStyle(),
+        onPressed: onPressed,
+        icon: SizedBox.square(
+          dimension: 18,
+          child: CircularProgressIndicator(
+            value: reading ? scan.done / scan.total : null,
+            strokeWidth: 2,
           ),
-        ],
+        ),
+        label: Text(l10n.libraryRescan),
       ),
     );
   }

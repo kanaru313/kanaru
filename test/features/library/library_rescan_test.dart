@@ -159,8 +159,8 @@ void main() {
     });
 
     for (final width in [1280.0, 480.0]) {
-      testWidgets('at $width px, scanning turns the button into a progress '
-          'bar of the same size, kept for 300 ms', (tester) async {
+      testWidgets('at $width px, scanning turns the icon into a progress '
+          'ring without resizing the button, kept for 300 ms', (tester) async {
         final indexer = ScriptedIndexer();
         final h = LibraryHarness(
           overrides: [libraryIndexerProvider.overrideWith(() => indexer)],
@@ -171,10 +171,16 @@ void main() {
         await tester.pumpAndSettle();
         final button = rescanLibrary();
         final idle = tester.getRect(button);
-        final bar = find.byType(LinearProgressIndicator);
-        final label = find.text('Rescan').hitTestable();
-        expect(bar, findsNothing);
-        expect(label, findsOneWidget);
+        final ring = find.descendant(
+          of: button,
+          matching: find.byType(CircularProgressIndicator),
+        );
+        final icon = find.descendant(
+          of: button,
+          matching: find.byIcon(Icons.refresh),
+        );
+        expect(ring, findsNothing);
+        expect(icon, findsOneWidget);
 
         await tester.tap(button);
         expect(indexer.scans, 1);
@@ -182,17 +188,13 @@ void main() {
           const IndexerScanning(phase: ScanPhase.discovering, rootPath: '/m'),
         );
         await tester.pump();
-        expect(bar, findsOneWidget);
-        expect(tester.widget<LinearProgressIndicator>(bar).value, isNull);
-        expect(label, findsNothing);
-        expect(find.byIcon(Icons.refresh).hitTestable(), findsNothing);
+        expect(ring, findsOneWidget);
+        expect(tester.widget<CircularProgressIndicator>(ring).value, isNull);
+        expect(icon, findsNothing);
+        expect(find.byType(LinearProgressIndicator), findsNothing);
         expect(find.byTooltip('Looking for music files…'), findsOneWidget);
         expect(tester.widget<FilledButton>(button).onPressed, isNull);
         expect(tester.getRect(button), idle);
-        final barRect = tester.getRect(bar);
-        expect(barRect.height, 4);
-        expect(barRect.center, idle.center);
-        expect(barRect.width, idle.width - 32);
 
         indexer.emit(
           const IndexerScanning(
@@ -203,19 +205,19 @@ void main() {
           ),
         );
         await tester.pump();
-        expect(tester.widget<LinearProgressIndicator>(bar).value, 0.25);
+        expect(tester.widget<CircularProgressIndicator>(ring).value, 0.25);
         expect(find.byTooltip('Reading tags 1 / 4'), findsOneWidget);
         expect(tester.getRect(button), idle);
 
         indexer.emit(IndexerFinished(const ScanSummary()));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 299));
-        expect(bar, findsOneWidget, reason: 'held until 300 ms');
+        expect(ring, findsOneWidget, reason: 'held until 300 ms');
         expect(tester.widget<FilledButton>(button).onPressed, isNull);
 
         await tester.pump(const Duration(milliseconds: 2));
-        expect(bar, findsNothing, reason: 'off at once after 300 ms');
-        expect(label, findsOneWidget);
+        expect(ring, findsNothing, reason: 'off at once after 300 ms');
+        expect(icon, findsOneWidget);
         expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
         expect(tester.getRect(button), idle);
         await tester.pumpAndSettle(const Duration(seconds: 1));
