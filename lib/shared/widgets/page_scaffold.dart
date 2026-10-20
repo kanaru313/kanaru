@@ -94,7 +94,11 @@ class PageScaffold extends StatelessWidget {
                   ),
                 ),
         ),
-        Expanded(child: body),
+        // Its own ink surface: hover and splash of rows that scroll under
+        // the title are clipped to the body instead of painting over it.
+        Expanded(
+          child: Material(type: MaterialType.transparency, child: body),
+        ),
       ],
     );
   }
