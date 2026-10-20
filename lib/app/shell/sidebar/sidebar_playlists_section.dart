@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import 'sidebar_tooltip.dart';
 
 /// Collapsible "Playlists" group at the bottom of the sidebar. Lists nothing
 /// until playlists exist; the add button stays disabled until then. In
@@ -26,10 +27,12 @@ class _SidebarPlaylistsSectionState extends State<SidebarPlaylistsSection> {
 
     if (widget.compact) {
       return Center(
-        child: IconButton(
-          icon: const Icon(Icons.playlist_add, size: 22),
-          tooltip: l10n.sidebarNewPlaylist,
-          onPressed: null,
+        child: SidebarTooltip(
+          message: l10n.sidebarNewPlaylist,
+          child: const IconButton(
+            icon: Icon(Icons.playlist_add, size: 22),
+            onPressed: null,
+          ),
         ),
       );
     }
