@@ -96,6 +96,12 @@
       "count": { "type": "int" }
     }
   },
+  "libraryScanUndecodableNames": "{count, plural, one{1 file or folder skipped: its name is not valid UTF-8} other{{count} files or folders skipped: names are not valid UTF-8}}",
+  "@libraryScanUndecodableNames": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "libraryScanRootMissing": "{path} was not found",
   "@libraryScanRootMissing": {
     "placeholders": {

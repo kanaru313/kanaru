@@ -108,6 +108,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
     var added = 0, updated = 0, removed = 0, failedTags = 0, failedCovers = 0;
     int? coversRepaired, coversRemoved;
     final skipped = <String, SkipReason>{};
+    var undecodableNames = 0;
+    final undecodableDirs = <String>[];
     Object? firstError;
     StackTrace? firstStack;
     var walkTime = Duration.zero, tagTime = Duration.zero;
@@ -136,6 +138,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
         removed += result.removed;
         failedTags += result.failedTags;
         failedCovers += result.failedCovers;
+        undecodableNames += result.undecodableNames;
+        for (final dir in result.undecodableSampleDirs) {
+          if (undecodableDirs.length < maxUndecodableSamples) {
+            undecodableDirs.add(dir);
+          }
+        }
         walkTime += result.walkTime;
         tagTime += result.tagTime;
         dbTime += result.dbTime;
@@ -157,8 +165,16 @@ class LibraryIndexer extends Notifier<IndexerState> {
         updated: updated,
         removed: removed,
         failedTags: failedTags,
+        undecodableNames: undecodableNames,
+        undecodableSampleDirs: undecodableDirs,
         skippedRoots: skipped,
       );
+      if (undecodableNames > 0) {
+        _log.warning(
+          '$undecodableNames files or folders skipped, names are not valid UTF-8, '
+          'for example in: ${undecodableDirs.join(', ')}',
+        );
+      }
       _log.info(
         'Scan finished: $added added, $updated updated, $removed removed, '
         '$failedTags without tags, ${skipped.length} roots skipped; '
@@ -187,7 +203,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
     final timeouts = ref.read(scanTimeoutsProvider);
     final walkFiles = ref.read(rootWalkerProvider);
     final walkTime = Stopwatch(), tagTime = Stopwatch(), dbTime = Stopwatch();
+    // Known once the walk is done; carried by every result after that.
+    var undecodable = 0;
+    var undecodableDirs = const <String>[];
     RootScanResult stopped(SkipReason reason) => RootScanResult(
+      undecodableNames: undecodable,
+      undecodableSampleDirs: undecodableDirs,
       skipReason: reason,
       walkTime: walkTime.elapsed,
       tagTime: tagTime.elapsed,
@@ -213,6 +234,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       walkTime.stop();
       if (!timedOut) _abandonedWalks.remove(root.path);
     }
+    undecodable = walk.undecodableNames;
+    undecodableDirs = walk.undecodableSampleDirs;
     if (walk.rootMissing) {
       _log.warning('Root unavailable, left unchanged: ${root.path}');
       return stopped(SkipReason.missing);
@@ -265,6 +288,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
           updated: updated,
           failedTags: failedTags,
           failedCovers: failedCovers,
+          undecodableNames: undecodable,
+          undecodableSampleDirs: undecodableDirs,
           skipReason: SkipReason.timedOut,
           walkTime: walkTime.elapsed,
           tagTime: tagTime.elapsed,
@@ -309,6 +334,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       removed: diff.toDelete.length,
       failedTags: failedTags,
       failedCovers: failedCovers,
+      undecodableNames: undecodable,
+      undecodableSampleDirs: undecodableDirs,
       walkTime: walkTime.elapsed,
       tagTime: tagTime.elapsed,
       dbTime: dbTime.elapsed,

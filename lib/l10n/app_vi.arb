@@ -64,6 +64,7 @@
   "libraryScanUpdated": "{count} bài đã cập nhật",
   "libraryScanRemoved": "{count} bài đã xoá",
   "libraryScanFailedTags": "{count, plural, other{{count} file không đọc được tag}}",
+  "libraryScanUndecodableNames": "{count, plural, other{Đã bỏ qua {count} file hoặc thư mục: tên không phải UTF-8 hợp lệ}}",
   "libraryScanRootMissing": "Không tìm thấy {path}",
   "libraryScanRootEmpty": "{path} đang trống, giữ nguyên thư viện",
   "libraryScanRootTimedOut": "{path} mất quá nhiều thời gian nên đã dừng, hãy thử lại sau",

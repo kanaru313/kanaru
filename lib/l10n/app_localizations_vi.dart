@@ -219,6 +219,16 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String libraryScanUndecodableNames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã bỏ qua $count file hoặc thư mục: tên không phải UTF-8 hợp lệ',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String libraryScanRootMissing(String path) {
     return 'Không tìm thấy $path';
   }

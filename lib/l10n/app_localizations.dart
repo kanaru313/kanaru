@@ -440,6 +440,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{1 file couldn\'t be read} other{{count} files couldn\'t be read}}'**
   String libraryScanFailedTags(int count);
 
+  /// No description provided for @libraryScanUndecodableNames.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 file or folder skipped: its name is not valid UTF-8} other{{count} files or folders skipped: names are not valid UTF-8}}'**
+  String libraryScanUndecodableNames(int count);
+
   /// No description provided for @libraryScanRootMissing.
   ///
   /// In en, this message translates to:

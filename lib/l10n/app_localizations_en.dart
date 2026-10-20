@@ -220,6 +220,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String libraryScanUndecodableNames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files or folders skipped: names are not valid UTF-8',
+      one: '1 file or folder skipped: its name is not valid UTF-8',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String libraryScanRootMissing(String path) {
     return '$path was not found';
   }

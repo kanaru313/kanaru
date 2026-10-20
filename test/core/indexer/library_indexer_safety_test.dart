@@ -118,6 +118,45 @@ void main() {
       expect(await tracks(), hasLength(2));
     });
 
+    test(
+      'a file name that is not UTF-8 is counted and nothing is deleted',
+      () async {
+        touch('a.mp3');
+        touch('b.mp3');
+        await scan();
+        expect(await tracks(), hasLength(2));
+
+        final made = Process.runSync('bash', [
+          '-c',
+          r'touch "$(printf "caf\xe9.mp3")"',
+        ], workingDirectory: root);
+        expect(made.exitCode, 0);
+        await scan();
+
+        expect(summary().undecodableNames, 1);
+        expect(summary().undecodableSampleDirs, [root]);
+        expect(summary().removed, 0);
+        expect(await tracks(), hasLength(2));
+      },
+    );
+
+    test(
+      'a file with U+FFFD in its name is indexed and re-read when changed',
+      () async {
+        final file = touch('bad\u{FFFD}name.mp3');
+        await scan();
+        expect(await tracks(), hasLength(1));
+        expect(summary().undecodableNames, 0);
+
+        file.setLastModifiedSync(fixedMtime);
+        reader.reset();
+        await scan();
+        expect(summary().updated, 1);
+        expect(reader.readCount, 1);
+        expect(await tracks(), hasLength(1));
+      },
+    );
+
     test('a link whose target vanished keeps its row', () async {
       touch('a.mp3');
       final target = touch('store/t.dat');

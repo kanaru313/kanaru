@@ -24,6 +24,8 @@ class ScanSummary {
     this.updated = 0,
     this.removed = 0,
     this.failedTags = 0,
+    this.undecodableNames = 0,
+    this.undecodableSampleDirs = const [],
     this.skippedRoots = const {},
   });
 
@@ -33,6 +35,13 @@ class ScanSummary {
 
   /// Files stored without tags because reading them failed.
   final int failedTags;
+
+  /// Audio files and folders skipped because their name is not valid UTF-8;
+  /// their stored rows are kept.
+  final int undecodableNames;
+
+  /// A few folders holding such entries, for the log.
+  final List<String> undecodableSampleDirs;
 
   /// Roots left untouched or unfinished, with the reason. Keyed by root path.
   final Map<String, SkipReason> skippedRoots;

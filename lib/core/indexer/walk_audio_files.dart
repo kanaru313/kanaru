@@ -16,6 +16,9 @@ class WalkedFile {
   final int sizeBytes;
 }
 
+/// How many folders with undecodable names a walk remembers for the log.
+const maxUndecodableSamples = 3;
+
 /// What [walkAudioFiles] found under one root.
 class WalkResult {
   const WalkResult({
@@ -23,6 +26,8 @@ class WalkResult {
     this.unreadableDirs = const [],
     this.unstattable = const [],
     this.emptyDirs = const [],
+    this.undecodableNames = 0,
+    this.undecodableSampleDirs = const [],
     this.rootMissing = false,
   });
 
@@ -39,6 +44,16 @@ class WalkResult {
   /// mount point looks exactly like this, so what the database holds below
   /// them is unknown, like for [unreadableDirs].
   final List<String> emptyDirs;
+
+  /// Audio files and folders whose name is not valid UTF-8 (Dart decodes it
+  /// with U+FFFD, so the real entry cannot be opened by that path). They are
+  /// skipped; files are also listed in [unstattable] and folders in
+  /// [unreadableDirs], so stored rows survive. A name that really contains
+  /// U+FFFD and opens fine is a normal entry, not counted here.
+  final int undecodableNames;
+
+  /// Up to [maxUndecodableSamples] distinct folders holding such entries.
+  final List<String> undecodableSampleDirs;
 
   /// The root itself is gone or cannot be listed (unplugged drive, bad
   /// permissions).
@@ -60,7 +75,17 @@ WalkResult walkAudioFiles(String root) {
   final unreadable = <String>[];
   final unstattable = <String>[];
   final empty = <String>[];
+  var undecodable = 0;
+  final aliased = <String>{};
+  final undecodableDirs = <String>[];
   final pending = <String>[root];
+  void noteUndecodable(String dir) {
+    if (undecodableDirs.length < maxUndecodableSamples &&
+        !undecodableDirs.contains(dir)) {
+      undecodableDirs.add(dir);
+    }
+  }
+
   while (pending.isNotEmpty) {
     final dir = pending.removeLast();
     final List<FileSystemEntity> entries;
@@ -69,6 +94,10 @@ WalkResult walkAudioFiles(String root) {
     } on FileSystemException {
       if (dir == root) return const WalkResult(rootMissing: true);
       unreadable.add(dir);
+      if (dir.contains('\uFFFD')) {
+        undecodable++;
+        noteUndecodable(dir.substring(0, dir.lastIndexOf('/')));
+      }
       continue;
     }
     if (entries.isEmpty && dir != root) empty.add(dir);
@@ -78,7 +107,17 @@ WalkResult walkAudioFiles(String root) {
         continue;
       }
       if (!isAudioFile(entry.path)) continue;
+      final lossy = entry.path.contains('\uFFFD');
       final stat = FileStat.statSync(entry.path);
+      if (lossy && stat.type != FileSystemEntityType.file) {
+        // The lossy path opens nothing: the real name is not valid UTF-8.
+        undecodable++;
+        unstattable.add(entry.path);
+        noteUndecodable(dir);
+        continue;
+      }
+      // Several different byte names can decode to one lossy path.
+      if (lossy && !aliased.add(entry.path)) continue;
       if (stat.type == FileSystemEntityType.file) {
         files.add(
           WalkedFile(
@@ -99,6 +138,8 @@ WalkResult walkAudioFiles(String root) {
     unreadableDirs: unreadable,
     unstattable: unstattable,
     emptyDirs: empty,
+    undecodableNames: undecodable,
+    undecodableSampleDirs: undecodableDirs,
   );
 }
 

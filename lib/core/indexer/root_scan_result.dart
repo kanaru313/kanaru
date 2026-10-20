@@ -9,6 +9,8 @@ class RootScanResult {
     this.removed = 0,
     this.failedTags = 0,
     this.failedCovers = 0,
+    this.undecodableNames = 0,
+    this.undecodableSampleDirs = const [],
     this.skipReason,
     this.error,
     this.walkTime = Duration.zero,
@@ -28,6 +30,8 @@ class RootScanResult {
        removed = 0,
        failedTags = 0,
        failedCovers = 0,
+       undecodableNames = 0,
+       undecodableSampleDirs = const [],
        skipReason = null;
 
   final int added;
@@ -35,6 +39,12 @@ class RootScanResult {
   final int removed;
   final int failedTags;
   final int failedCovers;
+
+  /// Audio files and folders of this root skipped for a name that is not
+  /// valid UTF-8,
+  /// and a few folders holding them.
+  final int undecodableNames;
+  final List<String> undecodableSampleDirs;
 
   /// Set when the root was left unchanged or unfinished (shown in the
   /// summary); null when it was scanned completely or [error] is set.
