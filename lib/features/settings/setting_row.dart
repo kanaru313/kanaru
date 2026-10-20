@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
+import 'full_or_compact_control.dart';
+
 /// Row width below which the control is built compact (a dropdown rather
 /// than a segmented button), so it leaves the title enough room.
 const _compactBelow = 560.0;
@@ -32,8 +34,8 @@ const _controlMaxShare = 0.6;
 /// The control always stays on the title's line. A narrow row asks for a
 /// compact control and gives it a fixed width shared by all rows (less only
 /// when the row is very narrow); a wide row lets the full control take its
-/// own width, shrunk if it is still too wide. A long title wraps to a second
-/// line.
+/// own width, or falls back to the compact one when the full one does not
+/// fit (long labels, large text). A long title wraps to a second line.
 class SettingRow extends StatelessWidget {
   const SettingRow({
     super.key,
@@ -99,10 +101,10 @@ class SettingRow extends StatelessWidget {
     }
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerRight,
-        child: control(false),
+      child: FullOrCompactControl(
+        full: control(false),
+        compact: control(true),
+        compactWidth: _compactControlWidth,
       ),
     );
   }

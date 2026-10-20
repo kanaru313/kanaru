@@ -10,138 +10,180 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
 
+/// Width of a settings row from which the control is built in full (a
+/// segmented button rather than a dropdown); mirrors `setting_row.dart`.
+const _wideRowFrom = 560.0;
+
 void main() {
-  const sizes = [Size(480, 800), Size(760, 800), Size(1280, 800)];
+  // 820 to 940 px windows give 579 to 699 px rows next to the sidebar:
+  // wide rows with little room, where the full controls get tight.
+  const sizes = [
+    Size(480, 800),
+    Size(760, 800),
+    Size(820, 800),
+    Size(900, 800),
+    Size(940, 800),
+    Size(1280, 800),
+  ];
+  const largeTextSizes = [Size(480, 800), Size(900, 800), Size(1280, 800)];
 
   for (final language in ['en', 'vi']) {
     for (final size in sizes) {
       testWidgets(
         'settings fit a ${size.width.toInt()} px window in $language',
-        (tester) async {
-          final l10n = lookupAppLocalizations(Locale(language));
-          tester.view.physicalSize = size;
-          tester.view.devicePixelRatio = 1;
-          addTearDown(tester.view.reset);
-          final container = ProviderContainer(
-            overrides: [
-              audioBackendProvider.overrideWithValue(FakeAudioBackend()),
-              initialSettingsProvider.overrideWithValue(
-                AppSettings(languageCode: language),
-              ),
-            ],
-          );
-          addTearDown(container.dispose);
-          await tester.pumpWidget(
-            UncontrolledProviderScope(
-              container: container,
-              child: const KanaruApp(),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await tester.tap(
-            find.byIcon(Icons.settings_outlined).hitTestable().first,
-          );
-          await tester.pumpAndSettle();
-
-          expect(tester.takeException(), isNull);
-
-          // Sections start at the same left edge whatever their rows' width.
-          expect(
-            tester.getTopLeft(find.text(l10n.settingsAbout)).dx,
-            tester.getTopLeft(find.text(l10n.settingsAppearance)).dx,
-          );
-
-          // Every control sits on its label's line, at its right.
-          for (final (label, control) in [
-            (l10n.settingsRescanLibrary, find.byType(FilledButton)),
-            (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>)),
-            (l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
-            (
-              l10n.settingsTitleBar,
-              find.byType(SettingChoice<TitleBarPreference>),
-            ),
-          ]) {
-            final title = tester.getRect(find.text(label));
-            final rect = tester.getRect(control);
-            expect(
-              title.center.dy,
-              inInclusiveRange(rect.top, rect.bottom),
-              reason: '$label: control on the same line',
-            );
-            expect(rect.left, greaterThan(title.right), reason: label);
-          }
-
-          // Every control, whatever its kind, has the same height.
-          final controls = [
-            ...find.byType(FilledButton).evaluate(),
-            ...find
-                .byWidgetPredicate(
-                  (w) => w is SegmentedButton || w is DropdownMenu,
-                )
-                .evaluate(),
-          ];
-          expect(controls, hasLength(4));
-          for (final control in controls) {
-            expect(
-              tester.getSize(find.byWidget(control.widget)).height,
-              settingControlHeight,
-              reason: '${control.widget.runtimeType}',
-            );
-          }
-
-          final wideRows = size.width >= 1280;
-          final theme = find.byType(SettingChoice<ThemePreference>);
-          expect(
-            find.descendant(
-              of: theme,
-              matching: find.byType(SegmentedButton<ThemePreference>),
-            ),
-            wideRows ? findsOneWidget : findsNothing,
-          );
-          expect(
-            find.descendant(
-              of: theme,
-              matching: find.byType(DropdownMenu<ThemePreference>),
-            ),
-            wideRows ? findsNothing : findsOneWidget,
-          );
-
-          // Compact selectors share one width, right edges lined up, and
-          // the rescan button ends on the same edge.
-          if (!wideRows) {
-            final dropdowns = find
-                .byWidgetPredicate((w) => w is DropdownMenu)
-                .evaluate()
-                .map((e) => tester.getRect(find.byWidget(e.widget)))
-                .toList();
-            expect(dropdowns, hasLength(3));
-            for (final rect in dropdowns.skip(1)) {
-              expect(rect.width, dropdowns.first.width);
-              expect(rect.right, dropdowns.first.right);
-            }
-            expect(
-              tester.getRect(find.byType(FilledButton)).right,
-              dropdowns.first.right,
-            );
-          }
-
-          await _choose(tester, theme, l10n.settingsThemeDark);
-          expect(container.read(settingsProvider).theme, ThemePreference.dark);
-
-          final titleBar = find.byType(SettingChoice<TitleBarPreference>);
-          await tester.ensureVisible(titleBar);
-          await tester.pumpAndSettle();
-          expect(titleBar.hitTestable(), findsOneWidget);
-          await _choose(tester, titleBar, l10n.settingsTitleBarNone);
-          expect(
-            container.read(settingsProvider).titleBar,
-            TitleBarPreference.none,
-          );
-          expect(tester.takeException(), isNull);
-        },
+        (tester) => _checkLayout(tester, language, size),
+      );
+    }
+    for (final size in largeTextSizes) {
+      testWidgets(
+        'settings fit a ${size.width.toInt()} px window in $language with '
+        'large text',
+        (tester) => _checkLayout(tester, language, size, textScale: 2),
       );
     }
   }
+}
+
+/// Opens Settings in a [size] window in [language] and checks that every
+/// row fits, keeps its control on the title's line, and that all controls
+/// are [settingControlHeight] tall as drawn.
+Future<void> _checkLayout(
+  WidgetTester tester,
+  String language,
+  Size size, {
+  double textScale = 1,
+}) async {
+  final l10n = lookupAppLocalizations(Locale(language));
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  tester.platformDispatcher.textScaleFactorTestValue = textScale;
+  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+  final container = ProviderContainer(
+    overrides: [
+      audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+      initialSettingsProvider.overrideWithValue(
+        AppSettings(languageCode: language),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+  await tester.pumpWidget(
+    UncontrolledProviderScope(container: container, child: const KanaruApp()),
+  );
+  await tester.pumpAndSettle();
+  // Only Settings is checked here.
+  tester.takeException();
+  await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
+  await tester.pumpAndSettle();
+
+  expect(tester.takeException(), isNull);
+
+  // Sections start at the same left edge whatever their rows' width.
+  expect(
+    tester.getTopLeft(find.text(l10n.settingsAbout)).dx,
+    tester.getTopLeft(find.text(l10n.settingsAppearance)).dx,
+  );
+
+  // Every control sits on its label's line, at its right.
+  for (final (label, control) in [
+    (l10n.settingsRescanLibrary, find.byType(FilledButton)),
+    (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>)),
+    (l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
+    (l10n.settingsTitleBar, find.byType(SettingChoice<TitleBarPreference>)),
+  ]) {
+    final title = tester.getRect(find.text(label));
+    final rect = tester.getRect(control);
+    expect(
+      title.center.dy,
+      inInclusiveRange(rect.top, rect.bottom),
+      reason: '$label: control on the same line',
+    );
+    expect(rect.left, greaterThan(title.right), reason: label);
+  }
+
+  // Every control, whatever its kind, has the same height as drawn
+  // (a wide row's control is never scaled down).
+  final controls = [
+    ...find.byType(FilledButton).evaluate(),
+    ...find
+        .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
+        .evaluate(),
+  ];
+  expect(controls, hasLength(4));
+  for (final control in controls) {
+    expect(
+      tester.getRect(find.byWidget(control.widget)).height,
+      moreOrLessEquals(settingControlHeight),
+      reason: '${control.widget.runtimeType}',
+    );
+  }
+
+  final rowWidth = tester.getSize(find.byType(SettingRow).first).width;
+  final wideRows = rowWidth >= _wideRowFrom;
+  final theme = find.byType(SettingChoice<ThemePreference>);
+  final segmented = find.descendant(
+    of: theme,
+    matching: find.byType(SegmentedButton<ThemePreference>),
+  );
+  final dropdown = find.descendant(
+    of: theme,
+    matching: find.byType(DropdownMenu<ThemePreference>),
+  );
+  if (!wideRows) {
+    // Narrow rows always ask for the compact control.
+    expect(segmented, findsNothing);
+    expect(dropdown, findsOneWidget);
+  } else if (language == 'en' && size.width >= 1280 && textScale == 1) {
+    // The full control fits a roomy row.
+    expect(segmented, findsOneWidget);
+    expect(dropdown, findsNothing);
+  } else {
+    // A wide row shows the full control only when it fits, else the
+    // compact one; never both, never a shrunk one.
+    expect(
+      segmented.evaluate().length + dropdown.evaluate().length,
+      1,
+      reason: 'one theme control',
+    );
+  }
+
+  // In narrow rows, compact selectors share one width, right edges lined
+  // up, and the rescan button ends on the same edge.
+  if (!wideRows) {
+    final dropdowns = find
+        .byWidgetPredicate((w) => w is DropdownMenu)
+        .evaluate()
+        .map((e) => tester.getRect(find.byWidget(e.widget)))
+        .toList();
+    expect(dropdowns, hasLength(3));
+    for (final rect in dropdowns.skip(1)) {
+      expect(rect.width, dropdowns.first.width);
+      expect(rect.right, dropdowns.first.right);
+    }
+    expect(
+      tester.getRect(find.byType(FilledButton)).right,
+      dropdowns.first.right,
+    );
+  }
+  if (size.width > 760 && size.width < 1280) {
+    expect(
+      rowWidth,
+      inInclusiveRange(_wideRowFrom, 700),
+      reason: 'a mid window gives a tight wide row',
+    );
+  }
+
+  await _choose(tester, theme, l10n.settingsThemeDark);
+  expect(container.read(settingsProvider).theme, ThemePreference.dark);
+
+  final titleBar = find.byType(SettingChoice<TitleBarPreference>);
+  await tester.ensureVisible(titleBar);
+  await tester.pumpAndSettle();
+  expect(titleBar.hitTestable(), findsOneWidget);
+  await _choose(tester, titleBar, l10n.settingsTitleBarNone);
+  expect(container.read(settingsProvider).titleBar, TitleBarPreference.none);
+  expect(tester.takeException(), isNull);
 }
 
 /// Picks an option of a [SettingChoice] by its label, from its segment or
