@@ -76,10 +76,9 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | IDX-09 | Phát file ngoài thư viện | Mở file/thư mục bằng dòng lệnh, kéo thả hoặc "Open with" mà không cần thêm vào thư viện                                                                                              | P1      | 1     | H   |
 | IDX-10 | Tiến độ quét mượt        | Vòng tiến độ của nút quét lại luôn thấy được và nhích đều. Trước đây batch cố định 512 file nên thư viện nhỏ hơn chỉ có một batch, và ở `0/total` vòng M3 determinate không vẽ gì (483 file đọc lại lấy cover mất ~14,7 s mà icon biến mất). Giờ vòng xoay cho tới khi đọc xong batch đầu; batch `ceil(total / 20)` trong khoảng 32–512 để mỗi root có ~20 bước — ✅ đã làm | P1      | 1     |     |
 
-**Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. Khi đó:
+**Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. "Mở thư mục" dùng chung bộ duyệt thư mục (`walkAudioFilesInIsolate`) với việc quét thư viện, nên bỏ qua đúng những thư mục mà lần quét bỏ qua, và bỏ FIFO/thiết bị. Khi đó:
 
 - Đường phát nhạc (`PlayerService.openTracks`, hàng đợi, player bar) vẫn giữ nguyên; màn thư viện dùng lại nó.
-- "Mở thư mục" dùng chung bộ duyệt thư mục (`walkAudioFilesInIsolate`) với việc quét thư viện, nên bỏ qua đúng những thư mục mà lần quét bỏ qua, và bỏ FIFO/thiết bị.
 - `isAudioFile` / `scanFolder` trong `lib/features/player/open_media.dart` chuyển sang `lib/core/indexer/`.
 - `file_selector` vẫn dùng cho hộp thoại chọn thư mục nguồn.
 - Phát file ngoài thư viện đi qua IDX-09 / SYS-07 (dòng lệnh, kéo thả, "Open with"), không qua nút.
