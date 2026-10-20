@@ -294,6 +294,18 @@ void main() {
       expect(playing(), isFalse);
     });
 
+    test('pause after the engine paused on its own is kept', () async {
+      await service().openTracks(songs);
+      // mpv reports the pause of a failing load before it stops.
+      backend.emitPlaying.add(false);
+      await service().pause();
+
+      backend.fail(songs[0]);
+      backend.emitCompleted.add(true);
+
+      expect(backend.calls.last, 'open(b, next: c, paused)');
+    });
+
     test('a broken track keeps playing when it was playing', () async {
       await service().openTracks(songs);
 

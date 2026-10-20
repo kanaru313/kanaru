@@ -32,8 +32,11 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     if (!state.playing) await playPause();
   }
 
+  /// Also records the wish when the engine already reported a pause on its
+  /// own, so a track that then fails moves on paused.
   Future<void> pause() async {
-    if (state.playing) await playPause();
+    if (state.playing) return playPause();
+    _wantsPlaying = false;
   }
 
   /// Pauses and rewinds to the start but keeps the queue; [play] then plays
