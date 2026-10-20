@@ -74,6 +74,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | IDX-07 | Bài lỗi / không đọc được | Liệt kê file có tag lỗi hoặc định dạng không hỗ trợ để người dùng xử lý                                                                                                              | P2      | 1     |     |
 | IDX-08 | CUE sheet                | Tách một file FLAC/APE + `.cue` thành nhiều track ảo                                                                                                                                 | P2      | 4     |     |
 | IDX-09 | Phát file ngoài thư viện | Mở file/thư mục bằng dòng lệnh, kéo thả hoặc "Open with" mà không cần thêm vào thư viện                                                                                              | P1      | 1     | H   |
+| IDX-10 | Tiến độ quét mượt        | Vòng tiến độ của nút quét lại luôn thấy được và nhích đều. Hiện tại: `tagBatchSize = 512` cố định nên thư viện < 512 file chỉ có một batch; ở `0/total` vòng M3 determinate không có track nên trống trơn (đã gặp: 483 file đọc lại lấy cover mất ~14,7 s, icon biến mất rồi nhảy thẳng lên đầy). Sửa: `IndexerScanning.progress` trả `null` (vòng xoay) khi `done == 0`; batch theo khối lượng `ceil(total / 20).clamp(32, 512)` để mỗi root có ~20 bước — ✅ đã làm (fix/scan-progress-steps) | P1      | 1     |     |
 
 **Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. Khi đó:
 

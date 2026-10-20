@@ -51,11 +51,12 @@ class IndexerScanning extends IndexerState {
   final int done;
   final int total;
 
-  /// Share of this root's files read so far (0 to 1) while tags are read;
-  /// `null` while files are still being looked for, when the amount of work
-  /// is not known yet.
+  /// Share of this root's files read so far (above 0, up to 1) while tags
+  /// are read; `null` while files are still being looked for, when the
+  /// amount of work is not known yet, and until the first batch is read:
+  /// a ring at 0 draws nothing, while `null` keeps it spinning.
   double? get progress =>
-      phase == ScanPhase.reading && total > 0 ? done / total : null;
+      phase == ScanPhase.reading && done > 0 && total > 0 ? done / total : null;
 }
 
 class IndexerFinished extends IndexerState {

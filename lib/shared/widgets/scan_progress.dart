@@ -67,6 +67,6 @@ class ScanProgressRing extends StatelessWidget {
 
 /// Says how far [scan] got, for a tooltip.
 String scanProgressTooltip(AppLocalizations l10n, IndexerScanning scan) =>
-    scan.progress == null
+    scan.phase == ScanPhase.discovering
     ? l10n.libraryScanDiscovering
     : l10n.libraryScanReading(scan.done, scan.total);
