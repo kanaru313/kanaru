@@ -281,5 +281,7 @@
     "placeholders": {
       "target": { "type": "String" }
     }
-  }
+  },
+  "playbackUnavailableTitle": "Audio engine not found",
+  "playbackUnavailableBody": "libmpv could not be loaded. You can browse your library, but playback is turned off."
 }

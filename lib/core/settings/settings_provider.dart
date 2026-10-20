@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import 'app_settings.dart';
 import 'settings_file.dart';
 
 export 'app_settings.dart';
 export 'settings_file.dart' show SettingsFile, settingsFileFor;
+
+final _log = Logger('settings');
 
 /// The settings as loaded at startup. `main()` overrides it with the file's
 /// contents. Also tells the UI which settings need a restart: those whose
@@ -32,14 +35,18 @@ final settingsSaveFailedProvider =
       SettingsSaveFailedNotifier.new,
     );
 
-/// The current settings. Every change is saved right away, in order.
+/// The current settings. Every change is saved right away; changes that come
+/// while a write is running are merged into one write of the latest state.
 ///
-/// There is no debounce: there is no hook to flush one when the window
-/// closes (window_manager replaces Flutter's close handler), and every
-/// option so far is a discrete choice rather than a slider.
+/// File writes are not debounced (applying a theme or language is delayed
+/// separately, in `applied_appearance_provider.dart`): there is no hook to
+/// flush one when the window closes (window_manager replaces Flutter's close
+/// handler), and every option so far is a discrete choice rather than a
+/// slider.
 class SettingsNotifier extends Notifier<AppSettings> {
   SettingsFile? _file;
-  Future<void> _writes = Future.value();
+  Future<void>? _inFlight;
+  AppSettings? _pending;
 
   /// Runs once. Never invalidate this provider: it would go back to the
   /// startup settings, not to the current ones.
@@ -69,9 +76,14 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setAlbumsView(AlbumsView view) =>
       _update(state.copyWith(albumsView: view));
 
-  /// Completes when every change made so far is on disk.
+  /// Completes when every change made so far is on disk: nothing is being
+  /// written and nothing is waiting.
   @visibleForTesting
-  Future<void> flush() => _writes;
+  Future<void> flush() async {
+    while (_inFlight != null) {
+      await _inFlight;
+    }
+  }
 
   void _update(AppSettings next) {
     if (next == state) return;
@@ -79,17 +91,39 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _save();
   }
 
+  /// At most one write runs and one waits. A change made during a write
+  /// replaces the waiting one, so a burst writes the first and the last state.
   void _save() {
-    final file = _file;
-    if (file == null) return;
-    final settings = state;
-    // SettingsFile.save never throws, so the chain never breaks.
-    _writes = _writes.then((_) async {
-      final saved = await file.save(settings);
-      if (ref.mounted) {
-        ref.read(settingsSaveFailedProvider.notifier).set(!saved);
+    if (_file == null) return;
+    _pending = state;
+    // Started on a later event, so `_inFlight` is set before any of the drain
+    // runs (even if it finishes without awaiting) and is cleared after.
+    _inFlight ??= Future<void>(_drain);
+  }
+
+  Future<void> _drain() async {
+    final file = _file!;
+    try {
+      while (_pending != null) {
+        final settings = _pending!;
+        _pending = null;
+        var saved = false;
+        try {
+          saved = await file.save(settings);
+        } catch (error, stack) {
+          // SettingsFile.save should not throw; if it does, treat it as a
+          // failed write and keep draining so later changes still get saved.
+          _log.warning('Saving settings threw', error, stack);
+        }
+        // Only the last write of a burst decides the warning, so a failure
+        // that a queued write is about to fix never flashes.
+        if (_pending == null && ref.mounted) {
+          ref.read(settingsSaveFailedProvider.notifier).set(!saved);
+        }
       }
-    });
+    } finally {
+      _inFlight = null;
+    }
   }
 }
 

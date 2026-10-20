@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/settings/applied_appearance_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -27,6 +28,12 @@ void main() {
     return ProviderScope.containerOf(t.element(find.byType(MaterialApp)));
   }
 
+  /// Appearance changes reach the app after a short pause.
+  Future<void> settle(WidgetTester t) async {
+    await t.pump(appearanceApplyDelay);
+    await t.pumpAndSettle();
+  }
+
   ThemeMode themeMode() =>
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
 
@@ -35,11 +42,11 @@ void main() {
     expect(themeMode(), ThemeMode.system);
 
     container.read(settingsProvider.notifier).setTheme(ThemePreference.dark);
-    await t.pumpAndSettle();
+    await settle(t);
     expect(themeMode(), ThemeMode.dark);
 
     container.read(settingsProvider.notifier).setTheme(ThemePreference.light);
-    await t.pumpAndSettle();
+    await settle(t);
     expect(themeMode(), ThemeMode.light);
   });
 
@@ -48,12 +55,12 @@ void main() {
     expect(find.text('Songs'), findsWidgets);
 
     container.read(settingsProvider.notifier).setLanguage('vi');
-    await t.pumpAndSettle();
+    await settle(t);
     expect(find.text('Bài hát'), findsWidgets);
     expect(find.text('Songs'), findsNothing);
 
     container.read(settingsProvider.notifier).setLanguage(null);
-    await t.pumpAndSettle();
+    await settle(t);
     expect(find.text('Songs'), findsWidgets);
   });
 
@@ -61,7 +68,7 @@ void main() {
     final container = await pumpApp(t);
 
     container.read(settingsProvider.notifier).setLanguage('fr');
-    await t.pumpAndSettle();
+    await settle(t);
     expect(find.text('Songs'), findsWidgets);
     expect(find.text('Bài hát'), findsNothing);
   });

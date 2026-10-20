@@ -175,5 +175,7 @@
   "settingsVersion": "Phiên bản",
   "settingsLicense": "Giấy phép",
   "settingsSourceCode": "Mã nguồn",
-  "settingsOpenFailed": "Không mở được {target}"
+  "settingsOpenFailed": "Không mở được {target}",
+  "playbackUnavailableTitle": "Không tìm thấy trình phát âm thanh",
+  "playbackUnavailableBody": "Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt."
 }

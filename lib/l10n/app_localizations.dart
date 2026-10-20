@@ -1063,6 +1063,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t open {target}'**
   String settingsOpenFailed(String target);
+
+  /// No description provided for @playbackUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio engine not found'**
+  String get playbackUnavailableTitle;
+
+  /// No description provided for @playbackUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'libmpv could not be loaded. You can browse your library, but playback is turned off.'**
+  String get playbackUnavailableBody;
 }
 
 class _AppLocalizationsDelegate

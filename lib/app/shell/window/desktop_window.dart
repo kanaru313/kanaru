@@ -11,6 +11,28 @@ import '../../../core/settings/settings_provider.dart';
 /// `main()` overrides it with the result of [setUpDesktopWindow].
 final customTitleBarProvider = Provider<bool>((ref) => false);
 
+/// Maximizes the window, or restores it when it already is. Shared by the
+/// title bar double click and the maximize button.
+Future<void> toggleMaximize() async {
+  if (await windowManager.isMaximized()) {
+    await windowManager.unmaximize();
+  } else {
+    await windowManager.maximize();
+  }
+}
+
+/// What a title bar double click runs. Tests override it so they never reach
+/// the window plugin.
+final toggleMaximizeProvider = Provider<Future<void> Function()>(
+  (ref) => toggleMaximize,
+);
+
+/// What a title bar drag runs to hand the pointer to the window manager.
+/// Tests override it so they never reach the window plugin.
+final startWindowDragProvider = Provider<Future<void> Function()>(
+  (ref) => windowManager.startDragging,
+);
+
 /// Sets up the window for the chosen title bar and returns whether the app
 /// must draw its own. Only [TitleBarPreference.kanaru] does.
 ///
@@ -29,6 +51,16 @@ Future<bool> setUpDesktopWindow({required TitleBarPreference titleBar}) async {
   });
   await windowManager.setMinimumSize(const Size(480, 720));
   return titleBar == TitleBarPreference.kanaru;
+}
+
+/// Best effort: puts the native title bar back after a failed
+/// [setUpDesktopWindow], which may have hidden it. Never throws.
+Future<void> restoreSystemTitleBar() async {
+  try {
+    await windowManager.setTitleBarStyle(TitleBarStyle.normal);
+  } catch (_) {
+    // Nothing more to fall back to.
+  }
 }
 
 /// Brings the window back when the desktop asks (MPRIS `Raise`): shows it if

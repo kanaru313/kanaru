@@ -3,6 +3,8 @@ import 'package:window_manager/window_manager.dart';
 
 import '../../../l10n/l10n.dart';
 import '../top_bar.dart';
+import 'desktop_window.dart';
+import 'window_drag_area.dart';
 
 /// Minimize, maximize/restore and close buttons for the custom title bar.
 class WindowButtons extends StatefulWidget {
@@ -36,36 +38,35 @@ class _WindowButtonsState extends State<WindowButtons> with WindowListener {
   @override
   void onWindowUnmaximize() => setState(() => _maximized = false);
 
-  void _toggleMaximize() =>
-      _maximized ? windowManager.unmaximize() : windowManager.maximize();
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      spacing: 8,
-      children: [
-        TopBarButton(
-          icon: Icons.remove,
-          tooltip: l10n.windowMinimize,
-          iconSize: 16,
-          onPressed: windowManager.minimize,
-        ),
-        TopBarButton(
-          icon: _maximized ? Icons.filter_none : Icons.crop_square,
-          tooltip: _maximized ? l10n.windowRestore : l10n.windowMaximize,
-          iconSize: 16,
-          onPressed: _toggleMaximize,
-        ),
-        TopBarButton(
-          icon: Icons.close,
-          tooltip: l10n.windowClose,
-          iconSize: 16,
-          onPressed: windowManager.close,
-        ),
-      ],
+    return WindowDragExclusion(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          TopBarButton(
+            icon: Icons.remove,
+            tooltip: l10n.windowMinimize,
+            iconSize: 16,
+            onPressed: windowManager.minimize,
+          ),
+          TopBarButton(
+            icon: _maximized ? Icons.filter_none : Icons.crop_square,
+            tooltip: _maximized ? l10n.windowRestore : l10n.windowMaximize,
+            iconSize: 16,
+            onPressed: toggleMaximize,
+          ),
+          TopBarButton(
+            icon: Icons.close,
+            tooltip: l10n.windowClose,
+            iconSize: 16,
+            onPressed: windowManager.close,
+          ),
+        ],
+      ),
     );
   }
 }

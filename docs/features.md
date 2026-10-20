@@ -42,6 +42,8 @@ Dùng `media_kit` (libmpv). Logic player nằm trong `lib/core/player/`.
 | PLAY-16 | Mono / cân bằng trái-phải             | Downmix mono và chỉnh balance cho trợ năng                                                                                                                                                                                                                          | P3      | 4     |     |
 | PLAY-17 | Bỏ khoảng lặng                        | Tuỳ chọn cắt khoảng lặng ở đầu và cuối bài                                                                                                                                                                                                                          | P3      | 4     |     |
 
+Không tìm thấy libmpv (hoặc không tạo được player) thì app vẫn mở ở chế độ chỉ duyệt thư viện: có banner báo phát nhạc bị tắt, bấm phát chỉ báo một lỗi rồi đứng ở trạng thái tạm dừng, không thử lần lượt cả hàng đợi.
+
 ## 2. Hàng đợi (queue) & chế độ phát
 
 | ID       | Tính năng                      | Mô tả / tiêu chí hoàn thành                                                                                                                                                               | Ưu tiên | Phase | H   |
@@ -271,6 +273,8 @@ Mỗi nguồn implement `StorageProvider` trong `lib/core/storage/<name>/`. Play
 | SET-05 | Đặt lại               | Xoá thư viện và quét lại; đặt lại toàn bộ cài đặt                                                                                                                                  | P1      | 1     |
 | SET-06 | Log & báo lỗi         | Xem và xuất log để đính kèm khi báo lỗi; không tự gửi đi đâu                                                                                                                       | P1      | 1     |
 | SET-07 | Kiểm tra cập nhật     | Báo khi có bản mới (tắt được; tự tắt trong bản Flatpak/distro)                                                                                                                     | P3      | 1     |
+
+Log tự che mật khẩu, token, cookie và user:pass trong URL (cả dạng percent-encode) trước khi ghi ra file. Một lỗi lặp lại liên tục chỉ được ghi một lần trong 10 giây, kèm dòng "lặp lại ×N".
 
 ## 17. Quyền riêng tư
 

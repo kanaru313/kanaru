@@ -21,7 +21,8 @@ SettingsFile? settingsFileFor(Map<String, String> environment) {
 /// Writes are atomic: the JSON goes to a temporary file next to the real one
 /// (next to its target when it is a symlink, so the link survives) and is
 /// renamed over it. The temporary name includes the process id, so two
-/// running instances never mix their bytes; the last one to write wins.
+/// running instances never mix their bytes; the last one to write wins. Two
+/// instances sharing one file are not merged: each saves its own whole state.
 ///
 /// The file becomes read-only for the session when overwriting it could lose
 /// something: it could not be read, or a newer Kanaru wrote it.

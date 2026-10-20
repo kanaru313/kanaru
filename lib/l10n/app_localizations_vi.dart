@@ -571,4 +571,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String settingsOpenFailed(String target) {
     return 'Không mở được $target';
   }
+
+  @override
+  String get playbackUnavailableTitle => 'Không tìm thấy trình phát âm thanh';
+
+  @override
+  String get playbackUnavailableBody =>
+      'Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt.';
 }

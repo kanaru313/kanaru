@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -158,6 +159,213 @@ void main() {
         ? 'root ignores directory modes'
         : false,
   );
+
+  group('under a slow file', () {
+    late _GatedFile gated;
+
+    ProviderContainer slowContainer() {
+      gated = _GatedFile(path);
+      final container = ProviderContainer(
+        overrides: [settingsFileProvider.overrideWithValue(gated)],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    Future<void> tick() => Future<void>.delayed(Duration.zero);
+
+    test('a burst of changes makes at most two writes and the last state '
+        'is what ends up saved', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      for (var i = 0; i < 4; i++) {
+        notifier.setTheme(ThemePreference.light);
+        notifier.setTheme(ThemePreference.dark);
+      }
+      notifier.setLanguage('vi');
+      await tick();
+      expect(gated.started, hasLength(1), reason: 'one write in flight');
+
+      gated.finishNext();
+      await tick();
+      await tick();
+      gated.finishNext();
+      await notifier.flush();
+
+      expect(gated.started, hasLength(2));
+      expect(gated.started.last, container.read(settingsProvider));
+      expect(gated.saved.last, container.read(settingsProvider));
+    });
+
+    test('flush waits for the write in flight and the pending one', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      notifier.setTheme(ThemePreference.light);
+      var flushed = false;
+      final flushing = notifier.flush().then((_) => flushed = true);
+
+      gated.finishNext();
+      await tick();
+      await tick();
+      expect(flushed, isFalse, reason: 'the pending write is not done');
+      expect(gated.started, hasLength(2));
+
+      gated.finishNext();
+      await flushing;
+      expect(gated.saved.last.theme, ThemePreference.light);
+    });
+
+    test('flush with nothing to write completes at once', () async {
+      final notifier = slowContainer().read(settingsProvider.notifier);
+      await notifier.flush();
+    });
+
+    test(
+      'a failed first write followed by a good one clears the warning',
+      () async {
+        final container = slowContainer();
+        final notifier = container.read(settingsProvider.notifier);
+
+        notifier.setTheme(ThemePreference.dark);
+        await tick();
+        notifier.setTheme(ThemePreference.light);
+        gated.finishNext(succeed: false);
+        await tick();
+        await tick();
+        gated.finishNext();
+        await notifier.flush();
+
+        expect(container.read(settingsSaveFailedProvider), isFalse);
+      },
+    );
+
+    test('a burst without flushing writes at most twice', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      for (var i = 0; i < 5; i++) {
+        notifier.setTheme(
+          i.isEven ? ThemePreference.dark : ThemePreference.light,
+        );
+        await tick();
+      }
+      for (var i = 0; i < 10; i++) {
+        if (gated.pendingGates > 0) gated.finishNext();
+        await tick();
+        await tick();
+      }
+      await notifier.flush();
+
+      expect(gated.started.length, lessThanOrEqualTo(2));
+      expect(gated.started.last, container.read(settingsProvider));
+    });
+
+    test('a change right after a write finishes is still written', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      gated.finishNext();
+      notifier.setTheme(ThemePreference.light);
+      await tick();
+      await tick();
+      gated.finishNext();
+      await notifier.flush();
+
+      expect(gated.saved.last.theme, ThemePreference.light);
+    });
+
+    test('a save that throws does not stop later changes', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+      gated.throwOnNext = true;
+
+      notifier.setTheme(ThemePreference.dark);
+      await notifier.flush();
+      expect(container.read(settingsSaveFailedProvider), isTrue);
+
+      notifier.setTheme(ThemePreference.light);
+      await tick();
+      gated.finishNext();
+      await notifier.flush();
+
+      expect(gated.saved.last.theme, ThemePreference.light);
+      expect(container.read(settingsSaveFailedProvider), isFalse);
+    });
+
+    test('a failure followed by a queued good write never flashes', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+      final history = <bool>[];
+      container.listen(settingsSaveFailedProvider, (_, v) => history.add(v));
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      notifier.setTheme(ThemePreference.light);
+      gated.finishNext(succeed: false);
+      await tick();
+      await tick();
+      gated.finishNext();
+      await notifier.flush();
+
+      expect(history, isNot(contains(true)));
+      expect(container.read(settingsSaveFailedProvider), isFalse);
+    });
+
+    test('a good first write does not hide a failed later one', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      notifier.setTheme(ThemePreference.light);
+      gated.finishNext();
+      await tick();
+      await tick();
+      gated.finishNext(succeed: false);
+      await notifier.flush();
+
+      expect(container.read(settingsSaveFailedProvider), isTrue);
+    });
+  });
+}
+
+/// A settings file whose writes finish only when the test says so.
+class _GatedFile extends SettingsFile {
+  _GatedFile(super.path);
+
+  final started = <AppSettings>[];
+  final saved = <AppSettings>[];
+  final _gates = <Completer<bool>>[];
+  var _finished = 0;
+  var throwOnNext = false;
+
+  int get pendingGates => _gates.length - _finished;
+
+  @override
+  Future<bool> save(AppSettings settings) {
+    started.add(settings);
+    if (throwOnNext) {
+      throwOnNext = false;
+      throw StateError('disk on fire');
+    }
+    final gate = Completer<bool>();
+    _gates.add(gate);
+    return gate.future.then((ok) {
+      if (ok) saved.add(settings);
+      return ok;
+    });
+  }
+
+  void finishNext({bool succeed = true}) =>
+      _gates[_finished++].complete(succeed);
 }
 
 bool _isRoot() => Process.runSync('id', ['-u']).stdout.toString().trim() == '0';

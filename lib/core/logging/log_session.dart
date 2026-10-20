@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 
 import 'log_format.dart';
 import 'log_redaction.dart';
+import 'repeated_error_filter.dart';
 import 'rotating_log_file.dart';
 
 final _log = Logger('app');
@@ -35,6 +36,9 @@ class LogSession {
   final bool _toConsole;
   final void Function(String line) _stderrLine;
   late final StreamSubscription<LogRecord> _subscription;
+  late final RepeatedErrorFilter _repeats = RepeatedErrorFilter(
+    onSummary: _writeRepeatSummary,
+  );
   bool _writeToFile = true;
   bool _closed = false;
 
@@ -52,35 +56,63 @@ class LogSession {
   ///
   /// The errors are written whatever `KANARU_LOG_LEVEL` says: they are the
   /// records that matter most. With [presentErrors] the framework also
-  /// prints them to the console, unredacted, which is for debug builds: in
-  /// a release build that output goes to the desktop's journal.
+  /// prints every one of them to the console, unredacted, which is for debug
+  /// builds: in a release build that output goes to the desktop's journal.
+  /// Only the file folds repeats.
   void installErrorHandlers({bool presentErrors = kDebugMode}) {
     if (_closed || _handlersInstalled) return;
     _handlersInstalled = true;
     _previousFlutterHandler = FlutterError.onError;
     _previousPlatformHandler = PlatformDispatcher.instance.onError;
     FlutterError.onError = (details) {
-      write(
-        LogRecord(
-          Level.SEVERE,
-          'Uncaught error in ${details.library ?? 'Flutter'}',
-          _log.name,
-          details.exception,
-          details.stack,
-        ),
-      );
+      if (_isNew(details.exception, details.stack)) {
+        write(
+          LogRecord(
+            Level.SEVERE,
+            'Uncaught error in ${details.library ?? 'Flutter'}',
+            _log.name,
+            details.exception,
+            details.stack,
+          ),
+        );
+      }
+      // Folding limits the file, not the console: a developer who watches a
+      // repeating error must still see it.
       if (presentErrors) FlutterError.presentError(details);
     };
     PlatformDispatcher.instance.onError = (error, stack) {
-      write(LogRecord(Level.SHOUT, 'Uncaught error', _log.name, error, stack));
+      if (_isNew(error, stack)) {
+        write(
+          LogRecord(Level.SHOUT, 'Uncaught error', _log.name, error, stack),
+        );
+      }
       return true;
     };
+  }
+
+  /// Whether an uncaught error is to be written; a repeat of a recent one
+  /// within the window is only counted. Never throws: on failure the error
+  /// is written.
+  bool _isNew(Object error, StackTrace? stack) {
+    try {
+      final (:key, :label) = RepeatedErrorFilter.describe(error, stack);
+      return _repeats.shouldWrite(key, label: label);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// The "repeated ×N" record goes through [write], like any other record.
+  void _writeRepeatSummary(String summary) {
+    write(LogRecord(Level.SEVERE, summary, _log.name));
   }
 
   /// Stops listening, closes the file and puts back the error handlers that
   /// were there before [installErrorHandlers].
   Future<void> close() async {
     if (_closed) return;
+    // Before `_closed`: `write` ignores records once closed.
+    _repeats.close().forEach(_writeRepeatSummary);
     _closed = true;
     if (_handlersInstalled) {
       FlutterError.onError = _previousFlutterHandler;
