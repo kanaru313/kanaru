@@ -79,6 +79,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 **Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. Khi đó:
 
 - Đường phát nhạc (`PlayerService.openTracks`, hàng đợi, player bar) vẫn giữ nguyên; màn thư viện dùng lại nó.
+- "Mở thư mục" dùng chung bộ duyệt thư mục (`walkAudioFilesInIsolate`) với việc quét thư viện, nên bỏ qua đúng những thư mục mà lần quét bỏ qua, và bỏ FIFO/thiết bị.
 - `isAudioFile` / `scanFolder` trong `lib/features/player/open_media.dart` chuyển sang `lib/core/indexer/`.
 - `file_selector` vẫn dùng cho hộp thoại chọn thư mục nguồn.
 - Phát file ngoài thư viện đi qua IDX-09 / SYS-07 (dòng lệnh, kéo thả, "Open with"), không qua nút.
