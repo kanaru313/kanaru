@@ -71,10 +71,11 @@ List<TracksCompanion> _rows(int rootId) {
   ];
 }
 
-LibraryDatabase _open(Directory dir) => LibraryDatabase(
+LibraryDatabase _open(Directory dir, {int readPool = 0}) => LibraryDatabase(
   NativeDatabase.createInBackground(
     File('${dir.path}/library.db'),
     setup: applyLibraryPragmas,
+    readPool: readPool,
   ),
 );
 
@@ -293,5 +294,71 @@ void main() {
     },
     skip: !_enabled,
     timeout: const Timeout(Duration(minutes: 40)),
+  );
+
+  test(
+    'reads during a scan, with and without a read connection',
+    () async {
+      // The open Songs and Albums lists reload while a scan writes; a probe
+      // reads the first page every 200 ms as the list would on scrolling.
+      Future<void> run(int readPool) async {
+        final dir = Directory.systemTemp.createTempSync('kanaru_bench');
+        final db = _open(dir, readPool: readPool);
+        final rows = _rows((await db.addRoots(['/m'], now: 1)).single);
+        final lists = [
+          throttledTracksQuery(
+            db,
+            db.songIds,
+            interval: const Duration(seconds: 2),
+          ).listen((_) {}),
+          throttledTracksQuery(
+            db,
+            db.albums,
+            interval: const Duration(seconds: 2),
+          ).listen((_) {}),
+        ];
+        final probes = <int>[];
+        var scanning = true;
+        final probe = () async {
+          while (scanning) {
+            final sw = Stopwatch()..start();
+            await db.songsPage();
+            probes.add(sw.elapsedMilliseconds);
+            await Future<void>.delayed(const Duration(milliseconds: 200));
+          }
+        }();
+        final scanMs = await _scan(
+          db,
+          rows,
+          readTime: const Duration(milliseconds: 15),
+        );
+        scanning = false;
+        await probe;
+        for (final l in lists) {
+          await l.cancel();
+        }
+        probes.sort();
+        final idle = {
+          'songIds + page': await _median(() async {
+            final ids = await db.songIds();
+            return (await db.songsByIds(ids.take(200).toList())).length;
+          }),
+          'albums': await _median(() async => (await db.albums()).length),
+        };
+        print(
+          'readPool $readPool: scan $scanMs ms; first page during the scan: '
+          'median ${probes[probes.length ~/ 2]} ms, worst ${probes.last} ms '
+          '(${probes.length} probes); idle ${idle.map((k, v) => MapEntry(k, v.$1))}',
+        );
+        await db.close();
+        dir.deleteSync(recursive: true);
+      }
+
+      for (final pool in const [0, 1, 0, 1, 0, 1]) {
+        await run(pool);
+      }
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 20)),
   );
 }
