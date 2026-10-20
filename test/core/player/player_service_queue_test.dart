@@ -107,6 +107,56 @@ void main() {
       expect(state().playing, isTrue);
     });
 
+    test(
+      'the playing track keeps playing when the engine already reported a stop',
+      () async {
+        await service().openTracks([a, b, c, d], start: 1);
+        // mpv can turn `playing` off while idle, before it reports the end.
+        backend.emitPlaying.add(false);
+        backend.calls.clear();
+
+        await service().removeTrack(1);
+
+        expect(backend.calls, ['open(c, next: d)']);
+        expect(state().playing, isTrue);
+      },
+    );
+
+    test(
+      'after the queue ran out the track that slides in stays paused',
+      () async {
+        await service().openTracks([a, b, c], start: 2);
+        backend.emitCompleted.add(true);
+        await service().setRepeat(RepeatMode.all);
+        backend.calls.clear();
+
+        await service().removeTrack(2);
+
+        expect(backend.calls, ['open(a, next: b, paused)']);
+        expect(state().playing, isFalse);
+      },
+    );
+
+    test(
+      'after giving up on a fully broken queue the next track stays paused',
+      () async {
+        await service().openTracks([a, b, c], start: 1);
+        await service().setRepeat(RepeatMode.all);
+        for (final track in [b, c, a]) {
+          backend.fail(track);
+          backend.emitCompleted.add(true);
+        }
+        expect(state().queue.current, a);
+        expect(state().playing, isFalse);
+        backend.calls.clear();
+
+        await service().removeTrack(0);
+
+        expect(backend.calls, ['open(b, next: c, paused)']);
+        expect(state().playing, isFalse);
+      },
+    );
+
     test('while paused the next track loads but stays paused', () async {
       await service().openTracks([a, b, c, d], start: 1);
       await service().pause();

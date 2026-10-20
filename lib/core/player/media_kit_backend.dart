@@ -39,6 +39,16 @@ class MediaKitBackend implements AudioBackend {
             _log.warning('Could not enable gapless audio', error);
           }),
     );
+    // media_kit turns on mpv's disk cache, but libmpv runs with config=no and
+    // has no cache directory, so every opened file logged "Failed to create
+    // file cache". Audio fits the RAM cache; remote streams will be cached by
+    // the local proxy, not by mpv.
+    unawaited(
+      _serial(() => _native.setProperty('cache-on-disk', 'no'))
+          .catchError((Object error) {
+            _log.warning('Could not turn off the mpv disk cache', error);
+          }),
+    );
     // Through the chain, so the end of the last track is not reported after
     // the user picked another one.
     _forwardCompleted = _player.stream.completed.listen((done) {
@@ -210,7 +220,12 @@ class MediaKitBackend implements AudioBackend {
   }
 
   @override
-  Future<void> open(Track track, {Track? next, bool play = true}) {
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  }) {
     _opensPending++;
     return _serial(() async {
       // A newer `open` is queued behind this one and would replace it, so
@@ -223,7 +238,16 @@ class MediaKitBackend implements AudioBackend {
       try {
         _loaded.clear();
         _lastError = '';
-        await _player.open(Media(track.uri), play: play);
+        // media_kit applies `start` while this entry loads and clears it
+        // when it unloads, so the next entry, appended with a raw
+        // `loadfile`, still starts at zero. Its list of opened media is
+        // indexed by playlist position, which drifts once finished entries
+        // are removed; harmless, as nothing reloads an entry but `open`,
+        // which resets that list.
+        await _player.open(
+          Media(track.uri, start: start > Duration.zero ? start : null),
+          play: play,
+        );
         _current = track;
         _currentId = await _entryId(0);
         await _queueNext(next);
@@ -303,9 +327,6 @@ class MediaKitBackend implements AudioBackend {
 
   @override
   Stream<Duration> get duration => _duration.stream;
-
-  @override
-  Stream<double> get volume => _player.stream.volume;
 
   @override
   Stream<PlaybackError> get failed => _failed.stream;

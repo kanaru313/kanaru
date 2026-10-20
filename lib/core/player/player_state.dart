@@ -21,7 +21,7 @@ class PlayerState {
   final Duration position;
   final Duration duration;
 
-  /// 0–100.
+  /// 0–100. Set by `PlayerService` only; the engine follows it.
   final double volume;
 
   /// Volume to restore on unmute; `null` when not muted.

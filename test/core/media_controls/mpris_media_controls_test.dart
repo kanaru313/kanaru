@@ -244,6 +244,82 @@ void main() {
     });
   });
 
+  group('volume', () {
+    Future<void> setVolume(double value) =>
+        h.remote.setProperty(mprisPlayerInterface, 'Volume', DBusDouble(value));
+
+    Future<DBusValue> readVolume() =>
+        h.remote.getProperty(mprisPlayerInterface, 'Volume');
+
+    test('mute publishes 0.0 and unmute the volume from before', () async {
+      await h.service.openTracks(songs);
+      await h.service.setVolume(60);
+      await h.start();
+      final changes = await h.watchChanges();
+
+      await h.service.toggleMute();
+      await h.settle();
+      expect(changes.single['Volume'], const DBusDouble(0));
+      expect(await readVolume(), const DBusDouble(0));
+
+      changes.clear();
+      await h.service.toggleMute();
+      await h.settle();
+      expect(changes.single['Volume'], const DBusDouble(0.6));
+      expect(await readVolume(), const DBusDouble(0.6));
+    });
+
+    test('a client setting the volume while muted unmutes', () async {
+      await h.service.openTracks(songs);
+      await h.service.setVolume(60);
+      await h.service.toggleMute();
+      await h.start();
+      final changes = await h.watchChanges();
+
+      await setVolume(0.3);
+      await h.settle();
+
+      final state = h.container.read(playerServiceProvider);
+      expect(state.muted, isFalse);
+      expect(state.volume, closeTo(30, 1e-9));
+      expect(h.backend.calls.last, startsWith('setVolume(30.'));
+      final sent = changes.single['Volume']!.asDouble();
+      expect(sent, closeTo(0.3, 1e-9));
+      expect((await readVolume()).asDouble(), closeTo(0.3, 1e-9));
+    });
+
+    test('out of range values are clamped', () async {
+      await h.service.openTracks(songs);
+      await h.start();
+
+      await setVolume(1.5);
+      await h.settle();
+      expect(h.container.read(playerServiceProvider).volume, 100);
+      expect(await readVolume(), const DBusDouble(1));
+
+      await setVolume(-1);
+      await h.settle();
+      expect(h.container.read(playerServiceProvider).volume, 0);
+      expect(await readVolume(), const DBusDouble(0));
+    });
+
+    test('non-finite values are refused and change nothing', () async {
+      await h.service.openTracks(songs);
+      await h.service.setVolume(60);
+      await h.start();
+
+      for (final value in [
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        await expectLater(setVolume(value), dbusError('InvalidArgs'));
+      }
+      await h.settle();
+      expect(h.container.read(playerServiceProvider).volume, 60);
+    });
+  });
+
   group('bad input', () {
     test('wrong signatures are refused at once', () async {
       await h.service.openTracks(songs);

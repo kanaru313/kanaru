@@ -20,7 +20,6 @@ class FakeAudioBackend implements AudioBackend {
   final emitCompleted = StreamController<bool>.broadcast(sync: true);
   final emitPosition = StreamController<Duration>.broadcast(sync: true);
   final emitDuration = StreamController<Duration>.broadcast(sync: true);
-  final emitVolume = StreamController<double>.broadcast(sync: true);
   final emitFailed = StreamController<PlaybackError>.broadcast(sync: true);
 
   /// Mimics the engine moving on to the queued next track by itself.
@@ -31,11 +30,16 @@ class FakeAudioBackend implements AudioBackend {
       emitFailed.add(PlaybackError(track, 'Failed to open'));
 
   @override
-  Future<void> open(Track track, {Track? next, bool play = true}) async {
+  Future<void> open(
+    Track track, {
+    Track? next,
+    bool play = true,
+    Duration start = Duration.zero,
+  }) async {
     this.next = next;
-    calls.add(
-      'open(${track.title}, next: ${next?.title}${play ? '' : ', paused'})',
-    );
+    final paused = play ? '' : ', paused';
+    final at = start > Duration.zero ? ', at $start' : '';
+    calls.add('open(${track.title}, next: ${next?.title}$paused$at)');
   }
 
   @override
@@ -78,9 +82,6 @@ class FakeAudioBackend implements AudioBackend {
 
   @override
   Stream<Duration> get duration => emitDuration.stream;
-
-  @override
-  Stream<double> get volume => emitVolume.stream;
 
   @override
   Stream<PlaybackError> get failed => emitFailed.stream;

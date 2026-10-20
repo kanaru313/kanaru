@@ -9,9 +9,12 @@ import 'play_queue.dart';
 import 'playback_error.dart';
 import 'player_state.dart';
 import 'repeat_mode.dart';
+import 'session/playback_session_provider.dart';
+import 'session/playback_session_saver.dart';
 import 'track.dart';
 
 part 'player_queue_commands.dart';
+part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
 part 'player_transport_commands.dart';
 
@@ -34,7 +37,8 @@ class PlayerService extends Notifier<PlayerState>
     with
         _PlayerSettingsCommands,
         _PlayerTransportCommands,
-        _PlayerQueueCommands {
+        _PlayerQueueCommands,
+        _PlayerSessionCommands {
   PlayerService({this._random});
 
   @override
@@ -57,6 +61,14 @@ class PlayerService extends Notifier<PlayerState>
   /// forever. Cleared by a track that loads and by anything the user plays.
   @override
   int _failuresInRow = 0;
+
+  /// What was last asked for: playing, or paused. A track that fails moves
+  /// on in that state, so a track loaded paused (or paused while it was
+  /// still loading) never starts playing on its own. Kept apart from
+  /// `state.playing`, which the engine may turn off on its own before it
+  /// reports that it stopped.
+  @override
+  bool _wantsPlaying = false;
 
   /// Every track in the queue failed since the last one that played.
   @override
@@ -83,6 +95,14 @@ class PlayerService extends Notifier<PlayerState>
 
   @override
   PlayerState build() {
+    // Riverpod keeps this object when the provider rebuilds: what the old
+    // build asked for must not leak into the new one, or the restored track
+    // would start playing on its own.
+    _wantsPlaying = false;
+    _ended = false;
+    _failuresInRow = 0;
+    _handedNext.clear();
+    _lastTick = Duration.zero;
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
     _seeked = StreamController.broadcast();
@@ -94,10 +114,12 @@ class PlayerService extends Notifier<PlayerState>
       }),
       _backend.position.listen(_onPosition),
       _backend.duration.listen((v) {
-        if (v > Duration.zero) _failuresInRow = 0;
+        if (v > Duration.zero) {
+          _failuresInRow = 0;
+          _sessionTrackLoaded();
+        }
         state = state.copyWith(duration: v);
       }),
-      _backend.volume.listen((v) => state = state.copyWith(volume: v)),
       _backend.failed.listen(_onFailed),
     ];
     ref.onDispose(() {
@@ -107,7 +129,7 @@ class PlayerService extends Notifier<PlayerState>
       _errors.close();
       _seeked.close();
     });
-    return PlayerState();
+    return _startSession();
   }
 
   void _onPosition(Duration position) {
@@ -125,13 +147,16 @@ class PlayerService extends Notifier<PlayerState>
 
   /// The engine stopped. With a track still to come, the current one failed
   /// or the engine ran out of tracks before it got the next one: go on.
+  /// Otherwise playback is over and nothing is wanted playing any more, so
+  /// a later queue edit loads its track paused.
   void _onCompleted() {
     final next = state.queue.nextIndex;
     if (next != null && !_allFailed) {
-      _play(next);
+      _play(next, play: _wantsPlaying);
       return;
     }
     _ended = true;
+    _wantsPlaying = false;
     state = state.copyWith(playing: false, stopped: true);
   }
 
@@ -139,6 +164,9 @@ class PlayerService extends Notifier<PlayerState>
     _failuresInRow++;
     _errors.add(error);
   }
+
+  @override
+  void _userActed() => _sessionUserActed();
 
   /// Hands the engine the track that follows the current one.
   @override
@@ -153,11 +181,18 @@ class PlayerService extends Notifier<PlayerState>
     return _backend.setNext(next == null ? null : queue.tracks[next]);
   }
 
+  /// Loads the track at [index], playing or paused, from [start].
   @override
-  Future<void> _play(int index, {bool play = true}) async {
+  Future<void> _play(
+    int index, {
+    bool play = true,
+    Duration start = Duration.zero,
+  }) async {
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
+    _wantsPlaying = play;
+    _openedSinceBuild = true;
     final next = queue.nextIndex;
     _handedNext.clear();
     if (next != null) _handedNext.add(queue.order[next]);
@@ -166,14 +201,15 @@ class PlayerService extends Notifier<PlayerState>
       queue: queue,
       playing: play,
       stopped: false,
-      position: Duration.zero,
+      position: start,
       duration: Duration.zero,
     );
-    _lastTick = Duration.zero;
+    _lastTick = start;
     await _backend.open(
       queue.tracks[index],
       next: next == null ? null : queue.tracks[next],
       play: play,
+      start: start,
     );
   }
 }
