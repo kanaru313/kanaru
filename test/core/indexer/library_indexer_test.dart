@@ -54,7 +54,7 @@ void main() {
   test('first scan stores every file; second reads only failed ones', () async {
     touch('a.mp3');
     touch('sub/b.flac');
-    touch('bad.mp3');
+    touch('flaky.mp3');
 
     await scan();
 
@@ -62,14 +62,17 @@ void main() {
     expect(summary().failedTags, 1);
     expect(reader.readCount, 3);
     final stored = await tracks();
-    expect(stored.map((t) => t.title), containsAll(['A.MP3', 'B.FLAC', 'bad']));
+    expect(
+      stored.map((t) => t.title),
+      containsAll(['A.MP3', 'B.FLAC', 'flaky']),
+    );
     expect((await db.roots()).single.lastScanAt, isNotNull);
 
     reader.reset();
     await scan();
 
     expect(reader.batches.expand((b) => b), [
-      '$root/bad.mp3',
+      '$root/flaky.mp3',
     ], reason: 'a failed read is retried, unchanged files are not');
     expect(summary().added, 0);
     expect(summary().updated, 0);

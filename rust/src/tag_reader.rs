@@ -13,9 +13,45 @@ use crate::cover_art::take_embedded_pictures;
 use crate::cover_cache::CoverSink;
 use crate::tag_mapping::{apply_properties, apply_tag};
 
-/// Extensions lofty cannot parse. They are reported as unsupported instead of
-/// guessed at, and the indexer keeps them as filename-only records.
-const UNSUPPORTED_EXTENSIONS: [&str; 3] = ["dsf", "dff", "wma"];
+/// Prefix of an [`TrackTags::error`] that reading again cannot fix (corrupt
+/// or unsupported content) with this version of the reader. Anything without
+/// it (an I/O or permission failure, or a mark from an older reader) may
+/// pass, so the indexer tries again on every scan. The number is bumped when
+/// the reader learns to read more files; keep in sync with
+/// `tagReaderVersion` on the Dart side.
+pub const PERMANENT_ERROR_PREFIX: &str = "permanent:v1:";
+
+/// Extensions lofty cannot parse and that carry no tags worth reading. DSD
+/// files are indexed as filename-only records without an error (the indexer
+/// scans them; their folder cover still applies).
+const NO_TAG_EXTENSIONS: [&str; 2] = ["dsf", "dff"];
+
+/// Extensions lofty cannot parse that are not indexed anyway; reading one
+/// directly is reported as unsupported.
+const UNSUPPORTED_EXTENSIONS: [&str; 1] = ["wma"];
+
+fn permanent(message: impl std::fmt::Display) -> String {
+    format!("{PERMANENT_ERROR_PREFIX}{message}")
+}
+
+/// Parse failures are permanent unless the cause may pass: any I/O error, or
+/// a file that ends early or disagrees with its own sizes, which is also what
+/// a file being rewritten or a stale network cache looks like.
+fn parse_error(error: &lofty::error::FileParseError) -> String {
+    use lofty::error::{NotEnoughDataError, SizeMismatchError};
+    use std::error::Error;
+    let mut source: Option<&(dyn Error + 'static)> = Some(error);
+    while let Some(current) = source {
+        if current.is::<std::io::Error>()
+            || current.is::<NotEnoughDataError>()
+            || current.is::<SizeMismatchError>()
+        {
+            return error.to_string();
+        }
+        source = current.source();
+    }
+    permanent(error)
+}
 
 /// Reads the tags of [`path`] and, when `covers` is given, its cover. Never
 /// panics and never fails: every tag problem ends up in [`TrackTags::error`],
@@ -73,7 +109,7 @@ pub fn embedded_pictures(path: &str) -> Vec<Vec<u8>> {
 fn guarded(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u8>>), String> {
     match catch_unwind(AssertUnwindSafe(|| read_checked(path, with_pictures))) {
         Ok(result) => result,
-        Err(_) => Err("tag parser panicked".to_owned()),
+        Err(_) => Err(permanent("tag parser panicked")),
     }
 }
 
@@ -92,8 +128,15 @@ fn read_checked(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase)
         .unwrap_or_default();
+    if NO_TAG_EXTENSIONS.contains(&extension.as_str()) {
+        let tags = TrackTags {
+            path: path.to_owned(),
+            ..TrackTags::default()
+        };
+        return Ok((tags, Vec::new()));
+    }
     if UNSUPPORTED_EXTENSIONS.contains(&extension.as_str()) {
-        return Err("unsupported".to_owned());
+        return Err(permanent("unsupported"));
     }
 
     let options = ParseOptions::new()
@@ -103,11 +146,11 @@ fn read_checked(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u
     // Opus or Speex, `.alac` is MP4, and files are often mislabeled. The
     // extension is only the fallback when the content is not recognised.
     let probe = Probe::open(file_path)
-        .map_err(|e| e.to_string())?
+        .map_err(|e| parse_error(&e))?
         .options(options)
         .guess_file_type()
         .map_err(|e| e.to_string())?;
-    let tagged = probe.read().map_err(|e| e.to_string())?;
+    let tagged = probe.read().map_err(|e| parse_error(&e))?;
 
     let mut tags = TrackTags {
         path: path.to_owned(),

@@ -131,18 +131,36 @@ void main() {
       expect(details, isNot(contains('TEMP B-TREE')));
     });
 
-    test('snapshots flag rows whose tags failed to read', () async {
+    test('snapshots flag rows whose tags failed to read for a reason that may pass', () async {
       final id = (await db.addRoots(['/m'], now: 1)).single;
       await db.upsertTracks([
         track(id, '/m/ok.mp3'),
         track(id, '/m/bad.mp3').copyWith(scanError: const Value('x')),
+        track(
+          id,
+          '/m/corrupt.mp3',
+        ).copyWith(scanError: const Value('permanent:v1:unsupported')),
+        track(
+          id,
+          '/m/old.mp3',
+        ).copyWith(scanError: const Value('permanent:unsupported')),
+        track(
+          id,
+          '/m/older.mp3',
+        ).copyWith(scanError: const Value('permanent:v0:unsupported')),
       ]);
 
       final byPath = {
         for (final t in await db.trackSnapshot(id)) t.path: t.hasScanError,
       };
 
-      expect(byPath, {'/m/ok.mp3': false, '/m/bad.mp3': true});
+      expect(byPath, {
+        '/m/ok.mp3': false,
+        '/m/bad.mp3': true,
+        '/m/corrupt.mp3': false,
+        '/m/old.mp3': true,
+        '/m/older.mp3': true,
+      });
     });
   });
 

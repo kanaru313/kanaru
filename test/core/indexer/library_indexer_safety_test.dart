@@ -157,6 +157,45 @@ void main() {
       },
     );
 
+    test('a rescan reads no file that can never be read', () async {
+      touch('ok.mp3');
+      touch('tune.dsf');
+      touch('album.DFF');
+      touch('bad1.mp3');
+      touch('bad2.flac');
+      await scan();
+      final rows = await db.select(db.tracks).get();
+      expect(rows, hasLength(5));
+      final byName = {for (final r in rows) r.path.split('/').last: r};
+      expect(byName['tune.dsf']!.scanError, isNull);
+      expect(byName['tune.dsf']!.title, 'tune');
+      expect(byName['bad1.mp3']!.scanError, startsWith('permanent:v1:'));
+      expect(summary().failedTags, 2);
+
+      reader.reset();
+      await scan();
+
+      expect(reader.readCount, 0, reason: 'nothing changed, nothing to read');
+      expect(summary().failedTags, 0);
+      expect(summary().updated, 0);
+
+      // A change makes even a permanently bad file worth a new look.
+      File('$root/bad1.mp3').setLastModifiedSync(fixedMtime);
+      await scan();
+      expect(reader.readCount, 1);
+    });
+
+    test('a transient read error is retried on every scan', () async {
+      touch('flaky.mp3');
+      await scan();
+      expect(summary().failedTags, 1);
+
+      reader.reset();
+      await scan();
+      expect(reader.readCount, 1);
+      expect(summary().failedTags, 1);
+    });
+
     test('a link whose target vanished keeps its row', () async {
       touch('a.mp3');
       final target = touch('store/t.dat');

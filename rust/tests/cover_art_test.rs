@@ -224,7 +224,7 @@ fn unreadable_tags_still_get_a_folder_cover() {
     let folder = jpeg(30, 30, 5);
     fs::write(music.path().join("folder.jpg"), &folder).unwrap();
     let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!(tags.error.as_deref(), Some("unsupported"));
+    assert_eq!(tags.error, None);
     assert_eq!(tags.cover, Some(cache_key(&folder)));
     assert_eq!(tags.cover_status, CoverStatus::Found);
 }

@@ -84,13 +84,16 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// `(id, path, mtime, size, has scan error)` of every track under [rootId],
   /// for diffing a rescan.
   Future<List<TrackSnapshot>> trackSnapshot(int rootId) async {
+    final retryable =
+        tracks.scanError.isNotNull() &
+        tracks.scanError.like('$permanentScanErrorPrefix%').not();
     final query = selectOnly(tracks)
       ..addColumns([
         tracks.id,
         tracks.path,
         tracks.mtimeMs,
         tracks.sizeBytes,
-        tracks.scanError.isNotNull(),
+        retryable,
         tracks.coverScanVersion,
       ])
       ..where(tracks.rootId.equals(rootId));
@@ -102,7 +105,7 @@ class LibraryDatabase extends _$LibraryDatabase {
           path: row.read(tracks.path)!,
           mtimeMs: row.read(tracks.mtimeMs)!,
           sizeBytes: row.read(tracks.sizeBytes)!,
-          hasScanError: row.read(tracks.scanError.isNotNull())!,
+          hasScanError: row.read(retryable)!,
           coverScanVersion: row.read(tracks.coverScanVersion)!,
         ),
     ];

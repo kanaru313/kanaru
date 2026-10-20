@@ -183,14 +183,75 @@ fn missing_empty_and_truncated_files_report_errors() {
 }
 
 #[test]
-fn dsd_and_wma_are_unsupported() {
+fn dsd_is_listed_without_tags_and_without_error() {
     let dir = tempfile::tempdir().unwrap();
-    for name in ["a.dsf", "b.DFF", "c.wma"] {
+    for name in ["a.dsf", "b.DFF"] {
         let path = dir.path().join(name);
         fs::write(&path, b"DSD fake content").unwrap();
         let tags = read(&path.to_string_lossy());
-        assert_eq!(tags.error.as_deref(), Some("unsupported"), "{name}");
+        assert_eq!(tags.error, None, "{name}");
+        assert_eq!(tags.title, None, "{name}");
     }
+}
+
+#[test]
+fn wma_is_a_permanent_unsupported_error() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("c.wma");
+    fs::write(&path, b"fake").unwrap();
+    let tags = read(&path.to_string_lossy());
+    assert_eq!(tags.error.as_deref(), Some("permanent:v1:unsupported"));
+}
+
+#[test]
+fn corrupt_content_is_permanent_and_io_trouble_is_not() {
+    let dir = tempfile::tempdir().unwrap();
+    let garbage = dir.path().join("garbage.mp3");
+    fs::write(&garbage, vec![0x5Au8; 4096]).unwrap();
+    let unknown = dir.path().join("notes.xyz");
+    fs::write(&unknown, b"hello").unwrap();
+    for path in [&garbage, &unknown] {
+        let error = read(&path.to_string_lossy()).error.unwrap();
+        assert!(
+            error.starts_with("permanent:v1:"),
+            "{}: {error}",
+            path.display()
+        );
+    }
+    let missing = read(&dir.path().join("nope.mp3").to_string_lossy());
+    assert!(!missing.error.unwrap().starts_with("permanent:"));
+}
+
+#[test]
+fn a_file_that_ends_early_may_still_be_written_so_it_is_not_permanent() {
+    let dir = tempfile::tempdir().unwrap();
+    let truncated = dir.path().join("truncated.flac");
+    fs::write(&truncated, &fs::read(fixture("sample.flac")).unwrap()[..30]).unwrap();
+    let empty = dir.path().join("empty.flac");
+    fs::write(&empty, b"").unwrap();
+    for path in [&truncated, &empty] {
+        let error = read(&path.to_string_lossy()).error.unwrap();
+        assert!(
+            !error.starts_with("permanent:"),
+            "{}: {error}",
+            path.display()
+        );
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn a_file_that_cannot_be_opened_is_not_permanent() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("locked.mp3");
+    fs::write(&path, fs::read(fixture("sample.mp3")).unwrap()).unwrap();
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o000)).unwrap();
+    if fs::File::open(&path).is_ok() {
+        return; // running as root: permissions do not apply
+    }
+    let error = read(&path.to_string_lossy()).error.expect("must fail");
+    assert!(!error.starts_with("permanent:"), "{error}");
 }
 
 #[test]
