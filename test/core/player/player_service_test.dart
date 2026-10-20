@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/playback_error.dart';
@@ -386,6 +388,49 @@ void main() {
       'setVolume(60.0)',
     ]);
   });
+
+  test('seeking with nothing loaded does nothing', () async {
+    await service().openTracks(songs, start: 3);
+    backend.emitDuration.add(const Duration(seconds: 100));
+    final seeks = <Duration>[];
+    service().seeked.listen(seeks.add);
+    await service().removeTrack(3);
+    backend.calls.clear();
+    final stoppedState = container.read(playerServiceProvider);
+    expect(stoppedState.stopped, isTrue);
+
+    await service().seekBy(const Duration(seconds: 5));
+    await service().seek(const Duration(seconds: 5));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(backend.calls, isEmpty);
+    expect(container.read(playerServiceProvider), stoppedState);
+    expect(seeks, isEmpty);
+  });
+
+  test('seek clamps to the track and a paused track still seeks', () async {
+    await service().openTracks(songs);
+    backend.emitDuration.add(const Duration(seconds: 100));
+    await service().pause();
+
+    await service().seek(const Duration(seconds: 500));
+    expect(backend.calls.last, 'seek(${const Duration(seconds: 100)})');
+    await service().seek(const Duration(seconds: -3));
+    expect(backend.calls.last, 'seek(${Duration.zero})');
+  });
+
+  test(
+    'a seek still pending when the provider is disposed ends quietly',
+    () async {
+      await service().openTracks(songs);
+      final gate = backend.seekGate = Completer<void>();
+      final pending = service().seek(const Duration(seconds: 10));
+      container.dispose();
+      gate.complete();
+
+      await expectLater(pending, completes);
+    },
+  );
 
   test('seekBy stays inside the track', () async {
     await service().openTracks(songs);

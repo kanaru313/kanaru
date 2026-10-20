@@ -57,8 +57,14 @@ class FakeAudioBackend implements AudioBackend {
   @override
   Future<void> stop() async => calls.add('stop');
 
+  /// When set, `seek` records its call and then waits for this to complete.
+  Completer<void>? seekGate;
+
   @override
-  Future<void> seek(Duration position) async => calls.add('seek($position)');
+  Future<void> seek(Duration position) async {
+    calls.add('seek($position)');
+    await seekGate?.future;
+  }
 
   @override
   Future<void> setVolume(double volume) async =>
