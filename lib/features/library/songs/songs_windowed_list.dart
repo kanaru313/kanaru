@@ -65,6 +65,8 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
   @override
   void didUpdateWidget(SongsWindowedList old) {
     super.didUpdateWidget(old);
+    // A new sort brings the first page of its order with it.
+    _cache.seed(widget.seed);
     _cache.setIds(widget.songs.ids);
   }
 

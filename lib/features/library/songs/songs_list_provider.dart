@@ -33,15 +33,17 @@ final songIdsProvider = StreamProvider.autoDispose<SongIds>((ref) {
   if (db == null) return Stream.value(SongIds(const [], order, false));
   // Wait for the keys: becoming ready rebuilds this and loads afresh.
   if (!ref.watch(keysReadyProvider)) return const Stream.empty();
-  return throttledTracksQuery(
-    db,
-    () async => SongIds(
+  // The database answers one query at a time: let the first page go before
+  // the ids, which take longer in a large library.
+  final firstPage = ref.watch(songsFirstPageProvider.future);
+  return throttledTracksQuery(db, () async {
+    await firstPage.then<void>((_) {}, onError: (Object _) {});
+    return SongIds(
       await db.songIds(order: order, descending: sort.descending),
       order,
       sort.descending,
-    ),
-    interval: ref.watch(libraryBrowseRefreshIntervalProvider),
-  );
+    );
+  }, interval: ref.watch(libraryBrowseRefreshIntervalProvider));
 });
 
 /// The first page in the saved sort, read at once so rows show while

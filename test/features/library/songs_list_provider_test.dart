@@ -132,4 +132,41 @@ void main() {
     await reordered.future.timeout(const Duration(seconds: 10));
     expect(await titles(), ['c', 'b', 'a']);
   });
+
+  test('the first page is read before the ids', () async {
+    final db = LibraryDatabase(NativeDatabase.memory());
+    final container = ProviderContainer(
+      overrides: [libraryDatabaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+    final rootId = (await db.addRoots(['/m'], now: 1)).single;
+    await db.upsertTracks([
+      TracksCompanion.insert(
+        rootId: rootId,
+        path: '/m/a.flac',
+        mtimeMs: 1,
+        sizeBytes: 1,
+        title: 'a',
+        addedAt: 1,
+        updatedAt: 1,
+      ),
+    ]);
+
+    final events = <String>[];
+    final ids = Completer<void>();
+    container.listen(songsFirstPageProvider, (_, next) {
+      if (next.hasValue && !next.isLoading) events.add('page');
+    });
+    container.listen(songIdsProvider, (_, next) {
+      if (!next.hasValue) return;
+      events.add('ids');
+      ids.complete();
+    });
+    await ids.future.timeout(const Duration(seconds: 10));
+    expect(events.indexOf('ids'), events.length - 1);
+    expect(events.first, 'page');
+  });
 }

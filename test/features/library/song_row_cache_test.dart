@@ -12,13 +12,18 @@ void main() {
   late List<Completer<List<TrackListItem>>> pending;
   var changed = 0;
 
-  SongRowCache make({int maxRows = 1200, int pageSize = 4}) {
+  var clock = DateTime(2026);
+
+  SongRowCache make({int maxRows = 1200, int pageSize = 4, int maxReads = 2}) {
+    clock = DateTime(2026);
     requests = [];
     pending = [];
     changed = 0;
     return SongRowCache(
       maxRows: maxRows,
       pageSize: pageSize,
+      maxReads: maxReads,
+      now: () => clock,
       onChanged: () => changed++,
       load: (ids) {
         requests.add(ids);
@@ -120,5 +125,75 @@ void main() {
     expect(changed, 0);
     cache.rowAt(0);
     expect(requests, hasLength(1));
+  });
+
+  test('a track that is gone is not asked for again and has no row', () async {
+    final cache = make()..setIds([1, 2, 3, 4]);
+    cache.rowAt(0);
+    pending[0].complete([_item(1), _item(3), _item(4)]);
+    await pumpEventQueue();
+    for (var i = 0; i < 5; i++) {
+      expect(cache.rowAt(1), isNull);
+      expect(cache.rowAt(0)?.id, 1);
+    }
+    expect(requests, hasLength(1));
+    // The next list asks again.
+    cache.setIds([1, 2, 3, 4, 5]);
+    expect(cache.rowAt(1), isNull);
+    expect(requests, hasLength(2));
+  });
+
+  test('a stale row of a track that is gone is dropped', () async {
+    final cache = make()..setIds([1, 2, 3, 4]);
+    cache.rowAt(0);
+    await answer(0);
+    cache.setIds([1, 2, 3, 4, 5]);
+    cache.rowAt(0);
+    pending[1].complete([_item(1), _item(3), _item(4)]);
+    await pumpEventQueue();
+    expect(cache.rowAt(1), isNull);
+  });
+
+  test('an empty answer is not asked for again', () async {
+    final cache = make()..setIds([1, 2, 3, 4]);
+    cache.rowAt(0);
+    pending[0].complete(const []);
+    await pumpEventQueue();
+    for (var i = 0; i < 5; i++) {
+      cache.rowAt(0);
+    }
+    expect(requests, hasLength(1));
+  });
+
+  test('at most maxReads run, the newest request goes first', () async {
+    final cache = make()..setIds([for (var i = 0; i < 40; i++) i]);
+    for (var page = 0; page < 10; page++) {
+      cache.rowAt(page * 4);
+    }
+    expect(cache.reading, 2);
+    expect(requests, hasLength(2));
+    await answer(0);
+    expect(cache.reading, 2);
+    expect(requests[2].first, 36, reason: 'page 9 was asked for last');
+    await answer(1);
+    expect(requests[3].first, 32);
+  });
+
+  test('a waiting page nobody asked for lately is skipped', () async {
+    final cache = make()..setIds([for (var i = 0; i < 16; i++) i]);
+    for (final page in [0, 1, 2, 3]) {
+      cache.rowAt(page * 4);
+    }
+    clock = clock.add(const Duration(milliseconds: 400));
+    cache.rowAt(12); // still on screen: asked for again
+    await answer(0);
+    expect(requests[2].first, 12);
+    await answer(1);
+    // Pages 2 and 3 waited without being asked for again: skipped.
+    expect(requests, hasLength(3));
+    expect(cache.reading, 1);
+    // A skipped page that comes back on screen is read.
+    cache.rowAt(8);
+    expect(requests.last.first, 8);
   });
 }

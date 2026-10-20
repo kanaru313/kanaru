@@ -361,4 +361,78 @@ void main() {
     skip: !_enabled,
     timeout: const Timeout(Duration(minutes: 20)),
   );
+
+  test(
+    'song ids as one concatenated value: ordered subquery or aggregate order',
+    () async {
+      final dir = Directory.systemTemp.createTempSync('kanaru_bench');
+      final db = _open(dir);
+      await _scan(db, _rows((await db.addRoots(['/m'], now: 1)).single));
+      Future<int> ids(String sql) async =>
+          ((await db.customSelect(sql).getSingle()).read<String>('ids'))
+              .split(',')
+              .length;
+      for (final order in SongOrder.values) {
+        final by = songsOrderSql(order);
+        final subquery = await _median(
+          () => ids(
+            'SELECT group_concat(id) AS ids FROM '
+            '(SELECT id FROM tracks ORDER BY $by)',
+          ),
+        );
+        final aggregate = await _median(
+          () => ids(
+            "SELECT group_concat(id, ',' ORDER BY $by) AS ids FROM tracks",
+          ),
+        );
+        print(
+          'ids ${order.name}: ordered subquery ${subquery.$1} ms, '
+          'aggregate ORDER BY ${aggregate.$1} ms',
+        );
+      }
+      await db.close();
+      dir.deleteSync(recursive: true);
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
+
+  test(
+    'first rows when the page and the ids are asked for together',
+    () async {
+      final dir = Directory.systemTemp.createTempSync('kanaru_bench');
+      final db = _open(dir);
+      await _scan(db, _rows((await db.addRoots(['/m'], now: 1)).single));
+      for (final order in SongOrder.values) {
+        Future<int> firstRows({required bool pageFirst}) async {
+          final sw = Stopwatch()..start();
+          late Future<void> page;
+          late Future<void> ids;
+          if (pageFirst) {
+            page = db.songsPage(order: order);
+            ids = db.songIds(order: order);
+          } else {
+            ids = db.songIds(order: order);
+            page = db.songsPage(order: order);
+          }
+          await page;
+          final ms = sw.elapsedMilliseconds;
+          await ids;
+          return ms;
+        }
+
+        await firstRows(pageFirst: true);
+        final before = await firstRows(pageFirst: false);
+        final after = await firstRows(pageFirst: true);
+        print(
+          'first rows ${order.name}: page after ids $before ms, '
+          'page before ids $after ms',
+        );
+      }
+      await db.close();
+      dir.deleteSync(recursive: true);
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 }

@@ -101,6 +101,35 @@ void main() {
       },
     );
 
+    test('match songs() on 20k rows with many ties, every order', () async {
+      await db.upsertTracks([
+        for (var i = 0; i < 20000; i++)
+          _row(
+            rootId,
+            i,
+            title: 'T${i % 50}',
+            artist: i % 3 == 0 ? null : 'Artist ${i % 40}',
+            album: i % 4 == 0 ? null : 'Album ${i % 30}',
+            year: i % 5 == 0 ? null : 1980 + i % 20,
+            durationMs: i % 7 == 0 ? null : i % 90,
+            addedAt: i % 100,
+          ),
+      ]);
+      for (final order in SongOrder.values) {
+        for (final desc in [false, true]) {
+          final expected = [
+            for (final t in await db.songs(order: order, descending: desc))
+              t.id,
+          ];
+          expect(
+            await db.songIds(order: order, descending: desc),
+            expected,
+            reason: '${order.name} desc=$desc',
+          );
+        }
+      }
+    });
+
     test('title order walks the title_sort index', () async {
       final rows = await db
           .customSelect(
