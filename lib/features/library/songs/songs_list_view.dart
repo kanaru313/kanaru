@@ -70,7 +70,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
       _resorting = true;
     });
     ref.listen(songsListProvider, (previous, next) {
-      if (next.hasError) {
+      if (next.hasError && !(previous?.hasError ?? false)) {
         _log.severe('Reading the songs failed', next.error, next.stackTrace);
       }
       if (_resorting && next.hasValue && !next.isLoading) {

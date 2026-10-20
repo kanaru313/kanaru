@@ -190,7 +190,15 @@ extension LibraryBrowseQueries on LibraryDatabase {
   Stream<List<TrackListItem>> watchSongs({
     SongOrder order = SongOrder.title,
     bool descending = false,
-  }) => _watch(
+  }) => _songs(order, descending).watch();
+
+  /// [watchSongs] once, for a throttled refresh.
+  Future<List<TrackListItem>> songs({
+    SongOrder order = SongOrder.title,
+    bool descending = false,
+  }) => _songs(order, descending).get();
+
+  Selectable<TrackListItem> _songs(SongOrder order, bool descending) => _query(
     'SELECT id, path, title, artist, album, duration_ms FROM tracks '
     'ORDER BY ${songsOrderSql(order, descending: descending)}',
     const [],
@@ -203,12 +211,6 @@ extension LibraryBrowseQueries on LibraryDatabase {
       durationMs: row.readNullable<int>('duration_ms'),
     ),
   );
-
-  Stream<List<T>> _watch<T>(
-    String sql,
-    List<Variable> variables,
-    T Function(QueryRow row) map,
-  ) => _query(sql, variables, map).watch();
 
   Selectable<T> _query<T>(
     String sql,
