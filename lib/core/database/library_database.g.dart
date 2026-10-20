@@ -582,6 +582,29 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _coverKeyMeta = const VerificationMeta(
+    'coverKey',
+  );
+  @override
+  late final GeneratedColumn<String> coverKey = GeneratedColumn<String>(
+    'cover_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _coverScanVersionMeta = const VerificationMeta(
+    'coverScanVersion',
+  );
+  @override
+  late final GeneratedColumn<int> coverScanVersion = GeneratedColumn<int>(
+    'cover_scan_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -609,6 +632,8 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     addedAt,
     updatedAt,
     scanError,
+    coverKey,
+    coverScanVersion,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -786,6 +811,21 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         scanError.isAcceptableOrUnknown(data['scan_error']!, _scanErrorMeta),
       );
     }
+    if (data.containsKey('cover_key')) {
+      context.handle(
+        _coverKeyMeta,
+        coverKey.isAcceptableOrUnknown(data['cover_key']!, _coverKeyMeta),
+      );
+    }
+    if (data.containsKey('cover_scan_version')) {
+      context.handle(
+        _coverScanVersionMeta,
+        coverScanVersion.isAcceptableOrUnknown(
+          data['cover_scan_version']!,
+          _coverScanVersionMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -895,6 +935,14 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         DriftSqlType.string,
         data['${effectivePrefix}scan_error'],
       ),
+      coverKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_key'],
+      ),
+      coverScanVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cover_scan_version'],
+      )!,
     );
   }
 
@@ -945,6 +993,16 @@ class Track extends DataClass implements Insertable<Track> {
 
   /// Why the tags could not be read; null when they were read fine.
   final String? scanError;
+
+  /// Key of the cover thumbnail (a JPEG, longest side 512 px) in the cover
+  /// cache folder: `<ab>/<hash>.jpg`, where `hash` is the blake3 of the
+  /// original image bytes. Null when the track has no cover.
+  final String? coverKey;
+
+  /// The `coverScanVersion` (library_rows.dart) whose rules produced [coverKey]; 0 when the
+  /// cover was never looked for. A lower value makes a rescan read the file
+  /// again even when it is unchanged.
+  final int coverScanVersion;
   const Track({
     required this.id,
     required this.rootId,
@@ -971,6 +1029,8 @@ class Track extends DataClass implements Insertable<Track> {
     required this.addedAt,
     required this.updatedAt,
     this.scanError,
+    this.coverKey,
+    required this.coverScanVersion,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1034,6 +1094,10 @@ class Track extends DataClass implements Insertable<Track> {
     if (!nullToAbsent || scanError != null) {
       map['scan_error'] = Variable<String>(scanError);
     }
+    if (!nullToAbsent || coverKey != null) {
+      map['cover_key'] = Variable<String>(coverKey);
+    }
+    map['cover_scan_version'] = Variable<int>(coverScanVersion);
     return map;
   }
 
@@ -1096,6 +1160,10 @@ class Track extends DataClass implements Insertable<Track> {
       scanError: scanError == null && nullToAbsent
           ? const Value.absent()
           : Value(scanError),
+      coverKey: coverKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverKey),
+      coverScanVersion: Value(coverScanVersion),
     );
   }
 
@@ -1130,6 +1198,8 @@ class Track extends DataClass implements Insertable<Track> {
       addedAt: serializer.fromJson<int>(json['addedAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       scanError: serializer.fromJson<String?>(json['scanError']),
+      coverKey: serializer.fromJson<String?>(json['coverKey']),
+      coverScanVersion: serializer.fromJson<int>(json['coverScanVersion']),
     );
   }
   @override
@@ -1161,6 +1231,8 @@ class Track extends DataClass implements Insertable<Track> {
       'addedAt': serializer.toJson<int>(addedAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
       'scanError': serializer.toJson<String?>(scanError),
+      'coverKey': serializer.toJson<String?>(coverKey),
+      'coverScanVersion': serializer.toJson<int>(coverScanVersion),
     };
   }
 
@@ -1190,6 +1262,8 @@ class Track extends DataClass implements Insertable<Track> {
     int? addedAt,
     int? updatedAt,
     Value<String?> scanError = const Value.absent(),
+    Value<String?> coverKey = const Value.absent(),
+    int? coverScanVersion,
   }) => Track(
     id: id ?? this.id,
     rootId: rootId ?? this.rootId,
@@ -1216,6 +1290,8 @@ class Track extends DataClass implements Insertable<Track> {
     addedAt: addedAt ?? this.addedAt,
     updatedAt: updatedAt ?? this.updatedAt,
     scanError: scanError.present ? scanError.value : this.scanError,
+    coverKey: coverKey.present ? coverKey.value : this.coverKey,
+    coverScanVersion: coverScanVersion ?? this.coverScanVersion,
   );
   Track copyWithCompanion(TracksCompanion data) {
     return Track(
@@ -1252,6 +1328,10 @@ class Track extends DataClass implements Insertable<Track> {
       addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       scanError: data.scanError.present ? data.scanError.value : this.scanError,
+      coverKey: data.coverKey.present ? data.coverKey.value : this.coverKey,
+      coverScanVersion: data.coverScanVersion.present
+          ? data.coverScanVersion.value
+          : this.coverScanVersion,
     );
   }
 
@@ -1282,7 +1362,9 @@ class Track extends DataClass implements Insertable<Track> {
           ..write('channels: $channels, ')
           ..write('addedAt: $addedAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('scanError: $scanError')
+          ..write('scanError: $scanError, ')
+          ..write('coverKey: $coverKey, ')
+          ..write('coverScanVersion: $coverScanVersion')
           ..write(')'))
         .toString();
   }
@@ -1314,6 +1396,8 @@ class Track extends DataClass implements Insertable<Track> {
     addedAt,
     updatedAt,
     scanError,
+    coverKey,
+    coverScanVersion,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1343,7 +1427,9 @@ class Track extends DataClass implements Insertable<Track> {
           other.channels == this.channels &&
           other.addedAt == this.addedAt &&
           other.updatedAt == this.updatedAt &&
-          other.scanError == this.scanError);
+          other.scanError == this.scanError &&
+          other.coverKey == this.coverKey &&
+          other.coverScanVersion == this.coverScanVersion);
 }
 
 class TracksCompanion extends UpdateCompanion<Track> {
@@ -1372,6 +1458,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
   final Value<int> addedAt;
   final Value<int> updatedAt;
   final Value<String?> scanError;
+  final Value<String?> coverKey;
+  final Value<int> coverScanVersion;
   const TracksCompanion({
     this.id = const Value.absent(),
     this.rootId = const Value.absent(),
@@ -1398,6 +1486,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.addedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.scanError = const Value.absent(),
+    this.coverKey = const Value.absent(),
+    this.coverScanVersion = const Value.absent(),
   });
   TracksCompanion.insert({
     this.id = const Value.absent(),
@@ -1425,6 +1515,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
     required int addedAt,
     required int updatedAt,
     this.scanError = const Value.absent(),
+    this.coverKey = const Value.absent(),
+    this.coverScanVersion = const Value.absent(),
   }) : rootId = Value(rootId),
        path = Value(path),
        mtimeMs = Value(mtimeMs),
@@ -1458,6 +1550,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Expression<int>? addedAt,
     Expression<int>? updatedAt,
     Expression<String>? scanError,
+    Expression<String>? coverKey,
+    Expression<int>? coverScanVersion,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1485,6 +1579,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
       if (addedAt != null) 'added_at': addedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (scanError != null) 'scan_error': scanError,
+      if (coverKey != null) 'cover_key': coverKey,
+      if (coverScanVersion != null) 'cover_scan_version': coverScanVersion,
     });
   }
 
@@ -1514,6 +1610,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Value<int>? addedAt,
     Value<int>? updatedAt,
     Value<String?>? scanError,
+    Value<String?>? coverKey,
+    Value<int>? coverScanVersion,
   }) {
     return TracksCompanion(
       id: id ?? this.id,
@@ -1541,6 +1639,8 @@ class TracksCompanion extends UpdateCompanion<Track> {
       addedAt: addedAt ?? this.addedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       scanError: scanError ?? this.scanError,
+      coverKey: coverKey ?? this.coverKey,
+      coverScanVersion: coverScanVersion ?? this.coverScanVersion,
     );
   }
 
@@ -1622,6 +1722,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
     if (scanError.present) {
       map['scan_error'] = Variable<String>(scanError.value);
     }
+    if (coverKey.present) {
+      map['cover_key'] = Variable<String>(coverKey.value);
+    }
+    if (coverScanVersion.present) {
+      map['cover_scan_version'] = Variable<int>(coverScanVersion.value);
+    }
     return map;
   }
 
@@ -1652,7 +1758,9 @@ class TracksCompanion extends UpdateCompanion<Track> {
           ..write('channels: $channels, ')
           ..write('addedAt: $addedAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('scanError: $scanError')
+          ..write('scanError: $scanError, ')
+          ..write('coverKey: $coverKey, ')
+          ..write('coverScanVersion: $coverScanVersion')
           ..write(')'))
         .toString();
   }
@@ -2000,6 +2108,8 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   required int addedAt,
   required int updatedAt,
   Value<String?> scanError,
+  Value<String?> coverKey,
+  Value<int> coverScanVersion,
 });
 typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int> id,
@@ -2027,6 +2137,8 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int> addedAt,
   Value<int> updatedAt,
   Value<String?> scanError,
+  Value<String?> coverKey,
+  Value<int> coverScanVersion,
 });
 
 final class $$TracksTableReferences
@@ -2177,6 +2289,16 @@ class $$TracksTableFilterComposer
 
   ColumnFilters<String> get scanError => $composableBuilder(
     column: $table.scanError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverKey => $composableBuilder(
+    column: $table.coverKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get coverScanVersion => $composableBuilder(
+    column: $table.coverScanVersion,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2333,6 +2455,16 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get coverKey => $composableBuilder(
+    column: $table.coverKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get coverScanVersion => $composableBuilder(
+    column: $table.coverScanVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$LibraryRootsTableOrderingComposer get rootId {
     final $$LibraryRootsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2446,6 +2578,14 @@ class $$TracksTableAnnotationComposer
   GeneratedColumn<String> get scanError =>
       $composableBuilder(column: $table.scanError, builder: (column) => column);
 
+  GeneratedColumn<String> get coverKey =>
+      $composableBuilder(column: $table.coverKey, builder: (column) => column);
+
+  GeneratedColumn<int> get coverScanVersion => $composableBuilder(
+    column: $table.coverScanVersion,
+    builder: (column) => column,
+  );
+
   $$LibraryRootsTableAnnotationComposer get rootId {
     final $$LibraryRootsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -2523,6 +2663,8 @@ class $$TracksTableTableManager
                 Value<int> addedAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<String?> scanError = const Value.absent(),
+                Value<String?> coverKey = const Value.absent(),
+                Value<int> coverScanVersion = const Value.absent(),
               }) => TracksCompanion(
                 id: id,
                 rootId: rootId,
@@ -2549,6 +2691,8 @@ class $$TracksTableTableManager
                 addedAt: addedAt,
                 updatedAt: updatedAt,
                 scanError: scanError,
+                coverKey: coverKey,
+                coverScanVersion: coverScanVersion,
               ),
           createCompanionCallback:
               ({
@@ -2577,6 +2721,8 @@ class $$TracksTableTableManager
                 required int addedAt,
                 required int updatedAt,
                 Value<String?> scanError = const Value.absent(),
+                Value<String?> coverKey = const Value.absent(),
+                Value<int> coverScanVersion = const Value.absent(),
               }) => TracksCompanion.insert(
                 id: id,
                 rootId: rootId,
@@ -2603,6 +2749,8 @@ class $$TracksTableTableManager
                 addedAt: addedAt,
                 updatedAt: updatedAt,
                 scanError: scanError,
+                coverKey: coverKey,
+                coverScanVersion: coverScanVersion,
               ),
           withReferenceMapper: (p0) => p0
               .map(

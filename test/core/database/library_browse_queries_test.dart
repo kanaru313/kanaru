@@ -20,6 +20,7 @@ TracksCompanion row({
   int? track,
   int? durationMs,
   int addedAt = 1,
+  String? coverKey,
 }) {
   final n = _next++;
   return TracksCompanion.insert(
@@ -37,6 +38,7 @@ TracksCompanion row({
     durationMs: Value(durationMs),
     addedAt: addedAt,
     updatedAt: addedAt,
+    coverKey: Value(coverKey),
   );
 }
 
@@ -337,6 +339,41 @@ void main() {
       expect(songs.map((t) => t.id), items.map((t) => t.id));
       expect(songs.first.artist, items.first.artist);
       expect(songs.first.path, items.first.path);
+    });
+  });
+
+  group('cover keys', () {
+    test('an album takes the smallest cover key among its tracks', () async {
+      await db.upsertTracks([
+        row(artist: 'A', album: 'X', coverKey: 'cd/cd.jpg'),
+        row(artist: 'A', album: 'X'),
+        row(artist: 'A', album: 'X', coverKey: 'ab/ab.jpg'),
+        // Another spelling of the same album key still counts.
+        row(artist: 'a', album: 'x', coverKey: 'aa/aa.jpg'),
+        row(artist: 'B', album: 'Y'),
+      ]);
+      final all = await albums();
+      expect(all[const AlbumKey('a', 'x')]!.coverKey, 'aa/aa.jpg');
+      expect(all[const AlbumKey('b', 'y')]!.coverKey, isNull);
+    });
+
+    test('songs, album tracks and artist tracks carry the key', () async {
+      await db.upsertTracks([
+        row(title: 'With', artist: 'A', album: 'X', coverKey: 'ab/ab.jpg'),
+        row(title: 'Without', artist: 'A', album: 'X'),
+      ]);
+      Map<String, String?> byTitle(Iterable<(String, String?)> rows) => {
+        for (final (title, key) in rows) title: key,
+      };
+      const expected = {'With': 'ab/ab.jpg', 'Without': null};
+      final songs = await db.watchSongs().first;
+      expect(byTitle(songs.map((t) => (t.title, t.coverKey))), expected);
+      final album = await db.albumTracks(const AlbumKey('a', 'x'));
+      expect(byTitle(album.map((t) => (t.title, t.coverKey))), expected);
+      final artist = await db.artistTracks('a');
+      expect(byTitle(artist.map((t) => (t.title, t.coverKey))), expected);
+      final items = await db.watchTrackListItems().first;
+      expect(byTitle(items.map((t) => (t.title, t.coverKey))), expected);
     });
   });
 

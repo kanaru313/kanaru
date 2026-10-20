@@ -1,24 +1,29 @@
 //! Tag reading API exposed to Dart.
 
-use rayon::prelude::*;
-use std::sync::LazyLock;
+use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::path::Path;
+use std::sync::Arc;
 
-use crate::tag_reader::read_one;
+use crate::cover_art::{first_source, list_images, read_bounded, validate_header, Attempt};
+use crate::cover_cache::CoverSink;
+use crate::tag_batch::read_batch;
+use crate::tag_reader::embedded_pictures;
 
-/// Stack size for tag-reading threads. Parsers recurse on nested containers
-/// (MP4 atoms, Ogg pages), and rayon's default stack is smaller than the
-/// 8 MiB a normal main thread gets.
-const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
-
-/// Dedicated pool so tag reading never competes with other rayon users and
-/// always runs with [`WORKER_STACK_BYTES`]. `Err` holds why it could not start.
-static POOL: LazyLock<Result<rayon::ThreadPool, String>> = LazyLock::new(|| {
-    rayon::ThreadPoolBuilder::new()
-        .stack_size(WORKER_STACK_BYTES)
-        .thread_name(|i| format!("kanaru-tags-{i}"))
-        .build()
-        .map_err(|e| format!("cannot start tag reader threads: {e}"))
-});
+/// What happened when looking for a file's cover.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum CoverStatus {
+    /// Covers were not requested (empty cover folder).
+    #[default]
+    Skipped,
+    /// A cover was found and its thumbnail is in the cache.
+    Found,
+    /// Every source was checked and none holds a usable image. Reading again
+    /// gives the same answer.
+    None,
+    /// Something went wrong that may pass (the cache could not be written, the
+    /// cover code crashed). Worth trying again on the next scan.
+    Failed,
+}
 
 /// Tags and audio properties of one file. Flat on purpose so flutter_rust_bridge
 /// generates a plain Dart class. A field is `None` when the file does not say.
@@ -50,6 +55,10 @@ pub struct TrackTags {
     pub channels: Option<u8>,
     /// Why the file could not be read; `None` on success.
     pub error: Option<String>,
+    /// Cache key of the cover thumbnail, `<ab>/<hash>.jpg` relative to the
+    /// cover folder; `hash` is the blake3 of the original image bytes.
+    pub cover: Option<String>,
+    pub cover_status: CoverStatus,
 }
 
 /// Reads the tags of every file in `paths`, in parallel.
@@ -57,14 +66,43 @@ pub struct TrackTags {
 /// The result has exactly one entry per input path, in the same order. A file
 /// that fails to read yields an entry with `error` set; it never fails the
 /// batch.
-pub fn read_tags_batch(paths: Vec<String>) -> Vec<TrackTags> {
-    match &*POOL {
-        Ok(pool) => pool.install(|| paths.par_iter().map(|p| read_one(p)).collect()),
-        Err(reason) => paths
-            .into_iter()
-            .map(|path| TrackTags::failed(path, reason.clone()))
-            .collect(),
+///
+/// `cover_dir` is the thumbnail folder (size included, e.g. `.../covers/512`).
+/// When it is empty no cover is looked for and every entry is
+/// [`CoverStatus::Skipped`]; otherwise each file's cover thumbnail is written
+/// there and its key returned in [`TrackTags::cover`]. Image bytes never cross
+/// to Dart here.
+pub fn read_tags_batch(paths: Vec<String>, cover_dir: String) -> Vec<TrackTags> {
+    if cover_dir.is_empty() {
+        return read_batch(paths, None);
     }
+    let sink = CoverSink::new(cover_dir);
+    read_batch(paths, Some(&sink))
+}
+
+/// The original bytes of the cover of the audio file at `path`, chosen the
+/// same way the scan chooses (embedded first, then sidecar images), for views
+/// that need more than the thumbnail. Nothing is decoded or written to disk.
+/// `None` when the file has no usable cover or cannot be read.
+pub fn read_original_cover(path: String) -> Option<Vec<u8>> {
+    catch_unwind(AssertUnwindSafe(|| {
+        let audio = Path::new(&path);
+        if !std::fs::metadata(audio).is_ok_and(|m| m.is_file()) {
+            return None;
+        }
+        let usable = |bytes: Vec<u8>| match validate_header(&bytes) {
+            Some(_) => Attempt::Take(bytes),
+            None => Attempt::Next,
+        };
+        first_source(
+            audio,
+            embedded_pictures(&path),
+            |dir| Arc::new(list_images(dir)),
+            usable,
+            |sidecar| read_bounded(sidecar).map_or(Attempt::Next, usable),
+        )
+    }))
+    .unwrap_or(None)
 }
 
 impl TrackTags {

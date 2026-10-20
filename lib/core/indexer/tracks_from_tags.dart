@@ -10,6 +10,12 @@ import 'walk_audio_files.dart';
 /// A file whose tags failed to read (or that has no title tag) is still
 /// stored: its title is the file name and [TrackTags.error] becomes
 /// `scanError`. [tags] is matched to [files] by path.
+///
+/// The cover columns follow [TrackTags.coverStatus]: a found or confirmed
+/// missing cover is stored and stamped with [coverScanVersion]. A failed or
+/// skipped lookup keeps the key but clears the stamp, so the next scan with
+/// covers on reads the file again (a file changed while covers were off would
+/// otherwise keep its old cover). A missing entry leaves both columns alone.
 List<TracksCompanion> tracksFromTags(
   int rootId,
   List<WalkedFile> files,
@@ -49,5 +55,15 @@ TracksCompanion _row(int rootId, WalkedFile file, TrackTags? tags, int now) {
     addedAt: now,
     updatedAt: now,
     scanError: Value(tags == null ? 'no tags returned' : tags.error),
+    coverKey: switch (tags?.coverStatus) {
+      CoverStatus.found => Value(tags!.cover),
+      CoverStatus.none => const Value(null),
+      _ => const Value.absent(),
+    },
+    coverScanVersion: switch (tags?.coverStatus) {
+      CoverStatus.found || CoverStatus.none => const Value(coverScanVersion),
+      CoverStatus.failed || CoverStatus.skipped => const Value(0),
+      _ => const Value.absent(),
+    },
   );
 }

@@ -15,13 +15,27 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 flutter_rust_bridge = "=2.13.0"
 lofty = "=0.25.4"
 rayon = "1"
-
-[dev-dependencies]
+# Cover thumbnails: decode only the three formats covers come in, nothing else.
+image = { version = "=0.25.10", default-features = false, features = ["jpeg", "png", "webp"] }
+# Cover cache keys: hash of the original image bytes. `pure` skips the C/asm build.
+blake3 = { version = "=1.8.7", default-features = false, features = ["std", "pure"] }
+# O_NONBLOCK when opening sidecar images, so a FIFO named cover.jpg cannot hang a scan.
+libc = "0.2"
+# Atomic writes into the cover cache (temp file in the same directory, then rename).
 tempfile = "3"
 
 # Panics inside one file's tag parser are caught per file (catch_unwind), which
 # only works with the default `panic = "unwind"`. Do not set `panic = "abort"`
 # in any profile.
+
+# Debug app builds (`flutter run`) use the dev profile. Unoptimized image
+# decoding and resizing make cover thumbnails about 90 times slower, so a first
+# scan with covers would take many minutes. The crate itself is optimized too:
+# the generic `image` code it calls is compiled in this crate, so optimizing only
+# the dependencies leaves the scan about twice as slow. Debug info and debug
+# assertions stay on.
+[profile.dev]
+opt-level = 3
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

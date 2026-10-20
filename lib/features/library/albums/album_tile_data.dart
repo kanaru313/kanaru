@@ -8,6 +8,7 @@ class AlbumTileData {
     required this.title,
     this.artist,
     this.year,
+    this.coverKey,
   });
 
   AlbumTileData.fromSummary(AlbumSummary album)
@@ -16,10 +17,23 @@ class AlbumTileData {
         title: album.title,
         artist: album.artist,
         year: album.year,
+        coverKey: album.coverKey,
       );
+
+  /// This tile with [coverKey] as its cover.
+  AlbumTileData withCoverKey(String? coverKey) => AlbumTileData(
+    key: key,
+    title: title,
+    artist: artist,
+    year: year,
+    coverKey: coverKey,
+  );
 
   final AlbumKey key;
   final String title;
   final String? artist;
   final int? year;
+
+  /// Cover key of the whole album (not only of some of its tracks).
+  final String? coverKey;
 }

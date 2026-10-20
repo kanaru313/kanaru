@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/indexer/tag_reader.dart';
 import 'package:kanaru/core/indexer/tracks_from_tags.dart';
 import 'package:kanaru/core/indexer/walk_audio_files.dart';
@@ -12,6 +14,7 @@ void main() {
       [_file],
       [
         const TrackTags(
+          coverStatus: CoverStatus.skipped,
           path: '/m/Song One.flac',
           title: 'Tagged',
           artist: 'A; B',
@@ -43,7 +46,12 @@ void main() {
     final row = tracksFromTags(
       1,
       [_file],
-      [const TrackTags(path: '/m/Song One.flac')],
+      [
+        const TrackTags(
+          coverStatus: CoverStatus.skipped,
+          path: '/m/Song One.flac',
+        ),
+      ],
       1,
     ).single;
 
@@ -57,7 +65,13 @@ void main() {
     final row = tracksFromTags(
       1,
       [_file],
-      [const TrackTags(path: '/m/Song One.flac', error: 'unsupported')],
+      [
+        const TrackTags(
+          coverStatus: CoverStatus.skipped,
+          path: '/m/Song One.flac',
+          error: 'unsupported',
+        ),
+      ],
       1,
     ).single;
 
@@ -70,5 +84,45 @@ void main() {
 
     expect(row.title.value, 'Song One');
     expect(row.scanError.value, isNotNull);
+  });
+
+  group('cover columns', () {
+    TracksCompanion rowFor(CoverStatus status, {String? cover}) =>
+        tracksFromTags(
+          1,
+          [_file],
+          [TrackTags(path: _file.path, cover: cover, coverStatus: status)],
+          1,
+        ).single;
+
+    test('a found cover is stored and stamped', () {
+      final row = rowFor(CoverStatus.found, cover: 'ab/ab.jpg');
+      expect(row.coverKey, const Value('ab/ab.jpg'));
+      expect(row.coverScanVersion, const Value(coverScanVersion));
+    });
+
+    test('no cover clears the key and is stamped', () {
+      final row = rowFor(CoverStatus.none);
+      expect(row.coverKey, const Value<String?>(null));
+      expect(row.coverScanVersion, const Value(coverScanVersion));
+    });
+
+    test('a failed lookup keeps the key and clears the stamp', () {
+      final row = rowFor(CoverStatus.failed);
+      expect(row.coverKey, const Value<String?>.absent());
+      expect(row.coverScanVersion, const Value(0));
+    });
+
+    test('a skipped lookup keeps the key and clears the stamp', () {
+      final row = rowFor(CoverStatus.skipped);
+      expect(row.coverKey, const Value<String?>.absent());
+      expect(row.coverScanVersion, const Value(0));
+    });
+
+    test('a missing entry leaves both alone', () {
+      final row = tracksFromTags(1, [_file], [], 1).single;
+      expect(row.coverKey, const Value<String?>.absent());
+      expect(row.coverScanVersion, const Value<int>.absent());
+    });
   });
 }
