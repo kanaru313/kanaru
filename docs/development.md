@@ -126,6 +126,8 @@ flutter pub get
 flutter run -d linux
 ```
 
+The `Makefile` wraps the everyday commands (`make` lists them): `make run`, `make check` (analyze + Dart and Rust tests), `make gen`, `make logs`, and `make reset-library` / `make reset-all` to start again from the first-run folder picker (quit Kanaru first). Without `flutter` on PATH, targets run inside `nix develop`.
+
 ### Code generation
 
 Run code generation again after changing drift tables, Riverpod annotations or Rust APIs:
