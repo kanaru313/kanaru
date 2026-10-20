@@ -126,7 +126,7 @@ void main() {
   });
 
   testWidgets('during the 300 ms hold the button keeps the last progress '
-      'the scan reported', (tester) async {
+      'the scan reported; the next scan starts from its own', (tester) async {
     final indexer = ScriptedIndexer();
     final h = LibraryHarness(
       overrides: [libraryIndexerProvider.overrideWith(() => indexer)],
@@ -165,6 +165,31 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(ring, findsNothing);
     expect(find.byTooltip('Rescan'), findsOneWidget);
+
+    // The next scan shows its own progress from its first frame, not the
+    // last one of the scan before.
+    await tester.tap(find.byTooltip('Rescan'));
+    expect(indexer.scans, 2);
+    indexer.emit(
+      const IndexerScanning(phase: ScanPhase.discovering, rootPath: '/m'),
+    );
+    await tester.pump();
+    expect(find.byTooltip('Looking for music files…'), findsOneWidget);
+    expect(find.byTooltip('Reading tags 3 / 4'), findsNothing);
+    expect(tester.widget<CircularProgressIndicator>(ring).value, isNull);
+
+    indexer.emit(
+      const IndexerScanning(
+        phase: ScanPhase.reading,
+        rootPath: '/m',
+        done: 1,
+        total: 2,
+      ),
+    );
+    await tester.pump();
+    expect(find.byTooltip('Reading tags 1 / 2'), findsOneWidget);
+    expect(tester.widget<CircularProgressIndicator>(ring).value, 0.5);
+    indexer.emit(IndexerFinished(const ScanSummary()));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   });
 

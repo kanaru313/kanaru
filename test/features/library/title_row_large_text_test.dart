@@ -26,8 +26,16 @@ void main() {
 
       // An overflow would fail the test with a layout error.
       expect(tester.takeException(), isNull);
-      expect(find.text(title).last, findsOneWidget);
-      // The actions stay inside the window.
+      // The title shares its row with the actions, inside the window.
+      final titleRow = find
+          .ancestor(of: find.byType(FittedBox), matching: find.byType(Row))
+          .first;
+      final heading = find.descendant(of: titleRow, matching: find.text(title));
+      expect(heading, findsOneWidget);
+      final headingRect = tester.getRect(heading);
+      expect(headingRect.left, greaterThanOrEqualTo(0), reason: location);
+      expect(headingRect.width, greaterThan(0), reason: location);
+      // The actions stay inside the window, right of the title.
       final actions = find.descendant(
         of: find.byType(FittedBox),
         matching: find.byWidgetPredicate(
@@ -38,7 +46,11 @@ void main() {
       for (final action in actions.evaluate()) {
         final rect = tester.getRect(find.byWidget(action.widget));
         expect(rect.right, lessThanOrEqualTo(480), reason: location);
-        expect(rect.left, greaterThanOrEqualTo(0), reason: location);
+        expect(
+          rect.left,
+          greaterThanOrEqualTo(headingRect.right),
+          reason: location,
+        );
       }
     });
   }
