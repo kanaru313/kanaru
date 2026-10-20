@@ -3,6 +3,8 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart' show TrackListItem;
+import '../../../core/indexer/indexer_providers.dart';
+import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../play_tracks.dart';
 import '../widgets/library_loading.dart';
@@ -25,7 +27,8 @@ const _prototypeSong = TrackListItem(
 
 /// The stored songs as a list. Shows a progress indicator until the first
 /// result, the "unavailable" message when reading failed, and the "no songs"
-/// message for an empty library unless a scan is still [scanning]. Tapping a
+/// message for an empty library unless a scan is still [scanning] or the
+/// list is reloading. Tapping a
 /// song plays the whole list from it.
 ///
 /// Changing the sort keeps the current rows until the re-sorted list
@@ -69,8 +72,20 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
     ref.listen(settingsProvider.select((s) => s.songSort), (_, _) {
       _resorting = true;
     });
+    // A scan that ends while the list is empty (a short first scan) would
+    // otherwise wait out the refresh interval before its songs show.
+    ref.listen(libraryIndexerProvider.select((s) => s is IndexerScanning), (
+      wasScanning,
+      scanning,
+    ) {
+      if (wasScanning == true &&
+          !scanning &&
+          (ref.read(songsListProvider).value?.isEmpty ?? false)) {
+        ref.invalidate(songsListProvider);
+      }
+    });
     ref.listen(songsListProvider, (previous, next) {
-      if (next.hasError) {
+      if (next.hasError && !(previous?.hasError ?? false)) {
         _log.severe('Reading the songs failed', next.error, next.stackTrace);
       }
       if (_resorting && next.hasValue && !next.isLoading) {
@@ -79,29 +94,29 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
       }
     });
 
-    return ref
-        .watch(songsListProvider)
-        .when(
-          skipLoadingOnReload: true,
-          loading: () => const LibraryLoading(),
-          error: (error, stackTrace) =>
-              const SongsEmptyView(kind: SongsEmptyKind.unavailable),
-          data: (songs) {
-            if (songs.isEmpty) {
-              return widget.scanning
-                  ? const SizedBox.shrink()
-                  : const SongsEmptyView(kind: SongsEmptyKind.noTracks);
-            }
-            return ListView.builder(
-              controller: _scroll,
-              padding: const EdgeInsets.only(bottom: libraryRescanClearance),
-              // Measured from a row, so larger text sizes do not clip rows.
-              prototypeItem: SongTile(song: _prototypeSong, onTap: () {}),
-              itemCount: songs.length,
-              itemBuilder: (context, i) =>
-                  SongTile(song: songs[i], onTap: () => _play(songs, i)),
-            );
-          },
+    final async = ref.watch(songsListProvider);
+    return async.when(
+      skipLoadingOnReload: true,
+      loading: () => const LibraryLoading(),
+      error: (error, stackTrace) =>
+          const SongsEmptyView(kind: SongsEmptyKind.unavailable),
+      data: (songs) {
+        if (songs.isEmpty) {
+          // Still reloading after a scan: rows may be about to arrive.
+          return widget.scanning || async.isLoading
+              ? const SizedBox.shrink()
+              : const SongsEmptyView(kind: SongsEmptyKind.noTracks);
+        }
+        return ListView.builder(
+          controller: _scroll,
+          padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+          // Measured from a row, so larger text sizes do not clip rows.
+          prototypeItem: SongTile(song: _prototypeSong, onTap: () {}),
+          itemCount: songs.length,
+          itemBuilder: (context, i) =>
+              SongTile(song: songs[i], onTap: () => _play(songs, i)),
         );
+      },
+    );
   }
 }

@@ -27,9 +27,13 @@ class LibraryHarness {
     FakeTagReader? reader,
     this.overrides = const [],
     this.picker,
+    this.refreshInterval = Duration.zero,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
+
+  /// Shortest time between reloads of the browse lists; zero reloads at once.
+  final Duration refreshInterval;
   final String? suggestion;
 
   /// Extra provider overrides, applied last.
@@ -75,8 +79,7 @@ class LibraryHarness {
           picker ?? () async => picks.isEmpty ? null : picks.removeAt(0),
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
-        // Albums and artists reload as soon as the library changes.
-        libraryBrowseRefreshIntervalProvider.overrideWithValue(Duration.zero),
+        libraryBrowseRefreshIntervalProvider.overrideWithValue(refreshInterval),
         ...overrides,
       ],
     );

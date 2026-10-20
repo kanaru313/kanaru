@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Shortest time between two reloads of the Albums and Artists lists while
+/// Shortest time between two reloads of the Albums, Artists and Songs lists while
 /// the library changes (see `throttledTracksQuery`). Tests set it to zero.
 final libraryBrowseRefreshIntervalProvider = Provider<Duration>(
   (ref) => const Duration(seconds: 2),

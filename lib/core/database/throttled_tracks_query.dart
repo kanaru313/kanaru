@@ -8,7 +8,7 @@ import 'library_database.dart';
 /// two loads at once and never sooner than [interval] after the previous
 /// load finished.
 ///
-/// For whole-library groupings (albums, artists): drift's `.watch()` cancels
+/// For whole-library lists (albums, artists, songs): drift's `.watch()` cancels
 /// and restarts such a query after every write, so during a scan it keeps the
 /// database isolate busy, slows the scan several times over and never emits.
 /// Here a write only marks the result dirty; a running load is never

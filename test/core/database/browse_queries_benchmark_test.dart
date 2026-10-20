@@ -15,8 +15,8 @@ import 'package:kanaru/core/database/library_sql_functions.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/throttled_tracks_query.dart';
 
-/// How the albums query is listened to during a timed scan.
-enum _Listener { none, watch, throttled, albumPage }
+/// How the albums or Songs query is listened to during a timed scan.
+enum _Listener { none, watch, throttled, albumPage, songsWatch, songsThrottled }
 
 const _total = 100000;
 
@@ -210,6 +210,12 @@ void main() {
             () => timed(() => scanDb.albumTracks(pageKey)),
             interval: const Duration(seconds: 2),
           ).listen((_) => emits++),
+          _Listener.songsWatch => scanDb.watchSongs().listen((_) => emits++),
+          _Listener.songsThrottled => throttledTracksQuery(
+            scanDb,
+            () => timed(scanDb.songs),
+            interval: const Duration(seconds: 2),
+          ).listen((_) => emits++),
         };
         final ms = await _scan(scanDb, scanRows, readTime: readTime);
         await sub?.cancel();
@@ -235,6 +241,7 @@ void main() {
         final alone = <int>[];
         final throttled = <int>[];
         final albumPage = <int>[];
+        final songsThrottled = <int>[];
         for (var i = 0; i < 3; i++) {
           alone.add(await scanInto(_Listener.none, readTime: readTime));
           throttled.add(
@@ -243,8 +250,15 @@ void main() {
           albumPage.add(
             await scanInto(_Listener.albumPage, readTime: readTime),
           );
+          songsThrottled.add(
+            await scanInto(_Listener.songsThrottled, readTime: readTime),
+          );
         }
         final watched = await scanInto(_Listener.watch, readTime: readTime);
+        final songsWatched = await scanInto(
+          _Listener.songsWatch,
+          readTime: readTime,
+        );
         final base = median(alone);
         print(
           'scan of $_total in batches of $_batch, '
@@ -253,11 +267,15 @@ void main() {
           '${median(throttled)} ms, ${slower(median(throttled), base)}); '
           'album page throttled $albumPage (median ${median(albumPage)} ms, '
           '${slower(median(albumPage), base)}); '
-          'albums watch $watched ms (${slower(watched, base)})',
+          'albums watch $watched ms (${slower(watched, base)}); '
+          'songs throttled $songsThrottled (median '
+          '${median(songsThrottled)} ms, '
+          '${slower(median(songsThrottled), base)}); '
+          'songs watch $songsWatched ms (${slower(songsWatched, base)})',
         );
       }
     },
     skip: !_enabled,
-    timeout: const Timeout(Duration(minutes: 15)),
+    timeout: const Timeout(Duration(minutes: 40)),
   );
 }
