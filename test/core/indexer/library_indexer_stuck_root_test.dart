@@ -157,7 +157,18 @@ void main() {
     expect(summary().skippedRoots, {rootB: SkipReason.readerStuck});
   });
 
-  Future<void> settle() => Future(() {});
+  /// Lets a scan that a finished walk or read started begin, then waits for
+  /// the indexer to stop scanning. Scans the indexer starts by itself have no
+  /// future to await, so the state is the only thing to watch.
+  Future<void> untilIdle() async {
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (state() is IndexerScanning) {
+      if (DateTime.now().isAfter(deadline)) fail('indexer never went idle');
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+  }
+
   int walksOf(String root) => walked.where((w) => w == root).length;
 
   test('a batch that was only slow frees the reader once it returns', () async {
@@ -166,13 +177,15 @@ void main() {
     await scan();
     expect(summary().skippedRoots, {rootB: SkipReason.timedOut});
 
-    reader.hung.single.complete([]);
-    await settle();
-    expect(await titles(), ['FINE.MP3'], reason: 'late result is dropped');
-
     final calls = reader.batches.length;
-    await scan();
-    expect(reader.batches.length, greaterThan(calls));
+    reader.hung.single.complete([]);
+    await untilIdle();
+    expect(await titles(), ['FINE.MP3'], reason: 'late result is dropped');
+    expect(
+      reader.batches.length,
+      greaterThan(calls),
+      reason: 'the freed reader is tried again without a user scan',
+    );
   });
 
   test('a walk that timed out is reused by the next scan', () async {
@@ -185,13 +198,137 @@ void main() {
     expect(summary().skippedRoots, {rootA: SkipReason.timedOut});
 
     hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
-    await scan();
+    await untilIdle();
     expect(walksOf(rootA), 1);
     expect(summary().skippedRoots, isEmpty);
     expect(await titles(), ['ONE.MP3', 'TWO.MP3']);
 
     await scan();
     expect(walksOf(rootA), 2, reason: 'a consumed walk is not reused');
+  });
+
+  test('a walk that finishes after its timeout starts a scan by itself, '
+      'once', () async {
+    touch(rootA, 'one.mp3');
+    hangingWalks = {rootA};
+    await scan();
+    expect(summary().skippedRoots, {rootA: SkipReason.timedOut});
+    expect(await titles(), isEmpty);
+
+    hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+    await untilIdle();
+    expect(walksOf(rootA), 1, reason: 'the finished walk is reused');
+    expect(summary().skippedRoots, isEmpty);
+    expect(await titles(), ['ONE.MP3']);
+
+    await untilIdle();
+    expect(walksOf(rootA), 1, reason: 'no scan after the first follow-up');
+  });
+
+  test(
+    'a walk that finishes after the indexer is disposed starts nothing',
+    () async {
+      touch(rootA, 'one.mp3');
+      hangingWalks = {rootA};
+      await scan();
+      final result = await walkAudioFilesInIsolate(rootA);
+      container.dispose();
+      hungWalks[rootA]!.single.complete(result);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(walksOf(rootA), 1);
+      expect(await titles(), isEmpty);
+    },
+  );
+
+  test(
+    'a walk that ends while another root is being scanned is not lost',
+    () async {
+      touch(rootA, 'one.mp3');
+      touch(rootB, 'two.mp3');
+      hangingWalks = {rootA};
+      await scan();
+      expect(summary().skippedRoots, {rootA: SkipReason.timedOut});
+
+      // Second scan: a is still hung and times out again, then b is slow.
+      hangingWalks = {rootB};
+      final second = scan();
+      while (hungWalks[rootB] == null) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      hangingWalks = {};
+      hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+      hungWalks[rootB]!.single.complete(await walkAudioFilesInIsolate(rootB));
+      await second;
+      await untilIdle();
+
+      expect(summary().skippedRoots, isEmpty);
+      expect(await titles(), ['ONE.MP3', 'TWO.MP3']);
+      expect(walksOf(rootA), 1, reason: 'the finished walk was reused');
+    },
+  );
+
+  test('automatic scans do not chain: a root that is slow inside one waits '
+      'for a manual scan', () async {
+    touch(rootA, 'one.mp3');
+    hangingWalks = {rootA};
+    await scan();
+    touch(rootB, 'two.mp3');
+
+    // The scan this starts finds b slow. That does not arm another one.
+    hangingWalks = {rootB};
+    hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+    await untilIdle();
+    expect(summary().skippedRoots, {rootB: SkipReason.timedOut});
+    expect(await titles(), ['ONE.MP3']);
+
+    hangingWalks = {};
+    hungWalks[rootB]!.single.complete(await walkAudioFilesInIsolate(rootB));
+    await untilIdle();
+    expect(await titles(), ['ONE.MP3'], reason: 'no scan on its own');
+
+    await scan();
+    expect(walksOf(rootB), 2, reason: 'a manual scan uses the finished walk');
+    expect(await titles(), ['ONE.MP3', 'TWO.MP3']);
+  });
+
+  test('a root removed while its walk is hung is forgotten', () async {
+    touch(rootA, 'one.mp3');
+    touch(rootB, 'two.mp3');
+    hangingWalks = {rootA};
+    await scan();
+    await (db.delete(db.libraryRoots)..where((r) => r.path.equals(rootA))).go();
+    await scan();
+
+    hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+    await untilIdle();
+    expect(walksOf(rootA), 1);
+    expect(await titles(), ['TWO.MP3']);
+  });
+
+  test('a finished walk is kept while the reader is stuck, and scanned '
+      'when it frees up', () async {
+    touch(rootA, 'stuck1.mp3');
+    touch(rootB, 'two.mp3');
+    hangingWalks = {rootB};
+    await scan();
+    expect(summary().skippedRoots, {
+      rootA: SkipReason.timedOut,
+      rootB: SkipReason.timedOut,
+    });
+    expect(reader.hung, hasLength(1));
+
+    // b's walk ends while the reader is stuck on a: its scan is skipped but
+    // the walk is not thrown away.
+    hungWalks[rootB]!.single.complete(await walkAudioFilesInIsolate(rootB));
+    await untilIdle();
+    expect(walksOf(rootB), 1);
+    expect(await titles(), isEmpty);
+
+    File('$rootA/stuck1.mp3').deleteSync();
+    reader.hung.single.complete([]);
+    await untilIdle();
+    expect(walksOf(rootB), 1, reason: 'the kept walk is used');
+    expect(await titles(), ['TWO.MP3']);
   });
 
   group('a stuck root keeps what it already has', () {

@@ -242,12 +242,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String libraryScanRootTimedOut(String path) {
-    return '$path took too long, stopped; try again later';
+    return '$path took too long, stopped. If the folder was still being read, the scan finishes by itself when it is done';
   }
 
   @override
   String libraryScanRootReaderStuck(String path) {
-    return '$path was not read: an earlier read is stuck, restart Kanaru';
+    return '$path was not read: an earlier read is still running. It is tried again automatically when that read finishes; if it never does, restart Kanaru';
   }
 
   @override

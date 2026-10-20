@@ -54,6 +54,19 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// deletions: the root is left unchanged.
   bool _readerStuck = false;
 
+  /// A root was left unread because of a slow read, in a scan that may
+  /// arm an automatic follow-up: when the reader frees up, scan once more.
+  bool _retryWhenReaderFrees = false;
+
+  /// The running scan was started by the indexer itself (a slow walk or read
+  /// finished), not by the user. Such a scan arms no further automatic scan,
+  /// so a root that is slow every time costs one extra scan, not a loop.
+  bool _autoStarted = false;
+
+  /// The root whose walk the running scan is waiting for right now: a walk
+  /// that finishes meanwhile is consumed by that scan itself.
+  String? _awaitingWalkOf;
+
   /// Walks that timed out and are still running (or finished unseen), by
   /// root path. The next scan awaits the same walk instead of starting
   /// another isolate; the entry goes once a scan has consumed it.
@@ -71,6 +84,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// a root added while scanning is scanned too. Never throws: a failure
   /// becomes [IndexerFailed]. Does nothing without a database.
   Future<void> scan() {
+    // Whoever asks, a scan the user wants arms automatic follow-ups again.
+    _autoStarted = false;
+    return _startOrFollow();
+  }
+
+  Future<void> _startOrFollow() {
     final running = _running;
     if (running != null) {
       _rescanRequested = true;
@@ -79,6 +98,14 @@ class LibraryIndexer extends Notifier<IndexerState> {
     return _running = _scanWithFollowUp().whenComplete(() {
       _running = null;
     });
+  }
+
+  /// Scans because something slow has finished, unless the app is closing.
+  /// A scan already running gets a follow-up pass instead.
+  void _scanAutomatically() {
+    if (!ref.mounted) return;
+    if (_running == null) _autoStarted = true;
+    unawaited(_startOrFollow());
   }
 
   Future<void> _scanWithFollowUp() async {
@@ -122,7 +149,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
           () => repairMissingCovers(db, coverDir),
         );
       }
-      for (final root in await db.roots()) {
+      final roots = await db.roots();
+      // A root removed since its walk timed out has nothing to wait for.
+      final rootPaths = {for (final root in roots) root.path};
+      _abandonedWalks.removeWhere((path, _) => !rootPaths.contains(path));
+      for (final root in roots) {
         // Disposed mid-scan (the app quit): nothing left to publish to.
         if (!ref.mounted) break;
         RootScanResult result;
@@ -232,21 +263,27 @@ class LibraryIndexer extends Notifier<IndexerState> {
       IndexerScanning(phase: ScanPhase.discovering, rootPath: root.path),
     );
     final WalkResult walk;
-    final running = _abandonedWalks[root.path] ?? walkFiles(root.path);
-    var timedOut = false;
+    final abandoned = _abandonedWalks[root.path];
+    final running = abandoned ?? walkFiles(root.path);
+    var keepWalk = false;
     walkTime.start();
+    _awaitingWalkOf = root.path;
     try {
       walk = await running.timeout(timeouts.walk);
     } on TimeoutException {
-      timedOut = true;
+      keepWalk = true;
       // Keep it: the isolate cannot be stopped, and a large cold root may
       // finish before the next scan asks.
-      _abandonedWalks[root.path] = running;
+      if (_abandonedWalks[root.path] != running) {
+        _abandonedWalks[root.path] = running;
+        if (!_autoStarted) _scanWhenAbandonedWalkEnds(root.path, running);
+      }
       _log.warning('Walk took over ${timeouts.walk}, gave up: ${root.path}');
       return stopped(SkipReason.timedOut);
     } finally {
       walkTime.stop();
-      if (!timedOut) _abandonedWalks.remove(root.path);
+      _awaitingWalkOf = null;
+      if (!keepWalk) _abandonedWalks.remove(root.path);
     }
     undecodable = walk.undecodableNames;
     undecodableDirs = walk.undecodableSampleDirs;
@@ -267,6 +304,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
     final total = diff.toRead.length;
     if (total > 0 && _readerStuck) {
       _log.warning('Tag reader is stuck, root left unchanged: ${root.path}');
+      // A walk that already outlasted its timeout is too costly to repeat:
+      // keep it for the scan that can read. Scan again as soon as the reader
+      // frees up.
+      if (abandoned != null) _abandonedWalks[root.path] = running;
+      _retryWhenReaderFrees = true;
       return stopped(SkipReason.readerStuck);
     }
     var failedTags = 0, failedCovers = 0, added = 0, updated = 0;
@@ -291,10 +333,15 @@ class LibraryIndexer extends Notifier<IndexerState> {
         // may be never: hand it no more work until it does. Its result is
         // dropped; the next scan reads these files again.
         _readerStuck = true;
-        pending.then(
-          (_) => _readerStuck = false,
-          onError: (_) => _readerStuck = false,
-        );
+        if (!_autoStarted) _retryWhenReaderFrees = true;
+        void freed() {
+          _readerStuck = false;
+          if (!_retryWhenReaderFrees) return;
+          _retryWhenReaderFrees = false;
+          _scanAutomatically();
+        }
+
+        pending.then((_) => freed(), onError: (_) => freed());
         _log.warning(
           'Tag batch took over ${timeouts.tagBatch}, gave up: ${root.path}',
         );
@@ -357,6 +404,20 @@ class LibraryIndexer extends Notifier<IndexerState> {
       tagTime: tagTime.elapsed,
       dbTime: dbTime.elapsed,
     );
+  }
+
+  /// A first scan of a huge library on a slow disk can outlast the walk
+  /// timeout and would leave the library empty until the user rescans. When
+  /// the abandoned [walk] of [rootPath] finally succeeds, scan again to
+  /// consume it, unless the running scan is waiting for that very walk. A
+  /// failed walk starts nothing; the next scan reports it.
+  void _scanWhenAbandonedWalkEnds(String rootPath, Future<WalkResult> walk) {
+    walk.then((_) {
+      if (!ref.mounted || !identical(_abandonedWalks[rootPath], walk)) return;
+      if (_awaitingWalkOf == rootPath) return;
+      _log.info('Walk finished after its timeout, scanning: $rootPath');
+      _scanAutomatically();
+    }, onError: (Object _) {});
   }
 
   /// [directory], created if needed, or null when it is null or cannot be

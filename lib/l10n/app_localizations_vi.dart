@@ -240,12 +240,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String libraryScanRootTimedOut(String path) {
-    return '$path mất quá nhiều thời gian nên đã dừng, hãy thử lại sau';
+    return '$path mất quá nhiều thời gian nên đã dừng. Nếu thư mục vẫn đang được đọc, việc quét sẽ tự hoàn tất khi đọc xong';
   }
 
   @override
   String libraryScanRootReaderStuck(String path) {
-    return 'Chưa đọc $path: một lần đọc trước đó bị treo, hãy khởi động lại Kanaru';
+    return 'Chưa đọc $path: một lần đọc trước đó vẫn đang chạy. Kanaru sẽ tự thử lại khi lần đọc đó xong; nếu nó không bao giờ xong, hãy khởi động lại Kanaru';
   }
 
   @override

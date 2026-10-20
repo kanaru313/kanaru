@@ -461,13 +461,13 @@ abstract class AppLocalizations {
   /// No description provided for @libraryScanRootTimedOut.
   ///
   /// In en, this message translates to:
-  /// **'{path} took too long, stopped; try again later'**
+  /// **'{path} took too long, stopped. If the folder was still being read, the scan finishes by itself when it is done'**
   String libraryScanRootTimedOut(String path);
 
   /// No description provided for @libraryScanRootReaderStuck.
   ///
   /// In en, this message translates to:
-  /// **'{path} was not read: an earlier read is stuck, restart Kanaru'**
+  /// **'{path} was not read: an earlier read is still running. It is tried again automatically when that read finishes; if it never does, restart Kanaru'**
   String libraryScanRootReaderStuck(String path);
 
   /// No description provided for @libraryRootNotFound.

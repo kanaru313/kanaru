@@ -114,13 +114,13 @@
       "path": { "type": "String" }
     }
   },
-  "libraryScanRootTimedOut": "{path} took too long, stopped; try again later",
+  "libraryScanRootTimedOut": "{path} took too long, stopped. If the folder was still being read, the scan finishes by itself when it is done",
   "@libraryScanRootTimedOut": {
     "placeholders": {
       "path": { "type": "String" }
     }
   },
-  "libraryScanRootReaderStuck": "{path} was not read: an earlier read is stuck, restart Kanaru",
+  "libraryScanRootReaderStuck": "{path} was not read: an earlier read is still running. It is tried again automatically when that read finishes; if it never does, restart Kanaru",
   "@libraryScanRootReaderStuck": {
     "placeholders": {
       "path": { "type": "String" }
