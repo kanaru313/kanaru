@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/settings/applied_appearance_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/open_external.dart';
 import 'package:material_ui/material_ui.dart';
@@ -76,6 +77,9 @@ void main() {
     await tester.tap(find.byType(DropdownMenu<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tiếng Việt').last);
+    await tester.pumpAndSettle();
+    // The language reaches the app only after the short apply pause.
+    await tester.pump(appearanceApplyDelay);
     await tester.pumpAndSettle();
 
     expect(container.read(settingsProvider).languageCode, 'vi');
