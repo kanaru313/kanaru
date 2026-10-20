@@ -86,8 +86,8 @@ reset-library: ## Drop the library database: next start shows the folder picker
 	command rm -rf $(DATA_DIR)
 
 .PHONY: reset-all
-reset-all: ## Like a fresh install: library, settings, playback session, covers (logs kept)
-	command rm -rf $(DATA_DIR) $(CONFIG_DIR) $(CACHE_DIR)/covers
+reset-all: ## Like a fresh install: library, settings, playback session, covers, logs
+	command rm -rf $(DATA_DIR) $(CONFIG_DIR) $(CACHE_DIR)
 
 ##@ Clean
 
