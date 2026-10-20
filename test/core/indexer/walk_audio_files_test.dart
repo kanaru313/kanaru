@@ -189,4 +189,44 @@ void main() {
       expect(result.undecodableSampleDirs, hasLength(3));
     });
   });
+
+  group('folders that never hold the library', () {
+    test('trash, system and dot folders are skipped at any depth', () {
+      touch('keep.mp3');
+      touch('.Trash-1000/files/gone.mp3');
+      touch('.Trash/gone.mp3');
+      touch('lost+found/gone.mp3');
+      touch('album/@eaDir/gone.mp3');
+      touch(r'$RECYCLE.BIN/gone.mp3');
+      touch('.hidden/gone.mp3');
+      touch('album/.cache/gone.mp3');
+      touch('album/song.mp3');
+
+      final result = walkAudioFiles(tmp.path);
+
+      expect(names(result), {'keep.mp3', 'album/song.mp3'});
+      expect(result.skippedFolderNames.toSet(), {
+        '.Trash-1000',
+        '.Trash',
+        'lost+found',
+        '@eaDir',
+        r'$RECYCLE.BIN',
+        '.hidden',
+        '.cache',
+      });
+    });
+
+    test('a dot-file is still a file, and a dot-named root is walked', () {
+      touch('.hidden-track.mp3');
+      touch('lost+found.mp3');
+      expect(names(walkAudioFiles(tmp.path)), {
+        '.hidden-track.mp3',
+        'lost+found.mp3',
+      });
+
+      touch('.music/a.mp3');
+      final inner = walkAudioFiles('${tmp.path}/.music');
+      expect(inner.files, hasLength(1));
+    });
+  });
 }

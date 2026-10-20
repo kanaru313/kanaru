@@ -11,6 +11,7 @@ class RootScanResult {
     this.failedCovers = 0,
     this.undecodableNames = 0,
     this.undecodableSampleDirs = const [],
+    this.skippedFolderNames = const [],
     this.skipReason,
     this.error,
     this.walkTime = Duration.zero,
@@ -32,6 +33,7 @@ class RootScanResult {
        failedCovers = 0,
        undecodableNames = 0,
        undecodableSampleDirs = const [],
+       skippedFolderNames = const [],
        skipReason = null;
 
   final int added;
@@ -45,6 +47,9 @@ class RootScanResult {
   /// and a few folders holding them.
   final int undecodableNames;
   final List<String> undecodableSampleDirs;
+
+  /// Names of the folders the walk left out (trash, hidden).
+  final List<String> skippedFolderNames;
 
   /// Set when the root was left unchanged or unfinished (shown in the
   /// summary); null when it was scanned completely or [error] is set.

@@ -19,6 +19,19 @@ class WalkedFile {
 /// How many folders with undecodable names a walk remembers for the log.
 const maxUndecodableSamples = 3;
 
+/// Folders that hold deleted or system files, never music: trash bins,
+/// `lost+found`, Synology `@eaDir`, the Windows recycle bin, and any
+/// dot-folder (caches, hidden data). Only folders below the root are tested,
+/// so a root that is itself a dot-folder is still walked; dot-files are not
+/// affected.
+bool isSkippedFolder(String path) {
+  final name = path.substring(path.lastIndexOf('/') + 1);
+  return name.startsWith('.') ||
+      name == 'lost+found' ||
+      name == '@eaDir' ||
+      name.toUpperCase() == r'$RECYCLE.BIN';
+}
+
 /// What [walkAudioFiles] found under one root.
 class WalkResult {
   const WalkResult({
@@ -27,6 +40,7 @@ class WalkResult {
     this.unstattable = const [],
     this.emptyDirs = const [],
     this.undecodableNames = 0,
+    this.skippedFolderNames = const [],
     this.undecodableSampleDirs = const [],
     this.rootMissing = false,
   });
@@ -55,6 +69,9 @@ class WalkResult {
   /// Up to [maxUndecodableSamples] distinct folders holding such entries.
   final List<String> undecodableSampleDirs;
 
+  /// Distinct names of the folders [isSkippedFolder] left out, for the log.
+  final List<String> skippedFolderNames;
+
   /// The root itself is gone or cannot be listed (unplugged drive, bad
   /// permissions).
   final bool rootMissing;
@@ -76,6 +93,7 @@ WalkResult walkAudioFiles(String root) {
   final unstattable = <String>[];
   final empty = <String>[];
   var undecodable = 0;
+  final skippedNames = <String>{};
   final aliased = <String>{};
   final undecodableDirs = <String>[];
   final pending = <String>[root];
@@ -103,7 +121,13 @@ WalkResult walkAudioFiles(String root) {
     if (entries.isEmpty && dir != root) empty.add(dir);
     for (final entry in entries) {
       if (entry is Directory) {
-        pending.add(entry.path);
+        if (isSkippedFolder(entry.path)) {
+          skippedNames.add(
+            entry.path.substring(entry.path.lastIndexOf('/') + 1),
+          );
+        } else {
+          pending.add(entry.path);
+        }
         continue;
       }
       if (!isAudioFile(entry.path)) continue;
@@ -138,6 +162,7 @@ WalkResult walkAudioFiles(String root) {
     unreadableDirs: unreadable,
     unstattable: unstattable,
     emptyDirs: empty,
+    skippedFolderNames: skippedNames.toList(),
     undecodableNames: undecodable,
     undecodableSampleDirs: undecodableDirs,
   );
