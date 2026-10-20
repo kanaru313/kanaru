@@ -113,14 +113,16 @@ void main() {
       expect(row.coverScanVersion, const Value(0));
     });
 
-    test('a skipped lookup or a missing entry leaves both alone', () {
-      for (final row in [
-        rowFor(CoverStatus.skipped),
-        tracksFromTags(1, [_file], [], 1).single,
-      ]) {
-        expect(row.coverKey, const Value<String?>.absent());
-        expect(row.coverScanVersion, const Value<int>.absent());
-      }
+    test('a skipped lookup keeps the key and clears the stamp', () {
+      final row = rowFor(CoverStatus.skipped);
+      expect(row.coverKey, const Value<String?>.absent());
+      expect(row.coverScanVersion, const Value(0));
+    });
+
+    test('a missing entry leaves both alone', () {
+      final row = tracksFromTags(1, [_file], [], 1).single;
+      expect(row.coverKey, const Value<String?>.absent());
+      expect(row.coverScanVersion, const Value<int>.absent());
     });
   });
 }

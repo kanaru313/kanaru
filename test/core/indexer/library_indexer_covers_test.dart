@@ -177,6 +177,34 @@ void main() {
     },
   );
 
+  test(
+    'a file changed while covers were off gets its new cover later',
+    () async {
+      reader.coverByName['a.mp3'] = 'red';
+      final a = touch('a.mp3');
+      await scan();
+
+      final coversOff = containerFor(db);
+      addTearDown(coversOff.dispose);
+      reader
+        ..coverDirectory = null
+        ..coverByName['a.mp3'] = 'blue';
+      change(a);
+      await coversOff.read(libraryIndexerProvider.notifier).scan();
+      expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
+
+      reader
+        ..coverDirectory = covers
+        ..reset();
+      await scan();
+
+      expect(reader.readCount, 1);
+      final row = await stored('a.mp3');
+      expect(row.coverKey, fakeCoverKey('blue'));
+      expect(row.coverScanVersion, coverScanVersion);
+    },
+  );
+
   test('tracks from before covers are read once, not counted', () async {
     reader.coverByName['a.mp3'] = 'red';
     touch('a.mp3');
