@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'setting_row.dart';
+
 /// One option of a [SettingChoice].
 class SettingOption<T> {
   const SettingOption({required this.value, required this.label, this.icon});
@@ -37,6 +39,7 @@ class SettingChoice<T> extends StatelessWidget {
     }
     return SegmentedButton<T>(
       showSelectedIcon: false,
+      style: settingButtonStyle(),
       segments: [
         for (final option in options)
           ButtonSegment(
@@ -87,7 +90,9 @@ class SettingDropdown<T> extends StatelessWidget {
         inputDecorationTheme: InputDecorationThemeData(
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-          constraints: const BoxConstraints.tightFor(height: 40),
+          constraints: const BoxConstraints.tightFor(
+            height: settingControlHeight,
+          ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
         ),
         dropdownMenuEntries: [

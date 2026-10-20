@@ -11,6 +11,18 @@ const _compactBelow = 560.0;
 /// shipped language.
 const _compactControlWidth = 200.0;
 
+/// Height of every settings control (dropdowns, segmented buttons, buttons),
+/// so they line up whatever their kind and the platform's density.
+const settingControlHeight = 40.0;
+
+/// Style that gives a settings button exactly [settingControlHeight], with
+/// no extra tap-target margin, whatever the platform's density.
+ButtonStyle settingButtonStyle() => const ButtonStyle(
+  visualDensity: VisualDensity.standard,
+  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  fixedSize: WidgetStatePropertyAll(Size.fromHeight(settingControlHeight)),
+);
+
 /// Share of the row a control may take, so the title always keeps a part.
 const _controlMaxShare = 0.6;
 

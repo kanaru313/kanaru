@@ -4,6 +4,7 @@ import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/setting_choice.dart';
+import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -68,6 +69,24 @@ void main() {
               reason: '$label: control on the same line',
             );
             expect(rect.left, greaterThan(title.right), reason: label);
+          }
+
+          // Every control, whatever its kind, has the same height.
+          final controls = [
+            ...find.byType(FilledButton).evaluate(),
+            ...find
+                .byWidgetPredicate(
+                  (w) => w is SegmentedButton || w is DropdownMenu,
+                )
+                .evaluate(),
+          ];
+          expect(controls, hasLength(4));
+          for (final control in controls) {
+            expect(
+              tester.getSize(find.byWidget(control.widget)).height,
+              settingControlHeight,
+              reason: '${control.widget.runtimeType}',
+            );
           }
 
           final wideRows = size.width >= 1280;

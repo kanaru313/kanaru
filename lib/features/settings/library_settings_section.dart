@@ -33,6 +33,7 @@ class LibrarySettingsSection extends ConsumerWidget {
         SettingRow(
           title: l10n.settingsRescanLibrary,
           control: (_) => FilledButton.tonalIcon(
+            style: settingButtonStyle(),
             onPressed: canScan
                 ? () => unawaited(
                     ref.read(libraryIndexerProvider.notifier).scan(),
