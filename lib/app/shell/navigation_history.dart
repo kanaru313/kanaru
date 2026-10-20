@@ -77,11 +77,16 @@ class NavigationHistory extends Notifier<NavigationHistoryState> {
     final target = state.entries[index];
     state = NavigationHistoryState(state.entries, index);
     _pendingIndex = index;
-    ref.read(routerProvider).go(target);
-    // Going to where the router already is notifies nobody.
-    if (_pendingIndex == index && _currentLocation() == target) {
+    try {
+      // Synchronous: the router reports where it landed before this returns.
+      ref.read(routerProvider).go(target);
+    } finally {
+      // Going to where the router already is, or to a redirect that resolves
+      // to it, notifies nobody; a pending index left behind would swallow the
+      // next real visit.
       _pendingIndex = null;
     }
+    _replaceAt(index, _currentLocation());
   }
 }
 

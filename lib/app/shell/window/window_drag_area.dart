@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -33,61 +31,69 @@ class WindowDragArea extends ConsumerStatefulWidget {
   ConsumerState<WindowDragArea> createState() => _WindowDragAreaState();
 }
 
+/// Whether a release [released] after a press at [pressed] ends a window
+/// drag rather than a click.
+///
+/// The pan recognizer is alone in its arena, so it wins at pointer down and
+/// every press starts a window drag; "the drag started" says nothing. On
+/// Linux the window manager then grabs the pointer and, once the user lets go,
+/// sends a synthetic release at the press position. Such a release looks like
+/// a click in place, but it comes long after the press.
+bool _isWindowDragRelease(Duration pressed, Duration released) =>
+    released - pressed > kLongPressTimeout;
+
 class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
   /// Pointers a [WindowDragExclusion] descendant took on pointer down.
   final _excluded = <int>{};
-  Offset? _downPosition;
-  Offset? _lastClickPosition;
 
-  /// Forgets the first click once a second one can no longer pair with it.
-  Timer? _doubleClickWindow;
+  /// Where and when each pressed primary-button pointer went down.
+  final _downs = <int, ({Offset position, Duration time})>{};
+
+  /// The last completed click, which a second one may pair with.
+  ({Offset position, Duration time})? _lastClick;
 
   void _onPointerDown(PointerDownEvent event) {
     // Only a plain primary click can be half of a double click.
-    _downPosition = event.buttons == kPrimaryButton ? event.position : null;
+    if (event.buttons == kPrimaryButton) {
+      _downs[event.pointer] = (position: event.position, time: event.timeStamp);
+    } else {
+      _downs.remove(event.pointer);
+    }
   }
 
   void _onPointerUp(PointerUpEvent event) {
-    final downPosition = _downPosition;
-    _downPosition = null;
+    final down = _downs.remove(event.pointer);
     final taken = _excluded.remove(event.pointer);
     if (!widget.doubleClickMaximizes) return;
-    // A drag is not a click; neither is a click on an interactive child.
-    if (downPosition == null ||
+    final slop = computeHitSlop(
+      event.kind,
+      MediaQuery.maybeGestureSettingsOf(context),
+    );
+    // A drag is not a click (see [_isWindowDragRelease]); neither is a click
+    // on an interactive child.
+    if (down == null ||
         taken ||
-        (event.position - downPosition).distance > kDoubleTapSlop) {
-      _resetClicks();
+        _isWindowDragRelease(down.time, event.timeStamp) ||
+        (event.position - down.position).distance > slop) {
+      _lastClick = null;
       return;
     }
 
-    final lastPosition = _lastClickPosition;
-    if (lastPosition != null &&
-        (event.position - lastPosition).distance <= kDoubleTapSlop) {
-      _resetClicks();
+    final last = _lastClick;
+    if (last != null &&
+        down.time - last.time <= kDoubleTapTimeout &&
+        (event.position - last.position).distance <= kDoubleTapSlop) {
+      _lastClick = null;
       ref.read(toggleMaximizeProvider)();
     } else {
-      _resetClicks();
-      _lastClickPosition = event.position;
-      _doubleClickWindow = Timer(kDoubleTapTimeout, _resetClicks);
+      _lastClick = (position: event.position, time: event.timeStamp);
     }
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
     _excluded.remove(event.pointer);
-    _downPosition = null;
-    _resetClicks();
-  }
-
-  void _resetClicks() {
-    _doubleClickWindow?.cancel();
-    _doubleClickWindow = null;
-    _lastClickPosition = null;
-  }
-
-  @override
-  void dispose() {
-    _doubleClickWindow?.cancel();
-    super.dispose();
+    _downs.remove(event.pointer);
+    _lastClick = null;
   }
 
   @override

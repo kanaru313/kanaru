@@ -58,14 +58,54 @@ Future<void> pumpArea(
   );
 }
 
+/// Sends pointer events with real time stamps; `tester.tap` stamps every event
+/// with zero, which hides anything the area measures in time.
+class Clicker {
+  Clicker(this.tester);
+
+  final WidgetTester tester;
+  Duration now = Duration.zero;
+  int _nextPointer = 1;
+
+  /// Presses at [at] for [hold], optionally moving [moveBy] meanwhile, and
+  /// releases at [releaseAt] (default: where it pressed).
+  Future<void> click(
+    Offset at, {
+    Duration hold = const Duration(milliseconds: 40),
+    Offset? moveBy,
+    int buttons = kPrimaryButton,
+    int? pointer,
+  }) async {
+    final p = TestPointer(
+      pointer ?? _nextPointer++,
+      PointerDeviceKind.mouse,
+      null,
+      buttons,
+    );
+    await tester.sendEventToBinding(p.down(at, timeStamp: now));
+    if (moveBy != null) {
+      await tester.sendEventToBinding(p.move(at + moveBy, timeStamp: now));
+    }
+    await wait(hold);
+    await tester.sendEventToBinding(p.up(timeStamp: now));
+  }
+
+  Future<void> wait(Duration d) async {
+    now += d;
+    await tester.pump(d);
+  }
+}
+
 Future<void> doubleClick(
   WidgetTester tester,
   Finder finder, {
   Duration gap = const Duration(milliseconds: 100),
 }) async {
-  await tester.tap(finder);
-  await tester.pump(gap);
-  await tester.tap(finder);
+  final clicker = Clicker(tester);
+  final at = tester.getCenter(finder);
+  await clicker.click(at);
+  await clicker.wait(gap);
+  await clicker.click(at);
   await tester.pump();
 }
 
@@ -184,5 +224,92 @@ void main() {
     }
 
     expect(toggles, isEmpty);
+  });
+
+  testWidgets('a release long after the press (window drag) is not a click', (
+    tester,
+  ) async {
+    final toggles = <int>[];
+    await pumpArea(tester, toggles: toggles);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+
+    // The window manager ends a window drag, long after the press, with a
+    // release at the press position; that release is not a click.
+    await clicker.click(
+      at,
+      hold: kLongPressTimeout + const Duration(seconds: 1),
+    );
+    await clicker.wait(const Duration(milliseconds: 100));
+    await clicker.click(at);
+
+    expect(toggles, isEmpty);
+  });
+
+  testWidgets('a mouse press that moved past the slop is not a click', (
+    tester,
+  ) async {
+    final toggles = <int>[];
+    await pumpArea(tester, toggles: toggles);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+
+    // The press ends where it moved to, 30 px away: more than a mouse
+    // pointer's slop, less than the double tap slop.
+    for (var i = 0; i < 2; i++) {
+      final p = TestPointer(1 + i, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(p.down(at, timeStamp: clicker.now));
+      await tester.sendEventToBinding(
+        p.move(at + const Offset(30, 0), timeStamp: clicker.now),
+      );
+      await clicker.wait(const Duration(milliseconds: 40));
+      await tester.sendEventToBinding(p.up(timeStamp: clicker.now));
+      await clicker.wait(const Duration(milliseconds: 60));
+    }
+
+    expect(toggles, isEmpty);
+  });
+
+  testWidgets('the gap runs from the first release to the second press', (
+    tester,
+  ) async {
+    final toggles = <int>[];
+    await pumpArea(tester, toggles: toggles);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+
+    // A second press just inside the timeout, held long: a double click,
+    // although the two releases are further apart than the timeout.
+    await clicker.click(at);
+    await clicker.wait(kDoubleTapTimeout - const Duration(milliseconds: 50));
+    await clicker.click(at, hold: const Duration(milliseconds: 400));
+    expect(toggles, hasLength(1));
+
+    // A second press just past the timeout starts a new pair.
+    await clicker.wait(const Duration(seconds: 1));
+    await clicker.click(at);
+    await clicker.wait(kDoubleTapTimeout + const Duration(milliseconds: 50));
+    await clicker.click(at);
+    expect(toggles, hasLength(1));
+  });
+
+  testWidgets('a second pointer pressed meanwhile keeps the first one\'s '
+      'press', (tester) async {
+    final toggles = <int>[];
+    await pumpArea(tester, toggles: toggles);
+    final clicker = Clicker(tester);
+    final at = tester.getCenter(find.byKey(_empty));
+    final button = tester.getCenter(find.byKey(_button));
+
+    // Pointer 1 presses empty space; pointer 2 presses the button and goes
+    // up first. Pointer 1's own press must still be there when it goes up.
+    final first = TestPointer(1, PointerDeviceKind.mouse);
+    await tester.sendEventToBinding(first.down(at, timeStamp: clicker.now));
+    await clicker.click(button, pointer: 2);
+    await tester.sendEventToBinding(first.up(timeStamp: clicker.now));
+    await clicker.wait(const Duration(milliseconds: 60));
+    await clicker.click(at, pointer: 3);
+
+    expect(toggles, hasLength(1));
   });
 }
