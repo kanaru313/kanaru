@@ -25,14 +25,16 @@ const discTrackOrderSql =
 const albumsSql =
     '''
 SELECT ak, tk, min(title) AS title, min(artist) AS artist, max(year) AS year,
-  sum(n) AS n, sum(duration) AS duration, max(added) AS added
+  sum(n) AS n, sum(duration) AS duration, max(added) AS added,
+  min(cover) AS cover
 FROM (
   SELECT $albumArtistKeySql AS ak, $albumTitleKeySql AS tk, album AS title,
     coalesce(album_artist, kanaru_first_artist(artist)) AS artist,
-    year, n, duration, added
+    year, n, duration, added, cover
   FROM (
     SELECT album_artist, artist, album, max(year) AS year, count(*) AS n,
-      sum(duration_ms) AS duration, max(added_at) AS added
+      sum(duration_ms) AS duration, max(added_at) AS added,
+      min(cover_key) AS cover
     FROM tracks WHERE album IS NOT NULL
     GROUP BY album_artist, artist, album
     LIMIT -1
@@ -68,7 +70,7 @@ GROUP BY artist''';
 /// only for the rows returned.
 const _browseTrackColumns = '''
 t.id, t.path, t.title, t.artist, t.album, t.album_artist, t.year, t.disc_no,
-t.track_no, t.duration_ms,
+t.track_no, t.duration_ms, t.cover_key,
 CASE WHEN t.album IS NOT NULL
   THEN kanaru_album_artist_key(t.album_artist, t.artist) END AS ak,
 CASE WHEN t.album IS NOT NULL THEN kanaru_album_title_key(t.album) END AS tk''';
@@ -144,6 +146,7 @@ extension LibraryBrowseQueries on LibraryDatabase {
       trackCount: row.read<int>('n'),
       durationMs: row.readNullable<int>('duration'),
       addedAt: row.read<int>('added'),
+      coverKey: row.readNullable<String>('cover'),
     );
   });
 
@@ -191,7 +194,8 @@ extension LibraryBrowseQueries on LibraryDatabase {
     SongOrder order = SongOrder.title,
     bool descending = false,
   }) => _watch(
-    'SELECT id, path, title, artist, album, duration_ms FROM tracks '
+    'SELECT id, path, title, artist, album, duration_ms, cover_key '
+    'FROM tracks '
     'ORDER BY ${songsOrderSql(order, descending: descending)}',
     const [],
     (row) => TrackListItem(
@@ -201,6 +205,7 @@ extension LibraryBrowseQueries on LibraryDatabase {
       artist: row.readNullable<String>('artist'),
       album: row.readNullable<String>('album'),
       durationMs: row.readNullable<int>('duration_ms'),
+      coverKey: row.readNullable<String>('cover_key'),
     ),
   );
 
@@ -238,5 +243,6 @@ BrowseTrack _browseTrack(QueryRow row) {
     albumKey: titleKey == null
         ? null
         : AlbumKey(row.read<String>('ak'), titleKey),
+    coverKey: row.readNullable<String>('cover_key'),
   );
 }

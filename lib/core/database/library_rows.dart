@@ -1,3 +1,10 @@
+/// Version of the rules that pick a track's cover: source order, accepted
+/// formats and thumbnail size. Tracks scanned under a lower version are read
+/// again on the next scan even when the file is unchanged. Bump it when those
+/// rules change; when the thumbnail size changes, also rename the size folder
+/// of the cover cache (`covers/<size>`) so old and new thumbnails never mix.
+const coverScanVersion = 1;
+
 /// What a rescan needs to know about a track already in the database.
 class TrackSnapshot {
   const TrackSnapshot({
@@ -28,6 +35,7 @@ class TrackListItem {
     this.artist,
     this.album,
     this.durationMs,
+    this.coverKey,
   });
 
   final int id;
@@ -36,4 +44,7 @@ class TrackListItem {
   final String? artist;
   final String? album;
   final int? durationMs;
+
+  /// Cover thumbnail key in the cover cache; null when there is no cover.
+  final String? coverKey;
 }

@@ -150,4 +150,13 @@ void main() {
       expect(byPath, {'/m/ok.mp3': false, '/m/bad.mp3': true});
     });
   });
+
+  test('a new database has empty cover columns by default', () async {
+    final rootId = (await db.addRoots(['/m'], now: 1)).single;
+    await db.upsertTracks([track(rootId, '/m/a.flac')]);
+    final row = await db.select(db.tracks).getSingle();
+    expect(row.coverKey, isNull);
+    expect(row.coverScanVersion, 0);
+    expect(db.schemaVersion, 2);
+  });
 }

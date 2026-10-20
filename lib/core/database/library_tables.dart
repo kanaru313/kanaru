@@ -64,4 +64,14 @@ class Tracks extends Table {
 
   /// Why the tags could not be read; null when they were read fine.
   TextColumn get scanError => text().nullable()();
+
+  /// Key of the cover thumbnail (a JPEG, longest side 512 px) in the cover
+  /// cache folder: `<ab>/<hash>.jpg`, where `hash` is the blake3 of the
+  /// original image bytes. Null when the track has no cover.
+  TextColumn get coverKey => text().nullable()();
+
+  /// The `coverScanVersion` (library_rows.dart) whose rules produced [coverKey]; 0 when the
+  /// cover was never looked for. A lower value makes a rescan read the file
+  /// again even when it is unchanged.
+  IntColumn get coverScanVersion => integer().withDefault(const Constant(0))();
 }
