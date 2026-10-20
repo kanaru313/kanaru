@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/artist_names.dart';
+import 'package:kanaru/core/database/text_keys.dart';
 
 void main() {
   test('splits on every agreed separator', () {
@@ -80,6 +81,18 @@ void main() {
         expect(key.codeUnits.every((u) => u >= 0x20), isTrue, reason: tag);
       }
     }
-    expect(textKey('Ti\u001ftle'), 'ti tle');
+    expect(groupKey('Ti\u001ftle'), 'ti tle');
+  });
+
+  test('repeats are found by group key: accents decide, spelling form not', () {
+    const nfc = 'Beyonc\u00e9';
+    const nfd = 'Beyonce\u0301';
+    expect(splitArtists('$nfc; $nfd'), [nfc]);
+    expect(splitArtists('$nfd feat. $nfc'), [nfd]);
+    expect(splitArtists('Anh; Ánh'), ['Anh', 'Ánh']);
+    expect(splitArtists('Anh; ANH; ánh'), ['Anh', 'ánh']);
+    expect(artistKeys('$nfc; $nfd'), [artistKey(nfc)]);
+    expect(artistKey(nfd), artistKey(nfc));
+    expect(artistKey('Anh'), isNot(artistKey('Ánh')));
   });
 }

@@ -3,13 +3,13 @@
 /// through the functions in `library_sql_functions.dart`.
 library;
 
+import 'text_keys.dart';
+
+export 'text_keys.dart' show maxKeyLength;
+
 /// Names containing `/` that are one artist, lower-cased. Matched only as
 /// whole names: `Shellac/DC Talk` still splits.
 const slashNameExceptions = {'ac/dc'};
-
-/// Longest key kept, in characters, so route keys stay bounded even for
-/// huge tags.
-const maxKeyLength = 256;
 
 /// `feat.`, `ft.` (dot optional), `featuring`, `with`.
 const _featuring = r'(?:feat\.?|ft\.?|featuring|with)';
@@ -36,7 +36,8 @@ final _exceptionSpans = {
 }.toList()..sort((a, b) => b - a);
 
 /// The artist names in an `artist` or `album_artist` tag, in order, trimmed,
-/// without empty parts and without repeats (compared by [artistKey]).
+/// without empty parts and without repeats (compared by [artistKey], so `Beyoncé` spelled with a
+/// combining accent is the same artist, while `Anh` and `Ánh` are two).
 ///
 /// Splits on `;` (however spaced), ` feat. `, ` ft. `, ` featuring `,
 /// ` with ` (any case, dot optional, any whitespace around) and `/`, except
@@ -98,35 +99,8 @@ bool _mayHoldSeveral(String tag) =>
     tag.contains('[') ||
     tag.contains(_maybeFeaturing);
 
-/// [text] with control characters (U+0000–U+001F, U+007F) replaced by
-/// spaces: tags may hold tabs or NULs, and keys must never contain the
-/// characters the queries use as delimiters.
-String withoutControlChars(String text) {
-  for (final unit in text.codeUnits) {
-    if (unit < 0x20 || unit == 0x7f) {
-      return String.fromCharCodes([
-        for (final u in text.codeUnits) u < 0x20 || u == 0x7f ? 0x20 : u,
-      ]);
-    }
-  }
-  return text;
-}
-
-/// The key of one artist name: [textKey] of it.
-String artistKey(String name) => textKey(name);
-
-/// A key made from user text: no control characters, lower case (Unicode),
-/// at most [maxKeyLength] characters.
-String textKey(String text) => cutKey(withoutControlChars(text).toLowerCase());
-
-/// [key] cut to [maxKeyLength] characters (not UTF-16 units, so a
-/// character is never split).
-String cutKey(String key) {
-  final runes = key.runes;
-  return runes.length <= maxKeyLength
-      ? key
-      : String.fromCharCodes(runes.take(maxKeyLength));
-}
+/// The key of one artist name: its [groupKey].
+String artistKey(String name) => groupKey(name);
 
 /// The keys of every artist in [tag].
 List<String> artistKeys(String? tag) => [

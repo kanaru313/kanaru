@@ -2,6 +2,7 @@ import 'package:sqlite3/sqlite3.dart';
 
 import 'artist_names.dart';
 import 'library_browse_rows.dart';
+import 'text_keys.dart';
 
 /// Separates artist keys in [artistKeysSql] results; never inside a key, as
 /// `;` always splits names.
@@ -64,7 +65,7 @@ String albumArtistKey(String? albumArtist, String? artist) {
 }
 
 /// Title part of an album key.
-String albumTitleKey(String album) => textKey(album);
+String albumTitleKey(String album) => groupKey(album);
 
 // Tags repeat across the tracks of an album and an artist, so results are
 // cached by input. A cache is cleared when large, which keeps memory bounded
