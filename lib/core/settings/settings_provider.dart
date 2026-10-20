@@ -38,9 +38,11 @@ final settingsSaveFailedProvider =
 /// The current settings. Every change is saved right away; changes that come
 /// while a write is running are merged into one write of the latest state.
 ///
-/// There is no debounce: there is no hook to flush one when the window
-/// closes (window_manager replaces Flutter's close handler), and every
-/// option so far is a discrete choice rather than a slider.
+/// File writes are not debounced (applying a theme or language is delayed
+/// separately, in `applied_appearance_provider.dart`): there is no hook to
+/// flush one when the window closes (window_manager replaces Flutter's close
+/// handler), and every option so far is a discrete choice rather than a
+/// slider.
 class SettingsNotifier extends Notifier<AppSettings> {
   SettingsFile? _file;
   Future<void>? _inFlight;
