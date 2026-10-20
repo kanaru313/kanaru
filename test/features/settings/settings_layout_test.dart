@@ -50,6 +50,26 @@ void main() {
             tester.getTopLeft(find.text(l10n.settingsAppearance)).dx,
           );
 
+          // Every control sits on its label's line, at its right.
+          for (final (label, control) in [
+            (l10n.settingsRescanLibrary, find.byType(FilledButton)),
+            (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>)),
+            (l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
+            (
+              l10n.settingsTitleBar,
+              find.byType(SettingChoice<TitleBarPreference>),
+            ),
+          ]) {
+            final title = tester.getRect(find.text(label));
+            final rect = tester.getRect(control);
+            expect(
+              title.center.dy,
+              inInclusiveRange(rect.top, rect.bottom),
+              reason: '$label: control on the same line',
+            );
+            expect(rect.left, greaterThan(title.right), reason: label);
+          }
+
           final wideRows = size.width >= 1280;
           final theme = find.byType(SettingChoice<ThemePreference>);
           expect(
@@ -66,6 +86,25 @@ void main() {
             ),
             wideRows ? findsNothing : findsOneWidget,
           );
+
+          // Compact selectors share one width, right edges lined up, and
+          // the rescan button ends on the same edge.
+          if (!wideRows) {
+            final dropdowns = find
+                .byWidgetPredicate((w) => w is DropdownMenu)
+                .evaluate()
+                .map((e) => tester.getRect(find.byWidget(e.widget)))
+                .toList();
+            expect(dropdowns, hasLength(3));
+            for (final rect in dropdowns.skip(1)) {
+              expect(rect.width, dropdowns.first.width);
+              expect(rect.right, dropdowns.first.right);
+            }
+            expect(
+              tester.getRect(find.byType(FilledButton)).right,
+              dropdowns.first.right,
+            );
+          }
 
           await _choose(tester, theme, l10n.settingsThemeDark);
           expect(container.read(settingsProvider).theme, ThemePreference.dark);
