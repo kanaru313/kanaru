@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -158,6 +159,130 @@ void main() {
         ? 'root ignores directory modes'
         : false,
   );
+  group('under a slow file', () {
+    late _GatedFile gated;
+
+    ProviderContainer slowContainer() {
+      gated = _GatedFile(path);
+      final container = ProviderContainer(
+        overrides: [settingsFileProvider.overrideWithValue(gated)],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    Future<void> tick() => Future<void>.delayed(Duration.zero);
+
+    test('a burst of changes makes at most two writes and the last state '
+        'is what ends up saved', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      for (var i = 0; i < 4; i++) {
+        notifier.setTheme(ThemePreference.light);
+        notifier.setTheme(ThemePreference.dark);
+      }
+      notifier.setLanguage('vi');
+      await tick();
+      expect(gated.started, hasLength(1), reason: 'one write in flight');
+
+      gated.finishNext();
+      await tick();
+      await tick();
+      gated.finishNext();
+      await notifier.flush();
+
+      expect(gated.started, hasLength(2));
+      expect(gated.started.last, container.read(settingsProvider));
+      expect(gated.saved.last, container.read(settingsProvider));
+    });
+
+    test('flush waits for the write in flight and the pending one', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      notifier.setTheme(ThemePreference.light);
+      var flushed = false;
+      final flushing = notifier.flush().then((_) => flushed = true);
+
+      gated.finishNext();
+      await tick();
+      await tick();
+      expect(flushed, isFalse, reason: 'the pending write is not done');
+      expect(gated.started, hasLength(2));
+
+      gated.finishNext();
+      await flushing;
+      expect(gated.saved.last.theme, ThemePreference.light);
+    });
+
+    test('flush with nothing to write completes at once', () async {
+      final notifier = slowContainer().read(settingsProvider.notifier);
+      await notifier.flush();
+    });
+
+    test(
+      'a failed first write followed by a good one clears the warning',
+      () async {
+        final container = slowContainer();
+        final notifier = container.read(settingsProvider.notifier);
+
+        notifier.setTheme(ThemePreference.dark);
+        await tick();
+        notifier.setTheme(ThemePreference.light);
+        gated.finishNext(succeed: false);
+        await tick();
+        await tick();
+        gated.finishNext();
+        await notifier.flush();
+
+        expect(container.read(settingsSaveFailedProvider), isFalse);
+      },
+    );
+
+    test('a good first write does not hide a failed later one', () async {
+      final container = slowContainer();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setTheme(ThemePreference.dark);
+      await tick();
+      notifier.setTheme(ThemePreference.light);
+      gated.finishNext();
+      await tick();
+      await tick();
+      gated.finishNext(succeed: false);
+      await notifier.flush();
+
+      expect(container.read(settingsSaveFailedProvider), isTrue);
+    });
+  });
+}
+
+/// A settings file whose writes finish only when the test says so.
+class _GatedFile extends SettingsFile {
+  _GatedFile(super.path);
+
+  final started = <AppSettings>[];
+  final saved = <AppSettings>[];
+  final _gates = <Completer<bool>>[];
+  var _finished = 0;
+
+  @override
+  Future<bool> save(AppSettings settings) {
+    started.add(settings);
+    final gate = Completer<bool>();
+    _gates.add(gate);
+    return gate.future.then((ok) {
+      if (ok) saved.add(settings);
+      return ok;
+    });
+  }
+
+  void finishNext({bool succeed = true}) =>
+      _gates[_finished++].complete(succeed);
 }
 
 bool _isRoot() => Process.runSync('id', ['-u']).stdout.toString().trim() == '0';

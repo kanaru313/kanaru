@@ -32,14 +32,17 @@ final settingsSaveFailedProvider =
       SettingsSaveFailedNotifier.new,
     );
 
-/// The current settings. Every change is saved right away, in order.
+/// The current settings. Every change is saved right away; changes that come
+/// while a write is running are merged into one write of the latest state.
 ///
 /// There is no debounce: there is no hook to flush one when the window
 /// closes (window_manager replaces Flutter's close handler), and every
 /// option so far is a discrete choice rather than a slider.
 class SettingsNotifier extends Notifier<AppSettings> {
   SettingsFile? _file;
-  Future<void> _writes = Future.value();
+  Future<void>? _inFlight;
+  AppSettings? _pending;
+  int _started = 0;
 
   /// Runs once. Never invalidate this provider: it would go back to the
   /// startup settings, not to the current ones.
@@ -69,9 +72,14 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setAlbumsView(AlbumsView view) =>
       _update(state.copyWith(albumsView: view));
 
-  /// Completes when every change made so far is on disk.
+  /// Completes when every change made so far is on disk: nothing is being
+  /// written and nothing is waiting.
   @visibleForTesting
-  Future<void> flush() => _writes;
+  Future<void> flush() async {
+    while (_inFlight != null) {
+      await _inFlight;
+    }
+  }
 
   void _update(AppSettings next) {
     if (next == state) return;
@@ -79,17 +87,32 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _save();
   }
 
+  /// At most one write runs and one waits. A change made during a write
+  /// replaces the waiting one, so a burst writes the first and the last state.
   void _save() {
-    final file = _file;
-    if (file == null) return;
-    final settings = state;
-    // SettingsFile.save never throws, so the chain never breaks.
-    _writes = _writes.then((_) async {
-      final saved = await file.save(settings);
-      if (ref.mounted) {
-        ref.read(settingsSaveFailedProvider.notifier).set(!saved);
+    if (_file == null) return;
+    _pending = state;
+    _inFlight ??= _drain();
+  }
+
+  Future<void> _drain() async {
+    final file = _file!;
+    try {
+      while (_pending != null) {
+        final settings = _pending!;
+        _pending = null;
+        final sequence = ++_started;
+        // SettingsFile.save never throws, so the loop always ends.
+        final saved = await file.save(settings);
+        // Only the latest started write decides the warning, so a slow older
+        // one never clears (or sets) what a newer one reported.
+        if (ref.mounted && sequence == _started) {
+          ref.read(settingsSaveFailedProvider.notifier).set(!saved);
+        }
       }
-    });
+    } finally {
+      _inFlight = null;
+    }
   }
 }
 
