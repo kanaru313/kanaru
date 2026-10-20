@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dbus/dbus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 
 import 'app/app.dart';
@@ -11,20 +12,39 @@ import 'core/database/library_startup.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
+import 'core/player/media_kit_backend.dart';
+import 'core/player/player_service.dart';
+import 'core/player/unavailable_audio_backend.dart';
 import 'core/settings/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // First, so startup errors are logged too. Never throws.
   setUpLogging().installErrorHandlers();
-  MediaKit.ensureInitialized();
+  final log = Logger('main');
+
+  // Without libmpv the app still starts, in library-only mode (see
+  // audioBackendOrUnavailable). Throwing here would leave the window hidden.
+  var engineReady = true;
+  try {
+    MediaKit.ensureInitialized();
+  } catch (error, stack) {
+    engineReady = false;
+    log.severe('Audio engine failed to initialise', error, stack);
+  }
 
   // Settings come first: the title bar choice is applied while the window is
   // set up. Loading never throws; a missing or broken file means defaults.
   final settingsFile = settingsFileFor(Platform.environment);
   final settings = settingsFile?.load() ?? const AppSettings();
 
-  final customTitleBar = await setUpDesktopWindow(titleBar: settings.titleBar);
+  // A window that cannot be set up falls back to the system title bar.
+  var customTitleBar = false;
+  try {
+    customTitleBar = await setUpDesktopWindow(titleBar: settings.titleBar);
+  } catch (error, stack) {
+    log.severe('Window setup failed', error, stack);
+  }
   // Library database. Never throws: on failure the library is unavailable but
   // playback still works.
   final library = await openLibraryAtStartup(Platform.environment);
@@ -37,6 +57,13 @@ Future<void> main() async {
       initialSettingsProvider.overrideWithValue(settings),
       settingsFileProvider.overrideWithValue(settingsFile),
       customTitleBarProvider.overrideWithValue(customTitleBar),
+      audioBackendProvider.overrideWith(
+        (ref) => audioBackendOrUnavailable(
+          ref,
+          engineReady: engineReady,
+          create: MediaKitBackend.new,
+        ),
+      ),
       ...library.overrides,
       if (Platform.isLinux)
         mediaControlsProvider.overrideWith((ref) {

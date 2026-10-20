@@ -575,4 +575,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsOpenFailed(String target) {
     return 'Couldn\'t open $target';
   }
+
+  @override
+  String get playbackUnavailableTitle => 'Audio engine not found';
+
+  @override
+  String get playbackUnavailableBody =>
+      'libmpv could not be loaded. You can browse your library, but playback is turned off.';
 }

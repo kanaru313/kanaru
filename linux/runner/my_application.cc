@@ -10,13 +10,37 @@
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  // The window has been shown: by the first Flutter frame or by the fallback
+  // timer. A relaunch only presents a window that is shown.
+  gboolean shown;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
+  self->shown = TRUE;
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+}
+
+// How long to wait for the first frame before showing the window anyway.
+// Longer than the library database open timeout (10 s), so a slow open does
+// not show a black window; short enough that a failed startup is not a
+// hidden process nobody can reach.
+static const guint kFirstFrameFallbackSeconds = 15;
+
+// Shows the window if no frame arrived in time. Runs once.
+static gboolean show_window_fallback(gpointer user_data) {
+  GtkWindow* window = GTK_WINDOW(user_data);
+  MyApplication* self =
+      MY_APPLICATION(gtk_window_get_application(window));
+  if (!self->shown) {
+    g_warning("No Flutter frame after %u s; showing the window anyway.",
+              kFirstFrameFallbackSeconds);
+    self->shown = TRUE;
+    gtk_widget_show(GTK_WIDGET(window));
+  }
+  return G_SOURCE_REMOVE;
 }
 
 // Implements GApplication::activate.
@@ -26,10 +50,11 @@ static void my_application_activate(GApplication* application) {
   // A second launch (or the primary's own re-activation) reuses the existing
   // window. Before the first frame the window is still hidden and
   // first_frame_cb shows it; presenting it now would flash a black window.
+  // Once the fallback timer has shown it, it is presented like any other.
   GList* windows = gtk_application_get_windows(GTK_APPLICATION(application));
   if (windows != nullptr) {
     GtkWindow* existing = GTK_WINDOW(windows->data);
-    if (gtk_widget_get_visible(GTK_WIDGET(existing))) {
+    if (self->shown || gtk_widget_get_visible(GTK_WIDGET(existing))) {
       gtk_window_deiconify(existing);
       gtk_window_present(existing);
     }
@@ -91,6 +116,12 @@ static void my_application_activate(GApplication* application) {
   g_signal_connect_swapped(view, "first-frame", G_CALLBACK(first_frame_cb),
                            self);
   gtk_widget_realize(GTK_WIDGET(view));
+
+  // If startup never produces a frame the process would stay hidden forever.
+  // The source holds its own reference to the window until it has fired.
+  g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, kFirstFrameFallbackSeconds,
+                             show_window_fallback, g_object_ref(window),
+                             g_object_unref);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 

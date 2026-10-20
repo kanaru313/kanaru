@@ -10,6 +10,7 @@ import '../../features/player/player_bar.dart';
 import '../../features/player/queue/queue_sheet_host.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
+import 'playback_unavailable_banner.dart';
 import 'sidebar/sidebar.dart';
 import 'sidebar/sidebar_toggle.dart';
 import 'top_bar.dart';
@@ -97,7 +98,13 @@ class AppShell extends ConsumerWidget {
                   Expanded(
                     child: Stack(
                       children: [
-                        Column(children: [const TopBar(), page]),
+                        Column(
+                          children: [
+                            const TopBar(),
+                            const PlaybackUnavailableBanner(),
+                            page,
+                          ],
+                        ),
                         const Align(
                           alignment: Alignment.centerLeft,
                           child: SidebarToggle(),
@@ -126,6 +133,7 @@ class AppShell extends ConsumerWidget {
                 builder: (context) => Column(
                   children: [
                     TopBar(onMenuPressed: Scaffold.of(context).openDrawer),
+                    const PlaybackUnavailableBanner(),
                     page,
                   ],
                 ),
