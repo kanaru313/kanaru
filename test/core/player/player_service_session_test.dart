@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:dbus/dbus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/player_state.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
@@ -109,9 +111,14 @@ void main() {
     expect(state().playing, isFalse);
     expect(state().position, const Duration(seconds: 83));
 
+    // MPRIS clients see the restored (muted) volume from the first reply.
+    final ids = MprisTrackIds()..observe(first.queue);
+    expect(playerProperties(first, ids)['Volume'], const DBusDouble(0));
+
     // Unmute brings back the volume from before the restart.
     await service().toggleMute();
     expect(state().volume, 40);
+    expect(playerProperties(state(), ids)['Volume'], const DBusDouble(0.4));
   });
 
   test('quit and relaunch comes back where it was paused', () async {
