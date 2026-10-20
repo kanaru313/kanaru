@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/artist_names.dart';
 import '../../../core/database/library_database.dart';
+import '../../../core/database/library_startup.dart';
+import '../../../core/indexer/cover_paths.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
@@ -46,7 +48,11 @@ class _AlbumPage extends ConsumerWidget {
     final l10n = context.l10n;
     final info = AlbumInfo.fromTracks(tracks);
     final groups = groupByDisc(tracks);
-    final queue = [for (final t in tracks) trackFromBrowse(t)];
+    final coverDirectory = ref.watch(coverCacheDirectoryProvider);
+    final queue = [
+      for (final t in tracks)
+        trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
+    ];
     // Where each group starts in [tracks]: groups keep the display order.
     final starts = <int>[];
     var count = 0;

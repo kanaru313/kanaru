@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
+import '../../../core/database/library_startup.dart';
+import '../../../core/indexer/cover_paths.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
@@ -52,7 +54,11 @@ class _ArtistPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final songs = sections.songs;
-    final queue = [for (final t in songs) trackFromBrowse(t)];
+    final coverDirectory = ref.watch(coverCacheDirectoryProvider);
+    final queue = [
+      for (final t in songs)
+        trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
+    ];
     final covers = ref.watch(albumCoverKeysProvider);
     List<AlbumTileData> withCovers(List<AlbumTileData> albums) => [
       for (final album in albums) album.withCoverKey(covers[album.key]),
