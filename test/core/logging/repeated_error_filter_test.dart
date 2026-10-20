@@ -150,6 +150,50 @@ void main() {
   });
 
   group('keyFor', () {
+    test('a credential across the text cut is not left half in the label', () {
+      final stack = StackTrace.fromString('#0 f (package:kanaru/a.dart:1:1)');
+      for (final secret in [
+        'https://bob:hunter2SECRETPW@nas/a',
+        'bob:hunter2SECRETPW@nas',
+      ]) {
+        for (var pad = 150; pad < 200; pad += 3) {
+          final error = StateError('${'x' * pad} $secret');
+          for (final out in [
+            RepeatedErrorFilter.keyFor(error, stack),
+            RepeatedErrorFilter.labelFor(error, stack),
+          ]) {
+            expect(out, isNot(contains('hunt')), reason: 'pad $pad');
+            expect(out, isNot(contains('SECRET')), reason: 'pad $pad');
+          }
+        }
+      }
+    });
+
+    test('a credential in the stack frame is redacted', () {
+      final stack = StackTrace.fromString('#0 f (https://bob:hunter2PW@h/a:1)');
+      expect(
+        RepeatedErrorFilter.keyFor(StateError('x'), stack),
+        isNot(contains('hunt')),
+      );
+    });
+
+    test('errors that differ only in numbers share a key', () {
+      final stack = StackTrace.fromString('#0 f (package:kanaru/a.dart:1:1)');
+      RangeError at(int i) => RangeError('index (Invalid value: $i)');
+      expect(
+        RepeatedErrorFilter.keyFor(at(5), stack),
+        RepeatedErrorFilter.keyFor(at(7), stack),
+      );
+      expect(
+        RepeatedErrorFilter.keyFor(StateError('Instance 0x1a2b3c4d'), stack),
+        RepeatedErrorFilter.keyFor(StateError('Instance 0x9f8e7d6c'), stack),
+      );
+      expect(
+        RepeatedErrorFilter.labelFor(at(5), stack),
+        contains('Invalid value: 5'),
+      );
+    });
+
     test('holds type, first stack line and text', () {
       final stack = StackTrace.fromString('\n#0 fetch (a.dart:1)\n#1 main');
       expect(

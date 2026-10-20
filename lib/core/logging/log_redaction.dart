@@ -47,7 +47,7 @@ String _postMask(String out) {
   final decoded = _percentDecode(out);
   if (!decoded.contains('@')) return out;
   final masked = decoded.replaceAllMapped(_longUserInfo, _maskLongUserInfo);
-  return masked == decoded ? out : masked;
+  return masked == decoded ? out : _redactPlain(masked);
 }
 
 /// A secret cut in half by the cap (`https://u:secr`) has no `@` or

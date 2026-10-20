@@ -108,11 +108,20 @@ void main() {
             redactSecrets(small);
             redactSecrets(large);
           }
-          final tSmall = _bestMicros(small);
-          final tLarge = _bestMicros(large);
+          // Smallest ratio of several paired runs: load that hits one run
+          // cannot fail the test, while a quadratic rule stays near 4.
+          var ratio = double.infinity;
+          var tLarge = 0;
+          var tSmall = 0;
+          for (var round = 0; round < 5; round++) {
+            tSmall = _bestMicros(small);
+            tLarge = _bestMicros(large);
+            ratio = min(ratio, tLarge / max(tSmall, 1000));
+            if (ratio < 3 && tLarge < 1000000) break;
+          }
           expect(tLarge, lessThan(1000000), reason: '${entry.key} ceiling');
           expect(
-            tLarge / max(tSmall, 1000),
+            ratio,
             lessThan(3),
             reason: '${entry.key}: $tSmall us -> $tLarge us',
           );

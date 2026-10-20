@@ -61,4 +61,14 @@ void main() {
       expect(out, isNot(contains('abcdef')));
     });
   });
+
+  group('decoded copy of long user info', () {
+    test('is redacted again after the long user info is masked', () {
+      final out = redactSecrets(
+        'HTTPS://bob:YQ%22V3XKJ@h/$long?Jwt=Q14266X4%70 ok',
+      );
+      expect(out, isNot(contains('Q14266X4')));
+      expect(out, isNot(contains('YQ')));
+    });
+  });
 }

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'log_redaction.dart';
+
 /// Folds an uncaught error that repeats (a widget that throws on every
 /// frame) into one record and a count, so it cannot fill the log file or
 /// starve the UI isolate with writes.
@@ -21,7 +23,8 @@ class RepeatedErrorFilter {
     DateTime Function()? now,
     Timer Function(Duration delay, void Function() callback)? startTimer,
   }) : _now = now ?? DateTime.now,
-       _startTimer = startTimer ?? Timer.new;
+       _startTimer = startTimer ?? Timer.new,
+       assert(maxKeys > 0, 'maxKeys must be positive');
 
   /// Receives the text of a "repeated ×N" record. Called synchronously from
   /// [shouldWrite] or from a window timer; never from [close], which returns
@@ -45,20 +48,41 @@ class RepeatedErrorFilter {
   static const _maxTextChars = 200;
   static final _spaces = RegExp(r'\s+');
 
+  static final _hexRuns = RegExp(r'[0-9a-fA-F]{4,}');
+  static final _digitRuns = RegExp(r'\d+');
+
   /// Key of an error: its runtime type, the first stack frame that is not in
   /// the Dart SDK or the Flutter framework (those frames are shared by
   /// unrelated bugs), and the start of its text. Without such a frame the key
   /// holds a hash of the first five frames; without a stack, the text alone
-  /// tells errors apart. Not redacted here; the summary goes through the log
-  /// session's write, which redacts and escapes it.
+  /// tells errors apart.
+  ///
+  /// The text is redacted before it is cut, so a credential cannot be split
+  /// by the cut and escape the rules. Digit and hex runs in the text are
+  /// replaced by a placeholder, so errors that differ only in an index, an id
+  /// or a hash code share a key. Use [labelFor] for the text to log.
   static String keyFor(Object error, StackTrace? stack) {
+    final text = _cleanText(error)
+        .replaceAll(_hexRuns, '#')
+        .replaceAll(_digitRuns, '#');
+    return _compose(error, stack, text);
+  }
+
+  /// What a summary shows for an error: like [keyFor] but with the numbers of
+  /// the first occurrence kept. Redacted before it is cut.
+  static String labelFor(Object error, StackTrace? stack) =>
+      _compose(error, stack, _cleanText(error));
+
+  static String _compose(Object error, StackTrace? stack, String text) {
     final frame = stack == null ? '' : _callSite(stack.toString());
-    var text = '$error'.trim().replaceAll(_spaces, ' ');
     if (text.length > _maxTextChars) {
       text = '${text.substring(0, _maxTextChars)}…';
     }
     return '${error.runtimeType}${frame.isEmpty ? '' : ' $frame'} | $text';
   }
+
+  static String _cleanText(Object error) =>
+      redactSecrets('$error'.trim()).replaceAll(_spaces, ' ');
 
   static String _callSite(String stack) {
     final frames = stack
@@ -70,9 +94,10 @@ class RepeatedErrorFilter {
       if (frame.contains('(dart:') || frame.contains('(package:flutter/')) {
         continue;
       }
-      return frame.length > _maxFrameChars
-          ? '${frame.substring(0, _maxFrameChars)}…'
-          : frame;
+      final safe = redactSecrets(frame);
+      return safe.length > _maxFrameChars
+          ? '${safe.substring(0, _maxFrameChars)}…'
+          : safe;
     }
     if (frames.isEmpty) return '';
     return '#${Object.hashAll(frames.take(5)).toRadixString(16)}';
@@ -84,7 +109,7 @@ class RepeatedErrorFilter {
   /// When it returns `true`, the summary of what was folded under an evicted
   /// or expired entry has already been passed to [onSummary], so it precedes
   /// the new record.
-  bool shouldWrite(String key) {
+  bool shouldWrite(String key, {String? label}) {
     final now = _now();
     final entry = _entries[key];
     if (entry != null) {
@@ -97,7 +122,7 @@ class RepeatedErrorFilter {
     while (_entries.length >= maxKeys) {
       _report(_drop(_entries.keys.first));
     }
-    final fresh = _Entry(now);
+    final fresh = _Entry(now, label ?? key);
     fresh.timer = _startTimer(window, () => _windowEnded(key, fresh));
     _entries[key] = fresh;
     return true;
@@ -126,13 +151,14 @@ class RepeatedErrorFilter {
     entry.timer?.cancel();
     entry.timer = null;
     if (entry.pending == 0) return null;
-    return 'Uncaught error repeated ×${entry.pending}: $key';
+    return 'Uncaught error repeated ×${entry.pending}: ${entry.label}';
   }
 }
 
 class _Entry {
-  _Entry(this.start);
+  _Entry(this.start, this.label);
   final DateTime start;
+  final String label;
   int pending = 0;
   Timer? timer;
 }
