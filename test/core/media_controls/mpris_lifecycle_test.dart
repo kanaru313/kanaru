@@ -39,7 +39,7 @@ class _GatedClient extends DBusClient {
 }
 
 /// Runs [body] with its own harness in a zone that records the coalescing
-/// timers (150ms). Everything, the player provider included, is created in
+/// timers (`harnessCoalesceWindow`). Everything, the player provider included, is created in
 /// that zone: stream callbacks run in the zone that subscribed.
 Future<void> withTimerLog(
   Future<void> Function(MprisHarness h, List<Timer> timers) body,
@@ -58,7 +58,7 @@ Future<void> withTimerLog(
     zoneSpecification: ZoneSpecification(
       createTimer: (self, parent, zone, duration, f) {
         final timer = parent.createTimer(zone, duration, f);
-        if (duration == const Duration(milliseconds: 150)) timers.add(timer);
+        if (duration == harnessCoalesceWindow) timers.add(timer);
         return timer;
       },
     ),
@@ -135,7 +135,9 @@ void main() {
       await h.service.openTracks(songs);
       final controls = await h.start();
       final changes = await h.watchChanges();
-      await h.service.pause();
+      // The change is pending (timer armed) when dispose starts, however
+      // short the window.
+      unawaited(h.service.setVolume(40));
       await controls.dispose();
       await h.settle();
       expect(changes, isEmpty);
@@ -189,6 +191,39 @@ void main() {
       }),
     );
 
+    test('a burst of position ticks does no property work', () async {
+      var builds = 0;
+      await h.service.openTracks(songs);
+      h.create(
+        buildProperties: (state, ids) {
+          builds++;
+          return playerProperties(state, ids);
+        },
+      );
+      await h.waitForName(mprisName);
+      final changes = await h.watchChanges();
+      await h.settle();
+      final buildsAtStart = builds;
+
+      for (var ms = 1; ms <= 1000; ms++) {
+        h.backend.emitPosition.add(Duration(milliseconds: ms));
+      }
+      await h.settle();
+      expect(builds, buildsAtStart);
+      expect(changes, isEmpty);
+      final position = await h.remote.getProperty(
+        mprisPlayerInterface,
+        'Position',
+      );
+      expect(position, const DBusInt64(1000000));
+
+      // The check is not blind: a change of anything published is built.
+      final next = h.nextChange();
+      await h.service.setVolume(40);
+      await next;
+      expect(builds, buildsAtStart + 1);
+    });
+
     test(
       'an idle controller arms nothing, whatever changes',
       () => withTimerLog((l, timers) async {
@@ -214,7 +249,9 @@ void main() {
       h.container.invalidate(playerServiceProvider);
       await h.settle();
       await h.service.openTracks(songs);
+      final next = h.nextSeeked();
       await h.service.seek(const Duration(seconds: 3));
+      await next;
       await h.settle();
 
       expect(seeked, [3000000]);

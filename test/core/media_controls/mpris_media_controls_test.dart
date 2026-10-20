@@ -96,8 +96,7 @@ void main() {
 
       Future<Map<String, DBusValue>> after(Future<void> Function() act) async {
         changes.clear();
-        await act();
-        await h.settle();
+        await h.changeAfter(act);
         expect(changes, hasLength(1));
         return changes.single;
       }
@@ -151,9 +150,10 @@ void main() {
       await h.start();
       final changes = await h.watchChanges();
 
-      await h.service.openTracks(songs, start: 2);
-      h.backend.emitDuration.add(const Duration(seconds: 90));
-      await h.settle();
+      await h.changeAfter(() async {
+        await h.service.openTracks(songs, start: 2);
+        h.backend.emitDuration.add(const Duration(seconds: 90));
+      });
 
       expect(changes, hasLength(1));
       final metadata = changes.single['Metadata']!.asStringVariantDict();
@@ -181,7 +181,9 @@ void main() {
       await h.start();
       final seeked = await h.watchSeeked();
 
+      final next = h.nextSeeked();
       await h.service.seek(const Duration(seconds: 3));
+      await next;
       await h.settle();
       expect(seeked, [3000000]);
     });
@@ -257,14 +259,12 @@ void main() {
       await h.start();
       final changes = await h.watchChanges();
 
-      await h.service.toggleMute();
-      await h.settle();
+      await h.changeAfter(h.service.toggleMute);
       expect(changes.single['Volume'], const DBusDouble(0));
       expect(await readVolume(), const DBusDouble(0));
 
       changes.clear();
-      await h.service.toggleMute();
-      await h.settle();
+      await h.changeAfter(h.service.toggleMute);
       expect(changes.single['Volume'], const DBusDouble(0.6));
       expect(await readVolume(), const DBusDouble(0.6));
     });
@@ -276,8 +276,7 @@ void main() {
       await h.start();
       final changes = await h.watchChanges();
 
-      await setVolume(0.3);
-      await h.settle();
+      await h.changeAfter(() => setVolume(0.3));
 
       final state = h.container.read(playerServiceProvider);
       expect(state.muted, isFalse);
@@ -423,8 +422,13 @@ void main() {
         await subscription.cancel();
         Logger.root.level = previousLevel;
       });
+      final logged = Logger.root.onRecord
+          .where((r) => r.loggerName == 'mpris')
+          .first
+          .timeout(const Duration(seconds: 1));
       h.create();
-      // Long enough for the 7 requests and the replies.
+      // The 7 requests and replies are done once the line is logged.
+      await logged;
       await h.settle();
       expect(h.app.ownedNames, isEmpty);
       // Exactly the one line: no "unavailable", no error or stack trace.

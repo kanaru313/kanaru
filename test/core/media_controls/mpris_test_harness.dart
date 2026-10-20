@@ -7,11 +7,23 @@ import 'package:kanaru/core/media_controls/media_controls_provider.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_media_controls.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/player_state.dart';
 import 'package:kanaru/core/player/track.dart';
 
 import '../player/fake_audio_backend.dart';
 
 const mprisName = 'org.mpris.MediaPlayer2.kanaru';
+
+/// Coalescing window of the controls under test; much shorter than
+/// `defaultMprisCoalesceWindow`.
+const harnessCoalesceWindow = Duration(milliseconds: 10);
+
+/// How long a "nothing is sent" check waits: several windows plus socket
+/// round trips.
+const _quietTime = Duration(milliseconds: 60);
+
+/// Longest wait for a signal that must arrive.
+const _signalTimeout = Duration(seconds: 1);
 
 final songs = [
   for (final name in ['a', 'b', 'c']) Track.fromPath('/music/$name.mp3'),
@@ -21,7 +33,8 @@ final songs = [
 /// client standing in for `playerctl`.
 ///
 /// Waits use real time: the `dbus` sockets are real I/O, which `fakeAsync`
-/// cannot drive, so the 150ms coalescing window is waited out with [settle].
+/// cannot drive. A signal that must arrive is awaited with [nextChange] or
+/// [nextSeeked]; a signal that must not is ruled out by waiting [settle].
 class MprisHarness {
   late final Directory _dir;
   late final DBusServer _server;
@@ -34,6 +47,8 @@ class MprisHarness {
   final raised = <int>[];
   final clients = <DBusClient>[];
   MprisMediaControls? controls;
+  final _changeEvents = StreamController<Map<String, DBusValue>>.broadcast();
+  final _seekedEvents = StreamController<int>.broadcast();
 
   DBusAddress get address => _address;
 
@@ -65,12 +80,16 @@ class MprisHarness {
     DBusClient? client,
     DBusClient Function()? factory,
     ProviderContainer? from,
+    Map<String, DBusValue> Function(PlayerState, MprisTrackIds)?
+    buildProperties,
   }) {
     final provider = Provider(
       (ref) => MprisMediaControls(
         ref,
         factory ?? () => client ?? app,
         onRaise: () async => raised.add(raised.length),
+        coalesceWindow: harnessCoalesceWindow,
+        buildProperties: buildProperties ?? playerProperties,
       ),
     );
     controls = (from ?? container).read(provider);
@@ -102,6 +121,7 @@ class MprisHarness {
             ref,
             () => app,
             onRaise: () async => raised.add(raised.length),
+            coalesceWindow: harnessCoalesceWindow,
           );
           ref.onDispose(controls.dispose);
           return controls;
@@ -130,13 +150,18 @@ class MprisHarness {
     throw StateError('$name ${gone ? 'never left' : 'never appeared'}');
   }
 
-  /// Collects `PropertiesChanged` of the player interface.
+  /// Collects `PropertiesChanged` of the player interface. Returns once the
+  /// bus has the match rule: the round trip on the same connection is
+  /// answered after it.
   Future<List<Map<String, DBusValue>>> watchChanges() async {
     final changes = <Map<String, DBusValue>>[];
     remote.propertiesChanged
         .where((s) => s.propertiesInterface == mprisPlayerInterface)
-        .listen((s) => changes.add(s.changedProperties));
-    await settle(const Duration(milliseconds: 100));
+        .listen((s) {
+          changes.add(s.changedProperties);
+          _changeEvents.add(s.changedProperties);
+        });
+    await names();
     return changes;
   }
 
@@ -146,13 +171,36 @@ class MprisHarness {
       object: remote,
       interface: mprisPlayerInterface,
       name: 'Seeked',
-    ).listen((s) => seeked.add(s.values[0].asInt64()));
-    await settle(const Duration(milliseconds: 100));
+    ).listen((s) {
+      final position = s.values[0].asInt64();
+      seeked.add(position);
+      _seekedEvents.add(position);
+    });
+    await names();
     return seeked;
   }
 
-  /// Longer than the coalescing window plus a socket round trip.
-  Future<void> settle([Duration time = const Duration(milliseconds: 400)]) =>
+  /// The next `PropertiesChanged` seen by [watchChanges]. Call it before the
+  /// action that causes the signal, then await it.
+  Future<Map<String, DBusValue>> nextChange() =>
+      _changeEvents.stream.first.timeout(_signalTimeout);
+
+  /// The next `Seeked` seen by [watchSeeked]; use like [nextChange].
+  Future<int> nextSeeked() =>
+      _seekedEvents.stream.first.timeout(_signalTimeout);
+
+  /// Runs [act] and waits for the `PropertiesChanged` it causes, then for
+  /// [settle], so a second signal would be caught as well.
+  Future<void> changeAfter(Future<void> Function() act) async {
+    final next = nextChange();
+    await act();
+    await next;
+    await settle();
+  }
+
+  /// For checks that nothing is sent: several coalescing windows plus a
+  /// socket round trip.
+  Future<void> settle([Duration time = _quietTime]) =>
       Future<void>.delayed(time);
 
   Future<DBusMethodSuccessResponse> call(
@@ -164,6 +212,8 @@ class MprisHarness {
   Future<void> tearDown() async {
     await controls?.dispose();
     container.dispose();
+    await _changeEvents.close();
+    await _seekedEvents.close();
     for (final client in clients) {
       await client.close();
     }
