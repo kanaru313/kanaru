@@ -51,7 +51,11 @@ class AlbumGridTile extends StatelessWidget {
           builder: (context, constraints) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AlbumArtwork(albumKey: data.key, size: constraints.maxWidth),
+              AlbumArtwork(
+                albumKey: data.key,
+                coverKey: data.coverKey,
+                size: constraints.maxWidth,
+              ),
               const SizedBox(height: _gap),
               Text(
                 data.title,

@@ -3,6 +3,8 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart' show TrackListItem;
+import '../../../core/database/library_startup.dart';
+import '../../../core/indexer/cover_paths.dart';
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
@@ -55,6 +57,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
   }
 
   void _play(List<TrackListItem> songs, int index) {
+    final covers = ref.read(coverCacheDirectoryProvider);
     final tracks = [
       for (final s in songs)
         trackFromItem(
@@ -62,6 +65,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
           title: s.title,
           artist: s.artist,
           durationMs: s.durationMs,
+          artPath: coverPath(covers, s.coverKey),
         ),
     ];
     playTracks(ref, tracks, index);

@@ -141,6 +141,8 @@ RUSTC_BOOTSTRAP=1 flutter_rust_bridge_codegen generate
 dart run drift_dev make-migrations
 ```
 
+`make-migrations` snapshots the schema into `drift_schemas/library_db/drift_schema_v<N>.json`, rewrites `lib/core/database/library_database.steps.dart` (the `stepByStep` helper; wire the new `fromXToY` callback in `LibraryDatabase.migration`) and regenerates `test/drift/library_db/generated/`. Bump `schemaVersion` before running it. `test/drift/library_db/migration_test.dart` is created only when missing: extend its data-integrity test by hand for each new step. Commit the snapshot, the steps file and the generated test schemas.
+
 In the Nix dev shell, `dart run` cannot find the Flutter SDK ("flutter_test from sdk which doesn't exist"). Use `flutter pub run build_runner build --delete-conflicting-outputs` and `flutter pub run drift_dev make-migrations` there instead.
 
 Notes on the Rust side:

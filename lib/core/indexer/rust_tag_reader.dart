@@ -10,15 +10,23 @@ final _log = Logger('RustTagReader');
 ///
 /// The native library loads on the first read, not at app start, so a missing
 /// or broken library fails the scan that needs it instead of blocking startup.
+///
+/// With a [coverDirectory], the native side also finds each file's cover and
+/// writes its thumbnail there (creating folders as needed; a write failure
+/// is reported per file as [CoverStatus.failed]); without one, covers are
+/// skipped.
 class RustTagReader implements TagReader {
-  RustTagReader();
+  RustTagReader({this.coverDirectory});
+
+  final String? coverDirectory;
 
   Future<void>? _ready;
 
   @override
   Future<List<TrackTags>> readBatch(List<String> paths) async {
     await _ensureLoaded();
-    return native.readTagsBatch(paths: paths);
+    // The empty string tells the native side to skip covers.
+    return native.readTagsBatch(paths: paths, coverDir: coverDirectory ?? '');
   }
 
   /// Initialises the bridge once. A failed attempt is forgotten so a later

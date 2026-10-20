@@ -62,4 +62,16 @@ void main() {
     expect(resolveDataDirectory({'XDG_DATA_HOME': 'rel'}), isNull);
     expect(resolveCacheDirectory({'HOME': 'rel'}), isNull);
   });
+
+  test('cover thumbnails live in a size folder of the cache', () {
+    expect(
+      resolveCoverCacheDirectory({...home, 'XDG_CACHE_HOME': '/x/cache'}),
+      '/x/cache/kanaru/covers/512',
+    );
+    expect(
+      resolveCoverCacheDirectory(home),
+      '/home/a/.cache/kanaru/covers/512',
+    );
+    expect(resolveCoverCacheDirectory({}), isNull);
+  });
 }

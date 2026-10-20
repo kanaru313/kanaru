@@ -28,6 +28,7 @@ class LibraryHarness {
     this.overrides = const [],
     this.picker,
     this.refreshInterval = Duration.zero,
+    this.coverCacheDirectory,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
@@ -35,6 +36,9 @@ class LibraryHarness {
   /// Shortest time between reloads of the browse lists; zero reloads at once.
   final Duration refreshInterval;
   final String? suggestion;
+
+  /// The cover thumbnail folder; covers are off without one.
+  final String? coverCacheDirectory;
 
   /// Extra provider overrides, applied last.
   final List<Override> overrides;
@@ -72,6 +76,7 @@ class LibraryHarness {
         ...LibraryStartup(
           db: hasDatabase ? db : null,
           hasRoots: hasRoots,
+          coverCacheDirectory: coverCacheDirectory,
         ).overrides,
         tagReaderProvider.overrideWithValue(reader),
         audioBackendProvider.overrideWithValue(backend),

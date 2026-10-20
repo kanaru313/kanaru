@@ -40,6 +40,7 @@ class AlbumSummary {
     this.artist,
     this.year,
     this.durationMs,
+    this.coverKey,
   });
 
   final AlbumKey key;
@@ -59,6 +60,10 @@ class AlbumSummary {
 
   /// When its most recently added track was indexed.
   final int addedAt;
+
+  /// The smallest cover key among its tracks, so the choice is stable; null
+  /// when none of its tracks has a cover.
+  final String? coverKey;
 }
 
 /// The tracks that share one exact `artist` value: the value, how many
@@ -91,6 +96,7 @@ class BrowseTrack {
     this.trackNo,
     this.durationMs,
     this.albumKey,
+    this.coverKey,
   });
 
   final int id;
@@ -106,6 +112,9 @@ class BrowseTrack {
 
   /// The key of its album; null when it has no album.
   final AlbumKey? albumKey;
+
+  /// Cover thumbnail key in the cover cache; null when there is no cover.
+  final String? coverKey;
 }
 
 /// What the Songs list can be ordered by.
