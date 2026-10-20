@@ -280,9 +280,9 @@ void main() {
     final clicker = Clicker(tester);
     final at = tester.getCenter(find.byKey(_empty));
 
-    await clicker.click(at, moveBy: const Offset(0.5, 0));
+    await clicker.click(at, moveBy: const Offset(4, 0));
     await clicker.wait(const Duration(milliseconds: 60));
-    await clicker.click(at, moveBy: const Offset(0.5, 0));
+    await clicker.click(at, moveBy: const Offset(4, 0));
 
     expect(drags, isEmpty);
     expect(toggles, hasLength(1));

@@ -4,6 +4,11 @@ import 'package:material_ui/material_ui.dart';
 
 import 'desktop_window.dart';
 
+/// How far a press may move and still count as a click. Matches GTK's default
+/// drag threshold, so a mouse that jitters during a double click does not
+/// start a window drag.
+const _dragSlop = 8.0;
+
 /// Lets the user move the window by dragging [child] and maximize it with a
 /// double click, like a native title bar. Does nothing without a custom
 /// title bar.
@@ -65,11 +70,7 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
         _dragged.contains(event.pointer)) {
       return;
     }
-    final slop = computeHitSlop(
-      event.kind,
-      MediaQuery.maybeGestureSettingsOf(context),
-    );
-    if ((event.position - down.position).distance <= slop) return;
+    if ((event.position - down.position).distance <= _dragSlop) return;
     _dragged.add(event.pointer);
     ref.read(startWindowDragProvider)();
   }
@@ -79,15 +80,11 @@ class _WindowDragAreaState extends ConsumerState<WindowDragArea> {
     final taken = _excluded.remove(event.pointer);
     final dragged = _dragged.remove(event.pointer);
     if (!widget.doubleClickMaximizes) return;
-    final slop = computeHitSlop(
-      event.kind,
-      MediaQuery.maybeGestureSettingsOf(context),
-    );
     // A drag is not a click; neither is a click on an interactive child.
     if (down == null ||
         taken ||
         dragged ||
-        (event.position - down.position).distance > slop) {
+        (event.position - down.position).distance > _dragSlop) {
       _lastClick = null;
       return;
     }
