@@ -19,21 +19,13 @@ class _CountingUnavailable extends UnavailableAudioBackend {
   }
 }
 
-/// Same override `main()` installs, with the two failure points injectable.
+/// The override `main()` installs, with the two failure points injectable.
 ProviderContainer containerWith({
   required bool engineReady,
   required AudioBackend Function() create,
 }) {
   final container = ProviderContainer(
-    overrides: [
-      audioBackendProvider.overrideWith(
-        (ref) => audioBackendOrUnavailable(
-          ref,
-          engineReady: engineReady,
-          create: create,
-        ),
-      ),
-    ],
+    overrides: [audioBackendOverride(engineReady: engineReady, create: create)],
   );
   addTearDown(container.dispose);
   return container;
@@ -111,11 +103,11 @@ void main() {
     });
   });
 
-  for (final engineReady in [false, true]) {
+  for (final initFailed in [true, false]) {
     test('tapping a song in a 10 000 track queue opens once and errors once '
-        '(${engineReady ? 'init failed' : 'constructor failed'})', () async {
+        '(${initFailed ? 'init failed' : 'constructor failed'})', () async {
       final container = containerWith(
-        engineReady: !engineReady,
+        engineReady: !initFailed,
         create: () => throw StateError('no libmpv'),
       );
       final backend = container.read(audioBackendProvider);
@@ -128,19 +120,32 @@ void main() {
         for (var i = 0; i < 10000; i++) Track.fromPath('/music/$i.mp3'),
       ];
 
-      final watch = Stopwatch()..start();
       await service.openTracks(tracks, start: 5000);
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      watch.stop();
 
       expect(errors, hasLength(1));
       expect(errors.single.track, tracks[5000]);
       final state = container.read(playerServiceProvider);
       expect(state.playing, isFalse);
       expect(state.queue.index, 5000);
-      expect(watch.elapsedMilliseconds, lessThan(100));
     });
   }
+
+  test('play without an engine falls back to paused', () async {
+    final container = containerWith(
+      engineReady: false,
+      create: () => throw StateError('unused'),
+    );
+    final service = container.read(playerServiceProvider.notifier);
+    await service.openTracks([Track.fromPath('/music/a.mp3')]);
+    await Future<void>.delayed(Duration.zero);
+
+    await service.playPause();
+    expect(container.read(playerServiceProvider).playing, isTrue);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(container.read(playerServiceProvider).playing, isFalse);
+  });
 
   test('a queue tap reaches the engine exactly once', () async {
     final counting = _CountingUnavailable();

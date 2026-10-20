@@ -573,7 +573,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get playbackUnavailableTitle => 'Không tìm thấy bộ máy phát nhạc';
+  String get playbackUnavailableTitle => 'Không tìm thấy trình phát âm thanh';
 
   @override
   String get playbackUnavailableBody =>

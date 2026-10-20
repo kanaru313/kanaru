@@ -52,7 +52,7 @@ void main() {
       locale: const Locale('vi'),
     );
 
-    expect(find.text('Không tìm thấy bộ máy phát nhạc'), findsOneWidget);
+    expect(find.text('Không tìm thấy trình phát âm thanh'), findsOneWidget);
   });
 
   testWidgets('is absent with a working audio engine', (tester) async {

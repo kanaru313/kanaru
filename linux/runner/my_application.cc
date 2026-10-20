@@ -13,6 +13,8 @@ struct _MyApplication {
   // The window has been shown: by the first Flutter frame or by the fallback
   // timer. A relaunch only presents a window that is shown.
   gboolean shown;
+  // Id of the first-frame fallback timer, 0 when none is pending.
+  guint fallback_source;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
@@ -20,6 +22,7 @@ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
   self->shown = TRUE;
+  g_clear_handle_id(&self->fallback_source, g_source_remove);
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
@@ -29,16 +32,18 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
 // hidden process nobody can reach.
 static const guint kFirstFrameFallbackSeconds = 15;
 
-// Shows the window if no frame arrived in time. Runs once.
+// Shows the window if no frame arrived in time. Runs once. The application
+// outlives its windows, so it is safe user data; the window is looked up and
+// may already be gone.
 static gboolean show_window_fallback(gpointer user_data) {
-  GtkWindow* window = GTK_WINDOW(user_data);
-  MyApplication* self =
-      MY_APPLICATION(gtk_window_get_application(window));
-  if (!self->shown) {
+  MyApplication* self = MY_APPLICATION(user_data);
+  self->fallback_source = 0;
+  GList* windows = gtk_application_get_windows(GTK_APPLICATION(self));
+  if (!self->shown && windows != nullptr) {
     g_warning("No Flutter frame after %u s; showing the window anyway.",
               kFirstFrameFallbackSeconds);
     self->shown = TRUE;
-    gtk_widget_show(GTK_WIDGET(window));
+    gtk_widget_show(GTK_WIDGET(windows->data));
   }
   return G_SOURCE_REMOVE;
 }
@@ -118,10 +123,9 @@ static void my_application_activate(GApplication* application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   // If startup never produces a frame the process would stay hidden forever.
-  // The source holds its own reference to the window until it has fired.
-  g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, kFirstFrameFallbackSeconds,
-                             show_window_fallback, g_object_ref(window),
-                             g_object_unref);
+  // The first frame or dispose removes the timer.
+  self->fallback_source = g_timeout_add_seconds(
+      kFirstFrameFallbackSeconds, show_window_fallback, self);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
@@ -179,6 +183,7 @@ static void my_application_shutdown(GApplication* application) {
 // Implements GObject::dispose.
 static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
+  g_clear_handle_id(&self->fallback_source, g_source_remove);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }

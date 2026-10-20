@@ -47,6 +47,16 @@ Future<bool> setUpDesktopWindow({required TitleBarPreference titleBar}) async {
   return titleBar == TitleBarPreference.kanaru;
 }
 
+/// Best effort: puts the native title bar back after a failed
+/// [setUpDesktopWindow], which may have hidden it. Never throws.
+Future<void> restoreSystemTitleBar() async {
+  try {
+    await windowManager.setTitleBarStyle(TitleBarStyle.normal);
+  } catch (_) {
+    // Nothing more to fall back to.
+  }
+}
+
 /// Brings the window back when the desktop asks (MPRIS `Raise`): shows it if
 /// hidden, then un-minimizes and presents it. On Wayland compositors that
 /// require xdg-activation (niri, for one) this has no visible effect: there

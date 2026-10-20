@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:logging/logging.dart';
 
 import 'audio_backend.dart';
 import 'playback_error.dart';
+import 'player_service.dart';
 import 'repeat_mode.dart';
 import 'track.dart';
 
@@ -38,7 +40,13 @@ class UnavailableAudioBackend implements AudioBackend {
   Future<void> setNext(Track? next) async {}
 
   @override
-  Future<void> play() async {}
+  Future<void> play() async {
+    // The player marks itself playing before the engine confirms; with no
+    // engine, answer that it is not, so it falls back to paused.
+    scheduleMicrotask(() {
+      if (!_playing.isClosed) _playing.add(false);
+    });
+  }
 
   @override
   Future<void> pause() async {}
@@ -112,3 +120,13 @@ AudioBackend audioBackendOrUnavailable(
   ref.onDispose(backend.dispose);
   return backend;
 }
+
+/// Provider override that installs [audioBackendOrUnavailable]. Used by
+/// `main()` and by tests, so both go through the same wiring.
+Override audioBackendOverride({
+  required bool engineReady,
+  required AudioBackend Function() create,
+}) => audioBackendProvider.overrideWith(
+  (ref) =>
+      audioBackendOrUnavailable(ref, engineReady: engineReady, create: create),
+);

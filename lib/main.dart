@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dbus/dbus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
 
 import 'app/app.dart';
@@ -13,7 +13,6 @@ import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
 import 'core/player/media_kit_backend.dart';
-import 'core/player/player_service.dart';
 import 'core/player/unavailable_audio_backend.dart';
 import 'core/settings/settings_provider.dart';
 
@@ -44,6 +43,8 @@ Future<void> main() async {
     customTitleBar = await setUpDesktopWindow(titleBar: settings.titleBar);
   } catch (error, stack) {
     log.severe('Window setup failed', error, stack);
+    // Setup may have hidden the native bar before failing.
+    await restoreSystemTitleBar();
   }
   // Library database. Never throws: on failure the library is unavailable but
   // playback still works.
@@ -57,12 +58,9 @@ Future<void> main() async {
       initialSettingsProvider.overrideWithValue(settings),
       settingsFileProvider.overrideWithValue(settingsFile),
       customTitleBarProvider.overrideWithValue(customTitleBar),
-      audioBackendProvider.overrideWith(
-        (ref) => audioBackendOrUnavailable(
-          ref,
-          engineReady: engineReady,
-          create: MediaKitBackend.new,
-        ),
+      audioBackendOverride(
+        engineReady: engineReady,
+        create: MediaKitBackend.new,
       ),
       ...library.overrides,
       if (Platform.isLinux)
