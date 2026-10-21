@@ -7,6 +7,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   bool get _ended;
   set _ended(bool ended);
+  Set<int> get _upNext;
   set _lastTick(Duration position);
   StreamController<Duration> get _seeked;
   Random? get _random;
@@ -88,6 +89,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     if (tracks.isEmpty) return;
     RangeError.checkValidIndex(start, tracks, 'start');
     _userActed();
+    _upNext.clear();
     final queue = PlayQueue.open(
       tracks,
       start,

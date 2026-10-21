@@ -204,4 +204,22 @@ void main() {
       expect(failed.single.track, _a);
     });
   });
+
+  group('promoteEntry', () {
+    test('announces an entry that started while another next was queued', () {
+      openAThenB();
+      // `c` replaced `b` as the queued next track, but mpv had started `b`.
+      tracker.queueNext(const Track(uri: '/c.mp3', title: 'c'));
+      tracker.setNextId(3);
+
+      tracker.promoteEntry(_b, 2);
+
+      expect(advanced, [_b]);
+      expect(tracker.current, _b);
+      expect(tracker.currentId, 2);
+      expect(tracker.next, isNull);
+      // `a` never loaded, so it counts as failed, as for any skipped track.
+      expect(failed.map((e) => e.track), [_a]);
+    });
+  });
 }

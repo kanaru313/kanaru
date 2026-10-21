@@ -216,9 +216,28 @@ class MediaKitBackend implements AudioBackend {
     final count = await _intProperty('playlist-count');
     // Append before removing the old next entry, so mpv never reaches the
     // end of the current track with nothing queued after it.
+    final before = (track: _tracker.next, id: _tracker.nextId);
     await _queueNext(next);
-    for (var i = count - 1; i > position; i--) {
+    // mpv may have started the old next entry while [next] was appended.
+    // That entry is playing now and stays; only the ones behind it go.
+    final now = await _intProperty('playlist-playing-pos');
+    var keep = position;
+    var finished = 0;
+    if (now > position) {
+      keep = now;
+      final id = before.id;
+      final track = before.track;
+      if (track != null && id != null && await _tracker.entryId(now) == id) {
+        _tracker.promoteEntry(track, id);
+        finished = now;
+      }
+    }
+    for (var i = count - 1; i > keep; i--) {
       await _native.command(['playlist-remove', '$i']);
+    }
+    // Drop the finished entries so the playlist is [current] again.
+    for (var i = 0; i < finished; i++) {
+      await _native.command(['playlist-remove', '0']);
     }
   });
 

@@ -29,18 +29,32 @@ Map<String, DBusValue> rootProperties() => {
 };
 
 /// Hands out track ids. An id is stable while the queue stays the one that
-/// was opened (shuffle and queue edits keep `original`, and an index into it
-/// is never reused) and changes when a new queue is opened, so a client
-/// holding an old id cannot seek the wrong track.
+/// was opened (shuffle and queue edits keep `original`, adding tracks only
+/// extends it, and an index into it is never reused) and changes when a new
+/// queue is opened, so a client holding an old id cannot seek the wrong
+/// track.
 class MprisTrackIds {
   List<Track>? _original;
   int _generation = 0;
 
   /// Call with every queue before asking for ids.
   void observe(PlayQueue queue) {
-    if (identical(queue.original, _original)) return;
-    _original = queue.original;
-    _generation++;
+    final original = queue.original;
+    if (identical(original, _original)) return;
+    final extended = _extends(original, _original);
+    _original = original;
+    if (!extended) _generation++;
+  }
+
+  /// Whether [tracks] is [before] plus more: tracks were added to the same
+  /// queue, so the old ids still point at the same tracks. The same tracks
+  /// opened again are a new queue.
+  static bool _extends(List<Track> tracks, List<Track>? before) {
+    if (before == null || tracks.length <= before.length) return false;
+    for (var i = 0; i < before.length; i++) {
+      if (!identical(tracks[i], before[i])) return false;
+    }
+    return true;
   }
 
   DBusObjectPath of(PlayQueue queue) => queue.isEmpty

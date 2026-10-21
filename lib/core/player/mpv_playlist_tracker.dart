@@ -44,6 +44,7 @@ class MpvPlaylistTracker {
   int? _nextId;
 
   Track? get current => _current;
+  Track? get next => _next;
   int? get currentId => _currentId;
   int? get nextId => _nextId;
 
@@ -137,6 +138,11 @@ class MpvPlaylistTracker {
     _becomeCurrent(next, nextId);
     return true;
   }
+
+  /// Makes [track], the entry with mpv id [id], current: mpv started it while
+  /// it was no longer the queued next track, e.g. because another next track
+  /// was being appended at that moment.
+  void promoteEntry(Track track, int id) => _becomeCurrent(track, id);
 
   /// Handles mpv going idle: the current track failed, and so did the queued
   /// next one if there was one. Returns whether anything was playing, i.e.

@@ -13,15 +13,69 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   bool get _wantsPlaying;
   set _wantsPlaying(bool wanted);
   List<int> get _handedNext;
+  Set<int> get _upNext;
+  bool get _ended;
   Future<void> _queueNext();
+  Future<void> jump(int index);
   Future<void> _play(int index, {bool play = true});
   void _userActed();
+
+  /// Puts [tracks] right after the playing track, behind the ones earlier
+  /// calls put there that have not played yet, so they play in the order
+  /// they were picked. With nothing queued, plays them.
+  Future<void> playNext(List<Track> tracks) async {
+    if (tracks.isEmpty) return;
+    final queue = state.queue;
+    if (queue.isEmpty) return _startQueue(tracks);
+    final at = queue.index + 1 + _upNextRun(queue);
+    final first = queue.original.length;
+    _upNext.addAll([for (var i = 0; i < tracks.length; i++) first + i]);
+    await _insert(at, tracks);
+  }
+
+  /// How many "play next" tracks sit right after the current track.
+  int _upNextRun(PlayQueue queue) {
+    var count = 0;
+    final start = queue.index + 1;
+    while (start + count < queue.order.length &&
+        _upNext.contains(queue.order[start + count])) {
+      count++;
+    }
+    return count;
+  }
+
+  /// Plays [tracks] in the order given on an empty queue. Shuffle stays on if
+  /// it was, but only applies to what is added later.
+  Future<void> _startQueue(List<Track> tracks) async {
+    _upNext.clear();
+    state = state.copyWith(queue: state.queue.insert(0, tracks));
+    await jump(0);
+  }
+
+  /// Puts [tracks] at the end of the queue. With nothing queued, plays them.
+  Future<void> addToQueue(List<Track> tracks) async {
+    if (tracks.isEmpty) return;
+    if (state.queue.isEmpty) return _startQueue(tracks);
+    await _insert(state.queue.order.length, tracks);
+  }
+
+  /// Inserts [tracks] at play position [at] without touching the playing
+  /// track: the engine only gets a fresh next track. After the queue ran out,
+  /// the first added track is loaded paused, so play continues there.
+  Future<void> _insert(int at, List<Track> tracks) async {
+    _userActed();
+    _failuresInRow = 0;
+    state = state.copyWith(queue: state.queue.insert(at, tracks));
+    if (_ended) return _play(at, play: false);
+    await _queueNext();
+  }
 
   /// Moves the track at play position [from] to [to]. The playing track is
   /// never interrupted, even when it is the one dragged.
   Future<void> moveTrack(int from, int to) async {
     final moved = state.queue.move(from, to);
     if (identical(moved, state.queue)) return;
+    _upNext.remove(state.queue.order[from]);
     _userActed();
     _failuresInRow = 0;
     state = state.copyWith(queue: moved);
@@ -36,6 +90,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     if (at < 0 || at >= queue.order.length) return;
     _userActed();
     _failuresInRow = 0;
+    _upNext.remove(queue.order[at]);
     final rest = queue.removeAt(at);
     if (rest.isEmpty) return _clearPlayback();
     if (at != queue.index) {
@@ -57,6 +112,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     if (state.queue.isEmpty) return;
     _userActed();
     _failuresInRow = 0;
+    _upNext.clear();
     state = state.copyWith(queue: state.queue.keepOnlyCurrent());
     await _queueNext();
   }
@@ -64,6 +120,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// Nothing left to play: stops the engine and keeps shuffle and repeat.
   Future<void> _clearPlayback() {
     final queue = state.queue;
+    _upNext.clear();
     _markStopped(
       ended: false,
       queue: PlayQueue(shuffled: queue.shuffled, repeat: queue.repeat),
@@ -113,8 +170,18 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
       _followEngine('carry on after a removed track', _advancedToRemoved);
       return;
     }
+    _upNext.remove(queue.order[index]);
+    // The engine moved on to the track that was next before a "play next"
+    // went in (its `setNext` was still on the way): the tracks put in
+    // between stay next, so the advanced one steps in front of them.
+    final onlyUpNextSkipped =
+        index > queue.index + 1 &&
+        queue.order.getRange(queue.index + 1, index).every(_upNext.contains);
+    final moved = onlyUpNextSkipped
+        ? queue.move(index, queue.index + 1)
+        : queue;
     state = state.copyWith(
-      queue: queue.copyWith(index: index),
+      queue: moved.copyWith(index: onlyUpNextSkipped ? queue.index + 1 : index),
       position: Duration.zero,
       duration: Duration.zero,
     );

@@ -56,6 +56,11 @@ class PlayerService extends Notifier<PlayerState>
   @override
   final _handedNext = <int>[];
 
+  /// Entries put in by "play next" that have not played yet. The next
+  /// "play next" goes behind those right after the current track.
+  @override
+  final _upNext = <int>{};
+
   /// Playback stopped after the last track; play starts the queue over.
   @override
   bool _ended = false;
@@ -105,6 +110,7 @@ class PlayerService extends Notifier<PlayerState>
     _ended = false;
     _failuresInRow = 0;
     _handedNext.clear();
+    _upNext.clear();
     _lastTick = Duration.zero;
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
@@ -199,6 +205,7 @@ class PlayerService extends Notifier<PlayerState>
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
+    _upNext.remove(queue.order[index]);
     _wantsPlaying = play;
     _openedSinceBuild = true;
     final next = queue.nextIndex;
@@ -219,5 +226,18 @@ class PlayerService extends Notifier<PlayerState>
       play: play,
       start: start,
     );
+    // An edit made while the engine was loading found it busy and its next
+    // track was dropped; the engine only has the one `open` was given.
+    if (!ref.mounted) return;
+    final now = state.queue;
+    if (now.isEmpty || now.index != index || index >= now.order.length) {
+      return;
+    }
+    if (now.order[index] != queue.order[index]) return;
+    final nowNext = now.nextIndex;
+    final handed = next == null ? null : queue.order[next];
+    if ((nowNext == null ? null : now.order[nowNext]) != handed) {
+      await _queueNext();
+    }
   }
 }
