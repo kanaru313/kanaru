@@ -22,6 +22,10 @@ class FakeAudioBackend implements AudioBackend {
   final emitDuration = StreamController<Duration>.broadcast(sync: true);
   final emitFailed = StreamController<PlaybackError>.broadcast(sync: true);
 
+  /// When set, `open` and `setNext` throw it (an [Exception] is an engine
+  /// failure; an [Error] a bug) after recording their call.
+  Object? engineError;
+
   /// Mimics the engine moving on to the queued next track by itself.
   void advance() => emitAdvanced.add(next!);
 
@@ -40,12 +44,14 @@ class FakeAudioBackend implements AudioBackend {
     final paused = play ? '' : ', paused';
     final at = start > Duration.zero ? ', at $start' : '';
     calls.add('open(${track.title}, next: ${next?.title}$paused$at)');
+    if (engineError != null) throw engineError!;
   }
 
   @override
   Future<void> setNext(Track? next) async {
     this.next = next;
     calls.add('setNext(${next?.title})');
+    if (engineError != null) throw engineError!;
   }
 
   @override
@@ -57,8 +63,14 @@ class FakeAudioBackend implements AudioBackend {
   @override
   Future<void> stop() async => calls.add('stop');
 
+  /// When set, `seek` records its call and then waits for this to complete.
+  Completer<void>? seekGate;
+
   @override
-  Future<void> seek(Duration position) async => calls.add('seek($position)');
+  Future<void> seek(Duration position) async {
+    calls.add('seek($position)');
+    await seekGate?.future;
+  }
 
   @override
   Future<void> setVolume(double volume) async =>

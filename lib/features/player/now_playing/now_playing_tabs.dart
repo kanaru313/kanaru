@@ -5,6 +5,7 @@ import '../queue/queue_button.dart';
 import 'now_playing_actions.dart';
 import 'now_playing_compact_page.dart';
 import 'now_playing_footer.dart' show nowPlayingHeaderHeight;
+import 'now_playing_title_bar.dart';
 
 /// Pages of the narrow layout, left to right. Lyrics will join on the right.
 enum _Tab { queue, track }
@@ -18,12 +19,16 @@ class NowPlayingTabs extends StatefulWidget {
   const NowPlayingTabs({
     super.key,
     required this.wrapHeader,
+    required this.excludeFromDrag,
     required this.queuePage,
     required this.onClose,
   });
 
   /// Adds the window drag area and buttons around the tab header.
   final Widget Function(Widget header) wrapHeader;
+
+  /// Wraps the header buttons so pressing them leaves the window alone.
+  final NowPlayingDragExclusion excludeFromDrag;
 
   /// The queue page: filled by the queue panel.
   final Widget queuePage;
@@ -71,20 +76,22 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                   alignment: Alignment.centerLeft,
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        NowPlayingCloseButton(onPressed: widget.onClose),
-                        // On the queue page the same spot leads back.
-                        if (_page == _Tab.queue.index)
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back_rounded),
-                            tooltip: l10n.nowPlayingBackToTrack,
-                            onPressed: () => _select(_Tab.track),
-                          )
-                        else
-                          QueueButton(onPressed: () => _select(_Tab.queue)),
-                      ],
+                    child: widget.excludeFromDrag(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          NowPlayingCloseButton(onPressed: widget.onClose),
+                          // On the queue page the same spot leads back.
+                          if (_page == _Tab.queue.index)
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back_rounded),
+                              tooltip: l10n.nowPlayingBackToTrack,
+                              onPressed: () => _select(_Tab.track),
+                            )
+                          else
+                            QueueButton(onPressed: () => _select(_Tab.queue)),
+                        ],
+                      ),
                     ),
                   ),
                 ),

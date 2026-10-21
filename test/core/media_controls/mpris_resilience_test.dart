@@ -85,7 +85,9 @@ void main() {
             await h.settle();
             final service = c.read(playerServiceProvider.notifier);
             await service.openTracks(songs);
+            final next = h.nextSeeked();
             await service.seek(const Duration(seconds: 3));
+            await next;
             await h.settle();
             expect(seeked, [3000000]);
             expect(zeroTimers, lessThan(20));

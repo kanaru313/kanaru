@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_auto_hide.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_footer.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:material_ui/material_ui.dart';
@@ -13,16 +14,18 @@ import '../../core/player/fake_audio_backend.dart';
 
 void main() {
   late ProviderContainer container;
+  late FakeAudioBackend backend;
 
-  Future<void> pumpOpen(WidgetTester tester) async {
+  Future<void> pumpOpen(WidgetTester tester, {bool animations = false}) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
+        FakeAccessibilityFeatures(disableAnimations: !animations);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    backend = FakeAudioBackend();
     container = ProviderContainer(
-      overrides: [audioBackendProvider.overrideWithValue(FakeAudioBackend())],
+      overrides: [audioBackendProvider.overrideWithValue(backend)],
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(
@@ -85,6 +88,71 @@ void main() {
     expect(footerIgnoresPointer(tester), isTrue);
     // Hidden, not gone: the layout does not move.
     expect(tester.getRect(find.byType(NowPlayingFooter)).bottom, 800);
+  });
+
+  testWidgets('a hidden footer schedules no frames while music plays', (
+    tester,
+  ) async {
+    await pumpOpen(tester, animations: true);
+    backend.emitDuration.add(const Duration(minutes: 3));
+    await mouse(tester);
+    // Past the countdown and the fade-out.
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(footerOpacity(tester), 0);
+
+    backend.emitPosition.add(const Duration(seconds: 1));
+    await tester.pump(const Duration(milliseconds: 64));
+    backend.emitPosition.add(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 64));
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('the footer catches up on the position once it shows', (
+    tester,
+  ) async {
+    await pumpOpen(tester, animations: true);
+    backend.emitDuration.add(const Duration(minutes: 3));
+    final gesture = await mouse(tester);
+    await tester.pump(const Duration(seconds: 4));
+    backend.emitPosition.add(const Duration(minutes: 1, seconds: 1));
+    await tester.pump(const Duration(milliseconds: 64));
+    expect(find.text('1:01'), findsNothing);
+
+    await gesture.moveTo(const Offset(400, 300));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+
+    expect(footerOpacity(tester), greaterThan(0));
+    expect(find.text('1:01'), findsOneWidget);
+    expect(tester.binding.hasScheduledFrame, isTrue);
+  });
+
+  testWidgets('a footer built while hidden schedules no frames', (
+    tester,
+  ) async {
+    final controller = AutoHideController()..visible.value = false;
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AutoHide(
+          controller: controller,
+          child: const CircularProgressIndicator(),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('the footer fits larger text', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await pumpOpen(tester);
+
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('moving the pointer brings it back', (tester) async {

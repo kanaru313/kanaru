@@ -56,31 +56,37 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     await _backend.seek(Duration.zero);
   }
 
+  /// Seeks to [position], kept inside the track (`[0, duration]` once the
+  /// length is known). Does nothing when playback ended with no track
+  /// loaded, such as after removing the last track.
   Future<void> seek(Duration position) async {
     if (state.queue.isEmpty) return;
+    if (_ended && state.duration <= Duration.zero) return;
     _userActed();
+    var target = position < Duration.zero ? Duration.zero : position;
     // Seeking back into a finished track resumes it rather than the queue.
-    if (state.duration > Duration.zero) _ended = false;
-    state = state.copyWith(position: position, stopped: false);
-    _lastTick = position;
-    await _backend.seek(position);
-    _seeked.add(position);
+    if (state.duration > Duration.zero) {
+      _ended = false;
+      if (target > state.duration) target = state.duration;
+    }
+    state = state.copyWith(position: target, stopped: false);
+    _lastTick = target;
+    await _backend.seek(target);
+    // Disposal closes the stream while the engine is seeking. Only that case
+    // is covered: a provider rebuild swaps in a new stream, which this write
+    // reaches.
+    if (!_seeked.isClosed) _seeked.add(target);
   }
 
-  /// Seeks relative to the current position, kept inside the track.
-  Future<void> seekBy(Duration offset) {
-    var target = state.position + offset;
-    if (target < Duration.zero) target = Duration.zero;
-    if (state.duration > Duration.zero && target > state.duration) {
-      target = state.duration;
-    }
-    return seek(target);
-  }
+  /// Seeks relative to the current position.
+  Future<void> seekBy(Duration offset) => seek(state.position + offset);
 
   /// Replaces the queue with [tracks] and plays from [start]. Shuffle and
-  /// repeat stay as they were.
+  /// repeat stay as they were. Opening nothing does nothing; a [start]
+  /// outside [tracks] throws [ArgumentError] and leaves playback as it was.
   Future<void> openTracks(List<Track> tracks, {int start = 0}) async {
     if (tracks.isEmpty) return;
+    RangeError.checkValidIndex(start, tracks, 'start');
     _userActed();
     final queue = PlayQueue.open(
       tracks,

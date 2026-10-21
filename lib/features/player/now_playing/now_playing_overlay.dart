@@ -3,21 +3,30 @@ import 'package:material_ui/material_ui.dart';
 
 import 'now_playing_open_provider.dart';
 import 'now_playing_screen.dart';
+import 'now_playing_title_bar.dart';
 
 /// Slide duration and curve of Now Playing coming up from the bottom edge.
 const nowPlayingSlideDuration = Duration(milliseconds: 500);
 const nowPlayingSlideCurve = Cubic(0.65, 0.05, 0.36, 1);
 
-/// Puts [NowPlayingScreen] over the whole window while it is open. The screen
-/// is built only while open or sliding out, never kept hidden: a hidden
-/// subtree would keep its tickers and per-tick rebuilds running. A new screen
-/// per opening also means it always takes focus, which Esc relies on.
+/// Puts [NowPlayingScreen] over [behind] while it is open. The screen is built
+/// only while open or sliding out, never kept hidden: a hidden subtree would
+/// keep its tickers and per-tick rebuilds running. A new screen per opening
+/// also means it always takes focus, which Esc relies on.
+///
+/// Once the slide-in has finished, [behind] is no longer painted: it is fully
+/// covered, but every repaint of the screen (a position tick) would otherwise
+/// repaint it too. Its state is kept, and it is drawn again as soon as the
+/// screen starts to leave.
 class NowPlayingOverlay extends ConsumerStatefulWidget {
-  const NowPlayingOverlay({super.key, this.titleBar});
+  const NowPlayingOverlay({super.key, required this.behind, this.titleBar});
+
+  /// The app shell, which the screen covers.
+  final Widget behind;
 
   /// Wraps the screen's header, to add the window drag area and buttons that
   /// live in the app shell.
-  final Widget Function(Widget header)? titleBar;
+  final NowPlayingTitleBar? titleBar;
 
   @override
   ConsumerState<NowPlayingOverlay> createState() => _NowPlayingOverlayState();
@@ -45,12 +54,17 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
   }
 
   void _onStatus(AnimationStatus status) {
-    if (status != AnimationStatus.dismissed) return;
-    // The screen leaves the tree now; hand focus back to the shell.
-    final previous = _previousFocus;
-    _previousFocus = null;
-    if (previous != null && previous.context != null) previous.requestFocus();
-    setState(() {});
+    if (status == AnimationStatus.dismissed) {
+      // The screen leaves the tree now; hand focus back to the shell.
+      final previous = _previousFocus;
+      _previousFocus = null;
+      if (previous != null && previous.context != null) previous.requestFocus();
+    }
+    // Rebuild when the shell's covered state or the screen's presence may
+    // change: at completed (shell hidden), reverse (shell drawn again) and
+    // dismissed (screen removed). Forward changes neither; opening already
+    // rebuilds.
+    if (status != AnimationStatus.forward) setState(() {});
   }
 
   void _onOpenChanged(bool open) {
@@ -83,14 +97,24 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
   Widget build(BuildContext context) {
     ref.listen(nowPlayingOpenProvider, (_, open) => _onOpenChanged(open));
     final open = ref.watch(nowPlayingOpenProvider);
-    if (!open && _controller.isDismissed) return const SizedBox.shrink();
-    return SlideTransition(
-      position: _slide,
-      // Opaque to pointers, so nothing reaches the shell underneath.
-      child: Listener(
-        behavior: HitTestBehavior.opaque,
-        child: NowPlayingScreen(titleBar: widget.titleBar),
-      ),
+    final screenShown = open || !_controller.isDismissed;
+    // Only a finished slide-in covers the shell; closing or reduced motion
+    // flips this in the same frame the screen's state changes.
+    final covered = open && _controller.isCompleted;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Offstage(offstage: covered, child: widget.behind),
+        if (screenShown)
+          SlideTransition(
+            position: _slide,
+            // Opaque to pointers, so nothing reaches the shell underneath.
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              child: NowPlayingScreen(titleBar: widget.titleBar),
+            ),
+          ),
+      ],
     );
   }
 }

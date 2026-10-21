@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -18,7 +20,8 @@ const _waveTravel = Duration(milliseconds: 1500);
 
 /// Elapsed time · track · total time, under the playback controls. While
 /// music plays the played part of the track turns into a travelling wave;
-/// it lies flat when paused, while dragging, or with animations turned off.
+/// it lies flat when paused, while dragging, with animations turned off, or
+/// while the window is not focused.
 class SeekBar extends ConsumerWidget {
   const SeekBar({super.key});
 
@@ -34,31 +37,44 @@ class SeekBar extends ConsumerWidget {
     );
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
-    return Row(
-      spacing: 8,
-      children: [
-        Text(formatDuration(position), style: style),
-        Expanded(
-          child: SeekGestureArea(
-            height: _hitHeight,
-            builder: (context, state) => _WavyTrack(
-              progress: state.progress,
-              waving:
-                  playing &&
-                  duration > Duration.zero &&
-                  !state.dragging &&
-                  !reduceMotion,
+    // The row is as high as its tallest part: the track or a time label.
+    final labelHeight = MediaQuery.textScalerOf(context)
+        .scale((style?.fontSize ?? 12) * (style?.height ?? 1));
+
+    // Position ticks repaint only this row. Its size is fixed so that their
+    // layout does not reach what surrounds it either.
+    return SizedBox(
+      width: double.infinity,
+      height: math.max(_hitHeight, labelHeight),
+      child: RepaintBoundary(
+        child: Row(
+          spacing: 8,
+          children: [
+            Text(formatDuration(position), style: style),
+            Expanded(
+              child: SeekGestureArea(
+                height: _hitHeight,
+                builder: (context, state) => _WavyTrack(
+                  progress: state.progress,
+                  waving:
+                      playing &&
+                      duration > Duration.zero &&
+                      !state.dragging &&
+                      !reduceMotion,
+                ),
+              ),
             ),
-          ),
+            Text(formatDuration(duration), style: style),
+          ],
         ),
-        Text(formatDuration(duration), style: style),
-      ],
+      ),
     );
   }
 }
 
 /// Owns the wave's animations: they tick only while the wave moves or
-/// settles, and stop once it lies flat.
+/// settles, and stop once it lies flat. The wave moves only while the app is
+/// `resumed`: an unfocused or minimized window lets it settle.
 class _WavyTrack extends StatefulWidget {
   const _WavyTrack({required this.progress, required this.waving});
 
@@ -69,13 +85,29 @@ class _WavyTrack extends StatefulWidget {
   State<_WavyTrack> createState() => _WavyTrackState();
 }
 
-class _WavyTrackState extends State<_WavyTrack> with TickerProviderStateMixin {
+class _WavyTrackState extends State<_WavyTrack>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final _amplitude = AnimationController(vsync: this, duration: _waveRise);
   late final _phase = AnimationController(vsync: this, duration: _waveTravel);
+
+  /// Whether the window has focus. Unknown counts as focused.
+  bool _focused = _isFocused(WidgetsBinding.instance.lifecycleState);
+
+  static bool _isFocused(AppLifecycleState? state) =>
+      state == null || state == AppLifecycleState.resumed;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _sync();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final focused = _isFocused(state);
+    if (focused == _focused) return;
+    _focused = focused;
     _sync();
   }
 
@@ -86,7 +118,7 @@ class _WavyTrackState extends State<_WavyTrack> with TickerProviderStateMixin {
   }
 
   void _sync() {
-    if (widget.waving) {
+    if (widget.waving && _focused) {
       _amplitude.forward();
       if (!_phase.isAnimating) _phase.repeat();
       return;
@@ -100,6 +132,7 @@ class _WavyTrackState extends State<_WavyTrack> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _amplitude.dispose();
     _phase.dispose();
     super.dispose();

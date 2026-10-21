@@ -44,14 +44,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     }
     final pastEnd = at == queue.order.length - 1;
     if (pastEnd && queue.repeat != RepeatMode.all) {
-      state = state.copyWith(
-        queue: rest,
-        playing: false,
-        stopped: true,
-        position: Duration.zero,
-        duration: Duration.zero,
-      );
-      _endPlayback();
+      _markStopped(ended: true, queue: rest);
       return _backend.stop();
     }
     state = state.copyWith(queue: rest);
@@ -71,26 +64,45 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// Nothing left to play: stops the engine and keeps shuffle and repeat.
   Future<void> _clearPlayback() {
     final queue = state.queue;
-    state = state.copyWith(
+    _markStopped(
+      ended: false,
       queue: PlayQueue(shuffled: queue.shuffled, repeat: queue.repeat),
-      playing: false,
-      stopped: true,
-      position: Duration.zero,
-      duration: Duration.zero,
     );
-    _ended = false;
-    _handedNext.clear();
-    _lastTick = Duration.zero;
     return _backend.stop();
   }
 
-  /// Playback ended on the last track: play starts the queue over, and
-  /// until then a queue edit loads its track paused.
-  void _endPlayback() {
-    _ended = true;
+  /// Playback stopped for good: nothing is wanted playing and the engine's
+  /// next-track bookkeeping is void. [ended] means the queue ran out (play
+  /// restarts it); [resetPosition] false keeps the finished track to seek back
+  /// into. [queue] swaps the queue in the same update. Leaves the engine alone.
+  void _markStopped({
+    required bool ended,
+    bool resetPosition = true,
+    PlayQueue? queue,
+  }) {
+    _ended = ended;
     _wantsPlaying = false;
     _handedNext.clear();
     _lastTick = Duration.zero;
+    state = state.copyWith(
+      queue: queue ?? state.queue,
+      playing: false,
+      stopped: true,
+      position: resetPosition ? Duration.zero : state.position,
+      duration: resetPosition ? Duration.zero : state.duration,
+    );
+  }
+
+  /// Runs an engine call made while following the engine on its own, where
+  /// nobody awaits the result: a failure is logged instead of escaping as an
+  /// uncaught error. Only an [Exception] (an engine failure) is caught; an
+  /// [Error] is a bug and still reaches the zone.
+  void _followEngine(String what, Future<void> Function() action) {
+    unawaited(
+      Future.sync(action).catchError((Object error, StackTrace stack) {
+        _log.warning('Could not $what', error, stack);
+      }, test: (error) => error is Exception),
+    );
   }
 
   void _onAdvanced(Track track) {
@@ -98,7 +110,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     if (queue.isEmpty) return;
     final index = _resolveAdvanced(queue, track);
     if (index == null) {
-      _advancedToRemoved();
+      _followEngine('carry on after a removed track', _advancedToRemoved);
       return;
     }
     state = state.copyWith(
@@ -111,9 +123,9 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     // The engine skips broken files on its own; with repeat all it would go
     // round the queue forever. Queuing nothing lets it stop after this one.
     if (_allFailed) {
-      _backend.setNext(null);
+      _followEngine('stop queuing tracks', () => _backend.setNext(null));
     } else {
-      _queueNext();
+      _followEngine('queue the next track', _queueNext);
     }
   }
 
@@ -130,7 +142,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     final length = queue.order.length;
     for (var step = 1; step <= length; step++) {
       final at = (queue.index + step) % length;
-      if (queue.tracks[at] == track) return at;
+      if (queue.trackAt(at) == track) return at;
     }
     return null;
   }
@@ -141,13 +153,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   Future<void> _advancedToRemoved() {
     final next = state.queue.nextIndex;
     if (next != null) return _play(next, play: _wantsPlaying);
-    state = state.copyWith(
-      playing: false,
-      stopped: true,
-      position: Duration.zero,
-      duration: Duration.zero,
-    );
-    _endPlayback();
+    _markStopped(ended: true);
     return _backend.stop();
   }
 }

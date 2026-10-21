@@ -15,7 +15,14 @@ const _scrollStep = 5.0;
 /// slider above the button, the volume in percent on top; scrolling on
 /// either changes the volume.
 class VolumeButton extends ConsumerStatefulWidget {
-  const VolumeButton({super.key});
+  const VolumeButton({super.key, this.onPopupChanged});
+
+  /// Called with `true` when the slider popup opens and `false` when it
+  /// closes (also when the button leaves the tree with the popup open). The
+  /// popup lives in the overlay, outside the button's own pointer regions, so
+  /// a parent that reacts to the pointer being on it needs this to know the
+  /// pointer is still on the volume control.
+  final ValueChanged<bool>? onPopupChanged;
 
   @override
   ConsumerState<VolumeButton> createState() => _VolumeButtonState();
@@ -26,15 +33,28 @@ class _VolumeButtonState extends ConsumerState<VolumeButton> {
   final _link = LayerLink();
   Timer? _hideTimer;
 
+  /// Own flag: the portal controller is already detached in [dispose].
+  bool _open = false;
+
   void _show() {
     _hideTimer?.cancel();
+    if (_open) return;
+    _open = true;
     _popup.show();
+    widget.onPopupChanged?.call(true);
+  }
+
+  void _hide() {
+    if (!_open) return;
+    _open = false;
+    _popup.hide();
+    widget.onPopupChanged?.call(false);
   }
 
   /// Waits a moment so the pointer can travel from the button to the popup.
   void _hideSoon() {
     _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(milliseconds: 300), _popup.hide);
+    _hideTimer = Timer(const Duration(milliseconds: 300), _hide);
   }
 
   void _onScroll(PointerSignalEvent event) {
@@ -49,6 +69,7 @@ class _VolumeButtonState extends ConsumerState<VolumeButton> {
   @override
   void dispose() {
     _hideTimer?.cancel();
+    if (_open) widget.onPopupChanged?.call(false);
     super.dispose();
   }
 

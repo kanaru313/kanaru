@@ -65,7 +65,34 @@ void main() {
     await pump(tester, file.path);
 
     final image = tester.widget<Image>(find.byType(Image)).image;
-    expect((image as ResizeImage).width, 200);
+    expect((image as ResizeImage).width, 256);
+  });
+
+  testWidgets('resizing decodes at a few snapped sizes, not one per pixel', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.5;
+    addTearDown(tester.view.reset);
+    final file = File('${dir.path}/cover.png')..writeAsBytesSync(_png);
+    final widths = <int>{};
+    for (var size = 100.0; size < 130; size++) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: TrackArtwork(artUri: file.path, size: size * 8),
+          ),
+        ),
+      );
+      widths.add(
+        (tester.widget<Image>(find.byType(Image)).image as ResizeImage).width!,
+      );
+    }
+
+    // 30 sizes spanning 800..1032 logical px.
+    expect(widths.length, lessThanOrEqualTo(8));
+    expect(widths.every((w) => w % 128 == 0), isTrue);
+    // Never below what is shown.
+    expect(widths.first, greaterThanOrEqualTo(800 * 1.5));
   });
 
   testWidgets('falls back to the music note when the file is missing', (

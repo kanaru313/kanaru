@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -367,6 +368,37 @@ void main() {
       expect(tester.binding.hasScheduledFrame, isFalse);
     });
 
+    testWidgets('stands still while the window is not focused', (tester) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(painter(tester).amplitude.value, 1);
+
+      for (final state in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(seconds: 2));
+        expect(painter(tester).amplitude.value, 0, reason: '$state');
+        expect(tester.binding.hasScheduledFrame, isFalse, reason: '$state');
+      }
+
+      // Lifecycle states come back one step at a time.
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(painter(tester).amplitude.value, 1);
+      final phase = painter(tester).phase.value;
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(painter(tester).phase.value, isNot(phase));
+    });
+
     testWidgets('lies flat with animations turned off', (tester) async {
       await pumpApp(tester);
       await openSongs(tester);
@@ -376,6 +408,97 @@ void main() {
       expect(find.byTooltip('Pause'), findsOneWidget);
       expect(painter(tester).amplitude.value, 0);
       expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+  });
+
+  group('seek bar height', () {
+    Future<double> height(WidgetTester tester, double scale) async {
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await pumpApp(tester);
+      await openSongs(tester);
+      return tester.getSize(find.byType(SeekBar)).height;
+    }
+
+    testWidgets('stays as high as the track in small text', (tester) async {
+      expect(await height(tester, 0.8), 24);
+    });
+
+    testWidgets('keeps the track height at normal text', (tester) async {
+      expect(await height(tester, 1), 24);
+    });
+
+    for (final scale in [1.5, 2.0]) {
+      testWidgets('grows with the time labels at text scale $scale', (
+        tester,
+      ) async {
+        final h = await height(tester, scale);
+
+        expect(h, greaterThanOrEqualTo(12 * 1.33 * scale));
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  group('position ticks', () {
+    /// Counts how often each render object is painted into
+    /// while [body] runs.
+    Future<Map<RenderObject, int>> paints(
+      WidgetTester tester,
+      Future<void> Function() body,
+    ) async {
+      final counts = <RenderObject, int>{};
+      debugOnProfilePaint = (object) =>
+          counts.update(object, (n) => n + 1, ifAbsent: () => 1);
+      try {
+        await body();
+      } finally {
+        debugOnProfilePaint = null;
+      }
+      return counts;
+    }
+
+    RenderObject text(WidgetTester tester, String data) =>
+        tester.renderObject(find.text(data).first);
+
+    Future<void> tick(WidgetTester tester, int seconds) async {
+      backend.emitPosition.add(Duration(seconds: seconds));
+      await tester.pump();
+    }
+
+    testWidgets('repaint the seek bar but not the rest of the bar', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await openSongs(tester);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tick(tester, 1);
+
+      final counts = await paints(tester, () => tick(tester, 2));
+
+      expect(counts[text(tester, '0:02')], 1);
+      expect(counts[text(tester, 'First Song')], isNull);
+      // The scaffold around the bar is not painted again.
+      expect(counts[tester.renderObject(find.byType(PlayerBar))], isNull);
+    });
+
+    testWidgets('repaint the seek strip but not the rest of the bar', (
+      tester,
+    ) async {
+      await pumpApp(tester, size: const Size(480, 640));
+      await openSongs(tester);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tick(tester, 1);
+
+      final counts = await paints(tester, () => tick(tester, 2));
+      final strip = find.descendant(
+        of: find.byType(SeekStrip),
+        matching: find.byType(Stack),
+      );
+      expect(counts[tester.renderObject(strip.first)], 1);
+      expect(counts[text(tester, 'First Song')], isNull);
+      // The scaffold around the bar is not painted again.
+      expect(counts[tester.renderObject(find.byType(PlayerBar))], isNull);
     });
   });
 
