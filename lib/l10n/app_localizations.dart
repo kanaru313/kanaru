@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'{done} / {total}'**
   String libraryKeysUpdatingProgress(int done, int total);
 
+  /// No description provided for @libraryCoverProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Making covers… {done} / {total}'**
+  String libraryCoverProgress(int done, int total);
+
   /// No description provided for @libraryScanDiscovering.
   ///
   /// In en, this message translates to:
@@ -529,6 +535,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That song is no longer in the library.'**
   String get songsTrackGone;
+
+  /// No description provided for @songsShuffleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle all'**
+  String get songsShuffleAll;
+
+  /// No description provided for @queuePlayNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play next'**
+  String get queuePlayNext;
+
+  /// No description provided for @queueAddToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to queue'**
+  String get queueAddToQueue;
+
+  /// No description provided for @queueActionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue actions'**
+  String get queueActionsTooltip;
+
+  /// No description provided for @queuePlayingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing next: {name}'**
+  String queuePlayingNext(String name);
+
+  /// No description provided for @queuePlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing: {name}'**
+  String queuePlaying(String name);
+
+  /// No description provided for @queueAddedToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to queue: {name}'**
+  String queueAddedToQueue(String name);
 
   /// No description provided for @sortBy.
   ///

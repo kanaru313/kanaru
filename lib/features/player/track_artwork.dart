@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../core/player/playing_track_art.dart';
 
 /// Cover art of a track at [size] with rounded corners, or a music note when
 /// the track has none, the file is missing or it is not a local file (remote
@@ -72,4 +75,21 @@ class TrackArtwork extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Cover of the playing track as core resolves it (its library cover, else
+/// the art it was queued with), at [size] with [radius]. Only this widget
+/// rebuilds when the cover changes.
+class PlayingTrackArtwork extends ConsumerWidget {
+  const PlayingTrackArtwork({super.key, required this.size, this.radius = 8});
+
+  final double size;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => TrackArtwork(
+    artUri: ref.watch(playingTrackArtProvider),
+    size: size,
+    radius: radius,
+  );
 }

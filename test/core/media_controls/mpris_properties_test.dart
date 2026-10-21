@@ -28,12 +28,16 @@ PlayerState stateOf(
 
 Map<String, DBusValue> props(PlayerState state, [MprisTrackIds? ids]) {
   ids ??= MprisTrackIds()..observe(state.queue);
-  return playerProperties(state, ids);
+  return playerProperties(state, ids, artUri: null);
 }
 
-Map<String, DBusValue> metadata(PlayerState state, [MprisTrackIds? ids]) {
+Map<String, DBusValue> metadata(
+  PlayerState state, [
+  MprisTrackIds? ids,
+  String? artUri,
+]) {
   ids ??= MprisTrackIds()..observe(state.queue);
-  return mprisMetadata(state, ids).asStringVariantDict();
+  return mprisMetadata(state, ids, artUri: artUri).asStringVariantDict();
 }
 
 void main() {
@@ -147,6 +151,28 @@ void main() {
       expect(ids.of(reopened), isNot(before));
     });
 
+    test('adding tracks keeps the ids', () {
+      final ids = MprisTrackIds();
+      final queue = PlayQueue(original: tracks, index: 1);
+      ids.observe(queue);
+      final before = ids.of(queue);
+
+      final grown = queue.insert(2, [Track.fromPath('/music/d.mp3')]);
+      ids.observe(grown);
+      expect(ids.of(grown), before);
+    });
+
+    test('clearing the queue compacts it and changes the ids', () {
+      final ids = MprisTrackIds();
+      final queue = PlayQueue(original: tracks, index: 1);
+      ids.observe(queue);
+      final before = ids.of(queue);
+
+      final cleared = queue.keepOnlyCurrent();
+      ids.observe(cleared);
+      expect(ids.of(cleared), isNot(before));
+    });
+
     test('ids are valid object paths', () {
       final ids = MprisTrackIds();
       final queue = PlayQueue(original: tracks);
@@ -203,7 +229,7 @@ void main() {
     );
 
     test('uses the types clients expect', () {
-      final m = metadata(stateOf(queue));
+      final m = metadata(stateOf(queue), null, '/music/cover.jpg');
       expect(m['mpris:trackid'], isA<DBusObjectPath>());
       expect(m['xesam:title'], const DBusString('Song'));
       expect(m['xesam:artist'], DBusArray.string(['Band']));
@@ -241,7 +267,7 @@ void main() {
           ),
         ],
       );
-      final m = metadata(stateOf(remote));
+      final m = metadata(stateOf(remote), null, 'https://example.com/c.jpg');
       expect(m.containsKey('xesam:url'), isFalse);
       expect(m.containsKey('mpris:artUrl'), isFalse);
     });
@@ -251,10 +277,11 @@ void main() {
     test('position alone changes nothing', () {
       final queue = PlayQueue(original: tracks);
       final ids = MprisTrackIds()..observe(queue);
-      final a = playerProperties(stateOf(queue), ids);
+      final a = playerProperties(stateOf(queue), ids, artUri: null);
       final b = playerProperties(
         stateOf(queue, position: const Duration(seconds: 3)),
         ids,
+        artUri: null,
       );
       expect(a['Position'], isNot(b['Position']));
       expect(changedProperties(a, b), isEmpty);
@@ -263,10 +290,11 @@ void main() {
     test('reports only what changed', () {
       final queue = PlayQueue(original: tracks);
       final ids = MprisTrackIds()..observe(queue);
-      final a = playerProperties(stateOf(queue), ids);
+      final a = playerProperties(stateOf(queue), ids, artUri: null);
       final b = playerProperties(
         stateOf(queue, playing: true, position: const Duration(seconds: 3)),
         ids,
+        artUri: null,
       );
       expect(changedProperties(a, b).keys, ['PlaybackStatus']);
     });

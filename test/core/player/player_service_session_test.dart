@@ -113,12 +113,18 @@ void main() {
 
     // MPRIS clients see the restored (muted) volume from the first reply.
     final ids = MprisTrackIds()..observe(first.queue);
-    expect(playerProperties(first, ids)['Volume'], const DBusDouble(0));
+    expect(
+      playerProperties(first, ids, artUri: null)['Volume'],
+      const DBusDouble(0),
+    );
 
     // Unmute brings back the volume from before the restart.
     await service().toggleMute();
     expect(state().volume, 40);
-    expect(playerProperties(state(), ids)['Volume'], const DBusDouble(0.4));
+    expect(
+      playerProperties(state(), ids, artUri: null)['Volume'],
+      const DBusDouble(0.4),
+    );
   });
 
   test('quit and relaunch comes back where it was paused', () async {
@@ -325,6 +331,41 @@ void main() {
         expect(File(sessionPath).readAsBytesSync(), isNot(before));
       });
     }
+  });
+
+  test('an edited queue comes back as it was', () async {
+    final d = song('d'), e = song('e');
+    live = launch();
+    await service().openTracks([a, b, c], start: 1);
+    await service().playNext([d]);
+    await service().addToQueue([e]);
+    await service().removeTrack(3);
+    await service().setShuffle(true);
+    await service().setShuffle(false);
+    await service().setShuffle(true);
+    final before = state().queue;
+    await quit();
+
+    live = launch();
+    final after = state().queue;
+    expect(after.tracks, before.tracks);
+    expect(after.current, before.current);
+    expect(after.shuffled, isTrue);
+    expect(after.unshuffle().tracks, before.unshuffle().tracks);
+    // A track removed in the last session is no longer kept.
+    expect(after.original.length, 4);
+  });
+
+  test('clearing the queue is saved without the dropped tracks', () async {
+    live = launch();
+    await service().openTracks([a, b, c], start: 1);
+    await service().addToQueue([song('d')]);
+    await service().clearQueue();
+    await quit();
+
+    live = launch();
+    expect(state().queue.original, [b]);
+    expect(state().queue.order, [0]);
   });
 
   test('without a settings file nothing is saved', () async {

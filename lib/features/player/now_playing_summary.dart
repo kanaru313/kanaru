@@ -48,9 +48,7 @@ class NowPlayingSummary extends ConsumerWidget {
     return Row(
       spacing: 12,
       children: [
-        NowPlayingOpenCover(
-          child: TrackArtwork(artUri: track.artUri, size: 64),
-        ),
+        NowPlayingOpenCover(child: const PlayingTrackArtwork(size: 64)),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -10,6 +10,7 @@ import 'tag_reader.dart';
 import 'walk_audio_files.dart';
 
 export '../database/library_startup.dart' show libraryHasRootsProvider;
+export 'cover_pass_state.dart';
 
 /// Reads tags with the Rust `lofty` bridge; tests override it with a fake.
 /// Writes cover thumbnails into [coverCacheDirectoryProvider] when it is set.

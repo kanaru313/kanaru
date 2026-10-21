@@ -49,6 +49,41 @@ void main() {
     },
   );
 
+  test(
+    'a flush while the player cannot be read logs and sends nothing',
+    () async {
+      var failing = false;
+      final backend = FakeAudioBackend();
+      final c = ProviderContainer(
+        overrides: [
+          audioBackendProvider.overrideWith((ref) {
+            if (failing) throw StateError('engine gone');
+            return backend;
+          }),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.listen(playerServiceProvider, (_, _) {}, onError: (_, _) {});
+      h.create(from: c, coalesceWindow: const Duration(milliseconds: 50));
+      await h.waitForName(mprisName);
+      final changes = await h.watchChanges();
+
+      // A change arms the flush timer; the player breaks before it fires.
+      await c.read(playerServiceProvider.notifier).openTracks(songs);
+      failing = true;
+      c.invalidate(audioBackendProvider);
+      await h.settle(const Duration(milliseconds: 150));
+
+      expect(changes, isEmpty);
+      final warnings = logs.where(
+        (r) =>
+            r.loggerName == 'mpris' && r.message == 'Not publishing a change',
+      );
+      expect(warnings, hasLength(1));
+      expect(warnings.single.level, Level.WARNING);
+    },
+  );
+
   group('seeked after a failed rebuild', () {
     test(
       'does not spin on the closed stream, resumes after a good rebuild',

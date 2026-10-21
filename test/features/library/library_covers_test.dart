@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
+import 'package:kanaru/core/indexer/indexer_providers.dart';
+import 'package:kanaru/core/indexer/indexer_state.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/albums/album_list_tile.dart';
 import 'package:kanaru/features/library/library_route_keys.dart';
@@ -135,5 +139,45 @@ void main() {
       ),
       findsNWidgets(2),
     );
+  });
+
+  testWidgets('a scanned song shows up first, its cover after the cover pass', (
+    tester,
+  ) async {
+    final covers = Directory.systemTemp.createTempSync('library_covers');
+    addTearDown(() => covers.deleteSync(recursive: true));
+    final h = LibraryHarness(coverCacheDirectory: covers.path);
+    h.reader
+      ..coverDirectory = covers.path
+      ..coverByName['one.mp3'] = 'red'
+      ..hangingCovers.add('one.mp3');
+    final music = h.folder('music');
+    h.touch(music, 'one.mp3');
+    await tester.runAsync(() => h.db.addRoots([music], now: 1));
+    await h.pump(tester, hasRoots: true);
+    goTo(tester, h, '/songs');
+    await tester.pumpAndSettle();
+
+    final indexer = h.container.read(libraryIndexerProvider.notifier);
+    late Future<void> scanning;
+    await tester.runAsync(() async {
+      scanning = indexer.scan();
+      while (h.reader.coverBatches.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+    });
+    await settleIo(tester, h);
+    Finder song() => find.ancestor(
+      of: find.text('ONE.MP3'),
+      matching: find.byType(SongTile),
+    );
+    expect(h.container.read(libraryIndexerProvider), isA<IndexerFinished>());
+    expect(song(), findsOneWidget);
+    expect(_coverPaths(tester, song()), isEmpty);
+
+    h.reader.releaseHangingCovers();
+    await tester.runAsync(() => scanning);
+    await settleIo(tester, h);
+    expect(_coverPaths(tester, song()), ['${covers.path}/$_red']);
   });
 }

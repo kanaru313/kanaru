@@ -29,18 +29,32 @@ Map<String, DBusValue> rootProperties() => {
 };
 
 /// Hands out track ids. An id is stable while the queue stays the one that
-/// was opened (shuffle and queue edits keep `original`, and an index into it
-/// is never reused) and changes when a new queue is opened, so a client
-/// holding an old id cannot seek the wrong track.
+/// was opened (shuffle, moves and removals keep `original`, adding tracks only
+/// extends it, and an index into it is never reused) and changes when a new
+/// queue is opened or the queue is cleared, so a client holding an old id
+/// cannot seek the wrong track.
 class MprisTrackIds {
   List<Track>? _original;
   int _generation = 0;
 
   /// Call with every queue before asking for ids.
   void observe(PlayQueue queue) {
-    if (identical(queue.original, _original)) return;
-    _original = queue.original;
-    _generation++;
+    final original = queue.original;
+    if (identical(original, _original)) return;
+    final extended = _extends(original, _original);
+    _original = original;
+    if (!extended) _generation++;
+  }
+
+  /// Whether [tracks] is [before] plus more: tracks were added to the same
+  /// queue, so the old ids still point at the same tracks. The same tracks
+  /// opened again are a new queue.
+  static bool _extends(List<Track> tracks, List<Track>? before) {
+    if (before == null || tracks.length <= before.length) return false;
+    for (var i = 0; i < before.length; i++) {
+      if (!identical(tracks[i], before[i])) return false;
+    }
+    return true;
   }
 
   DBusObjectPath of(PlayQueue queue) => queue.isEmpty
@@ -80,8 +94,14 @@ RepeatMode? repeatModeFromLoopStatus(String status) => switch (status) {
 };
 
 /// `a{sv}` for the current track, using the types clients insist on: object
-/// path id, int64 microseconds length, string array artist.
-DBusValue mprisMetadata(PlayerState state, MprisTrackIds ids) {
+/// path id, int64 microseconds length, string array artist. [artUri] is the
+/// current track's art as resolved by `playingTrackArtProvider`; the art
+/// stored on the track may be stale.
+DBusValue mprisMetadata(
+  PlayerState state,
+  MprisTrackIds ids, {
+  required String? artUri,
+}) {
   final track = state.queue.current;
   if (track == null) {
     return DBusDict.stringVariant({
@@ -92,7 +112,7 @@ DBusValue mprisMetadata(PlayerState state, MprisTrackIds ids) {
       ? state.duration
       : track.duration;
   final url = mprisFileUrl(track.uri);
-  final art = mprisFileUrl(track.artUri);
+  final art = mprisFileUrl(artUri);
   return DBusDict.stringVariant({
     'mpris:trackid': ids.of(state.queue),
     'xesam:title': DBusString(track.title),
@@ -105,16 +125,21 @@ DBusValue mprisMetadata(PlayerState state, MprisTrackIds ids) {
   });
 }
 
-/// All properties of `org.mpris.MediaPlayer2.Player` for [state].
+/// All properties of `org.mpris.MediaPlayer2.Player` for [state], with
+/// [artUri] as the current track's art (see [mprisMetadata]).
 /// [ids] must have observed `state.queue` already.
-Map<String, DBusValue> playerProperties(PlayerState state, MprisTrackIds ids) {
+Map<String, DBusValue> playerProperties(
+  PlayerState state,
+  MprisTrackIds ids, {
+  required String? artUri,
+}) {
   final queue = state.queue;
   return {
     'PlaybackStatus': DBusString(mprisPlaybackStatus(state)),
     'LoopStatus': DBusString(mprisLoopStatus(queue.repeat)),
     'Rate': const DBusDouble(1),
     'Shuffle': DBusBoolean(queue.shuffled),
-    'Metadata': mprisMetadata(state, ids),
+    'Metadata': mprisMetadata(state, ids, artUri: artUri),
     'Volume': DBusDouble((state.volume / 100).clamp(0, 1).toDouble()),
     'Position': DBusInt64(state.position.inMicroseconds),
     'MinimumRate': const DBusDouble(1),

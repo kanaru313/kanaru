@@ -1,16 +1,16 @@
 //! Reads one file with lofty, guarding against files that hang or crash the
-//! parser, and finds its cover in the same pass.
+//! parser: its tags, or its embedded pictures for the cover batch.
 
+use std::io::BufReader;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 
 use lofty::config::{ParseOptions, ParsingMode};
-use lofty::file::{AudioFile, TaggedFileExt};
+use lofty::file::{AudioFile, FileType, TaggedFileExt};
 use lofty::probe::Probe;
 
-use crate::api::tags::{CoverStatus, TrackTags};
-use crate::cover_art::take_embedded_pictures;
-use crate::cover_cache::CoverSink;
+use crate::api::tags::TrackTags;
+use crate::cover_art::{open_nonblocking, take_embedded_pictures};
 use crate::tag_mapping::{apply_properties, apply_tag};
 
 /// Prefix of an [`TrackTags::error`] that reading again cannot fix (corrupt
@@ -53,57 +53,50 @@ fn parse_error(error: &lofty::error::FileParseError) -> String {
     permanent(error)
 }
 
-/// Reads the tags of [`path`] and, when `covers` is given, its cover. Never
-/// panics and never fails: every tag problem ends up in [`TrackTags::error`],
-/// every cover problem in [`TrackTags::cover_status`].
-///
-/// A panic inside lofty is caught per file, and the cover code has its own
-/// guard so a crash there never loses the tags. That relies on the default
-/// `panic = "unwind"` profile setting; do not change it.
+/// Reads the tags of [`path`], without its pictures. Never panics and never
+/// fails: every problem ends up in [`TrackTags::error`]. A panic inside lofty
+/// is caught per file; that relies on the default `panic = "unwind"` profile
+/// setting, do not change it.
 ///
 /// Allocation inside lofty is capped per allocation by its default
 /// `GlobalOptions::allocation_limit` (16 MiB), which stops a corrupt length
-/// field from asking for gigabytes. It does not bound the total: with covers
-/// on, lofty loads every picture of the file. Peak memory is bounded instead
-/// by the small tag thread pool and the decode limit of
-/// [`make_jpeg`](crate::cover_thumbnail::make_jpeg).
-pub fn read_one(path: &str, covers: Option<&CoverSink>) -> TrackTags {
-    let mut parsed = guarded(path, covers.is_some());
-    if covers.is_some() && parsed.is_err() {
-        // Reading pictures can break a file whose tags are fine (a corrupt
-        // FLAC PICTURE block, an oversized MP4 `covr`). Keep the tags; the
-        // embedded cover counts as absent and sidecar images still apply.
-        parsed = guarded(path, false);
+/// field from asking for gigabytes.
+pub fn read_one(path: &str) -> TrackTags {
+    match guarded(path, false) {
+        Ok((tags, _)) => tags,
+        Err(reason) => TrackTags::failed(path.to_owned(), reason),
     }
-    let (mut tags, embedded) = match parsed {
-        Ok(found) => found,
-        Err(reason) => (TrackTags::failed(path.to_owned(), reason), Vec::new()),
-    };
-
-    let Some(sink) = covers else {
-        tags.cover_status = CoverStatus::Skipped;
-        return tags;
-    };
-    let audio = Path::new(path);
-    // Tags of DSD/WMA files cannot be read, but a folder.jpg beside them can.
-    let (cover, status) = if std::fs::metadata(audio).is_ok_and(|m| m.is_file()) {
-        catch_unwind(AssertUnwindSafe(|| sink.resolve(audio, embedded)))
-            .unwrap_or((None, CoverStatus::Failed))
-    } else {
-        (None, CoverStatus::None)
-    };
-    tags.cover = cover;
-    tags.cover_status = status;
-    tags
 }
 
 /// The embedded pictures of `path`, best first, for
 /// [`read_original_cover`](crate::api::tags::read_original_cover). Empty when
 /// the file cannot be parsed with pictures.
 pub fn embedded_pictures(path: &str) -> Vec<Vec<u8>> {
-    guarded(path, true)
-        .map(|(_, pictures)| pictures)
-        .unwrap_or_default()
+    embedded_pictures_result(path).unwrap_or_default()
+}
+
+/// Why the embedded pictures of a file could not be read.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CoverReadError {
+    /// May pass (I/O trouble, a file that ends early or is being written, a
+    /// file that is gone or not a regular file): the cover is worth looking
+    /// for again later.
+    Transient,
+    /// The content cannot be parsed with pictures by this reader (or the
+    /// parser crashed). Reading again gives the same answer, so the embedded
+    /// pictures count as absent.
+    Permanent,
+}
+
+/// The embedded pictures of `path`, best first, or why they could not be
+/// read, classified like [`TrackTags::error`]. Never panics. A file whose
+/// format carries no tags (DSD) has no pictures.
+pub fn embedded_pictures_result(path: &str) -> Result<Vec<Vec<u8>>, CoverReadError> {
+    match guarded(path, true) {
+        Ok((_, pictures)) => Ok(pictures),
+        Err(reason) if reason.starts_with(PERMANENT_ERROR_PREFIX) => Err(CoverReadError::Permanent),
+        Err(_) => Err(CoverReadError::Transient),
+    }
 }
 
 fn guarded(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u8>>), String> {
@@ -116,9 +109,11 @@ fn guarded(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u8>>),
 fn read_checked(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u8>>), String> {
     let file_path = Path::new(path);
 
-    // Check before opening: opening a FIFO blocks until a writer appears, and
-    // sockets or devices are never audio.
-    let metadata = std::fs::metadata(file_path).map_err(|e| e.to_string())?;
+    // Opened non-blocking and checked on the handle: opening a FIFO would
+    // otherwise block until a writer appears, sockets or devices are never
+    // audio, and the file read is the one that was checked.
+    let file = open_nonblocking(file_path).map_err(|e| e.to_string())?;
+    let metadata = file.metadata().map_err(|e| e.to_string())?;
     if !metadata.is_file() {
         return Err("not a regular file".to_owned());
     }
@@ -145,8 +140,12 @@ fn read_checked(path: &str, with_pictures: bool) -> Result<(TrackTags, Vec<Vec<u
     // Sniff the content instead of trusting the extension: `.oga` may hold
     // Opus or Speex, `.alac` is MP4, and files are often mislabeled. The
     // extension is only the fallback when the content is not recognised.
-    let probe = Probe::open(file_path)
-        .map_err(|e| parse_error(&e))?
+    let reader = BufReader::new(file);
+    let probe = match FileType::from_path(file_path) {
+        Some(file_type) => Probe::with_file_type(reader, file_type),
+        None => Probe::new(reader),
+    };
+    let probe = probe
         .options(options)
         .guess_file_type()
         .map_err(|e| e.to_string())?;

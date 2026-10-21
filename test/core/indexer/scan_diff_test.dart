@@ -12,14 +12,12 @@ TrackSnapshot row(
   int mtime = 1,
   int size = 10,
   bool error = false,
-  int coverVersion = 0,
 }) => TrackSnapshot(
   id: id,
   path: path,
   mtimeMs: mtime,
   sizeBytes: size,
   hasScanError: error,
-  coverScanVersion: coverVersion,
 );
 
 void main() {
@@ -124,24 +122,5 @@ void main() {
     expect(diff.toRead.map((f) => f.path), ['/m/a.mp3']);
     expect(diff.addedPaths, isEmpty);
     expect(diff.updatedPaths, isEmpty);
-  });
-
-  group('cover rules', () {
-    final walk = WalkResult(files: [file('/m/a.mp3'), file('/m/b.mp3')]);
-    final existing = [
-      row(1, '/m/a.mp3'),
-      row(2, '/m/b.mp3', coverVersion: coverScanVersion),
-    ];
-
-    test('an unchanged file looked at under older rules is read again', () {
-      final diff = diffScan(walk, existing, coversEnabled: true);
-      expect(diff.toRead.map((f) => f.path), ['/m/a.mp3']);
-      expect(diff.addedPaths, isEmpty);
-      expect(diff.updatedPaths, isEmpty);
-    });
-
-    test('with covers off the rules version is ignored', () {
-      expect(diffScan(walk, existing).toRead, isEmpty);
-    });
   });
 }

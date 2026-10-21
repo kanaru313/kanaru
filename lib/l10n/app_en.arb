@@ -60,6 +60,13 @@
       "total": { "type": "int", "format": "decimalPattern" }
     }
   },
+  "libraryCoverProgress": "Making covers… {done} / {total}",
+  "@libraryCoverProgress": {
+    "placeholders": {
+      "done": { "type": "int", "format": "decimalPattern" },
+      "total": { "type": "int", "format": "decimalPattern" }
+    }
+  },
   "libraryScanDiscovering": "Looking for music files…",
   "libraryScanReading": "Reading tags {done} / {total}",
   "@libraryScanReading": {
@@ -166,6 +173,28 @@
   "libraryUnexpectedError": "Something went wrong. See the log for details.",
   "libraryScanFailedDetails": "See the log for details",
   "songsTrackGone": "That song is no longer in the library.",
+  "songsShuffleAll": "Shuffle all",
+  "queuePlayNext": "Play next",
+  "queueAddToQueue": "Add to queue",
+  "queueActionsTooltip": "Queue actions",
+  "queuePlayingNext": "Playing next: {name}",
+  "@queuePlayingNext": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "queuePlaying": "Playing: {name}",
+  "@queuePlaying": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "queueAddedToQueue": "Added to queue: {name}",
+  "@queueAddedToQueue": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
 
   "sortBy": "Sort by:",
   "sortOrder": "Order:",

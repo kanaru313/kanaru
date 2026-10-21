@@ -91,7 +91,6 @@ class LibraryDatabase extends _$LibraryDatabase {
         tracks.mtimeMs,
         tracks.sizeBytes,
         retryable,
-        tracks.coverScanVersion,
       ])
       ..where(tracks.rootId.equals(rootId));
     final rows = await query.get();
@@ -103,7 +102,6 @@ class LibraryDatabase extends _$LibraryDatabase {
           mtimeMs: row.read(tracks.mtimeMs)!,
           sizeBytes: row.read(tracks.sizeBytes)!,
           hasScanError: row.read(retryable)!,
-          coverScanVersion: row.read(tracks.coverScanVersion)!,
         ),
     ];
   }
@@ -197,6 +195,94 @@ class LibraryDatabase extends _$LibraryDatabase {
         )..where((t) => t.id.isIn(all.sublist(i, end)))).go();
       }
     });
+  }
+
+  /// `(id, path)` of up to [limit] tracks under [rootIds] whose cover was
+  /// not yet looked for under the current `coverScanVersion`, ordered by
+  /// path and starting after [after] (from the start when null). Ids in
+  /// [excluding] are passed over without counting toward [limit].
+  Future<List<(int, String)>> tracksNeedingCover(
+    List<int> rootIds, {
+    String? after,
+    Set<int> excluding = const {},
+    required int limit,
+  }) async {
+    final found = <(int, String)>[];
+    var cursor = after;
+    while (found.length < limit) {
+      var condition =
+          tracks.coverScanVersion.isSmallerThanValue(coverScanVersion) &
+          tracks.rootId.isIn(rootIds);
+      if (cursor != null) {
+        condition = condition & tracks.path.isBiggerThanValue(cursor);
+      }
+      final query = selectOnly(tracks)
+        ..addColumns([tracks.id, tracks.path])
+        ..where(condition)
+        ..orderBy([OrderingTerm.asc(tracks.path)])
+        ..limit(limit);
+      final rows = await query.get();
+      for (final row in rows) {
+        final id = row.read(tracks.id)!;
+        if (excluding.contains(id)) continue;
+        found.add((id, row.read(tracks.path)!));
+        if (found.length == limit) break;
+      }
+      if (rows.length < limit) break;
+      cursor = rows.last.read(tracks.path);
+    }
+    return found;
+  }
+
+  /// How many tracks under [rootIds] wait for their cover (see
+  /// [tracksNeedingCover]), leaving out ids in [excluding]. Only excluded
+  /// ids that are still waiting count against the total, so ids of deleted
+  /// tracks or other roots never push it below the real work.
+  Future<int> countTracksNeedingCover(
+    List<int> rootIds, {
+    Set<int> excluding = const {},
+  }) async {
+    final waiting = await _countNeedingCover(rootIds);
+    final ids = excluding.toList();
+    var excluded = 0;
+    for (var i = 0; i < ids.length; i += deleteChunkSize) {
+      final end = i + deleteChunkSize < ids.length
+          ? i + deleteChunkSize
+          : ids.length;
+      excluded += await _countNeedingCover(rootIds, among: ids.sublist(i, end));
+    }
+    return waiting - excluded;
+  }
+
+  Future<int> _countNeedingCover(List<int> rootIds, {List<int>? among}) async {
+    final count = tracks.id.count();
+    var condition =
+        tracks.coverScanVersion.isSmallerThanValue(coverScanVersion) &
+        tracks.rootId.isIn(rootIds);
+    if (among != null) condition = condition & tracks.id.isIn(among);
+    final query = selectOnly(tracks)
+      ..addColumns([count])
+      ..where(condition);
+    return (await query.getSingle()).read(count)!;
+  }
+
+  /// Stores the outcome of looking for covers: `(id, key)` with a key for a
+  /// found cover, `null` for a confirmed missing one. Each row gets the
+  /// current `coverScanVersion`, unless it already has it. One transaction,
+  /// without notifying watchers: the caller calls [notifyUpdates] once.
+  Future<void> writeCovers(List<(int, String?)> covers) {
+    if (covers.isEmpty) return Future.value();
+    return transaction(
+      () => batch((b) {
+        for (final (id, key) in covers) {
+          b.customStatement(
+            'UPDATE tracks SET cover_key = ?, cover_scan_version = ? '
+            'WHERE id = ? AND cover_scan_version < ?',
+            [key, coverScanVersion, id, coverScanVersion],
+          );
+        }
+      }),
+    );
   }
 
   /// Every cover key some track points at.

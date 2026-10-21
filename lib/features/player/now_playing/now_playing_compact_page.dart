@@ -42,11 +42,7 @@ class NowPlayingCompactPage extends ConsumerWidget {
                 const SizedBox.shrink(),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: TrackArtwork(
-                    artUri: track.artUri,
-                    size: art,
-                    radius: 32,
-                  ),
+                  child: PlayingTrackArtwork(size: art, radius: 32),
                 ),
                 // Spacing as on SPlayer's phone layout: 24 under the title,
                 // 30 under the seek bar, 30 under the buttons.

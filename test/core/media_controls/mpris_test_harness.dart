@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dbus/dbus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:kanaru/core/media_controls/media_controls_provider.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_media_controls.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
@@ -54,7 +55,9 @@ class MprisHarness {
 
   PlayerService get service => container.read(playerServiceProvider.notifier);
 
-  Future<void> setUp() async {
+  /// [overrides] add to the player backend, e.g. a library and a covers
+  /// folder for the art.
+  Future<void> setUp({List<Override> overrides = const []}) async {
     _dir = await Directory.systemTemp.createTemp('kanaru-mpris');
     _server = DBusServer();
     _address = await _server.listenAddress(DBusAddress.unix(dir: _dir));
@@ -62,7 +65,10 @@ class MprisHarness {
     remoteClient = newClient();
     backend = FakeAudioBackend();
     container = ProviderContainer(
-      overrides: [audioBackendProvider.overrideWithValue(backend)],
+      overrides: [
+        audioBackendProvider.overrideWithValue(backend),
+        ...overrides,
+      ],
     );
     container.listen(playerServiceProvider, (_, _) {});
   }
@@ -81,7 +87,11 @@ class MprisHarness {
     DBusClient Function()? factory,
     ProviderContainer? from,
     Duration coalesceWindow = harnessCoalesceWindow,
-    Map<String, DBusValue> Function(PlayerState, MprisTrackIds)?
+    Map<String, DBusValue> Function(
+      PlayerState,
+      MprisTrackIds, {
+      required String? artUri,
+    })?
     buildProperties,
   }) {
     final provider = Provider(
@@ -93,7 +103,9 @@ class MprisHarness {
         buildProperties: buildProperties ?? playerProperties,
       ),
     );
-    controls = (from ?? container).read(provider);
+    // Listened like `main.dart` does, so what the controls listen to stays
+    // active.
+    controls = (from ?? container).listen(provider, (_, _) {}).read();
     pointRemoteAt(name);
     return controls!;
   }

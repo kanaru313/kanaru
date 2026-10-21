@@ -69,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 442866205;
+  int get rustContentHash => 1385684193;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -85,12 +85,18 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiTagsInitApp();
 
+  Future<List<TrackCover>> crateApiTagsReadCoversBatch({
+    required List<String> paths,
+    required String coverDir,
+  });
+
   Future<Uint8List?> crateApiTagsReadOriginalCover({required String path});
 
   Future<List<TrackTags>> crateApiTagsReadTagsBatch({
     required List<String> paths,
-    required String coverDir,
   });
+
+  Future<TrackCover> crateApiTagsTrackCoverDefault();
 
   Future<TrackTags> crateApiTagsTrackTagsDefault();
 
@@ -163,6 +169,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
   @override
+  Future<List<TrackCover>> crateApiTagsReadCoversBatch({
+    required List<String> paths,
+    required String coverDir,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_list_String(paths, serializer);
+          sse_encode_String(coverDir, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_track_cover,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTagsReadCoversBatchConstMeta,
+        argValues: [paths, coverDir],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTagsReadCoversBatchConstMeta =>
+      const TaskConstMeta(
+        debugName: "read_covers_batch",
+        argNames: ["paths", "coverDir"],
+      );
+
+  @override
   Future<Uint8List?> crateApiTagsReadOriginalCover({required String path}) {
     return handler.executeNormal(
       NormalTask(
@@ -172,7 +213,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -193,18 +234,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Future<List<TrackTags>> crateApiTagsReadTagsBatch({
     required List<String> paths,
-    required String coverDir,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_String(paths, serializer);
-          sse_encode_String(coverDir, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 5,
             port: port_,
           );
         },
@@ -213,16 +252,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiTagsReadTagsBatchConstMeta,
-        argValues: [paths, coverDir],
+        argValues: [paths],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiTagsReadTagsBatchConstMeta => const TaskConstMeta(
-    debugName: "read_tags_batch",
-    argNames: ["paths", "coverDir"],
-  );
+  TaskConstMeta get kCrateApiTagsReadTagsBatchConstMeta =>
+      const TaskConstMeta(debugName: "read_tags_batch", argNames: ["paths"]);
+
+  @override
+  Future<TrackCover> crateApiTagsTrackCoverDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_track_cover,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTagsTrackCoverDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTagsTrackCoverDefaultConstMeta =>
+      const TaskConstMeta(debugName: "track_cover_default", argNames: []);
 
   @override
   Future<TrackTags> crateApiTagsTrackTagsDefault() {
@@ -233,7 +297,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 7,
             port: port_,
           );
         },
@@ -265,7 +329,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 8,
             port: port_,
           );
         },
@@ -341,6 +405,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<TrackCover> dco_decode_list_track_cover(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_track_cover).toList();
+  }
+
+  @protected
   List<TrackTags> dco_decode_list_track_tags(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_track_tags).toList();
@@ -377,11 +447,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TrackCover dco_decode_track_cover(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return TrackCover(
+      path: dco_decode_String(arr[0]),
+      cover: dco_decode_opt_String(arr[1]),
+      status: dco_decode_cover_status(arr[2]),
+    );
+  }
+
+  @protected
   TrackTags dco_decode_track_tags(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 21)
-      throw Exception('unexpected arr length: expect 21 but see ${arr.length}');
+    if (arr.length != 19)
+      throw Exception('unexpected arr length: expect 19 but see ${arr.length}');
     return TrackTags(
       path: dco_decode_String(arr[0]),
       title: dco_decode_opt_String(arr[1]),
@@ -402,8 +485,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       bitDepth: dco_decode_opt_box_autoadd_u_8(arr[16]),
       channels: dco_decode_opt_box_autoadd_u_8(arr[17]),
       error: dco_decode_opt_String(arr[18]),
-      cover: dco_decode_opt_String(arr[19]),
-      coverStatus: dco_decode_cover_status(arr[20]),
     );
   }
 
@@ -489,6 +570,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<TrackCover> sse_decode_list_track_cover(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TrackCover>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_track_cover(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<TrackTags> sse_decode_list_track_tags(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -556,6 +649,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TrackCover sse_decode_track_cover(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_path = sse_decode_String(deserializer);
+    var var_cover = sse_decode_opt_String(deserializer);
+    var var_status = sse_decode_cover_status(deserializer);
+    return TrackCover(path: var_path, cover: var_cover, status: var_status);
+  }
+
+  @protected
   TrackTags sse_decode_track_tags(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_path = sse_decode_String(deserializer);
@@ -577,8 +679,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_bitDepth = sse_decode_opt_box_autoadd_u_8(deserializer);
     var var_channels = sse_decode_opt_box_autoadd_u_8(deserializer);
     var var_error = sse_decode_opt_String(deserializer);
-    var var_cover = sse_decode_opt_String(deserializer);
-    var var_coverStatus = sse_decode_cover_status(deserializer);
     return TrackTags(
       path: var_path,
       title: var_title,
@@ -599,8 +699,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       bitDepth: var_bitDepth,
       channels: var_channels,
       error: var_error,
-      cover: var_cover,
-      coverStatus: var_coverStatus,
     );
   }
 
@@ -692,6 +790,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_track_cover(
+    List<TrackCover> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_track_cover(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_track_tags(
     List<TrackTags> self,
     SseSerializer serializer,
@@ -760,6 +870,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_track_cover(TrackCover self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.path, serializer);
+    sse_encode_opt_String(self.cover, serializer);
+    sse_encode_cover_status(self.status, serializer);
+  }
+
+  @protected
   void sse_encode_track_tags(TrackTags self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.path, serializer);
@@ -781,8 +899,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_box_autoadd_u_8(self.bitDepth, serializer);
     sse_encode_opt_box_autoadd_u_8(self.channels, serializer);
     sse_encode_opt_String(self.error, serializer);
-    sse_encode_opt_String(self.cover, serializer);
-    sse_encode_cover_status(self.coverStatus, serializer);
   }
 
   @protected

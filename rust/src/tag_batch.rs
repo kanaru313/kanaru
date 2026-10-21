@@ -4,22 +4,22 @@ use rayon::prelude::*;
 use std::sync::LazyLock;
 
 use crate::api::tags::TrackTags;
-use crate::cover_cache::CoverSink;
 use crate::tag_reader::read_one;
 
 /// Stack size for tag-reading threads. Parsers recurse on nested containers
 /// (MP4 atoms, Ogg pages), and rayon's default stack is smaller than the
 /// 8 MiB a normal main thread gets.
-const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
+pub(crate) const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
 
 /// Number of tag threads for a machine with `cpus` hardware threads: half of
 /// them, so a scan leaves room for playback and the UI, and at least two.
 ///
-/// Each thread reads one file at a time. With covers on, lofty holds every
-/// picture of that file in memory and a thumbnail decode may take up to
+/// Each thread reads one file at a time. The cover pool uses the same count:
+/// there lofty holds every picture of a file in memory and a thumbnail decode
+/// may take up to
 /// [`MAX_DECODE_BYTES`](crate::cover_thumbnail::MAX_DECODE_BYTES), so peak
 /// memory grows with this count.
-fn thread_count(cpus: usize) -> usize {
+pub(crate) fn thread_count(cpus: usize) -> usize {
     (cpus / 2).max(2)
 }
 
@@ -35,12 +35,12 @@ static POOL: LazyLock<Result<rayon::ThreadPool, String>> = LazyLock::new(|| {
         .map_err(|e| format!("cannot start tag reader threads: {e}"))
 });
 
-/// Reads every file in `paths` in parallel, finding covers when `covers` is
-/// given. One entry per input path, in the same order; a file that fails
-/// yields an entry with `error` set and never fails the batch.
-pub fn read_batch(paths: Vec<String>, covers: Option<&CoverSink>) -> Vec<TrackTags> {
+/// Reads the tags of every file in `paths` in parallel. One entry per input
+/// path, in the same order; a file that fails yields an entry with `error`
+/// set and never fails the batch.
+pub fn read_batch(paths: Vec<String>) -> Vec<TrackTags> {
     match &*POOL {
-        Ok(pool) => pool.install(|| paths.par_iter().map(|p| read_one(p, covers)).collect()),
+        Ok(pool) => pool.install(|| paths.par_iter().map(|p| read_one(p)).collect()),
         Err(reason) => paths
             .into_iter()
             .map(|path| TrackTags::failed(path, reason.clone()))

@@ -166,6 +166,19 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String libraryCoverProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Đang tạo ảnh bìa… $doneString / $totalString';
+  }
+
+  @override
   String get libraryScanDiscovering => 'Đang tìm file nhạc…';
 
   @override
@@ -290,6 +303,33 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get songsTrackGone => 'Bài hát này không còn trong thư viện.';
+
+  @override
+  String get songsShuffleAll => 'Phát ngẫu nhiên tất cả';
+
+  @override
+  String get queuePlayNext => 'Phát tiếp theo';
+
+  @override
+  String get queueAddToQueue => 'Thêm vào hàng đợi';
+
+  @override
+  String get queueActionsTooltip => 'Thao tác hàng đợi';
+
+  @override
+  String queuePlayingNext(String name) {
+    return 'Phát tiếp theo: $name';
+  }
+
+  @override
+  String queuePlaying(String name) {
+    return 'Đang phát: $name';
+  }
+
+  @override
+  String queueAddedToQueue(String name) {
+    return 'Đã thêm vào hàng đợi: $name';
+  }
 
   @override
   String get sortBy => 'Sắp xếp:';

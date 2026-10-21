@@ -41,7 +41,8 @@ class PlaybackSession {
     );
   }
 
-  /// `PlayQueue.original`: every track as opened, removed ones included.
+  /// `PlayQueue.original`: the tracks opened and those added later. Removed
+  /// ones are dropped when the session is restored (`toQueue`).
   final List<Track> tracks;
 
   /// `PlayQueue.order`: indexes into [tracks] in play order.
@@ -65,14 +66,36 @@ class PlaybackSession {
   /// Whether there is a track to restore.
   bool get hasTrack => order.isNotEmpty;
 
-  PlayQueue toQueue() => PlayQueue(
-    original: tracks,
-    order: order,
-    index: index,
-    shuffled: shuffled,
-    repeat: repeat,
-    unshuffledOrder: unshuffledOrder,
-  );
+  /// The queue as it was. Tracks no longer in [order] (removed ones) are
+  /// dropped and the indexes renumbered, so [tracks] does not grow for as
+  /// long as the queue is edited across restarts.
+  PlayQueue toQueue() {
+    if (order.length >= tracks.length) {
+      return PlayQueue(
+        original: tracks,
+        order: order,
+        index: index,
+        shuffled: shuffled,
+        repeat: repeat,
+        unshuffledOrder: unshuffledOrder,
+      );
+    }
+    final kept = [...order]..sort();
+    final renumbered = {for (var i = 0; i < kept.length; i++) kept[i]: i};
+    List<int> renumber(List<int> entries) => [
+      for (final entry in entries) renumbered[entry]!,
+    ];
+    return PlayQueue(
+      original: [for (final entry in kept) tracks[entry]],
+      order: renumber(order),
+      index: index,
+      shuffled: shuffled,
+      repeat: repeat,
+      unshuffledOrder: unshuffledOrder == null
+          ? null
+          : renumber(unshuffledOrder!),
+    );
+  }
 
   @override
   bool operator ==(Object other) =>

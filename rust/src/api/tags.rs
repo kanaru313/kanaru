@@ -5,11 +5,12 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::cover_art::{first_source, list_images, read_bounded, validate_header, Attempt};
+use crate::cover_batch::read_covers;
 use crate::cover_cache::CoverSink;
 use crate::tag_batch::read_batch;
 use crate::tag_reader::embedded_pictures;
 
-/// What happened when looking for a file's cover.
+/// What happened when looking for a file's cover, in [`read_covers_batch`].
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum CoverStatus {
     /// Covers were not requested (empty cover folder).
@@ -55,29 +56,52 @@ pub struct TrackTags {
     pub channels: Option<u8>,
     /// Why the file could not be read; `None` on success.
     pub error: Option<String>,
-    /// Cache key of the cover thumbnail, `<ab>/<hash>.jpg` relative to the
-    /// cover folder; `hash` is the blake3 of the original image bytes.
-    pub cover: Option<String>,
-    pub cover_status: CoverStatus,
 }
 
-/// Reads the tags of every file in `paths`, in parallel.
+/// Reads the tags of every file in `paths`, in parallel. Pictures are not
+/// loaded; covers come from [`read_covers_batch`].
 ///
 /// The result has exactly one entry per input path, in the same order. A file
 /// that fails to read yields an entry with `error` set; it never fails the
 /// batch.
+pub fn read_tags_batch(paths: Vec<String>) -> Vec<TrackTags> {
+    read_batch(paths)
+}
+
+/// The cover of one file, from [`read_covers_batch`].
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TrackCover {
+    /// The path as given to [`read_covers_batch`].
+    pub path: String,
+    /// Cache key of the cover thumbnail, `<ab>/<hash>.jpg` relative to the
+    /// cover folder; `hash` is the blake3 of the original image bytes. Set
+    /// only when [`status`](Self::status) is [`CoverStatus::Found`].
+    pub cover: Option<String>,
+    pub status: CoverStatus,
+}
+
+/// Finds the cover of every file in `paths` and makes sure its thumbnail is
+/// in `cover_dir`, in parallel on low-priority threads. Tags are not read.
 ///
-/// `cover_dir` is the thumbnail folder (size included, e.g. `.../covers/512`).
-/// When it is empty no cover is looked for and every entry is
-/// [`CoverStatus::Skipped`]; otherwise each file's cover thumbnail is written
-/// there and its key returned in [`TrackTags::cover`]. Image bytes never cross
-/// to Dart here.
-pub fn read_tags_batch(paths: Vec<String>, cover_dir: String) -> Vec<TrackTags> {
+/// `cover_dir` is the thumbnail folder (size included, e.g.
+/// `.../covers/512`). The result has exactly one entry per input path, in the
+/// same order. A file that is
+/// gone, not a regular file, or whose cover could not be read for a reason
+/// that may pass gives [`CoverStatus::Failed`]; [`CoverStatus::None`] means
+/// every source was checked. When `cover_dir` is empty nothing is looked for
+/// and every entry is [`CoverStatus::Skipped`]. Image bytes never cross to
+/// Dart.
+pub fn read_covers_batch(paths: Vec<String>, cover_dir: String) -> Vec<TrackCover> {
     if cover_dir.is_empty() {
-        return read_batch(paths, None);
+        return paths
+            .into_iter()
+            .map(|path| TrackCover {
+                path,
+                ..TrackCover::default()
+            })
+            .collect();
     }
-    let sink = CoverSink::new(cover_dir);
-    read_batch(paths, Some(&sink))
+    read_covers(paths, &CoverSink::new(cover_dir))
 }
 
 /// The original bytes of the cover of the audio file at `path`, chosen the
@@ -97,9 +121,9 @@ pub fn read_original_cover(path: String) -> Option<Vec<u8>> {
         first_source(
             audio,
             embedded_pictures(&path),
-            |dir| Arc::new(list_images(dir)),
+            |dir| Ok(Arc::new(list_images(dir))),
             usable,
-            |sidecar| read_bounded(sidecar).map_or(Attempt::Next, usable),
+            |sidecar| read_bounded(sidecar).ok().flatten().map_or(Attempt::Next, usable),
         )
     }))
     .unwrap_or(None)

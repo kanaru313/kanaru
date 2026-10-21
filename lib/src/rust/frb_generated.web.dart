@@ -51,6 +51,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<TrackCover> dco_decode_list_track_cover(dynamic raw);
+
+  @protected
   List<TrackTags> dco_decode_list_track_tags(dynamic raw);
 
   @protected
@@ -67,6 +70,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  TrackCover dco_decode_track_cover(dynamic raw);
 
   @protected
   TrackTags dco_decode_track_tags(dynamic raw);
@@ -108,6 +114,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<TrackCover> sse_decode_list_track_cover(SseDeserializer deserializer);
+
+  @protected
   List<TrackTags> sse_decode_list_track_tags(SseDeserializer deserializer);
 
   @protected
@@ -124,6 +133,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  TrackCover sse_decode_track_cover(SseDeserializer deserializer);
 
   @protected
   TrackTags sse_decode_track_tags(SseDeserializer deserializer);
@@ -174,6 +186,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_track_cover(
+    List<TrackCover> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_track_tags(
     List<TrackTags> self,
     SseSerializer serializer,
@@ -199,6 +217,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     Uint8List? self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_track_cover(TrackCover self, SseSerializer serializer);
 
   @protected
   void sse_encode_track_tags(TrackTags self, SseSerializer serializer);

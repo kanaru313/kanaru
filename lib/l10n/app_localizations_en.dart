@@ -166,6 +166,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String libraryCoverProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Making covers… $doneString / $totalString';
+  }
+
+  @override
   String get libraryScanDiscovering => 'Looking for music files…';
 
   @override
@@ -292,6 +305,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get songsTrackGone => 'That song is no longer in the library.';
+
+  @override
+  String get songsShuffleAll => 'Shuffle all';
+
+  @override
+  String get queuePlayNext => 'Play next';
+
+  @override
+  String get queueAddToQueue => 'Add to queue';
+
+  @override
+  String get queueActionsTooltip => 'Queue actions';
+
+  @override
+  String queuePlayingNext(String name) {
+    return 'Playing next: $name';
+  }
+
+  @override
+  String queuePlaying(String name) {
+    return 'Playing: $name';
+  }
+
+  @override
+  String queueAddedToQueue(String name) {
+    return 'Added to queue: $name';
+  }
 
   @override
   String get sortBy => 'Sort by:';
