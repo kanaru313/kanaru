@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../router.dart';
+import 'app_destination.dart';
 
 /// Visited locations and the position in them, like a browser history.
 class NavigationHistoryState {
@@ -50,14 +51,24 @@ class NavigationHistory extends Notifier<NavigationHistoryState> {
       return;
     }
     // Already there, e.g. because the router reported the same page twice.
-    if (location == state.entries[state.index]) return;
-    var entries = [...state.entries.take(state.index + 1), location];
+    final current = state.entries[state.index];
+    if (location == current) return;
+    // Refining a search replaces the search entry, so one search session is
+    // one history step; entries after it go, as with any new visit.
+    final replacesSearch = _isSearch(current) && _isSearch(location);
+    var entries = [
+      ...state.entries.take(replacesSearch ? state.index : state.index + 1),
+      location,
+    ];
     if (entries.length > navigationHistoryLimit) {
       // A new list: the previous state's entries stay as they were.
       entries = entries.sublist(entries.length - navigationHistoryLimit);
     }
     state = NavigationHistoryState(entries, entries.length - 1);
   }
+
+  static bool _isSearch(String location) =>
+      Uri.parse(location).path == AppDestination.search.path;
 
   void _replaceAt(int index, String location) {
     if (state.entries[index] == location) return;
