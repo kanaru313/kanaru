@@ -99,6 +99,14 @@ class Tracks extends Table {
   TextColumn get artistSort => text().nullable()();
   TextColumn get albumSort => text().nullable()();
 
+  /// `sortKey` of the artist, album, album artist and genre tags (accents,
+  /// case and đ folded; a leading "the" kept); null with their tag. Together
+  /// with [titleSort] these are what `track_search` indexes.
+  TextColumn get artistSearch => text().nullable()();
+  TextColumn get albumSearch => text().nullable()();
+  TextColumn get albumArtistSearch => text().nullable()();
+  TextColumn get genreSearch => text().nullable()();
+
   /// The `textKeysVersion` whose rules produced the keys above; 0 when they
   /// were never computed.
   IntColumn get keysVersion => integer().withDefault(const Constant(0))();

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'library_database.steps.dart';
 import 'library_migration_v3.dart';
+import 'library_migration_v4.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
 import 'text_keys.dart';
@@ -17,12 +18,15 @@ part 'library_database.g.dart';
 const deleteChunkSize = 500;
 
 /// The music library: source folders and the tracks found in them.
-@DriftDatabase(tables: [LibraryRoots, Tracks, TrackArtists])
+@DriftDatabase(
+  tables: [LibraryRoots, Tracks, TrackArtists],
+  include: {'library_search.drift'},
+)
 class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -35,6 +39,7 @@ class LibraryDatabase extends _$LibraryDatabase {
         await m.addColumn(schema.tracks, schema.tracks.coverScanVersion);
       },
       from2To3: (m, schema) => migrateLibraryToSchema3(this, m, schema),
+      from3To4: (m, schema) => migrateLibraryToSchema4(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).
@@ -114,7 +119,7 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// textKeysVersion`) and its `track_artists` rows are replaced in the same
   /// transaction, on insert and on update alike, so a rescan that changes a
   /// title or an artist re-keys the track. [rows] carry the tags (title,
-  /// artist, album, album artist) the keys come from. [rows] must name them
+  /// artist, album, album artist, genre) the keys come from. [rows] must name them
   /// all, as `tracksFromTags` builds them: a tag left out (absent) is
   /// written as empty, so the keys never disagree with the stored text, and
   /// a rescan clears it.
@@ -129,12 +134,14 @@ class LibraryDatabase extends _$LibraryDatabase {
             albumArtist: Value(
               row.albumArtist.present ? row.albumArtist.value : null,
             ),
+            genre: Value(row.genre.present ? row.genre.value : null),
           ),
           keys: trackKeysFor(
             title: row.title.value,
             artist: row.artist.value,
             album: row.album.value,
             albumArtist: row.albumArtist.value,
+            genre: row.genre.value,
           ),
         ),
     ];
@@ -148,6 +155,10 @@ class LibraryDatabase extends _$LibraryDatabase {
             titleSort: Value(keys.titleSort),
             artistSort: Value(keys.artistSort),
             albumSort: Value(keys.albumSort),
+            artistSearch: Value(keys.artistSearch),
+            albumSearch: Value(keys.albumSearch),
+            albumArtistSearch: Value(keys.albumArtistSearch),
+            genreSearch: Value(keys.genreSearch),
             keysVersion: const Value(textKeysVersion),
           );
           b.insert(

@@ -5,3 +5,7 @@ targets:
         options:
           databases:
             library_db: lib/core/database/library_database.dart
+          sql:
+            dialect: sqlite
+            options:
+              modules: [fts5]

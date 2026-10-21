@@ -34,7 +34,7 @@ Future<int> backfillLibraryKeys(
   while (true) {
     final rows = await db
         .customSelect(
-          'SELECT id, title, artist, album, album_artist FROM tracks '
+          'SELECT id, title, artist, album, album_artist, genre FROM tracks '
           'WHERE id > ?1 AND keys_version < ?2 ORDER BY id LIMIT ?3',
           variables: [
             Variable.withInt(lastId),
@@ -61,6 +61,7 @@ Future<int> backfillLibraryKeys(
         row.readNullable<String>('artist'),
         row.readNullable<String>('album'),
         row.readNullable<String>('album_artist'),
+        row.readNullable<String>('genre'),
       ];
       try {
         keyed.add((
@@ -70,6 +71,7 @@ Future<int> backfillLibraryKeys(
             artist: tags[1] as String?,
             album: tags[2] as String?,
             albumArtist: tags[3] as String?,
+            genre: tags[4] as String?,
           ),
           tags,
         ));
@@ -125,14 +127,17 @@ Future<void> _writeChunk(
   // keys of [version]; used after the update to guard the credit rows.
   const keyed =
       'EXISTS (SELECT 1 FROM tracks WHERE id = ? AND keys_version = ? '
-      'AND title IS ? AND artist IS ? AND album IS ? AND album_artist IS ?)';
+      'AND title IS ? AND artist IS ? AND album IS ? AND album_artist IS ? '
+      'AND genre IS ?)';
   await db.batch((b) {
     for (final (id, keys, tags) in chunk) {
       b.customStatement(
         'UPDATE tracks SET album_artist_key = ?, album_title_key = ?, '
         'album_display_artist = ?, title_sort = ?, artist_sort = ?, '
-        'album_sort = ?, keys_version = ? WHERE id = ? AND keys_version < ? '
-        'AND title IS ? AND artist IS ? AND album IS ? AND album_artist IS ?',
+        'album_sort = ?, artist_search = ?, album_search = ?, '
+        'album_artist_search = ?, genre_search = ?, keys_version = ? '
+        'WHERE id = ? AND keys_version < ? AND title IS ? AND artist IS ? '
+        'AND album IS ? AND album_artist IS ? AND genre IS ?',
         [
           keys.albumArtistKey,
           keys.albumTitleKey,
@@ -140,6 +145,10 @@ Future<void> _writeChunk(
           keys.titleSort,
           keys.artistSort,
           keys.albumSort,
+          keys.artistSearch,
+          keys.albumSearch,
+          keys.albumArtistSearch,
+          keys.genreSearch,
           version,
           id,
           version,

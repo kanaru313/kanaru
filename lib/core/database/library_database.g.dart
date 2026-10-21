@@ -672,6 +672,51 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _artistSearchMeta = const VerificationMeta(
+    'artistSearch',
+  );
+  @override
+  late final GeneratedColumn<String> artistSearch = GeneratedColumn<String>(
+    'artist_search',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _albumSearchMeta = const VerificationMeta(
+    'albumSearch',
+  );
+  @override
+  late final GeneratedColumn<String> albumSearch = GeneratedColumn<String>(
+    'album_search',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _albumArtistSearchMeta = const VerificationMeta(
+    'albumArtistSearch',
+  );
+  @override
+  late final GeneratedColumn<String> albumArtistSearch =
+      GeneratedColumn<String>(
+        'album_artist_search',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _genreSearchMeta = const VerificationMeta(
+    'genreSearch',
+  );
+  @override
+  late final GeneratedColumn<String> genreSearch = GeneratedColumn<String>(
+    'genre_search',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _keysVersionMeta = const VerificationMeta(
     'keysVersion',
   );
@@ -719,6 +764,10 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     titleSort,
     artistSort,
     albumSort,
+    artistSearch,
+    albumSearch,
+    albumArtistSearch,
+    genreSearch,
     keysVersion,
   ];
   @override
@@ -957,6 +1006,42 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         albumSort.isAcceptableOrUnknown(data['album_sort']!, _albumSortMeta),
       );
     }
+    if (data.containsKey('artist_search')) {
+      context.handle(
+        _artistSearchMeta,
+        artistSearch.isAcceptableOrUnknown(
+          data['artist_search']!,
+          _artistSearchMeta,
+        ),
+      );
+    }
+    if (data.containsKey('album_search')) {
+      context.handle(
+        _albumSearchMeta,
+        albumSearch.isAcceptableOrUnknown(
+          data['album_search']!,
+          _albumSearchMeta,
+        ),
+      );
+    }
+    if (data.containsKey('album_artist_search')) {
+      context.handle(
+        _albumArtistSearchMeta,
+        albumArtistSearch.isAcceptableOrUnknown(
+          data['album_artist_search']!,
+          _albumArtistSearchMeta,
+        ),
+      );
+    }
+    if (data.containsKey('genre_search')) {
+      context.handle(
+        _genreSearchMeta,
+        genreSearch.isAcceptableOrUnknown(
+          data['genre_search']!,
+          _genreSearchMeta,
+        ),
+      );
+    }
     if (data.containsKey('keys_version')) {
       context.handle(
         _keysVersionMeta,
@@ -1107,6 +1192,22 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         DriftSqlType.string,
         data['${effectivePrefix}album_sort'],
       ),
+      artistSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}artist_search'],
+      ),
+      albumSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_search'],
+      ),
+      albumArtistSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_artist_search'],
+      ),
+      genreSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}genre_search'],
+      ),
       keysVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}keys_version'],
@@ -1188,6 +1289,14 @@ class Track extends DataClass implements Insertable<Track> {
   final String? artistSort;
   final String? albumSort;
 
+  /// `sortKey` of the artist, album, album artist and genre tags (accents,
+  /// case and đ folded; a leading "the" kept); null with their tag. Together
+  /// with [titleSort] these are what `track_search` indexes.
+  final String? artistSearch;
+  final String? albumSearch;
+  final String? albumArtistSearch;
+  final String? genreSearch;
+
   /// The `textKeysVersion` whose rules produced the keys above; 0 when they
   /// were never computed.
   final int keysVersion;
@@ -1225,6 +1334,10 @@ class Track extends DataClass implements Insertable<Track> {
     required this.titleSort,
     this.artistSort,
     this.albumSort,
+    this.artistSearch,
+    this.albumSearch,
+    this.albumArtistSearch,
+    this.genreSearch,
     required this.keysVersion,
   });
   @override
@@ -1309,6 +1422,18 @@ class Track extends DataClass implements Insertable<Track> {
     if (!nullToAbsent || albumSort != null) {
       map['album_sort'] = Variable<String>(albumSort);
     }
+    if (!nullToAbsent || artistSearch != null) {
+      map['artist_search'] = Variable<String>(artistSearch);
+    }
+    if (!nullToAbsent || albumSearch != null) {
+      map['album_search'] = Variable<String>(albumSearch);
+    }
+    if (!nullToAbsent || albumArtistSearch != null) {
+      map['album_artist_search'] = Variable<String>(albumArtistSearch);
+    }
+    if (!nullToAbsent || genreSearch != null) {
+      map['genre_search'] = Variable<String>(genreSearch);
+    }
     map['keys_version'] = Variable<int>(keysVersion);
     return map;
   }
@@ -1392,6 +1517,18 @@ class Track extends DataClass implements Insertable<Track> {
       albumSort: albumSort == null && nullToAbsent
           ? const Value.absent()
           : Value(albumSort),
+      artistSearch: artistSearch == null && nullToAbsent
+          ? const Value.absent()
+          : Value(artistSearch),
+      albumSearch: albumSearch == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumSearch),
+      albumArtistSearch: albumArtistSearch == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumArtistSearch),
+      genreSearch: genreSearch == null && nullToAbsent
+          ? const Value.absent()
+          : Value(genreSearch),
       keysVersion: Value(keysVersion),
     );
   }
@@ -1437,6 +1574,12 @@ class Track extends DataClass implements Insertable<Track> {
       titleSort: serializer.fromJson<String>(json['titleSort']),
       artistSort: serializer.fromJson<String?>(json['artistSort']),
       albumSort: serializer.fromJson<String?>(json['albumSort']),
+      artistSearch: serializer.fromJson<String?>(json['artistSearch']),
+      albumSearch: serializer.fromJson<String?>(json['albumSearch']),
+      albumArtistSearch: serializer.fromJson<String?>(
+        json['albumArtistSearch'],
+      ),
+      genreSearch: serializer.fromJson<String?>(json['genreSearch']),
       keysVersion: serializer.fromJson<int>(json['keysVersion']),
     );
   }
@@ -1477,6 +1620,10 @@ class Track extends DataClass implements Insertable<Track> {
       'titleSort': serializer.toJson<String>(titleSort),
       'artistSort': serializer.toJson<String?>(artistSort),
       'albumSort': serializer.toJson<String?>(albumSort),
+      'artistSearch': serializer.toJson<String?>(artistSearch),
+      'albumSearch': serializer.toJson<String?>(albumSearch),
+      'albumArtistSearch': serializer.toJson<String?>(albumArtistSearch),
+      'genreSearch': serializer.toJson<String?>(genreSearch),
       'keysVersion': serializer.toJson<int>(keysVersion),
     };
   }
@@ -1515,6 +1662,10 @@ class Track extends DataClass implements Insertable<Track> {
     String? titleSort,
     Value<String?> artistSort = const Value.absent(),
     Value<String?> albumSort = const Value.absent(),
+    Value<String?> artistSearch = const Value.absent(),
+    Value<String?> albumSearch = const Value.absent(),
+    Value<String?> albumArtistSearch = const Value.absent(),
+    Value<String?> genreSearch = const Value.absent(),
     int? keysVersion,
   }) => Track(
     id: id ?? this.id,
@@ -1556,6 +1707,12 @@ class Track extends DataClass implements Insertable<Track> {
     titleSort: titleSort ?? this.titleSort,
     artistSort: artistSort.present ? artistSort.value : this.artistSort,
     albumSort: albumSort.present ? albumSort.value : this.albumSort,
+    artistSearch: artistSearch.present ? artistSearch.value : this.artistSearch,
+    albumSearch: albumSearch.present ? albumSearch.value : this.albumSearch,
+    albumArtistSearch: albumArtistSearch.present
+        ? albumArtistSearch.value
+        : this.albumArtistSearch,
+    genreSearch: genreSearch.present ? genreSearch.value : this.genreSearch,
     keysVersion: keysVersion ?? this.keysVersion,
   );
   Track copyWithCompanion(TracksCompanion data) {
@@ -1611,6 +1768,18 @@ class Track extends DataClass implements Insertable<Track> {
           ? data.artistSort.value
           : this.artistSort,
       albumSort: data.albumSort.present ? data.albumSort.value : this.albumSort,
+      artistSearch: data.artistSearch.present
+          ? data.artistSearch.value
+          : this.artistSearch,
+      albumSearch: data.albumSearch.present
+          ? data.albumSearch.value
+          : this.albumSearch,
+      albumArtistSearch: data.albumArtistSearch.present
+          ? data.albumArtistSearch.value
+          : this.albumArtistSearch,
+      genreSearch: data.genreSearch.present
+          ? data.genreSearch.value
+          : this.genreSearch,
       keysVersion: data.keysVersion.present
           ? data.keysVersion.value
           : this.keysVersion,
@@ -1653,6 +1822,10 @@ class Track extends DataClass implements Insertable<Track> {
           ..write('titleSort: $titleSort, ')
           ..write('artistSort: $artistSort, ')
           ..write('albumSort: $albumSort, ')
+          ..write('artistSearch: $artistSearch, ')
+          ..write('albumSearch: $albumSearch, ')
+          ..write('albumArtistSearch: $albumArtistSearch, ')
+          ..write('genreSearch: $genreSearch, ')
           ..write('keysVersion: $keysVersion')
           ..write(')'))
         .toString();
@@ -1693,6 +1866,10 @@ class Track extends DataClass implements Insertable<Track> {
     titleSort,
     artistSort,
     albumSort,
+    artistSearch,
+    albumSearch,
+    albumArtistSearch,
+    genreSearch,
     keysVersion,
   ]);
   @override
@@ -1732,6 +1909,10 @@ class Track extends DataClass implements Insertable<Track> {
           other.titleSort == this.titleSort &&
           other.artistSort == this.artistSort &&
           other.albumSort == this.albumSort &&
+          other.artistSearch == this.artistSearch &&
+          other.albumSearch == this.albumSearch &&
+          other.albumArtistSearch == this.albumArtistSearch &&
+          other.genreSearch == this.genreSearch &&
           other.keysVersion == this.keysVersion);
 }
 
@@ -1769,6 +1950,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
   final Value<String> titleSort;
   final Value<String?> artistSort;
   final Value<String?> albumSort;
+  final Value<String?> artistSearch;
+  final Value<String?> albumSearch;
+  final Value<String?> albumArtistSearch;
+  final Value<String?> genreSearch;
   final Value<int> keysVersion;
   const TracksCompanion({
     this.id = const Value.absent(),
@@ -1804,6 +1989,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.titleSort = const Value.absent(),
     this.artistSort = const Value.absent(),
     this.albumSort = const Value.absent(),
+    this.artistSearch = const Value.absent(),
+    this.albumSearch = const Value.absent(),
+    this.albumArtistSearch = const Value.absent(),
+    this.genreSearch = const Value.absent(),
     this.keysVersion = const Value.absent(),
   });
   TracksCompanion.insert({
@@ -1840,6 +2029,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.titleSort = const Value.absent(),
     this.artistSort = const Value.absent(),
     this.albumSort = const Value.absent(),
+    this.artistSearch = const Value.absent(),
+    this.albumSearch = const Value.absent(),
+    this.albumArtistSearch = const Value.absent(),
+    this.genreSearch = const Value.absent(),
     this.keysVersion = const Value.absent(),
   }) : rootId = Value(rootId),
        path = Value(path),
@@ -1882,6 +2075,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Expression<String>? titleSort,
     Expression<String>? artistSort,
     Expression<String>? albumSort,
+    Expression<String>? artistSearch,
+    Expression<String>? albumSearch,
+    Expression<String>? albumArtistSearch,
+    Expression<String>? genreSearch,
     Expression<int>? keysVersion,
   }) {
     return RawValuesInsertable({
@@ -1919,6 +2116,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
       if (titleSort != null) 'title_sort': titleSort,
       if (artistSort != null) 'artist_sort': artistSort,
       if (albumSort != null) 'album_sort': albumSort,
+      if (artistSearch != null) 'artist_search': artistSearch,
+      if (albumSearch != null) 'album_search': albumSearch,
+      if (albumArtistSearch != null) 'album_artist_search': albumArtistSearch,
+      if (genreSearch != null) 'genre_search': genreSearch,
       if (keysVersion != null) 'keys_version': keysVersion,
     });
   }
@@ -1957,6 +2158,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Value<String>? titleSort,
     Value<String?>? artistSort,
     Value<String?>? albumSort,
+    Value<String?>? artistSearch,
+    Value<String?>? albumSearch,
+    Value<String?>? albumArtistSearch,
+    Value<String?>? genreSearch,
     Value<int>? keysVersion,
   }) {
     return TracksCompanion(
@@ -1993,6 +2198,10 @@ class TracksCompanion extends UpdateCompanion<Track> {
       titleSort: titleSort ?? this.titleSort,
       artistSort: artistSort ?? this.artistSort,
       albumSort: albumSort ?? this.albumSort,
+      artistSearch: artistSearch ?? this.artistSearch,
+      albumSearch: albumSearch ?? this.albumSearch,
+      albumArtistSearch: albumArtistSearch ?? this.albumArtistSearch,
+      genreSearch: genreSearch ?? this.genreSearch,
       keysVersion: keysVersion ?? this.keysVersion,
     );
   }
@@ -2099,6 +2308,18 @@ class TracksCompanion extends UpdateCompanion<Track> {
     if (albumSort.present) {
       map['album_sort'] = Variable<String>(albumSort.value);
     }
+    if (artistSearch.present) {
+      map['artist_search'] = Variable<String>(artistSearch.value);
+    }
+    if (albumSearch.present) {
+      map['album_search'] = Variable<String>(albumSearch.value);
+    }
+    if (albumArtistSearch.present) {
+      map['album_artist_search'] = Variable<String>(albumArtistSearch.value);
+    }
+    if (genreSearch.present) {
+      map['genre_search'] = Variable<String>(genreSearch.value);
+    }
     if (keysVersion.present) {
       map['keys_version'] = Variable<int>(keysVersion.value);
     }
@@ -2141,7 +2362,415 @@ class TracksCompanion extends UpdateCompanion<Track> {
           ..write('titleSort: $titleSort, ')
           ..write('artistSort: $artistSort, ')
           ..write('albumSort: $albumSort, ')
+          ..write('artistSearch: $artistSearch, ')
+          ..write('albumSearch: $albumSearch, ')
+          ..write('albumArtistSearch: $albumArtistSearch, ')
+          ..write('genreSearch: $genreSearch, ')
           ..write('keysVersion: $keysVersion')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class TrackSearch extends Table
+    with
+        TableInfo<TrackSearch, TrackSearchData>,
+        VirtualTableInfo<TrackSearch, TrackSearchData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  TrackSearch(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _titleSortMeta = const VerificationMeta(
+    'titleSort',
+  );
+  late final GeneratedColumn<String> titleSort = GeneratedColumn<String>(
+    'title_sort',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: '',
+  );
+  static const VerificationMeta _artistSearchMeta = const VerificationMeta(
+    'artistSearch',
+  );
+  late final GeneratedColumn<String> artistSearch = GeneratedColumn<String>(
+    'artist_search',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: '',
+  );
+  static const VerificationMeta _albumSearchMeta = const VerificationMeta(
+    'albumSearch',
+  );
+  late final GeneratedColumn<String> albumSearch = GeneratedColumn<String>(
+    'album_search',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: '',
+  );
+  static const VerificationMeta _albumArtistSearchMeta = const VerificationMeta(
+    'albumArtistSearch',
+  );
+  late final GeneratedColumn<String> albumArtistSearch =
+      GeneratedColumn<String>(
+        'album_artist_search',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+        $customConstraints: '',
+      );
+  static const VerificationMeta _genreSearchMeta = const VerificationMeta(
+    'genreSearch',
+  );
+  late final GeneratedColumn<String> genreSearch = GeneratedColumn<String>(
+    'genre_search',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: '',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    titleSort,
+    artistSearch,
+    albumSearch,
+    albumArtistSearch,
+    genreSearch,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'track_search';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TrackSearchData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('title_sort')) {
+      context.handle(
+        _titleSortMeta,
+        titleSort.isAcceptableOrUnknown(data['title_sort']!, _titleSortMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleSortMeta);
+    }
+    if (data.containsKey('artist_search')) {
+      context.handle(
+        _artistSearchMeta,
+        artistSearch.isAcceptableOrUnknown(
+          data['artist_search']!,
+          _artistSearchMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_artistSearchMeta);
+    }
+    if (data.containsKey('album_search')) {
+      context.handle(
+        _albumSearchMeta,
+        albumSearch.isAcceptableOrUnknown(
+          data['album_search']!,
+          _albumSearchMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_albumSearchMeta);
+    }
+    if (data.containsKey('album_artist_search')) {
+      context.handle(
+        _albumArtistSearchMeta,
+        albumArtistSearch.isAcceptableOrUnknown(
+          data['album_artist_search']!,
+          _albumArtistSearchMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_albumArtistSearchMeta);
+    }
+    if (data.containsKey('genre_search')) {
+      context.handle(
+        _genreSearchMeta,
+        genreSearch.isAcceptableOrUnknown(
+          data['genre_search']!,
+          _genreSearchMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_genreSearchMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  TrackSearchData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TrackSearchData(
+      titleSort: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title_sort'],
+      )!,
+      artistSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}artist_search'],
+      )!,
+      albumSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_search'],
+      )!,
+      albumArtistSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_artist_search'],
+      )!,
+      genreSearch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}genre_search'],
+      )!,
+    );
+  }
+
+  @override
+  TrackSearch createAlias(String alias) {
+    return TrackSearch(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs =>
+      'fts5(title_sort, artist_search, album_search, album_artist_search, genre_search, content=\'tracks\', content_rowid=\'id\', tokenize=\'unicode61 remove_diacritics 0\', prefix=\'1 2 3\')';
+}
+
+class TrackSearchData extends DataClass implements Insertable<TrackSearchData> {
+  final String titleSort;
+  final String artistSearch;
+  final String albumSearch;
+  final String albumArtistSearch;
+  final String genreSearch;
+  const TrackSearchData({
+    required this.titleSort,
+    required this.artistSearch,
+    required this.albumSearch,
+    required this.albumArtistSearch,
+    required this.genreSearch,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['title_sort'] = Variable<String>(titleSort);
+    map['artist_search'] = Variable<String>(artistSearch);
+    map['album_search'] = Variable<String>(albumSearch);
+    map['album_artist_search'] = Variable<String>(albumArtistSearch);
+    map['genre_search'] = Variable<String>(genreSearch);
+    return map;
+  }
+
+  TrackSearchCompanion toCompanion(bool nullToAbsent) {
+    return TrackSearchCompanion(
+      titleSort: Value(titleSort),
+      artistSearch: Value(artistSearch),
+      albumSearch: Value(albumSearch),
+      albumArtistSearch: Value(albumArtistSearch),
+      genreSearch: Value(genreSearch),
+    );
+  }
+
+  factory TrackSearchData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TrackSearchData(
+      titleSort: serializer.fromJson<String>(json['title_sort']),
+      artistSearch: serializer.fromJson<String>(json['artist_search']),
+      albumSearch: serializer.fromJson<String>(json['album_search']),
+      albumArtistSearch: serializer.fromJson<String>(
+        json['album_artist_search'],
+      ),
+      genreSearch: serializer.fromJson<String>(json['genre_search']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'title_sort': serializer.toJson<String>(titleSort),
+      'artist_search': serializer.toJson<String>(artistSearch),
+      'album_search': serializer.toJson<String>(albumSearch),
+      'album_artist_search': serializer.toJson<String>(albumArtistSearch),
+      'genre_search': serializer.toJson<String>(genreSearch),
+    };
+  }
+
+  TrackSearchData copyWith({
+    String? titleSort,
+    String? artistSearch,
+    String? albumSearch,
+    String? albumArtistSearch,
+    String? genreSearch,
+  }) => TrackSearchData(
+    titleSort: titleSort ?? this.titleSort,
+    artistSearch: artistSearch ?? this.artistSearch,
+    albumSearch: albumSearch ?? this.albumSearch,
+    albumArtistSearch: albumArtistSearch ?? this.albumArtistSearch,
+    genreSearch: genreSearch ?? this.genreSearch,
+  );
+  TrackSearchData copyWithCompanion(TrackSearchCompanion data) {
+    return TrackSearchData(
+      titleSort: data.titleSort.present ? data.titleSort.value : this.titleSort,
+      artistSearch: data.artistSearch.present
+          ? data.artistSearch.value
+          : this.artistSearch,
+      albumSearch: data.albumSearch.present
+          ? data.albumSearch.value
+          : this.albumSearch,
+      albumArtistSearch: data.albumArtistSearch.present
+          ? data.albumArtistSearch.value
+          : this.albumArtistSearch,
+      genreSearch: data.genreSearch.present
+          ? data.genreSearch.value
+          : this.genreSearch,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrackSearchData(')
+          ..write('titleSort: $titleSort, ')
+          ..write('artistSearch: $artistSearch, ')
+          ..write('albumSearch: $albumSearch, ')
+          ..write('albumArtistSearch: $albumArtistSearch, ')
+          ..write('genreSearch: $genreSearch')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    titleSort,
+    artistSearch,
+    albumSearch,
+    albumArtistSearch,
+    genreSearch,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrackSearchData &&
+          other.titleSort == this.titleSort &&
+          other.artistSearch == this.artistSearch &&
+          other.albumSearch == this.albumSearch &&
+          other.albumArtistSearch == this.albumArtistSearch &&
+          other.genreSearch == this.genreSearch);
+}
+
+class TrackSearchCompanion extends UpdateCompanion<TrackSearchData> {
+  final Value<String> titleSort;
+  final Value<String> artistSearch;
+  final Value<String> albumSearch;
+  final Value<String> albumArtistSearch;
+  final Value<String> genreSearch;
+  final Value<int> rowid;
+  const TrackSearchCompanion({
+    this.titleSort = const Value.absent(),
+    this.artistSearch = const Value.absent(),
+    this.albumSearch = const Value.absent(),
+    this.albumArtistSearch = const Value.absent(),
+    this.genreSearch = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TrackSearchCompanion.insert({
+    required String titleSort,
+    required String artistSearch,
+    required String albumSearch,
+    required String albumArtistSearch,
+    required String genreSearch,
+    this.rowid = const Value.absent(),
+  }) : titleSort = Value(titleSort),
+       artistSearch = Value(artistSearch),
+       albumSearch = Value(albumSearch),
+       albumArtistSearch = Value(albumArtistSearch),
+       genreSearch = Value(genreSearch);
+  static Insertable<TrackSearchData> custom({
+    Expression<String>? titleSort,
+    Expression<String>? artistSearch,
+    Expression<String>? albumSearch,
+    Expression<String>? albumArtistSearch,
+    Expression<String>? genreSearch,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (titleSort != null) 'title_sort': titleSort,
+      if (artistSearch != null) 'artist_search': artistSearch,
+      if (albumSearch != null) 'album_search': albumSearch,
+      if (albumArtistSearch != null) 'album_artist_search': albumArtistSearch,
+      if (genreSearch != null) 'genre_search': genreSearch,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TrackSearchCompanion copyWith({
+    Value<String>? titleSort,
+    Value<String>? artistSearch,
+    Value<String>? albumSearch,
+    Value<String>? albumArtistSearch,
+    Value<String>? genreSearch,
+    Value<int>? rowid,
+  }) {
+    return TrackSearchCompanion(
+      titleSort: titleSort ?? this.titleSort,
+      artistSearch: artistSearch ?? this.artistSearch,
+      albumSearch: albumSearch ?? this.albumSearch,
+      albumArtistSearch: albumArtistSearch ?? this.albumArtistSearch,
+      genreSearch: genreSearch ?? this.genreSearch,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (titleSort.present) {
+      map['title_sort'] = Variable<String>(titleSort.value);
+    }
+    if (artistSearch.present) {
+      map['artist_search'] = Variable<String>(artistSearch.value);
+    }
+    if (albumSearch.present) {
+      map['album_search'] = Variable<String>(albumSearch.value);
+    }
+    if (albumArtistSearch.present) {
+      map['album_artist_search'] = Variable<String>(albumArtistSearch.value);
+    }
+    if (genreSearch.present) {
+      map['genre_search'] = Variable<String>(genreSearch.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrackSearchCompanion(')
+          ..write('titleSort: $titleSort, ')
+          ..write('artistSearch: $artistSearch, ')
+          ..write('albumSearch: $albumSearch, ')
+          ..write('albumArtistSearch: $albumArtistSearch, ')
+          ..write('genreSearch: $genreSearch, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -2427,6 +3056,19 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
   $LibraryDatabaseManager get managers => $LibraryDatabaseManager(this);
   late final $LibraryRootsTable libraryRoots = $LibraryRootsTable(this);
   late final $TracksTable tracks = $TracksTable(this);
+  late final TrackSearch trackSearch = TrackSearch(this);
+  late final Trigger tracksSearchInsert = Trigger(
+    'CREATE TRIGGER tracks_search_insert AFTER INSERT ON tracks BEGIN INSERT INTO track_search ("rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);END',
+    'tracks_search_insert',
+  );
+  late final Trigger tracksSearchDelete = Trigger(
+    'CREATE TRIGGER tracks_search_delete AFTER DELETE ON tracks BEGIN INSERT INTO track_search (track_search, "rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (\'delete\', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);END',
+    'tracks_search_delete',
+  );
+  late final Trigger tracksSearchUpdate = Trigger(
+    'CREATE TRIGGER tracks_search_update AFTER UPDATE OF title_sort, artist_search, album_search, album_artist_search, genre_search ON tracks BEGIN INSERT INTO track_search (track_search, "rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (\'delete\', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);INSERT INTO track_search ("rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);END',
+    'tracks_search_update',
+  );
   late final $TrackArtistsTable trackArtists = $TrackArtistsTable(this);
   late final Index tracksRoot = Index(
     'tracks_root',
@@ -2455,6 +3097,10 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     libraryRoots,
     tracks,
+    trackSearch,
+    tracksSearchInsert,
+    tracksSearchDelete,
+    tracksSearchUpdate,
     trackArtists,
     tracksRoot,
     tracksTitleSort,
@@ -2470,6 +3116,27 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('tracks', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tracks',
+        limitUpdateKind: UpdateKind.insert,
+      ),
+      result: [TableUpdate('track_search', kind: UpdateKind.insert)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tracks',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('track_search', kind: UpdateKind.insert)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tracks',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('track_search', kind: UpdateKind.insert)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -2796,6 +3463,10 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   Value<String> titleSort,
   Value<String?> artistSort,
   Value<String?> albumSort,
+  Value<String?> artistSearch,
+  Value<String?> albumSearch,
+  Value<String?> albumArtistSearch,
+  Value<String?> genreSearch,
   Value<int> keysVersion,
 });
 typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
@@ -2832,6 +3503,10 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<String> titleSort,
   Value<String?> artistSort,
   Value<String?> albumSort,
+  Value<String?> artistSearch,
+  Value<String?> albumSearch,
+  Value<String?> albumArtistSearch,
+  Value<String?> genreSearch,
   Value<int> keysVersion,
 });
 
@@ -3041,6 +3716,26 @@ class $$TracksTableFilterComposer
 
   ColumnFilters<String> get albumSort => $composableBuilder(
     column: $table.albumSort,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get artistSearch => $composableBuilder(
+    column: $table.artistSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumSearch => $composableBuilder(
+    column: $table.albumSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumArtistSearch => $composableBuilder(
+    column: $table.albumArtistSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get genreSearch => $composableBuilder(
+    column: $table.genreSearch,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3267,6 +3962,26 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get artistSearch => $composableBuilder(
+    column: $table.artistSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumSearch => $composableBuilder(
+    column: $table.albumSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumArtistSearch => $composableBuilder(
+    column: $table.albumArtistSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get genreSearch => $composableBuilder(
+    column: $table.genreSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get keysVersion => $composableBuilder(
     column: $table.keysVersion,
     builder: (column) => ColumnOrderings(column),
@@ -3419,6 +4134,26 @@ class $$TracksTableAnnotationComposer
   GeneratedColumn<String> get albumSort =>
       $composableBuilder(column: $table.albumSort, builder: (column) => column);
 
+  GeneratedColumn<String> get artistSearch => $composableBuilder(
+    column: $table.artistSearch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumSearch => $composableBuilder(
+    column: $table.albumSearch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumArtistSearch => $composableBuilder(
+    column: $table.albumArtistSearch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get genreSearch => $composableBuilder(
+    column: $table.genreSearch,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get keysVersion => $composableBuilder(
     column: $table.keysVersion,
     builder: (column) => column,
@@ -3534,6 +4269,10 @@ class $$TracksTableTableManager
                 Value<String> titleSort = const Value.absent(),
                 Value<String?> artistSort = const Value.absent(),
                 Value<String?> albumSort = const Value.absent(),
+                Value<String?> artistSearch = const Value.absent(),
+                Value<String?> albumSearch = const Value.absent(),
+                Value<String?> albumArtistSearch = const Value.absent(),
+                Value<String?> genreSearch = const Value.absent(),
                 Value<int> keysVersion = const Value.absent(),
               }) => TracksCompanion(
                 id: id,
@@ -3569,6 +4308,10 @@ class $$TracksTableTableManager
                 titleSort: titleSort,
                 artistSort: artistSort,
                 albumSort: albumSort,
+                artistSearch: artistSearch,
+                albumSearch: albumSearch,
+                albumArtistSearch: albumArtistSearch,
+                genreSearch: genreSearch,
                 keysVersion: keysVersion,
               ),
           createCompanionCallback:
@@ -3606,6 +4349,10 @@ class $$TracksTableTableManager
                 Value<String> titleSort = const Value.absent(),
                 Value<String?> artistSort = const Value.absent(),
                 Value<String?> albumSort = const Value.absent(),
+                Value<String?> artistSearch = const Value.absent(),
+                Value<String?> albumSearch = const Value.absent(),
+                Value<String?> albumArtistSearch = const Value.absent(),
+                Value<String?> genreSearch = const Value.absent(),
                 Value<int> keysVersion = const Value.absent(),
               }) => TracksCompanion.insert(
                 id: id,
@@ -3641,6 +4388,10 @@ class $$TracksTableTableManager
                 titleSort: titleSort,
                 artistSort: artistSort,
                 albumSort: albumSort,
+                artistSearch: artistSearch,
+                albumSearch: albumSearch,
+                albumArtistSearch: albumArtistSearch,
+                genreSearch: genreSearch,
                 keysVersion: keysVersion,
               ),
           withReferenceMapper: (p0) => p0
@@ -3723,6 +4474,221 @@ typedef $$TracksTableProcessedTableManager =
       (Track, $$TracksTableReferences),
       Track,
       PrefetchHooks Function({bool rootId, bool trackArtistsRefs})
+    >;
+typedef $TrackSearchCreateCompanionBuilder = TrackSearchCompanion Function({
+  required String titleSort,
+  required String artistSearch,
+  required String albumSearch,
+  required String albumArtistSearch,
+  required String genreSearch,
+  Value<int> rowid,
+});
+typedef $TrackSearchUpdateCompanionBuilder = TrackSearchCompanion Function({
+  Value<String> titleSort,
+  Value<String> artistSearch,
+  Value<String> albumSearch,
+  Value<String> albumArtistSearch,
+  Value<String> genreSearch,
+  Value<int> rowid,
+});
+
+class $TrackSearchFilterComposer
+    extends Composer<_$LibraryDatabase, TrackSearch> {
+  $TrackSearchFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get titleSort => $composableBuilder(
+    column: $table.titleSort,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get artistSearch => $composableBuilder(
+    column: $table.artistSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumSearch => $composableBuilder(
+    column: $table.albumSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get albumArtistSearch => $composableBuilder(
+    column: $table.albumArtistSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get genreSearch => $composableBuilder(
+    column: $table.genreSearch,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $TrackSearchOrderingComposer
+    extends Composer<_$LibraryDatabase, TrackSearch> {
+  $TrackSearchOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get titleSort => $composableBuilder(
+    column: $table.titleSort,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get artistSearch => $composableBuilder(
+    column: $table.artistSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumSearch => $composableBuilder(
+    column: $table.albumSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get albumArtistSearch => $composableBuilder(
+    column: $table.albumArtistSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get genreSearch => $composableBuilder(
+    column: $table.genreSearch,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $TrackSearchAnnotationComposer
+    extends Composer<_$LibraryDatabase, TrackSearch> {
+  $TrackSearchAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get titleSort =>
+      $composableBuilder(column: $table.titleSort, builder: (column) => column);
+
+  GeneratedColumn<String> get artistSearch => $composableBuilder(
+    column: $table.artistSearch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumSearch => $composableBuilder(
+    column: $table.albumSearch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get albumArtistSearch => $composableBuilder(
+    column: $table.albumArtistSearch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get genreSearch => $composableBuilder(
+    column: $table.genreSearch,
+    builder: (column) => column,
+  );
+}
+
+class $TrackSearchTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          TrackSearch,
+          TrackSearchData,
+          $TrackSearchFilterComposer,
+          $TrackSearchOrderingComposer,
+          $TrackSearchAnnotationComposer,
+          $TrackSearchCreateCompanionBuilder,
+          $TrackSearchUpdateCompanionBuilder,
+          (
+            TrackSearchData,
+            BaseReferences<_$LibraryDatabase, TrackSearch, TrackSearchData>,
+          ),
+          TrackSearchData,
+          PrefetchHooks Function()
+        > {
+  $TrackSearchTableManager(_$LibraryDatabase db, TrackSearch table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $TrackSearchFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $TrackSearchOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $TrackSearchAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> titleSort = const Value.absent(),
+                Value<String> artistSearch = const Value.absent(),
+                Value<String> albumSearch = const Value.absent(),
+                Value<String> albumArtistSearch = const Value.absent(),
+                Value<String> genreSearch = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TrackSearchCompanion(
+                titleSort: titleSort,
+                artistSearch: artistSearch,
+                albumSearch: albumSearch,
+                albumArtistSearch: albumArtistSearch,
+                genreSearch: genreSearch,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String titleSort,
+                required String artistSearch,
+                required String albumSearch,
+                required String albumArtistSearch,
+                required String genreSearch,
+                Value<int> rowid = const Value.absent(),
+              }) => TrackSearchCompanion.insert(
+                titleSort: titleSort,
+                artistSearch: artistSearch,
+                albumSearch: albumSearch,
+                albumArtistSearch: albumArtistSearch,
+                genreSearch: genreSearch,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<TrackSearch, TrackSearchData>(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    TrackSearch,
+                    TrackSearchData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $TrackSearchProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      TrackSearch,
+      TrackSearchData,
+      $TrackSearchFilterComposer,
+      $TrackSearchOrderingComposer,
+      $TrackSearchAnnotationComposer,
+      $TrackSearchCreateCompanionBuilder,
+      $TrackSearchUpdateCompanionBuilder,
+      (
+        TrackSearchData,
+        BaseReferences<_$LibraryDatabase, TrackSearch, TrackSearchData>,
+      ),
+      TrackSearchData,
+      PrefetchHooks Function()
     >;
 typedef $$TrackArtistsTableCreateCompanionBuilder =
     TrackArtistsCompanion Function({
@@ -4013,6 +4979,8 @@ class $LibraryDatabaseManager {
       $$LibraryRootsTableTableManager(_db, _db.libraryRoots);
   $$TracksTableTableManager get tracks =>
       $$TracksTableTableManager(_db, _db.tracks);
+  $TrackSearchTableManager get trackSearch =>
+      $TrackSearchTableManager(_db, _db.trackSearch);
   $$TrackArtistsTableTableManager get trackArtists =>
       $$TrackArtistsTableTableManager(_db, _db.trackArtists);
 }

@@ -14,6 +14,10 @@ class TrackKeys {
     this.albumDisplayArtist,
     this.artistSort,
     this.albumSort,
+    this.artistSearch,
+    this.albumSearch,
+    this.albumArtistSearch,
+    this.genreSearch,
   });
 
   /// Artist and title parts of the album key; null when the track has no
@@ -28,18 +32,27 @@ class TrackKeys {
   final String? artistSort;
   final String? albumSort;
 
+  /// `sortKey` of the artist, album, album artist and genre tags, null with
+  /// their tag; what the search index holds besides [titleSort]. Unlike
+  /// [artistSort] they keep a leading "the".
+  final String? artistSearch;
+  final String? albumSearch;
+  final String? albumArtistSearch;
+  final String? genreSearch;
+
   /// The credited artists (the `artist` tag split into names) as
   /// (key, display name); keys are distinct.
   final List<({String key, String name})> artists;
 }
 
-/// Keys for a track with these tags. [artist] and [albumArtist] are the raw
-/// tag strings (multiple values joined with "; ").
+/// Keys for a track with these tags. [artist], [albumArtist] and [genre] are
+/// the raw tag strings (multiple values joined with "; ").
 TrackKeys trackKeysFor({
   required String title,
   String? artist,
   String? album,
   String? albumArtist,
+  String? genre,
 }) {
   final names = splitArtists(artist);
   return TrackKeys(
@@ -49,6 +62,10 @@ TrackKeys trackKeysFor({
     titleSort: sortKey(title),
     artistSort: artist == null ? null : artistSortKey(artist),
     albumSort: album == null ? null : artistSortKey(album),
+    artistSearch: artist == null ? null : sortKey(artist),
+    albumSearch: album == null ? null : sortKey(album),
+    albumArtistSearch: albumArtist == null ? null : sortKey(albumArtist),
+    genreSearch: genre == null ? null : sortKey(genre),
     artists: [for (final name in names) (key: artistKey(name), name: name)],
   );
 }
