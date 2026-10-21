@@ -135,7 +135,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | ID        | Tính năng            | Mô tả / tiêu chí hoàn thành                                                                     | Ưu tiên | Phase | H   |
 | --------- | -------------------- | ----------------------------------------------------------------------------------------------- | ------- | ----- | --- |
 | SEARCH-01 | Tìm toàn văn         | SQLite FTS5 trên title, artist, album, album artist, genre; kết quả chia nhóm bài/album/nghệ sĩ — ✅ đã làm (feat/search) | P0      | 1     | H   |
-| SEARCH-02 | Tìm khi gõ           | Kết quả cập nhật trong < 50 ms với thư viện 50k bài — ✅ đã làm (feat/search), đo bằng benchmark `KANARU_BENCH=1` trên dữ liệu tổng hợp; truy vấn một ký tự sát ngưỡng | P0      | 1     | H   |
+| SEARCH-02 | Tìm khi gõ           | Kết quả cập nhật trong < 50 ms với thư viện 50k bài — ✅ đã làm (feat/search), đo bằng benchmark `KANARU_BENCH=1` trên dữ liệu tổng hợp (p95 khoảng 30–45 ms, trường hợp xấu nhất là truy vấn khớp một nửa thư viện) | P0      | 1     | H   |
 | SEARCH-03 | Không phân biệt dấu  | "son tung" khớp "Sơn Tùng"; xử lý dấu tiếng Việt, ký tự Unicode, viết hoa/thường — ✅ đã làm (feat/search) | P0      | 1     |     |
 
 | SEARCH-04 | Tìm gần đúng         | Chấp nhận gõ sai nhẹ, khớp tiền tố                                                              | P2      | 1     |     |
