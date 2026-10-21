@@ -113,6 +113,8 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     _userActed();
     _failuresInRow = 0;
     _upNext.clear();
+    // The entries are renumbered, so the numbers handed over are void.
+    _handedNext.clear();
     state = state.copyWith(queue: state.queue.keepOnlyCurrent());
     await _queueNext();
   }
@@ -174,14 +176,14 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     // The engine moved on to the track that was next before a "play next"
     // went in (its `setNext` was still on the way): the tracks put in
     // between stay next, so the advanced one steps in front of them.
-    final onlyUpNextSkipped =
-        index > queue.index + 1 &&
-        queue.order.getRange(queue.index + 1, index).every(_upNext.contains);
-    final moved = onlyUpNextSkipped
-        ? queue.move(index, queue.index + 1)
-        : queue;
+    final skipsOnlyUpNext = _skipsOnlyUpNext(queue, index);
+    // From before the current track (repeat all wrapped around) it lands
+    // where the current track was, as that one shifts back by one.
+    final target = index > queue.index ? queue.index + 1 : queue.index;
     state = state.copyWith(
-      queue: moved.copyWith(index: onlyUpNextSkipped ? queue.index + 1 : index),
+      queue: (skipsOnlyUpNext ? queue.move(index, target) : queue).copyWith(
+        index: skipsOnlyUpNext ? target : index,
+      ),
       position: Duration.zero,
       duration: Duration.zero,
     );
@@ -194,6 +196,19 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     } else {
       _followEngine('queue the next track', _queueNext);
     }
+  }
+
+  /// Whether the engine, going on from the current track to the one at
+  /// [index], passed over at least one track and only "play next" ones. With
+  /// repeat all that can wrap past the end of the queue.
+  bool _skipsOnlyUpNext(PlayQueue queue, int index) {
+    if (index == queue.index) return false;
+    final order = queue.order;
+    final from = queue.index + 1;
+    final skipped = index > queue.index
+        ? order.getRange(from, index)
+        : order.skip(from).followedBy(order.take(index));
+    return skipped.isNotEmpty && skipped.every(_upNext.contains);
   }
 
   /// Play position of the track the engine moved on to. Matches the entries

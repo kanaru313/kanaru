@@ -300,24 +300,38 @@ void main() {
       },
     );
 
-    test(
-      'a next track dropped while the engine loads is handed over after',
-      () async {
-        backend.openGate = Completer<void>();
-        final opening = service().openTracks([a, b]);
+    test('the engine wrapping past picked tracks keeps them next', () async {
+      await service().cycleRepeat();
+      await service().openTracks([a, b], start: 1);
+      await service().playNext([x]);
 
-        await service().playNext([x]);
-        expect(backend.calls, ['open(a, next: b)', 'setNext(x) dropped']);
-        expect(backend.next, b);
+      // The engine had already wrapped to a when it learned about x.
+      backend.emitAdvanced.add(a);
 
-        backend.openGate!.complete();
-        await opening;
+      expect(titles(), ['b', 'a', 'x']);
+      expect(state().queue.current, a);
+      expect(backend.next, x);
 
-        expect(backend.calls.last, 'setNext(x)');
-        expect(backend.next, x);
-        expect(titles(), ['a', 'x', 'b']);
-      },
-    );
+      backend.advance();
+      expect(state().queue.current, x);
+    });
+
+    test('an edit made while the engine loads reaches it after', () async {
+      backend.openGate = Completer<void>();
+      final opening = service().openTracks([a, b]);
+
+      final inserting = service().playNext([x]);
+      expect(backend.calls, ['open(a, next: b)']);
+      expect(backend.next, b);
+
+      backend.openGate!.complete();
+      await opening;
+      await inserting;
+
+      expect(backend.calls, ['open(a, next: b)', 'setNext(x)']);
+      expect(backend.next, x);
+      expect(titles(), ['a', 'x', 'b']);
+    });
 
     test('an open that finishes unchanged hands nothing over again', () async {
       backend.openGate = Completer<void>();

@@ -226,18 +226,5 @@ class PlayerService extends Notifier<PlayerState>
       play: play,
       start: start,
     );
-    // An edit made while the engine was loading found it busy and its next
-    // track was dropped; the engine only has the one `open` was given.
-    if (!ref.mounted) return;
-    final now = state.queue;
-    if (now.isEmpty || now.index != index || index >= now.order.length) {
-      return;
-    }
-    if (now.order[index] != queue.order[index]) return;
-    final nowNext = now.nextIndex;
-    final handed = next == null ? null : queue.order[next];
-    if ((nowNext == null ? null : now.order[nowNext]) != handed) {
-      await _queueNext();
-    }
   }
 }

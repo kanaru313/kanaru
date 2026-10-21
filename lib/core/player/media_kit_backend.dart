@@ -159,7 +159,7 @@ class MediaKitBackend implements AudioBackend {
     if (!await _tracker.promoteIfNext(position)) return false;
     // Drop the finished entries so the playlist is [current] again.
     for (var i = 0; i < position; i++) {
-      await _native.command(['playlist-remove', '0']);
+      await _removeUnlessPlaying(0);
     }
     return true;
   }
@@ -213,11 +213,18 @@ class MediaKitBackend implements AudioBackend {
     // track before, and the listener picks a new one for the track now
     // playing.
     if (await _promoteIfNext(position)) return;
+    await _replaceNextEntry(next, position);
+  });
+
+  /// Queues [next] behind the entry at [position], which is playing, and
+  /// removes the old next entry.
+  Future<void> _replaceNextEntry(Track? next, int position) async {
     final count = await _intProperty('playlist-count');
     // Append before removing the old next entry, so mpv never reaches the
     // end of the current track with nothing queued after it.
-    final before = (track: _tracker.next, id: _tracker.nextId);
+    final old = (track: _tracker.next, id: _tracker.nextId);
     await _queueNext(next);
+    final appended = (track: _tracker.next, id: _tracker.nextId);
     // mpv may have started the old next entry while [next] was appended.
     // That entry is playing now and stays; only the ones behind it go.
     final now = await _intProperty('playlist-playing-pos');
@@ -225,21 +232,37 @@ class MediaKitBackend implements AudioBackend {
     var finished = 0;
     if (now > position) {
       keep = now;
-      final id = before.id;
-      final track = before.track;
-      if (track != null && id != null && await _tracker.entryId(now) == id) {
-        _tracker.promoteEntry(track, id);
+      final oldTrack = old.track;
+      final oldId = old.id;
+      if (oldTrack != null &&
+          oldId != null &&
+          await _tracker.entryId(now) == oldId) {
+        // The appended entry sits right behind it and is its next track.
+        _tracker.promoteEntry(
+          oldTrack,
+          oldId,
+          next: appended.track,
+          nextId: appended.id,
+        );
         finished = now;
       }
     }
     for (var i = count - 1; i > keep; i--) {
-      await _native.command(['playlist-remove', '$i']);
+      await _removeUnlessPlaying(i);
     }
     // Drop the finished entries so the playlist is [current] again.
     for (var i = 0; i < finished; i++) {
-      await _native.command(['playlist-remove', '0']);
+      await _removeUnlessPlaying(0);
     }
-  });
+  }
+
+  /// Removes the entry at [index] unless mpv is playing it by now. The
+  /// position is read again for each removal; mpv can still move on between
+  /// that read and the removal, which a command cannot close.
+  Future<void> _removeUnlessPlaying(int index) async {
+    if (await _intProperty('playlist-playing-pos') == index) return;
+    await _native.command(['playlist-remove', '$index']);
+  }
 
   // Transport commands go through the chain too, so one sent after an `open`
   // acts on the track that `open` starts, not the one it replaces.

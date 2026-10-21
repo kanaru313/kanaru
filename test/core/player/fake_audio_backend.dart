@@ -35,9 +35,10 @@ class FakeAudioBackend implements AudioBackend {
 
   /// When set, `open` records its call and then waits for this to complete,
   /// like the real engine loading a file. A `setNext` that arrives meanwhile
-  /// is dropped, as the real engine does while an `open` is pending.
+  /// waits for the `open` to finish, then applies, as in the engine's command
+  /// chain.
   Completer<void>? openGate;
-  int _opening = 0;
+  Future<void>? _openDone;
 
   @override
   Future<void> open(
@@ -53,20 +54,19 @@ class FakeAudioBackend implements AudioBackend {
     if (engineError != null) throw engineError!;
     final gate = openGate;
     if (gate == null) return;
-    _opening++;
+    final done = _openDone = gate.future;
     try {
-      await gate.future;
+      await done;
     } finally {
-      _opening--;
+      if (identical(_openDone, done)) _openDone = null;
     }
   }
 
   @override
   Future<void> setNext(Track? next) async {
-    if (_opening > 0) {
-      calls.add('setNext(${next?.title}) dropped');
-      return;
-    }
+    // Without a pending open the call applies at once, not a tick later.
+    final open = _openDone;
+    if (open != null) await open;
     this.next = next;
     calls.add('setNext(${next?.title})');
     if (engineError != null) throw engineError!;
