@@ -68,10 +68,16 @@ class LibraryRootsController {
     }
     try {
       await db.removeRoot(id);
-      await _syncHasRoots(db);
     } catch (error, stackTrace) {
       _log.severe('Could not remove library folder', error, stackTrace);
       return const RootChangeResult(rejection: RootRejection.writeFailed);
+    }
+    // The root is gone for good; failing to learn whether it was the last
+    // one must not report the removal as failed.
+    try {
+      await _syncHasRoots(db);
+    } catch (error, stackTrace) {
+      _log.warning('Could not refresh the has-roots flag', error, stackTrace);
     }
     return const RootChangeResult();
   });

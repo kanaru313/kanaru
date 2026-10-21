@@ -26,6 +26,14 @@ Future<void> _failDeletes(LibraryDatabase db) => db.customStatement(
   "BEGIN SELECT RAISE(ABORT, 'disk full'); END",
 );
 
+/// A database whose has-roots query fails, like a dying disk after a write.
+class _HasRootsFailsDatabase extends LibraryDatabase {
+  _HasRootsFailsDatabase(super.executor);
+
+  @override
+  Future<bool> hasLibraryRoots() => Future.error(StateError('disk gone'));
+}
+
 void main() {
   late Directory tmp;
   late String base;
@@ -234,6 +242,26 @@ void main() {
 
       expect(result.rejection, RootRejection.writeFailed);
     });
+
+    test(
+      'a failing has-roots query after the delete is still a success',
+      () async {
+        final flaky = _HasRootsFailsDatabase(NativeDatabase.memory());
+        addTearDown(flaky.close);
+        final other = ProviderContainer(
+          overrides: LibraryStartup(db: flaky).overrides,
+        );
+        addTearDown(other.dispose);
+        await flaky.addRoots(['$base/music'], now: 1);
+
+        final result = await other
+            .read(libraryRootsControllerProvider)
+            .removeRoot(1);
+
+        expect(result.ok, isTrue);
+        expect(await flaky.roots(), isEmpty);
+      },
+    );
 
     test('runs after an add queued before it', () async {
       final add = controller().addRoots(['$base/music']);

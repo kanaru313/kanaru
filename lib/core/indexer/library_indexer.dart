@@ -129,11 +129,21 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// A scan already running gets a follow-up pass instead.
   void _scanAutomatically() {
     if (!ref.mounted) return;
-    if (_running == null) {
-      _autoStarted = true;
-      _quiet = false;
-    }
+    // Keeps `_quiet` as the scan that armed this follow-up left it: it is
+    // loud only if a request for a loud scan was among those that led to it.
+    if (_running == null) _autoStarted = true;
     unawaited(_startOrFollow());
+  }
+
+  /// Whether root [id] is still stored. A failing check counts as present:
+  /// the caller then records the error it was already handling.
+  Future<bool> _rootExistsOrUnknown(LibraryDatabase db, int id) async {
+    try {
+      return await db.rootExists(id);
+    } catch (error, stackTrace) {
+      _log.warning('Could not check root $id', error, stackTrace);
+      return true;
+    }
   }
 
   Future<void> _scanWithFollowUp() async {
@@ -186,12 +196,14 @@ class LibraryIndexer extends Notifier<IndexerState> {
       for (final root in roots) {
         // Disposed mid-scan (the app quit): nothing left to publish to.
         if (!ref.mounted) break;
+        // Removed since the snapshot: nothing to show, walk or warn about.
+        if (!await db.rootExists(root.id)) continue;
         RootScanResult result;
         try {
           result = await _scanRoot(db, reader, root);
         } catch (error, stackTrace) {
           // A removed root fails on its deleted id (foreign key): not an error.
-          if (!await db.rootExists(root.id)) {
+          if (!await _rootExistsOrUnknown(db, root.id)) {
             _log.info('Root removed during scan: ${root.path}');
             continue;
           }

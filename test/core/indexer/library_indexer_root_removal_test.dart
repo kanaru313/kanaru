@@ -39,7 +39,7 @@ void main() {
   late _GatedTagReader reader;
   late ProviderContainer container;
   Completer<void>? walkGate;
-  final walkEntered = Completer<void>();
+  late Completer<void> walkEntered;
 
   setUp(() async {
     tmp = Directory.systemTemp.createTempSync('indexer_removal_test');
@@ -54,6 +54,7 @@ void main() {
     db = LibraryDatabase(NativeDatabase.memory());
     reader = _GatedTagReader();
     walkGate = null;
+    walkEntered = Completer<void>();
     container = ProviderContainer(
       overrides: [
         ...LibraryStartup(db: db).overrides,
@@ -126,6 +127,7 @@ void main() {
     final indexer = container.read(libraryIndexerProvider.notifier);
     final done = indexer.scan();
     await walkEntered.future;
+    expect(walkGate, isNull, reason: 'the scan is inside a\'s walk');
 
     final a = (await db.roots()).firstWhere((r) => r.path == rootA);
     final result = await container
