@@ -7,6 +7,7 @@ pub mod cover_batch;
 pub mod cover_cache;
 pub mod cover_thumbnail;
 mod frb_generated;
+pub mod jpeg_header;
 pub mod tag_batch;
 pub mod tag_mapping;
 pub mod tag_reader;
