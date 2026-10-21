@@ -50,7 +50,9 @@ class CoverPassResult {
 /// that outlasts [timeout] stops the pass: its tracks are skipped for the
 /// session and [onStuck] gets the native call, which may still return.
 /// Started past the top, the pass wraps around once to pick up tracks reset
-/// meanwhile. Errors from the reader or the database are thrown.
+/// meanwhile. [onProgress] gets (tracks looked at, tracks waiting when the
+/// pass started) before the first batch and after each one, only when there
+/// is something to do. Errors from the reader or the database are thrown.
 Future<CoverPassResult> runCoverPass({
   required LibraryDatabase db,
   required TagReader reader,
@@ -60,8 +62,16 @@ Future<CoverPassResult> runCoverPass({
   required bool Function() shouldYield,
   required bool Function() shouldStop,
   required void Function(Future<List<TrackCover>> pending) onStuck,
+  void Function(int done, int total)? onProgress,
 }) async {
   final result = CoverPassResult();
+  var done = 0, total = 0;
+  if (onProgress != null) {
+    final waiting = await db.countTracksNeedingCover(rootIds);
+    // Failed earlier in this session: passed over.
+    total = waiting - progress.skipIds.length;
+    if (total > 0) onProgress(0, total);
+  }
   var wrapped = progress.cursor == null;
   var unannounced = false;
   try {
@@ -128,6 +138,8 @@ Future<CoverPassResult> runCoverPass({
       unannounced = false;
       progress.cursor = rows.last.$2;
       result.batches++;
+      done += rows.length;
+      if (total > 0) onProgress?.call(done, total);
     }
   } finally {
     // A write that went through before an error still reaches the lists.

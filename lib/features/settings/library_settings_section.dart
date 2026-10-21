@@ -7,14 +7,16 @@ import '../../core/database/library_startup.dart';
 import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
 /// Library settings: for now only a rescan. The button is disabled while
 /// the library is unavailable, has no music folder yet, or is being
-/// scanned (it then shows a progress ring). The result is announced by the
-/// shell.
+/// scanned (it then shows a progress ring). While covers are being made its
+/// icon is the covers' progress ring and it stays usable. The result is
+/// announced by the shell.
 class LibrarySettingsSection extends ConsumerWidget {
   const LibrarySettingsSection({super.key});
 
@@ -34,6 +36,7 @@ class LibrarySettingsSection extends ConsumerWidget {
             scan: ref.watch(libraryIndexerProvider),
             builder: (context, progress) => _RescanButton(
               progress: progress,
+              makingCovers: ref.watch(coverPassProvider) is CoverPassRunning,
               onPressed: available && progress == null
                   ? () => unawaited(
                       ref.read(libraryIndexerProvider.notifier).scan(),
@@ -52,9 +55,14 @@ class LibrarySettingsSection extends ConsumerWidget {
 /// button; the ring has the icon's size, so the row does not move. The
 /// tooltip says how far the scan got.
 class _RescanButton extends StatelessWidget {
-  const _RescanButton({required this.progress, required this.onPressed});
+  const _RescanButton({
+    required this.progress,
+    required this.makingCovers,
+    required this.onPressed,
+  });
 
   final IndexerScanning? progress;
+  final bool makingCovers;
   final VoidCallback? onPressed;
 
   @override
@@ -72,7 +80,9 @@ class _RescanButton extends StatelessWidget {
       return FilledButton.tonalIcon(
         style: settingButtonStyle(),
         onPressed: onPressed,
-        icon: const Icon(Icons.refresh),
+        icon: makingCovers
+            ? const CoverProgressIndicator(size: 18, gap: 0)
+            : const Icon(Icons.refresh),
         label: label,
       );
     }

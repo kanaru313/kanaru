@@ -57,6 +57,7 @@ void main() {
     bool Function()? shouldYield,
     Duration timeout = const Duration(seconds: 5),
     void Function(Future<List<TrackCover>>)? onStuck,
+    void Function(int, int)? onProgress,
   }) => runCoverPass(
     db: db,
     reader: reader,
@@ -66,6 +67,7 @@ void main() {
     shouldYield: shouldYield ?? () => false,
     shouldStop: () => false,
     onStuck: onStuck ?? (_) {},
+    onProgress: onProgress,
   );
 
   test('looks up every pending track in batches, then completes', () async {
@@ -80,9 +82,11 @@ void main() {
         .listen((_) => updates++);
     addTearDown(sub.cancel);
 
-    final result = await pass();
+    final reports = <(int, int)>[];
+    final result = await pass(onProgress: (d, t) => reports.add((d, t)));
     await pumpEventQueue();
 
+    expect(reports, [(0, 70), (32, 70), (64, 70), (70, 70)]);
     expect(result.completed, isTrue);
     expect(reader.coverBatches.map((b) => b.length), [32, 32, 6]);
     expect((result.found, result.batches), (70, 3));
@@ -192,6 +196,13 @@ void main() {
     expect(result.failed, 1);
     expect((await keys())['a.mp3'], isNull);
     expect(progress.skipIds, hasLength(1));
+  });
+
+  test('reports nothing when no cover is waiting', () async {
+    final reports = <(int, int)>[];
+    final result = await pass(onProgress: (d, t) => reports.add((d, t)));
+    expect(result.completed, isTrue);
+    expect(reports, isEmpty);
   });
 
   test('stops before the first batch when the app is closing', () async {

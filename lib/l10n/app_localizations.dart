@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'{done} / {total}'**
   String libraryKeysUpdatingProgress(int done, int total);
 
+  /// No description provided for @libraryCoverProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Making covers… {done} / {total}'**
+  String libraryCoverProgress(int done, int total);
+
   /// No description provided for @libraryScanDiscovering.
   ///
   /// In en, this message translates to:

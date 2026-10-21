@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/widgets/cover_progress_indicator.dart';
 import '../../../shared/widgets/scan_progress.dart';
 
 /// Space a scroll view leaves at its end so the [LibraryRescanButton] never
@@ -49,7 +50,8 @@ class LibraryRescanButton extends ConsumerWidget {
 }
 
 /// [child] with the [LibraryRescanButton] floating at its bottom right, shown
-/// only while the library is open and has a music folder.
+/// only while the library is open and has a music folder. While covers are
+/// being made, a small ring sits beside it; the button stays usable.
 class LibraryRescanStack extends ConsumerWidget {
   const LibraryRescanStack({super.key, required this.child});
 
@@ -65,7 +67,17 @@ class LibraryRescanStack extends ConsumerWidget {
       children: [
         Positioned.fill(child: child),
         if (show)
-          const Positioned(right: 16, bottom: 16, child: LibraryRescanButton()),
+          const Positioned(
+            right: 16,
+            bottom: 16,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CoverProgressIndicator(backdrop: true),
+                LibraryRescanButton(),
+              ],
+            ),
+          ),
       ],
     );
   }

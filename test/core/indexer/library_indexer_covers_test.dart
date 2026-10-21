@@ -533,6 +533,54 @@ void main() {
       expect(row.coverScanVersion, 0);
     });
   });
+
+  group('cover progress', () {
+    List<CoverPassState> watch(ProviderContainer c) {
+      final seen = <CoverPassState>[];
+      c.listen(coverPassProvider, (_, next) => seen.add(next));
+      return seen;
+    }
+
+    test('runs while covers are made, idle once done', () async {
+      touch('a.mp3');
+      touch('b.mp3');
+      final seen = watch(container);
+      await scan();
+
+      expect(seen.first, isA<CoverPassRunning>());
+      final last = seen.whereType<CoverPassRunning>().last;
+      expect((last.done, last.total), (2, 2));
+      expect(container.read(coverPassProvider), isA<CoverPassIdle>());
+    });
+
+    test('goes idle when the cover reader throws', () async {
+      touch('a.mp3');
+      reader.throwOnCovers = StateError('broke');
+      final seen = watch(container);
+      await scan();
+
+      expect(seen, isNotEmpty);
+      expect(container.read(coverPassProvider), isA<CoverPassIdle>());
+    });
+
+    test('goes idle between a yield and the follow-up', () async {
+      for (var i = 0; i < 40; i++) {
+        touch('f${i.toString().padLeft(2, '0')}.mp3');
+      }
+      reader.hangingCovers.add('f00.mp3');
+      final seen = watch(container);
+      final first = scan();
+      while (reader.coverBatches.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      final second = scan();
+      reader.releaseHangingCovers();
+      await Future.wait([first, second]);
+
+      expect(seen.whereType<CoverPassIdle>(), hasLength(2));
+      expect(container.read(coverPassProvider), isA<CoverPassIdle>());
+    });
+  });
 }
 
 /// Answers every cover lookup with a key that could point outside the cover

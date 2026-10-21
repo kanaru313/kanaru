@@ -60,6 +60,13 @@
       "total": { "type": "int", "format": "decimalPattern" }
     }
   },
+  "libraryCoverProgress": "Making covers… {done} / {total}",
+  "@libraryCoverProgress": {
+    "placeholders": {
+      "done": { "type": "int", "format": "decimalPattern" },
+      "total": { "type": "int", "format": "decimalPattern" }
+    }
+  },
   "libraryScanDiscovering": "Looking for music files…",
   "libraryScanReading": "Reading tags {done} / {total}",
   "@libraryScanReading": {

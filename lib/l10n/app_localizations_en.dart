@@ -166,6 +166,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String libraryCoverProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Making covers… $doneString / $totalString';
+  }
+
+  @override
   String get libraryScanDiscovering => 'Looking for music files…';
 
   @override

@@ -267,6 +267,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     List<int> rootIds,
   ) async {
     final elapsed = Stopwatch()..start();
+    final progress = ref.read(coverPassProvider.notifier);
     final CoverPassResult r;
     try {
       r = await runCoverPass(
@@ -282,10 +283,15 @@ class LibraryIndexer extends Notifier<IndexerState> {
           void freed() => _coverReaderStuck = false;
           pending.then((_) => freed(), onError: (_) => freed());
         },
+        onProgress: (done, total) {
+          if (ref.mounted) progress.report(done, total);
+        },
       );
     } catch (error, stackTrace) {
       _log.warning('Cover pass failed', error, stackTrace);
       return false;
+    } finally {
+      if (ref.mounted) progress.finish();
     }
     _log.info(
       'Covers: ${r.found} found, ${r.none} without cover, '

@@ -234,6 +234,19 @@ class LibraryDatabase extends _$LibraryDatabase {
     return found;
   }
 
+  /// How many tracks under [rootIds] wait for their cover (see
+  /// [tracksNeedingCover]).
+  Future<int> countTracksNeedingCover(List<int> rootIds) async {
+    final count = tracks.id.count();
+    final query = selectOnly(tracks)
+      ..addColumns([count])
+      ..where(
+        tracks.coverScanVersion.isSmallerThanValue(coverScanVersion) &
+            tracks.rootId.isIn(rootIds),
+      );
+    return (await query.getSingle()).read(count)!;
+  }
+
   /// Stores the outcome of looking for covers: `(id, key)` with a key for a
   /// found cover, `null` for a confirmed missing one. Each row gets the
   /// current `coverScanVersion`, unless it already has it. One transaction,
