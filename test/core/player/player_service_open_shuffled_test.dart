@@ -79,6 +79,12 @@ void main() {
 
     expect(state().queue.repeat, RepeatMode.all);
     expect(state().queue.original, tracks);
+
+    // The held place is gone: a new play next lands right after the current.
+    final y = song('y');
+    await service().playNext([y]);
+    final queue = state().queue;
+    expect(queue.trackAt(queue.index + 1), y);
   });
 
   test('an empty list does nothing', () async {

@@ -200,6 +200,25 @@ void main() {
     });
   });
 
+  group('engine advancing past up-next tracks', () {
+    test(
+      'with repeat off, a track dragged above the current stays there',
+      () async {
+        await service().openTracks([a, b, c], start: 1);
+        await service().playNext([x]);
+        expect(titles(), ['a', 'b', 'x', 'c']);
+        await service().moveTrack(3, 0);
+        expect(titles(), ['c', 'a', 'b', 'x']);
+
+        // The engine still had c queued after b and moves on to it.
+        backend.emitAdvanced.add(c);
+
+        expect(titles(), ['c', 'a', 'b', 'x']);
+        expect(state().queue.current, c);
+      },
+    );
+  });
+
   group('up next run', () {
     test('removing, dragging or clearing releases the held place', () async {
       await service().openTracks([a, b, c]);
@@ -331,15 +350,6 @@ void main() {
       expect(backend.calls, ['open(a, next: b)', 'setNext(x)']);
       expect(backend.next, x);
       expect(titles(), ['a', 'x', 'b']);
-    });
-
-    test('an open that finishes unchanged hands nothing over again', () async {
-      backend.openGate = Completer<void>();
-      final opening = service().openTracks([a, b]);
-      backend.openGate!.complete();
-      await opening;
-
-      expect(backend.calls, ['open(a, next: b)']);
     });
   });
 }

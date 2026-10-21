@@ -199,12 +199,14 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   }
 
   /// Whether the engine, going on from the current track to the one at
-  /// [index], passed over at least one track and only "play next" ones. With
-  /// repeat all that can wrap past the end of the queue.
+  /// [index], passed over at least one track and only "play next" ones. Only
+  /// repeat all wraps past the end of the queue; otherwise a track before the
+  /// current one is where the user dragged it, not a skip.
   bool _skipsOnlyUpNext(PlayQueue queue, int index) {
     if (index == queue.index) return false;
     final order = queue.order;
     final from = queue.index + 1;
+    if (index < queue.index && queue.repeat != RepeatMode.all) return false;
     final skipped = index > queue.index
         ? order.getRange(from, index)
         : order.skip(from).followedBy(order.take(index));

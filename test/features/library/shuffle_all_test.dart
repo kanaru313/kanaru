@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/track.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
@@ -50,6 +52,74 @@ void main() {
       ['a', 'b', 'c', 'd'],
       reason: 'the Songs sort comes back',
     );
+  });
+
+  testWidgets('a second tap while the queue is being read does nothing', (
+    tester,
+  ) async {
+    final h = harness();
+    await openWithTracks(tester, h, const [
+      TestTrack('a'),
+      TestTrack('b'),
+    ], location: '/songs');
+
+    // Both presses reach the handler before the read can finish.
+    final onPressed = tester
+        .widget<TextButton>(
+          find.ancestor(
+            of: shuffleAll(),
+            matching: find.bySubtype<TextButton>(),
+          ),
+        )
+        .onPressed!;
+    onPressed();
+    onPressed();
+    await settleIo(tester, h);
+
+    expect(h.backend.calls.where((c) => c.startsWith('open(')), hasLength(1));
+  });
+
+  testWidgets('a queue changed during the read is not replaced', (
+    tester,
+  ) async {
+    final h = harness();
+    await openWithTracks(tester, h, const [
+      TestTrack('a'),
+      TestTrack('b'),
+    ], location: '/songs');
+
+    await tester.tap(shuffleAll());
+    // Another action lands before the read finishes.
+    final other = Track.fromPath('/elsewhere/z.mp3');
+    unawaited(
+      h.container.read(playerServiceProvider.notifier).openTracks([other]),
+    );
+    await settleIo(tester, h);
+
+    final state = h.container.read(playerServiceProvider);
+    expect(state.queue.original, [other]);
+    expect(state.queue.shuffled, isFalse);
+    expect(h.backend.calls.where((c) => c.startsWith('open(')), hasLength(1));
+  });
+
+  testWidgets('on a narrow header shows only the icon, with a tooltip', (
+    tester,
+  ) async {
+    final h = harness();
+    await insertTracks(tester, h, const [TestTrack('a'), TestTrack('b')]);
+    await h.pump(tester, hasRoots: true);
+    tester.view.physicalSize = const Size(500, 800);
+    goTo(tester, h, '/songs');
+    await tester.pumpAndSettle();
+
+    expect(shuffleAll(), findsNothing);
+    final button = find.byTooltip('Shuffle all');
+    expect(button, findsOneWidget);
+    await tester.tap(button);
+    await settleIo(tester, h);
+
+    expect(h.container.read(playerServiceProvider).queue.shuffled, isTrue);
+    expect(h.container.read(playerServiceProvider).playing, isTrue);
   });
 
   testWidgets('is disabled while the library has no songs', (tester) async {
