@@ -3,6 +3,7 @@
 use std::io::Cursor;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
+use image::metadata::Orientation;
 use image::{DynamicImage, GrayImage, ImageFormat, ImageReader, Limits, RgbImage};
 
 use crate::cover_art::MAX_COVER_SIDE;
@@ -30,7 +31,7 @@ const SCALED_DECODE_ABOVE: u32 = 1024;
 /// [`validate_header`](crate::cover_art::validate_header)) and encodes a JPEG
 /// whose longest side is [`THUMBNAIL_SIDE`], keeping the aspect ratio. Smaller
 /// images are re-encoded at their own size, never enlarged. Transparent parts
-/// end up on black. A small upright baseline JPEG is its own thumbnail, minus
+/// end up on black. A JPEG is turned upright per its EXIF orientation. A small upright baseline JPEG is its own thumbnail, minus
 /// its metadata (see [`passthrough`]); a large JPEG is decoded scaled down
 /// (see [`scaled_decode`]). Every shortcut falls back to the full path on
 /// any trouble. `None` when the image breaks a decode limit or is corrupt.
@@ -54,7 +55,30 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     // Flattened first: blending over black, then averaging, is what a
     // resize with premultiplied alpha followed by the blend would give.
     let rgb = shrink(flatten_on_black(image));
-    encode(&rgb)
+    // After the shrink: turning a thumbnail costs next to nothing and needs
+    // no buffer the size of the original.
+    let orientation = if format == ImageFormat::Jpeg {
+        jpeg_header::parse(bytes).map_or(1, |header| header.orientation)
+    } else {
+        1
+    };
+    encode(&turn_upright(rgb, orientation))
+}
+
+/// `rgb` turned or flipped as the EXIF `orientation` says; a value that is
+/// not an orientation leaves it as is. Neither the JPEG decoder nor `image`
+/// applies it on its own.
+fn turn_upright(rgb: RgbImage, orientation: u16) -> RgbImage {
+    let orientation = u8::try_from(orientation)
+        .ok()
+        .and_then(Orientation::from_exif)
+        .unwrap_or(Orientation::NoTransforms);
+    if orientation == Orientation::NoTransforms {
+        return rgb;
+    }
+    let mut image = DynamicImage::ImageRgb8(rgb);
+    image.apply_orientation(orientation);
+    image.into_rgb8()
 }
 
 /// `rgb` as a JPEG at [`JPEG_QUALITY`], colour at full resolution (4:4:4,
@@ -93,9 +117,7 @@ fn full_decode_fits(bytes: &[u8], format: ImageFormat) -> bool {
     if !header.progressive {
         return true;
     }
-    let output = u64::from(header.width)
-        * u64::from(header.height)
-        * header.sampling.len() as u64;
+    let output = u64::from(header.width) * u64::from(header.height) * header.sampling.len() as u64;
     progressive_coefficient_bytes(&header) + output <= MAX_DECODE_BYTES
 }
 
@@ -211,7 +233,8 @@ fn fits_as_is(header: &JpegHeader, decoded: (u32, u32)) -> bool {
 
 /// `rgb` fitted within [`THUMBNAIL_SIDE`] (aspect kept, rounded like
 /// `image`'s `thumbnail`), or as is when it already fits. Resized with
-/// fast_image_resize (SIMD chosen at run time); on any error, with `image`.
+/// fast_image_resize (Lanczos3, SIMD chosen at run time); on any error, with
+/// `image`.
 fn shrink(rgb: RgbImage) -> RgbImage {
     let (width, height) = rgb.dimensions();
     let longest = width.max(height);
@@ -227,7 +250,7 @@ fn shrink(rgb: RgbImage) -> RgbImage {
             fir::images::ImageRef::new(width, height, rgb.as_raw(), fir::PixelType::U8x3).ok()?;
         let mut target = fir::images::Image::new(new_width, new_height, fir::PixelType::U8x3);
         let options = fir::ResizeOptions::new()
-            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Bilinear));
+            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3));
         fir::Resizer::new()
             .resize(&source, &mut target, &options)
             .ok()?;
@@ -329,5 +352,18 @@ mod tests {
         let full = progressive(4096, 4096, vec![(1, 1); 3]);
         assert_eq!(progressive_coefficient_bytes(&full), 3 * 512 * 512 * 128);
         assert!(progressive_coefficient_bytes(&full) > MAX_DECODE_BYTES);
+    }
+
+    #[test]
+    fn shrink_rings_at_edges() {
+        // A step edge in the middle: a convolution with negative lobes
+        // (Lanczos) overshoots on both sides, a bilinear blend never does.
+        let step = RgbImage::from_fn(1024, 8, |x, _| {
+            let level = if x < 512 { 64 } else { 192 };
+            image::Rgb([level; 3])
+        });
+        let shrunk = shrink(step);
+        assert_eq!(shrunk.dimensions(), (512, 4));
+        assert!(shrunk.pixels().any(|p| p.0[0] < 64 || p.0[0] > 192));
     }
 }
