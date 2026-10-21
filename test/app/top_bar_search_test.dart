@@ -1,10 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/app/shell/navigation_history.dart';
 import 'package:material_ui/material_ui.dart' show EditableText, SearchBar;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'navigation_history_test.dart' show pumpApp;
+import 'app_test_harness.dart';
 
 const _pause = Duration(milliseconds: 150);
 
@@ -48,7 +48,10 @@ void main() {
     await tester.pump();
 
     expect(_location(container), '/search?q=abba');
-    await tester.pump(_pause);
+    final entries = container.read(navigationHistoryProvider).entries;
+    // The pending timer was cancelled: no second navigation follows.
+    await tester.pump(_pause * 2);
+    expect(container.read(navigationHistoryProvider).entries, entries);
   });
 
   testWidgets('a trailing space being typed is kept', (tester) async {
@@ -140,5 +143,62 @@ void main() {
 
     final editable = tester.widget<EditableText>(find.byType(EditableText));
     expect(editable.focusNode.hasFocus, isTrue);
+  });
+
+  testWidgets('a route change cancels the text typed for the old route', (
+    tester,
+  ) async {
+    final container = await pumpApp(tester);
+    final router = container.read(routerProvider);
+    final history = container.read(navigationHistoryProvider.notifier);
+    router.go('/search?q=a');
+    await tester.pumpAndSettle();
+    router.go('/albums');
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(SearchBar), 'x');
+    history.back();
+    await tester.pump();
+    await tester.pump(_pause * 2);
+    await tester.pumpAndSettle();
+
+    expect(_fieldText(tester), 'a');
+    expect(_location(container), '/search?q=a');
+    final state = container.read(navigationHistoryProvider);
+    expect(state.entries, ['/home', '/search?q=a', '/albums']);
+    expect(state.canGoForward, isTrue);
+  });
+
+  testWidgets('blank text off the search page opens nothing', (tester) async {
+    final container = await pumpApp(tester);
+
+    await tester.enterText(find.byType(SearchBar), '   ');
+    await tester.pump(_pause * 2);
+
+    expect(_location(container), '/home');
+    expect(container.read(navigationHistoryProvider).entries, ['/home']);
+  });
+
+  testWidgets('special characters survive the URL and history', (tester) async {
+    const text = 'Sơn Tùng & co #1 50% a+b=c?';
+    final container = await pumpApp(tester);
+    final history = container.read(navigationHistoryProvider.notifier);
+
+    await tester.enterText(find.byType(SearchBar), text);
+    await tester.pump(_pause);
+    await tester.pumpAndSettle();
+    final uri = Uri.parse(_location(container));
+    expect(uri.path, '/search');
+    expect(uri.queryParameters['q'], text);
+    expect(_fieldText(tester), text);
+
+    history.back();
+    await tester.pumpAndSettle();
+    expect(_fieldText(tester), '');
+
+    history.forward();
+    await tester.pumpAndSettle();
+    expect(Uri.parse(_location(container)).queryParameters['q'], text);
+    expect(_fieldText(tester), text);
   });
 }

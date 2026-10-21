@@ -58,8 +58,10 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
     _debounce?.cancel();
     final query = text.trim();
     _sentQuery = query;
-    // Opening the page moves focus into its route; give it back to a field
-    // the user is still typing in.
+    // Navigation takes focus only when the search page section is first
+    // built (not on later query changes). The refocus runs in the same
+    // frame, so focus is never visibly lost and the IME connection stays
+    // open while the user keeps typing.
     final hadFocus = _focusNode.hasFocus;
     context.go(
       Uri(
@@ -84,6 +86,9 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
     }
     final query = uri.queryParameters['q'] ?? '';
     if (query == _sentQuery) return;
+    // The route changed under the field (Back, Forward, a link): text typed
+    // for the old location must not fire afterwards.
+    _debounce?.cancel();
     _sentQuery = query;
     _controller.value = TextEditingValue(
       text: query,
@@ -108,6 +113,9 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
       ),
       onChanged: (text) {
         _debounce?.cancel();
+        // Off the search page, blank text would only add an empty search
+        // entry to the history.
+        if (_sentQuery == null && text.trim().isEmpty) return;
         _debounce = Timer(searchDebounce, () => _go(text));
       },
       onSubmitted: _go,
