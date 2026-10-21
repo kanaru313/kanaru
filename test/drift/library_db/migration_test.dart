@@ -214,6 +214,10 @@ void main() {
       final db = LibraryDatabase(schema.newConnection());
       addTearDown(db.close);
       expect(await backfillLibraryKeys(db), 2);
+      await db.customStatement(
+        "INSERT INTO track_search(track_search, rank) "
+        "VALUES ('integrity-check', 1)",
+      );
 
       final rows = await (db.select(
         db.tracks,

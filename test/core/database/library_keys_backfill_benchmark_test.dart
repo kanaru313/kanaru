@@ -23,7 +23,9 @@ Future<void> _unkey(LibraryDatabase db) async {
   await db.customStatement(
     "UPDATE tracks SET keys_version = 0, title_sort = '', "
     'artist_sort = NULL, album_sort = NULL, album_artist_key = NULL, '
-    'album_title_key = NULL, album_display_artist = NULL',
+    'album_title_key = NULL, album_display_artist = NULL, '
+    'artist_search = NULL, album_search = NULL, album_artist_search = NULL, '
+    'genre_search = NULL',
   );
   await db.customStatement('DELETE FROM track_artists');
 }

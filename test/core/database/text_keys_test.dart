@@ -240,7 +240,7 @@ void main() {
     });
   });
 
-  test('text keys version is 2', () {
+  test('text keys version covers the search columns', () {
     expect(textKeysVersion, 2);
   });
 

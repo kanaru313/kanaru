@@ -106,6 +106,44 @@ void main() {
     await expectSearchIndexIntact(db);
   });
 
+  test('a rescan of unchanged tags leaves the index data alone', () async {
+    Future<List<String>> data() async => [
+      for (final r
+          in await db
+              .customSelect(
+                'SELECT id, hex(block) AS block FROM track_search_data ORDER BY id',
+              )
+              .get())
+        '${r.read<int>('id')}:${r.read<String>('block')}',
+    ];
+    await db.upsertTracks([
+      _track(rootId, '/m/a.flac', artist: 'Band', genre: 'Rock'),
+    ]);
+    final before = await data();
+    await db.upsertTracks([
+      _track(rootId, '/m/a.flac', artist: 'Band', genre: 'Rock', mtimeMs: 2),
+    ]);
+    expect(await data(), before);
+    await db.upsertTracks([
+      _track(rootId, '/m/a.flac', artist: 'Other', genre: 'Rock', mtimeMs: 3),
+    ]);
+    expect(await data(), isNot(before));
+    expect(await idsMatching(db, 'other'), [await idOf('/m/a.flac')]);
+    await expectSearchIndexIntact(db);
+  });
+
+  test('INSERT OR REPLACE on tracks keeps the index intact', () async {
+    await db.upsertTracks([_track(rootId, '/m/a.flac', artist: 'Old Band')]);
+    await db.customStatement(
+      'INSERT OR REPLACE INTO tracks (root_id, path, mtime_ms, size_bytes, '
+      "title, title_sort, artist_search, added_at, updated_at) "
+      "VALUES ($rootId, '/m/a.flac', 2, 10, 'T', 't', 'new band', 1, 1)",
+    );
+    expect(await idsMatching(db, 'old'), isEmpty);
+    expect(await idsMatching(db, 'new'), [await idOf('/m/a.flac')]);
+    await expectSearchIndexIntact(db);
+  });
+
   test('deleting tracks removes them from the index', () async {
     await db.upsertTracks([
       _track(rootId, '/m/a.flac', artist: 'Band'),

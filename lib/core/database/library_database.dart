@@ -43,7 +43,12 @@ class LibraryDatabase extends _$LibraryDatabase {
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).
-    beforeOpen: (details) => customStatement('PRAGMA foreign_keys = ON'),
+    // recursive_triggers: REPLACE deletes must fire the search-index delete
+    // trigger.
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA recursive_triggers = ON');
+    },
   );
 
   // Roots
@@ -119,8 +124,8 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// textKeysVersion`) and its `track_artists` rows are replaced in the same
   /// transaction, on insert and on update alike, so a rescan that changes a
   /// title or an artist re-keys the track. [rows] carry the tags (title,
-  /// artist, album, album artist, genre) the keys come from. [rows] must name them
-  /// all, as `tracksFromTags` builds them: a tag left out (absent) is
+  /// artist, album, album artist, genre) the keys come from. [rows] must name
+  /// them all, as `tracksFromTags` builds them: a tag left out (absent) is
   /// written as empty, so the keys never disagree with the stored text, and
   /// a rescan clears it.
   Future<void> upsertTracks(List<TracksCompanion> rows) {
