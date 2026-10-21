@@ -27,10 +27,11 @@ const MAX_PASSTHROUGH_BYTES: usize = 200 * 1024;
 /// [`validate_header`](crate::cover_art::validate_header)) and encodes a JPEG
 /// whose longest side is [`THUMBNAIL_SIDE`], keeping the aspect ratio. Smaller
 /// images are re-encoded at their own size, never enlarged. Transparent parts
-/// end up on black. A JPEG is turned upright per its EXIF orientation. A small upright baseline JPEG is its own thumbnail, minus
-/// its metadata (see [`passthrough`]); a large JPEG is decoded scaled down
-/// (see [`scaled_decode`]). Every shortcut falls back to the full path on
-/// any trouble. `None` when the image breaks a decode limit or is corrupt.
+/// end up on black. A JPEG is turned upright per its EXIF orientation. A
+/// small upright baseline JPEG is its own thumbnail, minus its metadata (see
+/// [`passthrough`]); a large JPEG is decoded scaled down (see
+/// [`scaled_decode`]). Every shortcut falls back to the full path on any
+/// trouble. `None` when the image breaks a decode limit or is corrupt.
 pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     let image = match guarded(|| scaled_decode(bytes, format)) {
         Some(image) => image,
