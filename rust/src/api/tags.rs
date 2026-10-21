@@ -123,7 +123,7 @@ pub fn read_original_cover(path: String) -> Option<Vec<u8>> {
             embedded_pictures(&path),
             |dir| Ok(Arc::new(list_images(dir))),
             usable,
-            |sidecar| read_bounded(sidecar).map_or(Attempt::Next, usable),
+            |sidecar| read_bounded(sidecar).ok().flatten().map_or(Attempt::Next, usable),
         )
     }))
     .unwrap_or(None)

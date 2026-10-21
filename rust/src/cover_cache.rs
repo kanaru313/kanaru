@@ -101,11 +101,14 @@ impl CoverSink {
         ))
     }
 
+    /// The memoised cache key of the sidecar image at `path`. A file that
+    /// cannot be read is not memoised and fails the lookup, so the cover is
+    /// tried again later instead of being stored as absent.
     fn sidecar(&self, path: &Path) -> io::Result<Option<String>> {
         if let Some(known) = lock(&self.sidecars).get(path) {
             return Ok(known.clone());
         }
-        let key = match read_bounded(path) {
+        let key = match read_bounded(path)? {
             Some(bytes) => self.store(&bytes)?,
             None => None,
         };

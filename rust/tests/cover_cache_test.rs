@@ -113,11 +113,15 @@ fn hostile_sidecar_files_neither_hang_nor_fill_memory() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     let path = plain("sample.flac", music.path(), "song.flac");
-    symlink("/proc/self/pagemap", music.path().join("cover.jpg")).unwrap();
     mkfifo(&music.path().join("folder.jpg"));
     fs::create_dir(music.path().join("front.png")).unwrap();
     let found = read_in_thread(&path, cache.path());
     assert_eq!((found.cover, found.status), (None, CoverStatus::None));
+
+    // A "regular" file whose reads fail: not proof that there is no cover.
+    symlink("/proc/self/pagemap", music.path().join("cover.jpg")).unwrap();
+    let found = read_in_thread(&path, cache.path());
+    assert_eq!((found.cover, found.status), (None, CoverStatus::Failed));
 }
 
 #[test]

@@ -10,7 +10,7 @@
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{Cursor, Read};
+use std::io::{self, Cursor, Read};
 use std::path::{Path, PathBuf};
 
 use image::{ImageFormat, ImageReader};
@@ -116,16 +116,22 @@ pub fn sidecar_candidates(audio: &Path, listing: &ImageListing) -> Vec<PathBuf> 
 /// Reads a sidecar image of at most [`MAX_COVER_BYTES`]. The file is opened
 /// non-blocking and checked on the open handle, so a FIFO, a device, or a
 /// symlink into `/proc` neither hangs nor fills memory.
-pub fn read_bounded(path: &Path) -> Option<Vec<u8>> {
-    let file = open_nonblocking(path).ok()?;
-    if !file.metadata().ok()?.is_file() {
-        return None;
+///
+/// `Ok(None)` when the file is gone, not a regular file, or too large: there
+/// is no usable image. `Err` when it is there but cannot be opened or read
+/// (permissions, a network share hiccup), so the caller can try again later.
+pub fn read_bounded(path: &Path) -> io::Result<Option<Vec<u8>>> {
+    let file = match open_nonblocking(path) {
+        Ok(file) => file,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error),
+    };
+    if !file.metadata()?.is_file() {
+        return Ok(None);
     }
     let mut bytes = Vec::new();
-    file.take(MAX_COVER_BYTES + 1)
-        .read_to_end(&mut bytes)
-        .ok()?;
-    (bytes.len() as u64 <= MAX_COVER_BYTES).then_some(bytes)
+    file.take(MAX_COVER_BYTES + 1).read_to_end(&mut bytes)?;
+    Ok((bytes.len() as u64 <= MAX_COVER_BYTES).then_some(bytes))
 }
 
 /// Opens `path` for reading without blocking on FIFOs and devices: the open

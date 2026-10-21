@@ -155,6 +155,35 @@ fn folder_that_cannot_be_listed_fails_and_is_not_none() {
 }
 
 #[test]
+fn sidecar_that_cannot_be_read_fails_and_is_not_none() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    let path = plain("sample.mp3", music.path(), "song.mp3");
+    let folder = jpeg(20, 20, 1);
+    let sidecar = music.path().join("cover.jpg");
+    fs::write(&sidecar, &folder).unwrap();
+    // Listed but unreadable, like a share that fails mid-read.
+    fs::set_permissions(&sidecar, fs::Permissions::from_mode(0o000)).unwrap();
+    let readable = fs::File::open(&sidecar).is_ok();
+    let unreadable = cover(&path, cache.path());
+    fs::set_permissions(&sidecar, fs::Permissions::from_mode(0o644)).unwrap();
+    let readable_again = cover(&path, cache.path());
+    if readable {
+        return; // running as root: permissions do not apply
+    }
+    assert_eq!(
+        (unreadable.cover, unreadable.status),
+        (None, CoverStatus::Failed)
+    );
+    assert_eq!(
+        (readable_again.cover, readable_again.status),
+        (Some(cache_key(&folder)), CoverStatus::Found)
+    );
+}
+
+#[test]
 fn panic_for_one_file_fails_only_that_file() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();

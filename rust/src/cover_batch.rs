@@ -50,20 +50,32 @@ pub fn read_covers(paths: Vec<String>, sink: &CoverSink) -> Vec<TrackCover> {
                 })
                 .collect()
         }),
-        Err(_) => paths
-            .into_iter()
-            .map(|path| TrackCover {
-                path,
-                cover: None,
-                status: CoverStatus::Failed,
-            })
-            .collect(),
+        Err(reason) => {
+            report_pool_failure(reason);
+            paths
+                .into_iter()
+                .map(|path| TrackCover {
+                    path,
+                    cover: None,
+                    status: CoverStatus::Failed,
+                })
+                .collect()
+        }
     }
+}
+
+/// Reports once why the cover threads could not start; every cover then
+/// fails, and the reason would otherwise be lost.
+fn report_pool_failure(reason: &str) {
+    use std::sync::Once;
+    static REPORTED: Once = Once::new();
+    REPORTED.call_once(|| eprintln!("kanaru: {reason}"));
 }
 
 /// The cover of `path`: the same sources and keys as the tag scan. A file
 /// that is gone or not a regular file, a picture read that may pass, a
-/// folder that cannot be listed or a crash give [`CoverStatus::Failed`]
+/// folder that cannot be listed, a sidecar image that cannot be read or a
+/// crash give [`CoverStatus::Failed`]
 /// (keep what is stored, try again later); [`CoverStatus::None`] only when
 /// every source was checked.
 fn cover_for(path: &str, sink: &CoverSink) -> (Option<String>, CoverStatus) {
