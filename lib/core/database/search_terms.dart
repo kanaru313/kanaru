@@ -16,11 +16,16 @@ final _separators = RegExp(r'[^\p{L}\p{N}\p{Co}]+', unicode: true);
 /// lower case, no accents, `đ` as `d`) and split on punctuation and spaces.
 /// At most [maxSearchTerms]; empty when [text] has no letter or digit.
 List<String> searchTerms(String text) {
-  final terms = sortKey(text).split(_separators)..removeWhere((t) => t.isEmpty);
-  return terms.length <= maxSearchTerms
-      ? terms
-      : terms.sublist(0, maxSearchTerms);
+  final words = searchWords(text);
+  return words.length <= maxSearchTerms
+      ? words
+      : words.sublist(0, maxSearchTerms);
 }
+
+/// Every word of [text], folded like [searchTerms] but without the cap: for
+/// stored names, whose last words must stay searchable.
+List<String> searchWords(String text) =>
+    sortKey(text).split(_separators)..removeWhere((t) => t.isEmpty);
 
 /// The FTS5 query for [terms]: each one quoted and a prefix, all required.
 /// Terms hold only letters and digits, so none can close the quotes, and

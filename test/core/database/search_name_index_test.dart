@@ -34,6 +34,17 @@ void main() {
     expect(_titles(index.match(searchTerms('other'))), ['Other']);
   });
 
+  test('words past the eighth of a long album title are searchable', () {
+    final index = albumSearchIndex([
+      _album(
+        'The Rise and Fall of Ziggy Stardust and the Spiders from Mars',
+        artist: 'David Bowie',
+      ),
+    ]);
+    expect(index.match(searchTerms('mars')), hasLength(1));
+    expect(index.match(searchTerms('bowie')), hasLength(1));
+  });
+
   test('artists match their own name only', () {
     // One track credited "Sơn Tùng; Bích Phương" yields two credits.
     final index = artistSearchIndex([

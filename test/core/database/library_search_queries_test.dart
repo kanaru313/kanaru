@@ -116,6 +116,38 @@ void main() {
     expect(await titles('rock'), ['Rock Anthem', 'Plain', 'Zeta']);
   });
 
+  test(
+    'a long title match still ranks above artist and album matches',
+    () async {
+      await add('Artist Only', artist: 'Love');
+      await add('Album Only', album: 'Love Love');
+      await add(
+        'In The Long Run Of A Very Long Winded Song Title We Find Love At Last',
+        artist: 'Someone Else',
+      );
+      expect((await titles('love')).first, startsWith('In The Long Run'));
+    },
+  );
+
+  test('total counts every match and is zero without matches', () async {
+    for (var i = 0; i < 5; i++) {
+      await add('Echo $i');
+    }
+    final result = await db.searchSongs(searchTerms('echo'), limit: 2);
+    expect(result.songs, hasLength(2));
+    expect(result.total, 5);
+    final none = await db.searchSongs(searchTerms('zzz'));
+    expect(none.songs, isEmpty);
+    expect(none.total, 0);
+  });
+
+  test('one-character queries list songs by title', () async {
+    await add('Beta', artist: 'S S S S');
+    await add('Alpha', album: 'S');
+    await add('Sigma');
+    expect(await titles('s'), ['Alpha', 'Beta', 'Sigma']);
+  });
+
   test('operators and quotes in the input never throw', () async {
     await add('Not Or And', artist: 'Near');
     for (final query in [
