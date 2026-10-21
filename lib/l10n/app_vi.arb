@@ -132,7 +132,10 @@
   "searchEmptyTitle": "Tìm trong thư viện",
   "searchEmptyMessage": "Tìm bài hát, album và nghệ sĩ.",
   "searchResultsTitle": "Kết quả cho “{query}”",
-  "searchNotReadyMessage": "Tìm kiếm sẽ hoạt động khi thư viện đã được quét.",
+  "searchShowAll": "Xem tất cả ({count})",
+  "searchNoResultsTitle": "Không có kết quả",
+  "searchNoResultsMessage": "Không có gì khớp với “{query}”. Thử bớt từ hoặc gõ ngắn hơn.",
+  "searchMoreSongs": "Đang hiện {shown} trong {total} bài. Thêm từ để thu hẹp.",
 
   "playerOpenMenu": "Mở nhạc",
   "playerOpenFiles": "Mở file…",

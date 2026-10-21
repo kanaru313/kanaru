@@ -11,7 +11,7 @@ import 'queue_actions_menu.dart';
 /// Side of the cover at the start of a song row.
 const songCoverSize = 40.0;
 
-/// One row of the songs list: cover, title, "artist · album" and the
+/// One song row: cover, title, "artist · album" and the
 /// duration. Without a cover the row shows a music note.
 class SongTile extends ConsumerWidget {
   const SongTile({

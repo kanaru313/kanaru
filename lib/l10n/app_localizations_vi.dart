@@ -474,8 +474,22 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get searchNotReadyMessage =>
-      'Tìm kiếm sẽ hoạt động khi thư viện đã được quét.';
+  String searchShowAll(int count) {
+    return 'Xem tất cả ($count)';
+  }
+
+  @override
+  String get searchNoResultsTitle => 'Không có kết quả';
+
+  @override
+  String searchNoResultsMessage(String query) {
+    return 'Không có gì khớp với “$query”. Thử bớt từ hoặc gõ ngắn hơn.';
+  }
+
+  @override
+  String searchMoreSongs(int shown, int total) {
+    return 'Đang hiện $shown trong $total bài. Thêm từ để thu hẹp.';
+  }
 
   @override
   String get playerOpenMenu => 'Mở nhạc';

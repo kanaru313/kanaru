@@ -478,8 +478,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get searchNotReadyMessage =>
-      'Search will work once your library has been scanned.';
+  String searchShowAll(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
+  String get searchNoResultsTitle => 'No results';
+
+  @override
+  String searchNoResultsMessage(String query) {
+    return 'Nothing matches “$query”. Try fewer or shorter words.';
+  }
+
+  @override
+  String searchMoreSongs(int shown, int total) {
+    return 'Showing the first $shown of $total songs. Add words to narrow it down.';
+  }
 
   @override
   String get playerOpenMenu => 'Open music';
