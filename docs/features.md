@@ -134,13 +134,24 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 
 | ID        | Tính năng            | Mô tả / tiêu chí hoàn thành                                                                     | Ưu tiên | Phase | H   |
 | --------- | -------------------- | ----------------------------------------------------------------------------------------------- | ------- | ----- | --- |
-| SEARCH-01 | Tìm toàn văn         | SQLite FTS5 trên title, artist, album, album artist, genre; kết quả chia nhóm bài/album/nghệ sĩ | P0      | 1     | H   |
-| SEARCH-02 | Tìm khi gõ           | Kết quả cập nhật trong < 50 ms với thư viện 50k bài                                             | P0      | 1     | H   |
-| SEARCH-03 | Không phân biệt dấu  | "son tung" khớp "Sơn Tùng"; xử lý dấu tiếng Việt, ký tự Unicode, viết hoa/thường                | P0      | 1     |     |
+| SEARCH-01 | Tìm toàn văn         | SQLite FTS5 trên title, artist, album, album artist, genre; kết quả chia nhóm bài/album/nghệ sĩ — ✅ đã làm (feat/search) | P0      | 1     | H   |
+| SEARCH-02 | Tìm khi gõ           | Kết quả cập nhật trong < 50 ms với thư viện 50k bài — ✅ đã làm (feat/search), đo bằng benchmark `KANARU_BENCH=1` trên dữ liệu tổng hợp; truy vấn một ký tự sát ngưỡng | P0      | 1     | H   |
+| SEARCH-03 | Không phân biệt dấu  | "son tung" khớp "Sơn Tùng"; xử lý dấu tiếng Việt, ký tự Unicode, viết hoa/thường — ✅ đã làm (feat/search) | P0      | 1     |     |
+
 | SEARCH-04 | Tìm gần đúng         | Chấp nhận gõ sai nhẹ, khớp tiền tố                                                              | P2      | 1     |     |
 | SEARCH-05 | Lịch sử tìm kiếm     | Gợi ý các lần tìm trước, có nút xoá                                                             | P2      | 1     |     |
 | SEARCH-06 | Cú pháp nâng cao     | `artist:`, `year:>2010`, `genre:jazz`, `format:flac`                                            | P3      | 4     |     |
 | SEARCH-07 | Phím tắt mở tìm kiếm | `Ctrl+F` hoặc `/` để focus ô tìm kiếm                                                           | P1      | 1     |     |
+
+Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
+
+- `mtp` không khớp `M-TP`: dấu gạch ngang và dấu câu tách từ. Gõ `m-tp` hoặc `m tp` thì khớp.
+- Chữ Trung, Nhật, Hàn: chỉ khớp từ đầu của một chuỗi chữ liên tục. Gõ `本` không tìm ra `日本語`.
+- Tiếng Thái và một số chữ Ấn Độ: dấu tách từ, nên `กิน` bị tách thành `ก` và `น`.
+- Không sửa lỗi gõ: `sonn tung` không khớp. Việc này thuộc SEARCH-04.
+- Ký tự được gán sau Unicode 6.1 (emoji mới, ví dụ) không được FTS5 coi là dấu tách từ: `love🥰you` là một từ, nên gõ `you` không khớp.
+- Tag dài: chỉ 256 ký tự đầu của mỗi tag được lập chỉ mục.
+- Một truy vấn dùng tối đa 8 từ; từ thừa bị bỏ qua.
 
 ## 7. Playlist
 

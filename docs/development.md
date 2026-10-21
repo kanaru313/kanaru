@@ -163,7 +163,7 @@ Three constants tell the app to redo work on libraries that already exist. Bump 
 
 | Constant | Where | Bump when | Effect on existing libraries |
 |---|---|---|---|
-| `textKeysVersion` | `lib/core/database/text_keys.dart` | a rule in `groupKey`, `sortKey` or `artistSortKey` changes, or a Dart SDK upgrade changes `toLowerCase` output | Rows with an older version are keyed again in the background on the next start. Album, artist and sort order come from these keys. |
+| `textKeysVersion` | `lib/core/database/text_keys.dart` | a rule in `groupKey`, `sortKey` or `artistSortKey` changes, a Dart SDK upgrade changes `toLowerCase` output, or `trackKeysFor` starts writing a new key | Rows with an older version are keyed again in the background on the next start. Album, artist and sort order come from these keys. |
 | `tagReaderVersion` | `lib/core/database/library_rows.dart` | the Rust reader learns to read files it used to reject | Files marked permanently unreadable by an older reader are read again on the next scan. |
 | `PERMANENT_ERROR_PREFIX` | `rust/src/tag_reader.rs` | bumped together with `tagReaderVersion` | Its `permanent:v<N>:` prefix must carry the same `N` as `tagReaderVersion`. |
 

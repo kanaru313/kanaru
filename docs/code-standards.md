@@ -80,14 +80,14 @@ Three constants tell the app to redo work on existing libraries. Bump only the o
 
 | Constant | Location | Bump when |
 |---|---|---|
-| `textKeysVersion` | `lib/core/database/text_keys.dart` (currently `1`) | Rules of `groupKey`, `sortKey`, `artistSortKey` change, or a Dart SDK change alters `toLowerCase` output |
+| `textKeysVersion` | `lib/core/database/text_keys.dart` (currently `2`) | Rules of `groupKey`, `sortKey`, `artistSortKey` change, a Dart SDK change alters `toLowerCase` output, or `trackKeysFor` starts writing a new key |
 | `coverScanVersion` | `lib/core/database/library_rows.dart` (currently `1`) | Cover extraction or thumbnail rules change (also when `THUMBNAIL_SIDE` or the `covers/<size>` directory changes) |
 | `tagReaderVersion` | `lib/core/database/library_rows.dart` (currently `1`) | The Rust reader starts accepting files it used to reject |
 | `PERMANENT_ERROR_PREFIX` | `rust/src/tag_reader.rs` (currently `permanent:v1:`) | Must carry the same `N` as `tagReaderVersion` |
 
 Other version numbers that must stay in step:
 
-- `schemaVersion` in `core/database/library_database.dart` (currently `3`). After bumping it, run `make migrations`.
+- `schemaVersion` in `core/database/library_database.dart` (currently `4`). After bumping it, run `make migrations`.
 - `flutter_rust_bridge` (Dart package, crate, and codegen binary) are pinned to `2.13.0`. Change all three together.
 - `KANARU_VERSION` is passed at build time with `--dart-define` (see [deployment-guide.md](./deployment-guide.md#build-a-release-bundle)).
 

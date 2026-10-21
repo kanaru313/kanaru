@@ -51,7 +51,8 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
 
 - **Sidebar.** Groups: Home | Songs, Albums, Artists, Folders | Favorites, Recent | Playlists (placeholder). Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
-- **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field that opens `/search?q=`, Open media menu, Settings on the right at every width. Empty space drags the window.
+- **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Open media menu, Settings on the right at every width. Empty space drags the window.
+- **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
 - **Reselecting a sidebar item** returns that branch to its root.
 - **History.** Browser-style back and forward with a 100-entry cap. Mouse back and forward buttons work at any width.
@@ -98,6 +99,18 @@ Sort controls sit in the page header. Sort choices are stored per screen (`libra
 
 Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries.
 
+## Search page
+
+Opens from the top bar at `/search?q=…`. An empty query shows "Search your library".
+
+- **Sections** in order: Songs, Albums, Artists. A section without matches is hidden. Its header shows the count of all matches.
+- **Rows.** Eight per section. A longer section has one toggle below its rows: "Show all (N)", or "Show top N" for songs when more than the 200 loaded songs match. "Show less" closes it in place.
+- **Songs hint.** Once the songs are expanded and more match than are shown, a line says how many are shown and asks for more words.
+- **Song tap** plays only that song (a queue of one). Right-click or long-press opens the queue menu (Play next, Add to queue).
+- **Album and artist rows** open their pages. They have no queue menu.
+- **States**, checked in this order: library unavailable; no folders; "Updating library" while keys are recomputed; loading; "Search failed" (previous results stay only while a newer query loads); no results. While the first scan runs and there are no results yet, the page shows loading instead of "No results".
+- Results follow rescans while the page is open.
+
 ## Cover art
 
 - Decode sizes are bucketed to 64, 128, 256 and 512 px (`shared/widgets/cover_art.dart`). Images are never decoded at full size in lists.
@@ -118,7 +131,7 @@ Rescan is a button with a progress ring. The ring spins until the first batch fi
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-Placeholder screens (Home, Search, Folders, Favorites, Recent) use `EmptyState` and say the feature is not available yet.
+Placeholder screens (Home, Folders, Favorites, Recent) use `EmptyState` and say the feature is not available yet.
 
 ## Settings
 
