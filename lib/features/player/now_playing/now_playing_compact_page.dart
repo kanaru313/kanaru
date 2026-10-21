@@ -5,7 +5,7 @@ import '../../../core/player/player_service.dart';
 import '../playback_controls.dart';
 import '../seek_bar.dart';
 import 'now_playing_actions.dart';
-import '../track_artwork.dart';
+import 'now_playing_artwork.dart';
 import 'now_playing_track_info.dart';
 
 /// Now Playing page of a narrow window: cover, title and artist, then the
@@ -42,7 +42,7 @@ class NowPlayingCompactPage extends ConsumerWidget {
                 const SizedBox.shrink(),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: PlayingTrackArtwork(size: art, radius: 32),
+                  child: NowPlayingArtwork(size: art, radius: 32),
                 ),
                 // Spacing as on SPlayer's phone layout: 24 under the title,
                 // 30 under the seek bar, 30 under the buttons.

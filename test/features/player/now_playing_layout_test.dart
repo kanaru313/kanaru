@@ -205,6 +205,10 @@ void main() {
         final dots = queue.expandToInclude(track);
         expect(dots.center.dx, closeTo(width / 2, 1));
         expect(dots.top, lessThan(64));
+        // Unmounting schedules the disposal of providers Now Playing
+        // watched; let it run before the next app replaces this one.
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
       }
     });
 
