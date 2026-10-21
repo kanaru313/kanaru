@@ -294,6 +294,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songsTrackGone => 'That song is no longer in the library.';
 
   @override
+  String get songsShuffleAll => 'Shuffle all';
+
+  @override
   String get sortBy => 'Sort by:';
 
   @override

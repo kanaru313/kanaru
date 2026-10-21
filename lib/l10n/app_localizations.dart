@@ -530,6 +530,12 @@ abstract class AppLocalizations {
   /// **'That song is no longer in the library.'**
   String get songsTrackGone;
 
+  /// No description provided for @songsShuffleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle all'**
+  String get songsShuffleAll;
+
   /// No description provided for @sortBy.
   ///
   /// In en, this message translates to:

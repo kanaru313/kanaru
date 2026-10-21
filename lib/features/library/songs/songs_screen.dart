@@ -17,6 +17,7 @@ import '../widgets/library_keys_updating.dart';
 import '../widgets/library_loading.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
+import 'shuffle_all_button.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_view.dart';
 
@@ -102,13 +103,16 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     return PageScaffold(
       title: l10n.navSongs,
       actions: [
-        if (hasDb && hasRoots)
+        if (hasDb && hasRoots) ...[
+          const ShuffleAllButton(),
+          const SizedBox(width: 8),
           LibrarySortControls<SongSortField>(
             choice: ref.watch(settingsProvider.select((s) => s.songSort)),
             fields: SongSortField.values,
             label: songSortLabel,
             onChanged: ref.read(settingsProvider.notifier).setSongSort,
           ),
+        ],
       ],
       body: LibraryRescanStack(child: body),
     );

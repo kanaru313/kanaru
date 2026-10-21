@@ -292,6 +292,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get songsTrackGone => 'Bài hát này không còn trong thư viện.';
 
   @override
+  String get songsShuffleAll => 'Phát ngẫu nhiên tất cả';
+
+  @override
   String get sortBy => 'Sắp xếp:';
 
   @override
