@@ -1,0 +1,140 @@
+//! Finds the covers of a batch of files and caches their thumbnails, without
+//! reading tags, on a low-priority thread pool of its own.
+
+use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::path::Path;
+use std::sync::LazyLock;
+
+use rayon::prelude::*;
+
+use crate::api::tags::{CoverStatus, TrackCover};
+use crate::cover_cache::CoverSink;
+use crate::tag_batch::{thread_count, WORKER_STACK_BYTES};
+use crate::tag_reader::{embedded_pictures_result, CoverReadError};
+
+/// Nice value the cover threads run at, at least: making thumbnails is
+/// background work and should give way to playback and the UI, without
+/// starving under normal desktop load.
+#[cfg(target_os = "linux")]
+const COVER_NICE: libc::c_int = 10;
+
+/// Same size and stack as the tag pool, but separate: its threads are
+/// niced, and a niced thread can never be made normal again without
+/// privilege. `Err` holds why it could not start.
+static COVER_POOL: LazyLock<Result<rayon::ThreadPool, String>> = LazyLock::new(|| {
+    let threads = thread_count(std::thread::available_parallelism().map_or(1, usize::from));
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(threads)
+        .stack_size(WORKER_STACK_BYTES)
+        .thread_name(|i| format!("kanaru-covers-{i}"))
+        .start_handler(|_| lower_priority())
+        .build()
+        .map_err(|e| format!("cannot start cover threads: {e}"))
+});
+
+/// Finds the cover of every file in `paths` and makes sure its thumbnail is
+/// in `sink`'s folder. One entry per input path, in the same order; a file
+/// that fails gives [`CoverStatus::Failed`] and never fails the batch.
+pub fn read_covers(paths: Vec<String>, sink: &CoverSink) -> Vec<TrackCover> {
+    match &*COVER_POOL {
+        Ok(pool) => pool.install(|| {
+            paths
+                .into_par_iter()
+                .map(|path| {
+                    let (cover, status) = cover_for(&path, sink);
+                    TrackCover {
+                        path,
+                        cover,
+                        status,
+                    }
+                })
+                .collect()
+        }),
+        Err(reason) => {
+            report_pool_failure(reason);
+            paths
+                .into_iter()
+                .map(|path| TrackCover {
+                    path,
+                    cover: None,
+                    status: CoverStatus::Failed,
+                })
+                .collect()
+        }
+    }
+}
+
+/// Reports once why the cover threads could not start; every cover then
+/// fails, and the reason would otherwise be lost.
+fn report_pool_failure(reason: &str) {
+    use std::sync::Once;
+    static REPORTED: Once = Once::new();
+    REPORTED.call_once(|| eprintln!("kanaru: {reason}"));
+}
+
+/// The cover of `path`: the same sources and keys as the tag scan. A file
+/// that is gone or not a regular file, a picture read that may pass, a
+/// folder that cannot be listed, a sidecar image that cannot be read or a
+/// crash give [`CoverStatus::Failed`]
+/// (keep what is stored, try again later); [`CoverStatus::None`] only when
+/// every source was checked.
+fn cover_for(path: &str, sink: &CoverSink) -> (Option<String>, CoverStatus) {
+    catch_unwind(AssertUnwindSafe(|| {
+        let embedded = match embedded_pictures_result(path) {
+            Ok(pictures) => pictures,
+            Err(CoverReadError::Transient) => return (None, CoverStatus::Failed),
+            // Pictures that cannot be parsed count as absent; sidecar images
+            // beside the file still apply.
+            Err(CoverReadError::Permanent) => Vec::new(),
+        };
+        sink.resolve(Path::new(path), embedded)
+    }))
+    .unwrap_or((None, CoverStatus::Failed))
+}
+
+/// Raises the calling thread's nice value to at least [`COVER_NICE`]. On
+/// Linux nice is per thread and `PRIO_PROCESS` takes a thread id. A failure
+/// is reported once and otherwise ignored: the covers still get made.
+#[cfg(target_os = "linux")]
+fn lower_priority() {
+    use std::sync::Once;
+    static REPORTED: Once = Once::new();
+    // SAFETY: plain syscalls on the calling thread, no pointers involved.
+    // getpriority can return -1 as a valid value, so errno is checked.
+    let failed = unsafe {
+        let tid = libc::gettid() as libc::id_t;
+        *libc::__errno_location() = 0;
+        let current = libc::getpriority(libc::PRIO_PROCESS, tid);
+        if current == -1 && *libc::__errno_location() != 0 {
+            true
+        } else {
+            libc::setpriority(libc::PRIO_PROCESS, tid, current.max(COVER_NICE)) != 0
+        }
+    };
+    if failed {
+        REPORTED.call_once(|| {
+            eprintln!(
+                "kanaru: cannot lower the cover threads' priority: {}",
+                std::io::Error::last_os_error()
+            );
+        });
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn lower_priority() {}
+
+#[cfg(all(test, target_os = "linux"))]
+mod tests {
+    use super::{COVER_NICE, COVER_POOL};
+
+    #[test]
+    fn cover_threads_run_at_a_lower_priority() {
+        let pool = COVER_POOL.as_ref().expect("pool starts");
+        let nice = pool.install(|| {
+            // SAFETY: plain syscall on the calling thread.
+            unsafe { libc::getpriority(libc::PRIO_PROCESS, libc::gettid() as libc::id_t) }
+        });
+        assert!(nice >= COVER_NICE, "nice {nice}");
+    }
+}

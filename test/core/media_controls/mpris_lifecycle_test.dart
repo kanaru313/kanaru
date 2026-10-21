@@ -195,9 +195,9 @@ void main() {
       var builds = 0;
       await h.service.openTracks(songs);
       h.create(
-        buildProperties: (state, ids) {
+        buildProperties: (state, ids, {required artUri}) {
           builds++;
-          return playerProperties(state, ids);
+          return playerProperties(state, ids, artUri: artUri);
         },
       );
       await h.waitForName(mprisName);

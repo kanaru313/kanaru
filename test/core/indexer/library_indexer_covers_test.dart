@@ -7,6 +7,9 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/core/indexer/library_indexer.dart';
+import 'package:kanaru/core/indexer/root_scan_result.dart';
+import 'package:kanaru/core/indexer/tag_reader.dart';
 
 import 'fake_tag_reader.dart';
 
@@ -27,13 +30,17 @@ void main() {
   late FakeTagReader reader;
   late ProviderContainer container;
 
-  ProviderContainer containerFor(LibraryDatabase db, {String? coverDir}) =>
-      ProviderContainer(
-        overrides: [
-          ...LibraryStartup(db: db, coverCacheDirectory: coverDir).overrides,
-          tagReaderProvider.overrideWithValue(reader),
-        ],
-      );
+  ProviderContainer containerFor(
+    LibraryDatabase db, {
+    String? coverDir,
+    ScanTimeouts timeouts = const ScanTimeouts(),
+  }) => ProviderContainer(
+    overrides: [
+      ...LibraryStartup(db: db, coverCacheDirectory: coverDir).overrides,
+      tagReaderProvider.overrideWithValue(reader),
+      scanTimeoutsProvider.overrideWithValue(timeouts),
+    ],
+  );
 
   setUp(() async {
     tmp = Directory.systemTemp.createTempSync('indexer_covers_test');
@@ -62,9 +69,9 @@ void main() {
   Future<void> scan() => container.read(libraryIndexerProvider.notifier).scan();
   ScanSummary summary() =>
       (container.read(libraryIndexerProvider) as IndexerFinished).summary;
-  Future<Track> stored(String rel) => (db.select(
-    db.tracks,
-  )..where((t) => t.path.equals('$root/$rel'))).getSingle();
+  Future<Track> storedAt(String path) =>
+      (db.select(db.tracks)..where((t) => t.path.equals(path))).getSingle();
+  Future<Track> stored(String rel) => storedAt('$root/$rel');
   File thumbnail(String cover) => File('$covers/${fakeCoverKey(cover)}');
   List<String> cachedFiles() => Directory(covers).existsSync()
       ? [
@@ -169,7 +176,8 @@ void main() {
         ..reset();
       await scan();
 
-      expect(reader.readCount, 1);
+      expect(reader.readCount, 0, reason: 'tags are not read again');
+      expect(reader.coverCount, 1);
       expect(summary().updated, 0);
       final row = await stored('a.mp3');
       expect(row.coverKey, fakeCoverKey('red'));
@@ -188,24 +196,27 @@ void main() {
       addTearDown(coversOff.dispose);
       reader
         ..coverDirectory = null
-        ..coverByName['a.mp3'] = 'blue';
+        ..coverByName['a.mp3'] = 'blue'
+        ..reset();
       change(a);
       await coversOff.read(libraryIndexerProvider.notifier).scan();
       expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
 
+      expect(reader.coverCount, 0, reason: 'no cover pass with covers off');
       reader
         ..coverDirectory = covers
         ..reset();
       await scan();
 
-      expect(reader.readCount, 1);
+      expect(reader.readCount, 0);
+      expect(reader.coverCount, 1);
       final row = await stored('a.mp3');
       expect(row.coverKey, fakeCoverKey('blue'));
       expect(row.coverScanVersion, coverScanVersion);
     },
   );
 
-  test('tracks from before covers are read once, not counted', () async {
+  test('tracks from before covers get one cover lookup, not counted', () async {
     reader.coverByName['a.mp3'] = 'red';
     touch('a.mp3');
     touch('b.mp3');
@@ -217,14 +228,15 @@ void main() {
 
     reader.reset();
     await scan();
-    expect(reader.readCount, 2);
+    expect(reader.readCount, 0);
+    expect(reader.coverCount, 2);
     expect(summary().added, 0);
     expect(summary().updated, 0);
     expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
 
     reader.reset();
     await scan();
-    expect(reader.readCount, 0);
+    expect(reader.coverCount, 0);
   });
 
   test('one rescan brings back a wiped cover cache', () async {
@@ -237,7 +249,8 @@ void main() {
     reader.reset();
     await scan();
 
-    expect(reader.readCount, 2);
+    expect(reader.readCount, 0);
+    expect(reader.coverCount, 2);
     expect(thumbnail('red').existsSync(), isTrue);
     expect(thumbnail('blue').existsSync(), isTrue);
     expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
@@ -254,7 +267,7 @@ void main() {
     reader.reset();
     await scan();
 
-    expect(reader.readCount, 2);
+    expect(reader.coverCount, 2);
     expect(thumbnail('red').existsSync(), isTrue);
     expect(thumbnail('blue').lengthSync(), greaterThan(0));
   });
@@ -311,6 +324,7 @@ void main() {
 
       expect(blocked.read(libraryIndexerProvider), isA<IndexerFinished>());
       expect(reader.readCount, 0, reason: 'unchanged files are not read again');
+      expect(reader.coverCount, 0);
     },
   );
 
@@ -331,4 +345,347 @@ void main() {
     expect(thumbnail('old').existsSync(), isTrue);
     expect(thumbnail('red').existsSync(), isTrue);
   });
+
+  group('two passes', () {
+    test(
+      'tags are stored and published before the first cover lookup',
+      () async {
+        reader.coverByName['a.mp3'] = 'red';
+        touch('a.mp3');
+        reader.hangingCovers.add('a.mp3');
+        final scanning = scan();
+        while (reader.coverBatches.isEmpty) {
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+        }
+
+        expect(container.read(libraryIndexerProvider), isA<IndexerFinished>());
+        final before = await stored('a.mp3');
+        expect(before.title, 'A.MP3');
+        expect(before.coverKey, isNull);
+
+        reader.releaseHangingCovers();
+        await scanning;
+        expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
+      },
+    );
+
+    test('a failing root does not stop the covers of the others', () async {
+      final other = '${tmp.resolveSymbolicLinksSync()}/other';
+      Directory(other).createSync();
+      File('$other/z.mp3').writeAsStringSync('x');
+      await db.addRoots([other], now: 2);
+      reader.coverByName.addAll({'a.mp3': 'red', 'z.mp3': 'green'});
+      touch('a.mp3');
+      await scan();
+      thumbnail('old')
+        ..createSync(recursive: true)
+        ..setLastModifiedSync(DateTime(2000));
+
+      // The first root throws on its tag batch; the other one is fine.
+      final a = touch('a.mp3');
+      change(a);
+      File('$other/y.mp3').writeAsStringSync('x');
+      // Both roots have covers to look up again; only the healthy one may.
+      await db.customStatement('UPDATE tracks SET cover_scan_version = 0');
+      reader
+        ..coverByName['y.mp3'] = 'blue'
+        ..reset()
+        ..failOnBatch = 1;
+      final states = <IndexerState>[];
+      container.listen(libraryIndexerProvider, (_, next) => states.add(next));
+      await scan();
+
+      expect(states.whereType<IndexerFailed>(), hasLength(1));
+      expect((await storedAt('$other/y.mp3')).coverKey, fakeCoverKey('blue'));
+      expect(
+        reader.coverBatches.expand((b) => b),
+        everyElement(startsWith(other)),
+      );
+      expect(
+        reader.coverBatches.expand((b) => b),
+        containsAll(['$other/y.mp3', '$other/z.mp3']),
+      );
+      expect(thumbnail('old').existsSync(), isTrue, reason: 'no cleanup');
+    });
+
+    test('a cover reader that throws leaves the scan finished', () async {
+      reader.coverByName['a.mp3'] = 'red';
+      touch('a.mp3');
+      thumbnail('old')
+        ..createSync(recursive: true)
+        ..setLastModifiedSync(DateTime(2000));
+      reader.throwOnCovers = StateError('native library broke');
+      await scan();
+
+      expect(container.read(libraryIndexerProvider), isA<IndexerFinished>());
+      expect((await stored('a.mp3')).coverScanVersion, 0);
+      expect(thumbnail('old').existsSync(), isTrue, reason: 'no cleanup');
+    });
+
+    test(
+      'a cover batch that hangs ends the scan; tags still read meanwhile',
+      () async {
+        final quick = containerFor(
+          db,
+          coverDir: covers,
+          timeouts: const ScanTimeouts(tagBatch: Duration(milliseconds: 50)),
+        );
+        addTearDown(quick.dispose);
+        final indexer = quick.read(libraryIndexerProvider.notifier);
+        reader.coverByName.addAll({'a.mp3': 'red', 'b.mp3': 'blue'});
+        reader.hangingCovers.add('a.mp3');
+        final a = touch('a.mp3');
+        touch('b.mp3');
+        await indexer.scan();
+        expect(quick.read(libraryIndexerProvider), isA<IndexerFinished>());
+        expect((await stored('a.mp3')).coverScanVersion, 0);
+
+        // Still hanging: the next scan reads tags but starts no cover pass.
+        change(a);
+        reader.reset();
+        await indexer.scan();
+        expect(reader.readCount, 1);
+        expect(reader.coverCount, 0);
+
+        reader.releaseHangingCovers();
+        await Future<void>.delayed(Duration.zero);
+        reader.reset();
+        await indexer.scan();
+        expect(reader.coverCount, 2);
+        expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
+        expect((await stored('b.mp3')).coverKey, fakeCoverKey('blue'));
+      },
+    );
+
+    group('a stalled cover batch', () {
+      late ProviderContainer quick;
+      late LibraryIndexer indexer;
+
+      setUp(() {
+        quick = containerFor(
+          db,
+          coverDir: covers,
+          timeouts: const ScanTimeouts(tagBatch: Duration(milliseconds: 50)),
+        );
+        addTearDown(quick.dispose);
+        indexer = quick.read(libraryIndexerProvider.notifier);
+      });
+
+      /// `f00.mp3` … `f69.mp3`, each with its own cover.
+      List<String> seventy() {
+        final names = [
+          for (var i = 0; i < 70; i++) 'f${i.toString().padLeft(2, '0')}.mp3',
+        ];
+        for (final name in names) {
+          touch(name);
+          reader.coverByName[name] = name;
+        }
+        return names;
+      }
+
+      /// Waits for the automatic scan to look up [count] more covers and for
+      /// its cover pass to finish.
+      Future<void> untilCoversLookedUp(int count) async {
+        final deadline = DateTime.now().add(const Duration(seconds: 10));
+        while (reader.coverCount < count ||
+            quick.read(coverPassProvider) is CoverPassRunning) {
+          if (DateTime.now().isAfter(deadline)) fail('no automatic pass');
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+
+      Future<List<String>> withoutCover() async => [
+        for (final row in await db.select(db.tracks).get())
+          if (row.coverKey == null) row.path.substring(root.length + 1),
+      ]..sort();
+
+      test('resumes the pass once its call returns; failed and stalled '
+          'tracks wait for a scan the user asks for', () async {
+        final names = seventy();
+        // First batch: f05 fails. Second batch: f32 hangs past the timeout.
+        reader
+          ..failingCovers.add('f05.mp3')
+          ..hangingCovers.add('f32.mp3');
+        await indexer.scan();
+        expect(reader.coverBatches.map((b) => b.length), [32, 32]);
+
+        reader.releaseHangingCovers();
+        await untilCoversLookedUp(70);
+        // Only the rows after the stalled batch: nothing skipped is retried.
+        expect(reader.coverBatches.map((b) => b.length), [32, 32, 6]);
+        expect(reader.coverBatches.last.first, '$root/f64.mp3');
+        expect(await withoutCover(), [
+          'f05.mp3',
+          ...names.sublist(32, 64),
+        ], reason: 'the late result of the stalled batch is dropped');
+
+        reader
+          ..failingCovers.clear()
+          ..reset();
+        await indexer.scan();
+        expect(reader.coverCount, 33, reason: 'the user scan retries them');
+        expect(await withoutCover(), isEmpty);
+      });
+
+      test('a second stall waits for a scan the user asks for', () async {
+        final names = seventy();
+        reader.hangingCovers.add('f00.mp3');
+        await indexer.scan();
+        expect(reader.coverBatches.map((b) => b.length), [32]);
+
+        // The automatic scan stalls too, on the next batch.
+        reader
+          ..releaseHangingCovers()
+          ..hangingCovers.add('f32.mp3');
+        await untilCoversLookedUp(64);
+        expect(reader.coverBatches.map((b) => b.length), [32, 32]);
+
+        reader.releaseHangingCovers();
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        expect(reader.coverCount, 64, reason: 'no second automatic scan');
+        expect(await withoutCover(), names);
+
+        reader.reset();
+        await indexer.scan();
+        expect(reader.coverCount, 70);
+        expect(await withoutCover(), isEmpty);
+      });
+    });
+
+    test('a rescan makes the pass yield; the follow-up resumes', () async {
+      for (var i = 0; i < 40; i++) {
+        final name = 'f${i.toString().padLeft(2, '0')}.mp3';
+        touch(name);
+        reader.coverByName[name] = 'c$i';
+      }
+      reader.hangingCovers.add('f00.mp3');
+      final first = scan();
+      while (reader.coverBatches.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      final second = scan();
+      reader.releaseHangingCovers();
+      await Future.wait([first, second]);
+
+      expect(reader.coverBatches.map((b) => b.length), [32, 8]);
+      expect(reader.coverCount, 40, reason: 'nothing looked up twice');
+      expect((await stored('f39.mp3')).coverKey, fakeCoverKey('c39'));
+    });
+
+    test(
+      'a failed cover is retried by the next scan the user asks for',
+      () async {
+        reader.failingCovers.add('a.mp3');
+        reader.coverByName['b.mp3'] = 'blue';
+        touch('a.mp3');
+        touch('b.mp3');
+        await scan();
+        expect(reader.coverCount, 2);
+
+        reader
+          ..failingCovers.clear()
+          ..coverByName['a.mp3'] = 'red'
+          ..reset();
+        await scan();
+        expect(reader.coverBatches, [
+          ['$root/a.mp3'],
+        ]);
+        expect((await stored('a.mp3')).coverKey, fakeCoverKey('red'));
+      },
+    );
+
+    test('covers of a missing root are not looked up', () async {
+      final other = '${tmp.resolveSymbolicLinksSync()}/other';
+      Directory(other).createSync();
+      File('$other/z.mp3').writeAsStringSync('x');
+      await db.addRoots([other], now: 2);
+      reader.coverByName['z.mp3'] = 'green';
+      await scan();
+      expect((await storedAt('$other/z.mp3')).coverKey, fakeCoverKey('green'));
+
+      Directory(other).deleteSync(recursive: true);
+      await db.customStatement('UPDATE tracks SET cover_scan_version = 0');
+      reader.reset();
+      await scan();
+
+      expect(reader.coverCount, 0);
+      expect((await storedAt('$other/z.mp3')).coverKey, fakeCoverKey('green'));
+    });
+
+    test('a malformed key from the reader is not stored', () async {
+      final bad = _BadKeyReader()..coverDirectory = covers;
+      final odd = ProviderContainer(
+        overrides: [
+          ...LibraryStartup(db: db, coverCacheDirectory: covers).overrides,
+          tagReaderProvider.overrideWithValue(bad),
+        ],
+      );
+      addTearDown(odd.dispose);
+      touch('a.mp3');
+      await odd.read(libraryIndexerProvider.notifier).scan();
+
+      final row = await stored('a.mp3');
+      expect(row.coverKey, isNull);
+      expect(row.coverScanVersion, 0);
+    });
+  });
+
+  group('cover progress', () {
+    List<CoverPassState> watch(ProviderContainer c) {
+      final seen = <CoverPassState>[];
+      c.listen(coverPassProvider, (_, next) => seen.add(next));
+      return seen;
+    }
+
+    test('runs while covers are made, idle once done', () async {
+      touch('a.mp3');
+      touch('b.mp3');
+      final seen = watch(container);
+      await scan();
+
+      expect(seen.first, isA<CoverPassRunning>());
+      final last = seen.whereType<CoverPassRunning>().last;
+      expect((last.done, last.total), (2, 2));
+      expect(container.read(coverPassProvider), isA<CoverPassIdle>());
+    });
+
+    test('goes idle when the cover reader throws', () async {
+      touch('a.mp3');
+      reader.throwOnCovers = StateError('broke');
+      final seen = watch(container);
+      await scan();
+
+      expect(seen, isNotEmpty);
+      expect(container.read(coverPassProvider), isA<CoverPassIdle>());
+    });
+
+    test('goes idle between a yield and the follow-up', () async {
+      for (var i = 0; i < 40; i++) {
+        touch('f${i.toString().padLeft(2, '0')}.mp3');
+      }
+      reader.hangingCovers.add('f00.mp3');
+      final seen = watch(container);
+      final first = scan();
+      while (reader.coverBatches.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      final second = scan();
+      reader.releaseHangingCovers();
+      await Future.wait([first, second]);
+
+      expect(seen.whereType<CoverPassIdle>(), hasLength(2));
+      expect(container.read(coverPassProvider), isA<CoverPassIdle>());
+    });
+  });
+}
+
+/// Answers every cover lookup with a key that could point outside the cover
+/// folder.
+class _BadKeyReader extends FakeTagReader {
+  @override
+  Future<List<TrackCover>> readCovers(List<String> paths) async => [
+    for (final path in paths)
+      TrackCover(path: path, cover: '../../etc/x', status: CoverStatus.found),
+  ];
 }

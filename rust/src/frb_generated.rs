@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 442866205;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1385684193;
 
 // Section: executor
 
@@ -113,6 +113,43 @@ fn wire__crate__api__tags__init_app_impl(
         },
     )
 }
+fn wire__crate__api__tags__read_covers_batch_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "read_covers_batch",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_paths = <Vec<String>>::sse_decode(&mut deserializer);
+            let api_cover_dir = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>(crate::api::tags::read_covers_batch(
+                        api_paths,
+                        api_cover_dir,
+                    ))?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__crate__api__tags__read_original_cover_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -169,12 +206,42 @@ fn wire__crate__api__tags__read_tags_batch_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_paths = <Vec<String>>::sse_decode(&mut deserializer);
-            let api_cover_dir = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, ()>((move || {
-                    let output_ok =
-                        Ok::<_, ()>(crate::api::tags::read_tags_batch(api_paths, api_cover_dir))?;
+                    let output_ok = Ok::<_, ()>(crate::api::tags::read_tags_batch(api_paths))?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__tags__track_cover_default_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "track_cover_default",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>(crate::api::tags::TrackCover::default())?;
                     std::result::Result::Ok(output_ok)
                 })())
             }
@@ -311,6 +378,18 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Vec<crate::api::tags::TrackCover> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::tags::TrackCover>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::tags::TrackTags> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -378,6 +457,20 @@ impl SseDecode for Option<Vec<u8>> {
     }
 }
 
+impl SseDecode for crate::api::tags::TrackCover {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_path = <String>::sse_decode(deserializer);
+        let mut var_cover = <Option<String>>::sse_decode(deserializer);
+        let mut var_status = <crate::api::tags::CoverStatus>::sse_decode(deserializer);
+        return crate::api::tags::TrackCover {
+            path: var_path,
+            cover: var_cover,
+            status: var_status,
+        };
+    }
+}
+
 impl SseDecode for crate::api::tags::TrackTags {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -400,8 +493,6 @@ impl SseDecode for crate::api::tags::TrackTags {
         let mut var_bitDepth = <Option<u8>>::sse_decode(deserializer);
         let mut var_channels = <Option<u8>>::sse_decode(deserializer);
         let mut var_error = <Option<String>>::sse_decode(deserializer);
-        let mut var_cover = <Option<String>>::sse_decode(deserializer);
-        let mut var_coverStatus = <crate::api::tags::CoverStatus>::sse_decode(deserializer);
         return crate::api::tags::TrackTags {
             path: var_path,
             title: var_title,
@@ -422,8 +513,6 @@ impl SseDecode for crate::api::tags::TrackTags {
             bit_depth: var_bitDepth,
             channels: var_channels,
             error: var_error,
-            cover: var_cover,
-            cover_status: var_coverStatus,
         };
     }
 }
@@ -465,10 +554,12 @@ fn pde_ffi_dispatcher_primary_impl(
     match func_id {
         1 => wire__crate__api__tags__cover_status_default_impl(port, ptr, rust_vec_len, data_len),
         2 => wire__crate__api__tags__init_app_impl(port, ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__tags__read_original_cover_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__tags__read_tags_batch_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__tags__track_tags_default_impl(port, ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__tags__track_tags_failed_impl(port, ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__tags__read_covers_batch_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__tags__read_original_cover_impl(port, ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__tags__read_tags_batch_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__tags__track_cover_default_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__tags__track_tags_default_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__tags__track_tags_failed_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -508,6 +599,25 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::tags::CoverStatus>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::tags::TrackCover {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.path.into_into_dart().into_dart(),
+            self.cover.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::tags::TrackCover {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::tags::TrackCover>
+    for crate::api::tags::TrackCover
+{
+    fn into_into_dart(self) -> crate::api::tags::TrackCover {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::tags::TrackTags {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -530,8 +640,6 @@ impl flutter_rust_bridge::IntoDart for crate::api::tags::TrackTags {
             self.bit_depth.into_into_dart().into_dart(),
             self.channels.into_into_dart().into_dart(),
             self.error.into_into_dart().into_dart(),
-            self.cover.into_into_dart().into_dart(),
-            self.cover_status.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -604,6 +712,16 @@ impl SseEncode for Vec<u8> {
     }
 }
 
+impl SseEncode for Vec<crate::api::tags::TrackCover> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::tags::TrackCover>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::tags::TrackTags> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -664,6 +782,15 @@ impl SseEncode for Option<Vec<u8>> {
     }
 }
 
+impl SseEncode for crate::api::tags::TrackCover {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.path, serializer);
+        <Option<String>>::sse_encode(self.cover, serializer);
+        <crate::api::tags::CoverStatus>::sse_encode(self.status, serializer);
+    }
+}
+
 impl SseEncode for crate::api::tags::TrackTags {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -686,8 +813,6 @@ impl SseEncode for crate::api::tags::TrackTags {
         <Option<u8>>::sse_encode(self.bit_depth, serializer);
         <Option<u8>>::sse_encode(self.channels, serializer);
         <Option<String>>::sse_encode(self.error, serializer);
-        <Option<String>>::sse_encode(self.cover, serializer);
-        <crate::api::tags::CoverStatus>::sse_encode(self.cover_status, serializer);
     }
 }
 

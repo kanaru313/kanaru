@@ -12,11 +12,14 @@ final _log = Logger('mpris');
 /// catch what a handler throws, which leaves the caller waiting for a reply
 /// that never comes, so every entry point turns errors into `Failed`.
 class MprisObject extends DBusObject {
-  MprisObject(this._handler, this._state, this._ids, this._isActive)
+  MprisObject(this._handler, this._state, this._art, this._ids, this._isActive)
     : super(DBusObjectPath(mprisObjectPath));
 
   final MprisMethodHandler _handler;
   final PlayerState Function() _state;
+
+  /// Art of the current track; read with the state, on demand.
+  final String? Function() _art;
   final MprisTrackIds _ids;
 
   /// False once the owner is disposed; the player state is then out of reach.
@@ -30,7 +33,7 @@ class MprisObject extends DBusObject {
       case mprisPlayerInterface:
         final state = _state();
         _ids.observe(state.queue);
-        return playerProperties(state, _ids);
+        return playerProperties(state, _ids, artUri: _art());
       default:
         return null;
     }

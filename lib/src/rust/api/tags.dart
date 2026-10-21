@@ -7,23 +7,32 @@ import '../frb_generated.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
 
-/// Reads the tags of every file in `paths`, in parallel.
+/// Reads the tags of every file in `paths`, in parallel. Pictures are not
+/// loaded; covers come from [`read_covers_batch`].
 ///
 /// The result has exactly one entry per input path, in the same order. A file
 /// that fails to read yields an entry with `error` set; it never fails the
 /// batch.
+Future<List<TrackTags>> readTagsBatch({required List<String> paths}) =>
+    RustLib.instance.api.crateApiTagsReadTagsBatch(paths: paths);
+
+/// Finds the cover of every file in `paths` and makes sure its thumbnail is
+/// in `cover_dir`, in parallel on low-priority threads. Tags are not read.
 ///
-/// `cover_dir` is the thumbnail folder (size included, e.g. `.../covers/512`).
-/// When it is empty no cover is looked for and every entry is
-/// [`CoverStatus::Skipped`]; otherwise each file's cover thumbnail is written
-/// there and its key returned in [`TrackTags::cover`]. Image bytes never cross
-/// to Dart here.
-Future<List<TrackTags>> readTagsBatch({
+/// `cover_dir` is the thumbnail folder (size included, e.g.
+/// `.../covers/512`). The result has exactly one entry per input path, in the
+/// same order. A file that is
+/// gone, not a regular file, or whose cover could not be read for a reason
+/// that may pass gives [`CoverStatus::Failed`]; [`CoverStatus::None`] means
+/// every source was checked. When `cover_dir` is empty nothing is looked for
+/// and every entry is [`CoverStatus::Skipped`]. Image bytes never cross to
+/// Dart.
+Future<List<TrackCover>> readCoversBatch({
   required List<String> paths,
   required String coverDir,
-}) => RustLib.instance.api.crateApiTagsReadTagsBatch(
+}) => RustLib.instance.api.crateApiTagsReadCoversBatch(
   paths: paths,
   coverDir: coverDir,
 );
@@ -35,7 +44,7 @@ Future<List<TrackTags>> readTagsBatch({
 Future<Uint8List?> readOriginalCover({required String path}) =>
     RustLib.instance.api.crateApiTagsReadOriginalCover(path: path);
 
-/// What happened when looking for a file's cover.
+/// What happened when looking for a file's cover, in [`read_covers_batch`].
 enum CoverStatus {
   /// Covers were not requested (empty cover folder).
   skipped,
@@ -53,6 +62,35 @@ enum CoverStatus {
 
   static Future<CoverStatus> default_() =>
       RustLib.instance.api.crateApiTagsCoverStatusDefault();
+}
+
+/// The cover of one file, from [`read_covers_batch`].
+class TrackCover {
+  /// The path as given to [`read_covers_batch`].
+  final String path;
+
+  /// Cache key of the cover thumbnail, `<ab>/<hash>.jpg` relative to the
+  /// cover folder; `hash` is the blake3 of the original image bytes. Set
+  /// only when [`status`](Self::status) is [`CoverStatus::Found`].
+  final String? cover;
+  final CoverStatus status;
+
+  const TrackCover({required this.path, this.cover, required this.status});
+
+  static Future<TrackCover> default_() =>
+      RustLib.instance.api.crateApiTagsTrackCoverDefault();
+
+  @override
+  int get hashCode => path.hashCode ^ cover.hashCode ^ status.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TrackCover &&
+          runtimeType == other.runtimeType &&
+          path == other.path &&
+          cover == other.cover &&
+          status == other.status;
 }
 
 /// Tags and audio properties of one file. Flat on purpose so flutter_rust_bridge
@@ -89,11 +127,6 @@ class TrackTags {
   /// Why the file could not be read; `None` on success.
   final String? error;
 
-  /// Cache key of the cover thumbnail, `<ab>/<hash>.jpg` relative to the
-  /// cover folder; `hash` is the blake3 of the original image bytes.
-  final String? cover;
-  final CoverStatus coverStatus;
-
   const TrackTags({
     required this.path,
     this.title,
@@ -114,8 +147,6 @@ class TrackTags {
     this.bitDepth,
     this.channels,
     this.error,
-    this.cover,
-    required this.coverStatus,
   });
 
   static Future<TrackTags> default_() =>
@@ -150,9 +181,7 @@ class TrackTags {
       sampleRate.hashCode ^
       bitDepth.hashCode ^
       channels.hashCode ^
-      error.hashCode ^
-      cover.hashCode ^
-      coverStatus.hashCode;
+      error.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -177,7 +206,5 @@ class TrackTags {
           sampleRate == other.sampleRate &&
           bitDepth == other.bitDepth &&
           channels == other.channels &&
-          error == other.error &&
-          cover == other.cover &&
-          coverStatus == other.coverStatus;
+          error == other.error;
 }

@@ -113,12 +113,18 @@ void main() {
 
     // MPRIS clients see the restored (muted) volume from the first reply.
     final ids = MprisTrackIds()..observe(first.queue);
-    expect(playerProperties(first, ids)['Volume'], const DBusDouble(0));
+    expect(
+      playerProperties(first, ids, artUri: null)['Volume'],
+      const DBusDouble(0),
+    );
 
     // Unmute brings back the volume from before the restart.
     await service().toggleMute();
     expect(state().volume, 40);
-    expect(playerProperties(state(), ids)['Volume'], const DBusDouble(0.4));
+    expect(
+      playerProperties(state(), ids, artUri: null)['Volume'],
+      const DBusDouble(0.4),
+    );
   });
 
   test('quit and relaunch comes back where it was paused', () async {

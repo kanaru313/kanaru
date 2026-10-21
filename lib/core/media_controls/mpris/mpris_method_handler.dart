@@ -132,7 +132,8 @@ class MprisMethodHandler {
         }
         // Only 1.0 is supported; the spec says 0.0 means Pause.
         if (value.value == 0) _run('Rate', () => _player.pause());
-      case _ when playerProperties(_state, _ids).containsKey(name):
+      case _
+          when playerProperties(_state, _ids, artUri: null).containsKey(name):
         return DBusMethodErrorResponse.propertyReadOnly();
       default:
         return DBusMethodErrorResponse.unknownProperty();

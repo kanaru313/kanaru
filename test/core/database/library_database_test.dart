@@ -202,13 +202,105 @@ void main() {
       await db.resetCoverScan(keys);
 
       expect(await db.coverKeysInUse(), {'keep.jpg'});
-      final snapshot = await db.trackSnapshot(rootId);
-      final kept = snapshot.singleWhere((t) => t.path == '/m/keep');
+      final rows = await db.select(db.tracks).get();
+      final kept = rows.singleWhere((t) => t.path == '/m/keep');
       expect(kept.coverScanVersion, coverScanVersion);
       expect(
-        snapshot.where((t) => t.coverScanVersion == 0),
+        rows.where((t) => t.coverScanVersion == 0),
         hasLength(keys.length),
       );
+    });
+  });
+
+  group('cover lookups', () {
+    late int rootId;
+    setUp(() async => rootId = (await db.addRoots(['/m'], now: 1)).single);
+
+    Future<void> add(String path, {int version = 0, int? root}) =>
+        db.upsertTracks([
+          track(
+            root ?? rootId,
+            path,
+          ).copyWith(coverScanVersion: Value(version)),
+        ]);
+    Future<List<String>> paths(
+      List<int> roots, {
+      String? after,
+      Set<int> excluding = const {},
+      int limit = 10,
+    }) async => [
+      for (final (_, path) in await db.tracksNeedingCover(
+        roots,
+        after: after,
+        excluding: excluding,
+        limit: limit,
+      ))
+        path,
+    ];
+
+    test('lists tracks under older rules, by path, after a cursor', () async {
+      final other = (await db.addRoots(['/o'], now: 1)).single;
+      await add('/m/c');
+      await add('/m/a');
+      await add('/m/b', version: coverScanVersion);
+      await add('/m/d');
+      await add('/o/x', root: other);
+
+      expect(await paths([rootId]), ['/m/a', '/m/c', '/m/d']);
+      expect(await paths([rootId], after: '/m/a'), ['/m/c', '/m/d']);
+      expect(await paths([rootId], limit: 2), ['/m/a', '/m/c']);
+      expect(await paths([rootId, other], after: '/m/d'), ['/o/x']);
+      expect(await paths([]), isEmpty);
+    });
+
+    test('passes over excluded ids without counting them', () async {
+      for (var i = 0; i < 10; i++) {
+        await add('/m/$i');
+      }
+      final ids = {
+        for (final (id, path) in await db.tracksNeedingCover([
+          rootId,
+        ], limit: 10))
+          if (path.compareTo('/m/6') < 0) id,
+      };
+      expect(await paths([rootId], excluding: ids, limit: 3), [
+        '/m/6',
+        '/m/7',
+        '/m/8',
+      ]);
+    });
+
+    test('writes keys and stamps without notifying watchers', () async {
+      await add('/m/a');
+      await add('/m/b');
+      await add('/m/c', version: coverScanVersion);
+      final rows = {
+        for (final row in await db.select(db.tracks).get()) row.path: row.id,
+      };
+      var updates = 0;
+      final sub = db
+          .tableUpdates(TableUpdateQuery.onTable(db.tracks))
+          .listen((_) => updates++);
+      addTearDown(sub.cancel);
+
+      await db.writeCovers([
+        (rows['/m/a']!, 'aa/a.jpg'),
+        (rows['/m/b']!, null),
+        // Already stamped: left alone.
+        (rows['/m/c']!, 'cc/c.jpg'),
+      ]);
+      await pumpEventQueue();
+
+      final stored = {
+        for (final row in await db.select(db.tracks).get())
+          row.path: (row.coverKey, row.coverScanVersion),
+      };
+      expect(stored, {
+        '/m/a': ('aa/a.jpg', coverScanVersion),
+        '/m/b': (null, coverScanVersion),
+        '/m/c': (null, coverScanVersion),
+      });
+      expect(updates, 0);
     });
   });
 }

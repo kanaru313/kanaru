@@ -8,11 +8,12 @@ import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_startup.dart';
 import 'cover_cache_cleanup.dart';
+import 'cover_pass.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
 import 'root_scan_result.dart';
 import 'scan_diff.dart';
-import 'tag_reader.dart' show CoverStatus, TagReader, TrackTags;
+import 'tag_reader.dart' show TagReader, TrackTags;
 import 'tracks_from_tags.dart';
 import 'walk_audio_files.dart';
 
@@ -33,16 +34,20 @@ int tagBatchSizeFor(int total) =>
     (total / _progressSteps).ceil().clamp(minTagBatchSize, maxTagBatchSize);
 
 /// Scans every library root: walk, diff against the database, read tags of
-/// new or changed files, write them, then delete what is gone.
+/// new or changed files, write them, then delete what is gone. The result is
+/// published as soon as the tags are in; covers follow in a second pass.
 ///
 /// One scan at a time, no cancelling. Batches run one after another (read
 /// tags, write one transaction, next batch). Deleting happens only after all
 /// batches of a root, so quitting mid-scan loses nothing.
 ///
-/// With a cover folder, a scan first resets tracks whose thumbnail is gone
-/// (so they are read again in that same scan) and, after every root scanned
-/// without error, deletes thumbnails no track uses. Neither step can fail
-/// the scan.
+/// With a cover folder, a scan first resets tracks whose thumbnail is gone,
+/// then, after the tags, makes the covers of the roots that scanned without
+/// error ([runCoverPass]): resumable, it yields to a requested rescan and
+/// never changes the published state. A cover batch that stalls ends the
+/// pass; when its native call returns, one automatic scan resumes it. When every root scanned without error
+/// and the cover pass completed, it deletes thumbnails no track uses. No
+/// cover step can fail the scan.
 class LibraryIndexer extends Notifier<IndexerState> {
   Future<void>? _running;
   bool _rescanRequested = false;
@@ -57,6 +62,14 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// A root was left unread because of a slow read, in a scan that may
   /// arm an automatic follow-up: when the reader frees up, scan once more.
   bool _retryWhenReaderFrees = false;
+
+  /// A cover batch timed out and its native call has not returned yet. Like
+  /// [_readerStuck] but for covers only: while set, no cover pass starts;
+  /// tags are still read.
+  bool _coverReaderStuck = false;
+
+  /// Where the cover pass got to, across scans of this session.
+  final _coverProgress = CoverPassProgress();
 
   /// The running scan was started by the indexer itself (a slow walk or read
   /// finished), not by the user. Such a scan arms no further automatic scan,
@@ -84,8 +97,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// a root added while scanning is scanned too. Never throws: a failure
   /// becomes [IndexerFailed]. Does nothing without a database.
   Future<void> scan() {
-    // Whoever asks, a scan the user wants arms automatic follow-ups again.
+    // Whoever asks, a scan the user wants arms automatic follow-ups again,
+    // and tries the covers that failed earlier in this session once more.
     _autoStarted = false;
+    _coverProgress.skipIds.clear();
     return _startOrFollow();
   }
 
@@ -126,14 +141,16 @@ class LibraryIndexer extends Notifier<IndexerState> {
     if (db == null) return;
     final reader = ref.read(tagReaderProvider);
     // The folder the reader writes to. Null for this scan when covers are
-    // off or the folder cannot be created: then old cover rules do not make
-    // files be read again, and the cache is neither repaired nor cleaned.
+    // off or the folder cannot be created: then no cover pass runs, and the
+    // cache is neither repaired nor cleaned.
     final coverDir = await _usableCoverDirectory(
       ref.read(coverCacheDirectoryProvider),
     );
     final scanStartedAt = DateTime.now();
-    var added = 0, updated = 0, removed = 0, failedTags = 0, failedCovers = 0;
-    int? coversRepaired, coversRemoved;
+    var added = 0, updated = 0, removed = 0, failedTags = 0;
+    int? coversRepaired;
+    // Roots scanned to the end, without error: their covers are made next.
+    final okRootIds = <int>[];
     final skipped = <String, SkipReason>{};
     var undecodableNames = 0;
     final undecodableDirs = <String>[];
@@ -158,7 +175,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         if (!ref.mounted) break;
         RootScanResult result;
         try {
-          result = await _scanRoot(db, reader, coverDir, root);
+          result = await _scanRoot(db, reader, root);
         } catch (error, stackTrace) {
           _log.severe('Root failed: ${root.path}', error, stackTrace);
           firstError ??= error;
@@ -169,7 +186,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
         updated += result.updated;
         removed += result.removed;
         failedTags += result.failedTags;
-        failedCovers += result.failedCovers;
         undecodableNames += result.undecodableNames;
         skippedFolderNames.addAll(result.skippedFolderNames);
         for (final dir in result.undecodableSampleDirs) {
@@ -182,16 +198,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
         dbTime += result.dbTime;
         final reason = result.skipReason;
         if (reason != null) skipped[root.path] = reason;
+        if (reason == null && result.error == null) okRootIds.add(root.id);
       }
       // Every root had its turn; now report a root that threw.
       if (firstError != null) {
         Error.throwWithStackTrace(firstError, firstStack!);
-      }
-      if (coverDir != null) {
-        coversRemoved = await _coverStep(
-          'cleanup',
-          () => cleanCoverCache(db, coverDir, scanStartedAt),
-        );
       }
       final summary = ScanSummary(
         added: added,
@@ -216,8 +227,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _log.info(
         'Scan finished: $added added, $updated updated, $removed removed, '
         '$failedTags without tags, ${skipped.length} roots skipped; '
-        'covers ${coversRepaired ?? '-'} repaired, $failedCovers failed, '
-        '${coversRemoved ?? '-'} orphans removed; '
+        'covers ${coversRepaired ?? '-'} repaired; '
         'walk ${walkTime.inMilliseconds} ms, '
         'tags ${tagTime.inMilliseconds} ms, '
         'db ${dbTime.inMilliseconds} ms',
@@ -232,6 +242,74 @@ class LibraryIndexer extends Notifier<IndexerState> {
     if (ref.mounted) {
       unawaited(ref.read(libraryKeysProvider.notifier).keyStaleRows());
     }
+    if (coverDir == null || okRootIds.isEmpty || !ref.mounted) return;
+    if (_coverReaderStuck) {
+      _log.warning('Cover reader is stuck, covers left for a later scan');
+      return;
+    }
+    final completed = await _coverPass(db, reader, okRootIds);
+    if (completed && firstError == null && ref.mounted) {
+      final removed = await _coverStep(
+        'cleanup',
+        () => cleanCoverCache(db, coverDir, scanStartedAt),
+      );
+      if (removed != null && removed > 0) {
+        _log.info('Cover cache: $removed unused thumbnails removed');
+      }
+    }
+  }
+
+  /// Runs the cover pass for [rootIds] and logs how it went. Never throws
+  /// and never touches the published state: covers can always be made
+  /// later. Returns whether every eligible track was looked at.
+  Future<bool> _coverPass(
+    LibraryDatabase db,
+    TagReader reader,
+    List<int> rootIds,
+  ) async {
+    final elapsed = Stopwatch()..start();
+    final progress = ref.read(coverPassProvider.notifier);
+    final CoverPassResult r;
+    try {
+      r = await runCoverPass(
+        db: db,
+        reader: reader,
+        rootIds: rootIds,
+        progress: _coverProgress,
+        timeout: ref.read(scanTimeoutsProvider).tagBatch,
+        shouldYield: () => _rescanRequested,
+        shouldStop: () => !ref.mounted,
+        onStuck: (pending) {
+          _coverReaderStuck = true;
+          // Like a stuck tag read: once the call returns, scan once more so
+          // the covers after the stalled batch get made without the user.
+          // That scan keeps the skip set, and arms no retry of its own, so
+          // a drive that keeps hanging costs one extra scan, not a loop.
+          final retry = !_autoStarted;
+          void freed() {
+            _coverReaderStuck = false;
+            if (retry) _scanAutomatically();
+          }
+
+          pending.then((_) => freed(), onError: (_) => freed());
+        },
+        onProgress: (done, total) {
+          if (ref.mounted) progress.report(done, total);
+        },
+      );
+    } catch (error, stackTrace) {
+      _log.warning('Cover pass failed', error, stackTrace);
+      return false;
+    } finally {
+      if (ref.mounted) progress.finish();
+    }
+    _log.info(
+      'Covers: ${r.found} found, ${r.none} without cover, '
+      '${r.failed} failed, ${r.skipped} skipped; '
+      '${r.batches} batches, ${elapsed.elapsedMilliseconds} ms; '
+      '${r.completed ? 'completed' : 'stopped: ${r.stoppedBecause}'}',
+    );
+    return r.completed;
   }
 
   /// Scans one root. Returns why it was left unfinished instead of throwing
@@ -240,7 +318,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
   Future<RootScanResult> _scanRoot(
     LibraryDatabase db,
     TagReader reader,
-    String? coverDir,
     LibraryRoot root,
   ) async {
     final timeouts = ref.read(scanTimeoutsProvider);
@@ -294,7 +371,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     }
     dbTime.start();
     final snapshot = await db.trackSnapshot(root.id);
-    final diff = diffScan(walk, snapshot, coversEnabled: coverDir != null);
+    final diff = diffScan(walk, snapshot);
     dbTime.stop();
     if (diff.rootEmpty) {
       _log.warning('Root has no audio files, left unchanged: ${root.path}');
@@ -310,7 +387,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _retryWhenReaderFrees = true;
       return stopped(SkipReason.readerStuck);
     }
-    var failedTags = 0, failedCovers = 0, added = 0, updated = 0;
+    var failedTags = 0, added = 0, updated = 0;
     IndexerScanning reading(int done) => IndexerScanning(
       phase: ScanPhase.reading,
       rootPath: root.path,
@@ -348,7 +425,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
           added: added,
           updated: updated,
           failedTags: failedTags,
-          failedCovers: failedCovers,
           undecodableNames: undecodable,
           undecodableSampleDirs: undecodableDirs,
           skippedFolderNames: skippedFolders,
@@ -369,9 +445,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
       // Counted from the rows: a path the reader returned nothing for is
       // stored with an error too.
       failedTags += rows.where((r) => r.scanError.value != null).length;
-      failedCovers += tags
-          .where((t) => t.coverStatus == CoverStatus.failed)
-          .length;
       dbTime.start();
       await db.upsertTracks(rows);
       dbTime.stop();
@@ -393,7 +466,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
       updated: updated,
       removed: diff.toDelete.length,
       failedTags: failedTags,
-      failedCovers: failedCovers,
       undecodableNames: undecodable,
       undecodableSampleDirs: undecodableDirs,
       skippedFolderNames: skippedFolders,

@@ -13,7 +13,7 @@ use lofty::config::WriteOptions;
 use lofty::file::TaggedFileExt;
 use lofty::picture::{MimeType, Picture, PictureType};
 use lofty::prelude::*;
-use rust_lib_kanaru::api::tags::{read_original_cover, read_tags_batch, CoverStatus, TrackTags};
+use rust_lib_kanaru::api::tags::{read_covers_batch, read_original_cover, CoverStatus, TrackCover};
 use rust_lib_kanaru::cover_cache::{cache_key, CoverSink};
 
 /// Runs `work` on a thread so a hang fails the test instead of the suite.
@@ -26,10 +26,10 @@ fn within_seconds<T: Send + 'static>(seconds: u64, work: impl FnOnce() -> T + Se
         .expect("must not hang")
 }
 
-fn read_in_thread(path: &Path, cache: &Path) -> TrackTags {
+fn read_in_thread(path: &Path, cache: &Path) -> TrackCover {
     let path = path.to_string_lossy().into_owned();
     let cache = cache.to_string_lossy().into_owned();
-    within_seconds(20, move || read_tags_batch(vec![path], cache).remove(0))
+    within_seconds(20, move || read_covers_batch(vec![path], cache).remove(0))
 }
 
 #[test]
@@ -38,36 +38,32 @@ fn batch_api_writes_into_the_given_folder() {
     let cache = tempfile::tempdir().unwrap();
     let cover = png(64, 64, 9);
     let path = with_cover("sample.flac", music.path(), "song.flac", &cover);
-    let tags = read_in_thread(&path, cache.path());
-    assert_eq!(tags.cover, Some(cache_key(&cover)));
+    let found = read_in_thread(&path, cache.path());
+    assert_eq!(found.cover, Some(cache_key(&cover)));
     assert_eq!(files_under(cache.path()), vec![cache_key(&cover)]);
 }
 
 #[test]
-fn read_only_cache_fails_the_cover_but_not_the_tags() {
+fn read_only_cache_fails_the_cover() {
     use std::os::unix::fs::PermissionsExt;
 
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     fs::set_permissions(cache.path(), fs::Permissions::from_mode(0o555)).unwrap();
     let path = with_cover("sample.flac", music.path(), "song.flac", &png(20, 20, 1));
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
+    let found = read_with(&path, &CoverSink::new(cache.path()));
     fs::set_permissions(cache.path(), fs::Permissions::from_mode(0o755)).unwrap();
-    assert_eq!(tags.error, None);
-    assert_eq!(tags.title.as_deref(), Some("Test_Title"));
-    assert_eq!((tags.cover, tags.cover_status), (None, CoverStatus::Failed));
+    assert_eq!((found.cover, found.status), (None, CoverStatus::Failed));
 }
 
 #[test]
-fn panic_in_the_cover_code_keeps_the_tags() {
+fn panic_in_the_cover_code_fails_the_cover() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     let path = with_cover("sample.flac", music.path(), "song.flac", &png(20, 20, 1));
     let sink = CoverSink::new(cache.path()).panicking_for_tests();
-    let tags = read_with(&path, &sink);
-    assert_eq!(tags.cover_status, CoverStatus::Failed);
-    assert_eq!(tags.cover, None);
-    assert_eq!(tags_only(tags), tags_only(read_without_covers(&path)));
+    let found = read_with(&path, &sink);
+    assert_eq!((found.cover, found.status), (None, CoverStatus::Failed));
 }
 
 #[test]
@@ -101,7 +97,7 @@ fn successful_batch_leaves_no_temp_files() {
         .collect();
     let refs: Vec<&Path> = paths.iter().map(|p| p.as_path()).collect();
     let results = read_all(&refs, &CoverSink::new(cache.path()));
-    assert!(results.iter().all(|t| t.cover_status == CoverStatus::Found));
+    assert!(results.iter().all(|c| c.status == CoverStatus::Found));
     let files = files_under(cache.path());
     assert_eq!(files.len(), 12);
     assert!(
@@ -117,12 +113,15 @@ fn hostile_sidecar_files_neither_hang_nor_fill_memory() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     let path = plain("sample.flac", music.path(), "song.flac");
-    symlink("/proc/self/pagemap", music.path().join("cover.jpg")).unwrap();
     mkfifo(&music.path().join("folder.jpg"));
     fs::create_dir(music.path().join("front.png")).unwrap();
-    let tags = read_in_thread(&path, cache.path());
-    assert_eq!(tags.error, None);
-    assert_eq!((tags.cover, tags.cover_status), (None, CoverStatus::None));
+    let found = read_in_thread(&path, cache.path());
+    assert_eq!((found.cover, found.status), (None, CoverStatus::None));
+
+    // A "regular" file whose reads fail: not proof that there is no cover.
+    symlink("/proc/self/pagemap", music.path().join("cover.jpg")).unwrap();
+    let found = read_in_thread(&path, cache.path());
+    assert_eq!((found.cover, found.status), (None, CoverStatus::Failed));
 }
 
 #[test]
@@ -135,8 +134,8 @@ fn sidecar_over_the_size_limit_is_skipped() {
     fs::write(music.path().join("cover.jpg"), &huge).unwrap();
     let folder = jpeg(8, 8, 2);
     fs::write(music.path().join("folder.jpg"), &folder).unwrap();
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!(tags.cover, Some(cache_key(&folder)));
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&folder)));
     assert_eq!(
         read_original_cover(path.to_string_lossy().into_owned()),
         Some(folder)
@@ -144,21 +143,20 @@ fn sidecar_over_the_size_limit_is_skipped() {
 }
 
 #[test]
-fn corrupt_flac_picture_keeps_the_same_tags() {
+fn corrupt_flac_picture_counts_as_no_embedded_cover() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     let path = with_cover("sample.flac", music.path(), "song.flac", &png(20, 20, 1));
     corrupt_flac_picture_mime_length(&path);
-    let with = read_with(&path, &CoverSink::new(cache.path()));
-    let without = read_without_covers(&path);
-    assert_eq!(without.error, None);
-    assert_eq!(without.title.as_deref(), Some("Test_Title"));
-    assert_eq!(with.cover_status, CoverStatus::None);
-    assert_eq!(tags_only(with), tags_only(without));
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!((found.cover, found.status), (None, CoverStatus::None));
+    let tags = read_tags(&path);
+    assert_eq!(tags.error, None);
+    assert_eq!(tags.title.as_deref(), Some("Test_Title"));
 }
 
 #[test]
-fn oversized_mp4_cover_keeps_the_same_tags() {
+fn oversized_mp4_cover_gives_no_cover() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     let path = music.path().join("song.m4a");
@@ -173,12 +171,10 @@ fn oversized_mp4_cover_keeps_the_same_tags() {
     tagged.primary_tag_mut().unwrap().push_picture(picture);
     tagged.save_to_path(&path, WriteOptions::default()).unwrap();
 
-    let with = read_with(&path, &CoverSink::new(cache.path()));
-    // lofty rejects an MP4 atom over its 16 MiB allocation limit whether or
-    // not pictures are read; reading covers must not make it any worse.
-    let without = read_without_covers(&path);
-    assert_eq!(with.cover, None);
-    assert_eq!(tags_only(with), tags_only(without));
+    // lofty rejects an MP4 atom over its 16 MiB allocation limit: a
+    // permanent error, so the file counts as having no embedded cover.
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!((found.cover, found.status), (None, CoverStatus::None));
 }
 
 #[test]
@@ -203,34 +199,4 @@ fn original_cover_follows_the_scan_order_and_writes_nothing() {
     let bare = tempfile::tempdir().unwrap();
     assert_eq!(original(&plain("sample.opus", bare.path(), "d.opus")), None);
     assert_eq!(original(&bare.path().join("missing.flac")), None);
-}
-
-/// Makes the MIME length of the first PICTURE block absurd, so the block can
-/// no longer be parsed.
-fn corrupt_flac_picture_mime_length(path: &Path) {
-    let mut bytes = fs::read(path).unwrap();
-    assert_eq!(&bytes[..4], b"fLaC");
-    let mut at = 4;
-    loop {
-        let header = bytes[at];
-        let length = u32::from_be_bytes([0, bytes[at + 1], bytes[at + 2], bytes[at + 3]]) as usize;
-        if header & 0x7F == 6 {
-            // PICTURE body: picture type (4), then the MIME length (4).
-            bytes[at + 8..at + 12].copy_from_slice(&0x00FF_FFF0u32.to_be_bytes());
-            break;
-        }
-        assert_eq!(header & 0x80, 0, "no PICTURE block");
-        at += 4 + length;
-    }
-    fs::write(path, bytes).unwrap();
-}
-
-fn mkfifo(path: &Path) {
-    use std::ffi::CString;
-    use std::os::unix::ffi::OsStrExt;
-
-    let c_path = CString::new(path.as_os_str().as_bytes()).unwrap();
-    // SAFETY: c_path is a valid NUL-terminated string that outlives the call.
-    let rc = unsafe { libc::mkfifo(c_path.as_ptr(), 0o600) };
-    assert_eq!(rc, 0, "mkfifo failed");
 }

@@ -7,14 +7,15 @@ import '../../core/database/library_startup.dart';
 import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
 /// Library settings: for now only a rescan. The button is disabled while
 /// the library is unavailable, has no music folder yet, or is being
-/// scanned (it then shows a progress ring). The result is announced by the
-/// shell.
+/// scanned or its covers are being made (it then shows a progress ring).
+/// The result is announced by the shell.
 class LibrarySettingsSection extends ConsumerWidget {
   const LibrarySettingsSection({super.key});
 
@@ -24,6 +25,7 @@ class LibrarySettingsSection extends ConsumerWidget {
     final available =
         ref.watch(libraryDatabaseProvider) != null &&
         ref.watch(libraryHasRootsProvider);
+    final covers = ref.watch(coverPassProvider);
 
     return SettingsSection(
       title: l10n.settingsLibrary,
@@ -34,7 +36,9 @@ class LibrarySettingsSection extends ConsumerWidget {
             scan: ref.watch(libraryIndexerProvider),
             builder: (context, progress) => _RescanButton(
               progress: progress,
-              onPressed: available && progress == null
+              covers: covers is CoverPassRunning ? covers : null,
+              onPressed:
+                  available && progress == null && covers is! CoverPassRunning
                   ? () => unawaited(
                       ref.read(libraryIndexerProvider.notifier).scan(),
                     )
@@ -50,11 +54,17 @@ class LibrarySettingsSection extends ConsumerWidget {
 /// The rescan button. While a scan runs ([progress] set), its icon turns
 /// into the scan's progress ring, like the library's floating rescan
 /// button; the ring has the icon's size, so the row does not move. The
-/// tooltip says how far the scan got.
+/// tooltip says how far the scan got. The same goes for the cover pass
+/// that follows a scan ([covers] set).
 class _RescanButton extends StatelessWidget {
-  const _RescanButton({required this.progress, required this.onPressed});
+  const _RescanButton({
+    required this.progress,
+    required this.covers,
+    required this.onPressed,
+  });
 
   final IndexerScanning? progress;
+  final CoverPassRunning? covers;
   final VoidCallback? onPressed;
 
   @override
@@ -68,6 +78,22 @@ class _RescanButton extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
+    final covers = this.covers;
+    if (progress == null && covers != null) {
+      return Tooltip(
+        message: l10n.libraryCoverProgress(coverPassDone(covers), covers.total),
+        child: FilledButton.tonalIcon(
+          style: settingButtonStyle(),
+          onPressed: onPressed,
+          icon: const CoverProgressIndicator(
+            size: 18,
+            strokeWidth: 2,
+            tooltip: false,
+          ),
+          label: label,
+        ),
+      );
+    }
     if (progress == null) {
       return FilledButton.tonalIcon(
         style: settingButtonStyle(),

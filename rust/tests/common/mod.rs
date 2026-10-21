@@ -12,7 +12,8 @@ use lofty::config::WriteOptions;
 use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::picture::{MimeType, Picture, PictureType};
 use lofty::tag::Tag;
-use rust_lib_kanaru::api::tags::{CoverStatus, TrackTags};
+use rust_lib_kanaru::api::tags::{TrackCover, TrackTags};
+use rust_lib_kanaru::cover_batch::read_covers;
 use rust_lib_kanaru::cover_cache::CoverSink;
 use rust_lib_kanaru::tag_batch::read_batch;
 
@@ -115,29 +116,23 @@ pub fn plain(fixture_name: &str, dir: &Path, file_name: &str) -> PathBuf {
     path
 }
 
-pub fn read_all(paths: &[&Path], sink: &CoverSink) -> Vec<TrackTags> {
-    read_batch(
+/// The covers of `paths`, written through `sink`.
+pub fn read_all(paths: &[&Path], sink: &CoverSink) -> Vec<TrackCover> {
+    read_covers(
         paths
             .iter()
             .map(|p| p.to_string_lossy().into_owned())
             .collect(),
-        Some(sink),
+        sink,
     )
 }
 
-pub fn read_with(path: &Path, sink: &CoverSink) -> TrackTags {
+pub fn read_with(path: &Path, sink: &CoverSink) -> TrackCover {
     read_all(&[path], sink).remove(0)
 }
 
-pub fn read_without_covers(path: &Path) -> TrackTags {
-    read_batch(vec![path.to_string_lossy().into_owned()], None).remove(0)
-}
-
-/// The tag part of `tags`, for comparing reads with and without covers.
-pub fn tags_only(mut tags: TrackTags) -> TrackTags {
-    tags.cover = None;
-    tags.cover_status = CoverStatus::Skipped;
-    tags
+pub fn read_tags(path: &Path) -> TrackTags {
+    read_batch(vec![path.to_string_lossy().into_owned()]).remove(0)
 }
 
 /// Every file under `dir`, relative, sorted.
@@ -165,4 +160,34 @@ fn collect(root: &Path, dir: &Path, found: &mut Vec<String>) {
             );
         }
     }
+}
+
+/// Makes the MIME length of the first PICTURE block absurd, so the block can
+/// no longer be parsed.
+pub fn corrupt_flac_picture_mime_length(path: &Path) {
+    let mut bytes = fs::read(path).unwrap();
+    assert_eq!(&bytes[..4], b"fLaC");
+    let mut at = 4;
+    loop {
+        let header = bytes[at];
+        let length = u32::from_be_bytes([0, bytes[at + 1], bytes[at + 2], bytes[at + 3]]) as usize;
+        if header & 0x7F == 6 {
+            // PICTURE body: picture type (4), then the MIME length (4).
+            bytes[at + 8..at + 12].copy_from_slice(&0x00FF_FFF0u32.to_be_bytes());
+            break;
+        }
+        assert_eq!(header & 0x80, 0, "no PICTURE block");
+        at += 4 + length;
+    }
+    fs::write(path, bytes).unwrap();
+}
+
+pub fn mkfifo(path: &Path) {
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+
+    let c_path = CString::new(path.as_os_str().as_bytes()).unwrap();
+    // SAFETY: c_path is a valid NUL-terminated string that outlives the call.
+    let rc = unsafe { libc::mkfifo(c_path.as_ptr(), 0o600) };
+    assert_eq!(rc, 0, "mkfifo failed");
 }

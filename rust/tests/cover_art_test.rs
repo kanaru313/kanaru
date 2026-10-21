@@ -98,11 +98,9 @@ fn embedded_cover_of_each_format_becomes_a_cached_thumbnail() {
     {
         let cover = png(800, 600, index as u8);
         let path = with_cover(name, music.path(), name, &cover);
-        let tags = read_with(&path, &sink);
-        assert_eq!(tags.error, None, "{name}");
-        assert_eq!(tags.title.as_deref(), Some("Test_Title"), "{name}");
-        assert_eq!(tags.cover_status, CoverStatus::Found, "{name}");
-        let key = tags.cover.expect(name);
+        let found = read_with(&path, &sink);
+        assert_eq!(found.status, CoverStatus::Found, "{name}");
+        let key = found.cover.expect(name);
         assert_eq!(key, cache_key(&cover), "{name}");
         assert_eq!(thumbnail_size(cache.path(), &key), (512, 384), "{name}");
     }
@@ -151,8 +149,8 @@ fn embedded_cover_beats_a_cover_named_after_the_track() {
     let embedded = png(20, 20, 1);
     let path = with_cover("sample.flac", music.path(), "song.flac", &embedded);
     fs::write(music.path().join("song.jpg"), jpeg(20, 20, 2)).unwrap();
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!(tags.cover, Some(cache_key(&embedded)));
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&embedded)));
 }
 
 #[test]
@@ -163,9 +161,9 @@ fn cover_named_after_the_track_beats_folder_covers() {
     let own = png(20, 20, 1);
     fs::write(music.path().join("Song.PNG"), &own).unwrap();
     fs::write(music.path().join("cover.jpg"), jpeg(20, 20, 2)).unwrap();
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!(tags.cover, Some(cache_key(&own)));
-    assert_eq!(tags.cover_status, CoverStatus::Found);
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&own)));
+    assert_eq!(found.status, CoverStatus::Found);
 }
 
 #[test]
@@ -195,22 +193,20 @@ fn unusable_source_falls_through_to_the_next() {
     fs::write(music.path().join("song.jpg"), b"not an image").unwrap();
     let folder = jpeg(30, 30, 2);
     fs::write(music.path().join("cover.jpg"), &folder).unwrap();
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!(tags.cover, Some(cache_key(&folder)));
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&folder)));
 }
 
 #[test]
-fn unusable_images_give_no_cover_and_keep_the_tags() {
+fn unusable_images_give_no_cover() {
     let cache = tempfile::tempdir().unwrap();
     let sink = CoverSink::new(cache.path());
     let gif = b"GIF89a\x01\x00\x01\x00\x00\x00\x00".to_vec();
     for bad in [gif, png_claiming(30_000, 30_000), png_claiming(4000, 4000)] {
         let music = tempfile::tempdir().unwrap();
         let path = with_cover("sample.flac", music.path(), "song.flac", &bad);
-        let tags = read_with(&path, &sink);
-        assert_eq!(tags.cover, None);
-        assert_eq!(tags.cover_status, CoverStatus::None);
-        assert_eq!(tags_only(tags), tags_only(read_without_covers(&path)));
+        let found = read_with(&path, &sink);
+        assert_eq!((found.cover, found.status), (None, CoverStatus::None));
     }
     assert!(files_under(cache.path()).is_empty());
 }
@@ -223,10 +219,10 @@ fn unreadable_tags_still_get_a_folder_cover() {
     fs::write(&path, b"DSD fake content").unwrap();
     let folder = jpeg(30, 30, 5);
     fs::write(music.path().join("folder.jpg"), &folder).unwrap();
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!(tags.error, None);
-    assert_eq!(tags.cover, Some(cache_key(&folder)));
-    assert_eq!(tags.cover_status, CoverStatus::Found);
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(read_tags(&path).error, None);
+    assert_eq!(found.cover, Some(cache_key(&folder)));
+    assert_eq!(found.status, CoverStatus::Found);
 }
 
 #[test]
@@ -234,16 +230,15 @@ fn no_cover_anywhere_is_none() {
     let music = tempfile::tempdir().unwrap();
     let cache = tempfile::tempdir().unwrap();
     let path = plain("sample.ogg", music.path(), "song.ogg");
-    let tags = read_with(&path, &CoverSink::new(cache.path()));
-    assert_eq!((tags.cover, tags.cover_status), (None, CoverStatus::None));
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!((found.cover, found.status), (None, CoverStatus::None));
 }
 
 #[test]
-fn covers_off_reads_exactly_the_old_tags() {
+fn tags_are_read_without_pictures() {
     let music = tempfile::tempdir().unwrap();
     let path = with_cover("sample.mp3", music.path(), "song.mp3", &png(20, 20, 1));
-    let tags = read_without_covers(&path);
-    assert_eq!(tags.cover_status, CoverStatus::Skipped);
-    assert_eq!(tags.cover, None);
+    let tags = read_tags(&path);
+    assert_eq!(tags.error, None);
     assert_eq!(tags.title.as_deref(), Some("Test_Title"));
 }

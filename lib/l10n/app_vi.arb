@@ -54,6 +54,7 @@
   "libraryKeysUpdatingTitle": "Đang cập nhật thư viện…",
   "libraryKeysUpdatingMessage": "Đang sắp xếp nhạc của bạn. Bạn vẫn có thể phát nhạc.",
   "libraryKeysUpdatingProgress": "{done} / {total}",
+  "libraryCoverProgress": "Đang tạo ảnh bìa… {done} / {total}",
   "libraryScanDiscovering": "Đang tìm file nhạc…",
   "libraryScanReading": "Đang đọc tag {done} / {total}",
   "libraryScanDoneTitle": "Đã quét xong",
