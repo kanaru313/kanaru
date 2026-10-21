@@ -102,7 +102,7 @@ Rescan is a button with a progress ring. The ring spins until the first batch fi
 
 - Decode sizes are bucketed to 64, 128, 256 and 512 px (`shared/widgets/cover_art.dart`). Images are never decoded at full size in lists.
 - `gaplessPlayback` is on for covers so they do not flash between tracks.
-- Missing artwork shows a placeholder: a solid color chosen from a stable FNV hash of the album or artist name (`features/library/widgets/stable_hash.dart`, `placeholder_colors.dart`). The same name always gets the same color.
+- Missing artwork shows a placeholder: a solid color chosen from a stable FNV hash of the album or artist name (`shared/stable_hash.dart`, `shared/widgets/placeholder_colors.dart`). The same name always gets the same color.
 - Artist avatars use the same placeholder approach.
 
 ## States

@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../artist_summaries.dart';
 import 'artist_avatar.dart';
 import 'queue_actions_menu.dart';
-import '../artist_summaries.dart';
 
 /// One artist of the Artists list: avatar, name, "N albums · M songs".
 class ArtistTile extends StatelessWidget {

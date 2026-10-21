@@ -189,6 +189,9 @@ void enqueueAlbum(
 );
 
 /// Queues the tracks [read] returns, naming them [label]; see [enqueueTracks].
+/// [read] gets the open library and the cover cache directory (null when
+/// covers are off). Does nothing, silently, when [context] is unmounted or no
+/// library is open.
 void enqueueFromDatabase(
   WidgetRef ref,
   BuildContext context,

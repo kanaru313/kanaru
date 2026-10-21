@@ -79,7 +79,7 @@ flowchart TD
 Notes:
 
 - `shared/widgets/scan_progress.dart` imports `core/indexer`, which is allowed (downward).
-- `features/library/library_route_keys.dart` duplicates two route literals because features cannot import `app/`. A test keeps them in step.
+- `shared/library_route_keys.dart` duplicates two route literals because `shared/` and features cannot import `app/`. A test keeps them in step.
 - `app/shell` injects the Now Playing title bar, so features do not reach into the shell.
 
 ---
