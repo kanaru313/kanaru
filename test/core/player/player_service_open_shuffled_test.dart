@@ -84,8 +84,12 @@ void main() {
     // Queueing x holds entry 3 (the first free number) as "play next". Take
     // a seed whose play order has entry 3 right after the start track: were
     // the held place kept, it would count as a queued track there.
+    const maxSeeds = 1000;
     var seed = 0;
     while (true) {
+      if (seed >= maxSeeds) {
+        fail('no seed below $maxSeeds puts entry 3 right after the start');
+      }
       final probe = makeContainer(seed);
       await probe.read(playerServiceProvider.notifier).openShuffled(tracks);
       final queue = probe.read(playerServiceProvider).queue;

@@ -7,8 +7,8 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   bool get _ended;
   set _ended(bool ended);
-  set _opened(int count);
-  int get _opened;
+  set _userQueueChanges(int count);
+  int get _userQueueChanges;
   Set<int> get _upNext;
   set _lastTick(Duration position);
   StreamController<Duration> get _seeked;
@@ -108,7 +108,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     required bool shuffled,
   }) async {
     _userActed();
-    _opened++;
+    _userQueueChanges++;
     _upNext.clear();
     final queue = PlayQueue.open(
       tracks,

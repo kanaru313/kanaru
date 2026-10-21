@@ -367,28 +367,33 @@ void main() {
     });
 
     test(
-      'is counted for a new queue, not for the same one moving on',
+      'counts the user opening or filling a queue, not the queue moving on',
       () async {
-        expect(service().queuesOpened, 0);
+        expect(service().userQueueChanges, 0);
 
         await service().openTracks([a, b, c]);
-        expect(service().queuesOpened, 1);
+        expect(service().userQueueChanges, 1);
         await service().openShuffled([a, b, c]);
-        expect(service().queuesOpened, 2);
+        expect(service().userQueueChanges, 2);
 
         await service().playNext([x]);
+        expect(service().userQueueChanges, 3);
         await service().addToQueue([y]);
+        expect(service().userQueueChanges, 4);
         await service().setRepeat(RepeatMode.all);
         await service().setShuffle(false);
         await service().next();
         backend.advance();
-        expect(service().queuesOpened, 2);
+        await service().moveTrack(1, 2);
+        await service().removeTrack(1);
+        await service().clearQueue();
+        expect(service().userQueueChanges, 4);
       },
     );
 
     test('counts queueing on an empty queue', () async {
       await service().playNext([a]);
-      expect(service().queuesOpened, 1);
+      expect(service().userQueueChanges, 1);
     });
   });
 }

@@ -52,12 +52,54 @@ void playTracks(WidgetRef ref, List<Track> tracks, int start) => unawaited(
 
 /// Tail of the library-level enqueues: each one waits for the one before, so
 /// two quick menu picks land in the queue in click order even when their
-/// database reads finish in another order.
+/// database reads finish in another order. Also holds the queue message still
+/// on its way to the screen, so a newer one replaces it instead of piling up.
 class _EnqueueChain {
   Future<void> tail = Future.value();
+
+  /// The text of the queue snackbar shown or waiting behind other messages,
+  /// and the messenger it belongs to. Null once it is gone.
+  ValueNotifier<String>? pendingMessage;
+  ScaffoldMessengerState? pendingMessenger;
 }
 
 final _enqueueChainProvider = Provider<_EnqueueChain>((ref) => _EnqueueChain());
+
+/// Says [text] in a snackbar. While an earlier queue message is still showing
+/// or waiting its turn on the same [messenger], its text is replaced instead:
+/// only the latest pick is worth reading, and other messages (a finished
+/// scan) are never touched.
+void _showQueueMessage(
+  _EnqueueChain chain,
+  ScaffoldMessengerState messenger,
+  String text,
+) {
+  final pending = chain.pendingMessage;
+  if (pending != null && identical(chain.pendingMessenger, messenger)) {
+    pending.value = text;
+    return;
+  }
+  final message = ValueNotifier(text);
+  final controller = messenger.showSnackBar(
+    SnackBar(
+      content: ValueListenableBuilder<String>(
+        valueListenable: message,
+        builder: (_, value, _) => Text(value),
+      ),
+    ),
+  );
+  chain.pendingMessage = message;
+  chain.pendingMessenger = messenger;
+  unawaited(
+    controller.closed.then((_) {
+      if (identical(chain.pendingMessage, message)) {
+        chain.pendingMessage = null;
+        chain.pendingMessenger = null;
+      }
+      message.dispose();
+    }),
+  );
+}
 
 /// Puts the tracks [read] returns behind the playing one ([QueueAction.playNext])
 /// or at the end of the queue, then says so in a snackbar naming [label]
@@ -76,6 +118,7 @@ Future<void> enqueueTracks(
   final chain = ref.read(_enqueueChainProvider);
   final player = ref.read(playerServiceProvider.notifier);
   Future<void> attempt() async {
+    final String text;
     try {
       final tracks = await read();
       // The album or artist vanished in a rescan: nothing to queue.
@@ -84,23 +127,24 @@ Future<void> enqueueTracks(
         QueueAction.playNext => await player.playNext(tracks),
         QueueAction.addToQueue => await player.addToQueue(tracks),
       };
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            started
-                ? l10n.queuePlaying(label)
-                : switch (action) {
-                    QueueAction.playNext => l10n.queuePlayingNext(label),
-                    QueueAction.addToQueue => l10n.queueAddedToQueue(label),
-                  },
-          ),
-        ),
-      );
+      text = started
+          ? l10n.queuePlaying(label)
+          : switch (action) {
+              QueueAction.playNext => l10n.queuePlayingNext(label),
+              QueueAction.addToQueue => l10n.queueAddedToQueue(label),
+            };
     } catch (error, stackTrace) {
       _log.severe('Queuing tracks failed', error, stackTrace);
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.libraryUnexpectedError)),
       );
+      return;
+    }
+    // The tracks are queued: failing to say so is no queuing failure.
+    try {
+      _showQueueMessage(chain, messenger, text);
+    } catch (error, stackTrace) {
+      _log.warning('Showing the queue message failed', error, stackTrace);
     }
   }
 

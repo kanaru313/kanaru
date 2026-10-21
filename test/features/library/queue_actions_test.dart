@@ -392,5 +392,37 @@ void main() {
 
       expect(find.text('Scan finished'), findsOneWidget);
     });
+
+    testWidgets('two quick picks leave only the latest message', (
+      tester,
+    ) async {
+      await pumpHost(tester);
+
+      await enqueue(() async => [track('a')], 'first');
+      await enqueue(() async => [track('b')], 'second');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Added to queue: first'), findsNothing);
+      expect(find.text('Added to queue: second'), findsOneWidget);
+      expect(titles(), ['a', 'b']);
+    });
+
+    testWidgets('a message shown before is not replaced', (tester) async {
+      await pumpHost(tester);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Scan finished'),
+          duration: Duration(minutes: 1),
+        ),
+      );
+      await tester.pump();
+
+      await enqueue(() async => [track('a')], 'first');
+      await enqueue(() async => [track('b')], 'second');
+      await tester.pump();
+
+      expect(find.text('Scan finished'), findsOneWidget);
+      expect(find.textContaining('first'), findsNothing);
+    });
   });
 }

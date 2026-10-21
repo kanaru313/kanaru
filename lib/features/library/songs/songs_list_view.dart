@@ -95,6 +95,8 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
 
   /// Queues one song of the list from its menu.
   void _enqueue(TrackListItem song, QueueAction action) {
+    // The menu closes later than it opened: the list may be gone by then.
+    if (!mounted) return;
     final track = trackFromItem(
       path: song.path,
       title: song.title,

@@ -95,16 +95,38 @@ void main() {
 
     await tester.tap(shuffleAll());
     // The engine moves on and repeat changes before the read finishes: each
-    // makes a new queue object, but nothing newer was opened.
+    // makes a new queue object, but the user picked nothing newer.
     h.backend.advance();
     unawaited(player.cycleRepeat());
-    unawaited(player.playNext([Track.fromPath('/elsewhere/r.mp3')]));
     await settleIo(tester, h);
 
     final state = h.container.read(playerServiceProvider);
     expect([for (final t in state.queue.original) t.title], ['a', 'b']);
     expect(state.queue.shuffled, isTrue);
     expect(h.backend.calls.where((c) => c.startsWith('open(')), hasLength(2));
+  });
+
+  testWidgets('a track queued during the read stays and skips the shuffle', (
+    tester,
+  ) async {
+    final h = harness();
+    await openWithTracks(tester, h, const [
+      TestTrack('a'),
+      TestTrack('b'),
+    ], location: '/songs');
+    final player = h.container.read(playerServiceProvider.notifier);
+    await player.openTracks([Track.fromPath('/elsewhere/p.mp3')]);
+
+    await tester.tap(shuffleAll());
+    final album = Track.fromPath('/elsewhere/r.mp3');
+    unawaited(player.playNext([album]));
+    await settleIo(tester, h);
+
+    final state = h.container.read(playerServiceProvider);
+    expect(state.queue.original, contains(album));
+    expect(state.queue.shuffled, isFalse);
+    expect(h.backend.calls.where((c) => c.startsWith('open(')), hasLength(1));
+    expect(find.byType(SnackBar), findsNothing, reason: 'dropped silently');
   });
 
   testWidgets('a queue changed during the read is not replaced', (

@@ -7,8 +7,8 @@ part of 'player_service.dart';
 mixin _PlayerQueueCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   set _ended(bool ended);
-  int get _opened;
-  set _opened(int count);
+  int get _userQueueChanges;
+  set _userQueueChanges(int count);
   set _lastTick(Duration position);
   set _failuresInRow(int count);
   bool get _allFailed;
@@ -51,7 +51,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// Plays [tracks] in the order given on an empty queue. Shuffle stays on if
   /// it was, but only applies to what is added later.
   Future<bool> _startQueue(List<Track> tracks) async {
-    _opened++;
+    _userQueueChanges++;
     _upNext.clear();
     state = state.copyWith(queue: state.queue.insert(0, tracks));
     await jump(0);
@@ -72,6 +72,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// the first added track is loaded paused, so play continues there.
   Future<void> _insert(int at, List<Track> tracks) async {
     _userActed();
+    _userQueueChanges++;
     _failuresInRow = 0;
     state = state.copyWith(queue: state.queue.insert(at, tracks));
     if (_ended) return _play(at, play: false);

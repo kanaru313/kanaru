@@ -61,13 +61,13 @@ class PlayerService extends Notifier<PlayerState>
   @override
   final _upNext = <int>{};
 
-  /// How many times a new queue replaced or started the old one (open, open
-  /// shuffled, or queueing on an empty queue), as opposed to the same queue
-  /// moving on or being edited. Lets a slow caller tell whether something
-  /// newer was opened while it worked.
+  /// How many times the user opened a queue or put tracks into it (open, open
+  /// shuffled, play next, add to queue), as opposed to the engine moving on,
+  /// repeat or shuffle changing, or tracks being dragged, removed or cleared.
+  /// Lets a slow caller tell whether a newer pick landed while it worked.
   @override
-  int _opened = 0;
-  int get queuesOpened => _opened;
+  int _userQueueChanges = 0;
+  int get userQueueChanges => _userQueueChanges;
 
   /// Playback stopped after the last track; play starts the queue over.
   @override
