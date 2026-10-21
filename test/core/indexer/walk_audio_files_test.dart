@@ -116,4 +116,117 @@ void main() {
 
     expect(names(result), {'a.mp3'});
   });
+
+  group('names that are not valid UTF-8', () {
+    /// Creates `<dir>/caf\xe9.mp3` (latin-1 e-acute, invalid UTF-8) through
+    /// the shell, since Dart encodes every path it is given as UTF-8.
+    void touchLatin1(String dir) {
+      Directory('${tmp.path}/$dir').createSync(recursive: true);
+      final result = Process.runSync('bash', [
+        '-c',
+        r'touch "$(printf "caf\xe9.mp3")"',
+      ], workingDirectory: '${tmp.path}/$dir');
+      expect(result.exitCode, 0, reason: '${result.stderr}');
+    }
+
+    test('are counted, with their folder, and keep rows via unstattable', () {
+      touch('ok.mp3');
+      touchLatin1('sub');
+      touchLatin1('sub2');
+
+      final result = walkAudioFiles(tmp.path);
+
+      expect(names(result), {'ok.mp3'});
+      expect(result.undecodableNames, 2);
+      expect(result.undecodableSampleDirs.toSet(), {
+        '${tmp.path}/sub',
+        '${tmp.path}/sub2',
+      });
+      expect(result.unstattable, hasLength(2));
+    });
+
+    test('a folder name that is not UTF-8 is counted, with its parent', () {
+      touch('ok.mp3');
+      Directory('${tmp.path}/albums').createSync();
+      final made = Process.runSync('bash', [
+        '-c',
+        r'mkdir "$(printf "caf\xe9")" && touch "$(printf "caf\xe9")/in.mp3"',
+      ], workingDirectory: '${tmp.path}/albums');
+      expect(made.exitCode, 0, reason: '${made.stderr}');
+
+      final result = walkAudioFiles(tmp.path);
+
+      expect(names(result), {'ok.mp3'});
+      expect(result.undecodableNames, 1);
+      expect(result.undecodableSampleDirs, ['${tmp.path}/albums']);
+      expect(result.unreadableDirs, hasLength(1));
+    });
+
+    test('a name that really holds U+FFFD is a normal file, once', () {
+      touch('bad\u{FFFD}name.mp3');
+      final result = walkAudioFiles(tmp.path);
+      expect(names(result), {'bad\u{FFFD}name.mp3'});
+      expect(result.undecodableNames, 0);
+    });
+
+    test('several raw names that decode alike give one entry at most', () {
+      final made = Process.runSync('bash', [
+        '-c',
+        r'touch "$(printf "a\xe9.mp3")" "$(printf "a\xe8.mp3")"',
+      ], workingDirectory: tmp.path);
+      expect(made.exitCode, 0);
+      final result = walkAudioFiles(tmp.path);
+      expect(result.files, isEmpty);
+      expect(result.undecodableNames, 2);
+    });
+
+    test('samples stop at three folders', () {
+      for (var i = 0; i < 5; i++) {
+        touchLatin1('d$i');
+      }
+      final result = walkAudioFiles(tmp.path);
+      expect(result.undecodableNames, 5);
+      expect(result.undecodableSampleDirs, hasLength(3));
+    });
+  });
+
+  group('folders that never hold the library', () {
+    test('trash, system and dot folders are skipped at any depth', () {
+      touch('keep.mp3');
+      touch('.Trash-1000/files/gone.mp3');
+      touch('.Trash/gone.mp3');
+      touch('lost+found/gone.mp3');
+      touch('album/@eaDir/gone.mp3');
+      touch(r'$RECYCLE.BIN/gone.mp3');
+      touch('.hidden/gone.mp3');
+      touch('album/.cache/gone.mp3');
+      touch('album/song.mp3');
+
+      final result = walkAudioFiles(tmp.path);
+
+      expect(names(result), {'keep.mp3', 'album/song.mp3'});
+      expect(result.skippedFolderNames.toSet(), {
+        '.Trash-1000',
+        '.Trash',
+        'lost+found',
+        '@eaDir',
+        r'$RECYCLE.BIN',
+        '.hidden',
+        '.cache',
+      });
+    });
+
+    test('a dot-file is still a file, and a dot-named root is walked', () {
+      touch('.hidden-track.mp3');
+      touch('lost+found.mp3');
+      expect(names(walkAudioFiles(tmp.path)), {
+        '.hidden-track.mp3',
+        'lost+found.mp3',
+      });
+
+      touch('.music/a.mp3');
+      final inner = walkAudioFiles('${tmp.path}/.music');
+      expect(inner.files, hasLength(1));
+    });
+  });
 }

@@ -362,6 +362,24 @@ abstract class AppLocalizations {
   /// **'Rescan'**
   String get libraryRescan;
 
+  /// No description provided for @libraryKeysUpdatingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating library…'**
+  String get libraryKeysUpdatingTitle;
+
+  /// No description provided for @libraryKeysUpdatingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting your music. Playback keeps working.'**
+  String get libraryKeysUpdatingMessage;
+
+  /// No description provided for @libraryKeysUpdatingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} / {total}'**
+  String libraryKeysUpdatingProgress(int done, int total);
+
   /// No description provided for @libraryScanDiscovering.
   ///
   /// In en, this message translates to:
@@ -422,6 +440,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{1 file couldn\'t be read} other{{count} files couldn\'t be read}}'**
   String libraryScanFailedTags(int count);
 
+  /// No description provided for @libraryScanUndecodableNames.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 file or folder skipped: its name is not valid UTF-8} other{{count} files or folders skipped: names are not valid UTF-8}}'**
+  String libraryScanUndecodableNames(int count);
+
   /// No description provided for @libraryScanRootMissing.
   ///
   /// In en, this message translates to:
@@ -433,6 +457,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{path} is empty, library kept as it was'**
   String libraryScanRootEmpty(String path);
+
+  /// No description provided for @libraryScanRootTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} took too long, stopped. If the folder was still being read, the scan finishes by itself when it is done'**
+  String libraryScanRootTimedOut(String path);
+
+  /// No description provided for @libraryScanRootReaderStuck.
+  ///
+  /// In en, this message translates to:
+  /// **'{path} was not read: an earlier read is still running. It is tried again automatically when that read finishes; if it never does, restart Kanaru'**
+  String libraryScanRootReaderStuck(String path);
 
   /// No description provided for @libraryRootNotFound.
   ///
@@ -487,6 +523,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See the log for details'**
   String get libraryScanFailedDetails;
+
+  /// No description provided for @songsTrackGone.
+  ///
+  /// In en, this message translates to:
+  /// **'That song is no longer in the library.'**
+  String get songsTrackGone;
 
   /// No description provided for @sortBy.
   ///

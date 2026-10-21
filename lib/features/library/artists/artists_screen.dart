@@ -58,7 +58,7 @@ class ArtistsScreen extends ConsumerWidget {
         ],
         body: LibraryRescanStack(
           child: LibraryBrowseBody<ArtistSummary>(
-            state: ref.watch(artistsProvider),
+            hasError: ref.watch(artistsProvider.select((s) => s.hasError)),
             items: ref.watch(sortedArtistsProvider),
             icon: Icons.person_outline,
             noRootsMessage: l10n.artistsNoRootsMessage,

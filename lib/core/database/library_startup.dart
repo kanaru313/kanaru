@@ -9,7 +9,6 @@ import 'package:sqlite3/sqlite3.dart';
 
 import '../paths/app_directories.dart';
 import 'library_database.dart';
-import 'library_sql_functions.dart';
 
 final _log = Logger('library');
 
@@ -76,14 +75,12 @@ class LibraryStartup {
 }
 
 /// Runs once per connection on the database isolate, so it captures no state.
-/// WAL lets the UI read while a scan writes. Also registers the SQL functions
-/// the browse queries use.
+/// WAL lets the UI read while a scan writes.
 void applyLibraryPragmas(Database rawDb) {
   rawDb.execute('PRAGMA journal_mode = WAL;');
   rawDb.execute('PRAGMA synchronous = NORMAL;');
   rawDb.execute('PRAGMA foreign_keys = ON;');
   rawDb.execute('PRAGMA busy_timeout = 5000;');
-  registerLibrarySqlFunctions(rawDb);
 }
 
 /// Opens `library.db` in the data directory and runs the first query, which

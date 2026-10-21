@@ -146,6 +146,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryRescan => 'Rescan';
 
   @override
+  String get libraryKeysUpdatingTitle => 'Updating library…';
+
+  @override
+  String get libraryKeysUpdatingMessage =>
+      'Sorting your music. Playback keeps working.';
+
+  @override
+  String libraryKeysUpdatingProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString / $totalString';
+  }
+
+  @override
   String get libraryScanDiscovering => 'Looking for music files…';
 
   @override
@@ -200,6 +220,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String libraryScanUndecodableNames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files or folders skipped: names are not valid UTF-8',
+      one: '1 file or folder skipped: its name is not valid UTF-8',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String libraryScanRootMissing(String path) {
     return '$path was not found';
   }
@@ -207,6 +238,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String libraryScanRootEmpty(String path) {
     return '$path is empty, library kept as it was';
+  }
+
+  @override
+  String libraryScanRootTimedOut(String path) {
+    return '$path took too long, stopped. If the folder was still being read, the scan finishes by itself when it is done';
+  }
+
+  @override
+  String libraryScanRootReaderStuck(String path) {
+    return '$path was not read: an earlier read is still running. It is tried again automatically when that read finishes; if it never does, restart Kanaru';
   }
 
   @override
@@ -248,6 +289,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryScanFailedDetails => 'See the log for details';
+
+  @override
+  String get songsTrackGone => 'That song is no longer in the library.';
 
   @override
   String get sortBy => 'Sort by:';

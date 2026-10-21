@@ -32,7 +32,9 @@ SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
   final l10n = context.l10n;
   final (outcome, details) = switch (state) {
     IndexerFinished(:final summary) => (
-      summary.failedTags > 0 || summary.skippedRoots.isNotEmpty
+      summary.failedTags > 0 ||
+              summary.undecodableNames > 0 ||
+              summary.skippedRoots.isNotEmpty
           ? _Outcome.warning
           : _Outcome.done,
       _summaryDetails(l10n, summary),
@@ -76,10 +78,14 @@ String _summaryDetails(AppLocalizations l10n, ScanSummary summary) {
   return [
     counts.isEmpty ? l10n.libraryScanNoChanges : counts.join(' · '),
     if (summary.failedTags > 0) l10n.libraryScanFailedTags(summary.failedTags),
+    if (summary.undecodableNames > 0)
+      l10n.libraryScanUndecodableNames(summary.undecodableNames),
     for (final entry in summary.skippedRoots.entries)
       switch (entry.value) {
         SkipReason.missing => l10n.libraryScanRootMissing(entry.key),
         SkipReason.empty => l10n.libraryScanRootEmpty(entry.key),
+        SkipReason.timedOut => l10n.libraryScanRootTimedOut(entry.key),
+        SkipReason.readerStuck => l10n.libraryScanRootReaderStuck(entry.key),
       },
   ].join('\n');
 }

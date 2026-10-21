@@ -4,8 +4,8 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/core/database/library_startup.dart';
-import 'package:kanaru/core/database/library_sql_functions.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/library_browse_refresh.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
@@ -29,9 +29,7 @@ void main() {
   test('a scan reloads the list at most once per refresh interval', () async {
     const interval = Duration(milliseconds: 150);
     const batches = 40;
-    final db = LibraryDatabase(
-      NativeDatabase.memory(setup: registerLibrarySqlFunctions),
-    );
+    final db = LibraryDatabase(NativeDatabase.memory());
     final container = ProviderContainer(
       overrides: [
         libraryDatabaseProvider.overrideWithValue(db),
@@ -46,10 +44,10 @@ void main() {
 
     var loads = 0;
     final full = Completer<void>();
-    container.listen(songsListProvider, (_, next) {
+    container.listen(songIdsProvider, (_, next) {
       if (!next.hasValue) return;
       loads++;
-      if (next.requireValue.length == batches && !full.isCompleted) {
+      if (next.requireValue.ids.length == batches && !full.isCompleted) {
         full.complete();
       }
     });
@@ -74,13 +72,14 @@ void main() {
 
     final allowed = (scanTime.inMilliseconds / interval.inMilliseconds).ceil();
     expect(loads, lessThanOrEqualTo(allowed + 1));
-    expect(container.read(songsListProvider).requireValue, hasLength(batches));
+    expect(
+      container.read(songIdsProvider).requireValue.ids,
+      hasLength(batches),
+    );
   });
 
   test('changing the sort reloads at once, not after the interval', () async {
-    final db = LibraryDatabase(
-      NativeDatabase.memory(setup: registerLibrarySqlFunctions),
-    );
+    final db = LibraryDatabase(NativeDatabase.memory());
     final container = ProviderContainer(
       overrides: [
         libraryDatabaseProvider.overrideWithValue(db),
@@ -107,27 +106,67 @@ void main() {
         ),
     ]);
 
-    List<String> titles() => [
-      for (final t in container.read(songsListProvider).requireValue) t.title,
+    Future<List<String>> titles() async => [
+      for (final t in await db.songsByIds(
+        container.read(songIdsProvider).requireValue.ids,
+      ))
+        t.title,
     ];
     final first = Completer<void>();
     final reordered = Completer<void>();
-    container.listen(songsListProvider, (_, next) {
+    container.listen(songIdsProvider, (_, next) {
       if (!next.hasValue) return;
-      final names = [for (final t in next.requireValue) t.title];
+      final sort = next.requireValue;
       if (!first.isCompleted) {
         first.complete();
-      } else if (names.join() == 'cba' && !reordered.isCompleted) {
+      } else if (sort.descending && !reordered.isCompleted) {
         reordered.complete();
       }
     });
     await first.future.timeout(const Duration(seconds: 10));
-    expect(titles(), ['a', 'b', 'c']);
+    expect(await titles(), ['a', 'b', 'c']);
 
     container
         .read(settingsProvider.notifier)
         .setSongSort(const SortChoice(SongSortField.title, descending: true));
     await reordered.future.timeout(const Duration(seconds: 10));
-    expect(titles(), ['c', 'b', 'a']);
+    expect(await titles(), ['c', 'b', 'a']);
+  });
+
+  test('the first page is read before the ids', () async {
+    final db = LibraryDatabase(NativeDatabase.memory());
+    final container = ProviderContainer(
+      overrides: [libraryDatabaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+    final rootId = (await db.addRoots(['/m'], now: 1)).single;
+    await db.upsertTracks([
+      TracksCompanion.insert(
+        rootId: rootId,
+        path: '/m/a.flac',
+        mtimeMs: 1,
+        sizeBytes: 1,
+        title: 'a',
+        addedAt: 1,
+        updatedAt: 1,
+      ),
+    ]);
+
+    final events = <String>[];
+    final ids = Completer<void>();
+    container.listen(songsFirstPageProvider, (_, next) {
+      if (next.hasValue && !next.isLoading) events.add('page');
+    });
+    container.listen(songIdsProvider, (_, next) {
+      if (!next.hasValue) return;
+      events.add('ids');
+      ids.complete();
+    });
+    await ids.future.timeout(const Duration(seconds: 10));
+    expect(events.indexOf('ids'), events.length - 1);
+    expect(events.first, 'page');
   });
 }

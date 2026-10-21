@@ -15,7 +15,6 @@ import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'album_grid_tile.dart';
 import 'album_list_tile.dart';
-import 'album_tile_data.dart';
 import 'albums_provider.dart';
 
 final _log = Logger('library');
@@ -81,7 +80,7 @@ class AlbumsScreen extends ConsumerWidget {
         ],
         body: LibraryRescanStack(
           child: LibraryBrowseBody<AlbumSummary>(
-            state: ref.watch(albumsProvider),
+            hasError: ref.watch(albumsProvider.select((s) => s.hasError)),
             items: ref.watch(sortedAlbumsProvider),
             icon: Icons.album_outlined,
             noRootsMessage: l10n.albumsNoRootsMessage,
@@ -89,7 +88,7 @@ class AlbumsScreen extends ConsumerWidget {
             emptyMessage: l10n.albumsEmptyMessage,
             builder: (albums) => switch (view) {
               AlbumsView.grid => AlbumGrid(
-                albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
+                albums: albums,
                 onTap: (album) => open(album.key),
               ),
               AlbumsView.list => ListView.builder(

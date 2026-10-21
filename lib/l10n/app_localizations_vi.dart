@@ -146,6 +146,26 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryRescan => 'Quét lại';
 
   @override
+  String get libraryKeysUpdatingTitle => 'Đang cập nhật thư viện…';
+
+  @override
+  String get libraryKeysUpdatingMessage =>
+      'Đang sắp xếp nhạc của bạn. Bạn vẫn có thể phát nhạc.';
+
+  @override
+  String libraryKeysUpdatingProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString / $totalString';
+  }
+
+  @override
   String get libraryScanDiscovering => 'Đang tìm file nhạc…';
 
   @override
@@ -199,6 +219,16 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String libraryScanUndecodableNames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã bỏ qua $count file hoặc thư mục: tên không phải UTF-8 hợp lệ',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String libraryScanRootMissing(String path) {
     return 'Không tìm thấy $path';
   }
@@ -206,6 +236,16 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String libraryScanRootEmpty(String path) {
     return '$path đang trống, giữ nguyên thư viện';
+  }
+
+  @override
+  String libraryScanRootTimedOut(String path) {
+    return '$path mất quá nhiều thời gian nên đã dừng. Nếu thư mục vẫn đang được đọc, việc quét sẽ tự hoàn tất khi đọc xong';
+  }
+
+  @override
+  String libraryScanRootReaderStuck(String path) {
+    return 'Chưa đọc $path: một lần đọc trước đó vẫn đang chạy. Kanaru sẽ tự thử lại khi lần đọc đó xong; nếu nó không bao giờ xong, hãy khởi động lại Kanaru';
   }
 
   @override
@@ -247,6 +287,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get libraryScanFailedDetails => 'Xem chi tiết trong nhật ký';
+
+  @override
+  String get songsTrackGone => 'Bài hát này không còn trong thư viện.';
 
   @override
   String get sortBy => 'Sắp xếp:';

@@ -1,6 +1,7 @@
 // Times the production browse SQL on a 100k-track file database, and a scan's
-// writes with and without an open albums watch. Off by default; run with
+// writes with the Songs list or an album page open. Off by default; run with
 //   KANARU_BENCH=1 flutter test test/core/database/browse_queries_benchmark_test.dart
+// (add --plain-name 'browse queries' for the query timings only).
 // ignore_for_file: avoid_print
 import 'dart:async';
 import 'dart:io';
@@ -11,12 +12,15 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/core/database/library_sql_functions.dart';
+import 'package:kanaru/core/database/library_song_paging.dart';
+import 'package:kanaru/core/database/track_keys.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/throttled_tracks_query.dart';
 
+import 'songs_reference_query.dart';
+
 /// How the albums or Songs query is listened to during a timed scan.
-enum _Listener { none, watch, throttled, albumPage, songsWatch, songsThrottled }
+enum _Listener { none, throttled, albumPage, songsWatch, songsThrottled }
 
 const _total = 100000;
 
@@ -69,12 +73,19 @@ List<TracksCompanion> _rows(int rootId) {
   ];
 }
 
-LibraryDatabase _open(Directory dir) => LibraryDatabase(
+LibraryDatabase _open(Directory dir, {int readPool = 0}) => LibraryDatabase(
   NativeDatabase.createInBackground(
     File('${dir.path}/library.db'),
     setup: applyLibraryPragmas,
+    readPool: readPool,
   ),
 );
+
+/// The Songs list as a plain drift watch: reloads in full after every write.
+/// The app no longer has one; it is kept here to show what the throttled
+/// refresh saves during a scan.
+Stream<List<QueryRow>> _plainSongsWatch(LibraryDatabase db) =>
+    db.customSelect(songsSql(SongOrder.title), readsFrom: {db.tracks}).watch();
 
 /// Median of 5 timed runs after one warm-up; returns (ms, rows).
 Future<(int, int)> _median(Future<int> Function() run) async {
@@ -112,7 +123,7 @@ void main() {
       final dir = Directory.systemTemp.createTempSync('kanaru_bench');
       final db = _open(dir);
       final rows = _rows((await db.addRoots(['/m'], now: 1)).single);
-      await _scan(db, rows);
+      print('first scan of $_total: ${await _scan(db, rows)} ms');
 
       Future<int> sqlOnly(String sql, [List<Object> vars = const []]) async =>
           (await db
@@ -123,14 +134,7 @@ void main() {
                   .getSingle())
               .read<int>('n');
 
-      // Watch streams of the same query share a cached result; marking the
-      // table changed forces each timed `first` to run the query again.
-      Future<int> fresh<T>(Stream<List<T>> Function() watch) async {
-        db.markTablesUpdated({db.tracks});
-        return (await watch().first).length;
-      }
-
-      final albumKey = (await db.watchAlbums().first)[100].key;
+      final albumKey = (await db.albums())[100].key;
       const artistKey = 'guest 7';
       final results = <String, (int, int)>{
         'SQL albums': await _median(() => sqlOnly(albumsSql)),
@@ -142,15 +146,15 @@ void main() {
         'SQL artist tracks': await _median(
           () => sqlOnly(artistTracksSql, [artistKey]),
         ),
-        'Dart albums': await _median(() => fresh(db.watchAlbums)),
+        'Dart albums': await _median(() async => (await db.albums()).length),
         'Dart artist credits': await _median(
-          () => fresh(db.watchArtistCredits),
+          () async => (await db.artistCredits()).length,
         ),
         'Dart album tracks': await _median(
-          () => fresh(() => db.watchAlbumTracks(albumKey)),
+          () async => (await db.albumTracks(albumKey)).length,
         ),
         'Dart artist tracks': await _median(
-          () => fresh(() => db.watchArtistTracks(artistKey)),
+          () async => (await db.artistTracks(artistKey)).length,
         ),
         for (final order in SongOrder.values) ...{
           'SQL songs ${order.name}': await _median(
@@ -159,8 +163,16 @@ void main() {
             ),
           ),
           'Dart songs ${order.name}': await _median(
-            () => fresh(() => db.watchSongs(order: order)),
+            () async => (await db.songs(order: order)).length,
           ),
+          'Dart songs page ${order.name}': await _median(
+            () async => (await db.songsPage(order: order)).length,
+          ),
+          'Dart song ids ${order.name} + first page': await _median(() async {
+            final ids = await db.songIds(order: order);
+            return (await db.songsByIds(ids.take(songPageSize).toList()))
+                .length;
+          }),
         },
       };
       await db.close();
@@ -169,9 +181,17 @@ void main() {
       for (final e in results.entries) {
         print('${e.key}: median ${e.value.$1} ms, rows ${e.value.$2}');
       }
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 
-      // A first scan into an empty database, with the albums query listened
-      // to in different ways. Runs alternate so machine load hits all alike.
+  test(
+    'scan of 100k tracks with a list open',
+    () async {
+      // A first scan into an empty database, with the Songs list or an album
+      // page listened to in different ways. Runs alternate so machine load
+      // hits all alike.
       Future<int> scanInto(
         _Listener listener, {
         Duration readTime = Duration.zero,
@@ -199,7 +219,6 @@ void main() {
 
         final sub = switch (listener) {
           _Listener.none => null,
-          _Listener.watch => scanDb.watchAlbums().listen((_) => emits++),
           _Listener.throttled => throttledTracksQuery(
             scanDb,
             () => timed(scanDb.albums),
@@ -210,10 +229,12 @@ void main() {
             () => timed(() => scanDb.albumTracks(pageKey)),
             interval: const Duration(seconds: 2),
           ).listen((_) => emits++),
-          _Listener.songsWatch => scanDb.watchSongs().listen((_) => emits++),
+          _Listener.songsWatch => _plainSongsWatch(
+            scanDb,
+          ).listen((_) => emits++),
           _Listener.songsThrottled => throttledTracksQuery(
             scanDb,
-            () => timed(scanDb.songs),
+            () => timed(scanDb.songIds),
             interval: const Duration(seconds: 2),
           ).listen((_) => emits++),
         };
@@ -254,7 +275,6 @@ void main() {
             await scanInto(_Listener.songsThrottled, readTime: readTime),
           );
         }
-        final watched = await scanInto(_Listener.watch, readTime: readTime);
         final songsWatched = await scanInto(
           _Listener.songsWatch,
           readTime: readTime,
@@ -267,7 +287,6 @@ void main() {
           '${median(throttled)} ms, ${slower(median(throttled), base)}); '
           'album page throttled $albumPage (median ${median(albumPage)} ms, '
           '${slower(median(albumPage), base)}); '
-          'albums watch $watched ms (${slower(watched, base)}); '
           'songs throttled $songsThrottled (median '
           '${median(songsThrottled)} ms, '
           '${slower(median(songsThrottled), base)}); '
@@ -277,5 +296,145 @@ void main() {
     },
     skip: !_enabled,
     timeout: const Timeout(Duration(minutes: 40)),
+  );
+
+  test(
+    'reads during a scan, with and without a read connection',
+    () async {
+      // The open Songs and Albums lists reload while a scan writes; a probe
+      // reads the first page every 200 ms as the list would on scrolling.
+      Future<void> run(int readPool) async {
+        final dir = Directory.systemTemp.createTempSync('kanaru_bench');
+        final db = _open(dir, readPool: readPool);
+        final rows = _rows((await db.addRoots(['/m'], now: 1)).single);
+        final lists = [
+          throttledTracksQuery(
+            db,
+            db.songIds,
+            interval: const Duration(seconds: 2),
+          ).listen((_) {}),
+          throttledTracksQuery(
+            db,
+            db.albums,
+            interval: const Duration(seconds: 2),
+          ).listen((_) {}),
+        ];
+        final probes = <int>[];
+        var scanning = true;
+        final probe = () async {
+          while (scanning) {
+            final sw = Stopwatch()..start();
+            await db.songsPage();
+            probes.add(sw.elapsedMilliseconds);
+            await Future<void>.delayed(const Duration(milliseconds: 200));
+          }
+        }();
+        final scanMs = await _scan(
+          db,
+          rows,
+          readTime: const Duration(milliseconds: 15),
+        );
+        scanning = false;
+        await probe;
+        for (final l in lists) {
+          await l.cancel();
+        }
+        probes.sort();
+        final idle = {
+          'songIds + page': await _median(() async {
+            final ids = await db.songIds();
+            return (await db.songsByIds(ids.take(200).toList())).length;
+          }),
+          'albums': await _median(() async => (await db.albums()).length),
+        };
+        print(
+          'readPool $readPool: scan $scanMs ms; first page during the scan: '
+          'median ${probes[probes.length ~/ 2]} ms, worst ${probes.last} ms '
+          '(${probes.length} probes); idle ${idle.map((k, v) => MapEntry(k, v.$1))}',
+        );
+        await db.close();
+        dir.deleteSync(recursive: true);
+      }
+
+      for (final pool in const [0, 1, 0, 1, 0, 1]) {
+        await run(pool);
+      }
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 20)),
+  );
+
+  test(
+    'song ids as one concatenated value: ordered subquery or aggregate order',
+    () async {
+      final dir = Directory.systemTemp.createTempSync('kanaru_bench');
+      final db = _open(dir);
+      await _scan(db, _rows((await db.addRoots(['/m'], now: 1)).single));
+      Future<int> ids(String sql) async =>
+          ((await db.customSelect(sql).getSingle()).read<String>('ids'))
+              .split(',')
+              .length;
+      for (final order in SongOrder.values) {
+        final by = songsOrderSql(order);
+        final subquery = await _median(
+          () => ids(
+            'SELECT group_concat(id) AS ids FROM '
+            '(SELECT id FROM tracks ORDER BY $by)',
+          ),
+        );
+        final aggregate = await _median(
+          () => ids(
+            "SELECT group_concat(id, ',' ORDER BY $by) AS ids FROM tracks",
+          ),
+        );
+        print(
+          'ids ${order.name}: ordered subquery ${subquery.$1} ms, '
+          'aggregate ORDER BY ${aggregate.$1} ms',
+        );
+      }
+      await db.close();
+      dir.deleteSync(recursive: true);
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
+
+  test(
+    'first rows when the page and the ids are asked for together',
+    () async {
+      final dir = Directory.systemTemp.createTempSync('kanaru_bench');
+      final db = _open(dir);
+      await _scan(db, _rows((await db.addRoots(['/m'], now: 1)).single));
+      for (final order in SongOrder.values) {
+        Future<int> firstRows({required bool pageFirst}) async {
+          final sw = Stopwatch()..start();
+          late Future<void> page;
+          late Future<void> ids;
+          if (pageFirst) {
+            page = db.songsPage(order: order);
+            ids = db.songIds(order: order);
+          } else {
+            ids = db.songIds(order: order);
+            page = db.songsPage(order: order);
+          }
+          await page;
+          final ms = sw.elapsedMilliseconds;
+          await ids;
+          return ms;
+        }
+
+        await firstRows(pageFirst: true);
+        final before = await firstRows(pageFirst: false);
+        final after = await firstRows(pageFirst: true);
+        print(
+          'first rows ${order.name}: page after ids $before ms, '
+          'page before ids $after ms',
+        );
+      }
+      await db.close();
+      dir.deleteSync(recursive: true);
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 10)),
   );
 }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/library_browse_queries.dart';
 import '../../../core/database/library_database.dart';
+import '../../../core/database/library_keys_provider.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../core/settings/settings_provider.dart';
@@ -14,19 +15,13 @@ import 'album_sort.dart';
 final albumsProvider = StreamProvider<List<AlbumSummary>>((ref) {
   final db = ref.watch(libraryDatabaseProvider);
   if (db == null) return Stream.value(const []);
+  // Wait for the keys: becoming ready rebuilds this and loads afresh.
+  if (!ref.watch(keysReadyProvider)) return const Stream.empty();
   return throttledTracksQuery(
     db,
     db.albums,
     interval: ref.watch(libraryBrowseRefreshIntervalProvider),
   );
-});
-
-/// The cover key of every album, from [albumsProvider], so pages that show
-/// an album from only some of its tracks (an artist page) use the same cover
-/// as the albums list. Empty until the first list loaded.
-final albumCoverKeysProvider = Provider<Map<AlbumKey, String?>>((ref) {
-  final list = ref.watch(albumsProvider).value ?? const [];
-  return {for (final album in list) album.key: album.coverKey};
 });
 
 /// [albumsProvider] in the saved sort. Changing the sort re-sorts in memory

@@ -50,3 +50,36 @@ class SongTile extends ConsumerWidget {
     );
   }
 }
+
+/// A song row whose data is still being read: same height as [SongTile],
+/// with bars where the texts go.
+class SongTilePlaceholder extends StatelessWidget {
+  const SongTilePlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
+    Widget bar(double width) => Container(
+      width: width,
+      height: 12,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
+    );
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 32),
+      leading: SizedBox.square(
+        dimension: songCoverSize,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+      ),
+      title: Align(alignment: Alignment.centerLeft, child: bar(180)),
+      subtitle: Align(alignment: Alignment.centerLeft, child: bar(120)),
+    );
+  }
+}

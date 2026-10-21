@@ -1,8 +1,21 @@
 /// Which step of a scan is running.
 enum ScanPhase { discovering, reading }
 
-/// Why a root was skipped without changes.
-enum SkipReason { missing, empty }
+/// Why a root was skipped or left unfinished.
+enum SkipReason {
+  /// Unplugged, gone or not listable; left unchanged.
+  missing,
+
+  /// No audio files while the database has tracks for it; left unchanged.
+  empty,
+
+  /// The walk or a tag read took too long; the batches written before stay.
+  timedOut,
+
+  /// An earlier tag read this session never returned, so the tag reader is
+  /// not called again; the root is left unchanged.
+  readerStuck,
+}
 
 /// Totals of a finished scan.
 class ScanSummary {
@@ -11,6 +24,8 @@ class ScanSummary {
     this.updated = 0,
     this.removed = 0,
     this.failedTags = 0,
+    this.undecodableNames = 0,
+    this.undecodableSampleDirs = const [],
     this.skippedRoots = const {},
   });
 
@@ -21,8 +36,14 @@ class ScanSummary {
   /// Files stored without tags because reading them failed.
   final int failedTags;
 
-  /// Roots left untouched: missing (unplugged, gone) or empty while the
-  /// database has tracks for them. Keyed by root path.
+  /// Audio files and folders skipped because their name is not valid UTF-8;
+  /// their stored rows are kept.
+  final int undecodableNames;
+
+  /// A few folders holding such entries, for the log.
+  final List<String> undecodableSampleDirs;
+
+  /// Roots left untouched or unfinished, with the reason. Keyed by root path.
   final Map<String, SkipReason> skippedRoots;
 }
 

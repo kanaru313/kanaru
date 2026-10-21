@@ -9,6 +9,7 @@ import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
 import 'package:kanaru/core/indexer/library_indexer.dart';
 
+import '../database/songs_reference_query.dart';
 import 'fake_tag_reader.dart';
 
 void main() {
@@ -45,7 +46,7 @@ void main() {
   Future<void> scan() => container.read(libraryIndexerProvider.notifier).scan();
   IndexerState state() => container.read(libraryIndexerProvider);
   ScanSummary summary() => (state() as IndexerFinished).summary;
-  Future<List<TrackListItem>> tracks() => db.watchTrackListItems().first;
+  Future<List<TrackListItem>> tracks() => db.songs();
 
   group('data safety', () {
     final fixedMtime = DateTime.fromMillisecondsSinceEpoch(1700000000000);
@@ -115,6 +116,84 @@ void main() {
 
       expect(summary().removed, 0);
       expect(await tracks(), hasLength(2));
+    });
+
+    test(
+      'a file name that is not UTF-8 is counted and nothing is deleted',
+      () async {
+        touch('a.mp3');
+        touch('b.mp3');
+        await scan();
+        expect(await tracks(), hasLength(2));
+
+        final made = Process.runSync('bash', [
+          '-c',
+          r'touch "$(printf "caf\xe9.mp3")"',
+        ], workingDirectory: root);
+        expect(made.exitCode, 0);
+        await scan();
+
+        expect(summary().undecodableNames, 1);
+        expect(summary().undecodableSampleDirs, [root]);
+        expect(summary().removed, 0);
+        expect(await tracks(), hasLength(2));
+      },
+    );
+
+    test(
+      'a file with U+FFFD in its name is indexed and re-read when changed',
+      () async {
+        final file = touch('bad\u{FFFD}name.mp3');
+        await scan();
+        expect(await tracks(), hasLength(1));
+        expect(summary().undecodableNames, 0);
+
+        file.setLastModifiedSync(fixedMtime);
+        reader.reset();
+        await scan();
+        expect(summary().updated, 1);
+        expect(reader.readCount, 1);
+        expect(await tracks(), hasLength(1));
+      },
+    );
+
+    test('a rescan reads no file that can never be read', () async {
+      touch('ok.mp3');
+      touch('tune.dsf');
+      touch('album.DFF');
+      touch('bad1.mp3');
+      touch('bad2.flac');
+      await scan();
+      final rows = await db.select(db.tracks).get();
+      expect(rows, hasLength(5));
+      final byName = {for (final r in rows) r.path.split('/').last: r};
+      expect(byName['tune.dsf']!.scanError, isNull);
+      expect(byName['tune.dsf']!.title, 'tune');
+      expect(byName['bad1.mp3']!.scanError, startsWith('permanent:v1:'));
+      expect(summary().failedTags, 2);
+
+      reader.reset();
+      await scan();
+
+      expect(reader.readCount, 0, reason: 'nothing changed, nothing to read');
+      expect(summary().failedTags, 0);
+      expect(summary().updated, 0);
+
+      // A change makes even a permanently bad file worth a new look.
+      File('$root/bad1.mp3').setLastModifiedSync(fixedMtime);
+      await scan();
+      expect(reader.readCount, 1);
+    });
+
+    test('a transient read error is retried on every scan', () async {
+      touch('flaky.mp3');
+      await scan();
+      expect(summary().failedTags, 1);
+
+      reader.reset();
+      await scan();
+      expect(reader.readCount, 1);
+      expect(summary().failedTags, 1);
     });
 
     test('a link whose target vanished keeps its row', () async {

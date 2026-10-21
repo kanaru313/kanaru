@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -53,7 +54,7 @@ void main() {
 
     Future<void> add() async {
       await tester.tap(find.text('Add folder…'));
-      await settleIo(tester);
+      await settleIo(tester, h);
     }
 
     await add();
@@ -71,6 +72,38 @@ void main() {
     expect(find.text(music), findsOneWidget);
   });
 
+  testWidgets('a second click while the picker is open is ignored', (
+    tester,
+  ) async {
+    final opened = <Completer<String?>>[];
+    final h = LibraryHarness(
+      picker: () {
+        final completer = Completer<String?>();
+        opened.add(completer);
+        return completer.future;
+      },
+    );
+    final music = h.folder('music');
+    await h.pump(tester);
+
+    await tester.tap(find.text('Add folder…'));
+    await tester.pump();
+    await tester.tap(find.text('Add folder…'), warnIfMissed: false);
+    await tester.pump();
+    expect(opened, hasLength(1));
+
+    opened.single.complete(music);
+    await settleIo(tester, h);
+    expect(find.text(music), findsOneWidget);
+
+    // Once done, the button works again.
+    await tester.tap(find.text('Add folder…'));
+    await tester.pump();
+    expect(opened, hasLength(2));
+    opened.last.complete(null);
+    await settleIo(tester, h);
+  });
+
   testWidgets('Start stores the root, scans and opens Songs', (tester) async {
     final h = LibraryHarness();
     final music = h.folder('music');
@@ -79,9 +112,9 @@ void main() {
     await h.pump(tester);
 
     await tester.tap(find.text('Add folder…'));
-    await settleIo(tester);
+    await settleIo(tester, h);
     await tester.tap(start());
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect((await tester.runAsync(h.db.roots))!.single.path, music);
     expect(h.reader.readCount, 1);
@@ -102,12 +135,12 @@ void main() {
     h.picks.add(music);
     await h.pump(tester);
     await tester.tap(find.text('Add folder…'));
-    await settleIo(tester);
+    await settleIo(tester, h);
     // The folder disappears before Start.
     await tester.runAsync(() async => Directory(music).deleteSync());
 
     await tester.tap(start());
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(find.text('$music was not found'), findsOneWidget);
@@ -125,13 +158,13 @@ void main() {
     await h.pump(tester);
     for (var i = 0; i < 2; i++) {
       await tester.tap(find.text('Add folder…'));
-      await settleIo(tester);
+      await settleIo(tester, h);
     }
     // One folder disappears before Start.
     await tester.runAsync(() async => Directory(gone).deleteSync());
 
     await tester.tap(start());
-    await settleIo(tester, rounds: 12);
+    await settleIo(tester, h);
 
     expect((await tester.runAsync(h.db.roots))!.single.path, music);
     expect(find.byType(SongsScreen), findsOneWidget);
@@ -142,20 +175,14 @@ void main() {
   testWidgets('an unexpected error re-enables the buttons and says so', (
     tester,
   ) async {
-    final h = LibraryHarness(
-      overrides: [
-        libraryRootsControllerProvider.overrideWithValue(
-          _ThrowingRootsController(),
-        ),
-      ],
-    );
+    final h = LibraryHarness(rootsController: _ThrowingRootsController());
     h.picks.add(h.folder('music'));
     await h.pump(tester);
     await tester.tap(find.text('Add folder…'));
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     await tester.tap(start());
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(

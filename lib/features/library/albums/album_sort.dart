@@ -1,19 +1,26 @@
 import '../../../core/database/library_database.dart';
+import '../../../core/database/text_keys.dart';
 import '../../../core/settings/library_sort.dart';
 import '../sort_compare.dart';
 
-/// An album with its texts lower-cased once, not on every comparison.
+/// An album with its sort keys made once, not on every comparison.
 typedef _Keyed = ({AlbumSummary album, String title, String? artist});
 
 /// [albums] in the order of [sort]. Ties fall back to the title ascending,
-/// then to the key, so the order is stable. Text ignores case.
+/// then to the key, so the order is stable. Text sorts by the rules of
+/// `text_keys.dart`, like the Songs list: ignoring case and accents, and
+/// ignoring a leading "The" in titles and artists.
 List<AlbumSummary> sortAlbums(
   List<AlbumSummary> albums,
   SortChoice<AlbumSortField> sort,
 ) {
   final keyed = <_Keyed>[
     for (final a in albums)
-      (album: a, title: a.title.toLowerCase(), artist: a.artist?.toLowerCase()),
+      (
+        album: a,
+        title: a.titleSort ?? artistSortKey(a.title),
+        artist: a.artist == null ? null : artistSortKey(a.artist!),
+      ),
   ]..sort((a, b) => _compare(a, b, sort));
   return [for (final k in keyed) k.album];
 }
@@ -43,9 +50,11 @@ int _compare(_Keyed a, _Keyed b, SortChoice<AlbumSortField> sort) {
     ),
   };
   if (primary != 0) return primary;
-  final title = a.title.compareTo(b.title);
+  final title = compareCodePoints(a.title, b.title);
   if (title != 0) return title;
   final ak = a.album.key, bk = b.album.key;
-  final artistKey = ak.artistKey.compareTo(bk.artistKey);
-  return artistKey != 0 ? artistKey : ak.titleKey.compareTo(bk.titleKey);
+  final artistKey = compareCodePoints(ak.artistKey, bk.artistKey);
+  return artistKey != 0
+      ? artistKey
+      : compareCodePoints(ak.titleKey, bk.titleKey);
 }

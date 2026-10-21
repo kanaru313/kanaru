@@ -7,6 +7,7 @@ import 'package:kanaru/core/indexer/tag_reader.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/songs/song_tile.dart';
+import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:material_ui/material_ui.dart';
@@ -46,9 +47,9 @@ void main() {
   FloatingActionButton rescanButton(WidgetTester tester) =>
       tester.widget(find.byType(FloatingActionButton));
 
-  Future<void> scan(WidgetTester tester) async {
+  Future<void> scan(WidgetTester tester, LibraryHarness h) async {
     await tester.tap(rescan());
-    await settleIo(tester);
+    await settleIo(tester, h);
   }
 
   testWidgets('lists scanned songs in title order and plays from the tap', (
@@ -59,7 +60,7 @@ void main() {
     h.touch(music, 'b.mp3');
     h.touch(music, 'a.mp3');
     await openSongs(tester, h, folder: music);
-    await scan(tester);
+    await scan(tester, h);
 
     final a = tester.getTopLeft(find.text('A.MP3'));
     final b = tester.getTopLeft(find.text('B.MP3'));
@@ -95,13 +96,7 @@ void main() {
     h.touch(music, 'a.mp3');
     await openSongs(tester, h, folder: music);
     await tester.tap(rescan());
-    for (var i = 0; i < 4; i++) {
-      await tester.pump();
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 150)),
-      );
-    }
-    await tester.pump();
+    await waitForScanReading(tester, h);
 
     final ring = find.descendant(
       of: find.byType(FloatingActionButton),
@@ -117,7 +112,7 @@ void main() {
     expect(rescanButton(tester).onPressed, isNull);
 
     gated.release.complete();
-    await settleIo(tester);
+    await settleIo(tester, h);
     expect(ring, findsNothing);
     expect(rescan(), findsOneWidget);
     expect(rescanButton(tester).onPressed, isNotNull);
@@ -129,7 +124,7 @@ void main() {
     h.touch(music, 'a.mp3');
     h.reader.throwOnRead = StateError('boom');
     await openSongs(tester, h, folder: music);
-    await scan(tester);
+    await scan(tester, h);
 
     expect(find.text('Scan failed'), findsOneWidget);
     expect(
@@ -150,7 +145,7 @@ void main() {
     final gone = '${h.tmp.resolveSymbolicLinksSync()}/gone';
     await tester.runAsync(() => h.db.addRoots([gone], now: 1));
     await openSongs(tester, h, folder: music);
-    await scan(tester);
+    await scan(tester, h);
 
     expect(find.textContaining('1 file couldn\'t be read'), findsOneWidget);
     expect(find.textContaining('$gone was not found'), findsOneWidget);
@@ -181,7 +176,7 @@ void main() {
     expect(find.text('Your library is empty'), findsOneWidget);
 
     await tester.tap(find.text('Choose music folder'));
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect((await tester.runAsync(h.db.roots))!.single.path, music);
     expect(find.text('A.MP3'), findsOneWidget);
@@ -197,7 +192,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Choose music folder'));
-    await settleIo(tester);
+    await settleIo(tester, h);
 
     expect(find.text('$missing was not found'), findsOneWidget);
     expect(await tester.runAsync(h.db.roots), isEmpty);
@@ -228,14 +223,15 @@ void main() {
       await tester.tap(rescan());
       await tester.pump();
       gated.release.complete();
-      for (var i = 0; i < 8; i++) {
-        await tester.pump();
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 150)),
-        );
-        expect(find.text('No songs found'), findsNothing, reason: 'round $i');
-      }
-      await tester.pump();
+      await settleIo(
+        tester,
+        h,
+        eachRound: (round) => expect(
+          find.text('No songs found'),
+          findsNothing,
+          reason: 'round $round',
+        ),
+      );
 
       expect(find.text('A.MP3'), findsOneWidget);
 
@@ -249,7 +245,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(h.container.exists(songsListProvider), isFalse);
+      expect(h.container.exists(songIdsProvider), isFalse);
     },
   );
 
@@ -320,25 +316,25 @@ void main() {
 
     testWidgets('no spinner while the re-sorted list loads', (tester) async {
       // Each sort gets a stream the test feeds by hand.
-      final streams = <StreamController<List<TrackListItem>>>[];
+      final streams = <StreamController<SongIds>>[];
       final h = LibraryHarness(
         overrides: [
-          songsListProvider.overrideWith((ref) {
+          songIdsProvider.overrideWith((ref) {
             ref.watch(settingsProvider.select((s) => s.songSort));
-            final controller = StreamController<List<TrackListItem>>();
+            final controller = StreamController<SongIds>();
             ref.onDispose(controller.close);
             streams.add(controller);
             return controller.stream;
           }),
         ],
       );
-      TrackListItem item(String title) =>
-          TrackListItem(id: title.hashCode, path: '/$title', title: title);
-      await tester.runAsync(() => h.db.addRoots(['/m'], now: 1));
+      await insertTracks(tester, h, const [TestTrack('a'), TestTrack('b')]);
+      final ids = (await tester.runAsync(h.db.songIds))!;
+      SongIds sorted(List<int> ids) => SongIds(ids, SongOrder.title, false);
       await h.pump(tester, hasRoots: true);
       goTo(tester, h, '/songs');
       await tester.pump();
-      streams.last.add([item('a'), item('b')]);
+      streams.last.add(sorted(ids));
       await tester.pumpAndSettle();
 
       await chooseSort(tester, 'Title', 'Year');
@@ -347,7 +343,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('a'), findsOneWidget, reason: 'old rows stay');
 
-      streams.last.add([item('b'), item('a')]);
+      streams.last.add(sorted(ids.reversed.toList()));
       await tester.pumpAndSettle();
       expect(
         tester.getTopLeft(find.text('b')).dy,

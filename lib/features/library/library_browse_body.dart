@@ -1,22 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/library_keys_provider.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/empty_state.dart';
 import 'songs/songs_empty_view.dart';
+import 'widgets/library_keys_updating.dart';
 import 'widgets/library_loading.dart';
 
 /// The states shared by the Albums and Artists screens: library unavailable,
 /// no music folder yet (only a hint: adding folders happens in Songs),
-/// loading, nothing found, or the [builder] content. The screen shows its
+/// keys still being made, loading, nothing found, or the [builder] content. The screen shows its
 /// sort controls in the page title row.
 class LibraryBrowseBody<T> extends ConsumerWidget {
   const LibraryBrowseBody({
     super.key,
-    required this.state,
+    required this.hasError,
     required this.items,
     required this.icon,
     required this.noRootsMessage,
@@ -25,8 +27,8 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
     required this.builder,
   });
 
-  /// The load state of the list (loading, failed).
-  final AsyncValue<Object?> state;
+  /// Whether loading the list failed.
+  final bool hasError;
 
   /// The latest list, sorted; null until one loaded. Kept when a later
   /// reload fails (the screen logs the error).
@@ -50,13 +52,16 @@ class LibraryBrowseBody<T> extends ConsumerWidget {
         message: noRootsMessage,
       );
     }
+    if (ref.watch(keysUpdatingProvider)) return const LibraryKeysUpdating();
+    // Not counted yet: the lists have not queried, so this is a plain load.
+    if (!ref.watch(keysReadyProvider)) return const LibraryLoading();
     final scanning = ref.watch(
       libraryIndexerProvider.select((s) => s is IndexerScanning),
     );
 
     final list = items;
     if (list == null) {
-      return state.hasError
+      return hasError
           ? const SongsEmptyView(kind: SongsEmptyKind.unavailable)
           : const LibraryLoading();
     }

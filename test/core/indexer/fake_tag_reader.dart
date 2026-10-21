@@ -12,7 +12,8 @@ String fakeCoverKey(String name) {
 }
 
 /// Stands in for the Rust reader. Titles are the file name upper-cased;
-/// files named `bad*` report an error. Records every path it was asked to read.
+/// files named `bad*` report a permanent error, `flaky*` a transient one,
+/// and `.dsf`/`.dff` files come back without tags or error like real DSD. Records every path it was asked to read.
 ///
 /// Covers are off until [coverDirectory] is set. Then a file named in
 /// [coverByName] gets that cover: the thumbnail is written into the folder
@@ -49,9 +50,19 @@ class FakeTagReader implements TagReader {
     if (failOnBatch == batches.length) throw StateError('batch failed');
     return [
       for (final path in paths)
-        path.split('/').last.startsWith('bad')
-            ? _tags(path, error: 'unsupported')
-            : _tags(path, title: path.split('/').last.toUpperCase()),
+        switch (path.split('/').last.toLowerCase()) {
+          final name when name.startsWith('bad') => _tags(
+            path,
+            error: 'permanent:v1:unsupported',
+          ),
+          final name when name.startsWith('flaky') => _tags(
+            path,
+            error: 'Permission denied',
+          ),
+          final name when name.endsWith('.dsf') || name.endsWith('.dff') =>
+            _tags(path),
+          _ => _tags(path, title: path.split('/').last.toUpperCase()),
+        },
     ];
   }
 

@@ -7,8 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
-import 'package:kanaru/core/database/library_sql_functions.dart';
+import 'package:kanaru/core/database/library_keys_provider.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
+import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/directory_picker_provider.dart';
 import 'package:kanaru/features/library/library_browse_refresh.dart';
@@ -27,6 +29,7 @@ class LibraryHarness {
     FakeTagReader? reader,
     this.overrides = const [],
     this.picker,
+    this.rootsController,
     this.refreshInterval = Duration.zero,
     this.coverCacheDirectory,
   }) : reader = reader ?? FakeTagReader();
@@ -46,9 +49,11 @@ class LibraryHarness {
   /// Replaces the fake picker (which answers from [picks]).
   final DirectoryPicker? picker;
 
-  late final LibraryDatabase db = LibraryDatabase(
-    NativeDatabase.memory(setup: registerLibrarySqlFunctions),
-  );
+  /// Replaces the roots controller (which otherwise counts its additions in
+  /// flight for [settleIo]).
+  final LibraryRootsController? rootsController;
+
+  late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
 
   /// Folders the fake picker returns, in order; empty means cancelled.
   final picks = <String>[];
@@ -56,6 +61,10 @@ class LibraryHarness {
   final backend = FakeAudioBackend();
   late final Directory tmp = Directory.systemTemp.createTempSync('library_ui');
   late final ProviderContainer container;
+
+  /// Folder pickers and root additions started and not finished yet.
+  int pendingPicks = 0;
+  int pendingAddRoots = 0;
 
   /// A real, canonical folder named [name] under the temp directory.
   String folder(String name) {
@@ -80,8 +89,17 @@ class LibraryHarness {
         ).overrides,
         tagReaderProvider.overrideWithValue(reader),
         audioBackendProvider.overrideWithValue(backend),
-        directoryPickerProvider.overrideWithValue(
-          picker ?? () async => picks.isEmpty ? null : picks.removeAt(0),
+        directoryPickerProvider.overrideWithValue(() async {
+          pendingPicks++;
+          try {
+            return await (picker ??
+                () async => picks.isEmpty ? null : picks.removeAt(0))();
+          } finally {
+            pendingPicks--;
+          }
+        }),
+        libraryRootsControllerProvider.overrideWith(
+          (ref) => rootsController ?? _CountingRootsController(ref, this),
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
         libraryBrowseRefreshIntervalProvider.overrideWithValue(refreshInterval),
@@ -105,17 +123,91 @@ class LibraryHarness {
   }
 }
 
+/// Counts the root additions in flight on [harness].
+class _CountingRootsController extends LibraryRootsController {
+  _CountingRootsController(super.ref, this.harness);
+
+  final LibraryHarness harness;
+
+  @override
+  Future<AddRootsResult> addRoots(List<String> paths) async {
+    harness.pendingAddRoots++;
+    try {
+      return await super.addRoots(paths);
+    } finally {
+      harness.pendingAddRoots--;
+    }
+  }
+}
+
+/// What [settleIo] still waits for, or null when everything is quiet.
+String? _busyWith(LibraryHarness h) {
+  if (h.pendingPicks > 0) return 'a folder picker';
+  if (h.pendingAddRoots > 0) return 'adding folders';
+  if (h.container.read(libraryIndexerProvider) is IndexerScanning) {
+    return 'the indexer scan';
+  }
+  final keys = h.container.read(libraryKeysProvider).phase;
+  if (keys != KeysPhase.ready) return 'the library keys (${keys.name})';
+  return null;
+}
+
 /// Lets real I/O (directory checks, the walk isolate) finish, then settles
 /// the UI. The widget tester's clock does not run file system futures, and
 /// each step of a chain (pick, check, store, scan) starts only after the
-/// previous one was pumped, so alternate pumping and real waiting, [rounds]
-/// times (more for a longer chain).
-Future<void> settleIo(WidgetTester tester, {int rounds = 4}) async {
-  for (var i = 0; i < rounds; i++) {
+/// previous one was pumped, so alternate pumping and short real waits until
+/// nothing is in flight (picker, adding folders, scan, key backfill) on two
+/// checks in a row: the next step of a chain is not visible until the pump
+/// after the previous one. Fails after [timeout] naming what is still busy.
+/// [eachRound] runs after every pump, for checks on the states in between.
+Future<void> settleIo(
+  WidgetTester tester,
+  LibraryHarness h, {
+  Duration timeout = const Duration(seconds: 10),
+  void Function(int round)? eachRound,
+}) async {
+  final watch = Stopwatch()..start();
+  var quiet = 0;
+  for (var round = 0; quiet < 2; round++) {
     await tester.pump();
     await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
     );
+    eachRound?.call(round);
+    final busy = _busyWith(h);
+    if (busy == null) {
+      quiet++;
+    } else {
+      quiet = 0;
+      if (watch.elapsed > timeout) {
+        fail('settleIo: still waiting for $busy after $timeout');
+      }
+    }
   }
   await tester.pumpAndSettle();
+}
+
+/// Pumps and waits in real time until a scan is reading tags (a gated tag
+/// reader then holds it there). Fails after [timeout].
+Future<void> waitForScanReading(
+  WidgetTester tester,
+  LibraryHarness h, {
+  Duration timeout = const Duration(seconds: 10),
+}) async {
+  final watch = Stopwatch()..start();
+  while (true) {
+    await tester.pump();
+    final state = h.container.read(libraryIndexerProvider);
+    if (state is IndexerScanning && state.phase == ScanPhase.reading) break;
+    if (watch.elapsed > timeout) {
+      fail(
+        'waitForScanReading: no scan was reading tags after $timeout '
+        '(state: ${state.runtimeType})',
+      );
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+  }
+  await tester.pump();
 }

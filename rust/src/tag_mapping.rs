@@ -7,6 +7,16 @@ use lofty::tag::{ItemKey, Tag};
 
 use crate::api::tags::TrackTags;
 
+/// Longest stored title, artist, album, album artist, genre and composer, in
+/// bytes. A hostile tag cannot make a database row or a list tile huge.
+const MAX_TEXT_BYTES: usize = 1024;
+
+/// Longest stored comment, in bytes.
+const MAX_COMMENT_BYTES: usize = 4096;
+
+/// Most artist values joined into the artist field.
+const MAX_ARTISTS: usize = 32;
+
 /// Separator between artists when a track lists more than one.
 const ARTIST_SEPARATOR: &str = "; ";
 
@@ -23,10 +33,13 @@ pub fn parse_year(raw: &str) -> Option<u32> {
 
 /// Copies the textual and numeric fields of [`tag`] into [`out`].
 pub fn apply_tag(out: &mut TrackTags, tag: &Tag) {
-    out.title = non_empty(tag.title());
-    out.artist = artists(tag);
-    out.album = non_empty(tag.album());
-    out.album_artist = non_empty(tag.get_string(ItemKey::AlbumArtist).map(Into::into));
+    out.title = capped(non_empty(tag.title()), MAX_TEXT_BYTES);
+    out.artist = capped(artists(tag), MAX_TEXT_BYTES);
+    out.album = capped(non_empty(tag.album()), MAX_TEXT_BYTES);
+    out.album_artist = capped(
+        non_empty(tag.get_string(ItemKey::AlbumArtist).map(Into::into)),
+        MAX_TEXT_BYTES,
+    );
     out.track_no = tag.track();
     out.track_total = tag.track_total();
     out.disc_no = tag.disk();
@@ -35,9 +48,12 @@ pub fn apply_tag(out: &mut TrackTags, tag: &Tag) {
         .get_string(ItemKey::RecordingDate)
         .or_else(|| tag.get_string(ItemKey::Year))
         .and_then(parse_year);
-    out.genre = non_empty(tag.genre());
-    out.composer = non_empty(tag.get_string(ItemKey::Composer).map(Into::into));
-    out.comment = non_empty(tag.comment());
+    out.genre = capped(non_empty(tag.genre()), MAX_TEXT_BYTES);
+    out.composer = capped(
+        non_empty(tag.get_string(ItemKey::Composer).map(Into::into)),
+        MAX_TEXT_BYTES,
+    );
+    out.comment = capped(non_empty(tag.comment()), MAX_COMMENT_BYTES);
 }
 
 /// Copies the audio properties into [`out`]. Zero means "unknown" in several
@@ -59,6 +75,8 @@ fn artists(tag: &Tag) -> Option<String> {
         tag.get_strings(key)
             .map(str::trim)
             .filter(|s| !s.is_empty())
+            .map(|s| cut(s, MAX_TEXT_BYTES))
+            .take(MAX_ARTISTS)
             .collect()
     };
     let mut all = collect(ItemKey::TrackArtists);
@@ -70,6 +88,25 @@ fn artists(tag: &Tag) -> Option<String> {
     } else {
         Some(all.join(ARTIST_SEPARATOR))
     }
+}
+
+/// [`value`] cut to at most [`max_bytes`] bytes at a character boundary, so
+/// multi-byte text is never split.
+fn capped(value: Option<String>, max_bytes: usize) -> Option<String> {
+    value.map(|mut text| {
+        text.truncate(cut(&text, max_bytes).len());
+        text
+    })
+}
+
+/// The longest prefix of [`text`] of at most [`max_bytes`] bytes that ends at
+/// a character boundary.
+fn cut(text: &str, max_bytes: usize) -> &str {
+    let mut end = max_bytes.min(text.len());
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    &text[..end]
 }
 
 /// Trims [`value`] and drops it when nothing is left.
@@ -139,6 +176,52 @@ mod tests {
         assert_eq!(out.artist.as_deref(), Some("Solo"));
         assert_eq!(out.title.as_deref(), Some("Song"));
         assert_eq!(out.album, None);
+    }
+
+    #[test]
+    fn long_multibyte_title_is_cut_at_a_character_boundary() {
+        let mut tag = Tag::new(TagType::Id3v2);
+        // 3-byte characters: 1024 is not a multiple of 3, so a byte cut
+        // would land inside one.
+        tag.set_title("あ".repeat(700));
+        tag.set_comment("é".repeat(5000));
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        let title = out.title.unwrap();
+        assert_eq!(title.len(), 1023);
+        assert!(title.chars().all(|c| c == 'あ'));
+        assert_eq!(out.comment.unwrap().len(), 4096);
+    }
+
+    #[test]
+    fn thousands_of_artists_are_limited_before_joining() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        for i in 0..10_000 {
+            tag.push(lofty::tag::TagItem::new(
+                ItemKey::TrackArtists,
+                lofty::tag::ItemValue::Text(format!("Artist {i}")),
+            ));
+        }
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        let artist = out.artist.unwrap();
+        assert_eq!(artist.split("; ").count(), 32);
+        assert!(artist.len() <= 1024);
+    }
+
+    #[test]
+    fn each_artist_value_is_capped_before_joining() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        for _ in 0..32 {
+            tag.push(lofty::tag::TagItem::new(
+                ItemKey::TrackArtists,
+                lofty::tag::ItemValue::Text("é".repeat(100_000)),
+            ));
+        }
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        // 32 values of at most 1 KB, cut again to 1 KB after joining.
+        assert_eq!(out.artist.unwrap().len(), 1024);
     }
 
     #[test]

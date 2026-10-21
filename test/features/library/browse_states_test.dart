@@ -6,9 +6,9 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/tag_reader.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
-import 'package:kanaru/features/library/albums/album_tracks_provider.dart';
+import 'package:kanaru/features/library/albums/album_page_data.dart';
 import 'package:kanaru/features/library/albums/albums_provider.dart';
-import 'package:kanaru/features/library/artists/artist_tracks_provider.dart';
+import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/features/library/library_route_keys.dart';
 import 'package:logging/logging.dart';
 
@@ -74,15 +74,15 @@ void main() {
     tester,
   ) async {
     final severe = captureSevere();
-    final tracks = StreamController<List<BrowseTrack>>();
+    final tracks = StreamController<AlbumPageData?>();
     addTearDown(tracks.close);
     final h = LibraryHarness(
-      overrides: [
-        albumTracksProvider.overrideWith((ref, key) => tracks.stream),
-      ],
+      overrides: [albumPageProvider.overrideWith((ref, key) => tracks.stream)],
     );
     await _open(tester, h, albumLocation(_key));
-    tracks.add([_track('first')]);
+    tracks.add(
+      AlbumPageData(key: _key, album: _album('X'), tracks: [_track('first')]),
+    );
     await tester.pumpAndSettle();
     expect(find.text('first'), findsOneWidget);
 
@@ -100,7 +100,7 @@ void main() {
     final severe = captureSevere();
     final h = LibraryHarness(
       overrides: [
-        artistTracksProvider.overrideWith(
+        artistPageProvider.overrideWith(
           (ref, key) => Stream.error(StateError('boom')),
         ),
       ],
@@ -155,17 +155,11 @@ void main() {
     expect(find.text('No albums yet'), findsOneWidget);
 
     unawaited(h.container.read(libraryIndexerProvider.notifier).scan());
-    for (var i = 0; i < 4; i++) {
-      await tester.pump();
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 150)),
-      );
-    }
-    await tester.pump();
+    await waitForScanReading(tester, h);
     expect(find.text('No albums yet'), findsNothing);
     expect(find.byType(AlbumGridTile), findsNothing);
 
     gated.release.complete();
-    await settleIo(tester);
+    await settleIo(tester, h);
   });
 }

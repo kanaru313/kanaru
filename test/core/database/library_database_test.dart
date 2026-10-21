@@ -3,6 +3,8 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 
+import 'songs_reference_query.dart';
+
 TracksCompanion track(
   int rootId,
   String path, {
@@ -47,11 +49,6 @@ void main() {
       expect((await db.roots()).single.lastScanAt, isNull);
       await db.markRootScanned(id, 50);
       expect((await db.roots()).single.lastScanAt, 50);
-    });
-
-    test('watchRoots emits the current roots', () async {
-      await db.addRoots(['/a'], now: 1);
-      expect((await db.watchRoots().first).single.path, '/a');
     });
   });
 
@@ -108,46 +105,58 @@ void main() {
       expect(await db.select(db.tracks).get(), isEmpty);
     });
 
-    test(
-      'watchTrackListItems orders by title ignoring case, then id',
-      () async {
-        await db.upsertTracks([
-          track(rootId, '/m/1.mp3', title: 'beta'),
-          track(rootId, '/m/2.mp3', title: 'Alpha'),
-          track(rootId, '/m/3.mp3', title: 'alpha'),
-        ]);
-        final items = await db.watchTrackListItems().first;
-        expect(items.map((i) => i.path), ['/m/2.mp3', '/m/3.mp3', '/m/1.mp3']);
-      },
-    );
+    test('songs order by title ignoring case, then id', () async {
+      await db.upsertTracks([
+        track(rootId, '/m/1.mp3', title: 'beta'),
+        track(rootId, '/m/2.mp3', title: 'Alpha'),
+        track(rootId, '/m/3.mp3', title: 'alpha'),
+      ]);
+      final items = await db.songs();
+      expect(items.map((i) => i.path), ['/m/2.mp3', '/m/3.mp3', '/m/1.mp3']);
+    });
   });
 
   group('title order', () {
-    test('the list query is served by the NOCASE title index', () async {
+    test('the title order is served by the title_sort index', () async {
       final plan = await db
-          .customSelect(
-            'EXPLAIN QUERY PLAN SELECT id, path, title FROM tracks '
-            'ORDER BY title COLLATE NOCASE, id',
-          )
+          .customSelect('EXPLAIN QUERY PLAN ${songsSql(SongOrder.title)}')
           .get();
       final details = plan.map((r) => r.read<String>('detail')).join('\n');
 
-      expect(details, contains('tracks_title'));
+      expect(details, contains('tracks_title_sort'));
       expect(details, isNot(contains('TEMP B-TREE')));
     });
 
-    test('snapshots flag rows whose tags failed to read', () async {
+    test('snapshots flag rows whose tags failed to read for a reason that may pass', () async {
       final id = (await db.addRoots(['/m'], now: 1)).single;
       await db.upsertTracks([
         track(id, '/m/ok.mp3'),
         track(id, '/m/bad.mp3').copyWith(scanError: const Value('x')),
+        track(
+          id,
+          '/m/corrupt.mp3',
+        ).copyWith(scanError: const Value('permanent:v1:unsupported')),
+        track(
+          id,
+          '/m/old.mp3',
+        ).copyWith(scanError: const Value('permanent:unsupported')),
+        track(
+          id,
+          '/m/older.mp3',
+        ).copyWith(scanError: const Value('permanent:v0:unsupported')),
       ]);
 
       final byPath = {
         for (final t in await db.trackSnapshot(id)) t.path: t.hasScanError,
       };
 
-      expect(byPath, {'/m/ok.mp3': false, '/m/bad.mp3': true});
+      expect(byPath, {
+        '/m/ok.mp3': false,
+        '/m/bad.mp3': true,
+        '/m/corrupt.mp3': false,
+        '/m/old.mp3': true,
+        '/m/older.mp3': true,
+      });
     });
   });
 
@@ -157,7 +166,7 @@ void main() {
     final row = await db.select(db.tracks).getSingle();
     expect(row.coverKey, isNull);
     expect(row.coverScanVersion, 0);
-    expect(db.schemaVersion, 2);
+    expect(db.schemaVersion, 3);
   });
 
   group('cover keys', () {

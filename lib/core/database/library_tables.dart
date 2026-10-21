@@ -16,9 +16,13 @@ class LibraryRoots extends Table {
 /// One row per audio file found under a root. Artist and album are plain
 /// text columns for now; no separate album or artist tables yet.
 @TableIndex(name: 'tracks_root', columns: {#rootId})
-// Matches the list order (`ORDER BY title COLLATE NOCASE`); a plain index on
-// `title` is BINARY and cannot serve it.
-@TableIndex.sql('CREATE INDEX tracks_title ON tracks (title COLLATE NOCASE)')
+// Serves the Songs list order (`ORDER BY title_sort, id`).
+@TableIndex(name: 'tracks_title_sort', columns: {#titleSort, #id})
+@TableIndex(
+  name: 'tracks_album_key',
+  columns: {#albumArtistKey, #albumTitleKey},
+)
+@TableIndex(name: 'tracks_keys_version', columns: {#keysVersion})
 class Tracks extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -74,4 +78,45 @@ class Tracks extends Table {
   /// cover was never looked for. A lower value makes a rescan read the file
   /// again even when it is unchanged.
   IntColumn get coverScanVersion => integer().withDefault(const Constant(0))();
+
+  // Keys derived from the text columns above by `trackKeysFor`
+  // (track_keys.dart). Rows with `keysVersion < textKeysVersion` are keyed in
+  // the background, so the columns may be empty until then.
+
+  /// Artist part of the album key; null when the track has no album.
+  TextColumn get albumArtistKey => text().nullable()();
+
+  /// Title part of the album key; null when the track has no album.
+  TextColumn get albumTitleKey => text().nullable()();
+
+  /// The album's artist as shown: the album artist tag, else the first track
+  /// artist.
+  TextColumn get albumDisplayArtist => text().nullable()();
+
+  /// Sort keys of the title, the artist tag and the album; the last two are
+  /// null with their text.
+  TextColumn get titleSort => text().withDefault(const Constant(''))();
+  TextColumn get artistSort => text().nullable()();
+  TextColumn get albumSort => text().nullable()();
+
+  /// The `textKeysVersion` whose rules produced the keys above; 0 when they
+  /// were never computed.
+  IntColumn get keysVersion => integer().withDefault(const Constant(0))();
+}
+
+/// One row per artist credited on a track (the `artist` tag split into
+/// names), so an artist page is an index lookup.
+@TableIndex(name: 'track_artists_track', columns: {#trackId})
+class TrackArtists extends Table {
+  IntColumn get trackId =>
+      integer().references(Tracks, #id, onDelete: KeyAction.cascade)();
+
+  /// `groupKey` of the name.
+  TextColumn get artistKey => text()();
+
+  /// The spelling seen first on this track.
+  TextColumn get artistName => text()();
+
+  @override
+  Set<Column> get primaryKey => {artistKey, trackId};
 }
