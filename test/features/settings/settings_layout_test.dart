@@ -84,9 +84,17 @@ Future<void> _checkLayout(
     tester.getTopLeft(find.text(l10n.settingsAppearance)).dx,
   );
 
+  // The rescan button, apart from the "Add folder" one.
+  final rescanButton = find.ancestor(
+    of: find.text(l10n.libraryRescan),
+    matching: find.byType(FilledButton),
+  );
+
   // Every control sits on its label's line, at its right.
   for (final (label, control) in [
-    (l10n.settingsRescanLibrary, find.byType(FilledButton)),
+    (l10n.settingsFolders, find.byType(FilledButton).first),
+    (l10n.settingsRescanOnStartup, find.byType(Switch)),
+    (l10n.settingsRescanLibrary, rescanButton),
     (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>)),
     (l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
     (l10n.settingsTitleBar, find.byType(SettingChoice<TitleBarPreference>)),
@@ -109,7 +117,7 @@ Future<void> _checkLayout(
         .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
         .evaluate(),
   ];
-  expect(controls, hasLength(4));
+  expect(controls, hasLength(5), reason: 'two buttons and three choices');
   for (final control in controls) {
     expect(
       tester.getRect(find.byWidget(control.widget)).height,
@@ -120,9 +128,9 @@ Future<void> _checkLayout(
 
   // The rescan label is drawn inside its button on one line, however narrow
   // the button gets; at normal text size it also fits whole (no ellipsis).
-  final rescan = tester.getRect(find.byType(FilledButton));
+  final rescan = tester.getRect(rescanButton);
   final rescanLabel = find.descendant(
-    of: find.byType(FilledButton),
+    of: rescanButton,
     matching: find.text(l10n.libraryRescan),
   );
   final labelRect = tester.getRect(rescanLabel);
@@ -181,10 +189,7 @@ Future<void> _checkLayout(
       expect(rect.width, dropdowns.first.width);
       expect(rect.right, dropdowns.first.right);
     }
-    expect(
-      tester.getRect(find.byType(FilledButton)).right,
-      dropdowns.first.right,
-    );
+    expect(tester.getRect(rescanButton).right, dropdowns.first.right);
   }
   if (size.width > 760 && size.width < 1280) {
     expect(
@@ -194,6 +199,8 @@ Future<void> _checkLayout(
     );
   }
 
+  await tester.ensureVisible(theme);
+  await tester.pumpAndSettle();
   await _choose(tester, theme, l10n.settingsThemeDark);
   expect(container.read(settingsProvider).theme, ThemePreference.dark);
 
