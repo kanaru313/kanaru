@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../player/player_service.dart';
 import '../../player/player_state.dart';
+import '../../player/playing_track_art.dart';
 import '../media_controls.dart';
 import 'mpris_bus_name.dart';
 import 'mpris_method_handler.dart';
@@ -23,8 +24,8 @@ const defaultMprisCoalesceWindow = Duration(milliseconds: 150);
 const _closeTimeout = Duration(seconds: 1);
 
 /// MPRIS 2.2 on the D-Bus session bus. Publishes the state of
-/// [playerServiceProvider] and runs the commands that media keys,
-/// `playerctl` and desktop widgets send.
+/// [playerServiceProvider], with the art of [playingTrackArtProvider], and
+/// runs the commands that media keys, `playerctl` and desktop widgets send.
 ///
 /// Starts on its own and never throws: when the bus is missing or no name is
 /// free it logs and stays idle. It does not reconnect if the bus goes away.
@@ -33,8 +34,9 @@ class MprisMediaControls implements MediaControls {
   /// (`DBusClient.session` throws `FormatException`) only leaves the controls
   /// idle. The client is closed by [dispose]. [onRaise] answers `Raise()`.
   /// [coalesceWindow] is how long changes are collected before one signal
-  /// goes out. [buildProperties] makes the published properties from a state;
-  /// it is only replaced to observe how often that work happens.
+  /// goes out. [buildProperties] makes the published properties from a state
+  /// and the current track's art; it is only replaced to observe how often
+  /// that work happens.
   MprisMediaControls(
     Ref ref,
     this._createClient, {
@@ -47,14 +49,15 @@ class MprisMediaControls implements MediaControls {
     _object = MprisObject(
       handler,
       () => ref.read(playerServiceProvider),
+      _art,
       _ids,
       () => !_disposed,
     );
-    final state = ref.read(playerServiceProvider);
-    _ids.observe(state.queue);
-    _emitted = _latest = _buildProperties(state, _ids);
     // Listening starts before the first await so no change is missed while
-    // the connection is still being set up.
+    // the connection is still being set up. Listeners only schedule a flush,
+    // which reads the state and the art together: a listener may run before
+    // the art provider knows the track changed, and pairing the new track's
+    // id with the previous track's art would publish a wrong cover.
     _stateSubscription = ref.listen(playerServiceProvider, (previous, next) {
       // A new player (rebuild) may have a new seeked stream; see there.
       // Checked before the early return below: a rebuild can come with a
@@ -63,13 +66,10 @@ class MprisMediaControls implements MediaControls {
       // Position is read live and never signalled, so a tick changes
       // nothing we publish: no property work, no timer.
       if (previous != null && _samePublished(previous, next)) return;
-      _ids.observe(next.queue);
-      _latest = _buildProperties(next, _ids);
-      // Idle: nothing can be sent, and `_start` syncs `_emitted` on
-      // activation.
-      if (_active && changedProperties(_emitted, _latest).isNotEmpty) {
-        _timer ??= Timer(_coalesceWindow, _flush);
-      }
+      _schedule();
+    });
+    _artSubscription = ref.listen(playingTrackArtProvider, (_, _) {
+      _schedule();
     });
     _listenToSeeked();
     _started = _start();
@@ -77,7 +77,11 @@ class MprisMediaControls implements MediaControls {
 
   /// How long changes are collected into one `PropertiesChanged`.
   final Duration _coalesceWindow;
-  final Map<String, DBusValue> Function(PlayerState, MprisTrackIds)
+  final Map<String, DBusValue> Function(
+    PlayerState,
+    MprisTrackIds, {
+    required String? artUri,
+  })
   _buildProperties;
   final DBusClient Function() _createClient;
   DBusClient? _client;
@@ -85,13 +89,13 @@ class MprisMediaControls implements MediaControls {
   final _ids = MprisTrackIds();
   late final MprisObject _object;
   late final ProviderSubscription<PlayerState> _stateSubscription;
+  late final ProviderSubscription<String?> _artSubscription;
   StreamSubscription<Duration>? _seekedSubscription;
   Stream<Duration>? _seekedStream;
   late final Future<void> _started;
 
-  /// Properties as last sent to clients, and as they are now.
+  /// Properties as last sent to clients; built when the name is ours.
   late Map<String, DBusValue> _emitted;
-  late Map<String, DBusValue> _latest;
   Timer? _timer;
 
   String? _ownedName;
@@ -114,7 +118,7 @@ class MprisMediaControls implements MediaControls {
       // Kept even when disposed meanwhile, so dispose can give it back.
       _ownedName = name;
       if (_disposed) return;
-      _emitted = _latest;
+      _emitted = _build();
       _active = true;
     } on FormatException catch (error) {
       _unavailable(error);
@@ -169,11 +173,28 @@ class MprisMediaControls implements MediaControls {
     );
   }
 
+  String? _art() => _ref.read(playingTrackArtProvider);
+
+  /// The properties as they are now, the art read with the state.
+  Map<String, DBusValue> _build() {
+    final state = _ref.read(playerServiceProvider);
+    _ids.observe(state.queue);
+    return _buildProperties(state, _ids, artUri: _art());
+  }
+
+  /// Something published may have changed: flush after the coalescing
+  /// window. Idle, nothing can be sent, and `_start` builds afresh on
+  /// activation.
+  void _schedule() {
+    if (_active) _timer ??= Timer(_coalesceWindow, _flush);
+  }
+
   void _flush() {
     _timer = null;
     if (_disposed || !_active) return;
-    final changed = changedProperties(_emitted, _latest);
-    _emitted = _latest;
+    final latest = _build();
+    final changed = changedProperties(_emitted, latest);
+    _emitted = latest;
     if (changed.isEmpty) return;
     _send(
       _object.emitPropertiesChanged(
@@ -213,6 +234,7 @@ class MprisMediaControls implements MediaControls {
     _active = false;
     _timer?.cancel();
     _stateSubscription.close();
+    _artSubscription.close();
     await _seekedSubscription?.cancel();
     // Let a start that is still waiting on the bus finish, so the name it
     // may be about to get is released too.
