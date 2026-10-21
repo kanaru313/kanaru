@@ -45,13 +45,13 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 
 | Width | Sidebar | Top bar | Player bar |
 |---|---|---|---|
-| >= 720 px | Column: 240 px, or 72 px icon rail after collapse | 64 px; back, forward, search, Open media, Settings | 96 px, full width under the page |
-| < 720 px | Drawer, opened from the top bar | 64 px; back, search, Open media, Settings | 96 px, compact layout with a seek strip |
+| >= 720 px | Column: 240 px, or 72 px icon rail after collapse | 64 px; back, forward, search, Settings | 96 px, full width under the page |
+| < 720 px | Drawer, opened from the top bar | 64 px; back, search, Settings | 96 px, compact layout with a seek strip |
 
 The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
 
 - **Sidebar.** Groups: Home | Songs, Albums, Artists, Folders | Favorites, Recent | Playlists (placeholder). Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
-- **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Open media menu, Settings on the right at every width. Empty space drags the window.
+- **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Settings on the right at every width. Empty space drags the window.
 - **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
 - **Reselecting a sidebar item** returns that branch to its root.
@@ -61,7 +61,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 
 - Height 96 px. Shows artwork, title and artist, transport (previous, play or pause, next), seek bar, volume, shuffle, repeat, and the queue button.
 - Below 720 px: compact layout with a thin seek strip on the top edge. Controls stay in the bar.
-- Shown when a queue exists or the Open media flow is active (`playerBarVisibleProvider`).
+- Shown when a queue exists (`playerBarVisibleProvider`).
 - Seek bar: the played part is a wavy line while playing and flat when paused, while dragging, when the window is unfocused, or under reduced motion.
 - Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
 - Icon buttons carry tooltips.
@@ -93,7 +93,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Songs | Virtualized list, one row per track, read in pages of 200. Tap plays the list from that row in the displayed order. |
 | Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc. |
 | Artists | List with avatar placeholders; artist page has sections for albums, songs and appears-on. |
-| Onboarding | Full-page first-run picker, outside the shell. Suggests the XDG music folder. |
+| Onboarding | Full-page first-run picker, outside the shell, shown once after install (adding a folder or "Later" ends it for good). Suggests the XDG music folder. |
 
 Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
 
@@ -135,7 +135,7 @@ Placeholder screens (Home, Folders, Favorites, Recent) use `EmptyState` and say 
 
 ## Settings
 
-- Single column, at most 720 px wide, grouped in sections: Library (rescan), Appearance (theme, language, title bar), About (repository, license).
+- Single column, at most 720 px wide, grouped in sections: Library (music folders, rescan at start, rescan), Appearance (theme, language, title bar), About (repository, license).
 - Rows: label on the left, control on the right. Below 560 px the control moves below the label.
 - Choices use `setting_choice.dart`: a segmented button when there is room, a dropdown in a compact row.
 - Language choices: system, English, Vietnamese. The title bar choice (kanaru, system, none) needs a restart; the screen says so.

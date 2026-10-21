@@ -28,19 +28,19 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/main.dart` | 1 / 85 | Startup sequence, provider overrides |
 | `lib/app/` | 17 / 1,601 | Shell, router, theme, window integration, navigation history |
 | `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart`, `top_bar_search_field.dart` (live search), `navigation_history.dart`, `app_destination.dart`, `sidebar/`, `window/` |
-| `lib/core/database/` | 22 / 10,327 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, text keys, key backfill, v4 migration, FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`) |
-| `lib/core/indexer/` | 15 / 1,464 | Folder walk, tag reading via Rust, diff, scan orchestration, covers |
+| `lib/core/database/` | 23 / 10,379 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, text keys, key backfill, v4 migration, FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries |
+| `lib/core/indexer/` | 16 / 1,614 | Folder walk, tag reading via Rust, diff, scan orchestration, covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
 | `lib/core/paths/` | 1 / 62 | XDG directory resolution |
 | `lib/core/player/` | 19 / 2,211 | `PlayerService`, `PlayQueue`, `MediaKitBackend`, session persistence (`session/`) |
-| `lib/core/settings/` | 6 / 623 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance |
+| `lib/core/settings/` | 6 / 666 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
-| `lib/features/library/` | 36 / 3,122 | Songs, Albums, Artists, onboarding, library state machine, sort controls |
-| `lib/features/player/` | 28 / 3,300 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts, open-media |
+| `lib/features/library/` | 34 / 3,095 | Songs, Albums, Artists, onboarding, library state machine, sort controls |
+| `lib/features/player/` | 27 / 3,151 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |
 | `lib/features/search/` | 4 / 451 | Search page: `search_screen.dart` (states), `search_results_view.dart` and `search_section.dart` (groups), `search_providers.dart` (queries and name indexes) |
-| `lib/features/settings/` | 10 / 943 | Settings screen sections and setting widgets |
-| `lib/shared/` | 23 / 1,271 | Helpers and tiles used by library and search: `play_tracks.dart`, `enqueue_tracks.dart`, `format_duration.dart`; `widgets/` has the tiles (`song_tile.dart`, `album_list_tile.dart`, `artist_tile.dart`), CoverArt, EmptyState, PageScaffold, ScanProgress, MinBusyBuilder |
+| `lib/features/settings/` | 14 / 1,304 | Settings screen sections, library folders list, setting widgets |
+| `lib/shared/` | 25 / 1,310 | Helpers and tiles used by library and search: `play_tracks.dart`, `enqueue_tracks.dart`, `format_duration.dart`, `directory_picker_provider.dart`, `root_rejection_message.dart`; `widgets/` has the tiles (`song_tile.dart`, `album_list_tile.dart`, `artist_tile.dart`), CoverArt, EmptyState, PageScaffold, ScanProgress, MinBusyBuilder |
 | `lib/l10n/` | ARB + generated | `app_en.arb` (template), `app_vi.arb`; `app_localizations*.dart` is generated |
 
 Key files by area:
@@ -54,6 +54,7 @@ Key files by area:
 | Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
 | Search | `core/database/library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`, `library_migration_v4.dart`; `features/search/search_providers.dart`, `search_screen.dart`; `app/shell/top_bar_search_field.dart`, `navigation_history.dart` |
 | Startup DB | `core/database/library_startup.dart` |
+| Library folders | `core/database/library_root_queries.dart` (watch, count, remove, replace), `core/indexer/library_roots_controller.dart` (add, remove, replace), `core/indexer/library_startup_tasks.dart` (post-frame rescan), `features/settings/library_folders_list.dart` |
 | MPRIS | `core/media_controls/mpris/mpris_media_controls.dart`, `mpris_method_handler.dart`, `mpris_properties.dart` |
 | Browse UI | `features/library/library_browse_body.dart` (state machine), `songs/song_row_cache.dart`, `albums/album_screen.dart`, `artists/artist_screen.dart` |
 | Now Playing | `features/player/now_playing/now_playing_overlay.dart`, `now_playing_auto_hide.dart`, `now_playing_tabs.dart` |

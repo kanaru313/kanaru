@@ -65,12 +65,12 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 
 | ID     | Tính năng                | Mô tả / tiêu chí hoàn thành                                                                                                                                                          | Ưu tiên | Phase | H   |
 | ------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | ----- | --- |
-| IDX-01 | Chọn thư mục nhạc        | Lần đầu mở app (thư viện chưa có nguồn) hiện màn chọn nguồn nhạc trước khi vào thư viện; sau đó thêm và bỏ nhiều thư mục gốc trong Settings → Nguồn; mặc định gợi ý `$XDG_MUSIC_DIR` — một phần: màn chọn nguồn lần đầu đã làm (feat/library-indexer); thêm/bỏ trong Settings → Nguồn chưa làm | P0      | 1     | H   |
+| IDX-01 | Chọn thư mục nhạc        | Lần đầu mở app (thư viện chưa có nguồn) hiện màn chọn nguồn nhạc trước khi vào thư viện; sau đó thêm, đổi và bỏ thư mục gốc trong Settings → Thư viện (bỏ hoặc đổi có hộp xác nhận, file trên đĩa không bị xoá); mặc định gợi ý `$XDG_MUSIC_DIR`. Thư mục không còn tồn tại hiện gạch ngang kèm nút thùng rác. Màn chọn nguồn chỉ hiện một lần sau khi cài, kể cả khi sau đó đã bỏ hết thư mục (feat/library-folders) | P0      | 1     | H   |
 | IDX-02 | Quét lần đầu             | Quét đệ quy, đọc tag song song trên isolate/Rust, có thanh tiến độ, UI không bị đơ. Mục tiêu: 10.000 bài dưới 60 giây trên SSD — ✅ đã làm (feat/library-indexer) | P0      | 1     | H   |
 | IDX-03 | Quét lại tăng dần        | So `mtime` + kích thước, chỉ đọc lại file đã đổi; xoá bản ghi của file đã mất — ✅ đã làm (feat/library-indexer). File không bao giờ đọc được (lỗi parse, định dạng không hỗ trợ) không được đọc lại cho tới khi file đổi hoặc `tagReaderVersion` đổi; lỗi tạm (I/O, quyền) được thử lại mỗi lần quét (fix/library-data-hardening) | P0      | 1     | H   |
 | IDX-04 | Theo dõi thư mục         | Dùng inotify để tự cập nhật khi thêm/xoá/sửa file lúc app đang chạy                                                                                                                  | P1      | 1     |     |
 | IDX-05 | Loại trừ                 | Bỏ qua thư mục con, file `.nomedia`, file ngắn hơn N giây (nhạc chuông, ghi âm) — một phần: thư mục ẩn (tên bắt đầu bằng `.`, gồm `.Trash-<uid>`), `lost+found`, `@eaDir` và `$RECYCLE.BIN` được bỏ qua tự động; thư mục gốc là thư mục ẩn vẫn được quét. Bài đã index trong các thư mục này bị xoá khỏi thư viện ở lần quét kế tiếp. `.nomedia` và lọc theo thời lượng chưa làm (fix/library-data-hardening)                                                                                                      | P1      | 1     |     |
-| IDX-06 | Quét khi khởi động       | Tuỳ chọn tự quét lại khi mở app, chạy nền                                                                                                                                            | P1      | 1     | H   |
+| IDX-06 | Quét khi khởi động       | Tuỳ chọn tự quét lại khi mở app, chạy nền sau khi cửa sổ hiện; mặc định bật, công tắc trong Settings → Thư viện. Chỉ báo khi có thay đổi hoặc lỗi (feat/library-folders) | P1      | 1     | H   |
 | IDX-07 | Bài lỗi / không đọc được | Liệt kê file có tag lỗi hoặc định dạng không hỗ trợ để người dùng xử lý                                                                                                              | P2      | 1     |     |
 | IDX-08 | CUE sheet                | Tách một file FLAC/APE + `.cue` thành nhiều track ảo                                                                                                                                 | P2      | 4     |     |
 | IDX-09 | Phát file ngoài thư viện | Mở file/thư mục bằng dòng lệnh, kéo thả hoặc "Open with" mà không cần thêm vào thư viện                                                                                              | P1      | 1     | H   |
@@ -85,12 +85,11 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | Mount mạng hoặc FUSE (sshfs, rclone…) | Không hỗ trợ. App không nhận diện; timeout chỉ để quét không treo |
 | Khoá sắp xếp đổi phiên bản (sau khi nâng cấp) | Tính lại trong nền. Khi đó các màn Album, Nghệ sĩ và Bài hát hiện "Đang cập nhật thư viện…" kèm tiến độ; phát nhạc không bị ảnh hưởng |
 
-**Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. "Mở thư mục" dùng chung bộ duyệt thư mục (`walkAudioFilesInIsolate`) với việc quét thư viện, nên bỏ qua đúng những thư mục mà lần quét bỏ qua, và bỏ FIFO/thiết bị. Khi đó:
+**Nút "Mở file / Mở thư mục" trên top bar đã bỏ** (feat/library-folders). Nó chỉ có từ lúc làm player core, để nạp nhạc khi chưa có thư viện. Hiện chỉ phát được bài trong thư viện; phát file ngoài thư viện chờ IDX-09 / SYS-07 (dòng lệnh, kéo thả, "Open with"). Còn lại:
 
-- Đường phát nhạc (`PlayerService.openTracks`, hàng đợi, player bar) vẫn giữ nguyên; màn thư viện dùng lại nó.
-- `isAudioFile` / `scanFolder` trong `lib/features/player/open_media.dart` chuyển sang `lib/core/indexer/`.
-- `file_selector` vẫn dùng cho hộp thoại chọn thư mục nguồn.
-- Phát file ngoài thư viện đi qua IDX-09 / SYS-07 (dòng lệnh, kéo thả, "Open with"), không qua nút.
+- Đường phát nhạc (`PlayerService.openTracks`, hàng đợi, player bar) giữ nguyên; màn thư viện dùng nó.
+- `walkAudioFilesInIsolate` và `isAudioFile` nằm ở `lib/core/indexer/`, dùng cho việc quét thư viện.
+- `file_selector` dùng cho hộp thoại chọn thư mục nguồn (`lib/shared/directory_picker_provider.dart`).
 - Top bar cửa sổ hẹp (dưới 720 px, sidebar thành drawer): nút Back `‹` luôn hiện trước ô tìm kiếm (chỉ Back, không Forward; nút bên chuột vẫn đi tới), thành `☰ ‹ [Tìm kiếm] ⚙`. Hiện tại `‹ ›` bị ẩn khi top bar dưới 560 px. Settings `⚙` giữ ở góc phải ở mọi độ rộng, không gộp vào menu `⋮`, không chuyển xuống sidebar.
 
 ## 4. Metadata & artwork
