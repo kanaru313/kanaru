@@ -15,7 +15,6 @@ Future<bool> confirmRemoveFolder(
     title: l10n.settingsRemoveFolderTitle,
     body: '$path\n\n${l10n.settingsRemoveFolderBody(songCount)}',
     confirmLabel: l10n.settingsRemoveFolderConfirm,
-    destructive: true,
   );
 }
 
@@ -31,7 +30,6 @@ Future<bool> confirmReplaceFolder(
     title: l10n.settingsReplaceFolderTitle,
     body: l10n.settingsReplaceFolderBody(oldPath, newPath),
     confirmLabel: l10n.settingsReplaceFolderConfirm,
-    destructive: true,
   );
 }
 
@@ -40,7 +38,6 @@ Future<bool> _confirm(
   required String title,
   required String body,
   required String confirmLabel,
-  required bool destructive,
 }) async {
   final colors = Theme.of(context).colorScheme;
   final confirmed = await showDialog<bool>(
@@ -51,15 +48,13 @@ Future<bool> _confirm(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(context.l10n.settingsDialogCancel),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
         FilledButton(
-          style: destructive
-              ? FilledButton.styleFrom(
-                  backgroundColor: colors.error,
-                  foregroundColor: colors.onError,
-                )
-              : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: colors.error,
+            foregroundColor: colors.onError,
+          ),
           onPressed: () => Navigator.of(context).pop(true),
           child: Text(confirmLabel),
         ),

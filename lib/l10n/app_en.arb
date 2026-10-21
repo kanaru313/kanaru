@@ -339,7 +339,6 @@
   "settingsRemoveFolder": "Remove from library",
   "settingsFolderMissing": "This folder no longer exists",
   "settingsFolderMenu": "Folder actions",
-  "settingsDialogCancel": "Cancel",
   "settingsRemoveFolderTitle": "Remove folder from library?",
   "settingsRemoveFolderBody": "{count, plural, =0{No songs will leave the library.} =1{1 song will leave the library.} other{{count} songs will leave the library.}} Files on disk are not deleted.",
   "@settingsRemoveFolderBody": {

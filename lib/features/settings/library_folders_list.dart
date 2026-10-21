@@ -114,7 +114,10 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
         .read(libraryRootsControllerProvider)
         .replaceRoot(root.id, canonical);
     if (!mounted) return;
-    if (!result.ok) {
+    if (result.rejection == RootRejection.notFound) {
+      // The folder being replaced left the library meanwhile: the list has
+      // already dropped its row, so there is nothing to report.
+    } else if (!result.ok) {
       _showMessage(rootRejectionMessage(l10n, canonical, result.rejection!));
     } else if (!result.unchanged) {
       _scan();

@@ -646,9 +646,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsFolderMenu => 'Folder actions';
 
   @override
-  String get settingsDialogCancel => 'Cancel';
-
-  @override
   String get settingsRemoveFolderTitle => 'Remove folder from library?';
 
   @override

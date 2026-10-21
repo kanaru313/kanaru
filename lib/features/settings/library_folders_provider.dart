@@ -15,12 +15,16 @@ final libraryRootsProvider = StreamProvider<List<LibraryRoot>>((ref) {
 });
 
 /// Whether the folder at a path exists right now. Checked again after every
-/// finished scan, so a drive that is plugged back in stops being marked.
+/// finished or failed scan, so a drive that is plugged back in stops being marked.
 final rootFolderPresentProvider = FutureProvider.autoDispose
     .family<bool, String>((ref, path) {
       ref.watch(
         libraryIndexerProvider.select(
-          (state) => state is IndexerFinished ? state.at : null,
+          (state) => switch (state) {
+            IndexerFinished(:final at) => at,
+            IndexerFailed(:final at) => at,
+            _ => null,
+          },
         ),
       );
       return FileSystemEntity.isDirectory(path);

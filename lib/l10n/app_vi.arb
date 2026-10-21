@@ -180,7 +180,6 @@
   "settingsRemoveFolder": "Bỏ khỏi thư viện",
   "settingsFolderMissing": "Thư mục này không còn tồn tại",
   "settingsFolderMenu": "Tuỳ chọn thư mục",
-  "settingsDialogCancel": "Huỷ",
   "settingsRemoveFolderTitle": "Bỏ thư mục khỏi thư viện?",
   "settingsRemoveFolderBody": "{count, plural, =0{Không có bài nào bị gỡ khỏi thư viện.} other{{count} bài sẽ bị gỡ khỏi thư viện.}} File nhạc trên đĩa không bị xoá.",
   "settingsRemoveFolderConfirm": "Bỏ",

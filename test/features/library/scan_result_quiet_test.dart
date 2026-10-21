@@ -44,6 +44,26 @@ void main() {
     expect(find.textContaining('3 new'), findsOneWidget);
   });
 
+  testWidgets('a quiet scan with changes leaves out skipped folders', (
+    tester,
+  ) async {
+    final indexer = await pumpApp(tester);
+
+    indexer.emit(
+      IndexerFinished(
+        const ScanSummary(
+          added: 2,
+          skippedRoots: {'/gone': SkipReason.missing},
+        ),
+        quiet: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('2 new'), findsOneWidget);
+    expect(find.textContaining('/gone'), findsNothing);
+  });
+
   testWidgets('a scan the user asked for always reports', (tester) async {
     final indexer = await pumpApp(tester);
 

@@ -1088,12 +1088,6 @@ abstract class AppLocalizations {
   /// **'Folder actions'**
   String get settingsFolderMenu;
 
-  /// No description provided for @settingsDialogCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get settingsDialogCancel;
-
   /// No description provided for @settingsRemoveFolderTitle.
   ///
   /// In en, this message translates to:

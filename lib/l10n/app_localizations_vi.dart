@@ -641,9 +641,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsFolderMenu => 'Tuỳ chọn thư mục';
 
   @override
-  String get settingsDialogCancel => 'Huỷ';
-
-  @override
   String get settingsRemoveFolderTitle => 'Bỏ thư mục khỏi thư viện?';
 
   @override
