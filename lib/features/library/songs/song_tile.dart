@@ -6,6 +6,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../shared/format_duration.dart';
 import '../../../shared/widgets/cover_art.dart';
+import '../widgets/queue_actions_menu.dart';
 
 /// Side of the cover at the start of a song row.
 const songCoverSize = 40.0;
@@ -13,10 +14,18 @@ const songCoverSize = 40.0;
 /// One row of the songs list: cover, title, "artist · album" and the
 /// duration. Without a cover the row shows a music note.
 class SongTile extends ConsumerWidget {
-  const SongTile({super.key, required this.song, required this.onTap});
+  const SongTile({
+    super.key,
+    required this.song,
+    required this.onTap,
+    this.onQueueAction,
+  });
 
   final TrackListItem song;
   final VoidCallback onTap;
+
+  /// Picked from the menu of a right click or long press; no menu without it.
+  final ValueChanged<QueueAction>? onQueueAction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +36,7 @@ class SongTile extends ConsumerWidget {
     ].whereType<String>().where((s) => s.isNotEmpty).join(' · ');
     final durationMs = song.durationMs;
 
-    return ListTile(
+    final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
       leading: CoverArt(
         path: coverPath(ref.watch(coverCacheDirectoryProvider), song.coverKey),
@@ -48,6 +57,7 @@ class SongTile extends ConsumerWidget {
             ),
       onTap: onTap,
     );
+    return QueueActionsRegion(onAction: onQueueAction, child: tile);
   }
 }
 

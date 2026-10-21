@@ -6,11 +6,11 @@ import 'track.dart';
 /// Immutable play queue: the tracks as opened, the order they play in, the
 /// current position, shuffle and repeat. Every change returns a new queue.
 ///
-/// The play order is kept as indexes into [original]. [original] never changes
-/// after the queue is opened, so an index is never reused: removing a track
-/// only drops its index from [order]. That keeps UI keys and MPRIS track ids
-/// stable, and finds the current track again when the same file is queued
-/// twice.
+/// The play order is kept as indexes into [original]. [original] only grows
+/// after the queue is opened (tracks added to it go at its end), so an index
+/// is never reused: removing a track only drops its index from [order]. That
+/// keeps UI keys and MPRIS track ids stable, and finds the current track
+/// again when the same file is queued twice.
 class PlayQueue {
   PlayQueue({
     this.original = const [],
@@ -19,7 +19,23 @@ class PlayQueue {
     this.shuffled = false,
     this.repeat = RepeatMode.off,
     this.unshuffledOrder,
-  }) : order = order ?? List.generate(original.length, (i) => i);
+  }) : assert(
+         _consistent(original.length, order, unshuffledOrder),
+         'order must hold unique indexes into original, and unshuffledOrder '
+         'the same ones',
+       ),
+       order = order ?? List.generate(original.length, (i) => i);
+
+  /// Debug check for the queue invariants: [order] has no repeats and stays
+  /// inside `original`, and [unshuffledOrder] holds the same entries.
+  static bool _consistent(int size, List<int>? order, List<int>? unshuffled) {
+    if (order == null) return unshuffled == null || unshuffled.length == size;
+    final seen = order.toSet();
+    if (seen.length != order.length) return false;
+    if (order.any((entry) => entry < 0 || entry >= size)) return false;
+    if (unshuffled == null) return true;
+    return unshuffled.length == order.length && seen.containsAll(unshuffled);
+  }
 
   /// Queue for freshly opened [tracks], starting at [start]. Keeps the given
   /// shuffle and repeat settings; when shuffled, [start] plays first.
@@ -35,7 +51,8 @@ class PlayQueue {
     return shuffled ? queue.shuffle(random) : queue;
   }
 
-  /// Tracks as they were opened. Never edited, even by remove and clear.
+  /// Tracks as they were opened, then those added by [insert]. Never edited
+  /// otherwise, even by remove and clear.
   final List<Track> original;
 
   /// Play order: `order[i]` is the index in [original] of the i-th track.
@@ -121,6 +138,38 @@ class PlayQueue {
     return copyWith(order: moved, index: newIndex);
   }
 
+  /// Puts [added] at play position [at] (`order.length` appends), in their
+  /// order. They become new entries at the end of [original]; the current
+  /// track stays current. While shuffled, the order shuffle goes back to gets
+  /// them right after the track before [at], or at its end when appended.
+  PlayQueue insert(int at, List<Track> added) {
+    if (added.isEmpty || at < 0 || at > order.length) return this;
+    final first = original.length;
+    final entries = [for (var i = 0; i < added.length; i++) first + i];
+    final unshuffled = unshuffledOrder;
+    List<int>? newUnshuffled;
+    if (unshuffled == null) {
+      // A shuffled queue that was emptied has no saved order yet; tracks
+      // added to it are in the order given, which is also the unshuffled one.
+      if (shuffled && isEmpty) newUnshuffled = entries;
+    } else {
+      final after = at == order.length
+          ? unshuffled.length
+          : at == 0
+          ? 0
+          : unshuffled.indexOf(order[at - 1]) + 1;
+      newUnshuffled = List.of(unshuffled)..insertAll(after, entries);
+    }
+    return PlayQueue(
+      original: [...original, ...added],
+      order: List.of(order)..insertAll(at, entries),
+      index: !isEmpty && at <= index ? index + added.length : index,
+      shuffled: shuffled,
+      repeat: repeat,
+      unshuffledOrder: newUnshuffled,
+    );
+  }
+
   /// Drops the track at play position [at]. When it is the current track the
   /// next one slides into its position; past the end, repeat all wraps to
   /// the first and otherwise the new last track becomes current.
@@ -154,25 +203,35 @@ class PlayQueue {
     );
   }
 
-  /// Drops every track but the current one.
+  /// Drops every track but the current one. [original] shrinks to that
+  /// track too, so a queue that grew by adding tracks does not keep every
+  /// dropped one for the rest of the session.
   PlayQueue keepOnlyCurrent() {
     if (isEmpty) return this;
-    final only = [order[index]];
     return PlayQueue(
-      original: original,
-      order: only,
+      original: [current!],
+      order: const [0],
       shuffled: shuffled,
       repeat: repeat,
-      unshuffledOrder: shuffled ? [...only] : null,
+      unshuffledOrder: shuffled ? const [0] : null,
     );
   }
 
   /// Moves the current track to the front and shuffles the rest
-  /// (Fisher–Yates). The order before is kept for [unshuffle].
-  PlayQueue shuffle([Random? random]) {
+  /// (Fisher–Yates), except that the [keepNext] tracks right after the
+  /// current one stay there, in order. The order before is kept for
+  /// [unshuffle].
+  PlayQueue shuffle([Random? random, int keepNext = 0]) {
     if (isEmpty) return copyWith(shuffled: true);
     random ??= Random();
-    final rest = [...order]..removeAt(index);
+    final kept = order.sublist(
+      index + 1,
+      min(order.length, index + 1 + max(0, keepNext)),
+    );
+    final rest = [
+      for (var i = 0; i < order.length; i++)
+        if (i != index && (i <= index || i > index + kept.length)) order[i],
+    ];
     for (var i = rest.length - 1; i > 0; i--) {
       final j = random.nextInt(i + 1);
       final swap = rest[i];
@@ -181,7 +240,7 @@ class PlayQueue {
     }
     return PlayQueue(
       original: original,
-      order: [order[index], ...rest],
+      order: [order[index], ...kept, ...rest],
       shuffled: true,
       repeat: repeat,
       unshuffledOrder: unshuffledOrder ?? order,

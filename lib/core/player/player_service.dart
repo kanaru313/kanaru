@@ -56,6 +56,19 @@ class PlayerService extends Notifier<PlayerState>
   @override
   final _handedNext = <int>[];
 
+  /// Entries put in by "play next" that have not played yet. The next
+  /// "play next" goes behind those right after the current track.
+  @override
+  final _upNext = <int>{};
+
+  /// How many times the user opened a queue or put tracks into it (open, open
+  /// shuffled, play next, add to queue), as opposed to the engine moving on,
+  /// repeat or shuffle changing, or tracks being dragged, removed or cleared.
+  /// Lets a slow caller tell whether a newer pick landed while it worked.
+  @override
+  int _userQueueChanges = 0;
+  int get userQueueChanges => _userQueueChanges;
+
   /// Playback stopped after the last track; play starts the queue over.
   @override
   bool _ended = false;
@@ -105,6 +118,7 @@ class PlayerService extends Notifier<PlayerState>
     _ended = false;
     _failuresInRow = 0;
     _handedNext.clear();
+    _upNext.clear();
     _lastTick = Duration.zero;
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
@@ -199,6 +213,7 @@ class PlayerService extends Notifier<PlayerState>
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
+    _upNext.remove(queue.order[index]);
     _wantsPlaying = play;
     _openedSinceBuild = true;
     final next = queue.nextIndex;

@@ -204,4 +204,51 @@ void main() {
       expect(failed.single.track, _a);
     });
   });
+
+  group('promoteEntry', () {
+    test('announces an entry that started while another next was queued', () {
+      openAThenB();
+      // `c` replaced `b` as the queued next track, but mpv had started `b`.
+      const c = Track(uri: '/c.mp3', title: 'c');
+      tracker.queueNext(c);
+      tracker.setNextId(3);
+
+      tracker.promoteEntry(_b, 2, next: c, nextId: 3);
+
+      expect(advanced, [_b]);
+      expect(tracker.current, _b);
+      expect(tracker.currentId, 2);
+      // `c` sits right behind `b` in mpv's playlist, so it stays tracked.
+      expect(tracker.next, c);
+      expect(tracker.nextId, 3);
+      // `a` never loaded, so it counts as failed, as for any skipped track.
+      expect(failed.map((e) => e.track), [_a]);
+    });
+
+    test('the kept next entry is announced when mpv moves on to it', () async {
+      openAThenB();
+      const c = Track(uri: '/c.mp3', title: 'c');
+      tracker.queueNext(c);
+      tracker.setNextId(3);
+      tracker.promoteEntry(_b, 2, next: c, nextId: 3);
+      advanced.clear();
+      // The finished entries are removed: mpv plays `c` at the front.
+      mpv.ids = [3];
+      mpv.position = 0;
+
+      expect(await tracker.promoteIfNext(0), isTrue);
+
+      expect(advanced, [c]);
+    });
+
+    test('without an appended entry nothing is left queued', () {
+      openAThenB();
+      tracker.queueNext(null);
+
+      tracker.promoteEntry(_b, 2);
+
+      expect(tracker.next, isNull);
+      expect(tracker.nextId, isNull);
+    });
+  });
 }

@@ -228,10 +228,10 @@ void main() {
 
     test('keeps just the playing track', () {
       final queue = PlayQueue(original: five, index: 3).keepOnlyCurrent();
-      expect(queue.order, [3]);
+      expect(queue.order, [0]);
       expect(queue.index, 0);
       expect(queue.current, five[3]);
-      expect(queue.original, same(five));
+      expect(queue.original, [five[3]]);
     });
 
     test('while shuffled also resets the order shuffle returns to', () {
@@ -240,8 +240,8 @@ void main() {
         index: 3,
       ).shuffle(Random(1)).keepOnlyCurrent();
       expect(queue.shuffled, isTrue);
-      expect(queue.unshuffledOrder, [3]);
-      expect(queue.unshuffle().order, [3]);
+      expect(queue.unshuffledOrder, [0]);
+      expect(queue.unshuffle().order, [0]);
     });
 
     test('does nothing to an empty queue', () {

@@ -7,6 +7,9 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   bool get _ended;
   set _ended(bool ended);
+  set _userQueueChanges(int count);
+  int get _userQueueChanges;
+  Set<int> get _upNext;
   set _lastTick(Duration position);
   StreamController<Duration> get _seeked;
   Random? get _random;
@@ -87,12 +90,31 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   Future<void> openTracks(List<Track> tracks, {int start = 0}) async {
     if (tracks.isEmpty) return;
     RangeError.checkValidIndex(start, tracks, 'start');
+    return _open(tracks, start, shuffled: state.queue.shuffled);
+  }
+
+  /// Replaces the queue with [tracks], turns shuffle on and plays from a
+  /// random one. Repeat stays as it was; turning shuffle off later gives
+  /// back the order of [tracks]. Opening nothing does nothing.
+  Future<void> openShuffled(List<Track> tracks) async {
+    if (tracks.isEmpty) return;
+    final start = (_random ?? Random()).nextInt(tracks.length);
+    return _open(tracks, start, shuffled: true);
+  }
+
+  Future<void> _open(
+    List<Track> tracks,
+    int start, {
+    required bool shuffled,
+  }) async {
     _userActed();
+    _userQueueChanges++;
+    _upNext.clear();
     final queue = PlayQueue.open(
       tracks,
       start,
       repeat: state.queue.repeat,
-      shuffled: state.queue.shuffled,
+      shuffled: shuffled,
       random: _random,
     );
     state = state.copyWith(queue: queue);

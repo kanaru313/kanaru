@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
+import '../enqueue_tracks.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
@@ -71,6 +72,13 @@ class ArtistsScreen extends ConsumerWidget {
               itemBuilder: (context, i) => ArtistTile(
                 artist: artists[i],
                 onTap: () => context.go(artistLocation(artists[i].key)),
+                onQueueAction: (action) => enqueueArtist(
+                  ref,
+                  context,
+                  action,
+                  artists[i].key,
+                  artists[i].name,
+                ),
               ),
             ),
           ),

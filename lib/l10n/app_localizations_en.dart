@@ -294,6 +294,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songsTrackGone => 'That song is no longer in the library.';
 
   @override
+  String get songsShuffleAll => 'Shuffle all';
+
+  @override
+  String get queuePlayNext => 'Play next';
+
+  @override
+  String get queueAddToQueue => 'Add to queue';
+
+  @override
+  String get queueActionsTooltip => 'Queue actions';
+
+  @override
+  String queuePlayingNext(String name) {
+    return 'Playing next: $name';
+  }
+
+  @override
+  String queuePlaying(String name) {
+    return 'Playing: $name';
+  }
+
+  @override
+  String queueAddedToQueue(String name) {
+    return 'Added to queue: $name';
+  }
+
+  @override
   String get sortBy => 'Sort by:';
 
   @override

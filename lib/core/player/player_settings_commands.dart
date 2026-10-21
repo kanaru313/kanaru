@@ -6,6 +6,7 @@ part of 'player_service.dart';
 mixin _PlayerSettingsCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   Random? get _random;
+  int _upNextRun(PlayQueue queue);
   Future<void> _queueNext();
   void _userActed();
 
@@ -30,13 +31,16 @@ mixin _PlayerSettingsCommands on Notifier<PlayerState> {
   }
 
   /// Turns shuffle on or off. The current track keeps playing; only the
-  /// engine's next track changes.
+  /// engine's next track changes. Tracks put right after it by "play next"
+  /// keep their place and only the rest is shuffled.
   Future<void> setShuffle(bool on) async {
     final current = state.queue;
     if (current.shuffled == on) return;
     _userActed();
     state = state.copyWith(
-      queue: on ? current.shuffle(_random) : current.unshuffle(),
+      queue: on
+          ? current.shuffle(_random, _upNextRun(current))
+          : current.unshuffle(),
     );
     if (!state.queue.isEmpty) await _queueNext();
   }

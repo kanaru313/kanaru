@@ -13,8 +13,10 @@ import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
 import '../library_detail_body.dart';
 import '../library_route_keys.dart';
+import '../enqueue_tracks.dart';
 import '../play_tracks.dart';
 import '../songs/song_tile.dart';
+import '../widgets/queue_actions_menu.dart';
 import '../widgets/artist_avatar.dart';
 import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
@@ -58,6 +60,8 @@ class _ArtistPage extends ConsumerWidget {
       for (final t in songs)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
+    void queueAlbum(AlbumTileData album, QueueAction action) =>
+        enqueueAlbum(ref, context, action, album.key, album.title);
     void openAlbum(AlbumTileData album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
     Widget heading(String text) => SliverToBoxAdapter(
@@ -101,10 +105,25 @@ class _ArtistPage extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: () => playTracks(ref, queue(), 0),
-                        icon: const Icon(Icons.play_arrow),
-                        label: Text(l10n.artistsPlay),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: () => playTracks(ref, queue(), 0),
+                            icon: const Icon(Icons.play_arrow),
+                            label: Text(l10n.artistsPlay),
+                          ),
+                          const SizedBox(width: 4),
+                          QueueActionsButton(
+                            onSelected: (action) => enqueueLoaded(
+                              ref,
+                              context,
+                              action,
+                              queue(),
+                              sections.name,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -115,7 +134,11 @@ class _ArtistPage extends ConsumerWidget {
         ),
         if (sections.albums.isNotEmpty) ...[
           heading(l10n.artistsAlbums),
-          SliverAlbumGrid(albums: sections.albums, onTap: openAlbum),
+          SliverAlbumGrid(
+            albums: sections.albums,
+            onTap: openAlbum,
+            onQueueAction: queueAlbum,
+          ),
         ],
         heading(l10n.artistsSongs),
         SliverList.builder(
@@ -131,11 +154,21 @@ class _ArtistPage extends ConsumerWidget {
               coverKey: songs[i].coverKey,
             ),
             onTap: () => playTracks(ref, queue(), i),
+            onQueueAction: (action) => enqueueLoaded(ref, context, action, [
+              trackFromBrowse(
+                songs[i],
+                artPath: coverPath(coverDirectory, songs[i].coverKey),
+              ),
+            ], songs[i].title),
           ),
         ),
         if (sections.appearsOn.isNotEmpty) ...[
           heading(l10n.artistsAppearsOn),
-          SliverAlbumGrid(albums: sections.appearsOn, onTap: openAlbum),
+          SliverAlbumGrid(
+            albums: sections.appearsOn,
+            onTap: openAlbum,
+            onQueueAction: queueAlbum,
+          ),
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],

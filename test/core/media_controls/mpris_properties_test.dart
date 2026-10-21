@@ -147,6 +147,28 @@ void main() {
       expect(ids.of(reopened), isNot(before));
     });
 
+    test('adding tracks keeps the ids', () {
+      final ids = MprisTrackIds();
+      final queue = PlayQueue(original: tracks, index: 1);
+      ids.observe(queue);
+      final before = ids.of(queue);
+
+      final grown = queue.insert(2, [Track.fromPath('/music/d.mp3')]);
+      ids.observe(grown);
+      expect(ids.of(grown), before);
+    });
+
+    test('clearing the queue compacts it and changes the ids', () {
+      final ids = MprisTrackIds();
+      final queue = PlayQueue(original: tracks, index: 1);
+      ids.observe(queue);
+      final before = ids.of(queue);
+
+      final cleared = queue.keepOnlyCurrent();
+      ids.observe(cleared);
+      expect(ids.of(cleared), isNot(before));
+    });
+
     test('ids are valid object paths', () {
       final ids = MprisTrackIds();
       final queue = PlayQueue(original: tracks);
