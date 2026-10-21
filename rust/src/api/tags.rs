@@ -7,6 +7,7 @@ use std::sync::Arc;
 use crate::cover_art::{first_source, list_images, read_bounded, validate_header, Attempt};
 use crate::cover_batch::read_covers;
 use crate::cover_cache::CoverSink;
+use crate::cover_decode_limits::decode_fits;
 use crate::tag_batch::read_batch;
 use crate::tag_reader::embedded_pictures;
 
@@ -114,16 +115,23 @@ pub fn read_original_cover(path: String) -> Option<Vec<u8>> {
         if !std::fs::metadata(audio).is_ok_and(|m| m.is_file()) {
             return None;
         }
+        // The scan decodes what it shows; a source it would refuse for its
+        // decode limits is skipped here too, so both pick the same cover.
         let usable = |bytes: Vec<u8>| match validate_header(&bytes) {
-            Some(_) => Attempt::Take(bytes),
-            None => Attempt::Next,
+            Some(format) if decode_fits(&bytes, format) => Attempt::Take(bytes),
+            _ => Attempt::Next,
         };
         first_source(
             audio,
             embedded_pictures(&path),
             |dir| Ok(Arc::new(list_images(dir))),
             usable,
-            |sidecar| read_bounded(sidecar).ok().flatten().map_or(Attempt::Next, usable),
+            |sidecar| {
+                read_bounded(sidecar)
+                    .ok()
+                    .flatten()
+                    .map_or(Attempt::Next, usable)
+            },
         )
     }))
     .unwrap_or(None)

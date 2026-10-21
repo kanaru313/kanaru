@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use common::*;
 use image::{GenericImageView, ImageFormat};
-use rust_lib_kanaru::api::tags::CoverStatus;
+use rust_lib_kanaru::api::tags::{read_original_cover, CoverStatus};
 use rust_lib_kanaru::cover_cache::{cache_key, CoverSink};
 use rust_lib_kanaru::cover_thumbnail::make_jpeg;
 use rust_lib_kanaru::jpeg_header::{ends_with_first_scan, parse, strip_metadata};
@@ -218,6 +218,38 @@ fn progressive_jpeg_over_the_decode_limit_falls_back_to_the_folder_cover() {
     let found = read_with(&path, &CoverSink::new(cache.path()));
     assert_eq!(found.cover, Some(cache_key(&folder)));
     assert_eq!(found.status, CoverStatus::Found);
+}
+
+#[test]
+fn original_cover_skips_an_embedded_jpeg_the_scan_cannot_decode() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    let huge = progressive_444(4096);
+    let path = with_cover("sample.flac", music.path(), "song.flac", &huge);
+    let folder = jpeg(64, 64, 9);
+    fs::write(music.path().join("cover.jpg"), &folder).unwrap();
+
+    // The scan and the original pick the same cover.
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&folder)));
+    let original = read_original_cover(path.to_string_lossy().into_owned());
+    assert_eq!(original, Some(folder));
+}
+
+#[test]
+fn original_cover_keeps_a_large_progressive_jpeg_the_scan_decodes_scaled() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    // 3000² 4:4:4: 51.5 MiB of coefficients; fits at 1/4 scale, not in full.
+    let embedded = progressive_444(3000);
+    assert!(make_jpeg(&embedded, ImageFormat::Jpeg).is_some());
+    let path = with_cover("sample.flac", music.path(), "song.flac", &embedded);
+    fs::write(music.path().join("cover.jpg"), jpeg(64, 64, 9)).unwrap();
+
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&embedded)));
+    let original = read_original_cover(path.to_string_lossy().into_owned());
+    assert_eq!(original, Some(embedded));
 }
 
 #[test]
