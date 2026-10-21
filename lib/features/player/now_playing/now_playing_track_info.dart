@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/player/track.dart';
 import '../track_artwork.dart';
 
-/// Large cover, title and artist, centered. The album is not shown: tracks
-/// carry no album yet.
+/// Large cover of the playing track, then [track]'s title and artist,
+/// centered. The album is not shown: tracks carry no album yet.
 class NowPlayingTrackInfo extends StatelessWidget {
   const NowPlayingTrackInfo({
     super.key,
@@ -21,13 +21,7 @@ class NowPlayingTrackInfo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 24,
       children: [
-        Center(
-          child: TrackArtwork(
-            artUri: track.artUri,
-            size: artworkSize,
-            radius: 32,
-          ),
-        ),
+        Center(child: PlayingTrackArtwork(size: artworkSize, radius: 32)),
         NowPlayingTitle(track: track),
       ],
     );
