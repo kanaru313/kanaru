@@ -32,12 +32,13 @@ void main() {
     String? artUri,
     OriginalCover? original,
     bool layered = true,
+    double size = 100,
   }) => tester.pumpWidget(
     MaterialApp(
       home: Center(
         child: TrackArtwork(
           artUri: artUri ?? thumbnail.path,
-          size: 100,
+          size: size,
           layered: layered,
           original: original,
         ),
@@ -63,6 +64,20 @@ void main() {
     of: find.byType(OriginalCoverLayer),
     matching: find.byType(RawImage),
   );
+
+  Future<Object> keyOf(WidgetTester tester) async {
+    final layer = find.descendant(
+      of: find.byType(OriginalCoverLayer),
+      matching: find.byType(Image),
+    );
+    final provider = tester.widget<Image>(layer).image;
+    return (await tester.runAsync(
+      () => provider.obtainKey(ImageConfiguration.empty),
+    ))!;
+  }
+
+  bool cached(Object key) =>
+      PaintingBinding.instance.imageCache.statusForKey(key).tracked;
 
   testWidgets('shows the thumbnail, then the original over it', (tester) async {
     await pump(tester, original: _cover('/a'));
@@ -125,23 +140,39 @@ void main() {
     expect(tester.state(thumbnailImage), same(state));
   });
 
+  testWidgets('a resize keeps the original shown while it decodes again', (
+    tester,
+  ) async {
+    final cover = _cover('/a');
+    await pump(tester, original: cover);
+    await decode(tester);
+    expect(originalPixels, findsOneWidget);
+
+    // A larger decode width: a new image, not decoded yet.
+    final small = await keyOf(tester);
+    await pump(tester, original: cover, size: 300);
+
+    expect(originalPixels, findsOneWidget, reason: 'the last frame stays');
+    await decode(tester);
+    expect(cached(small), isFalse, reason: 'replaced');
+    expect(cached(await keyOf(tester)), isTrue);
+  });
+
+  testWidgets('new bytes of the same track keep the original shown', (
+    tester,
+  ) async {
+    await pump(tester, original: _cover('/a'));
+    await decode(tester);
+
+    // A rescan replaced the cover of the playing track.
+    await pump(tester, original: _cover('/a'));
+
+    expect(originalPixels, findsOneWidget, reason: 'the last frame stays');
+  });
+
   testWidgets('the original cover leaves the image cache with its layer', (
     tester,
   ) async {
-    Future<Object> keyOf(WidgetTester tester) async {
-      final layer = find.descendant(
-        of: find.byType(OriginalCoverLayer),
-        matching: find.byType(Image),
-      );
-      final provider = tester.widget<Image>(layer).image;
-      return (await tester.runAsync(
-        () => provider.obtainKey(ImageConfiguration.empty),
-      ))!;
-    }
-
-    bool cached(Object key) =>
-        PaintingBinding.instance.imageCache.statusForKey(key).tracked;
-
     await pump(tester, original: _cover('/a'));
     await decode(tester);
     final first = await keyOf(tester);

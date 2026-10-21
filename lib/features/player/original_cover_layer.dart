@@ -28,6 +28,11 @@ class OriginalCoverLayer extends StatefulWidget {
 class _OriginalCoverLayerState extends State<OriginalCoverLayer> {
   late ImageProvider _provider = _providerFor(widget);
 
+  /// Whether a frame has been shown. A new provider resets the frame number
+  /// the builder sees, but the image keeps its last frame until the next one
+  /// decodes (gapless), so only the first decode leaves the layer empty.
+  bool _shown = false;
+
   static ImageProvider _providerFor(OriginalCoverLayer layer) =>
       ResizeImage.resizeIfNeeded(
         layer.decodeWidth,
@@ -58,10 +63,12 @@ class _OriginalCoverLayerState extends State<OriginalCoverLayer> {
     image: _provider,
     fit: BoxFit.cover,
     gaplessPlayback: true,
-    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
-        frame == null && !wasSynchronouslyLoaded
-        ? const SizedBox.shrink()
-        : ColoredBox(color: Colors.black, child: child),
+    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+      _shown |= frame != null || wasSynchronouslyLoaded;
+      return _shown
+          ? ColoredBox(color: Colors.black, child: child)
+          : const SizedBox.shrink();
+    },
     errorBuilder: (_, _, _) => const SizedBox.shrink(),
   );
 }
