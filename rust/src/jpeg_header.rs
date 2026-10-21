@@ -85,6 +85,46 @@ pub fn strip_metadata(bytes: &[u8]) -> Option<Vec<u8>> {
     Some(out)
 }
 
+/// Whether `bytes` ends right after its first scan: the entropy-coded data
+/// that follows the first SOS runs, past byte stuffing (`FF 00`), restart
+/// markers and fill bytes, into an EOI that is the last two bytes. `false`
+/// when anything else comes first (a second scan, tables between scans,
+/// data after the image) or the marker list is malformed.
+pub fn ends_with_first_scan(bytes: &[u8]) -> bool {
+    let Some(data_start) = first_scan_data(bytes) else {
+        return false;
+    };
+    let mut at = data_start;
+    while let Some(&byte) = bytes.get(at) {
+        if byte != 0xFF {
+            at += 1;
+            continue;
+        }
+        let Some(&next) = bytes.get(at + 1) else {
+            return false;
+        };
+        match next {
+            // Fill byte: the marker byte comes later.
+            0xFF => at += 1,
+            // Byte stuffing and restart markers belong to the scan.
+            0x00 | 0xD0..=0xD7 => at += 2,
+            marker => return marker == EOI && at + 2 == bytes.len(),
+        }
+    }
+    false
+}
+
+/// Where the entropy-coded data of the first scan starts.
+fn first_scan_data(bytes: &[u8]) -> Option<usize> {
+    for segment in segments(bytes)? {
+        let segment = segment?;
+        if segment.marker == SOS {
+            return Some(segment.end);
+        }
+    }
+    None
+}
+
 /// One marker segment: `bytes[start..end]` is the marker and its payload.
 struct Segment<'a> {
     marker: u8,
@@ -249,6 +289,32 @@ mod tests {
             let mut bytes = minimal(10, 10);
             bytes[9] = marker;
             assert_eq!(parse(&bytes), None, "{marker:#x}");
+        }
+    }
+
+    #[test]
+    fn the_first_scan_must_run_into_the_final_eoi() {
+        assert!(ends_with_first_scan(&minimal(10, 10)));
+
+        // Stuffing, restart markers and fill bytes stay inside the scan.
+        let mut scan = minimal(10, 10);
+        let eoi = scan.len() - 2;
+        scan.splice(eoi..eoi, [0xFF, 0x00, 0x56, 0xFF, 0xD3, 0x78, 0xFF, 0xFF]);
+        assert!(ends_with_first_scan(&scan));
+
+        let mut trailing = minimal(10, 10);
+        trailing.extend_from_slice(b"junk");
+        trailing.extend_from_slice(&[0xFF, EOI]);
+        assert!(!ends_with_first_scan(&trailing));
+
+        let mut second_scan = minimal(10, 10);
+        let eoi = second_scan.len() - 2;
+        second_scan.splice(eoi..eoi, [0xFF, SOS, 0x00, 0x02, 0x9A]);
+        assert!(!ends_with_first_scan(&second_scan));
+
+        let whole = minimal(10, 10);
+        for end in 0..whole.len() {
+            assert!(!ends_with_first_scan(&whole[..end]), "cut at {end}");
         }
     }
 

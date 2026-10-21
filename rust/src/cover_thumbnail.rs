@@ -152,13 +152,14 @@ fn scaled_decode_bytes(header: &JpegHeader) -> u64 {
 
 /// The original JPEG without its metadata segments, when it can serve as
 /// its own thumbnail: at most [`THUMBNAIL_SIDE`] and [`MAX_PASSTHROUGH_BYTES`],
-/// complete (ends with EOI), baseline, three YCbCr components, upright (EXIF
-/// orientation 1, since the EXIF segment goes), one frame whose size matches
-/// `decoded`. `decoded` is the full decode of `bytes`, so only bytes that
-/// decode reach the cache; the decoder fills a scan that was cut short
-/// without complaint, hence the EOI check.
+/// one scan that runs into the final EOI, baseline, three YCbCr components,
+/// upright (EXIF orientation 1, since the EXIF segment goes), one frame
+/// whose size matches `decoded`. `decoded` is the full decode of `bytes`, so
+/// only bytes that decode reach the cache; the decoder fills a scan that was
+/// cut short without complaint and stops at the first EOI, hence the scan
+/// check.
 fn passthrough(bytes: &[u8], decoded: &DynamicImage) -> Option<Vec<u8>> {
-    if bytes.len() > MAX_PASSTHROUGH_BYTES || !bytes.ends_with(&[0xFF, 0xD9]) {
+    if bytes.len() > MAX_PASSTHROUGH_BYTES || !jpeg_header::ends_with_first_scan(bytes) {
         return None;
     }
     let header = jpeg_header::parse(bytes)?;

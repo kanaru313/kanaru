@@ -13,7 +13,7 @@ use image::{GenericImageView, ImageFormat};
 use rust_lib_kanaru::api::tags::CoverStatus;
 use rust_lib_kanaru::cover_cache::{cache_key, CoverSink};
 use rust_lib_kanaru::cover_thumbnail::make_jpeg;
-use rust_lib_kanaru::jpeg_header::{parse, strip_metadata};
+use rust_lib_kanaru::jpeg_header::{ends_with_first_scan, parse, strip_metadata};
 
 /// `jpeg` with an EXIF segment (orientation `orientation`) and a comment
 /// inserted after SOI.
@@ -179,6 +179,27 @@ fn small_jpeg_cut_inside_its_scan_is_never_passed_through() {
 }
 
 #[test]
+fn small_jpeg_with_data_after_its_image_is_never_passed_through() {
+    let good = jpeg(100, 100, 1);
+    let mut padded = good.clone();
+    padded.extend(std::iter::repeat_n(0xAB, 4000));
+    padded.extend_from_slice(b"TRAILING-DATA");
+    padded.extend_from_slice(&[0xFF, 0xD9]);
+    // The decoder stops at the first EOI and never sees the rest.
+    let thumbnail = make_jpeg(&padded, ImageFormat::Jpeg).unwrap();
+    assert_ne!(Some(thumbnail.clone()), strip_metadata(&padded));
+    assert!(!thumbnail.windows(13).any(|w| w == b"TRAILING-DATA"));
+    assert_eq!(
+        image::load_from_memory(&thumbnail).unwrap().dimensions(),
+        (100, 100)
+    );
+
+    // The same image without the extra data is still its own thumbnail.
+    let thumbnail = make_jpeg(&good, ImageFormat::Jpeg).unwrap();
+    assert_eq!(Some(thumbnail), strip_metadata(&good));
+}
+
+#[test]
 fn hostile_headers_never_panic_the_walk() {
     let seeds = [
         with_exif(&jpeg(40, 30, 1), 1),
@@ -206,6 +227,7 @@ fn hostile_headers_never_panic_the_walk() {
             }
             let _ = parse(&bytes);
             let _ = strip_metadata(&bytes);
+            let _ = ends_with_first_scan(&bytes);
         }
     }
 }
