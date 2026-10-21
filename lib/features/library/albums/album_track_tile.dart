@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../shared/format_duration.dart';
+import '../widgets/queue_actions_menu.dart';
 
 /// One track of an album page: number, title, the track artist when it is
 /// not the album artist, and the duration.
@@ -11,6 +12,7 @@ class AlbumTrackTile extends StatelessWidget {
     required this.track,
     required this.albumArtist,
     required this.onTap,
+    this.onQueueAction,
   });
 
   final BrowseTrack track;
@@ -18,6 +20,9 @@ class AlbumTrackTile extends StatelessWidget {
   /// Shown in the header; a track by the same artist does not repeat it.
   final String? albumArtist;
   final VoidCallback onTap;
+
+  /// Picked from the menu of a right click or long press; no menu without it.
+  final ValueChanged<QueueAction>? onQueueAction;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,7 @@ class AlbumTrackTile extends StatelessWidget {
     final artist = track.artist;
     final durationMs = track.durationMs;
 
-    return ListTile(
+    final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
       leading: SizedBox(
         width: 32,
@@ -50,5 +55,6 @@ class AlbumTrackTile extends StatelessWidget {
             ),
       onTap: onTap,
     );
+    return QueueActionsRegion(onAction: onQueueAction, child: tile);
   }
 }

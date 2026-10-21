@@ -295,6 +295,25 @@ class AppLocalizationsVi extends AppLocalizations {
   String get songsShuffleAll => 'Phát ngẫu nhiên tất cả';
 
   @override
+  String get queuePlayNext => 'Phát tiếp theo';
+
+  @override
+  String get queueAddToQueue => 'Thêm vào hàng đợi';
+
+  @override
+  String get queueActionsTooltip => 'Thao tác hàng đợi';
+
+  @override
+  String queuePlayingNext(String name) {
+    return 'Phát tiếp theo: $name';
+  }
+
+  @override
+  String queueAddedToQueue(String name) {
+    return 'Đã thêm vào hàng đợi: $name';
+  }
+
+  @override
   String get sortBy => 'Sắp xếp:';
 
   @override

@@ -5,6 +5,7 @@ import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
 import '../widgets/library_rescan_button.dart';
+import '../widgets/queue_actions_menu.dart';
 import 'song_row_cache.dart';
 import 'song_tile.dart';
 import 'songs_list_provider.dart';
@@ -29,6 +30,7 @@ class SongsWindowedList extends ConsumerStatefulWidget {
     required this.songs,
     required this.controller,
     required this.onTap,
+    this.onQueueAction,
     this.seed = const [],
   });
 
@@ -37,6 +39,9 @@ class SongsWindowedList extends ConsumerStatefulWidget {
 
   /// A row was tapped: the track id, not its position, which may change.
   final void Function(int trackId) onTap;
+
+  /// An action picked from the menu of a row; no menus without it.
+  final void Function(TrackListItem song, QueueAction action)? onQueueAction;
   final List<TrackListItem> seed;
 
   @override
@@ -87,7 +92,14 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
       itemBuilder: (context, i) {
         final song = _cache.rowAt(i);
         if (song == null) return const SongTilePlaceholder();
-        return SongTile(song: song, onTap: () => widget.onTap(song.id));
+        final onQueueAction = widget.onQueueAction;
+        return SongTile(
+          song: song,
+          onTap: () => widget.onTap(song.id),
+          onQueueAction: onQueueAction == null
+              ? null
+              : (action) => onQueueAction(song, action),
+        );
       },
     );
   }

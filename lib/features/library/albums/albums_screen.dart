@@ -10,6 +10,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
+import '../play_tracks.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
@@ -90,6 +91,8 @@ class AlbumsScreen extends ConsumerWidget {
               AlbumsView.grid => AlbumGrid(
                 albums: albums,
                 onTap: (album) => open(album.key),
+                onQueueAction: (album, action) =>
+                    enqueueAlbum(ref, context, action, album.key, album.title),
               ),
               AlbumsView.list => ListView.builder(
                 padding: const EdgeInsets.only(bottom: libraryRescanClearance),
@@ -101,6 +104,13 @@ class AlbumsScreen extends ConsumerWidget {
                 itemBuilder: (context, i) => AlbumListTile(
                   album: albums[i],
                   onTap: () => open(albums[i].key),
+                  onQueueAction: (action) => enqueueAlbum(
+                    ref,
+                    context,
+                    action,
+                    albums[i].key,
+                    albums[i].title,
+                  ),
                 ),
               ),
             },

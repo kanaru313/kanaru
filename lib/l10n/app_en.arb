@@ -167,6 +167,21 @@
   "libraryScanFailedDetails": "See the log for details",
   "songsTrackGone": "That song is no longer in the library.",
   "songsShuffleAll": "Shuffle all",
+  "queuePlayNext": "Play next",
+  "queueAddToQueue": "Add to queue",
+  "queueActionsTooltip": "Queue actions",
+  "queuePlayingNext": "Playing next: {name}",
+  "@queuePlayingNext": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "queueAddedToQueue": "Added to queue: {name}",
+  "@queueAddedToQueue": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
 
   "sortBy": "Sort by:",
   "sortOrder": "Order:",

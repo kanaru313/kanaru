@@ -536,6 +536,36 @@ abstract class AppLocalizations {
   /// **'Shuffle all'**
   String get songsShuffleAll;
 
+  /// No description provided for @queuePlayNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play next'**
+  String get queuePlayNext;
+
+  /// No description provided for @queueAddToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to queue'**
+  String get queueAddToQueue;
+
+  /// No description provided for @queueActionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue actions'**
+  String get queueActionsTooltip;
+
+  /// No description provided for @queuePlayingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing next: {name}'**
+  String queuePlayingNext(String name);
+
+  /// No description provided for @queueAddedToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to queue: {name}'**
+  String queueAddedToQueue(String name);
+
   /// No description provided for @sortBy.
   ///
   /// In en, this message translates to:

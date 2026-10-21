@@ -80,6 +80,11 @@
   "libraryScanFailedDetails": "Xem chi tiết trong nhật ký",
   "songsTrackGone": "Bài hát này không còn trong thư viện.",
   "songsShuffleAll": "Phát ngẫu nhiên tất cả",
+  "queuePlayNext": "Phát tiếp theo",
+  "queueAddToQueue": "Thêm vào hàng đợi",
+  "queueActionsTooltip": "Thao tác hàng đợi",
+  "queuePlayingNext": "Phát tiếp theo: {name}",
+  "queueAddedToQueue": "Đã thêm vào hàng đợi: {name}",
 
   "sortBy": "Sắp xếp:",
   "sortOrder": "Thứ tự:",

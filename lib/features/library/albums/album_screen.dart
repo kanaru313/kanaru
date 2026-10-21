@@ -64,6 +64,8 @@ class _AlbumPage extends ConsumerWidget {
             albumKey: albumKey,
             album: album,
             onPlay: () => playTracks(ref, queue(), 0),
+            onQueueAction: (action) =>
+                enqueueLoaded(ref, context, action, queue(), album.title),
             artist: artistKey != null && album.artist != null
                 ? _ArtistLink(
                     name: album.artist!,
@@ -91,6 +93,12 @@ class _AlbumPage extends ConsumerWidget {
               track: group.tracks[i],
               albumArtist: album.artist,
               onTap: () => playTracks(ref, queue(), starts[g] + i),
+              onQueueAction: (action) => enqueueLoaded(ref, context, action, [
+                trackFromBrowse(
+                  group.tracks[i],
+                  artPath: coverPath(coverDirectory, group.tracks[i].coverKey),
+                ),
+              ], group.tracks[i].title),
             ),
           ),
         ],

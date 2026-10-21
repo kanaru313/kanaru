@@ -4,6 +4,7 @@ import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../widgets/album_artwork.dart';
 import '../widgets/library_rescan_button.dart';
+import '../widgets/queue_actions_menu.dart';
 import 'album_tile_data.dart';
 
 const _padding = 8.0;
@@ -11,10 +12,18 @@ const _gap = 8.0;
 
 /// One album in a grid: square artwork, title, "artist · year".
 class AlbumGridTile extends StatelessWidget {
-  const AlbumGridTile({super.key, required this.data, required this.onTap});
+  const AlbumGridTile({
+    super.key,
+    required this.data,
+    required this.onTap,
+    this.onQueueAction,
+  });
 
   final AlbumTileData data;
   final VoidCallback onTap;
+
+  /// Picked from the menu of a right click or long press; no menu without it.
+  final ValueChanged<QueueAction>? onQueueAction;
 
   /// Height of a tile [width] wide: the square artwork plus two text lines
   /// at the current text scale, so large text never overflows.
@@ -43,7 +52,7 @@ class AlbumGridTile extends StatelessWidget {
       if (data.year != null) '${data.year}',
     ].join(' · ');
 
-    return InkWell(
+    final tile = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -77,6 +86,7 @@ class AlbumGridTile extends StatelessWidget {
         ),
       ),
     );
+    return QueueActionsRegion(onAction: onQueueAction, child: tile);
   }
 }
 
@@ -101,10 +111,18 @@ SliverGridDelegate albumGridDelegate(BuildContext context, double width) {
 /// [albums] as a scrolling grid, leaving room for the rescan button below.
 /// Tile data is made per visible tile, not for the whole list.
 class AlbumGrid extends StatelessWidget {
-  const AlbumGrid({super.key, required this.albums, required this.onTap});
+  const AlbumGrid({
+    super.key,
+    required this.albums,
+    required this.onTap,
+    this.onQueueAction,
+  });
 
   final List<AlbumSummary> albums;
   final void Function(AlbumSummary album) onTap;
+
+  /// An action picked from the menu of [album]; no menus without it.
+  final void Function(AlbumSummary album, QueueAction action)? onQueueAction;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +142,9 @@ class AlbumGrid extends StatelessWidget {
         itemBuilder: (context, i) => AlbumGridTile(
           data: AlbumTileData.fromSummary(albums[i]),
           onTap: () => onTap(albums[i]),
+          onQueueAction: onQueueAction == null
+              ? null
+              : (action) => onQueueAction!(albums[i], action),
         ),
       ),
     );
@@ -132,10 +153,18 @@ class AlbumGrid extends StatelessWidget {
 
 /// [albums] as a grid inside a [CustomScrollView].
 class SliverAlbumGrid extends StatelessWidget {
-  const SliverAlbumGrid({super.key, required this.albums, required this.onTap});
+  const SliverAlbumGrid({
+    super.key,
+    required this.albums,
+    required this.onTap,
+    this.onQueueAction,
+  });
 
   final List<AlbumTileData> albums;
   final void Function(AlbumTileData album) onTap;
+
+  /// An action picked from the menu of [album]; no menus without it.
+  final void Function(AlbumTileData album, QueueAction action)? onQueueAction;
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +174,13 @@ class SliverAlbumGrid extends StatelessWidget {
         builder: (context, constraints) => SliverGrid.builder(
           gridDelegate: albumGridDelegate(context, constraints.crossAxisExtent),
           itemCount: albums.length,
-          itemBuilder: (context, i) =>
-              AlbumGridTile(data: albums[i], onTap: () => onTap(albums[i])),
+          itemBuilder: (context, i) => AlbumGridTile(
+            data: albums[i],
+            onTap: () => onTap(albums[i]),
+            onQueueAction: onQueueAction == null
+                ? null
+                : (action) => onQueueAction!(albums[i], action),
+          ),
         ),
       ),
     );

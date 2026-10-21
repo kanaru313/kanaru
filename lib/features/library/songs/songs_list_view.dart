@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
@@ -12,6 +13,7 @@ import '../../../l10n/l10n.dart';
 import '../play_tracks.dart';
 import '../widgets/library_loading.dart';
 import '../widgets/library_rescan_button.dart';
+import '../widgets/queue_actions_menu.dart';
 import 'song_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
@@ -91,6 +93,18 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
     }
   }
 
+  /// Queues one song of the list from its menu.
+  void _enqueue(TrackListItem song, QueueAction action) {
+    final track = trackFromItem(
+      path: song.path,
+      title: song.title,
+      artist: song.artist,
+      durationMs: song.durationMs,
+      artPath: coverPath(ref.read(coverCacheDirectoryProvider), song.coverKey),
+    );
+    enqueueLoaded(ref, context, action, [track], song.title);
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(settingsProvider.select((s) => s.songSort), (_, _) {
@@ -136,6 +150,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
           controller: _scroll,
           seed: ref.read(songsFirstPageProvider).value ?? const [],
           onTap: (id) => _play(songs, id),
+          onQueueAction: _enqueue,
         );
       },
     );
@@ -153,8 +168,11 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
       padding: const EdgeInsets.only(bottom: libraryRescanClearance),
       prototypeItem: SongTile(song: prototypeSong, onTap: () {}),
       itemCount: rows.length,
-      itemBuilder: (context, i) =>
-          SongTile(song: rows[i], onTap: () => _play(songs, rows[i].id)),
+      itemBuilder: (context, i) => SongTile(
+        song: rows[i],
+        onTap: () => _play(songs, rows[i].id),
+        onQueueAction: (action) => _enqueue(rows[i], action),
+      ),
     );
   }
 }
