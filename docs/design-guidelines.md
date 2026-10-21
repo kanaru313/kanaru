@@ -1,0 +1,176 @@
+# Design guidelines
+
+UI rules as the code implements them today. New screens follow these first; if a rule is wrong for a new case, change the rule here in the same PR.
+
+Related: [code-standards.md](./code-standards.md) (widget conventions), [features.md](./features.md) (requirements by ID).
+
+## Principles
+
+1. **Material 3 everywhere.** Use `material_ui` widgets and theme tokens. No hard-coded colors for text or surfaces.
+2. **Library first, player always.** Browsing works without playback; playback controls are visible on every screen where a track can be playing.
+3. **Works from the 480 px minimum window to a 4K display.** Layout changes at named breakpoints, not by device type. UI-05 targets 360 px, which is not yet the minimum.
+4. **Keyboard and mouse are both first class.** Every action has a key or a visible control; overlays restore focus on close.
+5. **Calm motion.** Animations are short and skipped under reduced motion.
+6. **Say what is happening.** Empty, loading and "updating" states name the situation (see [States](#states)).
+
+## Theme
+
+| Item | Rule | Source |
+|---|---|---|
+| Base | Material 3 via `ColorScheme.fromSeed` | `lib/app/theme.dart` |
+| Seed color | `#6750A4` (`kanaruSeedColor`), used when the system gives no accent | `lib/app/theme.dart` |
+| System accent | `dynamic_color` (`DynamicColorBuilder`) supplies the GTK accent on Linux; the scheme is harmonized with it | `lib/app/app.dart`, `lib/app/theme.dart` |
+| Modes | Light, dark, system. Changes apply immediately; the applied appearance is debounced by 600 ms (`appliedAppearanceProvider`) | `core/settings/applied_appearance_provider.dart` |
+| AMOLED black | Not built (UI-08) | features.md |
+| Artwork color | Not built: no color is derived from album art yet (UI-03) | features.md |
+
+## Breakpoints
+
+Width thresholds in logical pixels. Use the named constant; do not add a new literal near an existing one.
+
+| Width | Constant (file) | Effect |
+|---|---|---|
+| 180 | `_compactBelow` (`app/shell/sidebar/sidebar.dart`) | Sidebar uses the icon-only rail layout below this width. |
+| 560 | `_historyButtonsMinWidth` (`app/shell/top_bar.dart`) | Back and forward buttons hidden below this width. Mouse side buttons still navigate. |
+| 560 | `_compactBelow` (`features/settings/setting_row.dart`) | Settings rows stack their control under the label. |
+| 640 | `pageHeaderCompactWidth` (`shared/widgets/page_scaffold.dart`) | Page header compacts its actions. |
+| 640 | `_centerMaxWidth` (`features/player/player_bar.dart`) | Widest the player bar's controls and seek column gets. |
+| 720 | `_sidebarBreakpoint` (`app/shell/app_shell.dart`) | At or above: sidebar is a column. Below: sidebar is a drawer. |
+| 720 | `_compactBreakpoint` (`features/player/player_bar.dart`) | Below: compact player bar with a seek strip on its top edge. |
+| 720 | `_wideBreakpoint` (`features/player/now_playing/now_playing_screen.dart`) | At or above: Now Playing shows header, body and footer. Below: one column with tabs. |
+| 720 | `maxWidth` (`features/settings/settings_screen.dart`) | Settings content column is at most 720 px wide. |
+| 480 × 720 | window minimum (`linux/runner/my_application.cc`, `desktop_window.dart`) | Smallest window. Default is 1280 × 720. |
+
+## Shell layout
+
+| Width | Sidebar | Top bar | Player bar |
+|---|---|---|---|
+| >= 720 px | Column: 240 px, or 72 px icon rail after collapse | 64 px; back, forward, search, Open media, Settings | 96 px, full width under the page |
+| < 720 px | Drawer, opened from the top bar | 64 px; back, search, Open media, Settings | 96 px, compact layout with a seek strip |
+
+The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
+
+- **Sidebar.** Groups: Home | Songs, Albums, Artists, Folders | Favorites, Recent | Playlists (placeholder). Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
+- **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field that opens `/search?q=`, Open media menu, Settings on the right at every width. Empty space drags the window.
+- **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
+- **Reselecting a sidebar item** returns that branch to its root.
+- **History.** Browser-style back and forward with a 100-entry cap. Mouse back and forward buttons work at any width.
+
+## Player bar
+
+- Height 96 px. Shows artwork, title and artist, transport (previous, play or pause, next), seek bar, volume, shuffle, repeat, and the queue button.
+- Below 720 px: compact layout with a thin seek strip on the top edge. Controls stay in the bar.
+- Shown when a queue exists or the Open media flow is active (`playerBarVisibleProvider`).
+- Seek bar: the played part is a wavy line while playing and flat when paused, while dragging, when the window is unfocused, or under reduced motion.
+- Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
+- Icon buttons carry tooltips.
+
+## Now Playing overlay
+
+Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvider` flags it, and the shell is excluded from focus, semantics, pointer and ticker while it is open.
+
+| Behavior | Rule |
+|---|---|
+| Enter | Slides up in 500 ms. The cover animates on open (`now_playing_open_cover.dart`). No shared-element hero from the player bar yet (NP-03). |
+| Exit | Esc (mapped to `DismissIntent`). Focus returns to the control that opened it. |
+| Auto-hide | Header and footer fade out after 3 s of inactivity; pointer movement brings them back. |
+| Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
+| Narrow (< 720 px) | One column with two tabs in a `PageView`: queue and track. |
+| Placeholders | Lyrics, favorite and add-to-playlist buttons exist and do nothing yet (Phase 1 and 4). |
+
+## Queue sheet
+
+- A panel on the right, at most 400 px wide. Not a route; Esc or the mouse back button closes it while it is open. Focus returns on close.
+- Rows are 64 px. Drag handle reorders; a remove control per row; clear-all in the header.
+- The current row uses the primary color (`queue_tile.dart`).
+- Opens and closes in 400 ms.
+
+## Library screens
+
+| Screen | Layout |
+|---|---|
+| Songs | Virtualized list, one row per track, read in pages of 200. Tap plays the list from that row in the displayed order. |
+| Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc. |
+| Artists | List with avatar placeholders; artist page has sections for albums, songs and appears-on. |
+| Onboarding | Full-page first-run picker, outside the shell. Suggests the XDG music folder. |
+
+Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
+
+Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries.
+
+## Cover art
+
+- Decode sizes are bucketed to 64, 128, 256 and 512 px (`shared/widgets/cover_art.dart`). Images are never decoded at full size in lists.
+- `gaplessPlayback` is on for covers so they do not flash between tracks.
+- Missing artwork shows a placeholder: a solid color chosen from a stable FNV hash of the album or artist name (`features/library/widgets/stable_hash.dart`, `placeholder_colors.dart`). The same name always gets the same color.
+- Artist avatars use the same placeholder approach.
+
+## States
+
+| State | Component | Rule |
+|---|---|---|
+| Library unavailable | Library browse body | Message that the library could not open; playback still works. |
+| No roots | Library browse body | Empty state with the action to add a folder. |
+| Keys updating | `library_keys_updating.dart` | "Updating library" with progress after a sort-rule change. Playback is not affected. |
+| Loading | `library_loading.dart`, `MinBusyBuilder` | `MinBusyBuilder` keeps the busy state on for a minimum time, so a short task does not flash its indicator. |
+| Empty | `EmptyState` (`shared/widgets/empty_state.dart`) | Icon, one sentence, optional action. |
+| Scan finished | Snack bar | Result summary with counts; not a dialog. |
+| Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
+| Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
+
+Placeholder screens (Home, Search, Folders, Favorites, Recent) use `EmptyState` and say the feature is not available yet.
+
+## Settings
+
+- Single column, at most 720 px wide, grouped in sections: Library (rescan), Appearance (theme, language, title bar), About (repository, license).
+- Rows: label on the left, control on the right. Below 560 px the control moves below the label.
+- Choices use `setting_choice.dart`: a segmented button when there is room, a dropdown in a compact row.
+- Language choices: system, English, Vietnamese. The title bar choice (kanaru, system, none) needs a restart; the screen says so.
+- A save warning (`settings_save_warning.dart`) appears when settings cannot be saved.
+
+## Motion and reduced motion
+
+| Motion | Duration | Reduced motion |
+|---|---|---|
+| Page transition | 300 ms (reverse 220 ms) | Fade only (`app/page_transition.dart`) |
+| Sidebar collapse | 400 ms | Not gated in the code found by grep. Known gap; see below. |
+| Queue sheet | 400 ms | Checked (`queue_sheet_host.dart`) |
+| Now Playing slide | 500 ms | Checked (`now_playing_overlay.dart`) |
+| Auto-hide fade | 100 to 150 ms | Not gated |
+| Seek bar wave | continuous while playing | Flat (`seek_bar.dart`) |
+
+Reduced motion comes from the platform setting. Every new animation must check it. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+
+## Focus, keyboard and accessibility
+
+| Key | Action | Where |
+|---|---|---|
+| Space | Play or pause | App-wide, even when a button has focus; not in text fields or when there is nothing to control |
+| Left, Right | Seek minus or plus 5 s | App-wide, same exceptions |
+| Ctrl+S | Toggle shuffle | App-wide |
+| Ctrl+R | Cycle repeat | App-wide |
+| Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer |
+| Mouse back, forward | History back, forward | Anywhere |
+
+- Keys are handled by `features/player/player_shortcuts.dart`.
+- Not implemented yet (SYS-03, SEARCH-07): Ctrl+Left and Ctrl+Right for track change, Up and Down for volume, Ctrl+F or `/` for search. Scroll over the volume button already changes volume.
+- Sliders expose slider semantics.
+- Focus is restored after an overlay or sheet closes.
+- Contrast: use theme `on*` color pairs. Do not place text on artwork without a scrim (guideline, not enforced by a test).
+- Screen reader coverage is partial (UI-11).
+
+## Localization
+
+- Template language is English (`app_en.arb`); Vietnamese is `app_vi.arb`.
+- Every visible string comes from `context.l10n`. Do not concatenate translated fragments; use placeholders in the ARB.
+- Layout must hold with longer Vietnamese strings: no fixed-width labels for text.
+
+## Checklist for a new screen
+
+- [ ] Uses `material_ui` and theme tokens; no new hard-coded colors.
+- [ ] Layout checked at 480 px, 720 px and 1280 px wide.
+- [ ] Has an empty or loading state with a sentence in `app_en.arb` and `app_vi.arb`.
+- [ ] Keyboard path to every action; focus restored after overlays.
+- [ ] Animations check reduced motion.
+- [ ] Covers decoded at a bucket size, not full size.
+- [ ] Route or breakpoint constants live at file level, with a `///` comment.

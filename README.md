@@ -7,7 +7,7 @@
 Beautiful & juicy Material Design 3 music player for GNU/Linux, Windows, macOS, Android & iOS.
 Local files first, then your own cloud: Subsonic/Navidrome, WebDAV, S3-compatible storage, Google Drive.
 
-> 🚧 Early development — nothing is usable yet.
+> 🚧 Early development — the Linux local player works; packages and the rest of Phase 1 are in progress.
 
 </div>
 
@@ -24,11 +24,11 @@ all merge into **one library**, with offline caching so it keeps playing when th
 ### Core (offline-first)
 
 - 🎵 Plays almost anything — MP3, FLAC, ALAC, AAC/M4A, OGG Vorbis, Opus, WAV, APE, WavPack… (powered by libmpv)
-- 📚 Library browsing by albums, artists, album artists, genres, years, folders
-- 🔍 Fast full-text search
-- 📝 Playlists, queue management, shuffle / repeat
-- 🎧 Gapless playback, ReplayGain
-- 🎨 Material You — dynamic colors extracted from album art, light/dark themes
+- 📚 Library browsing by albums, artists, album artists, genres, years, folders *(albums, artists and songs so far)*
+- 🔍 Fast full-text search *(Phase 1)*
+- 📝 Playlists *(Phase 1)*, queue management, shuffle / repeat
+- 🎧 Gapless playback, ReplayGain *(Phase 1)*
+- 🎨 Material You — light/dark themes and system accent; dynamic colors from album art *(Phase 1)*
 - 🖥️ Native media controls — MPRIS (Linux), SMTC (Windows), Now Playing (macOS), notification/lock screen (Android/iOS)
 - 🔒 Works fully offline, no account required, no telemetry
 
@@ -71,6 +71,8 @@ to support development. The exact list is not final.
 └───────────────────────────────────────────────────────────┘
 ```
 
+> The diagram is the target design. The library, player and indexer exist today; the storage providers and the proxy are planned. See [docs/system-architecture.md](docs/system-architecture.md) for what is built.
+
 The player never talks to a remote service directly. It plays `http://127.0.0.1:<port>/track/<id>` and the
 local proxy handles authentication, request signing, token refresh, range requests and caching. Adding a new
 source means implementing one `StorageProvider` interface.
@@ -79,34 +81,36 @@ source means implementing one `StorageProvider` interface.
 
 | Area            | Choice                                                                  |
 | --------------- | ----------------------------------------------------------------------- |
-| UI              | Flutter, Material Design 3, `dynamic_color`, `material_color_utilities` |
+| UI              | Flutter, Material Design 3, `dynamic_color` (`material_color_utilities` planned) |
 | State / routing | Riverpod, go_router                                                     |
 | Playback        | `media_kit` (libmpv)                                                    |
-| Database        | `drift` (SQLite + FTS5)                                                 |
+| Database        | `drift` (SQLite; FTS5 planned)                                          |
 | Tag reading     | `lofty` (Rust) via `flutter_rust_bridge`                                |
-| Media controls  | MPRIS (D-Bus), `smtc_windows`, `audio_service`                          |
-| Credentials     | `flutter_secure_storage` (libsecret / Keychain / Keystore)              |
-| Local proxy     | `shelf`                                                                 |
+| Media controls  | MPRIS (D-Bus, built in-house); `smtc_windows`, `audio_service` planned  |
+| Credentials     | `flutter_secure_storage` (libsecret / Keychain / Keystore), planned     |
+| Local proxy     | `shelf`, planned                                                        |
 
 ## Roadmap
 
-Detailed feature list with IDs, priorities and acceptance criteria: **[docs/features.md](docs/features.md)**.
+Detailed feature list with IDs, priorities and acceptance criteria: **[docs/features.md](docs/features.md)**. Checked items are on `main`; partially done items stay unchecked and say what is open. Status snapshot: [docs/project-roadmap.md](docs/project-roadmap.md).
 
 **Phase 0 — Foundation** · Linux
 
-- [x] Project scaffold, M3 theme, CI
+- [x] Project scaffold, M3 theme
 - [x] Play a local file with `media_kit`
 - [x] MPRIS integration
+- [ ] CI (no `.github/` workflows yet)
 
 **Phase 1 — Offline local player** · Linux
 
-- [ ] Folder scanning & tag reading, embedded / folder artwork
-- [ ] Library database & browsing (albums, artists, genres, folders)
-- [ ] Now Playing, mini player, queue, shuffle / repeat
-- [ ] Search, playlists (incl. M3U import/export)
-- [ ] Gapless, ReplayGain
-- [ ] Dynamic color from album art
-- [ ] Packaging: AppImage, Flatpak, `.deb`
+- [x] Folder scanning & tag reading, embedded / folder artwork
+- [ ] Library database & browsing: albums, artists, songs done; genres, folders open
+- [ ] Now Playing, mini player, queue, shuffle / repeat: shipped; hero transition and queue history open
+- [ ] Search, playlists (incl. M3U import/export): not started
+- [ ] Gapless, ReplayGain: gapless configured; ReplayGain not started
+- [ ] Dynamic color from album art: not started
+- [ ] Packaging: AppImage, Flatpak, `.deb`: not started
+- [ ] Before the first release: collapse the database schema history into v1
 
 **Phase 2 — More platforms**
 
@@ -143,9 +147,23 @@ flutter pub get
 flutter run -d linux
 ```
 
+## Documentation
+
+| Doc | For |
+| --- | --- |
+| [Project overview & PDR](docs/project-overview-pdr.md) | Vision, priorities, requirements, status |
+| [Codebase summary](docs/codebase-summary.md) | Directory map, entry points, generated code |
+| [Code standards](docs/code-standards.md) | Layering, Riverpod, conventions, testing |
+| [System architecture](docs/system-architecture.md) | Startup, scan, playback, MPRIS, storage, schema |
+| [Design guidelines](docs/design-guidelines.md) | Breakpoints, shell, player, motion, accessibility |
+| [Development setup](docs/development.md) | Toolchain, codegen, logs, troubleshooting |
+| [Deployment guide](docs/deployment-guide.md) | Release build, runtime needs, data locations, packaging plan |
+| [Roadmap](docs/project-roadmap.md) | Phases 0 to 4 with actual status |
+| [Features](docs/features.md) | Requirement IDs, priorities, acceptance criteria (Vietnamese) |
+
 ## Contributing
 
-Issues and ideas are welcome. Contribution guidelines (and a CLA, if needed for dual licensing) will be added
+Issues and ideas are welcome. Read [docs/code-standards.md](docs/code-standards.md) first. Contribution guidelines (and a CLA, if needed for dual licensing) will be added
 before accepting pull requests.
 
 ## License
