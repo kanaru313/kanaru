@@ -1,5 +1,5 @@
 //! Reads one file with lofty, guarding against files that hang or crash the
-//! parser, and finds its cover in the same pass.
+//! parser: its tags, or its embedded pictures for the cover batch.
 
 use std::io::BufReader;
 use std::panic::{catch_unwind, AssertUnwindSafe};
@@ -9,9 +9,8 @@ use lofty::config::{ParseOptions, ParsingMode};
 use lofty::file::{AudioFile, FileType, TaggedFileExt};
 use lofty::probe::Probe;
 
-use crate::api::tags::{CoverStatus, TrackTags};
+use crate::api::tags::TrackTags;
 use crate::cover_art::{open_nonblocking, take_embedded_pictures};
-use crate::cover_cache::CoverSink;
 use crate::tag_mapping::{apply_properties, apply_tag};
 
 /// Prefix of an [`TrackTags::error`] that reading again cannot fix (corrupt
@@ -54,48 +53,19 @@ fn parse_error(error: &lofty::error::FileParseError) -> String {
     permanent(error)
 }
 
-/// Reads the tags of [`path`] and, when `covers` is given, its cover. Never
-/// panics and never fails: every tag problem ends up in [`TrackTags::error`],
-/// every cover problem in [`TrackTags::cover_status`].
-///
-/// A panic inside lofty is caught per file, and the cover code has its own
-/// guard so a crash there never loses the tags. That relies on the default
-/// `panic = "unwind"` profile setting; do not change it.
+/// Reads the tags of [`path`], without its pictures. Never panics and never
+/// fails: every problem ends up in [`TrackTags::error`]. A panic inside lofty
+/// is caught per file; that relies on the default `panic = "unwind"` profile
+/// setting, do not change it.
 ///
 /// Allocation inside lofty is capped per allocation by its default
 /// `GlobalOptions::allocation_limit` (16 MiB), which stops a corrupt length
-/// field from asking for gigabytes. It does not bound the total: with covers
-/// on, lofty loads every picture of the file. Peak memory is bounded instead
-/// by the small tag thread pool and the decode limit of
-/// [`make_jpeg`](crate::cover_thumbnail::make_jpeg).
-pub fn read_one(path: &str, covers: Option<&CoverSink>) -> TrackTags {
-    let mut parsed = guarded(path, covers.is_some());
-    if covers.is_some() && parsed.is_err() {
-        // Reading pictures can break a file whose tags are fine (a corrupt
-        // FLAC PICTURE block, an oversized MP4 `covr`). Keep the tags; the
-        // embedded cover counts as absent and sidecar images still apply.
-        parsed = guarded(path, false);
+/// field from asking for gigabytes.
+pub fn read_one(path: &str) -> TrackTags {
+    match guarded(path, false) {
+        Ok((tags, _)) => tags,
+        Err(reason) => TrackTags::failed(path.to_owned(), reason),
     }
-    let (mut tags, embedded) = match parsed {
-        Ok(found) => found,
-        Err(reason) => (TrackTags::failed(path.to_owned(), reason), Vec::new()),
-    };
-
-    let Some(sink) = covers else {
-        tags.cover_status = CoverStatus::Skipped;
-        return tags;
-    };
-    let audio = Path::new(path);
-    // Tags of DSD/WMA files cannot be read, but a folder.jpg beside them can.
-    let (cover, status) = if std::fs::metadata(audio).is_ok_and(|m| m.is_file()) {
-        catch_unwind(AssertUnwindSafe(|| sink.resolve(audio, embedded)))
-            .unwrap_or((None, CoverStatus::Failed))
-    } else {
-        (None, CoverStatus::None)
-    };
-    tags.cover = cover;
-    tags.cover_status = status;
-    tags
 }
 
 /// The embedded pictures of `path`, best first, for

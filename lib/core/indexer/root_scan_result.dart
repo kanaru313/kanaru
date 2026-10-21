@@ -8,7 +8,6 @@ class RootScanResult {
     this.updated = 0,
     this.removed = 0,
     this.failedTags = 0,
-    this.failedCovers = 0,
     this.undecodableNames = 0,
     this.undecodableSampleDirs = const [],
     this.skippedFolderNames = const [],
@@ -30,7 +29,6 @@ class RootScanResult {
        updated = 0,
        removed = 0,
        failedTags = 0,
-       failedCovers = 0,
        undecodableNames = 0,
        undecodableSampleDirs = const [],
        skippedFolderNames = const [],
@@ -40,7 +38,6 @@ class RootScanResult {
   final int updated;
   final int removed;
   final int failedTags;
-  final int failedCovers;
 
   /// Audio files and folders of this root skipped for a name that is not
   /// valid UTF-8,
@@ -73,6 +70,6 @@ class ScanTimeouts {
   /// For the walk of one root.
   final Duration walk;
 
-  /// For reading the tags of one batch.
+  /// For reading the tags, or the covers, of one batch.
   final Duration tagBatch;
 }

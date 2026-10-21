@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:kanaru/core/indexer/tag_reader.dart';
@@ -13,16 +14,20 @@ String fakeCoverKey(String name) {
 
 /// Stands in for the Rust reader. Titles are the file name upper-cased;
 /// files named `bad*` report a permanent error, `flaky*` a transient one,
-/// and `.dsf`/`.dff` files come back without tags or error like real DSD. Records every path it was asked to read.
+/// and `.dsf`/`.dff` files come back without tags or error like real DSD.
+/// Records every path it was asked to read, tags and covers apart.
 ///
-/// Covers are off until [coverDirectory] is set. Then a file named in
+/// Covers are skipped until [coverDirectory] is set. Then a file named in
 /// [coverByName] gets that cover: the thumbnail is written into the folder
 /// (an hour old, like one from an earlier scan, unless it exists) and the
 /// status is found; a name in [failingCovers] fails; any other file has no
-/// cover.
+/// cover. A cover batch holding a name in [hangingCovers] waits for
+/// [releaseHangingCovers]; [throwOnCovers] makes every cover batch throw.
 class FakeTagReader implements TagReader {
   final List<List<String>> batches = [];
+  final List<List<String>> coverBatches = [];
   Object? throwOnRead;
+  Object? throwOnCovers;
 
   /// Throws on the n-th call of [readBatch] counted from 1 (since the last
   /// [reset]); the earlier calls succeed.
@@ -33,13 +38,26 @@ class FakeTagReader implements TagReader {
   /// File name → cover name (see [fakeCoverKey]).
   final Map<String, String> coverByName = {};
   final Set<String> failingCovers = {};
+  final Set<String> hangingCovers = {};
+  Completer<void>? _hang;
 
   /// Total paths read so far.
   int get readCount => batches.fold(0, (sum, b) => sum + b.length);
 
+  /// Total paths whose cover was looked for so far.
+  int get coverCount => coverBatches.fold(0, (sum, b) => sum + b.length);
+
   void reset() {
     batches.clear();
+    coverBatches.clear();
     failOnBatch = null;
+  }
+
+  /// Lets a hanging cover batch return (its files then get their covers).
+  void releaseHangingCovers() {
+    hangingCovers.clear();
+    _hang?.complete();
+    _hang = null;
   }
 
   @override
@@ -66,39 +84,44 @@ class FakeTagReader implements TagReader {
     ];
   }
 
-  TrackTags _tags(String path, {String? error, String? title}) {
-    final name = path.split('/').last;
-    var status = CoverStatus.skipped;
-    String? key;
-    final dir = coverDirectory;
-    if (dir != null) {
-      final cover = coverByName[name];
-      if (failingCovers.contains(name)) {
-        status = CoverStatus.failed;
-      } else if (cover != null) {
-        key = fakeCoverKey(cover);
-        final file = File('$dir/$key');
-        if (!file.existsSync() || file.lengthSync() == 0) {
-          file
-            ..createSync(recursive: true)
-            ..writeAsStringSync('jpeg of $cover')
-            ..setLastModifiedSync(
-              DateTime.now().subtract(const Duration(hours: 1)),
-            );
-        }
-        status = CoverStatus.found;
-      } else {
-        status = CoverStatus.none;
-      }
+  TrackTags _tags(String path, {String? error, String? title}) => TrackTags(
+    path: path,
+    error: error,
+    title: title,
+    artist: error == null ? 'Artist' : null,
+    durationMs: error == null ? 1000 : null,
+  );
+
+  @override
+  Future<List<TrackCover>> readCovers(List<String> paths) async {
+    coverBatches.add(List.of(paths));
+    final error = throwOnCovers;
+    if (error != null) throw error;
+    if (paths.any((p) => hangingCovers.contains(p.split('/').last))) {
+      await (_hang ??= Completer<void>()).future;
     }
-    return TrackTags(
-      path: path,
-      error: error,
-      title: title,
-      artist: error == null ? 'Artist' : null,
-      durationMs: error == null ? 1000 : null,
-      cover: key,
-      coverStatus: status,
-    );
+    return [for (final path in paths) _cover(path)];
+  }
+
+  TrackCover _cover(String path) {
+    final dir = coverDirectory;
+    if (dir == null) return TrackCover(path: path, status: CoverStatus.skipped);
+    final name = path.split('/').last;
+    final cover = coverByName[name];
+    if (failingCovers.contains(name)) {
+      return TrackCover(path: path, status: CoverStatus.failed);
+    }
+    if (cover == null) return TrackCover(path: path, status: CoverStatus.none);
+    final key = fakeCoverKey(cover);
+    final file = File('$dir/$key');
+    if (!file.existsSync() || file.lengthSync() == 0) {
+      file
+        ..createSync(recursive: true)
+        ..writeAsStringSync('jpeg of $cover')
+        ..setLastModifiedSync(
+          DateTime.now().subtract(const Duration(hours: 1)),
+        );
+    }
+    return TrackCover(path: path, cover: key, status: CoverStatus.found);
   }
 }

@@ -17,7 +17,7 @@ fn fixture(name: &str) -> String {
 }
 
 fn read(path: &str) -> TrackTags {
-    let mut result = read_tags_batch(vec![path.to_owned()], String::new());
+    let mut result = read_tags_batch(vec![path.to_owned()]);
     assert_eq!(result.len(), 1);
     result.remove(0)
 }
@@ -143,7 +143,7 @@ fn results_keep_input_order_and_one_entry_per_path() {
     paths.insert(3, fixture("does-not-exist.mp3"));
     // Enough entries that the work is split across several threads.
     let many: Vec<String> = paths.iter().cycle().take(200).cloned().collect();
-    let result = read_tags_batch(many.clone(), String::new());
+    let result = read_tags_batch(many.clone());
     assert_eq!(result.len(), many.len());
     for (input, tags) in many.iter().zip(&result) {
         assert_eq!(&tags.path, input);
@@ -154,7 +154,7 @@ fn results_keep_input_order_and_one_entry_per_path() {
 
 #[test]
 fn empty_batch_gives_empty_result() {
-    assert!(read_tags_batch(Vec::new(), String::new()).is_empty());
+    assert!(read_tags_batch(Vec::new()).is_empty());
 }
 
 #[test]
@@ -282,7 +282,7 @@ fn fifo_fails_fast_without_hanging() {
     let (tx, rx) = mpsc::channel();
     let path = fifo.to_string_lossy().into_owned();
     std::thread::spawn(move || {
-        let _ = tx.send(read_tags_batch(vec![path], String::new()));
+        let _ = tx.send(read_tags_batch(vec![path]));
     });
     let result = rx
         .recv_timeout(Duration::from_secs(10))

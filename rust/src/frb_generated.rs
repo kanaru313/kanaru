@@ -206,12 +206,10 @@ fn wire__crate__api__tags__read_tags_batch_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_paths = <Vec<String>>::sse_decode(&mut deserializer);
-            let api_cover_dir = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, ()>((move || {
-                    let output_ok =
-                        Ok::<_, ()>(crate::api::tags::read_tags_batch(api_paths, api_cover_dir))?;
+                    let output_ok = Ok::<_, ()>(crate::api::tags::read_tags_batch(api_paths))?;
                     std::result::Result::Ok(output_ok)
                 })())
             }
@@ -495,8 +493,6 @@ impl SseDecode for crate::api::tags::TrackTags {
         let mut var_bitDepth = <Option<u8>>::sse_decode(deserializer);
         let mut var_channels = <Option<u8>>::sse_decode(deserializer);
         let mut var_error = <Option<String>>::sse_decode(deserializer);
-        let mut var_cover = <Option<String>>::sse_decode(deserializer);
-        let mut var_coverStatus = <crate::api::tags::CoverStatus>::sse_decode(deserializer);
         return crate::api::tags::TrackTags {
             path: var_path,
             title: var_title,
@@ -517,8 +513,6 @@ impl SseDecode for crate::api::tags::TrackTags {
             bit_depth: var_bitDepth,
             channels: var_channels,
             error: var_error,
-            cover: var_cover,
-            cover_status: var_coverStatus,
         };
     }
 }
@@ -646,8 +640,6 @@ impl flutter_rust_bridge::IntoDart for crate::api::tags::TrackTags {
             self.bit_depth.into_into_dart().into_dart(),
             self.channels.into_into_dart().into_dart(),
             self.error.into_into_dart().into_dart(),
-            self.cover.into_into_dart().into_dart(),
-            self.cover_status.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -821,8 +813,6 @@ impl SseEncode for crate::api::tags::TrackTags {
         <Option<u8>>::sse_encode(self.bit_depth, serializer);
         <Option<u8>>::sse_encode(self.channels, serializer);
         <Option<String>>::sse_encode(self.error, serializer);
-        <Option<String>>::sse_encode(self.cover, serializer);
-        <crate::api::tags::CoverStatus>::sse_encode(self.cover_status, serializer);
     }
 }
 

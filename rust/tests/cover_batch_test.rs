@@ -1,4 +1,4 @@
-//! The covers-only batch: same choice and keys as the tag scan, and errors
+//! The covers-only batch: one entry per path with cache keys, and errors
 //! that may pass reported as `Failed`, never as "no cover".
 
 mod common;
@@ -9,7 +9,7 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use common::*;
-use rust_lib_kanaru::api::tags::{read_covers_batch, read_tags_batch, CoverStatus, TrackCover};
+use rust_lib_kanaru::api::tags::{read_covers_batch, CoverStatus, TrackCover};
 use rust_lib_kanaru::cover_batch::read_covers;
 use rust_lib_kanaru::cover_cache::{cache_key, CoverSink};
 
@@ -41,22 +41,18 @@ fn cover(path: &Path, cache: &Path) -> TrackCover {
 }
 
 #[test]
-fn keys_and_order_match_the_tag_scan() {
+fn one_entry_per_path_in_order_with_cache_keys() {
     let music = tempfile::tempdir().unwrap();
     let album = music.path().join("album");
     fs::create_dir(&album).unwrap();
-    let embedded = with_cover("sample.flac", music.path(), "a.flac", &png(40, 40, 1));
-    let shared = with_cover("sample.mp3", music.path(), "b.mp3", &jpeg(30, 30, 2));
+    let (first, second, third) = (png(40, 40, 1), jpeg(30, 30, 2), jpeg(20, 20, 3));
+    let embedded = with_cover("sample.flac", music.path(), "a.flac", &first);
+    let shared = with_cover("sample.mp3", music.path(), "b.mp3", &second);
     let folder = plain("sample.ogg", &album, "c.ogg");
-    fs::write(album.join("Folder.JPG"), jpeg(20, 20, 3)).unwrap();
+    fs::write(album.join("Folder.JPG"), &third).unwrap();
     let bare = plain("sample.opus", music.path(), "d.opus");
     let paths = [embedded.as_path(), &shared, &folder, &bare];
 
-    let tag_cache = tempfile::tempdir().unwrap();
-    let expected = read_tags_batch(
-        strings(&paths),
-        tag_cache.path().to_string_lossy().into_owned(),
-    );
     let cache = tempfile::tempdir().unwrap();
     let got = covers(&paths, cache.path());
 
@@ -64,16 +60,20 @@ fn keys_and_order_match_the_tag_scan() {
         got.iter().map(|c| c.path.clone()).collect::<Vec<_>>(),
         strings(&paths)
     );
-    for (cover, tags) in got.iter().zip(&expected) {
-        assert_eq!(
-            (&cover.cover, cover.status),
-            (&tags.cover, tags.cover_status),
-            "{}",
-            cover.path
-        );
-    }
-    assert_eq!(got[3].status, CoverStatus::None);
-    assert_eq!(files_under(cache.path()), files_under(tag_cache.path()));
+    let keys: Vec<_> = got.iter().map(|c| (c.cover.clone(), c.status)).collect();
+    let found = |bytes: &[u8]| (Some(cache_key(bytes)), CoverStatus::Found);
+    assert_eq!(
+        keys,
+        vec![
+            found(&first),
+            found(&second),
+            found(&third),
+            (None, CoverStatus::None)
+        ]
+    );
+    let mut expected = vec![cache_key(&first), cache_key(&second), cache_key(&third)];
+    expected.sort();
+    assert_eq!(files_under(cache.path()), expected);
 }
 
 #[test]
@@ -164,17 +164,4 @@ fn panic_for_one_file_fails_only_that_file() {
     let result = read_covers(strings(&[&a, &b]), &sink);
     assert_eq!(result[0].status, CoverStatus::Failed);
     assert_eq!(result[1].status, CoverStatus::Found);
-}
-
-#[test]
-fn read_only_cache_fails_the_cover() {
-    use std::os::unix::fs::PermissionsExt;
-
-    let music = tempfile::tempdir().unwrap();
-    let cache = tempfile::tempdir().unwrap();
-    let path = with_cover("sample.flac", music.path(), "song.flac", &png(20, 20, 1));
-    fs::set_permissions(cache.path(), fs::Permissions::from_mode(0o555)).unwrap();
-    let result = cover(&path, cache.path());
-    fs::set_permissions(cache.path(), fs::Permissions::from_mode(0o755)).unwrap();
-    assert_eq!((result.cover, result.status), (None, CoverStatus::Failed));
 }

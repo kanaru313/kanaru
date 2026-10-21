@@ -12,7 +12,8 @@ use lofty::config::WriteOptions;
 use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::picture::{MimeType, Picture, PictureType};
 use lofty::tag::Tag;
-use rust_lib_kanaru::api::tags::{CoverStatus, TrackTags};
+use rust_lib_kanaru::api::tags::{TrackCover, TrackTags};
+use rust_lib_kanaru::cover_batch::read_covers;
 use rust_lib_kanaru::cover_cache::CoverSink;
 use rust_lib_kanaru::tag_batch::read_batch;
 
@@ -115,29 +116,23 @@ pub fn plain(fixture_name: &str, dir: &Path, file_name: &str) -> PathBuf {
     path
 }
 
-pub fn read_all(paths: &[&Path], sink: &CoverSink) -> Vec<TrackTags> {
-    read_batch(
+/// The covers of `paths`, written through `sink`.
+pub fn read_all(paths: &[&Path], sink: &CoverSink) -> Vec<TrackCover> {
+    read_covers(
         paths
             .iter()
             .map(|p| p.to_string_lossy().into_owned())
             .collect(),
-        Some(sink),
+        sink,
     )
 }
 
-pub fn read_with(path: &Path, sink: &CoverSink) -> TrackTags {
+pub fn read_with(path: &Path, sink: &CoverSink) -> TrackCover {
     read_all(&[path], sink).remove(0)
 }
 
-pub fn read_without_covers(path: &Path) -> TrackTags {
-    read_batch(vec![path.to_string_lossy().into_owned()], None).remove(0)
-}
-
-/// The tag part of `tags`, for comparing reads with and without covers.
-pub fn tags_only(mut tags: TrackTags) -> TrackTags {
-    tags.cover = None;
-    tags.cover_status = CoverStatus::Skipped;
-    tags
+pub fn read_tags(path: &Path) -> TrackTags {
+    read_batch(vec![path.to_string_lossy().into_owned()]).remove(0)
 }
 
 /// Every file under `dir`, relative, sorted.
