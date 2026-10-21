@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 
 import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
+import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
@@ -177,10 +178,21 @@ class LibraryIndexer extends Notifier<IndexerState> {
         try {
           result = await _scanRoot(db, reader, root);
         } catch (error, stackTrace) {
+          // A removed root fails on its deleted id (foreign key): not an error.
+          if (!await db.rootExists(root.id)) {
+            _log.info('Root removed during scan: ${root.path}');
+            continue;
+          }
           _log.severe('Root failed: ${root.path}', error, stackTrace);
           firstError ??= error;
           firstStack ??= stackTrace;
           result = RootScanResult.failed(error);
+        }
+        // Removed (or replaced) while scanning: its rows are gone, so its
+        // counts and covers would describe nothing.
+        if (!await db.rootExists(root.id)) {
+          _log.info('Root removed during scan: ${root.path}');
+          continue;
         }
         added += result.added;
         updated += result.updated;

@@ -12,6 +12,13 @@ class _ThrowingRootsController implements LibraryRootsController {
   @override
   Future<AddRootsResult> addRoots(List<String> paths) =>
       Future.error(StateError('boom'));
+
+  @override
+  Future<RootChangeResult> removeRoot(int id) => throw UnimplementedError();
+
+  @override
+  Future<RootChangeResult> replaceRoot(int id, String newPath) =>
+      throw UnimplementedError();
 }
 
 void main() {
