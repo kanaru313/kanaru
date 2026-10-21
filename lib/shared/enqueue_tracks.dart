@@ -4,15 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_browse_queries.dart';
-import '../../core/database/library_database.dart'
-    show AlbumKey, BrowseTrack, LibraryDatabase;
-import '../../core/database/library_startup.dart';
-import '../../core/indexer/cover_paths.dart';
-import '../../core/player/player_service.dart';
-import '../../core/player/track.dart';
-import '../../l10n/l10n.dart';
-import 'artists/artist_page_data.dart';
+import '../core/database/library_browse_queries.dart';
+import '../core/database/library_database.dart' show AlbumKey, LibraryDatabase;
+import '../core/database/library_startup.dart';
+import '../core/indexer/cover_paths.dart';
+import '../core/player/player_service.dart';
+import '../core/player/track.dart';
+import '../l10n/l10n.dart';
 import 'play_tracks.dart';
 import 'widgets/queue_actions_menu.dart';
 
@@ -49,7 +47,8 @@ final _enqueueChainProvider = Provider<_EnqueueChain>((ref) => _EnqueueChain());
 /// Resolves once every library-level enqueue started so far has finished.
 /// A caller about to act on the queue awaits it first, so an earlier pick
 /// still reading from the database is not overtaken by what comes after.
-Future<void> pendingQueuePicks(WidgetRef ref) => ref.read(_enqueueChainProvider).tail;
+Future<void> pendingQueuePicks(WidgetRef ref) =>
+    ref.read(_enqueueChainProvider).tail;
 
 /// Says [text] in a snackbar. While an earlier queue message waits its turn on
 /// the same [messenger], its text is replaced instead: only the latest pick is
@@ -178,7 +177,7 @@ void enqueueAlbum(
   QueueAction action,
   AlbumKey key,
   String title,
-) => _enqueueFromDatabase(
+) => enqueueFromDatabase(
   ref,
   context,
   action,
@@ -189,22 +188,8 @@ void enqueueAlbum(
   ],
 );
 
-/// [enqueueTracks] for an artist: the songs of their page, in its order.
-void enqueueArtist(
-  WidgetRef ref,
-  BuildContext context,
-  QueueAction action,
-  String artistKey,
-  String name,
-) => _enqueueFromDatabase(ref, context, action, name, (db, covers) async {
-  final sections = await readArtistSections(db, artistKey);
-  return [
-    for (final t in sections?.songs ?? const <BrowseTrack>[])
-      trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
-  ];
-});
-
-void _enqueueFromDatabase(
+/// Queues the tracks [read] returns, naming them [label]; see [enqueueTracks].
+void enqueueFromDatabase(
   WidgetRef ref,
   BuildContext context,
   QueueAction action,

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';

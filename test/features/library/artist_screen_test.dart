@@ -4,7 +4,7 @@ import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';

@@ -5,9 +5,9 @@ import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
-import 'package:kanaru/features/library/albums/album_list_tile.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
-import 'package:kanaru/features/library/songs/song_tile.dart';
+import 'package:kanaru/shared/widgets/album_list_tile.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/fake_tag_reader.dart';

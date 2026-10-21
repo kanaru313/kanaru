@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_keys_provider.dart';
-import '../../../l10n/l10n.dart';
+import '../../core/database/library_keys_provider.dart';
+import '../../l10n/l10n.dart';
 
 /// What the browse pages show while the library's sort and grouping keys are
 /// being made: a title and a progress bar. Playback is unaffected.

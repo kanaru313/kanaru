@@ -6,7 +6,7 @@ import '../../../core/database/library_database.dart';
 import '../../../core/database/library_keys_provider.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
-import '../library_browse_refresh.dart';
+import '../../../shared/library_browse_refresh.dart';
 import 'album_disc_groups.dart';
 
 /// Everything the album page shows: the album's details (the albums query

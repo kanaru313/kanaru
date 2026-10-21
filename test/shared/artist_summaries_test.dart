@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/features/library/artists/artist_summaries.dart';
+import 'package:kanaru/shared/artist_summaries.dart';
 
 void main() {
   test('one summary per credit, with its counts', () {

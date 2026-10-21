@@ -10,8 +10,8 @@ import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
-import '../enqueue_tracks.dart';
-import '../play_tracks.dart';
+import '../../../shared/enqueue_tracks.dart';
+import '../../../shared/play_tracks.dart';
 import 'songs_list_provider.dart';
 
 final _log = Logger('library');

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';

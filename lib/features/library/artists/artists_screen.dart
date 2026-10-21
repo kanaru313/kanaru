@@ -8,13 +8,13 @@ import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
-import '../library_route_keys.dart';
-import '../enqueue_tracks.dart';
+import '../../../shared/library_route_keys.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
-import 'artist_summaries.dart';
-import 'artist_tile.dart';
+import '../../../shared/artist_summaries.dart';
+import 'enqueue_artist.dart';
+import '../../../shared/widgets/artist_tile.dart';
 import 'artists_provider.dart';
 
 final _log = Logger('library');

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/library_sort.dart';
 import 'package:kanaru/features/library/albums/album_sort.dart';
-import 'package:kanaru/features/library/sort_compare.dart';
+import 'package:kanaru/shared/sort_compare.dart';
 
-import 'album_sort_test.dart' show album;
+import '../features/library/album_sort_test.dart' show album;
 
 void main() {
   // U+1F600 is the surrogate pair D83D DE00: UTF-16 puts it before U+FF71,

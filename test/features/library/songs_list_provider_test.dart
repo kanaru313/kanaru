@@ -7,7 +7,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/library/library_browse_refresh.dart';
+import 'package:kanaru/shared/library_browse_refresh.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 
 void main() {

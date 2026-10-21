@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart'
     show AlbumKey, BrowseTrack;
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
-import 'package:kanaru/features/library/play_tracks.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/play_tracks.dart';
 
 import '../../core/indexer/fake_tag_reader.dart';
 import 'browse_test_data.dart';

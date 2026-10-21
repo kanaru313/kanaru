@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/library_sort.dart';
 import 'package:kanaru/features/library/artists/artist_sort.dart';
-import 'package:kanaru/features/library/artists/artist_summaries.dart';
+import 'package:kanaru/shared/artist_summaries.dart';
 
 ArtistSummary artist(String name, int songs, int albums) => ArtistSummary(
   key: name.toLowerCase(),

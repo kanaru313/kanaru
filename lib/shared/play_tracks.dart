@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/database/library_database.dart' show BrowseTrack;
-import '../../core/player/player_service.dart';
-import '../../core/player/track.dart';
+import '../core/database/library_database.dart' show BrowseTrack;
+import '../core/player/player_service.dart';
+import '../core/player/track.dart';
 
 /// A queue entry for a library row. [artPath] is the row's cover thumbnail
 /// (see `coverPath`), shown by the player and published over MPRIS; null

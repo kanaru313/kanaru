@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../l10n/l10n.dart';
+import '../../l10n/l10n.dart';
 
 /// What the queue menu of a song, album or artist can do.
 enum QueueAction { playNext, addToQueue }

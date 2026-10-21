@@ -1,7 +1,7 @@
 import '../../../core/database/library_database.dart';
 import '../../../core/database/text_keys.dart';
 import '../../../core/settings/library_sort.dart';
-import '../sort_compare.dart';
+import '../../../shared/sort_compare.dart';
 
 /// An album with its sort keys made once, not on every comparison.
 typedef _Keyed = ({AlbumSummary album, String title, String? artist});

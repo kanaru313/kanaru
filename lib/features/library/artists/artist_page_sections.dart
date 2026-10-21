@@ -2,8 +2,8 @@ import '../../../core/database/artist_names.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/text_keys.dart';
 import '../albums/album_tile_data.dart';
-import '../sort_compare.dart';
-import 'artist_summaries.dart' show preferredSpelling;
+import '../../../shared/sort_compare.dart';
+import '../../../shared/artist_summaries.dart' show preferredSpelling;
 
 /// What an artist page lists:
 /// - [albums]: albums the artist owns (one of its album artists, else its

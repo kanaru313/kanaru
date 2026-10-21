@@ -8,8 +8,8 @@ import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/empty_state.dart';
 import 'songs/songs_empty_view.dart';
-import 'widgets/library_keys_updating.dart';
-import 'widgets/library_loading.dart';
+import '../../shared/widgets/library_keys_updating.dart';
+import '../../shared/widgets/library_loading.dart';
 
 /// The states shared by the Albums and Artists screens: library unavailable,
 /// no music folder yet (only a hint: adding folders happens in Songs),

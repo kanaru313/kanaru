@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_database.dart';
-import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
-import '../../../shared/format_duration.dart';
-import '../../../shared/widgets/cover_art.dart';
-import '../widgets/queue_actions_menu.dart';
+import '../../core/database/library_database.dart';
+import '../../core/database/library_startup.dart';
+import '../../core/indexer/cover_paths.dart';
+import '../format_duration.dart';
+import 'cover_art.dart';
+import 'queue_actions_menu.dart';
 
 /// Side of the cover at the start of a song row.
 const songCoverSize = 40.0;

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../core/database/library_database.dart' show AlbumKey;
+import '../core/database/library_database.dart' show AlbumKey;
 
 /// Paths of the Albums and Artists branches. Kept here because features do
 /// not import `app/`; a test checks them against the shell destinations.

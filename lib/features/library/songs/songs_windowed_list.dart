@@ -5,9 +5,9 @@ import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
 import '../widgets/library_rescan_button.dart';
-import '../widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 import 'song_row_cache.dart';
-import 'song_tile.dart';
+import '../../../shared/widgets/song_tile.dart';
 import 'songs_list_provider.dart';
 
 /// Row used to measure the list: two lines and a duration, the tallest a

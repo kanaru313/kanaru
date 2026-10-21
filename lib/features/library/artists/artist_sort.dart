@@ -1,7 +1,7 @@
 import '../../../core/database/text_keys.dart';
 import '../../../core/settings/library_sort.dart';
-import '../sort_compare.dart';
-import 'artist_summaries.dart';
+import '../../../shared/sort_compare.dart';
+import '../../../shared/artist_summaries.dart';
 
 /// An artist with the sort key of the name made once, not on every comparison.
 typedef _Keyed = ({ArtistSummary artist, String name});

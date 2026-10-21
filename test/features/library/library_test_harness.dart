@@ -13,7 +13,7 @@ import 'package:kanaru/core/indexer/indexer_state.dart';
 import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/directory_picker_provider.dart';
-import 'package:kanaru/features/library/library_browse_refresh.dart';
+import 'package:kanaru/shared/library_browse_refresh.dart';
 import 'package:kanaru/features/library/onboarding/suggested_music_folder_provider.dart';
 import 'package:material_ui/material_ui.dart';
 

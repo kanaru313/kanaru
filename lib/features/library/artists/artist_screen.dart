@@ -12,12 +12,12 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
 import '../library_detail_body.dart';
-import '../library_route_keys.dart';
-import '../enqueue_tracks.dart';
-import '../play_tracks.dart';
-import '../songs/song_tile.dart';
-import '../widgets/queue_actions_menu.dart';
-import '../widgets/artist_avatar.dart';
+import '../../../shared/library_route_keys.dart';
+import '../../../shared/enqueue_tracks.dart';
+import '../../../shared/play_tracks.dart';
+import '../../../shared/widgets/song_tile.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/artist_avatar.dart';
 import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
 
