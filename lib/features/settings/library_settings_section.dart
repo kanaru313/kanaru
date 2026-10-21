@@ -26,6 +26,7 @@ class LibrarySettingsSection extends ConsumerWidget {
     final available =
         ref.watch(libraryDatabaseProvider) != null &&
         ref.watch(libraryHasRootsProvider);
+    final makingCovers = ref.watch(coverPassProvider) is CoverPassRunning;
 
     return SettingsSection(
       title: l10n.settingsLibrary,
@@ -36,7 +37,7 @@ class LibrarySettingsSection extends ConsumerWidget {
             scan: ref.watch(libraryIndexerProvider),
             builder: (context, progress) => _RescanButton(
               progress: progress,
-              makingCovers: ref.watch(coverPassProvider) is CoverPassRunning,
+              makingCovers: makingCovers,
               onPressed: available && progress == null
                   ? () => unawaited(
                       ref.read(libraryIndexerProvider.notifier).scan(),

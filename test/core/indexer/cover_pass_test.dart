@@ -198,6 +198,38 @@ void main() {
     expect(progress.skipIds, hasLength(1));
   });
 
+  test('progress counts only skipped tracks that still wait', () async {
+    final files = names('n', 40);
+    await add(files);
+    final ids = [for (final row in await db.select(db.tracks).get()) row.id];
+    // Five waiting tracks failed earlier, plus ids of tracks gone since.
+    progress.skipIds.addAll([...ids.take(5), 9001, 9002, 9003, 9004]);
+    for (final name in files) {
+      reader.coverByName[name] = name;
+    }
+
+    final reports = <(int, int)>[];
+    final result = await pass(onProgress: (d, t) => reports.add((d, t)));
+    expect(reports, [(0, 35), (32, 35), (35, 35)]);
+    expect(result.found, 35);
+  });
+
+  test('a batch that stores nothing announces nothing', () async {
+    final files = names('n', 40);
+    await add(files);
+    reader.failingCovers.addAll(files.take(32));
+    var updates = 0;
+    final sub = db
+        .tableUpdates(TableUpdateQuery.onTable(db.tracks))
+        .listen((_) => updates++);
+    addTearDown(sub.cancel);
+
+    final result = await pass();
+    await pumpEventQueue();
+    expect((result.failed, result.none, result.batches), (32, 8, 2));
+    expect(updates, 1, reason: 'only the batch that wrote rows');
+  });
+
   test('reports nothing when no cover is waiting', () async {
     final reports = <(int, int)>[];
     final result = await pass(onProgress: (d, t) => reports.add((d, t)));

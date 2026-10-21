@@ -67,9 +67,11 @@ Future<CoverPassResult> runCoverPass({
   final result = CoverPassResult();
   var done = 0, total = 0;
   if (onProgress != null) {
-    final waiting = await db.countTracksNeedingCover(rootIds);
-    // Failed earlier in this session: passed over.
-    total = waiting - progress.skipIds.length;
+    // Tracks that failed earlier in this session are passed over.
+    total = await db.countTracksNeedingCover(
+      rootIds,
+      excluding: progress.skipIds,
+    );
     if (total > 0) onProgress(0, total);
   }
   var wrapped = progress.cursor == null;
@@ -132,10 +134,12 @@ Future<CoverPassResult> runCoverPass({
             result.failed++;
         }
       }
-      unannounced = true;
-      await db.writeCovers(writes);
-      _announce(db);
-      unannounced = false;
+      if (writes.isNotEmpty) {
+        unannounced = true;
+        await db.writeCovers(writes);
+        _announce(db);
+        unannounced = false;
+      }
       progress.cursor = rows.last.$2;
       result.batches++;
       done += rows.length;

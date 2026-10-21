@@ -235,15 +235,34 @@ class LibraryDatabase extends _$LibraryDatabase {
   }
 
   /// How many tracks under [rootIds] wait for their cover (see
-  /// [tracksNeedingCover]).
-  Future<int> countTracksNeedingCover(List<int> rootIds) async {
+  /// [tracksNeedingCover]), leaving out ids in [excluding]. Only excluded
+  /// ids that are still waiting count against the total, so ids of deleted
+  /// tracks or other roots never push it below the real work.
+  Future<int> countTracksNeedingCover(
+    List<int> rootIds, {
+    Set<int> excluding = const {},
+  }) async {
+    final waiting = await _countNeedingCover(rootIds);
+    final ids = excluding.toList();
+    var excluded = 0;
+    for (var i = 0; i < ids.length; i += deleteChunkSize) {
+      final end = i + deleteChunkSize < ids.length
+          ? i + deleteChunkSize
+          : ids.length;
+      excluded += await _countNeedingCover(rootIds, among: ids.sublist(i, end));
+    }
+    return waiting - excluded;
+  }
+
+  Future<int> _countNeedingCover(List<int> rootIds, {List<int>? among}) async {
     final count = tracks.id.count();
+    var condition =
+        tracks.coverScanVersion.isSmallerThanValue(coverScanVersion) &
+        tracks.rootId.isIn(rootIds);
+    if (among != null) condition = condition & tracks.id.isIn(among);
     final query = selectOnly(tracks)
       ..addColumns([count])
-      ..where(
-        tracks.coverScanVersion.isSmallerThanValue(coverScanVersion) &
-            tracks.rootId.isIn(rootIds),
-      );
+      ..where(condition);
     return (await query.getSingle()).read(count)!;
   }
 
