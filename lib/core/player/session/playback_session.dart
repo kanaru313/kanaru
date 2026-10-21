@@ -41,7 +41,8 @@ class PlaybackSession {
     );
   }
 
-  /// `PlayQueue.original`: every track as opened, removed ones included.
+  /// `PlayQueue.original`: the tracks opened and those added later. Removed
+  /// ones are dropped when the session is restored (`toQueue`).
   final List<Track> tracks;
 
   /// `PlayQueue.order`: indexes into [tracks] in play order.

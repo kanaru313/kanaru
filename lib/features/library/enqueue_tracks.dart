@@ -18,6 +18,21 @@ import 'widgets/queue_actions_menu.dart';
 
 final _log = Logger('library');
 
+/// A queue snackbar shown or waiting behind other messages.
+class _PendingMessage {
+  _PendingMessage(this.text, this.messenger);
+
+  /// The text on the snackbar; changing it updates the snackbar in place.
+  final ValueNotifier<String> text;
+  final ScaffoldMessengerState messenger;
+  late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
+  controller;
+
+  /// The snackbar has finished appearing, which is when its time on screen
+  /// starts running: from then on a new text would not get a time of its own.
+  bool visible = false;
+}
+
 /// Tail of the library-level enqueues: each one waits for the one before, so
 /// two quick menu picks land in the queue in click order even when their
 /// database reads finish in another order. Also holds the queue message still
@@ -25,46 +40,51 @@ final _log = Logger('library');
 class _EnqueueChain {
   Future<void> tail = Future.value();
 
-  /// The text of the queue snackbar shown or waiting behind other messages,
-  /// and the messenger it belongs to. Null once it is gone.
-  ValueNotifier<String>? pendingMessage;
-  ScaffoldMessengerState? pendingMessenger;
+  /// The queue snackbar not gone yet. Null once it is.
+  _PendingMessage? pending;
 }
 
 final _enqueueChainProvider = Provider<_EnqueueChain>((ref) => _EnqueueChain());
 
-/// Says [text] in a snackbar. While an earlier queue message is still showing
-/// or waiting its turn on the same [messenger], its text is replaced instead:
-/// only the latest pick is worth reading, and other messages (a finished
+/// Resolves once every library-level enqueue started so far has finished.
+/// A caller about to act on the queue awaits it first, so an earlier pick
+/// still reading from the database is not overtaken by what comes after.
+Future<void> pendingQueuePicks(WidgetRef ref) => ref.read(_enqueueChainProvider).tail;
+
+/// Says [text] in a snackbar. While an earlier queue message waits its turn on
+/// the same [messenger], its text is replaced instead: only the latest pick is
+/// worth reading. One already on screen is closed and the new text gets a
+/// snackbar, and so a time on screen, of its own. Other messages (a finished
 /// scan) are never touched.
 void _showQueueMessage(
   _EnqueueChain chain,
   ScaffoldMessengerState messenger,
   String text,
 ) {
-  final pending = chain.pendingMessage;
-  if (pending != null && identical(chain.pendingMessenger, messenger)) {
-    pending.value = text;
-    return;
+  final earlier = chain.pending;
+  if (earlier != null && identical(earlier.messenger, messenger)) {
+    if (!earlier.visible) {
+      earlier.text.value = text;
+      return;
+    }
+    chain.pending = null;
+    earlier.controller.close();
   }
-  final message = ValueNotifier(text);
-  final controller = messenger.showSnackBar(
+  final message = _PendingMessage(ValueNotifier(text), messenger);
+  message.controller = messenger.showSnackBar(
     SnackBar(
+      onVisible: () => message.visible = true,
       content: ValueListenableBuilder<String>(
-        valueListenable: message,
+        valueListenable: message.text,
         builder: (_, value, _) => Text(value),
       ),
     ),
   );
-  chain.pendingMessage = message;
-  chain.pendingMessenger = messenger;
+  chain.pending = message;
   unawaited(
-    controller.closed.then((_) {
-      if (identical(chain.pendingMessage, message)) {
-        chain.pendingMessage = null;
-        chain.pendingMessenger = null;
-      }
-      message.dispose();
+    message.controller.closed.then((_) {
+      if (identical(chain.pending, message)) chain.pending = null;
+      message.text.dispose();
     }),
   );
 }

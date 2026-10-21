@@ -407,6 +407,28 @@ void main() {
       expect(titles(), ['a', 'b']);
     });
 
+    testWidgets('a late pick gets a message of its own time on screen', (
+      tester,
+    ) async {
+      await pumpHost(tester);
+
+      await enqueue(() async => [track('a')], 'first');
+      // The first message is nearly out of time.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 3900));
+      await enqueue(() async => [track('b')], 'second');
+      // The first one slides out, then the second slides in.
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Added to queue: second'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('Added to queue: second'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pumpAndSettle();
+      expect(find.text('Added to queue: second'), findsNothing);
+    });
+
     testWidgets('a message shown before is not replaced', (tester) async {
       await pumpHost(tester);
       ScaffoldMessenger.of(context).showSnackBar(

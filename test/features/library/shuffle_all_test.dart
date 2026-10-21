@@ -4,6 +4,11 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/library/enqueue_tracks.dart';
+import 'package:kanaru/features/library/songs/shuffle_all_button.dart';
+import 'package:kanaru/features/library/widgets/queue_actions_menu.dart';
+import 'package:kanaru/l10n/l10n.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
@@ -151,6 +156,47 @@ void main() {
     expect(state.queue.shuffled, isFalse);
     expect(h.backend.calls.where((c) => c.startsWith('open(')), hasLength(1));
     expect(find.byType(SnackBar), findsNothing, reason: 'dropped silently');
+  });
+
+  testWidgets('a pick still reading finishes first and the shuffle follows', (
+    tester,
+  ) async {
+    final h = harness();
+    await openWithTracks(tester, h, const [
+      TestTrack('a'),
+      TestTrack('b'),
+    ], location: '/songs');
+    // The button's element is a WidgetRef living in the same scope.
+    final element = tester.element(find.byType(ShuffleAllButton));
+    final slow = Completer<List<Track>>();
+    unawaited(
+      enqueueTracks(
+        element as WidgetRef,
+        ScaffoldMessenger.of(element),
+        element.l10n,
+        QueueAction.addToQueue,
+        () => slow.future,
+        'Album',
+      ),
+    );
+
+    await tester.tap(shuffleAll());
+    await tester.pump();
+    expect(
+      h.backend.calls.where((c) => c.startsWith('open(')),
+      isEmpty,
+      reason: 'the shuffle waits for the pick before it',
+    );
+
+    slow.complete([Track.fromPath('/elsewhere/album.mp3')]);
+    await settleIo(tester, h);
+
+    final opens = h.backend.calls.where((c) => c.startsWith('open(')).toList();
+    expect(opens, hasLength(2));
+    expect(opens.first, startsWith('open(album'));
+    final state = h.container.read(playerServiceProvider);
+    expect([for (final t in state.queue.original) t.title], ['a', 'b']);
+    expect(state.queue.shuffled, isTrue);
   });
 
   testWidgets('on a narrow header shows only the icon, with a tooltip', (

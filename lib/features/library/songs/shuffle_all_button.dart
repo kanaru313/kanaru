@@ -10,6 +10,7 @@ import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
+import '../enqueue_tracks.dart';
 import '../play_tracks.dart';
 import 'songs_list_provider.dart';
 
@@ -43,16 +44,19 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
     final player = ref.read(playerServiceProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
-    final changesBefore = player.userQueueChanges;
     setState(() => _busy = true);
     try {
+      // Picks made before the tap finish first, so they cannot be taken for
+      // a newer action by the check below, and click order holds across both.
+      await pendingQueuePicks(ref);
+      final changesBefore = player.userQueueChanges;
       final (items, _) = await db.songQueueFrom(
         anyId,
         order: songs.order,
         descending: songs.descending,
       );
-      // A queue opened or filled meanwhile (a tapped song, a queued album)
-      // came from a newer action: that one wins over a read started before
+      // A queue opened or filled meanwhile (a tapped song, a queued album
+      // picked after the tap) came from a newer action: that one wins over a read started before
       // it. The engine moving on, repeat or shuffle changes and dragging or
       // removing tracks do not count.
       if (player.userQueueChanges != changesBefore) return;
