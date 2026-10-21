@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/app/shell/sidebar/sidebar.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/player/player_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
@@ -33,6 +34,18 @@ void main() {
     await pumpApp(tester, wide);
 
     expect(find.text('Your library is empty'), findsOneWidget);
+  });
+
+  testWidgets('the top bar has no open-music button, on any width', (
+    tester,
+  ) async {
+    for (final size in [wide, narrow]) {
+      await pumpApp(tester, size);
+
+      expect(find.byTooltip('Open music'), findsNothing);
+      expect(find.byTooltip('Settings'), findsOneWidget);
+      expect(find.byType(PlayerBar), findsNothing, reason: 'empty queue');
+    }
   });
 
   testWidgets('shows the sidebar on wide windows', (tester) async {

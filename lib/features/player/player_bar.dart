@@ -7,7 +7,6 @@ import '../../core/player/playback_error.dart';
 import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
 import 'now_playing_summary.dart';
-import 'open_media.dart';
 import 'playback_controls.dart';
 import 'queue/queue_button.dart';
 import 'seek_bar.dart';
@@ -17,11 +16,9 @@ import 'volume_button.dart';
 const playerBarHeight = 96.0;
 
 /// Whether the shell shows the player bar: only when there is something to
-/// play, or while a folder scan is filling the queue.
+/// play.
 final playerBarVisibleProvider = Provider<bool>(
-  (ref) =>
-      ref.watch(openMediaProvider) ||
-      !ref.watch(playerServiceProvider.select((s) => s.queue.isEmpty)),
+  (ref) => !ref.watch(playerServiceProvider.select((s) => s.queue.isEmpty)),
 );
 
 /// Below this width the bar keeps only the track summary, play/pause and

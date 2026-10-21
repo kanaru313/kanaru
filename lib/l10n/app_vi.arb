@@ -140,11 +140,6 @@
   "searchNoResultsMessage": "Không tìm thấy kết quả cho “{query}”. Thử bớt từ hoặc gõ ngắn hơn.",
   "searchMoreSongs": "Đang hiện {shown} bài đầu trong {total} bài. Thêm từ để thu hẹp kết quả.",
 
-  "playerOpenMenu": "Mở nhạc",
-  "playerOpenFiles": "Mở file…",
-  "playerOpenFolder": "Mở thư mục…",
-  "playerScanning": "Đang quét thư mục…",
-  "playerNoAudioFound": "Không tìm thấy file nhạc nào",
   "playerPlaybackError": "Không phát được {title}",
   "playerPlay": "Phát",
   "playerPause": "Tạm dừng",

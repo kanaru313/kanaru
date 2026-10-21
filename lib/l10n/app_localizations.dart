@@ -860,36 +860,6 @@ abstract class AppLocalizations {
   /// **'Showing the top {shown} of {total} songs. Add words to narrow it down.'**
   String searchMoreSongs(int shown, int total);
 
-  /// No description provided for @playerOpenMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Open music'**
-  String get playerOpenMenu;
-
-  /// No description provided for @playerOpenFiles.
-  ///
-  /// In en, this message translates to:
-  /// **'Open files…'**
-  String get playerOpenFiles;
-
-  /// No description provided for @playerOpenFolder.
-  ///
-  /// In en, this message translates to:
-  /// **'Open folder…'**
-  String get playerOpenFolder;
-
-  /// No description provided for @playerScanning.
-  ///
-  /// In en, this message translates to:
-  /// **'Scanning folder…'**
-  String get playerScanning;
-
-  /// No description provided for @playerNoAudioFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No audio files found'**
-  String get playerNoAudioFound;
-
   /// No description provided for @playerPlaybackError.
   ///
   /// In en, this message translates to:

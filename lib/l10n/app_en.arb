@@ -289,11 +289,6 @@
     }
   },
 
-  "playerOpenMenu": "Open music",
-  "playerOpenFiles": "Open files…",
-  "playerOpenFolder": "Open folder…",
-  "playerScanning": "Scanning folder…",
-  "playerNoAudioFound": "No audio files found",
   "playerPlaybackError": "Couldn't play {title}",
   "@playerPlaybackError": {
     "placeholders": {

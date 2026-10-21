@@ -518,21 +518,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get playerOpenMenu => 'Mở nhạc';
-
-  @override
-  String get playerOpenFiles => 'Mở file…';
-
-  @override
-  String get playerOpenFolder => 'Mở thư mục…';
-
-  @override
-  String get playerScanning => 'Đang quét thư mục…';
-
-  @override
-  String get playerNoAudioFound => 'Không tìm thấy file nhạc nào';
-
-  @override
   String playerPlaybackError(String title) {
     return 'Không phát được $title';
   }

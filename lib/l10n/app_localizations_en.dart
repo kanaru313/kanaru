@@ -522,21 +522,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get playerOpenMenu => 'Open music';
-
-  @override
-  String get playerOpenFiles => 'Open files…';
-
-  @override
-  String get playerOpenFolder => 'Open folder…';
-
-  @override
-  String get playerScanning => 'Scanning folder…';
-
-  @override
-  String get playerNoAudioFound => 'No audio files found';
-
-  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }

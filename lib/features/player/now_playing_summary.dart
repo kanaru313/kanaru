@@ -2,39 +2,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/player_service.dart';
-import '../../l10n/l10n.dart';
 import 'now_playing/now_playing_open_cover.dart';
-import 'open_media.dart';
 import 'track_artwork.dart';
 
 /// Left side of the player bar: cover, title and artist of the current
-/// track, or progress while a folder is being scanned.
+/// track.
 class NowPlayingSummary extends ConsumerWidget {
   const NowPlayingSummary({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
     final theme = Theme.of(context);
     final track = ref.watch(
       playerServiceProvider.select((s) => s.queue.current),
     );
-    final scanning = ref.watch(openMediaProvider);
-
-    if (scanning) {
-      return Row(
-        spacing: 12,
-        children: [
-          const SizedBox.square(
-            dimension: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          Flexible(
-            child: Text(l10n.playerScanning, overflow: TextOverflow.ellipsis),
-          ),
-        ],
-      );
-    }
 
     if (track == null) return const SizedBox.shrink();
 
