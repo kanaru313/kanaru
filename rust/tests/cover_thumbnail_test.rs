@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use common::*;
 use image::{GenericImageView, ImageFormat};
-use rust_lib_kanaru::api::tags::CoverStatus;
+use rust_lib_kanaru::api::tags::{read_original_cover, CoverStatus};
 use rust_lib_kanaru::cover_cache::{cache_key, CoverSink};
 use rust_lib_kanaru::cover_thumbnail::make_jpeg;
 use rust_lib_kanaru::jpeg_header::{ends_with_first_scan, parse, strip_metadata};
@@ -139,6 +139,10 @@ fn rotated_or_large_jpeg_is_encoded_again() {
     let rotated = with_exif(&jpeg(300, 200, 4), 6);
     assert_eq!(parse(&rotated).unwrap().orientation, 6);
     let thumbnail = make_jpeg(&rotated, ImageFormat::Jpeg).unwrap();
+    assert_eq!(
+        image::load_from_memory(&thumbnail).unwrap().dimensions(),
+        (200, 300)
+    );
     assert_ne!(Some(thumbnail), strip_metadata(&rotated));
 
     let large = jpeg(600, 300, 4);
@@ -217,6 +221,38 @@ fn progressive_jpeg_over_the_decode_limit_falls_back_to_the_folder_cover() {
 }
 
 #[test]
+fn original_cover_skips_an_embedded_jpeg_the_scan_cannot_decode() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    let huge = progressive_444(4096);
+    let path = with_cover("sample.flac", music.path(), "song.flac", &huge);
+    let folder = jpeg(64, 64, 9);
+    fs::write(music.path().join("cover.jpg"), &folder).unwrap();
+
+    // The scan and the original pick the same cover.
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&folder)));
+    let original = read_original_cover(path.to_string_lossy().into_owned());
+    assert_eq!(original, Some(folder));
+}
+
+#[test]
+fn original_cover_keeps_a_large_progressive_jpeg_the_scan_decodes_scaled() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    // 3000² 4:4:4: 51.5 MiB of coefficients; fits at 1/4 scale, not in full.
+    let embedded = progressive_444(3000);
+    assert!(make_jpeg(&embedded, ImageFormat::Jpeg).is_some());
+    let path = with_cover("sample.flac", music.path(), "song.flac", &embedded);
+    fs::write(music.path().join("cover.jpg"), jpeg(64, 64, 9)).unwrap();
+
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&embedded)));
+    let original = read_original_cover(path.to_string_lossy().into_owned());
+    assert_eq!(original, Some(embedded));
+}
+
+#[test]
 fn small_jpeg_with_data_after_its_image_is_never_passed_through() {
     let good = jpeg(100, 100, 1);
     let mut padded = good.clone();
@@ -267,5 +303,97 @@ fn hostile_headers_never_panic_the_walk() {
             let _ = strip_metadata(&bytes);
             let _ = ends_with_first_scan(&bytes);
         }
+    }
+}
+
+const RED: [u8; 3] = [230, 20, 20];
+const BLUE: [u8; 3] = [20, 20, 230];
+
+/// A `width`×`height` 4:4:4 JPEG, `RED` in the left half and `BLUE` in the
+/// right half.
+fn red_and_blue(width: u16, height: u16) -> Vec<u8> {
+    let mut pixels = Vec::new();
+    for _ in 0..height {
+        for x in 0..width {
+            pixels.extend_from_slice(if x < width / 2 { &RED } else { &BLUE });
+        }
+    }
+    let mut out = Vec::new();
+    let mut encoder = jpeg_encoder::Encoder::new(&mut out, 95);
+    encoder.set_sampling_factor(jpeg_encoder::SamplingFactor::F_1_1);
+    encoder
+        .encode(&pixels, width, height, jpeg_encoder::ColorType::Rgb)
+        .unwrap();
+    out
+}
+
+fn assert_pixel_near(image: &image::RgbImage, (x, y): (u32, u32), expected: [u8; 3]) {
+    let pixel = image.get_pixel(x, y).0;
+    for (got, want) in pixel.iter().zip(expected) {
+        assert!(
+            got.abs_diff(want) <= 40,
+            "({x}, {y}) is {pixel:?}, want {expected:?}"
+        );
+    }
+}
+
+fn thumbnail_of(jpeg: &[u8]) -> image::RgbImage {
+    let thumbnail = make_jpeg(jpeg, ImageFormat::Jpeg).unwrap();
+    image::load_from_memory(&thumbnail).unwrap().into_rgb8()
+}
+
+#[test]
+fn rotated_jpeg_is_turned_upright() {
+    let original = red_and_blue(300, 200);
+
+    // 6: turned 90 degrees clockwise, the left half ends up on top.
+    let image = thumbnail_of(&with_exif(&original, 6));
+    assert_eq!(image.dimensions(), (200, 300));
+    assert_pixel_near(&image, (100, 75), RED);
+    assert_pixel_near(&image, (100, 225), BLUE);
+
+    // 8: turned 90 degrees counter-clockwise, the left half ends up below.
+    let image = thumbnail_of(&with_exif(&original, 8));
+    assert_eq!(image.dimensions(), (200, 300));
+    assert_pixel_near(&image, (100, 75), BLUE);
+    assert_pixel_near(&image, (100, 225), RED);
+
+    // 3: upside down, the left half ends up on the right.
+    let image = thumbnail_of(&with_exif(&original, 3));
+    assert_eq!(image.dimensions(), (300, 200));
+    assert_pixel_near(&image, (75, 100), BLUE);
+    assert_pixel_near(&image, (225, 100), RED);
+
+    // 1 and values that are not an orientation: left as decoded.
+    for orientation in [1, 0, 9, 0x0106] {
+        let image = thumbnail_of(&with_exif(&original, orientation));
+        assert_eq!(image.dimensions(), (300, 200), "orientation {orientation}");
+        assert_pixel_near(&image, (75, 100), RED);
+    }
+}
+
+#[test]
+fn large_rotated_jpeg_decoded_scaled_is_turned_upright() {
+    let original = red_and_blue(2048, 1024);
+    let header = parse(&original).unwrap();
+    assert_eq!((header.width, header.sampling.len()), (2048, 3));
+
+    // Decoded at 1/4 (512×256), then turned: 256×512.
+    let image = thumbnail_of(&with_exif(&original, 6));
+    assert_eq!(image.dimensions(), (256, 512));
+    assert_pixel_near(&image, (128, 128), RED);
+    assert_pixel_near(&image, (128, 384), BLUE);
+}
+
+#[test]
+fn thumbnail_size_does_not_depend_on_the_filter() {
+    for ((width, height), expected) in [
+        ((1001, 333), (512, 170)),
+        ((4096, 1), (512, 1)),
+        ((333, 1001), (170, 512)),
+    ] {
+        let thumbnail = make_jpeg(&png(width, height, 9), ImageFormat::Png).unwrap();
+        let size = image::load_from_memory(&thumbnail).unwrap().dimensions();
+        assert_eq!(size, expected, "{width}x{height}");
     }
 }

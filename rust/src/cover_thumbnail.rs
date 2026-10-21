@@ -3,9 +3,10 @@
 use std::io::Cursor;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
-use image::{DynamicImage, GrayImage, ImageFormat, ImageReader, Limits, RgbImage};
+use image::metadata::Orientation;
+use image::{DynamicImage, GrayImage, ImageFormat, ImageReader, RgbImage};
 
-use crate::cover_art::MAX_COVER_SIDE;
+use crate::cover_decode_limits::{decode_limits, full_decode_fits, scaled_plan, ScaledPlan};
 use crate::jpeg_header::{self, JpegHeader};
 
 /// Longest side of a thumbnail, in pixels. The cache folder is named after it
@@ -22,18 +23,15 @@ const JPEG_QUALITY: u8 = 85;
 /// Largest original JPEG used as its own thumbnail.
 const MAX_PASSTHROUGH_BYTES: usize = 200 * 1024;
 
-/// JPEGs with a longer side are decoded at 1/2, 1/4 or 1/8 of their size,
-/// still at least [`THUMBNAIL_SIDE`]: most of the decode work is skipped.
-const SCALED_DECODE_ABOVE: u32 = 1024;
-
 /// Decodes `bytes` (already checked by
 /// [`validate_header`](crate::cover_art::validate_header)) and encodes a JPEG
 /// whose longest side is [`THUMBNAIL_SIDE`], keeping the aspect ratio. Smaller
 /// images are re-encoded at their own size, never enlarged. Transparent parts
-/// end up on black. A small upright baseline JPEG is its own thumbnail, minus
-/// its metadata (see [`passthrough`]); a large JPEG is decoded scaled down
-/// (see [`scaled_decode`]). Every shortcut falls back to the full path on
-/// any trouble. `None` when the image breaks a decode limit or is corrupt.
+/// end up on black. A JPEG is turned upright per its EXIF orientation. A
+/// small upright baseline JPEG is its own thumbnail, minus its metadata (see
+/// [`passthrough`]); a large JPEG is decoded scaled down (see
+/// [`scaled_decode`]). Every shortcut falls back to the full path on any
+/// trouble. `None` when the image breaks a decode limit or is corrupt.
 pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     let image = match guarded(|| scaled_decode(bytes, format)) {
         Some(image) => image,
@@ -54,7 +52,30 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     // Flattened first: blending over black, then averaging, is what a
     // resize with premultiplied alpha followed by the blend would give.
     let rgb = shrink(flatten_on_black(image));
-    encode(&rgb)
+    // After the shrink: turning a thumbnail costs next to nothing and needs
+    // no buffer the size of the original.
+    let orientation = if format == ImageFormat::Jpeg {
+        jpeg_header::parse(bytes).map_or(1, |header| header.orientation)
+    } else {
+        1
+    };
+    encode(&turn_upright(rgb, orientation))
+}
+
+/// `rgb` turned or flipped as the EXIF `orientation` says; a value that is
+/// not an orientation leaves it as is. Neither the JPEG decoder nor `image`
+/// applies it on its own.
+fn turn_upright(rgb: RgbImage, orientation: u16) -> RgbImage {
+    let orientation = u8::try_from(orientation)
+        .ok()
+        .and_then(Orientation::from_exif)
+        .unwrap_or(Orientation::NoTransforms);
+    if orientation == Orientation::NoTransforms {
+        return rgb;
+    }
+    let mut image = DynamicImage::ImageRgb8(rgb);
+    image.apply_orientation(orientation);
+    image.into_rgb8()
 }
 
 /// `rgb` as a JPEG at [`JPEG_QUALITY`], colour at full resolution (4:4:4,
@@ -77,62 +98,22 @@ fn guarded<T>(shortcut: impl FnOnce() -> Option<T>) -> Option<T> {
     catch_unwind(AssertUnwindSafe(shortcut)).ok().flatten()
 }
 
-/// Whether the full decode of `bytes` keeps to [`MAX_DECODE_BYTES`].
-/// `image`'s limit only bounds the output buffer, but a progressive JPEG
-/// also keeps every coefficient of the image until its last scan (see
-/// [`progressive_coefficient_bytes`]), so one that would need more is
-/// refused: no thumbnail, rather than a decode far over the limit. Other
-/// images are left to `image`'s own limits.
-fn full_decode_fits(bytes: &[u8], format: ImageFormat) -> bool {
-    if format != ImageFormat::Jpeg {
-        return true;
-    }
-    let Some(header) = jpeg_header::parse(bytes) else {
-        return true;
-    };
-    if !header.progressive {
-        return true;
-    }
-    let output = u64::from(header.width)
-        * u64::from(header.height)
-        * header.sampling.len() as u64;
-    progressive_coefficient_bytes(&header) + output <= MAX_DECODE_BYTES
-}
-
 fn full_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
     let mut reader = ImageReader::with_format(Cursor::new(bytes), format);
-    let mut limits = Limits::default();
-    limits.max_image_width = Some(MAX_COVER_SIDE);
-    limits.max_image_height = Some(MAX_COVER_SIDE);
-    limits.max_alloc = Some(MAX_DECODE_BYTES);
-    reader.limits(limits);
+    reader.limits(decode_limits());
     reader.decode().ok()
 }
 
-/// A JPEG longer than [`SCALED_DECODE_ABOVE`] decoded at the smallest DCT
-/// scale (1/2, 1/4, 1/8) that keeps its longest side at least
-/// [`THUMBNAIL_SIDE`]. Gray and YCbCr (or RGB) only; CMYK and YCCK take the
-/// full path. `None` when it does not apply, when the decode would need more
-/// than [`MAX_DECODE_BYTES`] (see [`progressive_coefficient_bytes`]), or on
-/// any error.
+/// A large JPEG decoded at a DCT scale of 1/2, 1/4 or 1/8 (see
+/// [`scaled_plan`] for when that applies). `None` when it does not apply or
+/// on any error.
 fn scaled_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
-    if format != ImageFormat::Jpeg {
-        return None;
-    }
-    let header = jpeg_header::parse(bytes)?;
-    let side = u32::from(header.width.max(header.height));
-    if side <= SCALED_DECODE_ABOVE || side > MAX_COVER_SIDE || header.sampling.len() == 4 {
-        return None;
-    }
-    let mut decoder = jpeg_decoder::Decoder::new(Cursor::new(bytes));
-    let side = THUMBNAIL_SIDE as u16;
-    let (width, height) = decoder.scale(side, side).ok()?;
-    let output = u64::from(width) * u64::from(height) * header.sampling.len() as u64;
-    // The output is held about twice: component planes, then the
-    // interleaved pixels.
-    if progressive_coefficient_bytes(&header) + 2 * output > MAX_DECODE_BYTES {
-        return None;
-    }
+    let ScaledPlan {
+        mut decoder,
+        width,
+        height,
+        output,
+    } = scaled_plan(bytes, format)?;
     decoder.set_max_decoding_buffer_size(output as usize);
     let pixels = decoder.decode().ok()?;
     let (width, height) = (u32::from(width), u32::from(height));
@@ -145,37 +126,6 @@ fn scaled_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
         }
         _ => None,
     }
-}
-
-/// What a decode holds besides its output, at most: a progressive JPEG
-/// keeps every DCT coefficient of the full-size image (64 two-byte values
-/// per 8×8 block, blocks padded to whole MCUs) until its last scan, at any
-/// output scale; a baseline one decodes row by row. The output comes on
-/// top, counted by the caller.
-fn progressive_coefficient_bytes(header: &JpegHeader) -> u64 {
-    if !header.progressive {
-        return 0;
-    }
-    let h_max = header
-        .sampling
-        .iter()
-        .map(|s| u64::from(s.0))
-        .max()
-        .unwrap_or(1);
-    let v_max = header
-        .sampling
-        .iter()
-        .map(|s| u64::from(s.1))
-        .max()
-        .unwrap_or(1);
-    let mcus_x = u64::from(header.width).div_ceil(8 * h_max);
-    let mcus_y = u64::from(header.height).div_ceil(8 * v_max);
-    let blocks: u64 = header
-        .sampling
-        .iter()
-        .map(|&(h, v)| mcus_x * u64::from(h) * mcus_y * u64::from(v))
-        .sum();
-    blocks * 64 * 2
 }
 
 /// The original JPEG without its metadata segments, when it can serve as
@@ -211,7 +161,8 @@ fn fits_as_is(header: &JpegHeader, decoded: (u32, u32)) -> bool {
 
 /// `rgb` fitted within [`THUMBNAIL_SIDE`] (aspect kept, rounded like
 /// `image`'s `thumbnail`), or as is when it already fits. Resized with
-/// fast_image_resize (SIMD chosen at run time); on any error, with `image`.
+/// fast_image_resize (Lanczos3, SIMD chosen at run time); on any error, with
+/// `image`.
 fn shrink(rgb: RgbImage) -> RgbImage {
     let (width, height) = rgb.dimensions();
     let longest = width.max(height);
@@ -227,7 +178,7 @@ fn shrink(rgb: RgbImage) -> RgbImage {
             fir::images::ImageRef::new(width, height, rgb.as_raw(), fir::PixelType::U8x3).ok()?;
         let mut target = fir::images::Image::new(new_width, new_height, fir::PixelType::U8x3);
         let options = fir::ResizeOptions::new()
-            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Bilinear));
+            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3));
         fir::Resizer::new()
             .resize(&source, &mut target, &options)
             .ok()?;
@@ -312,22 +263,15 @@ mod tests {
     }
 
     #[test]
-    fn progressive_decode_memory_counts_padded_blocks() {
-        let progressive = |width, height, sampling: Vec<(u8, u8)>| JpegHeader {
-            width,
-            height,
-            progressive: true,
-            sampling,
-            ..header()
-        };
-        assert_eq!(progressive_coefficient_bytes(&header()), 0, "baseline");
-        // 2000×1000 4:2:0: 125×63 MCUs; 4 luma + 2 chroma blocks per MCU.
-        let blocks = 125 * 63 * 6;
-        let yuv420 = progressive(2000, 1000, vec![(2, 2), (1, 1), (1, 1)]);
-        assert_eq!(progressive_coefficient_bytes(&yuv420), blocks * 128);
-        // 4096² 4:4:4: 3 × 512² blocks = 96 MiB, over the cap.
-        let full = progressive(4096, 4096, vec![(1, 1); 3]);
-        assert_eq!(progressive_coefficient_bytes(&full), 3 * 512 * 512 * 128);
-        assert!(progressive_coefficient_bytes(&full) > MAX_DECODE_BYTES);
+    fn shrink_rings_at_edges() {
+        // A step edge in the middle: a convolution with negative lobes
+        // (Lanczos) overshoots on both sides, a bilinear blend never does.
+        let step = RgbImage::from_fn(1024, 8, |x, _| {
+            let level = if x < 512 { 64 } else { 192 };
+            image::Rgb([level; 3])
+        });
+        let shrunk = shrink(step);
+        assert_eq!(shrunk.dimensions(), (512, 4));
+        assert!(shrunk.pixels().any(|p| p.0[0] < 64 || p.0[0] > 192));
     }
 }

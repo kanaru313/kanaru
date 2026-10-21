@@ -13,6 +13,8 @@ import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
 import 'core/player/media_kit_backend.dart';
+import 'core/player/original_cover_reader.dart';
+import 'core/player/rust_original_cover_reader.dart';
 import 'core/player/unavailable_audio_backend.dart';
 import 'core/settings/settings_provider.dart';
 
@@ -63,6 +65,9 @@ Future<void> main() async {
         create: MediaKitBackend.new,
       ),
       ...library.overrides,
+      originalCoverReaderProvider.overrideWithValue(
+        const RustOriginalCoverReader(),
+      ),
       if (Platform.isLinux)
         mediaControlsProvider.overrideWith((ref) {
           final controls = MprisMediaControls(
