@@ -49,12 +49,9 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
         }
     };
 
-    let image = if image.width().max(image.height()) > THUMBNAIL_SIDE {
-        image.thumbnail(THUMBNAIL_SIDE, THUMBNAIL_SIDE)
-    } else {
-        image
-    };
-    let rgb = flatten_on_black(image);
+    // Flattened first: blending over black, then averaging, is what a
+    // resize with premultiplied alpha followed by the blend would give.
+    let rgb = shrink(flatten_on_black(image));
 
     let mut out = Vec::new();
     JpegEncoder::new_with_quality(&mut out, JPEG_QUALITY)
@@ -172,6 +169,33 @@ fn fits_as_is(header: &JpegHeader, decoded: (u32, u32)) -> bool {
         && header.orientation == 1
         && size.0.max(size.1) <= THUMBNAIL_SIDE
         && size == decoded
+}
+
+/// `rgb` fitted within [`THUMBNAIL_SIDE`] (aspect kept, rounded like
+/// `image`'s `thumbnail`), or as is when it already fits. Resized with
+/// fast_image_resize (SIMD chosen at run time); on any error, with `image`.
+fn shrink(rgb: RgbImage) -> RgbImage {
+    let (width, height) = rgb.dimensions();
+    let longest = width.max(height);
+    if longest <= THUMBNAIL_SIDE {
+        return rgb;
+    }
+    let ratio = f64::from(THUMBNAIL_SIDE) / f64::from(longest);
+    let fit = |side: u32| ((f64::from(side) * ratio).round() as u32).max(1);
+    let (new_width, new_height) = (fit(width), fit(height));
+    guarded(|| {
+        use fast_image_resize as fir;
+        let source =
+            fir::images::ImageRef::new(width, height, rgb.as_raw(), fir::PixelType::U8x3).ok()?;
+        let mut target = fir::images::Image::new(new_width, new_height, fir::PixelType::U8x3);
+        let options = fir::ResizeOptions::new()
+            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Bilinear));
+        fir::Resizer::new()
+            .resize(&source, &mut target, &options)
+            .ok()?;
+        RgbImage::from_raw(new_width, new_height, target.into_vec())
+    })
+    .unwrap_or_else(|| image::imageops::thumbnail(&rgb, new_width, new_height))
 }
 
 /// JPEG has no alpha channel: blends every pixel over black.

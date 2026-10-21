@@ -21,6 +21,10 @@ image = { version = "=0.25.10", default-features = false, features = ["jpeg", "p
 # `image` crate's decoder cannot do. A second JPEG decoder in the binary;
 # no rayon, so nothing inside a decode waits on the cover pool.
 jpeg-decoder = { version = "=0.3.2", default-features = false }
+# Thumbnail resize, several times faster than `image`'s (SIMD picked at run
+# time). Without its rayon feature: nothing inside a resize waits on the
+# cover pool.
+fast_image_resize = { version = "=6.1.0", default-features = false, features = ["std"] }
 # Cover cache keys: hash of the original image bytes. `pure` skips the C/asm build.
 blake3 = { version = "=1.8.7", default-features = false, features = ["std", "pure"] }
 # O_NONBLOCK when opening sidecar images, so a FIFO named cover.jpg cannot hang a scan.
