@@ -53,6 +53,31 @@ void main() {
     expect(tracks.map((t) => t.title), ['linked', 'real']);
   });
 
+  test('leaves out FIFOs, which would block when opened', () async {
+    final root = await Directory.systemTemp.createTemp('kanaru_scan');
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/real.flac').create();
+    final ProcessResult made;
+    try {
+      made = await Process.run('mkfifo', ['${root.path}/pipe.mp3']);
+    } on ProcessException {
+      markTestSkipped('mkfifo is not available');
+      return;
+    }
+    if (made.exitCode != 0) {
+      markTestSkipped('mkfifo failed: ${made.stderr}');
+      return;
+    }
+
+    final tracks = await scanFolder(root.path);
+
+    expect(tracks.map((t) => t.title), ['real']);
+  });
+
+  test('an unreadable or missing folder has no tracks', () async {
+    expect(await scanFolder('/nonexistent/kanaru_scan'), isEmpty);
+  });
+
   test('formats durations', () {
     expect(formatDuration(Duration.zero), '0:00');
     expect(formatDuration(const Duration(minutes: 3, seconds: 5)), '3:05');

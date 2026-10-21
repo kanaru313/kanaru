@@ -30,6 +30,7 @@ class PlayQueue {
     bool shuffled = false,
     Random? random,
   }) {
+    assert(start >= 0 && start < tracks.length, 'start $start out of range');
     final queue = PlayQueue(original: tracks, index: start, repeat: repeat);
     return shuffled ? queue.shuffle(random) : queue;
   }
@@ -51,11 +52,16 @@ class PlayQueue {
   /// the order the user arranged.
   final List<int>? unshuffledOrder;
 
-  /// Tracks in play order, the same order as the engine's playlist.
+  /// Tracks in play order, the same order as the engine's playlist. Built on
+  /// first use (for the queue panel); playback reads [trackAt] instead, so a
+  /// track change never copies the whole queue.
   late final List<Track> tracks = [for (final i in order) original[i]];
 
+  /// The track at play position [i], without building [tracks].
+  Track trackAt(int i) => original[order[i]];
+
   bool get isEmpty => order.isEmpty;
-  Track? get current => isEmpty ? null : tracks[index];
+  Track? get current => isEmpty ? null : trackAt(index);
 
   /// Index a manual "next" goes to, or `null` on the last track unless the
   /// whole queue repeats. Repeat-one still moves on within the queue.
@@ -95,8 +101,15 @@ class PlayQueue {
     if (from < 0 || from >= length || to < 0 || to >= length || from == to) {
       return this;
     }
-    final moved = [...order]..removeAt(from);
-    moved.insert(to, order[from]);
+    // One copy plus a block shift; spreading and insert/remove would each
+    // walk the whole list, which is slow on a queue of a whole library.
+    final moved = List<int>.of(order);
+    if (from < to) {
+      moved.setRange(from, to, order, from + 1);
+    } else {
+      moved.setRange(to + 1, from + 1, order, to);
+    }
+    moved[to] = order[from];
     var newIndex = index;
     if (from == index) {
       newIndex = to;

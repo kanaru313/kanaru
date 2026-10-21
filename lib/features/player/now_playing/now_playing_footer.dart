@@ -24,9 +24,17 @@ const _sideMinWidth = 160.0;
 /// left; the playback buttons over the seek bar in the middle; volume and
 /// the queue on the right.
 class NowPlayingFooter extends StatelessWidget {
-  const NowPlayingFooter({super.key, required this.onClose});
+  const NowPlayingFooter({
+    super.key,
+    required this.onClose,
+    this.onVolumePopupChanged,
+  });
 
   final VoidCallback onClose;
+
+  /// The volume popup opened (`true`) or closed; it floats outside the
+  /// footer, so the screen uses this to keep the footer shown meanwhile.
+  final ValueChanged<bool>? onVolumePopupChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +63,15 @@ class NowPlayingFooter extends StatelessWidget {
                     children: [PlaybackControls(spacing: 20), SeekBar()],
                   ),
                 ),
-                const Expanded(
+                Expanded(
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [VolumeButton(), QueueButton()],
+                      children: [
+                        VolumeButton(onPopupChanged: onVolumePopupChanged),
+                        const QueueButton(),
+                      ],
                     ),
                   ),
                 ),

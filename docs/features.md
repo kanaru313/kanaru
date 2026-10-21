@@ -85,7 +85,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | Mount mạng hoặc FUSE (sshfs, rclone…) | Không hỗ trợ. App không nhận diện; timeout chỉ để quét không treo |
 | Khoá sắp xếp đổi phiên bản (sau khi nâng cấp) | Tính lại trong nền. Khi đó các màn Album, Nghệ sĩ và Bài hát hiện "Đang cập nhật thư viện…" kèm tiến độ; phát nhạc không bị ảnh hưởng |
 
-**Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. Khi đó:
+**Nút "Mở file / Mở thư mục" trên top bar chỉ là tạm thời.** Nó có từ lúc làm player core, để nạp nhạc khi chưa có thư viện, và sẽ bị bỏ khi IDX-01 xong. "Mở thư mục" dùng chung bộ duyệt thư mục (`walkAudioFilesInIsolate`) với việc quét thư viện, nên bỏ qua đúng những thư mục mà lần quét bỏ qua, và bỏ FIFO/thiết bị. Khi đó:
 
 - Đường phát nhạc (`PlayerService.openTracks`, hàng đợi, player bar) vẫn giữ nguyên; màn thư viện dùng lại nó.
 - `isAudioFile` / `scanFolder` trong `lib/features/player/open_media.dart` chuyển sang `lib/core/indexer/`.

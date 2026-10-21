@@ -15,9 +15,10 @@ import 'mpris_properties.dart';
 
 final _log = Logger('mpris');
 
-/// Changes within this window go out as one `PropertiesChanged`. A track
-/// change moves several properties, and the length arrives after the title.
-const _coalesceWindow = Duration(milliseconds: 150);
+/// Default for `coalesceWindow`: changes within it go out as one
+/// `PropertiesChanged`. A track change moves several properties, and the
+/// length arrives after the title.
+const defaultMprisCoalesceWindow = Duration(milliseconds: 150);
 
 const _closeTimeout = Duration(seconds: 1);
 
@@ -31,10 +32,15 @@ class MprisMediaControls implements MediaControls {
   /// [createClient] runs inside the guarded start, so a bad bus address
   /// (`DBusClient.session` throws `FormatException`) only leaves the controls
   /// idle. The client is closed by [dispose]. [onRaise] answers `Raise()`.
+  /// [coalesceWindow] is how long changes are collected before one signal
+  /// goes out. [buildProperties] makes the published properties from a state;
+  /// it is only replaced to observe how often that work happens.
   MprisMediaControls(
     Ref ref,
     this._createClient, {
     required Future<void> Function() onRaise,
+    this._coalesceWindow = defaultMprisCoalesceWindow,
+    this._buildProperties = playerProperties,
   }) {
     _ref = ref;
     final handler = MprisMethodHandler(ref, _ids, onRaise);
@@ -46,17 +52,21 @@ class MprisMediaControls implements MediaControls {
     );
     final state = ref.read(playerServiceProvider);
     _ids.observe(state.queue);
-    _emitted = _latest = playerProperties(state, _ids);
+    _emitted = _latest = _buildProperties(state, _ids);
     // Listening starts before the first await so no change is missed while
     // the connection is still being set up.
-    _stateSubscription = ref.listen(playerServiceProvider, (_, next) {
-      _ids.observe(next.queue);
-      _latest = playerProperties(next, _ids);
+    _stateSubscription = ref.listen(playerServiceProvider, (previous, next) {
       // A new player (rebuild) may have a new seeked stream; see there.
+      // Checked before the early return below: a rebuild can come with a
+      // state that differs only in position.
       _listenToSeeked();
+      // Position is read live and never signalled, so a tick changes
+      // nothing we publish: no property work, no timer.
+      if (previous != null && _samePublished(previous, next)) return;
+      _ids.observe(next.queue);
+      _latest = _buildProperties(next, _ids);
       // Idle: nothing can be sent, and `_start` syncs `_emitted` on
-      // activation. Position ticks change nothing we publish; do not wake up
-      // for them either.
+      // activation.
       if (_active && changedProperties(_emitted, _latest).isNotEmpty) {
         _timer ??= Timer(_coalesceWindow, _flush);
       }
@@ -65,6 +75,10 @@ class MprisMediaControls implements MediaControls {
     _started = _start();
   }
 
+  /// How long changes are collected into one `PropertiesChanged`.
+  final Duration _coalesceWindow;
+  final Map<String, DBusValue> Function(PlayerState, MprisTrackIds)
+  _buildProperties;
   final DBusClient Function() _createClient;
   DBusClient? _client;
   late final Ref _ref;
@@ -118,6 +132,16 @@ class MprisMediaControls implements MediaControls {
   /// The usual reasons for not starting (no session bus, bus refused us):
   /// one line, no stack trace.
   void _unavailable(Object error) => _log.warning('MPRIS unavailable', error);
+
+  /// [a] and [b] give the same `playerProperties`: everything it reads
+  /// except `position` is equal. The queue is compared by identity; it is
+  /// immutable and replaced on every edit.
+  static bool _samePublished(PlayerState a, PlayerState b) =>
+      identical(a.queue, b.queue) &&
+      a.playing == b.playing &&
+      a.stopped == b.stopped &&
+      a.duration == b.duration &&
+      a.volume == b.volume;
 
   /// Follows `PlayerService.seeked`. The service makes a new stream when its
   /// provider rebuilds and closes the old one, so a finished stream means:

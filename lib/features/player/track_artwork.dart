@@ -19,6 +19,15 @@ class TrackArtwork extends StatelessWidget {
   final double size;
   final double radius;
 
+  /// Decode widths are multiples of this, so resizing the window does not
+  /// decode (and cache) a new image for every pixel of growth.
+  static const _decodeStep = 128;
+
+  /// [pixels] rounded up to a multiple of [_decodeStep], at least one step
+  /// (the image asserts a positive size).
+  static int _decodeWidth(double pixels) =>
+      max(1, (pixels / _decodeStep).ceil()) * _decodeStep;
+
   static File? _fileFor(String? uri) {
     if (uri == null || uri.isEmpty) return null;
     if (uri.startsWith('/')) return File(uri);
@@ -51,12 +60,10 @@ class TrackArtwork extends StatelessWidget {
             : Image.file(
                 file,
                 fit: BoxFit.cover,
-                // Decode no larger than shown: a big cover would otherwise
-                // sit in the image cache at full size.
-                // At least 1: the image asserts a positive size.
-                cacheWidth: max(
-                  1,
-                  (size * MediaQuery.devicePixelRatioOf(context)).round(),
+                // Decode no larger than shown (rounded up to a step): a big
+                // cover would otherwise sit in the image cache at full size.
+                cacheWidth: _decodeWidth(
+                  size * MediaQuery.devicePixelRatioOf(context),
                 ),
                 // No blank frame between one track's cover and the next.
                 gaplessPlayback: true,

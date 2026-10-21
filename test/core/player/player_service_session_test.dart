@@ -210,6 +210,24 @@ void main() {
     expect(back?.toQueue().current, a);
   });
 
+  test('a rejected open leaves a restored session frozen', () async {
+    await store(session);
+    final before = File(sessionPath).readAsBytesSync();
+    live = launch();
+    state();
+    await settle();
+
+    await expectLater(
+      service().openTracks([a, b], start: 5),
+      throwsArgumentError,
+    );
+    backend.advance(); // a change that would be saved if it were not frozen
+    await settle();
+    await quit();
+
+    expect(File(sessionPath).readAsBytesSync(), before);
+  });
+
   test('the user playing right away wins over the restore', () async {
     await store(session);
     live = launch();

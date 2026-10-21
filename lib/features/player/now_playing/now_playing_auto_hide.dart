@@ -62,7 +62,8 @@ class AutoHideController {
 
 /// Shows [child] while [controller] says so, fading it in and out. Hidden
 /// means unclickable but still laid out, so the content between the header and
-/// footer does not jump. The pointer resting on [child] keeps it shown.
+/// footer does not jump, and its animations stand still once the fade-out is
+/// over. The pointer resting on [child] keeps it shown.
 class AutoHide extends StatefulWidget {
   const AutoHide({super.key, required this.controller, required this.child});
 
@@ -77,6 +78,22 @@ class _AutoHideState extends State<AutoHide> {
   /// Whether this widget holds a pin, i.e. the pointer is on it.
   bool _pinned = false;
 
+  /// Whether the fade-out has finished, so [child] is invisible for good
+  /// until the chrome shows again.
+  late bool _fadedOut = !widget.controller.visible.value;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.visible.addListener(_onVisible);
+  }
+
+  void _onVisible() {
+    if (_fadedOut && widget.controller.visible.value) {
+      setState(() => _fadedOut = false);
+    }
+  }
+
   void _setPinned(bool pinned) {
     if (_pinned == pinned) return;
     _pinned = pinned;
@@ -86,7 +103,11 @@ class _AutoHideState extends State<AutoHide> {
   @override
   void didUpdateWidget(AutoHide oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_pinned && oldWidget.controller != widget.controller) {
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.visible.removeListener(_onVisible);
+    widget.controller.visible.addListener(_onVisible);
+    _fadedOut = !widget.controller.visible.value;
+    if (_pinned) {
       oldWidget.controller.unpin();
       widget.controller.pin();
     }
@@ -94,6 +115,7 @@ class _AutoHideState extends State<AutoHide> {
 
   @override
   void dispose() {
+    widget.controller.visible.removeListener(_onVisible);
     // A MouseRegion that leaves the tree under the pointer (e.g. the window
     // turning narrow) gets no exit, so give the pin back here.
     if (_pinned) widget.controller.unpin();
@@ -111,7 +133,14 @@ class _AutoHideState extends State<AutoHide> {
           // Quick in, slower out, both eased.
           duration: Duration(milliseconds: visible ? 150 : 100),
           curve: Curves.easeInOut,
-          child: child,
+          onEnd: () {
+            if (!widget.controller.visible.value) {
+              setState(() => _fadedOut = true);
+            }
+          },
+          // Muted tickers schedule no frames, and Riverpod consumers below
+          // stop rebuilding on position ticks nobody sees.
+          child: TickerMode(enabled: visible || !_fadedOut, child: child!),
         ),
       ),
       child: MouseRegion(

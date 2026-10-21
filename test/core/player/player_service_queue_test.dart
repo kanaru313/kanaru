@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/player_state.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:logging/logging.dart';
 
 import 'fake_audio_backend.dart';
 
@@ -180,6 +183,8 @@ void main() {
       expect(state().queue.index, 1);
       expect(state().playing, isFalse);
       expect(state().stopped, isTrue);
+      expect(state().position, Duration.zero);
+      expect(state().duration, Duration.zero);
 
       // Play starts the queue over.
       backend.calls.clear();
@@ -335,6 +340,19 @@ void main() {
       expect(state().stopped, isTrue);
     });
 
+    test('to a removed track at the end leaves nothing to seek', () async {
+      await service().openTracks([a, b]);
+      await service().removeTrack(1);
+      backend.emitAdvanced.add(b);
+      backend.calls.clear();
+
+      await service().seek(const Duration(seconds: 5));
+
+      expect(backend.calls, isEmpty);
+      expect(state().stopped, isTrue);
+      expect(state().position, Duration.zero);
+    });
+
     test('with a file queued twice does not jump to the first copy', () async {
       final x = song('x'), y = song('y');
       await service().openTracks([a, x, a, y, a], start: 2);
@@ -352,6 +370,75 @@ void main() {
       await service().moveTrack(1, 2);
 
       expect(backend.calls, ['open(a, next: b)', 'setNext(c)']);
+    });
+  });
+
+  group('engine calls made while following the engine', () {
+    late List<LogRecord> records;
+    late StreamSubscription<LogRecord> logs;
+
+    setUp(() {
+      records = [];
+      logs = Logger.root.onRecord
+          .where((r) => r.loggerName == 'player')
+          .listen(records.add);
+    });
+    tearDown(() => logs.cancel());
+
+    Future<void> settle() => Future<void>.delayed(Duration.zero);
+
+    test('a failing requeue after an advance is logged', () async {
+      await service().openTracks([a, b, c]);
+      backend.engineError = Exception('mpv gone');
+
+      backend.advance();
+      await settle();
+
+      expect(state().queue.current, b);
+      expect(records, hasLength(1));
+      expect(records.single.error, isA<Exception>());
+    });
+
+    test('a bug (an Error) is not swallowed', () async {
+      final uncaught = <Object>[];
+      // The service subscribes in the zone it is built in, so build it here.
+      await runZonedGuarded(() async {
+        final own = ProviderContainer(
+          overrides: [audioBackendProvider.overrideWithValue(backend)],
+        );
+        addTearDown(own.dispose);
+        own.listen(playerServiceProvider, (_, _) {});
+        await own.read(playerServiceProvider.notifier).openTracks([a, b, c]);
+        backend.engineError = StateError('bug');
+        backend.advance();
+        await settle();
+      }, (error, _) => uncaught.add(error));
+
+      expect(uncaught.single, isA<StateError>());
+      expect(records, isEmpty);
+    });
+
+    test('a failing open after the engine stopped is logged', () async {
+      await service().openTracks([a, b, c]);
+      backend.engineError = Exception('mpv gone');
+
+      backend.emitCompleted.add(true);
+      await settle();
+
+      expect(records, hasLength(1));
+      expect(records.single.error, isA<Exception>());
+    });
+
+    test('a failing open for a removed track is logged', () async {
+      await service().openTracks([a, b, c]);
+      await service().removeTrack(1);
+      backend.engineError = Exception('mpv gone');
+
+      backend.emitAdvanced.add(b);
+      await settle();
+
+      expect(records, hasLength(1));
+      expect(records.single.error, isA<Exception>());
     });
   });
 }

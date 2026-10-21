@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import 'audio_backend.dart';
 import 'media_kit_backend.dart';
@@ -17,6 +18,8 @@ part 'player_queue_commands.dart';
 part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
 part 'player_transport_commands.dart';
+
+final _log = Logger('player');
 
 /// Audio engine for the app session. Tests override it with a fake so they
 /// never load libmpv.
@@ -135,9 +138,12 @@ class PlayerService extends Notifier<PlayerState>
   void _onPosition(Duration position) {
     // Only a tick from the end of a known-length track can be followed by a
     // loop; stale ticks after a track change, seek or stop never qualify.
+    // The jump back matters for a track shorter than the window, where every
+    // tick is both near the end and near the start.
     final looped =
         state.queue.repeat == RepeatMode.one &&
         state.duration > Duration.zero &&
+        position < _lastTick &&
         state.duration - _lastTick < _loopJump &&
         position < _loopJump;
     _lastTick = position;
@@ -152,12 +158,14 @@ class PlayerService extends Notifier<PlayerState>
   void _onCompleted() {
     final next = state.queue.nextIndex;
     if (next != null && !_allFailed) {
-      _play(next, play: _wantsPlaying);
+      _followEngine(
+        'continue after the engine stopped',
+        () => _play(next, play: _wantsPlaying),
+      );
       return;
     }
-    _ended = true;
-    _wantsPlaying = false;
-    state = state.copyWith(playing: false, stopped: true);
+    // Position and duration stay so the user can seek back into the track.
+    _markStopped(ended: true, resetPosition: false);
   }
 
   void _onFailed(PlaybackError error) {
@@ -178,7 +186,7 @@ class PlayerService extends Notifier<PlayerState>
       // Edits that keep the same next track would otherwise pile it up.
       if (_handedNext.lastOrNull != entry) _handedNext.add(entry);
     }
-    return _backend.setNext(next == null ? null : queue.tracks[next]);
+    return _backend.setNext(next == null ? null : queue.trackAt(next));
   }
 
   /// Loads the track at [index], playing or paused, from [start].
@@ -206,8 +214,8 @@ class PlayerService extends Notifier<PlayerState>
     );
     _lastTick = start;
     await _backend.open(
-      queue.tracks[index],
-      next: next == null ? null : queue.tracks[next],
+      queue.trackAt(index),
+      next: next == null ? null : queue.trackAt(next),
       play: play,
       start: start,
     );

@@ -1,39 +1,22 @@
-import 'dart:io';
-
 import 'package:file_selector/file_selector.dart' as picker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/audio_file_types.dart';
+import '../../core/indexer/walk_audio_files.dart';
 import '../../core/player/player_service.dart';
 import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
 
 export '../../core/indexer/audio_file_types.dart';
 
-/// Every audio file under [path], recursively, sorted by path. Lists the
-/// folder asynchronously so the UI keeps running on large folders.
-/// Unreadable subfolders are skipped. Symlinked files are included; symlinked
-/// folders are not followed, so link loops cannot trap the scan.
+/// Every regular audio file under [path], recursively, sorted by path. Walks
+/// the folder on a worker isolate (the indexer's walker, so the same files
+/// count as in the library) to keep the UI running on large folders. Failures
+/// are skipped: an unreadable folder or a missing [path] yields no tracks.
 Future<List<Track>> scanFolder(String path) async {
-  final paths = <String>[];
-  Future<void> walk(Directory folder) async {
-    try {
-      await for (final entity in folder.list(followLinks: false)) {
-        if (entity is Directory) {
-          await walk(entity);
-        } else if (isAudioFile(entity.path) &&
-            (entity is File || await FileSystemEntity.isFile(entity.path))) {
-          paths.add(entity.path);
-        }
-      }
-    } on FileSystemException {
-      // Permission denied, vanished while listing, broken mount: skip it.
-    }
-  }
-
-  await walk(Directory(path));
-  paths.sort();
+  final walk = await walkAudioFilesInIsolate(path);
+  final paths = [for (final file in walk.files) file.path]..sort();
   return [for (final path in paths) Track.fromPath(path)];
 }
 

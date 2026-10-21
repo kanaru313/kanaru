@@ -4,31 +4,36 @@ import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 
 import 'audio_backend.dart';
+import 'mpv_playlist_tracker.dart';
 import 'playback_error.dart';
 import 'repeat_mode.dart';
 import 'track.dart';
-
-// Over the usual 200 lines on purpose: the playlist bookkeeping (entry ids,
-// current/next, failure detection) only makes sense next to the command chain
-// that keeps it consistent, so it stays in one file.
 
 final _log = Logger('player');
 final _mpvLog = Logger('mpv');
 
 /// [AudioBackend] on top of a media_kit (libmpv) [Player].
 ///
-/// mpv's playlist holds at most the current entry and the next one. Playlist
-/// state is always read from mpv itself, never from media_kit's mirrored
-/// `state.playlist`, which lags behind mpv. Entries are told apart by mpv's
-/// entry ids, so the same file queued twice, or an event that arrives after
-/// the playlist changed again, cannot be mistaken for a track change.
-
+/// Owns the command chain that runs every playlist change one at a time, and
+/// forwards media_kit's streams. The playlist bookkeeping lives in
+/// [MpvPlaylistTracker]. Playlist state is always read from mpv itself, never
+/// from media_kit's mirrored `state.playlist`, which lags behind mpv.
 class MediaKitBackend implements AudioBackend {
   MediaKitBackend()
     : _player = Player(
         // Fixed, not tied to KANARU_LOG_LEVEL: below `warn` mpv is too noisy.
         configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
       ) {
+    _tracker = MpvPlaylistTracker(
+      read: (name) => _native.getProperty(name),
+      onAdvanced: (track, {required loaded}) {
+        _advanced.add(track);
+        // The track loaded before its change was reported, so its duration
+        // came first too; listeners reset it on the change, so send it again.
+        if (loaded) _duration.add(_player.state.duration);
+      },
+      onFailed: _failed.add,
+    );
     // mpv's default today, set so gapless does not depend on it. `weak` joins
     // tracks only when their audio format matches; `yes` would resample a
     // track to the format of the one before it. Through the chain, so it
@@ -60,10 +65,7 @@ class MediaKitBackend implements AudioBackend {
         }),
       );
     });
-    // Log lines reach Dart before or after the track change they belong to,
-    // so they only supply the message; [_reportIfFailed] decides which track
-    // failed.
-    _forwardError = _player.stream.error.listen((m) => _lastError = m);
+    _forwardError = _player.stream.error.listen(_tracker.recordError);
     // No de-duplication here or in media_kit: its `distinct` compares
     // `PlayerLog` objects, which have no `==`, so every line gets through.
     _forwardLog = _player.stream.log.listen((entry) {
@@ -75,7 +77,9 @@ class MediaKitBackend implements AudioBackend {
     });
     _forwardDuration = _player.stream.duration.listen((duration) {
       _duration.add(duration);
-      if (duration > Duration.zero) unawaited(_markLoaded());
+      if (duration > Duration.zero && !_disposed) {
+        unawaited(_tracker.markLoaded());
+      }
     });
     // The value is ignored: the handler reads the position again once it
     // runs, after any command queued before it.
@@ -90,6 +94,7 @@ class MediaKitBackend implements AudioBackend {
   }
 
   final Player _player;
+  late final MpvPlaylistTracker _tracker;
   late final StreamSubscription<bool> _forwardCompleted;
   late final StreamSubscription<String> _forwardError;
   late final StreamSubscription<PlayerLog> _forwardLog;
@@ -103,11 +108,6 @@ class MediaKitBackend implements AudioBackend {
   final _failed = StreamController<PlaybackError>.broadcast();
   final _duration = StreamController<Duration>.broadcast();
 
-  /// mpv entry ids that loaded, i.e. reported a duration. An entry left
-  /// without loading is a track that failed.
-  final _loaded = <int>{};
-  String _lastError = '';
-
   /// `open` calls waiting in the chain. Each one replaces the playlist, so
   /// a track change seen before it runs belongs to the old queue.
   int _opensPending = 0;
@@ -116,13 +116,6 @@ class MediaKitBackend implements AudioBackend {
 
   /// Tail of the command chain: every playlist change runs one at a time.
   Future<void> _pending = Future.value();
-
-  /// The current track with its mpv entry id, and the queued next track
-  /// with its id.
-  Track? _current;
-  int? _currentId;
-  Track? _next;
-  int? _nextId;
 
   NativePlayer get _native => _player.platform as NativePlayer;
 
@@ -133,15 +126,10 @@ class MediaKitBackend implements AudioBackend {
     return run;
   }
 
-  Future<int> _intProperty(String name) async =>
-      int.tryParse(await _native.getProperty(name)) ?? -1;
-
-  Future<int?> _entryId(int index) async =>
-      int.tryParse(await _native.getProperty('playlist/$index/id'));
+  Future<int> _intProperty(String name) => _tracker.readInt(name);
 
   Future<void> _queueNext(Track? next) async {
-    _next = next;
-    _nextId = null;
+    _tracker.queueNext(next);
     if (next == null) return;
     await _native.command(['loadfile', next.uri, 'append']);
     final last = await _intProperty('playlist-count') - 1;
@@ -149,59 +137,17 @@ class MediaKitBackend implements AudioBackend {
     // never will be: drop it, and the idle handler reports the stop.
     if (await _intProperty('playlist-playing-pos') < 0) {
       await _native.command(['playlist-remove', '$last']);
-      _next = null;
+      _tracker.dropNext();
       return;
     }
-    _nextId = await _entryId(last);
-  }
-
-  Future<void> _markLoaded() async {
-    if (_disposed) return;
-    final position = await _intProperty('playlist-playing-pos');
-    final id = position < 0 ? null : await _entryId(position);
-    if (id != null) {
-      _loaded.add(id);
-      _lastError = '';
-    }
-  }
-
-  /// Reports the current track as failed when mpv is leaving it unloaded.
-  void _reportIfFailed() {
-    final track = _current;
-    if (track == null || _loaded.contains(_currentId)) return;
-    _log.warning('Playback failed: ${track.uri}: $_lastError');
-    _failed.add(PlaybackError(track, _lastError));
-    _lastError = '';
-  }
-
-  /// Moves on to [track], the queued next entry with mpv id [id].
-  void _becomeCurrent(Track track, int id) {
-    _reportIfFailed();
-    _current = track;
-    _currentId = id;
-    _next = null;
-    _nextId = null;
-    _loaded.removeWhere((loaded) => loaded < id);
-    _advanced.add(track);
-    // The track loaded before its change was reported, so its duration came
-    // first too; listeners reset it on the change, so send it again.
-    if (_loaded.contains(id)) _duration.add(_player.state.duration);
+    _tracker.setNextId(await _tracker.entryId(last));
   }
 
   Future<void> _onPlayingPosition() async {
     if (_opensPending > 0) return;
     final position = await _intProperty('playlist-playing-pos');
     if (position < 0) {
-      // Nothing playable left: the current track failed, and so did the
-      // queued next one if there was one.
-      if (_currentId == null) return;
-      final next = _next;
-      final nextId = _nextId;
-      if (next != null && nextId != null) _becomeCurrent(next, nextId);
-      _reportIfFailed();
-      _current = null;
-      _currentId = null;
-      _completed.add(true);
+      if (_tracker.leaveIdle()) _completed.add(true);
       return;
     }
     await _promoteIfNext(position);
@@ -210,8 +156,7 @@ class MediaKitBackend implements AudioBackend {
   /// Makes the entry at [position] current when it is the queued next track,
   /// i.e. mpv moved on to it by itself. Returns whether it did.
   Future<bool> _promoteIfNext(int position) async {
-    if (_nextId == null || await _entryId(position) != _nextId) return false;
-    _becomeCurrent(_next!, _nextId!);
+    if (!await _tracker.promoteIfNext(position)) return false;
     // Drop the finished entries so the playlist is [current] again.
     for (var i = 0; i < position; i++) {
       await _native.command(['playlist-remove', '0']);
@@ -236,8 +181,7 @@ class MediaKitBackend implements AudioBackend {
         return;
       }
       try {
-        _loaded.clear();
-        _lastError = '';
+        _tracker.resetForOpen();
         // media_kit applies `start` while this entry loads and clears it
         // when it unloads, so the next entry, appended with a raw
         // `loadfile`, still starts at zero. Its list of opened media is
@@ -248,8 +192,7 @@ class MediaKitBackend implements AudioBackend {
           Media(track.uri, start: start > Duration.zero ? start : null),
           play: play,
         );
-        _current = track;
-        _currentId = await _entryId(0);
+        _tracker.setCurrent(track, await _tracker.entryId(0));
         await _queueNext(next);
       } finally {
         _opensPending--;
@@ -291,11 +234,8 @@ class MediaKitBackend implements AudioBackend {
   Future<void> stop() => _serial(() async {
     // Forget the tracks first: stopping empties mpv's playlist, and the
     // handler would otherwise report the unfinished current track as failed.
-    _current = null;
-    _currentId = null;
-    _next = null;
-    _nextId = null;
-    _loaded.clear();
+    _tracker.forgetTracks();
+    _tracker.clearLoaded();
     await _player.stop();
   });
 

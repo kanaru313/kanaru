@@ -6,6 +6,7 @@ import '../../core/indexer/indexer_providers.dart';
 import '../../features/library/scan_result_snack_bar.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../features/player/now_playing/now_playing_overlay.dart';
+import '../../features/player/now_playing/now_playing_title_bar.dart';
 import '../../features/player/player_bar.dart';
 import '../../features/player/queue/queue_sheet_host.dart';
 import 'app_destination.dart';
@@ -39,11 +40,10 @@ class AppShell extends ConsumerWidget {
   }
 
   /// Header of Now Playing with the window drag area and buttons, which
-  /// features cannot reach themselves. The header holds buttons this layer
-  /// cannot mark as interactive, so a double click there must not maximize.
+  /// features cannot reach themselves. The header marks its own buttons with
+  /// [WindowDragExclusion], so the area behaves like the shell's title bar.
   Widget _nowPlayingTitleBar(Widget header, bool customTitleBar) {
     return WindowDragArea(
-      doubleClickMaximizes: false,
       child: Row(
         children: [
           Expanded(child: header),
@@ -143,25 +143,24 @@ class AppShell extends ConsumerWidget {
             ),
     );
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Behind Now Playing nothing may take focus, be read out or run
-        // animations; the page state is kept for when it closes.
-        ExcludeFocus(
+    // Behind Now Playing nothing may take focus, be read out or run
+    // animations; the page state is kept for when it closes. The overlay also
+    // stops drawing the shell once it covers it.
+    return NowPlayingOverlay(
+      behind: ExcludeFocus(
+        excluding: nowPlayingOpen,
+        child: ExcludeSemantics(
           excluding: nowPlayingOpen,
-          child: ExcludeSemantics(
-            excluding: nowPlayingOpen,
-            child: IgnorePointer(
-              ignoring: nowPlayingOpen,
-              child: TickerMode(enabled: !nowPlayingOpen, child: shell),
-            ),
+          child: IgnorePointer(
+            ignoring: nowPlayingOpen,
+            child: TickerMode(enabled: !nowPlayingOpen, child: shell),
           ),
         ),
-        NowPlayingOverlay(
-          titleBar: (header) => _nowPlayingTitleBar(header, customTitleBar),
-        ),
-      ],
+      ),
+      titleBar: NowPlayingTitleBar(
+        wrapHeader: (header) => _nowPlayingTitleBar(header, customTitleBar),
+        excludeFromDrag: (button) => WindowDragExclusion(child: button),
+      ),
     );
   }
 }

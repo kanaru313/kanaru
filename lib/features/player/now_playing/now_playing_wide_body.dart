@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
+import 'now_playing_title_bar.dart';
 import 'now_playing_track_info.dart';
 
 /// Header strip of the wide layout: the lyrics-only toggle at the top left,
@@ -12,12 +13,14 @@ class NowPlayingWideHeader extends StatelessWidget {
   const NowPlayingWideHeader({
     super.key,
     required this.height,
+    required this.excludeFromDrag,
     required this.hasLyrics,
     required this.lyricsOnly,
     required this.onToggleLyricsOnly,
   });
 
   final double height;
+  final NowPlayingDragExclusion excludeFromDrag;
   final bool hasLyrics;
   final bool lyricsOnly;
   final VoidCallback onToggleLyricsOnly;
@@ -31,11 +34,13 @@ class NowPlayingWideHeader extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Padding(
                 padding: const EdgeInsets.only(left: 30),
-                child: IconButton(
-                  icon: const Icon(Icons.lyrics_rounded),
-                  isSelected: lyricsOnly,
-                  tooltip: context.l10n.nowPlayingLyricsOnly,
-                  onPressed: onToggleLyricsOnly,
+                child: excludeFromDrag(
+                  IconButton(
+                    icon: const Icon(Icons.lyrics_rounded),
+                    isSelected: lyricsOnly,
+                    tooltip: context.l10n.nowPlayingLyricsOnly,
+                    onPressed: onToggleLyricsOnly,
+                  ),
                 ),
               ),
             )

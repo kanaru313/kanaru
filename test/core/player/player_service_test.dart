@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/playback_error.dart';
@@ -42,6 +44,30 @@ void main() {
   test('opening nothing keeps the queue', () async {
     await service().openTracks(const []);
     expect(backend.calls, isEmpty);
+  });
+
+  group('opening with a start outside the tracks', () {
+    for (final start in [-1, 4]) {
+      for (final shuffled in [false, true]) {
+        test('start $start${shuffled ? ', shuffled' : ''} '
+            'throws and keeps what plays', () async {
+          await service().openTracks(songs.sublist(0, 2), start: 1);
+          if (shuffled) await service().toggleShuffle();
+          backend.calls.clear();
+          final before = container.read(playerServiceProvider);
+
+          await expectLater(
+            service().openTracks(songs, start: start),
+            throwsArgumentError,
+          );
+
+          final after = container.read(playerServiceProvider);
+          expect(backend.calls, isEmpty);
+          expect(after.queue, same(before.queue));
+          expect(after.queue.current, songs[1]);
+        });
+      }
+    }
   });
 
   test('the last track queues nothing with repeat off', () async {
@@ -363,6 +389,49 @@ void main() {
     ]);
   });
 
+  test('seeking with nothing loaded does nothing', () async {
+    await service().openTracks(songs, start: 3);
+    backend.emitDuration.add(const Duration(seconds: 100));
+    final seeks = <Duration>[];
+    service().seeked.listen(seeks.add);
+    await service().removeTrack(3);
+    backend.calls.clear();
+    final stoppedState = container.read(playerServiceProvider);
+    expect(stoppedState.stopped, isTrue);
+
+    await service().seekBy(const Duration(seconds: 5));
+    await service().seek(const Duration(seconds: 5));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(backend.calls, isEmpty);
+    expect(container.read(playerServiceProvider), stoppedState);
+    expect(seeks, isEmpty);
+  });
+
+  test('seek clamps to the track and a paused track still seeks', () async {
+    await service().openTracks(songs);
+    backend.emitDuration.add(const Duration(seconds: 100));
+    await service().pause();
+
+    await service().seek(const Duration(seconds: 500));
+    expect(backend.calls.last, 'seek(${const Duration(seconds: 100)})');
+    await service().seek(const Duration(seconds: -3));
+    expect(backend.calls.last, 'seek(${Duration.zero})');
+  });
+
+  test(
+    'a seek still pending when the provider is disposed ends quietly',
+    () async {
+      await service().openTracks(songs);
+      final gate = backend.seekGate = Completer<void>();
+      final pending = service().seek(const Duration(seconds: 10));
+      container.dispose();
+      gate.complete();
+
+      await expectLater(pending, completes);
+    },
+  );
+
   test('seekBy stays inside the track', () async {
     await service().openTracks(songs);
     backend.emitDuration.add(const Duration(seconds: 100));
@@ -479,6 +548,55 @@ void main() {
       expect(current().stopped, isTrue);
     });
 
+    test('a natural end keeps the finished track to seek back into', () async {
+      await service().openTracks(songs, start: 3);
+      backend.emitDuration.add(const Duration(seconds: 100));
+      backend.emitPosition.add(const Duration(seconds: 99));
+      backend.emitCompleted.add(true);
+
+      expect(current().stopped, isTrue);
+      expect(current().position, const Duration(seconds: 99));
+      expect(current().duration, const Duration(seconds: 100));
+
+      await service().seek(const Duration(seconds: 10));
+      expect(current().stopped, isFalse);
+      expect(backend.calls.last, 'seek(0:00:10.000000)');
+    });
+
+    test(
+      'a natural end forgets the last tick, so no loop is signalled',
+      () async {
+        await service().openTracks(songs, start: 3);
+        backend.emitDuration.add(const Duration(seconds: 100));
+        backend.emitPosition.add(const Duration(seconds: 99));
+        backend.emitCompleted.add(true);
+        final seeks = <Duration>[];
+        service().seeked.listen(seeks.add);
+
+        await service().setRepeat(RepeatMode.one);
+        backend.emitPosition.add(const Duration(milliseconds: 500));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(seeks, isEmpty);
+      },
+    );
+
+    test('ends stopped and not playing after a late play echo', () async {
+      await service().openTracks(songs);
+      await service().pause();
+      await service().play();
+      await service().stop();
+
+      // A brief playing+stopped overlap before the engine's pause echo is
+      // accepted; only the final state matters.
+      // The engine reports play's result, then the pause that followed it.
+      backend.emitPlaying.add(true);
+      backend.emitPlaying.add(false);
+
+      expect(current().stopped, isTrue);
+      expect(current().playing, isFalse);
+    });
+
     test('jumping, seeking and opening clear it', () async {
       await service().openTracks(songs);
       for (final resume in <Future<void> Function()>[
@@ -540,6 +658,23 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(seeks, [Duration.zero]);
+    });
+
+    test('a track shorter than the loop window fires once per loop', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      service().seeked.listen(seeks.add);
+
+      backend.emitDuration.add(const Duration(milliseconds: 1500));
+      await Future<void>.delayed(Duration.zero);
+      for (var loop = 0; loop < 3; loop++) {
+        for (var ms = 0; ms <= 1500; ms += 50) {
+          backend.emitPosition.add(Duration(milliseconds: ms));
+        }
+      }
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, [Duration.zero, Duration.zero]);
     });
 
     test('plain progress and other repeat modes stay silent', () async {
