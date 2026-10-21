@@ -75,7 +75,9 @@ class LibraryStartup {
 }
 
 /// Runs once per connection on the database isolate, so it captures no state.
-/// WAL lets the UI read while a scan writes.
+/// WAL with `synchronous = NORMAL` keeps commits cheap. The app opens one
+/// connection, so its own reads wait while a scan's transaction runs; a
+/// separate read connection was measured and did not make scans faster.
 void applyLibraryPragmas(Database rawDb) {
   rawDb.execute('PRAGMA journal_mode = WAL;');
   rawDb.execute('PRAGMA synchronous = NORMAL;');
