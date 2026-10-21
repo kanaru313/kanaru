@@ -17,17 +17,34 @@ const libraryRescanClearance = 88.0;
 /// turns into its progress ring (determinate while tags are read) and
 /// cannot be pressed; the tooltip says how far the scan got. The ring stays
 /// for at least [ScanProgressBuilder]'s minimum, so a quick scan does not
-/// flash.
+/// flash. While the scan's covers are being made afterwards, it is their
+/// progress ring instead, again disabled.
 class LibraryRescanButton extends ConsumerWidget {
   const LibraryRescanButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final covers = ref.watch(coverPassProvider);
 
     return ScanProgressBuilder(
       scan: ref.watch(libraryIndexerProvider),
       builder: (context, progress) {
+        if (progress == null && covers is CoverPassRunning) {
+          return FloatingActionButton(
+            heroTag: null,
+            tooltip: l10n.libraryCoverProgress(
+              coverPassDone(covers),
+              covers.total,
+            ),
+            onPressed: null,
+            child: const CoverProgressIndicator(
+              size: 24,
+              strokeWidth: 3,
+              tooltip: false,
+            ),
+          );
+        }
         if (progress == null) {
           return FloatingActionButton(
             // Several library pages stay mounted at once.
@@ -50,8 +67,7 @@ class LibraryRescanButton extends ConsumerWidget {
 }
 
 /// [child] with the [LibraryRescanButton] floating at its bottom right, shown
-/// only while the library is open and has a music folder. While covers are
-/// being made, a small ring sits beside it; the button stays usable.
+/// only while the library is open and has a music folder.
 class LibraryRescanStack extends ConsumerWidget {
   const LibraryRescanStack({super.key, required this.child});
 
@@ -67,17 +83,7 @@ class LibraryRescanStack extends ConsumerWidget {
       children: [
         Positioned.fill(child: child),
         if (show)
-          const Positioned(
-            right: 16,
-            bottom: 16,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CoverProgressIndicator(backdrop: true),
-                LibraryRescanButton(),
-              ],
-            ),
-          ),
+          const Positioned(right: 16, bottom: 16, child: LibraryRescanButton()),
       ],
     );
   }

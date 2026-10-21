@@ -9,9 +9,8 @@ void main() {
   Finder rescan() => find.widgetWithIcon(FloatingActionButton, Icons.refresh);
   Finder ring() => find.byType(CircularProgressIndicator);
 
-  testWidgets('a ring beside the rescan button while covers are made', (
-    tester,
-  ) async {
+  testWidgets('the rescan button turns into a disabled ring while covers '
+      'are made', (tester) async {
     final h = LibraryHarness();
     await h.pump(tester, hasRoots: true);
     goTo(tester, h, '/songs');
@@ -20,20 +19,19 @@ void main() {
 
     h.container.read(coverPassProvider.notifier).report(340, 1170);
     await tester.pump();
-    expect(ring(), findsOneWidget);
+    final fab = find.byType(FloatingActionButton);
+    expect(find.descendant(of: fab, matching: ring()), findsOneWidget);
+    expect(rescan(), findsNothing);
     expect(find.byTooltip('Making covers… 340 / 1,170'), findsOneWidget);
-    expect(
-      tester.widget<FloatingActionButton>(rescan()).onPressed,
-      isNotNull,
-      reason: 'a rescan makes the cover pass yield',
-    );
+    expect(tester.widget<FloatingActionButton>(fab).onPressed, isNull);
 
     h.container.read(coverPassProvider.notifier).finish();
     await tester.pump();
     expect(ring(), findsNothing);
+    expect(tester.widget<FloatingActionButton>(rescan()).onPressed, isNotNull);
   });
 
-  testWidgets('settings show the ring and keep rescan enabled', (tester) async {
+  testWidgets('settings show the ring and disable rescan', (tester) async {
     final h = LibraryHarness();
     await h.pump(tester, hasRoots: true);
     goTo(tester, h, '/settings');
@@ -46,6 +44,10 @@ void main() {
       of: find.text('Rescan'),
       matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
     );
+    expect(tester.widget<ButtonStyleButton>(button).onPressed, isNull);
+
+    h.container.read(coverPassProvider.notifier).finish();
+    await tester.pump();
     expect(tester.widget<ButtonStyleButton>(button).onPressed, isNotNull);
   });
 }
