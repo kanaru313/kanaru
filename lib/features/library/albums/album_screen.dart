@@ -11,6 +11,7 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_detail_body.dart';
 import '../library_route_keys.dart';
+import '../enqueue_tracks.dart';
 import '../play_tracks.dart';
 import 'album_header.dart';
 import 'album_track_tile.dart';

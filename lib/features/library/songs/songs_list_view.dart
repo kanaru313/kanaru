@@ -10,6 +10,7 @@ import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
+import '../enqueue_tracks.dart';
 import '../play_tracks.dart';
 import '../widgets/library_loading.dart';
 import '../widgets/library_rescan_button.dart';

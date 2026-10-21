@@ -9,7 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../library_route_keys.dart';
-import '../play_tracks.dart';
+import '../enqueue_tracks.dart';
 import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
