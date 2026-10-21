@@ -3,7 +3,6 @@
 use std::io::Cursor;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
-use image::codecs::jpeg::JpegEncoder;
 use image::{DynamicImage, GrayImage, ImageFormat, ImageReader, Limits, RgbImage};
 
 use crate::cover_art::MAX_COVER_SIDE;
@@ -52,10 +51,20 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     // Flattened first: blending over black, then averaging, is what a
     // resize with premultiplied alpha followed by the blend would give.
     let rgb = shrink(flatten_on_black(image));
+    encode(&rgb)
+}
 
+/// `rgb` as a JPEG at [`JPEG_QUALITY`], colour at full resolution (4:4:4,
+/// like the `image` encoder used before), so text and edges in covers keep
+/// their colour.
+fn encode(rgb: &RgbImage) -> Option<Vec<u8>> {
+    let width = u16::try_from(rgb.width()).ok()?;
+    let height = u16::try_from(rgb.height()).ok()?;
     let mut out = Vec::new();
-    JpegEncoder::new_with_quality(&mut out, JPEG_QUALITY)
-        .encode_image(&rgb)
+    let mut encoder = jpeg_encoder::Encoder::new(&mut out, JPEG_QUALITY);
+    encoder.set_sampling_factor(jpeg_encoder::SamplingFactor::F_1_1);
+    encoder
+        .encode(rgb.as_raw(), width, height, jpeg_encoder::ColorType::Rgb)
         .ok()?;
     Some(out)
 }
