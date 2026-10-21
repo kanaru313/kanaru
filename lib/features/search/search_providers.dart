@@ -72,7 +72,7 @@ class SearchResults {
   final List<AlbumSummary> albums;
   final List<ArtistSummary> artists;
 
-  bool get isEmpty => songTotal == 0 && albums.isEmpty && artists.isEmpty;
+  bool get isEmpty => songs.isEmpty && albums.isEmpty && artists.isEmpty;
 }
 
 /// The three groups for the query [termsKey] (see [searchSongsProvider]).

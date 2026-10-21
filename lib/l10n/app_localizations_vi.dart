@@ -475,20 +475,46 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String searchShowAll(int count) {
-    return 'Xem tất cả ($count)';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Xem tất cả ($countString)';
   }
+
+  @override
+  String searchShowTop(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Xem $countString bài đầu';
+  }
+
+  @override
+  String get searchShowLess => 'Thu gọn';
+
+  @override
+  String get searchFailedTitle => 'Không tìm được';
 
   @override
   String get searchNoResultsTitle => 'Không có kết quả';
 
   @override
   String searchNoResultsMessage(String query) {
-    return 'Không có gì khớp với “$query”. Thử bớt từ hoặc gõ ngắn hơn.';
+    return 'Không tìm thấy kết quả cho “$query”. Thử bớt từ hoặc gõ ngắn hơn.';
   }
 
   @override
   String searchMoreSongs(int shown, int total) {
-    return 'Đang hiện $shown trong $total bài. Thêm từ để thu hẹp.';
+    final intl.NumberFormat shownNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String shownString = shownNumberFormat.format(shown);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Đang hiện $shownString bài đầu trong $totalString bài. Thêm từ để thu hẹp kết quả.';
   }
 
   @override

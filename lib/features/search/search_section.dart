@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
@@ -6,22 +7,28 @@ import '../../l10n/l10n.dart';
 const searchSectionPreview = 8;
 
 /// The slivers of one result group: a header with its [count], the [items]
-/// (the first [searchSectionPreview] unless [expanded]), then "Show all" or
-/// the [footer]. Rows are built lazily, so a long group stays cheap.
+/// (the first [searchSectionPreview] unless [expanded]), then a toggle
+/// ("Show all" / "Show less") and, once [expanded], the [footer]. A [count]
+/// above the [items] means the rows are only the best ones, and the toggle
+/// says so. Rows are built lazily, so a long group stays cheap.
 List<Widget> searchSectionSlivers<T>({
   required BuildContext context,
   required String title,
   required int count,
   required List<T> items,
   required bool expanded,
-  required VoidCallback onShowAll,
+  required VoidCallback onToggle,
   required Widget Function(T item) rowBuilder,
   Widget? footer,
 }) {
-  final shown = expanded || items.length <= searchSectionPreview
-      ? items.length
-      : searchSectionPreview;
-  final canExpand = !expanded && items.length > searchSectionPreview;
+  final l10n = context.l10n;
+  final collapsible = items.length > searchSectionPreview;
+  final shown = expanded || !collapsible ? items.length : searchSectionPreview;
+  final label = expanded
+      ? l10n.searchShowLess
+      : count > items.length
+      ? l10n.searchShowTop(items.length)
+      : l10n.searchShowAll(items.length);
   return [
     SliverToBoxAdapter(
       child: _SectionHeader(title: title, count: count),
@@ -30,20 +37,20 @@ List<Widget> searchSectionSlivers<T>({
       itemCount: shown,
       itemBuilder: (context, i) => rowBuilder(items[i]),
     ),
-    if (canExpand)
+    if (collapsible)
       SliverToBoxAdapter(
         child: Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TextButton(
-              onPressed: onShowAll,
-              child: Text(context.l10n.searchShowAll(items.length)),
+              onPressed: onToggle,
+              child: Text(label),
             ),
           ),
         ),
       ),
-    if (footer != null && !canExpand) SliverToBoxAdapter(child: footer),
+    if (footer != null && expanded) SliverToBoxAdapter(child: footer),
   ];
 }
 
@@ -56,16 +63,21 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final number = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toString(),
+    ).format(count);
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 4),
       child: Semantics(
         header: true,
+        label: '$title, $number',
+        excludeSemantics: true,
         child: Text.rich(
           TextSpan(
             text: title,
             children: [
               TextSpan(
-                text: '  $count',
+                text: '  $number',
                 style: TextStyle(
                   fontWeight: FontWeight.normal,
                   color: theme.colorScheme.onSurfaceVariant,

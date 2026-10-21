@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_keys_provider.dart';
 import '../../core/database/library_startup.dart';
+import '../../core/indexer/indexer_providers.dart';
+import '../../core/indexer/indexer_state.dart';
 import '../../core/database/search_terms.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/empty_state.dart';
@@ -42,6 +44,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    // Keep the name indexes loaded while the page is mounted, so the first
+    // search after clearing the field does not load the library again.
+    ref.listen(searchAlbumIndexProvider, (_, _) {});
+    ref.listen(searchArtistIndexProvider, (_, _) {});
     final terms = searchTerms(widget.query);
     if (terms.isEmpty) {
       return PageScaffold(
@@ -91,17 +97,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final async = ref.watch(searchResultsProvider(termsKey));
     final fresh = async.value;
     if (fresh != null) _shown = _Shown(termsKey, widget.query, fresh);
-    final shown = _shown;
-    if (shown == null) {
-      return async.hasError
-          ? EmptyState(
-              icon: Icons.error_outline,
-              title: l10n.libraryUnavailableTitle,
-              message: l10n.libraryUnexpectedError,
-            )
-          : const LibraryLoading();
+    // The previous query's results stand in only while this one loads; a
+    // failure of this query is shown as such.
+    if (fresh == null && async.hasError) {
+      return EmptyState(
+        icon: Icons.error_outline,
+        title: l10n.searchFailedTitle,
+        message: l10n.libraryUnexpectedError,
+      );
     }
+    final shown = _shown;
+    if (shown == null) return const LibraryLoading();
     if (shown.results.isEmpty) {
+      // A song may still be on its way while the first scan runs.
+      if (ref.watch(
+        libraryIndexerProvider.select((s) => s is IndexerScanning),
+      )) {
+        return const LibraryLoading();
+      }
       return EmptyState(
         icon: Icons.search_off,
         title: l10n.searchNoResultsTitle,

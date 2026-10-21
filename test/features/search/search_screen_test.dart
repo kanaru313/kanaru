@@ -2,8 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
+import 'package:kanaru/core/indexer/indexer_providers.dart';
+import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/features/search/search_providers.dart';
 
 import '../library/browse_test_data.dart';
+
+import 'package:kanaru/shared/widgets/library_loading.dart';
+
+import '../../core/indexer/scripted_indexer.dart';
 import '../library/library_test_harness.dart';
 import 'search_test_data.dart';
 
@@ -92,5 +99,70 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Hello'), findsOneWidget);
     expect(find.text('Lạc Trôi'), findsNothing);
+  });
+
+  testWidgets('a failed query shows the error, not the previous results', (
+    tester,
+  ) async {
+    final h = LibraryHarness(
+      overrides: [
+        searchSongsProvider('adele')
+            .overrideWith((ref) => Stream.error(StateError('boom'))),
+      ],
+    );
+    await openSearch(tester, h, 'son tung');
+    expect(find.text('Lạc Trôi'), findsOneWidget);
+
+    goTo(tester, h, '/search?q=adele');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search failed'), findsOneWidget);
+    expect(find.text("Couldn't open the library"), findsNothing);
+    expect(find.text('Lạc Trôi'), findsNothing);
+
+    goTo(tester, h, '/search?q=son+tung');
+    await tester.pumpAndSettle();
+    expect(find.text('Lạc Trôi'), findsOneWidget);
+    expect(find.text('Search failed'), findsNothing);
+  });
+
+  testWidgets('a failed first query shows the error', (tester) async {
+    final h = LibraryHarness(
+      overrides: [
+        searchSongsProvider('son')
+            .overrideWith((ref) => Stream.error(StateError('boom'))),
+      ],
+    );
+    await openSearch(tester, h, 'son');
+
+    expect(find.text('Search failed'), findsOneWidget);
+  });
+
+  testWidgets('no results while scanning shows loading, not "No results"', (
+    tester,
+  ) async {
+    final indexer = ScriptedIndexer();
+    final h = LibraryHarness(
+      overrides: [libraryIndexerProvider.overrideWith(() => indexer)],
+    );
+    await openSearch(tester, h, 'zzzz');
+    expect(find.text('No results'), findsOneWidget);
+
+    indexer.emit(
+      const IndexerScanning(phase: ScanPhase.reading, rootPath: '/m'),
+    );
+    await tester.pump();
+    expect(find.text('No results'), findsNothing);
+    expect(find.byType(LibraryLoading), findsOneWidget);
+
+    // Results found during a scan show as usual.
+    goTo(tester, h, '/search?q=son+tung');
+    await tester.pumpAndSettle();
+    expect(find.text('Lạc Trôi'), findsOneWidget);
+
+    indexer.emit(IndexerFinished(const ScanSummary()));
+    goTo(tester, h, '/search?q=zzzz');
+    await tester.pumpAndSettle();
+    expect(find.text('No results'), findsOneWidget);
   });
 }

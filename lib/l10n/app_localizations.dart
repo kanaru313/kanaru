@@ -824,6 +824,24 @@ abstract class AppLocalizations {
   /// **'Show all ({count})'**
   String searchShowAll(int count);
 
+  /// No description provided for @searchShowTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Show top {count}'**
+  String searchShowTop(int count);
+
+  /// No description provided for @searchShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get searchShowLess;
+
+  /// No description provided for @searchFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get searchFailedTitle;
+
   /// No description provided for @searchNoResultsTitle.
   ///
   /// In en, this message translates to:
@@ -839,7 +857,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchMoreSongs.
   ///
   /// In en, this message translates to:
-  /// **'Showing the first {shown} of {total} songs. Add words to narrow it down.'**
+  /// **'Showing the top {shown} of {total} songs. Add words to narrow it down.'**
   String searchMoreSongs(int shown, int total);
 
   /// No description provided for @playerOpenMenu.

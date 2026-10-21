@@ -19,7 +19,7 @@ import 'search_providers.dart';
 import 'search_section.dart';
 
 /// The songs, albums and artists [results] found, as one scrolling page.
-/// "Show all" opens a group in place; give the widget a new key per query so
+/// "Show all" opens a group in place ("Show less" closes it); give the widget a new key per query so
 /// the groups close again.
 class SearchResultsView extends ConsumerStatefulWidget {
   const SearchResultsView({super.key, required this.results});
@@ -57,7 +57,7 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
             count: r.songTotal,
             items: r.songs,
             expanded: _songs,
-            onShowAll: () => setState(() => _songs = true),
+            onToggle: () => setState(() => _songs = !_songs),
             rowBuilder: (song) => SongTile(
               song: song,
               // Plays only this song: a search result has no list context.
@@ -77,7 +77,7 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
             count: r.albums.length,
             items: r.albums,
             expanded: _albums,
-            onShowAll: () => setState(() => _albums = true),
+            onToggle: () => setState(() => _albums = !_albums),
             rowBuilder: (album) => AlbumListTile(
               album: album,
               onTap: () => context.go(albumLocation(album.key)),
@@ -90,7 +90,7 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
             count: r.artists.length,
             items: r.artists,
             expanded: _artists,
-            onShowAll: () => setState(() => _artists = true),
+            onToggle: () => setState(() => _artists = !_artists),
             rowBuilder: (artist) => ArtistTile(
               artist: artist,
               onTap: () => context.go(artistLocation(artist.key)),

@@ -1,11 +1,14 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:kanaru/shared/widgets/artist_tile.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/indexer/fake_tag_reader.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 import 'search_test_data.dart';
@@ -70,6 +73,20 @@ void main() {
     );
     expect(find.text('Song 21'), findsOneWidget);
     expect(find.text('Show all (12)'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Show less'),
+      200,
+      scrollable: _results,
+    );
+    expect(find.text('Show less'), findsOneWidget);
+
+    // The toggle keeps the same button, so keyboard focus stays on it.
+    await tester.tap(find.text('Show less'));
+    await tester.pumpAndSettle();
+    expect(find.text('Song 21', skipOffstage: false), findsNothing);
+    expect(find.text('Show all (12)'), findsOneWidget);
+    await tester.tap(find.text('Show all (12)'));
+    await tester.pumpAndSettle();
 
     goTo(tester, h, '/search?q=song+1');
     await tester.pumpAndSettle();
@@ -78,40 +95,51 @@ void main() {
     expect(find.text('Show all (10)'), findsOneWidget);
   });
 
-  testWidgets('many song matches show the narrow-down hint', (tester) async {
+  testWidgets('many song matches say they show the top ones and hint', (
+    tester,
+  ) async {
     final h = LibraryHarness();
-    final tracks = [for (var i = 0; i < 201; i++) TestTrack('Song $i')];
+    final tracks = [for (var i = 0; i < 1201; i++) TestTrack('Song $i')];
     await openSearch(tester, h, 'song', tracks: tracks);
 
-    await tester.tap(find.text('Show all (200)'));
+    expect(find.text('Songs  1,201', findRichText: true), findsOneWidget);
+    expect(find.text('Show all (200)'), findsNothing);
+    await tester.tap(find.text('Show top 200'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.textContaining('Showing the first 200 of 201 songs'),
+      find.textContaining('Showing the top 200 of 1,201 songs'),
       2000,
       scrollable: _results,
     );
-    expect(
-      find.textContaining('Showing the first 200 of 201 songs'),
-      findsOneWidget,
-    );
+    expect(find.text('Show less'), findsOneWidget);
   });
 
-  testWidgets('tapping a song plays only that song', (tester) async {
-    final h = LibraryHarness();
-    await openSearch(tester, h, 'son tung');
+  testWidgets('tapping a song plays only that song with its cover', (
+    tester,
+  ) async {
+    final h = LibraryHarness(coverCacheDirectory: '/covers');
+    final key = fakeCoverKey('red');
+    await openSearch(
+      tester,
+      h,
+      'son tung',
+      tracks: [
+        TestTrack('Lạc Trôi', artist: 'Sơn Tùng M-TP', coverKey: key),
+        const TestTrack('Chạy Ngay Đi', artist: 'Sơn Tùng M-TP'),
+      ],
+    );
 
-    await tester.tap(find.text('Chạy Ngay Đi'));
+    await tester.tap(find.text('Lạc Trôi'));
     await tester.pump();
 
-    expect(queuedTitles(h), ['Chạy Ngay Đi']);
-    expect(
-      h.container.read(playerServiceProvider).queue.current?.uri,
-      endsWith('.flac'),
-    );
+    expect(queuedTitles(h), ['Lạc Trôi']);
+    final current = h.container.read(playerServiceProvider).queue.current;
+    expect(current?.uri, matches(RegExp(r'^/m/\d+/0\.flac$')));
+    expect(current?.artUri, '/covers/$key');
   });
 
   group('song result menu', () {
-    testWidgets('song result menu adds the song to the queue', (tester) async {
+    testWidgets('adds the song to the queue', (tester) async {
       final h = LibraryHarness();
       await openSearch(tester, h, 'son tung');
       // Start a queue with another song first.
@@ -191,11 +219,85 @@ void main() {
     await insertTracks(tester, h, const [
       TestTrack('Rolling', artist: 'Adele', album: '21'),
     ]);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await tester.pumpAndSettle();
+    // Wait for the reload itself, not for a fixed time.
+    for (var i = 0; i < 200 && find.text('Rolling').evaluate().isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
 
     expect(find.text('Rolling'), findsOneWidget);
+  });
+
+  testWidgets('a narrow window lays the results out without overflow', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    final tracks = [
+      for (var i = 0; i < 12; i++)
+        TestTrack(
+          'A very long song title that cannot fit a narrow window $i',
+          artist: 'Sơn Tùng M-TP with a very long artist credit',
+          album: 'Sky Tour with a very long album name',
+          albumArtist: 'Sơn Tùng M-TP with a very long artist credit',
+        ),
+    ];
+    await insertTracks(tester, h, tracks);
+    await h.pump(tester, hasRoots: true);
+    tester.view.physicalSize = const Size(480, 800);
+    goTo(tester, h, '/search?q=son+tung');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SongTile), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('Show all (12)'),
+      200,
+      scrollable: _results,
+    );
+    await tester.drag(_results, const Offset(0, -150));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Show all (12)'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byType(AlbumListTile),
+      300,
+      scrollable: _results,
+    );
+    expect(find.byType(AlbumListTile), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows Vietnamese strings', (tester) async {
+    final h = LibraryHarness();
+    final tracks = [for (var i = 0; i < 12; i++) TestTrack('Song ${i + 10}')];
+    await insertTracks(tester, h, tracks);
+    await h.pump(tester, hasRoots: true);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: h.container,
+        child: const KanaruApp(locale: Locale('vi')),
+      ),
+    );
+    goTo(tester, h, '/search?q=song');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Xem tất cả (12)'), findsOneWidget);
+    await tester.tap(find.text('Xem tất cả (12)'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Thu gọn'),
+      200,
+      scrollable: _results,
+    );
+    expect(find.text('Thu gọn'), findsOneWidget);
+
+    goTo(tester, h, '/search?q=zzzz');
+    await tester.pumpAndSettle();
+    expect(find.text('Không có kết quả'), findsOneWidget);
+    expect(
+      find.textContaining('Không tìm thấy kết quả cho “zzzz”'),
+      findsOneWidget,
+    );
   });
 }
