@@ -352,4 +352,43 @@ void main() {
       expect(titles(), ['a', 'x', 'b']);
     });
   });
+
+  group('opening a queue', () {
+    test('playNext and addToQueue say whether they started playback', () async {
+      expect(await service().playNext([a]), isTrue);
+      expect(await service().playNext([b]), isFalse);
+      expect(await service().addToQueue([c]), isFalse);
+      expect(await service().playNext(const []), isFalse);
+
+      await service().clearQueue();
+      await service().removeTrack(0);
+      expect(state().queue.isEmpty, isTrue);
+      expect(await service().addToQueue([x]), isTrue);
+    });
+
+    test(
+      'is counted for a new queue, not for the same one moving on',
+      () async {
+        expect(service().queuesOpened, 0);
+
+        await service().openTracks([a, b, c]);
+        expect(service().queuesOpened, 1);
+        await service().openShuffled([a, b, c]);
+        expect(service().queuesOpened, 2);
+
+        await service().playNext([x]);
+        await service().addToQueue([y]);
+        await service().setRepeat(RepeatMode.all);
+        await service().setShuffle(false);
+        await service().next();
+        backend.advance();
+        expect(service().queuesOpened, 2);
+      },
+    );
+
+    test('counts queueing on an empty queue', () async {
+      await service().playNext([a]);
+      expect(service().queuesOpened, 1);
+    });
+  });
 }

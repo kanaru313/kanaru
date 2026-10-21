@@ -12,7 +12,7 @@ import '../../core/indexer/cover_paths.dart';
 import '../../core/player/player_service.dart';
 import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
-import 'artists/artist_page_sections.dart';
+import 'artists/artist_page_data.dart';
 import 'widgets/queue_actions_menu.dart';
 
 final _log = Logger('library');
@@ -60,8 +60,9 @@ class _EnqueueChain {
 final _enqueueChainProvider = Provider<_EnqueueChain>((ref) => _EnqueueChain());
 
 /// Puts the tracks [read] returns behind the playing one ([QueueAction.playNext])
-/// or at the end of the queue, then says so in a snackbar naming [label].
-/// Runs after every earlier call. Everything it needs from the widget tree
+/// or at the end of the queue, then says so in a snackbar naming [label]
+/// (or that [label] is playing, when the queue was empty and it started).
+/// Runs after every earlier call, whatever happened to them. Everything it needs from the widget tree
 /// ([messenger], [l10n]) is passed in, as the caller may be gone by the time
 /// the read finishes.
 Future<void> enqueueTracks(
@@ -74,33 +75,42 @@ Future<void> enqueueTracks(
 ) {
   final chain = ref.read(_enqueueChainProvider);
   final player = ref.read(playerServiceProvider.notifier);
-  final run = chain.tail.then((_) async {
+  Future<void> attempt() async {
     try {
       final tracks = await read();
       // The album or artist vanished in a rescan: nothing to queue.
       if (tracks.isEmpty) return;
-      switch (action) {
-        case QueueAction.playNext:
-          await player.playNext(tracks);
-        case QueueAction.addToQueue:
-          await player.addToQueue(tracks);
-      }
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(switch (action) {
-              QueueAction.playNext => l10n.queuePlayingNext(label),
-              QueueAction.addToQueue => l10n.queueAddedToQueue(label),
-            }),
+      final started = switch (action) {
+        QueueAction.playNext => await player.playNext(tracks),
+        QueueAction.addToQueue => await player.addToQueue(tracks),
+      };
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            started
+                ? l10n.queuePlaying(label)
+                : switch (action) {
+                    QueueAction.playNext => l10n.queuePlayingNext(label),
+                    QueueAction.addToQueue => l10n.queueAddedToQueue(label),
+                  },
           ),
-        );
+        ),
+      );
     } catch (error, stackTrace) {
       _log.severe('Queuing tracks failed', error, stackTrace);
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.libraryUnexpectedError)),
       );
     }
+  }
+
+  // Reporting the failure can fail too (the messenger may be gone): that must
+  // not leave the chain rejected, or no later pick would ever run.
+  final run = chain.tail.then((_) => attempt()).catchError((
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    _log.severe('Reporting a queuing failure failed', error, stackTrace);
   });
   chain.tail = run;
   return run;
@@ -113,16 +123,20 @@ void enqueueLoaded(
   QueueAction action,
   List<Track> tracks,
   String label,
-) => unawaited(
-  enqueueTracks(
-    ref,
-    ScaffoldMessenger.of(context),
-    context.l10n,
-    action,
-    () async => tracks,
-    label,
-  ),
-);
+) {
+  // The menu closes later than it opened: its page may be gone by then.
+  if (!context.mounted) return;
+  unawaited(
+    enqueueTracks(
+      ref,
+      ScaffoldMessenger.of(context),
+      context.l10n,
+      action,
+      () async => tracks,
+      label,
+    ),
+  );
+}
 
 /// [enqueueTracks] for an album, whose tracks are read from the database
 /// when its turn comes, in the order of its page.
@@ -151,16 +165,9 @@ void enqueueArtist(
   String artistKey,
   String name,
 ) => _enqueueFromDatabase(ref, context, action, name, (db, covers) async {
-  final (tracks, albums) = await db.transaction(
-    () => (db.artistTracks(artistKey), db.artistAlbums(artistKey)).wait,
-  );
-  if (tracks.isEmpty) return const [];
+  final sections = await readArtistSections(db, artistKey);
   return [
-    for (final t in ArtistPageSections.fromTracks(
-      artistKey,
-      tracks,
-      albums,
-    ).songs)
+    for (final t in sections?.songs ?? const <BrowseTrack>[])
       trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
   ];
 });
@@ -172,6 +179,7 @@ void _enqueueFromDatabase(
   String label,
   Future<List<Track>> Function(LibraryDatabase db, String? covers) read,
 ) {
+  if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;
   final covers = ref.read(coverCacheDirectoryProvider);

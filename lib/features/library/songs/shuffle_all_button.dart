@@ -43,7 +43,7 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
     final player = ref.read(playerServiceProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
-    final queueBefore = ref.read(playerServiceProvider).queue;
+    final openedBefore = player.queuesOpened;
     setState(() => _busy = true);
     try {
       final (items, _) = await db.songQueueFrom(
@@ -51,11 +51,10 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
         order: songs.order,
         descending: songs.descending,
       );
-      // A queue that changed meanwhile came from a newer action (a tapped
-      // song, a queued album): that one wins over a read started before it.
-      if (!identical(ref.read(playerServiceProvider).queue, queueBefore)) {
-        return;
-      }
+      // A queue opened meanwhile came from a newer action (a tapped song, a
+      // queued album): that one wins over a read started before it. The
+      // engine moving on or an edit of the queue does not count.
+      if (player.queuesOpened != openedBefore) return;
       // Not guarded by `mounted`: leaving the page does not cancel the tap.
       unawaited(
         player.openShuffled([

@@ -309,6 +309,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String queuePlaying(String name) {
+    return 'Đang phát: $name';
+  }
+
+  @override
   String queueAddedToQueue(String name) {
     return 'Đã thêm vào hàng đợi: $name';
   }

@@ -84,6 +84,7 @@
   "queueAddToQueue": "Thêm vào hàng đợi",
   "queueActionsTooltip": "Thao tác hàng đợi",
   "queuePlayingNext": "Phát tiếp theo: {name}",
+  "queuePlaying": "Đang phát: {name}",
   "queueAddedToQueue": "Đã thêm vào hàng đợi: {name}",
 
   "sortBy": "Sắp xếp:",

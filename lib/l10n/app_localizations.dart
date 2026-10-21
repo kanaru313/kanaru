@@ -560,6 +560,12 @@ abstract class AppLocalizations {
   /// **'Playing next: {name}'**
   String queuePlayingNext(String name);
 
+  /// No description provided for @queuePlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing: {name}'**
+  String queuePlaying(String name);
+
   /// No description provided for @queueAddedToQueue.
   ///
   /// In en, this message translates to:

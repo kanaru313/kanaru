@@ -70,19 +70,39 @@ void main() {
     expect(state().queue.current, playing);
   });
 
-  test('keeps repeat and drops tracks queued to play next', () async {
+  test('keeps repeat', () async {
     await service().openTracks(tracks.sublist(0, 3));
     await service().setRepeat(RepeatMode.all);
-    await service().playNext([song('x')]);
 
     await service().openShuffled(tracks);
 
     expect(state().queue.repeat, RepeatMode.all);
     expect(state().queue.original, tracks);
+  });
 
-    // The held place is gone: a new play next lands right after the current.
+  test('drops the places held by tracks queued to play next', () async {
+    // Queueing x holds entry 3 (the first free number) as "play next". Take
+    // a seed whose play order has entry 3 right after the start track: were
+    // the held place kept, it would count as a queued track there.
+    var seed = 0;
+    while (true) {
+      final probe = makeContainer(seed);
+      await probe.read(playerServiceProvider.notifier).openShuffled(tracks);
+      final queue = probe.read(playerServiceProvider).queue;
+      final hit = queue.order[queue.index + 1] == 3;
+      probe.dispose();
+      if (hit) break;
+      seed++;
+    }
+    container.dispose();
+    container = makeContainer(seed);
+    await service().openTracks(tracks.sublist(0, 3));
+    await service().playNext([song('x')]);
+
+    await service().openShuffled(tracks);
     final y = song('y');
     await service().playNext([y]);
+
     final queue = state().queue;
     expect(queue.trackAt(queue.index + 1), y);
   });

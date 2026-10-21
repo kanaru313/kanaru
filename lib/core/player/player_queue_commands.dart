@@ -7,6 +7,8 @@ part of 'player_service.dart';
 mixin _PlayerQueueCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   set _ended(bool ended);
+  int get _opened;
+  set _opened(int count);
   set _lastTick(Duration position);
   set _failuresInRow(int count);
   bool get _allFailed;
@@ -22,15 +24,17 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
 
   /// Puts [tracks] right after the playing track, behind the ones earlier
   /// calls put there that have not played yet, so they play in the order
-  /// they were picked. With nothing queued, plays them.
-  Future<void> playNext(List<Track> tracks) async {
-    if (tracks.isEmpty) return;
+  /// they were picked. With nothing queued, plays them instead and returns
+  /// true.
+  Future<bool> playNext(List<Track> tracks) async {
+    if (tracks.isEmpty) return false;
     final queue = state.queue;
     if (queue.isEmpty) return _startQueue(tracks);
     final at = queue.index + 1 + _upNextRun(queue);
     final first = queue.original.length;
     _upNext.addAll([for (var i = 0; i < tracks.length; i++) first + i]);
     await _insert(at, tracks);
+    return false;
   }
 
   /// How many "play next" tracks sit right after the current track.
@@ -46,17 +50,21 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
 
   /// Plays [tracks] in the order given on an empty queue. Shuffle stays on if
   /// it was, but only applies to what is added later.
-  Future<void> _startQueue(List<Track> tracks) async {
+  Future<bool> _startQueue(List<Track> tracks) async {
+    _opened++;
     _upNext.clear();
     state = state.copyWith(queue: state.queue.insert(0, tracks));
     await jump(0);
+    return true;
   }
 
-  /// Puts [tracks] at the end of the queue. With nothing queued, plays them.
-  Future<void> addToQueue(List<Track> tracks) async {
-    if (tracks.isEmpty) return;
+  /// Puts [tracks] at the end of the queue. With nothing queued, plays them
+  /// instead and returns true.
+  Future<bool> addToQueue(List<Track> tracks) async {
+    if (tracks.isEmpty) return false;
     if (state.queue.isEmpty) return _startQueue(tracks);
     await _insert(state.queue.order.length, tracks);
+    return false;
   }
 
   /// Inserts [tracks] at play position [at] without touching the playing

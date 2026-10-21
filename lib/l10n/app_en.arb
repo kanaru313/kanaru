@@ -176,6 +176,12 @@
       "name": { "type": "String" }
     }
   },
+  "queuePlaying": "Playing: {name}",
+  "@queuePlaying": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
   "queueAddedToQueue": "Added to queue: {name}",
   "@queueAddedToQueue": {
     "placeholders": {

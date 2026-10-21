@@ -311,6 +311,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String queuePlaying(String name) {
+    return 'Playing: $name';
+  }
+
+  @override
   String queueAddedToQueue(String name) {
     return 'Added to queue: $name';
   }

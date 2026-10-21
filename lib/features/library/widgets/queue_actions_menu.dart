@@ -27,11 +27,16 @@ Future<QueueAction?> showQueueActionsMenu(
   BuildContext context,
   Offset position,
 ) {
-  final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
+  // The menu is laid out in the overlay of the nearest navigator, which on
+  // the wide layout does not start at the window's corner (the sidebar and
+  // top bar sit outside it): so the point goes into its coordinates.
+  final overlay =
+      Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+  final local = overlay.globalToLocal(position);
   return showMenu<QueueAction>(
     context: context,
     position: RelativeRect.fromRect(
-      Rect.fromLTWH(position.dx, position.dy, 0, 0),
+      Rect.fromLTWH(local.dx, local.dy, 0, 0),
       Offset.zero & overlay.size,
     ),
     items: _items(context),
