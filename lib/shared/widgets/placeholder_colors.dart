@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'stable_hash.dart';
+import '../stable_hash.dart';
 
 /// Background and foreground of a placeholder picture, picked from [seed]
 /// among the container colors, the same on every launch.

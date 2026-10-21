@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/features/library/widgets/stable_hash.dart';
+import 'package:kanaru/shared/stable_hash.dart';
 
 void main() {
   test('matches the FNV-1a 32-bit reference values', () {

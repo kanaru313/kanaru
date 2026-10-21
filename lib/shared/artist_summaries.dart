@@ -1,5 +1,5 @@
-import '../../../core/database/library_database.dart';
-import '../sort_compare.dart';
+import '../core/database/library_database.dart';
+import 'sort_compare.dart';
 
 /// One artist of the Artists list.
 class ArtistSummary {

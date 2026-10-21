@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/library/artists/artist_tile.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/artist_tile.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';

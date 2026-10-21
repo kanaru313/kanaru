@@ -2,11 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
-import 'package:kanaru/features/library/widgets/queue_actions_menu.dart';
+import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'browse_test_data.dart';
-import 'library_test_harness.dart';
+import '../../features/library/browse_test_data.dart';
+import '../../features/library/library_test_harness.dart';
 
 const _tracks = [TestTrack('a'), TestTrack('b'), TestTrack('c')];
 

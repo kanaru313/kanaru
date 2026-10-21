@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../shared/format_duration.dart';
-import '../widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 
 /// One track of an album page: number, title, the track artist when it is
 /// not the album artist, and the duration.

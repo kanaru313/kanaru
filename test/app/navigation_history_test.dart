@@ -10,7 +10,7 @@ import 'package:kanaru/app/shell/navigation_history.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/library/library_browse_refresh.dart';
+import 'package:kanaru/shared/library_browse_refresh.dart';
 
 import '../core/player/fake_audio_backend.dart';
 

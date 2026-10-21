@@ -10,7 +10,7 @@ Dependency direction: `app → features → core`, with `shared` allowed to use 
 |---|---|---|
 | `lib/app/` | `features/`, `core/`, `shared/` | nothing above it |
 | `lib/features/<x>/` | `core/`, `shared/` | `app/`, other `features/<y>/` |
-| `lib/shared/` | `core/` | `app/`, `features/` |
+| `lib/shared/` | `core/`, `l10n/` | `app/`, `features/` |
 | `lib/core/` | `core/` | `app/`, `features/`, `shared/` |
 
 Checked by grep on the 2026-10-21 snapshot, over relative imports: no feature imports `app/`, no feature imports another feature, no `core/` file imports `features/`, `app/` or `shared/`, and only `core/indexer/` imports `src/rust/`.
@@ -19,14 +19,14 @@ Rules that follow from it:
 
 - **Shared code moves down.** If two features need the same thing, move it to `shared/` (widgets, formatting) or `core/` (logic). Do not import the other feature.
 - **Features cannot reach the shell.** The Now Playing title bar is injected by `app/shell`, not imported by `features/player`. Same for the router: features never import `app/router.dart`.
-- **Route literals are duplicated on purpose.** `features/library/library_route_keys.dart` declares `albumsPath = '/albums'` and `artistsPath = '/artists'` because features cannot import `app/`. A test checks them against the shell destinations (`lib/app/shell/app_destination.dart`). If you change a route, change both and keep the test passing.
+- **Route literals are duplicated on purpose.** `shared/library_route_keys.dart` declares `albumsPath = '/albums'` and `artistsPath = '/artists'` because `shared/` and features cannot import `app/`. A test checks them against the shell destinations (`lib/app/shell/app_destination.dart`). If you change a route, change both and keep the test passing.
 - **Route keys.** Album, artist and album-artist keys in URLs are `base64Url(utf8(json([...parts])))` without padding, length-capped (`_maxRouteKeyLength`). Build them with the helpers in `library_route_keys.dart`; do not hand-assemble paths.
 - **Imports** inside `lib/` are relative (`'../../core/...'`), as in the rest of the code. Apply the layering table to the resolved path, not to the import style.
 
 ## Flutter and UI library
 
 - **Use `package:material_ui/material_ui.dart`**, not `package:flutter/material.dart`. 87 files import `material_ui`; none import `flutter/material.dart`. Import `flutter/widgets.dart` or `flutter/services.dart` only where the widget library is not enough.
-- **Theme** lives in `lib/app/theme.dart`. Use theme tokens and `Theme.of(context)`; avoid hard-coded colors outside the placeholder palette (`features/library/widgets/placeholder_colors.dart`).
+- **Theme** lives in `lib/app/theme.dart`. Use theme tokens and `Theme.of(context)`; avoid hard-coded colors outside the placeholder palette (`shared/widgets/placeholder_colors.dart`).
 - **Layout numbers** that are shared across a file sit at file level as `const` values with a `///` doc. Breakpoints are named constants, not inline literals (see [design-guidelines.md](./design-guidelines.md#breakpoints)).
 - **Strings**: every user-visible string comes from `context.l10n` (see [Localization](#localization)).
 

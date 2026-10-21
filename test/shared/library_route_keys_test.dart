@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 
 void main() {
   const odd = ['/ ? # % + = ü 漢 😀', '', 'a/b', '%2F', '..'];

@@ -6,12 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/library/enqueue_tracks.dart';
-import 'package:kanaru/features/library/widgets/queue_actions_menu.dart';
+import 'package:kanaru/shared/enqueue_tracks.dart';
+import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 
 import 'browse_test_data.dart';
 import '../../core/player/fake_audio_backend.dart';

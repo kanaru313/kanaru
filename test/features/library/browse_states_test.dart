@@ -9,7 +9,7 @@ import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/albums/album_page_data.dart';
 import 'package:kanaru/features/library/albums/albums_provider.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:logging/logging.dart';
 
 import '../../core/indexer/fake_tag_reader.dart';

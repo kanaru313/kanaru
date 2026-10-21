@@ -5,7 +5,7 @@ import '../../../core/database/library_database.dart' show LibraryDatabase;
 import '../../../core/database/library_keys_provider.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
-import '../library_browse_refresh.dart';
+import '../../../shared/library_browse_refresh.dart';
 import 'artist_page_sections.dart';
 
 /// Reads the page of one artist (by key): tracks and album rows in one

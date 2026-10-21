@@ -6,7 +6,7 @@ import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../core/settings/settings_provider.dart';
-import '../library_browse_refresh.dart';
+import '../../../shared/library_browse_refresh.dart';
 
 /// The track ids of the Songs list in one sort, with the sort they were read
 /// in so a tap can read the matching queue.

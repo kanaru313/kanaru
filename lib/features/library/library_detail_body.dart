@@ -5,7 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
 import 'songs/songs_empty_view.dart';
-import 'widgets/library_loading.dart';
+import '../../shared/widgets/library_loading.dart';
 import 'widgets/page_material.dart';
 
 final _log = Logger('library');

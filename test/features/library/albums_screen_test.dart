@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
-import 'package:kanaru/features/library/albums/album_list_tile.dart';
+import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';

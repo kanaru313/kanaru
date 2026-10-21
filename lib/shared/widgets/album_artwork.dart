@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_database.dart' show AlbumKey;
-import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
-import '../../../shared/widgets/cover_art.dart';
+import '../../core/database/library_database.dart' show AlbumKey;
+import '../../core/database/library_startup.dart';
+import '../../core/indexer/cover_paths.dart';
+import 'cover_art.dart';
 import 'placeholder_colors.dart';
 
 /// Square cover of an album: its thumbnail when it has one, else a colored

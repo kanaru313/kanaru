@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/albums/album_page_data.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';

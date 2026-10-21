@@ -1,9 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
-import 'package:kanaru/features/library/artists/artist_tile.dart';
-import 'package:kanaru/features/library/library_route_keys.dart';
-import 'package:kanaru/features/library/songs/song_tile.dart';
+import 'package:kanaru/shared/widgets/artist_tile.dart';
+import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
