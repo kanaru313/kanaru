@@ -44,7 +44,8 @@ int tagBatchSizeFor(int total) =>
 /// With a cover folder, a scan first resets tracks whose thumbnail is gone,
 /// then, after the tags, makes the covers of the roots that scanned without
 /// error ([runCoverPass]): resumable, it yields to a requested rescan and
-/// never changes the published state. When every root scanned without error
+/// never changes the published state. A cover batch that stalls ends the
+/// pass; when its native call returns, one automatic scan resumes it. When every root scanned without error
 /// and the cover pass completed, it deletes thumbnails no track uses. No
 /// cover step can fail the scan.
 class LibraryIndexer extends Notifier<IndexerState> {
@@ -280,7 +281,16 @@ class LibraryIndexer extends Notifier<IndexerState> {
         shouldStop: () => !ref.mounted,
         onStuck: (pending) {
           _coverReaderStuck = true;
-          void freed() => _coverReaderStuck = false;
+          // Like a stuck tag read: once the call returns, scan once more so
+          // the covers after the stalled batch get made without the user.
+          // That scan keeps the skip set, and arms no retry of its own, so
+          // a drive that keeps hanging costs one extra scan, not a loop.
+          final retry = !_autoStarted;
+          void freed() {
+            _coverReaderStuck = false;
+            if (retry) _scanAutomatically();
+          }
+
           pending.then((_) => freed(), onError: (_) => freed());
         },
         onProgress: (done, total) {

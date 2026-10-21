@@ -7,6 +7,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/core/indexer/library_indexer.dart';
 import 'package:kanaru/core/indexer/root_scan_result.dart';
 import 'package:kanaru/core/indexer/tag_reader.dart';
 
@@ -455,6 +456,102 @@ void main() {
         expect((await stored('b.mp3')).coverKey, fakeCoverKey('blue'));
       },
     );
+
+    group('a stalled cover batch', () {
+      late ProviderContainer quick;
+      late LibraryIndexer indexer;
+
+      setUp(() {
+        quick = containerFor(
+          db,
+          coverDir: covers,
+          timeouts: const ScanTimeouts(tagBatch: Duration(milliseconds: 50)),
+        );
+        addTearDown(quick.dispose);
+        indexer = quick.read(libraryIndexerProvider.notifier);
+      });
+
+      /// `f00.mp3` … `f69.mp3`, each with its own cover.
+      List<String> seventy() {
+        final names = [
+          for (var i = 0; i < 70; i++) 'f${i.toString().padLeft(2, '0')}.mp3',
+        ];
+        for (final name in names) {
+          touch(name);
+          reader.coverByName[name] = name;
+        }
+        return names;
+      }
+
+      /// Waits for the automatic scan to look up [count] more covers and for
+      /// its cover pass to finish.
+      Future<void> untilCoversLookedUp(int count) async {
+        final deadline = DateTime.now().add(const Duration(seconds: 10));
+        while (reader.coverCount < count ||
+            quick.read(coverPassProvider) is CoverPassRunning) {
+          if (DateTime.now().isAfter(deadline)) fail('no automatic pass');
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+
+      Future<List<String>> withoutCover() async => [
+        for (final row in await db.select(db.tracks).get())
+          if (row.coverKey == null) row.path.substring(root.length + 1),
+      ]..sort();
+
+      test('resumes the pass once its call returns; failed and stalled '
+          'tracks wait for a scan the user asks for', () async {
+        final names = seventy();
+        // First batch: f05 fails. Second batch: f32 hangs past the timeout.
+        reader
+          ..failingCovers.add('f05.mp3')
+          ..hangingCovers.add('f32.mp3');
+        await indexer.scan();
+        expect(reader.coverBatches.map((b) => b.length), [32, 32]);
+
+        reader.releaseHangingCovers();
+        await untilCoversLookedUp(70);
+        // Only the rows after the stalled batch: nothing skipped is retried.
+        expect(reader.coverBatches.map((b) => b.length), [32, 32, 6]);
+        expect(reader.coverBatches.last.first, '$root/f64.mp3');
+        expect(await withoutCover(), [
+          'f05.mp3',
+          ...names.sublist(32, 64),
+        ], reason: 'the late result of the stalled batch is dropped');
+
+        reader
+          ..failingCovers.clear()
+          ..reset();
+        await indexer.scan();
+        expect(reader.coverCount, 33, reason: 'the user scan retries them');
+        expect(await withoutCover(), isEmpty);
+      });
+
+      test('a second stall waits for a scan the user asks for', () async {
+        final names = seventy();
+        reader.hangingCovers.add('f00.mp3');
+        await indexer.scan();
+        expect(reader.coverBatches.map((b) => b.length), [32]);
+
+        // The automatic scan stalls too, on the next batch.
+        reader
+          ..releaseHangingCovers()
+          ..hangingCovers.add('f32.mp3');
+        await untilCoversLookedUp(64);
+        expect(reader.coverBatches.map((b) => b.length), [32, 32]);
+
+        reader.releaseHangingCovers();
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        expect(reader.coverCount, 64, reason: 'no second automatic scan');
+        expect(await withoutCover(), names);
+
+        reader.reset();
+        await indexer.scan();
+        expect(reader.coverCount, 70);
+        expect(await withoutCover(), isEmpty);
+      });
+    });
 
     test('a rescan makes the pass yield; the follow-up resumes', () async {
       for (var i = 0; i < 40; i++) {
