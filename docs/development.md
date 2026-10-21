@@ -10,7 +10,7 @@ Kanaru currently targets **GNU/Linux** first. Windows, macOS, Android and iOS in
 | Clang, CMake, Ninja, pkg-config | any recent | Flutter Linux desktop toolchain |
 | GTK 3 (dev headers) | ≥ 3.24 | Flutter Linux embedder |
 | libmpv (dev headers) | ≥ 0.36 | Audio playback (`media_kit`) |
-| libsecret, jsoncpp (dev headers) | any recent | Credential storage (`flutter_secure_storage`) |
+| libsecret, jsoncpp (dev headers) | any recent | Planned credential storage (`flutter_secure_storage`, not in `pubspec.yaml` yet); installing them now keeps the setup stable |
 | SQLite (dev headers) | ≥ 3.35 | Library database (`drift`) |
 | Rust (stable) + Cargo | ≥ 1.89 | Tag reading (`lofty` via `flutter_rust_bridge`) |
 | libclang | any recent | Needed by `flutter_rust_bridge_codegen` / `ffigen` |
@@ -130,10 +130,10 @@ The `Makefile` wraps the everyday commands (`make` lists them): `make run`, `mak
 
 ### Code generation
 
-Run code generation again after changing drift tables, Riverpod annotations or Rust APIs:
+Run code generation again after changing drift tables or Rust APIs:
 
 ```bash
-# Dart (drift, riverpod, freezed…)
+# Dart (drift)
 dart run build_runner build --delete-conflicting-outputs
 
 # Rust bindings (after changing rust/src/api)
@@ -144,6 +144,8 @@ dart run drift_dev make-migrations
 ```
 
 `make-migrations` snapshots the schema into `drift_schemas/library_db/drift_schema_v<N>.json`, rewrites `lib/core/database/library_database.steps.dart` (the `stepByStep` helper; wire the new `fromXToY` callback in `LibraryDatabase.migration`) and regenerates `test/drift/library_db/generated/`. Bump `schemaVersion` before running it. `test/drift/library_db/migration_test.dart` is created only when missing: extend its data-integrity test by hand for each new step. Commit the snapshot, the steps file and the generated test schemas.
+
+Kanaru has not been released yet, so these steps only spare dev machines a rescan; `make reset-library` is an acceptable alternative. Right before the first release the schema history is collapsed into v1 (PKG-08 in `docs/features.md`).
 
 In the Nix dev shell, `dart run` cannot find the Flutter SDK ("flutter_test from sdk which doesn't exist"). Use `flutter pub run build_runner build --delete-conflicting-outputs` and `flutter pub run drift_dev make-migrations` there instead.
 
@@ -254,7 +256,7 @@ Timings are printed to the console. They depend on the machine and the repo keep
 
 ## End-user runtime dependencies
 
-Users of release builds do **not** need any of the above. AppImage and Flatpak builds bundle libmpv. `.deb` and `.rpm` packages declare `libmpv2` and `libsecret-1-0` as dependencies.
+No packages exist yet (see [Deployment guide](deployment-guide.md)). A build from `make build` needs libmpv, GTK 3 and SQLite at runtime. Once packaging lands (planned, PKG-01..05 in `docs/features.md`), users of release builds will not need any of the above: AppImage and Flatpak builds will bundle libmpv, `.deb` and `.rpm` packages will declare `libmpv2` as a dependency.
 
 ## AI agent tooling (optional)
 

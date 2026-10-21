@@ -60,7 +60,7 @@ check: analyze test test-rust ## Everything a PR must pass
 ##@ Generate
 
 .PHONY: gen
-gen: ## drift / riverpod codegen (`dart run` fails in the Nix shell)
+gen: ## drift codegen (`dart run` fails in the Nix shell)
 	$(DEV) flutter pub run build_runner build --delete-conflicting-outputs
 
 .PHONY: gen-rust
