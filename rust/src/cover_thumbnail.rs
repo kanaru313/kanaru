@@ -38,6 +38,9 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     let image = match guarded(|| scaled_decode(bytes, format)) {
         Some(image) => image,
         None => {
+            if !full_decode_fits(bytes, format) {
+                return None;
+            }
             let image = full_decode(bytes, format)?;
             if format == ImageFormat::Jpeg {
                 if let Some(original) = guarded(|| passthrough(bytes, &image)) {
@@ -74,6 +77,28 @@ fn guarded<T>(shortcut: impl FnOnce() -> Option<T>) -> Option<T> {
     catch_unwind(AssertUnwindSafe(shortcut)).ok().flatten()
 }
 
+/// Whether the full decode of `bytes` keeps to [`MAX_DECODE_BYTES`].
+/// `image`'s limit only bounds the output buffer, but a progressive JPEG
+/// also keeps every coefficient of the image until its last scan (see
+/// [`progressive_coefficient_bytes`]), so one that would need more is
+/// refused: no thumbnail, rather than a decode far over the limit. Other
+/// images are left to `image`'s own limits.
+fn full_decode_fits(bytes: &[u8], format: ImageFormat) -> bool {
+    if format != ImageFormat::Jpeg {
+        return true;
+    }
+    let Some(header) = jpeg_header::parse(bytes) else {
+        return true;
+    };
+    if !header.progressive {
+        return true;
+    }
+    let output = u64::from(header.width)
+        * u64::from(header.height)
+        * header.sampling.len() as u64;
+    progressive_coefficient_bytes(&header) + output <= MAX_DECODE_BYTES
+}
+
 fn full_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
     let mut reader = ImageReader::with_format(Cursor::new(bytes), format);
     let mut limits = Limits::default();
@@ -88,7 +113,8 @@ fn full_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
 /// scale (1/2, 1/4, 1/8) that keeps its longest side at least
 /// [`THUMBNAIL_SIDE`]. Gray and YCbCr (or RGB) only; CMYK and YCCK take the
 /// full path. `None` when it does not apply, when the decode would need more
-/// than [`MAX_DECODE_BYTES`] (see [`scaled_decode_bytes`]), or on any error.
+/// than [`MAX_DECODE_BYTES`] (see [`progressive_coefficient_bytes`]), or on
+/// any error.
 fn scaled_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
     if format != ImageFormat::Jpeg {
         return None;
@@ -102,7 +128,9 @@ fn scaled_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
     let side = THUMBNAIL_SIDE as u16;
     let (width, height) = decoder.scale(side, side).ok()?;
     let output = u64::from(width) * u64::from(height) * header.sampling.len() as u64;
-    if scaled_decode_bytes(&header) + 2 * output > MAX_DECODE_BYTES {
+    // The output is held about twice: component planes, then the
+    // interleaved pixels.
+    if progressive_coefficient_bytes(&header) + 2 * output > MAX_DECODE_BYTES {
         return None;
     }
     decoder.set_max_decoding_buffer_size(output as usize);
@@ -119,12 +147,12 @@ fn scaled_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
     }
 }
 
-/// What a scaled decode holds besides its output, at most: a progressive
-/// JPEG keeps every DCT coefficient of the full-size image (64 two-byte
-/// values per 8×8 block, blocks padded to whole MCUs) until its last scan;
-/// a baseline one decodes row by row. The output comes on top, about twice
-/// (component planes, then the interleaved pixels), counted by the caller.
-fn scaled_decode_bytes(header: &JpegHeader) -> u64 {
+/// What a decode holds besides its output, at most: a progressive JPEG
+/// keeps every DCT coefficient of the full-size image (64 two-byte values
+/// per 8×8 block, blocks padded to whole MCUs) until its last scan, at any
+/// output scale; a baseline one decodes row by row. The output comes on
+/// top, counted by the caller.
+fn progressive_coefficient_bytes(header: &JpegHeader) -> u64 {
     if !header.progressive {
         return 0;
     }
@@ -292,14 +320,14 @@ mod tests {
             sampling,
             ..header()
         };
-        assert_eq!(scaled_decode_bytes(&header()), 0, "baseline");
+        assert_eq!(progressive_coefficient_bytes(&header()), 0, "baseline");
         // 2000×1000 4:2:0: 125×63 MCUs; 4 luma + 2 chroma blocks per MCU.
         let blocks = 125 * 63 * 6;
         let yuv420 = progressive(2000, 1000, vec![(2, 2), (1, 1), (1, 1)]);
-        assert_eq!(scaled_decode_bytes(&yuv420), blocks * 128);
+        assert_eq!(progressive_coefficient_bytes(&yuv420), blocks * 128);
         // 4096² 4:4:4: 3 × 512² blocks = 96 MiB, over the cap.
         let full = progressive(4096, 4096, vec![(1, 1); 3]);
-        assert_eq!(scaled_decode_bytes(&full), 3 * 512 * 512 * 128);
-        assert!(scaled_decode_bytes(&full) > MAX_DECODE_BYTES);
+        assert_eq!(progressive_coefficient_bytes(&full), 3 * 512 * 512 * 128);
+        assert!(progressive_coefficient_bytes(&full) > MAX_DECODE_BYTES);
     }
 }

@@ -178,6 +178,44 @@ fn small_jpeg_cut_inside_its_scan_is_never_passed_through() {
     }
 }
 
+/// A uniform `side`×`side` progressive JPEG with full-resolution colour
+/// (4:4:4), so its coefficients take as much memory as they can.
+fn progressive_444(side: u16) -> Vec<u8> {
+    let pixels = vec![120u8; usize::from(side) * usize::from(side) * 3];
+    let mut out = Vec::new();
+    let mut encoder = jpeg_encoder::Encoder::new(&mut out, 50);
+    encoder.set_progressive(true);
+    encoder.set_sampling_factor(jpeg_encoder::SamplingFactor::F_1_1);
+    encoder
+        .encode(&pixels, side, side, jpeg_encoder::ColorType::Rgb)
+        .unwrap();
+    out
+}
+
+#[test]
+fn progressive_jpeg_under_the_decode_limit_is_thumbnailed() {
+    // 1000² 4:4:4: about 6 MiB of coefficients, decoded in full.
+    let thumbnail = make_jpeg(&progressive_444(1000), ImageFormat::Jpeg).unwrap();
+    let decoded = image::load_from_memory(&thumbnail).unwrap();
+    assert_eq!(decoded.dimensions(), (512, 512));
+}
+
+#[test]
+fn progressive_jpeg_over_the_decode_limit_falls_back_to_the_folder_cover() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    // 4096² 4:4:4: 96 MiB of coefficients, over the limit at any scale.
+    let huge = progressive_444(4096);
+    assert_eq!(make_jpeg(&huge, ImageFormat::Jpeg), None);
+
+    let path = with_cover("sample.flac", music.path(), "song.flac", &huge);
+    let folder = jpeg(64, 64, 9);
+    fs::write(music.path().join("cover.jpg"), &folder).unwrap();
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    assert_eq!(found.cover, Some(cache_key(&folder)));
+    assert_eq!(found.status, CoverStatus::Found);
+}
+
 #[test]
 fn small_jpeg_with_data_after_its_image_is_never_passed_through() {
     let good = jpeg(100, 100, 1);
