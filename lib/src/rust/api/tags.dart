@@ -7,7 +7,7 @@ import '../frb_generated.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
 
 /// Reads the tags of every file in `paths`, in parallel.
 ///
@@ -24,6 +24,24 @@ Future<List<TrackTags>> readTagsBatch({
   required List<String> paths,
   required String coverDir,
 }) => RustLib.instance.api.crateApiTagsReadTagsBatch(
+  paths: paths,
+  coverDir: coverDir,
+);
+
+/// Finds the cover of every file in `paths` and makes sure its thumbnail is
+/// in `cover_dir`, in parallel on low-priority threads. Tags are not read.
+///
+/// The result has exactly one entry per input path, in the same order. Covers
+/// are chosen and keyed exactly as [`read_tags_batch`] does. A file that is
+/// gone, not a regular file, or whose cover could not be read for a reason
+/// that may pass gives [`CoverStatus::Failed`]; [`CoverStatus::None`] means
+/// every source was checked. When `cover_dir` is empty nothing is looked for
+/// and every entry is [`CoverStatus::Skipped`]. Image bytes never cross to
+/// Dart.
+Future<List<TrackCover>> readCoversBatch({
+  required List<String> paths,
+  required String coverDir,
+}) => RustLib.instance.api.crateApiTagsReadCoversBatch(
   paths: paths,
   coverDir: coverDir,
 );
@@ -53,6 +71,34 @@ enum CoverStatus {
 
   static Future<CoverStatus> default_() =>
       RustLib.instance.api.crateApiTagsCoverStatusDefault();
+}
+
+/// The cover of one file, from [`read_covers_batch`].
+class TrackCover {
+  /// The path as given to [`read_covers_batch`].
+  final String path;
+
+  /// Cache key of the cover thumbnail, as in [`TrackTags::cover`]; set only
+  /// when [`status`](Self::status) is [`CoverStatus::Found`].
+  final String? cover;
+  final CoverStatus status;
+
+  const TrackCover({required this.path, this.cover, required this.status});
+
+  static Future<TrackCover> default_() =>
+      RustLib.instance.api.crateApiTagsTrackCoverDefault();
+
+  @override
+  int get hashCode => path.hashCode ^ cover.hashCode ^ status.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TrackCover &&
+          runtimeType == other.runtimeType &&
+          path == other.path &&
+          cover == other.cover &&
+          status == other.status;
 }
 
 /// Tags and audio properties of one file. Flat on purpose so flutter_rust_bridge

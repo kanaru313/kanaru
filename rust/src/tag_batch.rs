@@ -10,7 +10,7 @@ use crate::tag_reader::read_one;
 /// Stack size for tag-reading threads. Parsers recurse on nested containers
 /// (MP4 atoms, Ogg pages), and rayon's default stack is smaller than the
 /// 8 MiB a normal main thread gets.
-const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
+pub(crate) const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
 
 /// Number of tag threads for a machine with `cpus` hardware threads: half of
 /// them, so a scan leaves room for playback and the UI, and at least two.
@@ -19,7 +19,7 @@ const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
 /// picture of that file in memory and a thumbnail decode may take up to
 /// [`MAX_DECODE_BYTES`](crate::cover_thumbnail::MAX_DECODE_BYTES), so peak
 /// memory grows with this count.
-fn thread_count(cpus: usize) -> usize {
+pub(crate) fn thread_count(cpus: usize) -> usize {
     (cpus / 2).max(2)
 }
 

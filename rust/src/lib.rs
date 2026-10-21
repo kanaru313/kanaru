@@ -3,6 +3,7 @@
 
 pub mod api;
 pub mod cover_art;
+pub mod cover_batch;
 pub mod cover_cache;
 pub mod cover_thumbnail;
 mod frb_generated;

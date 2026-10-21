@@ -78,10 +78,14 @@ pub fn take_embedded_pictures(mut tagged: TaggedFile) -> Vec<Vec<u8>> {
 
 /// Lists the JPEG/PNG files in `dir`. An unreadable folder lists as empty.
 pub fn list_images(dir: &Path) -> ImageListing {
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return ImageListing::new();
-    };
-    entries
+    try_list_images(dir).unwrap_or_default()
+}
+
+/// Lists the JPEG/PNG files in `dir`, or fails when the folder cannot be
+/// read (a cover may be there, so "no cover" would be a guess).
+pub fn try_list_images(dir: &Path) -> std::io::Result<ImageListing> {
+    let entries = std::fs::read_dir(dir)?;
+    Ok(entries
         .filter_map(Result::ok)
         .filter_map(|entry| {
             let name = entry.file_name();
@@ -91,7 +95,7 @@ pub fn list_images(dir: &Path) -> ImageListing {
                 .contains(&extension)
                 .then(|| (lower.clone(), name))
         })
-        .collect()
+        .collect())
 }
 
 /// Sidecar images for `audio`, best first, from the listing of its folder.
@@ -124,8 +128,11 @@ pub fn read_bounded(path: &Path) -> Option<Vec<u8>> {
     (bytes.len() as u64 <= MAX_COVER_BYTES).then_some(bytes)
 }
 
+/// Opens `path` for reading without blocking on FIFOs and devices: the open
+/// returns at once, and the caller checks the handle's metadata before
+/// reading. Regular files read normally.
 #[cfg(unix)]
-fn open_nonblocking(path: &Path) -> std::io::Result<File> {
+pub(crate) fn open_nonblocking(path: &Path) -> std::io::Result<File> {
     use std::os::unix::fs::OpenOptionsExt;
     std::fs::OpenOptions::new()
         .read(true)
@@ -134,7 +141,7 @@ fn open_nonblocking(path: &Path) -> std::io::Result<File> {
 }
 
 #[cfg(not(unix))]
-fn open_nonblocking(path: &Path) -> std::io::Result<File> {
+pub(crate) fn open_nonblocking(path: &Path) -> std::io::Result<File> {
     File::open(path)
 }
 
@@ -149,11 +156,12 @@ pub enum Attempt<T> {
 /// Walks the sources of `audio` in order and returns the first
 /// [`Attempt::Take`]. `embedded` comes from [`take_embedded_pictures`];
 /// `listing` gives the image files of the audio file's folder (memoised by
-/// the scan, listed fresh otherwise).
+/// the scan, listed fresh otherwise), or the result to return when the folder
+/// cannot be listed.
 pub fn first_source<T>(
     audio: &Path,
     embedded: Vec<Vec<u8>>,
-    listing: impl FnOnce(&Path) -> std::sync::Arc<ImageListing>,
+    listing: impl FnOnce(&Path) -> Result<std::sync::Arc<ImageListing>, T>,
     mut try_embedded: impl FnMut(Vec<u8>) -> Attempt<T>,
     mut try_sidecar: impl FnMut(&Path) -> Attempt<T>,
 ) -> Option<T> {
@@ -163,7 +171,10 @@ pub fn first_source<T>(
         }
     }
     let dir = audio.parent()?;
-    let listing = listing(dir);
+    let listing = match listing(dir) {
+        Ok(listing) => listing,
+        Err(result) => return Some(result),
+    };
     for candidate in sidecar_candidates(audio, &listing) {
         if let Attempt::Take(result) = try_sidecar(&candidate) {
             return Some(result);

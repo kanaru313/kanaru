@@ -12,7 +12,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use crate::api::tags::CoverStatus;
 use crate::cover_art::{
-    first_source, list_images, read_bounded, validate_header, Attempt, ImageListing,
+    first_source, read_bounded, try_list_images, validate_header, Attempt, ImageListing,
 };
 use crate::cover_thumbnail::make_jpeg;
 
@@ -32,7 +32,8 @@ pub struct CoverSink {
     /// Sidecar path → cache key, or `None` when the image is not usable.
     sidecars: Mutex<HashMap<PathBuf, Option<String>>>,
     thumbnails_made: AtomicUsize,
-    panic_for_tests: bool,
+    /// File name whose lookup panics (empty: every file), for tests.
+    panic_for_tests: Option<String>,
 }
 
 impl CoverSink {
@@ -43,15 +44,22 @@ impl CoverSink {
             listings: Mutex::default(),
             sidecars: Mutex::default(),
             thumbnails_made: AtomicUsize::new(0),
-            panic_for_tests: false,
+            panic_for_tests: None,
         }
     }
 
     /// Makes [`resolve`](Self::resolve) panic, so tests can check that a crash
     /// in the cover code leaves the tags intact.
     #[doc(hidden)]
-    pub fn panicking_for_tests(mut self) -> Self {
-        self.panic_for_tests = true;
+    pub fn panicking_for_tests(self) -> Self {
+        self.panicking_for_tests_on("")
+    }
+
+    /// Makes [`resolve`](Self::resolve) panic for the audio file named
+    /// `file_name` only, so tests can check that the rest of a batch is fine.
+    #[doc(hidden)]
+    pub fn panicking_for_tests_on(mut self, file_name: &str) -> Self {
+        self.panic_for_tests = Some(file_name.to_owned());
         self
     }
 
@@ -63,11 +71,14 @@ impl CoverSink {
     /// Finds the cover of `audio` and makes sure its thumbnail is cached.
     /// `embedded` are the file's pictures, best first.
     pub fn resolve(&self, audio: &Path, embedded: Vec<Vec<u8>>) -> (Option<String>, CoverStatus) {
-        assert!(!self.panic_for_tests, "cover code panicked (test)");
+        if let Some(name) = &self.panic_for_tests {
+            let hit = name.is_empty() || audio.file_name().is_some_and(|n| n == name.as_str());
+            assert!(!hit, "cover code panicked (test)");
+        }
         let found = first_source(
             audio,
             embedded,
-            |dir| self.listing(dir),
+            |dir| self.listing(dir).map_err(Err),
             |bytes| attempt(self.store(&bytes)),
             |path| attempt(self.sidecar(path)),
         );
@@ -78,12 +89,16 @@ impl CoverSink {
         }
     }
 
-    fn listing(&self, dir: &Path) -> Arc<ImageListing> {
+    /// The memoised listing of `dir`. A folder that cannot be listed is not
+    /// memoised and fails the lookup, so the cover is tried again later.
+    fn listing(&self, dir: &Path) -> io::Result<Arc<ImageListing>> {
         if let Some(found) = lock(&self.listings).get(dir) {
-            return Arc::clone(found);
+            return Ok(Arc::clone(found));
         }
-        let listed = Arc::new(list_images(dir));
-        Arc::clone(lock(&self.listings).entry(dir.to_owned()).or_insert(listed))
+        let listed = Arc::new(try_list_images(dir)?);
+        Ok(Arc::clone(
+            lock(&self.listings).entry(dir.to_owned()).or_insert(listed),
+        ))
     }
 
     fn sidecar(&self, path: &Path) -> io::Result<Option<String>> {

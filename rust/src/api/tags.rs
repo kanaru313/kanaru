@@ -5,6 +5,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::cover_art::{first_source, list_images, read_bounded, validate_header, Attempt};
+use crate::cover_batch::read_covers;
 use crate::cover_cache::CoverSink;
 use crate::tag_batch::read_batch;
 use crate::tag_reader::embedded_pictures;
@@ -80,6 +81,40 @@ pub fn read_tags_batch(paths: Vec<String>, cover_dir: String) -> Vec<TrackTags> 
     read_batch(paths, Some(&sink))
 }
 
+/// The cover of one file, from [`read_covers_batch`].
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TrackCover {
+    /// The path as given to [`read_covers_batch`].
+    pub path: String,
+    /// Cache key of the cover thumbnail, as in [`TrackTags::cover`]; set only
+    /// when [`status`](Self::status) is [`CoverStatus::Found`].
+    pub cover: Option<String>,
+    pub status: CoverStatus,
+}
+
+/// Finds the cover of every file in `paths` and makes sure its thumbnail is
+/// in `cover_dir`, in parallel on low-priority threads. Tags are not read.
+///
+/// The result has exactly one entry per input path, in the same order. Covers
+/// are chosen and keyed exactly as [`read_tags_batch`] does. A file that is
+/// gone, not a regular file, or whose cover could not be read for a reason
+/// that may pass gives [`CoverStatus::Failed`]; [`CoverStatus::None`] means
+/// every source was checked. When `cover_dir` is empty nothing is looked for
+/// and every entry is [`CoverStatus::Skipped`]. Image bytes never cross to
+/// Dart.
+pub fn read_covers_batch(paths: Vec<String>, cover_dir: String) -> Vec<TrackCover> {
+    if cover_dir.is_empty() {
+        return paths
+            .into_iter()
+            .map(|path| TrackCover {
+                path,
+                ..TrackCover::default()
+            })
+            .collect();
+    }
+    read_covers(paths, &CoverSink::new(cover_dir))
+}
+
 /// The original bytes of the cover of the audio file at `path`, chosen the
 /// same way the scan chooses (embedded first, then sidecar images), for views
 /// that need more than the thumbnail. Nothing is decoded or written to disk.
@@ -97,7 +132,7 @@ pub fn read_original_cover(path: String) -> Option<Vec<u8>> {
         first_source(
             audio,
             embedded_pictures(&path),
-            |dir| Arc::new(list_images(dir)),
+            |dir| Ok(Arc::new(list_images(dir))),
             usable,
             |sidecar| read_bounded(sidecar).map_or(Attempt::Next, usable),
         )

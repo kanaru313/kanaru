@@ -166,3 +166,33 @@ fn collect(root: &Path, dir: &Path, found: &mut Vec<String>) {
         }
     }
 }
+
+/// Makes the MIME length of the first PICTURE block absurd, so the block can
+/// no longer be parsed.
+pub fn corrupt_flac_picture_mime_length(path: &Path) {
+    let mut bytes = fs::read(path).unwrap();
+    assert_eq!(&bytes[..4], b"fLaC");
+    let mut at = 4;
+    loop {
+        let header = bytes[at];
+        let length = u32::from_be_bytes([0, bytes[at + 1], bytes[at + 2], bytes[at + 3]]) as usize;
+        if header & 0x7F == 6 {
+            // PICTURE body: picture type (4), then the MIME length (4).
+            bytes[at + 8..at + 12].copy_from_slice(&0x00FF_FFF0u32.to_be_bytes());
+            break;
+        }
+        assert_eq!(header & 0x80, 0, "no PICTURE block");
+        at += 4 + length;
+    }
+    fs::write(path, bytes).unwrap();
+}
+
+pub fn mkfifo(path: &Path) {
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+
+    let c_path = CString::new(path.as_os_str().as_bytes()).unwrap();
+    // SAFETY: c_path is a valid NUL-terminated string that outlives the call.
+    let rc = unsafe { libc::mkfifo(c_path.as_ptr(), 0o600) };
+    assert_eq!(rc, 0, "mkfifo failed");
+}
