@@ -29,6 +29,11 @@ bool isFreshScanResult(IndexerState state, {DateTime? now}) {
 /// result that is no longer fresh ([isFreshScanResult]).
 SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
   if (!isFreshScanResult(state)) return null;
+  // The scan at app start only speaks up when it changed the library.
+  if (state case IndexerFinished(:final quiet, :final summary)
+      when quiet && summary.added + summary.updated + summary.removed == 0) {
+    return null;
+  }
   final l10n = context.l10n;
   final (outcome, details) = switch (state) {
     IndexerFinished(:final summary) => (

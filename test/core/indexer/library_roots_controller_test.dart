@@ -9,6 +9,7 @@ import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/core/indexer/root_path.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 
 /// A database whose writes of roots fail.
 class _WriteFailingDb extends LibraryDatabase {
@@ -58,6 +59,25 @@ void main() {
     expect(result.rejected, isEmpty);
     expect((await db.roots()).map((r) => r.path), result.added);
     expect(container.read(libraryHasRootsProvider), isTrue);
+  });
+
+  test(
+    'a successful add marks the library onboarded, a refusal does not',
+    () async {
+      await controller().addRoots(['$base/missing']);
+      expect(container.read(settingsProvider).libraryOnboarded, isFalse);
+
+      await controller().addRoots(['$base/music']);
+      expect(container.read(settingsProvider).libraryOnboarded, isTrue);
+    },
+  );
+
+  test('removing every root keeps the library onboarded', () async {
+    await controller().addRoots(['$base/music']);
+    await controller().removeRoot(1);
+
+    expect(container.read(libraryHasRootsProvider), isFalse);
+    expect(container.read(settingsProvider).libraryOnboarded, isTrue);
   });
 
   test('refuses duplicate, nested and sibling-prefix correctly', () async {

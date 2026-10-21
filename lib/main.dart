@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dbus/dbus.dart';
@@ -9,6 +10,7 @@ import 'package:media_kit/media_kit.dart';
 import 'app/app.dart';
 import 'app/shell/window/desktop_window.dart';
 import 'core/database/library_startup.dart';
+import 'core/indexer/library_startup_tasks.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
@@ -86,5 +88,9 @@ Future<void> main() async {
 
   runApp(
     UncontrolledProviderScope(container: container, child: const KanaruApp()),
+  );
+  // After the first frame, so the scan never delays the window appearing.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(runLibraryStartupTasks(container)),
   );
 }

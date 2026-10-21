@@ -213,4 +213,46 @@ void main() {
       expect(settingsSchemaVersion, 1);
     });
   });
+
+  group('library options', () {
+    test('default to a rescan at start and a pending first run', () {
+      final settings = decodeSettings(<String, Object?>{}).settings;
+
+      expect(settings.rescanOnStartup, isTrue);
+      expect(settings.libraryOnboarded, isFalse);
+    });
+
+    test('round-trip', () {
+      const settings = AppSettings(
+        rescanOnStartup: false,
+        libraryOnboarded: true,
+      );
+
+      final json = encodeSettings(settings);
+
+      expect(json['rescanOnStartup'], false);
+      expect(json['libraryOnboarded'], true);
+      expect(decodeSettings(json).settings, settings);
+    });
+
+    test('a value of the wrong type gives the default', () {
+      final settings = decodeSettings(<String, Object?>{
+        'rescanOnStartup': 'no',
+        'libraryOnboarded': 1,
+      }).settings;
+
+      expect(settings.rescanOnStartup, isTrue);
+      expect(settings.libraryOnboarded, isFalse);
+    });
+
+    test('are not kept as unknown keys', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'rescanOnStartup': false,
+        'libraryOnboarded': true,
+        'futureKey': 1,
+      });
+
+      expect(decoded.unknownKeys, {'futureKey': 1});
+    });
+  });
 }

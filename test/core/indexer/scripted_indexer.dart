@@ -6,8 +6,14 @@ import 'package:kanaru/core/indexer/library_indexer.dart';
 class ScriptedIndexer extends LibraryIndexer {
   int scans = 0;
 
+  /// The `quiet` argument of the last [scan].
+  bool? lastQuiet;
+
   @override
-  Future<void> scan() async => scans++;
+  Future<void> scan({bool quiet = false}) async {
+    scans++;
+    lastQuiet = quiet;
+  }
 
   void emit(IndexerState next) => state = next;
 }

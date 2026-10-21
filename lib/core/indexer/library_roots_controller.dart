@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 import '../database/library_database.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
+import '../settings/settings_provider.dart';
 import 'root_path.dart';
 
 final _log = Logger('indexer');
@@ -113,6 +114,7 @@ class LibraryRootsController {
             now: DateTime.now().millisecondsSinceEpoch,
           );
           _ref.read(libraryHasRootsProvider.notifier).markPresent();
+          _ref.read(settingsProvider.notifier).markLibraryOnboarded();
         } catch (error, stackTrace) {
           _log.severe('Could not replace library folder', error, stackTrace);
           return const RootChangeResult(rejection: RootRejection.writeFailed);
@@ -166,6 +168,7 @@ class LibraryRootsController {
           now: DateTime.now().millisecondsSinceEpoch,
         );
         _ref.read(libraryHasRootsProvider.notifier).markPresent();
+        _ref.read(settingsProvider.notifier).markLibraryOnboarded();
       }
     } catch (error, stackTrace) {
       _log.severe('Could not store library folders', error, stackTrace);

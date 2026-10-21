@@ -38,6 +38,22 @@ void main() {
     expect(File(path).existsSync(), isFalse);
   });
 
+  test('library options are saved, and onboarding is marked once', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.setRescanOnStartup(false);
+    notifier.markLibraryOnboarded();
+    notifier.markLibraryOnboarded();
+    await notifier.flush();
+
+    final settings = container.read(settingsProvider);
+    expect(settings.rescanOnStartup, isFalse);
+    expect(settings.libraryOnboarded, isTrue);
+    expect(stored()['rescanOnStartup'], false);
+    expect(stored()['libraryOnboarded'], true);
+  });
+
   test('several changes end up on disk with the last value', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

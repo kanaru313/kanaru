@@ -82,9 +82,14 @@ class IndexerScanning extends IndexerState {
 
 class IndexerFinished extends IndexerState {
   /// [at] defaults to now.
-  IndexerFinished(this.summary, {DateTime? at}) : at = at ?? DateTime.now();
+  IndexerFinished(this.summary, {DateTime? at, this.quiet = false})
+    : at = at ?? DateTime.now();
 
   final ScanSummary summary;
+
+  /// The scan started by itself (at app start) and nobody asked for it: its
+  /// result is announced only when it changed something.
+  final bool quiet;
 
   /// When the scan ended, so a screen can tell a fresh result from an old
   /// one it only now gets to see.

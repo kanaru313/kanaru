@@ -77,6 +77,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// so a root that is slow every time costs one extra scan, not a loop.
   bool _autoStarted = false;
 
+  /// The running scan was started with `quiet: true` and nobody asked for
+  /// more since; reported on its [IndexerFinished].
+  bool _quiet = false;
+
   /// The root whose walk the running scan is waiting for right now: a walk
   /// that finishes meanwhile is consumed by that scan itself.
   String? _awaitingWalkOf;
@@ -97,7 +101,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// its future (which completes after that pass). The extra pass makes sure
   /// a root added while scanning is scanned too. Never throws: a failure
   /// becomes [IndexerFailed]. Does nothing without a database.
-  Future<void> scan() {
+  ///
+  /// A [quiet] scan (the one at app start) marks its [IndexerFinished] so
+  /// the UI can stay silent about it. A non-quiet request made while it runs
+  /// makes the result count as the user's.
+  Future<void> scan({bool quiet = false}) {
+    if (_running == null || !quiet) _quiet = quiet;
     // Whoever asks, a scan the user wants arms automatic follow-ups again,
     // and tries the covers that failed earlier in this session once more.
     _autoStarted = false;
@@ -120,7 +129,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// A scan already running gets a follow-up pass instead.
   void _scanAutomatically() {
     if (!ref.mounted) return;
-    if (_running == null) _autoStarted = true;
+    if (_running == null) {
+      _autoStarted = true;
+      _quiet = false;
+    }
     unawaited(_startOrFollow());
   }
 
@@ -244,7 +256,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         'tags ${tagTime.inMilliseconds} ms, '
         'db ${dbTime.inMilliseconds} ms',
       );
-      _publish(IndexerFinished(summary));
+      _publish(IndexerFinished(summary, quiet: _quiet));
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
       _publish(IndexerFailed(error.toString()));

@@ -10,6 +10,8 @@ const _languageKey = 'language';
 const _titleBarKey = 'titleBar';
 const _librarySortKey = 'librarySort';
 const _albumsViewKey = 'albumsView';
+const _rescanOnStartupKey = 'rescanOnStartup';
+const _libraryOnboardedKey = 'libraryOnboarded';
 const _knownKeys = {
   _versionKey,
   _themeKey,
@@ -17,6 +19,8 @@ const _knownKeys = {
   _titleBarKey,
   _librarySortKey,
   _albumsViewKey,
+  _rescanOnStartupKey,
+  _libraryOnboardedKey,
 };
 
 // Screens inside `librarySort`, and the fields of each.
@@ -95,6 +99,14 @@ DecodedSettings decodeSettings(Object? json) {
         json[_albumsViewKey],
         defaults.albumsView,
       ),
+      rescanOnStartup: _boolOr(
+        json[_rescanOnStartupKey],
+        defaults.rescanOnStartup,
+      ),
+      libraryOnboarded: _boolOr(
+        json[_libraryOnboardedKey],
+        defaults.libraryOnboarded,
+      ),
     ),
     version is int && version > 0 ? version : settingsSchemaVersion,
     {
@@ -127,6 +139,8 @@ Map<String, Object?> encodeSettings(
     _artistsScreen: _encodeSort(settings.artistSort),
   },
   _albumsViewKey: settings.albumsView.name,
+  _rescanOnStartupKey: settings.rescanOnStartup,
+  _libraryOnboardedKey: settings.libraryOnboarded,
 };
 
 /// Each part falls back on its own: a bad `by` keeps a valid `descending`.
@@ -147,6 +161,8 @@ Map<String, Object?> _encodeSort(SortChoice<Enum> choice) => {
   _byKey: choice.field.name,
   _descendingKey: choice.descending,
 };
+
+bool _boolOr(Object? value, bool fallback) => value is bool ? value : fallback;
 
 T _enumOr<T extends Enum>(List<T> values, Object? name, T fallback) {
   for (final value in values) {

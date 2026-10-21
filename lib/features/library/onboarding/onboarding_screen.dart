@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/root_path.dart';
+import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../directory_picker_provider.dart';
 import '../root_rejection_message.dart';
@@ -124,6 +125,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  /// Leaves without a folder; the source picker does not come back.
+  void _later() {
+    ref.read(settingsProvider.notifier).markLibraryOnboarded();
+    context.go(_homePath);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -185,7 +192,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: _busy ? null : () => context.go(_homePath),
+                      onPressed: _busy ? null : _later,
                       child: Text(l10n.onboardingLater),
                     ),
                     const SizedBox(width: 8),
