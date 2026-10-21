@@ -4,9 +4,13 @@
 mod common;
 
 use std::fs;
+use std::path::Path;
+use std::sync::mpsc;
+use std::time::Duration;
 
 use common::*;
 use image::{GenericImageView, ImageFormat};
+use rust_lib_kanaru::api::tags::CoverStatus;
 use rust_lib_kanaru::cover_cache::{cache_key, CoverSink};
 use rust_lib_kanaru::cover_thumbnail::make_jpeg;
 use rust_lib_kanaru::jpeg_header::{parse, strip_metadata};
@@ -28,6 +32,94 @@ fn with_exif(jpeg: &[u8], orientation: u16) -> Vec<u8> {
     out.extend_from_slice(&[0xFF, 0xFE, 0x00, 0x06, b'h', b'i', b'!', b'!']);
     out.extend_from_slice(&jpeg[2..]);
     out
+}
+
+/// A `width`×`height` JPEG written by jpeg-encoder: `color` is RGB (or CMYK
+/// for `ColorType::Cmyk`), the same for every pixel.
+fn encoded(
+    width: u16,
+    height: u16,
+    color_type: jpeg_encoder::ColorType,
+    color: &[u8],
+    progressive: bool,
+) -> Vec<u8> {
+    let pixels: Vec<u8> = color
+        .iter()
+        .copied()
+        .cycle()
+        .take(usize::from(width) * usize::from(height) * color.len())
+        .collect();
+    let mut out = Vec::new();
+    let mut encoder = jpeg_encoder::Encoder::new(&mut out, 90);
+    encoder.set_progressive(progressive);
+    encoder.encode(&pixels, width, height, color_type).unwrap();
+    out
+}
+
+fn assert_color_near(thumbnail: &[u8], expected: [u8; 3]) {
+    let image = image::load_from_memory(thumbnail).unwrap().into_rgb8();
+    let (w, h) = image.dimensions();
+    let pixel = image.get_pixel(w / 2, h / 2).0;
+    for (got, want) in pixel.iter().zip(expected) {
+        assert!(got.abs_diff(want) <= 6, "{pixel:?} vs {expected:?}");
+    }
+}
+
+#[test]
+fn large_jpeg_is_decoded_scaled_with_the_same_size_and_colours() {
+    use jpeg_encoder::ColorType::{Luma, Rgb};
+
+    for progressive in [false, true] {
+        let wide = encoded(2000, 1000, Rgb, &[200, 40, 90], progressive);
+        let thumbnail = make_jpeg(&wide, ImageFormat::Jpeg).unwrap();
+        let size = image::load_from_memory(&thumbnail).unwrap().dimensions();
+        assert_eq!(size, (512, 256), "progressive {progressive}");
+        assert_color_near(&thumbnail, [200, 40, 90]);
+    }
+    let gray = encoded(1300, 1300, Luma, &[120], false);
+    let thumbnail = make_jpeg(&gray, ImageFormat::Jpeg).unwrap();
+    assert_eq!(
+        image::load_from_memory(&thumbnail).unwrap().dimensions(),
+        (512, 512)
+    );
+    assert_color_near(&thumbnail, [120, 120, 120]);
+}
+
+#[test]
+fn large_cmyk_jpeg_takes_the_full_path() {
+    let cmyk = encoded(
+        1500,
+        1500,
+        jpeg_encoder::ColorType::Cmyk,
+        &[0, 0, 0, 0],
+        false,
+    );
+    assert_eq!(parse(&cmyk).unwrap().sampling.len(), 4);
+    if let Some(thumbnail) = make_jpeg(&cmyk, ImageFormat::Jpeg) {
+        let size = image::load_from_memory(&thumbnail).unwrap().dimensions();
+        assert_eq!(size, (512, 512));
+    }
+}
+
+#[test]
+fn copies_of_one_large_cover_in_one_batch_finish() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    let cover = encoded(2400, 2400, jpeg_encoder::ColorType::Rgb, &[1, 2, 3], true);
+    let paths: Vec<_> = (0..8)
+        .map(|i| with_cover("sample.flac", music.path(), &format!("{i}.flac"), &cover))
+        .collect();
+    let cache_dir = cache.path().to_owned();
+    let (tx, rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        let refs: Vec<&Path> = paths.iter().map(|p| p.as_path()).collect();
+        let _ = tx.send(read_all(&refs, &CoverSink::new(&cache_dir)));
+    });
+    let found = rx
+        .recv_timeout(Duration::from_secs(30))
+        .expect("must not hang");
+    assert!(found.iter().all(|c| c.status == CoverStatus::Found));
+    assert_eq!(files_under(cache.path()), vec![cache_key(&cover)]);
 }
 
 #[test]

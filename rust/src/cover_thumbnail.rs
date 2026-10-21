@@ -4,7 +4,7 @@ use std::io::Cursor;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 use image::codecs::jpeg::JpegEncoder;
-use image::{DynamicImage, ImageFormat, ImageReader, Limits, RgbImage};
+use image::{DynamicImage, GrayImage, ImageFormat, ImageReader, Limits, RgbImage};
 
 use crate::cover_art::MAX_COVER_SIDE;
 use crate::jpeg_header::{self, JpegHeader};
@@ -23,27 +23,31 @@ const JPEG_QUALITY: u8 = 85;
 /// Largest original JPEG used as its own thumbnail.
 const MAX_PASSTHROUGH_BYTES: usize = 200 * 1024;
 
+/// JPEGs with a longer side are decoded at 1/2, 1/4 or 1/8 of their size,
+/// still at least [`THUMBNAIL_SIDE`]: most of the decode work is skipped.
+const SCALED_DECODE_ABOVE: u32 = 1024;
+
 /// Decodes `bytes` (already checked by
 /// [`validate_header`](crate::cover_art::validate_header)) and encodes a JPEG
 /// whose longest side is [`THUMBNAIL_SIDE`], keeping the aspect ratio. Smaller
 /// images are re-encoded at their own size, never enlarged. Transparent parts
 /// end up on black. A small upright baseline JPEG is its own thumbnail, minus
-/// its metadata (see [`passthrough`]). `None` when the image breaks a decode
-/// limit or is corrupt.
+/// its metadata (see [`passthrough`]); a large JPEG is decoded scaled down
+/// (see [`scaled_decode`]). Every shortcut falls back to the full path on
+/// any trouble. `None` when the image breaks a decode limit or is corrupt.
 pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
-    let mut reader = ImageReader::with_format(Cursor::new(bytes), format);
-    let mut limits = Limits::default();
-    limits.max_image_width = Some(MAX_COVER_SIDE);
-    limits.max_image_height = Some(MAX_COVER_SIDE);
-    limits.max_alloc = Some(MAX_DECODE_BYTES);
-    reader.limits(limits);
-    let image = reader.decode().ok()?;
-    if format == ImageFormat::Jpeg {
-        // Any trouble on this shortcut falls back to re-encoding.
-        if let Ok(Some(original)) = catch_unwind(AssertUnwindSafe(|| passthrough(bytes, &image))) {
-            return Some(original);
+    let image = match guarded(|| scaled_decode(bytes, format)) {
+        Some(image) => image,
+        None => {
+            let image = full_decode(bytes, format)?;
+            if format == ImageFormat::Jpeg {
+                if let Some(original) = guarded(|| passthrough(bytes, &image)) {
+                    return Some(original);
+                }
+            }
+            image
         }
-    }
+    };
 
     let image = if image.width().max(image.height()) > THUMBNAIL_SIDE {
         image.thumbnail(THUMBNAIL_SIDE, THUMBNAIL_SIDE)
@@ -57,6 +61,87 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
         .encode_image(&rgb)
         .ok()?;
     Some(out)
+}
+
+/// Runs a shortcut; a panic inside it counts as "not taken".
+fn guarded<T>(shortcut: impl FnOnce() -> Option<T>) -> Option<T> {
+    catch_unwind(AssertUnwindSafe(shortcut)).ok().flatten()
+}
+
+fn full_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
+    let mut reader = ImageReader::with_format(Cursor::new(bytes), format);
+    let mut limits = Limits::default();
+    limits.max_image_width = Some(MAX_COVER_SIDE);
+    limits.max_image_height = Some(MAX_COVER_SIDE);
+    limits.max_alloc = Some(MAX_DECODE_BYTES);
+    reader.limits(limits);
+    reader.decode().ok()
+}
+
+/// A JPEG longer than [`SCALED_DECODE_ABOVE`] decoded at the smallest DCT
+/// scale (1/2, 1/4, 1/8) that keeps its longest side at least
+/// [`THUMBNAIL_SIDE`]. Gray and YCbCr (or RGB) only; CMYK and YCCK take the
+/// full path. `None` when it does not apply, when the decode would need more
+/// than [`MAX_DECODE_BYTES`] (see [`scaled_decode_bytes`]), or on any error.
+fn scaled_decode(bytes: &[u8], format: ImageFormat) -> Option<DynamicImage> {
+    if format != ImageFormat::Jpeg {
+        return None;
+    }
+    let header = jpeg_header::parse(bytes)?;
+    let side = u32::from(header.width.max(header.height));
+    if side <= SCALED_DECODE_ABOVE || side > MAX_COVER_SIDE || header.sampling.len() == 4 {
+        return None;
+    }
+    let mut decoder = jpeg_decoder::Decoder::new(Cursor::new(bytes));
+    let side = THUMBNAIL_SIDE as u16;
+    let (width, height) = decoder.scale(side, side).ok()?;
+    let output = u64::from(width) * u64::from(height) * header.sampling.len() as u64;
+    if scaled_decode_bytes(&header) + 2 * output > MAX_DECODE_BYTES {
+        return None;
+    }
+    decoder.set_max_decoding_buffer_size(output as usize);
+    let pixels = decoder.decode().ok()?;
+    let (width, height) = (u32::from(width), u32::from(height));
+    match decoder.info()?.pixel_format {
+        jpeg_decoder::PixelFormat::RGB24 => {
+            RgbImage::from_raw(width, height, pixels).map(DynamicImage::ImageRgb8)
+        }
+        jpeg_decoder::PixelFormat::L8 => {
+            GrayImage::from_raw(width, height, pixels).map(DynamicImage::ImageLuma8)
+        }
+        _ => None,
+    }
+}
+
+/// What a scaled decode holds besides its output, at most: a progressive
+/// JPEG keeps every DCT coefficient of the full-size image (64 two-byte
+/// values per 8×8 block, blocks padded to whole MCUs) until its last scan;
+/// a baseline one decodes row by row. The output comes on top, about twice
+/// (component planes, then the interleaved pixels), counted by the caller.
+fn scaled_decode_bytes(header: &JpegHeader) -> u64 {
+    if !header.progressive {
+        return 0;
+    }
+    let h_max = header
+        .sampling
+        .iter()
+        .map(|s| u64::from(s.0))
+        .max()
+        .unwrap_or(1);
+    let v_max = header
+        .sampling
+        .iter()
+        .map(|s| u64::from(s.1))
+        .max()
+        .unwrap_or(1);
+    let mcus_x = u64::from(header.width).div_ceil(8 * h_max);
+    let mcus_y = u64::from(header.height).div_ceil(8 * v_max);
+    let blocks: u64 = header
+        .sampling
+        .iter()
+        .map(|&(h, v)| mcus_x * u64::from(h) * mcus_y * u64::from(v))
+        .sum();
+    blocks * 64 * 2
 }
 
 /// The original JPEG without its metadata segments, when it can serve as
@@ -162,5 +247,25 @@ mod tests {
             assert!(!fits_as_is(&refused, size), "{refused:?}");
         }
         assert!(!fits_as_is(&header(), (300, 400)), "decoded size differs");
+    }
+
+    #[test]
+    fn progressive_decode_memory_counts_padded_blocks() {
+        let progressive = |width, height, sampling: Vec<(u8, u8)>| JpegHeader {
+            width,
+            height,
+            progressive: true,
+            sampling,
+            ..header()
+        };
+        assert_eq!(scaled_decode_bytes(&header()), 0, "baseline");
+        // 2000×1000 4:2:0: 125×63 MCUs; 4 luma + 2 chroma blocks per MCU.
+        let blocks = 125 * 63 * 6;
+        let yuv420 = progressive(2000, 1000, vec![(2, 2), (1, 1), (1, 1)]);
+        assert_eq!(scaled_decode_bytes(&yuv420), blocks * 128);
+        // 4096² 4:4:4: 3 × 512² blocks = 96 MiB, over the cap.
+        let full = progressive(4096, 4096, vec![(1, 1); 3]);
+        assert_eq!(scaled_decode_bytes(&full), 3 * 512 * 512 * 128);
+        assert!(scaled_decode_bytes(&full) > MAX_DECODE_BYTES);
     }
 }

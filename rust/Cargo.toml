@@ -17,6 +17,10 @@ lofty = "=0.25.4"
 rayon = "1"
 # Cover thumbnails: decode only the three formats covers come in, nothing else.
 image = { version = "=0.25.10", default-features = false, features = ["jpeg", "png", "webp"] }
+# Large JPEG covers are decoded at 1/2..1/8 scale (DCT scaling), which the
+# `image` crate's decoder cannot do. A second JPEG decoder in the binary;
+# no rayon, so nothing inside a decode waits on the cover pool.
+jpeg-decoder = { version = "=0.3.2", default-features = false }
 # Cover cache keys: hash of the original image bytes. `pure` skips the C/asm build.
 blake3 = { version = "=1.8.7", default-features = false, features = ["std", "pure"] }
 # O_NONBLOCK when opening sidecar images, so a FIFO named cover.jpg cannot hang a scan.
@@ -34,6 +38,10 @@ tempfile = "3"
 # the generic `image` code it calls is compiled in this crate, so optimizing only
 # the dependencies leaves the scan about twice as slow. Debug info and debug
 # assertions stay on.
+[dev-dependencies]
+# Writes progressive and CMYK JPEGs for the thumbnail tests.
+jpeg-encoder = { version = "=0.7.1", default-features = false, features = ["std"] }
+
 [profile.dev]
 opt-level = 3
 
