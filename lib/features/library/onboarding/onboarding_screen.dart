@@ -9,8 +9,8 @@ import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/root_path.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
-import '../directory_picker_provider.dart';
-import '../root_rejection_message.dart';
+import '../../../shared/directory_picker_provider.dart';
+import '../../../shared/root_rejection_message.dart';
 import 'onboarding_folder_list.dart';
 import 'suggested_music_folder_provider.dart';
 
