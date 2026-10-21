@@ -189,10 +189,18 @@ class MprisMediaControls implements MediaControls {
     if (_active) _timer ??= Timer(_coalesceWindow, _flush);
   }
 
+  /// Runs from a timer, so it never throws: a player whose rebuild failed
+  /// cannot be read; the change is dropped and the next one flushes again.
   void _flush() {
     _timer = null;
     if (_disposed || !_active) return;
-    final latest = _build();
+    final Map<String, DBusValue> latest;
+    try {
+      latest = _build();
+    } catch (error) {
+      _log.warning('Not publishing a change', error);
+      return;
+    }
     final changed = changedProperties(_emitted, latest);
     _emitted = latest;
     if (changed.isEmpty) return;

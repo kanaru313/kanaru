@@ -244,6 +244,20 @@ void main() {
     expect(art(), '/x.jpg');
   });
 
+  test('a track removed from the library falls back to its own art', () async {
+    await add(['a.mp3'], key: fakeCoverKey('a'));
+    launch();
+    await service().openTracks([song('a.mp3', artUri: '/tap.jpg')]);
+    follow();
+    await settle();
+    expect(art(), coverOf('a'));
+
+    await db.customStatement('DELETE FROM tracks WHERE path = ?', ['/m/a.mp3']);
+    db.notifyUpdates({const TableUpdate('tracks', kind: UpdateKind.delete)});
+    await settle();
+    expect(art(), '/tap.jpg');
+  });
+
   test('a file uri of a library path is looked up', () async {
     await add(['a b.mp3'], key: fakeCoverKey('a'));
     launch();
