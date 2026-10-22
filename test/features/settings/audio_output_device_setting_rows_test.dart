@@ -35,8 +35,11 @@ Future<void> pumpRow(
   WidgetTester tester, {
   PlaybackPrefs prefs = const PlaybackPrefs(),
   List<AudioOutputDevice>? listed,
+  Size size = const Size(1000, 1400),
+  double textScale = 1,
+  Locale locale = const Locale('en'),
 }) async {
-  tester.view.physicalSize = const Size(1000, 1400);
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   backend = FakeAudioBackend()..devices = listed ?? devices;
@@ -52,11 +55,22 @@ Future<void> pumpRow(
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: const MaterialApp(
-        locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+      child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: AudioOutputDeviceSettingRow()),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+        // Scrollable like the settings page: a long subtitle wraps and grows.
+        home: const Scaffold(
+          body: SingleChildScrollView(child: AudioOutputDeviceSettingRow()),
+        ),
       ),
     ),
   );
@@ -221,5 +235,80 @@ void main() {
       inDialog(find.text('No other output devices found')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('tapping the selected device closes the dialog as it is', (
+    tester,
+  ) async {
+    await pumpRow(tester, prefs: saved('pipewire/spk', 'PW Speaker'));
+    backend.audioCalls.clear();
+    await openDialog(tester);
+
+    await tester.tap(inDialog(find.text('PW Speaker')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(playback.audioDeviceName, 'pipewire/spk');
+    expect(backend.audioCalls, isEmpty);
+  });
+
+  testWidgets('tapping Automatic while it is selected closes the dialog', (
+    tester,
+  ) async {
+    await pumpRow(tester);
+    await openDialog(tester);
+
+    await tester.tap(inDialog(find.text('Automatic (system default)')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(playback.audioDeviceName, isNull);
+  });
+
+  group('a 200 character description at 360 px, text scale 2, Vietnamese', () {
+    final long = 'Loa ${'rất dài ' * 25}'.trim().substring(0, 200);
+    final listed = [
+      device('auto', 'Autoselect device'),
+      device('pipewire/long', long),
+      device('pipewire/other', 'Other'),
+    ];
+
+    Future<void> pumpNarrow(WidgetTester tester, PlaybackPrefs prefs) =>
+        pumpRow(
+          tester,
+          prefs: prefs,
+          listed: listed,
+          size: const Size(360, 800),
+          textScale: 2,
+          locale: const Locale('vi'),
+        );
+
+    testWidgets('the row says a missing device', (tester) async {
+      await pumpNarrow(tester, saved('pipewire/gone', long));
+
+      expect(find.textContaining('Loa'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the row says a failed device', (tester) async {
+      await pumpNarrow(tester, saved('pipewire/long', long));
+      backend.emitAudioDeviceFailed('pipewire/long');
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Loa'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the dialog lists it, and the missing note', (tester) async {
+      await pumpNarrow(tester, saved('pipewire/gone', long));
+      await tester.ensureVisible(
+        find.byType(FilledButton),
+      ); // below the long text
+      await openDialog(tester);
+
+      expect(inDialog(find.text(long)), findsOneWidget);
+      expect(inDialog(find.textContaining('Loa')), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    });
   });
 }

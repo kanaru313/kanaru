@@ -44,8 +44,14 @@ class _AudioOutputDeviceDialogState
       .read(audioBackendProvider)
       .audioDevices;
 
+  /// A radio reports `null` when the one that is already selected is tapped
+  /// (the tiles are `toggleable`, or nothing would be reported): nothing to
+  /// change, so the dialog just closes.
   void _pick(String? name) {
-    if (name == null) return;
+    if (name == null) {
+      Navigator.of(context).pop();
+      return;
+    }
     final settings = ref.read(settingsProvider.notifier);
     final p = ref.read(settingsProvider).playback;
     if (name == autoAudioDevice) {
@@ -68,6 +74,7 @@ class _AudioOutputDeviceDialogState
 
   Widget _tile(AudioOutputDevice d) => RadioListTile<String>(
     value: d.name,
+    toggleable: true,
     title: Text(d.description.isEmpty ? d.name : d.description),
     subtitle: Text(d.name, maxLines: 1, overflow: TextOverflow.ellipsis),
   );
@@ -114,6 +121,7 @@ class _AudioOutputDeviceDialogState
               children: [
                 RadioListTile<String>(
                   value: autoAudioDevice,
+                  toggleable: true,
                   title: Text(l10n.audioDeviceAuto),
                 ),
                 if (missing)
