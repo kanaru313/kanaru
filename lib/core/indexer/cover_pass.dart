@@ -31,6 +31,11 @@ class CoverPassProgress {
   /// Cover keys whose colors failed (or timed out) in this session; the
   /// color round passes over them until the app restarts.
   final Set<String> skipColorKeys = {};
+
+  /// A color batch that timed out and may still be running on the cover
+  /// threads; no color round starts until it returns, so colors never keep
+  /// those threads from the thumbnails. Null when none.
+  Future<void>? colorCallPending;
 }
 
 /// How one cover pass ended.
@@ -75,7 +80,10 @@ class CoverPassResult {
 /// [shouldExtractColors] says so, a color round follows (see
 /// [runCoverColorRound]): it never calls [onStuck], never throws and never
 /// changes [CoverPassResult.completed]; its timeouts and failures go to
-/// [CoverPassProgress.skipColorKeys].
+/// [CoverPassProgress.skipColorKeys], and a timed-out call holds back later
+/// rounds until it returns ([CoverPassProgress.colorCallPending]). It yields
+/// on [shouldYieldColors] (default [shouldYield]): a color round can be long,
+/// so callers may let it give way to more than a rescan.
 Future<CoverPassResult> runCoverPass({
   required LibraryDatabase db,
   required TagReader reader,
@@ -88,6 +96,7 @@ Future<CoverPassResult> runCoverPass({
   void Function(int done, int total)? onProgress,
   CoverColorExtractor? colorExtractor,
   bool Function()? shouldExtractColors,
+  bool Function()? shouldYieldColors,
 }) async {
   final result = CoverPassResult();
   var done = 0, total = 0;
@@ -185,7 +194,7 @@ Future<CoverPassResult> runCoverPass({
   }
   final colors = colorExtractor;
   final colorsWanted = shouldExtractColors ?? () => false;
-  if (colors != null && colorsWanted()) {
+  if (colors != null && colorsWanted() && progress.colorCallPending == null) {
     final round = await runCoverColorRound(
       db: db,
       extractor: colors,
@@ -193,8 +202,19 @@ Future<CoverPassResult> runCoverPass({
       skip: progress.skipColorKeys,
       timeout: timeout,
       enabled: colorsWanted,
-      shouldYield: shouldYield,
+      shouldYield: shouldYieldColors ?? shouldYield,
       shouldStop: shouldStop,
+      onStuck: (pending) {
+        final call = progress.colorCallPending = pending.then<void>(
+          (_) {},
+          onError: (_) {},
+        );
+        call.whenComplete(() {
+          if (identical(progress.colorCallPending, call)) {
+            progress.colorCallPending = null;
+          }
+        });
+      },
     );
     result
       ..colorsDone = round.done

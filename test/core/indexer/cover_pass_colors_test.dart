@@ -165,12 +165,55 @@ void main() {
     expect(stuck, 0);
     expect(progress.skipColorKeys, keys.take(32).toSet());
     colors.gate!.complete();
+    await pumpEventQueue();
 
     colors.gate = null;
     colors.calls.clear();
     final next = await pass(extractor: colors, wanted: () => true);
     expect(colors.calls.single.$1, keys.skip(32).toList());
     expect(next.colorsDone, 8);
+  });
+
+  test('a timed-out color call holds back rounds until it returns', () async {
+    final keys = await addWithCovers(40);
+    colors.gate = Completer<void>();
+    await pass(
+      extractor: colors,
+      wanted: () => true,
+      timeout: const Duration(milliseconds: 50),
+    );
+    expect(progress.colorCallPending, isNotNull);
+
+    colors.calls.clear();
+    await pass(extractor: colors, wanted: () => true);
+    expect(colors.calls, isEmpty, reason: 'the stuck call still runs');
+
+    colors.gate!.complete();
+    colors.gate = null;
+    await pumpEventQueue();
+    expect(progress.colorCallPending, isNull);
+    final next = await pass(extractor: colors, wanted: () => true);
+    expect(colors.calls.single.$1, keys.skip(32).toList());
+    expect(next.colorsDone, 8);
+  });
+
+  test('the color round yields on its own condition', () async {
+    await addWithCovers(70);
+    final result = await runCoverPass(
+      db: db,
+      reader: reader,
+      rootIds: [rootId],
+      progress: progress,
+      timeout: const Duration(seconds: 5),
+      shouldYield: () => false,
+      shouldStop: () => false,
+      onStuck: (_) {},
+      colorExtractor: colors,
+      shouldExtractColors: () => true,
+      shouldYieldColors: () => colors.calls.isNotEmpty,
+    );
+    expect(result.completed, isTrue, reason: 'thumbnails did not yield');
+    expect(result.colorsDone, 32);
   });
 
   test('failed covers are not stored and not tried again', () async {

@@ -32,7 +32,8 @@ class CoverColorRoundResult {
 /// cover colors off), and a batch that comes back after the user turned
 /// cover colors off is not stored. A key whose colors cannot be worked out is added to
 /// [skip]; so is every key of a batch that outlasts [timeout], and the round
-/// stops there (the native call may still be running). Never throws: an
+/// stops there and hands the native call, which may still be running, to
+/// [onStuck]. Never throws: an
 /// error is logged and ends the round.
 Future<CoverColorRoundResult> runCoverColorRound({
   required LibraryDatabase db,
@@ -43,6 +44,7 @@ Future<CoverColorRoundResult> runCoverColorRound({
   required bool Function() enabled,
   required bool Function() shouldYield,
   required bool Function() shouldStop,
+  void Function(Future<List<CoverColorSample>> pending)? onStuck,
 }) async {
   final result = CoverColorRoundResult();
   try {
@@ -72,11 +74,11 @@ Future<CoverColorRoundResult> runCoverColorRound({
       );
       final nativeTime = Stopwatch()..start();
       final List<CoverColorSample> samples;
+      final pending = extractor.extract(batch, background: true);
       try {
-        samples = await extractor
-            .extract(batch, background: true)
-            .timeout(timeout);
+        samples = await pending.timeout(timeout);
       } on TimeoutException {
+        onStuck?.call(pending);
         result.nativeTime += nativeTime.elapsed;
         skip.addAll(batch);
         result.failed += batch.length;

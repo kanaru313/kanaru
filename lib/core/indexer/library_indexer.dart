@@ -382,6 +382,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
         colorExtractor: ref.read(coverColorExtractorProvider),
         shouldExtractColors: () =>
             ref.mounted && ref.read(settingsProvider).display.colorFromCover,
+        // The color round can be long (a whole library after turning the
+        // setting on), so it also gives way to files changed on disk.
+        shouldYieldColors: () => _rescanRequested || _changesPending,
       );
     } catch (error, stackTrace) {
       _log.warning('Cover pass failed', error, stackTrace);

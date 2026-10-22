@@ -45,7 +45,9 @@ extension CoverColorQueries on LibraryDatabase {
 
   /// The distinct cover keys of the tracks under [rootIds] whose colors are
   /// missing: no row under the current [coverColorAlgoVersion], or a damaged
-  /// one (see [paletteFromRow]). In key order.
+  /// one (see [paletteFromRow]; SQL narrows to rows that look damaged, so a
+  /// rare damage that passes its shape check is left to the player, which
+  /// rewrites any row it cannot read). In key order.
   Future<List<String>> coverKeysNeedingColors(List<int> rootIds) async {
     final keys = <String>{};
     for (var i = 0; i < rootIds.length; i += deleteChunkSize) {
@@ -61,7 +63,13 @@ extension CoverColorQueries on LibraryDatabase {
         'c.palette AS palette FROM tracks t '
         'LEFT JOIN cover_colors c '
         'ON c.cover_key = t.cover_key AND c.algo_version = ? '
-        'WHERE t.cover_key IS NOT NULL AND t.root_id IN ($marks)',
+        'WHERE t.cover_key IS NOT NULL AND t.root_id IN ($marks) '
+        // Only rows that are missing or look damaged; the parse below
+        // decides. Keeps a scan from reading every stored palette.
+        'AND (c.cover_key IS NULL '
+        "OR c.palette GLOB '*[^0-9a-f,]*' "
+        'OR (length(c.palette) + 1) % 9 != 0 OR length(c.palette) > 71 '
+        'OR NOT (c.seed = 0 OR c.seed BETWEEN 4278190080 AND 4294967295))',
         variables: [
           Variable.withInt(coverColorAlgoVersion),
           for (final id in chunk) Variable.withInt(id),
