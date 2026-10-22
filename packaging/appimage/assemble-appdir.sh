@@ -11,8 +11,9 @@ set -euo pipefail
 APP_ID=io.github.kanaru313.kanaru
 APPDIR=/AppDir
 OUT=/out
-# glibc symbol version the Debian 12 build container provides; nothing may need more.
-GLIBC_FLOOR=2.36
+# Highest glibc symbol version any shipped file may need (the supported host floor).
+# The Debian 12 build container has 2.36; the check below keeps the output at 2.35.
+GLIBC_FLOOR=2.35
 
 fail() { echo "assemble-appdir: $*" >&2; exit 1; }
 

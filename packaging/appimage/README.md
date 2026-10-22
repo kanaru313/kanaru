@@ -1,7 +1,7 @@
 # AppImage packaging
 
 `make appimage` writes `dist/Kanaru-<version>-x86_64.AppImage`. Everything is built inside
-`debian:bookworm` (glibc 2.36) by `Dockerfile`; nothing from the host build tree is used.
+`debian:bookworm` (glibc 2.36, shipped floor 2.35) by `Dockerfile`; nothing from the host build tree is used.
 Needs Docker with BuildKit (23+) and network access.
 
 | File | Purpose |
@@ -17,9 +17,9 @@ GTK, GLib, libstdc++, libpulse and libasound come from the host.
 
 ## Host requirements
 
-Verified in Debian 12, Ubuntu 24.04, Fedora and Arch containers (Xvfb, no GPU) and on NixOS.
+Verified in Debian 12, Ubuntu 22.04, Ubuntu 24.04, Fedora and Arch containers (Xvfb, no GPU). NixOS is not supported through `appimage-run` (it fails with `libepoxy.so.0: cannot open shared object file`); NixOS users build from source or wait for a Nix package.
 
-- glibc 2.36 or newer (highest symbol used: `GLIBC_2.35`); libstdc++ with `GLIBCXX_3.4.29` (GCC 11+).
+- glibc 2.35 or newer (highest symbol used: `GLIBC_2.35`, enforced by the build); libstdc++ with `GLIBCXX_3.4.29` (GCC 11+).
 - GTK 3 and Mesa with `libEGL` and `libGLESv2.so.2` (glvnd). Flutter's GTK engine dies at start without
   `libGLESv2.so.2` (`libgles2` on Debian/Ubuntu, `mesa-libGLES` on Fedora). Every desktop has it; minimal containers do not.
 - libpulse and libasound. Without them the app still starts, logs `Audio engine failed to initialise`

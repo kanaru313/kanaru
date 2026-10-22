@@ -318,7 +318,7 @@ Log tự che mật khẩu, token, cookie và user:pass trong URL (cả dạng pe
 
 | ID     | Tính năng       | Mô tả / tiêu chí hoàn thành                                               | Ưu tiên | Phase |
 | ------ | --------------- | ------------------------------------------------------------------------- | ------- | ----- |
-| PKG-01 | AppImage        | Một file chạy được trên các distro phổ biến, đã bundle libmpv — ✅ đã làm (x86_64, glibc ≥ 2.36, `make appimage`) | P0      | 1     |
+| PKG-01 | AppImage        | Một file chạy được trên các distro phổ biến, đã bundle libmpv — ✅ đã làm (x86_64, glibc ≥ 2.35, `make appimage`) | P0      | 1     |
 | PKG-02 | Flatpak         | Phát hành trên Flathub; sandbox chỉ cấp quyền vào thư mục nhạc qua portal | P1      | 1     |
 | PKG-03 | `.deb` / `.rpm` | Gói cho Debian/Ubuntu và Fedora                                           | P1      | 1     |
 | PKG-04 | AUR             | `kanaru-bin` cho Arch                                                     | P2      | 1     |

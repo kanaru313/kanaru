@@ -71,7 +71,7 @@ make appimage
 | Item | Value |
 |---|---|
 | Needs | Docker 23+ with BuildKit, network access |
-| Build environment | `debian:bookworm` (glibc 2.36) from `packaging/appimage/Dockerfile`. Nothing from the host build tree is used |
+| Build environment | `debian:bookworm` (glibc 2.36; the shipped floor is 2.35) from `packaging/appimage/Dockerfile`. Nothing from the host build tree is used |
 | Output | `dist/Kanaru-<version>-x86_64.AppImage`. The version comes from `pubspec.yaml` without the `+build` suffix |
 | Time, cold (`--no-cache`, 8 cores) | about 17.5 min (measured 17 min 34 s) |
 | Time, nothing changed | about 4 s (all steps cached) |
@@ -86,7 +86,7 @@ Measured on the first AppImage build (2026-10-22). The full verification log is 
 |---|---|
 | AppImage size | 16,370,168 bytes (15.6 MiB). NFR-04 limit: 60 MiB |
 | Uncompressed AppDir | 44,854,336 bytes |
-| Highest glibc symbol | `GLIBC_2.35` (floor set by the build: 2.36) |
+| Highest glibc symbol | `GLIBC_2.35` (floor enforced by the build: 2.35) |
 | Highest libstdc++ symbol | `GLIBCXX_3.4.29` (libstdc++ from GCC 11+ on the host) |
 
 Where it was run:
@@ -95,23 +95,24 @@ Where it was run:
 |---|---|
 | Debian 12 container (Xvfb, no GPU) | Starts. 20/20 format files decode, with `ao=null` and with PulseAudio (null sink) |
 | Debian 12 with `libmpv-dev` installed | Same. The bundled libmpv is the one loaded |
+| Ubuntu 22.04 container (glibc 2.35, GLIBCXX_3.4.30) | Same as Debian 12. `ldd` reports 0 missing libraries (19 files), window alive after 25 s, bundled `libmpv.so.2.5.0` loaded. Tested 2026-10-22 |
 | Ubuntu 24.04 container | Same as Debian 12 |
 | Fedora (latest) container | Same as Debian 12 |
 | Arch (latest) container, system `mpv` installed | Same. The bundled libmpv is loaded, not the system one |
-| NixOS desktop (real GUI, PipeWire), started with `appimage-run` | Window and MPRIS work. 20/20 formats decode with real audio output |
+| NixOS, `appimage-run` | Passes only inside `nix develop`, where the dev-shell `LD_LIBRARY_PATH` leaks gtk3 and libepoxy. Plain `appimage-run` fails with `libepoxy.so.0: cannot open shared object file`. Not supported |
 | Debian 12 without `libpulse0` and `libasound2` | Starts in library-only mode. No playback |
 
 The 20 format files cover MP3, FLAC, M4A (AAC and ALAC), AAC (ADTS), ALAC, OGG Vorbis, Opus (OGA and Opus), WAV, AIFF, APE, WavPack, DSF and DFF, plus MP3, FLAC and M4A with embedded cover art.
 
 These are decode checks run through libmpv, not listening tests. Audible playback through the UI was not checked.
 
-Not tested: other versions of these distros, Ubuntu 22.04 and older (glibc 2.35, below the documented floor), Wayland compositors other than niri, and KDE or GNOME desktops.
+Not tested: other versions of these distros, versions older than Ubuntu 22.04 (below the documented floor), Wayland compositors other than niri, and KDE or GNOME desktops.
 
 ### Host requirements
 
 | Needed on the host | Why | Debian 12 package |
 |---|---|---|
-| glibc 2.36 or newer | Floor for the build. The binary needs 2.35 | (part of the OS) |
+| glibc 2.35 or newer | Floor enforced by the build. The binary needs 2.35 | (part of the OS) |
 | libstdc++ with `GLIBCXX_3.4.29` (GCC 11+) | C++ runtime, not bundled | `libstdc++6` |
 | GTK 3 | Flutter GTK embedder, folder picker | `libgtk-3-0` |
 | `libGLESv2.so.2` and EGL (glvnd, Mesa) | The engine exits at start without `libGLESv2.so.2` | `libgles2` (Fedora: `mesa-libGLES`) |
@@ -128,7 +129,7 @@ Package names are for Debian 12; other distros name them differently.
 ```
 
 - No FUSE on the host (containers, minimal systems): `./Kanaru-0.1.0-x86_64.AppImage --appimage-extract-and-run`.
-- NixOS: `appimage-run ./Kanaru-0.1.0-x86_64.AppImage`.
+- NixOS: not supported through `appimage-run` (missing `libepoxy.so.0`). Build from source, or wait for a Nix package (PKG-05).
 
 ### Desktop integration
 
@@ -184,7 +185,7 @@ License texts are in `usr/share/licenses/` inside the AppImage, with the Kanaru 
 | OpenGL ES and EGL drivers | System | System | `libGLESv2.so.2` is required (see [Host requirements](#host-requirements)) |
 | libpulse, libasound | System | System | Audio output |
 | GSettings schemas (GTK) | System | System | Needed by GTK file pickers (folder picker). Distros ship them with GTK 3 |
-| glibc | Build host | 2.36 or newer | |
+| glibc | Build host | 2.35 or newer | |
 | D-Bus session bus | Optional | Optional | Needed for MPRIS. The app runs without it, with no media controls |
 | Secret Service (libsecret) | Not needed yet | Not needed yet | No credential storage in the code yet. Needed once remote sources land (PRIV-04) |
 
@@ -268,7 +269,7 @@ Steps 2 to 5 become CI jobs once workflows exist. The repo has no `.github/` dir
 | Starts in library-only mode, play does nothing | Log line `Audio engine failed to initialise`. Bundle: install the system libmpv runtime (`libmpv.so.2`). AppImage: check the host has `libpulse.so.0` and `libasound.so.2`. Run with `KANARU_LOG_LEVEL=FINE` and attach the log. |
 | AppImage exits at start, log shows `Couldn't open libGLESv2.so.2` | Install the GLES library (Debian and Ubuntu: `libgles2`; Fedora: `mesa-libGLES`). |
 | AppImage: `fuse: failed to open /dev/fuse` or `fusermount: not found` | Run with `--appimage-extract-and-run`, or install `fuse3` and make sure `/dev/fuse` exists. |
-| AppImage does not start on NixOS | Start it with `appimage-run`. |
+| AppImage does not start on NixOS | Not supported (`appimage-run` fails with `libepoxy.so.0` missing). Build from source, or wait for a Nix package (PKG-05). |
 | Log has `SEVERE mpv: ... _setProperty(osc, 1)` on every start | Harmless, see [Limits](#limits). |
 | "Open with Kanaru" opens the app but does not play the file | Expected until SYS-08. |
 | Folder picker does not open | GTK schemas missing: install the GTK 3 package of your distro. |

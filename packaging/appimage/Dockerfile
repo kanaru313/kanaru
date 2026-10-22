@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # AppImage image. Stages: debian-base, libmpv-build, app-build, package, export.
 
-# Debian 12 keeps the glibc floor at 2.36 for everything compiled here.
+# The Debian 12 build base has glibc 2.36, but the shipped floor is enforced at 2.35 by assemble-appdir.sh.
 FROM debian:bookworm-20261020 AS debian-base
 ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=C.UTF-8
