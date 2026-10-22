@@ -66,23 +66,29 @@ class _NowPlayingFavoriteButtonState
         final target = _wantedPath;
         final favorite = _wanted;
         if (target == null || favorite == null) break;
-        if (favorite && await db.coverKeyOf(target) == null) {
-          _say(messenger, l10n.playlistTrackNotInLibrary);
-          _forget();
+        try {
+          if (favorite && await db.coverKeyOf(target) == null) {
+            _say(messenger, l10n.playlistTrackNotInLibrary);
+            _forgetIfStill(target, favorite);
+          } else {
+            await db.setFavorite(
+              target,
+              favorite: favorite,
+              now: DateTime.now().millisecondsSinceEpoch,
+            );
+          }
+        } catch (error, stack) {
+          _log.severe('Changing the favorite of a song failed', error, stack);
+          _say(messenger, l10n.playlistSaveFailed);
+          _forgetIfStill(target, favorite);
+        }
+        // Done unless the user pressed again meanwhile (maybe on another
+        // song): then the newer wish is written next.
+        if (_wantedPath == null ||
+            (_wantedPath == target && _wanted == favorite)) {
           break;
         }
-        await db.setFavorite(
-          target,
-          favorite: favorite,
-          now: DateTime.now().millisecondsSinceEpoch,
-        );
-        // Done unless the user pressed again meanwhile.
-        if (_wantedPath == target && _wanted == favorite) break;
       }
-    } catch (error, stack) {
-      _log.severe('Changing the favorite of a song failed', error, stack);
-      _say(messenger, l10n.playlistSaveFailed);
-      _forget();
     } finally {
       // Rebuild so build() can drop the wanted state if the store already
       // caught up while the write was running.
@@ -91,18 +97,22 @@ class _NowPlayingFavoriteButtonState
     }
   }
 
-  void _forget() {
-    if (!mounted) return;
-    setState(() {
-      _wantedPath = null;
-      _wanted = null;
-    });
+  /// Drops the wanted state after a failed write, unless the user asked for
+  /// something newer meanwhile.
+  void _forgetIfStill(String path, bool favorite) {
+    if (_wantedPath != path || _wanted != favorite) return;
+    _wantedPath = null;
+    _wanted = null;
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final path = _currentPath(ref);
-    final enabled = path != null && ref.watch(libraryDatabaseProvider) != null;
+    // Until the favorites have loaded, a press could like a liked song again.
+    final loaded = ref.watch(favoritePathsProvider.select((s) => s.hasValue));
+    final enabled =
+        path != null && loaded && ref.watch(libraryDatabaseProvider) != null;
     final stored =
         path != null &&
         ref.watch(

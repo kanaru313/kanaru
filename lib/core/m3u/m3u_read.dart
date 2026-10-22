@@ -49,11 +49,26 @@ Future<Uint8List> readM3uBytes(
   RandomAccessFile? handle;
   try {
     handle = await File(path).open();
-    final bytes = await handle.read(maxBytes + 1);
-    if (bytes.length > maxBytes) {
-      throw const M3uReadException(M3uReadError.tooLarge);
+    final length = await handle.length();
+    if (length > maxBytes) throw const M3uReadException(M3uReadError.tooLarge);
+    // One byte more than the length tells a file that grew since; a read may
+    // return fewer bytes than asked (network and FUSE mounts), so loop.
+    final buffer = Uint8List(length + 1);
+    var filled = 0;
+    while (filled < buffer.length) {
+      final read = await handle.readInto(buffer, filled);
+      if (read == 0) break;
+      filled += read;
     }
-    return bytes;
+    if (filled > length) {
+      // Grown after the length was read: read on, still capped.
+      final rest = await handle.read(maxBytes + 1 - filled);
+      if (filled + rest.length > maxBytes) {
+        throw const M3uReadException(M3uReadError.tooLarge);
+      }
+      return Uint8List.fromList([...buffer, ...rest]);
+    }
+    return Uint8List.sublistView(buffer, 0, filled);
   } on FileSystemException {
     throw const M3uReadException(M3uReadError.unreadable);
   } finally {

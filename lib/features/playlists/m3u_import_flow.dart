@@ -50,21 +50,23 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   if (path == null || !navigator.mounted) return;
 
   var cancelled = false;
-  unawaited(
-    showDialog<void>(
-      context: navigator.context,
-      barrierDismissible: false,
-      builder: (dialogContext) => _ImportProgressDialog(
-        onCancel: () {
-          cancelled = true;
-          Navigator.of(dialogContext).pop();
-        },
-      ),
+  // Closed through its own route, never by popping whatever is on top.
+  late final DialogRoute<void> progress;
+  void closeProgress() {
+    if (progress.isActive && navigator.mounted) navigator.removeRoute(progress);
+  }
+
+  progress = DialogRoute<void>(
+    context: navigator.context,
+    barrierDismissible: false,
+    builder: (_) => _ImportProgressDialog(
+      onCancel: () {
+        cancelled = true;
+        closeProgress();
+      },
     ),
   );
-  void closeProgress() {
-    if (!cancelled && navigator.mounted) navigator.pop();
-  }
+  unawaited(navigator.push(progress));
 
   final M3uImportResult result;
   try {
@@ -145,14 +147,10 @@ String playlistNameFromM3uFile(String path, String fallback) {
   var name = path.substring(path.lastIndexOf('/') + 1);
   final extension = RegExp(r'\.m3u8?$', caseSensitive: false);
   name = name.replaceFirst(extension, '');
-  name = name
-      .replaceAll(
-        RegExp(r'[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]'),
-        ' ',
-      )
-      .trim();
-  if (name.length > _maxImportedNameLength) {
-    name = name.substring(0, _maxImportedNameLength).trim();
+  name = name.replaceAll(m3uUnsafeTextChars, ' ').trim();
+  final characters = name.characters;
+  if (characters.length > _maxImportedNameLength) {
+    name = characters.take(_maxImportedNameLength).string.trim();
   }
   return name.isEmpty ? fallback : name;
 }

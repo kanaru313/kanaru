@@ -27,6 +27,11 @@ void main() {
       expect(playlistNameFromM3uFile('/a/x\ny\u202Ez.m3u', 'New'), 'x y z');
     });
 
+    test('a cut never splits an emoji', () {
+      final name = playlistNameFromM3uFile('/a/${'n' * 99}👍🏽x.m3u', 'New');
+      expect(name, '${'n' * 99}👍🏽');
+    });
+
     test('a long name is cut to 100 characters', () {
       expect(
         playlistNameFromM3uFile('/a/${'n' * 300}.m3u', 'New'),
@@ -154,6 +159,26 @@ void main() {
         find.textContaining('No local music file of this playlist was found'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('Cancel in the progress dialog imports nothing', (
+      tester,
+    ) async {
+      final a = await file(tester, 'music/a.flac');
+      picked = await file(tester, 'lists/Mix.m3u', '$a\n');
+      await open(tester, [a]);
+
+      await tester.tap(find.text('Import M3U…'));
+      await tester.pump();
+      expect(find.text('Importing playlist…'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      for (var i = 0; i < 20; i++) {
+        await settleDb(tester);
+      }
+
+      expect(find.text('Importing playlist…'), findsNothing);
+      expect(await playlists(tester), isEmpty);
+      expect(find.byType(SnackBar), findsNothing);
     });
 
     testWidgets('a cancelled picker does nothing', (tester) async {

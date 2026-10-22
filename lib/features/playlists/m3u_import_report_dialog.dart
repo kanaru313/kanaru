@@ -73,11 +73,17 @@ Future<void> showM3uImportReport(
   );
 }
 
-/// [text] cut to [m3uReportMaxLineLength] characters, control characters as
-/// spaces.
+/// Control characters and bidi overrides or isolates: text from a file is
+/// shown with them as spaces, so it cannot hide or reorder what it says.
+final m3uUnsafeTextChars = RegExp(
+  r'[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]',
+);
+
+/// [text] cut to [m3uReportMaxLineLength] characters (whole graphemes), with
+/// [m3uUnsafeTextChars] as spaces.
 String m3uReportLineText(String text) {
-  final clean = text.replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ');
+  final clean = text.replaceAll(m3uUnsafeTextChars, ' ').characters;
   return clean.length <= m3uReportMaxLineLength
-      ? clean
-      : '${clean.substring(0, m3uReportMaxLineLength)}…';
+      ? clean.string
+      : '${clean.take(m3uReportMaxLineLength)}…';
 }
