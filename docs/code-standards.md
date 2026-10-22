@@ -13,7 +13,7 @@ Dependency direction: `app → features → core`, with `shared` allowed to use 
 | `lib/shared/` | `core/`, `l10n/` | `app/`, `features/` |
 | `lib/core/` | `core/` | `app/`, `features/`, `shared/` |
 
-Checked by grep on the 2026-10-21 snapshot, over relative imports: no feature imports `app/`, no feature imports another feature, no `core/` file imports `features/`, `app/` or `shared/`, and only `core/indexer/` imports `src/rust/`.
+Checked by grep on the 2026-10-21 snapshot, over relative imports: no feature imports `app/`, no feature imports another feature, no `core/` file imports `features/`, `app/` or `shared/`, and only `core/` imports `src/rust/` (`core/indexer/rust_tag_reader.dart`, `core/native/rust_library.dart`, `core/player/rust_original_cover_reader.dart`, `core/cover_colors/rust_cover_color_extractor.dart`), each behind a Dart interface that tests replace with a fake.
 
 Rules that follow from it:
 
