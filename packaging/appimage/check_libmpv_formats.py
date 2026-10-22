@@ -3,12 +3,15 @@
 
 Opens each file the way media_kit does (no video, no cover art display), plays it
 to the end on the chosen audio output and reports the audio codec libmpv picked.
+With `null` the file is decoded as fast as possible; a real output plays in real
+time, so long files take their full duration.
 
 Usage: check_libmpv_formats.py <libmpv.so path> <ao> <file>...
   e.g. check_libmpv_formats.py /opt/libmpv/lib/libmpv.so.2 null rust/tests/fixtures/sample.*
 
 <ao> is an mpv audio output: `null` for a decode-only check, `pulse` or `alsa`
-to also open a real device. Exit status is 1 if any file fails to play to EOF.
+to also open a real device. Exit status is 1 if any file fails to play to EOF
+or makes no progress for MAX_IDLE_WAITS * WAIT_SECONDS.
 Standard library only.
 """
 import ctypes
@@ -17,9 +20,10 @@ import sys
 MPV_EVENT_NONE = 0
 MPV_EVENT_END_FILE = 7
 MPV_EVENT_FILE_LOADED = 8
+MPV_FORMAT_NONE = 0
 END_FILE_EOF = 0
 WAIT_SECONDS = 10.0
-MAX_IDLE_WAITS = 3  # consecutive quiet waits before a file counts as hung
+MAX_IDLE_WAITS = 3  # consecutive waits without progress before a file counts as hung
 
 
 class MpvEvent(ctypes.Structure):
@@ -40,6 +44,7 @@ def load(path):
     lib.mpv_create.restype = ctypes.c_void_p
     lib.mpv_initialize.argtypes = [ctypes.c_void_p]
     lib.mpv_set_option_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.mpv_observe_property.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_char_p, ctypes.c_int]
     lib.mpv_command.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p)]
     lib.mpv_wait_event.argtypes = [ctypes.c_void_p, ctypes.c_double]
     lib.mpv_wait_event.restype = ctypes.POINTER(MpvEvent)
@@ -59,11 +64,18 @@ def play(lib, ao, path):
         return "-", "mpv_create failed"
     codec = "-"
     try:
-        for key, value in (("ao", ao), ("vid", "no"), ("audio-display", "no"), ("config", "no")):
-            lib.mpv_set_option_string(handle, key.encode(), value.encode())
+        options = [("ao", ao), ("vid", "no"), ("audio-display", "no"), ("config", "no")]
+        if ao == "null":
+            options.append(("ao-null-untimed", "yes"))
+        for key, value in options:
+            status = lib.mpv_set_option_string(handle, key.encode(), value.encode())
+            if status < 0:
+                return codec, "option %s=%s: %s" % (key, value, lib.mpv_error_string(status).decode())
         status = lib.mpv_initialize(handle)
         if status < 0:
             return codec, "mpv_initialize: " + lib.mpv_error_string(status).decode()
+        # Position updates count as progress, so long files do not trip the timeout.
+        lib.mpv_observe_property(handle, 0, b"playback-time", MPV_FORMAT_NONE)
         args = (ctypes.c_char_p * 3)(b"loadfile", path.encode(), None)
         status = lib.mpv_command(handle, args)
         if status < 0:

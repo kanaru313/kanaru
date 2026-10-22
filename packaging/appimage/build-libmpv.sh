@@ -113,14 +113,17 @@ ninja -C build-mpv
 echo "== licenses and source list"
 install -d "$PREFIX/licenses/ffmpeg" "$PREFIX/licenses/mpv" "$PREFIX/licenses/libplacebo" "$PREFIX/licenses/libass"
 install -m644 "ffmpeg-${FFMPEG_VERSION}/COPYING.LGPLv2.1" "ffmpeg-${FFMPEG_VERSION}/LICENSE.md" "$PREFIX/licenses/ffmpeg/"
-install -m644 mpv/LICENSE.LGPL "$PREFIX/licenses/mpv/"
+install -m644 mpv/LICENSE.LGPL mpv/Copyright "$PREFIX/licenses/mpv/"
 install -m644 libplacebo/LICENSE "$PREFIX/licenses/libplacebo/"
+# libplacebo compiles in the header-only fast_float submodule (MIT, Apache-2.0 or BSL-1.0).
+install -m644 libplacebo/3rdparty/fast_float/LICENSE-MIT "$PREFIX/licenses/libplacebo/fast_float-LICENSE-MIT"
 # libass is bundled by a later stage; ship its ISC notice with the other licenses.
 install -m644 /usr/share/doc/libass9/copyright "$PREFIX/licenses/libass/copyright"
 
 {
   echo "Kanaru bundled media libraries: sources and build options"
-  echo "Rebuild with packaging/appimage/build-libmpv.sh (Debian 12); all components are LGPL-2.1+."
+  echo "Rebuild with packaging/appimage/build-libmpv.sh from https://github.com/kanaru313/kanaru (Debian 12)."
+  echo "License texts are in licenses/."
   echo
   echo "FFmpeg ${FFMPEG_VERSION}"
   echo "  url:     https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
@@ -137,7 +140,7 @@ install -m644 /usr/share/doc/libass9/copyright "$PREFIX/licenses/libass/copyrigh
   echo "libplacebo ${PLACEBO_TAG} (linked statically into libmpv)"
   echo "  url:     https://code.videolan.org/videolan/libplacebo (tag ${PLACEBO_TAG}, with submodules)"
   echo "  commit:  ${PLACEBO_COMMIT}"
-  echo "  license: LGPL-2.1+"
+  echo "  license: LGPL-2.1+; includes fast_float (MIT, submodule 3rdparty/fast_float)"
   echo "  meson:   ${PLACEBO_OPTS[*]}"
   echo
   echo "libass $(dpkg-query -W -f='${Version}' libass9) (Debian 12 package, ISC license, bundled unmodified)"
