@@ -630,6 +630,45 @@ class AppLocalizationsVi extends AppLocalizations {
   String get genresNotFoundMessage => 'Có thể bài hát đã bị xoá hoặc đổi tag.';
 
   @override
+  String get foldersEmptyTitle => 'Chưa có thư mục';
+
+  @override
+  String get foldersEmptyMessage => 'Thư mục có bài hát sẽ hiện ở đây.';
+
+  @override
+  String get foldersNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get foldersNotFound => 'Không tìm thấy thư mục';
+
+  @override
+  String get foldersNotFoundMessage =>
+      'Có thể thư mục đã bị xoá hoặc không còn bài hát.';
+
+  @override
+  String get foldersTreeView => 'Cây thư mục';
+
+  @override
+  String get foldersFlatView => 'Tất cả thư mục';
+
+  @override
+  String get foldersSubfolders => 'Thư mục';
+
+  @override
+  String get foldersSongs => 'Bài hát';
+
+  @override
+  String foldersCounts(int songs, int folders) {
+    return '$songs bài, $folders thư mục con';
+  }
+
+  @override
+  String get foldersCreatePlaylist => 'Tạo playlist';
+
+  @override
+  String get foldersEmptyFolder => 'Thư mục này không có bài hát';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override

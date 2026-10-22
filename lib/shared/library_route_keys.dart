@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import '../core/database/library_database.dart' show AlbumKey;
 
-/// Paths of the Albums, Artists and Genres branches. Kept here because
+/// Paths of the Albums, Artists, Genres and Folders branches. Kept here because
 /// `shared/` and features do not import `app/`; a test checks them against
 /// the shell destinations.
 const albumsPath = '/albums';
 const artistsPath = '/artists';
 const genresPath = '/genres';
+const foldersPath = '/folders';
 
 /// Longest route key accepted. Each key part holds at most 256 characters
 /// (an album artist key may join several), and the worst characters (4-byte
@@ -52,6 +53,10 @@ String encodeGenreRouteKey(String genreKey) => _encode([genreKey]);
 
 String? decodeGenreRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
 
+String encodeFolderRouteKey(String path) => _encode([path]);
+
+String? decodeFolderRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
+
 /// An album page in the Albums branch.
 String albumLocation(AlbumKey key) => '$albumsPath/${encodeAlbumRouteKey(key)}';
 
@@ -66,3 +71,7 @@ String artistAlbumLocation(String artistKey, AlbumKey albumKey) =>
 /// A genre page; [genreKey] comes from `genreKey` in `genre_names.dart`.
 String genreLocation(String genreKey) =>
     '$genresPath/${encodeGenreRouteKey(genreKey)}';
+
+/// A folder page; [path] is the absolute path without a trailing `/`.
+String folderLocation(String path) =>
+    '$foldersPath/${encodeFolderRouteKey(path)}';

@@ -41,6 +41,8 @@ abstract final class AppIcons {
   static const IconData folder = Icons.folder;
   static const IconData folderOutlined = Icons.folder_outlined;
   static const IconData folderOpen = Icons.folder_open_outlined;
+  static const IconData folderTree = Icons.account_tree_outlined;
+  static const IconData folderFlat = Icons.format_list_bulleted;
   static const IconData folderOff = Icons.folder_off_outlined;
   static const IconData folderSpecial = Icons.folder_special_outlined;
   static const IconData addFolder = Icons.create_new_folder_outlined;

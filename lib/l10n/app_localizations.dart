@@ -1058,6 +1058,78 @@ abstract class AppLocalizations {
   /// **'Its songs may have been removed or retagged.'**
   String get genresNotFoundMessage;
 
+  /// No description provided for @foldersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders yet'**
+  String get foldersEmptyTitle;
+
+  /// No description provided for @foldersEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders with songs show up here.'**
+  String get foldersEmptyMessage;
+
+  /// No description provided for @foldersNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get foldersNoRootsMessage;
+
+  /// No description provided for @foldersNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder not found'**
+  String get foldersNotFound;
+
+  /// No description provided for @foldersNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been removed or no longer holds songs.'**
+  String get foldersNotFoundMessage;
+
+  /// No description provided for @foldersTreeView.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder tree'**
+  String get foldersTreeView;
+
+  /// No description provided for @foldersFlatView.
+  ///
+  /// In en, this message translates to:
+  /// **'All folders'**
+  String get foldersFlatView;
+
+  /// No description provided for @foldersSubfolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get foldersSubfolders;
+
+  /// No description provided for @foldersSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get foldersSongs;
+
+  /// No description provided for @foldersCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{1 song} other{{songs} songs}}, {folders, plural, =0{no subfolders} =1{1 subfolder} other{{folders} subfolders}}'**
+  String foldersCounts(int songs, int folders);
+
+  /// No description provided for @foldersCreatePlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create playlist'**
+  String get foldersCreatePlaylist;
+
+  /// No description provided for @foldersEmptyFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'No songs in this folder'**
+  String get foldersEmptyFolder;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:

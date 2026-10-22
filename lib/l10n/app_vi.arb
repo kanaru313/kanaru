@@ -173,6 +173,25 @@
   "genresNotFound": "Không tìm thấy thể loại",
   "genresNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag.",
 
+  "foldersEmptyTitle": "Chưa có thư mục",
+  "foldersEmptyMessage": "Thư mục có bài hát sẽ hiện ở đây.",
+  "foldersNoRootsMessage": "Thêm thư mục nhạc ở mục Bài hát.",
+  "foldersNotFound": "Không tìm thấy thư mục",
+  "foldersNotFoundMessage": "Có thể thư mục đã bị xoá hoặc không còn bài hát.",
+  "foldersTreeView": "Cây thư mục",
+  "foldersFlatView": "Tất cả thư mục",
+  "foldersSubfolders": "Thư mục",
+  "foldersSongs": "Bài hát",
+  "foldersCounts": "{songs} bài, {folders} thư mục con",
+  "@foldersCounts": {
+    "placeholders": {
+      "songs": { "type": "int" },
+      "folders": { "type": "int" }
+    }
+  },
+  "foldersCreatePlaylist": "Tạo playlist",
+  "foldersEmptyFolder": "Thư mục này không có bài hát",
+
   "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
   "recentlyPlayedEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
 

@@ -54,4 +54,25 @@ void main() {
     expect(modes.genres, AlbumsView.grid);
     expect(modes.artists, AlbumsView.list);
   });
+
+  test('folders default to the list with the tree on, each set apart', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final modes = container.read(libraryViewModesProvider);
+    expect(modes.folders, AlbumsView.list);
+    expect(modes.foldersHierarchy, isTrue);
+
+    container
+        .read(libraryViewModesProvider.notifier)
+        .setFoldersView(AlbumsView.grid);
+    container
+        .read(libraryViewModesProvider.notifier)
+        .setFoldersHierarchy(false);
+
+    final changed = container.read(libraryViewModesProvider);
+    expect(changed.folders, AlbumsView.grid);
+    expect(changed.foldersHierarchy, isFalse);
+    expect(changed.artists, AlbumsView.list);
+    expect(changed.genres, AlbumsView.list);
+  });
 }

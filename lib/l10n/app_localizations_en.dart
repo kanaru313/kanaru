@@ -640,6 +640,58 @@ class AppLocalizationsEn extends AppLocalizations {
       'Its songs may have been removed or retagged.';
 
   @override
+  String get foldersEmptyTitle => 'No folders yet';
+
+  @override
+  String get foldersEmptyMessage => 'Folders with songs show up here.';
+
+  @override
+  String get foldersNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get foldersNotFound => 'Folder not found';
+
+  @override
+  String get foldersNotFoundMessage =>
+      'It may have been removed or no longer holds songs.';
+
+  @override
+  String get foldersTreeView => 'Folder tree';
+
+  @override
+  String get foldersFlatView => 'All folders';
+
+  @override
+  String get foldersSubfolders => 'Folders';
+
+  @override
+  String get foldersSongs => 'Songs';
+
+  @override
+  String foldersCounts(int songs, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders subfolders',
+      one: '1 subfolder',
+      zero: 'no subfolders',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get foldersCreatePlaylist => 'Create playlist';
+
+  @override
+  String get foldersEmptyFolder => 'No songs in this folder';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override

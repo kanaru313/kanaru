@@ -9,7 +9,8 @@ import 'playlist_name_dialog.dart';
 final _log = Logger('playlists');
 
 /// Asks for a name and creates the playlist (with [paths], if any) in one
-/// transaction. Returns its id and name, or null when cancelled or when
+/// transaction. The name field starts as [initialName] (a default name when
+/// null). Returns its id and name, or null when cancelled or when
 /// saving failed (reported in a snackbar on [messenger]).
 ///
 /// Callers capture [db], [messenger] and [l10n] before their first `await`;
@@ -20,12 +21,13 @@ Future<({int id, String name})?> promptAndCreatePlaylist(
   ScaffoldMessengerState messenger,
   AppLocalizations l10n, {
   List<String> paths = const [],
+  String? initialName,
 }) async {
   final name = await showPlaylistNameDialog(
     dialogContext,
     title: l10n.playlistCreateTitle,
     confirmLabel: l10n.playlistCreateConfirm,
-    initialName: l10n.playlistDefaultName,
+    initialName: initialName ?? l10n.playlistDefaultName,
   );
   if (name == null) return null;
   try {
