@@ -75,6 +75,8 @@ abstract final class AppIcons {
   static const IconData viewGrid = Icons.grid_view;
   static const IconData viewList = Icons.view_list;
   static const IconData more = Icons.more_vert;
+  static const IconData sortAscending = Icons.arrow_upward;
+  static const IconData sortDescending = Icons.arrow_downward;
 
   // Actions.
   static const IconData search = Icons.search;

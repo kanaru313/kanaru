@@ -35,9 +35,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(MenuItemButton, 'Songs'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Ascending'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(MenuItemButton, 'Descending'));
+    await tester.tap(find.byTooltip('Order: Ascending'));
     await tester.pumpAndSettle();
 
     expect(top('Bob'), lessThan(top('Ann')));

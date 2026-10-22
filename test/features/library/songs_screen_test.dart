@@ -297,7 +297,7 @@ void main() {
           lessThan(tester.getTopLeft(find.text('s38')).dy),
         );
 
-        await chooseSort(tester, 'Ascending', 'Descending');
+        await tester.tap(find.byTooltip('Order: Ascending'));
         await tester.pumpAndSettle();
         expect(find.text('s00'), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);

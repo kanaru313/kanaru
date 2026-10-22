@@ -95,18 +95,27 @@ const albumGridPadding = 24.0;
 
 const _maxTileWidth = 200.0;
 
-/// Columns of tiles at most 200 px wide filling [width], rows sized to fit
-/// the artwork and two lines of text.
-SliverGridDelegate albumGridDelegate(BuildContext context, double width) {
+/// Columns of tiles at most 200 px wide filling [width]; [tileHeight] gives
+/// the height of a tile from the width of its content (the tile minus its
+/// padding), so rows fit the artwork and the text at the current text scale.
+SliverGridDelegate libraryGridDelegate(
+  BuildContext context,
+  double width, {
+  required double Function(BuildContext context, double contentWidth)
+  tileHeight,
+}) {
   final columns = (width / _maxTileWidth).ceil().clamp(1, 1 << 20);
   final tileWidth = width / columns;
   return SliverGridDelegateWithFixedCrossAxisCount(
     crossAxisCount: columns,
     mainAxisExtent:
-        AlbumGridTile.heightFor(context, tileWidth - _padding * 2) +
-        _padding * 2,
+        tileHeight(context, tileWidth - _padding * 2) + _padding * 2,
   );
 }
+
+/// [libraryGridDelegate] for album tiles: artwork and two lines of text.
+SliverGridDelegate albumGridDelegate(BuildContext context, double width) =>
+    libraryGridDelegate(context, width, tileHeight: AlbumGridTile.heightFor);
 
 /// [albums] as a scrolling grid, leaving room for the rescan button below.
 /// Tile data is made per visible tile, not for the whole list.
