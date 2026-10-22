@@ -78,7 +78,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
 | Narrow (< 720 px) | One column with two tabs in a `PageView`: queue and track. |
 | Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
-| Placeholders | Lyrics and favorite buttons exist and do nothing yet (Phase 1 and 4). |
+| Placeholders | The lyrics button exists and does nothing yet (Phase 4). The favorite button (heart) likes and unlikes the current song. |
 
 ## Queue sheet
 
@@ -160,11 +160,11 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-Placeholder screens (Home, Favorites) use `EmptyState` with a one-sentence message (Favorites: what will show up there).
+The Home placeholder screen uses `EmptyState` with a one-sentence message. Favorites uses `EmptyState` only before the first like or when its playlist is empty.
 
 ## Settings
 
-- Single column, at most 720 px wide, grouped in five sections, in this order: Appearance (theme, language, title bar), Library (music folders, rescan at start, rescan), Backup and restore (placeholder), Advanced (listen history, log folder), About (repository, license).
+- Single column, at most 720 px wide, grouped in five sections, in this order: Appearance (theme, language, title bar, display options such as colors from the cover), Library (music folders, excluded folders, scan options and filters, folder watching, rescan at start, rescan), Backup and restore (placeholder), Advanced (playback with ReplayGain and the output device, interface, listen history, log folder), About (repository, license). Options that are stored but not built yet carry a coming-soon badge.
 - Every row has a hint line under its title that says what the option does; keep it to one sentence. A row that needs a restart replaces its hint with "Applies after restart" until the value is changed back.
 - Rows: label on the left, control on the right. Below 560 px the control moves below the label.
 - Library folder rows have only a trash button, faded in while the pointer is over the row or focus is inside it (it stays in the tree, so Tab reaches it and the row does not reflow). A missing folder keeps a red button visible.

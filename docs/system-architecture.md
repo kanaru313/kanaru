@@ -33,7 +33,9 @@ flowchart TD
         Player["player"]
         Settings["settings"]
         Search["search"]
-        Placeholders["home, history"]
+        History["history"]
+        Playlists["playlists"]
+        Placeholders["home"]
     end
 
     subgraph SHARED ["lib/shared"]
@@ -65,6 +67,8 @@ flowchart TD
     SHARED --> CORE
     Library --> Database
     Search --> Database
+    History --> Database
+    Playlists --> Database
     Library --> Indexer
     Player --> PlayerCore
     Settings --> SettingsCore
@@ -83,7 +87,7 @@ Notes:
 - `shared/widgets/scan_progress.dart` imports `core/indexer`, which is allowed (downward).
 - `shared/library_route_keys.dart` duplicates four route literals (`/albums`, `/artists`, `/genres`, `/folders`) because `shared/` and features cannot import `app/`. A test keeps them in step.
 - `app/shell` injects the Now Playing title bar, so features do not reach into the shell.
-- The History and Favorites pages are owned by their features, so these features add pages without editing `app/`: `features/history/history_routes.dart` declares `historyPath` and `historyRoutes` (pages under `/history`) next to `HistoryScreen`; `features/playlists/favorites_routes.dart` declares `favoritesPath` and `favoritesRoutes` next to `FavoritesScreen`. Both pages are empty states for now. Shell tests check only the location and the page widget type; page content is tested with the feature.
+- The History and Favorites pages are owned by their features, so these features add pages without editing `app/`: `features/history/history_routes.dart` declares `historyPath` and `historyRoutes` (pages under `/history`) next to `HistoryScreen`; `features/playlists/favorites_routes.dart` declares `favoritesPath` and `favoritesRoutes` next to `FavoritesScreen`. The History page shows every listen by day and the songs played most in a date range (two tabs), with a page per song at `/history/track`; the Favorites page shows the Favorites playlist (`playlists.kind = 'favorites'`) with the playlist page body, or an empty state before the first like. Shell tests check only the location and the page widget type; page content is tested with the feature.
 
 ---
 

@@ -259,7 +259,7 @@ Timings are printed to the console. They depend on the machine and the repo keep
 
 ## End-user runtime dependencies
 
-No packages exist yet (see [Deployment guide](deployment-guide.md)). A build from `make build` needs libmpv, GTK 3 and SQLite at runtime. Once packaging lands (planned, PKG-01..05 in `docs/features.md`), users of release builds will not need any of the above: AppImage and Flatpak builds will bundle libmpv, `.deb` and `.rpm` packages will declare `libmpv2` as a dependency.
+The only package is an x86_64 AppImage built with `make appimage`; it bundles libmpv (see [Deployment guide](deployment-guide.md)). A build from `make build` needs libmpv, GTK 3 and SQLite at runtime. Other packages are planned (PKG-02..05 in `docs/features.md`): Flatpak builds will bundle libmpv, `.deb` and `.rpm` packages will declare `libmpv2` as a dependency.
 
 ## AI agent tooling (optional)
 
