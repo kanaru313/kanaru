@@ -45,6 +45,7 @@ use rust_lib_kanaru::cover_cache::{cache_key, CoverSink, TEMP_PREFIX};
 use rust_lib_kanaru::cover_thumbnail::make_jpeg;
 use rust_lib_kanaru::jpeg_header;
 use rust_lib_kanaru::tag_reader::{embedded_pictures_result, read_one, CoverReadError};
+use rust_lib_kanaru::webp_exif;
 
 /// Same as the app's `coverBatchSize` and the upper bound of its tag batches.
 const APP_COVER_CHUNK: usize = 32;
@@ -107,16 +108,21 @@ fn under_tmp(path: &Path) -> bool {
             .all(|c| !matches!(c, std::path::Component::ParentDir))
 }
 
-/// A new, empty folder for one measurement.
+/// A new, empty folder for one measurement. The name carries the time, so a
+/// folder left by an earlier run that failed is never reused.
 fn fresh_dir(root: &Path, section: &str) -> PathBuf {
     static COUNT: AtomicUsize = AtomicUsize::new(0);
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos());
     let dir = root.join(format!(
-        "{section}-{}-{}",
+        "{section}-{}-{nanos}-{}",
         std::process::id(),
         COUNT.fetch_add(1, Ordering::Relaxed)
     ));
     assert!(under_tmp(&dir));
-    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::create_dir_all(root).unwrap();
+    std::fs::create_dir(&dir).unwrap();
     dir
 }
 
@@ -467,14 +473,13 @@ fn classify(c: &mut Counts, bytes: &[u8], format: ImageFormat) {
         }
         ImageFormat::WebP => {
             c.webp += 1;
-            let mut decoder = ImageReader::with_format(Cursor::new(bytes), format)
+            // The orientation comes from the code the app uses to turn
+            // thumbnails; the decoder only gives the size.
+            c.webp_exif_rotated += usize::from(webp_exif::orientation(bytes) > 1);
+            ImageReader::with_format(Cursor::new(bytes), format)
                 .into_decoder()
-                .ok();
-            if let Some(orientation) = decoder.as_mut().and_then(|d| d.orientation().ok()) {
-                let upright = orientation == image::metadata::Orientation::NoTransforms;
-                c.webp_exif_rotated += usize::from(!upright);
-            }
-            decoder.map(|d| d.dimensions().0.max(d.dimensions().1))
+                .ok()
+                .map(|d| d.dimensions().0.max(d.dimensions().1))
         }
         _ => {
             c.png += 1;
