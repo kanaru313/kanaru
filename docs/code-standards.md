@@ -77,13 +77,14 @@ Startup overrides are assembled in [lib/main.dart](../lib/main.dart) into one ma
 
 ## Version constants
 
-Three constants tell the app to redo work on existing libraries. Bump only the one that matches your change. The full procedure is in [development.md](./development.md#library-version-constants).
+Four constants tell the app to redo work on existing libraries. Bump only the one that matches your change. The full procedure is in [development.md](./development.md#library-version-constants).
 
 | Constant | Location | Bump when |
 |---|---|---|
 | `textKeysVersion` | `lib/core/database/text_keys.dart` (currently `2`) | Rules of `groupKey`, `sortKey`, `artistSortKey` change, a Dart SDK change alters `toLowerCase` output, or `trackKeysFor` starts writing a new key |
 | `coverScanVersion` | `lib/core/database/library_rows.dart` (currently `1`) | Cover extraction or thumbnail rules change (also when `THUMBNAIL_SIDE` or the `covers/<size>` directory changes) |
 | `tagReaderVersion` | `lib/core/database/library_rows.dart` (currently `1`) | The Rust reader starts accepting files it used to reject |
+| `coverColorAlgoVersion` | `lib/core/cover_colors/cover_palette.dart` (currently `100512`: `coverColorAlgoRevision * 100000 + coverThumbnailSize`) | Bump `coverColorAlgoRevision` together with `COLOR_ALGO_REVISION` in `rust/src/cover_colors.rs` when the colors for the same thumbnail change; a new thumbnail size changes it by itself |
 | `PERMANENT_ERROR_PREFIX` | `rust/src/tag_reader.rs` (currently `permanent:v1:`) | Must carry the same `N` as `tagReaderVersion` |
 
 Other version numbers that must stay in step:

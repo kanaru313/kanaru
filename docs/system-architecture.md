@@ -205,6 +205,16 @@ State is a sealed class: `Idle`, `Scanning`, `Finished`, `Failed` (`indexer/inde
 - **No loops.** A scan that finds a root missing publishes no folders for it, so its watches go and no event follows. Many watches closing at once (a deleted root) give one coalesced scan.
 - **Not detected.** Deleting the `.nomedia` of a folder the scan dropped (the folder is no longer watched), unmounting or replugging a drive and renaming a root show up only at the next scan, as Dart reports neither for the watched folder itself.
 
+### Cover colors
+
+"Colors from the cover" (UI-03, `DisplayPrefs.colorFromCover`, off by default) tints the app with the playing cover. The colors of a cover are worked out once, from its thumbnail, and stored per cover key in `cover_colors`.
+
+| Piece | What it does | Where |
+|---|---|---|
+| Color function | Reads `<cover dir>/<key>` (at most 1 MiB, JPEG header at most 512 px, cover decode limits), shrinks it to 112 px, clusters it (Wu, then each distinct color counted toward its nearest cluster in Lab space). Seed = `Score` with one color wanted, or `0` when no cluster fits or the pick has HCT chroma below 8 (a gray cover). Palette = up to five clusters, most common first. A bad key or file fails only its own entry. | `rust/src/cover_colors.rs`, `rust/src/api/cover_colors.rs` |
+| Stored row | `seed` (opaque ARGB or `0`), `palette` (lowercase 8-digit ARGB hex joined by commas), `algo_version = coverColorAlgoRevision * 100000 + coverThumbnailSize` (now `100512`). Another version or a damaged row counts as missing and is written again. | `core/cover_colors/cover_palette.dart`, `core/database/cover_color_queries.dart` |
+| Orphans | One statement deletes colors no track points at: `DELETE FROM cover_colors WHERE cover_key NOT IN (SELECT cover_key FROM tracks WHERE cover_key IS NOT NULL)` (`deleteOrphanCoverColors`). Without `IS NOT NULL`, one track without a cover would make it delete nothing. | `core/database/cover_color_queries.dart` |
+
 ---
 
 ## 4. Playback
