@@ -398,10 +398,8 @@
   "settingsRescanLibrary": "Rescan library",
   "settingsFolders": "Music folders",
   "settingsAddFolder": "Add folder",
-  "settingsChangeFolder": "Change folder…",
   "settingsRemoveFolder": "Remove from library",
   "settingsFolderMissing": "This folder no longer exists",
-  "settingsFolderMenu": "Folder actions",
   "settingsRemoveFolderTitle": "Remove folder from library?",
   "settingsRemoveFolderBody": "{count, plural, =0{No songs will leave the library.} =1{1 song will leave the library.} other{{count} songs will leave the library.}} Files on disk are not deleted.",
   "@settingsRemoveFolderBody": {
@@ -416,15 +414,6 @@
       "path": { "type": "String" }
     }
   },
-  "settingsReplaceFolderTitle": "Change folder?",
-  "settingsReplaceFolderBody": "Replace {oldPath} with {newPath}? Songs from {oldPath} leave the library and {newPath} is scanned. Files on disk are not deleted.",
-  "@settingsReplaceFolderBody": {
-    "placeholders": {
-      "oldPath": { "type": "String" },
-      "newPath": { "type": "String" }
-    }
-  },
-  "settingsReplaceFolderConfirm": "Change",
   "settingsRescanOnStartup": "Rescan when Kanaru opens",
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",

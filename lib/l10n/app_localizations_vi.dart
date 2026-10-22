@@ -750,16 +750,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsAddFolder => 'Thêm thư mục';
 
   @override
-  String get settingsChangeFolder => 'Đổi thư mục…';
-
-  @override
   String get settingsRemoveFolder => 'Bỏ khỏi thư viện';
 
   @override
   String get settingsFolderMissing => 'Thư mục này không còn tồn tại';
-
-  @override
-  String get settingsFolderMenu => 'Tuỳ chọn thư mục';
 
   @override
   String get settingsRemoveFolderTitle => 'Bỏ thư mục khỏi thư viện?';
@@ -782,17 +776,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String settingsRemoveFolderFailed(String path) {
     return 'Không bỏ được $path. Xem chi tiết trong nhật ký.';
   }
-
-  @override
-  String get settingsReplaceFolderTitle => 'Đổi thư mục?';
-
-  @override
-  String settingsReplaceFolderBody(String oldPath, String newPath) {
-    return 'Thay $oldPath bằng $newPath? Các bài trong $oldPath sẽ bị gỡ khỏi thư viện và $newPath sẽ được quét. File nhạc trên đĩa không bị xoá.';
-  }
-
-  @override
-  String get settingsReplaceFolderConfirm => 'Đổi';
 
   @override
   String get settingsRescanOnStartup => 'Quét lại khi mở Kanaru';

@@ -8,7 +8,6 @@ import '../../core/database/library_database.dart';
 import '../../core/database/library_root_queries.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/indexer_providers.dart';
-import '../../core/indexer/root_path.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/directory_picker_provider.dart';
 import '../../shared/icons/app_icons.dart';
@@ -20,7 +19,7 @@ import 'setting_row.dart';
 
 final _log = Logger('settings');
 
-/// The library folders with add, change and remove. Everything is disabled
+/// The library folders with add and remove. Everything is disabled
 /// without a library database, and while one action (a picker, a dialog, a
 /// write) is running.
 class LibraryFoldersList extends ConsumerStatefulWidget {
@@ -92,39 +91,6 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
     }
   });
 
-  Future<void> _change(LibraryRoot root) => _guarded(() async {
-    final l10n = context.l10n;
-    final picked = await ref.read(directoryPickerProvider)();
-    if (picked == null || !mounted) return;
-    // Compare and confirm with the path that would be stored.
-    final checked = await canonicalizeRoot(picked);
-    if (!mounted) return;
-    final canonical = checked.path;
-    if (canonical == null) {
-      _showMessage(rootRejectionMessage(l10n, picked, checked.rejection!));
-      return;
-    }
-    if (canonical == root.path) return;
-    final confirmed = await confirmReplaceFolder(
-      context,
-      oldPath: root.path,
-      newPath: canonical,
-    );
-    if (!confirmed || !mounted) return;
-    final result = await ref
-        .read(libraryRootsControllerProvider)
-        .replaceRoot(root.id, canonical);
-    if (!mounted) return;
-    if (result.rejection == RootRejection.notFound) {
-      // The folder being replaced left the library meanwhile: the list has
-      // already dropped its row, so there is nothing to report.
-    } else if (!result.ok) {
-      _showMessage(rootRejectionMessage(l10n, canonical, result.rejection!));
-    } else if (!result.unchanged) {
-      _scan();
-    }
-  });
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -166,7 +132,6 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
             missing:
                 ref.watch(rootFolderPresentProvider(root.path)).value == false,
             enabled: enabled,
-            onChange: () => unawaited(_change(root)),
             onRemove: () => unawaited(_remove(root)),
           ),
       ],

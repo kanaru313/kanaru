@@ -1232,12 +1232,6 @@ abstract class AppLocalizations {
   /// **'Add folder'**
   String get settingsAddFolder;
 
-  /// No description provided for @settingsChangeFolder.
-  ///
-  /// In en, this message translates to:
-  /// **'Change folder…'**
-  String get settingsChangeFolder;
-
   /// No description provided for @settingsRemoveFolder.
   ///
   /// In en, this message translates to:
@@ -1249,12 +1243,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder no longer exists'**
   String get settingsFolderMissing;
-
-  /// No description provided for @settingsFolderMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Folder actions'**
-  String get settingsFolderMenu;
 
   /// No description provided for @settingsRemoveFolderTitle.
   ///
@@ -1279,24 +1267,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t remove {path}. See the log for details.'**
   String settingsRemoveFolderFailed(String path);
-
-  /// No description provided for @settingsReplaceFolderTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Change folder?'**
-  String get settingsReplaceFolderTitle;
-
-  /// No description provided for @settingsReplaceFolderBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace {oldPath} with {newPath}? Songs from {oldPath} leave the library and {newPath} is scanned. Files on disk are not deleted.'**
-  String settingsReplaceFolderBody(String oldPath, String newPath);
-
-  /// No description provided for @settingsReplaceFolderConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Change'**
-  String get settingsReplaceFolderConfirm;
 
   /// No description provided for @settingsRescanOnStartup.
   ///

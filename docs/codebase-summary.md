@@ -40,7 +40,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/features/player/` | 29 / 3,337 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |
 | `lib/features/playlists/` | 12 / 1,166 | Playlists grid and playlist page: `playlists_screen.dart`, `playlist_screen.dart` (page, delete and rename), `playlist_entries_view.dart` (drag to reorder), `optimistic_order.dart`, `playlist_page_data.dart` (reactive providers), `playlist_page_actions.dart`, `playlist_routes.dart` |
 | `lib/features/search/` | 4 / 451 | Search page: `search_screen.dart` (states), `search_results_view.dart` and `search_section.dart` (groups), `search_providers.dart` (queries and name indexes) |
-| `lib/features/settings/` | 18 / 1,485 | Settings screen sections (appearance, library, backup, advanced, about), library folders list, setting widgets |
+| `lib/features/settings/` | 18 / 1,447 | Settings screen sections (appearance, library, backup, advanced, about), library folders list, setting widgets |
 | `lib/shared/` | 31 / 1,768 | Helpers and tiles used by library and search: `play_tracks.dart`, `enqueue_tracks.dart`, `format_duration.dart`, `directory_picker_provider.dart`, `root_rejection_message.dart`; `widgets/` has the tiles (`song_tile.dart`, `album_list_tile.dart`, `artist_tile.dart`), `queue_actions_menu.dart`, `playlist_cover.dart`, `add_to_playlist/` (picker, name dialog, add flow), CoverArt, EmptyState, PageScaffold, ScanProgress, MinBusyBuilder |
 | `lib/l10n/` | ARB + generated | `app_en.arb` (template), `app_vi.arb`; `app_localizations*.dart` is generated |
 
@@ -56,7 +56,7 @@ Key files by area:
 | Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
 | Search | `core/database/library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`, `library_migration_v4.dart`; `features/search/search_providers.dart`, `search_screen.dart`; `app/shell/top_bar_search_field.dart`, `navigation_history.dart` |
 | Startup DB | `core/database/library_startup.dart` |
-| Library folders | `core/database/library_root_queries.dart` (watch, count, remove, replace), `core/indexer/library_roots_controller.dart` (add, remove, replace), `core/indexer/library_startup_tasks.dart` (post-frame rescan), `features/settings/library_folders_list.dart` |
+| Library folders | `core/database/library_root_queries.dart` (watch, count, remove, replace; the settings UI no longer calls replace), `core/indexer/library_roots_controller.dart` (add, remove, replace), `core/indexer/library_startup_tasks.dart` (post-frame rescan), `features/settings/library_folders_list.dart` |
 | MPRIS | `core/media_controls/mpris/mpris_media_controls.dart`, `mpris_method_handler.dart`, `mpris_properties.dart` |
 | Browse UI | `features/library/library_browse_body.dart` (state machine), `songs/song_row_cache.dart`, `albums/album_screen.dart`, `artists/artist_screen.dart` |
 | Now Playing | `features/player/now_playing/now_playing_overlay.dart`, `now_playing_auto_hide.dart`, `now_playing_tabs.dart` |

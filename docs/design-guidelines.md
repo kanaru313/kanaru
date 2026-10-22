@@ -152,6 +152,7 @@ Placeholder screens (Home, Folders, Favorites, Recent) use `EmptyState` and say 
 - Single column, at most 720 px wide, grouped in five sections, in this order: Appearance (theme, language, title bar), Library (music folders, rescan at start, rescan), Backup and restore (placeholder), Advanced (listen history), About (repository, license).
 - Every row has a hint line under its title that says what the option does; keep it to one sentence. A row that needs a restart replaces its hint with "Applies after restart" until the value is changed back.
 - Rows: label on the left, control on the right. Below 560 px the control moves below the label.
+- Library folder rows have only a trash button, faded in while the pointer is over the row or focus is inside it (it stays in the tree, so Tab reaches it and the row does not reflow). A missing folder keeps a red button visible.
 - Choices use `setting_choice.dart`: a segmented button when there is room, a dropdown in a compact row.
 - Language choices: system, English, Vietnamese. The title bar choice (kanaru, system, none) needs a restart; the screen says so.
 - A save warning (`settings_save_warning.dart`) appears when settings cannot be saved.
