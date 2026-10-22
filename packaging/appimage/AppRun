@@ -1,0 +1,6 @@
+#!/bin/sh
+# AppImage entry point. Runs the Flutter bundle and points media_kit at the
+# bundled libmpv, so a libmpv installed on the host is never loaded instead.
+HERE="$(dirname "$(readlink -f "$0")")"
+export LIBMPV_LIBRARY_PATH="$HERE/usr/lib/libmpv.so.2"
+exec "$HERE/usr/kanaru" "$@"

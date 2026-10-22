@@ -102,6 +102,21 @@ reset-library: ## Forget scanned folders and tracks (keeps playlists and listen 
 reset-all: ## Like a fresh install: library, playlists, listen history, settings, session, covers, logs
 	command rm -rf $(DATA_DIR) $(CONFIG_DIR) $(CACHE_DIR)
 
+##@ Package
+
+# Version for packages: pubspec `version:` without the `+build` suffix.
+APP_VERSION := $(shell sed -n 's/^version: *\([^+ ]*\).*/\1/p' pubspec.yaml)
+DIST_DIR    := dist
+
+.PHONY: appimage
+appimage: ## x86_64 AppImage in dist/, built in Docker (Debian 12); needs network
+	docker build --file packaging/appimage/Dockerfile \
+	  --build-arg KANARU_VERSION=$(APP_VERSION) \
+	  --build-arg SOURCE_DATE_EPOCH=$$(git log -1 --format=%ct) \
+	  --target export --output type=local,dest=$(DIST_DIR) .
+	@printf '*\n' > $(DIST_DIR)/.gitignore
+	@ls -lh $(DIST_DIR)/Kanaru-$(APP_VERSION)-x86_64.AppImage
+
 ##@ Clean
 
 .PHONY: clean

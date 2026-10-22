@@ -17,3 +17,4 @@ rust/target
 linux/flutter/ephemeral
 rust_builder/cargokit/build_tool/.dart_tool
 **/.dart_tool
+**/*.pyc
