@@ -17,13 +17,16 @@ GTK, GLib, libstdc++, libpulse and libasound come from the host.
 
 ## Pins
 
-Every download is checked against a sha256 in `Dockerfile` (`ARG`s): base image `debian:bookworm-20261020`,
+Every download is checked against a sha256 in `Dockerfile` (`ARG`s): base image `debian:bookworm-20261020`
+(tag only; digest at pin time `sha256:854dd8ab51d62866dbd8f5431d15ce77b12983a2a4a1e1fe43a2395dc7ef9f61`),
 Flutter 3.47.4 (engine revision asserted to match the Nix dev shell), rustup-init 1.29.2,
 appimagetool 1.9.1, type2 runtime `20251108`. To bump one, change the
-tag and sha256 together (`sha256sum` of the release asset). Not pinned: Debian apt packages and the Rust
-`stable` toolchain (cargokit accepts channel names only); both are frozen by Docker layer caching.
+tag and sha256 together (`sha256sum` of the release asset). Not pinned: Debian apt packages, the Rust
+`stable` toolchain (cargokit accepts channel names only) and the engine artifacts `flutter precache` fetches
+(HTTPS; engine revision asserted); all are frozen by Docker layer caching.
 
 ## Cache
 
-BuildKit keeps the libmpv and toolchain layers, so a Dart-only change rebuilds just the app and package stages.
+BuildKit keeps the libmpv and toolchain layers, so a Dart-only change rebuilds just the app and package stages,
+and a new commit with no app change reruns only the package stage (the commit time is the `BUILD_EPOCH` arg).
 `docker builder prune` frees the cache (tens of GB over time).

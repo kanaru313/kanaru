@@ -111,9 +111,11 @@ DIST_DIR    := dist
 
 .PHONY: appimage
 appimage: ## x86_64 AppImage in dist/, built in Docker (Debian 12); needs network
-	docker build --file packaging/appimage/Dockerfile \
+	@command -v docker >/dev/null || { echo "make appimage needs Docker 23+ (BuildKit)." >&2; exit 1; }
+	@test -n "$(APP_VERSION)" || { echo "No version in pubspec.yaml; run make from the repo root." >&2; exit 1; }
+	epoch=$$(git log -1 --format=%ct) && docker build --file packaging/appimage/Dockerfile \
 	  --build-arg KANARU_VERSION=$(APP_VERSION) \
-	  --build-arg SOURCE_DATE_EPOCH=$$(git log -1 --format=%ct) \
+	  --build-arg BUILD_EPOCH=$$epoch \
 	  --target export --output type=local,dest=$(DIST_DIR) .
 	@printf '*\n' > $(DIST_DIR)/.gitignore
 	@ls -lh $(DIST_DIR)/Kanaru-$(APP_VERSION)-x86_64.AppImage

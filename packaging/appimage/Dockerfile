@@ -102,9 +102,12 @@ COPY --from=libmpv-build /opt/libmpv /opt/libmpv
 COPY packaging /packaging
 COPY LICENSE /packaging/LICENSE
 ARG KANARU_VERSION
-ARG SOURCE_DATE_EPOCH
-RUN test -n "${KANARU_VERSION}" && test -n "${SOURCE_DATE_EPOCH}" \
- && KANARU_VERSION="${KANARU_VERSION}" SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}" \
+# Last commit time, handed to appimagetool as SOURCE_DATE_EPOCH. Not passed under that
+# name: BuildKit stamps WORKDIR with a SOURCE_DATE_EPOCH build arg in every stage,
+# so each new commit would rebuild the whole app-build stage, toolchains included.
+ARG BUILD_EPOCH
+RUN test -n "${KANARU_VERSION}" && test -n "${BUILD_EPOCH}" \
+ && KANARU_VERSION="${KANARU_VERSION}" SOURCE_DATE_EPOCH="${BUILD_EPOCH}" \
     /packaging/appimage/assemble-appdir.sh
 
 FROM scratch AS export
