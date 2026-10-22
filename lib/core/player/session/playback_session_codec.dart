@@ -1,3 +1,5 @@
+import '../../indexer/cover_paths.dart' show coverPath;
+import '../cover_path_in_directory.dart';
 import '../repeat_mode.dart';
 import '../track.dart';
 import 'playback_session.dart';
@@ -12,9 +14,19 @@ const playbackSessionVersion = 1;
 /// stable source URI: a remote track must be stored by its source, never by
 /// the local proxy URL it plays through, which carries a token and dies with
 /// the process.
-Map<String, Object?> encodePlaybackSession(PlaybackSession session) => {
+///
+/// A thumbnail inside [coverDirectory] is stored as its `coverKey` (the path
+/// below that folder), so the file survives a moved cache and stays small;
+/// any other art keeps its `artUri`. `coverKey` is an optional per-track key
+/// that older readers ignore, so the version stays the same.
+Map<String, Object?> encodePlaybackSession(
+  PlaybackSession session, {
+  String? coverDirectory,
+}) => {
   'version': playbackSessionVersion,
-  'tracks': [for (final track in session.tracks) _encodeTrack(track)],
+  'tracks': [
+    for (final track in session.tracks) _encodeTrack(track, coverDirectory),
+  ],
   'order': session.order,
   'unshuffledOrder': session.unshuffledOrder,
   'index': session.index,
@@ -35,11 +47,18 @@ int? playbackSessionVersionOf(Map<String, Object?> json) {
 /// Reads a session written by [encodePlaybackSession]. Throws a
 /// [FormatException] when anything is off: a queue that points past its
 /// tracks would break the player, so a half-valid session is not restored.
-/// Unknown keys are ignored.
-PlaybackSession decodePlaybackSession(Map<String, Object?> json) {
+/// Unknown keys are ignored. A `coverKey` is resolved against
+/// [coverDirectory]; without a folder, or when the key is malformed, the
+/// track has no art.
+PlaybackSession decodePlaybackSession(
+  Map<String, Object?> json, {
+  String? coverDirectory,
+}) {
   final rawTracks = json['tracks'];
   if (rawTracks is! List) throw const FormatException('tracks');
-  final tracks = [for (final raw in rawTracks) _decodeTrack(raw)];
+  final tracks = [
+    for (final raw in rawTracks) _decodeTrack(raw, coverDirectory),
+  ];
 
   final order = _intList(json['order'], 'order');
   if (order == null) throw const FormatException('order');
@@ -100,26 +119,36 @@ PlaybackSession decodePlaybackSession(Map<String, Object?> json) {
   );
 }
 
-Map<String, Object?> _encodeTrack(Track track) => {
-  'uri': track.uri,
-  'title': track.title,
-  'artist': track.artist,
-  'artUri': track.artUri,
-  'durationMs': track.duration?.inMilliseconds,
-};
+Map<String, Object?> _encodeTrack(Track track, String? coverDirectory) {
+  final art = track.artUri;
+  final isThumbnail =
+      coverDirectory != null && isCoverPathIn(coverDirectory, art);
+  return {
+    'uri': track.uri,
+    'title': track.title,
+    'artist': track.artist,
+    if (isThumbnail)
+      'coverKey': art!.substring(coverDirectory.length + 1)
+    else
+      'artUri': art,
+    'durationMs': track.duration?.inMilliseconds,
+  };
+}
 
-Track _decodeTrack(Object? raw) {
+Track _decodeTrack(Object? raw, String? coverDirectory) {
   if (raw is! Map) throw const FormatException('track');
   final uri = raw['uri'];
   final title = raw['title'];
   final artist = raw['artist'];
   final artUri = raw['artUri'];
+  final coverKey = raw['coverKey'];
   final duration = raw['durationMs'];
   if (uri is! String || uri.isEmpty || title is! String) {
     throw const FormatException('track');
   }
   if ((artist != null && artist is! String) ||
       (artUri != null && artUri is! String) ||
+      (coverKey != null && coverKey is! String) ||
       (duration != null && (duration is! int || duration < 0))) {
     throw const FormatException('track');
   }
@@ -127,7 +156,9 @@ Track _decodeTrack(Object? raw) {
     uri: uri,
     title: title,
     artist: artist as String?,
-    artUri: artUri as String?,
+    artUri: coverKey is String
+        ? coverPath(coverDirectory, coverKey)
+        : artUri as String?,
     duration: duration == null ? null : Duration(milliseconds: duration as int),
   );
 }

@@ -27,10 +27,11 @@ void main() {
 
   /// A player as the app builds it, with its settings (and so its session)
   /// in the temporary directory.
-  ProviderContainer launch() {
+  ProviderContainer launch({String? coverDirectory}) {
     backend = FakeAudioBackend();
     final app = ProviderContainer(
       overrides: [
+        sessionCoverDirectoryProvider.overrideWithValue(coverDirectory),
         audioBackendProvider.overrideWithValue(backend),
         settingsFileProvider.overrideWithValue(
           SettingsFile('${root.path}/settings.json'),
@@ -539,5 +540,48 @@ void main() {
       await service().play();
       expect(backend.calls.last, 'open(a, next: null)');
     });
+  });
+
+  test('restored tracks get their cover from the key and the folder', () async {
+    const dir = '/cache/covers/512';
+    final key = 'ab/${'ab'.padRight(64, '0')}.jpg';
+    final file = PlaybackSessionFile(sessionPath, coverDirectory: dir);
+    await file.save(
+      PlaybackSession(
+        tracks: [Track(uri: '/music/t.mp3', title: 't', artUri: '$dir/$key')],
+        order: const [0],
+      ),
+    );
+    await file.flush();
+
+    live = launch(coverDirectory: '/moved/covers/512');
+
+    expect(state().queue.current?.artUri, '/moved/covers/512/$key');
+  });
+
+  test('a restored cover key is not written back unchanged', () async {
+    const dir = '/cache/covers/512';
+    final key = 'ab/${'ab'.padRight(64, '0')}.jpg';
+    final file = PlaybackSessionFile(sessionPath, coverDirectory: dir);
+    await file.save(
+      PlaybackSession(
+        tracks: [Track(uri: '/music/t.mp3', title: 't', artUri: '$dir/$key')],
+        order: const [0],
+      ),
+    );
+    await file.flush();
+    final before = File(sessionPath).readAsBytesSync();
+    final modified = File(sessionPath).lastModifiedSync();
+
+    live = launch(coverDirectory: dir);
+    state();
+    await settle();
+    // A track loading lets saving go on.
+    backend.emitDuration.add(const Duration(minutes: 3));
+    await settle();
+    await quit();
+
+    expect(File(sessionPath).readAsBytesSync(), before);
+    expect(File(sessionPath).lastModifiedSync(), modified);
   });
 }

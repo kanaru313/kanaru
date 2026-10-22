@@ -13,10 +13,17 @@ final _log = Logger('session');
 /// file (tests, or no config directory): the session then lives in memory.
 /// The settings path is not resolved through symlinks, so a `settings.json`
 /// linked from dotfiles still keeps the session in the config directory.
-PlaybackSessionFile? playbackSessionFileFor(SettingsFile? settings) {
+///
+/// [coverDirectory] is the folder of the cover thumbnails; see
+/// [PlaybackSessionFile.coverDirectory].
+PlaybackSessionFile? playbackSessionFileFor(
+  SettingsFile? settings, {
+  String? coverDirectory,
+}) {
   if (settings == null) return null;
   return PlaybackSessionFile(
     '${File(settings.path).parent.path}/playback-session.json',
+    coverDirectory: coverDirectory,
   );
 }
 
@@ -30,9 +37,14 @@ PlaybackSessionFile? playbackSessionFileFor(SettingsFile? settings) {
 /// The file becomes read-only for the session when overwriting it could lose
 /// something: it could not be read, or a newer Kanaru wrote it.
 class PlaybackSessionFile {
-  PlaybackSessionFile(this.path);
+  PlaybackSessionFile(this.path, {this.coverDirectory});
 
   final String path;
+
+  /// Folder of the cover thumbnails. Tracks whose art is in it are saved by
+  /// cover key and get the path back from the key on load. `null`: art is
+  /// saved and read as it is, and a saved key has no art.
+  final String? coverDirectory;
 
   bool _readOnly = false;
   bool _loaded = false;
@@ -87,7 +99,10 @@ class PlaybackSessionFile {
       }
       try {
         if (version == null) throw const FormatException('version');
-        return _latest = decodePlaybackSession(json);
+        return _latest = decodePlaybackSession(
+          json,
+          coverDirectory: coverDirectory,
+        );
       } on FormatException {
         _quarantine();
         return null;
@@ -138,7 +153,9 @@ class PlaybackSessionFile {
       await File(path).parent.create(recursive: true);
       temporary = File('$path.$pid.tmp');
       await temporary.writeAsString(
-        jsonEncode(encodePlaybackSession(session)),
+        jsonEncode(
+          encodePlaybackSession(session, coverDirectory: coverDirectory),
+        ),
         flush: true,
       );
       await temporary.rename(path);

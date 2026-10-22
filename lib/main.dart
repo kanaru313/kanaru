@@ -15,11 +15,13 @@ import 'core/indexer/library_startup_tasks.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
+import 'core/paths/app_directories.dart' show resolveCoverCacheDirectory;
 import 'core/player/app_exit_flush.dart';
 import 'core/player/media_kit_backend.dart';
 import 'core/player/original_cover_reader.dart';
 import 'core/player/player_service.dart';
 import 'core/player/rust_original_cover_reader.dart';
+import 'core/player/session/playback_session_provider.dart';
 import 'core/player/unavailable_audio_backend.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/stats/listen_recorder_provider.dart';
@@ -75,6 +77,9 @@ Future<void> main() async {
         create: MediaKitBackend.new,
       ),
       ...library.overrides,
+      sessionCoverDirectoryProvider.overrideWithValue(
+        resolveCoverCacheDirectory(Platform.environment),
+      ),
       originalCoverReaderProvider.overrideWithValue(
         const RustOriginalCoverReader(),
       ),
