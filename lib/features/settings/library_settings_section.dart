@@ -6,16 +6,19 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
+import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
+import 'library_folders_list.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
-/// Library settings: for now only a rescan. The button is disabled while
-/// the library is unavailable, has no music folder yet, or is being
-/// scanned or its covers are being made (it then shows a progress ring).
-/// The result is announced by the shell.
+/// Library settings: the music folders, whether to rescan when the app
+/// opens, and a rescan button. The button is disabled while the library is
+/// unavailable, has no music folder yet, or is being scanned or its covers
+/// are being made (it then shows a progress ring). The result is announced
+/// by the shell.
 class LibrarySettingsSection extends ConsumerWidget {
   const LibrarySettingsSection({super.key});
 
@@ -30,6 +33,16 @@ class LibrarySettingsSection extends ConsumerWidget {
     return SettingsSection(
       title: l10n.settingsLibrary,
       children: [
+        const LibraryFoldersList(),
+        SettingRow.single(
+          title: l10n.settingsRescanOnStartup,
+          control: Switch(
+            value: ref.watch(settingsProvider.select((s) => s.rescanOnStartup)),
+            onChanged: ref.watch(libraryDatabaseProvider) != null
+                ? ref.read(settingsProvider.notifier).setRescanOnStartup
+                : null,
+          ),
+        ),
         SettingRow.single(
           title: l10n.settingsRescanLibrary,
           control: ScanProgressBuilder(

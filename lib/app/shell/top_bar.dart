@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../features/player/open_media.dart';
 import '../../l10n/l10n.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
@@ -17,8 +16,8 @@ const topBarHeight = 64.0;
 /// gets their space. Mouse side buttons still move through the history.
 const _historyButtonsMinWidth = 560.0;
 
-/// Header above every page: back/forward, search, open music, settings and,
-/// when the app draws its own title bar, the window buttons. Empty space drags the window.
+/// Header above every page: back/forward, search, settings and, when the app
+/// draws its own title bar, the window buttons. Empty space drags the window.
 /// On narrow bars back/forward are left out.
 class TopBar extends ConsumerWidget {
   const TopBar({super.key, this.onMenuPressed});
@@ -80,15 +79,6 @@ class TopBar extends ConsumerWidget {
                       child: WindowDragExclusion(
                         child: const TopBarSearchField(),
                       ),
-                    ),
-                  ),
-                ),
-                WindowDragExclusion(
-                  child: OpenMediaMenu(
-                    builder: (tooltip, onPressed) => TopBarButton(
-                      icon: Icons.library_music_outlined,
-                      tooltip: tooltip,
-                      onPressed: onPressed,
                     ),
                   ),
                 ),

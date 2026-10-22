@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../database/library_database.dart';
+import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
+import '../settings/settings_provider.dart';
 import 'root_path.dart';
 
 final _log = Logger('indexer');
@@ -17,8 +20,22 @@ class AddRootsResult {
   final Map<String, RootRejection> rejected;
 }
 
-/// Adds library source folders. There is deliberately no way to remove one
-/// yet.
+/// Outcome of [LibraryRootsController.removeRoot] and
+/// [LibraryRootsController.replaceRoot].
+class RootChangeResult {
+  const RootChangeResult({this.rejection, this.unchanged = false});
+
+  /// Why nothing was changed; `null` on success.
+  final RootRejection? rejection;
+
+  /// The new path is the one the root already has: nothing was written.
+  final bool unchanged;
+
+  bool get ok => rejection == null;
+}
+
+/// Adds, removes and re-points library source folders. Calls run one after
+/// the other. It never starts a scan; the caller does.
 class LibraryRootsController {
   LibraryRootsController(this._ref);
 
@@ -37,8 +54,89 @@ class LibraryRootsController {
   /// Never throws: when the database fails, every path not stored is refused
   /// with [RootRejection.writeFailed] and the error is logged.
   Future<AddRootsResult> addRoots(List<String> paths) {
-    final result = _queue.then((_) => _addRoots(paths));
-    // _addRoots never throws, but keep the chain alive whatever happens.
+    return _chain(() => _addRoots(paths));
+  }
+
+  /// Removes root [id] with its tracks. Idempotent: a root that is already
+  /// gone counts as removed. Never throws.
+  Future<RootChangeResult> removeRoot(int id) => _chain(() async {
+    final db = _ref.read(libraryDatabaseProvider);
+    if (db == null) {
+      return const RootChangeResult(
+        rejection: RootRejection.libraryUnavailable,
+      );
+    }
+    try {
+      await db.removeRoot(id);
+    } catch (error, stackTrace) {
+      _log.severe('Could not remove library folder', error, stackTrace);
+      return const RootChangeResult(rejection: RootRejection.writeFailed);
+    }
+    // The root is gone for good; failing to learn whether it was the last
+    // one must not report the removal as failed.
+    try {
+      await _syncHasRoots(db);
+    } catch (error, stackTrace) {
+      _log.warning('Could not refresh the has-roots flag', error, stackTrace);
+    }
+    return const RootChangeResult();
+  });
+
+  /// Re-points root [id] to [newPath] (removes it and adds the new folder in
+  /// one transaction; the new root gets a new id). The same checks as
+  /// [addRoots] apply, except against the root being replaced, so a parent or
+  /// child folder of it is fine. An unknown [id] gives
+  /// [RootRejection.notFound]. Never throws.
+  Future<RootChangeResult> replaceRoot(int id, String newPath) =>
+      _chain(() async {
+        final db = _ref.read(libraryDatabaseProvider);
+        if (db == null) {
+          return const RootChangeResult(
+            rejection: RootRejection.libraryUnavailable,
+          );
+        }
+        try {
+          final roots = await db.roots();
+          final old = roots.where((root) => root.id == id).firstOrNull;
+          if (old == null) {
+            return const RootChangeResult(rejection: RootRejection.notFound);
+          }
+          final result = await canonicalizeRoot(newPath);
+          final canonical = result.path;
+          if (canonical == null) {
+            return RootChangeResult(rejection: result.rejection);
+          }
+          if (canonical == old.path) {
+            return const RootChangeResult(unchanged: true);
+          }
+          final conflict = conflictWith(canonical, [
+            for (final root in roots)
+              if (root.id != id) root.path,
+          ]);
+          if (conflict != null) return RootChangeResult(rejection: conflict);
+          await db.replaceRoot(
+            id,
+            canonical,
+            now: DateTime.now().millisecondsSinceEpoch,
+          );
+          _ref.read(libraryHasRootsProvider.notifier).markPresent();
+          _ref.read(settingsProvider.notifier).markLibraryOnboarded();
+        } catch (error, stackTrace) {
+          _log.severe('Could not replace library folder', error, stackTrace);
+          return const RootChangeResult(rejection: RootRejection.writeFailed);
+        }
+        return const RootChangeResult();
+      });
+
+  Future<void> _syncHasRoots(LibraryDatabase db) async {
+    if (!await db.hasLibraryRoots()) {
+      _ref.read(libraryHasRootsProvider.notifier).markAbsent();
+    }
+  }
+
+  /// Runs [action] after the calls so far; [action] must not throw.
+  Future<T> _chain<T>(Future<T> Function() action) {
+    final result = _queue.then((_) => action());
     _queue = result.then((_) {}, onError: (_) {});
     return result;
   }
@@ -76,6 +174,7 @@ class LibraryRootsController {
           now: DateTime.now().millisecondsSinceEpoch,
         );
         _ref.read(libraryHasRootsProvider.notifier).markPresent();
+        _ref.read(settingsProvider.notifier).markLibraryOnboarded();
       }
     } catch (error, stackTrace) {
       _log.severe('Could not store library folders', error, stackTrace);

@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 
 import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
+import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
@@ -76,6 +77,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// so a root that is slow every time costs one extra scan, not a loop.
   bool _autoStarted = false;
 
+  /// The running scan was started with `quiet: true` and nobody asked for
+  /// more since; reported on its [IndexerFinished].
+  bool _quiet = false;
+
   /// The root whose walk the running scan is waiting for right now: a walk
   /// that finishes meanwhile is consumed by that scan itself.
   String? _awaitingWalkOf;
@@ -96,7 +101,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// its future (which completes after that pass). The extra pass makes sure
   /// a root added while scanning is scanned too. Never throws: a failure
   /// becomes [IndexerFailed]. Does nothing without a database.
-  Future<void> scan() {
+  ///
+  /// A [quiet] scan (the one at app start) marks its [IndexerFinished] so
+  /// the UI can stay silent about it. A non-quiet request made while it runs
+  /// makes the result count as the user's.
+  Future<void> scan({bool quiet = false}) {
+    if (_running == null || !quiet) _quiet = quiet;
     // Whoever asks, a scan the user wants arms automatic follow-ups again,
     // and tries the covers that failed earlier in this session once more.
     _autoStarted = false;
@@ -119,8 +129,21 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// A scan already running gets a follow-up pass instead.
   void _scanAutomatically() {
     if (!ref.mounted) return;
+    // Keeps `_quiet` as the scan that armed this follow-up left it: it is
+    // loud only if a request for a loud scan was among those that led to it.
     if (_running == null) _autoStarted = true;
     unawaited(_startOrFollow());
+  }
+
+  /// Whether root [id] is still stored. A failing check counts as present:
+  /// the caller then records the error it was already handling.
+  Future<bool> _rootExistsOrUnknown(LibraryDatabase db, int id) async {
+    try {
+      return await db.rootExists(id);
+    } catch (error, stackTrace) {
+      _log.warning('Could not check root $id', error, stackTrace);
+      return true;
+    }
   }
 
   Future<void> _scanWithFollowUp() async {
@@ -173,14 +196,27 @@ class LibraryIndexer extends Notifier<IndexerState> {
       for (final root in roots) {
         // Disposed mid-scan (the app quit): nothing left to publish to.
         if (!ref.mounted) break;
+        // Removed since the snapshot: nothing to show, walk or warn about.
+        if (!await db.rootExists(root.id)) continue;
         RootScanResult result;
         try {
           result = await _scanRoot(db, reader, root);
         } catch (error, stackTrace) {
+          // A removed root fails on its deleted id (foreign key): not an error.
+          if (!await _rootExistsOrUnknown(db, root.id)) {
+            _log.info('Root removed during scan: ${root.path}');
+            continue;
+          }
           _log.severe('Root failed: ${root.path}', error, stackTrace);
           firstError ??= error;
           firstStack ??= stackTrace;
           result = RootScanResult.failed(error);
+        }
+        // Removed (or replaced) while scanning: its rows are gone, so its
+        // counts and covers would describe nothing.
+        if (!await db.rootExists(root.id)) {
+          _log.info('Root removed during scan: ${root.path}');
+          continue;
         }
         added += result.added;
         updated += result.updated;
@@ -232,7 +268,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         'tags ${tagTime.inMilliseconds} ms, '
         'db ${dbTime.inMilliseconds} ms',
       );
-      _publish(IndexerFinished(summary));
+      _publish(IndexerFinished(summary, quiet: _quiet));
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
       _publish(IndexerFailed(error.toString()));

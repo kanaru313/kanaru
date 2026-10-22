@@ -80,6 +80,40 @@ void main() {
     expect((await tracks()), hasLength(3));
   });
 
+  group('quiet scans', () {
+    bool quiet() => (state() as IndexerFinished).quiet;
+    LibraryIndexer indexer() => container.read(libraryIndexerProvider.notifier);
+
+    test('a user scan is not quiet, a quiet one is marked', () async {
+      touch('a.mp3');
+
+      await scan();
+      expect(quiet(), isFalse);
+
+      await indexer().scan(quiet: true);
+      expect(quiet(), isTrue);
+    });
+
+    test('a user request while a quiet scan runs makes it not quiet', () async {
+      touch('a.mp3');
+
+      await Future.wait([indexer().scan(quiet: true), indexer().scan()]);
+
+      expect(quiet(), isFalse);
+    });
+
+    test(
+      'a quiet request while a user scan runs does not silence it',
+      () async {
+        touch('a.mp3');
+
+        await Future.wait([indexer().scan(), indexer().scan(quiet: true)]);
+
+        expect(quiet(), isFalse);
+      },
+    );
+  });
+
   test('a changed file is read again and keeps id and addedAt', () async {
     final a = touch('a.mp3');
     touch('b.mp3');

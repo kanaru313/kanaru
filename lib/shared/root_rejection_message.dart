@@ -1,5 +1,5 @@
-import '../../core/indexer/root_path.dart';
-import '../../l10n/l10n.dart';
+import '../core/indexer/root_path.dart';
+import '../l10n/l10n.dart';
 
 /// User-facing reason why [path] was refused as a library folder.
 String rootRejectionMessage(

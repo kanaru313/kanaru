@@ -92,13 +92,13 @@ Status on 2026-10-21, with the search work on `feat/search`. Commit and PR count
 | Shell, theme (M3), i18n (en, vi), desktop title bar | Shipped |
 | Playback (media_kit, queue, shuffle, repeat, session restore) | Shipped; gapless configured but not verified (PLAY-06); ReplayGain and output device not done |
 | MPRIS (own D-Bus implementation) | Shipped |
-| Folder scan, tags (Rust, lofty), embedded and folder artwork | Shipped; file watching, startup scan and root removal not done |
+| Folder scan, tags (Rust, lofty), embedded and folder artwork | Shipped, with startup rescan and root removal; file watching not done |
 | Library browse: Songs, Albums, Artists | Shipped |
 | Library browse: Genres, Folders, Favorites, Recent | Not started (placeholder screens) |
 | Now Playing overlay and queue sheet | Shipped; hero transition not built |
 | Search | Shipped: songs, albums and artists, live from the top bar; typo tolerance not done (SEARCH-04) |
 | Playlists | Not started (placeholder in sidebar) |
-| Settings | Shipped in part (library rescan, appearance, about) |
+| Settings | Shipped in part (library folders, rescan, appearance, about) |
 | Packaging (AppImage, Flatpak, deb, rpm) | Not started |
 | CI | Not started (no `.github/` workflows) |
 | Remote sources, cache, licensing | Not started |
@@ -122,9 +122,9 @@ Scope of the first release, derived from the P0 items of Phase 1 (features.md).
 | Playlists: create, edit, delete, add and reorder | PL-01, PL-02 | P0 | Not started |
 | AppImage package | PKG-01 | P0 | Not started |
 | Collapse DB schema history to v1 before release | PKG-08 | P0 | Not started |
-| Startup rescan option | IDX-06 | P1 | Not started |
+| Startup rescan option | IDX-06 | P1 | Done |
 | Folder watching | IDX-04 | P1 | Not started |
-| Root removal and folder edits in Settings | IDX-01 (remainder) | P0 | Partial: onboarding picker only |
+| Root removal and folder edits in Settings | IDX-01 (remainder) | P0 | Done |
 | ReplayGain | PLAY-07 | P1 | Not started |
 | Dynamic color from artwork | UI-03 | P1 | Not started |
 | Flatpak and deb/rpm | PKG-02, PKG-03 | P1 | Not started |

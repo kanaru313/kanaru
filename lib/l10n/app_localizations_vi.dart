@@ -518,21 +518,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get playerOpenMenu => 'Mở nhạc';
-
-  @override
-  String get playerOpenFiles => 'Mở file…';
-
-  @override
-  String get playerOpenFolder => 'Mở thư mục…';
-
-  @override
-  String get playerScanning => 'Đang quét thư mục…';
-
-  @override
-  String get playerNoAudioFound => 'Không tìm thấy file nhạc nào';
-
-  @override
   String playerPlaybackError(String title) {
     return 'Không phát được $title';
   }
@@ -636,6 +621,60 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsRescanLibrary => 'Quét lại thư viện';
+
+  @override
+  String get settingsFolders => 'Thư mục nhạc';
+
+  @override
+  String get settingsAddFolder => 'Thêm thư mục';
+
+  @override
+  String get settingsChangeFolder => 'Đổi thư mục…';
+
+  @override
+  String get settingsRemoveFolder => 'Bỏ khỏi thư viện';
+
+  @override
+  String get settingsFolderMissing => 'Thư mục này không còn tồn tại';
+
+  @override
+  String get settingsFolderMenu => 'Tuỳ chọn thư mục';
+
+  @override
+  String get settingsRemoveFolderTitle => 'Bỏ thư mục khỏi thư viện?';
+
+  @override
+  String settingsRemoveFolderBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài sẽ bị gỡ khỏi thư viện.',
+      zero: 'Không có bài nào bị gỡ khỏi thư viện.',
+    );
+    return '$_temp0 File nhạc trên đĩa không bị xoá.';
+  }
+
+  @override
+  String get settingsRemoveFolderConfirm => 'Bỏ';
+
+  @override
+  String settingsRemoveFolderFailed(String path) {
+    return 'Không bỏ được $path. Xem chi tiết trong nhật ký.';
+  }
+
+  @override
+  String get settingsReplaceFolderTitle => 'Đổi thư mục?';
+
+  @override
+  String settingsReplaceFolderBody(String oldPath, String newPath) {
+    return 'Thay $oldPath bằng $newPath? Các bài trong $oldPath sẽ bị gỡ khỏi thư viện và $newPath sẽ được quét. File nhạc trên đĩa không bị xoá.';
+  }
+
+  @override
+  String get settingsReplaceFolderConfirm => 'Đổi';
+
+  @override
+  String get settingsRescanOnStartup => 'Quét lại khi mở Kanaru';
 
   @override
   String get settingsAppearance => 'Giao diện';

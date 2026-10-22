@@ -37,7 +37,7 @@ flowchart TD
     end
 
     subgraph SHARED ["lib/shared"]
-        Widgets["widgets and tiles: CoverArt, EmptyState, SongTile; play and enqueue helpers"]
+        Widgets["widgets and tiles: CoverArt, EmptyState, SongTile; play and enqueue helpers, folder picker"]
     end
 
     subgraph CORE ["lib/core: engine"]
@@ -125,7 +125,9 @@ sequenceDiagram
     Note over C: eager MPRIS creation
     M->>A: runApp with UncontrolledProviderScope
     A->>A: routerProvider picks initial location
-    Note over A: /welcome if DB exists and has no roots, else /home
+    Note over A: /welcome if DB exists, no roots and not yet onboarded, else /home
+    A->>C: after the first frame, runLibraryStartupTasks
+    Note over C: marks a library with roots as onboarded, quiet scan if enabled
 ```
 
 After `runApp`, `PlayerService.build()` restores the saved queue synchronously and paused (see [section 4](#4-playback)). The library starts with its keys phase in `unknown`, then `updating` or `ready` (see [section 7](#7-library-database-schema)).
@@ -134,7 +136,9 @@ After `runApp`, `PlayerService.build()` restores the saved queue synchronously a
 
 ## 3. Library scan pipeline
 
-Entry points: rescan button, Settings, onboarding, adding a folder. There is **no** startup scan, no file watcher and no root removal yet (features IDX-06, IDX-04 and root removal are open). One scan runs at a time; a request during a scan queues one follow-up.
+Entry points: rescan button, Settings (add or change a folder), onboarding, adding a folder, and the startup rescan (`indexer/library_startup_tasks.dart`, after the first frame, when `rescanOnStartup` is on and a folder exists). A startup scan is quiet: the UI announces it only when it added, updated or removed something, or failed. There is **no** file watcher yet (IDX-04). One scan runs at a time; a request during a scan queues one follow-up, and a user request during a quiet scan makes its result count as the user's.
+
+Removing a folder deletes its `library_roots` row; `tracks` and `track_artists` go by `ON DELETE CASCADE`, and albums and artists are derived from `tracks`, so nothing is left behind. Changing a folder is a remove plus an add in one transaction (new root id), then a scan. A scan that is running when its root is removed drops that root's result silently (its next write fails on the foreign key). The play queue is not touched: it holds file paths. Cover thumbnails of removed songs are cleaned by the next scan that finishes cleanly.
 
 ```mermaid
 flowchart TD
@@ -259,7 +263,7 @@ flowchart TB
 
 | File | Format | Notes |
 |---|---|---|
-| `settings.json` | JSON v1 | Theme, language, title bar, library sort per screen, albums view. Unknown keys are kept. Secrets are never stored here (keyring planned). |
+| `settings.json` | JSON v1 | Theme, language, title bar, library sort per screen, albums view, `rescanOnStartup` (default on), `libraryOnboarded` (first-run picker done). Unknown keys are kept. Secrets are never stored here (keyring planned). |
 | `playback-session.json` | JSON v1 | Queue, position, volume, shuffle, repeat. Strict parse. |
 | `library.db` | SQLite (drift) | Opened with WAL, `synchronous = NORMAL`, `foreign_keys = ON`, `busy_timeout = 5000`. |
 | `covers/512/<ab>/<64-hex blake3>.jpg` | JPEG, 512 px longest side | Deduplicated by hash of the original image. Orphans are cleaned after a complete scan. |

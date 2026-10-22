@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/database/library_startup.dart';
+import '../core/settings/settings_provider.dart';
 import '../features/home/home_screen.dart';
 import '../features/library/albums/album_screen.dart';
 import '../features/library/albums/albums_screen.dart';
@@ -20,12 +21,18 @@ import 'shell/app_shell.dart';
 /// First-run source picker, outside the shell (no sidebar or player bar).
 const _welcomePath = '/welcome';
 
+/// Whether the first-run picker is done: a folder exists, or the user already
+/// added one or chose "Later" (an app whose folders were all removed opens
+/// straight to the empty library).
+bool _onboarded(Ref ref) =>
+    ref.read(settingsProvider).libraryOnboarded ||
+    ref.read(libraryHasRootsProvider);
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Read once: the first-run screen only matters when the app opens. Without
   // a database the library is unavailable and there is nothing to set up.
   final showWelcome =
-      ref.read(libraryDatabaseProvider) != null &&
-      !ref.read(libraryHasRootsProvider);
+      ref.read(libraryDatabaseProvider) != null && !_onboarded(ref);
   final router = GoRouter(
     initialLocation: showWelcome ? _welcomePath : AppDestination.home.path,
     routes: [
@@ -34,7 +41,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Back or a typed URL must not return to onboarding once a folder
         // exists.
         redirect: (context, state) =>
-            ref.read(libraryHasRootsProvider) ? AppDestination.home.path : null,
+            _onboarded(ref) ? AppDestination.home.path : null,
         builder: (context, state) => const OnboardingScreen(),
       ),
       StatefulShellRoute.indexedStack(

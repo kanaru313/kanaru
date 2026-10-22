@@ -860,36 +860,6 @@ abstract class AppLocalizations {
   /// **'Showing the top {shown} of {total} songs. Add words to narrow it down.'**
   String searchMoreSongs(int shown, int total);
 
-  /// No description provided for @playerOpenMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Open music'**
-  String get playerOpenMenu;
-
-  /// No description provided for @playerOpenFiles.
-  ///
-  /// In en, this message translates to:
-  /// **'Open files…'**
-  String get playerOpenFiles;
-
-  /// No description provided for @playerOpenFolder.
-  ///
-  /// In en, this message translates to:
-  /// **'Open folder…'**
-  String get playerOpenFolder;
-
-  /// No description provided for @playerScanning.
-  ///
-  /// In en, this message translates to:
-  /// **'Scanning folder…'**
-  String get playerScanning;
-
-  /// No description provided for @playerNoAudioFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No audio files found'**
-  String get playerNoAudioFound;
-
   /// No description provided for @playerPlaybackError.
   ///
   /// In en, this message translates to:
@@ -1081,6 +1051,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rescan library'**
   String get settingsRescanLibrary;
+
+  /// No description provided for @settingsFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Music folders'**
+  String get settingsFolders;
+
+  /// No description provided for @settingsAddFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add folder'**
+  String get settingsAddFolder;
+
+  /// No description provided for @settingsChangeFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Change folder…'**
+  String get settingsChangeFolder;
+
+  /// No description provided for @settingsRemoveFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from library'**
+  String get settingsRemoveFolder;
+
+  /// No description provided for @settingsFolderMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder no longer exists'**
+  String get settingsFolderMissing;
+
+  /// No description provided for @settingsFolderMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder actions'**
+  String get settingsFolderMenu;
+
+  /// No description provided for @settingsRemoveFolderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove folder from library?'**
+  String get settingsRemoveFolderTitle;
+
+  /// No description provided for @settingsRemoveFolderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No songs will leave the library.} =1{1 song will leave the library.} other{{count} songs will leave the library.}} Files on disk are not deleted.'**
+  String settingsRemoveFolderBody(int count);
+
+  /// No description provided for @settingsRemoveFolderConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get settingsRemoveFolderConfirm;
+
+  /// No description provided for @settingsRemoveFolderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t remove {path}. See the log for details.'**
+  String settingsRemoveFolderFailed(String path);
+
+  /// No description provided for @settingsReplaceFolderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change folder?'**
+  String get settingsReplaceFolderTitle;
+
+  /// No description provided for @settingsReplaceFolderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace {oldPath} with {newPath}? Songs from {oldPath} leave the library and {newPath} is scanned. Files on disk are not deleted.'**
+  String settingsReplaceFolderBody(String oldPath, String newPath);
+
+  /// No description provided for @settingsReplaceFolderConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get settingsReplaceFolderConfirm;
+
+  /// No description provided for @settingsRescanOnStartup.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescan when Kanaru opens'**
+  String get settingsRescanOnStartup;
 
   /// No description provided for @settingsAppearance.
   ///

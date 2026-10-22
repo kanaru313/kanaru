@@ -29,15 +29,22 @@ bool isFreshScanResult(IndexerState state, {DateTime? now}) {
 /// result that is no longer fresh ([isFreshScanResult]).
 SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
   if (!isFreshScanResult(state)) return null;
+  // The scan at app start only speaks up when it changed the library, and
+  // then only about the changes: Settings already marks a missing folder.
+  final quiet = state is IndexerFinished && state.quiet;
+  if (state case IndexerFinished(:final summary)
+      when quiet && summary.added + summary.updated + summary.removed == 0) {
+    return null;
+  }
   final l10n = context.l10n;
   final (outcome, details) = switch (state) {
     IndexerFinished(:final summary) => (
       summary.failedTags > 0 ||
               summary.undecodableNames > 0 ||
-              summary.skippedRoots.isNotEmpty
+              (!quiet && summary.skippedRoots.isNotEmpty)
           ? _Outcome.warning
           : _Outcome.done,
-      _summaryDetails(l10n, summary),
+      _summaryDetails(l10n, summary, quiet: quiet),
     ),
     // The technical message goes to the log, not to the user.
     IndexerFailed() => (_Outcome.failed, l10n.libraryScanFailedDetails),
@@ -68,8 +75,12 @@ SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
 }
 
 /// "4 new · 1 updated", leaving out zero counts, then unreadable files and
-/// skipped roots on their own lines.
-String _summaryDetails(AppLocalizations l10n, ScanSummary summary) {
+/// skipped roots on their own lines (not for a [quiet] scan).
+String _summaryDetails(
+  AppLocalizations l10n,
+  ScanSummary summary, {
+  required bool quiet,
+}) {
   final counts = [
     if (summary.added > 0) l10n.libraryScanAdded(summary.added),
     if (summary.updated > 0) l10n.libraryScanUpdated(summary.updated),
@@ -80,13 +91,14 @@ String _summaryDetails(AppLocalizations l10n, ScanSummary summary) {
     if (summary.failedTags > 0) l10n.libraryScanFailedTags(summary.failedTags),
     if (summary.undecodableNames > 0)
       l10n.libraryScanUndecodableNames(summary.undecodableNames),
-    for (final entry in summary.skippedRoots.entries)
-      switch (entry.value) {
-        SkipReason.missing => l10n.libraryScanRootMissing(entry.key),
-        SkipReason.empty => l10n.libraryScanRootEmpty(entry.key),
-        SkipReason.timedOut => l10n.libraryScanRootTimedOut(entry.key),
-        SkipReason.readerStuck => l10n.libraryScanRootReaderStuck(entry.key),
-      },
+    if (!quiet)
+      for (final entry in summary.skippedRoots.entries)
+        switch (entry.value) {
+          SkipReason.missing => l10n.libraryScanRootMissing(entry.key),
+          SkipReason.empty => l10n.libraryScanRootEmpty(entry.key),
+          SkipReason.timedOut => l10n.libraryScanRootTimedOut(entry.key),
+          SkipReason.readerStuck => l10n.libraryScanRootReaderStuck(entry.key),
+        },
   ].join('\n');
 }
 

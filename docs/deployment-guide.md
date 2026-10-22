@@ -61,7 +61,7 @@ Rust is built by cargokit inside `flutter build`. The first build is slow. Use `
 | Rust tag reader | Bundled | Shared library built by cargokit from `rust/`, bundled through `rust_builder`. |
 | GTK 3 | System | Required by the Flutter Linux embedder. |
 | SQLite | System | Library database. The dev docs require SQLite 3.35 or newer; confirm the system library version on your distro. |
-| GSettings schemas (GTK) | System | Needed by GTK file pickers (folder picker, open media). Distros ship them with GTK 3. |
+| GSettings schemas (GTK) | System | Needed by GTK file pickers (folder picker). Distros ship them with GTK 3. |
 | D-Bus session bus | Optional | Needed for MPRIS. The app runs without it, with no media controls. |
 | Secret Service (libsecret) | Not needed yet | No credential storage in the code yet. Needed once remote sources land (PRIV-04). |
 
@@ -144,6 +144,6 @@ Steps 2 to 4 become CI jobs once workflows exist. The repo has no `.github/` dir
 |---|---|
 | App starts in library-only mode, play does nothing | Log line "Audio engine failed to initialize". Check the bundle `lib/` has libmpv. |
 | Folder picker does not open | GTK schemas missing: install the GTK 3 package of your distro. |
-| Library empty after start | Startup does not rescan (IDX-06 open). Press the rescan button. |
+| Library empty after start | Check Settings → Library: the folders must exist (a missing one is struck through) and "Rescan when Kanaru opens" should be on. Press the rescan button. |
 | Window does not come forward on second launch under niri | Known limit (SYS-15). |
 | Anything else | Attach the log: `kanaru.log` and any `kanaru-<pid>.log` from the same time. Logs are not sent anywhere. |

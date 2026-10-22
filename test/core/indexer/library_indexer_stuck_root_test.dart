@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_root_queries.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
@@ -370,6 +371,73 @@ void main() {
     await scan();
     expect(summary().skippedRoots, {rootB: SkipReason.timedOut});
     expect(summary().added, tagBatchSizeFor(files));
+  });
+
+  group('the automatic scan after a slow walk', () {
+    Future<void> finishWalkAndWait() async {
+      hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+      await untilIdle();
+    }
+
+    test('stays quiet when the scan that armed it was quiet', () async {
+      touch(rootA, 'one.mp3');
+      hangingWalks = {rootA};
+      await container.read(libraryIndexerProvider.notifier).scan(quiet: true);
+      expect((state() as IndexerFinished).quiet, isTrue);
+
+      await finishWalkAndWait();
+
+      expect(summary().added, 1);
+      expect((state() as IndexerFinished).quiet, isTrue);
+    });
+
+    test('is loud when the scan that armed it was the user\'s', () async {
+      touch(rootA, 'one.mp3');
+      hangingWalks = {rootA};
+      await scan();
+      expect((state() as IndexerFinished).quiet, isFalse);
+
+      await finishWalkAndWait();
+
+      expect(summary().added, 1);
+      expect((state() as IndexerFinished).quiet, isFalse);
+    });
+
+    test(
+      'is loud when a user scan was requested during the quiet one',
+      () async {
+        touch(rootA, 'one.mp3');
+        hangingWalks = {rootA};
+        final indexer = container.read(libraryIndexerProvider.notifier);
+        final quiet = indexer.scan(quiet: true);
+        final user = indexer.scan();
+        await Future.wait([quiet, user]);
+
+        await finishWalkAndWait();
+
+        expect(summary().added, 1);
+        expect((state() as IndexerFinished).quiet, isFalse);
+      },
+    );
+  });
+
+  test('a root removed before its turn is not walked or reported', () async {
+    touch(rootA, 'one.mp3');
+    touch(rootB, 'two.mp3');
+    final rootBId = (await db.roots()).firstWhere((r) => r.path == rootB).id;
+    // Removes b while a is being walked.
+    hangingWalks = {rootA};
+    final done = scan();
+    while (hungWalks[rootA] == null) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+    await db.removeRoot(rootBId);
+    await done;
+
+    expect(state(), isA<IndexerFinished>());
+    expect(walksOf(rootB), 0);
+    expect(summary().skippedRoots, {rootA: SkipReason.timedOut});
+    expect(await titles(), isEmpty);
   });
 
   test('an error in one root does not stop the others', () async {

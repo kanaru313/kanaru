@@ -76,6 +76,13 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setAlbumsView(AlbumsView view) =>
       _update(state.copyWith(albumsView: view));
 
+  void setRescanOnStartup(bool enabled) =>
+      _update(state.copyWith(rescanOnStartup: enabled));
+
+  /// Records that the first-run source picker is done for good.
+  void markLibraryOnboarded() =>
+      _update(state.copyWith(libraryOnboarded: true));
+
   /// Completes when every change made so far is on disk: nothing is being
   /// written and nothing is waiting.
   @visibleForTesting

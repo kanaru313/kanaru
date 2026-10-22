@@ -31,6 +31,8 @@ class AppSettings {
     this.albumSort = const SortChoice(AlbumSortField.title),
     this.artistSort = const SortChoice(ArtistSortField.name),
     this.albumsView = AlbumsView.grid,
+    this.rescanOnStartup = true,
+    this.libraryOnboarded = false,
   });
 
   final ThemePreference theme;
@@ -48,6 +50,13 @@ class AppSettings {
 
   final AlbumsView albumsView;
 
+  /// Scan the library folders in the background when the app opens.
+  final bool rescanOnStartup;
+
+  /// The first-run source picker has been dealt with (a folder was added or
+  /// "Later" was chosen), so it never comes back, even with no folders.
+  final bool libraryOnboarded;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -55,6 +64,8 @@ class AppSettings {
     SortChoice<AlbumSortField>? albumSort,
     SortChoice<ArtistSortField>? artistSort,
     AlbumsView? albumsView,
+    bool? rescanOnStartup,
+    bool? libraryOnboarded,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -63,6 +74,8 @@ class AppSettings {
     albumSort: albumSort ?? this.albumSort,
     artistSort: artistSort ?? this.artistSort,
     albumsView: albumsView ?? this.albumsView,
+    rescanOnStartup: rescanOnStartup ?? this.rescanOnStartup,
+    libraryOnboarded: libraryOnboarded ?? this.libraryOnboarded,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -74,6 +87,8 @@ class AppSettings {
     albumSort: albumSort,
     artistSort: artistSort,
     albumsView: albumsView,
+    rescanOnStartup: rescanOnStartup,
+    libraryOnboarded: libraryOnboarded,
   );
 
   @override
@@ -85,7 +100,9 @@ class AppSettings {
       other.songSort == songSort &&
       other.albumSort == albumSort &&
       other.artistSort == artistSort &&
-      other.albumsView == albumsView;
+      other.albumsView == albumsView &&
+      other.rescanOnStartup == rescanOnStartup &&
+      other.libraryOnboarded == libraryOnboarded;
 
   @override
   int get hashCode => Object.hash(
@@ -96,6 +113,8 @@ class AppSettings {
     albumSort,
     artistSort,
     albumsView,
+    rescanOnStartup,
+    libraryOnboarded,
   );
 
   @override
@@ -103,5 +122,6 @@ class AppSettings {
       'AppSettings(theme: ${theme.name}, language: $languageCode, '
       'titleBar: ${titleBar.name}, songSort: $songSort, '
       'albumSort: $albumSort, artistSort: $artistSort, '
-      'albumsView: ${albumsView.name})';
+      'albumsView: ${albumsView.name}, rescanOnStartup: $rescanOnStartup, '
+      'libraryOnboarded: $libraryOnboarded)';
 }

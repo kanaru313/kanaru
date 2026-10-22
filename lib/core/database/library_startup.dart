@@ -32,6 +32,8 @@ class LibraryHasRoots extends Notifier<bool> {
   bool build() => _initial;
 
   void markPresent() => state = true;
+
+  void markAbsent() => state = false;
 }
 
 final libraryHasRootsProvider = NotifierProvider<LibraryHasRoots, bool>(

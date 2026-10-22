@@ -522,21 +522,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get playerOpenMenu => 'Open music';
-
-  @override
-  String get playerOpenFiles => 'Open files…';
-
-  @override
-  String get playerOpenFolder => 'Open folder…';
-
-  @override
-  String get playerScanning => 'Scanning folder…';
-
-  @override
-  String get playerNoAudioFound => 'No audio files found';
-
-  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }
@@ -641,6 +626,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsRescanLibrary => 'Rescan library';
+
+  @override
+  String get settingsFolders => 'Music folders';
+
+  @override
+  String get settingsAddFolder => 'Add folder';
+
+  @override
+  String get settingsChangeFolder => 'Change folder…';
+
+  @override
+  String get settingsRemoveFolder => 'Remove from library';
+
+  @override
+  String get settingsFolderMissing => 'This folder no longer exists';
+
+  @override
+  String get settingsFolderMenu => 'Folder actions';
+
+  @override
+  String get settingsRemoveFolderTitle => 'Remove folder from library?';
+
+  @override
+  String settingsRemoveFolderBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs will leave the library.',
+      one: '1 song will leave the library.',
+      zero: 'No songs will leave the library.',
+    );
+    return '$_temp0 Files on disk are not deleted.';
+  }
+
+  @override
+  String get settingsRemoveFolderConfirm => 'Remove';
+
+  @override
+  String settingsRemoveFolderFailed(String path) {
+    return 'Couldn\'t remove $path. See the log for details.';
+  }
+
+  @override
+  String get settingsReplaceFolderTitle => 'Change folder?';
+
+  @override
+  String settingsReplaceFolderBody(String oldPath, String newPath) {
+    return 'Replace $oldPath with $newPath? Songs from $oldPath leave the library and $newPath is scanned. Files on disk are not deleted.';
+  }
+
+  @override
+  String get settingsReplaceFolderConfirm => 'Change';
+
+  @override
+  String get settingsRescanOnStartup => 'Rescan when Kanaru opens';
 
   @override
   String get settingsAppearance => 'Appearance';

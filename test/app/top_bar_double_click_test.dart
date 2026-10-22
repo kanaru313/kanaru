@@ -78,8 +78,8 @@ void main() {
     await pumpTopBar(tester, toggles);
 
     final buttons = find.byType(IconButton).evaluate().length;
-    // Menu, back, forward, open music, settings, minimize, maximize, close.
-    expect(buttons, 8);
+    // Menu, back, forward, settings, minimize, maximize, close.
+    expect(buttons, 7);
     for (var i = 0; i < buttons; i++) {
       // Close is last; the stub channel swallows the window calls.
       await doubleClickAt(
