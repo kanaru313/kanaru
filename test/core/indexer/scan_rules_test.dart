@@ -84,6 +84,43 @@ void main() {
     expect(result.filteredOut, 0);
   });
 
+  test('an exclusion matches whole names, with % and _ taken literally', () {
+    final result = applyWalkRules(
+      WalkResult(
+        files: [
+          file('/m/Live/a.mp3'),
+          file('/m/Live Albums/b.mp3'),
+          file('/m/a_b/c.mp3'),
+          file('/m/aXb/d.mp3'),
+          file('/m/100%/e.mp3'),
+          file('/m/100x/f.mp3'),
+        ],
+        dirs: ['/m'],
+      ),
+      root,
+      const WalkRules(excludedPaths: ['/m/Live', '/m/a_b', '/m/100%']),
+    );
+
+    expect(paths(result), {
+      '/m/Live Albums/b.mp3',
+      '/m/aXb/d.mp3',
+      '/m/100x/f.mp3',
+    });
+  });
+
+  test('nested exclusions, and ones equal to or outside the root', () {
+    final result = applyWalkRules(
+      walk,
+      root,
+      const WalkRules(
+        excludedPaths: ['/m/quiet', '/m/quiet/deep', '/m', '/x/m/loud'],
+      ),
+    );
+
+    expect(paths(result), {'/m/a.mp3', '/m/loud/d.mp3'});
+    expect(result.dirs, ['/m', '/m/loud']);
+  });
+
   test('files under the minimum size are dropped and counted', () {
     final result = applyWalkRules(
       walk,

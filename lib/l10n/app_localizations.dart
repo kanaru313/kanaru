@@ -2191,6 +2191,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lower the gain when a boost would distort the loudest peaks.'**
   String get settingsAudioPreventClippingHint;
+
+  /// Title of the excluded folders setting
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded folders'**
+  String get excludedFoldersTitle;
+
+  /// Explains what excluding a folder does
+  ///
+  /// In en, this message translates to:
+  /// **'Folders inside your music folders that Kanaru skips. Songs in them leave the library. Files are never deleted.'**
+  String get excludedFoldersHint;
+
+  /// Button that picks a folder to exclude
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude folder'**
+  String get excludedFoldersAdd;
+
+  /// Tooltip of the button that stops excluding a folder
+  ///
+  /// In en, this message translates to:
+  /// **'Stop excluding'**
+  String get excludedFoldersRemove;
+
+  /// Note on an excluded folder that is not below any library folder
+  ///
+  /// In en, this message translates to:
+  /// **'Not inside a music folder, so it has no effect'**
+  String get excludedFoldersNotInLibrary;
+
+  /// Note on an excluded folder that no longer exists
+  ///
+  /// In en, this message translates to:
+  /// **'Folder not found'**
+  String get excludedFoldersMissing;
+
+  /// Shown when the folder to exclude is a library folder
+  ///
+  /// In en, this message translates to:
+  /// **'That is a music folder. Remove it from the folders above instead.'**
+  String get excludedFoldersSameAsRoot;
+
+  /// Shown when the folder to exclude is not below a library folder
+  ///
+  /// In en, this message translates to:
+  /// **'That folder is not inside a music folder.'**
+  String get excludedFoldersOutsideLibrary;
+
+  /// Shown when the folder is already excluded
+  ///
+  /// In en, this message translates to:
+  /// **'That folder is already excluded.'**
+  String get excludedFoldersAlreadyExcluded;
 }
 
 class _AppLocalizationsDelegate

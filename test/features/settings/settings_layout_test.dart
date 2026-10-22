@@ -185,9 +185,9 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(20),
+    hasLength(21),
     reason:
-        'seven buttons, four choices and nine dropdowns: the output device, '
+        'eight buttons, four choices and nine dropdowns: the output device, '
         'ReplayGain mode, preamp and two scan filters are wired, six options '
         'are not yet',
   );

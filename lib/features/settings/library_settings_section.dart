@@ -11,6 +11,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
+import 'excluded_folders_list.dart';
 import 'library_folders_list.dart';
 import 'library_scan_setting_rows.dart';
 import 'library_stats_row.dart';
@@ -38,6 +39,7 @@ class LibrarySettingsSection extends ConsumerWidget {
       children: [
         const LibraryStatsRow(),
         const LibraryFoldersList(),
+        const ExcludedFoldersList(),
         SettingRow.single(
           title: l10n.settingsRescanOnStartup,
           subtitle: l10n.settingsRescanOnStartupHint,

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../database/excluded_folder_queries.dart';
 import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_root_queries.dart';
@@ -177,7 +178,6 @@ class LibraryIndexer extends Notifier<IndexerState> {
       ref.read(coverCacheDirectoryProvider),
     );
     final scanStartedAt = DateTime.now();
-    final rules = ScanRules.from(ref.read(settingsProvider).libraryScan);
     var added = 0, updated = 0, removed = 0, failedTags = 0, filtered = 0;
     int? coversRepaired;
     // Roots scanned to the end, without error: their covers are made next.
@@ -191,6 +191,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
     var walkTime = Duration.zero, tagTime = Duration.zero;
     var dbTime = Duration.zero;
     try {
+      // Read inside the try: a scan without the exclusions would bring back
+      // the tracks the user left out, so a failed read fails the scan.
+      final rules = ScanRules.from(
+        ref.read(settingsProvider).libraryScan,
+        excluded: await db.excludedFolderPaths(),
+      );
       if (coverDir != null) {
         coversRepaired = await _coverStep(
           'repair',

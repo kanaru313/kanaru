@@ -661,5 +661,23 @@
     }
   },
   "settingsAudioPreventClipping": "Prevent clipping",
-  "settingsAudioPreventClippingHint": "Lower the gain when a boost would distort the loudest peaks."
+  "settingsAudioPreventClippingHint": "Lower the gain when a boost would distort the loudest peaks.",
+  "excludedFoldersTitle": "Excluded folders",
+  "@excludedFoldersTitle": { "description": "Title of the excluded folders setting" },
+  "excludedFoldersHint": "Folders inside your music folders that Kanaru skips. Songs in them leave the library. Files are never deleted.",
+  "@excludedFoldersHint": { "description": "Explains what excluding a folder does" },
+  "excludedFoldersAdd": "Exclude folder",
+  "@excludedFoldersAdd": { "description": "Button that picks a folder to exclude" },
+  "excludedFoldersRemove": "Stop excluding",
+  "@excludedFoldersRemove": { "description": "Tooltip of the button that stops excluding a folder" },
+  "excludedFoldersNotInLibrary": "Not inside a music folder, so it has no effect",
+  "@excludedFoldersNotInLibrary": { "description": "Note on an excluded folder that is not below any library folder" },
+  "excludedFoldersMissing": "Folder not found",
+  "@excludedFoldersMissing": { "description": "Note on an excluded folder that no longer exists" },
+  "excludedFoldersSameAsRoot": "That is a music folder. Remove it from the folders above instead.",
+  "@excludedFoldersSameAsRoot": { "description": "Shown when the folder to exclude is a library folder" },
+  "excludedFoldersOutsideLibrary": "That folder is not inside a music folder.",
+  "@excludedFoldersOutsideLibrary": { "description": "Shown when the folder to exclude is not below a library folder" },
+  "excludedFoldersAlreadyExcluded": "That folder is already excluded.",
+  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" }
 }
