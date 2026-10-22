@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_favorites.dart';
+import 'package:kanaru/core/database/playlist_providers.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_actions.dart';
@@ -11,6 +12,7 @@ import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
+import '../../core/stats/gated_query_interceptor.dart';
 import '../library/library_test_harness.dart';
 import '../playlists/playlist_test_data.dart';
 
@@ -115,6 +117,61 @@ void main() {
 
     expect(await stored(tester, path), isFalse);
     expect(iconButton(tester, heart).isSelected, isFalse);
+  });
+
+  testWidgets('a press on the next song during a write is written too', (
+    tester,
+  ) async {
+    final gate = GatedQueryInterceptor();
+    h = LibraryHarness(refreshInterval: Duration.zero, interceptor: gate);
+    await openApp(tester, h, ['a', 'b']);
+    final paths = await trackPaths(tester, h);
+    await settleDb(tester);
+    await play(tester, Track(uri: paths['a']!, title: 'a'));
+    final heart = heartIn(PlayerBar);
+
+    // Hold the write for a while the song changes and b is liked.
+    final release = gate.holdNext('SELECT 1 FROM playlist_entries e');
+    await tester.tap(heart);
+    await settleDb(tester);
+    expect(gate.count('SELECT 1 FROM playlist_entries e'), 1);
+    await play(tester, Track(uri: paths['b']!, title: 'b'));
+    expect(iconButton(tester, heart).isSelected, isFalse);
+    await tester.tap(heart);
+    await tester.pump();
+    expect(iconButton(tester, heart).isSelected, isTrue);
+    // Not read back here: a read would wait behind the held write.
+
+    release();
+    await settleDb(tester);
+    await settleDb(tester);
+
+    expect(await stored(tester, paths['a']!), isTrue);
+    expect(await stored(tester, paths['b']!), isTrue);
+    expect(iconButton(tester, heart).isSelected, isTrue);
+  });
+
+  testWidgets('a favorites read error leaves the heart usable', (tester) async {
+    h = LibraryHarness(
+      refreshInterval: Duration.zero,
+      overrides: [
+        favoritePathsProvider.overrideWith(
+          (ref) => Stream<Set<String>>.error(StateError('read failed')),
+        ),
+      ],
+    );
+    await openApp(tester, h, ['a']);
+    final path = (await trackPaths(tester, h))['a']!;
+    await settleDb(tester);
+    await play(tester, Track(uri: path, title: 'a'));
+    final heart = heartIn(PlayerBar);
+    expect(iconButton(tester, heart).onPressed, isNotNull);
+
+    await tester.tap(heart);
+    await settleDb(tester);
+
+    expect(await stored(tester, path), isTrue);
+    expect(iconButton(tester, heart).isSelected, isTrue);
   });
 
   testWidgets('a song outside the library cannot be liked', (tester) async {

@@ -142,6 +142,40 @@ file://${p('music/sub/b')}%00.mp3
     );
   });
 
+  test('reads a file larger than one read, byte for byte', () async {
+    // Three reads of 1 MiB plus a tail: the loop must join them all.
+    final bytes = List<int>.generate(3 * 1024 * 1024 + 7, (i) => i % 251);
+    final file = File(p('large.m3u'));
+    await file.writeAsBytes(bytes);
+
+    expect(await readM3uBytes(file.path), bytes);
+  });
+
+  test('a file of exactly the cap is read, one byte more is not', () async {
+    final file = File(p('cap.m3u'));
+    await file.writeAsBytes(List.filled(10, 0x41));
+    expect(await readM3uBytes(file.path, maxBytes: 10), hasLength(10));
+
+    await file.writeAsBytes(List.filled(11, 0x41));
+    await expectLater(
+      readM3uBytes(file.path, maxBytes: 10),
+      throwsA(
+        isA<M3uReadException>().having(
+          (e) => e.error,
+          'error',
+          M3uReadError.tooLarge,
+        ),
+      ),
+    );
+  });
+
+  test('a file that reports size 0 is still read to the end', () async {
+    // procfs reports 0 for its files, as some network mounts do.
+    final bytes = await readM3uBytes('/proc/self/status');
+    expect(bytes, isNotEmpty);
+    expect(String.fromCharCodes(bytes), contains('Name:'));
+  }, skip: Platform.isLinux ? false : 'procfs is Linux only');
+
   test('cancelling stops the import', () async {
     final path = await m3u('../music/a.flac\n../music/sub/b.mp3\n');
     var calls = 0;

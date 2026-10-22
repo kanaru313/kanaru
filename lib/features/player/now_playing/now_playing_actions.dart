@@ -109,8 +109,11 @@ class _NowPlayingFavoriteButtonState
   @override
   Widget build(BuildContext context) {
     final path = _currentPath(ref);
-    // Until the favorites have loaded, a press could like a liked song again.
-    final loaded = ref.watch(favoritePathsProvider.select((s) => s.hasValue));
+    // While the favorites load, a press could like a liked song again. A read
+    // error does not block the heart: the writes set a state, never toggle.
+    final loaded = ref.watch(
+      favoritePathsProvider.select((s) => s.hasValue || s.hasError),
+    );
     final enabled =
         path != null && loaded && ref.watch(libraryDatabaseProvider) != null;
     final stored =

@@ -1,9 +1,13 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 /// Largest M3U file read: far above any real playlist (50 000 lines of
 /// 300 bytes is 15 MB), small enough to hold in memory.
 const m3uMaxBytes = 16 * 1024 * 1024;
+
+/// Bytes asked for per read while loading an M3U file.
+const _readChunkBytes = 1024 * 1024;
 
 /// Why an M3U file could not be read.
 enum M3uReadError {
@@ -49,26 +53,25 @@ Future<Uint8List> readM3uBytes(
   RandomAccessFile? handle;
   try {
     handle = await File(path).open();
-    final length = await handle.length();
-    if (length > maxBytes) throw const M3uReadException(M3uReadError.tooLarge);
-    // One byte more than the length tells a file that grew since; a read may
-    // return fewer bytes than asked (network and FUSE mounts), so loop.
-    final buffer = Uint8List(length + 1);
-    var filled = 0;
-    while (filled < buffer.length) {
-      final read = await handle.readInto(buffer, filled);
-      if (read == 0) break;
-      filled += read;
+    if (await handle.length() > maxBytes) {
+      throw const M3uReadException(M3uReadError.tooLarge);
     }
-    if (filled > length) {
-      // Grown after the length was read: read on, still capped.
-      final rest = await handle.read(maxBytes + 1 - filled);
-      if (filled + rest.length > maxBytes) {
-        throw const M3uReadException(M3uReadError.tooLarge);
-      }
-      return Uint8List.fromList([...buffer, ...rest]);
+    // Read to the end instead of trusting the length: a read may return
+    // fewer bytes than asked (network and FUSE mounts), some mounts report
+    // size 0, and the file may grow meanwhile. One byte past the cap tells a
+    // file that is too large.
+    final bytes = BytesBuilder(copy: false);
+    while (bytes.length <= maxBytes) {
+      final chunk = await handle.read(
+        math.min(_readChunkBytes, maxBytes + 1 - bytes.length),
+      );
+      if (chunk.isEmpty) break;
+      bytes.add(chunk);
     }
-    return Uint8List.sublistView(buffer, 0, filled);
+    if (bytes.length > maxBytes) {
+      throw const M3uReadException(M3uReadError.tooLarge);
+    }
+    return bytes.takeBytes();
   } on FileSystemException {
     throw const M3uReadException(M3uReadError.unreadable);
   } finally {
