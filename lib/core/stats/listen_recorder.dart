@@ -56,6 +56,7 @@ class ListenRecorder {
   /// Follows the player. Cheap: O(1) per state, no awaiting.
   void onState(PlayerState? previous, PlayerState next) {
     _last = next;
+    if (next.stopped) _switchedOffMarker = null;
     if (!_recording || _disposed || _clearing != null) return;
     final track = next.queue.current;
     if (next.stopped || track == null) {
@@ -84,9 +85,7 @@ class ListenRecorder {
     if (!enabled) {
       final open = _current;
       _end();
-      final counted =
-          open?.row == PlayRow.pending || open?.row == PlayRow.stored;
-      _switchedOffMarker = counted ? open!.marker : null;
+      _switchedOffMarker = open != null && _hasRow(open) ? open.marker : null;
       return;
     }
     final state = _last;
@@ -120,6 +119,9 @@ class ListenRecorder {
     return _clearing = cleared;
   }
 
+  static bool _hasRow(ListenPlaythrough p) =>
+      p.row == PlayRow.pending || p.row == PlayRow.stored;
+
   void _restart() {
     final state = _last;
     if (state != null) onState(null, state);
@@ -135,6 +137,8 @@ class ListenRecorder {
         state != null &&
         !state.stopped &&
         state.playthrough == open.marker;
+    // Switched off while the delete ran: the switch-on must skip this play.
+    if (!_recording && _hasRow(open)) _switchedOffMarker = open.marker;
     _current = open;
     if (!playing) _end();
   }

@@ -427,6 +427,21 @@ void main() {
       expect(await plays(), hasLength(2));
     });
 
+    test(
+      'a stop and replay while off is counted after the switch on',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        recorder.setEnabled(false);
+        sim.stop();
+        sim.resume();
+        recorder.setEnabled(true);
+        sim.listen(90);
+
+        expect(await plays(), hasLength(2));
+      },
+    );
+
     test('stop and play after the switch counts the track again', () async {
       sim.open(trackA);
       sim.listen(100);
@@ -587,6 +602,24 @@ void main() {
 
         expect(await cleared, 1);
         expect(await plays(), isEmpty);
+      },
+    );
+
+    test(
+      'off during a failing delete, then on, is not a second play',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+
+        gate.failNext('DELETE FROM');
+        final cleared = recorder.clearHistory();
+        recorder.setEnabled(false);
+        expect(await cleared, isNull);
+        recorder.setEnabled(true);
+        sim.listen(90);
+
+        expect(await plays(), hasLength(1));
       },
     );
   });
