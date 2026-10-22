@@ -128,3 +128,52 @@ class TrackArtists extends Table {
   @override
   Set<Column> get primaryKey => {artistKey, trackId};
 }
+
+/// Colors extracted from a cover thumbnail, keyed like the thumbnail itself.
+/// Derived data: a rescan or a later pass can rebuild every row.
+///
+/// - [coverKey] is a `tracks.cover_key` value (the blake3 of the original
+///   image, see [Tracks.coverKey]). No foreign key: one key serves many
+///   tracks.
+/// - [seed] is the ARGB color as an unsigned 32-bit integer
+///   (0..0xFFFFFFFF). `0` (alpha 0) means the cover has no usable accent
+///   color (it is grey): the app falls back to the system accent.
+/// - [palette] is lowercase 8-digit ARGB hex values joined by commas, most
+///   important first; it must match `^[0-9a-f]{8}(,[0-9a-f]{8}){0,7}$`. A row
+///   whose palette does not match counts as missing and is overwritten once.
+/// - [algoVersion] is `revision * 100000 + thumbnail size` (the constant is
+///   defined by the color extraction code). A row whose [algoVersion]
+///   differs from the current one counts as missing.
+///
+/// Orphans are removed with
+/// `DELETE FROM cover_colors WHERE cover_key NOT IN
+/// (SELECT cover_key FROM tracks WHERE cover_key IS NOT NULL)`. The
+/// `IS NOT NULL` is required: `tracks.cover_key` is nullable, and one NULL in
+/// the subquery makes `NOT IN` NULL for every row, so nothing is deleted.
+/// Rows are not removed when only a thumbnail file is missing (its key does
+/// not change).
+@DataClassName('CoverColor')
+class CoverColors extends Table {
+  TextColumn get coverKey => text()();
+  IntColumn get seed => integer()();
+  TextColumn get palette => text()();
+  IntColumn get algoVersion => integer()();
+
+  @override
+  Set<Column> get primaryKey => {coverKey};
+}
+
+/// Folders the scan skips, with everything under them. User configuration,
+/// not scan output: a library reset keeps these rows.
+///
+/// [path] is canonical like [LibraryRoots.path] (symlinks resolved, no
+/// trailing slash). Match files and folders against it with
+/// `isSameOrInside` (`lib/core/indexer/root_path.dart`), never `LIKE` or a
+/// plain prefix test. No foreign key to `library_roots`: removing or
+/// replacing a root keeps its exclusions.
+@DataClassName('ExcludedFolder')
+class ExcludedFolders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get path => text().unique()();
+  IntColumn get addedAt => integer()();
+}

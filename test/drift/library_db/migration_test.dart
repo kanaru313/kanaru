@@ -7,6 +7,7 @@ import 'package:kanaru/core/database/library_keys_backfill.dart';
 import 'package:kanaru/core/database/library_migration_v3.dart';
 import 'package:kanaru/core/database/library_migration_v4.dart';
 import 'package:kanaru/core/database/library_migration_v5.dart';
+import 'package:kanaru/core/database/library_migration_v6.dart';
 import 'package:kanaru/core/database/text_keys.dart';
 import 'package:kanaru/core/database/library_database.steps.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -621,6 +622,109 @@ void main() {
       expect(await stats(db, '/m/1.flac'), [
         [1, 10, 10],
       ]);
+    });
+  });
+
+  group('v5 to v6', () {
+    Future<void> insertV5Data(GeneratedDatabase db) async {
+      for (final sql in [
+        "INSERT INTO library_roots (id, path, added_at) VALUES (1, '/m', 1)",
+        'INSERT INTO tracks (id, root_id, path, mtime_ms, size_bytes, title, '
+            'added_at, updated_at, title_sort, cover_key) '
+            "VALUES (1, 1, '/m/1.flac', 1, 1, 'Halo', 1, 1, 'halo', 'ab/c')",
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 10)",
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 20)",
+        "INSERT INTO playlists (id, name, created_at) VALUES (1, 'Mix', 5)",
+        'INSERT INTO playlist_entries (playlist_id, path, position) '
+            "VALUES (1, '/m/1.flac', 0), (1, '/m/gone.flac', 1)",
+      ]) {
+        await db.customStatement(sql);
+      }
+    }
+
+    Future<int> count(GeneratedDatabase db, String table) async =>
+        (await db.customSelect('SELECT COUNT(*) AS n FROM $table').getSingle())
+            .read<int>('n');
+
+    Future<void> expectV5DataKept(GeneratedDatabase db) async {
+      expect(await count(db, 'library_roots'), 1);
+      expect(await count(db, 'tracks'), 1);
+      expect(await count(db, 'plays'), 2);
+      expect(await count(db, 'playlist_entries'), 2);
+      final stats = await db
+          .customSelect('SELECT play_count FROM play_stats')
+          .getSingle();
+      expect(stats.read<int>('play_count'), 2);
+      final playlist = await db
+          .customSelect('SELECT name, kind FROM playlists')
+          .getSingle();
+      expect(playlist.read<String>('name'), 'Mix');
+      expect(playlist.read<String?>('kind'), isNull);
+      expect(await count(db, 'cover_colors'), 0);
+      expect(await count(db, 'excluded_folders'), 0);
+    }
+
+    test('keeps user data, adds empty tables and a null kind', () async {
+      final schema = await verifier.schemaAt(5);
+      final old = v5.DatabaseAtV5(schema.newConnection());
+      await insertV5Data(old);
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 6);
+      await expectV5DataKept(db);
+
+      // The play_stats triggers still run after the step.
+      await db.customStatement(
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 30)",
+      );
+      final stats = await db
+          .customSelect('SELECT play_count, last_played_at FROM play_stats')
+          .getSingle();
+      expect(stats.read<int>('play_count'), 3);
+      expect(stats.read<int>('last_played_at'), 30);
+
+      // The partial unique index exists on the upgraded file.
+      await db.customStatement(
+        "INSERT INTO playlists (name, created_at, kind) "
+        "VALUES ('Favorites', 6, 'favorites')",
+      );
+      await expectLater(
+        db.customStatement(
+          "INSERT INTO playlists (name, created_at, kind) "
+          "VALUES ('Again', 7, 'favorites')",
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test('runs again on a half-migrated file and on a migrated one', () async {
+      final schema = await verifier.schemaAt(5);
+      final old = v5.DatabaseAtV5(schema.newConnection());
+      await insertV5Data(old);
+      // A crashed earlier attempt: one new table exists; the column and the
+      // index do not, and the version was never written.
+      await old.customStatement(
+        'CREATE TABLE cover_colors (cover_key TEXT NOT NULL, '
+        'seed INTEGER NOT NULL, palette TEXT NOT NULL, '
+        'algo_version INTEGER NOT NULL, PRIMARY KEY (cover_key))',
+      );
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 6);
+      await expectV5DataKept(db);
+
+      // Once more on the finished schema.
+      await migrateLibraryToSchema6(
+        db,
+        db.createMigrator(),
+        Schema6(database: db),
+      );
+      await verifier.migrateAndValidate(db, 6);
+      await expectV5DataKept(db);
     });
   });
 }

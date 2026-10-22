@@ -276,7 +276,7 @@ Reset targets: `make reset-library`, `make reset-covers`, `make reset-all` (see 
 
 ## 7. Library database schema
 
-drift, `schemaVersion = 5`, file `library.db`. Times are epoch milliseconds. Browse queries are raw SQL (`customSelect`) that read `tracks`; there are no `albums` or `artists` tables. Albums and artists are `GROUP BY` over the text keys. Schema 5 adds the user-data tables `plays`, `play_stats`, `playlists` and `playlist_entries`: data a scan cannot rebuild (see [User data](#user-data)).
+drift, `schemaVersion = 6`, file `library.db`. Times are epoch milliseconds. Browse queries are raw SQL (`customSelect`) that read `tracks`; there are no `albums` or `artists` tables. Albums and artists are `GROUP BY` over the text keys. Schema 5 adds the user-data tables `plays`, `play_stats`, `playlists` and `playlist_entries`: data a scan cannot rebuild (see [User data](#user-data)). Schema 6 adds `cover_colors` (colors extracted from cover thumbnails, rebuildable), `excluded_folders` (folders the scan skips, user configuration) and `playlists.kind` (see [Playlist kinds](#playlist-kinds)).
 
 ```mermaid
 erDiagram
@@ -347,12 +347,24 @@ erDiagram
         int id PK
         text name "not unique"
         int created_at
+        text kind "null = ordinary, favorites = at most one row"
     }
     PLAYLIST_ENTRIES {
         int id PK
         int playlist_id FK "cascade delete"
         text path "= tracks.path, no FK"
         int position "dense 0..n-1, not unique"
+    }
+    COVER_COLORS {
+        text cover_key PK "= tracks.cover_key, no FK"
+        int seed "ARGB, 0 = no usable accent"
+        text palette "ARGB hex, comma-separated"
+        int algo_version
+    }
+    EXCLUDED_FOLDERS {
+        int id PK
+        text path UK "canonical, no FK to roots"
+        int added_at
     }
     LIBRARY_ROOTS ||--o{ TRACKS : "root_id"
     TRACKS ||--o{ TRACK_ARTISTS : "track_id"
@@ -361,11 +373,12 @@ erDiagram
     PLAYS }o--|| PLAY_STATS : "kept by triggers"
     PLAYLISTS ||--o{ PLAYLIST_ENTRIES : "playlist_id"
     TRACKS |o..o{ PLAYLIST_ENTRIES : "matched by path"
+    TRACKS }o..o| COVER_COLORS : "matched by cover_key"
 ```
 
 Only the main columns are shown; the library tables are in `lib/core/database/library_tables.dart` and the user-data tables in `lib/core/database/user_data_tables.dart`.
 
-Indexes: `tracks_root(root_id)`, `tracks_title_sort(title_sort, id)`, `tracks_album_key(album_artist_key, album_title_key)`, `tracks_keys_version(keys_version)`, `track_artists_track(track_id)`, `plays_path_played(path, played_at)`, `plays_played_at(played_at, path)` (covers date-range aggregates), `playlist_entries_order(playlist_id, position)`. Full-text index: `track_search`, a virtual table (see [Full-text search](#full-text-search)). Triggers on `plays` in `listen_history.drift`: `plays_stats_insert`, `plays_stats_delete`, `plays_stats_update`; they are the only writers of `play_stats`.
+Indexes: `tracks_root(root_id)`, `tracks_title_sort(title_sort, id)`, `tracks_album_key(album_artist_key, album_title_key)`, `tracks_keys_version(keys_version)`, `track_artists_track(track_id)`, `plays_path_played(path, played_at)`, `plays_played_at(played_at, path)` (covers date-range aggregates), `playlist_entries_order(playlist_id, position)`, `playlists_favorites_unique` (partial unique: `ON playlists (kind) WHERE kind = 'favorites'`). Full-text index: `track_search`, a virtual table (see [Full-text search](#full-text-search)). Triggers on `plays` in `listen_history.drift`: `plays_stats_insert`, `plays_stats_delete`, `plays_stats_update`; they are the only writers of `play_stats`.
 
 Writes and reads:
 
@@ -377,7 +390,7 @@ Writes and reads:
 | Songs paging | IDs come from `group_concat`; pages of 200; `songsByIds` in chunks of 200 keeps order; `songQueueFrom(trackId)` reads in one transaction. |
 | Ordering | Songs: NULLs last in both directions, ties by `title_sort`, `id`. Albums and artists are sorted in Dart by code point, matching the database. |
 | Text keys | Pure Dart (`text_keys.dart`, generated tables in `text_key_tables.dart`). `textKeysVersion = 2` (version 2 added the search columns). Stale rows are re-keyed in place when few (≤ 500), or in a background isolate. Conditional writes let a concurrent scan win. |
-| Migrations | Step-by-step (`library_database.steps.dart`). v1 → v2 adds cover columns; v2 → v3 is schema-only and re-runnable (`library_migration_v3.dart`). v3 → v4 adds the four search columns, creates `track_search` and its triggers, and runs one index `rebuild` (`library_migration_v4.dart`). Values are filled by the background key backfill. v4 → v5 creates the four user-data tables, their indexes and the `play_stats` triggers in one transaction; `plays` starts empty, so there is no backfill (`library_migration_v5.dart`, re-runnable). |
+| Migrations | Step-by-step (`library_database.steps.dart`). v1 → v2 adds cover columns; v2 → v3 is schema-only and re-runnable (`library_migration_v3.dart`). v3 → v4 adds the four search columns, creates `track_search` and its triggers, and runs one index `rebuild` (`library_migration_v4.dart`). Values are filled by the background key backfill. v4 → v5 creates the four user-data tables, their indexes and the `play_stats` triggers in one transaction; `plays` starts empty, so there is no backfill (`library_migration_v5.dart`, re-runnable). v5 → v6 creates `cover_colors` and `excluded_folders`, adds `playlists.kind` (NULL for existing playlists) and the partial index, in one transaction, no backfill (`library_migration_v6.dart`, re-runnable). |
 | Full-text index | External-content FTS5 table `track_search` over `title_sort`, `artist_search`, `album_search`, `album_artist_search`, `genre_search`; `unicode61 remove_diacritics 0`, prefixes 1 to 3. The three triggers in `library_search.drift` are its only writers; Dart never writes it. They fire on insert, on delete (including a root cascade), and on update of an indexed column whose value changed. `recursive_triggers` is on, so `REPLACE` deletes fire too. |
 | Search query | `searchTerms` splits the query into words folded like the columns; each becomes `"word"*` and all are required. Songs: `bm25` with weights 20, 2, 1.5, 1, 0.5 in column order, then `title_sort`, `id` (weighted, not strict). One-character single-word queries order by `title_sort`, `id`. One statement returns at most 200 songs and the total match count. Albums and artists are filtered in Dart over `albums()` and `artistCredits()` with the same terms (`SearchNameIndex`). A corrupt index is rebuilt once per database and the search retried. |
 | Listen history | `plays` is a log: `path` and `played_at` do not change in normal use; only the recorder sets `listened_ms` of the play it is recording, coarsely (pause, stop, track end, reaching the count threshold), not per tick: drift cannot see the trigger's `WHEN` filter, so every `plays` update re-runs all `play_stats` watchers. Stats are kept by triggers, never by Dart. Range aggregates read `plays`. Details in [User data](#user-data). |
@@ -408,7 +421,18 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Writing `plays` | Use drift APIs or `customUpdate(updates: {plays})`, so `.watch()` on `play_stats` refreshes. A bare `customStatement` does not notify watchers. |
 | Playlist order | `position` is `0..n-1` per playlist, not unique. Writers renumber inside one transaction; readers order by `position, id`. The same path may appear more than once; each entry's `id` is its identity. |
 | Playlist cover | Computed, nothing is stored: the first up to 4 distinct non-null cover keys among the first 64 covered entries by position (tracks of one album share a cover, so repeats count once). |
-| Reset | A library reset deletes roots and tracks, never the file. **Gap:** `make reset-library` still removes the whole data directory, these tables included (`Makefile`, [deployment-guide.md](./deployment-guide.md#reset-targets)). Fix before any UI writes history or playlists. |
+| Reset | A library reset deletes roots and tracks, never the file. `make reset-library` runs `packaging/dev/reset-library.sql`: it removes `library_roots`, `tracks`, `track_artists` and `cover_colors` (scan output) and keeps the user-data tables and `excluded_folders` (user configuration). The target refuses a database below schema 6. |
+
+### Playlist kinds
+
+`playlists.kind` (invariant 8 in `user_data_tables.dart`): NULL is an ordinary playlist; `'favorites'` is the Favorites playlist, at most one row, enforced by the partial unique index `playlists_favorites_unique`; `'queue'` is reserved and may repeat. Writers store no other value; readers treat an unknown kind as ordinary. Favorites is created lazily, never seeded: in one transaction, `INSERT OR IGNORE` (drift `InsertMode.insertOrIgnore`) and then `SELECT id FROM playlists WHERE kind = 'favorites'`. `insertReturning` is not used (an ignored insert returns no row) and neither is `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects for a partial index). Favorites entries follow the same path, order and no-foreign-key rules as any playlist.
+
+### Scan-side tables
+
+| Table | Rule |
+|---|---|
+| `cover_colors` | Keyed by `tracks.cover_key`, no foreign key (one key serves many tracks). `seed` is ARGB as an unsigned 32-bit integer; `0` (alpha 0) means the cover has no usable accent color (grey) and the app falls back to the system accent. `palette` matches `^[0-9a-f]{8}(,[0-9a-f]{8}){0,7}$`, most important first; a row that does not match counts as missing. `algo_version` is `revision * 100000 + thumbnail size` (constant owned by the color extraction code); a different value counts as missing. Orphans are removed with `DELETE FROM cover_colors WHERE cover_key NOT IN (SELECT cover_key FROM tracks WHERE cover_key IS NOT NULL)`: without `IS NOT NULL` one NULL `cover_key` makes `NOT IN` delete nothing. |
+| `excluded_folders` | Canonical paths like `library_roots.path`, unique, no foreign key to roots (removing or replacing a root keeps its exclusions). Match with `isSameOrInside` (`core/indexer/root_path.dart`), never `LIKE`. |
 
 Planned schema work: collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md). Playlists (PL-01, PL-02) read and write the v5 tables, see [Playlists](#playlists). Favorites and M3U (PL-03 to PL-05) and listen history (STAT-01, STAT-10, and the history views) are not in the code yet.
 

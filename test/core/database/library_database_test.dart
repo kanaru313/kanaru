@@ -166,7 +166,7 @@ void main() {
     final row = await db.select(db.tracks).getSingle();
     expect(row.coverKey, isNull);
     expect(row.coverScanVersion, 0);
-    expect(db.schemaVersion, 5);
+    expect(db.schemaVersion, 6);
   });
 
   group('cover keys', () {
