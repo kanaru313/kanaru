@@ -1,0 +1,37 @@
+import 'user_data_tables.dart';
+
+-- Keeps `play_stats` equal to
+-- SELECT path, COUNT(*), MIN(played_at), MAX(played_at) FROM plays GROUP BY path.
+-- The insert side is an UPSERT on purpose: an `INSERT OR ...` inside a trigger
+-- takes the outer statement's conflict policy, an ON CONFLICT clause does not.
+CREATE TRIGGER plays_stats_insert AFTER INSERT ON plays BEGIN
+  INSERT INTO play_stats (path, play_count, first_played_at, last_played_at)
+    VALUES (new.path, 1, new.played_at, new.played_at)
+    ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1,
+      first_played_at = min(first_played_at, excluded.first_played_at),
+      last_played_at = max(last_played_at, excluded.last_played_at);
+END;
+
+CREATE TRIGGER plays_stats_delete AFTER DELETE ON plays BEGIN
+  UPDATE play_stats SET play_count = play_count - 1,
+    first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at),
+    last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at)
+  WHERE path = old.path;
+  DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;
+END;
+
+-- Fires only when a key value really changes (drift's replace()/upsert name
+-- every column).
+CREATE TRIGGER plays_stats_update AFTER UPDATE OF path, played_at ON plays
+WHEN old.path IS NOT new.path OR old.played_at IS NOT new.played_at BEGIN
+  UPDATE play_stats SET play_count = play_count - 1,
+    first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at),
+    last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at)
+  WHERE path = old.path;
+  DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;
+  INSERT INTO play_stats (path, play_count, first_played_at, last_played_at)
+    VALUES (new.path, 1, new.played_at, new.played_at)
+    ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1,
+      first_played_at = min(first_played_at, excluded.first_played_at),
+      last_played_at = max(last_played_at, excluded.last_played_at);
+END;
