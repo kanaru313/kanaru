@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart' hide RepeatMode;
 import '../../core/player/player_service.dart';
 import '../../core/player/repeat_mode.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// Icon size of the player bar's buttons; play/pause is larger.
 const playerIconSize = 28.0;
@@ -59,21 +60,21 @@ class PlaybackControls extends ConsumerWidget {
       children: [
         if (!compact) ...[
           IconButton(
-            icon: const Icon(Icons.shuffle_rounded),
+            icon: const Icon(AppIcons.shuffle),
             iconSize: modeSize,
             tooltip: l10n.playerShuffle,
             isSelected: shuffled,
             onPressed: when(player.toggleShuffle),
           ),
           IconButton(
-            icon: const Icon(Icons.skip_previous_rounded),
+            icon: const Icon(AppIcons.skipPrevious),
             iconSize: skipSize,
             tooltip: l10n.playerPrevious,
             onPressed: hasPrevious ? player.previous : null,
           ),
         ],
         IconButton.filledTonal(
-          icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+          icon: Icon(playing ? AppIcons.pause : AppIcons.playRounded),
           iconSize: spread ? 40 : 36,
           style: spread
               ? IconButton.styleFrom(minimumSize: const Size.square(60))
@@ -82,7 +83,7 @@ class PlaybackControls extends ConsumerWidget {
           onPressed: when(player.playPause),
         ),
         IconButton(
-          icon: const Icon(Icons.skip_next_rounded),
+          icon: const Icon(AppIcons.skipNext),
           iconSize: skipSize,
           tooltip: l10n.playerNext,
           onPressed: hasNext ? player.next : null,
@@ -90,9 +91,7 @@ class PlaybackControls extends ConsumerWidget {
         if (!compact)
           IconButton(
             icon: Icon(
-              repeat == RepeatMode.one
-                  ? Icons.repeat_one_rounded
-                  : Icons.repeat_rounded,
+              repeat == RepeatMode.one ? AppIcons.repeatOne : AppIcons.repeat,
             ),
             iconSize: modeSize,
             tooltip: switch (repeat) {

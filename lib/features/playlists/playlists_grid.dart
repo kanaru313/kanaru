@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/playlist_cover.dart';
 
@@ -52,7 +53,7 @@ class PlaylistsGrid extends StatelessWidget {
     final l10n = context.l10n;
     if (cards.isEmpty) {
       return EmptyState(
-        icon: Icons.queue_music,
+        icon: AppIcons.queue,
         title: l10n.sidebarNoPlaylists,
         message: l10n.playlistsEmptyMessage,
         action: emptyAction,

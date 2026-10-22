@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../top_bar.dart';
 import 'desktop_window.dart';
 import 'window_drag_area.dart';
@@ -48,19 +49,19 @@ class _WindowButtonsState extends State<WindowButtons> with WindowListener {
         spacing: 8,
         children: [
           TopBarButton(
-            icon: Icons.remove,
+            icon: AppIcons.remove,
             tooltip: l10n.windowMinimize,
             iconSize: 16,
             onPressed: windowManager.minimize,
           ),
           TopBarButton(
-            icon: _maximized ? Icons.filter_none : Icons.crop_square,
+            icon: _maximized ? AppIcons.windowRestore : AppIcons.windowMaximize,
             tooltip: _maximized ? l10n.windowRestore : l10n.windowMaximize,
             iconSize: 16,
             onPressed: toggleMaximize,
           ),
           TopBarButton(
-            icon: Icons.close,
+            icon: AppIcons.close,
             tooltip: l10n.windowClose,
             iconSize: 16,
             onPressed: windowManager.close,

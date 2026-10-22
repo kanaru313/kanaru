@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/player/player_service.dart';
 import '../../core/player/unavailable_audio_backend.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// Tells the user playback is off because the audio engine (libmpv) was not
 /// found. Shown exactly while the active backend is the stand-in, so it also
@@ -25,7 +26,7 @@ class PlaybackUnavailableBanner extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            Icon(Icons.volume_off, color: colors.onErrorContainer),
+            Icon(AppIcons.volumeOff, color: colors.onErrorContainer),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

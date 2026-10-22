@@ -27,6 +27,7 @@ Rules that follow from it:
 
 - **Use `package:material_ui/material_ui.dart`**, not `package:flutter/material.dart`. 87 files import `material_ui`; none import `flutter/material.dart`. Import `flutter/widgets.dart` or `flutter/services.dart` only where the widget library is not enough.
 - **Theme** lives in `lib/app/theme.dart`. Use theme tokens and `Theme.of(context)`; avoid hard-coded colors outside the placeholder palette (`shared/widgets/placeholder_colors.dart`).
+- **Icons go through `AppIcons`** (`lib/shared/icons/app_icons.dart`), never `Icons.` directly. Add a new icon there, named by meaning. `test/shared/icons/app_icons_usage_test.dart` enforces it.
 - **Layout numbers** that are shared across a file sit at file level as `const` values with a `///` doc. Breakpoints are named constants, not inline literals (see [design-guidelines.md](./design-guidelines.md#breakpoints)).
 - **Strings**: every user-visible string comes from `context.l10n` (see [Localization](#localization)).
 

@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 
 /// The folders chosen on the welcome screen: the pre-checked suggestion, if
 /// any, followed by the folders the user added.
@@ -49,17 +50,17 @@ class OnboardingFolderList extends StatelessWidget {
           CheckboxListTile(
             value: suggestionSelected,
             onChanged: (value) => onSuggestionChanged(value ?? false),
-            secondary: const Icon(Icons.folder_special_outlined),
+            secondary: const Icon(AppIcons.folderSpecial),
             title: Text(suggested, overflow: TextOverflow.ellipsis),
             subtitle: Text(l10n.onboardingSuggested),
             controlAffinity: ListTileControlAffinity.leading,
           ),
         for (final folder in folders)
           ListTile(
-            leading: const Icon(Icons.folder_outlined),
+            leading: const Icon(AppIcons.folderOutlined),
             title: Text(folder, overflow: TextOverflow.ellipsis),
             trailing: IconButton(
-              icon: const Icon(Icons.close),
+              icon: const Icon(AppIcons.close),
               tooltip: l10n.onboardingRemoveFolder,
               onPressed: () => onRemove(folder),
             ),

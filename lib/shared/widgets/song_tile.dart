@@ -5,6 +5,7 @@ import '../../core/database/library_database.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../format_duration.dart';
+import '../icons/app_icons.dart';
 import 'cover_art.dart';
 import 'queue_actions_menu.dart';
 
@@ -41,7 +42,7 @@ class SongTile extends ConsumerWidget {
       leading: CoverArt(
         path: coverPath(ref.watch(coverCacheDirectoryProvider), song.coverKey),
         size: songCoverSize,
-        placeholder: const Center(child: Icon(Icons.music_note_outlined)),
+        placeholder: const Center(child: Icon(AppIcons.musicNoteOutlined)),
       ),
       title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: details.isEmpty

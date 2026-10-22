@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../app_destination.dart';
 import 'sidebar_item.dart';
 import 'sidebar_tooltip.dart';
@@ -30,7 +31,7 @@ class SidebarPlaylistsRail extends StatelessWidget {
           child: SidebarTooltip(
             message: l10n.sidebarNewPlaylist,
             child: IconButton(
-              icon: const Icon(Icons.playlist_add, size: 22),
+              icon: const Icon(AppIcons.playlistAdd, size: 22),
               onPressed: onCreate,
             ),
           ),

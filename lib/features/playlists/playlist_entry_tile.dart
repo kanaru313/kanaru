@@ -6,6 +6,7 @@ import '../../core/database/playlist_rows.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/format_duration.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_art.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile.dart' show songCoverSize;
@@ -63,7 +64,7 @@ class PlaylistEntryTile extends ConsumerWidget {
               message: l10n.playlistReorder,
               child: const Padding(
                 padding: EdgeInsets.all(8),
-                child: Icon(Icons.drag_handle_rounded, size: 20),
+                child: Icon(AppIcons.dragHandle, size: 20),
               ),
             ),
           ),
@@ -76,9 +77,7 @@ class PlaylistEntryTile extends ConsumerWidget {
           size: songCoverSize,
           placeholder: Center(
             child: Icon(
-              track == null
-                  ? Icons.music_off_outlined
-                  : Icons.music_note_outlined,
+              track == null ? AppIcons.musicOff : AppIcons.musicNoteOutlined,
             ),
           ),
         ),
@@ -118,7 +117,7 @@ class PlaylistEntryTile extends ConsumerWidget {
             ),
           ),
         IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(AppIcons.closeRounded),
           iconSize: 20,
           tooltip: l10n.playlistRemoveEntry,
           onPressed: onRemove,

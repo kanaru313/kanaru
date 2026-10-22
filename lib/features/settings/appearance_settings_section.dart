@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
@@ -46,17 +47,17 @@ class AppearanceSettingsSection extends ConsumerWidget {
             options: [
               SettingOption(
                 value: ThemePreference.system,
-                icon: Icons.brightness_auto_outlined,
+                icon: AppIcons.themeSystem,
                 label: l10n.settingsThemeSystem,
               ),
               SettingOption(
                 value: ThemePreference.light,
-                icon: Icons.light_mode_outlined,
+                icon: AppIcons.themeLight,
                 label: l10n.settingsThemeLight,
               ),
               SettingOption(
                 value: ThemePreference.dark,
-                icon: Icons.dark_mode_outlined,
+                icon: AppIcons.themeDark,
                 label: l10n.settingsThemeDark,
               ),
             ],
@@ -67,7 +68,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
         SettingRow.single(
           title: l10n.settingsLanguage,
           control: SettingDropdown<String>(
-            leadingIcon: Icons.translate,
+            leadingIcon: AppIcons.language,
             options: [
               SettingOption(
                 value: _systemLanguage,
@@ -91,17 +92,17 @@ class AppearanceSettingsSection extends ConsumerWidget {
             options: [
               SettingOption(
                 value: TitleBarPreference.kanaru,
-                icon: Icons.web_asset,
+                icon: AppIcons.windowCustom,
                 label: l10n.settingsTitleBarKanaru,
               ),
               SettingOption(
                 value: TitleBarPreference.system,
-                icon: Icons.desktop_windows_outlined,
+                icon: AppIcons.windowSystem,
                 label: l10n.settingsTitleBarSystem,
               ),
               SettingOption(
                 value: TitleBarPreference.none,
-                icon: Icons.crop_free,
+                icon: AppIcons.windowFrameless,
                 label: l10n.settingsTitleBarNone,
               ),
             ],

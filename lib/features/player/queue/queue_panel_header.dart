@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 
 /// Top of the queue panel: title and track count on the left; on the right
@@ -59,20 +60,20 @@ class QueuePanelHeader extends StatelessWidget {
           ),
           // The playing track stays, so clearing needs no confirmation.
           IconButton(
-            icon: const Icon(Icons.delete_sweep_rounded),
+            icon: const Icon(AppIcons.clearAll),
             iconSize: playerIconSize,
             tooltip: l10n.queueClear,
             onPressed: onClear,
           ),
           IconButton(
-            icon: const Icon(Icons.my_location_rounded),
+            icon: const Icon(AppIcons.locateCurrent),
             iconSize: playerIconSize,
             tooltip: l10n.queueShowCurrent,
             onPressed: onShowCurrent,
           ),
           if (onClose != null)
             IconButton(
-              icon: const Icon(Icons.close_rounded),
+              icon: const Icon(AppIcons.closeRounded),
               iconSize: playerIconSize,
               tooltip: l10n.queueClose,
               onPressed: onClose,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../router.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
@@ -105,7 +106,7 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
       controller: _controller,
       focusNode: _focusNode,
       hintText: context.l10n.topBarSearchHint,
-      leading: const Icon(Icons.search, size: 20),
+      leading: const Icon(AppIcons.search, size: 20),
       elevation: const WidgetStatePropertyAll(0),
       constraints: const BoxConstraints(minHeight: 40),
       padding: const WidgetStatePropertyAll(

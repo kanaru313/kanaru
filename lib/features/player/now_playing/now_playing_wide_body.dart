@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import 'now_playing_title_bar.dart';
 import 'now_playing_track_info.dart';
 
@@ -36,7 +37,7 @@ class NowPlayingWideHeader extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 30),
                 child: excludeFromDrag(
                   IconButton(
-                    icon: const Icon(Icons.lyrics_rounded),
+                    icon: const Icon(AppIcons.lyrics),
                     isSelected: lyricsOnly,
                     tooltip: context.l10n.nowPlayingLyricsOnly,
                     onPressed: onToggleLyricsOnly,

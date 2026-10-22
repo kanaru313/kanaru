@@ -11,6 +11,7 @@ import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/root_path.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/directory_picker_provider.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/root_rejection_message.dart';
 import 'library_folder_dialogs.dart';
 import 'library_folder_row.dart';
@@ -138,7 +139,7 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
           control: FilledButton.tonalIcon(
             style: settingButtonStyle(),
             onPressed: enabled ? _add : null,
-            icon: const Icon(Icons.create_new_folder_outlined),
+            icon: const Icon(AppIcons.addFolder),
             label: Text(
               l10n.settingsAddFolder,
               maxLines: 1,

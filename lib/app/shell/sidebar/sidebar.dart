@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../app_destination.dart';
 import '../top_bar.dart';
 import '../window/window_drag_area.dart';
@@ -98,7 +99,7 @@ class _Logo extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final icon = Icon(
-      Icons.graphic_eq,
+      AppIcons.equalizer,
       color: theme.colorScheme.primary,
       size: 28,
     );

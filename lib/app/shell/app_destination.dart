@@ -1,20 +1,21 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// Top-level pages of the app. Each one is a branch of the shell route (in
 /// this order), so it keeps its own navigation stack.
 enum AppDestination {
-  home('/home', Icons.home_outlined, Icons.home),
-  songs('/songs', Icons.music_note_outlined, Icons.music_note),
-  albums('/albums', Icons.album_outlined, Icons.album),
-  artists('/artists', Icons.person_outline, Icons.person),
-  folders('/folders', Icons.folder_outlined, Icons.folder),
-  favorites('/favorites', Icons.favorite_outline, Icons.favorite),
-  recentlyPlayed('/recent', Icons.history, Icons.history),
-  playlists('/playlists', Icons.queue_music_outlined, Icons.queue_music),
-  search('/search', Icons.search, Icons.search),
-  settings('/settings', Icons.settings_outlined, Icons.settings);
+  home('/home', AppIcons.homeOutlined, AppIcons.home),
+  songs('/songs', AppIcons.musicNoteOutlined, AppIcons.musicNote),
+  albums('/albums', AppIcons.albumOutlined, AppIcons.album),
+  artists('/artists', AppIcons.artistOutline, AppIcons.artist),
+  folders('/folders', AppIcons.folderOutlined, AppIcons.folder),
+  favorites('/favorites', AppIcons.favoriteOutline, AppIcons.favorite),
+  recentlyPlayed('/recent', AppIcons.history, AppIcons.history),
+  playlists('/playlists', AppIcons.queueOutlined, AppIcons.queue),
+  search('/search', AppIcons.search, AppIcons.search),
+  settings('/settings', AppIcons.settingsOutlined, AppIcons.settings);
 
   const AppDestination(this.path, this.icon, this.selectedIcon);
 

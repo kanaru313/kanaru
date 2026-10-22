@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
 import 'top_bar_search_field.dart';
@@ -43,7 +44,7 @@ class TopBar extends ConsumerWidget {
                 if (onMenuPressed != null)
                   WindowDragExclusion(
                     child: IconButton(
-                      icon: const Icon(Icons.menu),
+                      icon: const Icon(AppIcons.menu),
                       tooltip: MaterialLocalizations.of(context)
                           .openAppDrawerTooltip,
                       onPressed: onMenuPressed,
@@ -52,7 +53,7 @@ class TopBar extends ConsumerWidget {
                 if (constraints.maxWidth >= _historyButtonsMinWidth) ...[
                   WindowDragExclusion(
                     child: TopBarButton(
-                      icon: Icons.chevron_left,
+                      icon: AppIcons.chevronLeft,
                       tooltip: l10n.topBarBack,
                       onPressed: history.canGoBack
                           ? historyNotifier.back
@@ -61,7 +62,7 @@ class TopBar extends ConsumerWidget {
                   ),
                   WindowDragExclusion(
                     child: TopBarButton(
-                      icon: Icons.chevron_right,
+                      icon: AppIcons.chevronRight,
                       tooltip: l10n.topBarForward,
                       onPressed: history.canGoForward
                           ? historyNotifier.forward
@@ -84,7 +85,7 @@ class TopBar extends ConsumerWidget {
                 ),
                 WindowDragExclusion(
                   child: TopBarButton(
-                    icon: Icons.settings_outlined,
+                    icon: AppIcons.settingsOutlined,
                     tooltip: l10n.navSettings,
                     onPressed: () => context.go(AppDestination.settings.path),
                   ),

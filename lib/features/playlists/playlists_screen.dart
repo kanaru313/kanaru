@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
@@ -62,7 +63,7 @@ class PlaylistsScreen extends ConsumerWidget {
             skipError: true,
             loading: () => const LibraryLoading(),
             error: (error, stack) => EmptyState(
-              icon: Icons.error_outline,
+              icon: AppIcons.errorOutline,
               title: l10n.libraryUnavailableTitle,
               message: l10n.libraryUnavailableMessage,
             ),
@@ -71,7 +72,7 @@ class PlaylistsScreen extends ConsumerWidget {
               onOpen: (playlist) => context.go(playlistLocation(playlist.id)),
               emptyAction: FilledButton.icon(
                 onPressed: () => _create(ref, context),
-                icon: const Icon(Icons.add),
+                icon: const Icon(AppIcons.add),
                 label: Text(l10n.sidebarNewPlaylist),
               ),
             ),
@@ -92,13 +93,13 @@ class _NewPlaylistButton extends StatelessWidget {
     if (PageScaffold.compactActionsOf(context)) {
       return IconButton.filledTonal(
         onPressed: onPressed,
-        icon: const Icon(Icons.add),
+        icon: const Icon(AppIcons.add),
         tooltip: label,
       );
     }
     return FilledButton.tonalIcon(
       onPressed: onPressed,
-      icon: const Icon(Icons.add),
+      icon: const Icon(AppIcons.add),
       label: Text(label),
     );
   }

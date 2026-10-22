@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../icons/app_icons.dart';
 
 /// What the menu of a song, album or artist can do.
 ///
@@ -27,13 +28,9 @@ List<PopupMenuEntry<QueueAction>> _items(BuildContext context) {
     ),
   );
   return [
-    item(QueueAction.playNext, Icons.playlist_play, l10n.queuePlayNext),
-    item(QueueAction.addToQueue, Icons.playlist_add, l10n.queueAddToQueue),
-    item(
-      QueueAction.addToPlaylist,
-      Icons.library_add_outlined,
-      l10n.playlistAddTo,
-    ),
+    item(QueueAction.playNext, AppIcons.playlistPlay, l10n.queuePlayNext),
+    item(QueueAction.addToQueue, AppIcons.playlistAdd, l10n.queueAddToQueue),
+    item(QueueAction.addToPlaylist, AppIcons.addToLibrary, l10n.playlistAddTo),
   ];
 }
 
@@ -96,7 +93,7 @@ class QueueActionsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<QueueAction>(
       tooltip: context.l10n.queueActionsTooltip,
-      icon: const Icon(Icons.more_vert),
+      icon: const Icon(AppIcons.more),
       onSelected: onSelected,
       itemBuilder: _items,
     );

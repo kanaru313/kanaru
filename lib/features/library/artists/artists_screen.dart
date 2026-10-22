@@ -7,6 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/artist_summaries.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/widgets/artist_tile.dart';
 import '../../../shared/widgets/page_scaffold.dart';
@@ -61,7 +62,7 @@ class ArtistsScreen extends ConsumerWidget {
           child: LibraryBrowseBody<ArtistSummary>(
             hasError: ref.watch(artistsProvider.select((s) => s.hasError)),
             items: ref.watch(sortedArtistsProvider),
-            icon: Icons.person_outline,
+            icon: AppIcons.artistOutline,
             noRootsMessage: l10n.artistsNoRootsMessage,
             emptyTitle: l10n.artistsEmptyTitle,
             emptyMessage: l10n.artistsEmptyMessage,

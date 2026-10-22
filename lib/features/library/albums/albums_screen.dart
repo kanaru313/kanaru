@@ -7,6 +7,7 @@ import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../../../shared/library_route_keys.dart';
@@ -62,8 +63,8 @@ class AlbumsScreen extends ConsumerWidget {
                 AlbumsView.list => l10n.albumsListView,
               },
               icon: Icon(switch (view) {
-                AlbumsView.grid => Icons.grid_view,
-                AlbumsView.list => Icons.view_list,
+                AlbumsView.grid => AppIcons.viewGrid,
+                AlbumsView.list => AppIcons.viewList,
               }),
               onPressed: () => settings.setAlbumsView(switch (view) {
                 AlbumsView.grid => AlbumsView.list,
@@ -83,7 +84,7 @@ class AlbumsScreen extends ConsumerWidget {
           child: LibraryBrowseBody<AlbumSummary>(
             hasError: ref.watch(albumsProvider.select((s) => s.hasError)),
             items: ref.watch(sortedAlbumsProvider),
-            icon: Icons.album_outlined,
+            icon: AppIcons.albumOutlined,
             noRootsMessage: l10n.albumsNoRootsMessage,
             emptyTitle: l10n.albumsEmptyTitle,
             emptyMessage: l10n.albumsEmptyMessage,

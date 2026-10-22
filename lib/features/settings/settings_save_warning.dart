@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// Tells the user that changes will not survive a restart: the settings file
 /// could not be read safely at startup, or the last write failed. Takes no
@@ -20,7 +21,7 @@ class SettingsSaveWarning extends ConsumerWidget {
 
     return ListTile(
       leading: Icon(
-        Icons.warning_amber_outlined,
+        AppIcons.warningOutlined,
         color: Theme.of(context).colorScheme.error,
       ),
       title: Text(context.l10n.settingsReadOnly(file.path)),

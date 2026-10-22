@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/playing_track_art.dart';
 import '../../core/player/playing_track_original_cover.dart';
+import '../../shared/icons/app_icons.dart';
 import 'original_cover_layer.dart';
 
 /// Cover art of a track at [size] with rounded corners, or a music note when
@@ -62,7 +63,7 @@ class TrackArtwork extends StatelessWidget {
       color: colors.surfaceContainerHighest,
       child: Center(
         child: Icon(
-          Icons.music_note_rounded,
+          AppIcons.musicNoteRounded,
           size: size / 2,
           color: colors.onSurfaceVariant,
         ),

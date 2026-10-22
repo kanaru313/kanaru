@@ -8,6 +8,7 @@ import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
 import 'library_folders_list.dart';
@@ -111,7 +112,7 @@ class _RescanButton extends StatelessWidget {
       return FilledButton.tonalIcon(
         style: settingButtonStyle(),
         onPressed: onPressed,
-        icon: const Icon(Icons.refresh),
+        icon: const Icon(AppIcons.refresh),
         label: label,
       );
     }
