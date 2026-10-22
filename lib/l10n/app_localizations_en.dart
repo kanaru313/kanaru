@@ -1413,4 +1413,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsAudioPreventClippingHint =>
       'Lower the gain when a boost would distort the loudest peaks.';
+
+  @override
+  String get excludedFoldersTitle => 'Excluded folders';
+
+  @override
+  String get excludedFoldersHint =>
+      'Folders inside your music folders that Kanaru skips. Songs in them leave the library. Files are never deleted.';
+
+  @override
+  String get excludedFoldersAdd => 'Exclude folder';
+
+  @override
+  String get excludedFoldersRemove => 'Stop excluding';
+
+  @override
+  String get excludedFoldersNotInLibrary =>
+      'Not inside a music folder, so it has no effect';
+
+  @override
+  String get excludedFoldersMissing => 'Folder not found';
+
+  @override
+  String get excludedFoldersSameAsRoot =>
+      'That is a music folder. Remove it from the folders above instead.';
+
+  @override
+  String get excludedFoldersOutsideLibrary =>
+      'That folder is not inside a music folder.';
+
+  @override
+  String get excludedFoldersAlreadyExcluded =>
+      'That folder is already excluded.';
+
+  @override
+  String get settingsWatchFolders => 'Watch music folders';
+
+  @override
+  String get settingsWatchFoldersHint =>
+      'Pick up added, changed and removed files while Kanaru runs, a few seconds after they stop changing';
+
+  @override
+  String get settingsWatchFoldersLimit =>
+      'Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.';
 }

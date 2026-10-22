@@ -40,14 +40,14 @@ PRs merged to `main`, 208 commits from 2026-10-18 to 2026-10-21. No tags or rele
 
 | Item | Status | Features | Notes |
 |---|---|---|---|
-| Folder scanning, tag reading, embedded and folder artwork | Done | IDX-02, IDX-03, IDX-10, META-01, META-03, META-04 | PRs #7, #15, #18. Open in the same area: file watching (IDX-04), error list (IDX-07), `.nomedia` and duration filters (IDX-05 partial). |
+| Folder scanning, tag reading, embedded and folder artwork | Done | IDX-02, IDX-03, IDX-10, META-01, META-03, META-04 | PRs #7, #15, #18. Folder watching (IDX-04), `.nomedia`, size and duration filters (IDX-05) and excluded folders (IDX-13) shipped in feat/indexer-watch-exclude. Open in the same area: error list (IDX-07). |
 | Library database and browsing | Partial | LIB-01, LIB-02, LIB-03, LIB-04, LIB-06, LIB-07, LIB-19 | Albums, artists and songs shipped (PRs #10, #13); genres (LIB-04) and folders (LIB-06, LIB-19) shipped with the library browse lane (folders: tree or flat list, recursive counts, whole-subtree actions; hidden folders and merging single-child folders still open). Sort keys: songs, albums and artists. Play count not in sort. |
 | Now Playing, mini player, queue, shuffle, repeat | Partial | NP-01, NP-02, QUEUE-02 to QUEUE-05, PLAY-12 | Player bar, Now Playing overlay, queue sheet and session restore shipped (PRs #2, #9, #14). Open: hero transition (NP-03), queue history (QUEUE-07), play-after-current-track (QUEUE-10), playlist from queue (QUEUE-06). |
 | Full-text search | Done | SEARCH-01 to SEARCH-03 | Songs, albums and artists, accent-insensitive, live from the top bar. Schema v4 with an FTS5 index. Limits are listed in features.md, section 6. Typo tolerance is SEARCH-04 (P2). |
 | Playlists (incl. M3U) | Partial | PL-01 to PL-05 | PL-01 and PL-02 shipped (feat/playlists): create, rename, delete, cover collage, add from every queue menu and from Now Playing, remove, drag to reorder. Open: favorites (PL-03), M3U import and export (PL-04, PL-05). |
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: done (off, track, album, auto; preamp; clipping protection; output device choice in Settings > Advanced). |
 | Dynamic color from album art | **Open** | UI-03 | Theme uses GTK accent and a fallback seed. Artwork-based color not built. |
-| Packaging: AppImage, Flatpak, `.deb` | **Open** | PKG-01 to PKG-03 | No packaging files exist. No `.desktop` file (SYS-07). |
+| Packaging: AppImage, Flatpak, `.deb` | **Open** | PKG-01 to PKG-03 | No Flatpak or `.deb` files exist. The AppImage ships a `.desktop` file with audio MIME types (SYS-07). |
 | Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v5 with migration steps. Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
 
 Also shipped in Phase 1 and not listed in the README: responsive shell (UI-05), reduced motion (UI-06), custom title bar choice (UI-07), i18n en and vi (UI-10), single instance on Release and Profile builds (SYS-06), desktop accent color (UI-04), scan progress (IDX-10).
@@ -66,7 +66,7 @@ Ordered by what blocks a first usable release. IDs are from [features.md](./feat
 | 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. A snackbar with a Settings action warns once per launch about missing music folders, whether or not the rescan is on. |
 | 5 | AppImage package | PKG-01 | Done (PR #32). P0. libmpv is bundled by the AppImage recipe. |
 | 6 | CI for `flutter analyze`, `flutter test`, `cargo test --locked` | Phase 0 CI item | Blocks trustworthy releases. Needs a workflow file. |
-| 7 | ReplayGain, folder watching | PLAY-07, IDX-04 | P1, larger changes. ReplayGain (PLAY-07): done (feat/audio-replaygain-output). |
+| 7 | ReplayGain, folder watching | PLAY-07, IDX-04 | Done. ReplayGain (PLAY-07): feat/audio-replaygain-output. Folder watching (IDX-04): feat/indexer-watch-exclude. |
 | 8 | History UI: timeline, most played by range, per-track history | STAT-06, STAT-07, STAT-08, QUEUE-07 | P1. Reads the recorder's rows. |
 | 9 | Collapse schema history to v1 | PKG-08 | Do this right before the first release, then write migrations only from then on. |
 

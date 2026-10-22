@@ -123,4 +123,29 @@ void main() {
     expect(diff.addedPaths, isEmpty);
     expect(diff.updatedPaths, isEmpty);
   });
+
+  group('rules that empty a walk', () {
+    final stored = [row(1, '/m/a.mp3'), row(2, '/m/b.mp3')];
+
+    test('files all filtered out delete everything stored', () {
+      final diff = diffScan(const WalkResult(filteredOut: 2), stored);
+      expect(diff.rootEmpty, isFalse);
+      expect(diff.toDelete, [1, 2]);
+    });
+
+    test('an empty mount with nothing filtered is left alone', () {
+      final diff = diffScan(const WalkResult(), stored);
+      expect(diff.rootEmpty, isTrue);
+      expect(diff.toDelete, isEmpty);
+    });
+
+    test('only deferred files left: no root-empty, deferred rows stay', () {
+      final diff = diffScan(
+        const WalkResult(deferred: 1, unstattable: ['/m/a.mp3']),
+        stored,
+      );
+      expect(diff.rootEmpty, isFalse);
+      expect(diff.toDelete, [2]);
+    });
+  });
 }

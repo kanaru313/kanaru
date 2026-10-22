@@ -6,6 +6,7 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "open_files.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -15,6 +16,8 @@ struct _MyApplication {
   gboolean shown;
   // Id of the first-frame fallback timer, 0 when none is pending.
   guint fallback_source;
+  // Files from the command line and "Open with", on their way to Dart.
+  OpenFiles* open_files;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
@@ -48,23 +51,32 @@ static gboolean show_window_fallback(gpointer user_data) {
   return G_SOURCE_REMOVE;
 }
 
+// Brings the existing window forward, if there is one. A second launch (or
+// the primary's own re-activation) reuses the window. Before the first frame
+// the window is still hidden and first_frame_cb shows it; presenting it now
+// would flash a black window. Once the fallback timer has shown it, it is
+// presented like any other. Returns whether a window exists.
+static gboolean present_window(MyApplication* self) {
+  GList* windows = gtk_application_get_windows(GTK_APPLICATION(self));
+  if (windows == nullptr) return FALSE;
+  GtkWindow* existing = GTK_WINDOW(windows->data);
+  if (self->shown || gtk_widget_get_visible(GTK_WIDGET(existing))) {
+    gtk_window_deiconify(existing);
+    gtk_window_present(existing);
+  }
+  return TRUE;
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
 
-  // A second launch (or the primary's own re-activation) reuses the existing
-  // window. Before the first frame the window is still hidden and
-  // first_frame_cb shows it; presenting it now would flash a black window.
-  // Once the fallback timer has shown it, it is presented like any other.
-  GList* windows = gtk_application_get_windows(GTK_APPLICATION(application));
-  if (windows != nullptr) {
-    GtkWindow* existing = GTK_WINDOW(windows->data);
-    if (self->shown || gtk_widget_get_visible(GTK_WIDGET(existing))) {
-      gtk_window_deiconify(existing);
-      gtk_window_present(existing);
-    }
-    return;
-  }
+  if (present_window(self)) return;
+
+  // A new window starts hidden with a new engine; nothing of an earlier one
+  // applies (a stale timer would show the new window before its first frame).
+  self->shown = FALSE;
+  g_clear_handle_id(&self->fallback_source, g_source_remove);
 
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
@@ -129,7 +141,37 @@ static void my_application_activate(GApplication* application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
+  open_files_attach(self->open_files,
+                    fl_engine_get_binary_messenger(fl_view_get_engine(view)));
+
   gtk_widget_grab_focus(GTK_WIDGET(view));
+}
+
+// Implements GApplication::open. Runs in the primary instance, for the files
+// of its own command line and for those a second launch sent over D-Bus.
+static void my_application_open(GApplication* application, GFile** files,
+                                gint n_files, const gchar* hint) {
+  MyApplication* self = MY_APPLICATION(application);
+
+  // First launch with files: the view and the channel do not exist yet.
+  if (gtk_application_get_windows(GTK_APPLICATION(application)) == nullptr) {
+    my_application_activate(application);
+  }
+
+  open_files_handle(self->open_files, files, n_files);
+  present_window(self);
+}
+
+// Hands the command line's files to the primary instance (this one, or the
+// one that owns the application ID, over D-Bus); with no files, activates it.
+static void open_or_activate(GApplication* application, gchar** arguments) {
+  g_autoptr(GPtrArray) files = open_files_from_arguments(arguments);
+  if (files->len > 0) {
+    g_application_open(application, reinterpret_cast<GFile**>(files->pdata),
+                       files->len, "");
+  } else {
+    g_application_activate(application);
+  }
 }
 
 // Implements GApplication::local_command_line.
@@ -144,11 +186,12 @@ static gboolean my_application_local_command_line(GApplication* application,
     return TRUE;
   }
 
-  // Another instance owns the application ID: ask it to show its window and
-  // exit without creating a Flutter engine. Arguments are dropped here.
+  // Another instance owns the application ID: ask it to open the files and
+  // show its window, then exit without creating a Flutter engine. Only the
+  // files cross over; other arguments are dropped here.
   if (g_application_get_is_remote(application)) {
     g_message("Kanaru is already running; activating it.");
-    g_application_activate(application);
+    open_or_activate(application, *arguments);
     *exit_status = 0;
     return TRUE;
   }
@@ -156,7 +199,7 @@ static gboolean my_application_local_command_line(GApplication* application,
   // Strip out the first argument as it is the binary name.
   self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
 
-  g_application_activate(application);
+  open_or_activate(application, *arguments);
   *exit_status = 0;
 
   return TRUE;
@@ -185,11 +228,13 @@ static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
   g_clear_handle_id(&self->fallback_source, g_source_remove);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  g_clear_pointer(&self->open_files, open_files_free);
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }
 
 static void my_application_class_init(MyApplicationClass* klass) {
   G_APPLICATION_CLASS(klass)->activate = my_application_activate;
+  G_APPLICATION_CLASS(klass)->open = my_application_open;
   G_APPLICATION_CLASS(klass)->local_command_line =
       my_application_local_command_line;
   G_APPLICATION_CLASS(klass)->startup = my_application_startup;
@@ -197,7 +242,9 @@ static void my_application_class_init(MyApplicationClass* klass) {
   G_OBJECT_CLASS(klass)->dispose = my_application_dispose;
 }
 
-static void my_application_init(MyApplication* self) {}
+static void my_application_init(MyApplication* self) {
+  self->open_files = open_files_new();
+}
 
 MyApplication* my_application_new() {
   // Set the program name to the application ID, which helps various systems
@@ -208,15 +255,12 @@ MyApplication* my_application_new() {
 
 #ifndef NDEBUG
   // Debug: `flutter run` must start next to an installed instance.
-  GApplicationFlags flags = G_APPLICATION_NON_UNIQUE;
+  GApplicationFlags flags = static_cast<GApplicationFlags>(
+      G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN);
 #else
-  // Profile/Release: one instance per session, a second launch activates it.
-  // G_APPLICATION_DEFAULT_FLAGS only exists since GLib 2.74.
-#if GLIB_CHECK_VERSION(2, 74, 0)
-  GApplicationFlags flags = G_APPLICATION_DEFAULT_FLAGS;
-#else
-  GApplicationFlags flags = G_APPLICATION_FLAGS_NONE;
-#endif
+  // Profile/Release: one instance per session, a second launch opens its
+  // files in it and activates it.
+  GApplicationFlags flags = G_APPLICATION_HANDLES_OPEN;
 #endif
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),

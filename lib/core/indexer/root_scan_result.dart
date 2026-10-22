@@ -7,12 +7,15 @@ class RootScanResult {
     this.added = 0,
     this.updated = 0,
     this.removed = 0,
+    this.filtered = 0,
     this.failedTags = 0,
     this.undecodableNames = 0,
     this.undecodableSampleDirs = const [],
     this.skippedFolderNames = const [],
     this.skipReason,
     this.error,
+    this.dirs,
+    this.deferred = 0,
     this.walkTime = Duration.zero,
     this.tagTime = Duration.zero,
     this.dbTime = Duration.zero,
@@ -28,15 +31,21 @@ class RootScanResult {
   }) : added = 0,
        updated = 0,
        removed = 0,
+       filtered = 0,
        failedTags = 0,
        undecodableNames = 0,
        undecodableSampleDirs = const [],
        skippedFolderNames = const [],
-       skipReason = null;
+       skipReason = null,
+       dirs = null,
+       deferred = 0;
 
   final int added;
   final int updated;
   final int removed;
+
+  /// Files and folders the scan rules left out of this root's walk.
+  final int filtered;
   final int failedTags;
 
   /// Audio files and folders of this root skipped for a name that is not
@@ -54,6 +63,14 @@ class RootScanResult {
 
   /// Unexpected failure while scanning this root; null otherwise.
   final Object? error;
+
+  /// The folders of this root that the walk listed, after the scan rules;
+  /// empty when the root is gone. Null when the walk gave no answer (it
+  /// timed out, or the scan threw): what was known before stays.
+  final List<String>? dirs;
+
+  /// Files left unread because they changed too recently.
+  final int deferred;
 
   final Duration walkTime;
   final Duration tagTime;

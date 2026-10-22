@@ -1,15 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/library_startup.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import 'coming_soon_rows.dart';
+import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_chips_row.dart';
 import 'settings_number_presets.dart';
 
-/// Scan options that are not wired yet (shown from the saved values, off):
-/// what a scan skips, how albums are grouped, and the cover cache.
+/// Scan options: what a scan skips (folders with `.nomedia`, small files,
+/// short tracks), which work from the next scan on, and those not wired yet
+/// (shown from the saved values, off): duplicates, playlists, album grouping
+/// and the cover cache. Skip options are off without a library database,
+/// like "rescan on open".
 class LibraryScanSettingRows extends ConsumerWidget {
   const LibraryScanSettingRows({super.key});
 
@@ -17,14 +22,23 @@ class LibraryScanSettingRows extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final scan = ref.watch(settingsProvider.select((s) => s.libraryScan));
+    final settings = ref.read(settingsProvider.notifier);
+    final live = ref.watch(libraryDatabaseProvider) != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ComingSoonSwitchRow(
+        SettingRow.single(
           title: l10n.settingsRespectNomedia,
           subtitle: l10n.settingsRespectNomediaHint,
-          value: scan.respectNomedia,
+          control: Switch(
+            value: scan.respectNomedia,
+            onChanged: live
+                ? (value) => settings.setLibraryScan(
+                    scan.copyWith(respectNomedia: value),
+                  )
+                : null,
+          ),
         ),
         ComingSoonSwitchRow(
           title: l10n.settingsDuplicatesByFilename,
@@ -59,25 +73,36 @@ class LibraryScanSettingRows extends ConsumerWidget {
             ),
           ],
         ),
-        ComingSoonDropdownRow<int>(
+        SettingRow.single(
           title: l10n.settingsMinFileSize,
           subtitle: l10n.settingsMinFileSizeHint,
-          options: presetOptions(
-            minFileSizePresetsKb,
-            scan.minFileSizeKb,
-            (kb) => formatFileSizeKb(l10n, kb),
+          control: SettingDropdown<int>(
+            options: presetOptions(
+              minFileSizePresetsKb,
+              scan.minFileSizeKb,
+              (kb) => formatFileSizeKb(l10n, kb),
+            ),
+            selected: scan.minFileSizeKb,
+            enabled: live,
+            onSelected: (kb) =>
+                settings.setLibraryScan(scan.copyWith(minFileSizeKb: kb)),
           ),
-          selected: scan.minFileSizeKb,
         ),
-        ComingSoonDropdownRow<int>(
+        SettingRow.single(
           title: l10n.settingsMinDuration,
           subtitle: l10n.settingsMinDurationHint,
-          options: presetOptions(
-            minDurationPresetsSeconds,
-            scan.minDurationSeconds,
-            (s) => formatSeconds(l10n, s),
+          control: SettingDropdown<int>(
+            options: presetOptions(
+              minDurationPresetsSeconds,
+              scan.minDurationSeconds,
+              (s) => formatSeconds(l10n, s),
+            ),
+            selected: scan.minDurationSeconds,
+            enabled: live,
+            onSelected: (seconds) => settings.setLibraryScan(
+              scan.copyWith(minDurationSeconds: seconds),
+            ),
           ),
-          selected: scan.minDurationSeconds,
         ),
         SettingRow.single(
           title: l10n.settingsClearCoverCache,

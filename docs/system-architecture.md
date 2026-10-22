@@ -130,7 +130,13 @@ sequenceDiagram
     Note over C: marks a library with roots as onboarded, quiet scan if enabled
     A->>A: after the first frame, the shell checks every root with isDirectory
     Note over A: once per launch; a snackbar with a Settings action names missing folders
+    A->>C: container.listen(folderWatcherProvider)
+    Note over C: folder watcher follows the Watch folders setting, kept for the session
+    A->>C: then startOpenFiles (Linux)
+    Note over C: handler for openFiles first, then takePendingFiles; files the app was launched with play now
 ```
+
+**Opening files from the command line.** The Linux runner (`linux/runner/my_application.cc`, the open-files part in `linux/runner/open_files.{h,cc}`) has `G_APPLICATION_HANDLES_OPEN`. Its `local_command_line` turns every argument that does not start with `-` (or every argument after `--`) into a `GFile` (`g_file_new_for_commandline_arg`: a relative path is resolved against the folder of the process that was started, a `file://` URI is percent-decoded; ignored `-` arguments are counted in the log) and calls `g_application_open`, or `g_application_activate` when there are none. In a second launch GApplication sends the files to the running instance over D-Bus and the process exits 0 without an engine; the first launch handles them itself. The `open` handler creates the window if needed, keeps only native files whose path is valid UTF-8 (at most 1000; skipped ones are only counted in the log, never named), then sends the paths on the method channel `io.github.kanaru313.kanaru/open_files`, or holds them until Dart calls `takePendingFiles`. Before Dart is ready the newest request replaces the one waiting. A new window (new engine) drops the old channel and starts again from "not ready". Dart sets its `openFiles` handler before that call, and the runner starts sending directly when it answers it, so no file is lost or doubled. `OpenFilesService` checks every path with `localAudioPath`, takes at most 1000, reads tags in batches (5 s timeout per batch; a timed-out or failed batch plays under file names, and no new read starts until the stuck call returns), and calls `PlayerService.openTracks`. The newest request that has at least one playable path replaces one still reading; a request where nothing passes changes nothing. Nothing plays until every tag batch of the request is read, so a slow disk or a busy native pool (the startup scan shares it; the opened files are queued first) delays playback by up to the 5 s timeout of a batch. Playing at once and adding tags later needs a player API (follow-up). Debug builds (`NON_UNIQUE`) take the same path for their own command line. The runner still passes the arguments to the Dart entrypoint (`dart_entrypoint_arguments`), but `main()` ignores them.
 
 After `runApp`, `PlayerService.build()` restores the saved queue synchronously and paused (see [section 4](#4-playback)). The library starts with its keys phase in `unknown`, then `updating` or `ready` (see [section 7](#7-library-database-schema)).
 
@@ -138,7 +144,7 @@ After `runApp`, `PlayerService.build()` restores the saved queue synchronously a
 
 ## 3. Library scan pipeline
 
-Entry points: rescan button, Settings (add or change a folder), onboarding, adding a folder, and the startup rescan (`indexer/library_startup_tasks.dart`, after the first frame, when `rescanOnStartup` is on and a folder exists). A startup scan is quiet: the UI announces it only when it added, updated or removed something, or failed. There is **no** file watcher yet (IDX-04). One scan runs at a time; a request during a scan queues one follow-up, and a user request during a quiet scan makes its result count as the user's.
+Entry points: rescan button, Settings (add or change a folder), onboarding, adding a folder, and the startup rescan (`indexer/library_startup_tasks.dart`, after the first frame, when `rescanOnStartup` is on and a folder exists). A startup scan is quiet: the UI announces it only when it added, updated or removed something, or failed. With "Watch music folders" on, the folder watcher rescans by itself when files change (see [Folder watcher](#folder-watcher)). One scan runs at a time; a request during a scan queues one follow-up, and a user request during a quiet scan makes its result count as the user's.
 
 Removing a folder deletes its `library_roots` row; `tracks` and `track_artists` go by `ON DELETE CASCADE`, and albums and artists are derived from `tracks`, so nothing is left behind. Changing a folder is a remove plus an add in one transaction (new root id), then a scan. A scan that is running when its root is removed drops that root's result silently (its next write fails on the foreign key). The play queue is not touched: it holds file paths. Cover thumbnails of removed songs are cleaned by the next scan that finishes cleanly.
 
@@ -154,15 +160,18 @@ flowchart TD
     CleanCovers --> Done(["IndexerFinished or IndexerFailed, then stale key rows"])
 
     Root -- "root" --> Walk["walkAudioFilesInIsolate, 60 s timeout"]
-    Walk --> Snap["trackSnapshot from DB"]
+    Walk --> Rules["applyWalkRules: .nomedia and excluded folders, minimum file size"]
+    Rules --> Snap["trackSnapshot from DB"]
     Snap --> Diff["diffScan: new, changed mtime or size, retryable error, stale cover version"]
-    Diff --> Batches["tag batches: ceil(total / 20), clamped 32 to 512"]
+    Diff --> Memo["drop files remembered as too short"]
+    Memo --> Batches["tag batches: ceil(total / 20), clamped 32 to 512"]
     Batches --> Read["Rust readBatch, 60 s timeout per batch"]
     Read --> Map["tracksFromTags"]
-    Map --> Upsert["upsertTracks in one transaction"]
+    Map --> Short["split off tracks under the minimum length"]
+    Short --> Upsert["upsertTracks in one transaction"]
     Upsert --> More{"more batches?"}
     More -- yes --> Batches
-    More -- no --> Gone["delete rows certainly gone, markRootScanned"]
+    More -- no --> Gone["delete rows certainly gone, now barred or too short, markRootScanned"]
     Gone --> Root
 
     Walk -. "timeout" .-> Stall["abandoned walk reused, one automatic rescan"]
@@ -174,12 +183,26 @@ Rules that shape the pipeline:
 | Rule | Where |
 |---|---|
 | Delete only when certainly gone. Unstattable, unreadable, empty (unmounted) or missing roots keep their rows. | `indexer/scan_diff.dart` |
+| Scan rules (Settings > Library) apply after the walk, on the main isolate, by the pure `applyWalkRules`; the walk and `rootWalkerProvider` know nothing of them. A folder below the root holding a `.nomedia` entry (file or link) is dropped with its subtree when `respectNomedia` is on; the root's own `.nomedia` is ignored. Files under `minFileSizeKb` are dropped. Everything dropped also leaves the unreadable, unstattable and empty lists, so tracks stored there are deleted by the diff. The walk result carries `filteredOut`, so a root emptied by the rules deletes its rows, while an empty mount (`filteredOut` 0) is still left alone. Changing a rule does not start a scan; it applies at the next one. Excluded folders (table `excluded_folders`, canonical paths) are blocked like `.nomedia` folders, matched with `isSameOrInside` (never SQL `LIKE`); one outside the root being scanned is ignored. The list is read at the start of every scan, inside the scan's `try`: a failed read fails the whole scan, as scanning without it would bring back tracks the user left out. `ExcludedFoldersController` accepts only a folder below a library folder (`ExclusionConflict`: same as a root, outside the library, already excluded; path errors reuse `RootRejection`), and adding or removing one starts a normal scan. | `indexer/scan_rules.dart`, `indexer/scan_diff.dart`, `indexer/excluded_folders_controller.dart`, `database/excluded_folder_queries.dart` |
+| `minDurationSeconds` needs the tags: a row read with a duration under the minimum is not stored (a missing duration or failed tags are kept), and its old row, if any, is deleted. Stored tracks under the minimum are deleted at the end of the root's scan (`shortTrackIds`), unchanged files included. `ShortTrackMemo` (one per session) stops an unchanged short file from being read again on every scan; the summary counts only rows written. | `indexer/short_track_memo.dart`, `database/scan_filter_queries.dart` |
 | Walk skips symlinked directories, dot-folders, `lost+found`, `@eaDir`, `$RECYCLE.BIN`, FIFOs, sockets and devices. Non-UTF-8 names are counted and skipped, rows kept. | `indexer/walk_audio_files.dart` |
 | Permanent tag errors are not retried until the file changes or `tagReaderVersion` changes. Transient I/O errors are retried every scan. | `indexer/tracks_from_tags.dart`, `rust/src/tag_reader.rs` |
 | Automatic rescans do not chain. | `indexer/library_indexer.dart` |
 | Rust reads a batch in parallel on the `kanaru-tags-N` pool and never fails the batch as a whole. | `rust/src/tag_batch.rs` |
 
 State is a sealed class: `Idle`, `Scanning`, `Finished`, `Failed` (`indexer/indexer_state.dart`). The UI shows progress through `ScanProgress`.
+
+### Folder watcher
+
+`folderWatcherProvider` (`indexer/folder_watcher_provider.dart`, started with the startup tasks and kept for the session) runs only when `libraryScan.watchFolders` is on and a library database exists; switching the setting off drops every inotify watch and timer. It never touches the database itself.
+
+- **What is watched.** One `Directory.watch` per folder: Dart on Linux ignores `recursive`. The folders are the ones the last scan saw, after the exclusion and `.nomedia` rules, published once per scan in `scannedFoldersProvider` (the indexer writes it right after its loop over the roots, before a failure is rethrown or the cover pass starts). A root that is `missing` publishes no folders; a root whose walk timed out or threw keeps its previous ones. When nothing was published yet and no scan is running (`rescanOnStartup` off), the watcher lists the folders once without scanning (`listLibraryFolders`, no track is touched).
+- **Events.** Created audio file, folder or `.nomedia`; modified audio content (not attributes); deleted audio file, `.nomedia` (only while its folder is watched, so creating one is seen, deleting one that already hides its folder is not) or watched folder; a move counts by its old and new name, so an rsync temporary name renamed to `x.flac` is seen. A created folder (and its subfolders) is watched at once; the next published list corrects it.
+- **Timing.** The scan starts 3 s after the last event, at most 60 s after the first of a burst. Files modified in the last 2 s are left alone by that scan (`settledBeforeMs`, their rows stay) and, if any, the watcher schedules one more scan; files that never settle slow this to once a minute. Only a file dated at most 5 s ahead of the scan start can be "still being written"; one dated further ahead (wrong clock, archive dates, FAT time zones) is read normally, or it would be deferred forever. After a failed scan the next one waits 60 s, so the error snackbar does not repeat every few seconds.
+- **Scan.** `LibraryIndexer.scanForChanges()`: quiet, queues one more pass when a scan is running, and unlike `scan()` neither clears the skipped covers, nor re-arms automatic follow-ups, nor makes the cover pass yield.
+- **Budget.** At most a quarter of `/proc/sys/fs/inotify/max_user_watches` (8192 if unreadable), as the budget is shared with the IDE and sync tools. More folders than that, or `ENOSPC` while adding a watch, cancels every watch and sets `WatchStatus.limitReached` for the session (Settings says so); the stored setting is unchanged. A folder that fails otherwise (permission, vanished) is dropped until the next published list, and the stream closing after the error is not a change.
+- **No loops.** A scan that finds a root missing publishes no folders for it, so its watches go and no event follows. Many watches closing at once (a deleted root) give one coalesced scan.
+- **Not detected.** Deleting the `.nomedia` of a folder the scan dropped (the folder is no longer watched), unmounting or replugging a drive and renaming a root show up only at the next scan, as Dart reports neither for the watched folder itself.
 
 ---
 
@@ -271,7 +294,7 @@ flowchart TB
 
 | File | Format | Notes |
 |---|---|---|
-| `settings.json` | JSON v1 | Theme, language, title bar, library sort per screen, albums view, `rescanOnStartup` (default on), `libraryOnboarded` (first-run picker done), and the option groups `libraryScan`, `playback`, `display`. `playback` holds ReplayGain (`replayGainMode` off/track/album/auto, default off; `replayGainPreampDb` −15..15, default 0; `replayGainPreventClipping`, default true, which is mpv `replaygain-clip=no`) and the output device (`audioDeviceName`/`audioDeviceDescription`, absent = mpv `auto`); `libraryScan` holds `watchFolders` (default off). Defaults are today's behavior; the player and the scan do not read these yet. A missing or wrong-typed key gives its default, a number outside its range is clamped. Unknown keys are kept. Secrets are never stored here (keyring planned). |
+| `settings.json` | JSON v1 | Theme, language, title bar, library sort per screen, albums view, `rescanOnStartup` (default on), `libraryOnboarded` (first-run picker done), and the option groups `libraryScan`, `playback`, `display`. `playback` holds ReplayGain (`replayGainMode` off/track/album/auto, default off; `replayGainPreampDb` −15..15, default 0; `replayGainPreventClipping`, default true, which is mpv `replaygain-clip=no`) and the output device (`audioDeviceName`/`audioDeviceDescription`, absent = mpv `auto`); `libraryScan` holds `watchFolders` (default off). Defaults are today's behavior; the scan reads `libraryScan` (`respectNomedia`, `minFileSizeKb`, `minDurationSeconds`, `watchFolders`), the player does not read `playback` yet. A missing or wrong-typed key gives its default, a number outside its range is clamped. Unknown keys are kept. Secrets are never stored here (keyring planned). |
 | `playback-session.json` | JSON v1 | Queue, position, volume, shuffle, repeat. Strict parse. |
 | `library.db` | SQLite (drift) | Opened with WAL, `synchronous = NORMAL`, `foreign_keys = ON`, `busy_timeout = 5000`. |
 | `covers/512/<ab>/<64-hex blake3>.jpg` | JPEG, 512 px longest side | Deduplicated by hash of the original image. Orphans are cleaned after a complete scan. |
@@ -443,7 +466,7 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | `cover_colors` | Keyed by `tracks.cover_key`, no foreign key (one key serves many tracks). `seed` is ARGB as an unsigned 32-bit integer; `0` (alpha 0) means the cover has no usable accent color (grey) and the app falls back to the system accent. `palette` matches `^[0-9a-f]{8}(,[0-9a-f]{8}){0,7}$`, most important first; a row that does not match counts as missing. `algo_version` is `revision * 100000 + thumbnail size` (constant owned by the color extraction code); a different value counts as missing. Orphans are removed with `DELETE FROM cover_colors WHERE cover_key NOT IN (SELECT cover_key FROM tracks WHERE cover_key IS NOT NULL)`: without `IS NOT NULL` one NULL `cover_key` makes `NOT IN` delete nothing. |
 | `excluded_folders` | Canonical paths like `library_roots.path`, unique, no foreign key to roots (removing or replacing a root keeps its exclusions). Match with `isSameOrInside` (`core/indexer/root_path.dart`), never `LIKE`. |
 
-Paths that come from outside the library (command-line files, M3U lines, restored sessions) must go through `localAudioPath` (`core/paths/local_audio_path.dart`) before they reach the player or these tables: it accepts an absolute path, a `file:` URI (percent-decoded) or a path relative to a given folder, and returns the invariant-1 spelling of an existing regular audio file, or null. Every other `scheme://` (`http`, `edl`, `av`, …) gives null, since mpv would open it. Not wired yet: nothing calls it in this version, and restored sessions (`playback-session.json`) still reach the player unchecked. It vouches for the file name only; on a case-insensitive mount a differently cased name passes as written, and mpv may still follow references inside a local file (an EDL or playlist), which the player's mpv options must limit.
+Paths that come from outside the library (command-line files, M3U lines, restored sessions) must go through `localAudioPath` (`core/paths/local_audio_path.dart`) before they reach the player or these tables: it accepts an absolute path, a `file:` URI (percent-decoded) or a path relative to a given folder, and returns the invariant-1 spelling of an existing regular audio file, or null. Every other `scheme://` (`http`, `edl`, `av`, …) gives null, since mpv would open it. Files opened from the command line or "Open with" go through it (`core/open_files/open_files_service.dart`). It vouches for the file name only; on a case-insensitive mount a differently cased name passes as written. References inside a local file (an EDL or playlist) are limited by the player's mpv options (`demuxer=lavf` with `protocol_whitelist=file`), not by this check.
 
 Planned schema work: collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md). Playlists (PL-01, PL-02) read and write the v5 tables, see [Playlists](#playlists). Favorites and M3U (PL-03 to PL-05) and listen history (STAT-01, STAT-10, and the history views) are not in the code yet.
 

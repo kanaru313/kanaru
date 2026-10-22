@@ -11,6 +11,8 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
+import 'excluded_folders_list.dart';
+import 'folder_watch_row.dart';
 import 'library_folders_list.dart';
 import 'library_scan_setting_rows.dart';
 import 'library_stats_row.dart';
@@ -18,10 +20,10 @@ import 'setting_row.dart';
 import 'settings_section.dart';
 
 /// Library settings: the library's counts, the music folders, whether to
-/// rescan when the app opens, and a rescan button. The button is disabled
-/// while the library is unavailable, has no music folder yet, or is being
-/// scanned or its covers are being made (it then shows a progress ring). The
-/// result is announced by the shell.
+/// rescan when the app opens or watch the folders, and a rescan button. The
+/// button is disabled while the library is unavailable, has no music folder
+/// yet, or is being scanned or its covers are being made (it then shows a
+/// progress ring). The result is announced by the shell.
 class LibrarySettingsSection extends ConsumerWidget {
   const LibrarySettingsSection({super.key});
 
@@ -38,6 +40,7 @@ class LibrarySettingsSection extends ConsumerWidget {
       children: [
         const LibraryStatsRow(),
         const LibraryFoldersList(),
+        const ExcludedFoldersList(),
         SettingRow.single(
           title: l10n.settingsRescanOnStartup,
           subtitle: l10n.settingsRescanOnStartupHint,
@@ -48,6 +51,7 @@ class LibrarySettingsSection extends ConsumerWidget {
                 : null,
           ),
         ),
+        const FolderWatchRow(),
         SettingRow.single(
           title: l10n.settingsRescanLibrary,
           subtitle: l10n.settingsRescanLibraryHint,

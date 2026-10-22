@@ -1361,4 +1361,46 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsAudioPreventClippingHint =>
       'Giảm mức khi tăng âm có thể làm méo các đỉnh to nhất.';
+
+  @override
+  String get excludedFoldersTitle => 'Thư mục loại trừ';
+
+  @override
+  String get excludedFoldersHint =>
+      'Các thư mục trong thư mục nhạc mà Kanaru bỏ qua. Bài hát trong đó sẽ rời khỏi thư viện. Tệp không bao giờ bị xoá.';
+
+  @override
+  String get excludedFoldersAdd => 'Loại trừ thư mục';
+
+  @override
+  String get excludedFoldersRemove => 'Bỏ loại trừ';
+
+  @override
+  String get excludedFoldersNotInLibrary =>
+      'Không nằm trong thư mục nhạc nào nên không có tác dụng';
+
+  @override
+  String get excludedFoldersMissing => 'Không tìm thấy thư mục';
+
+  @override
+  String get excludedFoldersSameAsRoot =>
+      'Đây là một thư mục nhạc. Hãy xoá nó khỏi danh sách thư mục ở trên.';
+
+  @override
+  String get excludedFoldersOutsideLibrary =>
+      'Thư mục này không nằm trong thư mục nhạc nào.';
+
+  @override
+  String get excludedFoldersAlreadyExcluded => 'Thư mục này đã bị loại trừ.';
+
+  @override
+  String get settingsWatchFolders => 'Theo dõi thư mục nhạc';
+
+  @override
+  String get settingsWatchFoldersHint =>
+      'Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi';
+
+  @override
+  String get settingsWatchFoldersLimit =>
+      'Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.';
 }

@@ -50,7 +50,7 @@ Startup overrides are assembled in [lib/main.dart](../lib/main.dart) into one ma
 
 - **One public widget per file.** Private helpers are `_Sub` widgets in the same file.
 - **File names** are `snake_case.dart`. Types are `UpperCamelCase`, members `lowerCamelCase`. Rust files are `snake_case.rs`.
-- **Size.** Files over about 200 lines are candidates for splitting (CLAUDE.md). Current largest hand-written Dart: `features/settings/full_or_compact_control.dart` (302). Split on a real boundary (state, painter, gesture) and keep the public widget name stable.
+- **Size.** Files over about 200 lines are candidates for splitting (CLAUDE.md). Current largest hand-written Dart: `core/indexer/library_indexer.dart` (624). Split on a real boundary (state, painter, gesture) and keep the public widget name stable.
 - **Comments explain why.** Dense, short comments are the norm in this codebase. Use `///` for public API and for file-level constants; use `//` for non-obvious reasoning. Do not restate the code.
 - **Comments carry no plan IDs, phase numbers, audit labels or finding codes.** Write the invariant or behavior instead. Feature IDs from [features.md](./features.md) (for example `IDX-03`) are the one exception when they name a user-facing requirement.
 - **Accessibility.** Sliders expose semantics. Focus is restored after an overlay or sheet closes. Reduced motion is respected everywhere (see [design-guidelines.md](./design-guidelines.md#motion-and-reduced-motion)).
