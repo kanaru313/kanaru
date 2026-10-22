@@ -85,6 +85,8 @@
 
             # Packaging
             appimage-run
+            desktop-file-utils
+            appstream
             flatpak-builder
           ] ++ nativeLibs;
 
