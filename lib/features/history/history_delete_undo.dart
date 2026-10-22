@@ -40,8 +40,9 @@ final historyDeleteUndoProvider = Provider<HistoryDeleteUndo>(
 /// Only the latest removal can be undone, and only while its snackbar is on
 /// screen ([historyUndoDuration]). Removing again while the snackbar is
 /// visible replaces it with a new one; while it still waits behind another
-/// message (a scan result) it is updated in place. Only this page's own
-/// snackbar is ever closed: closing the messenger's current snackbar when it
+/// message (a scan result) it is updated in place. Only this
+/// class's own snackbar is ever closed (one instance serves the whole app,
+/// see [historyDeleteUndoProvider]): closing the messenger's current snackbar when it
 /// is another one would hide that one instead.
 ///
 /// Nothing here reads a `BuildContext` or a `Ref` after an `await`: the

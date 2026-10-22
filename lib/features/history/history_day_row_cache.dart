@@ -49,6 +49,9 @@ class HistoryDayRowCache {
   var _generation = 0;
   var _disposed = false;
 
+  /// Redraws once [retryAfter] has passed after a failed read.
+  Timer? _retryTimer;
+
   /// Least recently asked first.
   final _rows = <int, List<HistoryPlayRow>>{};
 
@@ -91,6 +94,8 @@ class HistoryDayRowCache {
     _queue.clear();
     _askedAt.clear();
     _failedAt.clear();
+    _retryTimer?.cancel();
+    _retryTimer = null;
   }
 
   /// Drops everything, and every read still running.
@@ -155,7 +160,16 @@ class HistoryDayRowCache {
             _askedAt.remove(day);
             _failedAt[day] = _now();
             logHistoryError('Reading the plays of a day failed', error);
-            if (!_disposed) onChanged();
+            if (!_disposed) {
+              onChanged();
+              // A list standing still draws nothing more: draw once the wait
+              // is over so the failed day is asked for again.
+              _retryTimer?.cancel();
+              _retryTimer = Timer(retryAfter, () {
+                _retryTimer = null;
+                if (!_disposed && generation == _generation) onChanged();
+              });
+            }
           }
           _startReads();
         },

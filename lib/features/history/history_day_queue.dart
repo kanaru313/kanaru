@@ -1,21 +1,10 @@
 import '../../core/database/history_rows.dart';
-import '../../core/indexer/cover_paths.dart';
 import '../../core/player/track.dart';
-import '../../shared/play_tracks.dart';
+import 'history_queue_track.dart';
 
-/// The queue for [track] as the library knows it. The player is only ever
-/// handed the library row's path, never the path a play remembers: a play
-/// outlives its file, and the library row is the one the indexer vetted.
-Track historyTrackOf(HistoryPlayRow row, String? covers) {
-  final track = row.track!;
-  return trackFromItem(
-    path: track.path,
-    title: track.title,
-    artist: track.artist,
-    durationMs: track.durationMs,
-    artPath: coverPath(covers, track.coverKey),
-  );
-}
+/// The queue entry for the library song of [row], which must have one.
+Track historyTrackOf(HistoryPlayRow row, String? covers) =>
+    historyQueueTrack(row.track!, covers);
 
 /// What a tap on [tapped] plays: the songs of its day ([dayRows], in the order
 /// shown), each song once at its first appearance, those no longer in the

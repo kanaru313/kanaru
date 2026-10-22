@@ -4,10 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
-import '../../core/database/library_rows.dart' show TrackListItem;
 import '../../core/database/library_startup.dart';
-import '../../core/indexer/cover_paths.dart';
-import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/enqueue_tracks.dart';
@@ -18,6 +15,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'history_delete_undo.dart';
 import 'history_play_menu.dart';
 import 'history_plays_version.dart';
+import 'history_queue_track.dart';
 import 'history_providers.dart';
 import 'history_screen_states.dart';
 import 'history_track_header.dart';
@@ -40,19 +38,12 @@ class HistoryTrackScreen extends ConsumerStatefulWidget {
 }
 
 class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
-  /// The queue entry of the library song; the path is the `tracks` row's.
-  Track _trackOf(TrackListItem track) => trackFromItem(
-    path: track.path,
-    title: track.title,
-    artist: track.artist,
-    durationMs: track.durationMs,
-    artPath: coverPath(ref.read(coverCacheDirectoryProvider), track.coverKey),
-  );
-
   void _play(HistoryTrackSummary summary) {
     final track = summary.track;
     if (track == null) return;
-    playTracks(ref, [_trackOf(track)], 0);
+    playTracks(ref, [
+      historyQueueTrack(track, ref.read(coverCacheDirectoryProvider)),
+    ], 0);
   }
 
   /// Opens the menu of [row]. The play is the one the menu was opened on:
@@ -73,7 +64,9 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
     final item = summary.track;
     if (action != null) {
       if (item == null) return;
-      enqueueLoaded(ref, context, action, [_trackOf(item)], item.title);
+      enqueueLoaded(ref, context, action, [
+        historyQueueTrack(item, ref.read(coverCacheDirectoryProvider)),
+      ], item.title);
       return;
     }
     if (choice != HistoryPlayChoice.delete) return;

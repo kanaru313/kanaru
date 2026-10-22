@@ -108,9 +108,10 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
 
   /// While a read is held back the header of a day says how many plays it had
   /// then, so its rows must be that many too: a read that finds more has the
-  /// held plays, which are the newest (the recorder stamps the start of a
-  /// play with the time it is written, and rows run newest first), so they
-  /// are the leading rows and are cut. Taking the last rows is the same cut
+  /// held plays, which are the newest (a play is stamped with the time
+  /// playback started and its row is written a little later, but still
+  /// after every play shown, and rows run newest first), so they are the
+  /// leading rows and are cut. Taking the last rows is the same cut
   /// without needing the time or id of the newest play shown. Removals and
   /// changes are never held, so a day cannot have fewer rows than its count.
   List<HistoryPlayRow> _heldRows(int dayStart, List<HistoryPlayRow> rows) {
@@ -129,6 +130,9 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
     _lastCounts = counts;
     final version = ref.read(historyPlaysVersionProvider.notifier);
     if (_index != null && !version.mustApplyNow && _scrolledAway) {
+      // A day read just before this may already hold the new plays: read the
+      // days on screen again so they are cut to the shown counts.
+      if (_held == null) _cache.invalidate();
       _held = counts;
       return;
     }

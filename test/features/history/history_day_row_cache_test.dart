@@ -45,6 +45,8 @@ void main() {
     cache = make();
   });
 
+  tearDown(() => cache.dispose());
+
   Future<void> tick() => Future<void>.delayed(Duration.zero);
 
   test('a day is unread until its read ends, then served', () async {
@@ -169,6 +171,42 @@ void main() {
       expect(reads.started, [1, 1]);
     },
   );
+
+  test('a still list redraws once the wait is over', () async {
+    cache.dispose();
+    cache = HistoryDayRowCache(
+      load: reads.load,
+      onChanged: () => changed++,
+      now: () => clock,
+      retryAfter: const Duration(milliseconds: 30),
+    );
+    cache.rowsOf(1);
+    reads.fail(1);
+    await tick();
+    expect(changed, 1);
+
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+
+    expect(changed, 2);
+  });
+
+  test('an invalidation cancels the redraw after a failure', () async {
+    cache.dispose();
+    cache = HistoryDayRowCache(
+      load: reads.load,
+      onChanged: () => changed++,
+      now: () => clock,
+      retryAfter: const Duration(milliseconds: 30),
+    );
+    cache.rowsOf(1);
+    reads.fail(1);
+    await tick();
+    cache.invalidate();
+
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+
+    expect(changed, 1);
+  });
 
   test('a failing day does not loop through redraws', () async {
     late final HistoryDayRowCache looping;

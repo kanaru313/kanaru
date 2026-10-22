@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_database.dart' show PlaysCompanion;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -345,6 +346,41 @@ void main() {
       expect(listText('31 listens'), findsOneWidget);
       await scrollTimelineTo(tester, rowExtent * 28);
       expect(find.text('TS0'), findsOneWidget);
+    });
+
+    testWidgets('a day read just before a play is held is cut to its count', (
+      tester,
+    ) async {
+      await openHistory(
+        tester,
+        h,
+        tracks: [for (var i = 0; i < 30; i++) song('S$i'), song('New')],
+        plays: [for (var i = 0; i < 30; i++) ('S$i', _at(23, 0, i))],
+      );
+      await scrollTimelineTo(tester, rowExtent * 6);
+
+      // The scan reads the day again with the new play in it, before the
+      // plays debounce ends and the page decides to hold the counts back.
+      await tester.runAsync(() async {
+        await h.db
+            .into(h.db.plays)
+            .insert(
+              PlaysCompanion.insert(
+                path: '/m/New.flac',
+                playedAt: _at(23, 11, 59).millisecondsSinceEpoch,
+              ),
+            );
+        await h.db.customUpdate(
+          "UPDATE tracks SET title = 'T' || title WHERE path = '/m/S0.flac'",
+          updates: {h.db.tracks},
+        );
+      });
+      await settleHistory(tester);
+
+      expect(find.text('New'), findsNothing);
+      await scrollTimelineTo(tester, rowExtent * 28);
+      expect(find.text('TS0'), findsOneWidget);
+      expect(listText('31 listens'), findsNothing);
     });
 
     testWidgets('a removal shows at once even when scrolled', (tester) async {
