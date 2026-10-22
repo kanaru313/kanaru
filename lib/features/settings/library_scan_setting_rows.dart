@@ -5,6 +5,7 @@ import '../../core/database/library_startup.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import 'coming_soon_rows.dart';
+import 'cover_cache_setting_rows.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_chips_row.dart';
@@ -12,9 +13,9 @@ import 'settings_number_presets.dart';
 
 /// Scan options: what a scan skips (folders with `.nomedia`, small files,
 /// short tracks), which work from the next scan on, and those not wired yet
-/// (shown from the saved values, off): duplicates, playlists, album grouping
-/// and the cover cache. Skip options are off without a library database,
-/// like "rescan on open".
+/// (shown from the saved values, off): duplicates, playlists and album
+/// grouping. The cover cache rows come last. Skip options are off without a
+/// library database, like "rescan on open".
 class LibraryScanSettingRows extends ConsumerWidget {
   const LibraryScanSettingRows({super.key});
 
@@ -104,27 +105,7 @@ class LibraryScanSettingRows extends ConsumerWidget {
             ),
           ),
         ),
-        SettingRow.single(
-          title: l10n.settingsClearCoverCache,
-          subtitle: l10n.settingsClearCoverCacheHint,
-          comingSoon: true,
-          control: FilledButton.tonal(
-            style: settingButtonStyle().copyWith(
-              // Red only while live; disabled keeps the normal disabled color.
-              foregroundColor: WidgetStateProperty.resolveWith(
-                (states) => states.contains(WidgetState.disabled)
-                    ? null
-                    : Theme.of(context).colorScheme.error,
-              ),
-            ),
-            onPressed: null,
-            child: Text(
-              l10n.settingsClearCoverCacheButton,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
+        const CoverCacheSettingRows(),
       ],
     );
   }
