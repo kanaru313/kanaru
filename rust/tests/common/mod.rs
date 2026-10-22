@@ -41,6 +41,33 @@ pub fn encode(image: DynamicImage, format: ImageFormat) -> Vec<u8> {
     out.into_inner()
 }
 
+/// A lossless WebP, 40×20, left half red and right half blue. `exif` is
+/// stored as its EXIF chunk.
+pub fn webp_halves(exif: Option<Vec<u8>>) -> Vec<u8> {
+    use image::ImageEncoder;
+
+    let pixels: Vec<u8> = (0..20)
+        .flat_map(|_| (0..40).flat_map(|x| if x < 20 { [255, 0, 0] } else { [0, 0, 255] }))
+        .collect();
+    let mut out = Vec::new();
+    let mut encoder = image::codecs::webp::WebPEncoder::new_lossless(&mut out);
+    if let Some(exif) = exif {
+        encoder.set_exif_metadata(exif).unwrap();
+    }
+    encoder
+        .write_image(&pixels, 40, 20, image::ExtendedColorType::Rgb8)
+        .unwrap();
+    out
+}
+
+/// Big-endian TIFF block whose only entry is the EXIF orientation.
+pub fn exif_tiff(orientation: u16) -> Vec<u8> {
+    let mut tiff = b"MM\0\x2a\0\0\0\x08\0\x01\x01\x12\0\x03\0\0\0\x01".to_vec();
+    tiff.extend_from_slice(&orientation.to_be_bytes());
+    tiff.extend_from_slice(&[0; 6]);
+    tiff
+}
+
 pub fn png(width: u32, height: u32, shade: u8) -> Vec<u8> {
     image_bytes(width, height, ImageFormat::Png, shade)
 }

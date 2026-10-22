@@ -155,6 +155,7 @@ Notes on the Rust side:
 - **`RUSTC_BOOTSTRAP=1`**: codegen runs `cargo expand`, which needs nightly features. The variable lets the stable toolchain do it. The dev shell ships `cargo-expand`; elsewhere `cargo install cargo-expand`.
 - **`rustup` shim (Nix only)**: the build glue (cargokit) calls `rustup toolchain list`, `rustup target list --installed` and `rustup run <toolchain> cargo`. Nix provides one fixed toolchain and no rustup, so the dev shell has a tiny `rustup` script that answers exactly those three calls and fails on anything else. Without it `flutter run` fails while building the Rust crate. Cargokit looks for `~/.cargo/bin/rustup` before `PATH`, so a real rustup install bypasses the shim.
 - **Rust builds** happen inside `flutter run` / `flutter build` (cargokit builds the crate in debug for debug app builds and in release otherwise). The first build is slow, and each git worktree has its own `rust/` build output.
+- **Optimized dev profile**: `rust/Cargo.toml` sets `[profile.dev] opt-level = 3`, so debug app builds (`flutter run`, `flutter build linux --debug`) ship an optimized Rust library; unoptimized image decoding and resizing make a first scan with covers many times slower. Debug info and debug assertions stay on. To step through Rust with variables that are not optimized away, build with `CARGO_PROFILE_DEV_OPT_LEVEL=0 flutter run -d linux`. Cargokit passes the variable on to cargo, and cargo rebuilds the library when it changes (checked: the `.so` was rebuilt with no folder deleted, and rebuilt again once the variable was dropped). The library then runs many times slower, so unset the variable for normal work.
 - **Tests**: `cargo test --locked --manifest-path rust/Cargo.toml` (`--locked` fails if `Cargo.lock` is out of date).
 
 ### Library version constants
@@ -232,12 +233,13 @@ cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 
 #### Benchmarks
 
-Two benchmarks run 100k-track libraries in a file database. They are skipped unless `KANARU_BENCH=1` is set.
+The database benchmarks run 100k-track libraries in a file database; the Rust one times a scan with covers on real audio files. All are skipped unless `KANARU_BENCH=1` is set.
 
 | File | What it times | Run |
 |---|---|---|
 | `test/core/database/browse_queries_benchmark_test.dart` | Browse SQL (median of 5 runs after one warm-up), a scan with the Songs list or an album page open, and reads during a scan | `KANARU_BENCH=1 flutter test test/core/database/browse_queries_benchmark_test.dart` |
 | `test/core/database/library_keys_backfill_benchmark_test.dart` | Key backfill through the background isolate path the app uses, plus in-place chunk times | `KANARU_BENCH=1 flutter test test/core/database/library_keys_backfill_benchmark_test.dart` |
+| `rust/tests/scan_covers_bench.rs` | A scan with covers stage by stage (tags, picture load, hash, decode+resize+encode, write), the cover pool as the app calls it, and the tag batch. Needs `KANARU_BENCH_LIST` (a file with one audio path per line) and `XDG_CACHE_HOME` under `/tmp/`; `KANARU_BENCH_SECTION=tags\|serial\|pool` runs one part (one process per part gives its peak memory) | `KANARU_BENCH=1 KANARU_BENCH_LIST=files.txt XDG_CACHE_HOME=/tmp/kanaru-bench-cache cargo test --release --manifest-path rust/Cargo.toml --test scan_covers_bench -- --nocapture` |
 
 For query timings only, add `--plain-name 'browse queries'` to the first command.
 

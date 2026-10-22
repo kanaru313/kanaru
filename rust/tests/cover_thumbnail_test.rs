@@ -397,3 +397,75 @@ fn thumbnail_size_does_not_depend_on_the_filter() {
         assert_eq!(size, expected, "{width}x{height}");
     }
 }
+
+/// Colour of the pixel at (`fx`, `fy`), given as fractions of the size.
+fn pixel_at(thumbnail: &[u8], fx: f32, fy: f32) -> [u8; 3] {
+    let image = image::load_from_memory(thumbnail).unwrap().into_rgb8();
+    let (w, h) = image.dimensions();
+    image
+        .get_pixel((w as f32 * fx) as u32, (h as f32 * fy) as u32)
+        .0
+}
+
+fn is_red(pixel: [u8; 3]) -> bool {
+    pixel[0] > 200 && pixel[2] < 60
+}
+
+fn is_blue(pixel: [u8; 3]) -> bool {
+    pixel[2] > 200 && pixel[0] < 60
+}
+
+#[test]
+fn webp_is_turned_upright_by_its_exif_orientation() {
+    // Orientation 6: turn 90 degrees clockwise, so the left half ends on top.
+    let webp = webp_halves(Some(exif_tiff(6)));
+    let thumbnail = make_jpeg(&webp, ImageFormat::WebP).unwrap();
+    let image = image::load_from_memory(&thumbnail).unwrap();
+    assert_eq!(image.dimensions(), (20, 40));
+    assert!(is_red(pixel_at(&thumbnail, 0.5, 0.25)));
+    assert!(is_blue(pixel_at(&thumbnail, 0.5, 0.75)));
+}
+
+#[test]
+fn webp_exif_with_the_exif_prefix_still_turns() {
+    let exif = [b"Exif\0\0".as_slice(), &exif_tiff(8)].concat();
+    let thumbnail = make_jpeg(&webp_halves(Some(exif)), ImageFormat::WebP).unwrap();
+    assert_eq!(
+        image::load_from_memory(&thumbnail).unwrap().dimensions(),
+        (20, 40)
+    );
+    // Orientation 8: counter-clockwise, so the left half ends at the bottom.
+    assert!(is_blue(pixel_at(&thumbnail, 0.5, 0.25)));
+    assert!(is_red(pixel_at(&thumbnail, 0.5, 0.75)));
+}
+
+#[test]
+fn webp_without_exif_or_with_upright_exif_keeps_its_shape() {
+    for exif in [None, Some(exif_tiff(1)), Some(b"not a tiff block".to_vec())] {
+        let thumbnail = make_jpeg(&webp_halves(exif), ImageFormat::WebP).unwrap();
+        assert_eq!(
+            image::load_from_memory(&thumbnail).unwrap().dimensions(),
+            (40, 20)
+        );
+        assert!(is_red(pixel_at(&thumbnail, 0.25, 0.5)));
+        assert!(is_blue(pixel_at(&thumbnail, 0.75, 0.5)));
+    }
+}
+
+#[test]
+fn webp_exif_chunk_longer_than_the_file_is_not_applied() {
+    let webp = webp_halves(Some(exif_tiff(6)));
+    let at = webp.windows(4).position(|w| w == b"EXIF").unwrap() + 4;
+    for declared in [exif_tiff(6).len() as u32 + 100, 1 << 31, u32::MAX] {
+        let mut hostile = webp.clone();
+        hostile[at..at + 4].copy_from_slice(&declared.to_le_bytes());
+        // Either the decoder rejects the file or it is left as it is.
+        if let Some(thumbnail) = make_jpeg(&hostile, ImageFormat::WebP) {
+            assert_eq!(
+                image::load_from_memory(&thumbnail).unwrap().dimensions(),
+                (40, 20),
+                "{declared}"
+            );
+        }
+    }
+}

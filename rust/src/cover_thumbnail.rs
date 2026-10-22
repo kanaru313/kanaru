@@ -8,14 +8,24 @@ use image::{DynamicImage, GrayImage, ImageFormat, ImageReader, RgbImage};
 
 use crate::cover_decode_limits::{decode_limits, full_decode_fits, scaled_plan, ScaledPlan};
 use crate::jpeg_header::{self, JpegHeader};
+use crate::webp_exif;
 
 /// Longest side of a thumbnail, in pixels. The cache folder is named after it
 /// (`covers/512` on the Dart side), so a new size never mixes with old files.
 pub const THUMBNAIL_SIDE: u32 = 512;
 
-/// Upper bound on what one decode may allocate. Each cover thread runs one
-/// decode at a time, so total decode memory grows with the thread count
-/// chosen in `tag_batch`.
+/// Upper bound on the buffers one decode may allocate, in the format the
+/// decoder produces (the pixel buffer, and for a progressive JPEG its
+/// coefficients, see `cover_decode_limits`). It does not cover what comes
+/// after: `into_rgb8` and the alpha flattening allocate a new RGB buffer while
+/// the decoded one is still alive, and the resize and the turn add smaller
+/// ones. So the peak of one cover thread is a multiple of this limit that
+/// depends on the pixel format: about 1x for RGB8, 1.75x for RGBA8, up to 3.5x
+/// for gray with alpha and up to 4x for 8-bit gray (the decode buffer plus a
+/// three times larger RGB copy). On top of that come the pictures lofty read
+/// from the file the thread is working on (each at most `MAX_COVER_BYTES`).
+/// Each thread runs one decode at a time, so the total grows with the thread
+/// count chosen in `tag_batch`.
 pub const MAX_DECODE_BYTES: u64 = 64 * 1024 * 1024;
 
 const JPEG_QUALITY: u8 = 85;
@@ -27,7 +37,7 @@ const MAX_PASSTHROUGH_BYTES: usize = 200 * 1024;
 /// [`validate_header`](crate::cover_art::validate_header)) and encodes a JPEG
 /// whose longest side is [`THUMBNAIL_SIDE`], keeping the aspect ratio. Smaller
 /// images are re-encoded at their own size, never enlarged. Transparent parts
-/// end up on black. A JPEG is turned upright per its EXIF orientation. A
+/// end up on black. A JPEG or WebP is turned upright per its EXIF orientation. A
 /// small upright baseline JPEG is its own thumbnail, minus its metadata (see
 /// [`passthrough`]); a large JPEG is decoded scaled down (see
 /// [`scaled_decode`]). Every shortcut falls back to the full path on any
@@ -54,12 +64,17 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     let rgb = shrink(flatten_on_black(image));
     // After the shrink: turning a thumbnail costs next to nothing and needs
     // no buffer the size of the original.
-    let orientation = if format == ImageFormat::Jpeg {
-        jpeg_header::parse(bytes).map_or(1, |header| header.orientation)
-    } else {
-        1
-    };
-    encode(&turn_upright(rgb, orientation))
+    encode(&turn_upright(rgb, exif_orientation(bytes, format)))
+}
+
+/// EXIF orientation of the original: from the JPEG header or the WebP `EXIF`
+/// chunk; PNG is not read, so it counts as upright.
+fn exif_orientation(bytes: &[u8], format: ImageFormat) -> u16 {
+    match format {
+        ImageFormat::Jpeg => jpeg_header::parse(bytes).map_or(1, |header| header.orientation),
+        ImageFormat::WebP => webp_exif::orientation(bytes),
+        _ => 1,
+    }
 }
 
 /// `rgb` turned or flipped as the EXIF `orientation` says; a value that is

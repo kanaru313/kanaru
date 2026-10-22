@@ -36,5 +36,9 @@ fn progressive_jpeg_over_the_decode_limit_is_refused_without_decoding() {
     let thumbnail = make_jpeg(&jpeg, ImageFormat::Jpeg);
     let grew = peak_rss() - before;
     assert_eq!(thumbnail, None);
-    assert!(grew < MAX_DECODE_BYTES / 4, "peak grew by {} MiB", grew >> 20);
+    assert!(
+        grew < MAX_DECODE_BYTES / 4,
+        "peak grew by {} MiB",
+        grew >> 20
+    );
 }

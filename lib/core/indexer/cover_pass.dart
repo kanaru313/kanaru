@@ -38,6 +38,12 @@ class CoverPassResult {
 
   /// Why the pass stopped early, for the log.
   String? stoppedBecause;
+
+  /// Time spent waiting for the native reader (finding covers and writing
+  /// thumbnails), and in the database (the `countTracksNeedingCover` and
+  /// `tracksNeedingCover` queries, and `writeCovers`). Together with the pass's wall time they show which side
+  /// a slow pass is on.
+  Duration nativeTime = Duration.zero, dbTime = Duration.zero;
 }
 
 /// Makes the covers of the tracks under [rootIds] whose cover was not looked
@@ -68,10 +74,12 @@ Future<CoverPassResult> runCoverPass({
   var done = 0, total = 0;
   if (onProgress != null) {
     // Tracks that failed earlier in this session are passed over.
+    final countTime = Stopwatch()..start();
     total = await db.countTracksNeedingCover(
       rootIds,
       excluding: progress.skipIds,
     );
+    result.dbTime += countTime.elapsed;
     if (total > 0) onProgress(0, total);
   }
   var wrapped = progress.cursor == null;
@@ -86,12 +94,14 @@ Future<CoverPassResult> runCoverPass({
         result.stoppedBecause = 'rescan requested';
         return result;
       }
+      final queryTime = Stopwatch()..start();
       final rows = await db.tracksNeedingCover(
         rootIds,
         after: progress.cursor,
         excluding: progress.skipIds,
         limit: coverBatchSize,
       );
+      result.dbTime += queryTime.elapsed;
       if (rows.isEmpty) {
         progress.cursor = null;
         if (wrapped) {
@@ -101,11 +111,14 @@ Future<CoverPassResult> runCoverPass({
         wrapped = true;
         continue;
       }
+      final nativeTime = Stopwatch()..start();
       final pending = reader.readCovers([for (final (_, path) in rows) path]);
       final List<TrackCover> covers;
       try {
         covers = await pending.timeout(timeout);
+        result.nativeTime += nativeTime.elapsed;
       } on TimeoutException {
+        result.nativeTime += nativeTime.elapsed;
         progress.skipIds.addAll([for (final (id, _) in rows) id]);
         progress.cursor = rows.last.$2;
         onStuck(pending);
@@ -136,7 +149,9 @@ Future<CoverPassResult> runCoverPass({
       }
       if (writes.isNotEmpty) {
         unannounced = true;
+        final writeTime = Stopwatch()..start();
         await db.writeCovers(writes);
+        result.dbTime += writeTime.elapsed;
         _announce(db);
         unannounced = false;
       }
