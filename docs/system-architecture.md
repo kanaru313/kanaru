@@ -473,6 +473,19 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Playlist cover | Computed, nothing is stored: the first up to 4 distinct non-null cover keys among the first 64 covered entries by position (tracks of one album share a cover, so repeats count once). |
 | Reset | A library reset deletes roots and tracks, never the file. `make reset-library` runs `packaging/dev/reset-library.sql`: it removes `library_roots`, `tracks`, `track_artists` and `cover_colors` (scan output) and keeps the user-data tables and `excluded_folders` (user configuration). The target refuses a database below schema 6. |
 
+### Listen history reads
+
+`history_queries.dart` (reads) and `history_play_writes.dart` (delete and restore of one play) sit on `LibraryDatabase`. Each read is a one-shot `Future`; the provider layer decides when to run it again.
+
+| Rule | Detail |
+|---|---|
+| Time bounds | The caller computes every bound from local calendar dates (`DateTime(y, m, d)`, so DST days are 23 or 25 hours) and passes epoch ms as half-open `[start, end)`. SQL never uses `localtime` or `strftime`. Bucket counts take the ascending bounds as one JSON array (`json_each`); empty buckets are dropped, newest first. |
+| Indexes | Range counts and the top query search `plays_played_at`; per-track reads and the "Nth listen" subqueries search `plays_path_played` or `plays_played_at`. A test runs `EXPLAIN QUERY PLAN` and fails on a full scan of `plays` under any alias. |
+| Order and "Nth listen" | The journal order is `played_at DESC, id DESC`. `nth` is `play_stats.play_count` minus the plays of the same path that come later in `(played_at, id)` order; it is null when the path has no `play_stats` row. |
+| Top | `count DESC`, then the earlier last play inside the range, then `path`; the caller gives the limit. With no range it reads `play_stats` instead of scanning `plays`. |
+| Missing tracks | Rows are joined to `tracks` by path with a left join; a path no longer in the library still comes back, with a null track. |
+| Delete and restore | `deletePlay` returns the removed row (or null if it is gone); `restorePlay` inserts it again with the same `id`, safe because `plays.id` is AUTOINCREMENT, and returns false when the id exists. Both go through drift's API, so the `play_stats` triggers and watchers run. A recorder checkpoint that landed while the row was absent is lost, so a restored `listened_ms` can be lower than the real time. |
+
 ### Playlist kinds
 
 `playlists.kind` (invariant 8 in `user_data_tables.dart`): NULL is an ordinary playlist; `'favorites'` is the Favorites playlist, at most one row, enforced by the partial unique index `playlists_favorites_unique`; `'queue'` is reserved and may repeat. Writers store no other value; readers treat an unknown kind as ordinary. Favorites is created lazily, never seeded: in one transaction, `INSERT OR IGNORE` (drift `InsertMode.insertOrIgnore`) and then `SELECT id FROM playlists WHERE kind = 'favorites'`. `insertReturning` is not used (an ignored insert returns no row) and neither is `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects for a partial index). Favorites entries follow the same path, order and no-foreign-key rules as any playlist.
