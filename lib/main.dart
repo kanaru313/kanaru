@@ -15,6 +15,7 @@ import 'core/indexer/library_startup_tasks.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
+import 'core/open_files/open_files_provider.dart';
 import 'core/paths/app_directories.dart' show resolveCoverCacheDirectory;
 import 'core/player/app_exit_flush.dart';
 import 'core/player/media_kit_backend.dart';
@@ -107,9 +108,18 @@ Future<void> main() async {
   );
   // After the first frame, so the scan never delays the window appearing.
   WidgetsBinding.instance.addPostFrameCallback(
-    (_) => unawaited(runLibraryStartupTasks(container)),
+    (_) => unawaited(_runStartupTasks(container)),
   );
   if (windowReady) await _installExitHook(container, log);
+}
+
+/// Work that waits for the first frame. The library tasks start first; the
+/// files the app was launched with then replace the restored queue (the
+/// session restore never overwrites a queue the user already opened).
+Future<void> _runStartupTasks(ProviderContainer container) async {
+  // The scan keeps running; waiting for it would delay the files.
+  unawaited(runLibraryStartupTasks(container));
+  await startOpenFiles(container);
 }
 
 /// Flushes the listen progress and the session when the window closes. Only

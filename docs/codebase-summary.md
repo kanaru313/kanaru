@@ -32,6 +32,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/indexer/` | 16 / 1,614 | Folder walk, tag reading via Rust, diff, scan orchestration, covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
+| `lib/core/open_files/` | 3 / ~230 | Files from the command line and "Open with": method channel to the Linux runner (`open_files_channel.dart`), `OpenFilesService` (validate with `localAudioPath`, read tags, `openTracks`), startup hook |
 | `lib/core/paths/` | 2 / 160 | XDG directory resolution; `local_audio_path.dart` (`localAudioPath`: the one check that a path or `file:` URI from outside the library is a local audio file, returned in canonical spelling) |
 | `lib/core/player/` | 34 / 3,192 (without `session/`: 5 / 798) | `PlayerService`, `PlayQueue`, `MediaKitBackend`, ReplayGain and output device (`ReplayGainSync`, `AlbumRunKeyCache`, `OutputDeviceSync`, `AudioOutputControl`, `MpvAudioOutput`), session persistence (`session/`) |
 | `lib/core/settings/` | 14 / 1,516 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance, preference groups for options not wired yet (`library_scan_prefs.dart` incl. `watchFolders`, `playback_prefs.dart` incl. ReplayGain and output device with `withAudioDevice`, `display_prefs.dart` and their codecs; nothing outside settings reads them) |

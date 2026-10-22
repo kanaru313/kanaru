@@ -132,7 +132,11 @@ sequenceDiagram
     Note over A: once per launch; a snackbar with a Settings action names missing folders
     A->>C: container.listen(folderWatcherProvider)
     Note over C: folder watcher follows the Watch folders setting, kept for the session
+    A->>C: then startOpenFiles (Linux)
+    Note over C: handler for openFiles first, then takePendingFiles; files the app was launched with play now
 ```
+
+**Opening files from the command line.** The Linux runner (`linux/runner/my_application.cc`) has `G_APPLICATION_HANDLES_OPEN`. Its `local_command_line` turns every argument that does not start with `-` into a `GFile` (`g_file_new_for_commandline_arg`: a relative path is resolved against the folder of the process that was started, a `file://` URI is percent-decoded) and calls `g_application_open`, or `g_application_activate` when there are none. In a second launch GApplication sends the files to the running instance over D-Bus and the process exits 0 without an engine; the first launch handles them itself. The `open` handler creates the window if needed, keeps only native files whose path is valid UTF-8 (anything else is logged and dropped), then sends the paths on the method channel `io.github.kanaru313.kanaru/open_files`, or queues them until Dart calls `takePendingFiles`. Dart sets its `openFiles` handler before that call, and the runner starts sending directly when it answers it, so no file is lost or doubled. `OpenFilesService` checks every path with `localAudioPath`, takes at most 1000, reads tags in batches (5 s timeout per batch; a timed-out or failed batch plays under file names, and no new read starts until the stuck call returns), and calls `PlayerService.openTracks`. A newer request replaces one still reading. Debug builds (`NON_UNIQUE`) take the same path for their own command line. The runner still passes the arguments to the Dart entrypoint (`dart_entrypoint_arguments`), but `main()` ignores them.
 
 After `runApp`, `PlayerService.build()` restores the saved queue synchronously and paused (see [section 4](#4-playback)). The library starts with its keys phase in `unknown`, then `updating` or `ready` (see [section 7](#7-library-database-schema)).
 
