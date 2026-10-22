@@ -36,12 +36,16 @@ class ListenRecorder {
   PlayerState? _last;
   ListenPlaythrough? _current;
 
-  /// Marker of the last playthrough that reached the listen threshold.
-  int? _countedMarker;
+  /// Marker of the playthrough that had a row when recording was switched
+  /// off; consumed by the next switch on.
+  int? _switchedOffMarker;
 
   /// Marker the recorder was switched back on in, after it was already
   /// counted: that playthrough is not opened again.
   int? _skippedMarker;
+
+  /// The delete running now, if any. Nothing is counted meanwhile.
+  Future<int?>? _clearing;
   final _writes = PlayWriteChain();
   late final _rows = PlayRowWriter(_db, _writes, _time.now);
 
@@ -52,7 +56,7 @@ class ListenRecorder {
   /// Follows the player. Cheap: O(1) per state, no awaiting.
   void onState(PlayerState? previous, PlayerState next) {
     _last = next;
-    if (!_recording || _disposed) return;
+    if (!_recording || _disposed || _clearing != null) return;
     final track = next.queue.current;
     if (next.stopped || track == null) {
       _skippedMarker = null;
@@ -62,6 +66,7 @@ class ListenRecorder {
     var playthrough = _current;
     if (playthrough == null || playthrough.marker != next.playthrough) {
       if (playthrough == null && next.playthrough == _skippedMarker) return;
+      _skippedMarker = null;
       _end();
       playthrough = _current = _begin(next, track);
     }
@@ -76,37 +81,43 @@ class ListenRecorder {
   void setEnabled(bool enabled) {
     if (_recording == enabled) return;
     _recording = enabled;
-    if (!enabled) return _end();
-    final state = _last;
-    if (state == null) return;
-    if (state.playthrough == _countedMarker) {
-      _skippedMarker = state.playthrough;
+    if (!enabled) {
+      final open = _current;
+      _end();
+      final counted =
+          open?.row == PlayRow.pending || open?.row == PlayRow.stored;
+      _switchedOffMarker = counted ? open!.marker : null;
       return;
     }
+    final state = _last;
+    final closed = _switchedOffMarker;
+    _switchedOffMarker = null;
+    if (state == null) return;
+    if (state.playthrough == closed) _skippedMarker = closed;
     onState(null, state);
   }
 
-  /// Deletes the whole play history. Counting restarts from now when
-  /// recording is on, and the open playthrough is dropped without a write once
-  /// the delete worked; a failed delete gives it back as it was. Returns how
-  /// many plays were removed, `null` when the delete failed.
+  /// Deletes the whole play history. Nothing is counted while the delete
+  /// runs. When it worked, the open playthrough is dropped without a write and
+  /// counting restarts from then; when it failed, the history is intact and
+  /// the open playthrough goes on. Returns how many plays were removed, `null`
+  /// when the delete failed.
   Future<int?> clearHistory() {
+    final running = _clearing;
+    if (running != null) return running;
     final open = _current;
-    final counted = _countedMarker;
     _current = null;
-    _countedMarker = null;
-    // A counted playthrough stays closed until the delete has worked.
-    final restartLater = _skippedMarker != null;
-    if (!restartLater) _restart();
-    return _writes.enqueue(_db.clearPlayHistory).then((removed) {
-      if (removed == null) {
-        _restoreAfterFailedClear(open, counted);
-      } else if (restartLater) {
-        _skippedMarker = null;
-        _restart();
+    final cleared = _writes.enqueue(_db.clearPlayHistory).then((removed) {
+      _clearing = null;
+      if (removed != null) {
+        _skippedMarker = _switchedOffMarker = null;
+      } else if (open != null) {
+        _resume(open);
       }
+      _restart();
       return removed;
     });
+    return _clearing = cleared;
   }
 
   void _restart() {
@@ -114,23 +125,18 @@ class ListenRecorder {
     if (state != null) onState(null, state);
   }
 
-  /// The history is intact, so the playthrough [open] when the clear began
-  /// goes on. Counting that began meanwhile is dropped, unless it already
-  /// reached a row of its own.
-  void _restoreAfterFailedClear(ListenPlaythrough? open, int? counted) {
-    _countedMarker ??= counted;
-    if (open == null) return;
-    final meanwhile = _current;
-    if (meanwhile != null &&
-        meanwhile.marker == open.marker &&
-        meanwhile.row == PlayRow.none) {
-      _current = open;
-      return;
-    }
-    // It ended in the meantime: give it its final write.
+  /// After a failed delete: [open] goes on when it is still the playing one,
+  /// else it gets its final write.
+  void _resume(ListenPlaythrough open) {
+    final state = _last;
+    final playing =
+        _recording &&
+        !_disposed &&
+        state != null &&
+        !state.stopped &&
+        state.playthrough == open.marker;
     _current = open;
-    _end();
-    _current = meanwhile;
+    if (!playing) _end();
   }
 
   /// Writes what the open playthrough has and goes inert.
@@ -164,7 +170,7 @@ class ListenRecorder {
     );
     final listened = p.acc.listened;
     if (p.row == PlayRow.none) {
-      if (qualifiesAsListen(listened, p.length)) _insertRow(p);
+      if (qualifiesAsListen(listened, p.length)) _rows.insert(p);
       return;
     }
     final fresh = listened - p.queued;
@@ -174,18 +180,13 @@ class ListenRecorder {
     }
   }
 
-  void _insertRow(ListenPlaythrough p) {
-    _countedMarker = p.marker;
-    _rows.insert(p);
-  }
-
   /// Final write of the open playthrough.
   void _end() {
     final p = _current;
     _current = null;
     if (p == null) return;
     if (p.row == PlayRow.none && qualifiesAsListen(p.acc.listened, p.length)) {
-      _insertRow(p);
+      _rows.insert(p);
     } else if ((p.row == PlayRow.pending || p.row == PlayRow.stored) &&
         p.acc.listened > p.queued) {
       _rows.update(p);

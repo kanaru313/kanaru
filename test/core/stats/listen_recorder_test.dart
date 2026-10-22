@@ -413,6 +413,20 @@ void main() {
       expect(await plays(), hasLength(2));
     });
 
+    test('off and on in a replay counts the replay on its own', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      sim.stop();
+      sim.resume();
+      sim.listen(60);
+
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+      sim.listen(240);
+
+      expect(await plays(), hasLength(2));
+    });
+
     test('stop and play after the switch counts the track again', () async {
       sim.open(trackA);
       sim.listen(100);
@@ -502,6 +516,7 @@ void main() {
       sim.listen(30);
       expect(await cleared, isNull);
       sim.listen(1);
+      recorder.dispose();
 
       expect((await plays()).single.listenedMs, 91000);
     });
@@ -518,6 +533,62 @@ void main() {
 
       expect((await plays()).single.listenedMs, 120000);
     });
+
+    test(
+      'a failing delete under a long wait counts the sitting once',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+
+        gate.failNext('DELETE FROM');
+        final cleared = recorder.clearHistory();
+        sim.listen(90);
+        expect(await cleared, isNull);
+        sim.listen(1);
+        recorder.dispose();
+
+        expect((await plays()).single.listenedMs, 191000);
+      },
+    );
+
+    test(
+      'nothing is counted while the delete runs, then it counts anew',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+
+        final release = gate.holdNext('DELETE FROM');
+        final cleared = recorder.clearHistory();
+        sim.listen(100);
+        release();
+        expect(await cleared, 1);
+        expect(await plays(), isEmpty);
+
+        sim.listen(89);
+        expect(await plays(), isEmpty);
+        sim.listen(1);
+        expect(await plays(), hasLength(1));
+      },
+    );
+
+    test(
+      'dispose while the delete runs still deletes and writes nothing',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+
+        final release = gate.holdNext('DELETE FROM');
+        final cleared = recorder.clearHistory();
+        recorder.dispose();
+        release();
+
+        expect(await cleared, 1);
+        expect(await plays(), isEmpty);
+      },
+    );
   });
 
   group('failures', () {
