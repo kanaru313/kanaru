@@ -66,7 +66,7 @@ Ordered by what blocks a first usable release. IDs are from [features.md](./feat
 | 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. |
 | 5 | AppImage package | PKG-01 | Done (PR #32). P0. libmpv is bundled by the AppImage recipe. |
 | 6 | CI for `flutter analyze`, `flutter test`, `cargo test --locked` | Phase 0 CI item | Blocks trustworthy releases. Needs a workflow file. |
-| 7 | ReplayGain, folder watching | PLAY-07, IDX-04 | P1, larger changes. |
+| 7 | ReplayGain, folder watching | PLAY-07, IDX-04 | P1, larger changes. ReplayGain (PLAY-07): done (feat/audio-replaygain-output). |
 | 8 | History UI: timeline, most played by range, per-track history | STAT-06, STAT-07, STAT-08, QUEUE-07 | P1. Reads the recorder's rows. |
 | 9 | Collapse schema history to v1 | PKG-08 | Do this right before the first release, then write migrations only from then on. |
 

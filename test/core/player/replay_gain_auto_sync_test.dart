@@ -267,27 +267,5 @@ void main() {
       await settle();
       expect(fake.audioCalls, isEmpty); // s has no album: track, as before
     });
-
-    test('keeps at most 256 keys, oldest first', () async {
-      final many = [for (var i = 0; i < 300; i++) 'x$i'];
-      sync.dispose();
-      sync = build(
-        withLookup: (paths) async {
-          lookups.add(paths);
-          return {for (final p in paths) p: albumOne};
-        },
-      );
-      sync.setPrefs(rg(ReplayGainMode.auto));
-      for (var i = 0; i < 300; i += 2) {
-        startTurn(queueOf(many, at: i));
-        await settle();
-      }
-      lookups.clear();
-
-      // The first tracks are gone from the cache and are read again.
-      startTurn(queueOf(many));
-      await settle();
-      expect(lookups, isNotEmpty);
-    });
   });
 }

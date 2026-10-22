@@ -33,7 +33,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
 | `lib/core/paths/` | 2 / 160 | XDG directory resolution; `local_audio_path.dart` (`localAudioPath`: the one check that a path or `file:` URI from outside the library is a local audio file, returned in canonical spelling) |
-| `lib/core/player/` | 30 / 3,012 | `PlayerService`, `PlayQueue`, `MediaKitBackend`, ReplayGain and output device (`ReplayGainSync`, `OutputDeviceSync`, `AudioOutputControl`, `MpvAudioOutput`), session persistence (`session/`) |
+| `lib/core/player/` | 34 / 3,192 (without `session/`: 5 / 798) | `PlayerService`, `PlayQueue`, `MediaKitBackend`, ReplayGain and output device (`ReplayGainSync`, `AlbumRunKeyCache`, `OutputDeviceSync`, `AudioOutputControl`, `MpvAudioOutput`), session persistence (`session/`) |
 | `lib/core/settings/` | 14 / 1,516 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance, preference groups for options not wired yet (`library_scan_prefs.dart` incl. `watchFolders`, `playback_prefs.dart` incl. ReplayGain and output device with `withAudioDevice`, `display_prefs.dart` and their codecs; nothing outside settings reads them) |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
 | `lib/features/library/` | 34 / 3,095 | Songs, Albums, Artists, onboarding, library state machine, sort controls |
@@ -49,7 +49,7 @@ Key files by area:
 | Area | Files |
 |---|---|
 | Playback | `core/player/player_service.dart`, `play_queue.dart`, `media_kit_backend.dart`, `mpv_playlist_tracker.dart`, `unavailable_audio_backend.dart` |
-| Audio output | `core/player/replay_gain_sync.dart` and `output_device_sync.dart` (settings to engine), `send_audio_call.dart`, `player_audio_output.dart` (part of `PlayerService`), `replay_gain_options.dart`, `audio_device_choice.dart`, `audio_output_control.dart`, `mpv_audio_output.dart`, `mpv_startup_options.dart`, `album_run_lookup.dart`, `audio_output_devices_provider.dart` |
+| Audio output | `core/player/replay_gain_sync.dart` with `album_run_key_cache.dart`, `output_device_sync.dart` (settings to engine), `send_audio_call.dart`, `player_audio_output.dart` (part of `PlayerService`), `replay_gain_options.dart`, `audio_device_choice.dart`, `audio_output_control.dart`, `mpv_audio_output.dart`, `mpv_startup_options.dart`, `album_run_lookup.dart`, `audio_output_devices_provider.dart` |
 | Original cover | `core/player/original_cover_reader.dart`, `rust_original_cover_reader.dart`, `playing_track_original_cover.dart`; native init shared in `core/native/rust_library.dart`; shown by `features/player/now_playing/now_playing_artwork.dart` |
 | Session restore | `core/player/session/playback_session_file.dart`, `playback_session_saver.dart`, `playback_session_codec.dart` |
 | Indexing | `core/indexer/library_indexer.dart`, `walk_audio_files.dart`, `scan_diff.dart`, `tracks_from_tags.dart`, `rust_tag_reader.dart` |
@@ -103,9 +103,9 @@ Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
 | `linux/` | 10 | 570 |
 | `test/` (all `.dart`, helpers included) | 192 | 43,536 |
 
-Largest non-generated Dart files: `core/indexer/library_indexer.dart` (551), `core/database/library_database.dart` (344), `core/player/media_kit_backend.dart` (423), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (982, generated).
+Largest non-generated Dart files: `core/indexer/library_indexer.dart` (553), `core/database/library_database.dart` (348), `core/player/media_kit_backend.dart` (422), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (1,654, generated).
 
-Non-generated Dart files over the 200-line guideline in [CLAUDE.md](../CLAUDE.md) are candidates for splitting: 15 of them, the largest listed above. The search files are all under 200 lines.
+Non-generated Dart files over the 200-line guideline in [CLAUDE.md](../CLAUDE.md) are candidates for splitting: 18 of them, the largest listed above. The search files are all under 200 lines.
 
 ## Generated code
 

@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:logging/logging.dart';
-
 import '../settings/playback_prefs.dart';
+import 'album_run_key_cache.dart';
 import 'album_run_lookup.dart';
 import 'audio_backend.dart';
 import 'local_path_of.dart';
@@ -11,8 +10,6 @@ import 'repeat_mode.dart';
 import 'replay_gain_options.dart';
 import 'send_audio_call.dart';
 import 'track.dart';
-
-final _log = Logger('player');
 
 /// Keeps the engine's ReplayGain options in line with the settings and the
 /// queue. One per `PlayerService` build (a new engine starts from mpv's
@@ -26,13 +23,11 @@ final _log = Logger('player');
 /// album, else track gain. The decision is made once per turn (a track that
 /// really starts, see [setQueue]) and kept while the queue is edited.
 class ReplayGainSync {
-  ReplayGainSync({required this._backend, required this._lookup});
-
-  /// Most keys kept; the oldest go first.
-  static const _cacheSize = 256;
+  ReplayGainSync({required this._backend, required AlbumRunKeyLookup lookup})
+    : _keys = AlbumRunKeyCache(lookup);
 
   final AudioBackend _backend;
-  final AlbumRunKeyLookup _lookup;
+  final AlbumRunKeyCache _keys;
   bool _disposed = false;
 
   var _prefs = const PlaybackPrefs();
@@ -48,17 +43,6 @@ class ReplayGainSync {
 
   /// Bumped by anything that makes a lookup in flight stale.
   var _generation = 0;
-
-  /// Album key of each path read so far, `null` for a path that has none.
-  /// Never invalidated within a session: a file retagged after it was read
-  /// keeps its old key until it is evicted or the app restarts. A track that
-  /// is only keyed after its neighbours were (a fresh scan) stays "no album"
-  /// the same way. Both are accepted: a wrong level lasts one session at most.
-  final _keys = <String, AlbumRunKey?>{};
-
-  /// Lookups in flight, by path, so a path is never asked for twice at once.
-  final _fetching = <String, Future<void>>{};
-  String? _lastLookupError;
 
   void setPrefs(PlaybackPrefs prefs) {
     if (_disposed) return;
@@ -96,6 +80,7 @@ class ReplayGainSync {
   void dispose() {
     _disposed = true;
     _generation++;
+    _keys.dispose();
   }
 
   void _applyReplayGain() {
@@ -110,13 +95,13 @@ class ReplayGainSync {
   void _decide() {
     final generation = ++_generation;
     final paths = _decisionPaths();
-    if (paths.every(_keys.containsKey)) {
+    if (paths.every(_keys.has)) {
       _albumRun = _computeAlbumRun();
       _applyReplayGain();
       return;
     }
     unawaited(
-      _ensure(paths).then((_) {
+      _keys.ensure(paths).then((_) {
         if (_disposed || generation != _generation) return;
         _albumRun = _computeAlbumRun();
         _applyReplayGain();
@@ -187,60 +172,10 @@ class ReplayGainSync {
       afterNext,
     }.nonNulls;
     unawaited(
-      _ensure({
+      _keys.ensure({
         for (final position in positions)
           ?localPathOf(queue.trackAt(position).uri),
       }),
     );
-  }
-
-  /// Completes once every path in [paths] is cached or its lookup failed.
-  /// Paths already being read are waited for, not asked for again.
-  Future<void> _ensure(Iterable<String> paths) {
-    final waits = <Future<void>>[];
-    final fresh = <String>[];
-    for (final path in paths) {
-      if (_keys.containsKey(path)) continue;
-      final inFlight = _fetching[path];
-      if (inFlight != null) {
-        waits.add(inFlight);
-      } else {
-        fresh.add(path);
-      }
-    }
-    if (fresh.isNotEmpty) {
-      final run = _fill(fresh)
-          .whenComplete(() => fresh.forEach(_fetching.remove));
-      for (final path in fresh) {
-        _fetching[path] = run;
-      }
-      waits.add(run);
-    }
-    return Future.wait(waits);
-  }
-
-  /// Reads the keys of [paths] into the cache; one the lookup did not return
-  /// is cached as having none. A failure is logged once per message and
-  /// caches nothing, so the paths are asked again later; meanwhile they count
-  /// as no album.
-  Future<void> _fill(List<String> paths) async {
-    try {
-      final found = await _lookup(paths);
-      if (_disposed) return;
-      for (final path in paths) {
-        _keys.remove(path);
-        _keys[path] = found[path];
-      }
-      while (_keys.length > _cacheSize) {
-        _keys.remove(_keys.keys.first);
-      }
-      _lastLookupError = null;
-    } on Object catch (error, stack) {
-      final message = '$error';
-      if (message != _lastLookupError) {
-        _log.warning('Looking up album keys failed', error, stack);
-      }
-      _lastLookupError = message;
-    }
   }
 }
