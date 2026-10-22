@@ -14,14 +14,18 @@ use crate::webp_exif;
 /// (`covers/512` on the Dart side), so a new size never mixes with old files.
 pub const THUMBNAIL_SIDE: u32 = 512;
 
-/// Upper bound on the buffers one decode may allocate (the pixel buffer, and
-/// for a progressive JPEG its coefficients, see `cover_decode_limits`). It does
-/// not cover what comes after the decode: flattening, `into_rgb8`, the resize
-/// and the turn each allocate a buffer of about the size of their output. So a
-/// cover thread may hold up to twice this limit, plus every picture lofty read
-/// from the file it is working on (each at most `MAX_COVER_BYTES`). Each
-/// thread runs one decode at a time, so the total grows with the thread count
-/// chosen in `tag_batch`.
+/// Upper bound on the buffers one decode may allocate, in the format the
+/// decoder produces (the pixel buffer, and for a progressive JPEG its
+/// coefficients, see `cover_decode_limits`). It does not cover what comes
+/// after: `into_rgb8` and the alpha flattening allocate a new RGB buffer while
+/// the decoded one is still alive, and the resize and the turn add smaller
+/// ones. So the peak of one cover thread is a multiple of this limit that
+/// depends on the pixel format: about 1x for RGB8, 1.75x for RGBA8, up to 3.5x
+/// for gray with alpha and up to 4x for 8-bit gray (the decode buffer plus a
+/// three times larger RGB copy). On top of that come the pictures lofty read
+/// from the file the thread is working on (each at most `MAX_COVER_BYTES`).
+/// Each thread runs one decode at a time, so the total grows with the thread
+/// count chosen in `tag_batch`.
 pub const MAX_DECODE_BYTES: u64 = 64 * 1024 * 1024;
 
 const JPEG_QUALITY: u8 = 85;
