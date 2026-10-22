@@ -34,6 +34,17 @@ import 'package:drift/drift.dart';
 // 6. The playlist cover is computed (first 4 entries by position), not stored.
 // 7. This data lives in `library.db`: a "reset library" must delete roots and
 //    tracks, never the file.
+// 8. Playlist kinds. `playlists.kind` NULL is an ordinary playlist;
+//    'favorites' is the Favorites playlist, at most one row (partial unique
+//    index `playlists_favorites_unique`); 'queue' is reserved and may have
+//    several rows. Writers store no other value; readers treat an unknown
+//    kind as an ordinary playlist. Favorites is created lazily, never seeded:
+//    in one transaction, `INSERT OR IGNORE` (drift `InsertMode.insertOrIgnore`)
+//    then `SELECT id FROM playlists WHERE kind = 'favorites'`. Do not use
+//    `insertReturning` (an ignored insert reports no row) nor
+//    `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects
+//    for a partial index). Favorites is still a playlist: invariants 1, 2 and
+//    5 apply to its entries.
 
 /// One listen of a track. Append-mostly log; see invariants 1-4 above.
 @DataClassName('Play')
@@ -68,11 +79,18 @@ class PlayStats extends Table {
   Set<Column> get primaryKey => {path};
 }
 
-/// A user playlist. Names are not unique.
+/// A user playlist. Names are not unique. See invariant 8 for [kind].
+@TableIndex.sql(
+  "CREATE UNIQUE INDEX playlists_favorites_unique ON playlists (kind) "
+  "WHERE kind = 'favorites'",
+)
 class Playlists extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   IntColumn get createdAt => integer()();
+
+  /// Null for an ordinary playlist, 'favorites' for the Favorites playlist.
+  TextColumn get kind => text().nullable()();
 }
 
 /// One entry of a playlist. The same path may appear several times; the row

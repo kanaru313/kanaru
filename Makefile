@@ -95,6 +95,11 @@ reset-library: ## Forget scanned folders and tracks (keeps playlists and listen 
 	pat="$$(realpath "$$db" | sed 's/[][*?\\]/\\&/g')"; \
 	if [ -n "$$(find /proc/[0-9]*/fd -lname "$$pat" 2>/dev/null | head -n 1)" ]; then \
 	  echo "Kanaru (or another process) has $$db open. Quit it first." >&2; exit 1; fi; \
+	version="$$($(SQLITE) "$$db" 'PRAGMA user_version;')"; \
+	case "$$version" in ''|*[!0-9]*) \
+	  echo "Could not read the schema version of $$db." >&2; exit 1;; esac; \
+	if [ "$$version" -lt 6 ]; then \
+	  echo "$$db is at schema $$version; open a current Kanaru build once to upgrade it, then retry." >&2; exit 1; fi; \
 	$(SQLITE) -bail "$$db" < "$(CURDIR)/packaging/dev/reset-library.sql" \
 	  && command rm -rf "$(CACHE_DIR)/covers" \
 	  && echo "Library cleared. Playlists and listen history kept; next start opens the empty library (add folders in Settings > Library)."

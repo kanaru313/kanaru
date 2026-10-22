@@ -676,8 +676,17 @@ class $PlaylistsTable extends Playlists
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
   @override
-  List<GeneratedColumn> get $columns => [id, name, createdAt];
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, createdAt, kind];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -709,6 +718,12 @@ class $PlaylistsTable extends Playlists
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
     return context;
   }
 
@@ -730,6 +745,10 @@ class $PlaylistsTable extends Playlists
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
       )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      ),
     );
   }
 
@@ -743,10 +762,14 @@ class Playlist extends DataClass implements Insertable<Playlist> {
   final int id;
   final String name;
   final int createdAt;
+
+  /// Null for an ordinary playlist, 'favorites' for the Favorites playlist.
+  final String? kind;
   const Playlist({
     required this.id,
     required this.name,
     required this.createdAt,
+    this.kind,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -754,6 +777,9 @@ class Playlist extends DataClass implements Insertable<Playlist> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['created_at'] = Variable<int>(createdAt);
+    if (!nullToAbsent || kind != null) {
+      map['kind'] = Variable<String>(kind);
+    }
     return map;
   }
 
@@ -762,6 +788,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       id: Value(id),
       name: Value(name),
       createdAt: Value(createdAt),
+      kind: kind == null && nullToAbsent ? const Value.absent() : Value(kind),
     );
   }
 
@@ -774,6 +801,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
+      kind: serializer.fromJson<String?>(json['kind']),
     );
   }
   @override
@@ -783,19 +811,27 @@ class Playlist extends DataClass implements Insertable<Playlist> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'createdAt': serializer.toJson<int>(createdAt),
+      'kind': serializer.toJson<String?>(kind),
     };
   }
 
-  Playlist copyWith({int? id, String? name, int? createdAt}) => Playlist(
+  Playlist copyWith({
+    int? id,
+    String? name,
+    int? createdAt,
+    Value<String?> kind = const Value.absent(),
+  }) => Playlist(
     id: id ?? this.id,
     name: name ?? this.name,
     createdAt: createdAt ?? this.createdAt,
+    kind: kind.present ? kind.value : this.kind,
   );
   Playlist copyWithCompanion(PlaylistsCompanion data) {
     return Playlist(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      kind: data.kind.present ? data.kind.value : this.kind,
     );
   }
 
@@ -804,46 +840,53 @@ class Playlist extends DataClass implements Insertable<Playlist> {
     return (StringBuffer('Playlist(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('kind: $kind')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, createdAt);
+  int get hashCode => Object.hash(id, name, createdAt, kind);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Playlist &&
           other.id == this.id &&
           other.name == this.name &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.kind == this.kind);
 }
 
 class PlaylistsCompanion extends UpdateCompanion<Playlist> {
   final Value<int> id;
   final Value<String> name;
   final Value<int> createdAt;
+  final Value<String?> kind;
   const PlaylistsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.kind = const Value.absent(),
   });
   PlaylistsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     required int createdAt,
+    this.kind = const Value.absent(),
   }) : name = Value(name),
        createdAt = Value(createdAt);
   static Insertable<Playlist> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<int>? createdAt,
+    Expression<String>? kind,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (createdAt != null) 'created_at': createdAt,
+      if (kind != null) 'kind': kind,
     });
   }
 
@@ -851,11 +894,13 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
     Value<int>? id,
     Value<String>? name,
     Value<int>? createdAt,
+    Value<String?>? kind,
   }) {
     return PlaylistsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
+      kind: kind ?? this.kind,
     );
   }
 
@@ -871,6 +916,9 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
     return map;
   }
 
@@ -879,7 +927,8 @@ class PlaylistsCompanion extends UpdateCompanion<Playlist> {
     return (StringBuffer('PlaylistsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('kind: $kind')
           ..write(')'))
         .toString();
   }
@@ -4240,6 +4289,574 @@ class TrackArtistsCompanion extends UpdateCompanion<TrackArtist> {
   }
 }
 
+class $CoverColorsTable extends CoverColors
+    with TableInfo<$CoverColorsTable, CoverColor> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CoverColorsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _coverKeyMeta = const VerificationMeta(
+    'coverKey',
+  );
+  @override
+  late final GeneratedColumn<String> coverKey = GeneratedColumn<String>(
+    'cover_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seedMeta = const VerificationMeta('seed');
+  @override
+  late final GeneratedColumn<int> seed = GeneratedColumn<int>(
+    'seed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _paletteMeta = const VerificationMeta(
+    'palette',
+  );
+  @override
+  late final GeneratedColumn<String> palette = GeneratedColumn<String>(
+    'palette',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _algoVersionMeta = const VerificationMeta(
+    'algoVersion',
+  );
+  @override
+  late final GeneratedColumn<int> algoVersion = GeneratedColumn<int>(
+    'algo_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [coverKey, seed, palette, algoVersion];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cover_colors';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CoverColor> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('cover_key')) {
+      context.handle(
+        _coverKeyMeta,
+        coverKey.isAcceptableOrUnknown(data['cover_key']!, _coverKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_coverKeyMeta);
+    }
+    if (data.containsKey('seed')) {
+      context.handle(
+        _seedMeta,
+        seed.isAcceptableOrUnknown(data['seed']!, _seedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seedMeta);
+    }
+    if (data.containsKey('palette')) {
+      context.handle(
+        _paletteMeta,
+        palette.isAcceptableOrUnknown(data['palette']!, _paletteMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_paletteMeta);
+    }
+    if (data.containsKey('algo_version')) {
+      context.handle(
+        _algoVersionMeta,
+        algoVersion.isAcceptableOrUnknown(
+          data['algo_version']!,
+          _algoVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_algoVersionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {coverKey};
+  @override
+  CoverColor map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CoverColor(
+      coverKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_key'],
+      )!,
+      seed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seed'],
+      )!,
+      palette: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}palette'],
+      )!,
+      algoVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}algo_version'],
+      )!,
+    );
+  }
+
+  @override
+  $CoverColorsTable createAlias(String alias) {
+    return $CoverColorsTable(attachedDatabase, alias);
+  }
+}
+
+class CoverColor extends DataClass implements Insertable<CoverColor> {
+  final String coverKey;
+  final int seed;
+  final String palette;
+  final int algoVersion;
+  const CoverColor({
+    required this.coverKey,
+    required this.seed,
+    required this.palette,
+    required this.algoVersion,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['cover_key'] = Variable<String>(coverKey);
+    map['seed'] = Variable<int>(seed);
+    map['palette'] = Variable<String>(palette);
+    map['algo_version'] = Variable<int>(algoVersion);
+    return map;
+  }
+
+  CoverColorsCompanion toCompanion(bool nullToAbsent) {
+    return CoverColorsCompanion(
+      coverKey: Value(coverKey),
+      seed: Value(seed),
+      palette: Value(palette),
+      algoVersion: Value(algoVersion),
+    );
+  }
+
+  factory CoverColor.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CoverColor(
+      coverKey: serializer.fromJson<String>(json['coverKey']),
+      seed: serializer.fromJson<int>(json['seed']),
+      palette: serializer.fromJson<String>(json['palette']),
+      algoVersion: serializer.fromJson<int>(json['algoVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'coverKey': serializer.toJson<String>(coverKey),
+      'seed': serializer.toJson<int>(seed),
+      'palette': serializer.toJson<String>(palette),
+      'algoVersion': serializer.toJson<int>(algoVersion),
+    };
+  }
+
+  CoverColor copyWith({
+    String? coverKey,
+    int? seed,
+    String? palette,
+    int? algoVersion,
+  }) => CoverColor(
+    coverKey: coverKey ?? this.coverKey,
+    seed: seed ?? this.seed,
+    palette: palette ?? this.palette,
+    algoVersion: algoVersion ?? this.algoVersion,
+  );
+  CoverColor copyWithCompanion(CoverColorsCompanion data) {
+    return CoverColor(
+      coverKey: data.coverKey.present ? data.coverKey.value : this.coverKey,
+      seed: data.seed.present ? data.seed.value : this.seed,
+      palette: data.palette.present ? data.palette.value : this.palette,
+      algoVersion: data.algoVersion.present
+          ? data.algoVersion.value
+          : this.algoVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoverColor(')
+          ..write('coverKey: $coverKey, ')
+          ..write('seed: $seed, ')
+          ..write('palette: $palette, ')
+          ..write('algoVersion: $algoVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(coverKey, seed, palette, algoVersion);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CoverColor &&
+          other.coverKey == this.coverKey &&
+          other.seed == this.seed &&
+          other.palette == this.palette &&
+          other.algoVersion == this.algoVersion);
+}
+
+class CoverColorsCompanion extends UpdateCompanion<CoverColor> {
+  final Value<String> coverKey;
+  final Value<int> seed;
+  final Value<String> palette;
+  final Value<int> algoVersion;
+  final Value<int> rowid;
+  const CoverColorsCompanion({
+    this.coverKey = const Value.absent(),
+    this.seed = const Value.absent(),
+    this.palette = const Value.absent(),
+    this.algoVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CoverColorsCompanion.insert({
+    required String coverKey,
+    required int seed,
+    required String palette,
+    required int algoVersion,
+    this.rowid = const Value.absent(),
+  }) : coverKey = Value(coverKey),
+       seed = Value(seed),
+       palette = Value(palette),
+       algoVersion = Value(algoVersion);
+  static Insertable<CoverColor> custom({
+    Expression<String>? coverKey,
+    Expression<int>? seed,
+    Expression<String>? palette,
+    Expression<int>? algoVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (coverKey != null) 'cover_key': coverKey,
+      if (seed != null) 'seed': seed,
+      if (palette != null) 'palette': palette,
+      if (algoVersion != null) 'algo_version': algoVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CoverColorsCompanion copyWith({
+    Value<String>? coverKey,
+    Value<int>? seed,
+    Value<String>? palette,
+    Value<int>? algoVersion,
+    Value<int>? rowid,
+  }) {
+    return CoverColorsCompanion(
+      coverKey: coverKey ?? this.coverKey,
+      seed: seed ?? this.seed,
+      palette: palette ?? this.palette,
+      algoVersion: algoVersion ?? this.algoVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (coverKey.present) {
+      map['cover_key'] = Variable<String>(coverKey.value);
+    }
+    if (seed.present) {
+      map['seed'] = Variable<int>(seed.value);
+    }
+    if (palette.present) {
+      map['palette'] = Variable<String>(palette.value);
+    }
+    if (algoVersion.present) {
+      map['algo_version'] = Variable<int>(algoVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoverColorsCompanion(')
+          ..write('coverKey: $coverKey, ')
+          ..write('seed: $seed, ')
+          ..write('palette: $palette, ')
+          ..write('algoVersion: $algoVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExcludedFoldersTable extends ExcludedFolders
+    with TableInfo<$ExcludedFoldersTable, ExcludedFolder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExcludedFoldersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _addedAtMeta = const VerificationMeta(
+    'addedAt',
+  );
+  @override
+  late final GeneratedColumn<int> addedAt = GeneratedColumn<int>(
+    'added_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, path, addedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'excluded_folders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExcludedFolder> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('added_at')) {
+      context.handle(
+        _addedAtMeta,
+        addedAt.isAcceptableOrUnknown(data['added_at']!, _addedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_addedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExcludedFolder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExcludedFolder(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      addedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}added_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExcludedFoldersTable createAlias(String alias) {
+    return $ExcludedFoldersTable(attachedDatabase, alias);
+  }
+}
+
+class ExcludedFolder extends DataClass implements Insertable<ExcludedFolder> {
+  final int id;
+  final String path;
+  final int addedAt;
+  const ExcludedFolder({
+    required this.id,
+    required this.path,
+    required this.addedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['path'] = Variable<String>(path);
+    map['added_at'] = Variable<int>(addedAt);
+    return map;
+  }
+
+  ExcludedFoldersCompanion toCompanion(bool nullToAbsent) {
+    return ExcludedFoldersCompanion(
+      id: Value(id),
+      path: Value(path),
+      addedAt: Value(addedAt),
+    );
+  }
+
+  factory ExcludedFolder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExcludedFolder(
+      id: serializer.fromJson<int>(json['id']),
+      path: serializer.fromJson<String>(json['path']),
+      addedAt: serializer.fromJson<int>(json['addedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'path': serializer.toJson<String>(path),
+      'addedAt': serializer.toJson<int>(addedAt),
+    };
+  }
+
+  ExcludedFolder copyWith({int? id, String? path, int? addedAt}) =>
+      ExcludedFolder(
+        id: id ?? this.id,
+        path: path ?? this.path,
+        addedAt: addedAt ?? this.addedAt,
+      );
+  ExcludedFolder copyWithCompanion(ExcludedFoldersCompanion data) {
+    return ExcludedFolder(
+      id: data.id.present ? data.id.value : this.id,
+      path: data.path.present ? data.path.value : this.path,
+      addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExcludedFolder(')
+          ..write('id: $id, ')
+          ..write('path: $path, ')
+          ..write('addedAt: $addedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, path, addedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExcludedFolder &&
+          other.id == this.id &&
+          other.path == this.path &&
+          other.addedAt == this.addedAt);
+}
+
+class ExcludedFoldersCompanion extends UpdateCompanion<ExcludedFolder> {
+  final Value<int> id;
+  final Value<String> path;
+  final Value<int> addedAt;
+  const ExcludedFoldersCompanion({
+    this.id = const Value.absent(),
+    this.path = const Value.absent(),
+    this.addedAt = const Value.absent(),
+  });
+  ExcludedFoldersCompanion.insert({
+    this.id = const Value.absent(),
+    required String path,
+    required int addedAt,
+  }) : path = Value(path),
+       addedAt = Value(addedAt);
+  static Insertable<ExcludedFolder> custom({
+    Expression<int>? id,
+    Expression<String>? path,
+    Expression<int>? addedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (path != null) 'path': path,
+      if (addedAt != null) 'added_at': addedAt,
+    });
+  }
+
+  ExcludedFoldersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? path,
+    Value<int>? addedAt,
+  }) {
+    return ExcludedFoldersCompanion(
+      id: id ?? this.id,
+      path: path ?? this.path,
+      addedAt: addedAt ?? this.addedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (addedAt.present) {
+      map['added_at'] = Variable<int>(addedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExcludedFoldersCompanion(')
+          ..write('id: $id, ')
+          ..write('path: $path, ')
+          ..write('addedAt: $addedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LibraryDatabase extends GeneratedDatabase {
   _$LibraryDatabase(QueryExecutor e) : super(e);
   $LibraryDatabaseManager get managers => $LibraryDatabaseManager(this);
@@ -4269,6 +4886,10 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     'plays_played_at',
     'CREATE INDEX plays_played_at ON plays (played_at, path)',
   );
+  late final Index playlistsFavoritesUnique = Index(
+    'playlists_favorites_unique',
+    'CREATE UNIQUE INDEX playlists_favorites_unique ON playlists (kind) WHERE kind = \'favorites\'',
+  );
   late final Index playlistEntriesOrder = Index(
     'playlist_entries_order',
     'CREATE INDEX playlist_entries_order ON playlist_entries (playlist_id, position)',
@@ -4289,6 +4910,10 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     'tracks_search_update',
   );
   late final $TrackArtistsTable trackArtists = $TrackArtistsTable(this);
+  late final $CoverColorsTable coverColors = $CoverColorsTable(this);
+  late final $ExcludedFoldersTable excludedFolders = $ExcludedFoldersTable(
+    this,
+  );
   late final Index tracksRoot = Index(
     'tracks_root',
     'CREATE INDEX tracks_root ON tracks (root_id)',
@@ -4323,6 +4948,7 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     playlistEntries,
     playsPathPlayed,
     playsPlayedAt,
+    playlistsFavoritesUnique,
     playlistEntriesOrder,
     libraryRoots,
     tracks,
@@ -4331,6 +4957,8 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     tracksSearchDelete,
     tracksSearchUpdate,
     trackArtists,
+    coverColors,
+    excludedFolders,
     tracksRoot,
     tracksTitleSort,
     tracksAlbumKey,
@@ -4783,11 +5411,13 @@ typedef $$PlaylistsTableCreateCompanionBuilder = PlaylistsCompanion Function({
   Value<int> id,
   required String name,
   required int createdAt,
+  Value<String?> kind,
 });
 typedef $$PlaylistsTableUpdateCompanionBuilder = PlaylistsCompanion Function({
   Value<int> id,
   Value<String> name,
   Value<int> createdAt,
+  Value<String?> kind,
 });
 
 final class $$PlaylistsTableReferences
@@ -4840,6 +5470,11 @@ class $$PlaylistsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> playlistEntriesRefs(
     Expression<bool> Function($$PlaylistEntriesTableFilterComposer f) f,
   ) {
@@ -4889,6 +5524,11 @@ class $$PlaylistsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PlaylistsTableAnnotationComposer
@@ -4908,6 +5548,9 @@ class $$PlaylistsTableAnnotationComposer
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
 
   Expression<T> playlistEntriesRefs<T extends Object>(
     Expression<T> Function($$PlaylistEntriesTableAnnotationComposer a) f,
@@ -4961,20 +5604,29 @@ class $$PlaylistsTableTableManager
               $$PlaylistsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$PlaylistsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<int> createdAt = const Value.absent(),
-          }) => PlaylistsCompanion(id: id, name: name, createdAt: createdAt),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<String?> kind = const Value.absent(),
+              }) => PlaylistsCompanion(
+                id: id,
+                name: name,
+                createdAt: createdAt,
+                kind: kind,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
                 required int createdAt,
+                Value<String?> kind = const Value.absent(),
               }) => PlaylistsCompanion.insert(
                 id: id,
                 name: name,
                 createdAt: createdAt,
+                kind: kind,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -7158,6 +7810,368 @@ typedef $$TrackArtistsTableProcessedTableManager =
       TrackArtist,
       PrefetchHooks Function({bool trackId})
     >;
+typedef $$CoverColorsTableCreateCompanionBuilder =
+    CoverColorsCompanion Function({
+      required String coverKey,
+      required int seed,
+      required String palette,
+      required int algoVersion,
+      Value<int> rowid,
+    });
+typedef $$CoverColorsTableUpdateCompanionBuilder =
+    CoverColorsCompanion Function({
+      Value<String> coverKey,
+      Value<int> seed,
+      Value<String> palette,
+      Value<int> algoVersion,
+      Value<int> rowid,
+    });
+
+class $$CoverColorsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $CoverColorsTable> {
+  $$CoverColorsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get coverKey => $composableBuilder(
+    column: $table.coverKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seed => $composableBuilder(
+    column: $table.seed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get palette => $composableBuilder(
+    column: $table.palette,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get algoVersion => $composableBuilder(
+    column: $table.algoVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CoverColorsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $CoverColorsTable> {
+  $$CoverColorsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get coverKey => $composableBuilder(
+    column: $table.coverKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seed => $composableBuilder(
+    column: $table.seed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get palette => $composableBuilder(
+    column: $table.palette,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get algoVersion => $composableBuilder(
+    column: $table.algoVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CoverColorsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $CoverColorsTable> {
+  $$CoverColorsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get coverKey =>
+      $composableBuilder(column: $table.coverKey, builder: (column) => column);
+
+  GeneratedColumn<int> get seed =>
+      $composableBuilder(column: $table.seed, builder: (column) => column);
+
+  GeneratedColumn<String> get palette =>
+      $composableBuilder(column: $table.palette, builder: (column) => column);
+
+  GeneratedColumn<int> get algoVersion => $composableBuilder(
+    column: $table.algoVersion,
+    builder: (column) => column,
+  );
+}
+
+class $$CoverColorsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $CoverColorsTable,
+          CoverColor,
+          $$CoverColorsTableFilterComposer,
+          $$CoverColorsTableOrderingComposer,
+          $$CoverColorsTableAnnotationComposer,
+          $$CoverColorsTableCreateCompanionBuilder,
+          $$CoverColorsTableUpdateCompanionBuilder,
+          (
+            CoverColor,
+            BaseReferences<_$LibraryDatabase, $CoverColorsTable, CoverColor>,
+          ),
+          CoverColor,
+          PrefetchHooks Function()
+        > {
+  $$CoverColorsTableTableManager(_$LibraryDatabase db, $CoverColorsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CoverColorsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CoverColorsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CoverColorsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> coverKey = const Value.absent(),
+                Value<int> seed = const Value.absent(),
+                Value<String> palette = const Value.absent(),
+                Value<int> algoVersion = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoverColorsCompanion(
+                coverKey: coverKey,
+                seed: seed,
+                palette: palette,
+                algoVersion: algoVersion,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String coverKey,
+                required int seed,
+                required String palette,
+                required int algoVersion,
+                Value<int> rowid = const Value.absent(),
+              }) => CoverColorsCompanion.insert(
+                coverKey: coverKey,
+                seed: seed,
+                palette: palette,
+                algoVersion: algoVersion,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CoverColorsTable, CoverColor>(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $CoverColorsTable,
+                    CoverColor
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CoverColorsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $CoverColorsTable,
+      CoverColor,
+      $$CoverColorsTableFilterComposer,
+      $$CoverColorsTableOrderingComposer,
+      $$CoverColorsTableAnnotationComposer,
+      $$CoverColorsTableCreateCompanionBuilder,
+      $$CoverColorsTableUpdateCompanionBuilder,
+      (
+        CoverColor,
+        BaseReferences<_$LibraryDatabase, $CoverColorsTable, CoverColor>,
+      ),
+      CoverColor,
+      PrefetchHooks Function()
+    >;
+typedef $$ExcludedFoldersTableCreateCompanionBuilder =
+    ExcludedFoldersCompanion Function({
+      Value<int> id,
+      required String path,
+      required int addedAt,
+    });
+typedef $$ExcludedFoldersTableUpdateCompanionBuilder =
+    ExcludedFoldersCompanion Function({
+      Value<int> id,
+      Value<String> path,
+      Value<int> addedAt,
+    });
+
+class $$ExcludedFoldersTableFilterComposer
+    extends Composer<_$LibraryDatabase, $ExcludedFoldersTable> {
+  $$ExcludedFoldersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ExcludedFoldersTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $ExcludedFoldersTable> {
+  $$ExcludedFoldersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExcludedFoldersTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $ExcludedFoldersTable> {
+  $$ExcludedFoldersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<int> get addedAt =>
+      $composableBuilder(column: $table.addedAt, builder: (column) => column);
+}
+
+class $$ExcludedFoldersTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $ExcludedFoldersTable,
+          ExcludedFolder,
+          $$ExcludedFoldersTableFilterComposer,
+          $$ExcludedFoldersTableOrderingComposer,
+          $$ExcludedFoldersTableAnnotationComposer,
+          $$ExcludedFoldersTableCreateCompanionBuilder,
+          $$ExcludedFoldersTableUpdateCompanionBuilder,
+          (
+            ExcludedFolder,
+            BaseReferences<
+              _$LibraryDatabase,
+              $ExcludedFoldersTable,
+              ExcludedFolder
+            >,
+          ),
+          ExcludedFolder,
+          PrefetchHooks Function()
+        > {
+  $$ExcludedFoldersTableTableManager(
+    _$LibraryDatabase db,
+    $ExcludedFoldersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExcludedFoldersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExcludedFoldersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExcludedFoldersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> path = const Value.absent(),
+            Value<int> addedAt = const Value.absent(),
+          }) => ExcludedFoldersCompanion(id: id, path: path, addedAt: addedAt),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String path,
+                required int addedAt,
+              }) => ExcludedFoldersCompanion.insert(
+                id: id,
+                path: path,
+                addedAt: addedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ExcludedFoldersTable, ExcludedFolder>(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $ExcludedFoldersTable,
+                    ExcludedFolder
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ExcludedFoldersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $ExcludedFoldersTable,
+      ExcludedFolder,
+      $$ExcludedFoldersTableFilterComposer,
+      $$ExcludedFoldersTableOrderingComposer,
+      $$ExcludedFoldersTableAnnotationComposer,
+      $$ExcludedFoldersTableCreateCompanionBuilder,
+      $$ExcludedFoldersTableUpdateCompanionBuilder,
+      (
+        ExcludedFolder,
+        BaseReferences<
+          _$LibraryDatabase,
+          $ExcludedFoldersTable,
+          ExcludedFolder
+        >,
+      ),
+      ExcludedFolder,
+      PrefetchHooks Function()
+    >;
 
 class $LibraryDatabaseManager {
   final _$LibraryDatabase _db;
@@ -7178,4 +8192,8 @@ class $LibraryDatabaseManager {
       $TrackSearchTableManager(_db, _db.trackSearch);
   $$TrackArtistsTableTableManager get trackArtists =>
       $$TrackArtistsTableTableManager(_db, _db.trackArtists);
+  $$CoverColorsTableTableManager get coverColors =>
+      $$CoverColorsTableTableManager(_db, _db.coverColors);
+  $$ExcludedFoldersTableTableManager get excludedFolders =>
+      $$ExcludedFoldersTableTableManager(_db, _db.excludedFolders);
 }

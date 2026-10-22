@@ -224,7 +224,7 @@ Quit Kanaru first. `reset-covers` and `reset-all` are `Makefile` rules that run 
 | Command | Removes | Keeps | Next start |
 |---|---|---|---|
 | `make reset-covers` | `cache/covers` | everything else | Covers read again on the next scan |
-| `make reset-library` | Library folders, tracks, track artists and the search index inside `library.db`; `cache/covers` | Playlists, listen history and play counts, settings, session | Empty library: settings still record that onboarding is done, so the first-run folder picker does not show; add folders in Settings → Library. Old playlist entries and plays match again by path once the same files are scanned |
+| `make reset-library` | Library folders, tracks, track artists, cover colors and the search index inside `library.db`; `cache/covers` | Playlists (Favorites included), listen history and play counts, excluded folders, settings, session. Refuses a `library.db` below schema 6 (open a current build once first) | Empty library: settings still record that onboarding is done, so the first-run folder picker does not show; add folders in Settings → Library. Old playlist entries and plays match again by path once the same files are scanned |
 | `make reset-all` | `data`, `config`, `cache`: library, **playlists, listen history**, settings, playback session, covers, logs | nothing | Like a fresh install |
 | `make logs` | nothing | everything | Follows `kanaru.log` |
 

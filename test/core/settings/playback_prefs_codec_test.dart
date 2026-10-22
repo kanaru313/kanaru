@@ -97,4 +97,110 @@ void main() {
     expect(json['eq'], [1]);
     expect(json['gapless'], false);
   });
+
+  group('ReplayGain and output device', () {
+    test('defaults keep ReplayGain off and the automatic device', () {
+      const d = PlaybackPrefs();
+      expect(d.replayGainMode, ReplayGainMode.off);
+      expect(d.replayGainPreampDb, 0);
+      expect(d.replayGainPreventClipping, isTrue);
+      expect(d.audioDeviceName, isNull);
+      expect(d.audioDeviceDescription, isNull);
+    });
+
+    test('values round-trip', () {
+      final prefs = const PlaybackPrefs(
+        replayGainMode: ReplayGainMode.auto,
+        replayGainPreampDb: -4.5,
+        replayGainPreventClipping: false,
+      ).withAudioDevice(name: 'pipewire/usb-dac', description: 'USB DAC');
+
+      final json = encodePlaybackPrefs(prefs);
+      expect(json['replayGainMode'], 'auto');
+      expect(json['audioDeviceName'], 'pipewire/usb-dac');
+      expect(decodePlaybackPrefs(json).$1, prefs);
+      for (final mode in ReplayGainMode.values) {
+        final p = PlaybackPrefs(replayGainMode: mode);
+        expect(decodePlaybackPrefs(encodePlaybackPrefs(p)).$1, p);
+      }
+    });
+
+    test('the device keys are left out while no device is chosen', () {
+      final json = encodePlaybackPrefs(const PlaybackPrefs());
+      expect(json.containsKey('audioDeviceName'), isFalse);
+      expect(json.containsKey('audioDeviceDescription'), isFalse);
+      expect(decodePlaybackPrefs(json).$1, const PlaybackPrefs());
+    });
+
+    test('preamp outside the range is moved to the nearest bound', () {
+      double preamp(Object? value) =>
+          decodePlaybackPrefs({'replayGainPreampDb': value})
+              .$1
+              .replayGainPreampDb;
+      expect(preamp(20), PlaybackPrefs.maxReplayGainPreampDb);
+      expect(preamp(-99.5), PlaybackPrefs.minReplayGainPreampDb);
+      expect(preamp(3), 3.0);
+      expect(preamp('3'), 0);
+      expect(preamp(double.nan), 0);
+      expect(preamp(double.infinity), 0);
+    });
+
+    test('values of the wrong type give the default of that key only', () {
+      final prefs = decodePlaybackPrefs({
+        'replayGainMode': 'loud',
+        'replayGainPreventClipping': 'yes',
+        'audioDeviceName': 42,
+        'audioDeviceDescription': ['x'],
+        'gapless': false,
+      }).$1;
+      expect(prefs, const PlaybackPrefs(gapless: false));
+    });
+
+    test('an empty device name is the automatic device', () {
+      final prefs = decodePlaybackPrefs({
+        'audioDeviceName': '',
+        'audioDeviceDescription': 'Speakers',
+      }).$1;
+      expect(prefs.audioDeviceName, isNull);
+      expect(prefs.audioDeviceDescription, isNull);
+    });
+
+    test('withAudioDevice sets both fields and resets to auto', () {
+      final chosen = const PlaybackPrefs(gapless: false)
+          .withAudioDevice(name: 'alsa/hw', description: 'HW');
+      expect(chosen.audioDeviceName, 'alsa/hw');
+      expect(chosen.audioDeviceDescription, 'HW');
+      expect(chosen.gapless, isFalse);
+
+      // copyWith keeps the device.
+      expect(chosen.copyWith(gapless: true).audioDeviceName, 'alsa/hw');
+
+      final reset = chosen.withAudioDevice();
+      expect(reset.audioDeviceName, isNull);
+      expect(reset.audioDeviceDescription, isNull);
+      expect(reset, const PlaybackPrefs(gapless: false));
+
+      // Every other field survives a device change.
+      final custom = const PlaybackPrefs(
+        preferEmbeddedLyrics: false,
+        gapless: false,
+        infiniteQueue: true,
+        crossfadeSeconds: 6,
+        fadeOnPlayMs: 300,
+        fadeOnPauseMs: 500,
+        listenThresholdMinutes: 2,
+        listenThresholdPercent: 30,
+        replayGainMode: ReplayGainMode.album,
+        replayGainPreampDb: 3.5,
+        replayGainPreventClipping: false,
+      );
+      expect(custom.withAudioDevice(name: 'a').withAudioDevice(), custom);
+
+      // A description without a name is dropped.
+      expect(
+        const PlaybackPrefs().withAudioDevice(description: 'X'),
+        const PlaybackPrefs(),
+      );
+    });
+  });
 }

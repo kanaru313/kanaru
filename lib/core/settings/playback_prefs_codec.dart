@@ -9,6 +9,11 @@ const _fadeOnPlayMsKey = 'fadeOnPlayMs';
 const _fadeOnPauseMsKey = 'fadeOnPauseMs';
 const _listenThresholdMinutesKey = 'listenThresholdMinutes';
 const _listenThresholdPercentKey = 'listenThresholdPercent';
+const _replayGainModeKey = 'replayGainMode';
+const _replayGainPreampDbKey = 'replayGainPreampDb';
+const _replayGainPreventClippingKey = 'replayGainPreventClipping';
+const _audioDeviceNameKey = 'audioDeviceName';
+const _audioDeviceDescriptionKey = 'audioDeviceDescription';
 const _knownKeys = {
   _preferEmbeddedLyricsKey,
   _gaplessKey,
@@ -18,6 +23,11 @@ const _knownKeys = {
   _fadeOnPauseMsKey,
   _listenThresholdMinutesKey,
   _listenThresholdPercentKey,
+  _replayGainModeKey,
+  _replayGainPreampDbKey,
+  _replayGainPreventClippingKey,
+  _audioDeviceNameKey,
+  _audioDeviceDescriptionKey,
 };
 
 /// Reads the `playback` object; each key falls back on its own. The second
@@ -63,12 +73,31 @@ const _knownKeys = {
         PlaybackPrefs.maxListenThresholdPercent,
         d.listenThresholdPercent,
       ),
+      replayGainMode: enumOr(
+        ReplayGainMode.values,
+        map[_replayGainModeKey],
+        d.replayGainMode,
+      ),
+      replayGainPreampDb: doubleInRange(
+        map[_replayGainPreampDbKey],
+        PlaybackPrefs.minReplayGainPreampDb,
+        PlaybackPrefs.maxReplayGainPreampDb,
+        d.replayGainPreampDb,
+      ),
+      replayGainPreventClipping: boolOr(
+        map[_replayGainPreventClippingKey],
+        d.replayGainPreventClipping,
+      ),
+    ).withAudioDevice(
+      name: nonEmptyStringOrNull(map[_audioDeviceNameKey]),
+      description: nonEmptyStringOrNull(map[_audioDeviceDescriptionKey]),
     ),
     unknownEntries(map, _knownKeys),
   );
 }
 
-/// The `playback` object, with [extra] (unknown keys) carried over.
+/// The `playback` object, with [extra] (unknown keys) carried over. The
+/// device keys are left out while no device is chosen.
 Map<String, Object?> encodePlaybackPrefs(
   PlaybackPrefs prefs, {
   Map<String, Object?> extra = const {},
@@ -82,4 +111,9 @@ Map<String, Object?> encodePlaybackPrefs(
   _fadeOnPauseMsKey: prefs.fadeOnPauseMs,
   _listenThresholdMinutesKey: prefs.listenThresholdMinutes,
   _listenThresholdPercentKey: prefs.listenThresholdPercent,
+  _replayGainModeKey: prefs.replayGainMode.name,
+  _replayGainPreampDbKey: prefs.replayGainPreampDb,
+  _replayGainPreventClippingKey: prefs.replayGainPreventClipping,
+  _audioDeviceNameKey: ?prefs.audioDeviceName,
+  _audioDeviceDescriptionKey: ?prefs.audioDeviceDescription,
 };

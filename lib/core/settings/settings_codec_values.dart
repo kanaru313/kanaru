@@ -39,6 +39,10 @@ double doubleInRange(Object? value, double min, double max, double fallback) {
   return value.toDouble().clamp(min, max);
 }
 
+/// [value] when it is a non-empty string, else null.
+String? nonEmptyStringOrNull(Object? value) =>
+    value is String && value.isNotEmpty ? value : null;
+
 /// [json] as an object, or an empty one: a group of keys that was stored as
 /// something else reads as all defaults.
 Map<String, Object?> objectOrEmpty(Object? json) =>

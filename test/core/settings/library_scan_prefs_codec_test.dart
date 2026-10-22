@@ -137,4 +137,16 @@ void main() {
     expect(json['futureKey'], {'a': 1});
     expect(json['respectNomedia'], true);
   });
+
+  test('folder watching is off by default and round-trips', () {
+    expect(const LibraryScanPrefs().watchFolders, isFalse);
+    expect(
+      decodeLibraryScanPrefs({'watchFolders': 'yes'}).$1.watchFolders,
+      isFalse,
+    );
+    const prefs = LibraryScanPrefs(watchFolders: true);
+    final json = encodeLibraryScanPrefs(prefs);
+    expect(json['watchFolders'], true);
+    expect(decodeLibraryScanPrefs(json).$1, prefs);
+  });
 }
