@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../cover_colors/rust_cover_color_extractor.dart';
 import '../database/excluded_folder_queries.dart';
 import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
@@ -376,6 +377,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
         onProgress: (done, total) {
           if (ref.mounted) progress.report(done, total);
         },
+        // Colors from the cover: read before each batch, so turning the
+        // setting off stops the color round.
+        colorExtractor: ref.read(coverColorExtractorProvider),
+        shouldExtractColors: () =>
+            ref.mounted && ref.read(settingsProvider).display.colorFromCover,
       );
     } catch (error, stackTrace) {
       _log.warning('Cover pass failed', error, stackTrace);
@@ -386,7 +392,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
     _log.info(
       'Covers: ${r.found} found, ${r.none} without cover, '
       '${r.failed} failed, ${r.skipped} skipped; '
-      '${r.batches} batches, ${elapsed.elapsedMilliseconds} ms '
+      '${r.batches} batches, colors ${r.colorsDone} stored, '
+      '${r.colorsFailed} failed; ${elapsed.elapsedMilliseconds} ms '
       '(native ${r.nativeTime.inMilliseconds} ms, '
       'db ${r.dbTime.inMilliseconds} ms); '
       '${r.completed ? 'completed' : 'stopped: ${r.stoppedBecause}'}',

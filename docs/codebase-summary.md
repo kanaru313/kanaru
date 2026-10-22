@@ -77,7 +77,7 @@ Key files by area:
 | `rust/src/tag_mapping.rs` | | lofty tags to `TrackTags` |
 | `rust/src/tag_batch.rs` | | Batch read on a rayon pool |
 | `rust/src/cover_art.rs`, `cover_thumbnail.rs`, `cover_cache.rs` | | Embedded and sidecar art, 512 px JPEG thumbnails, blake3 cache keys |
-| `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Celebi quantizer + Score), `COLOR_ALGO_REVISION` |
+| `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Wu clusters, one nearest-cluster count, Score), `COLOR_ALGO_REVISION` |
 | `rust/src/frb_generated.rs` | 763 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |
 

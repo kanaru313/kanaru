@@ -109,7 +109,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [x] Full-text search over songs, albums and artists
 - [ ] Playlists: create, rename, delete, add, remove and reorder work; M3U import/export not started
 - [ ] Gapless, ReplayGain: gapless configured; ReplayGain and output device choice in Settings > Advanced
-- [ ] Dynamic color from album art: app colors follow the playing cover; extraction during the scan not turned on yet
+- [x] Dynamic color from album art
 - [ ] Packaging: AppImage done; Flatpak, `.deb` not started
 - [ ] Before the first release: collapse the database schema history into v1
 

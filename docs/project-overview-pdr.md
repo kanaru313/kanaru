@@ -126,7 +126,7 @@ Scope of the first release, derived from the P0 items of Phase 1 (features.md).
 | Folder watching | IDX-04 | P1 | Done (switch in Settings, off by default) |
 | Root removal and folder edits in Settings | IDX-01 (remainder) | P0 | Done |
 | ReplayGain | PLAY-07 | P1 | Not started |
-| Dynamic color from artwork | UI-03 | P1 | In progress |
+| Dynamic color from artwork | UI-03 | P1 | Done |
 | Flatpak and deb/rpm | PKG-02, PKG-03 | P1 | Not started |
 | CI for analyze, test and cargo test | Phase 0 item | — | Not started |
 
