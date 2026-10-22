@@ -30,10 +30,19 @@ void main() {
     ),
     matching: find.byType(Switch),
   );
-  final clearButton = find.widgetWithText(FilledButton, 'Clear');
+  // Not the "Clear" button of the cover cache row.
+  final clearButton = find.descendant(
+    of: find.ancestor(
+      of: find.text('Clear listen history'),
+      matching: find.byType(SettingRow),
+    ),
+    matching: find.byType(FilledButton),
+  );
 
   Future<void> openSettings(WidgetTester tester, LibraryHarness h) async {
     await h.pump(tester);
+    // Tall, so every row on the page is on screen.
+    tester.view.physicalSize = const Size(1280, 3000);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
     await tester.ensureVisible(clearButton);

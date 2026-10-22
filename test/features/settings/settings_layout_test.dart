@@ -142,6 +142,27 @@ Future<void> _checkLayout(
       find.byType(SettingChoice<TitleBarPreference>),
       l10n.settingsTitleBarHint,
     ),
+    // Rows of options that are not wired yet.
+    (
+      l10n.settingsRespectNomedia,
+      inRow(l10n.settingsRespectNomedia, find.byType(Switch)),
+      l10n.settingsRespectNomediaHint,
+    ),
+    (
+      l10n.settingsMinFileSize,
+      inRow(l10n.settingsMinFileSize, find.byType(DropdownMenu<int>)),
+      l10n.settingsMinFileSizeHint,
+    ),
+    (
+      l10n.settingsFontScale,
+      inRow(l10n.settingsFontScale, find.byType(DropdownMenu<double>)),
+      l10n.settingsFontScaleHint,
+    ),
+    (
+      l10n.settingsClearCoverCache,
+      inRow(l10n.settingsClearCoverCache, find.byType(FilledButton)),
+      l10n.settingsClearCoverCacheHint,
+    ),
   ]) {
     final title = tester.getRect(find.text(label));
     final text = title.expandToInclude(tester.getRect(find.text(subtitle)));
@@ -162,7 +183,13 @@ Future<void> _checkLayout(
         .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
         .evaluate(),
   ];
-  expect(controls, hasLength(7), reason: 'four buttons and three choices');
+  expect(
+    controls,
+    hasLength(17),
+    reason:
+        'six buttons, three choices and eight dropdowns of options not wired '
+        'yet',
+  );
   for (final control in controls) {
     expect(
       tester.getRect(find.byWidget(control.widget)).height,
@@ -173,6 +200,16 @@ Future<void> _checkLayout(
 
   // The rescan label is drawn inside its button on one line, however narrow
   // the button gets; at normal text size it also fits whole (no ellipsis).
+  // Chips wrap inside the window, however narrow.
+  for (final label in [
+    l10n.settingsAlbumGroupYear,
+    l10n.navFolders,
+    l10n.settingsTabLanguages,
+  ]) {
+    final chip = tester.getRect(find.text(label).last);
+    expect(chip.right, lessThanOrEqualTo(size.width), reason: label);
+  }
+
   final rescan = tester.getRect(rescanButton);
   final rescanLabel = find.descendant(
     of: rescanButton,
@@ -229,7 +266,7 @@ Future<void> _checkLayout(
         .evaluate()
         .map((e) => tester.getRect(find.byWidget(e.widget)))
         .toList();
-    expect(dropdowns, hasLength(3));
+    expect(dropdowns, hasLength(11));
     for (final rect in dropdowns.skip(1)) {
       expect(rect.width, dropdowns.first.width);
       expect(rect.right, dropdowns.first.right);

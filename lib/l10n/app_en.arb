@@ -472,9 +472,94 @@
   "settingsOpenLogFolderHint": "For bug reports. Passwords and tokens are removed before writing.",
   "settingsOpenLogFolderButton": "Open",
   "settingsLogFolderUnavailable": "Kanaru has no folder for log files on this system.",
+  "settingsComingSoon": "Coming soon",
+  "settingsOff": "Off",
+  "settingsBackupExport": "Export…",
+  "settingsUnitKb": "{count} KB",
+  "@settingsUnitKb": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitMb": "{value} MB",
+  "@settingsUnitMb": {
+    "placeholders": {
+      "value": { "type": "double", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitSeconds": "{count} s",
+  "@settingsUnitSeconds": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitMs": "{count} ms",
+  "@settingsUnitMs": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitMinutes": "{count} min",
+  "@settingsUnitMinutes": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitPercent": "{count}%",
+  "@settingsUnitPercent": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsAnimations": "Animations",
+  "settingsAnimationsHint": "Off: pages and panels switch without motion and the seek bar stays flat. Reduced motion set on the desktop always applies.",
+  "settingsColorFromCover": "Colors from the cover",
+  "settingsColorFromCoverHint": "Tint the app with the colors of the cover that is playing.",
+  "settingsFontScale": "Text size",
+  "settingsFontScaleHint": "Makes all text in Kanaru smaller or larger.",
+  "settingsRespectNomedia": "Skip folders with .nomedia",
+  "settingsRespectNomediaHint": "Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.",
+  "settingsDuplicatesByFilename": "Find duplicates by file name",
+  "settingsDuplicatesByFilenameHint": "Files with the same name count as one song. Applies at the next rescan.",
+  "settingsM3uPlaylists": "Read m3u playlists",
+  "settingsM3uPlaylistsHint": "Add the .m3u files found in the music folders as playlists. Applies at the next rescan.",
+  "settingsAlbumGrouping": "Group albums by",
+  "settingsAlbumGroupingHint": "Songs with the same album title are one album; pick what else must match. Applies at the next rescan.",
+  "settingsAlbumGroupTitle": "Album title",
+  "settingsAlbumGroupArtist": "Album artist",
+  "settingsAlbumGroupYear": "Year",
+  "settingsMinFileSize": "Minimum file size",
+  "settingsMinFileSizeHint": "Smaller files stay out of the library. Applies at the next rescan.",
+  "settingsMinDuration": "Minimum length",
+  "settingsMinDurationHint": "Shorter songs stay out of the library. Applies at the next rescan.",
+  "settingsClearCoverCache": "Clear cover cache",
+  "settingsClearCoverCacheHint": "Covers disappear until the next rescan makes them again.",
+  "settingsClearCoverCacheButton": "Clear",
+  "settingsPreferEmbeddedLyrics": "Prefer embedded lyrics",
+  "settingsPreferEmbeddedLyricsHint": "Use lyrics stored in the song file before lyric files next to it.",
+  "settingsGapless": "Gapless playback",
+  "settingsGaplessHint": "No silence between songs that follow each other, as on an album.",
+  "settingsCrossfade": "Crossfade",
+  "settingsCrossfadeHint": "How long the end of a song overlaps the start of the next.",
+  "settingsFadeOnPlay": "Fade in on play",
+  "settingsFadeOnPlayHint": "Raise the volume slowly when playback starts.",
+  "settingsFadeOnPause": "Fade out on pause",
+  "settingsFadeOnPauseHint": "Lower the volume slowly before playback pauses.",
+  "settingsInfiniteQueue": "Endless queue",
+  "settingsInfiniteQueueHint": "When the queue ends, keep playing songs like the last ones.",
+  "settingsListenAfterTime": "A listen counts after",
+  "settingsListenAfterTimeHint": "This long, or the share below of the song, whichever comes first.",
+  "settingsListenAfterShare": "A listen counts after (share of the song)",
+  "settingsListenAfterShareHint": "This share of the song, or the time above, whichever comes first.",
+  "settingsSidebarTabs": "Sidebar tabs",
+  "settingsSidebarTabsHint": "Choose which pages show in the sidebar.",
+  "settingsTabGenres": "Genres",
+  "settingsTabLanguages": "Languages",
+  "settingsTrackNumbers": "Track numbers in albums",
+  "settingsTrackNumbersHint": "Show each song's number on an album page.",
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
-  "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts. Coming soon.",
+  "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts.",
   "settingsThemeHint": "Light, dark, or follow the desktop",
   "settingsLanguageHint": "Language of menus and labels",
   "settingsTitleBarHint": "Kanaru's own bar with window buttons, the system's, or none",

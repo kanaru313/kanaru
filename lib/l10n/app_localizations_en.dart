@@ -927,6 +927,228 @@ class AppLocalizationsEn extends AppLocalizations {
       'Kanaru has no folder for log files on this system.';
 
   @override
+  String get settingsComingSoon => 'Coming soon';
+
+  @override
+  String get settingsOff => 'Off';
+
+  @override
+  String get settingsBackupExport => 'Export…';
+
+  @override
+  String settingsUnitKb(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString KB';
+  }
+
+  @override
+  String settingsUnitMb(double value) {
+    final intl.NumberFormat valueNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String valueString = valueNumberFormat.format(value);
+
+    return '$valueString MB';
+  }
+
+  @override
+  String settingsUnitSeconds(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString s';
+  }
+
+  @override
+  String settingsUnitMs(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString ms';
+  }
+
+  @override
+  String settingsUnitMinutes(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString min';
+  }
+
+  @override
+  String settingsUnitPercent(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString%';
+  }
+
+  @override
+  String get settingsAnimations => 'Animations';
+
+  @override
+  String get settingsAnimationsHint =>
+      'Off: pages and panels switch without motion and the seek bar stays flat. Reduced motion set on the desktop always applies.';
+
+  @override
+  String get settingsColorFromCover => 'Colors from the cover';
+
+  @override
+  String get settingsColorFromCoverHint =>
+      'Tint the app with the colors of the cover that is playing.';
+
+  @override
+  String get settingsFontScale => 'Text size';
+
+  @override
+  String get settingsFontScaleHint =>
+      'Makes all text in Kanaru smaller or larger.';
+
+  @override
+  String get settingsRespectNomedia => 'Skip folders with .nomedia';
+
+  @override
+  String get settingsRespectNomediaHint =>
+      'Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.';
+
+  @override
+  String get settingsDuplicatesByFilename => 'Find duplicates by file name';
+
+  @override
+  String get settingsDuplicatesByFilenameHint =>
+      'Files with the same name count as one song. Applies at the next rescan.';
+
+  @override
+  String get settingsM3uPlaylists => 'Read m3u playlists';
+
+  @override
+  String get settingsM3uPlaylistsHint =>
+      'Add the .m3u files found in the music folders as playlists. Applies at the next rescan.';
+
+  @override
+  String get settingsAlbumGrouping => 'Group albums by';
+
+  @override
+  String get settingsAlbumGroupingHint =>
+      'Songs with the same album title are one album; pick what else must match. Applies at the next rescan.';
+
+  @override
+  String get settingsAlbumGroupTitle => 'Album title';
+
+  @override
+  String get settingsAlbumGroupArtist => 'Album artist';
+
+  @override
+  String get settingsAlbumGroupYear => 'Year';
+
+  @override
+  String get settingsMinFileSize => 'Minimum file size';
+
+  @override
+  String get settingsMinFileSizeHint =>
+      'Smaller files stay out of the library. Applies at the next rescan.';
+
+  @override
+  String get settingsMinDuration => 'Minimum length';
+
+  @override
+  String get settingsMinDurationHint =>
+      'Shorter songs stay out of the library. Applies at the next rescan.';
+
+  @override
+  String get settingsClearCoverCache => 'Clear cover cache';
+
+  @override
+  String get settingsClearCoverCacheHint =>
+      'Covers disappear until the next rescan makes them again.';
+
+  @override
+  String get settingsClearCoverCacheButton => 'Clear';
+
+  @override
+  String get settingsPreferEmbeddedLyrics => 'Prefer embedded lyrics';
+
+  @override
+  String get settingsPreferEmbeddedLyricsHint =>
+      'Use lyrics stored in the song file before lyric files next to it.';
+
+  @override
+  String get settingsGapless => 'Gapless playback';
+
+  @override
+  String get settingsGaplessHint =>
+      'No silence between songs that follow each other, as on an album.';
+
+  @override
+  String get settingsCrossfade => 'Crossfade';
+
+  @override
+  String get settingsCrossfadeHint =>
+      'How long the end of a song overlaps the start of the next.';
+
+  @override
+  String get settingsFadeOnPlay => 'Fade in on play';
+
+  @override
+  String get settingsFadeOnPlayHint =>
+      'Raise the volume slowly when playback starts.';
+
+  @override
+  String get settingsFadeOnPause => 'Fade out on pause';
+
+  @override
+  String get settingsFadeOnPauseHint =>
+      'Lower the volume slowly before playback pauses.';
+
+  @override
+  String get settingsInfiniteQueue => 'Endless queue';
+
+  @override
+  String get settingsInfiniteQueueHint =>
+      'When the queue ends, keep playing songs like the last ones.';
+
+  @override
+  String get settingsListenAfterTime => 'A listen counts after';
+
+  @override
+  String get settingsListenAfterTimeHint =>
+      'This long, or the share below of the song, whichever comes first.';
+
+  @override
+  String get settingsListenAfterShare =>
+      'A listen counts after (share of the song)';
+
+  @override
+  String get settingsListenAfterShareHint =>
+      'This share of the song, or the time above, whichever comes first.';
+
+  @override
+  String get settingsSidebarTabs => 'Sidebar tabs';
+
+  @override
+  String get settingsSidebarTabsHint =>
+      'Choose which pages show in the sidebar.';
+
+  @override
+  String get settingsTabGenres => 'Genres';
+
+  @override
+  String get settingsTabLanguages => 'Languages';
+
+  @override
+  String get settingsTrackNumbers => 'Track numbers in albums';
+
+  @override
+  String get settingsTrackNumbersHint =>
+      'Show each song\'s number on an album page.';
+
+  @override
   String get settingsAdvanced => 'Advanced';
 
   @override
@@ -934,7 +1156,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsBackupRestoreHint =>
-      'Export and import your settings, playlists and play counts. Coming soon.';
+      'Export and import your settings, playlists and play counts.';
 
   @override
   String get settingsThemeHint => 'Light, dark, or follow the desktop';

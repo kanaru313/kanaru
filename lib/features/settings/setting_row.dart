@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'full_or_compact_control.dart';
+import 'setting_row_text.dart';
 
 /// Row width below which the control is built compact (a dropdown rather
 /// than a segmented button), so it leaves the title enough room.
@@ -45,6 +46,7 @@ class SettingRow extends StatelessWidget {
     required this.title,
     required Widget Function(bool compact) control,
     this.subtitle,
+    this.comingSoon = false,
   }) : _buildControl = control,
        _singleControl = null;
 
@@ -55,19 +57,22 @@ class SettingRow extends StatelessWidget {
     required this.title,
     required Widget control,
     this.subtitle,
+    this.comingSoon = false,
   }) : _buildControl = null,
        _singleControl = control;
 
   final String title;
   final String? subtitle;
+
+  /// The option is shown but not wired yet: the row is drawn disabled with a
+  /// "Coming soon" badge, and its control takes no tap and no focus whatever
+  /// its callbacks do. A backend that wires the option drops this flag.
+  final bool comingSoon;
   final Widget Function(bool compact)? _buildControl;
   final Widget? _singleControl;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final subtitle = this.subtitle;
-
     return LayoutBuilder(
       builder: (context, constraints) => ConstrainedBox(
         // As tall as a one-line list tile.
@@ -77,24 +82,10 @@ class SettingRow extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                    if (subtitle != null)
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                  ],
+                child: SettingRowText(
+                  title: title,
+                  subtitle: subtitle,
+                  comingSoon: comingSoon,
                 ),
               ),
               const SizedBox(width: 16),
@@ -108,13 +99,18 @@ class SettingRow extends StatelessWidget {
 
   Widget _control(double rowWidth) {
     final build = _buildControl;
+    Widget control = FullOrCompactControl(
+      full: build == null ? _singleControl! : build(false),
+      compact: build?.call(true),
+      compactWidth: _compactControlWidth,
+      forceCompact: rowWidth < _compactBelow,
+    );
+    if (comingSoon) control = Semantics(enabled: false, child: control);
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: rowWidth * _controlMaxShare),
-      child: FullOrCompactControl(
-        full: build == null ? _singleControl! : build(false),
-        compact: build?.call(true),
-        compactWidth: _compactControlWidth,
-        forceCompact: rowWidth < _compactBelow,
+      child: ExcludeFocus(
+        excluding: comingSoon,
+        child: IgnorePointer(ignoring: comingSoon, child: control),
       ),
     );
   }

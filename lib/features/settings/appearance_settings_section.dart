@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import 'display_setting_rows.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
@@ -112,6 +113,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
             onSelected: notifier.setTitleBar,
           ),
         ),
+        const DisplaySettingRows(),
       ],
     );
   }

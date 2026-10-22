@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import 'setting_row.dart';
 import 'settings_section.dart';
 
 /// Placeholder for backup and restore (SET-03): there is no backend yet, so
-/// the row is disabled and says so.
+/// the row is shown as coming soon.
 class BackupSettingsSection extends StatelessWidget {
   const BackupSettingsSection({super.key});
 
@@ -15,10 +16,19 @@ class BackupSettingsSection extends StatelessWidget {
     return SettingsSection(
       title: l10n.settingsBackupRestore,
       children: [
-        ListTile(
-          enabled: false,
-          title: Text(l10n.settingsBackupRestore),
-          subtitle: Text(l10n.settingsBackupRestoreHint),
+        SettingRow.single(
+          title: l10n.settingsBackupRestore,
+          subtitle: l10n.settingsBackupRestoreHint,
+          comingSoon: true,
+          control: FilledButton.tonal(
+            style: settingButtonStyle(),
+            onPressed: null,
+            child: Text(
+              l10n.settingsBackupExport,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ),
       ],
     );

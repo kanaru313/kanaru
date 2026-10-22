@@ -48,6 +48,8 @@ void main() {
     final ids = await tester.runAsync(() => h.db.addRoots(roots, now: 1));
     if (seed != null) await tester.runAsync(() => seed(ids!));
     await h.pump(tester, hasRoots: roots.isNotEmpty);
+    // Tall, so the folders are on screen below the appearance rows.
+    tester.view.physicalSize = const Size(1280, 2400);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
   }

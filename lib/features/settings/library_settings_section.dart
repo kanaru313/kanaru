@@ -12,6 +12,7 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
 import 'library_folders_list.dart';
+import 'library_scan_setting_rows.dart';
 import 'library_stats_row.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
@@ -64,6 +65,7 @@ class LibrarySettingsSection extends ConsumerWidget {
             ),
           ),
         ),
+        const LibraryScanSettingRows(),
       ],
     );
   }
