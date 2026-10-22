@@ -1898,12 +1898,6 @@ abstract class AppLocalizations {
   /// **'Output device'**
   String get settingsAudioOutputDevice;
 
-  /// No description provided for @settingsAudioOutputDeviceHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Where Kanaru plays. Automatic follows the system default.'**
-  String get settingsAudioOutputDeviceHint;
-
   /// No description provided for @audioDeviceAuto.
   ///
   /// In en, this message translates to:

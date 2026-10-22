@@ -1233,10 +1233,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAudioOutputDevice => 'Output device';
 
   @override
-  String get settingsAudioOutputDeviceHint =>
-      'Where Kanaru plays. Automatic follows the system default.';
-
-  @override
   String get audioDeviceAuto => 'Automatic (system default)';
 
   @override

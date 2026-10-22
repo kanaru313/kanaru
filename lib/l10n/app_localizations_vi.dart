@@ -1195,10 +1195,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsAudioOutputDevice => 'Thiết bị đầu ra';
 
   @override
-  String get settingsAudioOutputDeviceHint =>
-      'Nơi Kanaru phát nhạc. Tự động theo thiết bị mặc định của hệ thống.';
-
-  @override
   String get audioDeviceAuto => 'Tự động (theo hệ thống)';
 
   @override

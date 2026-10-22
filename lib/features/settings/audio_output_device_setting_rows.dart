@@ -7,7 +7,7 @@ import '../../core/player/audio_output_devices_provider.dart';
 import '../../core/player/player_service.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
-import 'audio_output_device_dialog.dart';
+import 'audio_output_device_picker_setting_rows.dart';
 import 'setting_row.dart';
 
 /// The output device row: names the chosen device (or why Automatic is in

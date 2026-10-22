@@ -120,17 +120,35 @@ void main() {
     expect(backend.audioCalls, ['setReplayGain(track, 0.00, clip=no)']);
   });
 
-  test('the decision for a track reaches the engine before its open', () async {
+  test('the decision for a track is sent before the engine opens it', () async {
     setPlayback(const PlaybackPrefs(replayGainMode: ReplayGainMode.auto));
     await service().openTracks([song('a1'), song('a2')]);
     await settle();
-    // Plays a2 from the queue: the keys are cached, so no wait.
+    // Plays a2 from the queue: the keys are cached, so no wait. Only the order
+    // of the calls on the backend is checked; mpv recomputes the gain when an
+    // option changes, so the two chains need no stricter order.
     final before = backend.audioCalls.length;
     await service().jump(1);
     await settle();
 
     expect(backend.calls.last, startsWith('open(a2'));
     expect(backend.audioCalls.length, before);
+  });
+
+  test('clearing the queue keeps the level of the playing track', () async {
+    setPlayback(const PlaybackPrefs(replayGainMode: ReplayGainMode.auto));
+    await service().openTracks([song('a1'), song('a2'), song('s')], start: 1);
+    await settle();
+    expect(backend.audioCalls.last, 'setReplayGain(album, 0.00, clip=no)');
+    backend.audioCalls.clear();
+
+    await service().clearQueue(); // a2 is alone now, without neighbours
+    await settle();
+    expect(backend.audioCalls, isEmpty);
+
+    await service().openTracks([song('s')]);
+    await settle();
+    expect(backend.audioCalls, ['setReplayGain(track, 0.00, clip=no)']);
   });
 
   test('progress updates do not read the database', () async {
@@ -171,6 +189,38 @@ void main() {
       expect(container.read(audioOutputFailedDeviceProvider), isNull);
     },
   );
+
+  test('a saved device is used at the start, without a list change', () async {
+    const x = 'pipewire/x';
+    container.dispose();
+    final engine = FakeAudioBackend()
+      ..devices = [
+        const AudioOutputDevice(name: 'auto', description: ''),
+        const AudioOutputDevice(name: x, description: 'X'),
+      ];
+    container = containerWith([audioBackendProvider.overrideWithValue(engine)]);
+    setPlayback(const PlaybackPrefs().withAudioDevice(name: x));
+    await settle();
+
+    expect(engine.audioCalls, ['setAudioDevice($x)']);
+  });
+
+  test('a rebuilt service forgets the device that failed before', () async {
+    container.dispose();
+    final engines = [FakeAudioBackend(), FakeAudioBackend()];
+    var built = 0;
+    container = containerWith([
+      audioBackendProvider.overrideWith((ref) => engines[built++]),
+    ]);
+    container.listen(audioOutputFailedDeviceProvider, (_, _) {});
+    await settle();
+    container.read(audioOutputFailedDeviceProvider.notifier).set('pipewire/x');
+
+    container.invalidate(audioBackendProvider);
+    await settle();
+
+    expect(container.read(audioOutputFailedDeviceProvider), isNull);
+  });
 
   test('a rebuilt service talks to the new engine only', () async {
     container.dispose();

@@ -584,7 +584,6 @@
   "playbackUnavailableTitle": "Audio engine not found",
   "playbackUnavailableBody": "libmpv could not be loaded. You can browse your library, but playback is turned off.",
   "settingsAudioOutputDevice": "Output device",
-  "settingsAudioOutputDeviceHint": "Where Kanaru plays. Automatic follows the system default.",
   "audioDeviceAuto": "Automatic (system default)",
   "audioDeviceMissing": "{name} — not available, using Automatic",
   "@audioDeviceMissing": {

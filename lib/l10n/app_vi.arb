@@ -316,7 +316,6 @@
   "playbackUnavailableTitle": "Không tìm thấy trình phát âm thanh",
   "playbackUnavailableBody": "Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt.",
   "settingsAudioOutputDevice": "Thiết bị đầu ra",
-  "settingsAudioOutputDeviceHint": "Nơi Kanaru phát nhạc. Tự động theo thiết bị mặc định của hệ thống.",
   "audioDeviceAuto": "Tự động (theo hệ thống)",
   "audioDeviceMissing": "{name} — không có, đang dùng Tự động",
   "@audioDeviceMissing": {

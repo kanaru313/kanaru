@@ -7,6 +7,8 @@ part of 'player_service.dart';
 mixin _PlayerQueueCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   set _ended(bool ended);
+  int get _turn;
+  set _turn(int turn);
   int get _userQueueChanges;
   set _userQueueChanges(int count);
   set _failuresInRow(int count);
@@ -187,6 +189,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     // From before the current track (repeat all wrapped around) it lands
     // where the current track was, as that one shifts back by one.
     final target = index > queue.index ? queue.index + 1 : queue.index;
+    _turn++;
     state = state.copyWith(
       queue: (skipsOnlyUpNext ? queue.move(index, target) : queue).copyWith(
         index: skipsOnlyUpNext ? target : index,
