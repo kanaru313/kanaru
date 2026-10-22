@@ -726,5 +726,21 @@ void main() {
       await verifier.migrateAndValidate(db, 6);
       await expectV5DataKept(db);
     });
+
+    test('runs on a file that already has the kind column', () async {
+      final schema = await verifier.schemaAt(5);
+      final old = v5.DatabaseAtV5(schema.newConnection());
+      await insertV5Data(old);
+      // A crashed earlier attempt added the column but not the index.
+      await old.customStatement(
+        'ALTER TABLE playlists ADD COLUMN kind TEXT NULL',
+      );
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 6);
+      await expectV5DataKept(db);
+    });
   });
 }
