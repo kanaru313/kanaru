@@ -867,7 +867,40 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get listenHistorySection => 'Listen history';
+  String get settingsAdvanced => 'Advanced';
+
+  @override
+  String get settingsBackupRestore => 'Backup and restore';
+
+  @override
+  String get settingsBackupRestoreHint =>
+      'Export and import your settings, playlists and play counts. Coming soon.';
+
+  @override
+  String get settingsThemeHint => 'Light, dark, or follow the desktop';
+
+  @override
+  String get settingsLanguageHint => 'Language of menus and labels';
+
+  @override
+  String get settingsTitleBarHint =>
+      'Kanaru\'s own bar with window buttons, the system\'s, or none';
+
+  @override
+  String get settingsFoldersHint =>
+      'Folders Kanaru looks for music in. Removing one never deletes files.';
+
+  @override
+  String get settingsRescanOnStartupHint =>
+      'Look for new, changed and removed files in the background each time Kanaru opens';
+
+  @override
+  String get settingsRescanLibraryHint =>
+      'Look for changes in the music folders now';
+
+  @override
+  String get settingsClearListenHistoryHint =>
+      'Removes every recorded listen on this device. Can\'t be undone.';
 
   @override
   String get listenHistoryRecord => 'Record listen history';

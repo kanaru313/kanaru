@@ -42,6 +42,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
       children: [
         SettingRow(
           title: l10n.settingsTheme,
+          subtitle: l10n.settingsThemeHint,
           control: (compact) => SettingChoice<ThemePreference>(
             compact: compact,
             options: [
@@ -67,6 +68,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
         ),
         SettingRow.single(
           title: l10n.settingsLanguage,
+          subtitle: l10n.settingsLanguageHint,
           control: SettingDropdown<String>(
             leadingIcon: AppIcons.language,
             options: [
@@ -86,7 +88,7 @@ class AppearanceSettingsSection extends ConsumerWidget {
           title: l10n.settingsTitleBar,
           subtitle: settings.titleBar != initial.titleBar
               ? l10n.settingsRestartRequired
-              : null,
+              : l10n.settingsTitleBarHint,
           control: (compact) => SettingChoice<TitleBarPreference>(
             compact: compact,
             options: [

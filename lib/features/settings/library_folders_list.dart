@@ -136,6 +136,7 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
       children: [
         SettingRow.single(
           title: l10n.settingsFolders,
+          subtitle: l10n.settingsFoldersHint,
           control: FilledButton.tonalIcon(
             style: settingButtonStyle(),
             onPressed: enabled ? _add : null,

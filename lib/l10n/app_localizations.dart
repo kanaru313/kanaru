@@ -1412,11 +1412,65 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open {target}'**
   String settingsOpenFailed(String target);
 
-  /// No description provided for @listenHistorySection.
+  /// No description provided for @settingsAdvanced.
   ///
   /// In en, this message translates to:
-  /// **'Listen history'**
-  String get listenHistorySection;
+  /// **'Advanced'**
+  String get settingsAdvanced;
+
+  /// No description provided for @settingsBackupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and restore'**
+  String get settingsBackupRestore;
+
+  /// No description provided for @settingsBackupRestoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Export and import your settings, playlists and play counts. Coming soon.'**
+  String get settingsBackupRestoreHint;
+
+  /// No description provided for @settingsThemeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Light, dark, or follow the desktop'**
+  String get settingsThemeHint;
+
+  /// No description provided for @settingsLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Language of menus and labels'**
+  String get settingsLanguageHint;
+
+  /// No description provided for @settingsTitleBarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru\'s own bar with window buttons, the system\'s, or none'**
+  String get settingsTitleBarHint;
+
+  /// No description provided for @settingsFoldersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders Kanaru looks for music in. Removing one never deletes files.'**
+  String get settingsFoldersHint;
+
+  /// No description provided for @settingsRescanOnStartupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Look for new, changed and removed files in the background each time Kanaru opens'**
+  String get settingsRescanOnStartupHint;
+
+  /// No description provided for @settingsRescanLibraryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Look for changes in the music folders now'**
+  String get settingsRescanLibraryHint;
+
+  /// No description provided for @settingsClearListenHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes every recorded listen on this device. Can\'t be undone.'**
+  String get settingsClearListenHistoryHint;
 
   /// No description provided for @listenHistoryRecord.
   ///

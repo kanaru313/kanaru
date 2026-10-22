@@ -37,6 +37,7 @@ class LibrarySettingsSection extends ConsumerWidget {
         const LibraryFoldersList(),
         SettingRow.single(
           title: l10n.settingsRescanOnStartup,
+          subtitle: l10n.settingsRescanOnStartupHint,
           control: Switch(
             value: ref.watch(settingsProvider.select((s) => s.rescanOnStartup)),
             onChanged: ref.watch(libraryDatabaseProvider) != null
@@ -46,6 +47,7 @@ class LibrarySettingsSection extends ConsumerWidget {
         ),
         SettingRow.single(
           title: l10n.settingsRescanLibrary,
+          subtitle: l10n.settingsRescanLibraryHint,
           control: ScanProgressBuilder(
             scan: ref.watch(libraryIndexerProvider),
             builder: (context, progress) => _RescanButton(

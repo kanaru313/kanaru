@@ -91,7 +91,7 @@ void main() {
   testWidgets('the switch shows and changes the setting', (tester) async {
     final h = LibraryHarness(overrides: [_onboarded]);
     await openSettings(tester, h);
-    expect(find.text('Listen history'), findsOneWidget);
+    expect(find.text('Advanced'), findsOneWidget);
     expect(h.container.read(settingsProvider).recordListenHistory, isTrue);
     expect(tester.widget<Switch>(recordSwitch).value, isTrue);
 

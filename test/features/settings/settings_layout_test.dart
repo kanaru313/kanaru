@@ -98,16 +98,20 @@ Future<void> _checkLayout(
   );
 
   // Every control sits on its label's line, at its right.
-  // A row with a subtitle centres its control on the title and subtitle
-  // together, so that block stands for the label there.
+  // A row centres its control on the title and subtitle together, so that
+  // block stands for the label.
   for (final (label, control, subtitle) in [
-    (l10n.settingsFolders, find.byType(FilledButton).first, null),
+    (
+      l10n.settingsFolders,
+      find.byType(FilledButton).first,
+      l10n.settingsFoldersHint,
+    ),
     (
       l10n.settingsRescanOnStartup,
       inRow(l10n.settingsRescanOnStartup, find.byType(Switch)),
-      null,
+      l10n.settingsRescanOnStartupHint,
     ),
-    (l10n.settingsRescanLibrary, rescanButton, null),
+    (l10n.settingsRescanLibrary, rescanButton, l10n.settingsRescanLibraryHint),
     (
       l10n.listenHistoryRecord,
       inRow(l10n.listenHistoryRecord, find.byType(Switch)),
@@ -116,20 +120,26 @@ Future<void> _checkLayout(
     (
       l10n.listenHistoryClear,
       inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
-      null,
+      l10n.settingsClearListenHistoryHint,
     ),
-    (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>), null),
-    (l10n.settingsLanguage, find.byType(SettingDropdown<String>), null),
+    (
+      l10n.settingsTheme,
+      find.byType(SettingChoice<ThemePreference>),
+      l10n.settingsThemeHint,
+    ),
+    (
+      l10n.settingsLanguage,
+      find.byType(SettingDropdown<String>),
+      l10n.settingsLanguageHint,
+    ),
     (
       l10n.settingsTitleBar,
       find.byType(SettingChoice<TitleBarPreference>),
-      null,
+      l10n.settingsTitleBarHint,
     ),
   ]) {
     final title = tester.getRect(find.text(label));
-    final text = subtitle == null
-        ? title
-        : title.expandToInclude(tester.getRect(find.text(subtitle)));
+    final text = title.expandToInclude(tester.getRect(find.text(subtitle)));
     final rect = tester.getRect(control);
     expect(
       text.center.dy,

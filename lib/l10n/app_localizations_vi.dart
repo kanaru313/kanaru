@@ -856,7 +856,40 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get listenHistorySection => 'Lịch sử nghe';
+  String get settingsAdvanced => 'Nâng cao';
+
+  @override
+  String get settingsBackupRestore => 'Sao lưu & khôi phục';
+
+  @override
+  String get settingsBackupRestoreHint =>
+      'Xuất và nhập cài đặt, playlist và lượt nghe. Sắp có.';
+
+  @override
+  String get settingsThemeHint => 'Sáng, tối hoặc theo hệ thống';
+
+  @override
+  String get settingsLanguageHint => 'Ngôn ngữ của menu và nhãn';
+
+  @override
+  String get settingsTitleBarHint =>
+      'Thanh riêng của Kanaru có nút cửa sổ, thanh của hệ thống, hoặc không có';
+
+  @override
+  String get settingsFoldersHint =>
+      'Thư mục Kanaru tìm nhạc. Bỏ một thư mục không xoá file nào.';
+
+  @override
+  String get settingsRescanOnStartupHint =>
+      'Mỗi lần mở Kanaru, tìm file mới, đã sửa và đã xoá trong nền';
+
+  @override
+  String get settingsRescanLibraryHint =>
+      'Tìm thay đổi trong các thư mục nhạc ngay bây giờ';
+
+  @override
+  String get settingsClearListenHistoryHint =>
+      'Xoá mọi lượt nghe đã ghi trên máy này. Không hoàn tác được.';
 
   @override
   String get listenHistoryRecord => 'Ghi lịch sử nghe';

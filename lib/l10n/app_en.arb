@@ -454,7 +454,16 @@
       "target": { "type": "String" }
     }
   },
-  "listenHistorySection": "Listen history",
+  "settingsAdvanced": "Advanced",
+  "settingsBackupRestore": "Backup and restore",
+  "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts. Coming soon.",
+  "settingsThemeHint": "Light, dark, or follow the desktop",
+  "settingsLanguageHint": "Language of menus and labels",
+  "settingsTitleBarHint": "Kanaru's own bar with window buttons, the system's, or none",
+  "settingsFoldersHint": "Folders Kanaru looks for music in. Removing one never deletes files.",
+  "settingsRescanOnStartupHint": "Look for new, changed and removed files in the background each time Kanaru opens",
+  "settingsRescanLibraryHint": "Look for changes in the music folders now",
+  "settingsClearListenHistoryHint": "Removes every recorded listen on this device. Can't be undone.",
   "listenHistoryRecord": "Record listen history",
   "listenHistoryRecordHint": "Kept only on this device. Turning it off keeps what is already recorded.",
   "listenHistoryClear": "Clear listen history",

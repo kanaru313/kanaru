@@ -7,6 +7,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/applied_appearance_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/open_external.dart';
+import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -46,8 +47,15 @@ void main() {
   testWidgets('shows the sections, without a save warning', (tester) async {
     await pumpSettings(tester);
 
-    expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Listen history'), findsOneWidget);
+    for (final section in [
+      'Appearance',
+      'Library',
+      'Backup and restore',
+      'Advanced',
+      'About',
+    ]) {
+      expect(find.text(section), findsWidgets, reason: section);
+    }
     expect(find.text('Rescan library'), findsOneWidget);
     expect(
       tester
@@ -59,6 +67,32 @@ void main() {
     expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
     expect(find.text('About'), findsWidgets);
     expect(find.text('GPL-3.0-or-later'), findsOneWidget);
+  });
+
+  testWidgets('sections come in order and every row has a hint', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+
+    final tops = [
+      for (final title in [
+        'Appearance',
+        'Library',
+        'Backup and restore',
+        'Advanced',
+        'About',
+      ])
+        tester.getTopLeft(find.text(title).first).dy,
+    ];
+    expect(tops, orderedEquals([...tops]..sort()));
+    expect(tops.toSet(), hasLength(5));
+
+    final rows = find.byType(SettingRow).evaluate();
+    expect(rows, isNotEmpty);
+    for (final row in rows) {
+      final widget = row.widget as SettingRow;
+      expect(widget.subtitle, isNotNull, reason: widget.title);
+    }
   });
 
   testWidgets('choosing Dark switches the app theme', (tester) async {
