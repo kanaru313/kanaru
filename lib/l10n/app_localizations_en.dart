@@ -31,7 +31,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navFavorites => 'Favorites';
 
   @override
-  String get navRecentlyPlayed => 'Recently played';
+  String get navHistory => 'History';
 
   @override
   String get navSearch => 'Search';

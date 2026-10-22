@@ -33,7 +33,7 @@ flowchart TD
         Player["player"]
         Settings["settings"]
         Search["search"]
-        Placeholders["home"]
+        Placeholders["home, history"]
     end
 
     subgraph SHARED ["lib/shared"]
@@ -83,6 +83,7 @@ Notes:
 - `shared/widgets/scan_progress.dart` imports `core/indexer`, which is allowed (downward).
 - `shared/library_route_keys.dart` duplicates four route literals (`/albums`, `/artists`, `/genres`, `/folders`) because `shared/` and features cannot import `app/`. A test keeps them in step.
 - `app/shell` injects the Now Playing title bar, so features do not reach into the shell.
+- The History and Favorites pages are owned by their features, so these features add pages without editing `app/`: `features/history/history_routes.dart` declares `historyPath` and `historyRoutes` (pages under `/history`) next to `HistoryScreen`; `features/playlists/favorites_routes.dart` declares `favoritesPath` and `favoritesRoutes` next to `FavoritesScreen`. Both pages are empty states for now. Shell tests check only the location and the page widget type; page content is tested with the feature.
 
 ---
 

@@ -50,7 +50,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 
 The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
 
-- **Sidebar.** Groups: Home | Songs, Albums, Artists, Genres, Folders | Favorites, Recent | Playlists. The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
+- **Sidebar.** Groups: Home | Songs, Albums, Artists, Genres, Folders | Favorites, History | Playlists. The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
 - **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Settings on the right at every width. Empty space drags the window.
 - **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
@@ -147,7 +147,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-Placeholder screens (Home, Favorites, Recent) use `EmptyState` and say the feature is not available yet.
+Placeholder screens (Home, Favorites, History) use `EmptyState` with a one-sentence message (Favorites and History: what will show up there).
 
 ## Settings
 

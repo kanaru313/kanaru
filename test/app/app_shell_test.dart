@@ -2,9 +2,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/app/router.dart';
+import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/app/shell/sidebar/sidebar.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/history/history_screen.dart';
 import 'package:kanaru/features/player/player_bar.dart';
+import 'package:kanaru/features/playlists/favorites_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
@@ -25,6 +29,15 @@ Future<void> pumpApp(
   );
   await tester.pumpAndSettle();
 }
+
+/// Where the app's router is now.
+String _location(WidgetTester tester) =>
+    ProviderScope.containerOf(tester.element(find.byType(KanaruApp)))
+        .read(routerProvider)
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .toString();
 
 const wide = Size(1280, 800);
 const narrow = Size(480, 800);
@@ -71,13 +84,29 @@ void main() {
     expect(find.text('Albums'), findsOneWidget);
   });
 
-  testWidgets('switches pages from the sidebar', (tester) async {
-    await pumpApp(tester, wide);
+  // Only the location and the page widget: what each page shows is tested
+  // with its feature, so a feature can change its page without editing this.
+  for (final (label, path, page) in [
+    ('Favorites', '/favorites', FavoritesScreen),
+    ('History', '/history', HistoryScreen),
+  ]) {
+    testWidgets('the sidebar opens $label at $path', (tester) async {
+      await pumpApp(tester, wide);
 
-    await tester.tap(find.text('Favorites'));
-    await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(of: find.byType(Sidebar), matching: find.text(label)),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Songs you like will show up here.'), findsOneWidget);
+      expect(_location(tester), path);
+      expect(find.byType(page), findsOneWidget);
+    });
+  }
+
+  test('History lives at /history, not the old /recent', () {
+    final paths = AppDestination.values.map((d) => d.path);
+    expect(paths, contains('/history'));
+    expect(paths, isNot(contains('/recent')));
   });
 
   testWidgets('the sidebar lists Genres between Artists and Folders', (
