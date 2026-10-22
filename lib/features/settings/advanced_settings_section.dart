@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import 'listen_history_setting_rows.dart';
+import 'log_folder_setting_row.dart';
 import 'settings_section.dart';
 
 /// Settings that are rarely changed: listen history, and the rows of the
@@ -13,7 +14,7 @@ class AdvancedSettingsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SettingsSection(
       title: context.l10n.settingsAdvanced,
-      children: const [ListenHistorySettingRows()],
+      children: const [ListenHistorySettingRows(), LogFolderSettingRow()],
     );
   }
 }

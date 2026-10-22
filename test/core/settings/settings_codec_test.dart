@@ -284,4 +284,28 @@ void main() {
       expect(decoded.unknownKeys, isEmpty);
     });
   });
+
+  group('animations', () {
+    test('are on by default, also for a file without the key', () {
+      expect(decodeSettings(<String, Object?>{}).settings.animations, isTrue);
+      expect(const AppSettings().animations, isTrue);
+    });
+
+    test('round-trip when turned off', () {
+      const settings = AppSettings(animations: false);
+
+      final json = encodeSettings(settings);
+
+      expect(json['animations'], false);
+      expect(decodeSettings(json).settings, settings);
+      expect(settings.toString(), contains('animations: false'));
+    });
+
+    test('a value of the wrong type gives the default', () {
+      final decoded = decodeSettings(<String, Object?>{'animations': 'no'});
+
+      expect(decoded.settings.animations, isTrue);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+  });
 }

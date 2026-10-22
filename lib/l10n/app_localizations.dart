@@ -1412,6 +1412,30 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{{count} genre} other{{count} genres}}'**
   String settingsStatsGenres(int count);
 
+  /// No description provided for @settingsOpenLogFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Log files'**
+  String get settingsOpenLogFolder;
+
+  /// No description provided for @settingsOpenLogFolderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For bug reports. Passwords and tokens are removed before writing.'**
+  String get settingsOpenLogFolderHint;
+
+  /// No description provided for @settingsOpenLogFolderButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get settingsOpenLogFolderButton;
+
+  /// No description provided for @settingsLogFolderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru has no folder for log files on this system.'**
+  String get settingsLogFolderUnavailable;
+
   /// No description provided for @settingsAdvanced.
   ///
   /// In en, this message translates to:

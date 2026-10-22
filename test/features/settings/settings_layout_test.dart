@@ -133,6 +133,11 @@ Future<void> _checkLayout(
       l10n.settingsLanguageHint,
     ),
     (
+      l10n.settingsOpenLogFolder,
+      inRow(l10n.settingsOpenLogFolder, find.byType(FilledButton)),
+      l10n.settingsOpenLogFolderHint,
+    ),
+    (
       l10n.settingsTitleBar,
       find.byType(SettingChoice<TitleBarPreference>),
       l10n.settingsTitleBarHint,
@@ -157,7 +162,7 @@ Future<void> _checkLayout(
         .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
         .evaluate(),
   ];
-  expect(controls, hasLength(6), reason: 'three buttons and three choices');
+  expect(controls, hasLength(7), reason: 'four buttons and three choices');
   for (final control in controls) {
     expect(
       tester.getRect(find.byWidget(control.widget)).height,

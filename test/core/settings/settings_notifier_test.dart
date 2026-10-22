@@ -65,6 +65,22 @@ void main() {
     expect(stored()['recordListenHistory'], false);
   });
 
+  test(
+    'the animations switch is saved and survives a language change',
+    () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setAnimations(false);
+      notifier.setLanguage('vi');
+      await notifier.flush();
+
+      expect(container.read(settingsProvider).animations, isFalse);
+      expect(stored()['animations'], false);
+      expect(stored()['language'], 'vi');
+    },
+  );
+
   test('several changes end up on disk with the last value', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

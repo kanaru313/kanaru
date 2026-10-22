@@ -878,6 +878,20 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get settingsOpenLogFolder => 'File log';
+
+  @override
+  String get settingsOpenLogFolderHint =>
+      'Để đính kèm khi báo lỗi. Mật khẩu và token đã được che trước khi ghi.';
+
+  @override
+  String get settingsOpenLogFolderButton => 'Mở';
+
+  @override
+  String get settingsLogFolderUnavailable =>
+      'Kanaru không có thư mục log trên hệ thống này.';
+
+  @override
   String get settingsAdvanced => 'Nâng cao';
 
   @override

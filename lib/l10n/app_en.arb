@@ -468,6 +468,10 @@
       "count": { "type": "int", "format": "decimalPattern" }
     }
   },
+  "settingsOpenLogFolder": "Log files",
+  "settingsOpenLogFolderHint": "For bug reports. Passwords and tokens are removed before writing.",
+  "settingsOpenLogFolderButton": "Open",
+  "settingsLogFolderUnavailable": "Kanaru has no folder for log files on this system.",
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts. Coming soon.",

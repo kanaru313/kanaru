@@ -82,6 +82,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setRecordListenHistory(bool enabled) =>
       _update(state.copyWith(recordListenHistory: enabled));
 
+  void setAnimations(bool enabled) =>
+      _update(state.copyWith(animations: enabled));
+
   /// Records that the first-run source picker is done for good.
   void markLibraryOnboarded() =>
       _update(state.copyWith(libraryOnboarded: true));

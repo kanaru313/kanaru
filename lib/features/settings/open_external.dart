@@ -9,7 +9,8 @@ typedef ProcessStarter = Future<Process> Function(
   List<String> arguments,
 );
 
-/// Opens an `https://` URL in the desktop's default app.
+/// Opens an `https://` URL or an absolute folder path in the desktop's
+/// default app.
 /// Returns `false` when nothing could open it, so the caller can tell the user.
 final openExternalProvider = Provider<Future<bool> Function(String target)>(
   (ref) =>
@@ -26,8 +27,8 @@ const _openers = [
 const _openerTimeout = Duration(seconds: 2);
 
 /// Tries `gio open`, then `xdg-open`. Arguments are passed as a list, never
-/// through a shell, and targets start with `https://`, so they can't be read
-/// as options.
+/// through a shell, and targets start with `https://` or `/`, so they can't be
+/// read as options.
 Future<bool> openExternal(
   String target, {
   ProcessStarter start = _start,

@@ -34,6 +34,7 @@ class AppSettings {
     this.rescanOnStartup = true,
     this.libraryOnboarded = false,
     this.recordListenHistory = true,
+    this.animations = true,
   });
 
   final ThemePreference theme;
@@ -62,6 +63,11 @@ class AppSettings {
   /// is stored.
   final bool recordListenHistory;
 
+  /// `false` forces reduced motion everywhere; `true` follows the system's
+  /// reduced-motion setting. Stored for the option that is not wired yet:
+  /// nothing reads it.
+  final bool animations;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -72,6 +78,7 @@ class AppSettings {
     bool? rescanOnStartup,
     bool? libraryOnboarded,
     bool? recordListenHistory,
+    bool? animations,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -83,6 +90,7 @@ class AppSettings {
     rescanOnStartup: rescanOnStartup ?? this.rescanOnStartup,
     libraryOnboarded: libraryOnboarded ?? this.libraryOnboarded,
     recordListenHistory: recordListenHistory ?? this.recordListenHistory,
+    animations: animations ?? this.animations,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -97,6 +105,7 @@ class AppSettings {
     rescanOnStartup: rescanOnStartup,
     libraryOnboarded: libraryOnboarded,
     recordListenHistory: recordListenHistory,
+    animations: animations,
   );
 
   @override
@@ -111,7 +120,8 @@ class AppSettings {
       other.albumsView == albumsView &&
       other.rescanOnStartup == rescanOnStartup &&
       other.libraryOnboarded == libraryOnboarded &&
-      other.recordListenHistory == recordListenHistory;
+      other.recordListenHistory == recordListenHistory &&
+      other.animations == animations;
 
   @override
   int get hashCode => Object.hash(
@@ -125,6 +135,7 @@ class AppSettings {
     rescanOnStartup,
     libraryOnboarded,
     recordListenHistory,
+    animations,
   );
 
   @override
@@ -134,5 +145,5 @@ class AppSettings {
       'albumSort: $albumSort, artistSort: $artistSort, '
       'albumsView: ${albumsView.name}, rescanOnStartup: $rescanOnStartup, '
       'libraryOnboarded: $libraryOnboarded, '
-      'recordListenHistory: $recordListenHistory)';
+      'recordListenHistory: $recordListenHistory, animations: $animations)';
 }

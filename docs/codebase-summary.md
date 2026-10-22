@@ -34,13 +34,13 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
 | `lib/core/paths/` | 1 / 62 | XDG directory resolution |
 | `lib/core/player/` | 19 / 2,211 | `PlayerService`, `PlayQueue`, `MediaKitBackend`, session persistence (`session/`) |
-| `lib/core/settings/` | 6 / 687 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance |
+| `lib/core/settings/` | 6 / 705 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
 | `lib/features/library/` | 34 / 3,095 | Songs, Albums, Artists, onboarding, library state machine, sort controls |
 | `lib/features/player/` | 29 / 3,337 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |
 | `lib/features/playlists/` | 12 / 1,166 | Playlists grid and playlist page: `playlists_screen.dart`, `playlist_screen.dart` (page, delete and rename), `playlist_entries_view.dart` (drag to reorder), `optimistic_order.dart`, `playlist_page_data.dart` (reactive providers), `playlist_page_actions.dart`, `playlist_routes.dart` |
 | `lib/features/search/` | 4 / 451 | Search page: `search_screen.dart` (states), `search_results_view.dart` and `search_section.dart` (groups), `search_providers.dart` (queries and name indexes) |
-| `lib/features/settings/` | 20 / 1,522 | Settings screen sections (appearance, library, backup, advanced, about), library folders list, setting widgets |
+| `lib/features/settings/` | 21 / 1,577 | Settings screen sections (appearance, library, backup, advanced, about), library folders list, setting widgets |
 | `lib/shared/` | 31 / 1,768 | Helpers and tiles used by library and search: `play_tracks.dart`, `enqueue_tracks.dart`, `format_duration.dart`, `directory_picker_provider.dart`, `root_rejection_message.dart`; `widgets/` has the tiles (`song_tile.dart`, `album_list_tile.dart`, `artist_tile.dart`), `queue_actions_menu.dart`, `playlist_cover.dart`, `add_to_playlist/` (picker, name dialog, add flow), CoverArt, EmptyState, PageScaffold, ScanProgress, MinBusyBuilder |
 | `lib/l10n/` | ARB + generated | `app_en.arb` (template), `app_vi.arb`; `app_localizations*.dart` is generated |
 

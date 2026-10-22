@@ -13,6 +13,7 @@ const _albumsViewKey = 'albumsView';
 const _rescanOnStartupKey = 'rescanOnStartup';
 const _libraryOnboardedKey = 'libraryOnboarded';
 const _recordListenHistoryKey = 'recordListenHistory';
+const _animationsKey = 'animations';
 const _knownKeys = {
   _versionKey,
   _themeKey,
@@ -23,6 +24,7 @@ const _knownKeys = {
   _rescanOnStartupKey,
   _libraryOnboardedKey,
   _recordListenHistoryKey,
+  _animationsKey,
 };
 
 // Screens inside `librarySort`, and the fields of each.
@@ -113,6 +115,7 @@ DecodedSettings decodeSettings(Object? json) {
         json[_recordListenHistoryKey],
         defaults.recordListenHistory,
       ),
+      animations: _boolOr(json[_animationsKey], defaults.animations),
     ),
     version is int && version > 0 ? version : settingsSchemaVersion,
     {
@@ -148,6 +151,7 @@ Map<String, Object?> encodeSettings(
   _rescanOnStartupKey: settings.rescanOnStartup,
   _libraryOnboardedKey: settings.libraryOnboarded,
   _recordListenHistoryKey: settings.recordListenHistory,
+  _animationsKey: settings.animations,
 };
 
 /// Each part falls back on its own: a bad `by` keeps a valid `descending`.

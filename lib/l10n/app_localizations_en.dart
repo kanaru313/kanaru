@@ -913,6 +913,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsOpenLogFolder => 'Log files';
+
+  @override
+  String get settingsOpenLogFolderHint =>
+      'For bug reports. Passwords and tokens are removed before writing.';
+
+  @override
+  String get settingsOpenLogFolderButton => 'Open';
+
+  @override
+  String get settingsLogFolderUnavailable =>
+      'Kanaru has no folder for log files on this system.';
+
+  @override
   String get settingsAdvanced => 'Advanced';
 
   @override
