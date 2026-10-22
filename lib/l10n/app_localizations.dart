@@ -2365,6 +2365,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show {year}'**
   String historyOlderYear(int year);
+
+  /// Tab of the History page that lists every play by day
+  ///
+  /// In en, this message translates to:
+  /// **'Journal'**
+  String get historyTabTimeline;
+
+  /// Tab of the History page that ranks songs by plays in a date range
+  ///
+  /// In en, this message translates to:
+  /// **'Most played'**
+  String get historyTabTop;
+
+  /// Most played range chip and label for the current day
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get historyRangeToday;
+
+  /// Most played range chip: the last 7 days
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get historyRange7Days;
+
+  /// Most played range chip: the last 30 days
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get historyRange30Days;
+
+  /// Most played range chip: the last 6 months
+  ///
+  /// In en, this message translates to:
+  /// **'6 months'**
+  String get historyRange6Months;
+
+  /// Most played range chip: the last 12 months
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get historyRangeYear;
+
+  /// Most played range chip and label for the whole history
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get historyRangeAll;
+
+  /// Most played range chip that opens the date range picker
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get historyRangeCustom;
+
+  /// Tooltip of the button that moves the Most played range back
+  ///
+  /// In en, this message translates to:
+  /// **'Previous period'**
+  String get historyRangePrevious;
+
+  /// Tooltip of the button that moves the Most played range forward
+  ///
+  /// In en, this message translates to:
+  /// **'Next period'**
+  String get historyRangeNext;
+
+  /// First and last day of the Most played range
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String historyRangeLabel(String start, String end);
+
+  /// Plays of a song on a Most played row
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
+  String historyTopPlayCount(int count);
+
+  /// Note under the Most played list when it was cut at its limit
+  ///
+  /// In en, this message translates to:
+  /// **'Showing first {count}'**
+  String historyTopCapped(int count);
+
+  /// Button that plays the Most played list from the top
+  ///
+  /// In en, this message translates to:
+  /// **'Play all'**
+  String get historyPlayAll;
+
+  /// Button that saves the Most played list as a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Create playlist'**
+  String get historyCreatePlaylist;
+
+  /// Suggested name of a playlist made from the Most played list
+  ///
+  /// In en, this message translates to:
+  /// **'Most played · {range}'**
+  String historyTopPlaylistName(String range);
+
+  /// Snackbar after a playlist was made from the Most played list
+  ///
+  /// In en, this message translates to:
+  /// **'Created playlist {name}'**
+  String historyPlaylistCreated(String name);
+
+  /// Message of the Most played tab when the range has no plays
+  ///
+  /// In en, this message translates to:
+  /// **'No listens in this range'**
+  String get historyTopEmpty;
 }
 
 class _AppLocalizationsDelegate

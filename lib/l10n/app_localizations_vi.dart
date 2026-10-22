@@ -1470,4 +1470,76 @@ class AppLocalizationsVi extends AppLocalizations {
   String historyOlderYear(int year) {
     return 'Xem năm $year';
   }
+
+  @override
+  String get historyTabTimeline => 'Nhật ký';
+
+  @override
+  String get historyTabTop => 'Phát nhiều nhất';
+
+  @override
+  String get historyRangeToday => 'Hôm nay';
+
+  @override
+  String get historyRange7Days => '7 ngày';
+
+  @override
+  String get historyRange30Days => '30 ngày';
+
+  @override
+  String get historyRange6Months => '6 tháng';
+
+  @override
+  String get historyRangeYear => '1 năm';
+
+  @override
+  String get historyRangeAll => 'Tất cả';
+
+  @override
+  String get historyRangeCustom => 'Tuỳ chọn';
+
+  @override
+  String get historyRangePrevious => 'Kỳ trước';
+
+  @override
+  String get historyRangeNext => 'Kỳ sau';
+
+  @override
+  String historyRangeLabel(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String historyTopPlayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyTopCapped(int count) {
+    return 'Hiện $count bài đầu';
+  }
+
+  @override
+  String get historyPlayAll => 'Phát tất cả';
+
+  @override
+  String get historyCreatePlaylist => 'Tạo playlist';
+
+  @override
+  String historyTopPlaylistName(String range) {
+    return 'Nghe nhiều nhất · $range';
+  }
+
+  @override
+  String historyPlaylistCreated(String name) {
+    return 'Đã tạo playlist $name';
+  }
+
+  @override
+  String get historyTopEmpty => 'Không có lượt nghe trong khoảng này';
 }

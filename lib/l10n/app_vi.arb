@@ -458,5 +458,58 @@
   "@historyOlderYear": {
     "description": "Last row of the History list: switches to an older year",
     "placeholders": { "year": { "type": "int" } }
-  }
+  },
+  "historyTabTimeline": "Nhật ký",
+  "@historyTabTimeline": { "description": "Tab of the History page that lists every play by day" },
+  "historyTabTop": "Phát nhiều nhất",
+  "@historyTabTop": { "description": "Tab of the History page that ranks songs by plays in a date range" },
+  "historyRangeToday": "Hôm nay",
+  "@historyRangeToday": { "description": "Most played range chip and label for the current day" },
+  "historyRange7Days": "7 ngày",
+  "@historyRange7Days": { "description": "Most played range chip: the last 7 days" },
+  "historyRange30Days": "30 ngày",
+  "@historyRange30Days": { "description": "Most played range chip: the last 30 days" },
+  "historyRange6Months": "6 tháng",
+  "@historyRange6Months": { "description": "Most played range chip: the last 6 months" },
+  "historyRangeYear": "1 năm",
+  "@historyRangeYear": { "description": "Most played range chip: the last 12 months" },
+  "historyRangeAll": "Tất cả",
+  "@historyRangeAll": { "description": "Most played range chip and label for the whole history" },
+  "historyRangeCustom": "Tuỳ chọn",
+  "@historyRangeCustom": { "description": "Most played range chip that opens the date range picker" },
+  "historyRangePrevious": "Kỳ trước",
+  "@historyRangePrevious": { "description": "Tooltip of the button that moves the Most played range back" },
+  "historyRangeNext": "Kỳ sau",
+  "@historyRangeNext": { "description": "Tooltip of the button that moves the Most played range forward" },
+  "historyRangeLabel": "{start} – {end}",
+  "@historyRangeLabel": {
+    "description": "First and last day of the Most played range",
+    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+  },
+  "historyTopPlayCount": "{count, plural, other{{count} lượt}}",
+  "@historyTopPlayCount": {
+    "description": "Plays of a song on a Most played row",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTopCapped": "Hiện {count} bài đầu",
+  "@historyTopCapped": {
+    "description": "Note under the Most played list when it was cut at its limit",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyPlayAll": "Phát tất cả",
+  "@historyPlayAll": { "description": "Button that plays the Most played list from the top" },
+  "historyCreatePlaylist": "Tạo playlist",
+  "@historyCreatePlaylist": { "description": "Button that saves the Most played list as a playlist" },
+  "historyTopPlaylistName": "Nghe nhiều nhất · {range}",
+  "@historyTopPlaylistName": {
+    "description": "Suggested name of a playlist made from the Most played list",
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "historyPlaylistCreated": "Đã tạo playlist {name}",
+  "@historyPlaylistCreated": {
+    "description": "Snackbar after a playlist was made from the Most played list",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "historyTopEmpty": "Không có lượt nghe trong khoảng này",
+  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" }
 }

@@ -17,11 +17,14 @@ QueueAction? historyQueueActionOf(HistoryPlayChoice choice) => switch (choice) {
 
 /// Opens the row menu with its corner at [position] (global): the queue rows,
 /// greyed out when the song is gone from the library ([canQueue] false), then
-/// Remove from history. Returns null when it was dismissed.
+/// Remove from history unless [canDelete] is false (a most-played row stands
+/// for many plays, which are removed from the journal). Returns null when it
+/// was dismissed.
 Future<HistoryPlayChoice?> showHistoryPlayMenu(
   BuildContext context,
   Offset position, {
   required bool canQueue,
+  bool canDelete = true,
 }) {
   final l10n = context.l10n;
   return showMenu<HistoryPlayChoice>(
@@ -46,12 +49,14 @@ Future<HistoryPlayChoice?> showHistoryPlayMenu(
         l10n.playlistAddTo,
         enabled: canQueue,
       ),
-      const PopupMenuDivider(),
-      menuRow(
-        HistoryPlayChoice.delete,
-        AppIcons.deleteOutline,
-        l10n.historyDeletePlay,
-      ),
+      if (canDelete) ...[
+        const PopupMenuDivider(),
+        menuRow(
+          HistoryPlayChoice.delete,
+          AppIcons.deleteOutline,
+          l10n.historyDeletePlay,
+        ),
+      ],
     ],
   );
 }

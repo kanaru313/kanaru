@@ -124,6 +124,8 @@ Dragging a row lifts the card itself (shadow, no wider slab); the order changes 
 | Not in library | A play whose file is gone shows its file name and "Not in library", is dimmed, does not play, and has its queue items disabled; it can still be removed. |
 | Remove | No confirmation. A snackbar "Removed one listen from history" with Undo stays 4 s; Undo restores only the latest removal. There is no one-tap delete on the row. |
 | States | "History is not available" (no library), the empty page (with a line when recording is turned off in Settings), a spinner while the first read runs, and a failure message. |
+| Tabs | "Journal" and "Most played" under the title, side by side in an `IndexedStack` (no swiping), each keeping its state. The calendar button shows on the Journal tab only. |
+| Most played | A chip per range (Today, 7 days, 30 days, 6 months, 1 year, All time, Custom), then Previous period, the range label and Next period (hidden for All time; Next is off on the current period). "Play all" and "Create playlist" sit above the list and are off when no song can play. Rows are 64 px: rank, cover, title, "artist · album", listens and a more button; a tap queues the playable songs by rank from that row. The menu is the Journal one without Remove. A song not in the library is dimmed and skipped. At 500 rows a note says "Showing first 500"; a thin bar runs over the old list while a new one is read; an empty range says "No listens in this range". |
 
 ## Search page
 

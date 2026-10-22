@@ -732,5 +732,58 @@
   "@historyOlderYear": {
     "description": "Last row of the History list: switches to an older year",
     "placeholders": { "year": { "type": "int" } }
-  }
+  },
+  "historyTabTimeline": "Journal",
+  "@historyTabTimeline": { "description": "Tab of the History page that lists every play by day" },
+  "historyTabTop": "Most played",
+  "@historyTabTop": { "description": "Tab of the History page that ranks songs by plays in a date range" },
+  "historyRangeToday": "Today",
+  "@historyRangeToday": { "description": "Most played range chip and label for the current day" },
+  "historyRange7Days": "7 days",
+  "@historyRange7Days": { "description": "Most played range chip: the last 7 days" },
+  "historyRange30Days": "30 days",
+  "@historyRange30Days": { "description": "Most played range chip: the last 30 days" },
+  "historyRange6Months": "6 months",
+  "@historyRange6Months": { "description": "Most played range chip: the last 6 months" },
+  "historyRangeYear": "1 year",
+  "@historyRangeYear": { "description": "Most played range chip: the last 12 months" },
+  "historyRangeAll": "All time",
+  "@historyRangeAll": { "description": "Most played range chip and label for the whole history" },
+  "historyRangeCustom": "Custom",
+  "@historyRangeCustom": { "description": "Most played range chip that opens the date range picker" },
+  "historyRangePrevious": "Previous period",
+  "@historyRangePrevious": { "description": "Tooltip of the button that moves the Most played range back" },
+  "historyRangeNext": "Next period",
+  "@historyRangeNext": { "description": "Tooltip of the button that moves the Most played range forward" },
+  "historyRangeLabel": "{start} – {end}",
+  "@historyRangeLabel": {
+    "description": "First and last day of the Most played range",
+    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+  },
+  "historyTopPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyTopPlayCount": {
+    "description": "Plays of a song on a Most played row",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTopCapped": "Showing first {count}",
+  "@historyTopCapped": {
+    "description": "Note under the Most played list when it was cut at its limit",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyPlayAll": "Play all",
+  "@historyPlayAll": { "description": "Button that plays the Most played list from the top" },
+  "historyCreatePlaylist": "Create playlist",
+  "@historyCreatePlaylist": { "description": "Button that saves the Most played list as a playlist" },
+  "historyTopPlaylistName": "Most played · {range}",
+  "@historyTopPlaylistName": {
+    "description": "Suggested name of a playlist made from the Most played list",
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "historyPlaylistCreated": "Created playlist {name}",
+  "@historyPlaylistCreated": {
+    "description": "Snackbar after a playlist was made from the Most played list",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "historyTopEmpty": "No listens in this range",
+  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" }
 }

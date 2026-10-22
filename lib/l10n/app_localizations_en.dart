@@ -1524,4 +1524,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String historyOlderYear(int year) {
     return 'Show $year';
   }
+
+  @override
+  String get historyTabTimeline => 'Journal';
+
+  @override
+  String get historyTabTop => 'Most played';
+
+  @override
+  String get historyRangeToday => 'Today';
+
+  @override
+  String get historyRange7Days => '7 days';
+
+  @override
+  String get historyRange30Days => '30 days';
+
+  @override
+  String get historyRange6Months => '6 months';
+
+  @override
+  String get historyRangeYear => '1 year';
+
+  @override
+  String get historyRangeAll => 'All time';
+
+  @override
+  String get historyRangeCustom => 'Custom';
+
+  @override
+  String get historyRangePrevious => 'Previous period';
+
+  @override
+  String get historyRangeNext => 'Next period';
+
+  @override
+  String historyRangeLabel(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String historyTopPlayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listens',
+      one: '1 listen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyTopCapped(int count) {
+    return 'Showing first $count';
+  }
+
+  @override
+  String get historyPlayAll => 'Play all';
+
+  @override
+  String get historyCreatePlaylist => 'Create playlist';
+
+  @override
+  String historyTopPlaylistName(String range) {
+    return 'Most played · $range';
+  }
+
+  @override
+  String historyPlaylistCreated(String name) {
+    return 'Created playlist $name';
+  }
+
+  @override
+  String get historyTopEmpty => 'No listens in this range';
 }
