@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_startup.dart';
 import '../../../core/player/player_service.dart';
 import 'queue_panel_header.dart';
+import 'queue_save_flow.dart';
 import 'queue_sheet_host.dart';
 import 'queue_tile.dart';
 
@@ -76,6 +78,9 @@ class _QueuePanelState extends ConsumerState<QueuePanel> {
       children: [
         QueuePanelHeader(
           trackCount: tracks.length,
+          onSave: ref.watch(libraryDatabaseProvider) == null
+              ? null
+              : () => saveQueueAsPlaylist(ref, context),
           onClear: tracks.length > 1 ? player.clearQueue : null,
           onShowCurrent: _showCurrent,
           onClose: widget.onClose,

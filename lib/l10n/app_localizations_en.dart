@@ -1790,4 +1790,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playlistM3uOverwriteConfirm => 'Replace';
+
+  @override
+  String get queueSaveAsPlaylist => 'Save queue as playlist';
+
+  @override
+  String queueSaveDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Queue $dateString';
+  }
+
+  @override
+  String queueSaved(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count songs to $name',
+      one: 'Saved 1 song to $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String queueSavedSkipped(int count, int skipped, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count songs to $name',
+      one: 'Saved 1 song to $name',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skipped,
+      locale: localeName,
+      other: '$skipped left out (not in your library or repeated)',
+      one: '1 left out (not in your library or repeated)',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get queueSaveNothing => 'Nothing in the queue is in your library';
 }

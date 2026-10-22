@@ -2683,6 +2683,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Replace'**
   String get playlistM3uOverwriteConfirm;
+
+  /// Tooltip of the queue panel button that saves the queue as a new playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Save queue as playlist'**
+  String get queueSaveAsPlaylist;
+
+  /// Default name of a playlist saved from the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Queue {date}'**
+  String queueSaveDefaultName(DateTime date);
+
+  /// Snackbar after saving the queue as a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}'**
+  String queueSaved(int count, String name);
+
+  /// Snackbar after saving the queue when some queue songs were not saved
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library or repeated)} other{{skipped} left out (not in your library or repeated)}}'**
+  String queueSavedSkipped(int count, int skipped, String name);
+
+  /// Snackbar when no queue song can be saved in a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in the queue is in your library'**
+  String get queueSaveNothing;
 }
 
 class _AppLocalizationsDelegate

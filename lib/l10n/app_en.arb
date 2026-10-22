@@ -902,5 +902,24 @@
     "placeholders": { "file": { "type": "String" } }
   },
   "playlistM3uOverwriteConfirm": "Replace",
-  "@playlistM3uOverwriteConfirm": { "description": "Button that overwrites the existing file" }
+  "@playlistM3uOverwriteConfirm": { "description": "Button that overwrites the existing file" },
+  "queueSaveAsPlaylist": "Save queue as playlist",
+  "@queueSaveAsPlaylist": { "description": "Tooltip of the queue panel button that saves the queue as a new playlist" },
+  "queueSaveDefaultName": "Queue {date}",
+  "@queueSaveDefaultName": {
+    "description": "Default name of a playlist saved from the queue",
+    "placeholders": { "date": { "type": "DateTime", "format": "yMMMd" } }
+  },
+  "queueSaved": "{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}",
+  "@queueSaved": {
+    "description": "Snackbar after saving the queue as a playlist",
+    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+  },
+  "queueSavedSkipped": "{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library or repeated)} other{{skipped} left out (not in your library or repeated)}}",
+  "@queueSavedSkipped": {
+    "description": "Snackbar after saving the queue when some queue songs were not saved",
+    "placeholders": { "count": { "type": "int" }, "skipped": { "type": "int" }, "name": { "type": "String" } }
+  },
+  "queueSaveNothing": "Nothing in the queue is in your library",
+  "@queueSaveNothing": { "description": "Snackbar when no queue song can be saved in a playlist" }
 }

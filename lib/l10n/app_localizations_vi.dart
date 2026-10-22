@@ -1684,4 +1684,29 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get playlistM3uOverwriteConfirm => 'Thay thế';
+
+  @override
+  String get queueSaveAsPlaylist => 'Lưu hàng đợi thành playlist';
+
+  @override
+  String queueSaveDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Hàng đợi $dateString';
+  }
+
+  @override
+  String queueSaved(int count, String name) {
+    return 'Đã lưu $count bài vào $name';
+  }
+
+  @override
+  String queueSavedSkipped(int count, int skipped, String name) {
+    return 'Đã lưu $count bài vào $name, bỏ $skipped bài (không có trong thư viện hoặc trùng)';
+  }
+
+  @override
+  String get queueSaveNothing =>
+      'Không bài nào trong hàng đợi có trong thư viện';
 }
