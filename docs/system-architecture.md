@@ -530,7 +530,7 @@ The song page (`HistoryTrackScreen`, `/history/track?path=`) reads one song's to
 
 Paths that come from outside the library (command-line files, M3U lines, restored sessions) must go through `localAudioPath` (`core/paths/local_audio_path.dart`) before they reach the player or these tables: it accepts an absolute path, a `file:` URI (percent-decoded) or a path relative to a given folder, and returns the invariant-1 spelling of an existing regular audio file, or null. Every other `scheme://` (`http`, `edl`, `av`, …) gives null, since mpv would open it. Files opened from the command line or "Open with" go through it (`core/open_files/open_files_service.dart`). It vouches for the file name only; on a case-insensitive mount a differently cased name passes as written. References inside a local file (an EDL or playlist) are limited by the player's mpv options (`demuxer=lavf` with `protocol_whitelist=file`), not by this check.
 
-Planned schema work: collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md). Playlists (PL-01, PL-02) read and write the v5 tables, see [Playlists](#playlists). Favorites and M3U (PL-03 to PL-05) and listen history (STAT-01, STAT-10, and the history views) are not in the code yet.
+Planned schema work: collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md). Playlists, Favorites and M3U (PL-01 to PL-05) read and write these tables, see [Playlists](#playlists). Listen history (STAT-01, STAT-10, and the history views) is not in the code yet.
 
 ### Playlists
 

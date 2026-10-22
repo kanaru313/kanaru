@@ -97,7 +97,7 @@ Status on 2026-10-21, with the search work on `feat/search`. Commit and PR count
 | Library browse: Favorites, History | Not started (placeholder screens) |
 | Now Playing overlay and queue sheet | Shipped; hero transition not built |
 | Search | Shipped: songs, albums and artists, live from the top bar; typo tolerance not done (SEARCH-04) |
-| Playlists | Not started (placeholder in sidebar) |
+| Playlists | Done: create, rename, delete, add, remove, reorder (PL-01, PL-02), Favorites (PL-03), M3U import and export (PL-04, PL-05), save the queue (QUEUE-06) |
 | Settings | Shipped in part (library folders, rescan, appearance, about) |
 | Packaging (AppImage, Flatpak, deb, rpm) | Not started |
 | CI | Not started (no `.github/` workflows) |
@@ -119,7 +119,7 @@ Scope of the first release, derived from the P0 items of Phase 1 (features.md).
 
 | Requirement | ID | Priority | State |
 |---|---|---|---|
-| Playlists: create, edit, delete, add and reorder | PL-01, PL-02 | P0 | Not started |
+| Playlists: create, edit, delete, add and reorder | PL-01, PL-02 | P0 | Done |
 | AppImage package | PKG-01 | P0 | Not started |
 | Collapse DB schema history to v1 before release | PKG-08 | P0 | Not started |
 | Startup rescan option | IDX-06 | P1 | Done |
