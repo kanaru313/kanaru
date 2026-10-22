@@ -20,6 +20,69 @@
   "sidebarShrink": "Collapse sidebar",
   "sidebarGrow": "Expand sidebar",
 
+  "playlistDefaultName": "New playlist",
+  "playlistCreateTitle": "New playlist",
+  "playlistCreateConfirm": "Create",
+  "playlistRename": "Rename",
+  "playlistRenameTitle": "Rename playlist",
+  "playlistNameLabel": "Name",
+  "playlistDelete": "Delete playlist",
+  "playlistDeleteTitle": "Delete \"{name}\"?",
+  "@playlistDeleteTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "playlistDeleteBody": "{count, plural, =0{It has no songs.} =1{It has 1 song.} other{It has {count} songs.}} The songs stay in your library.",
+  "@playlistDeleteBody": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "playlistDeleteConfirm": "Delete",
+  "playlistActions": "Playlist actions",
+  "playlistTrackCount": "{count, plural, =0{No songs} =1{1 song} other{{count} songs}}",
+  "@playlistTrackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "playlistEmptyTitle": "This playlist is empty",
+  "playlistEmptyMessage": "Add songs from the menu of any song, album or artist.",
+  "playlistsEmptyMessage": "Create a playlist to keep songs in your own order.",
+  "playlistNotFound": "Playlist not found",
+  "playlistNotFoundMessage": "It may have been deleted.",
+  "playlistNotInLibrary": "Not in library",
+  "playlistRemoveEntry": "Remove from playlist",
+  "playlistReorder": "Drag to reorder",
+  "playlistAddTo": "Add to playlist…",
+  "playlistPickerTitle": "Add to playlist",
+  "playlistPickerNew": "New playlist…",
+  "playlistAdded": "Added to {playlist}: {name}",
+  "@playlistAdded": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "playlist": { "type": "String" }
+    }
+  },
+  "playlistAddedSkipped": "{added, plural, =1{Added 1 song to {playlist}} other{Added {added} songs to {playlist}}}, {skipped, plural, =1{1 was already there} other{{skipped} were already there}}",
+  "@playlistAddedSkipped": {
+    "placeholders": {
+      "added": { "type": "int" },
+      "skipped": { "type": "int" },
+      "playlist": { "type": "String" }
+    }
+  },
+  "playlistAlreadyIn": "Already in {playlist}: {name}",
+  "@playlistAlreadyIn": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "playlist": { "type": "String" }
+    }
+  },
+  "playlistSaveFailed": "Couldn't save the playlist. See the log for details.",
+  "playlistTrackNotInLibrary": "This song isn't in your library, so it can't go in a playlist.",
+
   "topBarBack": "Back",
   "topBarForward": "Forward",
   "topBarSearchHint": "Search songs, albums, artists",

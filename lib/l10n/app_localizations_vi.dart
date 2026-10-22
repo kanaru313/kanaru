@@ -61,6 +61,127 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sidebarGrow => 'Mở rộng thanh bên';
 
   @override
+  String get playlistDefaultName => 'Playlist mới';
+
+  @override
+  String get playlistCreateTitle => 'Tạo playlist';
+
+  @override
+  String get playlistCreateConfirm => 'Tạo';
+
+  @override
+  String get playlistRename => 'Đổi tên';
+
+  @override
+  String get playlistRenameTitle => 'Đổi tên playlist';
+
+  @override
+  String get playlistNameLabel => 'Tên';
+
+  @override
+  String get playlistDelete => 'Xoá playlist';
+
+  @override
+  String playlistDeleteTitle(String name) {
+    return 'Xoá \"$name\"?';
+  }
+
+  @override
+  String playlistDeleteBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Playlist có $count bài.',
+      zero: 'Playlist chưa có bài nào.',
+    );
+    return '$_temp0 Các bài vẫn còn trong thư viện.';
+  }
+
+  @override
+  String get playlistDeleteConfirm => 'Xoá';
+
+  @override
+  String get playlistActions => 'Tác vụ playlist';
+
+  @override
+  String playlistTrackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài',
+      zero: 'Chưa có bài',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistEmptyTitle => 'Playlist trống';
+
+  @override
+  String get playlistEmptyMessage =>
+      'Thêm bài từ menu của bài hát, album hoặc nghệ sĩ.';
+
+  @override
+  String get playlistsEmptyMessage => 'Tạo playlist để xếp bài theo ý bạn.';
+
+  @override
+  String get playlistNotFound => 'Không tìm thấy playlist';
+
+  @override
+  String get playlistNotFoundMessage => 'Có thể playlist đã bị xoá.';
+
+  @override
+  String get playlistNotInLibrary => 'Không có trong thư viện';
+
+  @override
+  String get playlistRemoveEntry => 'Bỏ khỏi playlist';
+
+  @override
+  String get playlistReorder => 'Kéo để sắp xếp';
+
+  @override
+  String get playlistAddTo => 'Thêm vào playlist…';
+
+  @override
+  String get playlistPickerTitle => 'Thêm vào playlist';
+
+  @override
+  String get playlistPickerNew => 'Playlist mới…';
+
+  @override
+  String playlistAdded(String name, String playlist) {
+    return 'Đã thêm vào $playlist: $name';
+  }
+
+  @override
+  String playlistAddedSkipped(int added, int skipped, String playlist) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Đã thêm $added bài vào $playlist',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skipped,
+      locale: localeName,
+      other: '$skipped bài đã có sẵn',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String playlistAlreadyIn(String name, String playlist) {
+    return 'Đã có trong $playlist: $name';
+  }
+
+  @override
+  String get playlistSaveFailed =>
+      'Không lưu được playlist. Xem log để biết chi tiết.';
+
+  @override
+  String get playlistTrackNotInLibrary =>
+      'Bài này không có trong thư viện nên không thêm vào playlist được.';
+
+  @override
   String get topBarBack => 'Quay lại';
 
   @override
