@@ -97,6 +97,31 @@ void main() {
     },
   );
 
+  test('a file dated far ahead is read and leaves nothing deferred', () async {
+    touch('a.mp3')
+        .setLastModifiedSync(DateTime.now().add(const Duration(hours: 3)));
+    await changes();
+
+    expect(await stored(), {'a.mp3'});
+    expect(
+      container.read(scannedFoldersProvider).deferred,
+      0,
+      reason: 'a deferral would make the watcher rescan again and again',
+    );
+  });
+
+  test('a change scan queued behind a loud one is quiet', () async {
+    touch('a.mp3');
+    final loud = indexer().scan();
+    final follow = changes();
+    await Future.wait([loud, follow]);
+
+    expect(
+      (container.read(libraryIndexerProvider) as IndexerFinished).quiet,
+      isTrue,
+    );
+  });
+
   test(
     'a stored file rewritten just now keeps its row and is not read',
     () async {
