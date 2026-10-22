@@ -165,6 +165,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
     do {
       // A user's request wins over a change: its pass has no settle window.
       _changeScan = _changesPending && !_rescanRequested;
+      // A pass for changes alone is quiet, whatever the pass before it was.
+      if (_changeScan) _quiet = true;
       _rescanRequested = false;
       _changesPending = false;
       await _scan();
@@ -209,8 +211,15 @@ class LibraryIndexer extends Notifier<IndexerState> {
     );
     final scanStartedAt = DateTime.now();
     // A scan caused by file changes leaves out files still being written.
-    final settledBeforeMs = _changeScan
-        ? scanStartedAt.millisecondsSinceEpoch - settleWindow.inMilliseconds
+    final settle = _changeScan
+        ? (
+            beforeMs:
+                scanStartedAt.millisecondsSinceEpoch -
+                settleWindow.inMilliseconds,
+            untilMs:
+                scanStartedAt.millisecondsSinceEpoch +
+                settleClockSlack.inMilliseconds,
+          )
         : null;
     final folders = ScannedFoldersTally(
       ref.read(scannedFoldersProvider).byRoot,
@@ -251,7 +260,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         if (!await db.rootExists(root.id)) continue;
         RootScanResult result;
         try {
-          result = await _scanRoot(db, reader, root, rules, settledBeforeMs);
+          result = await _scanRoot(db, reader, root, rules, settle);
         } catch (error, stackTrace) {
           // A removed root fails on its deleted id (foreign key): not an error.
           if (!await _rootExistsOrUnknown(db, root.id)) {
@@ -419,7 +428,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     TagReader reader,
     LibraryRoot root,
     ScanRules rules,
-    int? settledBeforeMs,
+    ({int beforeMs, int untilMs})? settle,
   ) async {
     final timeouts = ref.read(scanTimeoutsProvider);
     final walkFiles = ref.read(rootWalkerProvider);
@@ -469,7 +478,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       walk,
       root.path,
       rules.walk,
-      settledBeforeMs: settledBeforeMs,
+      settledBeforeMs: settle?.beforeMs,
+      settleUntilMs: settle?.untilMs,
     );
     undecodable = walk.undecodableNames;
     undecodableDirs = walk.undecodableSampleDirs;

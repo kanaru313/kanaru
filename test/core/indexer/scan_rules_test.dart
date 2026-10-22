@@ -152,6 +152,27 @@ void main() {
     expect(result.filteredOut, 0);
   });
 
+  test('a file dated well in the future is read, not deferred', () {
+    final result = applyWalkRules(
+      WalkResult(
+        files: [
+          file('/m/now.mp3', mtime: 1002),
+          file('/m/edge.mp3', mtime: 1005),
+          file('/m/future.mp3', mtime: 1006),
+          file('/m/hours.mp3', mtime: 1000 + 3600 * 1000),
+        ],
+      ),
+      root,
+      const WalkRules(),
+      settledBeforeMs: 1000,
+      settleUntilMs: 1005,
+    );
+
+    expect(paths(result), {'/m/future.mp3', '/m/hours.mp3'});
+    expect(result.unstattable, ['/m/now.mp3', '/m/edge.mp3']);
+    expect(result.deferred, 2);
+  });
+
   test('ScanRules.from converts the stored options', () {
     final rules = ScanRules.from(
       const LibraryScanPrefs(

@@ -11,6 +11,11 @@ import 'walk_audio_files.dart';
 /// a scan for file changes leaves such files for the next pass.
 const settleWindow = Duration(seconds: 2);
 
+/// How far ahead of the scan's start a modification time may be and still
+/// count as "being written now" (clock rounding between file system and
+/// host). A file dated later is read, not deferred.
+const settleClockSlack = Duration(seconds: 5);
+
 /// The folders the library holds, as the last scan (or listing) saw them.
 typedef ScannedFoldersState = ({
   Map<String, List<String>> byRoot,

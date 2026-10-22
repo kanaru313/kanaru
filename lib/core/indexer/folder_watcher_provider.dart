@@ -94,9 +94,12 @@ class FolderWatcherController extends Notifier<WatchStatus> {
       return;
     }
     if (!ref.mounted) return;
+    final failed = ref.read(libraryIndexerProvider) is IndexerFailed;
     watcher.scanEnded(
-      failed: ref.read(libraryIndexerProvider) is IndexerFailed,
-      deferred: ref.read(scannedFoldersProvider).deferred,
+      failed: failed,
+      // A scan that failed may have died before it published: the count
+      // left there belongs to an earlier scan.
+      deferred: failed ? 0 : ref.read(scannedFoldersProvider).deferred,
     );
   }
 

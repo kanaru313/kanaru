@@ -54,8 +54,11 @@ class ScanRules {
 /// unreadable and unstattable ones too, so that rows stored below it are
 /// deleted by the diff even when they cannot be listed. Files under
 /// [WalkRules.minFileSizeBytes] are dropped. With [settledBeforeMs], a file
-/// modified after that moment is still being written: it moves to
-/// `unstattable` (its row stays, it is not read) and counts as `deferred`.
+/// modified after that moment and no later than [settleUntilMs] is still
+/// being written: it moves to `unstattable` (its row stays, it is not read)
+/// and counts as `deferred`. A file dated after [settleUntilMs] is not being
+/// written now (wrong clock, archive dates, FAT time zones), so it is read:
+/// deferring it would never end.
 ///
 /// `filteredOut` counts the files dropped and the blocked folders the walk
 /// listed. With no rule at work the result is [walk] itself.
@@ -64,6 +67,7 @@ WalkResult applyWalkRules(
   String root,
   WalkRules rules, {
   int? settledBeforeMs,
+  int? settleUntilMs,
 }) {
   final blocked = <String>{
     for (final path in rules.excludedPaths)
@@ -98,14 +102,17 @@ WalkResult applyWalkRules(
   for (final file in walk.files) {
     if (inBlocked(file.path) || file.sizeBytes < rules.minFileSizeBytes) {
       dropped++;
-    } else if (settledBeforeMs != null && file.mtimeMs > settledBeforeMs) {
+    } else if (settledBeforeMs != null &&
+        file.mtimeMs > settledBeforeMs &&
+        (settleUntilMs == null || file.mtimeMs <= settleUntilMs)) {
       unstattable.add(file.path);
       deferred++;
     } else {
       files.add(file);
     }
   }
-  final blockedListed = blocked.where(walk.dirs.contains).length;
+  final listed = walk.dirs.toSet();
+  final blockedListed = blocked.where(listed.contains).length;
   return walk.copyWith(
     files: files,
     unstattable: unstattable,
