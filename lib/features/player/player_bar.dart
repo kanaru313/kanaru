@@ -155,6 +155,7 @@ class _OneRow extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      NowPlayingFavoriteButton(),
                       NowPlayingPlaylistButton(),
                       VolumeButton(),
                       QueueButton(),

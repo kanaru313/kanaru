@@ -1310,12 +1310,6 @@ abstract class AppLocalizations {
   /// **'Add to playlist'**
   String get nowPlayingAddToPlaylist;
 
-  /// No description provided for @nowPlayingComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get nowPlayingComingSoon;
-
   /// No description provided for @nowPlayingTabQueue.
   ///
   /// In en, this message translates to:
@@ -2533,6 +2527,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play'**
   String get historyPlay;
+
+  /// Tooltip of the filled heart and song menu item that take a song out of Favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get favoritesRemove;
+
+  /// Snackbar after liking a song from its menu
+  ///
+  /// In en, this message translates to:
+  /// **'Added to Favorites'**
+  String get favoritesAdded;
+
+  /// Snackbar after unliking a song from its menu
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from Favorites'**
+  String get favoritesRemoved;
 }
 
 class _AppLocalizationsDelegate

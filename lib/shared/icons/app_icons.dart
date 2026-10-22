@@ -115,4 +115,7 @@ abstract final class AppIcons {
 
   // History.
   static const IconData calendar = Icons.calendar_month_outlined;
+
+  // Favorites and playlist files.
+  static const IconData favoriteRounded = Icons.favorite_rounded;
 }

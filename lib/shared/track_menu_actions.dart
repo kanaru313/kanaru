@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../core/database/library_browse_track_links.dart';
 import '../core/database/library_database.dart';
 import '../core/database/library_startup.dart';
+import '../core/database/playlist_favorites.dart';
 import '../l10n/l10n.dart';
 import 'icons/app_icons.dart';
 import 'library_route_keys.dart';
@@ -15,8 +16,8 @@ import 'widgets/queue_actions_menu.dart';
 
 final _log = Logger('track_menu');
 
-/// Carries out the links of the song menu: opens a song's artist or album
-/// page, or shows its file in the file manager.
+/// Carries out the song menu: opens a song's artist or album page, shows its
+/// file in the file manager, or puts it in or out of Favorites.
 ///
 /// Built before the menu opens, because what it needs from the widget tree
 /// (router, messenger, texts) must outlive the row: a rescan can rebuild the
@@ -56,6 +57,20 @@ class TrackMenuRunner {
       switch (choice) {
         case QueueChoice():
           return;
+        case FavoriteChoice(:final favorite):
+          final db = _db;
+          if (db == null) {
+            _say(_l10n.libraryUnexpectedError);
+            return;
+          }
+          // [path] is the song's `tracks.path`: a library row, so it may be
+          // liked without a check.
+          await db.setFavorite(
+            path,
+            favorite: favorite,
+            now: DateTime.now().millisecondsSinceEpoch,
+          );
+          _say(favorite ? _l10n.favoritesAdded : _l10n.favoritesRemoved);
         case ShowInFileManagerChoice():
           if (!await _showInFileManager(path)) {
             _say(_l10n.libraryFileManagerFailed);
@@ -85,7 +100,7 @@ class TrackMenuRunner {
           }
       }
     } catch (error, stack) {
-      _log.severe('Following a song menu link failed', error, stack);
+      _log.severe('A song menu action failed', error, stack);
       _say(_l10n.libraryUnexpectedError);
     }
   }

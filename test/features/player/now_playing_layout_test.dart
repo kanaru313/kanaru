@@ -144,13 +144,21 @@ void main() {
       );
     });
 
-    testWidgets('favorite only says it is coming', (tester) async {
+    testWidgets('has the favorite heart, off without a library', (
+      tester,
+    ) async {
       await pumpOpen(tester, const Size(1280, 800));
 
-      await tester.tap(inScreen(find.byTooltip('Add to favorites')));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(inScreen(find.text('Coming soon')), findsOneWidget);
+      final heart = inScreen(find.byTooltip('Add to favorites'));
+      expect(heart, findsOneWidget);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.ancestor(of: heart, matching: find.byType(IconButton)),
+            )
+            .onPressed,
+        isNull,
+      );
     });
 
     testWidgets('closes from the footer', (tester) async {

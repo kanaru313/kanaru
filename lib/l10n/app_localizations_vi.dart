@@ -794,9 +794,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingAddToPlaylist => 'Thêm vào playlist';
 
   @override
-  String get nowPlayingComingSoon => 'Sắp có';
-
-  @override
   String get nowPlayingTabQueue => 'Đang phát';
 
   @override
@@ -1582,4 +1579,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get historyPlay => 'Phát';
+
+  @override
+  String get favoritesRemove => 'Bỏ khỏi yêu thích';
+
+  @override
+  String get favoritesAdded => 'Đã thêm vào Yêu thích';
+
+  @override
+  String get favoritesRemoved => 'Đã bỏ khỏi Yêu thích';
 }

@@ -225,7 +225,6 @@
   "nowPlayingClose": "Đóng màn hình đang phát",
   "nowPlayingFavorite": "Thêm vào yêu thích",
   "nowPlayingAddToPlaylist": "Thêm vào playlist",
-  "nowPlayingComingSoon": "Sắp có",
   "nowPlayingTabQueue": "Đang phát",
   "nowPlayingTabTrack": "Bài hát",
   "nowPlayingBackToTrack": "Quay lại bài hát",
@@ -541,5 +540,11 @@
   "historyTrackNotFound": "Không tìm thấy bài hát",
   "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
   "historyPlay": "Phát",
-  "@historyPlay": { "description": "Button on the song history page that plays the song" }
+  "@historyPlay": { "description": "Button on the song history page that plays the song" },
+  "favoritesRemove": "Bỏ khỏi yêu thích",
+  "@favoritesRemove": { "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites" },
+  "favoritesAdded": "Đã thêm vào Yêu thích",
+  "@favoritesAdded": { "description": "Snackbar after liking a song from its menu" },
+  "favoritesRemoved": "Đã bỏ khỏi Yêu thích",
+  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" }
 }

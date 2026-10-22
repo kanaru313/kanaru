@@ -3,6 +3,8 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/playlist_favorites.dart';
+import '../../../core/database/playlist_providers.dart';
 import '../../../core/database/track_cover_lookup.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
@@ -13,23 +15,119 @@ import '../playback_controls.dart';
 
 final _log = Logger('playlists');
 
-void _comingSoon(BuildContext context) {
-  ScaffoldMessenger.of(context)
-    ..clearSnackBars()
-    ..showSnackBar(SnackBar(content: Text(context.l10n.nowPlayingComingSoon)));
+void _say(ScaffoldMessengerState messenger, String text) => messenger
+  ..clearSnackBars()
+  ..showSnackBar(SnackBar(content: Text(text)));
+
+/// The local path of the current song, or null (nothing playing, or a song
+/// that is not a local file).
+String? _currentPath(WidgetRef ref) {
+  final track = ref.watch(playerServiceProvider.select((s) => s.queue.current));
+  return track == null ? null : localPathOf(track.uri);
 }
 
-/// Heart. Favorites do not exist yet: the button only says so.
-class NowPlayingFavoriteButton extends StatelessWidget {
+/// Heart: puts the current song in Favorites or takes it out. Only a song
+/// that is a row of the library can be added (the playlist matches entries
+/// to library rows by path); any song can be taken out, so one that left the
+/// library is not stuck in Favorites.
+///
+/// The heart shows the wanted state at once. Presses while a write runs only
+/// change the wanted state, and the writes run one after another, so two
+/// quick presses end where they started.
+class NowPlayingFavoriteButton extends ConsumerStatefulWidget {
   const NowPlayingFavoriteButton({super.key});
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    icon: const Icon(AppIcons.favoriteBorderRounded),
-    iconSize: playerIconSize,
-    tooltip: context.l10n.nowPlayingFavorite,
-    onPressed: () => _comingSoon(context),
-  );
+  ConsumerState<NowPlayingFavoriteButton> createState() =>
+      _NowPlayingFavoriteButtonState();
+}
+
+class _NowPlayingFavoriteButtonState
+    extends ConsumerState<NowPlayingFavoriteButton> {
+  /// The state the user asked for and the song it is for, shown instead of
+  /// the stored one until the stored one agrees.
+  String? _wantedPath;
+  bool? _wanted;
+  bool _writing = false;
+
+  Future<void> _press(String path, bool shown) async {
+    final db = ref.read(libraryDatabaseProvider);
+    if (db == null) return;
+    setState(() {
+      _wantedPath = path;
+      _wanted = !shown;
+    });
+    if (_writing) return;
+    _writing = true;
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      while (true) {
+        final target = _wantedPath;
+        final favorite = _wanted;
+        if (target == null || favorite == null) break;
+        if (favorite && await db.coverKeyOf(target) == null) {
+          _say(messenger, l10n.playlistTrackNotInLibrary);
+          _forget();
+          break;
+        }
+        await db.setFavorite(
+          target,
+          favorite: favorite,
+          now: DateTime.now().millisecondsSinceEpoch,
+        );
+        // Done unless the user pressed again meanwhile.
+        if (_wantedPath == target && _wanted == favorite) break;
+      }
+    } catch (error, stack) {
+      _log.severe('Changing the favorite of a song failed', error, stack);
+      _say(messenger, l10n.playlistSaveFailed);
+      _forget();
+    } finally {
+      // Rebuild so build() can drop the wanted state if the store already
+      // caught up while the write was running.
+      if (mounted) setState(() => _writing = false);
+      _writing = false;
+    }
+  }
+
+  void _forget() {
+    if (!mounted) return;
+    setState(() {
+      _wantedPath = null;
+      _wanted = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final path = _currentPath(ref);
+    final enabled = path != null && ref.watch(libraryDatabaseProvider) != null;
+    final stored =
+        path != null &&
+        ref.watch(
+          favoritePathsProvider.select((s) => s.value?.contains(path) ?? false),
+        );
+    // Once the writes are done and the store caught up (or the song
+    // changed), stop overriding it, so a change made elsewhere shows. The
+    // output is the same, so no rebuild is needed.
+    if (_wanted != null &&
+        !_writing &&
+        (_wantedPath != path || _wanted == stored)) {
+      _wantedPath = null;
+      _wanted = null;
+    }
+    final favorite = _wanted != null && _wantedPath == path ? _wanted! : stored;
+    final l10n = context.l10n;
+    return IconButton(
+      isSelected: favorite,
+      icon: const Icon(AppIcons.favoriteBorderRounded),
+      selectedIcon: const Icon(AppIcons.favoriteRounded),
+      iconSize: playerIconSize,
+      tooltip: favorite ? l10n.favoritesRemove : l10n.nowPlayingFavorite,
+      onPressed: enabled ? () => _press(path, favorite) : null,
+    );
+  }
 }
 
 /// Add to playlist: opens the playlist picker for the current track. Only a
@@ -59,20 +157,14 @@ class _NowPlayingPlaylistButtonState
     try {
       final inLibrary = await db.coverKeyOf(path) != null;
       if (!inLibrary) {
-        messenger
-          ..clearSnackBars()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.playlistTrackNotInLibrary)),
-          );
+        _say(messenger, l10n.playlistTrackNotInLibrary);
         return;
       }
       if (!mounted) return;
       await addTracksToPlaylist(ref, context, () async => [path], title);
     } catch (error, stack) {
       _log.severe('Adding the current song to a playlist failed', error, stack);
-      messenger
-        ..clearSnackBars()
-        ..showSnackBar(SnackBar(content: Text(l10n.playlistSaveFailed)));
+      _say(messenger, l10n.playlistSaveFailed);
     } finally {
       _busy = false;
     }

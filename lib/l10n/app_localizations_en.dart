@@ -817,9 +817,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingAddToPlaylist => 'Add to playlist';
 
   @override
-  String get nowPlayingComingSoon => 'Coming soon';
-
-  @override
   String get nowPlayingTabQueue => 'Now playing';
 
   @override
@@ -1638,4 +1635,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyPlay => 'Play';
+
+  @override
+  String get favoritesRemove => 'Remove from favorites';
+
+  @override
+  String get favoritesAdded => 'Added to Favorites';
+
+  @override
+  String get favoritesRemoved => 'Removed from Favorites';
 }

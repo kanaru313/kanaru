@@ -419,7 +419,6 @@
   "nowPlayingClose": "Close Now Playing",
   "nowPlayingFavorite": "Add to favorites",
   "nowPlayingAddToPlaylist": "Add to playlist",
-  "nowPlayingComingSoon": "Coming soon",
   "nowPlayingTabQueue": "Now playing",
   "nowPlayingTabTrack": "Song",
   "nowPlayingBackToTrack": "Back to the song",
@@ -815,5 +814,11 @@
   "historyTrackNotFound": "Song not found",
   "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
   "historyPlay": "Play",
-  "@historyPlay": { "description": "Button on the song history page that plays the song" }
+  "@historyPlay": { "description": "Button on the song history page that plays the song" },
+  "favoritesRemove": "Remove from favorites",
+  "@favoritesRemove": { "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites" },
+  "favoritesAdded": "Added to Favorites",
+  "@favoritesAdded": { "description": "Snackbar after liking a song from its menu" },
+  "favoritesRemoved": "Removed from Favorites",
+  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" }
 }
