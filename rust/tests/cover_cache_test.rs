@@ -9,6 +9,7 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use common::*;
+use image::GenericImageView;
 use lofty::config::WriteOptions;
 use lofty::file::TaggedFileExt;
 use lofty::picture::{MimeType, Picture, PictureType};
@@ -199,4 +200,24 @@ fn original_cover_follows_the_scan_order_and_writes_nothing() {
     let bare = tempfile::tempdir().unwrap();
     assert_eq!(original(&plain("sample.opus", bare.path(), "d.opus")), None);
     assert_eq!(original(&bare.path().join("missing.flac")), None);
+}
+
+#[test]
+fn sidecar_holding_a_webp_with_exif_is_turned_upright() {
+    let music = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    let path = plain("sample.flac", music.path(), "song.flac");
+    // The extension says JPEG; the content decides.
+    fs::write(
+        music.path().join("cover.jpg"),
+        webp_halves(Some(exif_tiff(6))),
+    )
+    .unwrap();
+    let found = read_with(&path, &CoverSink::new(cache.path()));
+    let key = found.cover.expect("the sidecar is the cover");
+    let thumbnail = fs::read(cache.path().join(&key)).unwrap();
+    assert_eq!(
+        image::load_from_memory(&thumbnail).unwrap().dimensions(),
+        (20, 40)
+    );
 }

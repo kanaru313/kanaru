@@ -14,11 +14,13 @@ pub(crate) const WORKER_STACK_BYTES: usize = 8 * 1024 * 1024;
 /// Number of tag threads for a machine with `cpus` hardware threads: half of
 /// them, so a scan leaves room for playback and the UI, and at least two.
 ///
-/// Each thread reads one file at a time. The cover pool uses the same count:
-/// there lofty holds every picture of a file in memory and a thumbnail decode
-/// may take up to
-/// [`MAX_DECODE_BYTES`](crate::cover_thumbnail::MAX_DECODE_BYTES), so peak
-/// memory grows with this count.
+/// Each thread reads one file at a time. The cover pool uses the same count.
+/// A cover thread holds every picture lofty read from its file (each at most
+/// 16 MiB, `MAX_COVER_BYTES`) and, while it makes a thumbnail, up to twice
+/// [`MAX_DECODE_BYTES`](crate::cover_thumbnail::MAX_DECODE_BYTES): the decode
+/// buffer is capped by that limit, and flattening, resizing and turning the
+/// image each add a buffer of about their output size. The worst case is
+/// therefore this count times that sum, and it grows with the count.
 pub(crate) fn thread_count(cpus: usize) -> usize {
     (cpus / 2).max(2)
 }
