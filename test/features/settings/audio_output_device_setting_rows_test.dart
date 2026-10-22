@@ -265,6 +265,22 @@ void main() {
     expect(playback.audioDeviceName, isNull);
   });
 
+  testWidgets('tapping Automatic while the saved device is failed clears it', (
+    tester,
+  ) async {
+    await pumpRow(tester, prefs: saved('pipewire/spk', 'PW Speaker'));
+    backend.emitAudioDeviceFailed('pipewire/spk');
+    await tester.pumpAndSettle();
+    await openDialog(tester);
+
+    await tester.tap(inDialog(find.text('Automatic (system default)')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(playback.audioDeviceName, isNull);
+    expect(playback.audioDeviceDescription, isNull);
+  });
+
   group('a 200 character description at 360 px, text scale 2, Vietnamese', () {
     final long = 'Loa ${'rất dài ' * 25}'.trim().substring(0, 200);
     final listed = [

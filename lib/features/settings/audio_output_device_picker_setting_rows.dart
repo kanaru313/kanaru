@@ -45,12 +45,20 @@ class _AudioOutputDeviceDialogState
       .audioDevices;
 
   /// A radio reports `null` when the one that is already selected is tapped
-  /// (the tiles are `toggleable`, or nothing would be reported): nothing to
-  /// change, so the dialog just closes.
+  /// (the tiles are `toggleable`, or nothing would be reported). Usually
+  /// there is nothing to change and the dialog just closes. While the saved
+  /// device is failed, Automatic is the selected radio: tapping it means
+  /// "stop using the saved device", so that is picked.
   void _pick(String? name) {
     if (name == null) {
-      Navigator.of(context).pop();
-      return;
+      final saved = ref.read(settingsProvider).playback.audioDeviceName;
+      final failed =
+          saved != null && ref.read(audioOutputFailedDeviceProvider) == saved;
+      if (!failed) {
+        Navigator.of(context).pop();
+        return;
+      }
+      name = autoAudioDevice;
     }
     final settings = ref.read(settingsProvider.notifier);
     final p = ref.read(settingsProvider).playback;
