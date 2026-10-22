@@ -321,6 +321,15 @@
   "artistsNotFound": "Artist not found",
   "artistsNotFoundMessage": "Their songs may have been removed or retagged.",
 
+  "genresTitle": "Genres",
+  "genresNoRootsMessage": "Add a music folder in Songs.",
+  "genresEmptyTitle": "No genres yet",
+  "genresEmptyMessage": "Songs with a genre tag show up here by genre.",
+  "genresAlbums": "Albums",
+  "genresSongs": "Songs",
+  "genresNotFound": "Genre not found",
+  "genresNotFoundMessage": "Its songs may have been removed or retagged.",
+
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 

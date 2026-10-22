@@ -36,6 +36,8 @@ abstract final class AppIcons {
   static const IconData artist = Icons.person;
   static const IconData artistOutline = Icons.person_outline;
   static const IconData artistRounded = Icons.person_rounded;
+  static const IconData genre = Icons.category;
+  static const IconData genreOutlined = Icons.category_outlined;
   static const IconData folder = Icons.folder;
   static const IconData folderOutlined = Icons.folder_outlined;
   static const IconData folderOpen = Icons.folder_open_outlined;

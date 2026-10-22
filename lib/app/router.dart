@@ -9,6 +9,8 @@ import '../features/library/albums/album_screen.dart';
 import '../features/library/albums/albums_screen.dart';
 import '../features/library/artists/artist_screen.dart';
 import '../features/library/artists/artists_screen.dart';
+import '../features/library/genres/genre_screen.dart';
+import '../features/library/genres/genres_screen.dart';
 import '../features/library/library_section_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
@@ -81,6 +83,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                         ],
                       ),
                     ],
+                    AppDestination.genres => [
+                      GoRoute(
+                        path: ':key',
+                        builder: (context, state) =>
+                            GenreScreen(routeKey: state.pathParameters['key']!),
+                      ),
+                    ],
                     AppDestination.playlists => [
                       GoRoute(
                         path: ':id',
@@ -122,6 +131,7 @@ Widget _buildPage(
     AppDestination.songs => const SongsScreen(),
     AppDestination.albums => const AlbumsScreen(),
     AppDestination.artists => const ArtistsScreen(),
+    AppDestination.genres => const GenresScreen(),
     AppDestination.folders => section(l10n.libraryEmptyMessage),
     AppDestination.favorites => section(
       l10n.favoritesEmptyMessage,

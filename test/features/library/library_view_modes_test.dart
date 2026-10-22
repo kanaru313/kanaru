@@ -40,4 +40,18 @@ void main() {
 
     expect(second.read(libraryViewModesProvider).artists, AlbumsView.list);
   });
+
+  test('genres default to the list and can be switched apart from artists', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(container.read(libraryViewModesProvider).genres, AlbumsView.list);
+    container
+        .read(libraryViewModesProvider.notifier)
+        .setGenresView(AlbumsView.grid);
+
+    final modes = container.read(libraryViewModesProvider);
+    expect(modes.genres, AlbumsView.grid);
+    expect(modes.artists, AlbumsView.list);
+  });
 }

@@ -7,8 +7,10 @@ import '../widgets/library_rescan_button.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'album_tile_data.dart';
 
-const _padding = 8.0;
-const _gap = 8.0;
+/// Padding around the content of a grid tile and the gap between the picture
+/// and the text; shared by the round tiles, whose height is derived from here.
+const gridTilePadding = 8.0;
+const gridTileGap = 8.0;
 
 /// One album in a grid: square artwork, title, "artist · year".
 class AlbumGridTile extends StatelessWidget {
@@ -36,7 +38,7 @@ class AlbumGridTile extends StatelessWidget {
     }
 
     return width +
-        _gap +
+        gridTileGap +
         line(theme.titleSmall) +
         line(theme.bodySmall) +
         // Rounding slack so a fractional line height never clips.
@@ -56,7 +58,7 @@ class AlbumGridTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.all(_padding),
+        padding: const EdgeInsets.all(gridTilePadding),
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +68,7 @@ class AlbumGridTile extends StatelessWidget {
                 coverKey: data.coverKey,
                 size: constraints.maxWidth,
               ),
-              const SizedBox(height: _gap),
+              const SizedBox(height: gridTileGap),
               Text(
                 data.title,
                 maxLines: 1,
@@ -109,7 +111,8 @@ SliverGridDelegate libraryGridDelegate(
   return SliverGridDelegateWithFixedCrossAxisCount(
     crossAxisCount: columns,
     mainAxisExtent:
-        tileHeight(context, tileWidth - _padding * 2) + _padding * 2,
+        tileHeight(context, tileWidth - gridTilePadding * 2) +
+        gridTilePadding * 2,
   );
 }
 

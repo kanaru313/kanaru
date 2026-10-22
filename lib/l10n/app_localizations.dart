@@ -1010,6 +1010,54 @@ abstract class AppLocalizations {
   /// **'Their songs may have been removed or retagged.'**
   String get artistsNotFoundMessage;
 
+  /// No description provided for @genresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get genresTitle;
+
+  /// No description provided for @genresNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get genresNoRootsMessage;
+
+  /// No description provided for @genresEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No genres yet'**
+  String get genresEmptyTitle;
+
+  /// No description provided for @genresEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs with a genre tag show up here by genre.'**
+  String get genresEmptyMessage;
+
+  /// No description provided for @genresAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get genresAlbums;
+
+  /// No description provided for @genresSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get genresSongs;
+
+  /// No description provided for @genresNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre not found'**
+  String get genresNotFound;
+
+  /// No description provided for @genresNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Its songs may have been removed or retagged.'**
+  String get genresNotFoundMessage;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:

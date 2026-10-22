@@ -80,6 +80,25 @@ void main() {
     expect(find.text('Songs you like will show up here.'), findsOneWidget);
   });
 
+  testWidgets('the sidebar lists Genres between Artists and Folders', (
+    tester,
+  ) async {
+    await pumpApp(tester, wide);
+    double top(String label) => tester
+        .getTopLeft(
+          find.descendant(of: find.byType(Sidebar), matching: find.text(label)),
+        )
+        .dy;
+
+    expect(top('Artists'), lessThan(top('Genres')));
+    expect(top('Genres'), lessThan(top('Folders')));
+
+    await tester.tap(find.text('Genres'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Genres'), findsNWidgets(2));
+  });
+
   testWidgets('back and forward move through visited pages', (tester) async {
     await pumpApp(tester, wide);
     final back = find.byTooltip('Back');

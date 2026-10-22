@@ -614,6 +614,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'Their songs may have been removed or retagged.';
 
   @override
+  String get genresTitle => 'Genres';
+
+  @override
+  String get genresNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get genresEmptyTitle => 'No genres yet';
+
+  @override
+  String get genresEmptyMessage =>
+      'Songs with a genre tag show up here by genre.';
+
+  @override
+  String get genresAlbums => 'Albums';
+
+  @override
+  String get genresSongs => 'Songs';
+
+  @override
+  String get genresNotFound => 'Genre not found';
+
+  @override
+  String get genresNotFoundMessage =>
+      'Its songs may have been removed or retagged.';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override

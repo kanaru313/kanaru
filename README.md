@@ -24,7 +24,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 ### Core (offline-first)
 
 - 🎵 Plays almost anything — MP3, FLAC, ALAC, AAC/M4A, OGG Vorbis, Opus, WAV, APE, WavPack… (powered by libmpv)
-- 📚 Library browsing by albums, artists, album artists, genres, years, folders *(albums, artists and songs so far)*
+- 📚 Library browsing by albums, artists, album artists, genres, years, folders *(albums, artists, genres and songs so far)*
 - 🔍 Full-text search of songs, albums and artists, ignoring accents
 - 📝 Playlists *(Phase 1)*, queue management, shuffle / repeat
 - 🎧 Gapless playback, ReplayGain *(Phase 1)*
@@ -104,7 +104,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 **Phase 1 — Offline local player** · Linux
 
 - [x] Folder scanning & tag reading, embedded / folder artwork
-- [ ] Library database & browsing: albums, artists, songs done; genres, folders open
+- [ ] Library database & browsing: albums, artists, genres, songs done; folders open
 - [ ] Now Playing, mini player, queue, shuffle / repeat: shipped; hero transition and queue history open
 - [x] Full-text search over songs, albums and artists
 - [ ] Playlists: create, rename, delete, add, remove and reorder work; M3U import/export not started

@@ -21,10 +21,22 @@ void main() {
     }
   });
 
+  test('genre keys round-trip any text', () {
+    for (final name in odd) {
+      expect(decodeGenreRouteKey(encodeGenreRouteKey(name)), name);
+    }
+    expect(decodeGenreRouteKey('!!'), isNull);
+    expect(
+      decodeGenreRouteKey(encodeAlbumRouteKey(const AlbumKey('a', 'b'))),
+      isNull,
+    );
+  });
+
   test('keys are URL-safe and never empty', () {
     for (final text in odd) {
       for (final key in [
         encodeArtistRouteKey(text),
+        encodeGenreRouteKey(text),
         encodeAlbumRouteKey(AlbumKey(text, text)),
       ]) {
         expect(key, isNotEmpty);
@@ -75,6 +87,8 @@ void main() {
   test('locations use the shell paths', () {
     expect(albumsPath, AppDestination.albums.path);
     expect(artistsPath, AppDestination.artists.path);
+    expect(genresPath, AppDestination.genres.path);
+    expect(genreLocation('rock'), '/genres/${encodeGenreRouteKey('rock')}');
     const key = AlbumKey('a', 'b');
     expect(albumLocation(key), '/albums/${encodeAlbumRouteKey(key)}');
     expect(

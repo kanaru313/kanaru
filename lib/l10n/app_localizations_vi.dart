@@ -605,6 +605,31 @@ class AppLocalizationsVi extends AppLocalizations {
       'Có thể bài hát của nghệ sĩ đã bị xoá hoặc đổi tag.';
 
   @override
+  String get genresTitle => 'Thể loại';
+
+  @override
+  String get genresNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get genresEmptyTitle => 'Chưa có thể loại';
+
+  @override
+  String get genresEmptyMessage =>
+      'Bài hát có tag thể loại sẽ hiện ở đây theo thể loại.';
+
+  @override
+  String get genresAlbums => 'Album';
+
+  @override
+  String get genresSongs => 'Bài hát';
+
+  @override
+  String get genresNotFound => 'Không tìm thấy thể loại';
+
+  @override
+  String get genresNotFoundMessage => 'Có thể bài hát đã bị xoá hoặc đổi tag.';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override

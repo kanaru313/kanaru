@@ -19,6 +19,7 @@ class TestTrack {
     this.durationMs = 1000,
     this.addedAt = 1,
     this.coverKey,
+    this.genre,
   });
 
   final String title;
@@ -31,6 +32,7 @@ class TestTrack {
   final int? durationMs;
   final int addedAt;
   final String? coverKey;
+  final String? genre;
 }
 
 /// Stores [tracks] under the root `/m` (added if missing), with paths
@@ -64,6 +66,7 @@ Future<void> insertTracks(
           addedAt: t.addedAt,
           updatedAt: t.addedAt,
           coverKey: Value(t.coverKey),
+          genre: Value(t.genre),
         ),
     ]);
   });

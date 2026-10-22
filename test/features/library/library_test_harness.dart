@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show ApplyInterceptor, QueryInterceptor;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -32,6 +33,7 @@ class LibraryHarness {
     this.rootsController,
     this.refreshInterval = Duration.zero,
     this.coverCacheDirectory,
+    this.interceptor,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
@@ -53,7 +55,14 @@ class LibraryHarness {
   /// flight for [settleIo]).
   final LibraryRootsController? rootsController;
 
-  late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
+  /// Sees every statement the database runs, when given.
+  final QueryInterceptor? interceptor;
+
+  late final LibraryDatabase db = LibraryDatabase(
+    interceptor == null
+        ? NativeDatabase.memory()
+        : NativeDatabase.memory().interceptWith(interceptor!),
+  );
 
   /// Folders the fake picker returns, in order; empty means cancelled.
   final picks = <String>[];

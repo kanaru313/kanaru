@@ -164,6 +164,15 @@
   "artistsNotFound": "Không tìm thấy nghệ sĩ",
   "artistsNotFoundMessage": "Có thể bài hát của nghệ sĩ đã bị xoá hoặc đổi tag.",
 
+  "genresTitle": "Thể loại",
+  "genresNoRootsMessage": "Thêm thư mục nhạc ở mục Bài hát.",
+  "genresEmptyTitle": "Chưa có thể loại",
+  "genresEmptyMessage": "Bài hát có tag thể loại sẽ hiện ở đây theo thể loại.",
+  "genresAlbums": "Album",
+  "genresSongs": "Bài hát",
+  "genresNotFound": "Không tìm thấy thể loại",
+  "genresNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag.",
+
   "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
   "recentlyPlayedEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
 
