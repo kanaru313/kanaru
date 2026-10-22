@@ -110,7 +110,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [ ] Playlists (incl. M3U import/export): not started
 - [ ] Gapless, ReplayGain: gapless configured; ReplayGain not started
 - [ ] Dynamic color from album art: not started
-- [ ] Packaging: AppImage, Flatpak, `.deb`: not started
+- [ ] Packaging: AppImage done; Flatpak, `.deb` not started
 - [ ] Before the first release: collapse the database schema history into v1
 
 **Phase 2 — More platforms**
