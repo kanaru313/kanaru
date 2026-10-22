@@ -40,8 +40,8 @@ class CoverPassResult {
   String? stoppedBecause;
 
   /// Time spent waiting for the native reader (finding covers and writing
-  /// thumbnails), and in the database (the `tracksNeedingCover` query and
-  /// `writeCovers`). Together with the pass's wall time they show which side
+  /// thumbnails), and in the database (the `countTracksNeedingCover` and
+  /// `tracksNeedingCover` queries, and `writeCovers`). Together with the pass's wall time they show which side
   /// a slow pass is on.
   Duration nativeTime = Duration.zero, dbTime = Duration.zero;
 }
@@ -74,10 +74,12 @@ Future<CoverPassResult> runCoverPass({
   var done = 0, total = 0;
   if (onProgress != null) {
     // Tracks that failed earlier in this session are passed over.
+    final countTime = Stopwatch()..start();
     total = await db.countTracksNeedingCover(
       rootIds,
       excluding: progress.skipIds,
     );
+    result.dbTime += countTime.elapsed;
     if (total > 0) onProgress(0, total);
   }
   var wrapped = progress.cursor == null;
