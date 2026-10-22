@@ -20,6 +20,7 @@ class SidebarPlaylistsSection extends ConsumerStatefulWidget {
     super.key,
     this.compact = false,
     required this.playlistsSelected,
+    required this.onOpenPlaylists,
     required this.onOpenLocation,
   });
 
@@ -27,6 +28,10 @@ class SidebarPlaylistsSection extends ConsumerStatefulWidget {
 
   /// Whether the playlists branch is the current page (the rail's entry).
   final bool playlistsSelected;
+
+  /// Switches to the playlists branch like any other destination: back to
+  /// its last page, or to its root when it is already current.
+  final VoidCallback onOpenPlaylists;
 
   /// Opens a location such as `/playlists/3`; the drawer closes itself first.
   final ValueChanged<String> onOpenLocation;
@@ -62,7 +67,7 @@ class _SidebarPlaylistsSectionState
       return SidebarPlaylistsRail(
         selected: widget.playlistsSelected,
         onCreate: onCreate,
-        onOpen: () => widget.onOpenLocation(playlistsPath),
+        onOpen: widget.onOpenPlaylists,
       );
     }
 
@@ -71,9 +76,11 @@ class _SidebarPlaylistsSectionState
     final muted = theme.colorScheme.onSurfaceVariant;
     final playlists = ref.watch(playlistSummariesProvider).value ?? const [];
     // Only the path: a query string must not hide the highlight.
-    final current = Uri.parse(
-      ref.watch(navigationHistoryProvider.select((h) => h.entries[h.index])),
-    ).path;
+    final currentId = playlistIdOfLocation(
+      Uri.parse(
+        ref.watch(navigationHistoryProvider.select((h) => h.entries[h.index])),
+      ).path,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -85,15 +92,24 @@ class _SidebarPlaylistsSectionState
               Expanded(
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(4),
-                    onTap: () => widget.onOpenLocation(playlistsPath),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        l10n.sidebarPlaylists,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: muted,
+                  child: Semantics(
+                    button: true,
+                    selected: widget.playlistsSelected,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: widget.onOpenPlaylists,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          l10n.sidebarPlaylists,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: widget.playlistsSelected
+                                ? theme.colorScheme.primary
+                                : muted,
+                            fontWeight: widget.playlistsSelected
+                                ? FontWeight.bold
+                                : null,
+                          ),
                         ),
                       ),
                     ),
@@ -133,10 +149,21 @@ class _SidebarPlaylistsSectionState
               icon: Icons.queue_music_outlined,
               selectedIcon: Icons.queue_music,
               label: playlist.name,
-              selected: current == playlistLocation(playlist.id),
+              selected: currentId == playlist.id,
               onTap: () => widget.onOpenLocation(playlistLocation(playlist.id)),
             ),
       ],
     );
   }
+}
+
+/// The playlist id of a page location such as `/playlists/3`, else null.
+/// Parsed, so `/playlists/05` still marks playlist 5.
+@visibleForTesting
+int? playlistIdOfLocation(String path) {
+  final segments = Uri.parse(path).pathSegments;
+  if (segments.length != 2 || '/${segments.first}' != playlistsPath) {
+    return null;
+  }
+  return parsePlaylistRouteId(segments.last);
 }

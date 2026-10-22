@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
+import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
@@ -61,4 +63,80 @@ Future<void> settleDb(WidgetTester tester) async {
     () => Future<void>.delayed(const Duration(milliseconds: 50)),
   );
   await tester.pumpAndSettle();
+}
+
+/// Titles of the playlist rows on screen, top to bottom.
+List<String> shownTitles(WidgetTester tester) {
+  final byY = {
+    for (final tile in tester.widgetList<PlaylistEntryTile>(
+      find.byType(PlaylistEntryTile),
+    ))
+      tester.getTopLeft(find.byWidget(tile)).dy:
+          tile.entry.track?.title ?? tile.entry.path,
+  };
+  return [for (final y in byY.keys.toList()..sort()) byY[y]!];
+}
+
+/// Titles of the playlist "Mix" that [openMix] seeds.
+const mixTitles = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
+
+/// Opens the app on the page of a new playlist "Mix" holding [mixTitles].
+Future<int> openMix(WidgetTester tester, LibraryHarness h) async {
+  await openApp(tester, h, mixTitles);
+  final id = await seedPlaylist(tester, h, 'Mix', mixTitles);
+  goTo(tester, h, '/playlists/$id');
+  await settleDb(tester);
+  return id;
+}
+
+/// Pumps frames, letting database work run in between, until [done] is true
+/// (checked inside `runAsync`), calling [onFrame] after each frame. Fails
+/// when [done] has not become true within [timeout] of wall time, so a test
+/// can never pass because the work it waits for did not happen.
+Future<void> pumpUntil(
+  WidgetTester tester,
+  Future<bool> Function() done, {
+  void Function()? onFrame,
+  Duration frame = const Duration(milliseconds: 16),
+  Duration timeout = const Duration(seconds: 5),
+}) async {
+  final watch = Stopwatch()..start();
+  while (true) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(frame);
+    onFrame?.call();
+    if (await tester.runAsync(done) ?? false) return;
+    if (watch.elapsed > timeout) fail('Not done after $timeout');
+  }
+}
+
+/// Makes every later [event] (`UPDATE`, `DELETE`) on [table] fail inside
+/// SQLite, like a full disk.
+Future<void> breakWrites(
+  WidgetTester tester,
+  LibraryHarness h,
+  String table,
+  String event,
+) async {
+  await tester.runAsync(
+    () => h.db.customStatement(
+      'CREATE TRIGGER broken_${table}_$event BEFORE $event ON $table '
+      "BEGIN SELECT RAISE(ABORT, 'disk full'); END",
+    ),
+  );
+}
+
+/// Drags the first playlist row by its handle just below the third, without
+/// waiting for the result.
+Future<void> dragFirstRowDown(WidgetTester tester) async {
+  final handle = find.byIcon(Icons.drag_handle_rounded).first;
+  final gesture = await tester.startGesture(tester.getCenter(handle));
+  await tester.pump(const Duration(milliseconds: 50));
+  for (var i = 0; i < 18; i++) {
+    await gesture.moveBy(const Offset(0, 8));
+    await tester.pump(const Duration(milliseconds: 16));
+  }
+  await gesture.up();
 }

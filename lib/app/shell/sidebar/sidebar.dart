@@ -74,6 +74,8 @@ class Sidebar extends StatelessWidget {
                     SidebarPlaylistsSection(
                       compact: compact,
                       playlistsSelected: selected == AppDestination.playlists,
+                      onOpenPlaylists: () =>
+                          onSelected(AppDestination.playlists),
                       onOpenLocation: onOpenLocation,
                     ),
                   ],
