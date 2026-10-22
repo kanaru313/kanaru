@@ -26,9 +26,9 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | Path | Files / lines | Purpose |
 |---|---|---|
 | `lib/main.dart` | 1 / 85 | Startup sequence, provider overrides |
-| `lib/app/` | 17 / 1,601 | Shell, router, theme, window integration, navigation history |
-| `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart`, `top_bar_search_field.dart` (live search), `navigation_history.dart`, `app_destination.dart`, `sidebar/`, `window/` |
-| `lib/core/database/` | 23 / 10,379 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, text keys, key backfill, v4 and v5 migrations, user-data tables (`user_data_tables.dart`: `plays`, `play_stats`, `playlists`, `playlist_entries`; triggers in `listen_history.drift`), FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries |
+| `lib/app/` | 19 / 1,888 | Shell, router, theme, window integration, navigation history |
+| `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart`, `top_bar_search_field.dart` (live search), `navigation_history.dart`, `app_destination.dart`, `sidebar/` (incl. `sidebar_playlists_section.dart`, `sidebar_playlists_rail.dart`), `window/` |
+| `lib/core/database/` | 30 / 13,465 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, text keys, key backfill, v4 and v5 migrations, user-data tables (`user_data_tables.dart`: `plays`, `play_stats`, `playlists`, `playlist_entries`; triggers in `listen_history.drift`), FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries, playlist queries, writes, row models and cover keys (`playlist_*.dart`) |
 | `lib/core/indexer/` | 16 / 1,614 | Folder walk, tag reading via Rust, diff, scan orchestration, covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
@@ -37,10 +37,11 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/settings/` | 6 / 666 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
 | `lib/features/library/` | 34 / 3,095 | Songs, Albums, Artists, onboarding, library state machine, sort controls |
-| `lib/features/player/` | 27 / 3,151 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |
+| `lib/features/player/` | 29 / 3,337 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |
+| `lib/features/playlists/` | 12 / 1,166 | Playlists grid and playlist page: `playlists_screen.dart`, `playlist_screen.dart` (page, delete and rename), `playlist_entries_view.dart` (drag to reorder), `optimistic_order.dart`, `playlist_page_data.dart` (reactive providers), `playlist_page_actions.dart`, `playlist_routes.dart` |
 | `lib/features/search/` | 4 / 451 | Search page: `search_screen.dart` (states), `search_results_view.dart` and `search_section.dart` (groups), `search_providers.dart` (queries and name indexes) |
 | `lib/features/settings/` | 14 / 1,304 | Settings screen sections, library folders list, setting widgets |
-| `lib/shared/` | 25 / 1,310 | Helpers and tiles used by library and search: `play_tracks.dart`, `enqueue_tracks.dart`, `format_duration.dart`, `directory_picker_provider.dart`, `root_rejection_message.dart`; `widgets/` has the tiles (`song_tile.dart`, `album_list_tile.dart`, `artist_tile.dart`), CoverArt, EmptyState, PageScaffold, ScanProgress, MinBusyBuilder |
+| `lib/shared/` | 31 / 1,768 | Helpers and tiles used by library and search: `play_tracks.dart`, `enqueue_tracks.dart`, `format_duration.dart`, `directory_picker_provider.dart`, `root_rejection_message.dart`; `widgets/` has the tiles (`song_tile.dart`, `album_list_tile.dart`, `artist_tile.dart`), `queue_actions_menu.dart`, `playlist_cover.dart`, `add_to_playlist/` (picker, name dialog, add flow), CoverArt, EmptyState, PageScaffold, ScanProgress, MinBusyBuilder |
 | `lib/l10n/` | ARB + generated | `app_en.arb` (template), `app_vi.arb`; `app_localizations*.dart` is generated |
 
 Key files by area:
@@ -51,6 +52,7 @@ Key files by area:
 | Original cover | `core/player/original_cover_reader.dart`, `rust_original_cover_reader.dart`, `playing_track_original_cover.dart`; native init shared in `core/native/rust_library.dart`; shown by `features/player/now_playing/now_playing_artwork.dart` |
 | Session restore | `core/player/session/playback_session_file.dart`, `playback_session_saver.dart`, `playback_session_codec.dart` |
 | Indexing | `core/indexer/library_indexer.dart`, `walk_audio_files.dart`, `scan_diff.dart`, `tracks_from_tags.dart`, `rust_tag_reader.dart` |
+| Playlists | `core/database/playlist_queries.dart`, `playlist_writes.dart`, `playlist_providers.dart`, `playlist_cover_keys.dart`; `shared/widgets/add_to_playlist/add_to_playlist_flow.dart`; `features/playlists/playlist_screen.dart`, `playlist_entries_view.dart`; `app/shell/sidebar/sidebar_playlists_section.dart` |
 | Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
 | Search | `core/database/library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`, `library_migration_v4.dart`; `features/search/search_providers.dart`, `search_screen.dart`; `app/shell/top_bar_search_field.dart`, `navigation_history.dart` |
 | Startup DB | `core/database/library_startup.dart` |
@@ -79,7 +81,7 @@ Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
 
 | Path | Purpose |
 |---|---|
-| `test/` | Dart tests; 117 `*_test.dart` files under `core/`, `features/`, `app/`, `shared/`, `drift/` |
+| `test/` | Dart tests; 170 `*_test.dart` files under `core/`, `features/`, `app/`, `shared/`, `drift/` |
 | `test/drift/library_db/generated/` | **Generated** schema test code for v1–v5 |
 | `drift_schemas/library_db/` | drift schema snapshots `drift_schema_v1..v5.json` (generated by `make-migrations`) |
 | `rust_builder/` | Vendored cargokit glue that builds the Rust crate inside Flutter builds |
@@ -94,12 +96,12 @@ Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
 
 | Module | Files | Lines |
 |---|---|---|
-| `lib/` (excludes `*.g.dart`, `lib/src/rust/`, `lib/l10n/`; includes the two generated files `library_database.steps.dart` and `text_key_tables.dart`) | 209 | 23,469 |
+| `lib/` (excludes `*.g.dart`, `lib/src/rust/`, `lib/l10n/`; includes the two generated files `library_database.steps.dart` and `text_key_tables.dart`) | 240 | 26,692 |
 | `rust/src/` | 10 | 1,751 |
 | `linux/` | 10 | 570 |
-| `test/` (all `.dart`, helpers included) | 158 | 35,045 |
+| `test/` (all `.dart`, helpers included) | 192 | 43,536 |
 
-Largest non-generated Dart files: `core/indexer/library_indexer.dart` (515), `core/player/media_kit_backend.dart` (338), `core/database/library_database.dart` (333), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (982, generated).
+Largest non-generated Dart files: `core/indexer/library_indexer.dart` (551), `core/database/library_database.dart` (344), `core/player/media_kit_backend.dart` (338), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (982, generated).
 
 Non-generated Dart files over the 200-line guideline in [CLAUDE.md](../CLAUDE.md) are candidates for splitting: 15 of them, the largest listed above. The search files are all under 200 lines.
 
@@ -131,13 +133,14 @@ The step file is rewritten by `make-migrations`; the `fromXToY` wiring lives in 
 | `test/core/logging/`, `settings/`, `paths/` | Unit tests |
 | `test/drift/library_db/` | `migration_test.dart` against generated schemas |
 | `test/features/library/` | Browse UI; `library_test_harness.dart` (`LibraryHarness`, in-memory DB) |
+| `test/features/playlists/` | Playlists: queries (`test/core/database/playlist_*`), grid, page, drag reorder, sidebar section, add-to-playlist flow and menus, Now Playing button; `playlist_test_data.dart` seeds playlists |
 | `test/features/search/` | Search page: states, sections, show all, song tap and queue menu |
 | `test/features/player/` | Player bar, Now Playing layout and auto-hide, volume popup |
 | `test/features/settings/` | Settings widgets |
 | `test/app/`, `test/shared/` | Router, shell, shared widgets |
 | `rust/tests/`, `#[cfg(test)]` | 43 integration and 10 unit tests (format fixtures) |
 
-Counts are from the scout snapshot; the last full run on `feat/search` (2026-10-21) reported about 1,375 Dart tests. Commands and helper details: [development.md](./development.md#tests--lints) and [code-standards.md](./code-standards.md#testing).
+Counts are from the scout snapshot; the last full run on `feat/playlists` (2026-10-22) reported 1,619 Dart tests. Commands and helper details: [development.md](./development.md#tests--lints) and [code-standards.md](./code-standards.md#testing).
 
 ## Compaction
 

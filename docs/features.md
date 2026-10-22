@@ -156,8 +156,8 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
 
 | ID    | Tính năng            | Mô tả / tiêu chí hoàn thành                                                                         | Ưu tiên | Phase | H   |
 | ----- | -------------------- | --------------------------------------------------------------------------------------------------- | ------- | ----- | --- |
-| PL-01 | Tạo / đổi tên / xoá  | CRUD playlist; ảnh đại diện ghép từ 4 ảnh bìa đầu tiên                                              | P0      | 1     | H   |
-| PL-02 | Thêm / bớt / sắp xếp | Thêm từ menu ngữ cảnh, kéo thả để sắp xếp, cảnh báo khi thêm bài trùng                              | P0      | 1     | H   |
+| PL-01 | Tạo / đổi tên / xoá  | CRUD playlist; ảnh đại diện ghép từ tối đa 4 ảnh bìa khác nhau của các bài đầu tiên — ✅ đã làm       | P0      | 1     | H   |
+| PL-02 | Thêm / bớt / sắp xếp | Thêm từ menu ngữ cảnh, kéo thả để sắp xếp; bài trùng bị bỏ qua và snackbar báo số bài đã thêm / đã có — ✅ đã làm | P0      | 1     | H   |
 | PL-03 | Playlist "Yêu thích" | Playlist hệ thống, tự cập nhật theo META-11                                                         | P1      | 1     | H   |
 | PL-04 | Import M3U/M3U8      | Nhập playlist; đường dẫn tương đối/tuyệt đối; báo các bài không tìm thấy                            | P1      | 1     |     |
 | PL-05 | Export M3U/M3U8      | Xuất playlist, chọn đường dẫn tương đối hoặc tuyệt đối                                              | P1      | 1     |     |

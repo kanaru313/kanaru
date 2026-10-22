@@ -406,10 +406,24 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Stats kept by triggers | `play_stats` holds the count and first and last `played_at` per path, and a row exists while the path has a play. The triggers `plays_stats_insert`, `plays_stats_delete` and `plays_stats_update` (`listen_history.drift`) keep it equal to a `GROUP BY` over `plays` for every write mode, batch writes and clear-all (`DELETE FROM plays`). Never write `play_stats` from Dart. The triggers are correct only with `PRAGMA recursive_triggers = ON` on every connection that writes `plays` (a REPLACE conflict deletes the old row without firing delete triggers otherwise); `LibraryDatabase.beforeOpen` and the file database setup both set it, together with `foreign_keys`. |
 | Writing `plays` | Use drift APIs or `customUpdate(updates: {plays})`, so `.watch()` on `play_stats` refreshes. A bare `customStatement` does not notify watchers. |
 | Playlist order | `position` is `0..n-1` per playlist, not unique. Writers renumber inside one transaction; readers order by `position, id`. The same path may appear more than once; each entry's `id` is its identity. |
-| Playlist cover | Computed from the first 4 entries by position; nothing is stored. |
+| Playlist cover | Computed, nothing is stored: the first up to 4 distinct non-null cover keys among the first 64 covered entries by position (tracks of one album share a cover, so repeats count once). |
 | Reset | A library reset deletes roots and tracks, never the file. **Gap:** `make reset-library` still removes the whole data directory, these tables included (`Makefile`, [deployment-guide.md](./deployment-guide.md#reset-targets)). Fix before any UI writes history or playlists. |
 
-Planned schema work: collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md). Playlists (PL-01 to PL-05) and listen history (STAT-01, STAT-10, and the history views) read and write the v5 tables; their UI and queries are not in the code yet.
+Planned schema work: collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md). Playlists (PL-01, PL-02) read and write the v5 tables, see [Playlists](#playlists). Favorites and M3U (PL-03 to PL-05) and listen history (STAT-01, STAT-10, and the history views) are not in the code yet.
+
+### Playlists
+
+Code: `lib/core/database/playlist_queries.dart` (reads, extension `PlaylistQueries`), `playlist_writes.dart` (writes, `PlaylistWrites`), `playlist_rows.dart` (row models), `playlist_cover_keys.dart` (collage rule), `playlist_providers.dart` (`playlistSummariesProvider`); UI in `lib/features/playlists/`, `lib/shared/widgets/add_to_playlist/` and `lib/app/shell/sidebar/sidebar_playlists_section.dart`.
+
+| Topic | Rule |
+|---|---|
+| Writes | Each is one transaction and addresses entries by id, never by position. `movePlaylistEntry` shifts the rows between the old and new place by one in a single `UPDATE`, then sets the entry, which gives the same result as `list.insert(to, list.removeAt(from))`; `to` is clamped; an entry of another playlist throws and changes nothing. `removePlaylistEntries` deletes, then renumbers with one `UPDATE … FROM (ROW_NUMBER())`, and writes nothing when no row matched. Positions stay `0..n-1`. |
+| Adding | `addMissingToPlaylist` dedupes the batch (first occurrence wins), drops the paths the playlist already holds, appends the rest and returns `(added, skipped)`, all in one transaction, so two overlapping adds cannot store a path twice. `createPlaylist(paths:)` takes an already deduped batch. Duplicates already stored are left alone. |
+| Reactive reads | Lists that do not read `tracks` (`watchPlaylistSummaries`) use `.watch()` on the playlist tables and emit only when the summaries changed, so a reorder or a scan does not wake the sidebar. Reads that join `tracks` (`playlistPage`, `playlistCards`) go through `throttledTracksQuery`, which only sees `tracks` writes, so `playlist_page_data.dart` also listens to the playlist tables and invalidates the provider on every edit: edits show at once, scans stay throttled. |
+| Entries without a track | `playlistPage` left-joins `tracks` by path. An entry whose file is not in the library comes back with a null track: it shows as "Not in library", can be moved and removed, and is skipped on play. |
+| Reorder in the UI | The list keeps the order the user dropped in `OptimisticOrder` (entry ids plus a count of moves in flight) until the write finishes, so the rows never jump back. A failed move rolls back and reports `playlistSaveFailed`. |
+| Add flow | Every queue menu ends in `enqueueLoaded` or `enqueueFromDatabase`, which send `QueueAction.addToPlaylist` to `addTracksToPlaylist` instead of `enqueueTracks` (which refuses it). The flow takes the database, messenger, localizations and the root navigator before its first `await`, because the row that opened the menu can be rebuilt away by a rescan while the picker is open; it never reads the caller's `ref` or `context` afterwards. |
+| Now Playing | The button adds the current track only when its path is a library row (`coverKeyOf`), so no non-canonical path is ever written. |
 
 ---
 
