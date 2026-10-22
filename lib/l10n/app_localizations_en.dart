@@ -1597,4 +1597,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyTopEmpty => 'No listens in this range';
+
+  @override
+  String get historyShowTrackHistory => 'Song history';
+
+  @override
+  String get historyTrackTitle => 'Song history';
+
+  @override
+  String historyTrackStats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listens',
+      one: '1 listen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyTrackFirst(String date) {
+    return 'First $date';
+  }
+
+  @override
+  String historyTrackLast(String date) {
+    return 'Last $date';
+  }
+
+  @override
+  String historyListened(String duration) {
+    return 'listened $duration';
+  }
+
+  @override
+  String get historyTrackNoPlays => 'No listens yet';
+
+  @override
+  String get historyTrackNotFound => 'Song not found';
+
+  @override
+  String get historyPlay => 'Play';
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_queries.dart';
@@ -19,6 +20,7 @@ import 'history_play_menu.dart';
 import 'history_play_tile.dart';
 import 'history_plays_version.dart';
 import 'history_providers.dart';
+import 'history_routes.dart';
 import 'history_screen_states.dart';
 import 'history_timeline_index.dart';
 import 'history_timeline_view.dart';
@@ -169,6 +171,10 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
       enqueueLoaded(ref, context, action, [
         historyTrackOf(row, ref.read(coverCacheDirectoryProvider)),
       ], row.track!.title);
+      return;
+    }
+    if (choice == HistoryPlayChoice.trackHistory) {
+      context.go(historyTrackLocation(row.path));
       return;
     }
     final db = ref.read(libraryDatabaseProvider);

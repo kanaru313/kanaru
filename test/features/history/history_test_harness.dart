@@ -10,7 +10,8 @@ import 'package:material_ui/material_ui.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 
-export '../library/browse_test_data.dart' show TestTrack, goTo, insertTracks;
+export '../library/browse_test_data.dart'
+    show TestTrack, goTo, insertTracks, location;
 export '../library/library_test_harness.dart' show LibraryHarness;
 
 /// "Now" in the History widget tests: noon on 2026-10-23.

@@ -81,3 +81,38 @@ final historyTopProvider = StreamProvider.autoDispose
         }
       }, interval: ref.watch(libraryBrowseRefreshIntervalProvider));
     }, retry: _noRetry);
+
+/// What the page of one song shows: its totals and every play, newest first.
+typedef HistoryTrackPage = ({
+  HistoryTrackSummary summary,
+  List<HistoryPlayRow> plays,
+});
+
+/// The page of the song at [path]. The totals and the plays are read in one
+/// transaction, so the count in the header and the list always agree. It
+/// reads again after a new or removed play (not after a checkpoint of the
+/// time listened) and, at most once per browse interval, after a scan.
+final historyTrackProvider = StreamProvider.autoDispose
+    .family<HistoryTrackPage, String>((ref, path) {
+      final db = ref.watch(libraryDatabaseProvider);
+      ref.watch(historyPlaysVersionProvider);
+      if (db == null) {
+        return Stream.value((
+          summary: HistoryTrackSummary(path: path, count: 0),
+          plays: const <HistoryPlayRow>[],
+        ));
+      }
+      return throttledTracksQuery(db, () async {
+        try {
+          return await db.transaction(
+            () async => (
+              summary: await db.historyTrackSummary(path),
+              plays: await db.historyTrackPlays(path),
+            ),
+          );
+        } on Object catch (error) {
+          logHistoryError('Reading the song history failed', error);
+          rethrow;
+        }
+      }, interval: ref.watch(libraryBrowseRefreshIntervalProvider));
+    }, retry: _noRetry);

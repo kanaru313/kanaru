@@ -2479,6 +2479,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No listens in this range'**
   String get historyTopEmpty;
+
+  /// Row menu item that opens the history page of a song
+  ///
+  /// In en, this message translates to:
+  /// **'Song history'**
+  String get historyShowTrackHistory;
+
+  /// Title of the song history page when no song is named
+  ///
+  /// In en, this message translates to:
+  /// **'Song history'**
+  String get historyTrackTitle;
+
+  /// Number of plays of a song in the header of its history page
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
+  String historyTrackStats(int count);
+
+  /// Day of the first play in the header of a song history page
+  ///
+  /// In en, this message translates to:
+  /// **'First {date}'**
+  String historyTrackFirst(String date);
+
+  /// Day and time of the latest play in the header of a song history page
+  ///
+  /// In en, this message translates to:
+  /// **'Last {date}'**
+  String historyTrackLast(String date);
+
+  /// How long a play was listened to, on a row of the song history page
+  ///
+  /// In en, this message translates to:
+  /// **'listened {duration}'**
+  String historyListened(String duration);
+
+  /// Message of the song history page when the song has no plays
+  ///
+  /// In en, this message translates to:
+  /// **'No listens yet'**
+  String get historyTrackNoPlays;
+
+  /// Message of the song history page opened without a song
+  ///
+  /// In en, this message translates to:
+  /// **'Song not found'**
+  String get historyTrackNotFound;
+
+  /// Button on the song history page that plays the song
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get historyPlay;
 }
 
 class _AppLocalizationsDelegate

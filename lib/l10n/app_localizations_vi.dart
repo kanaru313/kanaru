@@ -1542,4 +1542,44 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get historyTopEmpty => 'Không có lượt nghe trong khoảng này';
+
+  @override
+  String get historyShowTrackHistory => 'Lịch sử bài này';
+
+  @override
+  String get historyTrackTitle => 'Lịch sử bài hát';
+
+  @override
+  String historyTrackStats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt nghe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyTrackFirst(String date) {
+    return 'Lần đầu $date';
+  }
+
+  @override
+  String historyTrackLast(String date) {
+    return 'Lần cuối $date';
+  }
+
+  @override
+  String historyListened(String duration) {
+    return 'đã nghe $duration';
+  }
+
+  @override
+  String get historyTrackNoPlays => 'Chưa có lượt nghe nào';
+
+  @override
+  String get historyTrackNotFound => 'Không tìm thấy bài hát';
+
+  @override
+  String get historyPlay => 'Phát';
 }

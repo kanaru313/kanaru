@@ -511,5 +511,35 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "historyTopEmpty": "Không có lượt nghe trong khoảng này",
-  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" }
+  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" },
+  "historyShowTrackHistory": "Lịch sử bài này",
+  "@historyShowTrackHistory": { "description": "Row menu item that opens the history page of a song" },
+  "historyTrackTitle": "Lịch sử bài hát",
+  "@historyTrackTitle": { "description": "Title of the song history page when no song is named" },
+  "historyTrackStats": "{count, plural, other{{count} lượt nghe}}",
+  "@historyTrackStats": {
+    "description": "Number of plays of a song in the header of its history page",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTrackFirst": "Lần đầu {date}",
+  "@historyTrackFirst": {
+    "description": "Day of the first play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyTrackLast": "Lần cuối {date}",
+  "@historyTrackLast": {
+    "description": "Day and time of the latest play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyListened": "đã nghe {duration}",
+  "@historyListened": {
+    "description": "How long a play was listened to, on a row of the song history page",
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "historyTrackNoPlays": "Chưa có lượt nghe nào",
+  "@historyTrackNoPlays": { "description": "Message of the song history page when the song has no plays" },
+  "historyTrackNotFound": "Không tìm thấy bài hát",
+  "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
+  "historyPlay": "Phát",
+  "@historyPlay": { "description": "Button on the song history page that plays the song" }
 }

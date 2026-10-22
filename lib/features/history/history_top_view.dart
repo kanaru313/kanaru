@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
@@ -17,6 +18,7 @@ import 'history_play_tile.dart' show historyRowExtent;
 import 'history_providers.dart';
 import 'history_range.dart';
 import 'history_range_bar.dart';
+import 'history_routes.dart';
 import 'history_screen_states.dart';
 import 'history_top_actions.dart';
 import 'history_top_queue.dart';
@@ -75,6 +77,10 @@ class _HistoryTopViewState extends ConsumerState<HistoryTopView> {
       canDelete: false,
     );
     if (choice == null || !mounted) return;
+    if (choice == HistoryPlayChoice.trackHistory) {
+      context.go(historyTrackLocation(row.path));
+      return;
+    }
     final action = historyQueueActionOf(choice);
     final track = historyTopTrackOf(row, ref.read(coverCacheDirectoryProvider));
     if (action == null || track == null) return;

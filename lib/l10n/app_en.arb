@@ -785,5 +785,35 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "historyTopEmpty": "No listens in this range",
-  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" }
+  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" },
+  "historyShowTrackHistory": "Song history",
+  "@historyShowTrackHistory": { "description": "Row menu item that opens the history page of a song" },
+  "historyTrackTitle": "Song history",
+  "@historyTrackTitle": { "description": "Title of the song history page when no song is named" },
+  "historyTrackStats": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyTrackStats": {
+    "description": "Number of plays of a song in the header of its history page",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTrackFirst": "First {date}",
+  "@historyTrackFirst": {
+    "description": "Day of the first play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyTrackLast": "Last {date}",
+  "@historyTrackLast": {
+    "description": "Day and time of the latest play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyListened": "listened {duration}",
+  "@historyListened": {
+    "description": "How long a play was listened to, on a row of the song history page",
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "historyTrackNoPlays": "No listens yet",
+  "@historyTrackNoPlays": { "description": "Message of the song history page when the song has no plays" },
+  "historyTrackNotFound": "Song not found",
+  "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
+  "historyPlay": "Play",
+  "@historyPlay": { "description": "Button on the song history page that plays the song" }
 }
