@@ -92,14 +92,21 @@ void main() {
     }
 
     List<Color> gradient(WidgetTester tester) {
+      final under = find.descendant(
+        of: find.byType(NowPlayingCoverGradient),
+        matching: find.byType(ColoredBox),
+      );
+      final surface = Theme.of(tester.element(find.byType(SizedBox)))
+          .colorScheme
+          .surface;
+      final base = tester.widget<ColoredBox>(under.first).color;
+      expect(base, surface, reason: 'the surface is painted under the tint');
+      expect(base.a, 1.0, reason: 'always opaque');
       final box = tester.widget<DecoratedBox>(
-        find.descendant(
-          of: find.byType(NowPlayingCoverGradient),
-          matching: find.byType(DecoratedBox),
-        ),
+        find.descendant(of: under.first, matching: find.byType(DecoratedBox)),
       );
       final decoration = box.decoration as BoxDecoration;
-      expect(decoration.color!.a, 1.0, reason: 'always opaque');
+      expect(decoration.color, isNull, reason: 'ignored next to a gradient');
       return (decoration.gradient! as LinearGradient).colors;
     }
 

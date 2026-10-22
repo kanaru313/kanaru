@@ -56,13 +56,17 @@ class NowPlayingCoverGradient extends ConsumerWidget {
                   ? Duration.zero
                   : coverThemeTransition,
               curve: Curves.easeInOut,
-              builder: (context, value, _) => DecoratedBox(
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: value.colors,
+              // Two layers: a BoxDecoration ignores its color once it has
+              // a gradient, and the gradient is translucent.
+              builder: (context, value, _) => ColoredBox(
+                color: scheme.surface,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: value.colors,
+                    ),
                   ),
                 ),
               ),
