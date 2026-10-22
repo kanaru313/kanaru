@@ -391,6 +391,20 @@
       "target": { "type": "String" }
     }
   },
+  "listenHistorySection": "Listen history",
+  "listenHistoryRecord": "Record listen history",
+  "listenHistoryRecordHint": "Kept only on this device. Turning it off keeps what is already recorded.",
+  "listenHistoryClear": "Clear listen history",
+  "listenHistoryClearButton": "Clear",
+  "listenHistoryClearTitle": "Clear all listen history?",
+  "listenHistoryClearBody": "Every recorded listen, with play counts and last-played times, is removed from Kanaru. This cannot be undone.",
+  "listenHistoryCleared": "{count, plural, =0{Listen history cleared} =1{Listen history cleared (1 listen)} other{Listen history cleared ({count} listens)}}",
+  "@listenHistoryCleared": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "listenHistoryClearFailed": "Could not clear listen history",
   "playbackUnavailableTitle": "Audio engine not found",
   "playbackUnavailableBody": "libmpv could not be loaded. You can browse your library, but playback is turned off."
 }

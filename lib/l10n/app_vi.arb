@@ -206,6 +206,15 @@
   "settingsLicense": "Giấy phép",
   "settingsSourceCode": "Mã nguồn",
   "settingsOpenFailed": "Không mở được {target}",
+  "listenHistorySection": "Lịch sử nghe",
+  "listenHistoryRecord": "Ghi lịch sử nghe",
+  "listenHistoryRecordHint": "Chỉ lưu trên máy này. Tắt thì giữ lại những gì đã ghi.",
+  "listenHistoryClear": "Xoá lịch sử nghe",
+  "listenHistoryClearButton": "Xoá",
+  "listenHistoryClearTitle": "Xoá toàn bộ lịch sử nghe?",
+  "listenHistoryClearBody": "Mọi lượt nghe đã ghi, cùng số lượt và lần nghe cuối, sẽ bị xoá khỏi Kanaru. Không thể hoàn tác.",
+  "listenHistoryCleared": "{count, plural, =0{Đã xoá lịch sử nghe} other{Đã xoá lịch sử nghe ({count} lượt)}}",
+  "listenHistoryClearFailed": "Không xoá được lịch sử nghe",
   "playbackUnavailableTitle": "Không tìm thấy trình phát âm thanh",
   "playbackUnavailableBody": "Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt."
 }

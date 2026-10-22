@@ -18,15 +18,16 @@ const _wideRowFrom = 560.0;
 void main() {
   // 820 to 940 px windows give 579 to 699 px rows next to the sidebar:
   // wide rows with little room, where the full controls get tight.
+  // Tall enough to build every section: the list is lazy.
   const sizes = [
-    Size(480, 800),
-    Size(760, 800),
-    Size(820, 800),
-    Size(900, 800),
-    Size(940, 800),
-    Size(1280, 800),
+    Size(480, 1200),
+    Size(760, 1200),
+    Size(820, 1200),
+    Size(900, 1200),
+    Size(940, 1200),
+    Size(1280, 1200),
   ];
-  const largeTextSizes = [Size(480, 800), Size(900, 800), Size(1280, 800)];
+  const largeTextSizes = [Size(480, 1200), Size(900, 1200), Size(1280, 1200)];
 
   for (final language in ['en', 'vi']) {
     for (final size in sizes) {
@@ -90,19 +91,48 @@ Future<void> _checkLayout(
     matching: find.byType(FilledButton),
   );
 
+  // The control of the row titled [label], found inside that row.
+  Finder inRow(String label, Finder control) => find.descendant(
+    of: find.ancestor(of: find.text(label), matching: find.byType(SettingRow)),
+    matching: control,
+  );
+
   // Every control sits on its label's line, at its right.
-  for (final (label, control) in [
-    (l10n.settingsFolders, find.byType(FilledButton).first),
-    (l10n.settingsRescanOnStartup, find.byType(Switch)),
-    (l10n.settingsRescanLibrary, rescanButton),
-    (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>)),
-    (l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
-    (l10n.settingsTitleBar, find.byType(SettingChoice<TitleBarPreference>)),
+  // A row with a subtitle centres its control on the title and subtitle
+  // together, so that block stands for the label there.
+  for (final (label, control, subtitle) in [
+    (l10n.settingsFolders, find.byType(FilledButton).first, null),
+    (
+      l10n.settingsRescanOnStartup,
+      inRow(l10n.settingsRescanOnStartup, find.byType(Switch)),
+      null,
+    ),
+    (l10n.settingsRescanLibrary, rescanButton, null),
+    (
+      l10n.listenHistoryRecord,
+      inRow(l10n.listenHistoryRecord, find.byType(Switch)),
+      l10n.listenHistoryRecordHint,
+    ),
+    (
+      l10n.listenHistoryClear,
+      inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
+      null,
+    ),
+    (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>), null),
+    (l10n.settingsLanguage, find.byType(SettingDropdown<String>), null),
+    (
+      l10n.settingsTitleBar,
+      find.byType(SettingChoice<TitleBarPreference>),
+      null,
+    ),
   ]) {
     final title = tester.getRect(find.text(label));
+    final text = subtitle == null
+        ? title
+        : title.expandToInclude(tester.getRect(find.text(subtitle)));
     final rect = tester.getRect(control);
     expect(
-      title.center.dy,
+      text.center.dy,
       inInclusiveRange(rect.top, rect.bottom),
       reason: '$label: control on the same line',
     );
@@ -117,7 +147,7 @@ Future<void> _checkLayout(
         .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
         .evaluate(),
   ];
-  expect(controls, hasLength(5), reason: 'two buttons and three choices');
+  expect(controls, hasLength(6), reason: 'three buttons and three choices');
   for (final control in controls) {
     expect(
       tester.getRect(find.byWidget(control.widget)).height,

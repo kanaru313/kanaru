@@ -161,7 +161,10 @@ class PlayerService extends Notifier<PlayerState>
         state.duration - _lastTick < _loopJump &&
         position < _loopJump;
     _lastTick = position;
-    state = state.copyWith(position: position);
+    state = state.copyWith(
+      position: position,
+      playthrough: looped ? state.playthrough + 1 : null,
+    );
     if (looped) _seeked.add(Duration.zero);
   }
 
@@ -226,6 +229,7 @@ class PlayerService extends Notifier<PlayerState>
       stopped: false,
       position: start,
       duration: Duration.zero,
+      playthrough: state.playthrough + 1,
     );
     _lastTick = start;
     await _backend.open(

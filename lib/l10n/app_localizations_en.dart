@@ -741,6 +741,44 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get listenHistorySection => 'Listen history';
+
+  @override
+  String get listenHistoryRecord => 'Record listen history';
+
+  @override
+  String get listenHistoryRecordHint =>
+      'Kept only on this device. Turning it off keeps what is already recorded.';
+
+  @override
+  String get listenHistoryClear => 'Clear listen history';
+
+  @override
+  String get listenHistoryClearButton => 'Clear';
+
+  @override
+  String get listenHistoryClearTitle => 'Clear all listen history?';
+
+  @override
+  String get listenHistoryClearBody =>
+      'Every recorded listen, with play counts and last-played times, is removed from Kanaru. This cannot be undone.';
+
+  @override
+  String listenHistoryCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Listen history cleared ($count listens)',
+      one: 'Listen history cleared (1 listen)',
+      zero: 'Listen history cleared',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listenHistoryClearFailed => 'Could not clear listen history';
+
+  @override
   String get playbackUnavailableTitle => 'Audio engine not found';
 
   @override

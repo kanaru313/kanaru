@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
@@ -23,6 +24,15 @@ final _onboarded = [
     const AppSettings(libraryOnboarded: true),
   ),
 ];
+
+/// The switch of the startup rescan row; the listen history row has one too.
+final _rescanSwitch = find.descendant(
+  of: find.ancestor(
+    of: find.text('Rescan when Kanaru opens'),
+    matching: find.byType(SettingRow),
+  ),
+  matching: find.byType(Switch),
+);
 
 void main() {
   /// Pumps the app with [roots] stored (and `seed` run on the database), then
@@ -231,7 +241,7 @@ void main() {
     expect(find.text('Rescan when Kanaru opens'), findsOneWidget);
     expect(h.container.read(settingsProvider).rescanOnStartup, isTrue);
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(_rescanSwitch);
     await tester.pumpAndSettle();
 
     expect(h.container.read(settingsProvider).rescanOnStartup, isFalse);
@@ -256,7 +266,7 @@ void main() {
           .onPressed,
       isNull,
     );
-    expect(tester.widget<Switch>(find.byType(Switch)).onChanged, isNull);
+    expect(tester.widget<Switch>(_rescanSwitch).onChanged, isNull);
   });
 
   for (final width in [480.0, 900.0]) {

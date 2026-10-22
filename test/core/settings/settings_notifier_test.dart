@@ -54,6 +54,17 @@ void main() {
     expect(stored()['libraryOnboarded'], true);
   });
 
+  test('the listen history switch is saved', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.setRecordListenHistory(false);
+    await notifier.flush();
+
+    expect(container.read(settingsProvider).recordListenHistory, isFalse);
+    expect(stored()['recordListenHistory'], false);
+  });
+
   test('several changes end up on disk with the last value', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

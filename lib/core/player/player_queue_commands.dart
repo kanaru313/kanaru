@@ -195,6 +195,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
       ),
       position: Duration.zero,
       duration: Duration.zero,
+      playthrough: state.playthrough + 1,
     );
     _lastTick = Duration.zero;
     _handedNext.clear();

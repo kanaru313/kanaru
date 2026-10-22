@@ -5,6 +5,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'about_settings_section.dart';
 import 'appearance_settings_section.dart';
 import 'library_settings_section.dart';
+import 'listen_history_settings_section.dart';
 import 'settings_save_warning.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -30,6 +31,7 @@ class SettingsScreen extends StatelessWidget {
                   SettingsSaveWarning(),
                   LibrarySettingsSection(),
                   AppearanceSettingsSection(),
+                  ListenHistorySettingsSection(),
                   AboutSettingsSection(),
                 ],
               ),

@@ -735,6 +735,43 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get listenHistorySection => 'Lịch sử nghe';
+
+  @override
+  String get listenHistoryRecord => 'Ghi lịch sử nghe';
+
+  @override
+  String get listenHistoryRecordHint =>
+      'Chỉ lưu trên máy này. Tắt thì giữ lại những gì đã ghi.';
+
+  @override
+  String get listenHistoryClear => 'Xoá lịch sử nghe';
+
+  @override
+  String get listenHistoryClearButton => 'Xoá';
+
+  @override
+  String get listenHistoryClearTitle => 'Xoá toàn bộ lịch sử nghe?';
+
+  @override
+  String get listenHistoryClearBody =>
+      'Mọi lượt nghe đã ghi, cùng số lượt và lần nghe cuối, sẽ bị xoá khỏi Kanaru. Không thể hoàn tác.';
+
+  @override
+  String listenHistoryCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá lịch sử nghe ($count lượt)',
+      zero: 'Đã xoá lịch sử nghe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listenHistoryClearFailed => 'Không xoá được lịch sử nghe';
+
+  @override
   String get playbackUnavailableTitle => 'Không tìm thấy trình phát âm thanh';
 
   @override

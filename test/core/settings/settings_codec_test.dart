@@ -255,4 +255,33 @@ void main() {
       expect(decoded.unknownKeys, {'futureKey': 1});
     });
   });
+
+  group('listen history', () {
+    test('is recorded by default, also for a file without the key', () {
+      expect(
+        decodeSettings(<String, Object?>{}).settings.recordListenHistory,
+        isTrue,
+      );
+      expect(const AppSettings().recordListenHistory, isTrue);
+    });
+
+    test('round-trips when turned off', () {
+      const settings = AppSettings(recordListenHistory: false);
+
+      final json = encodeSettings(settings);
+
+      expect(json['recordListenHistory'], false);
+      expect(decodeSettings(json).settings, settings);
+      expect(settings.toString(), contains('recordListenHistory: false'));
+    });
+
+    test('a value of the wrong type gives the default', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'recordListenHistory': 'no',
+      });
+
+      expect(decoded.settings.recordListenHistory, isTrue);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+  });
 }
