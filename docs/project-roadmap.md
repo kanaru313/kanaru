@@ -48,7 +48,7 @@ PRs merged to `main`, 208 commits from 2026-10-18 to 2026-10-21. No tags or rele
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: not started. |
 | Dynamic color from album art | **Open** | UI-03 | Theme uses GTK accent and a fallback seed. Artwork-based color not built. |
 | Packaging: AppImage, Flatpak, `.deb` | **Open** | PKG-01 to PKG-03 | No packaging files exist. No `.desktop` file (SYS-07). |
-| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v4 with migration steps. Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v5 with migration steps. Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
 
 Also shipped in Phase 1 and not listed in the README: responsive shell (UI-05), reduced motion (UI-06), custom title bar choice (UI-07), i18n en and vi (UI-10), single instance on Release and Profile builds (SYS-06), desktop accent color (UI-04), scan progress (IDX-10).
 

@@ -3,10 +3,12 @@ import 'package:drift/drift.dart';
 import 'library_database.steps.dart';
 import 'library_migration_v3.dart';
 import 'library_migration_v4.dart';
+import 'library_migration_v5.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
 import 'text_keys.dart';
 import 'track_keys.dart';
+import 'user_data_tables.dart';
 
 export 'library_browse_rows.dart';
 export 'library_rows.dart';
@@ -19,14 +21,22 @@ const deleteChunkSize = 500;
 
 /// The music library: source folders and the tracks found in them.
 @DriftDatabase(
-  tables: [LibraryRoots, Tracks, TrackArtists],
-  include: {'library_search.drift'},
+  tables: [
+    LibraryRoots,
+    Tracks,
+    TrackArtists,
+    Plays,
+    PlayStats,
+    Playlists,
+    PlaylistEntries,
+  ],
+  include: {'library_search.drift', 'listen_history.drift'},
 )
 class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -40,11 +50,12 @@ class LibraryDatabase extends _$LibraryDatabase {
       },
       from2To3: (m, schema) => migrateLibraryToSchema3(this, m, schema),
       from3To4: (m, schema) => migrateLibraryToSchema4(this, m, schema),
+      from4To5: (m, schema) => migrateLibraryToSchema5(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).
     // recursive_triggers: REPLACE deletes must fire the search-index delete
-    // trigger.
+    // trigger and the play_stats delete trigger.
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA recursive_triggers = ON');

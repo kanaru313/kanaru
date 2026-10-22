@@ -1,0 +1,1353 @@
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": false
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "plays",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "path",
+            "getter_name": "path",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "played_at",
+            "getter_name": "playedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "listened_ms",
+            "getter_name": "listenedMs",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 1,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "play_stats",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "path",
+            "getter_name": "path",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "play_count",
+            "getter_name": "playCount",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "first_played_at",
+            "getter_name": "firstPlayedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "last_played_at",
+            "getter_name": "lastPlayedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "path"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "references": [
+        0,
+        1
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 0,
+        "references_in_body": [
+          0,
+          1
+        ],
+        "name": "plays_stats_insert",
+        "sql": "CREATE TRIGGER plays_stats_insert AFTER INSERT ON plays BEGIN\n  INSERT INTO play_stats (path, play_count, first_played_at, last_played_at)\n    VALUES (new.path, 1, new.played_at, new.played_at)\n    ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1,\n      first_played_at = min(first_played_at, excluded.first_played_at),\n      last_played_at = max(last_played_at, excluded.last_played_at);\nEND;"
+      }
+    },
+    {
+      "id": 3,
+      "references": [
+        0,
+        1
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 0,
+        "references_in_body": [
+          0,
+          1
+        ],
+        "name": "plays_stats_delete",
+        "sql": "CREATE TRIGGER plays_stats_delete AFTER DELETE ON plays BEGIN\n  UPDATE play_stats SET play_count = play_count - 1,\n    first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at),\n    last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at)\n  WHERE path = old.path;\n  DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;\nEND;"
+      }
+    },
+    {
+      "id": 4,
+      "references": [
+        0,
+        1
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 0,
+        "references_in_body": [
+          0,
+          1
+        ],
+        "name": "plays_stats_update",
+        "sql": "CREATE TRIGGER plays_stats_update AFTER UPDATE OF path, played_at ON plays\nWHEN old.path IS NOT new.path OR old.played_at IS NOT new.played_at BEGIN\n  UPDATE play_stats SET play_count = play_count - 1,\n    first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at),\n    last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at)\n  WHERE path = old.path;\n  DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;\n  INSERT INTO play_stats (path, play_count, first_played_at, last_played_at)\n    VALUES (new.path, 1, new.played_at, new.played_at)\n    ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1,\n      first_played_at = min(first_played_at, excluded.first_played_at),\n      last_played_at = max(last_played_at, excluded.last_played_at);\nEND;"
+      }
+    },
+    {
+      "id": 5,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "playlists",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 6,
+      "references": [
+        5
+      ],
+      "type": "table",
+      "data": {
+        "name": "playlist_entries",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "playlist_id",
+            "getter_name": "playlistId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES playlists (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES playlists (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "playlists",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "path",
+            "getter_name": "path",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "position",
+            "getter_name": "position",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 7,
+      "references": [
+        0
+      ],
+      "type": "index",
+      "data": {
+        "on": 0,
+        "name": "plays_path_played",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "path",
+            "order_by": null
+          },
+          {
+            "column": "played_at",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "references": [
+        0
+      ],
+      "type": "index",
+      "data": {
+        "on": 0,
+        "name": "plays_played_at",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "played_at",
+            "order_by": null
+          },
+          {
+            "column": "path",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "references": [
+        6
+      ],
+      "type": "index",
+      "data": {
+        "on": 6,
+        "name": "playlist_entries_order",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "playlist_id",
+            "order_by": null
+          },
+          {
+            "column": "position",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "library_roots",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "path",
+            "getter_name": "path",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "added_at",
+            "getter_name": "addedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "last_scan_at",
+            "getter_name": "lastScanAt",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 11,
+      "references": [
+        10
+      ],
+      "type": "table",
+      "data": {
+        "name": "tracks",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "root_id",
+            "getter_name": "rootId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES library_roots (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES library_roots (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "library_roots",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "path",
+            "getter_name": "path",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "mtime_ms",
+            "getter_name": "mtimeMs",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "size_bytes",
+            "getter_name": "sizeBytes",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "title",
+            "getter_name": "title",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "artist",
+            "getter_name": "artist",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album",
+            "getter_name": "album",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_artist",
+            "getter_name": "albumArtist",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "track_no",
+            "getter_name": "trackNo",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "track_total",
+            "getter_name": "trackTotal",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "disc_no",
+            "getter_name": "discNo",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "disc_total",
+            "getter_name": "discTotal",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "year",
+            "getter_name": "year",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "genre",
+            "getter_name": "genre",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "composer",
+            "getter_name": "composer",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "comment",
+            "getter_name": "comment",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "duration_ms",
+            "getter_name": "durationMs",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "bitrate",
+            "getter_name": "bitrate",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "sample_rate",
+            "getter_name": "sampleRate",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "bit_depth",
+            "getter_name": "bitDepth",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "channels",
+            "getter_name": "channels",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "added_at",
+            "getter_name": "addedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "scan_error",
+            "getter_name": "scanError",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cover_key",
+            "getter_name": "coverKey",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "cover_scan_version",
+            "getter_name": "coverScanVersion",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_artist_key",
+            "getter_name": "albumArtistKey",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_title_key",
+            "getter_name": "albumTitleKey",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_display_artist",
+            "getter_name": "albumDisplayArtist",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "title_sort",
+            "getter_name": "titleSort",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "artist_sort",
+            "getter_name": "artistSort",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_sort",
+            "getter_name": "albumSort",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "artist_search",
+            "getter_name": "artistSearch",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_search",
+            "getter_name": "albumSearch",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_artist_search",
+            "getter_name": "albumArtistSearch",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "genre_search",
+            "getter_name": "genreSearch",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "keys_version",
+            "getter_name": "keysVersion",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 12,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "track_search",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "title_sort",
+            "getter_name": "titleSort",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "artist_search",
+            "getter_name": "artistSearch",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_search",
+            "getter_name": "albumSearch",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "album_artist_search",
+            "getter_name": "albumArtistSearch",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "genre_search",
+            "getter_name": "genreSearch",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": true,
+        "create_virtual_stmt": "CREATE VIRTUAL TABLE \"track_search\" USING fts5(title_sort, artist_search, album_search, album_artist_search, genre_search, content='tracks', content_rowid='id', tokenize='unicode61 remove_diacritics 0', prefix='1 2 3')",
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 13,
+      "references": [
+        11,
+        12
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 11,
+        "references_in_body": [
+          11,
+          12
+        ],
+        "name": "tracks_search_insert",
+        "sql": "CREATE TRIGGER tracks_search_insert AFTER INSERT ON tracks BEGIN\n  INSERT INTO track_search(rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)\n  VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);\nEND;"
+      }
+    },
+    {
+      "id": 14,
+      "references": [
+        11,
+        12
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 11,
+        "references_in_body": [
+          11,
+          12
+        ],
+        "name": "tracks_search_delete",
+        "sql": "CREATE TRIGGER tracks_search_delete AFTER DELETE ON tracks BEGIN\n  INSERT INTO track_search(track_search, rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)\n  VALUES ('delete', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);\nEND;"
+      }
+    },
+    {
+      "id": 15,
+      "references": [
+        11,
+        12
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 11,
+        "references_in_body": [
+          11,
+          12
+        ],
+        "name": "tracks_search_update",
+        "sql": "CREATE TRIGGER tracks_search_update AFTER UPDATE OF title_sort, artist_search, album_search, album_artist_search, genre_search ON tracks\nWHEN old.title_sort IS NOT new.title_sort\n  OR old.artist_search IS NOT new.artist_search\n  OR old.album_search IS NOT new.album_search\n  OR old.album_artist_search IS NOT new.album_artist_search\n  OR old.genre_search IS NOT new.genre_search\nBEGIN\n  INSERT INTO track_search(track_search, rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)\n  VALUES ('delete', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);\n  INSERT INTO track_search(rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)\n  VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);\nEND;"
+      }
+    },
+    {
+      "id": 16,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "track_artists",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "track_id",
+            "getter_name": "trackId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES tracks (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES tracks (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "tracks",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "artist_key",
+            "getter_name": "artistKey",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "artist_name",
+            "getter_name": "artistName",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "artist_key",
+          "track_id"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "references": [
+        11
+      ],
+      "type": "index",
+      "data": {
+        "on": 11,
+        "name": "tracks_root",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "root_id",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "references": [
+        11
+      ],
+      "type": "index",
+      "data": {
+        "on": 11,
+        "name": "tracks_title_sort",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "title_sort",
+            "order_by": null
+          },
+          {
+            "column": "id",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "references": [
+        11
+      ],
+      "type": "index",
+      "data": {
+        "on": 11,
+        "name": "tracks_album_key",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "album_artist_key",
+            "order_by": null
+          },
+          {
+            "column": "album_title_key",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "references": [
+        11
+      ],
+      "type": "index",
+      "data": {
+        "on": 11,
+        "name": "tracks_keys_version",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "keys_version",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "references": [
+        16
+      ],
+      "type": "index",
+      "data": {
+        "on": 16,
+        "name": "track_artists_track",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "track_id",
+            "order_by": null
+          }
+        ]
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "plays",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"plays\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"path\" TEXT NOT NULL, \"played_at\" INTEGER NOT NULL, \"listened_ms\" INTEGER NULL);"
+        }
+      ]
+    },
+    {
+      "name": "play_stats",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"play_stats\" (\"path\" TEXT NOT NULL, \"play_count\" INTEGER NOT NULL, \"first_played_at\" INTEGER NOT NULL, \"last_played_at\" INTEGER NOT NULL, PRIMARY KEY (\"path\"));"
+        }
+      ]
+    },
+    {
+      "name": "plays_stats_insert",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER plays_stats_insert AFTER INSERT ON plays BEGIN INSERT INTO play_stats (path, play_count, first_played_at, last_played_at) VALUES (new.path, 1, new.played_at, new.played_at) ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1, first_played_at = min(first_played_at, excluded.first_played_at), last_played_at = max(last_played_at, excluded.last_played_at);END"
+        }
+      ]
+    },
+    {
+      "name": "plays_stats_delete",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER plays_stats_delete AFTER DELETE ON plays BEGIN UPDATE play_stats SET play_count = play_count - 1, first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at), last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at) WHERE path = old.path;DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;END"
+        }
+      ]
+    },
+    {
+      "name": "plays_stats_update",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER plays_stats_update AFTER UPDATE OF path, played_at ON plays WHEN old.path IS NOT new.path OR old.played_at IS NOT new.played_at BEGIN UPDATE play_stats SET play_count = play_count - 1, first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at), last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at) WHERE path = old.path;DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;INSERT INTO play_stats (path, play_count, first_played_at, last_played_at) VALUES (new.path, 1, new.played_at, new.played_at) ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1, first_played_at = min(first_played_at, excluded.first_played_at), last_played_at = max(last_played_at, excluded.last_played_at);END"
+        }
+      ]
+    },
+    {
+      "name": "playlists",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"playlists\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "playlist_entries",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"playlist_entries\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"playlist_id\" INTEGER NOT NULL REFERENCES playlists (id) ON DELETE CASCADE, \"path\" TEXT NOT NULL, \"position\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "plays_path_played",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX plays_path_played ON plays (path, played_at)"
+        }
+      ]
+    },
+    {
+      "name": "plays_played_at",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX plays_played_at ON plays (played_at, path)"
+        }
+      ]
+    },
+    {
+      "name": "playlist_entries_order",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX playlist_entries_order ON playlist_entries (playlist_id, position)"
+        }
+      ]
+    },
+    {
+      "name": "library_roots",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"library_roots\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"path\" TEXT NOT NULL UNIQUE, \"added_at\" INTEGER NOT NULL, \"last_scan_at\" INTEGER NULL);"
+        }
+      ]
+    },
+    {
+      "name": "tracks",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"tracks\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"root_id\" INTEGER NOT NULL REFERENCES library_roots (id) ON DELETE CASCADE, \"path\" TEXT NOT NULL UNIQUE, \"mtime_ms\" INTEGER NOT NULL, \"size_bytes\" INTEGER NOT NULL, \"title\" TEXT NOT NULL, \"artist\" TEXT NULL, \"album\" TEXT NULL, \"album_artist\" TEXT NULL, \"track_no\" INTEGER NULL, \"track_total\" INTEGER NULL, \"disc_no\" INTEGER NULL, \"disc_total\" INTEGER NULL, \"year\" INTEGER NULL, \"genre\" TEXT NULL, \"composer\" TEXT NULL, \"comment\" TEXT NULL, \"duration_ms\" INTEGER NULL, \"bitrate\" INTEGER NULL, \"sample_rate\" INTEGER NULL, \"bit_depth\" INTEGER NULL, \"channels\" INTEGER NULL, \"added_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"scan_error\" TEXT NULL, \"cover_key\" TEXT NULL, \"cover_scan_version\" INTEGER NOT NULL DEFAULT 0, \"album_artist_key\" TEXT NULL, \"album_title_key\" TEXT NULL, \"album_display_artist\" TEXT NULL, \"title_sort\" TEXT NOT NULL DEFAULT '', \"artist_sort\" TEXT NULL, \"album_sort\" TEXT NULL, \"artist_search\" TEXT NULL, \"album_search\" TEXT NULL, \"album_artist_search\" TEXT NULL, \"genre_search\" TEXT NULL, \"keys_version\" INTEGER NOT NULL DEFAULT 0);"
+        }
+      ]
+    },
+    {
+      "name": "track_search",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE VIRTUAL TABLE IF NOT EXISTS \"track_search\" USING fts5(title_sort, artist_search, album_search, album_artist_search, genre_search, content='tracks', content_rowid='id', tokenize='unicode61 remove_diacritics 0', prefix='1 2 3');"
+        }
+      ]
+    },
+    {
+      "name": "tracks_search_insert",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER tracks_search_insert AFTER INSERT ON tracks BEGIN INSERT INTO track_search (\"rowid\", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);END"
+        }
+      ]
+    },
+    {
+      "name": "tracks_search_delete",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER tracks_search_delete AFTER DELETE ON tracks BEGIN INSERT INTO track_search (track_search, \"rowid\", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES ('delete', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);END"
+        }
+      ]
+    },
+    {
+      "name": "tracks_search_update",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER tracks_search_update AFTER UPDATE OF title_sort, artist_search, album_search, album_artist_search, genre_search ON tracks WHEN old.title_sort IS NOT new.title_sort OR old.artist_search IS NOT new.artist_search OR old.album_search IS NOT new.album_search OR old.album_artist_search IS NOT new.album_artist_search OR old.genre_search IS NOT new.genre_search BEGIN INSERT INTO track_search (track_search, \"rowid\", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES ('delete', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);INSERT INTO track_search (\"rowid\", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);END"
+        }
+      ]
+    },
+    {
+      "name": "track_artists",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"track_artists\" (\"track_id\" INTEGER NOT NULL REFERENCES tracks (id) ON DELETE CASCADE, \"artist_key\" TEXT NOT NULL, \"artist_name\" TEXT NOT NULL, PRIMARY KEY (\"artist_key\", \"track_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "tracks_root",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX tracks_root ON tracks (root_id)"
+        }
+      ]
+    },
+    {
+      "name": "tracks_title_sort",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX tracks_title_sort ON tracks (title_sort, id)"
+        }
+      ]
+    },
+    {
+      "name": "tracks_album_key",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX tracks_album_key ON tracks (album_artist_key, album_title_key)"
+        }
+      ]
+    },
+    {
+      "name": "tracks_keys_version",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX tracks_keys_version ON tracks (keys_version)"
+        }
+      ]
+    },
+    {
+      "name": "track_artists_track",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX track_artists_track ON track_artists (track_id)"
+        }
+      ]
+    }
+  ]
+}

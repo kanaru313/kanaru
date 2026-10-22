@@ -6,6 +6,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_keys_backfill.dart';
 import 'package:kanaru/core/database/library_migration_v3.dart';
 import 'package:kanaru/core/database/library_migration_v4.dart';
+import 'package:kanaru/core/database/library_migration_v5.dart';
 import 'package:kanaru/core/database/text_keys.dart';
 import 'package:kanaru/core/database/library_database.steps.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,7 @@ import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
+import 'generated/schema_v5.dart' as v5;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -443,6 +445,182 @@ void main() {
       await verifier.migrateAndValidate(db, 4);
       expect(await matching(db, 'halo'), [1]);
       await expectIntact(db);
+    });
+  });
+
+  group('v4 to v5', () {
+    const newTables = ['plays', 'play_stats', 'playlists', 'playlist_entries'];
+    const triggers = [
+      'plays_stats_insert',
+      'plays_stats_delete',
+      'plays_stats_update',
+    ];
+
+    Future<void> insertV4Library(v4.DatabaseAtV4 db) async {
+      await db.customStatement(
+        "INSERT INTO library_roots (id, path, added_at) VALUES (1, '/m', 1)",
+      );
+      await db.customStatement(
+        'INSERT INTO tracks (id, root_id, path, mtime_ms, size_bytes, title, '
+        'added_at, updated_at, title_sort) '
+        "VALUES (1, 1, '/m/1.flac', 1, 1, 'Halo', 1, 1, 'halo')",
+      );
+      await db.customStatement(
+        'INSERT INTO track_artists (track_id, artist_key, artist_name) '
+        "VALUES (1, 'beyonce', 'Beyoncé')",
+      );
+    }
+
+    Future<Set<String>> schemaNames(GeneratedDatabase db, String type) async =>
+        {
+          for (final r
+              in await db
+                  .customSelect(
+                    'SELECT name FROM sqlite_master WHERE type = ?',
+                    variables: [Variable.withString(type)],
+                  )
+                  .get())
+            r.read<String>('name'),
+        };
+
+    Future<List<List<int>>> stats(GeneratedDatabase db, String path) async => [
+      for (final r
+          in await db
+              .customSelect(
+                'SELECT play_count, first_played_at, last_played_at '
+                'FROM play_stats WHERE path = ?',
+                variables: [Variable.withString(path)],
+              )
+              .get())
+        [
+          r.read<int>('play_count'),
+          r.read<int>('first_played_at'),
+          r.read<int>('last_played_at'),
+        ],
+    ];
+
+    test('keeps rows and search, adds empty tables and the triggers', () async {
+      await verifier.testWithDataIntegrity(
+        oldVersion: 4,
+        newVersion: 5,
+        createOld: v4.DatabaseAtV4.new,
+        createNew: v5.DatabaseAtV5.new,
+        openTestedDatabase: LibraryDatabase.new,
+        createItems: (batch, oldDb) {
+          batch.insertAll(oldDb.libraryRoots, [
+            const v4.LibraryRootsData(id: 1, path: '/m', addedAt: 1),
+          ]);
+          batch.insertAll(oldDb.tracks, [
+            const v4.TracksData(
+              id: 1,
+              rootId: 1,
+              path: '/m/1.flac',
+              mtimeMs: 1,
+              sizeBytes: 1,
+              title: 'Halo',
+              addedAt: 1,
+              updatedAt: 1,
+              coverScanVersion: 0,
+              titleSort: 'halo',
+              keysVersion: 0,
+            ),
+          ]);
+          batch.insertAll(oldDb.trackArtists, [
+            const v4.TrackArtistsData(
+              trackId: 1,
+              artistKey: 'beyonce',
+              artistName: 'Beyoncé',
+            ),
+          ]);
+        },
+        validateItems: (newDb) async {
+          expect(
+            (await newDb.select(newDb.libraryRoots).get()).map((r) => r.path),
+            ["/m"],
+          );
+          expect((await newDb.select(newDb.tracks).get()).map((t) => t.path), [
+            '/m/1.flac',
+          ]);
+          expect(await newDb.select(newDb.trackArtists).get(), hasLength(1));
+          final hits = await newDb
+              .customSelect(
+                "SELECT rowid FROM track_search WHERE track_search MATCH 'halo'",
+              )
+              .get();
+          expect(hits.map((r) => r.read<int>('rowid')), [1]);
+          await newDb.customStatement(
+            "INSERT INTO track_search(track_search, rank) "
+            "VALUES ('integrity-check', 1)",
+          );
+          expect(await newDb.select(newDb.plays).get(), isEmpty);
+          expect(await newDb.select(newDb.playStats).get(), isEmpty);
+          expect(await newDb.select(newDb.playlists).get(), isEmpty);
+          expect(await newDb.select(newDb.playlistEntries).get(), isEmpty);
+          expect(await schemaNames(newDb, 'table'), containsAll(newTables));
+          expect(await schemaNames(newDb, 'trigger'), containsAll(triggers));
+        },
+      );
+    });
+
+    test('triggers keep play_stats current on an upgraded file', () async {
+      final schema = await verifier.schemaAt(4);
+      final old = v4.DatabaseAtV4(schema.newConnection());
+      await insertV4Library(old);
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 5);
+      await db.customStatement(
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 10)",
+      );
+      await db.customStatement(
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 20)",
+      );
+      expect(await stats(db, '/m/1.flac'), [
+        [2, 10, 20],
+      ]);
+      await db.customStatement('DELETE FROM plays');
+      expect(await stats(db, '/m/1.flac'), isEmpty);
+    });
+
+    test('runs again on a half-migrated file and on a migrated one', () async {
+      final schema = await verifier.schemaAt(4);
+      final old = v4.DatabaseAtV4(schema.newConnection());
+      await insertV4Library(old);
+      // A crashed earlier attempt: the table, one index and an outdated
+      // trigger exist; the version was never written.
+      await old.customStatement(
+        'CREATE TABLE plays (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+        'path TEXT NOT NULL, played_at INTEGER NOT NULL, '
+        'listened_ms INTEGER NULL)',
+      );
+      await old.customStatement(
+        'CREATE INDEX plays_path_played ON plays (path, played_at)',
+      );
+      await old.customStatement(
+        'CREATE TRIGGER plays_stats_insert AFTER INSERT ON plays '
+        'BEGIN SELECT 1; END',
+      );
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 5);
+
+      // Once more on the finished schema.
+      await migrateLibraryToSchema5(
+        db,
+        db.createMigrator(),
+        Schema5(database: db),
+      );
+      await verifier.migrateAndValidate(db, 5);
+      await db.customStatement(
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 10)",
+      );
+      expect(await stats(db, '/m/1.flac'), [
+        [1, 10, 10],
+      ]);
     });
   });
 }
