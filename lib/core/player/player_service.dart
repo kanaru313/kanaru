@@ -106,6 +106,7 @@ class PlayerService extends Notifier<PlayerState>
 
   @override
   late StreamController<Duration> _seeked;
+  late StreamController<PlayQueue> _replacedQueues;
 
   /// Tracks the engine could not play, one event per track.
   Stream<PlaybackError> get errors => _errors.stream;
@@ -113,6 +114,24 @@ class PlayerService extends Notifier<PlayerState>
   /// The playback position jumped: once per [seek], and when repeat one
   /// loops the track (to zero). Plain progress never shows up here.
   Stream<Duration> get seeked => _seeked.stream;
+
+  /// The queue the user replaced, once per open or open shuffled that swaps
+  /// out a queue with at least one track. `state.queue` already holds the new
+  /// queue when a listener hears of it, but a later open may have landed in
+  /// between, so it is not the replacement of that event. Opening the same
+  /// tracks again still counts as a replacement. Restoring the last
+  /// session, play next, add to queue, the engine moving on, repeat, shuffle
+  /// and queue edits never show up here. The service makes a new stream when
+  /// its provider rebuilds, so a listener must subscribe again.
+  Stream<PlayQueue> get replacedQueues => _replacedQueues.stream;
+
+  /// Announces [previous] on [replacedQueues] unless it held no track. Every
+  /// command that swaps the whole queue out calls this.
+  @override
+  void _queueReplaced(PlayQueue previous) {
+    if (previous.order.isEmpty || _replacedQueues.isClosed) return;
+    _replacedQueues.add(previous);
+  }
 
   @override
   PlayerState build() {
@@ -127,6 +146,7 @@ class PlayerService extends Notifier<PlayerState>
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
     _seeked = StreamController.broadcast();
+    _replacedQueues = StreamController.broadcast();
     final subscriptions = [
       _backend.advanced.listen(_onAdvanced),
       _backend.playing.listen((v) => state = state.copyWith(playing: v)),
@@ -150,6 +170,7 @@ class PlayerService extends Notifier<PlayerState>
       }
       _errors.close();
       _seeked.close();
+      _replacedQueues.close();
     });
     _startAudioOutput();
     return _startSession();

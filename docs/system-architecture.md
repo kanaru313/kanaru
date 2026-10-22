@@ -254,7 +254,7 @@ flowchart LR
 
 Behavior:
 
-- **Commands** (`openTracks`, `jump`, `next`, `previous`, `playPause`, `seek`, `setVolume`, `setShuffle`, `cycleRepeat`, `moveTrack`, `removeTrack`, `clearQueue`, and others) go through `PlayerService`. Errors surface as a stream; `seeked` is also a stream.
+- **Commands** (`openTracks`, `jump`, `next`, `previous`, `playPause`, `seek`, `setVolume`, `setShuffle`, `cycleRepeat`, `moveTrack`, `removeTrack`, `clearQueue`, and others) go through `PlayerService`. Errors surface as a stream; `seeked` is also a stream. `replacedQueues` announces the old queue each time `openTracks` or `openShuffled` replaces a queue that held at least one track, after `state.queue` already holds the new one; restoring the session, play next, add to queue, the engine moving on, repeat, shuffle and queue edits never announce. Like `seeked`, it is a new stream after each provider rebuild, so listeners subscribe again.
 - **Queue** is immutable: the original list never changes; order is a list of indexes. Shuffle is Fisher–Yates with the current track first; un-shuffling restores `unshuffledOrder`. Stable keys make duplicate files safe.
 - **Repeat**: `off`, `all`, `one`. `one` sets mpv `loop-file` to a finite count (10000) and observes `remaining-file-loops`: each decrement is one loop, reported as `AudioBackend.looped` with the track and followed by re-arming the count. `PlayerService` ignores a loop whose track is no longer current, otherwise it starts a new playthrough at position 0. Seeks, opens and track changes never count.
 - **Failures**: a track that never reports a duration counts as failed. When every queued track fails in a row, the queue stops.
