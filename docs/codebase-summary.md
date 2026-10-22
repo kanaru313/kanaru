@@ -34,7 +34,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
 | `lib/core/paths/` | 2 / 160 | XDG directory resolution; `local_audio_path.dart` (`localAudioPath`: the one check that a path or `file:` URI from outside the library is a local audio file, returned in canonical spelling) |
 | `lib/core/player/` | 19 / 2,211 | `PlayerService`, `PlayQueue`, `MediaKitBackend`, session persistence (`session/`) |
-| `lib/core/settings/` | 14 / 1,336 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance, preference groups for options not wired yet (`library_scan_prefs.dart`, `playback_prefs.dart`, `display_prefs.dart` and their codecs; nothing outside settings reads them) |
+| `lib/core/settings/` | 14 / 1,516 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance, preference groups for options not wired yet (`library_scan_prefs.dart` incl. `watchFolders`, `playback_prefs.dart` incl. ReplayGain and output device with `withAudioDevice`, `display_prefs.dart` and their codecs; nothing outside settings reads them) |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
 | `lib/features/library/` | 34 / 3,095 | Songs, Albums, Artists, onboarding, library state machine, sort controls |
 | `lib/features/player/` | 29 / 3,337 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |

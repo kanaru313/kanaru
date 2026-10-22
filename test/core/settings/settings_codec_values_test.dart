@@ -11,4 +11,11 @@ void main() {
     expect(intInRange(double.nan, 0, 10, 3), 3);
     expect(doubleInRange(double.nan, 0, 1, 0.5), 0.5);
   });
+
+  test('nonEmptyStringOrNull keeps only non-empty strings', () {
+    expect(nonEmptyStringOrNull('a'), 'a');
+    expect(nonEmptyStringOrNull(''), isNull);
+    expect(nonEmptyStringOrNull(null), isNull);
+    expect(nonEmptyStringOrNull(3), isNull);
+  });
 }

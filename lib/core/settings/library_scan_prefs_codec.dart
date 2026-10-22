@@ -9,6 +9,7 @@ const _byAlbumArtistKey = 'byAlbumArtist';
 const _byYearKey = 'byYear';
 const _minFileSizeKbKey = 'minFileSizeKb';
 const _minDurationSecondsKey = 'minDurationSeconds';
+const _watchFoldersKey = 'watchFolders';
 const _knownGroupingKeys = {_byAlbumArtistKey, _byYearKey};
 const _knownKeys = {
   _respectNomediaKey,
@@ -17,6 +18,7 @@ const _knownKeys = {
   _albumGroupingKey,
   _minFileSizeKbKey,
   _minDurationSecondsKey,
+  _watchFoldersKey,
 };
 
 /// Reads the `libraryScan` object; each key falls back on its own. The
@@ -52,6 +54,7 @@ const _knownKeys = {
         maxMinDurationSeconds,
         d.minDurationSeconds,
       ),
+      watchFolders: boolOr(map[_watchFoldersKey], d.watchFolders),
     ),
     {
       ...unknownEntries(map, _knownKeys),
@@ -79,4 +82,5 @@ Map<String, Object?> encodeLibraryScanPrefs(
   },
   _minFileSizeKbKey: prefs.minFileSizeKb,
   _minDurationSecondsKey: prefs.minDurationSeconds,
+  _watchFoldersKey: prefs.watchFolders,
 };
