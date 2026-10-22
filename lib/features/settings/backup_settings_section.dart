@@ -17,7 +17,7 @@ class BackupSettingsSection extends StatelessWidget {
       title: l10n.settingsBackupRestore,
       children: [
         SettingRow.single(
-          title: l10n.settingsBackupRestore,
+          title: l10n.settingsBackupRestoreRow,
           subtitle: l10n.settingsBackupRestoreHint,
           comingSoon: true,
           control: FilledButton.tonal(

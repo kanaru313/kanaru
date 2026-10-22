@@ -1,3 +1,6 @@
+import 'dart:ui' show Tristate;
+
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
@@ -126,6 +129,31 @@ void main() {
     expect(chip('Year'), isTrue);
     expect(chip('Songs'), isTrue);
     expect(chip('Albums'), isFalse);
+  });
+
+  testWidgets('coming soon dropdowns are disabled and open no menu', (
+    tester,
+  ) async {
+    await _openSettings(tester, const AppSettings());
+
+    final menus = find.byType(DropdownMenu<int>);
+    expect(menus, findsWidgets);
+    for (final menu in menus.evaluate()) {
+      expect((menu.widget as DropdownMenu<int>).enabled, isFalse);
+    }
+    final field = _inRow('Minimum file size', find.byType(TextField));
+    expect(tester.widget<TextField>(field).enabled, isFalse);
+
+    final semantics = tester.ensureSemantics();
+    final data = tester.getSemantics(field).getSemanticsData();
+    expect(data.flagsCollection.isEnabled, isNot(Tristate.isTrue));
+    expect(data.hasAction(SemanticsAction.tap), isFalse);
+    semantics.dispose();
+
+    final before = tester.widgetList(find.byType(MenuItemButton)).length;
+    await tester.tap(field, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.byType(MenuItemButton).evaluate(), hasLength(before));
   });
 
   testWidgets('a stored value outside the presets still shows', (tester) async {

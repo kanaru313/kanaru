@@ -1,6 +1,11 @@
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/features/settings/library_stats_provider.dart';
+import 'package:kanaru/features/settings/library_stats_row.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
 
@@ -59,5 +64,30 @@ void main() {
 
     expect(find.text('In your library'), findsNothing);
     expect(find.text('Music folders'), findsOneWidget);
+  });
+
+  testWidgets('shows a dash, not the loading dots, when the count fails', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          libraryStatsProvider.overrideWith(
+            (ref) => Stream.error(StateError('no count')),
+          ),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: LibraryStatsRow()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('In your library'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('…'), findsNothing);
   });
 }

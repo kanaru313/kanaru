@@ -1,6 +1,9 @@
 // Helpers shared by the settings codecs. Each reads one JSON value and
 // never fails: a value of the wrong type gives the fallback.
 
+/// Doubles from here up are whole numbers, and `truncate` would saturate.
+const _twoPow53 = 9007199254740992.0;
+
 bool boolOr(Object? value, bool fallback) => value is bool ? value : fallback;
 
 T enumOr<T extends Enum>(List<T> values, Object? name, T fallback) {
@@ -17,7 +20,10 @@ int intInRange(Object? value, int min, int max, int fallback) {
   final int number;
   if (value is int) {
     number = value;
-  } else if (value is double && value.isFinite && value == value.truncate()) {
+  } else if (value is double && value.isFinite && value.abs() >= _twoPow53) {
+    // Too big for an exact int and always whole: past every bound.
+    number = value.isNegative ? min : max;
+  } else if (value is double && value == value.truncate()) {
     number = value.toInt();
   } else {
     return fallback;

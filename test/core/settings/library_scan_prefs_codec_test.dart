@@ -84,6 +84,33 @@ void main() {
     );
   });
 
+  test('huge numbers go to the nearest bound, not the default', () {
+    final high = decodeLibraryScanPrefs({
+      'minFileSizeKb': 1e30,
+      'minDurationSeconds': 9007199254740993,
+    }).$1;
+    final low = decodeLibraryScanPrefs({'minFileSizeKb': -1e30}).$1;
+
+    expect(high.minFileSizeKb, maxMinFileSizeKb);
+    expect(high.minDurationSeconds, maxMinDurationSeconds);
+    expect(low.minFileSizeKb, 0);
+  });
+
+  test('keys this version does not know inside the grouping are kept', () {
+    final (prefs, extra) = decodeLibraryScanPrefs({
+      'albumGrouping': {'byYear': true, 'byGenre': true},
+    });
+
+    final json = encodeLibraryScanPrefs(prefs, extra: extra);
+
+    expect(json['albumGrouping'], {
+      'byGenre': true,
+      'byAlbumArtist': true,
+      'byYear': true,
+    });
+    expect(decodeLibraryScanPrefs(json).$1, prefs);
+  });
+
   test('keys this version does not know are kept', () {
     final (prefs, extra) = decodeLibraryScanPrefs({
       'respectNomedia': true,

@@ -1499,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAnimationsHint.
   ///
   /// In en, this message translates to:
-  /// **'Off: pages and panels switch without motion and the seek bar stays flat. Reduced motion set on the desktop always applies.'**
+  /// **'Off: pages and panels switch without motion.'**
   String get settingsAnimationsHint;
 
   /// No description provided for @settingsColorFromCover.
@@ -1703,7 +1703,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsInfiniteQueueHint.
   ///
   /// In en, this message translates to:
-  /// **'When the queue ends, keep playing songs like the last ones.'**
+  /// **'When the queue ends, Next goes back to the first song, whatever the repeat mode.'**
   String get settingsInfiniteQueueHint;
 
   /// No description provided for @settingsListenAfterTime.
@@ -1777,6 +1777,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Backup and restore'**
   String get settingsBackupRestore;
+
+  /// No description provided for @settingsBackupRestoreRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up and restore data'**
+  String get settingsBackupRestoreRow;
 
   /// No description provided for @settingsBackupRestoreHint.
   ///

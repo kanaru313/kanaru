@@ -223,6 +223,21 @@ void main() {
     final music = h.folder('music');
     await openSettings(tester, h, roots: [music]);
     expect(removeOpacity(tester), 0);
+    // Invisible, yet still in the semantics tree for screen readers.
+    final semantics = tester.ensureSemantics();
+    expect(
+      tester.getSemantics(find.byTooltip('Remove from library')),
+      matchesSemantics(
+        tooltip: 'Remove from library',
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    semantics.dispose();
 
     final pointer = await hover(tester, find.text(music));
     expect(removeOpacity(tester), 1);

@@ -17,8 +17,8 @@ import 'library_stats_row.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
-/// Library settings: the library's counts, the music folders, whether to rescan when the app
-/// opens, and a rescan button. The button is disabled while the library is
+/// Library settings: the library's counts, the music folders, whether to
+/// rescan when the app opens, and a rescan button. The button is disabled while the library is
 /// unavailable, has no music folder yet, or is being scanned or its covers
 /// are being made (it then shows a progress ring). The result is announced
 /// by the shell.

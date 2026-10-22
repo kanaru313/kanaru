@@ -85,8 +85,11 @@ class LibraryScanSettingRows extends ConsumerWidget {
           comingSoon: true,
           control: FilledButton.tonal(
             style: settingButtonStyle().copyWith(
-              foregroundColor: WidgetStatePropertyAll(
-                Theme.of(context).colorScheme.error,
+              // Red only while live; disabled keeps the normal disabled color.
+              foregroundColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.disabled)
+                    ? null
+                    : Theme.of(context).colorScheme.error,
               ),
             ),
             onPressed: null,

@@ -78,6 +78,8 @@ class _LibraryFolderRowState extends State<LibraryFolderRow> {
           trailing: AnimatedOpacity(
             opacity: missing || _hovered || _focused ? 1 : 0,
             duration: fade,
+            // Hidden is only visual: screen readers still find the button.
+            alwaysIncludeSemantics: true,
             child: IconButton(
               icon: const Icon(AppIcons.deleteOutline),
               tooltip: l10n.settingsRemoveFolder,

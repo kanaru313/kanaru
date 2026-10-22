@@ -9,6 +9,7 @@ const _byAlbumArtistKey = 'byAlbumArtist';
 const _byYearKey = 'byYear';
 const _minFileSizeKbKey = 'minFileSizeKb';
 const _minDurationSecondsKey = 'minDurationSeconds';
+const _knownGroupingKeys = {_byAlbumArtistKey, _byYearKey};
 const _knownKeys = {
   _respectNomediaKey,
   _duplicatesByFilenameKey,
@@ -52,7 +53,13 @@ const _knownKeys = {
         d.minDurationSeconds,
       ),
     ),
-    unknownEntries(map, _knownKeys),
+    {
+      ...unknownEntries(map, _knownKeys),
+      // Unknown parts of the grouping object ride along under its own key.
+      if (unknownEntries(grouping, _knownGroupingKeys) case final rest
+          when rest.isNotEmpty)
+        _albumGroupingKey: rest,
+    },
   );
 }
 
@@ -66,6 +73,7 @@ Map<String, Object?> encodeLibraryScanPrefs(
   _duplicatesByFilenameKey: prefs.duplicatesByFilename,
   _m3uPlaylistsKey: prefs.m3uPlaylists,
   _albumGroupingKey: {
+    if (extra[_albumGroupingKey] case final Map<String, Object?> rest) ...rest,
     _byAlbumArtistKey: prefs.albumGrouping.byAlbumArtist,
     _byYearKey: prefs.albumGrouping.byYear,
   },

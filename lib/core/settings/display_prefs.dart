@@ -34,7 +34,8 @@ class DisplayPrefs {
   /// Multiplies every text size; 1.0 leaves them alone.
   final double fontScale;
 
-  /// The sidebar destinations that show. Never empty.
+  /// The sidebar destinations that show. Never empty. The file stores the
+  /// hidden ones instead, so a destination added later shows by default.
   final Set<SidebarTab> sidebarTabs;
 
   /// Show the track number in front of each song on an album page.

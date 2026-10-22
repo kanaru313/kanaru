@@ -994,7 +994,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAnimationsHint =>
-      'Off: pages and panels switch without motion and the seek bar stays flat. Reduced motion set on the desktop always applies.';
+      'Off: pages and panels switch without motion.';
 
   @override
   String get settingsColorFromCover => 'Colors from the cover';
@@ -1111,7 +1111,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsInfiniteQueueHint =>
-      'When the queue ends, keep playing songs like the last ones.';
+      'When the queue ends, Next goes back to the first song, whatever the repeat mode.';
 
   @override
   String get settingsListenAfterTime => 'A listen counts after';
@@ -1153,6 +1153,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsBackupRestore => 'Backup and restore';
+
+  @override
+  String get settingsBackupRestoreRow => 'Back up and restore data';
 
   @override
   String get settingsBackupRestoreHint =>

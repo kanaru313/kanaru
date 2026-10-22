@@ -102,7 +102,13 @@ void main() {
     expect(settings.animations, isFalse);
     expect((stored()['libraryScan']! as Map)['minFileSizeKb'], 500);
     expect((stored()['playback']! as Map)['gapless'], false);
-    expect((stored()['display']! as Map)['sidebarTabs'], ['songs']);
+    expect((stored()['display']! as Map)['hiddenSidebarTabs'], [
+      'albums',
+      'artists',
+      'folders',
+      'genres',
+      'languages',
+    ]);
   });
 
   test('several changes end up on disk with the last value', () async {

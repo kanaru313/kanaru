@@ -7,7 +7,8 @@ import 'library_stats_provider.dart';
 /// First row of the library section: how many tracks, albums, artists and
 /// genres the library holds, live while a scan runs. A row without a control,
 /// laid out like a `SettingRow`. Hidden without a library; shows "…" until
-/// the first count is in, and keeps the last count if a reload fails.
+/// the first count is in, "—" if the first count fails, and keeps the last
+/// count if a later reload fails.
 class LibraryStatsRow extends ConsumerWidget {
   const LibraryStatsRow({super.key});
 
@@ -32,7 +33,7 @@ class LibraryStatsRow extends ConsumerWidget {
             Text(l10n.settingsLibraryStats, style: theme.textTheme.bodyLarge),
             Text(
               value == null
-                  ? '…'
+                  ? (stats.hasError ? '—' : '…')
                   : [
                       l10n.settingsStatsTracks(value.tracks),
                       l10n.settingsStatsAlbums(value.albums),

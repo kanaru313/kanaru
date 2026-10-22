@@ -27,7 +27,13 @@ void main() {
 
     final json = encodeDisplayPrefs(prefs);
 
-    expect(json['sidebarTabs'], ['songs', 'genres']);
+    expect(json['hiddenSidebarTabs'], [
+      'albums',
+      'artists',
+      'folders',
+      'languages',
+    ]);
+    expect(json.containsKey('sidebarTabs'), isFalse);
     expect(decodeDisplayPrefs(json).$1, prefs);
   });
 
@@ -36,7 +42,7 @@ void main() {
       final decoded = decodeDisplayPrefs({
         'colorFromCover': bad,
         'fontScale': bad,
-        'sidebarTabs': bad is List ? 5 : bad,
+        'hiddenSidebarTabs': bad is List ? 5 : bad,
         'trackNumbersInAlbum': bad,
       }).$1;
 
@@ -56,19 +62,38 @@ void main() {
     expect(scale('1.2'), 1.0);
   });
 
-  test('tabs: unknown names and duplicates go, none left means all', () {
+  test('tabs: a tab not listed as hidden shows; hiding all shows all', () {
     Set<SidebarTab> tabs(Object? v) =>
-        decodeDisplayPrefs({'sidebarTabs': v}).$1.sidebarTabs;
+        decodeDisplayPrefs({'hiddenSidebarTabs': v}).$1.sidebarTabs;
+    final all = SidebarTab.values.toSet();
 
-    expect(tabs(['songs', 'nope', 'songs', 3]), {SidebarTab.songs});
-    expect(tabs([]), SidebarTab.values.toSet());
-    expect(tabs(['nope']), SidebarTab.values.toSet());
-    expect(tabs('songs'), SidebarTab.values.toSet());
+    expect(
+      tabs(['songs', 'nope', 'songs', 3]),
+      all.difference({SidebarTab.songs}),
+    );
+    expect(tabs([]), all);
+    expect(tabs(['nope']), all);
+    expect(tabs('songs'), all);
+    expect(tabs([for (final t in SidebarTab.values) t.name]), all);
+  });
+
+  test('hidden tab names this version does not know are kept on save', () {
+    final (prefs, extra) = decodeDisplayPrefs({
+      'hiddenSidebarTabs': ['albums', 'playlists'],
+    });
+
+    expect(prefs.sidebarTabs, isNot(contains(SidebarTab.albums)));
+    final json = encodeDisplayPrefs(
+      prefs.copyWith(sidebarTabs: {...prefs.sidebarTabs, SidebarTab.albums}),
+      extra: extra,
+    );
+
+    expect(json['hiddenSidebarTabs'], ['playlists']);
   });
 
   test('the tab set cannot be changed', () {
     final tabs = decodeDisplayPrefs({
-      'sidebarTabs': ['songs'],
+      'hiddenSidebarTabs': ['albums'],
     }).$1.sidebarTabs;
 
     expect(() => tabs.add(SidebarTab.albums), throwsUnsupportedError);

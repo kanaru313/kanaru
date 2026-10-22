@@ -51,7 +51,8 @@ class ComingSoonDropdownRow<T> extends StatelessWidget {
     control: SettingDropdown<T>(
       options: options,
       selected: selected,
-      // Never called: the row ignores input.
+      enabled: false,
+      // Never called: a disabled dropdown opens no menu.
       onSelected: (_) {},
     ),
   );

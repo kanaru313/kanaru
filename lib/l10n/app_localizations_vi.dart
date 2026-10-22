@@ -959,7 +959,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsAnimationsHint =>
-      'Tắt: trang và bảng chuyển không có chuyển động, thanh tua đứng yên. Giảm chuyển động của hệ thống luôn được tôn trọng.';
+      'Tắt: trang và bảng chuyển không có chuyển động.';
 
   @override
   String get settingsColorFromCover => 'Màu theo ảnh bìa';
@@ -1075,7 +1075,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsInfiniteQueueHint =>
-      'Khi hàng đợi hết, tiếp tục phát các bài giống những bài cuối.';
+      'Hết hàng đợi thì Tiếp theo quay về bài đầu, bất kể chế độ lặp.';
 
   @override
   String get settingsListenAfterTime => 'Một lượt nghe được tính sau';
@@ -1116,6 +1116,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsBackupRestore => 'Sao lưu & khôi phục';
+
+  @override
+  String get settingsBackupRestoreRow => 'Sao lưu và khôi phục dữ liệu';
 
   @override
   String get settingsBackupRestoreHint =>
