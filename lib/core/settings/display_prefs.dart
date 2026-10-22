@@ -18,8 +18,9 @@ const minFontScale = 0.8;
 const maxFontScale = 1.5;
 
 /// How the app looks beyond the theme. The defaults are what the app shows
-/// today; the options are stored for the display options that do not exist
-/// yet: nothing reads them.
+/// today. Only [colorFromCover] is read (the cover palette and the scan);
+/// [fontScale], [sidebarTabs] and [trackNumbersInAlbum] are stored for
+/// display options that do not exist yet: nothing reads them.
 class DisplayPrefs {
   const DisplayPrefs({
     this.colorFromCover = false,

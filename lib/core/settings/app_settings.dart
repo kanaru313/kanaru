@@ -77,8 +77,11 @@ class AppSettings {
   /// nothing reads it.
   final bool animations;
 
-  /// Options of features that are not built yet, grouped so that this class
-  /// stays small. Their defaults are today's behavior; nothing reads them.
+  /// Library scan, playback and display options, grouped so that this class
+  /// stays small. Their defaults are today's behavior. Read today: the scan
+  /// filters (`.nomedia`, size, duration) and folder watching, ReplayGain
+  /// and the output device, and the color taken from the cover. The others
+  /// are stored for features that are not built yet: nothing reads them.
   final LibraryScanPrefs libraryScan;
   final PlaybackPrefs playback;
   final DisplayPrefs display;

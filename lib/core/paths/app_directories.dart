@@ -25,7 +25,10 @@ String? resolveCacheDirectory(Map<String, String> environment) =>
 /// Longest side, in pixels, of the cover thumbnails the tag reader writes
 /// (`THUMBNAIL_SIDE` in `rust/src/cover_thumbnail.rs`; change both together,
 /// with `coverScanVersion`). Also the name of their cache folder, so
-/// thumbnails of another size never share a folder with these.
+/// thumbnails of another size never share a folder with these. It is part of
+/// `coverColorAlgoVersion` too, so changing it makes every stored cover color
+/// count as missing: the next cover pass computes them again (while color
+/// from the cover is on).
 const coverThumbnailSize = 512;
 
 /// Folder of the cover thumbnails: `<cache>/covers/512`. Thumbnails can be
