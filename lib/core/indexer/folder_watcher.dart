@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:logging/logging.dart';
 
 import 'audio_file_types.dart';
+import 'change_debouncer.dart';
 import 'walk_audio_files.dart';
 
 final _log = Logger('folder_watcher');
@@ -11,9 +12,6 @@ final _log = Logger('folder_watcher');
 /// Watches one folder (not its subfolders: Dart ignores `recursive` on
 /// Linux, so the watcher watches each folder itself).
 typedef DirWatch = Stream<FileSystemEvent> Function(String dir);
-
-/// Makes a timer; tests pass a fake one to move time by hand.
-typedef TimerFactory = Timer Function(Duration duration, void Function() cb);
 
 enum WatchStatus {
   /// No watcher: the setting is off or the library is unavailable.
@@ -31,10 +29,6 @@ enum WatchStatus {
 /// when the user is out of watches.
 const _enospc = 28;
 
-/// How many quiet scans in a row may be repeated at the short delay because
-/// a file keeps changing; after that the long delay applies.
-const _maxQuickRetries = 5;
-
 /// Turns file system events in the library's folders into one call of
 /// [onChange] per burst of changes: [quiet] after the last event, or at
 /// latest [maxWait] after the first one of the burst.
@@ -47,27 +41,26 @@ const _maxQuickRetries = 5;
 class FolderWatcher {
   FolderWatcher({
     required this._watch,
-    required this._onChange,
+    required void Function() onChange,
     required this._maxWatches,
-    this._timer = Timer.new,
-    this.quiet = const Duration(seconds: 3),
-    this.maxWait = const Duration(seconds: 60),
-    this.backoff = const Duration(seconds: 60),
-  });
+    TimerFactory timer = Timer.new,
+    Duration quiet = const Duration(seconds: 3),
+    Duration maxWait = const Duration(seconds: 60),
+    Duration backoff = const Duration(seconds: 60),
+  }) {
+    _changes = ChangeDebouncer(
+      onFire: onChange,
+      isActive: () => !_disposed && _status == WatchStatus.watching,
+      timer: timer,
+      quiet: quiet,
+      maxWait: maxWait,
+      backoff: backoff,
+    );
+  }
 
   final DirWatch _watch;
-  final void Function() _onChange;
   final int _maxWatches;
-  final TimerFactory _timer;
-
-  /// Silence after the last event that starts a scan.
-  final Duration quiet;
-
-  /// Longest wait from the first event of a burst to the scan.
-  final Duration maxWait;
-
-  /// Pause after a failed scan before the next one.
-  final Duration backoff;
+  late final ChangeDebouncer _changes;
 
   final Map<String, StreamSubscription<FileSystemEvent>> _subs = {};
 
@@ -76,9 +69,6 @@ class FolderWatcher {
   final Set<StreamSubscription<FileSystemEntity>> _listings = {};
   final _statusController = StreamController<WatchStatus>.broadcast();
   WatchStatus _status = WatchStatus.watching;
-  Timer? _quietTimer, _maxTimer, _backoffTimer;
-  bool _waitingForBackoff = false;
-  int _quickRetries = 0;
   bool _disposed = false;
 
   WatchStatus get status => _status;
@@ -117,33 +107,13 @@ class FolderWatcher {
   /// Tells the watcher that a scan it asked for ended. A failed scan delays
   /// the next one by [backoff]; files left unread because they were still
   /// being written ([deferred]) get another scan.
-  void scanEnded({required bool failed, required int deferred}) {
-    if (_disposed || _status != WatchStatus.watching) return;
-    if (failed) {
-      _backoffTimer?.cancel();
-      _backoffTimer = _timer(backoff, () {
-        _backoffTimer = null;
-        if (_waitingForBackoff) {
-          _waitingForBackoff = false;
-          _fire();
-        }
-      });
-    }
-    if (deferred > 0) {
-      _quickRetries++;
-      // A file dated in the future never settles: slow down, do not loop.
-      _schedule(_quickRetries <= _maxQuickRetries ? quiet : maxWait);
-    } else {
-      _quickRetries = 0;
-    }
-  }
+  void scanEnded({required bool failed, required int deferred}) =>
+      _changes.scanEnded(failed: failed, deferred: deferred);
 
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
-    _cancelTimers();
-    _backoffTimer?.cancel();
-    _backoffTimer = null;
+    _changes.dispose();
     await _cancelAll();
     _setStatus(WatchStatus.off);
     await _statusController.close();
@@ -173,7 +143,7 @@ class FolderWatcher {
         // dropped) or a cancel, is a folder that went away.
         if (_disposed || !identical(_subs[dir], sub)) return;
         _subs.remove(dir);
-        _noteChange();
+        _changes.note();
       },
     );
     _subs[dir] = sub;
@@ -217,8 +187,7 @@ class FolderWatcher {
       'Folder watching stopped ($why). Raise fs.inotify.max_user_watches '
       'to watch the whole library.',
     );
-    _cancelTimers();
-    _waitingForBackoff = false;
+    _changes.cancel();
     _setStatus(WatchStatus.limitReached);
     unawaited(_cancelAll());
   }
@@ -257,7 +226,7 @@ class FolderWatcher {
       FileSystemDeleteEvent() => _onGone(event.path),
       FileSystemMoveEvent() => _onMoved(event),
     };
-    if (relevant) _noteChange();
+    if (relevant) _changes.note();
   }
 
   bool _isNomedia(String path) => path.endsWith('/$nomediaName');
@@ -285,32 +254,5 @@ class FolderWatcher {
     if (destination == null) return gone;
     // The watch of a renamed folder still reports the old name.
     return _onCreated(destination, event.isDirectory) || gone;
-  }
-
-  // --- timing ---
-
-  void _noteChange() => _schedule(quiet);
-
-  void _schedule(Duration delay) {
-    if (_disposed || _status != WatchStatus.watching) return;
-    _quietTimer?.cancel();
-    _quietTimer = _timer(delay, _fire);
-    _maxTimer ??= _timer(maxWait, _fire);
-  }
-
-  void _cancelTimers() {
-    _quietTimer?.cancel();
-    _maxTimer?.cancel();
-    _quietTimer = _maxTimer = null;
-  }
-
-  void _fire() {
-    _cancelTimers();
-    if (_disposed || _status != WatchStatus.watching) return;
-    if (_backoffTimer != null) {
-      _waitingForBackoff = true;
-      return;
-    }
-    _onChange();
   }
 }

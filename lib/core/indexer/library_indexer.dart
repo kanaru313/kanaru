@@ -9,15 +9,16 @@ import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
-import '../database/scan_filter_queries.dart';
 import '../settings/settings_provider.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
 import 'root_scan_result.dart';
+import 'root_short_track_rules.dart';
 import 'scan_diff.dart';
 import 'scan_rules.dart';
+import 'scan_totals.dart';
 import 'scanned_folders.dart';
 import 'short_track_memo.dart';
 import 'tag_reader.dart' show TagReader, TrackTags;
@@ -221,21 +222,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
                 settleClockSlack.inMilliseconds,
           )
         : null;
-    final folders = ScannedFoldersTally(
-      ref.read(scannedFoldersProvider).byRoot,
-    );
-    var added = 0, updated = 0, removed = 0, failedTags = 0, filtered = 0;
+    final totals = ScanTotals(ref.read(scannedFoldersProvider).byRoot);
     int? coversRepaired;
-    // Roots scanned to the end, without error: their covers are made next.
-    final okRootIds = <int>[];
-    final skipped = <String, SkipReason>{};
-    var undecodableNames = 0;
-    final undecodableDirs = <String>[];
-    final skippedFolderNames = <String>{};
+    final okRootIds = totals.okRootIds;
     Object? firstError;
     StackTrace? firstStack;
-    var walkTime = Duration.zero, tagTime = Duration.zero;
-    var dbTime = Duration.zero;
     try {
       // Read inside the try: a scan without the exclusions would bring back
       // the tracks the user left out, so a failed read fails the scan.
@@ -278,65 +269,48 @@ class LibraryIndexer extends Notifier<IndexerState> {
           _log.info('Root removed during scan: ${root.path}');
           continue;
         }
-        added += result.added;
-        updated += result.updated;
-        removed += result.removed;
-        filtered += result.filtered;
-        failedTags += result.failedTags;
-        undecodableNames += result.undecodableNames;
-        skippedFolderNames.addAll(result.skippedFolderNames);
-        for (final dir in result.undecodableSampleDirs) {
-          if (undecodableDirs.length < maxUndecodableSamples) {
-            undecodableDirs.add(dir);
-          }
-        }
-        folders.add(root.path, result);
-        walkTime += result.walkTime;
-        tagTime += result.tagTime;
-        dbTime += result.dbTime;
-        final reason = result.skipReason;
-        if (reason != null) skipped[root.path] = reason;
-        if (reason == null && result.error == null) okRootIds.add(root.id);
+        totals.add(root.id, root.path, result);
       }
       // Before anything can throw or return early: the folder watcher needs
       // the folders even when the scan failed or its covers are skipped.
       if (ref.mounted) {
         ref
             .read(scannedFoldersProvider.notifier)
-            .publish(folders.byRoot, deferred: folders.deferred);
+            .publish(totals.folders.byRoot, deferred: totals.folders.deferred);
       }
       // Every root had its turn; now report a root that threw.
       if (firstError != null) {
         Error.throwWithStackTrace(firstError, firstStack!);
       }
       final summary = ScanSummary(
-        added: added,
-        updated: updated,
-        removed: removed,
-        failedTags: failedTags,
-        undecodableNames: undecodableNames,
-        undecodableSampleDirs: undecodableDirs,
-        skippedRoots: skipped,
+        added: totals.added,
+        updated: totals.updated,
+        removed: totals.removed,
+        failedTags: totals.failedTags,
+        undecodableNames: totals.undecodableNames,
+        undecodableSampleDirs: totals.undecodableDirs,
+        skippedRoots: totals.skipped,
       );
-      if (skippedFolderNames.isNotEmpty) {
+      if (totals.skippedFolderNames.isNotEmpty) {
         _log.info(
-          'Folders left out of the walk: ${skippedFolderNames.join(', ')}',
+          'Folders left out of the walk: ${totals.skippedFolderNames.join(', ')}',
         );
       }
-      if (undecodableNames > 0) {
+      if (totals.undecodableNames > 0) {
         _log.warning(
-          '$undecodableNames files or folders skipped, names are not valid UTF-8, '
-          'for example in: ${undecodableDirs.join(', ')}',
+          '${totals.undecodableNames} files or folders skipped, names are not valid UTF-8, '
+          'for example in: ${totals.undecodableDirs.join(', ')}',
         );
       }
       _log.info(
-        'Scan finished: $added added, $updated updated, $removed removed, '
-        '$failedTags without tags, $filtered left out by scan rules, '
-        '${skipped.length} roots skipped; '
+        'Scan finished: ${totals.added} added, ${totals.updated} updated, '
+        '${totals.removed} removed, ${totals.failedTags} without tags, '
+        '${totals.filtered} left out by scan rules, '
+        '${totals.skipped.length} roots skipped; '
         'covers ${coversRepaired ?? '-'} repaired; '
-        'walk ${walkTime.inMilliseconds} ms, '
-        'tags ${tagTime.inMilliseconds} ms, '
-        'db ${dbTime.inMilliseconds} ms',
+        'walk ${totals.walkTime.inMilliseconds} ms, '
+        'tags ${totals.tagTime.inMilliseconds} ms, '
+        'db ${totals.dbTime.inMilliseconds} ms',
       );
       _publish(IndexerFinished(summary, quiet: _quiet));
     } catch (error, stackTrace) {
@@ -498,17 +472,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
     }
     // Tracks stored under a rule that now bars them go with the diff's own
     // deletions; so do old rows of files found too short to keep.
-    final extraDeletes = <int>{};
-    final idByPath = {for (final track in snapshot) track.path: track.id};
-    final minMs = rules.minDurationMs;
-    final toRead = <WalkedFile>[];
-    for (final file in diff.toRead) {
-      if (!_shortTracks.skips(file, minMs)) {
-        toRead.add(file);
-      } else if (idByPath[file.path] case final id?) {
-        extraDeletes.add(id);
-      }
-    }
+    final shortRules = RootShortTrackRules(
+      memo: _shortTracks,
+      minMs: rules.minDurationMs,
+      snapshot: snapshot,
+    );
+    final toRead = shortRules.filterToRead(diff.toRead);
     final total = toRead.length;
     if (total > 0 && _readerStuck) {
       _log.warning('Tag reader is stuck, root left unchanged: ${root.path}');
@@ -576,14 +545,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         tags,
         DateTime.now().millisecondsSinceEpoch,
       );
-      final (kept: rows, :shortPaths) = _shortTracks.splitShort(
-        batch,
-        read,
-        minMs,
-      );
-      for (final path in shortPaths) {
-        if (idByPath[path] case final id?) extraDeletes.add(id);
-      }
+      final rows = shortRules.keepLongEnough(batch, read);
       // Counted from the rows: a path the reader returned nothing for is
       // stored with an error too.
       failedTags += rows.where((r) => r.scanError.value != null).length;
@@ -601,11 +563,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _publish(reading(end));
     }
     dbTime.start();
-    final deletes = {
-      ...diff.toDelete,
-      ...extraDeletes,
-      ...await db.shortTrackIds(root.id, minMs),
-    };
+    final deletes = await shortRules.deletes(db, root.id, diff.toDelete);
     await db.deleteTracksById(deletes);
     await db.markRootScanned(root.id, DateTime.now().millisecondsSinceEpoch);
     dbTime.stop();
