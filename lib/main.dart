@@ -113,13 +113,15 @@ Future<void> main() async {
   if (windowReady) await _installExitHook(container, log);
 }
 
-/// Work that waits for the first frame. The library tasks start first; the
-/// files the app was launched with then replace the restored queue (the
+/// Work that waits for the first frame. The files the app was launched with
+/// start first, so their tag read is queued in the native pool before the
+/// library scan's first batch; they then replace the restored queue (the
 /// session restore never overwrites a queue the user already opened).
 Future<void> _runStartupTasks(ProviderContainer container) async {
+  final opening = startOpenFiles(container);
   // The scan keeps running; waiting for it would delay the files.
   unawaited(runLibraryStartupTasks(container));
-  await startOpenFiles(container);
+  await opening;
 }
 
 /// Flushes the listen progress and the session when the window closes. Only

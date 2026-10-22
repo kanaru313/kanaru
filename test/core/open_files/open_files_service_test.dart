@@ -170,6 +170,43 @@ void main() {
     expect(titles(), ['SECOND.MP3']);
   });
 
+  test(
+    'a request where nothing passes does not cancel one in flight',
+    () async {
+      container.dispose();
+      final hanging = _HangingReader();
+      build(tags: hanging, timeout: const Duration(seconds: 30));
+      final good = file('good.mp3');
+      final svc = container.read(openFilesServiceProvider);
+
+      final one = svc.open([good]);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(await svc.open(['${dir.path}/typo.mp3', 'http://x/a.mp3']), 0);
+      hanging.gate.complete();
+
+      expect(await one, 1);
+      expect(titles(), ['GOOD.MP3']);
+    },
+  );
+
+  test('a newer request wins while an older one still checks paths', () async {
+    final many = [for (var i = 0; i < 200; i++) file('m$i.mp3')];
+    final newest = file('newest.mp3');
+    final svc = container.read(openFilesServiceProvider);
+
+    final older = svc.open(many);
+    final newer = svc.open([newest]);
+
+    expect(await older, 0);
+    expect(await newer, 1);
+    expect(titles(), ['NEWEST.MP3']);
+    expect(
+      reader.batches.expand((b) => b),
+      isNot(contains(many.first)),
+      reason: 'the older request never reached the tag reader',
+    );
+  });
+
   test('a slow tag batch plays by file name and blocks later reads', () async {
     container.dispose();
     final hanging = _HangingReader();

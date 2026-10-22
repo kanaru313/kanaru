@@ -27,9 +27,14 @@ class OpenFilesService {
   final Ref _ref;
   final Duration tagTimeout;
 
-  /// Number of the latest request. A request that finds a newer one when it
-  /// resumes gives up, so only the newest reaches the player.
-  int _generation = 0;
+  /// Requests received so far; a request's number is its arrival order.
+  int _arrivals = 0;
+
+  /// Number of the newest request that has at least one playable path. Only
+  /// such a request replaces another: a request where nothing passes (a typo,
+  /// a text file) must not cancel one that is about to play. A request that
+  /// finds a newer valid one gives up, so only the newest reaches the player.
+  int _newestValid = 0;
 
   /// A tag call timed out and has not returned yet. The native pool may be
   /// stuck on it, so no new call is made until it returns.
@@ -38,10 +43,11 @@ class OpenFilesService {
   /// Replaces the queue with the audio files among [rawPaths] and plays the
   /// first, in the order given. Each entry is an absolute path or a `file:`
   /// URI (the runner makes command-line paths absolute); everything else is
-  /// dropped, see [localAudioPath]. Returns the number of tracks opened: 0 when nothing
-  /// passed or a newer request took over.
+  /// dropped, see [localAudioPath]. Returns the number of tracks opened: 0 when
+  /// nothing passed or a newer request took over. A request where nothing
+  /// passed leaves the queue and any earlier request alone.
   Future<int> open(List<String> rawPaths) async {
-    final generation = ++_generation;
+    final arrival = ++_arrivals;
     var raw = rawPaths;
     if (raw.length > maxOpenFiles) {
       _log.warning(
@@ -53,7 +59,7 @@ class OpenFilesService {
     final paths = <String>[];
     for (final entry in raw) {
       final path = await localAudioPath(entry);
-      if (generation != _generation) return 0;
+      if (_newestValid > arrival) return 0;
       if (path == null) {
         _log.info('Not a local audio file, skipped: $entry');
       } else {
@@ -61,13 +67,14 @@ class OpenFilesService {
       }
     }
     if (paths.isEmpty) return 0;
+    _newestValid = arrival;
 
     final tracks = <Track>[];
     for (var i = 0; i < paths.length; i += maxTagBatchSize) {
       final end = i + maxTagBatchSize;
       final batch = paths.sublist(i, end > paths.length ? paths.length : end);
       tracks.addAll(await _tracksOf(batch));
-      if (generation != _generation) return 0;
+      if (_newestValid != arrival) return 0;
     }
 
     await _ref.read(playerServiceProvider.notifier).openTracks(tracks);
