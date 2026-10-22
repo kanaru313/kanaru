@@ -7,6 +7,7 @@ class RootScanResult {
     this.added = 0,
     this.updated = 0,
     this.removed = 0,
+    this.filtered = 0,
     this.failedTags = 0,
     this.undecodableNames = 0,
     this.undecodableSampleDirs = const [],
@@ -28,6 +29,7 @@ class RootScanResult {
   }) : added = 0,
        updated = 0,
        removed = 0,
+       filtered = 0,
        failedTags = 0,
        undecodableNames = 0,
        undecodableSampleDirs = const [],
@@ -37,6 +39,9 @@ class RootScanResult {
   final int added;
   final int updated;
   final int removed;
+
+  /// Files and folders the scan rules left out of this root's walk.
+  final int filtered;
   final int failedTags;
 
   /// Audio files and folders of this root skipped for a name that is not

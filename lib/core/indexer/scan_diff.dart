@@ -24,7 +24,8 @@ class ScanDiff {
   final Set<String> updatedPaths;
 
   /// The walk found no audio file although the database has tracks of this
-  /// root (for example an empty mount point). Nothing is deleted.
+  /// root and no rule explains it (for example an empty mount point).
+  /// Nothing is deleted.
   final bool rootEmpty;
 }
 
@@ -57,7 +58,14 @@ ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
     }
   }
 
-  if (walk.files.isEmpty && existing.isNotEmpty) {
+  // A walk emptied by the user's own rules or by files still being written
+  // (`filteredOut`, `deferred`) is not a mount that lists nothing: the rules
+  // may delete everything. A mount point lists no folder at all, so both
+  // counts are 0 there.
+  if (walk.files.isEmpty &&
+      existing.isNotEmpty &&
+      walk.filteredOut == 0 &&
+      walk.deferred == 0) {
     return ScanDiff(rootEmpty: true);
   }
 

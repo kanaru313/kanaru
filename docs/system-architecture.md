@@ -154,15 +154,18 @@ flowchart TD
     CleanCovers --> Done(["IndexerFinished or IndexerFailed, then stale key rows"])
 
     Root -- "root" --> Walk["walkAudioFilesInIsolate, 60 s timeout"]
-    Walk --> Snap["trackSnapshot from DB"]
+    Walk --> Rules["applyWalkRules: .nomedia folders, minimum file size"]
+    Rules --> Snap["trackSnapshot from DB"]
     Snap --> Diff["diffScan: new, changed mtime or size, retryable error, stale cover version"]
-    Diff --> Batches["tag batches: ceil(total / 20), clamped 32 to 512"]
+    Diff --> Memo["drop files remembered as too short"]
+    Memo --> Batches["tag batches: ceil(total / 20), clamped 32 to 512"]
     Batches --> Read["Rust readBatch, 60 s timeout per batch"]
     Read --> Map["tracksFromTags"]
-    Map --> Upsert["upsertTracks in one transaction"]
+    Map --> Short["split off tracks under the minimum length"]
+    Short --> Upsert["upsertTracks in one transaction"]
     Upsert --> More{"more batches?"}
     More -- yes --> Batches
-    More -- no --> Gone["delete rows certainly gone, markRootScanned"]
+    More -- no --> Gone["delete rows certainly gone, now barred or too short, markRootScanned"]
     Gone --> Root
 
     Walk -. "timeout" .-> Stall["abandoned walk reused, one automatic rescan"]
@@ -174,6 +177,8 @@ Rules that shape the pipeline:
 | Rule | Where |
 |---|---|
 | Delete only when certainly gone. Unstattable, unreadable, empty (unmounted) or missing roots keep their rows. | `indexer/scan_diff.dart` |
+| Scan rules (Settings > Library) apply after the walk, on the main isolate, by the pure `applyWalkRules`; the walk and `rootWalkerProvider` know nothing of them. A folder below the root holding a `.nomedia` entry (file or link) is dropped with its subtree when `respectNomedia` is on; the root's own `.nomedia` is ignored. Files under `minFileSizeKb` are dropped. Everything dropped also leaves the unreadable, unstattable and empty lists, so tracks stored there are deleted by the diff. The walk result carries `filteredOut`, so a root emptied by the rules deletes its rows, while an empty mount (`filteredOut` 0) is still left alone. Changing a rule does not start a scan; it applies at the next one. | `indexer/scan_rules.dart`, `indexer/scan_diff.dart` |
+| `minDurationSeconds` needs the tags: a row read with a duration under the minimum is not stored (a missing duration or failed tags are kept), and its old row, if any, is deleted. Stored tracks under the minimum are deleted at the end of the root's scan (`shortTrackIds`), unchanged files included. `ShortTrackMemo` (one per session) stops an unchanged short file from being read again on every scan; the summary counts only rows written. | `indexer/short_track_memo.dart`, `database/scan_filter_queries.dart` |
 | Walk skips symlinked directories, dot-folders, `lost+found`, `@eaDir`, `$RECYCLE.BIN`, FIFOs, sockets and devices. Non-UTF-8 names are counted and skipped, rows kept. | `indexer/walk_audio_files.dart` |
 | Permanent tag errors are not retried until the file changes or `tagReaderVersion` changes. Transient I/O errors are retried every scan. | `indexer/tracks_from_tags.dart`, `rust/src/tag_reader.rs` |
 | Automatic rescans do not chain. | `indexer/library_indexer.dart` |

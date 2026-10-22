@@ -32,6 +32,10 @@ bool isSkippedFolder(String path) {
       name.toUpperCase() == r'$RECYCLE.BIN';
 }
 
+/// Name of the entry that marks a folder as "no media here".
+const nomediaName = '.nomedia';
+const _nomediaSuffix = '/$nomediaName';
+
 /// What [walkAudioFiles] found under one root.
 class WalkResult {
   const WalkResult({
@@ -43,9 +47,30 @@ class WalkResult {
     this.skippedFolderNames = const [],
     this.undecodableSampleDirs = const [],
     this.rootMissing = false,
+    this.dirs = const [],
+    this.nomediaDirs = const [],
+    this.filteredOut = 0,
+    this.deferred = 0,
   });
 
   final List<WalkedFile> files;
+
+  /// Every folder listed successfully, the root included.
+  final List<String> dirs;
+
+  /// Folders below the root that hold an entry named [nomediaName] (file or
+  /// link). The walk always collects them; the scan rules decide whether
+  /// they count.
+  final List<String> nomediaDirs;
+
+  /// Files and folders the scan rules left out of this result (set by
+  /// `applyWalkRules`, never by the walk). A rescan that finds no file
+  /// because of them is a deliberate filter, not an empty mount.
+  final int filteredOut;
+
+  /// Files left unread for now because they changed too recently, so their
+  /// stored rows stay (set by `applyWalkRules`).
+  final int deferred;
 
   /// Folders that could not be listed; what lies below them is unknown.
   final List<String> unreadableDirs;
@@ -75,6 +100,30 @@ class WalkResult {
   /// The root itself is gone or cannot be listed (unplugged drive, bad
   /// permissions).
   final bool rootMissing;
+
+  /// This result with the given parts replaced.
+  WalkResult copyWith({
+    List<WalkedFile>? files,
+    List<String>? unreadableDirs,
+    List<String>? unstattable,
+    List<String>? emptyDirs,
+    List<String>? dirs,
+    int? filteredOut,
+    int? deferred,
+  }) => WalkResult(
+    files: files ?? this.files,
+    unreadableDirs: unreadableDirs ?? this.unreadableDirs,
+    unstattable: unstattable ?? this.unstattable,
+    emptyDirs: emptyDirs ?? this.emptyDirs,
+    undecodableNames: undecodableNames,
+    skippedFolderNames: skippedFolderNames,
+    undecodableSampleDirs: undecodableSampleDirs,
+    rootMissing: rootMissing,
+    dirs: dirs ?? this.dirs,
+    nomediaDirs: nomediaDirs,
+    filteredOut: filteredOut ?? this.filteredOut,
+    deferred: deferred ?? this.deferred,
+  );
 }
 
 /// Every regular audio file under [root], recursively, with mtime and size.
@@ -92,6 +141,8 @@ WalkResult walkAudioFiles(String root) {
   final unreadable = <String>[];
   final unstattable = <String>[];
   final empty = <String>[];
+  final listed = <String>[];
+  final nomedia = <String>[];
   var undecodable = 0;
   final skippedNames = <String>{};
   final aliased = <String>{};
@@ -118,7 +169,9 @@ WalkResult walkAudioFiles(String root) {
       }
       continue;
     }
+    listed.add(dir);
     if (entries.isEmpty && dir != root) empty.add(dir);
+    var hasNomedia = false;
     for (final entry in entries) {
       if (entry is Directory) {
         if (isSkippedFolder(entry.path)) {
@@ -129,6 +182,10 @@ WalkResult walkAudioFiles(String root) {
           pending.add(entry.path);
         }
         continue;
+      }
+      if (!hasNomedia && entry.path.endsWith(_nomediaSuffix)) {
+        hasNomedia = true;
+        if (dir != root) nomedia.add(dir);
       }
       if (!isAudioFile(entry.path)) continue;
       final lossy = entry.path.contains('\uFFFD');
@@ -165,6 +222,8 @@ WalkResult walkAudioFiles(String root) {
     skippedFolderNames: skippedNames.toList(),
     undecodableNames: undecodable,
     undecodableSampleDirs: undecodableDirs,
+    dirs: listed,
+    nomediaDirs: nomedia,
   );
 }
 

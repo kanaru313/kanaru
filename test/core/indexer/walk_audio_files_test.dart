@@ -229,4 +229,49 @@ void main() {
       expect(inner.files, hasLength(1));
     });
   });
+
+  group('folders and .nomedia', () {
+    test(
+      'lists every folder walked and the ones below the root with .nomedia',
+      () {
+        touch('a.mp3');
+        touch('quiet/.nomedia', '');
+        touch('quiet/deep/b.mp3');
+        touch('loud/c.mp3');
+
+        final result = walkAudioFiles(tmp.path);
+
+        expect(result.dirs.toSet(), {
+          tmp.path,
+          '${tmp.path}/quiet',
+          '${tmp.path}/quiet/deep',
+          '${tmp.path}/loud',
+        });
+        expect(result.nomediaDirs, ['${tmp.path}/quiet']);
+        expect(
+          names(result),
+          hasLength(3),
+          reason: 'the walk itself drops nothing',
+        );
+      },
+    );
+
+    test('a .nomedia link counts, the root own .nomedia does not', () {
+      touch('.nomedia', '');
+      touch('real');
+      Link('${tmp.path}/linked/.nomedia')
+          .createSync('${tmp.path}/real', recursive: true);
+
+      final result = walkAudioFiles(tmp.path);
+
+      expect(result.nomediaDirs, ['${tmp.path}/linked']);
+    });
+
+    test('a folder only named like .nomedia does not count', () {
+      touch('x/not.nomedia', '');
+      touch('y/.nomedia.bak', '');
+
+      expect(walkAudioFiles(tmp.path).nomediaDirs, isEmpty);
+    });
+  });
 }

@@ -142,7 +142,7 @@ Future<void> _checkLayout(
       find.byType(SettingChoice<TitleBarPreference>),
       l10n.settingsTitleBarHint,
     ),
-    // Rows of options that are not wired yet.
+    // Rows of scan options that work, then of options not wired yet.
     (
       l10n.settingsRespectNomedia,
       inRow(l10n.settingsRespectNomedia, find.byType(Switch)),
@@ -188,7 +188,8 @@ Future<void> _checkLayout(
     hasLength(20),
     reason:
         'seven buttons, four choices and nine dropdowns: the output device, '
-        'ReplayGain mode and preamp are wired, eight options are not yet',
+        'ReplayGain mode, preamp and two scan filters are wired, six options '
+        'are not yet',
   );
   for (final control in controls) {
     expect(

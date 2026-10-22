@@ -8,12 +8,16 @@ import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
+import '../database/scan_filter_queries.dart';
+import '../settings/settings_provider.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
 import 'root_scan_result.dart';
 import 'scan_diff.dart';
+import 'scan_rules.dart';
+import 'short_track_memo.dart';
 import 'tag_reader.dart' show TagReader, TrackTags;
 import 'tracks_from_tags.dart';
 import 'walk_audio_files.dart';
@@ -89,6 +93,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// root path. The next scan awaits the same walk instead of starting
   /// another isolate; the entry goes once a scan has consumed it.
   final Map<String, Future<WalkResult>> _abandonedWalks = {};
+
+  /// Files found shorter than the minimum length, not read again unchanged.
+  final _shortTracks = ShortTrackMemo();
 
   @override
   IndexerState build() {
@@ -170,7 +177,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       ref.read(coverCacheDirectoryProvider),
     );
     final scanStartedAt = DateTime.now();
-    var added = 0, updated = 0, removed = 0, failedTags = 0;
+    final rules = ScanRules.from(ref.read(settingsProvider).libraryScan);
+    var added = 0, updated = 0, removed = 0, failedTags = 0, filtered = 0;
     int? coversRepaired;
     // Roots scanned to the end, without error: their covers are made next.
     final okRootIds = <int>[];
@@ -200,7 +208,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         if (!await db.rootExists(root.id)) continue;
         RootScanResult result;
         try {
-          result = await _scanRoot(db, reader, root);
+          result = await _scanRoot(db, reader, root, rules);
         } catch (error, stackTrace) {
           // A removed root fails on its deleted id (foreign key): not an error.
           if (!await _rootExistsOrUnknown(db, root.id)) {
@@ -221,6 +229,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         added += result.added;
         updated += result.updated;
         removed += result.removed;
+        filtered += result.filtered;
         failedTags += result.failedTags;
         undecodableNames += result.undecodableNames;
         skippedFolderNames.addAll(result.skippedFolderNames);
@@ -262,7 +271,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       }
       _log.info(
         'Scan finished: $added added, $updated updated, $removed removed, '
-        '$failedTags without tags, ${skipped.length} roots skipped; '
+        '$failedTags without tags, $filtered left out by scan rules, '
+        '${skipped.length} roots skipped; '
         'covers ${coversRepaired ?? '-'} repaired; '
         'walk ${walkTime.inMilliseconds} ms, '
         'tags ${tagTime.inMilliseconds} ms, '
@@ -357,6 +367,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     LibraryDatabase db,
     TagReader reader,
     LibraryRoot root,
+    ScanRules rules,
   ) async {
     final timeouts = ref.read(scanTimeoutsProvider);
     final walkFiles = ref.read(rootWalkerProvider);
@@ -377,7 +388,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     _publish(
       IndexerScanning(phase: ScanPhase.discovering, rootPath: root.path),
     );
-    final WalkResult walk;
+    WalkResult walk;
     final abandoned = _abandonedWalks[root.path];
     final running = abandoned ?? walkFiles(root.path);
     var keepWalk = false;
@@ -400,6 +411,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _awaitingWalkOf = null;
       if (!keepWalk) _abandonedWalks.remove(root.path);
     }
+    walk = applyWalkRules(walk, root.path, rules.walk);
     undecodable = walk.undecodableNames;
     undecodableDirs = walk.undecodableSampleDirs;
     skippedFolders = walk.skippedFolderNames;
@@ -415,7 +427,20 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _log.warning('Root has no audio files, left unchanged: ${root.path}');
       return stopped(SkipReason.empty);
     }
-    final total = diff.toRead.length;
+    // Tracks stored under a rule that now bars them go with the diff's own
+    // deletions; so do old rows of files found too short to keep.
+    final extraDeletes = <int>{};
+    final idByPath = {for (final track in snapshot) track.path: track.id};
+    final minMs = rules.minDurationMs;
+    final toRead = <WalkedFile>[];
+    for (final file in diff.toRead) {
+      if (!_shortTracks.skips(file, minMs)) {
+        toRead.add(file);
+      } else if (idByPath[file.path] case final id?) {
+        extraDeletes.add(id);
+      }
+    }
+    final total = toRead.length;
     if (total > 0 && _readerStuck) {
       _log.warning('Tag reader is stuck, root left unchanged: ${root.path}');
       // A walk that already outlasted its timeout is too costly to repeat:
@@ -436,7 +461,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     final batchSize = tagBatchSizeFor(total);
     for (var i = 0; i < total; i += batchSize) {
       final end = i + batchSize < total ? i + batchSize : total;
-      final batch = diff.toRead.sublist(i, end);
+      final batch = toRead.sublist(i, end);
       final List<TrackTags> tags;
       final pending = reader.readBatch([for (final f in batch) f.path]);
       tagTime.start();
@@ -474,19 +499,28 @@ class LibraryIndexer extends Notifier<IndexerState> {
       } finally {
         tagTime.stop();
       }
-      final rows = tracksFromTags(
+      final read = tracksFromTags(
         root.id,
         batch,
         tags,
         DateTime.now().millisecondsSinceEpoch,
       );
+      final (kept: rows, :shortPaths) = _shortTracks.splitShort(
+        batch,
+        read,
+        minMs,
+      );
+      for (final path in shortPaths) {
+        if (idByPath[path] case final id?) extraDeletes.add(id);
+      }
       // Counted from the rows: a path the reader returned nothing for is
       // stored with an error too.
       failedTags += rows.where((r) => r.scanError.value != null).length;
       dbTime.start();
       await db.upsertTracks(rows);
       dbTime.stop();
-      for (final file in batch) {
+      final storedPaths = {for (final row in rows) row.path.value};
+      for (final file in batch.where((f) => storedPaths.contains(f.path))) {
         if (diff.addedPaths.contains(file.path)) {
           added++;
         } else if (diff.updatedPaths.contains(file.path)) {
@@ -496,13 +530,19 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _publish(reading(end));
     }
     dbTime.start();
-    await db.deleteTracksById(diff.toDelete);
+    final deletes = {
+      ...diff.toDelete,
+      ...extraDeletes,
+      ...await db.shortTrackIds(root.id, minMs),
+    };
+    await db.deleteTracksById(deletes);
     await db.markRootScanned(root.id, DateTime.now().millisecondsSinceEpoch);
     dbTime.stop();
     return RootScanResult(
       added: added,
       updated: updated,
-      removed: diff.toDelete.length,
+      removed: deletes.length,
+      filtered: walk.filteredOut,
       failedTags: failedTags,
       undecodableNames: undecodable,
       undecodableSampleDirs: undecodableDirs,

@@ -87,7 +87,7 @@ void main() {
     await _openSettings(tester, const AppSettings());
 
     final rows = _comingSoonRows().toList();
-    expect(rows, hasLength(21));
+    expect(rows, hasLength(18));
     expect(find.text('Coming soon'), findsNWidgets(rows.length));
     for (final row in rows) {
       final title = row.widget is SettingRow
@@ -136,12 +136,20 @@ void main() {
   ) async {
     await _openSettings(tester, const AppSettings());
 
-    final menus = find.byType(DropdownMenu<int>);
-    expect(menus, findsWidgets);
-    for (final menu in menus.evaluate()) {
+    final menus = [
+      for (final row in _comingSoonRows())
+        ...find
+            .descendant(
+              of: find.byElementPredicate((e) => e == row),
+              matching: find.byType(DropdownMenu<int>),
+            )
+            .evaluate(),
+    ];
+    expect(menus, isNotEmpty);
+    for (final menu in menus) {
       expect((menu.widget as DropdownMenu<int>).enabled, isFalse);
     }
-    final field = _inRow('Minimum file size', find.byType(TextField));
+    final field = _inRow('Crossfade', find.byType(TextField));
     expect(tester.widget<TextField>(field).enabled, isFalse);
 
     final semantics = tester.ensureSemantics();

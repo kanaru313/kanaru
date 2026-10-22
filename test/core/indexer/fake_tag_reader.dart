@@ -35,6 +35,9 @@ class FakeTagReader implements TagReader {
 
   String? coverDirectory;
 
+  /// File name → duration in ms, for files that should not read as 1000 ms.
+  final Map<String, int> durationByName = {};
+
   /// File name → cover name (see [fakeCoverKey]).
   final Map<String, String> coverByName = {};
   final Set<String> failingCovers = {};
@@ -89,7 +92,9 @@ class FakeTagReader implements TagReader {
     error: error,
     title: title,
     artist: error == null ? 'Artist' : null,
-    durationMs: error == null ? 1000 : null,
+    durationMs: error == null
+        ? durationByName[path.split('/').last] ?? 1000
+        : null,
   );
 
   @override
