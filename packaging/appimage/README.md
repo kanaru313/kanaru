@@ -15,6 +15,16 @@ Needs Docker with BuildKit (23+) and network access.
 
 GTK, GLib, libstdc++, libpulse and libasound come from the host.
 
+## Host requirements
+
+Verified in Debian 12, Ubuntu 24.04, Fedora and Arch containers (Xvfb, no GPU) and on NixOS.
+
+- glibc 2.36 or newer (highest symbol used: `GLIBC_2.35`); libstdc++ with `GLIBCXX_3.4.29` (GCC 11+).
+- GTK 3 and Mesa with `libEGL` and `libGLESv2.so.2` (glvnd). Flutter's GTK engine dies at start without
+  `libGLESv2.so.2` (`libgles2` on Debian/Ubuntu, `mesa-libGLES` on Fedora). Every desktop has it; minimal containers do not.
+- libpulse and libasound. Without them the app still starts, logs `Audio engine failed to initialise`
+  and runs with no playback.
+
 ## Pins
 
 Every download is checked against a sha256 in `Dockerfile` (`ARG`s): base image `debian:bookworm-20261020`
