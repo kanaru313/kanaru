@@ -11,6 +11,11 @@ import 'songs/songs_empty_view.dart';
 import '../../shared/widgets/library_keys_updating.dart';
 import '../../shared/widgets/library_loading.dart';
 
+/// Space a scrolling library list leaves below its last row, so it does not
+/// sit flush against the player bar.
+const libraryBottomInset = 24.0;
+const libraryListBottomPadding = EdgeInsets.only(bottom: libraryBottomInset);
+
 /// The states shared by the Albums and Artists screens: library unavailable,
 /// no music folder yet (only a hint: adding folders happens in Songs),
 /// keys still being made, loading, nothing found, or the [builder] content. The screen shows its

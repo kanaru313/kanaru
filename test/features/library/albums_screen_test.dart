@@ -39,10 +39,9 @@ void main() {
       const SortChoice(AlbumSortField.year),
     );
 
-    await tester.tap(find.widgetWithText(TextButton, 'Ascending'));
+    await tester.tap(find.byTooltip('Order: Ascending'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(MenuItemButton, 'Descending'));
-    await tester.pumpAndSettle();
+    expect(find.byTooltip('Order: Descending'), findsOneWidget);
     expect(left('Alpha'), lessThan(left('Beta')));
     expect(h.container.read(settingsProvider).albumSort.descending, isTrue);
   });
@@ -58,7 +57,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the sort menus mark the current choice and refocus', (
+  testWidgets('the sort menu marks the current choice and refocuses', (
     tester,
   ) async {
     final h = LibraryHarness();
@@ -86,21 +85,16 @@ void main() {
         .widget<TextButton>(find.widgetWithText(TextButton, 'Year'))
         .focusNode!;
     expect(focus.hasFocus, isTrue, reason: 'focus returns to the button');
-
-    await tester.tap(find.widgetWithText(TextButton, 'Ascending'));
-    await tester.pumpAndSettle();
-    final ascending = radio<bool>('Ascending');
-    expect(ascending.groupValue, ascending.value);
-    final descending = radio<bool>('Descending');
-    expect(descending.groupValue, isNot(descending.value));
   });
 
-  testWidgets('the title row shows the sort labels when wide', (tester) async {
+  testWidgets('the title row shows the sort field and arrow, no labels', (
+    tester,
+  ) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/albums');
 
-    expect(find.text('Sort by:'), findsOneWidget);
-    expect(find.text('Order:'), findsOneWidget);
+    expect(find.text('Sort by:'), findsNothing);
+    expect(find.text('Order:'), findsNothing);
     final titleY = tester.getCenter(find.text('Albums').last).dy;
     expect(
       tester.getCenter(find.widgetWithText(TextButton, 'Title')).dy,
@@ -109,7 +103,7 @@ void main() {
     );
   });
 
-  testWidgets('a narrow title row drops the labels and fits', (tester) async {
+  testWidgets('a narrow title row fits the sort controls', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/albums');
     // The smallest window.
@@ -119,7 +113,7 @@ void main() {
     expect(find.text('Sort by:'), findsNothing);
     expect(find.text('Order:'), findsNothing);
     expect(find.widgetWithText(TextButton, 'Title'), findsOneWidget);
-    expect(find.widgetWithText(TextButton, 'Ascending'), findsOneWidget);
+    expect(find.byTooltip('Order: Ascending'), findsOneWidget);
     expect(find.byTooltip('Grid'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
@@ -173,11 +167,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add a music folder in Songs.'), findsOneWidget);
     expect(find.byType(FilledButton), findsNothing);
-    expect(
-      find.text('Sort by:'),
-      findsNothing,
-      reason: 'no sort without roots',
-    );
+    expect(find.byTooltip('Order: Ascending'), findsNothing, reason: 'no sort');
+    expect(find.widgetWithText(TextButton, 'Title'), findsNothing);
   });
 
   testWidgets('no albums yet', (tester) async {

@@ -530,6 +530,60 @@ abstract class AppLocalizations {
   /// **'Rescan'**
   String get libraryRescan;
 
+  /// No description provided for @libraryShuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get libraryShuffle;
+
+  /// No description provided for @libraryShowArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Show artist'**
+  String get libraryShowArtist;
+
+  /// No description provided for @libraryShowAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Show album'**
+  String get libraryShowAlbum;
+
+  /// No description provided for @libraryShowInFileManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in file manager'**
+  String get libraryShowInFileManager;
+
+  /// No description provided for @libraryFileManagerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the file manager'**
+  String get libraryFileManagerFailed;
+
+  /// No description provided for @libraryTrackGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This song is no longer in the library'**
+  String get libraryTrackGone;
+
+  /// No description provided for @libraryNoAlbumToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'This song has no album'**
+  String get libraryNoAlbumToShow;
+
+  /// No description provided for @libraryNoArtistToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'This song has no artist'**
+  String get libraryNoArtistToShow;
+
+  /// No description provided for @libraryChooseArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an artist'**
+  String get libraryChooseArtist;
+
   /// No description provided for @libraryKeysUpdatingTitle.
   ///
   /// In en, this message translates to:
@@ -625,6 +679,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{path} was not found'**
   String libraryScanRootMissing(String path);
+
+  /// No description provided for @libraryMissingRoots.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Music folder not found: {path}} other{{count} music folders not found}}'**
+  String libraryMissingRoots(int count, String path);
+
+  /// No description provided for @libraryMissingRootsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get libraryMissingRootsAction;
 
   /// No description provided for @libraryScanRootEmpty.
   ///
@@ -956,6 +1022,126 @@ abstract class AppLocalizations {
   /// **'Their songs may have been removed or retagged.'**
   String get artistsNotFoundMessage;
 
+  /// No description provided for @genresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get genresTitle;
+
+  /// No description provided for @genresNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get genresNoRootsMessage;
+
+  /// No description provided for @genresEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No genres yet'**
+  String get genresEmptyTitle;
+
+  /// No description provided for @genresEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs with a genre tag show up here by genre.'**
+  String get genresEmptyMessage;
+
+  /// No description provided for @genresAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get genresAlbums;
+
+  /// No description provided for @genresSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get genresSongs;
+
+  /// No description provided for @genresNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre not found'**
+  String get genresNotFound;
+
+  /// No description provided for @genresNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Its songs may have been removed or retagged.'**
+  String get genresNotFoundMessage;
+
+  /// No description provided for @foldersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders yet'**
+  String get foldersEmptyTitle;
+
+  /// No description provided for @foldersEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders with songs show up here.'**
+  String get foldersEmptyMessage;
+
+  /// No description provided for @foldersNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get foldersNoRootsMessage;
+
+  /// No description provided for @foldersNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder not found'**
+  String get foldersNotFound;
+
+  /// No description provided for @foldersNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been removed or no longer holds songs.'**
+  String get foldersNotFoundMessage;
+
+  /// No description provided for @foldersTreeView.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder tree'**
+  String get foldersTreeView;
+
+  /// No description provided for @foldersFlatView.
+  ///
+  /// In en, this message translates to:
+  /// **'All folders'**
+  String get foldersFlatView;
+
+  /// No description provided for @foldersSubfolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get foldersSubfolders;
+
+  /// No description provided for @foldersSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get foldersSongs;
+
+  /// No description provided for @foldersCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{1 song} other{{songs} songs}}, {folders, plural, =0{no subfolders} =1{1 subfolder} other{{folders} subfolders}}'**
+  String foldersCounts(int songs, int folders);
+
+  /// No description provided for @foldersCreatePlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create playlist'**
+  String get foldersCreatePlaylist;
+
+  /// No description provided for @foldersEmptyFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'No songs in this folder'**
+  String get foldersEmptyFolder;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:
@@ -1139,19 +1325,19 @@ abstract class AppLocalizations {
   /// No description provided for @nowPlayingTabQueue.
   ///
   /// In en, this message translates to:
-  /// **'Queue'**
+  /// **'Now playing'**
   String get nowPlayingTabQueue;
 
   /// No description provided for @nowPlayingTabTrack.
   ///
   /// In en, this message translates to:
-  /// **'Now Playing'**
+  /// **'Song'**
   String get nowPlayingTabTrack;
 
   /// No description provided for @nowPlayingBackToTrack.
   ///
   /// In en, this message translates to:
-  /// **'Back to Now Playing'**
+  /// **'Back to the song'**
   String get nowPlayingBackToTrack;
 
   /// No description provided for @nowPlayingLyricsOnly.
@@ -1163,13 +1349,13 @@ abstract class AppLocalizations {
   /// No description provided for @queueOpen.
   ///
   /// In en, this message translates to:
-  /// **'Open queue'**
+  /// **'Show now playing list'**
   String get queueOpen;
 
   /// No description provided for @queueTitle.
   ///
   /// In en, this message translates to:
-  /// **'Queue'**
+  /// **'Now playing'**
   String get queueTitle;
 
   /// No description provided for @queueTrackCount.
@@ -1199,13 +1385,13 @@ abstract class AppLocalizations {
   /// No description provided for @queueShowCurrent.
   ///
   /// In en, this message translates to:
-  /// **'Now playing'**
+  /// **'Jump to current song'**
   String get queueShowCurrent;
 
   /// No description provided for @queueClose.
   ///
   /// In en, this message translates to:
-  /// **'Close queue'**
+  /// **'Close now playing list'**
   String get queueClose;
 
   /// No description provided for @settingsLibrary.

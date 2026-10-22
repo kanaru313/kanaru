@@ -12,7 +12,6 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/enqueue_tracks.dart';
-import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'album_grid_tile.dart';
@@ -80,42 +79,40 @@ class AlbumsScreen extends ConsumerWidget {
             ),
           ],
         ],
-        body: LibraryRescanStack(
-          child: LibraryBrowseBody<AlbumSummary>(
-            hasError: ref.watch(albumsProvider.select((s) => s.hasError)),
-            items: ref.watch(sortedAlbumsProvider),
-            icon: AppIcons.albumOutlined,
-            noRootsMessage: l10n.albumsNoRootsMessage,
-            emptyTitle: l10n.albumsEmptyTitle,
-            emptyMessage: l10n.albumsEmptyMessage,
-            builder: (albums) => switch (view) {
-              AlbumsView.grid => AlbumGrid(
-                albums: albums,
-                onTap: (album) => open(album.key),
-                onQueueAction: (album, action) =>
-                    enqueueAlbum(ref, context, action, album.key, album.title),
+        body: LibraryBrowseBody<AlbumSummary>(
+          hasError: ref.watch(albumsProvider.select((s) => s.hasError)),
+          items: ref.watch(sortedAlbumsProvider),
+          icon: AppIcons.albumOutlined,
+          noRootsMessage: l10n.albumsNoRootsMessage,
+          emptyTitle: l10n.albumsEmptyTitle,
+          emptyMessage: l10n.albumsEmptyMessage,
+          builder: (albums) => switch (view) {
+            AlbumsView.grid => AlbumGrid(
+              albums: albums,
+              onTap: (album) => open(album.key),
+              onQueueAction: (album, action) =>
+                  enqueueAlbum(ref, context, action, album.key, album.title),
+            ),
+            AlbumsView.list => ListView.builder(
+              padding: libraryListBottomPadding,
+              prototypeItem: AlbumListTile(
+                album: _prototypeAlbum,
+                onTap: () {},
               ),
-              AlbumsView.list => ListView.builder(
-                padding: const EdgeInsets.only(bottom: libraryRescanClearance),
-                prototypeItem: AlbumListTile(
-                  album: _prototypeAlbum,
-                  onTap: () {},
-                ),
-                itemCount: albums.length,
-                itemBuilder: (context, i) => AlbumListTile(
-                  album: albums[i],
-                  onTap: () => open(albums[i].key),
-                  onQueueAction: (action) => enqueueAlbum(
-                    ref,
-                    context,
-                    action,
-                    albums[i].key,
-                    albums[i].title,
-                  ),
+              itemCount: albums.length,
+              itemBuilder: (context, i) => AlbumListTile(
+                album: albums[i],
+                onTap: () => open(albums[i].key),
+                onQueueAction: (action) => enqueueAlbum(
+                  ref,
+                  context,
+                  action,
+                  albums[i].key,
+                  albums[i].title,
                 ),
               ),
-            },
-          ),
+            ),
+          },
         ),
       ),
     );

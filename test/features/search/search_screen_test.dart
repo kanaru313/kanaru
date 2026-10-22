@@ -157,7 +157,11 @@ void main() {
 
     // Results found during a scan show as usual.
     goTo(tester, h, '/search?q=son+tung');
-    await tester.pumpAndSettle();
+    // A scan without progress shows the top bar's rescan ring spinning,
+    // so the frames never settle: pump a bounded time instead.
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(find.text('Lạc Trôi'), findsOneWidget);
 
     indexer.emit(IndexerFinished(const ScanSummary()));

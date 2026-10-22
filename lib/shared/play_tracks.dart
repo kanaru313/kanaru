@@ -38,3 +38,8 @@ Track trackFromBrowse(BrowseTrack track, {String? artPath}) => trackFromItem(
 void playTracks(WidgetRef ref, List<Track> tracks, int start) => unawaited(
   ref.read(playerServiceProvider.notifier).openTracks(tracks, start: start),
 );
+
+/// Replaces the queue with [tracks], turns shuffle on and plays from a
+/// random one.
+void shuffleTracks(WidgetRef ref, List<Track> tracks) =>
+    unawaited(ref.read(playerServiceProvider.notifier).openShuffled(tracks));

@@ -2,13 +2,15 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
+import '../library_browse_body.dart';
 import '../../../shared/widgets/album_artwork.dart';
-import '../widgets/library_rescan_button.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'album_tile_data.dart';
 
-const _padding = 8.0;
-const _gap = 8.0;
+/// Padding around the content of a grid tile and the gap between the picture
+/// and the text; shared by the round tiles, whose height is derived from here.
+const gridTilePadding = 8.0;
+const gridTileGap = 8.0;
 
 /// One album in a grid: square artwork, title, "artist · year".
 class AlbumGridTile extends StatelessWidget {
@@ -36,7 +38,7 @@ class AlbumGridTile extends StatelessWidget {
     }
 
     return width +
-        _gap +
+        gridTileGap +
         line(theme.titleSmall) +
         line(theme.bodySmall) +
         // Rounding slack so a fractional line height never clips.
@@ -56,7 +58,7 @@ class AlbumGridTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.all(_padding),
+        padding: const EdgeInsets.all(gridTilePadding),
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +68,7 @@ class AlbumGridTile extends StatelessWidget {
                 coverKey: data.coverKey,
                 size: constraints.maxWidth,
               ),
-              const SizedBox(height: _gap),
+              const SizedBox(height: gridTileGap),
               Text(
                 data.title,
                 maxLines: 1,
@@ -95,18 +97,28 @@ const albumGridPadding = 24.0;
 
 const _maxTileWidth = 200.0;
 
-/// Columns of tiles at most 200 px wide filling [width], rows sized to fit
-/// the artwork and two lines of text.
-SliverGridDelegate albumGridDelegate(BuildContext context, double width) {
+/// Columns of tiles at most 200 px wide filling [width]; [tileHeight] gives
+/// the height of a tile from the width of its content (the tile minus its
+/// padding), so rows fit the artwork and the text at the current text scale.
+SliverGridDelegate libraryGridDelegate(
+  BuildContext context,
+  double width, {
+  required double Function(BuildContext context, double contentWidth)
+  tileHeight,
+}) {
   final columns = (width / _maxTileWidth).ceil().clamp(1, 1 << 20);
   final tileWidth = width / columns;
   return SliverGridDelegateWithFixedCrossAxisCount(
     crossAxisCount: columns,
     mainAxisExtent:
-        AlbumGridTile.heightFor(context, tileWidth - _padding * 2) +
-        _padding * 2,
+        tileHeight(context, tileWidth - gridTilePadding * 2) +
+        gridTilePadding * 2,
   );
 }
+
+/// [libraryGridDelegate] for album tiles: artwork and two lines of text.
+SliverGridDelegate albumGridDelegate(BuildContext context, double width) =>
+    libraryGridDelegate(context, width, tileHeight: AlbumGridTile.heightFor);
 
 /// [albums] as a scrolling grid, leaving room for the rescan button below.
 /// Tile data is made per visible tile, not for the whole list.
@@ -132,7 +144,7 @@ class AlbumGrid extends StatelessWidget {
           albumGridPadding,
           0,
           albumGridPadding,
-          libraryRescanClearance,
+          libraryBottomInset,
         ),
         gridDelegate: albumGridDelegate(
           context,

@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
-import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../features/library/browse_test_data.dart';
@@ -20,7 +19,10 @@ void main() {
   Offset menuCorner(WidgetTester tester) => tester.getTopLeft(
     find.ancestor(
       of: find.text('Play next'),
-      matching: find.byType(PopupMenuItem<QueueAction>, skipOffstage: false),
+      matching: find.byWidgetPredicate(
+        (w) => w is PopupMenuItem,
+        skipOffstage: false,
+      ),
     ),
   );
 

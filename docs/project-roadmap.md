@@ -41,7 +41,7 @@ PRs merged to `main`, 208 commits from 2026-10-18 to 2026-10-21. No tags or rele
 | Item | Status | Features | Notes |
 |---|---|---|---|
 | Folder scanning, tag reading, embedded and folder artwork | Done | IDX-02, IDX-03, IDX-10, META-01, META-03, META-04 | PRs #7, #15, #18. Open in the same area: file watching (IDX-04), error list (IDX-07), `.nomedia` and duration filters (IDX-05 partial). |
-| Library database and browsing | Partial | LIB-01, LIB-02, LIB-03, LIB-07 | Albums, artists and songs shipped (PRs #10, #13). Genres (LIB-04) and folders (LIB-06) are empty placeholders. Sort keys: songs, albums and artists. Play count not in sort. |
+| Library database and browsing | Partial | LIB-01, LIB-02, LIB-03, LIB-04, LIB-06, LIB-07, LIB-19 | Albums, artists and songs shipped (PRs #10, #13); genres (LIB-04) and folders (LIB-06, LIB-19) shipped with the library browse lane (folders: tree or flat list, recursive counts, whole-subtree actions; hidden folders and merging single-child folders still open). Sort keys: songs, albums and artists. Play count not in sort. |
 | Now Playing, mini player, queue, shuffle, repeat | Partial | NP-01, NP-02, QUEUE-02 to QUEUE-05, PLAY-12 | Player bar, Now Playing overlay, queue sheet and session restore shipped (PRs #2, #9, #14). Open: hero transition (NP-03), queue history (QUEUE-07), play-after-current-track (QUEUE-10), playlist from queue (QUEUE-06). |
 | Full-text search | Done | SEARCH-01 to SEARCH-03 | Songs, albums and artists, accent-insensitive, live from the top bar. Schema v4 with an FTS5 index. Limits are listed in features.md, section 6. Typo tolerance is SEARCH-04 (P2). |
 | Playlists (incl. M3U) | Partial | PL-01 to PL-05 | PL-01 and PL-02 shipped (feat/playlists): create, rename, delete, cover collage, add from every queue menu and from Now Playing, remove, drag to reorder. Open: favorites (PL-03), M3U import and export (PL-04, PL-05). |
@@ -63,7 +63,7 @@ Ordered by what blocks a first usable release. IDs are from [features.md](./feat
 | 1 | Playlists: create, rename, delete, add, reorder | PL-01, PL-02 | Done (feat/playlists) on the v5 tables. Open: QUEUE-06 (save the queue as a playlist) reuses `createPlaylist(paths:)`. |
 | 2 | Listen recorder (no UI yet) | STAT-01, STAT-10 | Done (PR #31). P0. History cannot be backfilled, so recording starts before the history UI. Last.fm rule (> 30 s, listened ≥ min(50 %, 4 min)); append-only `plays` rows in the library DB. |
 | 3 | Root removal and folder edits in Settings | IDX-01 (remainder) | Done (feat/library-folders). Add, change and remove in Settings → Library; onboarding only on first run. |
-| 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. |
+| 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. A snackbar with a Settings action warns once per launch about missing music folders, whether or not the rescan is on. |
 | 5 | AppImage package | PKG-01 | Done (PR #32). P0. libmpv is bundled by the AppImage recipe. |
 | 6 | CI for `flutter analyze`, `flutter test`, `cargo test --locked` | Phase 0 CI item | Blocks trustworthy releases. Needs a workflow file. |
 | 7 | ReplayGain, folder watching | PLAY-07, IDX-04 | P1, larger changes. ReplayGain (PLAY-07): done (feat/audio-replaygain-output). |

@@ -21,10 +21,42 @@ void main() {
     }
   });
 
+  test('genre keys round-trip any text', () {
+    for (final name in odd) {
+      expect(decodeGenreRouteKey(encodeGenreRouteKey(name)), name);
+    }
+    expect(decodeGenreRouteKey('!!'), isNull);
+    expect(
+      decodeGenreRouteKey(encodeAlbumRouteKey(const AlbumKey('a', 'b'))),
+      isNull,
+    );
+  });
+
+  test('folder keys round-trip any path', () {
+    for (final path in [...odd, '/m/😀 dir/a b', '/日本/Ünï']) {
+      expect(decodeFolderRouteKey(encodeFolderRouteKey(path)), path);
+    }
+    expect(decodeFolderRouteKey('!!'), isNull);
+    expect(
+      decodeFolderRouteKey(encodeAlbumRouteKey(const AlbumKey('a', 'b'))),
+      isNull,
+    );
+  });
+
+  test('the longest Linux path still opens', () {
+    final path = '/${'😀' * 1000}';
+    expect(path.codeUnits.length, lessThan(4096));
+    final key = encodeFolderRouteKey(path);
+    expect(key.length, lessThanOrEqualTo(8192));
+    expect(decodeFolderRouteKey(key), path);
+  });
+
   test('keys are URL-safe and never empty', () {
     for (final text in odd) {
       for (final key in [
         encodeArtistRouteKey(text),
+        encodeGenreRouteKey(text),
+        encodeFolderRouteKey(text),
         encodeAlbumRouteKey(AlbumKey(text, text)),
       ]) {
         expect(key, isNotEmpty);
@@ -75,6 +107,10 @@ void main() {
   test('locations use the shell paths', () {
     expect(albumsPath, AppDestination.albums.path);
     expect(artistsPath, AppDestination.artists.path);
+    expect(genresPath, AppDestination.genres.path);
+    expect(foldersPath, AppDestination.folders.path);
+    expect(folderLocation('/m/a'), '/folders/${encodeFolderRouteKey('/m/a')}');
+    expect(genreLocation('rock'), '/genres/${encodeGenreRouteKey('rock')}');
     const key = AlbumKey('a', 'b');
     expect(albumLocation(key), '/albums/${encodeAlbumRouteKey(key)}');
     expect(

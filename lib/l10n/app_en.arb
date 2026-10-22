@@ -114,6 +114,15 @@
   "libraryNoTracksTitle": "No songs found",
   "libraryNoTracksMessage": "Add music to your folders, then rescan.",
   "libraryRescan": "Rescan",
+  "libraryShuffle": "Shuffle",
+  "libraryShowArtist": "Show artist",
+  "libraryShowAlbum": "Show album",
+  "libraryShowInFileManager": "Show in file manager",
+  "libraryFileManagerFailed": "Couldn't open the file manager",
+  "libraryTrackGone": "This song is no longer in the library",
+  "libraryNoAlbumToShow": "This song has no album",
+  "libraryNoArtistToShow": "This song has no artist",
+  "libraryChooseArtist": "Choose an artist",
   "libraryKeysUpdatingTitle": "Updating library…",
   "libraryKeysUpdatingMessage": "Sorting your music. Playback keeps working.",
   "libraryKeysUpdatingProgress": "{done} / {total}",
@@ -178,6 +187,14 @@
       "path": { "type": "String" }
     }
   },
+  "libraryMissingRoots": "{count, plural, =1{Music folder not found: {path}} other{{count} music folders not found}}",
+  "@libraryMissingRoots": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "path": { "type": "String" }
+    }
+  },
+  "libraryMissingRootsAction": "Settings",
   "libraryScanRootEmpty": "{path} is empty, library kept as it was",
   "@libraryScanRootEmpty": {
     "placeholders": {
@@ -312,6 +329,34 @@
   "artistsNotFound": "Artist not found",
   "artistsNotFoundMessage": "Their songs may have been removed or retagged.",
 
+  "genresTitle": "Genres",
+  "genresNoRootsMessage": "Add a music folder in Songs.",
+  "genresEmptyTitle": "No genres yet",
+  "genresEmptyMessage": "Songs with a genre tag show up here by genre.",
+  "genresAlbums": "Albums",
+  "genresSongs": "Songs",
+  "genresNotFound": "Genre not found",
+  "genresNotFoundMessage": "Its songs may have been removed or retagged.",
+
+  "foldersEmptyTitle": "No folders yet",
+  "foldersEmptyMessage": "Folders with songs show up here.",
+  "foldersNoRootsMessage": "Add a music folder in Songs.",
+  "foldersNotFound": "Folder not found",
+  "foldersNotFoundMessage": "It may have been removed or no longer holds songs.",
+  "foldersTreeView": "Folder tree",
+  "foldersFlatView": "All folders",
+  "foldersSubfolders": "Folders",
+  "foldersSongs": "Songs",
+  "foldersCounts": "{songs, plural, =1{1 song} other{{songs} songs}}, {folders, plural, =0{no subfolders} =1{1 subfolder} other{{folders} subfolders}}",
+  "@foldersCounts": {
+    "placeholders": {
+      "songs": { "type": "int" },
+      "folders": { "type": "int" }
+    }
+  },
+  "foldersCreatePlaylist": "Create playlist",
+  "foldersEmptyFolder": "No songs in this folder",
+
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 
@@ -376,12 +421,12 @@
   "nowPlayingFavorite": "Add to favorites",
   "nowPlayingAddToPlaylist": "Add to playlist",
   "nowPlayingComingSoon": "Coming soon",
-  "nowPlayingTabQueue": "Queue",
-  "nowPlayingTabTrack": "Now Playing",
-  "nowPlayingBackToTrack": "Back to Now Playing",
+  "nowPlayingTabQueue": "Now playing",
+  "nowPlayingTabTrack": "Song",
+  "nowPlayingBackToTrack": "Back to the song",
   "nowPlayingLyricsOnly": "Lyrics only",
-  "queueOpen": "Open queue",
-  "queueTitle": "Queue",
+  "queueOpen": "Show now playing list",
+  "queueTitle": "Now playing",
   "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",
   "@queueTrackCount": {
     "placeholders": {
@@ -391,8 +436,8 @@
   "queueClear": "Clear queue",
   "queueRemove": "Remove from queue",
   "queueReorder": "Drag to reorder",
-  "queueShowCurrent": "Now playing",
-  "queueClose": "Close queue",
+  "queueShowCurrent": "Jump to current song",
+  "queueClose": "Close now playing list",
 
   "settingsLibrary": "Library",
   "settingsRescanLibrary": "Rescan library",

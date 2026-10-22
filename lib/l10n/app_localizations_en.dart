@@ -272,6 +272,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryRescan => 'Rescan';
 
   @override
+  String get libraryShuffle => 'Shuffle';
+
+  @override
+  String get libraryShowArtist => 'Show artist';
+
+  @override
+  String get libraryShowAlbum => 'Show album';
+
+  @override
+  String get libraryShowInFileManager => 'Show in file manager';
+
+  @override
+  String get libraryFileManagerFailed => 'Couldn\'t open the file manager';
+
+  @override
+  String get libraryTrackGone => 'This song is no longer in the library';
+
+  @override
+  String get libraryNoAlbumToShow => 'This song has no album';
+
+  @override
+  String get libraryNoArtistToShow => 'This song has no artist';
+
+  @override
+  String get libraryChooseArtist => 'Choose an artist';
+
+  @override
   String get libraryKeysUpdatingTitle => 'Updating library…';
 
   @override
@@ -373,6 +400,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String libraryScanRootMissing(String path) {
     return '$path was not found';
   }
+
+  @override
+  String libraryMissingRoots(int count, String path) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count music folders not found',
+      one: 'Music folder not found: $path',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryMissingRootsAction => 'Settings';
 
   @override
   String libraryScanRootEmpty(String path) {
@@ -587,6 +628,84 @@ class AppLocalizationsEn extends AppLocalizations {
       'Their songs may have been removed or retagged.';
 
   @override
+  String get genresTitle => 'Genres';
+
+  @override
+  String get genresNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get genresEmptyTitle => 'No genres yet';
+
+  @override
+  String get genresEmptyMessage =>
+      'Songs with a genre tag show up here by genre.';
+
+  @override
+  String get genresAlbums => 'Albums';
+
+  @override
+  String get genresSongs => 'Songs';
+
+  @override
+  String get genresNotFound => 'Genre not found';
+
+  @override
+  String get genresNotFoundMessage =>
+      'Its songs may have been removed or retagged.';
+
+  @override
+  String get foldersEmptyTitle => 'No folders yet';
+
+  @override
+  String get foldersEmptyMessage => 'Folders with songs show up here.';
+
+  @override
+  String get foldersNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get foldersNotFound => 'Folder not found';
+
+  @override
+  String get foldersNotFoundMessage =>
+      'It may have been removed or no longer holds songs.';
+
+  @override
+  String get foldersTreeView => 'Folder tree';
+
+  @override
+  String get foldersFlatView => 'All folders';
+
+  @override
+  String get foldersSubfolders => 'Folders';
+
+  @override
+  String get foldersSongs => 'Songs';
+
+  @override
+  String foldersCounts(int songs, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders subfolders',
+      one: '1 subfolder',
+      zero: 'no subfolders',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get foldersCreatePlaylist => 'Create playlist';
+
+  @override
+  String get foldersEmptyFolder => 'No songs in this folder';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override
@@ -704,22 +823,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingComingSoon => 'Coming soon';
 
   @override
-  String get nowPlayingTabQueue => 'Queue';
+  String get nowPlayingTabQueue => 'Now playing';
 
   @override
-  String get nowPlayingTabTrack => 'Now Playing';
+  String get nowPlayingTabTrack => 'Song';
 
   @override
-  String get nowPlayingBackToTrack => 'Back to Now Playing';
+  String get nowPlayingBackToTrack => 'Back to the song';
 
   @override
   String get nowPlayingLyricsOnly => 'Lyrics only';
 
   @override
-  String get queueOpen => 'Open queue';
+  String get queueOpen => 'Show now playing list';
 
   @override
-  String get queueTitle => 'Queue';
+  String get queueTitle => 'Now playing';
 
   @override
   String queueTrackCount(int count) {
@@ -742,10 +861,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueReorder => 'Drag to reorder';
 
   @override
-  String get queueShowCurrent => 'Now playing';
+  String get queueShowCurrent => 'Jump to current song';
 
   @override
-  String get queueClose => 'Close queue';
+  String get queueClose => 'Close now playing list';
 
   @override
   String get settingsLibrary => 'Library';

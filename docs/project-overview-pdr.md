@@ -93,8 +93,8 @@ Status on 2026-10-21, with the search work on `feat/search`. Commit and PR count
 | Playback (media_kit, queue, shuffle, repeat, session restore) | Shipped; gapless configured but not verified (PLAY-06); ReplayGain and output device not done |
 | MPRIS (own D-Bus implementation) | Shipped |
 | Folder scan, tags (Rust, lofty), embedded and folder artwork | Shipped, with startup rescan and root removal; file watching not done |
-| Library browse: Songs, Albums, Artists | Shipped |
-| Library browse: Genres, Folders, Favorites, Recent | Not started (placeholder screens) |
+| Library browse: Songs, Albums, Artists, Genres, Folders | Shipped |
+| Library browse: Favorites, Recent | Not started (placeholder screens) |
 | Now Playing overlay and queue sheet | Shipped; hero transition not built |
 | Search | Shipped: songs, albums and artists, live from the top bar; typo tolerance not done (SEARCH-04) |
 | Playlists | Not started (placeholder in sidebar) |

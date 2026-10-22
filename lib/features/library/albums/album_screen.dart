@@ -66,6 +66,7 @@ class _AlbumPage extends ConsumerWidget {
             albumKey: albumKey,
             album: album,
             onPlay: () => playTracks(ref, queue(), 0),
+            onShuffle: () => shuffleTracks(ref, queue()),
             onQueueAction: (action) =>
                 enqueueLoaded(ref, context, action, queue(), album.title),
             artist: artistKey != null && album.artist != null

@@ -267,6 +267,33 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryRescan => 'Quét lại';
 
   @override
+  String get libraryShuffle => 'Phát ngẫu nhiên';
+
+  @override
+  String get libraryShowArtist => 'Xem nghệ sĩ';
+
+  @override
+  String get libraryShowAlbum => 'Xem album';
+
+  @override
+  String get libraryShowInFileManager => 'Mở trong trình quản lý tệp';
+
+  @override
+  String get libraryFileManagerFailed => 'Không mở được trình quản lý tệp';
+
+  @override
+  String get libraryTrackGone => 'Bài này không còn trong thư viện';
+
+  @override
+  String get libraryNoAlbumToShow => 'Bài này không có album';
+
+  @override
+  String get libraryNoArtistToShow => 'Bài này không có nghệ sĩ';
+
+  @override
+  String get libraryChooseArtist => 'Chọn nghệ sĩ';
+
+  @override
   String get libraryKeysUpdatingTitle => 'Đang cập nhật thư viện…';
 
   @override
@@ -366,6 +393,20 @@ class AppLocalizationsVi extends AppLocalizations {
   String libraryScanRootMissing(String path) {
     return 'Không tìm thấy $path';
   }
+
+  @override
+  String libraryMissingRoots(int count, String path) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count thư mục nhạc không còn tồn tại',
+      one: 'Không tìm thấy thư mục nhạc: $path',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryMissingRootsAction => 'Cài đặt';
 
   @override
   String libraryScanRootEmpty(String path) {
@@ -578,6 +619,70 @@ class AppLocalizationsVi extends AppLocalizations {
       'Có thể bài hát của nghệ sĩ đã bị xoá hoặc đổi tag.';
 
   @override
+  String get genresTitle => 'Thể loại';
+
+  @override
+  String get genresNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get genresEmptyTitle => 'Chưa có thể loại';
+
+  @override
+  String get genresEmptyMessage =>
+      'Bài hát có tag thể loại sẽ hiện ở đây theo thể loại.';
+
+  @override
+  String get genresAlbums => 'Album';
+
+  @override
+  String get genresSongs => 'Bài hát';
+
+  @override
+  String get genresNotFound => 'Không tìm thấy thể loại';
+
+  @override
+  String get genresNotFoundMessage => 'Có thể bài hát đã bị xoá hoặc đổi tag.';
+
+  @override
+  String get foldersEmptyTitle => 'Chưa có thư mục';
+
+  @override
+  String get foldersEmptyMessage => 'Thư mục có bài hát sẽ hiện ở đây.';
+
+  @override
+  String get foldersNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get foldersNotFound => 'Không tìm thấy thư mục';
+
+  @override
+  String get foldersNotFoundMessage =>
+      'Có thể thư mục đã bị xoá hoặc không còn bài hát.';
+
+  @override
+  String get foldersTreeView => 'Cây thư mục';
+
+  @override
+  String get foldersFlatView => 'Tất cả thư mục';
+
+  @override
+  String get foldersSubfolders => 'Thư mục';
+
+  @override
+  String get foldersSongs => 'Bài hát';
+
+  @override
+  String foldersCounts(int songs, int folders) {
+    return '$songs bài, $folders thư mục con';
+  }
+
+  @override
+  String get foldersCreatePlaylist => 'Tạo playlist';
+
+  @override
+  String get foldersEmptyFolder => 'Thư mục này không có bài hát';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override
@@ -695,22 +800,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingComingSoon => 'Sắp có';
 
   @override
-  String get nowPlayingTabQueue => 'Hàng đợi';
+  String get nowPlayingTabQueue => 'Đang phát';
 
   @override
-  String get nowPlayingTabTrack => 'Đang phát';
+  String get nowPlayingTabTrack => 'Bài hát';
 
   @override
-  String get nowPlayingBackToTrack => 'Quay lại bài đang phát';
+  String get nowPlayingBackToTrack => 'Quay lại bài hát';
 
   @override
   String get nowPlayingLyricsOnly => 'Chỉ hiện lời bài hát';
 
   @override
-  String get queueOpen => 'Mở hàng đợi';
+  String get queueOpen => 'Mở danh sách đang phát';
 
   @override
-  String get queueTitle => 'Hàng đợi';
+  String get queueTitle => 'Đang phát';
 
   @override
   String queueTrackCount(int count) {
@@ -732,10 +837,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override
-  String get queueShowCurrent => 'Đang phát';
+  String get queueShowCurrent => 'Tới bài đang phát';
 
   @override
-  String get queueClose => 'Đóng hàng đợi';
+  String get queueClose => 'Đóng danh sách đang phát';
 
   @override
   String get settingsLibrary => 'Thư viện';

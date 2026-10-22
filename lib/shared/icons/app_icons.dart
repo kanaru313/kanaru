@@ -36,9 +36,13 @@ abstract final class AppIcons {
   static const IconData artist = Icons.person;
   static const IconData artistOutline = Icons.person_outline;
   static const IconData artistRounded = Icons.person_rounded;
+  static const IconData genre = Icons.category;
+  static const IconData genreOutlined = Icons.category_outlined;
   static const IconData folder = Icons.folder;
   static const IconData folderOutlined = Icons.folder_outlined;
   static const IconData folderOpen = Icons.folder_open_outlined;
+  static const IconData folderTree = Icons.account_tree_outlined;
+  static const IconData folderFlat = Icons.format_list_bulleted;
   static const IconData folderOff = Icons.folder_off_outlined;
   static const IconData folderSpecial = Icons.folder_special_outlined;
   static const IconData addFolder = Icons.create_new_folder_outlined;
@@ -75,6 +79,8 @@ abstract final class AppIcons {
   static const IconData viewGrid = Icons.grid_view;
   static const IconData viewList = Icons.view_list;
   static const IconData more = Icons.more_vert;
+  static const IconData sortAscending = Icons.arrow_upward;
+  static const IconData sortDescending = Icons.arrow_downward;
 
   // Actions.
   static const IconData search = Icons.search;

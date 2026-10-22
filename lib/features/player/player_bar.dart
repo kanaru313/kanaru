@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/player/playback_error.dart';
 import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
+import 'now_playing/now_playing_actions.dart';
 import 'now_playing_summary.dart';
 import 'playback_controls.dart';
 import 'queue/queue_button.dart';
@@ -153,7 +154,11 @@ class _OneRow extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: [VolumeButton(), QueueButton()],
+                    children: [
+                      NowPlayingPlaylistButton(),
+                      VolumeButton(),
+                      QueueButton(),
+                    ],
                   ),
                 ),
               ),

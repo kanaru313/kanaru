@@ -8,6 +8,7 @@ import '../format_duration.dart';
 import '../icons/app_icons.dart';
 import 'cover_art.dart';
 import 'queue_actions_menu.dart';
+import 'track_actions_menu.dart';
 
 /// Side of the cover at the start of a song row.
 const songCoverSize = 40.0;
@@ -58,7 +59,14 @@ class SongTile extends ConsumerWidget {
             ),
       onTap: onTap,
     );
-    return QueueActionsRegion(onAction: onQueueAction, child: tile);
+    return TrackActionsRegion(
+      trackId: song.id,
+      path: song.path,
+      hasArtist: song.artist?.isNotEmpty ?? false,
+      hasAlbum: song.album?.isNotEmpty ?? false,
+      onQueueAction: onQueueAction,
+      child: tile,
+    );
   }
 }
 

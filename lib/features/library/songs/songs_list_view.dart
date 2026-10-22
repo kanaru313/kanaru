@@ -10,12 +10,12 @@ import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
+import '../library_browse_body.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/library_loading.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/song_tile.dart';
-import '../widgets/library_rescan_button.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
 import 'songs_windowed_list.dart';
@@ -168,7 +168,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
     final songs = SongIds(const [], songOrderFor(sort.field), sort.descending);
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+      padding: libraryListBottomPadding,
       prototypeItem: SongTile(song: prototypeSong, onTap: () {}),
       itemCount: rows.length,
       itemBuilder: (context, i) => SongTile(

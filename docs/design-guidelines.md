@@ -50,7 +50,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 
 The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
 
-- **Sidebar.** Groups: Home | Songs, Albums, Artists, Folders | Favorites, Recent | Playlists. The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
+- **Sidebar.** Groups: Home | Songs, Albums, Artists, Genres, Folders | Favorites, Recent | Playlists. The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
 - **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Settings on the right at every width. Empty space drags the window.
 - **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
@@ -93,12 +93,14 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 |---|---|
 | Songs | Virtualized list, one row per track, read in pages of 200. Tap plays the list from that row in the displayed order. |
 | Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc. |
-| Artists | List with avatar placeholders; artist page has sections for albums, songs and appears-on. |
+| Artists | Round avatars in a grid or a list, switched per session (not kept across restarts); artist page has Play, Shuffle and queue buttons, then sections for albums, songs and appears-on. |
+| Genres | Round tiles in a grid or a list, switched per session. Genre page has Play, Shuffle and queue buttons, then its albums and songs. |
+| Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. |
 | Onboarding | Full-page first-run picker, outside the shell, shown once after install (adding a folder or "Later" ends it for good). Suggests the XDG music folder. |
 
 Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
 
-Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries.
+Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries. It sits in the top bar, left of Settings, and stays at every window width (no floating button on the pages).
 
 ## Playlist screens
 
@@ -145,7 +147,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-Placeholder screens (Home, Folders, Favorites, Recent) use `EmptyState` and say the feature is not available yet.
+Placeholder screens (Home, Favorites, Recent) use `EmptyState` and say the feature is not available yet.
 
 ## Settings
 

@@ -2,10 +2,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/track.dart';
 import '../../../shared/icons/app_icons.dart';
+import 'now_playing_album_line.dart';
 import 'now_playing_artwork.dart';
 
-/// Large cover of the playing track, then [track]'s title and artist,
-/// centered. The album is not shown: tracks carry no album yet.
+/// Large cover of the playing track, then [track]'s title, artist and album,
+/// centered.
 class NowPlayingTrackInfo extends StatelessWidget {
   const NowPlayingTrackInfo({
     super.key,
@@ -29,7 +30,7 @@ class NowPlayingTrackInfo extends StatelessWidget {
   }
 }
 
-/// Title (bold, up to two lines) and artist, as under the large cover.
+/// Title (bold, up to two lines), artist and album, as under the large cover.
 class NowPlayingTitle extends StatelessWidget {
   const NowPlayingTitle({
     super.key,
@@ -65,7 +66,6 @@ class NowPlayingTitle extends StatelessWidget {
       crossAxisAlignment: centered
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.stretch,
-      spacing: 8,
       children: [
         trailing == null
             ? title
@@ -75,7 +75,8 @@ class NowPlayingTitle extends StatelessWidget {
                   trailing!,
                 ],
               ),
-        if (artist != null)
+        if (artist != null) ...[
+          const SizedBox(height: 8),
           Opacity(
             opacity: 0.7,
             child: Row(
@@ -94,13 +95,15 @@ class NowPlayingTitle extends StatelessWidget {
               ],
             ),
           ),
+        ],
+        NowPlayingAlbumLine(centered: centered),
       ],
     );
   }
 }
 
 /// Title (bold) and artist, small and centered: what stays on top of the
-/// lyrics in the lyrics-only view. The album joins once tracks carry one.
+/// lyrics in the lyrics-only view.
 class NowPlayingCompactInfo extends StatelessWidget {
   const NowPlayingCompactInfo({super.key, required this.track});
 

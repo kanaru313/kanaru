@@ -81,7 +81,7 @@ flowchart TD
 Notes:
 
 - `shared/widgets/scan_progress.dart` imports `core/indexer`, which is allowed (downward).
-- `shared/library_route_keys.dart` duplicates two route literals because `shared/` and features cannot import `app/`. A test keeps them in step.
+- `shared/library_route_keys.dart` duplicates four route literals (`/albums`, `/artists`, `/genres`, `/folders`) because `shared/` and features cannot import `app/`. A test keeps them in step.
 - `app/shell` injects the Now Playing title bar, so features do not reach into the shell.
 
 ---
@@ -128,6 +128,8 @@ sequenceDiagram
     Note over A: /welcome if DB exists, no roots and not yet onboarded, else /home
     A->>C: after the first frame, runLibraryStartupTasks
     Note over C: marks a library with roots as onboarded, quiet scan if enabled
+    A->>A: after the first frame, the shell checks every root with isDirectory
+    Note over A: once per launch; a snackbar with a Settings action names missing folders
 ```
 
 After `runApp`, `PlayerService.build()` restores the saved queue synchronously and paused (see [section 4](#4-playback)). The library starts with its keys phase in `unknown`, then `updating` or `ready` (see [section 7](#7-library-database-schema)).
@@ -393,6 +395,8 @@ Writes and reads:
 | Deletes | Chunked, 500 ids per statement. |
 | Whole-library lists | `throttledTracksQuery` replaces drift `.watch()`, because `.watch()` restarts on every write and starves during scans. Dirty flag, no overlapping loads, cooldown. |
 | Songs paging | IDs come from `group_concat`; pages of 200; `songsByIds` in chunks of 200 keeps order; `songQueueFrom(trackId)` reads in one transaction. |
+| Genres | No table. `genreCounts()` is one `GROUP BY genre`; Dart splits each stored string on `;` (`splitGenres`, separators are a parameter) and merges spellings by `sortKey` (`buildGenreSummaries`). A genre page reads its tracks and albums with `genre IN (…)` over the stored strings of that key. The scanner stores only the first genre of a file. |
+| Folders | No table, no disk walk. `folderSongCounts()` reads `tracks.path` in pages of 5 000 ordered by the unique index (keyset, `path > last`) and takes the directory of each path in Dart (SQL `GROUP BY rtrim(path, replace(path, '/', ''))` held the database isolate for seconds on 100k tracks); `buildFolderTree` turns the counts and `library_roots` into a tree with recursive counts, on another isolate above 2 000 folders, reloaded at 5 times the browse interval. A subtree is the BINARY range `path >= 'X/' AND path < 'X0'` (`0` follows `/`), read by `folderTracks` (SQL order) and put in tree order in the feature (`readFolderSongs`: relative path split at `/`, each part by `naturalKey`, computed once per path; above 5 000 paths on another isolate). |
 | Ordering | Songs: NULLs last in both directions, ties by `title_sort`, `id`. Albums and artists are sorted in Dart by code point, matching the database. |
 | Text keys | Pure Dart (`text_keys.dart`, generated tables in `text_key_tables.dart`). `textKeysVersion = 2` (version 2 added the search columns). Stale rows are re-keyed in place when few (≤ 500), or in a background isolate. Conditional writes let a concurrent scan win. |
 | Migrations | Step-by-step (`library_database.steps.dart`). v1 → v2 adds cover columns; v2 → v3 is schema-only and re-runnable (`library_migration_v3.dart`). v3 → v4 adds the four search columns, creates `track_search` and its triggers, and runs one index `rebuild` (`library_migration_v4.dart`). Values are filled by the background key backfill. v4 → v5 creates the four user-data tables, their indexes and the `play_stats` triggers in one transaction; `plays` starts empty, so there is no backfill (`library_migration_v5.dart`, re-runnable). v5 → v6 creates `cover_colors` and `excluded_folders`, adds `playlists.kind` (NULL for existing playlists) and the partial index, in one transaction, no backfill (`library_migration_v6.dart`, re-runnable). |

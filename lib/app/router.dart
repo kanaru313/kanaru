@@ -9,6 +9,10 @@ import '../features/library/albums/album_screen.dart';
 import '../features/library/albums/albums_screen.dart';
 import '../features/library/artists/artist_screen.dart';
 import '../features/library/artists/artists_screen.dart';
+import '../features/library/folders/folder_screen.dart';
+import '../features/library/folders/folders_screen.dart';
+import '../features/library/genres/genre_screen.dart';
+import '../features/library/genres/genres_screen.dart';
 import '../features/library/library_section_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
@@ -19,6 +23,7 @@ import '../features/settings/settings_screen.dart';
 import '../l10n/l10n.dart';
 import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
+import 'shell/missing_roots_notice.dart';
 
 /// First-run source picker, outside the shell (no sidebar or player bar).
 const _welcomePath = '/welcome';
@@ -47,8 +52,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingScreen(),
       ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            AppShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => MissingRootsNotice(
+          child: AppShell(navigationShell: navigationShell),
+        ),
         branches: [
           for (final destination in AppDestination.values)
             StatefulShellBranch(
@@ -79,6 +85,27 @@ final routerProvider = Provider<GoRouter>((ref) {
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                    AppDestination.genres => [
+                      GoRoute(
+                        path: ':key',
+                        builder: (context, state) =>
+                            GenreScreen(routeKey: state.pathParameters['key']!),
+                      ),
+                    ],
+                    AppDestination.folders => [
+                      GoRoute(
+                        path: ':key',
+                        builder: (context, state) {
+                          final key = state.pathParameters['key']!;
+                          // A new key is a new page: nothing of the folder
+                          // before it stays.
+                          return FolderScreen(
+                            key: ValueKey(key),
+                            routeKey: key,
+                          );
+                        },
                       ),
                     ],
                     AppDestination.playlists => [
@@ -122,7 +149,8 @@ Widget _buildPage(
     AppDestination.songs => const SongsScreen(),
     AppDestination.albums => const AlbumsScreen(),
     AppDestination.artists => const ArtistsScreen(),
-    AppDestination.folders => section(l10n.libraryEmptyMessage),
+    AppDestination.genres => const GenresScreen(),
+    AppDestination.folders => const FoldersScreen(),
     AppDestination.favorites => section(
       l10n.favoritesEmptyMessage,
       emptyTitle: l10n.navFavorites,

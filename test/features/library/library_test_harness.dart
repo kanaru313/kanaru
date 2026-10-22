@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show ApplyInterceptor, QueryInterceptor;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/core/database/library_browse_missing_roots.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
@@ -32,6 +34,8 @@ class LibraryHarness {
     this.rootsController,
     this.refreshInterval = Duration.zero,
     this.coverCacheDirectory,
+    this.interceptor,
+    this.rootIsDirectory,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
@@ -53,7 +57,18 @@ class LibraryHarness {
   /// flight for [settleIo]).
   final LibraryRootsController? rootsController;
 
-  late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
+  /// Answers whether a root is still a folder; roots in tests are made-up
+  /// paths, so by default every one is.
+  final Future<bool> Function(String)? rootIsDirectory;
+
+  /// Sees every statement the database runs, when given.
+  final QueryInterceptor? interceptor;
+
+  late final LibraryDatabase db = LibraryDatabase(
+    interceptor == null
+        ? NativeDatabase.memory()
+        : NativeDatabase.memory().interceptWith(interceptor!),
+  );
 
   /// Folders the fake picker returns, in order; empty means cancelled.
   final picks = <String>[];
@@ -103,6 +118,9 @@ class LibraryHarness {
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
         libraryBrowseRefreshIntervalProvider.overrideWithValue(refreshInterval),
+        rootIsDirectoryProvider.overrideWithValue(
+          rootIsDirectory ?? (_) async => true,
+        ),
         ...overrides,
       ],
     );

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import 'now_playing_album_line.dart';
 import 'now_playing_title_bar.dart';
 import 'now_playing_track_info.dart';
 
@@ -50,6 +51,9 @@ class NowPlayingWideHeader extends StatelessWidget {
   }
 }
 
+/// Height of the album line: its 8 px gap and one line of text.
+const _albumLineHeight = 32.0;
+
 /// Body of the wide layout between header and footer. By default the cover
 /// block is centered, or takes the left half when there are [lyrics] (shown
 /// on the right half). In [lyricsOnly] mode a compact title and artist sit
@@ -80,6 +84,7 @@ class NowPlayingWideBody extends ConsumerWidget {
       );
     }
     final windowHeight = MediaQuery.sizeOf(context).height;
+    final hasAlbum = ref.watch(nowPlayingAlbumProvider).value != null;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -87,11 +92,12 @@ class NowPlayingWideBody extends ConsumerWidget {
             ? constraints.maxWidth / 2
             : constraints.maxWidth;
         // 70% of the block, at most half the window, and leaving room for
-        // the title and artist below.
+        // the title and artist below, plus the album line when the song has
+        // an album.
         final art = [
           blockWidth * 0.7,
           windowHeight * 0.5,
-          constraints.maxHeight - 140,
+          constraints.maxHeight - 140 - (hasAlbum ? _albumLineHeight : 0),
         ].reduce((a, b) => a < b ? a : b).clamp(96.0, double.infinity);
         return Row(
           children: [

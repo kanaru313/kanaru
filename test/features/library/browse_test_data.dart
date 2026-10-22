@@ -19,6 +19,8 @@ class TestTrack {
     this.durationMs = 1000,
     this.addedAt = 1,
     this.coverKey,
+    this.genre,
+    this.path,
   });
 
   final String title;
@@ -31,6 +33,10 @@ class TestTrack {
   final int? durationMs;
   final int addedAt;
   final String? coverKey;
+  final String? genre;
+
+  /// Where the file is; a path of its own under the root `/m` when null.
+  final String? path;
 }
 
 /// Stores [tracks] under the root `/m` (added if missing), with paths
@@ -44,13 +50,13 @@ Future<void> insertTracks(
     final roots = await h.db.roots();
     final rootId = roots.isEmpty
         ? (await h.db.addRoots(['/m'], now: 1)).single
-        : roots.single.id;
+        : roots.first.id;
     final batch = _batches++;
     await h.db.upsertTracks([
       for (final (i, t) in tracks.indexed)
         TracksCompanion.insert(
           rootId: rootId,
-          path: '/m/$batch/$i.flac',
+          path: t.path ?? '/m/$batch/$i.flac',
           mtimeMs: 1,
           sizeBytes: 1,
           title: t.title,
@@ -64,6 +70,7 @@ Future<void> insertTracks(
           addedAt: t.addedAt,
           updatedAt: t.addedAt,
           coverKey: Value(t.coverKey),
+          genre: Value(t.genre),
         ),
     ]);
   });
