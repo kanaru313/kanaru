@@ -147,7 +147,6 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | LIB-15 | Ẩn mục                 | Ẩn bài/album khỏi thư viện mà không xoá file                                                                                                                | P3      | 1     |     |
 | LIB-16 | Xoá file               | Đưa vào thùng rác hệ thống (có xác nhận)                                                                                                                    | P3      | 1     |     |
 | LIB-17 | Duyệt theo mood, tag và rating | Trang duyệt theo mood và tag tuỳ chỉnh (đọc từ TXXX hoặc tag tương đương) và theo rating; tạo danh sách từ mood (Namida "moods/tags/ratings"). Chưa làm | P3      | 4     |     |
-| LIB-18 | Duyệt theo ngôn ngữ | Trang nhóm bài theo ngôn ngữ (Namida 8.2). Chưa chốt nguồn dữ liệu: tag ngôn ngữ hay lời (xem Câu hỏi mở) | P3      | 4     |     |
 | LIB-19 | Hành động trên thư mục | Trang thư mục có nút Phát, Xáo, Thêm vào hàng đợi, Phát tiếp, Tạo playlist (tên = tên thư mục) cho cả cây con; số bài và số thư mục con đệ quy hiện nhỏ dưới tên, không quét lại khi vào thư mục; chế độ lưới hoặc danh sách (con-ton-dong §7 và §11). Chưa làm | P2      | 1     |     |
 
 ## 6. Tìm kiếm
@@ -422,4 +421,3 @@ Nguyên tắc: **mọi thứ cần để dùng Kanaru như một player offline 
 2. Có cần tính năng tag editor (META-08) ngay trong Phase 1 không, hay để sang Phase 4 như hiện tại?
 3. Mốc 1.0 gồm những gì: chỉ Phase 1 trên Linux, hay phải có thêm Phase 3 (nguồn từ xa)?
 4. Có hỗ trợ giao diện M2 (UI-12) như Harmonoid không, hay chỉ làm M3?
-5. LIB-18 (ngôn ngữ): lấy dữ liệu từ tag ngôn ngữ hay từ lời?
