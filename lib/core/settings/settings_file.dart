@@ -34,6 +34,7 @@ class SettingsFile {
   bool _readOnly = false;
   Map<String, Object?> _unknownKeys = const {};
   Map<String, Object?> _librarySortExtra = const {};
+  Map<String, Map<String, Object?>> _groupExtras = const {};
 
   /// Whether [save] does nothing for the rest of the session.
   bool get readOnly => _readOnly;
@@ -65,6 +66,7 @@ class SettingsFile {
       final decoded = decodeSettings(json);
       _unknownKeys = decoded.unknownKeys;
       _librarySortExtra = decoded.librarySortExtra;
+      _groupExtras = decoded.groupExtras;
       if (decoded.version > settingsSchemaVersion) {
         _readOnly = true;
         _log.warning(
@@ -83,8 +85,9 @@ class SettingsFile {
     }
   }
 
-  /// Writes [settings], keeping keys (and library sort screens) this version
-  /// does not know. Never throws; failures are logged.
+  /// Writes [settings], keeping keys (and library sort screens, and keys
+  /// inside the preference groups) this version does not know. Never throws;
+  /// failures are logged.
   ///
   /// Returns `false` when writing failed. A read-only file skips the write
   /// and returns `true`: [readOnly] reports that case.
@@ -101,6 +104,7 @@ class SettingsFile {
         settings,
         unknownKeys: _unknownKeys,
         librarySortExtra: _librarySortExtra,
+        groupExtras: _groupExtras,
       );
       await temporary.writeAsString(
         '${const JsonEncoder.withIndent('  ').convert(json)}\n',

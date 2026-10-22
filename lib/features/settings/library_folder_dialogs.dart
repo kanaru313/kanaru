@@ -18,18 +18,3 @@ Future<bool> confirmRemoveFolder(
     confirmLabel: l10n.settingsRemoveFolderConfirm,
   );
 }
-
-/// Asks before the folder at [oldPath] is swapped for [newPath].
-Future<bool> confirmReplaceFolder(
-  BuildContext context, {
-  required String oldPath,
-  required String newPath,
-}) {
-  final l10n = context.l10n;
-  return confirmDestructive(
-    context,
-    title: l10n.settingsReplaceFolderTitle,
-    body: l10n.settingsReplaceFolderBody(oldPath, newPath),
-    confirmLabel: l10n.settingsReplaceFolderConfirm,
-  );
-}

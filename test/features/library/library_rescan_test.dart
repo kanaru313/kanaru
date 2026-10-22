@@ -219,12 +219,15 @@ void main() {
       await openScannable(tester, h, '/settings');
 
       expect(find.text('Library'), findsOneWidget);
+      // Tall: the rescan row sits below the appearance rows.
+      tester.view.physicalSize = const Size(1280, 3000);
+      await tester.pumpAndSettle();
       expect(find.text('Rescan library'), findsOneWidget);
-      final library = tester.getTopLeft(find.text('Library')).dy;
+      final appearance = tester.getTopLeft(find.text('Appearance')).dy;
       expect(
-        library,
-        lessThan(tester.getTopLeft(find.text('Appearance')).dy),
-        reason: 'Library comes before Appearance',
+        appearance,
+        lessThan(tester.getTopLeft(find.text('Library')).dy),
+        reason: 'Appearance comes before Library',
       );
 
       await tester.tap(rescanLibrary());
@@ -242,7 +245,8 @@ void main() {
           overrides: [libraryIndexerProvider.overrideWith(() => indexer)],
         );
         await h.pump(tester, hasRoots: true);
-        tester.view.physicalSize = Size(width, 800);
+        // Tall: the rescan row sits below the appearance rows.
+        tester.view.physicalSize = Size(width, 3000);
         goTo(tester, h, '/settings');
         await tester.pumpAndSettle();
         final button = rescanLibrary();

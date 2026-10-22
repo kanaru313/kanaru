@@ -149,8 +149,11 @@ Placeholder screens (Home, Folders, Favorites, Recent) use `EmptyState` and say 
 
 ## Settings
 
-- Single column, at most 720 px wide, grouped in sections: Library (music folders, rescan at start, rescan), Appearance (theme, language, title bar), About (repository, license).
+- Single column, at most 720 px wide, grouped in five sections, in this order: Appearance (theme, language, title bar), Library (music folders, rescan at start, rescan), Backup and restore (placeholder), Advanced (listen history, log folder), About (repository, license).
+- Every row has a hint line under its title that says what the option does; keep it to one sentence. A row that needs a restart replaces its hint with "Applies after restart" until the value is changed back.
 - Rows: label on the left, control on the right. Below 560 px the control moves below the label.
+- Library folder rows have only a trash button, faded in while the pointer is over the row or focus is inside it (it stays in the tree, so Tab reaches it and the row does not reflow). A missing folder keeps a red button visible.
+- Options that are not wired yet are shown as "Coming soon" rows (`SettingRow.comingSoon` or `SettingsChipsRow`): disabled colors, a badge after the title, the saved value shown, and no tap or focus reaches the control. Real rows come first in each section; the coming soon rows follow. Whoever wires an option removes `comingSoon` and passes a callback. Numeric options are dropdowns of preset values (`settings_number_presets.dart`); a stored value outside the presets is added to the list.
 - Choices use `setting_choice.dart`: a segmented button when there is room, a dropdown in a compact row.
 - Language choices: system, English, Vietnamese. The title bar choice (kanaru, system, none) needs a restart; the screen says so.
 - A save warning (`settings_save_warning.dart`) appears when settings cannot be saved.
@@ -166,7 +169,7 @@ Placeholder screens (Home, Folders, Favorites, Recent) use `EmptyState` and say 
 | Auto-hide fade | 100 to 150 ms | Not gated |
 | Seek bar wave | continuous while playing | Flat (`seek_bar.dart`) |
 
-Reduced motion comes from the platform setting. Every new animation must check it. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+Reduced motion comes from the platform setting. Every new animation must check it. Settings → Appearance has an Animations row, shown as coming soon: the `animations` flag is stored, but nothing forces reduced motion yet (wire it by overriding `MediaQuery.disableAnimations` in `MaterialApp.builder`). The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
 
 ## Focus, keyboard and accessibility
 

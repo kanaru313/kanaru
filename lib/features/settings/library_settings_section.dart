@@ -12,14 +12,16 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
 import 'library_folders_list.dart';
+import 'library_scan_setting_rows.dart';
+import 'library_stats_row.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
-/// Library settings: the music folders, whether to rescan when the app
-/// opens, and a rescan button. The button is disabled while the library is
-/// unavailable, has no music folder yet, or is being scanned or its covers
-/// are being made (it then shows a progress ring). The result is announced
-/// by the shell.
+/// Library settings: the library's counts, the music folders, whether to
+/// rescan when the app opens, and a rescan button. The button is disabled
+/// while the library is unavailable, has no music folder yet, or is being
+/// scanned or its covers are being made (it then shows a progress ring). The
+/// result is announced by the shell.
 class LibrarySettingsSection extends ConsumerWidget {
   const LibrarySettingsSection({super.key});
 
@@ -34,9 +36,11 @@ class LibrarySettingsSection extends ConsumerWidget {
     return SettingsSection(
       title: l10n.settingsLibrary,
       children: [
+        const LibraryStatsRow(),
         const LibraryFoldersList(),
         SettingRow.single(
           title: l10n.settingsRescanOnStartup,
+          subtitle: l10n.settingsRescanOnStartupHint,
           control: Switch(
             value: ref.watch(settingsProvider.select((s) => s.rescanOnStartup)),
             onChanged: ref.watch(libraryDatabaseProvider) != null
@@ -46,6 +50,7 @@ class LibrarySettingsSection extends ConsumerWidget {
         ),
         SettingRow.single(
           title: l10n.settingsRescanLibrary,
+          subtitle: l10n.settingsRescanLibraryHint,
           control: ScanProgressBuilder(
             scan: ref.watch(libraryIndexerProvider),
             builder: (context, progress) => _RescanButton(
@@ -60,6 +65,7 @@ class LibrarySettingsSection extends ConsumerWidget {
             ),
           ),
         ),
+        const LibraryScanSettingRows(),
       ],
     );
   }

@@ -1,6 +1,12 @@
+import 'display_prefs.dart';
+import 'library_scan_prefs.dart';
 import 'library_sort.dart';
+import 'playback_prefs.dart';
 
+export 'display_prefs.dart';
+export 'library_scan_prefs.dart';
 export 'library_sort.dart';
+export 'playback_prefs.dart';
 
 /// Light or dark theme, or whatever the desktop uses.
 enum ThemePreference { system, light, dark }
@@ -34,6 +40,10 @@ class AppSettings {
     this.rescanOnStartup = true,
     this.libraryOnboarded = false,
     this.recordListenHistory = true,
+    this.animations = true,
+    this.libraryScan = const LibraryScanPrefs(),
+    this.playback = const PlaybackPrefs(),
+    this.display = const DisplayPrefs(),
   });
 
   final ThemePreference theme;
@@ -62,6 +72,17 @@ class AppSettings {
   /// is stored.
   final bool recordListenHistory;
 
+  /// `false` forces reduced motion everywhere; `true` follows the system's
+  /// reduced-motion setting. Stored for the option that is not wired yet:
+  /// nothing reads it.
+  final bool animations;
+
+  /// Options of features that are not built yet, grouped so that this class
+  /// stays small. Their defaults are today's behavior; nothing reads them.
+  final LibraryScanPrefs libraryScan;
+  final PlaybackPrefs playback;
+  final DisplayPrefs display;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -72,6 +93,10 @@ class AppSettings {
     bool? rescanOnStartup,
     bool? libraryOnboarded,
     bool? recordListenHistory,
+    bool? animations,
+    LibraryScanPrefs? libraryScan,
+    PlaybackPrefs? playback,
+    DisplayPrefs? display,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -83,6 +108,10 @@ class AppSettings {
     rescanOnStartup: rescanOnStartup ?? this.rescanOnStartup,
     libraryOnboarded: libraryOnboarded ?? this.libraryOnboarded,
     recordListenHistory: recordListenHistory ?? this.recordListenHistory,
+    animations: animations ?? this.animations,
+    libraryScan: libraryScan ?? this.libraryScan,
+    playback: playback ?? this.playback,
+    display: display ?? this.display,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -97,6 +126,10 @@ class AppSettings {
     rescanOnStartup: rescanOnStartup,
     libraryOnboarded: libraryOnboarded,
     recordListenHistory: recordListenHistory,
+    animations: animations,
+    libraryScan: libraryScan,
+    playback: playback,
+    display: display,
   );
 
   @override
@@ -111,7 +144,11 @@ class AppSettings {
       other.albumsView == albumsView &&
       other.rescanOnStartup == rescanOnStartup &&
       other.libraryOnboarded == libraryOnboarded &&
-      other.recordListenHistory == recordListenHistory;
+      other.recordListenHistory == recordListenHistory &&
+      other.animations == animations &&
+      other.libraryScan == libraryScan &&
+      other.playback == playback &&
+      other.display == display;
 
   @override
   int get hashCode => Object.hash(
@@ -125,6 +162,10 @@ class AppSettings {
     rescanOnStartup,
     libraryOnboarded,
     recordListenHistory,
+    animations,
+    libraryScan,
+    playback,
+    display,
   );
 
   @override
@@ -134,5 +175,6 @@ class AppSettings {
       'albumSort: $albumSort, artistSort: $artistSort, '
       'albumsView: ${albumsView.name}, rescanOnStartup: $rescanOnStartup, '
       'libraryOnboarded: $libraryOnboarded, '
-      'recordListenHistory: $recordListenHistory)';
+      'recordListenHistory: $recordListenHistory, animations: $animations, '
+      'libraryScan: $libraryScan, playback: $playback, display: $display)';
 }

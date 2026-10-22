@@ -98,16 +98,20 @@ Future<void> _checkLayout(
   );
 
   // Every control sits on its label's line, at its right.
-  // A row with a subtitle centres its control on the title and subtitle
-  // together, so that block stands for the label there.
+  // A row centres its control on the title and subtitle together, so that
+  // block stands for the label.
   for (final (label, control, subtitle) in [
-    (l10n.settingsFolders, find.byType(FilledButton).first, null),
+    (
+      l10n.settingsFolders,
+      find.byType(FilledButton).first,
+      l10n.settingsFoldersHint,
+    ),
     (
       l10n.settingsRescanOnStartup,
       inRow(l10n.settingsRescanOnStartup, find.byType(Switch)),
-      null,
+      l10n.settingsRescanOnStartupHint,
     ),
-    (l10n.settingsRescanLibrary, rescanButton, null),
+    (l10n.settingsRescanLibrary, rescanButton, l10n.settingsRescanLibraryHint),
     (
       l10n.listenHistoryRecord,
       inRow(l10n.listenHistoryRecord, find.byType(Switch)),
@@ -116,20 +120,52 @@ Future<void> _checkLayout(
     (
       l10n.listenHistoryClear,
       inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
-      null,
+      l10n.settingsClearListenHistoryHint,
     ),
-    (l10n.settingsTheme, find.byType(SettingChoice<ThemePreference>), null),
-    (l10n.settingsLanguage, find.byType(SettingDropdown<String>), null),
+    (
+      l10n.settingsTheme,
+      find.byType(SettingChoice<ThemePreference>),
+      l10n.settingsThemeHint,
+    ),
+    (
+      l10n.settingsLanguage,
+      find.byType(SettingDropdown<String>),
+      l10n.settingsLanguageHint,
+    ),
+    (
+      l10n.settingsOpenLogFolder,
+      inRow(l10n.settingsOpenLogFolder, find.byType(FilledButton)),
+      l10n.settingsOpenLogFolderHint,
+    ),
     (
       l10n.settingsTitleBar,
       find.byType(SettingChoice<TitleBarPreference>),
-      null,
+      l10n.settingsTitleBarHint,
+    ),
+    // Rows of options that are not wired yet.
+    (
+      l10n.settingsRespectNomedia,
+      inRow(l10n.settingsRespectNomedia, find.byType(Switch)),
+      l10n.settingsRespectNomediaHint,
+    ),
+    (
+      l10n.settingsMinFileSize,
+      inRow(l10n.settingsMinFileSize, find.byType(DropdownMenu<int>)),
+      l10n.settingsMinFileSizeHint,
+    ),
+    (
+      l10n.settingsFontScale,
+      inRow(l10n.settingsFontScale, find.byType(DropdownMenu<double>)),
+      l10n.settingsFontScaleHint,
+    ),
+    (
+      l10n.settingsClearCoverCache,
+      inRow(l10n.settingsClearCoverCache, find.byType(FilledButton)),
+      l10n.settingsClearCoverCacheHint,
     ),
   ]) {
     final title = tester.getRect(find.text(label));
-    final text = subtitle == null
-        ? title
-        : title.expandToInclude(tester.getRect(find.text(subtitle)));
+    final text = title.expandToInclude(tester.getRect(find.text(subtitle)));
     final rect = tester.getRect(control);
     expect(
       text.center.dy,
@@ -147,7 +183,13 @@ Future<void> _checkLayout(
         .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
         .evaluate(),
   ];
-  expect(controls, hasLength(6), reason: 'three buttons and three choices');
+  expect(
+    controls,
+    hasLength(17),
+    reason:
+        'six buttons, three choices and eight dropdowns of options not wired '
+        'yet',
+  );
   for (final control in controls) {
     expect(
       tester.getRect(find.byWidget(control.widget)).height,
@@ -158,6 +200,16 @@ Future<void> _checkLayout(
 
   // The rescan label is drawn inside its button on one line, however narrow
   // the button gets; at normal text size it also fits whole (no ellipsis).
+  // Chips wrap inside the window, however narrow.
+  for (final label in [
+    l10n.settingsAlbumGroupYear,
+    l10n.navFolders,
+    l10n.settingsTabLanguages,
+  ]) {
+    final chip = tester.getRect(find.text(label).last);
+    expect(chip.right, lessThanOrEqualTo(size.width), reason: label);
+  }
+
   final rescan = tester.getRect(rescanButton);
   final rescanLabel = find.descendant(
     of: rescanButton,
@@ -214,7 +266,7 @@ Future<void> _checkLayout(
         .evaluate()
         .map((e) => tester.getRect(find.byWidget(e.widget)))
         .toList();
-    expect(dropdowns, hasLength(3));
+    expect(dropdowns, hasLength(11));
     for (final rect in dropdowns.skip(1)) {
       expect(rect.width, dropdowns.first.width);
       expect(rect.right, dropdowns.first.right);

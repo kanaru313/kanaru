@@ -1232,12 +1232,6 @@ abstract class AppLocalizations {
   /// **'Add folder'**
   String get settingsAddFolder;
 
-  /// No description provided for @settingsChangeFolder.
-  ///
-  /// In en, this message translates to:
-  /// **'Change folder…'**
-  String get settingsChangeFolder;
-
   /// No description provided for @settingsRemoveFolder.
   ///
   /// In en, this message translates to:
@@ -1249,12 +1243,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder no longer exists'**
   String get settingsFolderMissing;
-
-  /// No description provided for @settingsFolderMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Folder actions'**
-  String get settingsFolderMenu;
 
   /// No description provided for @settingsRemoveFolderTitle.
   ///
@@ -1279,24 +1267,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t remove {path}. See the log for details.'**
   String settingsRemoveFolderFailed(String path);
-
-  /// No description provided for @settingsReplaceFolderTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Change folder?'**
-  String get settingsReplaceFolderTitle;
-
-  /// No description provided for @settingsReplaceFolderBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace {oldPath} with {newPath}? Songs from {oldPath} leave the library and {newPath} is scanned. Files on disk are not deleted.'**
-  String settingsReplaceFolderBody(String oldPath, String newPath);
-
-  /// No description provided for @settingsReplaceFolderConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Change'**
-  String get settingsReplaceFolderConfirm;
 
   /// No description provided for @settingsRescanOnStartup.
   ///
@@ -1412,11 +1382,455 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open {target}'**
   String settingsOpenFailed(String target);
 
-  /// No description provided for @listenHistorySection.
+  /// No description provided for @settingsLibraryStats.
   ///
   /// In en, this message translates to:
-  /// **'Listen history'**
-  String get listenHistorySection;
+  /// **'In your library'**
+  String get settingsLibraryStats;
+
+  /// No description provided for @settingsStatsTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} track} other{{count} tracks}}'**
+  String settingsStatsTracks(int count);
+
+  /// No description provided for @settingsStatsAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} album} other{{count} albums}}'**
+  String settingsStatsAlbums(int count);
+
+  /// No description provided for @settingsStatsArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} artist} other{{count} artists}}'**
+  String settingsStatsArtists(int count);
+
+  /// No description provided for @settingsStatsGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} genre} other{{count} genres}}'**
+  String settingsStatsGenres(int count);
+
+  /// No description provided for @settingsOpenLogFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Log files'**
+  String get settingsOpenLogFolder;
+
+  /// No description provided for @settingsOpenLogFolderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For bug reports. Passwords and tokens are removed before writing.'**
+  String get settingsOpenLogFolderHint;
+
+  /// No description provided for @settingsOpenLogFolderButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get settingsOpenLogFolderButton;
+
+  /// No description provided for @settingsLogFolderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru has no folder for log files on this system.'**
+  String get settingsLogFolderUnavailable;
+
+  /// No description provided for @settingsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get settingsComingSoon;
+
+  /// No description provided for @settingsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get settingsOff;
+
+  /// No description provided for @settingsBackupExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export…'**
+  String get settingsBackupExport;
+
+  /// No description provided for @settingsUnitKb.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} KB'**
+  String settingsUnitKb(int count);
+
+  /// No description provided for @settingsUnitMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} MB'**
+  String settingsUnitMb(double value);
+
+  /// No description provided for @settingsUnitSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} s'**
+  String settingsUnitSeconds(int count);
+
+  /// No description provided for @settingsUnitMs.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ms'**
+  String settingsUnitMs(int count);
+
+  /// No description provided for @settingsUnitMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String settingsUnitMinutes(int count);
+
+  /// No description provided for @settingsUnitPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}%'**
+  String settingsUnitPercent(int count);
+
+  /// No description provided for @settingsAnimations.
+  ///
+  /// In en, this message translates to:
+  /// **'Animations'**
+  String get settingsAnimations;
+
+  /// No description provided for @settingsAnimationsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: pages and panels switch without motion.'**
+  String get settingsAnimationsHint;
+
+  /// No description provided for @settingsColorFromCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors from the cover'**
+  String get settingsColorFromCover;
+
+  /// No description provided for @settingsColorFromCoverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tint the app with the colors of the cover that is playing.'**
+  String get settingsColorFromCoverHint;
+
+  /// No description provided for @settingsFontScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsFontScale;
+
+  /// No description provided for @settingsFontScaleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Makes all text in Kanaru smaller or larger.'**
+  String get settingsFontScaleHint;
+
+  /// No description provided for @settingsRespectNomedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip folders with .nomedia'**
+  String get settingsRespectNomedia;
+
+  /// No description provided for @settingsRespectNomediaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.'**
+  String get settingsRespectNomediaHint;
+
+  /// No description provided for @settingsDuplicatesByFilename.
+  ///
+  /// In en, this message translates to:
+  /// **'Find duplicates by file name'**
+  String get settingsDuplicatesByFilename;
+
+  /// No description provided for @settingsDuplicatesByFilenameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Files with the same name count as one song. Applies at the next rescan.'**
+  String get settingsDuplicatesByFilenameHint;
+
+  /// No description provided for @settingsM3uPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Read m3u playlists'**
+  String get settingsM3uPlaylists;
+
+  /// No description provided for @settingsM3uPlaylistsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the .m3u files found in the music folders as playlists. Applies at the next rescan.'**
+  String get settingsM3uPlaylistsHint;
+
+  /// No description provided for @settingsAlbumGrouping.
+  ///
+  /// In en, this message translates to:
+  /// **'Group albums by'**
+  String get settingsAlbumGrouping;
+
+  /// No description provided for @settingsAlbumGroupingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs with the same album title are one album; pick what else must match. Applies at the next rescan.'**
+  String get settingsAlbumGroupingHint;
+
+  /// No description provided for @settingsAlbumGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Album title'**
+  String get settingsAlbumGroupTitle;
+
+  /// No description provided for @settingsAlbumGroupArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Album artist'**
+  String get settingsAlbumGroupArtist;
+
+  /// No description provided for @settingsAlbumGroupYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get settingsAlbumGroupYear;
+
+  /// No description provided for @settingsMinFileSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum file size'**
+  String get settingsMinFileSize;
+
+  /// No description provided for @settingsMinFileSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Smaller files stay out of the library. Applies at the next rescan.'**
+  String get settingsMinFileSizeHint;
+
+  /// No description provided for @settingsMinDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum length'**
+  String get settingsMinDuration;
+
+  /// No description provided for @settingsMinDurationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorter songs stay out of the library. Applies at the next rescan.'**
+  String get settingsMinDurationHint;
+
+  /// No description provided for @settingsClearCoverCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cover cache'**
+  String get settingsClearCoverCache;
+
+  /// No description provided for @settingsClearCoverCacheHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Covers disappear until the next rescan makes them again.'**
+  String get settingsClearCoverCacheHint;
+
+  /// No description provided for @settingsClearCoverCacheButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsClearCoverCacheButton;
+
+  /// No description provided for @settingsPreferEmbeddedLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer embedded lyrics'**
+  String get settingsPreferEmbeddedLyrics;
+
+  /// No description provided for @settingsPreferEmbeddedLyricsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use lyrics stored in the song file before lyric files next to it.'**
+  String get settingsPreferEmbeddedLyricsHint;
+
+  /// No description provided for @settingsGapless.
+  ///
+  /// In en, this message translates to:
+  /// **'Gapless playback'**
+  String get settingsGapless;
+
+  /// No description provided for @settingsGaplessHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No silence between songs that follow each other, as on an album.'**
+  String get settingsGaplessHint;
+
+  /// No description provided for @settingsCrossfade.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade'**
+  String get settingsCrossfade;
+
+  /// No description provided for @settingsCrossfadeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How long the end of a song overlaps the start of the next.'**
+  String get settingsCrossfadeHint;
+
+  /// No description provided for @settingsFadeOnPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Fade in on play'**
+  String get settingsFadeOnPlay;
+
+  /// No description provided for @settingsFadeOnPlayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Raise the volume slowly when playback starts.'**
+  String get settingsFadeOnPlayHint;
+
+  /// No description provided for @settingsFadeOnPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Fade out on pause'**
+  String get settingsFadeOnPause;
+
+  /// No description provided for @settingsFadeOnPauseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower the volume slowly before playback pauses.'**
+  String get settingsFadeOnPauseHint;
+
+  /// No description provided for @settingsInfiniteQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Endless queue'**
+  String get settingsInfiniteQueue;
+
+  /// No description provided for @settingsInfiniteQueueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When the queue ends, Next goes back to the first song, and Previous on the first song goes to the last, whatever the repeat mode.'**
+  String get settingsInfiniteQueueHint;
+
+  /// No description provided for @settingsListenAfterTime.
+  ///
+  /// In en, this message translates to:
+  /// **'A listen counts after'**
+  String get settingsListenAfterTime;
+
+  /// No description provided for @settingsListenAfterTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This long, or the share below of the song, whichever comes first.'**
+  String get settingsListenAfterTimeHint;
+
+  /// No description provided for @settingsListenAfterShare.
+  ///
+  /// In en, this message translates to:
+  /// **'A listen counts after (share of the song)'**
+  String get settingsListenAfterShare;
+
+  /// No description provided for @settingsListenAfterShareHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This share of the song, or the time above, whichever comes first.'**
+  String get settingsListenAfterShareHint;
+
+  /// No description provided for @settingsSidebarTabs.
+  ///
+  /// In en, this message translates to:
+  /// **'Sidebar tabs'**
+  String get settingsSidebarTabs;
+
+  /// No description provided for @settingsSidebarTabsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which pages show in the sidebar.'**
+  String get settingsSidebarTabsHint;
+
+  /// No description provided for @settingsTabGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get settingsTabGenres;
+
+  /// No description provided for @settingsTabLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get settingsTabLanguages;
+
+  /// No description provided for @settingsTrackNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Track numbers in albums'**
+  String get settingsTrackNumbers;
+
+  /// No description provided for @settingsTrackNumbersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show each song\'s number on an album page.'**
+  String get settingsTrackNumbersHint;
+
+  /// No description provided for @settingsAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get settingsAdvanced;
+
+  /// No description provided for @settingsBackupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and restore'**
+  String get settingsBackupRestore;
+
+  /// No description provided for @settingsBackupRestoreRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up and restore data'**
+  String get settingsBackupRestoreRow;
+
+  /// No description provided for @settingsBackupRestoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Export and import your settings, playlists and play counts.'**
+  String get settingsBackupRestoreHint;
+
+  /// No description provided for @settingsThemeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Light, dark, or follow the desktop'**
+  String get settingsThemeHint;
+
+  /// No description provided for @settingsLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Language of menus and labels'**
+  String get settingsLanguageHint;
+
+  /// No description provided for @settingsTitleBarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru\'s own bar with window buttons, the system\'s, or none'**
+  String get settingsTitleBarHint;
+
+  /// No description provided for @settingsFoldersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders Kanaru looks for music in. Removing one never deletes files.'**
+  String get settingsFoldersHint;
+
+  /// No description provided for @settingsRescanOnStartupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Look for new, changed and removed files in the background each time Kanaru opens'**
+  String get settingsRescanOnStartupHint;
+
+  /// No description provided for @settingsRescanLibraryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Look for changes in the music folders now'**
+  String get settingsRescanLibraryHint;
+
+  /// No description provided for @settingsClearListenHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes every recorded listen on this device. Can\'t be undone.'**
+  String get settingsClearListenHistoryHint;
 
   /// No description provided for @listenHistoryRecord.
   ///

@@ -144,6 +144,24 @@ void main() {
     expect(json['language'], 'vi');
   });
 
+  test('keys inside the preference groups survive a save', () async {
+    writeFile(
+      path,
+      '{"version": 1, "playback": {"gapless": false, "eq": [1]}, '
+      '"display": {"density": "tight"}, "libraryScan": "bad"}',
+    );
+    final file = SettingsFile(path);
+    final loaded = file.load();
+    expect(loaded.playback.gapless, isFalse);
+
+    await file.save(loaded);
+    final json = jsonDecode(File(path).readAsStringSync()) as Map;
+    expect((json['playback'] as Map)['eq'], [1]);
+    expect((json['playback'] as Map)['gapless'], false);
+    expect((json['display'] as Map)['density'], 'tight');
+    expect((json['libraryScan'] as Map)['minFileSizeKb'], 0);
+  });
+
   test('an old file loads sort defaults and a save keeps the rest', () async {
     writeFile(
       path,

@@ -6,22 +6,21 @@ import '../../core/stats/listen_recorder_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
 import 'settings_confirm_dialog.dart';
-import 'settings_section.dart';
 
-/// Listen history settings (STAT-10): whether listens are recorded, and a
+/// Listen history rows (STAT-10): whether listens are recorded, and a
 /// button that removes every recorded listen after a confirmation. The
 /// switch is only a preference, so it works without a library; the button
 /// needs the library database and is off while a clear runs.
-class ListenHistorySettingsSection extends ConsumerStatefulWidget {
-  const ListenHistorySettingsSection({super.key});
+class ListenHistorySettingRows extends ConsumerStatefulWidget {
+  const ListenHistorySettingRows({super.key});
 
   @override
-  ConsumerState<ListenHistorySettingsSection> createState() =>
-      _ListenHistorySettingsSectionState();
+  ConsumerState<ListenHistorySettingRows> createState() =>
+      _ListenHistorySettingRowsState();
 }
 
-class _ListenHistorySettingsSectionState
-    extends ConsumerState<ListenHistorySettingsSection> {
+class _ListenHistorySettingRowsState
+    extends ConsumerState<ListenHistorySettingRows> {
   bool _clearing = false;
 
   Future<void> _clear() async {
@@ -57,8 +56,8 @@ class _ListenHistorySettingsSectionState
     final l10n = context.l10n;
     final canClear = ref.watch(listenRecorderProvider) != null && !_clearing;
 
-    return SettingsSection(
-      title: l10n.listenHistorySection,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SettingRow.single(
           title: l10n.listenHistoryRecord,
@@ -74,6 +73,7 @@ class _ListenHistorySettingsSectionState
         ),
         SettingRow.single(
           title: l10n.listenHistoryClear,
+          subtitle: l10n.settingsClearListenHistoryHint,
           control: FilledButton.tonal(
             style: settingButtonStyle(),
             onPressed: canClear ? _clear : null,

@@ -65,12 +65,16 @@ class SettingDropdown<T> extends StatelessWidget {
     required this.selected,
     required this.onSelected,
     this.leadingIcon,
+    this.enabled = true,
   });
 
   final List<SettingOption<T>> options;
   final T selected;
   final ValueChanged<T> onSelected;
   final IconData? leadingIcon;
+
+  /// `false` draws and announces the dropdown as disabled.
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +98,7 @@ class SettingDropdown<T> extends StatelessWidget {
         // kept for that one case; accepted.
         key: ValueKey(Localizations.localeOf(context)),
         initialSelection: selected,
+        enabled: enabled,
         requestFocusOnTap: false,
         enableFilter: false,
         leadingIcon: leading,

@@ -284,4 +284,92 @@ void main() {
       expect(decoded.unknownKeys, isEmpty);
     });
   });
+
+  group('animations', () {
+    test('are on by default, also for a file without the key', () {
+      expect(decodeSettings(<String, Object?>{}).settings.animations, isTrue);
+      expect(const AppSettings().animations, isTrue);
+    });
+
+    test('round-trip when turned off', () {
+      const settings = AppSettings(animations: false);
+
+      final json = encodeSettings(settings);
+
+      expect(json['animations'], false);
+      expect(decodeSettings(json).settings, settings);
+      expect(settings.toString(), contains('animations: false'));
+    });
+
+    test('a value of the wrong type gives the default', () {
+      final decoded = decodeSettings(<String, Object?>{'animations': 'no'});
+
+      expect(decoded.settings.animations, isTrue);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+  });
+
+  group('preference groups', () {
+    test('a file without them gives the defaults', () {
+      final settings = decodeSettings(<String, Object?>{}).settings;
+
+      expect(settings.libraryScan, const LibraryScanPrefs());
+      expect(settings.playback, const PlaybackPrefs());
+      expect(settings.display, const DisplayPrefs());
+    });
+
+    test('round-trip as nested objects', () {
+      const settings = AppSettings(
+        libraryScan: LibraryScanPrefs(minFileSizeKb: 500),
+        playback: PlaybackPrefs(gapless: false),
+        display: DisplayPrefs(fontScale: 1.2),
+      );
+
+      final json = encodeSettings(settings);
+
+      expect((json['libraryScan']! as Map)['minFileSizeKb'], 500);
+      expect((json['playback']! as Map)['gapless'], false);
+      expect((json['display']! as Map)['fontScale'], 1.2);
+      expect(decodeSettings(json).settings, settings);
+    });
+
+    test('are known keys, not left over as unknown ones', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'libraryScan': <String, Object?>{},
+        'playback': <String, Object?>{},
+        'display': <String, Object?>{},
+      });
+
+      expect(decoded.unknownKeys, isEmpty);
+    });
+
+    test(
+      'keys inside a group are kept, an object of the wrong type is not',
+      () {
+        final decoded = decodeSettings(<String, Object?>{
+          'playback': <String, Object?>{'eq': 1},
+          'display': 'bad',
+        });
+        final json = encodeSettings(
+          decoded.settings,
+          groupExtras: decoded.groupExtras,
+        );
+
+        expect((json['playback']! as Map)['eq'], 1);
+        expect(decoded.groupExtras['display'], isEmpty);
+        expect(json['display'], isA<Map<String, Object?>>());
+      },
+    );
+
+    test('settings that differ only in a group are not equal', () {
+      expect(
+        const AppSettings(playback: PlaybackPrefs(gapless: false)),
+        isNot(const AppSettings()),
+      );
+      expect(
+        const AppSettings(playback: PlaybackPrefs(gapless: false)).hashCode,
+        isNot(const AppSettings().hashCode),
+      );
+    });
+  });
 }

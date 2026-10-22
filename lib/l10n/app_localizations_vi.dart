@@ -750,16 +750,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsAddFolder => 'Thêm thư mục';
 
   @override
-  String get settingsChangeFolder => 'Đổi thư mục…';
-
-  @override
   String get settingsRemoveFolder => 'Bỏ khỏi thư viện';
 
   @override
   String get settingsFolderMissing => 'Thư mục này không còn tồn tại';
-
-  @override
-  String get settingsFolderMenu => 'Tuỳ chọn thư mục';
 
   @override
   String get settingsRemoveFolderTitle => 'Bỏ thư mục khỏi thư viện?';
@@ -782,17 +776,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String settingsRemoveFolderFailed(String path) {
     return 'Không bỏ được $path. Xem chi tiết trong nhật ký.';
   }
-
-  @override
-  String get settingsReplaceFolderTitle => 'Đổi thư mục?';
-
-  @override
-  String settingsReplaceFolderBody(String oldPath, String newPath) {
-    return 'Thay $oldPath bằng $newPath? Các bài trong $oldPath sẽ bị gỡ khỏi thư viện và $newPath sẽ được quét. File nhạc trên đĩa không bị xoá.';
-  }
-
-  @override
-  String get settingsReplaceFolderConfirm => 'Đổi';
 
   @override
   String get settingsRescanOnStartup => 'Quét lại khi mở Kanaru';
@@ -856,7 +839,316 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get listenHistorySection => 'Lịch sử nghe';
+  String get settingsLibraryStats => 'Trong thư viện';
+
+  @override
+  String settingsStatsTracks(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString bài';
+  }
+
+  @override
+  String settingsStatsAlbums(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString album';
+  }
+
+  @override
+  String settingsStatsArtists(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString nghệ sĩ';
+  }
+
+  @override
+  String settingsStatsGenres(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString thể loại';
+  }
+
+  @override
+  String get settingsOpenLogFolder => 'File log';
+
+  @override
+  String get settingsOpenLogFolderHint =>
+      'Để đính kèm khi báo lỗi. Mật khẩu và token đã được che trước khi ghi.';
+
+  @override
+  String get settingsOpenLogFolderButton => 'Mở';
+
+  @override
+  String get settingsLogFolderUnavailable =>
+      'Kanaru không có thư mục log trên hệ thống này.';
+
+  @override
+  String get settingsComingSoon => 'Sắp có';
+
+  @override
+  String get settingsOff => 'Tắt';
+
+  @override
+  String get settingsBackupExport => 'Xuất…';
+
+  @override
+  String settingsUnitKb(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString KB';
+  }
+
+  @override
+  String settingsUnitMb(double value) {
+    final intl.NumberFormat valueNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String valueString = valueNumberFormat.format(value);
+
+    return '$valueString MB';
+  }
+
+  @override
+  String settingsUnitSeconds(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString giây';
+  }
+
+  @override
+  String settingsUnitMs(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString ms';
+  }
+
+  @override
+  String settingsUnitMinutes(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString phút';
+  }
+
+  @override
+  String settingsUnitPercent(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString%';
+  }
+
+  @override
+  String get settingsAnimations => 'Hiệu ứng chuyển động';
+
+  @override
+  String get settingsAnimationsHint =>
+      'Tắt: trang và bảng chuyển không có chuyển động.';
+
+  @override
+  String get settingsColorFromCover => 'Màu theo ảnh bìa';
+
+  @override
+  String get settingsColorFromCoverHint =>
+      'Phủ màu của ảnh bìa đang phát lên giao diện.';
+
+  @override
+  String get settingsFontScale => 'Cỡ chữ';
+
+  @override
+  String get settingsFontScaleHint =>
+      'Làm mọi chữ trong Kanaru nhỏ hơn hoặc lớn hơn.';
+
+  @override
+  String get settingsRespectNomedia => 'Bỏ qua thư mục có .nomedia';
+
+  @override
+  String get settingsRespectNomediaHint =>
+      'Thư mục có file .nomedia không vào thư viện. Có hiệu lực ở lần quét sau.';
+
+  @override
+  String get settingsDuplicatesByFilename => 'Tìm bài trùng theo tên file';
+
+  @override
+  String get settingsDuplicatesByFilenameHint =>
+      'File trùng tên được tính là một bài. Có hiệu lực ở lần quét sau.';
+
+  @override
+  String get settingsM3uPlaylists => 'Đọc playlist m3u';
+
+  @override
+  String get settingsM3uPlaylistsHint =>
+      'Thêm các file .m3u trong thư mục nhạc thành playlist. Có hiệu lực ở lần quét sau.';
+
+  @override
+  String get settingsAlbumGrouping => 'Nhóm album theo';
+
+  @override
+  String get settingsAlbumGroupingHint =>
+      'Bài cùng tên album là một album; chọn thêm điều kiện phải trùng. Có hiệu lực ở lần quét sau.';
+
+  @override
+  String get settingsAlbumGroupTitle => 'Tên album';
+
+  @override
+  String get settingsAlbumGroupArtist => 'Album artist';
+
+  @override
+  String get settingsAlbumGroupYear => 'Năm';
+
+  @override
+  String get settingsMinFileSize => 'Kích thước file tối thiểu';
+
+  @override
+  String get settingsMinFileSizeHint =>
+      'File nhỏ hơn không vào thư viện. Có hiệu lực ở lần quét sau.';
+
+  @override
+  String get settingsMinDuration => 'Thời lượng tối thiểu';
+
+  @override
+  String get settingsMinDurationHint =>
+      'Bài ngắn hơn không vào thư viện. Có hiệu lực ở lần quét sau.';
+
+  @override
+  String get settingsClearCoverCache => 'Xoá cache ảnh bìa';
+
+  @override
+  String get settingsClearCoverCacheHint =>
+      'Ảnh bìa biến mất cho đến khi lần quét sau tạo lại.';
+
+  @override
+  String get settingsClearCoverCacheButton => 'Xoá';
+
+  @override
+  String get settingsPreferEmbeddedLyrics => 'Ưu tiên lời nhúng trong file';
+
+  @override
+  String get settingsPreferEmbeddedLyricsHint =>
+      'Dùng lời lưu trong file nhạc trước các file lời đặt cạnh nó.';
+
+  @override
+  String get settingsGapless => 'Phát liền mạch (gapless)';
+
+  @override
+  String get settingsGaplessHint =>
+      'Không có khoảng lặng giữa các bài nối tiếp nhau, như trong một album.';
+
+  @override
+  String get settingsCrossfade => 'Chuyển bài mờ dần (crossfade)';
+
+  @override
+  String get settingsCrossfadeHint =>
+      'Thời gian cuối bài này chồng lên đầu bài kế tiếp.';
+
+  @override
+  String get settingsFadeOnPlay => 'Tăng dần âm lượng khi phát';
+
+  @override
+  String get settingsFadeOnPlayHint => 'Tăng âm lượng từ từ khi bắt đầu phát.';
+
+  @override
+  String get settingsFadeOnPause => 'Giảm dần âm lượng khi tạm dừng';
+
+  @override
+  String get settingsFadeOnPauseHint =>
+      'Giảm âm lượng từ từ trước khi tạm dừng.';
+
+  @override
+  String get settingsInfiniteQueue => 'Hàng đợi vô hạn';
+
+  @override
+  String get settingsInfiniteQueueHint =>
+      'Hết hàng đợi thì Bài tiếp quay về bài đầu, và Bài trước ở bài đầu nhảy tới bài cuối, bất kể chế độ lặp.';
+
+  @override
+  String get settingsListenAfterTime => 'Một lượt nghe được tính sau';
+
+  @override
+  String get settingsListenAfterTimeHint =>
+      'Khoảng thời gian này, hoặc tỉ lệ bên dưới của bài, tuỳ điều kiện nào đến trước.';
+
+  @override
+  String get settingsListenAfterShare =>
+      'Một lượt nghe được tính sau (tỉ lệ của bài)';
+
+  @override
+  String get settingsListenAfterShareHint =>
+      'Tỉ lệ này của bài, hoặc thời gian bên trên, tuỳ điều kiện nào đến trước.';
+
+  @override
+  String get settingsSidebarTabs => 'Tab thanh bên';
+
+  @override
+  String get settingsSidebarTabsHint => 'Chọn các trang hiện ở thanh bên.';
+
+  @override
+  String get settingsTabGenres => 'Thể loại';
+
+  @override
+  String get settingsTabLanguages => 'Ngôn ngữ bài hát';
+
+  @override
+  String get settingsTrackNumbers => 'Số thứ tự bài trong album';
+
+  @override
+  String get settingsTrackNumbersHint =>
+      'Hiện số thứ tự của từng bài trên trang album.';
+
+  @override
+  String get settingsAdvanced => 'Nâng cao';
+
+  @override
+  String get settingsBackupRestore => 'Sao lưu & khôi phục';
+
+  @override
+  String get settingsBackupRestoreRow => 'Sao lưu và khôi phục dữ liệu';
+
+  @override
+  String get settingsBackupRestoreHint =>
+      'Xuất và nhập cài đặt, playlist và lượt nghe.';
+
+  @override
+  String get settingsThemeHint => 'Sáng, tối hoặc theo hệ thống';
+
+  @override
+  String get settingsLanguageHint => 'Ngôn ngữ của menu và nhãn';
+
+  @override
+  String get settingsTitleBarHint =>
+      'Thanh riêng của Kanaru có nút cửa sổ, thanh của hệ thống, hoặc không có';
+
+  @override
+  String get settingsFoldersHint =>
+      'Thư mục Kanaru tìm nhạc. Bỏ một thư mục không xoá file nào.';
+
+  @override
+  String get settingsRescanOnStartupHint =>
+      'Mỗi lần mở Kanaru, tìm file mới, đã sửa và đã xoá trong nền';
+
+  @override
+  String get settingsRescanLibraryHint =>
+      'Tìm thay đổi trong các thư mục nhạc ngay bây giờ';
+
+  @override
+  String get settingsClearListenHistoryHint =>
+      'Xoá mọi lượt nghe đã ghi trên máy này. Không hoàn tác được.';
 
   @override
   String get listenHistoryRecord => 'Ghi lịch sử nghe';

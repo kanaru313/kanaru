@@ -1,4 +1,6 @@
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -46,6 +48,8 @@ void main() {
     final ids = await tester.runAsync(() => h.db.addRoots(roots, now: 1));
     if (seed != null) await tester.runAsync(() => seed(ids!));
     await h.pump(tester, hasRoots: roots.isNotEmpty);
+    // Tall, so the folders are on screen below the appearance rows.
+    tester.view.physicalSize = const Size(1280, 2400);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
   }
@@ -66,16 +70,39 @@ void main() {
   Finder dialogButton(String label) =>
       find.descendant(of: find.byType(AlertDialog), matching: find.text(label));
 
-  Future<void> chooseRowAction(
-    WidgetTester tester,
-    LibraryHarness h,
-    String action,
-  ) async {
-    await tester.tap(find.byTooltip('Folder actions').first);
+  TestGesture? mouse;
+  setUp(() => mouse = null);
+
+  /// Moves the test's mouse pointer over [target], adding it on first use.
+  Future<TestGesture> hover(WidgetTester tester, Finder target) async {
+    var gesture = mouse;
+    if (gesture == null) {
+      gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+      mouse = gesture;
+    }
+    await gesture.moveTo(tester.getCenter(target));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(action).last);
+    return gesture;
+  }
+
+  /// Hovers the folder row of [path] and taps its remove button.
+  Future<void> removeRow(WidgetTester tester, String path) async {
+    await hover(tester, find.text(path).first);
+    await tester.tap(find.byTooltip('Remove from library'));
     await tester.pumpAndSettle();
   }
+
+  /// How opaque the remove button of the (only) folder row is.
+  double removeOpacity(WidgetTester tester) => tester
+      .widget<AnimatedOpacity>(
+        find.ancestor(
+          of: find.byTooltip('Remove from library'),
+          matching: find.byType(AnimatedOpacity),
+        ),
+      )
+      .opacity;
 
   testWidgets('lists the folders, a missing one struck through', (
     tester,
@@ -96,8 +123,10 @@ void main() {
       isNot(TextDecoration.lineThrough),
     );
     expect(find.text('This folder no longer exists'), findsOneWidget);
-    expect(find.byTooltip('Remove from library'), findsOneWidget);
-    expect(find.byTooltip('Folder actions'), findsOneWidget);
+    // The present folder's button is there too, only invisible.
+    expect(find.byTooltip('Remove from library'), findsNWidgets(2));
+    expect(find.byTooltip('Folder actions'), findsNothing);
+    expect(find.text('Change folder…'), findsNothing);
   });
 
   testWidgets('the trash button of a missing folder removes it and its songs', (
@@ -138,17 +167,18 @@ void main() {
       ]),
     );
 
-    await chooseRowAction(tester, h, 'Remove from library');
+    await removeRow(tester, music);
     expect(
       find.textContaining('2 songs will leave the library'),
       findsOneWidget,
     );
     await tester.tap(dialogButton('Cancel'));
     await settleIo(tester, h);
-    expect(find.text(music), findsOneWidget);
+    // The pointer still rests on the row, so its tooltip shows the path too.
+    expect(find.text(music), findsWidgets);
     expect(await storedRoots(tester, h), [music]);
 
-    await chooseRowAction(tester, h, 'Remove from library');
+    await removeRow(tester, music);
     await tester.tap(dialogButton('Remove'));
     await settleIo(tester, h);
     expect(find.text(music), findsNothing);
@@ -186,53 +216,93 @@ void main() {
     expect(await storedRoots(tester, h), [music]);
   });
 
-  testWidgets('changing to the same folder asks nothing and writes nothing', (
+  testWidgets('the remove button shows on hover and hides again', (
     tester,
   ) async {
     final h = LibraryHarness();
     final music = h.folder('music');
     await openSettings(tester, h, roots: [music]);
-    h.picks.add(music);
+    expect(removeOpacity(tester), 0);
+    // Invisible, yet still in the semantics tree for screen readers.
+    final semantics = tester.ensureSemantics();
+    expect(
+      tester.getSemantics(find.byTooltip('Remove from library')),
+      matchesSemantics(
+        tooltip: 'Remove from library',
+        isButton: true,
+        hasEnabledState: true,
+        isEnabled: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    semantics.dispose();
 
-    await chooseRowAction(tester, h, 'Change folder…');
-    await settleIo(tester, h);
+    final pointer = await hover(tester, find.text(music));
+    expect(removeOpacity(tester), 1);
 
-    expect(find.byType(AlertDialog), findsNothing);
-    expect(await storedRoots(tester, h), [music]);
+    await pointer.moveTo(Offset.zero);
+    await tester.pumpAndSettle();
+    expect(removeOpacity(tester), 0);
   });
 
-  testWidgets('changing to another folder replaces it after confirming', (
+  testWidgets('keyboard focus shows the remove button and Enter asks', (
     tester,
   ) async {
     final h = LibraryHarness();
     final music = h.folder('music');
-    final other = h.folder('other');
-    h.touch(other, 'new.mp3');
-    await openSettings(
-      tester,
-      h,
-      roots: [music],
-      seed: (ids) => h.db.upsertTracks([_track(ids.single, '$music/old.mp3')]),
-    );
-    h.picks.add(other);
+    await openSettings(tester, h, roots: [music]);
+    expect(removeOpacity(tester), 0);
 
-    await chooseRowAction(tester, h, 'Change folder…');
-    await settleIo(tester, h);
-    expect(find.textContaining('Replace $music with $other?'), findsOneWidget);
-    await tester.tap(dialogButton('Change'));
-    await settleIo(tester, h);
-
-    expect(find.text(music), findsNothing);
-    expect(find.text(other), findsOneWidget);
-    expect(await storedRoots(tester, h), [other]);
-    // The scan starts a moment after the write.
-    for (var i = 0; i < 50; i++) {
-      if ((await storedTracks(tester, h)).isNotEmpty) break;
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
+    // Tab until focus reaches the hidden button.
+    for (var i = 0; i < 40 && removeOpacity(tester) == 0; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pumpAndSettle();
     }
-    expect(await storedTracks(tester, h), ['$other/new.mp3']);
+    expect(removeOpacity(tester), 1);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await settleIo(tester, h);
+    expect(find.text('Remove folder from library?'), findsOneWidget);
+  });
+
+  testWidgets('a missing folder keeps a red button; a present one does not', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    final present = h.folder('music');
+    final gone = '${h.tmp.resolveSymbolicLinksSync()}/unplugged';
+    await openSettings(tester, h, roots: [present, gone]);
+
+    final scheme = Theme.of(tester.element(find.text(present))).colorScheme;
+    Color? colorOf(String path) => tester
+        .widget<IconButton>(
+          find.descendant(
+            of: find.ancestor(
+              of: find.text(path),
+              matching: find.byType(ListTile),
+            ),
+            matching: find.byType(IconButton),
+          ),
+        )
+        .color;
+    double opacityOf(String path) => tester
+        .widget<AnimatedOpacity>(
+          find.descendant(
+            of: find.ancestor(
+              of: find.text(path),
+              matching: find.byType(ListTile),
+            ),
+            matching: find.byType(AnimatedOpacity),
+          ),
+        )
+        .opacity;
+
+    expect(opacityOf(gone), 1);
+    expect(colorOf(gone), scheme.error);
+    expect(opacityOf(present), 0);
+    expect(colorOf(present), scheme.onSurface);
   });
 
   testWidgets('the startup rescan switch is saved', (tester) async {

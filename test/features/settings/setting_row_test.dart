@@ -1,5 +1,8 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
+import 'package:kanaru/features/settings/settings_chips_row.dart';
+import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Row widths on both sides of the width below which rows are narrow.
@@ -58,7 +61,107 @@ void main() {
     await pump(_wide);
     expect(mounts[true], 1);
   });
+
+  group('coming soon', () {
+    testWidgets('shows the badge and ignores taps, even with a callback', (
+      tester,
+    ) async {
+      var changes = 0;
+      await _pumpLocalized(
+        tester,
+        SettingRow.single(
+          title: 'Gapless',
+          subtitle: 'Hint',
+          comingSoon: true,
+          control: Switch(value: false, onChanged: (_) => changes++),
+        ),
+      );
+
+      expect(find.text('Coming soon'), findsOneWidget);
+      await tester.tap(find.byType(Switch), warnIfMissed: false);
+      await tester.pump();
+      expect(changes, 0);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+    });
+
+    testWidgets('keeps keyboard focus out of the control', (tester) async {
+      var changes = 0;
+      var live = 0;
+      await _pumpLocalized(
+        tester,
+        Column(
+          children: [
+            SettingRow.single(
+              title: 'Soon',
+              comingSoon: true,
+              control: Switch(value: false, onChanged: (_) => changes++),
+            ),
+            SettingRow.single(
+              title: 'Live',
+              control: Switch(value: false, onChanged: (_) => live++),
+            ),
+          ],
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pump();
+
+      // The first Tab skipped the coming soon switch.
+      expect(changes, 0);
+      expect(live, 1);
+    });
+
+    testWidgets('a normal row has no badge', (tester) async {
+      await _pumpLocalized(
+        tester,
+        SettingRow.single(
+          title: 'Live',
+          control: Switch(value: true, onChanged: (_) {}),
+        ),
+      );
+
+      expect(find.text('Coming soon'), findsNothing);
+    });
+
+    testWidgets('the chips row ignores taps', (tester) async {
+      var taps = 0;
+      await _pumpLocalized(
+        tester,
+        SettingsChipsRow(
+          title: 'Tabs',
+          comingSoon: true,
+          chips: [
+            FilterChip(
+              label: const Text('Songs'),
+              selected: true,
+              onSelected: (_) => taps++,
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text('Coming soon'), findsOneWidget);
+      await tester.tap(find.text('Songs'), warnIfMissed: false);
+      await tester.pump();
+      expect(taps, 0);
+    });
+  });
 }
+
+Future<void> _pumpLocalized(WidgetTester tester, Widget child) =>
+    tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
+        home: Material(
+          child: Align(alignment: Alignment.topLeft, child: child),
+        ),
+      ),
+    );
 
 Future<void> _pumpRow(WidgetTester tester, double width, Widget row) async {
   await tester.pumpWidget(

@@ -398,10 +398,8 @@
   "settingsRescanLibrary": "Rescan library",
   "settingsFolders": "Music folders",
   "settingsAddFolder": "Add folder",
-  "settingsChangeFolder": "Change folder…",
   "settingsRemoveFolder": "Remove from library",
   "settingsFolderMissing": "This folder no longer exists",
-  "settingsFolderMenu": "Folder actions",
   "settingsRemoveFolderTitle": "Remove folder from library?",
   "settingsRemoveFolderBody": "{count, plural, =0{No songs will leave the library.} =1{1 song will leave the library.} other{{count} songs will leave the library.}} Files on disk are not deleted.",
   "@settingsRemoveFolderBody": {
@@ -416,15 +414,6 @@
       "path": { "type": "String" }
     }
   },
-  "settingsReplaceFolderTitle": "Change folder?",
-  "settingsReplaceFolderBody": "Replace {oldPath} with {newPath}? Songs from {oldPath} leave the library and {newPath} is scanned. Files on disk are not deleted.",
-  "@settingsReplaceFolderBody": {
-    "placeholders": {
-      "oldPath": { "type": "String" },
-      "newPath": { "type": "String" }
-    }
-  },
-  "settingsReplaceFolderConfirm": "Change",
   "settingsRescanOnStartup": "Rescan when Kanaru opens",
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
@@ -454,7 +443,131 @@
       "target": { "type": "String" }
     }
   },
-  "listenHistorySection": "Listen history",
+  "settingsLibraryStats": "In your library",
+  "settingsStatsTracks": "{count, plural, =1{{count} track} other{{count} tracks}}",
+  "@settingsStatsTracks": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsStatsAlbums": "{count, plural, =1{{count} album} other{{count} albums}}",
+  "@settingsStatsAlbums": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsStatsArtists": "{count, plural, =1{{count} artist} other{{count} artists}}",
+  "@settingsStatsArtists": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsStatsGenres": "{count, plural, =1{{count} genre} other{{count} genres}}",
+  "@settingsStatsGenres": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsOpenLogFolder": "Log files",
+  "settingsOpenLogFolderHint": "For bug reports. Passwords and tokens are removed before writing.",
+  "settingsOpenLogFolderButton": "Open",
+  "settingsLogFolderUnavailable": "Kanaru has no folder for log files on this system.",
+  "settingsComingSoon": "Coming soon",
+  "settingsOff": "Off",
+  "settingsBackupExport": "Export…",
+  "settingsUnitKb": "{count} KB",
+  "@settingsUnitKb": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitMb": "{value} MB",
+  "@settingsUnitMb": {
+    "placeholders": {
+      "value": { "type": "double", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitSeconds": "{count} s",
+  "@settingsUnitSeconds": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitMs": "{count} ms",
+  "@settingsUnitMs": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitMinutes": "{count} min",
+  "@settingsUnitMinutes": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsUnitPercent": "{count}%",
+  "@settingsUnitPercent": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsAnimations": "Animations",
+  "settingsAnimationsHint": "Off: pages and panels switch without motion.",
+  "settingsColorFromCover": "Colors from the cover",
+  "settingsColorFromCoverHint": "Tint the app with the colors of the cover that is playing.",
+  "settingsFontScale": "Text size",
+  "settingsFontScaleHint": "Makes all text in Kanaru smaller or larger.",
+  "settingsRespectNomedia": "Skip folders with .nomedia",
+  "settingsRespectNomediaHint": "Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.",
+  "settingsDuplicatesByFilename": "Find duplicates by file name",
+  "settingsDuplicatesByFilenameHint": "Files with the same name count as one song. Applies at the next rescan.",
+  "settingsM3uPlaylists": "Read m3u playlists",
+  "settingsM3uPlaylistsHint": "Add the .m3u files found in the music folders as playlists. Applies at the next rescan.",
+  "settingsAlbumGrouping": "Group albums by",
+  "settingsAlbumGroupingHint": "Songs with the same album title are one album; pick what else must match. Applies at the next rescan.",
+  "settingsAlbumGroupTitle": "Album title",
+  "settingsAlbumGroupArtist": "Album artist",
+  "settingsAlbumGroupYear": "Year",
+  "settingsMinFileSize": "Minimum file size",
+  "settingsMinFileSizeHint": "Smaller files stay out of the library. Applies at the next rescan.",
+  "settingsMinDuration": "Minimum length",
+  "settingsMinDurationHint": "Shorter songs stay out of the library. Applies at the next rescan.",
+  "settingsClearCoverCache": "Clear cover cache",
+  "settingsClearCoverCacheHint": "Covers disappear until the next rescan makes them again.",
+  "settingsClearCoverCacheButton": "Clear",
+  "settingsPreferEmbeddedLyrics": "Prefer embedded lyrics",
+  "settingsPreferEmbeddedLyricsHint": "Use lyrics stored in the song file before lyric files next to it.",
+  "settingsGapless": "Gapless playback",
+  "settingsGaplessHint": "No silence between songs that follow each other, as on an album.",
+  "settingsCrossfade": "Crossfade",
+  "settingsCrossfadeHint": "How long the end of a song overlaps the start of the next.",
+  "settingsFadeOnPlay": "Fade in on play",
+  "settingsFadeOnPlayHint": "Raise the volume slowly when playback starts.",
+  "settingsFadeOnPause": "Fade out on pause",
+  "settingsFadeOnPauseHint": "Lower the volume slowly before playback pauses.",
+  "settingsInfiniteQueue": "Endless queue",
+  "settingsInfiniteQueueHint": "When the queue ends, Next goes back to the first song, and Previous on the first song goes to the last, whatever the repeat mode.",
+  "settingsListenAfterTime": "A listen counts after",
+  "settingsListenAfterTimeHint": "This long, or the share below of the song, whichever comes first.",
+  "settingsListenAfterShare": "A listen counts after (share of the song)",
+  "settingsListenAfterShareHint": "This share of the song, or the time above, whichever comes first.",
+  "settingsSidebarTabs": "Sidebar tabs",
+  "settingsSidebarTabsHint": "Choose which pages show in the sidebar.",
+  "settingsTabGenres": "Genres",
+  "settingsTabLanguages": "Languages",
+  "settingsTrackNumbers": "Track numbers in albums",
+  "settingsTrackNumbersHint": "Show each song's number on an album page.",
+  "settingsAdvanced": "Advanced",
+  "settingsBackupRestore": "Backup and restore",
+  "settingsBackupRestoreRow": "Back up and restore data",
+  "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts.",
+  "settingsThemeHint": "Light, dark, or follow the desktop",
+  "settingsLanguageHint": "Language of menus and labels",
+  "settingsTitleBarHint": "Kanaru's own bar with window buttons, the system's, or none",
+  "settingsFoldersHint": "Folders Kanaru looks for music in. Removing one never deletes files.",
+  "settingsRescanOnStartupHint": "Look for new, changed and removed files in the background each time Kanaru opens",
+  "settingsRescanLibraryHint": "Look for changes in the music folders now",
+  "settingsClearListenHistoryHint": "Removes every recorded listen on this device. Can't be undone.",
   "listenHistoryRecord": "Record listen history",
   "listenHistoryRecordHint": "Kept only on this device. Turning it off keeps what is already recorded.",
   "listenHistoryClear": "Clear listen history",
