@@ -13,6 +13,9 @@ import '../../shared/widgets/song_tile.dart' show songCoverSize;
 /// Fixed row height, which lets the list place rows without measuring them.
 const playlistEntryExtent = 64.0;
 
+/// Space between a row's slot and its visible card.
+const playlistEntryInset = EdgeInsets.symmetric(horizontal: 24, vertical: 4);
+
 /// One playlist entry: drag handle, cover, title with "artist · album",
 /// length and a remove button. An entry whose file is not in the library
 /// shows its file name, is dimmed and does not play.
@@ -126,7 +129,7 @@ class PlaylistEntryTile extends ConsumerWidget {
     return SizedBox(
       height: playlistEntryExtent,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        padding: playlistEntryInset,
         child: Opacity(
           opacity: track == null ? 0.6 : 1,
           child: QueueActionsRegion(

@@ -93,13 +93,35 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     }
   }
 
-  Widget _lift(Widget child, int index, Animation<double> animation) =>
-      Material(
-        elevation: 4,
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        child: child,
-      );
+  /// The row being dragged: its card gets a shadow and an opaque plate of
+  /// the card's own size. The slot around the card (the row's inset) stays
+  /// clear, so no slab bigger than the card is lifted.
+  Widget _lift(Widget child, int index, Animation<double> animation) {
+    final colors = Theme.of(context).colorScheme;
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Padding(
+            padding: playlistEntryInset,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.shadow.withValues(alpha: 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
