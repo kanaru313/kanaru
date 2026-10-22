@@ -249,7 +249,15 @@ fn scan_covers_stages() {
         let _ = read_one(path);
     }
     let (wall, cpu) = warm.stop();
-    row("warmup", "read_one all", wall, cpu, setup.paths.len(), 0, 100.0);
+    row(
+        "warmup",
+        "read_one all",
+        wall,
+        cpu,
+        setup.paths.len(),
+        0,
+        100.0,
+    );
 
     let want = |name: &str| setup.section == "all" || setup.section == name;
     if want("tags") {
@@ -283,8 +291,19 @@ fn tags_section(paths: &[String]) {
         let (wall, cpu) = clock.stop();
         assert_eq!(tags.len(), slice.len());
         let failed = tags.iter().filter(|t| t.error.is_some()).count();
-        row("tags", &format!("{name} ({})", slice.len()), wall, cpu, slice.len(), 0, 100.0);
-        count(&format!("tags {name}"), &[("files", slice.len()), ("errors", failed)]);
+        row(
+            "tags",
+            &format!("{name} ({})", slice.len()),
+            wall,
+            cpu,
+            slice.len(),
+            0,
+            100.0,
+        );
+        count(
+            &format!("tags {name}"),
+            &[("files", slice.len()), ("errors", failed)],
+        );
     }
 }
 
@@ -541,8 +560,24 @@ fn serial_section(paths: &[String], root: &Path, dump: Option<&Path>) {
     // Buckets show wall and the thread's CPU time; the percentages are of CPU.
     let pass = b.tags_and_pictures + b.sidecar_io + b.hash + b.make + b.write;
     let pct = |d: Span| 100.0 * d.cpu.as_secs_f64() / pass.cpu.as_secs_f64();
-    row("serial", "whole loop (incl. tags; cpu of the whole process)", wall, cpu, c.files, made, 100.0 * cpu / ms(pass.cpu));
-    row("serial", "cover pass (sum of buckets, no tags)", ms(pass.wall), ms(pass.cpu), c.files, made, 100.0);
+    row(
+        "serial",
+        "whole loop (incl. tags; cpu of the whole process)",
+        wall,
+        cpu,
+        c.files,
+        made,
+        100.0 * cpu / ms(pass.cpu),
+    );
+    row(
+        "serial",
+        "cover pass (sum of buckets, no tags)",
+        ms(pass.wall),
+        ms(pass.cpu),
+        c.files,
+        made,
+        100.0,
+    );
     let pictures_load = Span {
         wall: b.tags_and_pictures.wall.saturating_sub(b.tags.wall),
         cpu: b.tags_and_pictures.cpu.saturating_sub(b.tags.cpu),
@@ -657,13 +692,19 @@ fn pool_pass(name: &str, paths: &[String], dir: &Path, chunk: usize) -> PoolRun 
 fn pool_section(paths: &[String], root: &Path) {
     let dir = fresh_dir(root, "pool-chunk32");
     let cold = pool_pass("cold chunk 32", paths, &dir, APP_COVER_CHUNK);
-    assert!(cold.made > 0, "the cold pass made no thumbnail: the folder was not empty");
+    assert!(
+        cold.made > 0,
+        "the cold pass made no thumbnail: the folder was not empty"
+    );
     let warm = pool_pass("warm chunk 32", paths, &dir, APP_COVER_CHUNK);
     assert_eq!(warm.made, 0, "the warm pass made thumbnails");
     remove_dir(root, &dir);
 
     let dir = fresh_dir(root, "pool-chunk512");
     let large = pool_pass("cold chunk 512", paths, &dir, LARGE_COVER_CHUNK);
-    assert!(large.made > 0, "the cold pass made no thumbnail: the folder was not empty");
+    assert!(
+        large.made > 0,
+        "the cold pass made no thumbnail: the folder was not empty"
+    );
     remove_dir(root, &dir);
 }

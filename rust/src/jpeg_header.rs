@@ -204,7 +204,7 @@ fn parse_frame(marker: u8, payload: &[u8]) -> Option<Frame> {
     }
     let components = payload.get(6..6 + 3 * count)?;
     let mut sampling = Vec::with_capacity(count);
-    for component in components.chunks_exact(3) {
+    for component in components.as_chunks::<3>().0 {
         let (h, v) = (component[1] >> 4, component[1] & 0x0F);
         if !(1..=4).contains(&h) || !(1..=4).contains(&v) {
             return None;
