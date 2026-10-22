@@ -95,16 +95,16 @@ Secrets are never written to these files (planned keyring storage for remote sou
 
 ## Reset targets
 
-Quit Kanaru first. Each target is a `Makefile` rule that runs `rm -rf` on the paths shown.
+Quit Kanaru first. `reset-covers` and `reset-all` are `Makefile` rules that run `rm -rf` on the paths shown. `reset-library` runs [packaging/dev/reset-library.sql](../packaging/dev/reset-library.sql) with the `sqlite3` CLI (from `PATH`, else from the Nix dev shell; non-Nix users need `sqlite3` 3.35+ with FTS5). It refuses to run while a process has `library.db` open.
 
-| Command | Removes | Next start |
-|---|---|---|
-| `make reset-covers` | `cache/covers` | Covers read again on the next scan |
-| `make reset-library` | `data` (library database) | Folder picker shows again |
-| `make reset-all` | `data`, `config`, `cache` (library, settings, playback session, covers, logs) | Like a fresh install |
-| `make logs` | nothing | Follows `kanaru.log` |
+| Command | Removes | Keeps | Next start |
+|---|---|---|---|
+| `make reset-covers` | `cache/covers` | everything else | Covers read again on the next scan |
+| `make reset-library` | Library folders, tracks, track artists and the search index inside `library.db`; `cache/covers` | Playlists, listen history and play counts, settings, session | Folder picker shows again (no library folders); the old playlist entries and plays match again by path once the same files are scanned |
+| `make reset-all` | `data`, `config`, `cache`: library, **playlists, listen history**, settings, playback session, covers, logs | nothing | Like a fresh install |
+| `make logs` | nothing | everything | Follows `kanaru.log` |
 
-Use `make reset-library` instead of a migration when a dev schema change is not worth keeping (see [development.md](./development.md#code-generation)).
+`reset-library` lists its tables explicitly: when a table derived from the scan is added, update the SQL. For a throwaway dev schema change that is not worth migrating, use `make reset-all` (it also deletes playlists and listen history; see [development.md](./development.md#code-generation)).
 
 ## Single instance
 

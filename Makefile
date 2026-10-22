@@ -16,6 +16,13 @@ CONFIG_DIR := $(or $(XDG_CONFIG_HOME),$(HOME)/.config)/kanaru
 DATA_DIR   := $(or $(XDG_DATA_HOME),$(HOME)/.local/share)/kanaru
 CACHE_DIR  := $(or $(XDG_CACHE_HOME),$(HOME)/.cache)/kanaru
 
+# sqlite3 CLI for the reset targets: from PATH, else from the Nix dev shell.
+ifeq ($(shell command -v sqlite3 2>/dev/null),)
+  SQLITE := nix develop -c sqlite3
+else
+  SQLITE := sqlite3
+endif
+
 .DEFAULT_GOAL := help
 
 ##@ Run
@@ -82,11 +89,17 @@ reset-covers: ## Drop cover thumbnails; the next rescan reads them again
 	command rm -rf $(CACHE_DIR)/covers
 
 .PHONY: reset-library
-reset-library: ## Drop the library database: next start shows the folder picker
-	command rm -rf $(DATA_DIR)
+reset-library: ## Forget scanned folders and tracks (keeps playlists and listen history), drop covers
+	@db="$(DATA_DIR)/library.db"; \
+	if [ ! -f "$$db" ]; then echo "No library database at $$db: nothing to reset."; exit 0; fi; \
+	if [ -n "$$(find /proc/[0-9]*/fd -lname "$$(realpath "$$db")" 2>/dev/null | head -n 1)" ]; then \
+	  echo "Kanaru (or another process) has $$db open. Quit it first." >&2; exit 1; fi; \
+	$(SQLITE) -bail "$$db" < packaging/dev/reset-library.sql \
+	  && command rm -rf $(CACHE_DIR)/covers \
+	  && echo "Library cleared. Playlists and listen history kept; next start shows the folder picker."
 
 .PHONY: reset-all
-reset-all: ## Like a fresh install: library, settings, playback session, covers, logs
+reset-all: ## Like a fresh install: library, playlists, listen history, settings, session, covers, logs
 	command rm -rf $(DATA_DIR) $(CONFIG_DIR) $(CACHE_DIR)
 
 ##@ Clean
