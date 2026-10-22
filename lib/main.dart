@@ -19,6 +19,7 @@ import 'core/player/original_cover_reader.dart';
 import 'core/player/rust_original_cover_reader.dart';
 import 'core/player/unavailable_audio_backend.dart';
 import 'core/settings/settings_provider.dart';
+import 'core/stats/listen_recorder_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +86,9 @@ Future<void> main() async {
   // Nothing in the UI reads the provider, so this listener is what creates
   // the media controls at startup. It also keeps them for the whole session.
   container.listen(mediaControlsProvider, (_, _) {});
+  // Records listens (STAT-01) for the whole session; nothing in the UI keeps
+  // it alive.
+  container.listen(listenRecorderProvider, (_, _) {});
 
   runApp(
     UncontrolledProviderScope(container: container, child: const KanaruApp()),
