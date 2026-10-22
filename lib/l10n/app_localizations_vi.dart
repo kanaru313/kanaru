@@ -1392,4 +1392,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get excludedFoldersAlreadyExcluded => 'Thư mục này đã bị loại trừ.';
+
+  @override
+  String get settingsWatchFolders => 'Theo dõi thư mục nhạc';
+
+  @override
+  String get settingsWatchFoldersHint =>
+      'Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi';
+
+  @override
+  String get settingsWatchFoldersLimit =>
+      'Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.';
 }

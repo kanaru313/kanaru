@@ -18,6 +18,7 @@ import 'indexer_state.dart';
 import 'root_scan_result.dart';
 import 'scan_diff.dart';
 import 'scan_rules.dart';
+import 'scanned_folders.dart';
 import 'short_track_memo.dart';
 import 'tag_reader.dart' show TagReader, TrackTags;
 import 'tracks_from_tags.dart';
@@ -57,6 +58,12 @@ int tagBatchSizeFor(int total) =>
 class LibraryIndexer extends Notifier<IndexerState> {
   Future<void>? _running;
   bool _rescanRequested = false;
+
+  /// Files changed on disk since the last pass; see [scanForChanges].
+  bool _changesPending = false;
+
+  /// The running pass is for file changes only.
+  bool _changeScan = false;
 
   /// A tag batch timed out and the native call has not returned yet. Its
   /// bridge worker stays blocked, so no further tag reads are started. Clears
@@ -156,9 +163,32 @@ class LibraryIndexer extends Notifier<IndexerState> {
 
   Future<void> _scanWithFollowUp() async {
     do {
+      // A user's request wins over a change: its pass has no settle window.
+      _changeScan = _changesPending && !_rescanRequested;
       _rescanRequested = false;
+      _changesPending = false;
       await _scan();
-    } while (_rescanRequested && ref.mounted);
+    } while ((_rescanRequested || _changesPending) && ref.mounted);
+    _changeScan = false;
+  }
+
+  /// Whether a scan is running (a follow-up pass included).
+  bool get isRunning => _running != null;
+
+  /// Scans because files changed on disk (the folder watcher). Like a scan
+  /// at app start it is quiet, but it leaves everything that [scan] resets
+  /// alone: skipped covers, the automatic-follow-up guard, and it never asks
+  /// the cover pass to yield. Files modified in the last [settleWindow] are
+  /// left for the next pass. During a scan it only queues one more pass.
+  Future<void> scanForChanges() {
+    _changesPending = true;
+    final running = _running;
+    if (running != null) return running;
+    _autoStarted = true;
+    _quiet = true;
+    return _running = _scanWithFollowUp().whenComplete(() {
+      _running = null;
+    });
   }
 
   /// Publishes [next] unless the container is already disposed (the app quit
@@ -178,6 +208,13 @@ class LibraryIndexer extends Notifier<IndexerState> {
       ref.read(coverCacheDirectoryProvider),
     );
     final scanStartedAt = DateTime.now();
+    // A scan caused by file changes leaves out files still being written.
+    final settledBeforeMs = _changeScan
+        ? scanStartedAt.millisecondsSinceEpoch - settleWindow.inMilliseconds
+        : null;
+    final folders = ScannedFoldersTally(
+      ref.read(scannedFoldersProvider).byRoot,
+    );
     var added = 0, updated = 0, removed = 0, failedTags = 0, filtered = 0;
     int? coversRepaired;
     // Roots scanned to the end, without error: their covers are made next.
@@ -214,7 +251,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         if (!await db.rootExists(root.id)) continue;
         RootScanResult result;
         try {
-          result = await _scanRoot(db, reader, root, rules);
+          result = await _scanRoot(db, reader, root, rules, settledBeforeMs);
         } catch (error, stackTrace) {
           // A removed root fails on its deleted id (foreign key): not an error.
           if (!await _rootExistsOrUnknown(db, root.id)) {
@@ -244,12 +281,20 @@ class LibraryIndexer extends Notifier<IndexerState> {
             undecodableDirs.add(dir);
           }
         }
+        folders.add(root.path, result);
         walkTime += result.walkTime;
         tagTime += result.tagTime;
         dbTime += result.dbTime;
         final reason = result.skipReason;
         if (reason != null) skipped[root.path] = reason;
         if (reason == null && result.error == null) okRootIds.add(root.id);
+      }
+      // Before anything can throw or return early: the folder watcher needs
+      // the folders even when the scan failed or its covers are skipped.
+      if (ref.mounted) {
+        ref
+            .read(scannedFoldersProvider.notifier)
+            .publish(folders.byRoot, deferred: folders.deferred);
       }
       // Every root had its turn; now report a root that threw.
       if (firstError != null) {
@@ -374,6 +419,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     TagReader reader,
     LibraryRoot root,
     ScanRules rules,
+    int? settledBeforeMs,
   ) async {
     final timeouts = ref.read(scanTimeoutsProvider);
     final walkFiles = ref.read(rootWalkerProvider);
@@ -382,15 +428,17 @@ class LibraryIndexer extends Notifier<IndexerState> {
     var undecodable = 0;
     var undecodableDirs = const <String>[];
     var skippedFolders = const <String>[];
-    RootScanResult stopped(SkipReason reason) => RootScanResult(
-      undecodableNames: undecodable,
-      undecodableSampleDirs: undecodableDirs,
-      skippedFolderNames: skippedFolders,
-      skipReason: reason,
-      walkTime: walkTime.elapsed,
-      tagTime: tagTime.elapsed,
-      dbTime: dbTime.elapsed,
-    );
+    RootScanResult stopped(SkipReason reason, {List<String>? dirs}) =>
+        RootScanResult(
+          dirs: dirs,
+          undecodableNames: undecodable,
+          undecodableSampleDirs: undecodableDirs,
+          skippedFolderNames: skippedFolders,
+          skipReason: reason,
+          walkTime: walkTime.elapsed,
+          tagTime: tagTime.elapsed,
+          dbTime: dbTime.elapsed,
+        );
     _publish(
       IndexerScanning(phase: ScanPhase.discovering, rootPath: root.path),
     );
@@ -417,13 +465,18 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _awaitingWalkOf = null;
       if (!keepWalk) _abandonedWalks.remove(root.path);
     }
-    walk = applyWalkRules(walk, root.path, rules.walk);
+    walk = applyWalkRules(
+      walk,
+      root.path,
+      rules.walk,
+      settledBeforeMs: settledBeforeMs,
+    );
     undecodable = walk.undecodableNames;
     undecodableDirs = walk.undecodableSampleDirs;
     skippedFolders = walk.skippedFolderNames;
     if (walk.rootMissing) {
       _log.warning('Root unavailable, left unchanged: ${root.path}');
-      return stopped(SkipReason.missing);
+      return stopped(SkipReason.missing, dirs: const []);
     }
     dbTime.start();
     final snapshot = await db.trackSnapshot(root.id);
@@ -431,7 +484,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
     dbTime.stop();
     if (diff.rootEmpty) {
       _log.warning('Root has no audio files, left unchanged: ${root.path}');
-      return stopped(SkipReason.empty);
+      return stopped(SkipReason.empty, dirs: walk.dirs);
     }
     // Tracks stored under a rule that now bars them go with the diff's own
     // deletions; so do old rows of files found too short to keep.
@@ -454,7 +507,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       // frees up.
       if (abandoned != null) _abandonedWalks[root.path] = running;
       _retryWhenReaderFrees = true;
-      return stopped(SkipReason.readerStuck);
+      return stopped(SkipReason.readerStuck, dirs: walk.dirs);
     }
     var failedTags = 0, added = 0, updated = 0;
     IndexerScanning reading(int done) => IndexerScanning(
@@ -498,6 +551,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
           undecodableSampleDirs: undecodableDirs,
           skippedFolderNames: skippedFolders,
           skipReason: SkipReason.timedOut,
+          dirs: walk.dirs,
+          deferred: walk.deferred,
           walkTime: walkTime.elapsed,
           tagTime: tagTime.elapsed,
           dbTime: dbTime.elapsed,
@@ -553,6 +608,8 @@ class LibraryIndexer extends Notifier<IndexerState> {
       undecodableNames: undecodable,
       undecodableSampleDirs: undecodableDirs,
       skippedFolderNames: skippedFolders,
+      dirs: walk.dirs,
+      deferred: walk.deferred,
       walkTime: walkTime.elapsed,
       tagTime: tagTime.elapsed,
       dbTime: dbTime.elapsed,

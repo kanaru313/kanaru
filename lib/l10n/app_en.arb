@@ -679,5 +679,11 @@
   "excludedFoldersOutsideLibrary": "That folder is not inside a music folder.",
   "@excludedFoldersOutsideLibrary": { "description": "Shown when the folder to exclude is not below a library folder" },
   "excludedFoldersAlreadyExcluded": "That folder is already excluded.",
-  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" }
+  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" },
+  "settingsWatchFolders": "Watch music folders",
+  "@settingsWatchFolders": { "description": "Title of the switch that makes Kanaru rescan by itself when files in the music folders change" },
+  "settingsWatchFoldersHint": "Pick up added, changed and removed files while Kanaru runs, a few seconds after they stop changing",
+  "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
+  "settingsWatchFoldersLimit": "Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.",
+  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" }
 }

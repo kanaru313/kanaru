@@ -405,5 +405,8 @@
   "excludedFoldersOutsideLibrary": "Thư mục này không nằm trong thư mục nhạc nào.",
   "@excludedFoldersOutsideLibrary": { "description": "Shown when the folder to exclude is not below a library folder" },
   "excludedFoldersAlreadyExcluded": "Thư mục này đã bị loại trừ.",
-  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" }
+  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" },
+  "settingsWatchFolders": "Theo dõi thư mục nhạc",
+  "settingsWatchFoldersHint": "Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi",
+  "settingsWatchFoldersLimit": "Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại."
 }

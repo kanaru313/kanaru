@@ -2245,6 +2245,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That folder is already excluded.'**
   String get excludedFoldersAlreadyExcluded;
+
+  /// Title of the switch that makes Kanaru rescan by itself when files in the music folders change
+  ///
+  /// In en, this message translates to:
+  /// **'Watch music folders'**
+  String get settingsWatchFolders;
+
+  /// Subtitle of the watch music folders switch
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up added, changed and removed files while Kanaru runs, a few seconds after they stop changing'**
+  String get settingsWatchFoldersHint;
+
+  /// Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)
+  ///
+  /// In en, this message translates to:
+  /// **'Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.'**
+  String get settingsWatchFoldersLimit;
 }
 
 class _AppLocalizationsDelegate
