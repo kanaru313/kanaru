@@ -20,7 +20,7 @@ Rules that follow from it:
 - **Shared code moves down.** If two features need the same thing, move it to `shared/` (widgets, formatting) or `core/` (logic). Do not import the other feature.
 - **Features cannot reach the shell.** The Now Playing title bar is injected by `app/shell`, not imported by `features/player`. Same for the router: features never import `app/router.dart`.
 - **Route literals are duplicated on purpose.** `shared/library_route_keys.dart` declares `albumsPath = '/albums'`, `artistsPath = '/artists'`, `genresPath = '/genres'` and `foldersPath = '/folders'` because `shared/` and features cannot import `app/`. A test checks them against the shell destinations (`lib/app/shell/app_destination.dart`). If you change a route, change both and keep the test passing.
-- **Route keys.** Album, artist, genre and album-artist keys in URLs are `base64Url(utf8(json([...parts])))` without padding, length-capped (`_maxRouteKeyLength`). Build them with the helpers in `library_route_keys.dart`; do not hand-assemble paths.
+- **Route keys.** Album, artist, genre, folder and album-artist keys in URLs are `base64Url(utf8(json([...parts])))` without padding, length-capped (`_maxRouteKeyLength`). Build them with the helpers in `library_route_keys.dart`; do not hand-assemble paths.
 - **Imports** inside `lib/` are relative (`'../../core/...'`), as in the rest of the code. Apply the layering table to the resolved path, not to the import style.
 
 ## Flutter and UI library
