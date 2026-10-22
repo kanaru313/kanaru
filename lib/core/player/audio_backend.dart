@@ -1,5 +1,7 @@
+import 'audio_output_device.dart';
 import 'playback_error.dart';
 import 'repeat_mode.dart';
+import 'replay_gain_options.dart';
 import 'track.dart';
 
 /// Thin wrapper over the audio engine. The Dart queue is the source of truth;
@@ -34,6 +36,24 @@ abstract interface class AudioBackend {
   /// reports each loop through [looped]); moving on to the next track is
   /// decided in Dart through [setNext].
   Future<void> setRepeat(RepeatMode mode);
+
+  /// Sets how ReplayGain tags change the level. Never throws.
+  Future<void> setReplayGain(ReplayGainOptions options);
+
+  /// Sets the output device: `auto`, or a name from [audioDevices] that
+  /// `selectableDevices` accepts. Anything else is replaced by `auto`. Never
+  /// throws.
+  Future<void> setAudioDevice(String name);
+
+  /// Output devices the engine lists now.
+  List<AudioOutputDevice> get audioDevices;
+
+  /// The current device list first, then every change.
+  Stream<List<AudioOutputDevice>> get audioDevicesChanged;
+
+  /// A device that was set could not be opened. The engine is already back on
+  /// `auto`; the track that was playing is lost like a broken one.
+  Stream<String> get audioDeviceFailed;
 
   /// The queued next track became the current one on its own: the previous
   /// one ended, or failed to load and was skipped.

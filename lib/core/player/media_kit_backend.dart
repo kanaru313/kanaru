@@ -5,9 +5,13 @@ import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 
 import 'audio_backend.dart';
+import 'audio_output_device.dart';
+import 'mpv_audio_output.dart';
 import 'mpv_playlist_tracker.dart';
+import 'mpv_startup_options.dart';
 import 'playback_error.dart';
 import 'repeat_mode.dart';
+import 'replay_gain_options.dart';
 import 'track.dart';
 
 final _log = Logger('player');
@@ -54,25 +58,17 @@ class MediaKitBackend implements AudioBackend {
       },
       onFailed: _failed.add,
     );
-    // mpv's default today, set so gapless does not depend on it. `weak` joins
-    // tracks only when their audio format matches; `yes` would resample a
-    // track to the format of the one before it. Through the chain, so it
-    // applies before the first `open`.
+    _audio = MpvAudioOutput(_player, _native);
+    // Through the chain, so they apply before the first `open`.
     unawaited(
-      _serial(() => _native.setProperty('gapless-audio', 'weak'))
-          .catchError((Object error) {
-            _log.warning('Could not enable gapless audio', error);
-          }),
-    );
-    // media_kit turns on mpv's disk cache, but libmpv runs with config=no and
-    // has no cache directory, so every opened file logged "Failed to create
-    // file cache". Audio fits the RAM cache; remote streams will be cached by
-    // the local proxy, not by mpv.
-    unawaited(
-      _serial(() => _native.setProperty('cache-on-disk', 'no'))
-          .catchError((Object error) {
-            _log.warning('Could not turn off the mpv disk cache', error);
-          }),
+      _serial(
+        () => applyMpvStartupOptions(
+          setProperty: _native.setProperty,
+          getProperty: _native.getProperty,
+        ),
+      ).catchError((Object error) {
+        _log.warning('Could not set the mpv startup options', error);
+      }),
     );
     // Through the chain, so the end of the last track is not reported after
     // the user picked another one.
@@ -89,6 +85,7 @@ class MediaKitBackend implements AudioBackend {
     // No de-duplication here or in media_kit: its `distinct` compares
     // `PlayerLog` objects, which have no `==`, so every line gets through.
     _forwardLog = _player.stream.log.listen((entry) {
+      _audio.onMpvLog(entry);
       _mpvLog.log(
         mpvLogLevel(entry.prefix, entry.level, entry.text),
         '${entry.prefix}: ${entry.text}',
@@ -125,6 +122,7 @@ class MediaKitBackend implements AudioBackend {
   }
 
   final Player _player;
+  late final MpvAudioOutput _audio;
   late final MpvPlaylistTracker _tracker;
   late final StreamSubscription<bool> _forwardCompleted;
   late final StreamSubscription<String> _forwardError;
@@ -353,6 +351,24 @@ class MediaKitBackend implements AudioBackend {
     ),
   );
 
+  // ReplayGain and the output device run in `MpvAudioOutput`'s own chain.
+  @override
+  Future<void> setReplayGain(ReplayGainOptions options) =>
+      _audio.setReplayGain(options);
+
+  @override
+  Future<void> setAudioDevice(String name) => _audio.setAudioDevice(name);
+
+  @override
+  List<AudioOutputDevice> get audioDevices => _audio.devices;
+
+  @override
+  Stream<List<AudioOutputDevice>> get audioDevicesChanged =>
+      _audio.devicesChanged;
+
+  @override
+  Stream<String> get audioDeviceFailed => _audio.deviceFailed;
+
   @override
   Stream<Track> get advanced => _advanced.stream;
 
@@ -379,6 +395,7 @@ class MediaKitBackend implements AudioBackend {
     // Stop reacting to mpv first: disposing the player empties its playlist,
     // which would otherwise reach the handler after the streams are closed.
     _disposed = true;
+    final audioDone = _audio.dispose();
     try {
       await _observing;
       await _native.unobserveProperty('playlist-playing-pos');
@@ -396,6 +413,7 @@ class MediaKitBackend implements AudioBackend {
     await _forwardLog.cancel();
     await _forwardDuration.cancel();
     await _pending;
+    await audioDone;
     await _player.dispose();
     await _advanced.close();
     await _looped.close();

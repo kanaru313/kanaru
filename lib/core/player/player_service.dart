@@ -4,16 +4,23 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../database/library_startup.dart';
+import '../settings/settings_provider.dart';
+import 'album_run_lookup.dart';
 import 'audio_backend.dart';
+import 'audio_output_devices_provider.dart';
 import 'media_kit_backend.dart';
+import 'output_device_sync.dart';
 import 'play_queue.dart';
 import 'playback_error.dart';
 import 'player_state.dart';
 import 'repeat_mode.dart';
+import 'replay_gain_sync.dart';
 import 'session/playback_session_provider.dart';
 import 'session/playback_session_saver.dart';
 import 'track.dart';
 
+part 'player_audio_output.dart';
 part 'player_queue_commands.dart';
 part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
@@ -38,6 +45,7 @@ final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
 /// when it moved on to that one by itself.
 class PlayerService extends Notifier<PlayerState>
     with
+        _PlayerAudioOutput,
         _PlayerSettingsCommands,
         _PlayerTransportCommands,
         _PlayerQueueCommands,
@@ -68,6 +76,12 @@ class PlayerService extends Notifier<PlayerState>
   @override
   int _userQueueChanges = 0;
   int get userQueueChanges => _userQueueChanges;
+
+  /// Counts the tracks that really started: every `_play` and every move of
+  /// the engine to the next track. Not bumped by repeat one loops or queue
+  /// edits, which keep the playing track; ReplayGain follows it.
+  @override
+  int _turn = 0;
 
   /// Playback stopped after the last track; play starts the queue over.
   @override
@@ -137,6 +151,7 @@ class PlayerService extends Notifier<PlayerState>
       _errors.close();
       _seeked.close();
     });
+    _startAudioOutput();
     return _startSession();
   }
 
@@ -208,6 +223,7 @@ class PlayerService extends Notifier<PlayerState>
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
     _upNext.remove(queue.order[index]);
+    _turn++;
     _wantsPlaying = play;
     _openedSinceBuild = true;
     final next = queue.nextIndex;

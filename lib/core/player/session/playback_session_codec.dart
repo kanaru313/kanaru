@@ -1,8 +1,13 @@
+import 'package:logging/logging.dart';
+
+import '../../indexer/audio_file_types.dart' show isAudioFile;
 import '../../indexer/cover_paths.dart' show coverPath;
 import '../cover_path_in_directory.dart';
 import '../repeat_mode.dart';
 import '../track.dart';
 import 'playback_session.dart';
+
+final _log = Logger('player');
 
 /// Version written by this build. A file with a higher one came from a newer
 /// Kanaru and is left alone.
@@ -47,7 +52,11 @@ int? playbackSessionVersionOf(Map<String, Object?> json) {
 /// Reads a session written by [encodePlaybackSession]. Throws a
 /// [FormatException] when anything is off: a queue that points past its
 /// tracks would break the player, so a half-valid session is not restored.
-/// Unknown keys are ignored. A `coverKey` is resolved against
+/// Unknown keys are ignored.
+///
+/// A track whose URI is not a plain absolute path to an audio file is
+/// dropped from the queue instead (see [_isRestorableUri]); the rest of the
+/// session is restored. A `coverKey` is resolved against
 /// [coverDirectory]; without a folder, or when the key is malformed, the
 /// track has no art.
 PlaybackSession decodePlaybackSession(
@@ -106,7 +115,7 @@ PlaybackSession decodePlaybackSession(
     throw const FormatException('volumeBeforeMute');
   }
 
-  return PlaybackSession(
+  final session = PlaybackSession(
     tracks: tracks,
     order: order,
     unshuffledOrder: unshuffledOrder,
@@ -116,6 +125,68 @@ PlaybackSession decodePlaybackSession(
     position: Duration(milliseconds: position),
     volume: volume,
     volumeBeforeMute: volumeBeforeMute,
+  );
+  return _withoutUnrestorable(session);
+}
+
+/// Whether [uri] is safe to hand to the engine as a file: an absolute path
+/// (mpv opens a string that starts with `/` as a file, never as a URL or an
+/// `edl://`, `av://` or `file://` source) with no NUL, ending in an audio
+/// extension. The file is not looked for: a library on a drive that is not
+/// mounted yet keeps its queue.
+bool _isRestorableUri(String uri) =>
+    uri.startsWith('/') && !uri.contains('\u0000') && isAudioFile(uri);
+
+/// [session] without the tracks that fail [_isRestorableUri]. Order and
+/// unshuffled order are renumbered to the tracks that are left. The current
+/// track stays current; when it was dropped, the one that took its place in
+/// the order is (the last one at the end), at the start of the track.
+PlaybackSession _withoutUnrestorable(PlaybackSession session) {
+  final tracks = session.tracks;
+  final renumbered = List<int>.filled(tracks.length, -1);
+  final kept = <Track>[];
+  for (var i = 0; i < tracks.length; i++) {
+    if (_isRestorableUri(tracks[i].uri)) {
+      renumbered[i] = kept.length;
+      kept.add(tracks[i]);
+    }
+  }
+  if (kept.length == tracks.length) return session;
+  // The count only: a path is private and can be long.
+  _log.warning(
+    'Dropped ${tracks.length - kept.length} queued tracks that are not '
+    'local audio files',
+  );
+
+  List<int> renumber(List<int> entries) => [
+    for (final entry in entries)
+      if (renumbered[entry] >= 0) renumbered[entry],
+  ];
+  final order = renumber(session.order);
+  var index = 0;
+  var position = session.position;
+  if (session.order.isNotEmpty) {
+    final current = renumbered[session.order[session.index]];
+    if (current >= 0) {
+      index = order.indexOf(current);
+    } else {
+      // Entries before the current one that survived; the first one after
+      // it moves into that slot.
+      index = renumber(session.order.sublist(0, session.index)).length;
+      position = Duration.zero;
+    }
+  }
+  final unshuffled = session.unshuffledOrder;
+  return PlaybackSession(
+    tracks: kept,
+    order: order,
+    unshuffledOrder: unshuffled == null ? null : renumber(unshuffled),
+    index: order.isEmpty ? 0 : index.clamp(0, order.length - 1),
+    shuffled: session.shuffled,
+    repeat: session.repeat,
+    position: position,
+    volume: session.volume,
+    volumeBeforeMute: session.volumeBeforeMute,
   );
 }
 

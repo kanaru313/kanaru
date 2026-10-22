@@ -1190,4 +1190,70 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get playbackUnavailableBody =>
       'Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt.';
+
+  @override
+  String get settingsAudioOutputDevice => 'Thiết bị đầu ra';
+
+  @override
+  String get audioDeviceAuto => 'Tự động (theo hệ thống)';
+
+  @override
+  String audioDeviceMissing(String name) {
+    return '$name — không có, đang dùng Tự động';
+  }
+
+  @override
+  String get audioDeviceDialogTitle => 'Thiết bị đầu ra';
+
+  @override
+  String get audioDeviceNoneFound => 'Không tìm thấy thiết bị đầu ra nào khác';
+
+  @override
+  String get audioDeviceOtherOutputs => 'Đầu ra khác';
+
+  @override
+  String audioDeviceFailed(String name) {
+    return '$name — không mở được, đang dùng Tự động';
+  }
+
+  @override
+  String get audioDeviceChange => 'Đổi';
+
+  @override
+  String get settingsAudioReplayGain => 'ReplayGain';
+
+  @override
+  String get settingsAudioReplayGainHint =>
+      'Cân bằng độ lớn theo thẻ ReplayGain trong file. Tự động dùng mức theo album khi các bài cùng album phát liền nhau, còn lại dùng mức theo bài.';
+
+  @override
+  String get replayGainModeOff => 'Tắt';
+
+  @override
+  String get replayGainModeTrack => 'Theo bài';
+
+  @override
+  String get replayGainModeAlbum => 'Theo album';
+
+  @override
+  String get replayGainModeAuto => 'Tự động';
+
+  @override
+  String get settingsAudioReplayGainPreamp => 'Tiền khuếch đại ReplayGain';
+
+  @override
+  String get settingsAudioReplayGainPreampHint =>
+      'Mức tăng cộng thêm vào giá trị ReplayGain. File không có thẻ ReplayGain giữ nguyên âm lượng.';
+
+  @override
+  String settingsAudioDecibels(String value) {
+    return '$value dB';
+  }
+
+  @override
+  String get settingsAudioPreventClipping => 'Chống méo tiếng';
+
+  @override
+  String get settingsAudioPreventClippingHint =>
+      'Giảm mức khi tăng âm có thể làm méo các đỉnh to nhất.';
 }

@@ -185,10 +185,10 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(17),
+    hasLength(20),
     reason:
-        'six buttons, three choices and eight dropdowns of options not wired '
-        'yet',
+        'seven buttons, four choices and nine dropdowns: the output device, '
+        'ReplayGain mode and preamp are wired, eight options are not yet',
   );
   for (final control in controls) {
     expect(
@@ -266,7 +266,7 @@ Future<void> _checkLayout(
         .evaluate()
         .map((e) => tester.getRect(find.byWidget(e.widget)))
         .toList();
-    expect(dropdowns, hasLength(11));
+    expect(dropdowns, hasLength(13));
     for (final rect in dropdowns.skip(1)) {
       expect(rect.width, dropdowns.first.width);
       expect(rect.right, dropdowns.first.right);

@@ -314,5 +314,39 @@
   "listenHistoryCleared": "{count, plural, =0{Đã xoá lịch sử nghe} other{Đã xoá lịch sử nghe ({count} lượt)}}",
   "listenHistoryClearFailed": "Không xoá được lịch sử nghe",
   "playbackUnavailableTitle": "Không tìm thấy trình phát âm thanh",
-  "playbackUnavailableBody": "Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt."
+  "playbackUnavailableBody": "Không tải được libmpv. Bạn vẫn xem được thư viện nhạc, nhưng tính năng phát nhạc đã bị tắt.",
+  "settingsAudioOutputDevice": "Thiết bị đầu ra",
+  "audioDeviceAuto": "Tự động (theo hệ thống)",
+  "audioDeviceMissing": "{name} — không có, đang dùng Tự động",
+  "@audioDeviceMissing": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "audioDeviceDialogTitle": "Thiết bị đầu ra",
+  "audioDeviceNoneFound": "Không tìm thấy thiết bị đầu ra nào khác",
+  "audioDeviceOtherOutputs": "Đầu ra khác",
+  "audioDeviceFailed": "{name} — không mở được, đang dùng Tự động",
+  "@audioDeviceFailed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "audioDeviceChange": "Đổi",
+  "settingsAudioReplayGain": "ReplayGain",
+  "settingsAudioReplayGainHint": "Cân bằng độ lớn theo thẻ ReplayGain trong file. Tự động dùng mức theo album khi các bài cùng album phát liền nhau, còn lại dùng mức theo bài.",
+  "replayGainModeOff": "Tắt",
+  "replayGainModeTrack": "Theo bài",
+  "replayGainModeAlbum": "Theo album",
+  "replayGainModeAuto": "Tự động",
+  "settingsAudioReplayGainPreamp": "Tiền khuếch đại ReplayGain",
+  "settingsAudioReplayGainPreampHint": "Mức tăng cộng thêm vào giá trị ReplayGain. File không có thẻ ReplayGain giữ nguyên âm lượng.",
+  "settingsAudioDecibels": "{value} dB",
+  "@settingsAudioDecibels": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "settingsAudioPreventClipping": "Chống méo tiếng",
+  "settingsAudioPreventClippingHint": "Giảm mức khi tăng âm có thể làm méo các đỉnh to nhất."
 }
