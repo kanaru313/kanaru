@@ -141,7 +141,7 @@ void main() {
       );
     });
 
-    testWidgets('favorite and playlist only say they are coming', (
+    testWidgets('favorite only says it is coming', (
       tester,
     ) async {
       await pumpOpen(tester, const Size(1280, 800));

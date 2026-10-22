@@ -2,8 +2,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 
-/// What the queue menu of a song, album or artist can do.
-enum QueueAction { playNext, addToQueue }
+/// What the menu of a song, album or artist can do.
+///
+/// [addToPlaylist] does not change the queue: `enqueueLoaded` and
+/// `enqueueFromDatabase`, which every menu ends in, send it to the playlist
+/// picker instead of `enqueueTracks`.
+enum QueueAction { playNext, addToQueue, addToPlaylist }
 
 List<PopupMenuEntry<QueueAction>> _items(BuildContext context) {
   final l10n = context.l10n;
@@ -13,11 +17,23 @@ List<PopupMenuEntry<QueueAction>> _items(BuildContext context) {
     String label,
   ) => PopupMenuItem(
     value: action,
-    child: Row(children: [Icon(icon), const SizedBox(width: 12), Text(label)]),
+    child: Row(
+      children: [
+        Icon(icon),
+        const SizedBox(width: 12),
+        // A long translation shortens instead of overflowing the menu.
+        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+      ],
+    ),
   );
   return [
     item(QueueAction.playNext, Icons.playlist_play, l10n.queuePlayNext),
     item(QueueAction.addToQueue, Icons.playlist_add, l10n.queueAddToQueue),
+    item(
+      QueueAction.addToPlaylist,
+      Icons.library_add_outlined,
+      l10n.playlistAddTo,
+    ),
   ];
 }
 

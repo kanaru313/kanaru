@@ -12,6 +12,8 @@ import '../features/library/artists/artists_screen.dart';
 import '../features/library/library_section_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
+import '../features/playlists/playlist_screen.dart';
+import '../features/playlists/playlists_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../l10n/l10n.dart';
@@ -79,6 +81,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                         ],
                       ),
                     ],
+                    AppDestination.playlists => [
+                      GoRoute(
+                        path: ':id',
+                        builder: (context, state) => PlaylistScreen(
+                          routeId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
                     _ => const [],
                   },
                 ),
@@ -121,6 +131,7 @@ Widget _buildPage(
       l10n.recentlyPlayedEmptyMessage,
       emptyTitle: l10n.navRecentlyPlayed,
     ),
+    AppDestination.playlists => const PlaylistsScreen(),
     AppDestination.search => SearchScreen(
       query: state.uri.queryParameters['q'] ?? '',
     ),

@@ -61,6 +61,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sidebarGrow => 'Expand sidebar';
 
   @override
+  String get playlistDefaultName => 'New playlist';
+
+  @override
+  String get playlistCreateTitle => 'New playlist';
+
+  @override
+  String get playlistCreateConfirm => 'Create';
+
+  @override
+  String get playlistRename => 'Rename';
+
+  @override
+  String get playlistRenameTitle => 'Rename playlist';
+
+  @override
+  String get playlistNameLabel => 'Name';
+
+  @override
+  String get playlistDelete => 'Delete playlist';
+
+  @override
+  String playlistDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String playlistDeleteBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'It has $count songs.',
+      one: 'It has 1 song.',
+      zero: 'It has no songs.',
+    );
+    return '$_temp0 The songs stay in your library.';
+  }
+
+  @override
+  String get playlistDeleteConfirm => 'Delete';
+
+  @override
+  String get playlistActions => 'Playlist actions';
+
+  @override
+  String playlistTrackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+      zero: 'No songs',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistEmptyTitle => 'This playlist is empty';
+
+  @override
+  String get playlistEmptyMessage =>
+      'Add songs from the menu of any song, album or artist.';
+
+  @override
+  String get playlistsEmptyMessage =>
+      'Create a playlist to keep songs in your own order.';
+
+  @override
+  String get playlistNotFound => 'Playlist not found';
+
+  @override
+  String get playlistNotFoundMessage => 'It may have been deleted.';
+
+  @override
+  String get playlistNotInLibrary => 'Not in library';
+
+  @override
+  String get playlistRemoveEntry => 'Remove from playlist';
+
+  @override
+  String get playlistReorder => 'Drag to reorder';
+
+  @override
+  String get playlistAddTo => 'Add to playlist…';
+
+  @override
+  String get playlistPickerTitle => 'Add to playlist';
+
+  @override
+  String get playlistPickerNew => 'New playlist…';
+
+  @override
+  String playlistAdded(String name, String playlist) {
+    return 'Added to $playlist: $name';
+  }
+
+  @override
+  String playlistAddedSkipped(int added, int skipped, String playlist) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Added $added songs to $playlist',
+      one: 'Added 1 song to $playlist',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skipped,
+      locale: localeName,
+      other: '$skipped were already there',
+      one: '1 was already there',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String playlistAlreadyIn(String name, String playlist) {
+    return 'Already in $playlist: $name';
+  }
+
+  @override
+  String get playlistSaveFailed =>
+      'Couldn\'t save the playlist. See the log for details.';
+
+  @override
+  String get playlistTrackNotInLibrary =>
+      'This song isn\'t in your library, so it can\'t go in a playlist.';
+
+  @override
   String get topBarBack => 'Back';
 
   @override

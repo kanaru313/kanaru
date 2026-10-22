@@ -50,7 +50,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 
 The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
 
-- **Sidebar.** Groups: Home | Songs, Albums, Artists, Folders | Favorites, Recent | Playlists (placeholder). Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
+- **Sidebar.** Groups: Home | Songs, Albums, Artists, Folders | Favorites, Recent | Playlists. The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
 - **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Settings on the right at every width. Empty space drags the window.
 - **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
@@ -77,7 +77,8 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Auto-hide | Header and footer fade out after 3 s of inactivity; pointer movement brings them back. |
 | Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
 | Narrow (< 720 px) | One column with two tabs in a `PageView`: queue and track. |
-| Placeholders | Lyrics, favorite and add-to-playlist buttons exist and do nothing yet (Phase 1 and 4). |
+| Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
+| Placeholders | Lyrics and favorite buttons exist and do nothing yet (Phase 1 and 4). |
 
 ## Queue sheet
 
@@ -99,6 +100,19 @@ Sort controls sit in the page header. Sort choices are stored per screen (`libra
 
 Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries.
 
+## Playlist screens
+
+| Screen | Layout |
+|---|---|
+| Playlists (`/playlists`) | Grid of playlist cards, newest first, with a "New playlist" button; an empty state explains how to start. A card shows the cover collage, the name (up to two lines) and the song count. |
+| Playlist page (`/playlists/<id>`) | Header with the collage (up to four distinct covers of the first songs: none gives a placeholder, one or three show the first cover, four a 2×2), name, count, Play, the queue menu button and an actions menu (Rename, Delete). Below it 64 px rows with a drag handle, the song, its duration and a remove button. Tap plays the available songs from that row. |
+| Not in library | A row whose file is not in the library shows its file name and "Not in library", is dimmed, can be moved and removed, and is skipped on play. |
+| Delete | Asks first and says how many songs go; the songs stay in the library. Leaves the page before deleting. |
+
+Dragging a row lifts the card itself (shadow, no wider slab); the order changes at once and is saved when the row drops. A failed save puts the rows back and says so in a snackbar. Reordering is by pointer only for now.
+
+**Add to playlist.** Every queue menu (song rows, album and artist tiles, album and artist page headers, search songs, playlist page header and rows) has a third item, "Add to playlist…". It opens a picker over the page: "New playlist…" first, then the playlists newest first with their song counts. Duplicates are skipped silently, with no dialog: repeats inside the batch collapse to one, songs already in the playlist are dropped, the rest are appended in order. The snackbar says "Added to <playlist>: <name>", or "Added N songs to <playlist>, M were already there", or "Already in <playlist>: <name>" when nothing was new (nothing is written). A new playlist from the picker is created with the songs in one step. Duplicates already stored in a playlist are left alone.
+
 ## Search page
 
 Opens from the top bar at `/search?q=…`. An empty query shows "Search your library".
@@ -106,7 +120,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 - **Sections** in order: Songs, Albums, Artists. A section without matches is hidden. Its header shows the count of all matches.
 - **Rows.** Eight per section. A longer section has one toggle below its rows: "Show all (N)", or "Show top N" for songs when more than the 200 loaded songs match. "Show less" closes it in place.
 - **Songs hint.** Once the songs are expanded and more match than are shown, a line says how many are shown and asks for more words.
-- **Song tap** plays only that song (a queue of one). Right-click or long-press opens the queue menu (Play next, Add to queue).
+- **Song tap** plays only that song (a queue of one). Right-click or long-press opens the queue menu (Play next, Add to queue, Add to playlist…).
 - **Album and artist rows** open their pages. They have no queue menu.
 - **States**, checked in this order: library unavailable; no folders; "Updating library" while keys are recomputed; loading; "Search failed" (previous results stay only while a newer query loads); no results. While the first scan runs and there are no results yet, the page shows loading instead of "No results".
 - Results follow rescans while the page is open.

@@ -200,6 +200,174 @@ abstract class AppLocalizations {
   /// **'Expand sidebar'**
   String get sidebarGrow;
 
+  /// No description provided for @playlistDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist'**
+  String get playlistDefaultName;
+
+  /// No description provided for @playlistCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist'**
+  String get playlistCreateTitle;
+
+  /// No description provided for @playlistCreateConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get playlistCreateConfirm;
+
+  /// No description provided for @playlistRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get playlistRename;
+
+  /// No description provided for @playlistRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename playlist'**
+  String get playlistRenameTitle;
+
+  /// No description provided for @playlistNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get playlistNameLabel;
+
+  /// No description provided for @playlistDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete playlist'**
+  String get playlistDelete;
+
+  /// No description provided for @playlistDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String playlistDeleteTitle(String name);
+
+  /// No description provided for @playlistDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{It has no songs.} =1{It has 1 song.} other{It has {count} songs.}} The songs stay in your library.'**
+  String playlistDeleteBody(int count);
+
+  /// No description provided for @playlistDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get playlistDeleteConfirm;
+
+  /// No description provided for @playlistActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist actions'**
+  String get playlistActions;
+
+  /// No description provided for @playlistTrackCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No songs} =1{1 song} other{{count} songs}}'**
+  String playlistTrackCount(int count);
+
+  /// No description provided for @playlistEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This playlist is empty'**
+  String get playlistEmptyTitle;
+
+  /// No description provided for @playlistEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add songs from the menu of any song, album or artist.'**
+  String get playlistEmptyMessage;
+
+  /// No description provided for @playlistsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a playlist to keep songs in your own order.'**
+  String get playlistsEmptyMessage;
+
+  /// No description provided for @playlistNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist not found'**
+  String get playlistNotFound;
+
+  /// No description provided for @playlistNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been deleted.'**
+  String get playlistNotFoundMessage;
+
+  /// No description provided for @playlistNotInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in library'**
+  String get playlistNotInLibrary;
+
+  /// No description provided for @playlistRemoveEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from playlist'**
+  String get playlistRemoveEntry;
+
+  /// No description provided for @playlistReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get playlistReorder;
+
+  /// No description provided for @playlistAddTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist…'**
+  String get playlistAddTo;
+
+  /// No description provided for @playlistPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist'**
+  String get playlistPickerTitle;
+
+  /// No description provided for @playlistPickerNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist…'**
+  String get playlistPickerNew;
+
+  /// No description provided for @playlistAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to {playlist}: {name}'**
+  String playlistAdded(String name, String playlist);
+
+  /// No description provided for @playlistAddedSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{Added 1 song to {playlist}} other{Added {added} songs to {playlist}}}, {skipped, plural, =1{1 was already there} other{{skipped} were already there}}'**
+  String playlistAddedSkipped(int added, int skipped, String playlist);
+
+  /// No description provided for @playlistAlreadyIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in {playlist}: {name}'**
+  String playlistAlreadyIn(String name, String playlist);
+
+  /// No description provided for @playlistSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the playlist. See the log for details.'**
+  String get playlistSaveFailed;
+
+  /// No description provided for @playlistTrackNotInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'This song isn\'t in your library, so it can\'t go in a playlist.'**
+  String get playlistTrackNotInLibrary;
+
   /// No description provided for @topBarBack.
   ///
   /// In en, this message translates to:

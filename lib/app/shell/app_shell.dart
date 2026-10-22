@@ -95,7 +95,12 @@ class AppShell extends ConsumerWidget {
                 children: [
                   _CollapsibleSidebar(
                     expanded: ref.watch(sidebarExpandedProvider),
-                    child: Sidebar(selected: selected, onSelected: _select),
+                    child: Sidebar(
+                      selected: selected,
+                      onSelected: _select,
+                      onOpenLocation: (location) =>
+                          GoRouter.of(context).go(location),
+                    ),
                   ),
                   Expanded(
                     child: Stack(
@@ -127,6 +132,10 @@ class AppShell extends ConsumerWidget {
                     onSelected: (destination) {
                       Navigator.of(context).pop();
                       _select(destination);
+                    },
+                    onOpenLocation: (location) {
+                      Navigator.of(context).pop();
+                      GoRouter.of(context).go(location);
                     },
                   ),
                 ),

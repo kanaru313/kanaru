@@ -9,9 +9,11 @@ import '../core/database/library_database.dart' show AlbumKey, LibraryDatabase;
 import '../core/database/library_startup.dart';
 import '../core/indexer/cover_paths.dart';
 import '../core/player/player_service.dart';
+import '../core/player/playing_track_art.dart' show localPathOf;
 import '../core/player/track.dart';
 import '../l10n/l10n.dart';
 import 'play_tracks.dart';
+import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
 
 final _log = Logger('library');
@@ -91,9 +93,11 @@ void _showQueueMessage(
 /// Puts the tracks [read] returns behind the playing one ([QueueAction.playNext])
 /// or at the end of the queue, then says so in a snackbar naming [label]
 /// (or that [label] is playing, when the queue was empty and it started).
-/// Runs after every earlier call, whatever happened to them. Everything it needs from the widget tree
-/// ([messenger], [l10n]) is passed in, as the caller may be gone by the time
-/// the read finishes.
+/// Runs after every earlier call, whatever happened to them. Everything it
+/// needs from the widget tree ([messenger], [l10n]) is passed in, as the
+/// caller may be gone by the time the read finishes. [QueueAction.addToPlaylist] is not a queue action:
+/// `enqueueLoaded` and `enqueueFromDatabase` handle it, and passing it here
+/// throws [ArgumentError].
 Future<void> enqueueTracks(
   WidgetRef ref,
   ScaffoldMessengerState messenger,
@@ -102,6 +106,9 @@ Future<void> enqueueTracks(
   Future<List<Track>> Function() read,
   String label,
 ) {
+  if (action == QueueAction.addToPlaylist) {
+    throw ArgumentError.value(action, 'action', 'not a queue action');
+  }
   final chain = ref.read(_enqueueChainProvider);
   final player = ref.read(playerServiceProvider.notifier);
   Future<void> attempt() async {
@@ -110,16 +117,16 @@ Future<void> enqueueTracks(
       final tracks = await read();
       // The album or artist vanished in a rescan: nothing to queue.
       if (tracks.isEmpty) return;
-      final started = switch (action) {
-        QueueAction.playNext => await player.playNext(tracks),
-        QueueAction.addToQueue => await player.addToQueue(tracks),
-      };
+      // The guard on entry leaves just these two.
+      final next = action == QueueAction.playNext;
+      final started = next
+          ? await player.playNext(tracks)
+          : await player.addToQueue(tracks);
       text = started
           ? l10n.queuePlaying(label)
-          : switch (action) {
-              QueueAction.playNext => l10n.queuePlayingNext(label),
-              QueueAction.addToQueue => l10n.queueAddedToQueue(label),
-            };
+          : next
+          ? l10n.queuePlayingNext(label)
+          : l10n.queueAddedToQueue(label);
     } catch (error, stackTrace) {
       _log.severe('Queuing tracks failed', error, stackTrace);
       messenger.showSnackBar(
@@ -157,6 +164,18 @@ void enqueueLoaded(
 ) {
   // The menu closes later than it opened: its page may be gone by then.
   if (!context.mounted) return;
+  if (action == QueueAction.addToPlaylist) {
+    // Library tracks carry their file path as uri.
+    unawaited(
+      addTracksToPlaylist(
+        ref,
+        context,
+        () async => [for (final t in tracks) ?localPathOf(t.uri)],
+        label,
+      ),
+    );
+    return;
+  }
   unawaited(
     enqueueTracks(
       ref,
@@ -203,6 +222,19 @@ void enqueueFromDatabase(
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;
   final covers = ref.read(coverCacheDirectoryProvider);
+  if (action == QueueAction.addToPlaylist) {
+    unawaited(
+      addTracksToPlaylist(
+        ref,
+        context,
+        () async => [
+          for (final t in await read(db, covers)) ?localPathOf(t.uri),
+        ],
+        label,
+      ),
+    );
+    return;
+  }
   unawaited(
     enqueueTracks(
       ref,

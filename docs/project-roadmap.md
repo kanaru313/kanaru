@@ -4,14 +4,14 @@ Phases follow the README roadmap. Status is what the code does on 2026-10-21 (`m
 
 Status labels: **Done** (shipped, merged), **Partial** (some of the requirement shipped), **Open** (not started), **Known issue** (shipped, with a documented limit).
 
-Last updated: 2026-10-21.
+Last updated: 2026-10-22.
 
 ## Summary
 
 | Phase | Scope | Status |
 |---|---|---|
 | 0 Foundation | Scaffold, M3 theme, first playback, MPRIS | Done, except CI |
-| 1 Offline local player | Scan, library, Now Playing, queue, search, playlists, packaging | In progress: core library, playback and search shipped; playlists, packaging open |
+| 1 Offline local player | Scan, library, Now Playing, queue, search, playlists, packaging | In progress: core library, playback, search and playlists (create, rename, delete, add, remove, reorder) shipped; M3U, packaging open |
 | 2 More platforms | Windows, macOS, Android, iOS | Open |
 | 3 Remote sources | `StorageProvider`, proxy, cache, Subsonic, WebDAV, S3, SFTP, Drive | Open |
 | 4 Juicy | Lyrics, waveform, EQ, stats, scrobbling, cross-device sync | Open (a few UI placeholders exist) |
@@ -44,7 +44,7 @@ PRs merged to `main`, 208 commits from 2026-10-18 to 2026-10-21. No tags or rele
 | Library database and browsing | Partial | LIB-01, LIB-02, LIB-03, LIB-07 | Albums, artists and songs shipped (PRs #10, #13). Genres (LIB-04) and folders (LIB-06) are empty placeholders. Sort keys: songs, albums and artists. Play count not in sort. |
 | Now Playing, mini player, queue, shuffle, repeat | Partial | NP-01, NP-02, QUEUE-02 to QUEUE-05, PLAY-12 | Player bar, Now Playing overlay, queue sheet and session restore shipped (PRs #2, #9, #14). Open: hero transition (NP-03), queue history (QUEUE-07), play-after-current-track (QUEUE-10), playlist from queue (QUEUE-06). |
 | Full-text search | Done | SEARCH-01 to SEARCH-03 | Songs, albums and artists, accent-insensitive, live from the top bar. Schema v4 with an FTS5 index. Limits are listed in features.md, section 6. Typo tolerance is SEARCH-04 (P2). |
-| Playlists (incl. M3U) | **Open** | PL-01 to PL-05 | Sidebar playlist section is a placeholder. |
+| Playlists (incl. M3U) | Partial | PL-01 to PL-05 | PL-01 and PL-02 shipped (feat/playlists): create, rename, delete, cover collage, add from every queue menu and from Now Playing, remove, drag to reorder. Open: favorites (PL-03), M3U import and export (PL-04, PL-05). |
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: not started. |
 | Dynamic color from album art | **Open** | UI-03 | Theme uses GTK accent and a fallback seed. Artwork-based color not built. |
 | Packaging: AppImage, Flatpak, `.deb` | **Open** | PKG-01 to PKG-03 | No packaging files exist. No `.desktop` file (SYS-07). |
@@ -60,7 +60,7 @@ Ordered by what blocks a first usable release. IDs are from [features.md](./feat
 
 | Order | Item | IDs | Why here |
 |---|---|---|---|
-| 1 | Playlists: create, rename, delete, add, reorder | PL-01, PL-02 | P0. Needs new tables; ties in with QUEUE-06. |
+| 1 | Playlists: create, rename, delete, add, reorder | PL-01, PL-02 | Done (feat/playlists) on the v5 tables. Open: QUEUE-06 (save the queue as a playlist) reuses `createPlaylist(paths:)`. |
 | 2 | Listen recorder (no UI yet) | STAT-01, STAT-10 | P0. History cannot be backfilled, so recording starts before the history UI. Last.fm rule (> 30 s, listened ≥ min(50 %, 4 min)); append-only `plays` rows in the library DB. |
 | 3 | Root removal and folder edits in Settings | IDX-01 (remainder) | Done (feat/library-folders). Add, change and remove in Settings → Library; onboarding only on first run. |
 | 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. |

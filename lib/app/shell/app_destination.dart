@@ -12,6 +12,7 @@ enum AppDestination {
   folders('/folders', Icons.folder_outlined, Icons.folder),
   favorites('/favorites', Icons.favorite_outline, Icons.favorite),
   recentlyPlayed('/recent', Icons.history, Icons.history),
+  playlists('/playlists', Icons.queue_music_outlined, Icons.queue_music),
   search('/search', Icons.search, Icons.search),
   settings('/settings', Icons.settings_outlined, Icons.settings);
 
@@ -29,13 +30,15 @@ enum AppDestination {
     folders => l10n.navFolders,
     favorites => l10n.navFavorites,
     recentlyPlayed => l10n.navRecentlyPlayed,
+    playlists => l10n.sidebarPlaylists,
     search => l10n.navSearch,
     settings => l10n.navSettings,
   };
 }
 
 /// Destinations listed in the sidebar, grouped by dividers. Search and
-/// settings are reached from the top bar instead.
+/// settings are reached from the top bar instead; playlists have their own
+/// section below the groups.
 const sidebarGroups = [
   [AppDestination.home],
   [
