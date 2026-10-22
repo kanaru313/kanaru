@@ -375,6 +375,55 @@ void main() {
 
       expect((await plays()).single.playedAt, enabledAt);
     });
+
+    test('on again after a counted play is not a second play', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      expect(await plays(), hasLength(1));
+
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+      sim.listen(240);
+
+      final row = (await plays()).single;
+      expect(row.listenedMs, 240000);
+    });
+
+    test('on again while the insert is queued is not a second play', () async {
+      final release = gate.holdNext(_insert);
+      sim.open(trackB);
+      sim.listen(240);
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+      sim.listen(240);
+      release();
+
+      expect(await plays(), hasLength(1));
+    });
+
+    test('after being counted, the next fresh start counts again', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+
+      sim.open(trackA);
+      sim.listen(90);
+
+      expect(await plays(), hasLength(2));
+    });
+
+    test('stop and play after the switch counts the track again', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+      sim.stop();
+      sim.resume();
+      sim.listen(90);
+
+      expect(await plays(), hasLength(2));
+    });
   });
 
   group('clearing', () {
@@ -417,6 +466,57 @@ void main() {
       gate.failNext('DELETE FROM');
       expect(await recorder.clearHistory(), isNull);
       expect(await plays(), hasLength(1));
+    });
+
+    test('after a switch back on, the counted play counts anew', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+
+      expect(await recorder.clearHistory(), 1);
+      sim.listen(239);
+      expect(await plays(), isEmpty);
+      sim.listen(1);
+
+      expect(await plays(), hasLength(1));
+    });
+
+    test('a failing delete keeps the open play counting', () async {
+      sim.open(trackA);
+      sim.listen(60);
+
+      gate.failNext('DELETE FROM');
+      expect(await recorder.clearHistory(), isNull);
+      sim.listen(30);
+
+      expect((await plays()).single.listenedMs, 90000);
+    });
+
+    test('a failing delete keeps the time heard while it ran', () async {
+      sim.open(trackA);
+      sim.listen(60);
+
+      gate.failNext('DELETE FROM');
+      final cleared = recorder.clearHistory();
+      sim.listen(30);
+      expect(await cleared, isNull);
+      sim.listen(1);
+
+      expect((await plays()).single.listenedMs, 91000);
+    });
+
+    test('a failing delete keeps a row already stored', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+
+      gate.failNext('DELETE FROM');
+      expect(await recorder.clearHistory(), isNull);
+      sim.listen(20);
+      recorder.dispose();
+
+      expect((await plays()).single.listenedMs, 120000);
     });
   });
 
