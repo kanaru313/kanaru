@@ -37,6 +37,19 @@ void main() {
       ]);
     });
 
+    test('stops looking after the scan limit', () {
+      // Distinct keys 3 and 4 only show up after the 64th non-null key.
+      final keys = <String?>[
+        for (var i = 0; i < playlistCollageScanLimit - 1; i++)
+          i.isEven ? 'a' : 'b',
+        'c',
+        'd',
+      ];
+      keys.insert(3, null);
+      expect(pickCollageKeys(keys), ['a', 'b', 'c']);
+      expect(pickCollageKeys([...keys, 'e']), ['a', 'b', 'c']);
+    });
+
     test('empty and repeated input', () {
       expect(pickCollageKeys(const []), isEmpty);
       expect(pickCollageKeys(['a', 'a']), ['a']);
