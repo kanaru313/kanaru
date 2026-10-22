@@ -147,7 +147,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-Placeholder screens (Home, Favorites, History) use `EmptyState` and say the feature is not available yet.
+Placeholder screens (Home, Favorites, History) use `EmptyState` with a one-sentence message (Favorites and History: what will show up there).
 
 ## Settings
 

@@ -8,5 +8,6 @@ const favoritesPath = '/favorites';
 
 /// Pages below [favoritesPath]. The router mounts them under the Favorites
 /// branch, so the playlists feature adds its sub-pages here without touching
-/// `app/`.
+/// `app/`. Their paths are relative to [favoritesPath] (`'foo'`, `':id'`), never
+/// absolute: go_router rejects a leading `/` on a nested route.
 const List<RouteBase> favoritesRoutes = [];
