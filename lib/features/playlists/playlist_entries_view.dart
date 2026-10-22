@@ -151,7 +151,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
           // which a non-scrolling fill cannot size.
           SliverFillRemaining(
             child: EmptyState(
-              icon: AppIcons.queue,
+              icon: AppIcons.playlist,
               title: l10n.playlistEmptyTitle,
               message: l10n.playlistEmptyMessage,
             ),

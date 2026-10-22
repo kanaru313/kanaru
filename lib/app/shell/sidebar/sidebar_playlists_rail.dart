@@ -31,7 +31,7 @@ class SidebarPlaylistsRail extends StatelessWidget {
           child: SidebarTooltip(
             message: l10n.sidebarNewPlaylist,
             child: IconButton(
-              icon: const Icon(AppIcons.playlistAdd, size: 22),
+              icon: const Icon(AppIcons.newPlaylist, size: 22),
               onPressed: onCreate,
             ),
           ),

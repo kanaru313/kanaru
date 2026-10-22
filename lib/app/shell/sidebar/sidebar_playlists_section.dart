@@ -147,8 +147,8 @@ class _SidebarPlaylistsSectionState
           for (final playlist in playlists)
             SidebarItem(
               key: ValueKey(playlist.id),
-              icon: AppIcons.queueOutlined,
-              selectedIcon: AppIcons.queue,
+              icon: AppIcons.playlistOutlined,
+              selectedIcon: AppIcons.playlist,
               label: playlist.name,
               selected: currentId == playlist.id,
               onTap: () => widget.onOpenLocation(playlistLocation(playlist.id)),

@@ -43,18 +43,19 @@ abstract final class AppIcons {
   static const IconData folderSpecial = Icons.folder_special_outlined;
   static const IconData addFolder = Icons.create_new_folder_outlined;
   static const IconData library = Icons.library_music_outlined;
-  static const IconData addToLibrary = Icons.library_add_outlined;
+  static const IconData addToPlaylist = Icons.library_add_outlined;
   static const IconData favorite = Icons.favorite;
   static const IconData favoriteOutline = Icons.favorite_outline;
   static const IconData favoriteBorderRounded = Icons.favorite_border_rounded;
   static const IconData history = Icons.history;
 
   // Queue and playlists.
-  static const IconData queue = Icons.queue_music;
-  static const IconData queueOutlined = Icons.queue_music_outlined;
-  static const IconData queueRounded = Icons.queue_music_rounded;
+  static const IconData playlist = Icons.queue_music;
+  static const IconData playlistOutlined = Icons.queue_music_outlined;
+  static const IconData queue = Icons.queue_music_rounded;
   static const IconData playlistPlay = Icons.playlist_play;
-  static const IconData playlistAdd = Icons.playlist_add;
+  static const IconData addToQueue = Icons.playlist_add;
+  static const IconData newPlaylist = Icons.playlist_add;
   static const IconData playlistAddRounded = Icons.playlist_add_rounded;
 
   // Navigation and layout.

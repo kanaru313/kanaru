@@ -21,8 +21,9 @@ void main() {
           path == allowed) {
         continue;
       }
-      if (materialIcons.hasMatch(entity.readAsStringSync())) {
-        offenders.add(path);
+      final lines = entity.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        if (materialIcons.hasMatch(lines[i])) offenders.add('$path:${i + 1}');
       }
     }
 

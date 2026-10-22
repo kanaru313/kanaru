@@ -48,7 +48,7 @@ class PlaylistCover extends ConsumerWidget {
         radius: radius,
         placeholder: ColoredBox(
           color: background,
-          child: Icon(AppIcons.queue, size: size * 0.4, color: foreground),
+          child: Icon(AppIcons.playlist, size: size * 0.4, color: foreground),
         ),
       );
     }

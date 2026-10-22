@@ -41,7 +41,7 @@ class PlaylistPickerView extends StatelessWidget {
           ),
         for (final playlist in playlists)
           ListTile(
-            leading: const Icon(AppIcons.queue),
+            leading: const Icon(AppIcons.playlist),
             title: Text(
               playlist.name,
               maxLines: 1,

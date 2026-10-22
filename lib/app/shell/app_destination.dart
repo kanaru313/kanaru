@@ -13,7 +13,7 @@ enum AppDestination {
   folders('/folders', AppIcons.folderOutlined, AppIcons.folder),
   favorites('/favorites', AppIcons.favoriteOutline, AppIcons.favorite),
   recentlyPlayed('/recent', AppIcons.history, AppIcons.history),
-  playlists('/playlists', AppIcons.queueOutlined, AppIcons.queue),
+  playlists('/playlists', AppIcons.playlistOutlined, AppIcons.playlist),
   search('/search', AppIcons.search, AppIcons.search),
   settings('/settings', AppIcons.settingsOutlined, AppIcons.settings);
 

@@ -33,7 +33,7 @@ class PlaylistNotFound extends StatelessWidget {
     return PageScaffold(
       title: l10n.sidebarPlaylists,
       body: EmptyState(
-        icon: AppIcons.queue,
+        icon: AppIcons.playlist,
         title: l10n.playlistNotFound,
         message: l10n.playlistNotFoundMessage,
       ),

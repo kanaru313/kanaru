@@ -27,7 +27,7 @@ class QueueButton extends ConsumerWidget {
       isLabelVisible: count > 0,
       label: Text(count > _badgeMax ? '$_badgeMax+' : '$count'),
       child: IconButton(
-        icon: const Icon(AppIcons.queueRounded),
+        icon: const Icon(AppIcons.queue),
         iconSize: playerIconSize,
         tooltip: context.l10n.queueOpen,
         onPressed: count == 0

@@ -53,7 +53,7 @@ class PlaylistsGrid extends StatelessWidget {
     final l10n = context.l10n;
     if (cards.isEmpty) {
       return EmptyState(
-        icon: AppIcons.queue,
+        icon: AppIcons.playlist,
         title: l10n.sidebarNoPlaylists,
         message: l10n.playlistsEmptyMessage,
         action: emptyAction,

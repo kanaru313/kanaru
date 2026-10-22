@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
-import 'package:material_ui/material_ui.dart' show Icons;
+import 'package:kanaru/shared/icons/app_icons.dart';
 
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
@@ -131,7 +131,7 @@ Future<void> breakWrites(
 /// Drags the first playlist row by its handle just below the third, without
 /// waiting for the result.
 Future<void> dragFirstRowDown(WidgetTester tester) async {
-  final handle = find.byIcon(Icons.drag_handle_rounded).first;
+  final handle = find.byIcon(AppIcons.dragHandle).first;
   final gesture = await tester.startGesture(tester.getCenter(handle));
   await tester.pump(const Duration(milliseconds: 50));
   for (var i = 0; i < 18; i++) {

@@ -29,8 +29,8 @@ List<PopupMenuEntry<QueueAction>> _items(BuildContext context) {
   );
   return [
     item(QueueAction.playNext, AppIcons.playlistPlay, l10n.queuePlayNext),
-    item(QueueAction.addToQueue, AppIcons.playlistAdd, l10n.queueAddToQueue),
-    item(QueueAction.addToPlaylist, AppIcons.addToLibrary, l10n.playlistAddTo),
+    item(QueueAction.addToQueue, AppIcons.addToQueue, l10n.queueAddToQueue),
+    item(QueueAction.addToPlaylist, AppIcons.addToPlaylist, l10n.playlistAddTo),
   ];
 }
 
