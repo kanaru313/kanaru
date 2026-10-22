@@ -358,7 +358,6 @@
   "foldersEmptyFolder": "No songs in this folder",
 
   "favoritesEmptyMessage": "Songs you like will show up here.",
-  "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 
   "searchEmptyTitle": "Search your library",
   "searchEmptyMessage": "Find songs, albums and artists.",
@@ -685,5 +684,53 @@
   "settingsWatchFoldersHint": "Pick up added, changed and removed files while Kanaru runs, a few seconds after they stop changing",
   "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
   "settingsWatchFoldersLimit": "Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.",
-  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" }
+  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" },
+  "historyEmptyMessage": "Songs you play will show up here.",
+  "@historyEmptyMessage": { "description": "Message of the History page when nothing was played yet" },
+  "historyToday": "Today",
+  "@historyToday": { "description": "Header of the History day that is today" },
+  "historyYesterday": "Yesterday",
+  "@historyYesterday": { "description": "Header of the History day that is yesterday" },
+  "historyDayPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyDayPlayCount": {
+    "description": "How many plays a History day holds",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyNthPlay": "#{n}",
+  "@historyNthPlay": {
+    "description": "Badge on a History row: this is the Nth time the song was played",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyNthPlayLabel": "Listen number {n}",
+  "@historyNthPlayLabel": {
+    "description": "Tooltip and screen reader text of the Nth play badge",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyTrackMissing": "Not in library",
+  "@historyTrackMissing": { "description": "Note on a History row whose file is no longer in the library" },
+  "historyDeletePlay": "Remove from history",
+  "@historyDeletePlay": { "description": "Menu item that removes one play from the History" },
+  "historyPlayDeleted": "Removed one listen from history",
+  "@historyPlayDeleted": { "description": "Snackbar after one play was removed from the History" },
+  "historyUndo": "Undo",
+  "@historyUndo": { "description": "Snackbar action that puts a removed play back" },
+  "historyDeleteFailed": "Couldn't remove the listen. See the log for details.",
+  "@historyDeleteFailed": { "description": "Snackbar when removing a play failed" },
+  "historyRestoreFailed": "Couldn't restore the listen. See the log for details.",
+  "@historyRestoreFailed": { "description": "Snackbar when undoing a removal failed" },
+  "historyCalendar": "Jump to a day",
+  "@historyCalendar": { "description": "Tooltip of the button that opens the History calendar" },
+  "historyRecordingOff": "Recording listen history is turned off",
+  "@historyRecordingOff": { "description": "Note on the empty History page when recording is off in Settings" },
+  "historyUnavailable": "History is not available",
+  "@historyUnavailable": { "description": "Title of the History page when there is no library database" },
+  "historyLoadFailed": "Couldn't read the history. See the log for details.",
+  "@historyLoadFailed": { "description": "Message of the History page when reading it failed" },
+  "historyMore": "More",
+  "@historyMore": { "description": "Tooltip of the more button on a History row" },
+  "historyOlderYear": "Show {year}",
+  "@historyOlderYear": {
+    "description": "Last row of the History list: switches to an older year",
+    "placeholders": { "year": { "type": "int" } }
+  }
 }

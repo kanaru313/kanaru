@@ -112,4 +112,7 @@ abstract final class AppIcons {
   static const IconData windowFrameless = Icons.crop_free;
   static const IconData windowRestore = Icons.filter_none;
   static const IconData windowMaximize = Icons.crop_square;
+
+  // History.
+  static const IconData calendar = Icons.calendar_month_outlined;
 }

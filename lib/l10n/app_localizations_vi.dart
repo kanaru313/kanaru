@@ -686,9 +686,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override
-  String get recentlyPlayedEmptyMessage => 'Bài hát bạn đã phát sẽ hiện ở đây.';
-
-  @override
   String get searchEmptyTitle => 'Tìm trong thư viện';
 
   @override
@@ -1403,4 +1400,74 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsWatchFoldersLimit =>
       'Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.';
+
+  @override
+  String get historyEmptyMessage => 'Bài hát bạn đã phát sẽ hiện ở đây.';
+
+  @override
+  String get historyToday => 'Hôm nay';
+
+  @override
+  String get historyYesterday => 'Hôm qua';
+
+  @override
+  String historyDayPlayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt nghe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyNthPlay(int n) {
+    return '#$n';
+  }
+
+  @override
+  String historyNthPlayLabel(int n) {
+    return 'Lượt nghe thứ $n';
+  }
+
+  @override
+  String get historyTrackMissing => 'Không có trong thư viện';
+
+  @override
+  String get historyDeletePlay => 'Xoá khỏi lịch sử';
+
+  @override
+  String get historyPlayDeleted => 'Đã xoá một lượt nghe';
+
+  @override
+  String get historyUndo => 'Hoàn tác';
+
+  @override
+  String get historyDeleteFailed =>
+      'Không xoá được lượt nghe. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get historyRestoreFailed =>
+      'Không khôi phục được lượt nghe. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get historyCalendar => 'Nhảy tới ngày';
+
+  @override
+  String get historyRecordingOff => 'Đang tắt ghi lịch sử nghe';
+
+  @override
+  String get historyUnavailable => 'Lịch sử không khả dụng';
+
+  @override
+  String get historyLoadFailed =>
+      'Không đọc được lịch sử. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get historyMore => 'Thêm';
+
+  @override
+  String historyOlderYear(int year) {
+    return 'Xem năm $year';
+  }
 }

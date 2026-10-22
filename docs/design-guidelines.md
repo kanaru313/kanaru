@@ -115,6 +115,16 @@ Dragging a row lifts the card itself (shadow, no wider slab); the order changes 
 
 **Add to playlist.** Every queue menu (song rows, album and artist tiles, album and artist page headers, search songs, playlist page header and rows) has a third item, "Add to playlist…". It opens a picker over the page: "New playlist…" first, then the playlists newest first with their song counts. Duplicates are skipped silently, with no dialog: repeats inside the batch collapse to one, songs already in the playlist are dropped, the rest are appended in order. The snackbar says "Added to <playlist>: <name>", or "Added N songs to <playlist>, M were already there", or "Already in <playlist>: <name>" when nothing was new (nothing is written). A new playlist from the picker is created with the songs in one step. Duplicates already stored in a playlist are left alone.
 
+## History page
+
+| Screen | Layout |
+|---|---|
+| History (`/history`) | Every play of one year, newest first, in 64 px lines grouped by day. A day header says "Today", "Yesterday" or the full date, and how many listens; the header of the day at the top stays pinned while its rows scroll under it. Year chips (hidden with one year) pick the year; the last line offers the next older year. A calendar button opens a month grid of the selected year, with a dot under each day that has plays and the other days disabled; picking a day scrolls to its header. |
+| Row | Cover, title, "artist · album", a `#N` badge (the Nth listen of that song, with a tooltip), the start time (12 or 24 hour as the system says) and a more button. A tap plays that day's songs, each once, starting at the tapped one. Right click, long press and the more button open the menu: Play next, Add to queue, Add to playlist…, Remove from history. |
+| Not in library | A play whose file is gone shows its file name and "Not in library", is dimmed, does not play, and has its queue items disabled; it can still be removed. |
+| Remove | No confirmation. A snackbar "Removed one listen from history" with Undo stays 4 s; Undo restores only the latest removal. There is no one-tap delete on the row. |
+| States | "History is not available" (no library), the empty page (with a line when recording is turned off in Settings), a spinner while the first read runs, and a failure message. |
+
 ## Search page
 
 Opens from the top bar at `/search?q=…`. An empty query shows "Search your library".
@@ -147,7 +157,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-Placeholder screens (Home, Favorites, History) use `EmptyState` with a one-sentence message (Favorites and History: what will show up there).
+Placeholder screens (Home, Favorites) use `EmptyState` with a one-sentence message (Favorites: what will show up there).
 
 ## Settings
 

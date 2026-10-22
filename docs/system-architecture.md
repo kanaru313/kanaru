@@ -486,6 +486,16 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Missing tracks | Rows are joined to `tracks` by path with a left join; a path no longer in the library still comes back, with a null track. |
 | Delete and restore | `deletePlay` returns the removed row (or null if it is gone); `restorePlay` inserts it again with the same `id`, safe because `plays.id` is AUTOINCREMENT, and returns false when the id exists. Both go through drift's API, so the `play_stats` triggers and watchers run. A recorder checkpoint that landed while the row was absent is lost, so a restored `listened_ms` can be lower than the real time. |
 
+The History page (`features/history/`) reads them as follows.
+
+| Rule | Detail |
+|---|---|
+| Layout | One fixed-extent list (64 px) holds every day header and play of the selected year, so lines are placed without measuring and a flat index finds the day of a line by binary search. The sticky header is an overlay drawn from `offset ~/ extent`, not part of the scroll. A year is one `HistoryTimelineBody`; a chip or the "Show <year>" line builds a new one. |
+| One signal | One subscription to the `plays` table per page. Batches where every update is `UpdateKind.update` (the recorder's `listened_ms` checkpoints) are ignored; an insert, a delete or an update with no kind counts. Changes are collected for 250 ms and then bump one version number that the year and day-count providers watch. |
+| Day rows | `HistoryDayRowCache` reads the plays of a day when a line of it is first drawn: at most two reads at once, newest request first, a request nobody renewed for 300 ms is dropped, 40 days kept (least recently used out). A new version marks every day stale but keeps drawing the old rows until the read returns, so rows do not flash. A `tracks` change (a scan) marks them stale at most once per `libraryBrowseRefreshInterval`. |
+| Inserts while scrolled | A new play arriving while the list is more than one line from the top is held back and shown when the reader scrolls back near the top or changes year, so nothing moves under them. Deletes, restores and a cleared history show at once. There is no scroll anchoring (`jumpTo`). |
+| Tap and menu | A tap queues the day's songs, each once at its first place, skipping songs gone from the library. The player gets only the `tracks` row path, never `plays.path`. Removal is only in the row menu, which keeps the play id it was opened on. |
+
 ### Playlist kinds
 
 `playlists.kind` (invariant 8 in `user_data_tables.dart`): NULL is an ordinary playlist; `'favorites'` is the Favorites playlist, at most one row, enforced by the partial unique index `playlists_favorites_unique`; `'queue'` is reserved and may repeat. Writers store no other value; readers treat an unknown kind as ordinary. Favorites is created lazily, never seeded: in one transaction, `INSERT OR IGNORE` (drift `InsertMode.insertOrIgnore`) and then `SELECT id FROM playlists WHERE kind = 'favorites'`. `insertReturning` is not used (an ignored insert returns no row) and neither is `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects for a partial index). Favorites entries follow the same path, order and no-foreign-key rules as any playlist.

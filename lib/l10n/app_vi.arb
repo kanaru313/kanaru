@@ -195,7 +195,6 @@
   "foldersEmptyFolder": "Thư mục này không có bài hát",
 
   "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
-  "recentlyPlayedEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
 
   "searchEmptyTitle": "Tìm trong thư viện",
   "searchEmptyMessage": "Tìm bài hát, album và nghệ sĩ.",
@@ -411,5 +410,53 @@
   "settingsWatchFoldersHint": "Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi",
   "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
   "settingsWatchFoldersLimit": "Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.",
-  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" }
+  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" },
+  "historyEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
+  "@historyEmptyMessage": { "description": "Message of the History page when nothing was played yet" },
+  "historyToday": "Hôm nay",
+  "@historyToday": { "description": "Header of the History day that is today" },
+  "historyYesterday": "Hôm qua",
+  "@historyYesterday": { "description": "Header of the History day that is yesterday" },
+  "historyDayPlayCount": "{count, plural, other{{count} lượt nghe}}",
+  "@historyDayPlayCount": {
+    "description": "How many plays a History day holds",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyNthPlay": "#{n}",
+  "@historyNthPlay": {
+    "description": "Badge on a History row: this is the Nth time the song was played",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyNthPlayLabel": "Lượt nghe thứ {n}",
+  "@historyNthPlayLabel": {
+    "description": "Tooltip and screen reader text of the Nth play badge",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyTrackMissing": "Không có trong thư viện",
+  "@historyTrackMissing": { "description": "Note on a History row whose file is no longer in the library" },
+  "historyDeletePlay": "Xoá khỏi lịch sử",
+  "@historyDeletePlay": { "description": "Menu item that removes one play from the History" },
+  "historyPlayDeleted": "Đã xoá một lượt nghe",
+  "@historyPlayDeleted": { "description": "Snackbar after one play was removed from the History" },
+  "historyUndo": "Hoàn tác",
+  "@historyUndo": { "description": "Snackbar action that puts a removed play back" },
+  "historyDeleteFailed": "Không xoá được lượt nghe. Xem chi tiết trong nhật ký.",
+  "@historyDeleteFailed": { "description": "Snackbar when removing a play failed" },
+  "historyRestoreFailed": "Không khôi phục được lượt nghe. Xem chi tiết trong nhật ký.",
+  "@historyRestoreFailed": { "description": "Snackbar when undoing a removal failed" },
+  "historyCalendar": "Nhảy tới ngày",
+  "@historyCalendar": { "description": "Tooltip of the button that opens the History calendar" },
+  "historyRecordingOff": "Đang tắt ghi lịch sử nghe",
+  "@historyRecordingOff": { "description": "Note on the empty History page when recording is off in Settings" },
+  "historyUnavailable": "Lịch sử không khả dụng",
+  "@historyUnavailable": { "description": "Title of the History page when there is no library database" },
+  "historyLoadFailed": "Không đọc được lịch sử. Xem chi tiết trong nhật ký.",
+  "@historyLoadFailed": { "description": "Message of the History page when reading it failed" },
+  "historyMore": "Thêm",
+  "@historyMore": { "description": "Tooltip of the more button on a History row" },
+  "historyOlderYear": "Xem năm {year}",
+  "@historyOlderYear": {
+    "description": "Last row of the History list: switches to an older year",
+    "placeholders": { "year": { "type": "int" } }
+  }
 }

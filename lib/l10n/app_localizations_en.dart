@@ -709,9 +709,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override
-  String get recentlyPlayedEmptyMessage => 'Songs you play will show up here.';
-
-  @override
   String get searchEmptyTitle => 'Search your library';
 
   @override
@@ -1456,4 +1453,75 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsWatchFoldersLimit =>
       'Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.';
+
+  @override
+  String get historyEmptyMessage => 'Songs you play will show up here.';
+
+  @override
+  String get historyToday => 'Today';
+
+  @override
+  String get historyYesterday => 'Yesterday';
+
+  @override
+  String historyDayPlayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listens',
+      one: '1 listen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyNthPlay(int n) {
+    return '#$n';
+  }
+
+  @override
+  String historyNthPlayLabel(int n) {
+    return 'Listen number $n';
+  }
+
+  @override
+  String get historyTrackMissing => 'Not in library';
+
+  @override
+  String get historyDeletePlay => 'Remove from history';
+
+  @override
+  String get historyPlayDeleted => 'Removed one listen from history';
+
+  @override
+  String get historyUndo => 'Undo';
+
+  @override
+  String get historyDeleteFailed =>
+      'Couldn\'t remove the listen. See the log for details.';
+
+  @override
+  String get historyRestoreFailed =>
+      'Couldn\'t restore the listen. See the log for details.';
+
+  @override
+  String get historyCalendar => 'Jump to a day';
+
+  @override
+  String get historyRecordingOff => 'Recording listen history is turned off';
+
+  @override
+  String get historyUnavailable => 'History is not available';
+
+  @override
+  String get historyLoadFailed =>
+      'Couldn\'t read the history. See the log for details.';
+
+  @override
+  String get historyMore => 'More';
+
+  @override
+  String historyOlderYear(int year) {
+    return 'Show $year';
+  }
 }

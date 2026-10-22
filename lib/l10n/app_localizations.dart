@@ -1148,12 +1148,6 @@ abstract class AppLocalizations {
   /// **'Songs you like will show up here.'**
   String get favoritesEmptyMessage;
 
-  /// No description provided for @recentlyPlayedEmptyMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Songs you play will show up here.'**
-  String get recentlyPlayedEmptyMessage;
-
   /// No description provided for @searchEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -2263,6 +2257,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.'**
   String get settingsWatchFoldersLimit;
+
+  /// Message of the History page when nothing was played yet
+  ///
+  /// In en, this message translates to:
+  /// **'Songs you play will show up here.'**
+  String get historyEmptyMessage;
+
+  /// Header of the History day that is today
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get historyToday;
+
+  /// Header of the History day that is yesterday
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get historyYesterday;
+
+  /// How many plays a History day holds
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
+  String historyDayPlayCount(int count);
+
+  /// Badge on a History row: this is the Nth time the song was played
+  ///
+  /// In en, this message translates to:
+  /// **'#{n}'**
+  String historyNthPlay(int n);
+
+  /// Tooltip and screen reader text of the Nth play badge
+  ///
+  /// In en, this message translates to:
+  /// **'Listen number {n}'**
+  String historyNthPlayLabel(int n);
+
+  /// Note on a History row whose file is no longer in the library
+  ///
+  /// In en, this message translates to:
+  /// **'Not in library'**
+  String get historyTrackMissing;
+
+  /// Menu item that removes one play from the History
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from history'**
+  String get historyDeletePlay;
+
+  /// Snackbar after one play was removed from the History
+  ///
+  /// In en, this message translates to:
+  /// **'Removed one listen from history'**
+  String get historyPlayDeleted;
+
+  /// Snackbar action that puts a removed play back
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get historyUndo;
+
+  /// Snackbar when removing a play failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t remove the listen. See the log for details.'**
+  String get historyDeleteFailed;
+
+  /// Snackbar when undoing a removal failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t restore the listen. See the log for details.'**
+  String get historyRestoreFailed;
+
+  /// Tooltip of the button that opens the History calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to a day'**
+  String get historyCalendar;
+
+  /// Note on the empty History page when recording is off in Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Recording listen history is turned off'**
+  String get historyRecordingOff;
+
+  /// Title of the History page when there is no library database
+  ///
+  /// In en, this message translates to:
+  /// **'History is not available'**
+  String get historyUnavailable;
+
+  /// Message of the History page when reading it failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the history. See the log for details.'**
+  String get historyLoadFailed;
+
+  /// Tooltip of the more button on a History row
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get historyMore;
+
+  /// Last row of the History list: switches to an older year
+  ///
+  /// In en, this message translates to:
+  /// **'Show {year}'**
+  String historyOlderYear(int year);
 }
 
 class _AppLocalizationsDelegate
