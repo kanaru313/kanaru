@@ -33,6 +33,7 @@ class AppSettings {
     this.albumsView = AlbumsView.grid,
     this.rescanOnStartup = true,
     this.libraryOnboarded = false,
+    this.recordListenHistory = true,
   });
 
   final ThemePreference theme;
@@ -57,6 +58,10 @@ class AppSettings {
   /// "Later" was chosen), so it never comes back, even with no folders.
   final bool libraryOnboarded;
 
+  /// Record listens to the play history (STAT-10). Turning it off keeps what
+  /// is stored.
+  final bool recordListenHistory;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -66,6 +71,7 @@ class AppSettings {
     AlbumsView? albumsView,
     bool? rescanOnStartup,
     bool? libraryOnboarded,
+    bool? recordListenHistory,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -76,6 +82,7 @@ class AppSettings {
     albumsView: albumsView ?? this.albumsView,
     rescanOnStartup: rescanOnStartup ?? this.rescanOnStartup,
     libraryOnboarded: libraryOnboarded ?? this.libraryOnboarded,
+    recordListenHistory: recordListenHistory ?? this.recordListenHistory,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -89,6 +96,7 @@ class AppSettings {
     albumsView: albumsView,
     rescanOnStartup: rescanOnStartup,
     libraryOnboarded: libraryOnboarded,
+    recordListenHistory: recordListenHistory,
   );
 
   @override
@@ -102,7 +110,8 @@ class AppSettings {
       other.artistSort == artistSort &&
       other.albumsView == albumsView &&
       other.rescanOnStartup == rescanOnStartup &&
-      other.libraryOnboarded == libraryOnboarded;
+      other.libraryOnboarded == libraryOnboarded &&
+      other.recordListenHistory == recordListenHistory;
 
   @override
   int get hashCode => Object.hash(
@@ -115,6 +124,7 @@ class AppSettings {
     albumsView,
     rescanOnStartup,
     libraryOnboarded,
+    recordListenHistory,
   );
 
   @override
@@ -123,5 +133,6 @@ class AppSettings {
       'titleBar: ${titleBar.name}, songSort: $songSort, '
       'albumSort: $albumSort, artistSort: $artistSort, '
       'albumsView: ${albumsView.name}, rescanOnStartup: $rescanOnStartup, '
-      'libraryOnboarded: $libraryOnboarded)';
+      'libraryOnboarded: $libraryOnboarded, '
+      'recordListenHistory: $recordListenHistory)';
 }

@@ -79,6 +79,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setRescanOnStartup(bool enabled) =>
       _update(state.copyWith(rescanOnStartup: enabled));
 
+  void setRecordListenHistory(bool enabled) =>
+      _update(state.copyWith(recordListenHistory: enabled));
+
   /// Records that the first-run source picker is done for good.
   void markLibraryOnboarded() =>
       _update(state.copyWith(libraryOnboarded: true));
