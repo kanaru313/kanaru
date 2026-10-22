@@ -27,10 +27,11 @@ void main() {
 
   /// A player as the app builds it, with its settings (and so its session)
   /// in the temporary directory.
-  ProviderContainer launch() {
+  ProviderContainer launch({String? coverDirectory}) {
     backend = FakeAudioBackend();
     final app = ProviderContainer(
       overrides: [
+        sessionCoverDirectoryProvider.overrideWithValue(coverDirectory),
         audioBackendProvider.overrideWithValue(backend),
         settingsFileProvider.overrideWithValue(
           SettingsFile('${root.path}/settings.json'),
@@ -379,5 +380,208 @@ void main() {
     await service().openTracks([a, b]);
     await service().pause();
     expect(state().queue.current, a);
+  });
+
+  group('flushSession', () {
+    test('writes a volume change before the debounce would', () async {
+      live = launch();
+      await service().openTracks([a, b]);
+      await service().setVolume(35);
+
+      await service().flushSession();
+
+      expect(PlaybackSessionFile(sessionPath).load()?.volume, 35);
+    });
+
+    test('writes the paused position', () async {
+      live = launch();
+      await service().openTracks([a, b, c], start: 1);
+      await service().seek(const Duration(seconds: 70));
+      await service().pause();
+
+      await service().flushSession();
+
+      final saved = PlaybackSessionFile(sessionPath).load();
+      expect(saved?.position, const Duration(seconds: 70));
+    });
+
+    test('without a settings file completes', () async {
+      backend = FakeAudioBackend();
+      live = ProviderContainer(
+        overrides: [audioBackendProvider.overrideWithValue(backend)],
+      );
+      live!.listen(playerServiceProvider, (_, _) {});
+
+      await service().flushSession();
+    });
+  });
+
+  group('the restored start position', () {
+    final long = Track(
+      uri: '/music/long.mp3',
+      title: 'long',
+      duration: const Duration(minutes: 3),
+    );
+
+    PlaybackSession savedAt(Duration position, {Track? track}) =>
+        PlaybackSession(
+          tracks: [track ?? long, c],
+          order: const [0, 1],
+          position: position,
+        );
+
+    List<String> opens() => [
+      for (final call in backend.calls)
+        if (call.startsWith('open')) call,
+    ];
+
+    test(
+      'at the track length restarts at 0, in state and in the file',
+      () async {
+        await store(savedAt(const Duration(minutes: 3)));
+        live = launch();
+        expect(state().position, Duration.zero);
+        await settle();
+        expect(opens(), ['open(long, next: c, paused)']);
+
+        await service().setVolume(50);
+        await quit();
+
+        expect(
+          PlaybackSessionFile(sessionPath).load()?.position,
+          Duration.zero,
+        );
+      },
+    );
+
+    test('just below the length opens there', () async {
+      await store(savedAt(const Duration(minutes: 2, seconds: 59)));
+      live = launch();
+      await settle();
+
+      expect(opens(), ['open(long, next: c, paused, at 0:02:59.000000)']);
+    });
+
+    test('a track with a zero duration is not clamped', () async {
+      final zero = Track(
+        uri: '/music/zero.mp3',
+        title: 'zero',
+        duration: Duration.zero,
+      );
+      await store(savedAt(const Duration(seconds: 30), track: zero));
+      live = launch();
+      await settle();
+
+      expect(opens(), ['open(zero, next: c, paused, at 0:00:30.000000)']);
+    });
+
+    test('a track without a duration is not clamped', () async {
+      await store(savedAt(const Duration(hours: 5), track: a));
+      live = launch();
+      await settle();
+
+      expect(opens(), ['open(a, next: c, paused, at 5:00:00.000000)']);
+    });
+  });
+
+  group('a stop made before the restore ran', () {
+    test('loads the track paused at 0 and stays stopped', () async {
+      await store(session);
+      live = launch();
+      state();
+
+      await service().stop();
+      await settle();
+
+      final calls = backend.calls;
+      expect(
+        [
+          for (final call in calls)
+            if (call.startsWith('open')) call,
+        ],
+        ['open(b, next: a, paused)'],
+      );
+      final open = calls.indexOf('open(b, next: a, paused)');
+      expect(
+        calls.indexOf('setVolume(0.0)'),
+        allOf(isNonNegative, lessThan(open)),
+      );
+      expect(
+        calls.indexOf('setRepeat(all)'),
+        allOf(isNonNegative, lessThan(open)),
+      );
+      expect(state().position, Duration.zero);
+      expect(state().stopped, isTrue);
+      expect(state().playing, isFalse);
+
+      await service().play();
+      expect(backend.calls.last, 'play');
+      expect(state().stopped, isFalse);
+    });
+
+    test('a queue that ran out loads nothing; play restarts it', () async {
+      await store(
+        PlaybackSession(
+          tracks: [a, b],
+          order: const [0, 1],
+          index: 1,
+          position: const Duration(seconds: 5),
+        ),
+      );
+      live = launch();
+      state();
+
+      await service().removeTrack(1);
+      await settle();
+
+      expect(backend.calls.where((c) => c.startsWith('open')), isEmpty);
+      expect(state().stopped, isTrue);
+
+      await service().play();
+      expect(backend.calls.last, 'open(a, next: null)');
+    });
+  });
+
+  test('restored tracks get their cover from the key and the folder', () async {
+    const dir = '/cache/covers/512';
+    final key = 'ab/${'ab'.padRight(64, '0')}.jpg';
+    final file = PlaybackSessionFile(sessionPath, coverDirectory: dir);
+    await file.save(
+      PlaybackSession(
+        tracks: [Track(uri: '/music/t.mp3', title: 't', artUri: '$dir/$key')],
+        order: const [0],
+      ),
+    );
+    await file.flush();
+
+    live = launch(coverDirectory: '/moved/covers/512');
+
+    expect(state().queue.current?.artUri, '/moved/covers/512/$key');
+  });
+
+  test('a restored cover key is not written back unchanged', () async {
+    const dir = '/cache/covers/512';
+    final key = 'ab/${'ab'.padRight(64, '0')}.jpg';
+    final file = PlaybackSessionFile(sessionPath, coverDirectory: dir);
+    await file.save(
+      PlaybackSession(
+        tracks: [Track(uri: '/music/t.mp3', title: 't', artUri: '$dir/$key')],
+        order: const [0],
+      ),
+    );
+    await file.flush();
+    final before = File(sessionPath).readAsBytesSync();
+    final modified = File(sessionPath).lastModifiedSync();
+
+    live = launch(coverDirectory: dir);
+    state();
+    await settle();
+    // A track loading lets saving go on.
+    backend.emitDuration.add(const Duration(minutes: 3));
+    await settle();
+    await quit();
+
+    expect(File(sessionPath).readAsBytesSync(), before);
+    expect(File(sessionPath).lastModifiedSync(), modified);
   });
 }

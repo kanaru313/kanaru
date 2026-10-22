@@ -10,7 +10,6 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   set _userQueueChanges(int count);
   int get _userQueueChanges;
   Set<int> get _upNext;
-  set _lastTick(Duration position);
   StreamController<Duration> get _seeked;
   Random? get _random;
   set _failuresInRow(int count);
@@ -54,7 +53,6 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
       stopped: true,
       position: Duration.zero,
     );
-    _lastTick = Duration.zero;
     await _backend.pause();
     await _backend.seek(Duration.zero);
   }
@@ -73,7 +71,6 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
       if (target > state.duration) target = state.duration;
     }
     state = state.copyWith(position: target, stopped: false);
-    _lastTick = target;
     await _backend.seek(target);
     // Disposal closes the stream while the engine is seeking. Only that case
     // is covered: a provider rebuild swaps in a new stream, which this write

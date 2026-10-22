@@ -143,6 +143,17 @@ class ListenRecorder {
     if (!playing) _end();
   }
 
+  /// Writes the open playthrough's progress now and waits for every queued
+  /// write, for the app's exit. Unlike [dispose] it is a checkpoint: the
+  /// playthrough stays open and recording goes on, so a flush that is not
+  /// followed by an exit counts nothing twice (the same row is updated).
+  /// Listened time is as of the last player state.
+  Future<void> flush() async {
+    final open = _current;
+    if (!_disposed && _clearing == null && open != null) _writeProgress(open);
+    await _writes.idle;
+  }
+
   /// Writes what the open playthrough has and goes inert.
   void dispose() {
     if (_disposed) return;
@@ -188,7 +199,11 @@ class ListenRecorder {
   void _end() {
     final p = _current;
     _current = null;
-    if (p == null) return;
+    if (p != null) _writeProgress(p);
+  }
+
+  /// Inserts [p] when it qualifies, or brings its stored row up to date.
+  void _writeProgress(ListenPlaythrough p) {
     if (p.row == PlayRow.none && qualifiesAsListen(p.acc.listened, p.length)) {
       _rows.insert(p);
     } else if ((p.row == PlayRow.pending || p.row == PlayRow.stored) &&

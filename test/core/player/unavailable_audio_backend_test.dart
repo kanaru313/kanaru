@@ -53,8 +53,10 @@ void main() {
       backend.playing.listen(playing.add);
       final completed = <bool>[];
       final advanced = <Track>[];
+      final looped = <Track>[];
       backend.completed.listen(completed.add);
       backend.advanced.listen(advanced.add);
+      backend.looped.listen(looped.add);
 
       final track = Track.fromPath('/music/a.mp3');
       await backend.open(track, next: Track.fromPath('/music/b.mp3'));
@@ -64,7 +66,15 @@ void main() {
       expect(playing, [false]);
       expect(completed, isEmpty);
       expect(advanced, isEmpty);
+      expect(looped, isEmpty);
       await backend.dispose();
+    });
+
+    test('dispose closes the loop stream', () async {
+      final backend = UnavailableAudioBackend();
+      final done = backend.looped.drain<void>();
+      await backend.dispose();
+      await done;
     });
 
     test('open after dispose does not throw', () async {

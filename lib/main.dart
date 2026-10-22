@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'app/app.dart';
 import 'app/shell/window/desktop_window.dart';
@@ -14,9 +15,13 @@ import 'core/indexer/library_startup_tasks.dart';
 import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
+import 'core/paths/app_directories.dart' show resolveCoverCacheDirectory;
+import 'core/player/app_exit_flush.dart';
 import 'core/player/media_kit_backend.dart';
 import 'core/player/original_cover_reader.dart';
+import 'core/player/player_service.dart';
 import 'core/player/rust_original_cover_reader.dart';
+import 'core/player/session/playback_session_provider.dart';
 import 'core/player/unavailable_audio_backend.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/stats/listen_recorder_provider.dart';
@@ -44,8 +49,12 @@ Future<void> main() async {
 
   // A window that cannot be set up falls back to the system title bar.
   var customTitleBar = false;
+  // Whether window_manager is initialised (the setup's result says only
+  // whether the custom bar is on); the exit hook needs it.
+  var windowReady = false;
   try {
     customTitleBar = await setUpDesktopWindow(titleBar: settings.titleBar);
+    windowReady = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
   } catch (error, stack) {
     log.severe('Window setup failed', error, stack);
     // Setup may have hidden the native bar before failing.
@@ -68,6 +77,9 @@ Future<void> main() async {
         create: MediaKitBackend.new,
       ),
       ...library.overrides,
+      sessionCoverDirectoryProvider.overrideWithValue(
+        resolveCoverCacheDirectory(Platform.environment),
+      ),
       originalCoverReaderProvider.overrideWithValue(
         const RustOriginalCoverReader(),
       ),
@@ -97,4 +109,45 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(runLibraryStartupTasks(container)),
   );
+  if (windowReady) await _installExitHook(container, log);
+}
+
+/// Flushes the listen progress and the session when the window closes. Only
+/// a window close gets here: SIGTERM, SIGKILL and a logout kill run nothing,
+/// so the checkpoints (30 s for listens, 10 s for the session) bound the loss.
+/// Installed after `runApp` so a crash before the first frame cannot leave a
+/// close that nothing answers. Never throws: if it fails, closing works as
+/// before.
+Future<void> _installExitHook(ProviderContainer container, Logger log) async {
+  try {
+    // The listener goes first, so a prevented close always has a handler.
+    windowManager.addListener(
+      _ExitOnClose(
+        exitOnClose(
+          hide: windowManager.hide,
+          pause: () => container.read(playerServiceProvider.notifier).pause(),
+          flushSteps: [
+            () =>
+                container.read(listenRecorderProvider)?.flush() ??
+                Future.value(),
+            () => container.read(playerServiceProvider.notifier).flushSession(),
+          ],
+          destroy: windowManager.destroy,
+          exit: () => exit(0),
+        ),
+      ),
+    );
+    await windowManager.setPreventClose(true);
+  } catch (error, stack) {
+    log.warning('Exit hook not installed', error, stack);
+  }
+}
+
+class _ExitOnClose with WindowListener {
+  _ExitOnClose(this._onClose);
+
+  final Future<void> Function() _onClose;
+
+  @override
+  void onWindowClose() => unawaited(_onClose());
 }

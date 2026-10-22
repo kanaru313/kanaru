@@ -6,6 +6,7 @@ import '../database/library_startup.dart';
 import '../database/throttled_tracks_query.dart';
 import '../database/track_cover_lookup.dart';
 import '../indexer/cover_paths.dart';
+import 'cover_path_in_directory.dart';
 import 'player_service.dart';
 
 final _log = Logger('playing_art');
@@ -28,13 +29,6 @@ String? localPathOf(String uri) {
     return null;
   }
 }
-
-/// Whether [art] names a thumbnail inside [directory]:
-/// `<directory>/<a well-formed cover key>`.
-bool isCoverPathIn(String directory, String? art) =>
-    art != null &&
-    art.startsWith('$directory/') &&
-    isCoverKey(art.substring(directory.length + 1));
 
 /// The library row at [path] as `(coverKey: …)`, followed while `tracks`
 /// changes; `null` when no library track has this path.

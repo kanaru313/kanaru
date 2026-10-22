@@ -188,4 +188,35 @@ void main() {
       expect(playbackSessionFileFor(null), isNull);
     });
   });
+
+  group('cover keys', () {
+    const dir = '/cache/covers/512';
+    final key = 'ab/${'ab'.padRight(64, '0')}.jpg';
+    final thumb = Track(uri: '/music/t.flac', title: 'T', artUri: '$dir/$key');
+    final session = PlaybackSession(tracks: [thumb], order: const [0]);
+
+    test('the saved file holds the key, not the path', () async {
+      await PlaybackSessionFile(path, coverDirectory: dir).save(session);
+
+      final text = File(path).readAsStringSync();
+      expect(text, contains('"coverKey":"$key"'));
+      expect(text, isNot(contains(dir)));
+    });
+
+    test('a load with the same folder gives the path back', () async {
+      await PlaybackSessionFile(path, coverDirectory: dir).save(session);
+
+      final loaded = PlaybackSessionFile(path, coverDirectory: dir).load();
+      expect(loaded?.tracks.single.artUri, '$dir/$key');
+    });
+
+    test('playbackSessionFileFor passes the folder on', () {
+      final file = playbackSessionFileFor(
+        SettingsFile('${root.path}/settings.json'),
+        coverDirectory: dir,
+      );
+
+      expect(file?.coverDirectory, dir);
+    });
+  });
 }

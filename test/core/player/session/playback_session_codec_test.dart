@@ -221,4 +221,104 @@ void main() {
     expect(encodeTime, lessThan(budget));
     expect(decodeTime, lessThan(budget));
   });
+
+  group('cover keys', () {
+    const dir = '/cache/covers/512';
+    final key = 'ab/${'ab'.padRight(64, '0')}.jpg';
+    final thumb = Track(uri: '/music/t.flac', title: 'T', artUri: '$dir/$key');
+
+    PlaybackSession oneTrack(Track track) =>
+        PlaybackSession(tracks: [track], order: const [0]);
+
+    Map<String, Object?> encode(Track track, {String? coverDirectory = dir}) =>
+        jsonDecode(
+          jsonEncode(
+            encodePlaybackSession(
+              oneTrack(track),
+              coverDirectory: coverDirectory,
+            ),
+          ),
+        ) as Map<String, Object?>;
+
+    Map<String, Object?> firstTrack(Map<String, Object?> json) =>
+        ((json['tracks']! as List).first as Map).cast<String, Object?>();
+
+    test('a thumbnail inside the folder is stored as its key only', () {
+      final saved = firstTrack(encode(thumb));
+
+      expect(saved['coverKey'], key);
+      expect(saved.containsKey('artUri'), isFalse);
+    });
+
+    test('external art keeps its artUri', () {
+      final saved = firstTrack(encode(a));
+
+      expect(saved['artUri'], '/covers/a.jpg');
+      expect(saved.containsKey('coverKey'), isFalse);
+    });
+
+    test('no art stores no key', () {
+      final saved = firstTrack(encode(b));
+
+      expect(saved.containsKey('coverKey'), isFalse);
+      expect(saved['artUri'], isNull);
+    });
+
+    test('without a folder the path is stored as it is', () {
+      final saved = firstTrack(encode(thumb, coverDirectory: null));
+
+      expect(saved['artUri'], '$dir/$key');
+      expect(saved.containsKey('coverKey'), isFalse);
+    });
+
+    test('the same folder gives the same art back', () {
+      final back = decodePlaybackSession(encode(thumb), coverDirectory: dir);
+
+      expect(back.tracks.single.artUri, '$dir/$key');
+    });
+
+    test('another folder moves the art with it', () {
+      final back = decodePlaybackSession(
+        encode(thumb),
+        coverDirectory: '/other/covers/512',
+      );
+
+      expect(back.tracks.single.artUri, '/other/covers/512/$key');
+    });
+
+    test('a key with no folder has no art', () {
+      expect(decodePlaybackSession(encode(thumb)).tracks.single.artUri, isNull);
+    });
+
+    test('a malformed key has no art', () {
+      final json = encode(thumb);
+      firstTrack(json)['coverKey'] = '../x';
+
+      expect(
+        decodePlaybackSession(json, coverDirectory: dir).tracks.single.artUri,
+        isNull,
+      );
+    });
+
+    test('a key that is not a string is rejected', () {
+      final json = encode(thumb);
+      firstTrack(json)['coverKey'] = 5;
+
+      expect(
+        () => decodePlaybackSession(json, coverDirectory: dir),
+        throwsFormatException,
+      );
+    });
+
+    test('a file without keys still loads, its artUri kept', () {
+      final back = decodePlaybackSession(valid(), coverDirectory: dir);
+
+      expect(back.tracks.first.artUri, '/covers/a.jpg');
+    });
+
+    test('the version stays the same', () {
+      expect(encode(thumb)['version'], playbackSessionVersion);
+      expect(playbackSessionVersion, 1);
+    });
+  });
 }
