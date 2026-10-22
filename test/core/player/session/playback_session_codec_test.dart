@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/session/playback_session.dart';
 import 'package:kanaru/core/player/session/playback_session_codec.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:logging/logging.dart';
 
 void main() {
   const a = Track(
@@ -220,6 +221,192 @@ void main() {
     const budget = Duration(milliseconds: 250);
     expect(encodeTime, lessThan(budget));
     expect(decodeTime, lessThan(budget));
+  });
+
+  group('uris that are not local audio files', () {
+    const bad = [
+      'http://example.test/a.mp3',
+      'edl://%5,/music/a.flac',
+      'av://lavfi:sine=frequency=440',
+      'file:///music/a.flac',
+      'a.flac',
+      '/music/notes.txt',
+      '/music/a\u0000.flac',
+    ];
+
+    /// A session of tracks at [uris] (the first track is the current one
+    /// unless [order]/[index] say otherwise).
+    Map<String, Object?> sessionOf(
+      List<String> uris, {
+      List<int>? order,
+      List<int>? unshuffled,
+      int index = 0,
+      int positionMs = 5000,
+    }) {
+      final json = valid();
+      json['tracks'] = [
+        for (var i = 0; i < uris.length; i++)
+          {'uri': uris[i], 'title': 't$i', 'artist': null, 'durationMs': null},
+      ];
+      json['order'] = order ?? [for (var i = 0; i < uris.length; i++) i];
+      json['unshuffledOrder'] = unshuffled;
+      json['index'] = index;
+      json['positionMs'] = positionMs;
+      return json;
+    }
+
+    List<String> uris(PlaybackSession s) => [
+      for (final i in s.order) s.tracks[i].uri,
+    ];
+
+    for (final uri in bad) {
+      test(
+        '${uri.replaceAll('\u0000', '<NUL>')} is dropped, not the session',
+        () {
+          final back = decodePlaybackSession(
+            sessionOf(['/music/a.flac', uri, '/music/b.mp3']),
+          );
+
+          expect(uris(back), ['/music/a.flac', '/music/b.mp3']);
+          expect(back.tracks.map((t) => t.uri), [
+            '/music/a.flac',
+            '/music/b.mp3',
+          ]);
+          expect(back.order, [0, 1]);
+        },
+      );
+    }
+
+    test('plain absolute audio paths are all kept', () {
+      const good = [
+        '/music/a.flac',
+        '/music/B.MP3',
+        '/music/dir with space/c.opus',
+        '/music/d.m4a',
+      ];
+      final back = decodePlaybackSession(sessionOf(good));
+
+      expect(uris(back), good);
+    });
+
+    test('the current track stays current, position kept', () {
+      final back = decodePlaybackSession(
+        sessionOf([
+          'http://x/a.mp3',
+          '/music/b.flac',
+          'edl://c',
+          '/music/d.flac',
+        ], index: 3),
+      );
+
+      expect(uris(back), ['/music/b.flac', '/music/d.flac']);
+      expect(back.index, 1);
+      expect(back.position, const Duration(seconds: 5));
+    });
+
+    test('a dropped current track passes to the one that took its place', () {
+      final back = decodePlaybackSession(
+        sessionOf([
+          '/music/a.flac',
+          'http://x/b.mp3',
+          '/music/c.flac',
+          '/music/d.flac',
+        ], index: 1),
+      );
+
+      expect(uris(back), ['/music/a.flac', '/music/c.flac', '/music/d.flac']);
+      expect(back.index, 1);
+      expect(back.tracks[back.order[back.index]].uri, '/music/c.flac');
+      expect(back.position, Duration.zero);
+    });
+
+    test('a dropped current track at the end passes to the last one left', () {
+      final back = decodePlaybackSession(
+        sessionOf([
+          '/music/a.flac',
+          '/music/b.flac',
+          'http://x/c.mp3',
+        ], index: 2),
+      );
+
+      expect(uris(back), ['/music/a.flac', '/music/b.flac']);
+      expect(back.index, 1);
+      expect(back.position, Duration.zero);
+    });
+
+    test('renumbers a shuffled order and the unshuffled one', () {
+      // Tracks 0 and 2 are fine; 1 and 3 are not. Plays 3, 2, 0, 1; current
+      // is 0, which survives.
+      final back = decodePlaybackSession(
+        sessionOf(
+          ['/music/a.flac', 'http://x', '/music/c.flac', 'edl://d'],
+          order: [3, 2, 0, 1],
+          unshuffled: [0, 1, 2, 3],
+          index: 2,
+        ),
+      );
+
+      expect(back.tracks.map((t) => t.uri), ['/music/a.flac', '/music/c.flac']);
+      expect(back.order, [1, 0]);
+      expect(back.unshuffledOrder, [0, 1]);
+      expect(back.index, 1);
+      expect(back.position, const Duration(seconds: 5));
+    });
+
+    test('a track that is not in the order is dropped too', () {
+      final back = decodePlaybackSession(
+        sessionOf(
+          ['http://x', '/music/b.flac', '/music/c.flac'],
+          order: [2, 1],
+          index: 1,
+        ),
+      );
+
+      expect(back.tracks.map((t) => t.uri), ['/music/b.flac', '/music/c.flac']);
+      expect(back.order, [1, 0]);
+      expect(back.index, 1);
+    });
+
+    test('nothing left gives an empty queue at index 0', () {
+      final back = decodePlaybackSession(
+        sessionOf(['http://x', 'edl://y'], index: 1),
+      );
+
+      expect(back.tracks, isEmpty);
+      expect(back.order, isEmpty);
+      expect(back.index, 0);
+    });
+
+    test('a bad session is still rejected as a whole', () {
+      final json = sessionOf(['/music/a.flac', 'http://x'], index: 5);
+
+      expect(() => decodePlaybackSession(json), throwsFormatException);
+    });
+
+    test('the warning names a count, never a path', () {
+      final records = <LogRecord>[];
+      final previous = Logger.root.level;
+      Logger.root.level = Level.ALL;
+      final subscription = Logger.root.onRecord.listen(records.add);
+      addTearDown(() {
+        subscription.cancel();
+        Logger.root.level = previous;
+      });
+
+      decodePlaybackSession(
+        sessionOf([
+          '/music/a.flac',
+          'http://secret.test/x.mp3',
+          '/music/b.txt',
+        ]),
+      );
+
+      final text = records.map((r) => r.message).join('\n');
+      expect(records, hasLength(1));
+      expect(text, contains('2'));
+      expect(text, isNot(contains('secret')));
+      expect(text, isNot(contains('b.txt')));
+    });
   });
 
   group('cover keys', () {
