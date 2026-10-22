@@ -563,24 +563,6 @@ void main() {
       expect(backend.calls.last, 'seek(0:00:10.000000)');
     });
 
-    test(
-      'a natural end forgets the last tick, so no loop is signalled',
-      () async {
-        await service().openTracks(songs, start: 3);
-        backend.emitDuration.add(const Duration(seconds: 100));
-        backend.emitPosition.add(const Duration(seconds: 99));
-        backend.emitCompleted.add(true);
-        final seeks = <Duration>[];
-        service().seeked.listen(seeks.add);
-
-        await service().setRepeat(RepeatMode.one);
-        backend.emitPosition.add(const Duration(milliseconds: 500));
-        await Future<void>.delayed(Duration.zero);
-
-        expect(seeks, isEmpty);
-      },
-    );
-
     test('ends stopped and not playing after a late play echo', () async {
       await service().openTracks(songs);
       await service().pause();
@@ -648,104 +630,55 @@ void main() {
       await service().openTracks(songs);
       await service().setRepeat(RepeatMode.one);
       service().seeked.listen(seeks.add);
-
-      backend.emitDuration.add(const Duration(seconds: 180));
-      await Future<void>.delayed(Duration.zero);
       backend.emitPosition.add(const Duration(seconds: 179));
-      backend.emitPosition.add(const Duration(seconds: 180));
-      backend.emitPosition.add(Duration.zero);
-      backend.emitPosition.add(const Duration(seconds: 1));
+
+      backend.emitLooped.add(songs[0]);
       await Future<void>.delayed(Duration.zero);
 
       expect(seeks, [Duration.zero]);
+      expect(container.read(playerServiceProvider).position, Duration.zero);
     });
 
-    test('a track shorter than the loop window fires once per loop', () async {
-      await service().openTracks(songs);
-      await service().setRepeat(RepeatMode.one);
-      service().seeked.listen(seeks.add);
-
-      backend.emitDuration.add(const Duration(milliseconds: 1500));
-      await Future<void>.delayed(Duration.zero);
-      for (var loop = 0; loop < 3; loop++) {
-        for (var ms = 0; ms <= 1500; ms += 50) {
-          backend.emitPosition.add(Duration(milliseconds: ms));
-        }
-      }
-      await Future<void>.delayed(Duration.zero);
-
-      expect(seeks, [Duration.zero, Duration.zero]);
-    });
-
-    test('plain progress and other repeat modes stay silent', () async {
-      await service().openTracks(songs);
-      service().seeked.listen(seeks.add);
-
-      backend.emitPosition.add(const Duration(seconds: 180));
-      backend.emitPosition.add(Duration.zero); // repeat off: not a loop
-      backend.emitPosition.add(const Duration(seconds: 1));
-      await service().setRepeat(RepeatMode.one);
-      backend.emitPosition.add(const Duration(seconds: 2));
-      backend.emitPosition.add(const Duration(seconds: 3));
-      await Future<void>.delayed(Duration.zero);
-
-      expect(seeks, isEmpty);
-    });
-
-    test('a new track starting at zero is not a loop', () async {
-      await service().openTracks(songs);
-      await service().setRepeat(RepeatMode.one);
-      service().seeked.listen(seeks.add);
-
-      backend.emitPosition.add(const Duration(seconds: 180));
-      await service().next();
-      backend.emitPosition.add(Duration.zero);
-      await Future<void>.delayed(Duration.zero);
-
-      expect(seeks, isEmpty);
-    });
-
-    group('stale ticks under repeat one', () {
-      setUp(() async {
+    test(
+      'a user seek to the start is one seeked, no new playthrough',
+      () async {
         await service().openTracks(songs);
         await service().setRepeat(RepeatMode.one);
         service().seeked.listen(seeks.add);
-        backend.emitDuration.add(const Duration(seconds: 180));
-        await Future<void>.delayed(Duration.zero);
-      });
+        final before = container.read(playerServiceProvider).playthrough;
 
-      test('after next', () async {
-        backend.emitPosition.add(const Duration(seconds: 179));
-        await service().next();
-        backend.emitPosition.add(const Duration(seconds: 179)); // stale
-        backend.emitDuration.add(const Duration(seconds: 200));
-        backend.emitPosition.add(Duration.zero);
-        backend.emitPosition.add(const Duration(seconds: 1));
+        await service().seek(Duration.zero);
         await Future<void>.delayed(Duration.zero);
 
-        expect(seeks, isEmpty);
-      });
+        expect(seeks, [Duration.zero]);
+        expect(container.read(playerServiceProvider).playthrough, before);
+      },
+    );
 
-      test('after seeking near the start', () async {
-        backend.emitPosition.add(const Duration(seconds: 100));
-        await service().seek(const Duration(seconds: 1));
-        backend.emitPosition.add(const Duration(seconds: 100)); // stale
-        backend.emitPosition.add(const Duration(seconds: 1));
-        await Future<void>.delayed(Duration.zero);
+    test('plain progress and a loop with repeat off stay silent', () async {
+      await service().openTracks(songs);
+      service().seeked.listen(seeks.add);
 
-        // Only the seek itself.
-        expect(seeks, [const Duration(seconds: 1)]);
-      });
+      backend.emitPosition.add(const Duration(seconds: 180));
+      backend.emitPosition.add(Duration.zero);
+      backend.emitPosition.add(const Duration(seconds: 1));
+      backend.emitLooped.add(songs[0]);
+      await Future<void>.delayed(Duration.zero);
 
-      test('after stop', () async {
-        backend.emitPosition.add(const Duration(seconds: 100));
-        await service().stop();
-        backend.emitPosition.add(const Duration(seconds: 100)); // stale
-        backend.emitPosition.add(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
+      expect(seeks, isEmpty);
+    });
 
-        expect(seeks, isEmpty);
-      });
+    test('a loop after the queue was cleared is ignored', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      await service().clearQueue();
+      await service().removeTrack(0);
+      service().seeked.listen(seeks.add);
+
+      backend.emitLooped.add(songs[0]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(seeks, isEmpty);
     });
   });
 }

@@ -61,48 +61,41 @@ void main() {
     test('repeat one looping the track, once per loop', () async {
       await service().openTracks(songs);
       await service().setRepeat(RepeatMode.one);
-      backend.emitDuration.add(const Duration(seconds: 180));
-      await settle();
 
-      final before = playthrough();
-      backend.emitPosition.add(const Duration(seconds: 179));
-      backend.emitPosition.add(const Duration(seconds: 180));
-      backend.emitPosition.add(Duration.zero);
-      backend.emitPosition.add(_tick);
-      await settle();
-
-      expect(playthrough(), before + 1);
+      expect(await bump(() async => backend.emitLooped.add(songs[0])), 1);
+      expect(await bump(() async => backend.emitLooped.add(songs[0])), 1);
+      expect(await bump(() async => backend.emitLooped.add(songs[0])), 1);
     });
 
-    test('a track shorter than the loop window, once per loop', () async {
+    test('a loop with repeat off changes nothing', () async {
+      await service().openTracks(songs);
+
+      expect(await bump(() async => backend.emitLooped.add(songs[0])), 0);
+    });
+
+    test('ticks that jump back under repeat one are not a loop', () async {
       await service().openTracks(songs);
       await service().setRepeat(RepeatMode.one);
-      backend.emitDuration.add(const Duration(milliseconds: 1500));
-      await settle();
-
-      final before = playthrough();
-      for (var loop = 0; loop < 3; loop++) {
-        for (var ms = 0; ms <= 1500; ms += 50) {
-          backend.emitPosition.add(Duration(milliseconds: ms));
-        }
-      }
-      await settle();
-
-      expect(playthrough(), before + 2);
-    });
-
-    test('the same ticks with repeat off change nothing', () async {
-      await service().openTracks(songs);
       backend.emitDuration.add(const Duration(seconds: 180));
       await settle();
 
-      final before = playthrough();
-      backend.emitPosition.add(const Duration(seconds: 179));
-      backend.emitPosition.add(const Duration(seconds: 180));
-      backend.emitPosition.add(Duration.zero);
-      await settle();
+      expect(
+        await bump(() async {
+          backend.emitPosition.add(const Duration(seconds: 179));
+          backend.emitPosition.add(const Duration(seconds: 180));
+          backend.emitPosition.add(Duration.zero);
+          backend.emitPosition.add(_tick);
+        }),
+        0,
+      );
+    });
 
-      expect(playthrough(), before);
+    test('a loop of the track before next() is ignored', () async {
+      await service().openTracks(songs);
+      await service().setRepeat(RepeatMode.one);
+      await service().next();
+
+      expect(await bump(() async => backend.emitLooped.add(songs[0])), 0);
     });
 
     test('adding to an empty queue loads a track', () async {

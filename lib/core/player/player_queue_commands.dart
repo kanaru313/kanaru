@@ -9,7 +9,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   set _ended(bool ended);
   int get _userQueueChanges;
   set _userQueueChanges(int count);
-  set _lastTick(Duration position);
   set _failuresInRow(int count);
   bool get _allFailed;
   bool get _wantsPlaying;
@@ -151,7 +150,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     _ended = ended;
     _wantsPlaying = false;
     _handedNext.clear();
-    _lastTick = Duration.zero;
     state = state.copyWith(
       queue: queue ?? state.queue,
       playing: false,
@@ -197,7 +195,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
       duration: Duration.zero,
       playthrough: state.playthrough + 1,
     );
-    _lastTick = Duration.zero;
     _handedNext.clear();
     // The engine skips broken files on its own; with repeat all it would go
     // round the queue forever. Queuing nothing lets it stop after this one.

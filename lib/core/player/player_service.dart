@@ -90,17 +90,8 @@ class PlayerService extends Notifier<PlayerState>
   @override
   bool get _allFailed => _failuresInRow >= state.queue.order.length;
 
-  /// How close to the end the last tick must be, and how close to the start
-  /// the next one, for it to count as repeat one starting the track over.
-  static const _loopJump = Duration(seconds: 2);
-
   @override
   late StreamController<Duration> _seeked;
-
-  /// Position of the last engine tick, to tell repeat one looping the track
-  /// from a tick that merely arrives out of order.
-  @override
-  Duration _lastTick = Duration.zero;
 
   /// Tracks the engine could not play, one event per track.
   Stream<PlaybackError> get errors => _errors.stream;
@@ -119,7 +110,6 @@ class PlayerService extends Notifier<PlayerState>
     _failuresInRow = 0;
     _handedNext.clear();
     _upNext.clear();
-    _lastTick = Duration.zero;
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
     _seeked = StreamController.broadcast();
@@ -130,6 +120,7 @@ class PlayerService extends Notifier<PlayerState>
         if (done) _onCompleted();
       }),
       _backend.position.listen(_onPosition),
+      _backend.looped.listen(_onLooped),
       _backend.duration.listen((v) {
         if (v > Duration.zero) {
           _failuresInRow = 0;
@@ -150,22 +141,22 @@ class PlayerService extends Notifier<PlayerState>
   }
 
   void _onPosition(Duration position) {
-    // Only a tick from the end of a known-length track can be followed by a
-    // loop; stale ticks after a track change, seek or stop never qualify.
-    // The jump back matters for a track shorter than the window, where every
-    // tick is both near the end and near the start.
-    final looped =
-        state.queue.repeat == RepeatMode.one &&
-        state.duration > Duration.zero &&
-        position < _lastTick &&
-        state.duration - _lastTick < _loopJump &&
-        position < _loopJump;
-    _lastTick = position;
+    state = state.copyWith(position: position);
+  }
+
+  /// The engine started [track] over under repeat one. A loop that was
+  /// already on its way when the user changed track or repeat mode is
+  /// dropped: it is not a play of what is current now.
+  void _onLooped(Track track) {
+    if (state.queue.repeat != RepeatMode.one ||
+        state.queue.current?.uri != track.uri) {
+      return;
+    }
     state = state.copyWith(
-      position: position,
-      playthrough: looped ? state.playthrough + 1 : null,
+      position: Duration.zero,
+      playthrough: state.playthrough + 1,
     );
-    if (looped) _seeked.add(Duration.zero);
+    _seeked.add(Duration.zero);
   }
 
   /// The engine stopped. With a track still to come, the current one failed
@@ -231,7 +222,6 @@ class PlayerService extends Notifier<PlayerState>
       duration: Duration.zero,
       playthrough: state.playthrough + 1,
     );
-    _lastTick = start;
     await _backend.open(
       queue.trackAt(index),
       next: next == null ? null : queue.trackAt(next),

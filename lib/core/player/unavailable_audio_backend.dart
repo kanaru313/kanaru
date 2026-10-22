@@ -18,6 +18,7 @@ final _log = Logger('UnavailableAudioBackend');
 /// open the next track, which would walk the whole queue.
 class UnavailableAudioBackend implements AudioBackend {
   final _advanced = StreamController<Track>.broadcast();
+  final _looped = StreamController<Track>.broadcast();
   final _playing = StreamController<bool>.broadcast();
   final _completed = StreamController<bool>.broadcast();
   final _position = StreamController<Duration>.broadcast();
@@ -74,6 +75,10 @@ class UnavailableAudioBackend implements AudioBackend {
   @override
   Stream<Track> get advanced => _advanced.stream;
 
+  /// Never fed: there is no engine to loop.
+  @override
+  Stream<Track> get looped => _looped.stream;
+
   @override
   Stream<bool> get playing => _playing.stream;
 
@@ -93,6 +98,7 @@ class UnavailableAudioBackend implements AudioBackend {
   Future<void> dispose() async {
     await Future.wait([
       _advanced.close(),
+      _looped.close(),
       _playing.close(),
       _completed.close(),
       _position.close(),

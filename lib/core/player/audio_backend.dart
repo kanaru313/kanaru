@@ -30,13 +30,19 @@ abstract interface class AudioBackend {
   /// follows what it is told and never reports a volume of its own.
   Future<void> setVolume(double volume);
 
-  /// Only [RepeatMode.one] matters to the engine (it loops the file); moving
-  /// on to the next track is decided in Dart through [setNext].
+  /// Only [RepeatMode.one] matters to the engine (it loops the file, and
+  /// reports each loop through [looped]); moving on to the next track is
+  /// decided in Dart through [setNext].
   Future<void> setRepeat(RepeatMode mode);
 
   /// The queued next track became the current one on its own: the previous
   /// one ended, or failed to load and was skipped.
   Stream<Track> get advanced;
+
+  /// The current track started over by itself under repeat one: one event per
+  /// loop, with the track that looped. Never for a seek, an open or a change
+  /// of track.
+  Stream<Track> get looped;
   Stream<bool> get playing;
 
   /// Fires `true` when playback stops with nothing queued next: the last

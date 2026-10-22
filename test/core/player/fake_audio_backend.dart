@@ -16,6 +16,7 @@ class FakeAudioBackend implements AudioBackend {
   Track? next;
 
   final emitAdvanced = StreamController<Track>.broadcast(sync: true);
+  final emitLooped = StreamController<Track>.broadcast(sync: true);
   final emitPlaying = StreamController<bool>.broadcast(sync: true);
   final emitCompleted = StreamController<bool>.broadcast(sync: true);
   final emitPosition = StreamController<Duration>.broadcast(sync: true);
@@ -100,6 +101,10 @@ class FakeAudioBackend implements AudioBackend {
 
   @override
   Stream<Track> get advanced => emitAdvanced.stream;
+
+  /// Mimics repeat one starting the track over.
+  @override
+  Stream<Track> get looped => emitLooped.stream;
 
   @override
   Stream<bool> get playing => emitPlaying.stream;
