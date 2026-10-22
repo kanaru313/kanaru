@@ -1,5 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
+import 'package:kanaru/features/library/albums/album_screen.dart';
+import 'package:kanaru/features/library/albums/albums_screen.dart';
+import 'package:kanaru/features/library/artists/artist_screen.dart';
+import 'package:kanaru/features/library/artists/artists_screen.dart';
+import 'package:kanaru/features/library/folders/folders_screen.dart';
+import 'package:kanaru/features/library/genres/genres_screen.dart';
+import 'package:kanaru/features/library/songs/songs_screen.dart';
+import 'package:kanaru/features/library/widgets/library_rescan_button.dart';
+import 'package:kanaru/features/settings/settings_screen.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
@@ -9,6 +18,13 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/indexer/scripted_indexer.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+/// A tooltip on the settings page itself; the top bar repeats the scan
+/// tooltips of its own rescan button.
+Finder inSettings(String tooltip) => find.descendant(
+  of: find.byType(SettingsScreen),
+  matching: find.byTooltip(tooltip),
+);
 
 void main() {
   /// Opens [location] on a library whose root is a real folder with one
@@ -26,7 +42,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('the albums page rescans from its floating button, and the '
+  testWidgets('the albums page rescans from the top bar button, and the '
       'result is announced once', (tester) async {
     final h = LibraryHarness();
     await openScannable(tester, h, '/songs');
@@ -34,7 +50,7 @@ void main() {
     goTo(tester, h, '/albums');
     await tester.pumpAndSettle();
 
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(LibraryRescanButton), findsOneWidget);
     await tester.tap(find.byTooltip('Rescan'));
     await settleIo(tester, h);
 
@@ -45,29 +61,30 @@ void main() {
     expect(find.text('Scan complete'), findsNothing);
   });
 
-  testWidgets('every library page has the button, detail pages do not', (
-    tester,
-  ) async {
+  testWidgets('the top bar has the button on every page, detail pages and '
+      'settings included, and no floating button remains', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, const [
       TestTrack('one', artist: 'Ann', album: 'X'),
     ], location: '/songs');
-    expect(find.byTooltip('Rescan'), findsOneWidget);
 
-    for (final location in ['/albums', '/artists']) {
+    final pages = <String, Type>{
+      '/songs': SongsScreen,
+      '/albums': AlbumsScreen,
+      '/artists': ArtistsScreen,
+      '/genres': GenresScreen,
+      '/folders': FoldersScreen,
+      albumLocation(const AlbumKey('ann', 'x')): AlbumScreen,
+      artistLocation('ann'): ArtistScreen,
+      '/settings': SettingsScreen,
+    };
+    for (final MapEntry(key: location, value: page) in pages.entries) {
       goTo(tester, h, location);
       await tester.pumpAndSettle();
+      expect(find.byType(page), findsOneWidget, reason: location);
       expect(find.byTooltip('Rescan'), findsOneWidget, reason: location);
+      expect(find.byType(FloatingActionButton), findsNothing, reason: location);
     }
-
-    goTo(tester, h, albumLocation(const AlbumKey('ann', 'x')));
-    await tester.pumpAndSettle();
-    expect(find.text('X'), findsWidgets);
-    expect(find.byType(FloatingActionButton), findsNothing);
-
-    goTo(tester, h, artistLocation('ann'));
-    await tester.pumpAndSettle();
-    expect(find.byType(FloatingActionButton), findsNothing);
   });
 
   testWidgets('a quick scan keeps the ring for 300 ms, a long one shows '
@@ -79,10 +96,14 @@ void main() {
     await h.pump(tester, hasRoots: true);
     goTo(tester, h, '/albums');
     await tester.pumpAndSettle();
-    FloatingActionButton fab() =>
-        tester.widget(find.byType(FloatingActionButton));
+    IconButton fab() => tester.widget(
+      find.descendant(
+        of: find.byType(LibraryRescanButton),
+        matching: find.byType(IconButton),
+      ),
+    );
     final ring = find.descendant(
-      of: find.byType(FloatingActionButton),
+      of: find.byType(LibraryRescanButton),
       matching: find.byType(CircularProgressIndicator),
     );
 
@@ -135,7 +156,7 @@ void main() {
     goTo(tester, h, '/albums');
     await tester.pumpAndSettle();
     final ring = find.descendant(
-      of: find.byType(FloatingActionButton),
+      of: find.byType(LibraryRescanButton),
       matching: find.byType(CircularProgressIndicator),
     );
 
@@ -206,7 +227,7 @@ void main() {
     await h.pump(tester);
     goTo(tester, h, '/albums');
     await tester.pumpAndSettle();
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(LibraryRescanButton), findsNothing);
   });
 
   group('settings', () {
@@ -272,7 +293,7 @@ void main() {
         expect(tester.widget<CircularProgressIndicator>(ring).value, isNull);
         expect(icon, findsNothing);
         expect(find.byType(LinearProgressIndicator), findsNothing);
-        expect(find.byTooltip('Looking for music files…'), findsOneWidget);
+        expect(inSettings('Looking for music files…'), findsOneWidget);
         expect(tester.widget<FilledButton>(button).onPressed, isNull);
         expect(tester.getRect(button), idle);
 
@@ -286,7 +307,7 @@ void main() {
         );
         await tester.pump();
         expect(tester.widget<CircularProgressIndicator>(ring).value, 0.25);
-        expect(find.byTooltip('Reading tags 1 / 4'), findsOneWidget);
+        expect(inSettings('Reading tags 1 / 4'), findsOneWidget);
         expect(tester.getRect(button), idle);
 
         indexer.emit(IndexerFinished(const ScanSummary()));
@@ -296,8 +317,8 @@ void main() {
         expect(tester.widget<FilledButton>(button).onPressed, isNull);
         // The scan is over: the hold shows its last progress, not the
         // first step's text.
-        expect(find.byTooltip('Reading tags 1 / 4'), findsOneWidget);
-        expect(find.byTooltip('Looking for music files…'), findsNothing);
+        expect(inSettings('Reading tags 1 / 4'), findsOneWidget);
+        expect(inSettings('Looking for music files…'), findsNothing);
         expect(tester.widget<CircularProgressIndicator>(ring).value, 0.25);
 
         await tester.pump(const Duration(milliseconds: 2));

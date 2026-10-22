@@ -87,7 +87,7 @@ class GenresScreen extends ConsumerWidget {
               onQueueAction: enqueue,
             ),
             AlbumsView.list => ListView.builder(
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: libraryListBottomPadding,
               prototypeItem: GenreTile(genre: _prototypeGenre, onTap: () {}),
               itemCount: genres.length,
               itemBuilder: (context, i) => GenreTile(

@@ -14,7 +14,6 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_browse_body.dart';
 import '../library_view_modes.dart';
-import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'artist_grid_tile.dart';
@@ -84,35 +83,30 @@ class ArtistsScreen extends ConsumerWidget {
             ),
           ],
         ],
-        body: LibraryRescanStack(
-          child: LibraryBrowseBody<ArtistSummary>(
-            hasError: ref.watch(artistsProvider.select((s) => s.hasError)),
-            items: ref.watch(sortedArtistsProvider),
-            icon: AppIcons.artistOutline,
-            noRootsMessage: l10n.artistsNoRootsMessage,
-            emptyTitle: l10n.artistsEmptyTitle,
-            emptyMessage: l10n.artistsEmptyMessage,
-            builder: (artists) => switch (view) {
-              AlbumsView.grid => ArtistGrid(
-                artists: artists,
-                onTap: open,
-                onQueueAction: enqueue,
+        body: LibraryBrowseBody<ArtistSummary>(
+          hasError: ref.watch(artistsProvider.select((s) => s.hasError)),
+          items: ref.watch(sortedArtistsProvider),
+          icon: AppIcons.artistOutline,
+          noRootsMessage: l10n.artistsNoRootsMessage,
+          emptyTitle: l10n.artistsEmptyTitle,
+          emptyMessage: l10n.artistsEmptyMessage,
+          builder: (artists) => switch (view) {
+            AlbumsView.grid => ArtistGrid(
+              artists: artists,
+              onTap: open,
+              onQueueAction: enqueue,
+            ),
+            AlbumsView.list => ListView.builder(
+              padding: libraryListBottomPadding,
+              prototypeItem: ArtistTile(artist: _prototypeArtist, onTap: () {}),
+              itemCount: artists.length,
+              itemBuilder: (context, i) => ArtistTile(
+                artist: artists[i],
+                onTap: () => open(artists[i]),
+                onQueueAction: (action) => enqueue(artists[i], action),
               ),
-              AlbumsView.list => ListView.builder(
-                padding: const EdgeInsets.only(bottom: libraryRescanClearance),
-                prototypeItem: ArtistTile(
-                  artist: _prototypeArtist,
-                  onTap: () {},
-                ),
-                itemCount: artists.length,
-                itemBuilder: (context, i) => ArtistTile(
-                  artist: artists[i],
-                  onTap: () => open(artists[i]),
-                  onQueueAction: (action) => enqueue(artists[i], action),
-                ),
-              ),
-            },
-          ),
+            ),
+          },
         ),
       ),
     );

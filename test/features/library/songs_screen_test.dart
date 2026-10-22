@@ -9,6 +9,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
+import 'package:kanaru/features/library/widgets/library_rescan_button.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -43,9 +44,13 @@ void main() {
 
   Finder rescan() => find.byTooltip('Rescan');
 
-  /// The floating rescan button, whatever its state.
-  FloatingActionButton rescanButton(WidgetTester tester) =>
-      tester.widget(find.byType(FloatingActionButton));
+  /// The top bar rescan button, whatever its state.
+  IconButton rescanButton(WidgetTester tester) => tester.widget(
+    find.descendant(
+      of: find.byType(LibraryRescanButton),
+      matching: find.byType(IconButton),
+    ),
+  );
 
   Future<void> scan(WidgetTester tester, LibraryHarness h) async {
     await tester.tap(rescan());
@@ -99,7 +104,7 @@ void main() {
     await waitForScanReading(tester, h);
 
     final ring = find.descendant(
-      of: find.byType(FloatingActionButton),
+      of: find.byType(LibraryRescanButton),
       matching: find.byType(CircularProgressIndicator),
     );
     expect(ring, findsOneWidget);

@@ -809,22 +809,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingComingSoon => 'Coming soon';
 
   @override
-  String get nowPlayingTabQueue => 'Queue';
+  String get nowPlayingTabQueue => 'Now playing';
 
   @override
-  String get nowPlayingTabTrack => 'Now Playing';
+  String get nowPlayingTabTrack => 'Song';
 
   @override
-  String get nowPlayingBackToTrack => 'Back to Now Playing';
+  String get nowPlayingBackToTrack => 'Back to the song';
 
   @override
   String get nowPlayingLyricsOnly => 'Lyrics only';
 
   @override
-  String get queueOpen => 'Open queue';
+  String get queueOpen => 'Show now playing list';
 
   @override
-  String get queueTitle => 'Queue';
+  String get queueTitle => 'Now playing';
 
   @override
   String queueTrackCount(int count) {
@@ -847,10 +847,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueReorder => 'Drag to reorder';
 
   @override
-  String get queueShowCurrent => 'Now playing';
+  String get queueShowCurrent => 'Jump to current song';
 
   @override
-  String get queueClose => 'Close queue';
+  String get queueClose => 'Close now playing list';
 
   @override
   String get settingsLibrary => 'Library';

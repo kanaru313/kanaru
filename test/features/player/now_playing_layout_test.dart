@@ -109,7 +109,10 @@ void main() {
       expect(at('Shuffle').center.dx, lessThan(640));
       expect(at('Next').center.dx, greaterThan(640));
       expect(at('Mute').center.dx, greaterThan(footer.center.dx));
-      expect(at('Open queue').center.dx, greaterThan(at('Mute').center.dx));
+      expect(
+        at('Show now playing list').center.dx,
+        greaterThan(at('Mute').center.dx),
+      );
       // The seek bar is under the buttons.
       expect(
         tester.getRect(inScreen(find.text('0:00')).first).center.dy,
@@ -141,9 +144,7 @@ void main() {
       );
     });
 
-    testWidgets('favorite only says it is coming', (
-      tester,
-    ) async {
+    testWidgets('favorite only says it is coming', (tester) async {
       await pumpOpen(tester, const Size(1280, 800));
 
       await tester.tap(inScreen(find.byTooltip('Add to favorites')));
@@ -175,7 +176,7 @@ void main() {
       expect(tester.getSize(inScreen(find.byType(TrackArtwork))).width, 315);
       expect(inScreen(find.byTooltip('Pause')), findsOneWidget);
       expect(inScreen(find.byTooltip('Add to favorites')), findsOneWidget);
-      expect(inScreen(find.byTooltip('Open queue')), findsOneWidget);
+      expect(inScreen(find.byTooltip('Show now playing list')), findsOneWidget);
     });
 
     testWidgets('has no volume button and no bottom buttons row', (
@@ -189,7 +190,9 @@ void main() {
       final close = tester.getRect(
         inScreen(find.byTooltip('Close Now Playing')),
       );
-      final queue = tester.getRect(inScreen(find.byTooltip('Open queue')));
+      final queue = tester.getRect(
+        inScreen(find.byTooltip('Show now playing list')),
+      );
       expect(close.top, lessThan(64));
       expect(queue.top, lessThan(64));
       expect(close.left, lessThan(queue.left));
@@ -200,8 +203,8 @@ void main() {
     testWidgets('centers the dots on the whole window', (tester) async {
       for (final width in [600.0, 480.0]) {
         await pumpOpen(tester, Size(width, 700));
-        final queue = tester.getRect(inScreen(find.byTooltip('Queue')));
-        final track = tester.getRect(inScreen(find.byTooltip('Now Playing')));
+        final queue = tester.getRect(inScreen(find.byTooltip('Now playing')));
+        final track = tester.getRect(inScreen(find.byTooltip('Song')));
         final dots = queue.expandToInclude(track);
         expect(dots.center.dx, closeTo(width / 2, 1));
         expect(dots.top, lessThan(64));
@@ -217,8 +220,8 @@ void main() {
     ) async {
       await pumpOpen(tester, const Size(480, 360), customTitleBar: true);
 
-      final queue = tester.getRect(inScreen(find.byTooltip('Queue')));
-      final track = tester.getRect(inScreen(find.byTooltip('Now Playing')));
+      final queue = tester.getRect(inScreen(find.byTooltip('Now playing')));
+      final track = tester.getRect(inScreen(find.byTooltip('Song')));
       expect(queue.expandToInclude(track).center.dx, closeTo(240, 1));
       expect(tester.takeException(), isNull);
     });
@@ -226,7 +229,7 @@ void main() {
     testWidgets('the header queue button opens the queue page', (tester) async {
       await pumpOpen(tester, const Size(600, 700));
 
-      await tester.tap(inScreen(find.byTooltip('Open queue')));
+      await tester.tap(inScreen(find.byTooltip('Show now playing list')));
       await tester.pumpAndSettle();
 
       expect(
@@ -237,8 +240,8 @@ void main() {
         0,
       );
       // On the queue page the queue button turns into a way back.
-      expect(inScreen(find.byTooltip('Open queue')), findsNothing);
-      await tester.tap(inScreen(find.byTooltip('Back to Now Playing')));
+      expect(inScreen(find.byTooltip('Show now playing list')), findsNothing);
+      await tester.tap(inScreen(find.byTooltip('Back to the song')));
       await tester.pumpAndSettle();
       expect(
         tester
@@ -247,7 +250,7 @@ void main() {
             .page,
         1,
       );
-      expect(inScreen(find.byTooltip('Open queue')), findsOneWidget);
+      expect(inScreen(find.byTooltip('Show now playing list')), findsOneWidget);
     });
 
     testWidgets('keeps the playing page on the bottom edge', (tester) async {
@@ -297,11 +300,11 @@ void main() {
       await pumpOpen(tester, const Size(600, 700));
       final pages = inScreen(find.byType(PageView));
 
-      await tester.tap(inScreen(find.byTooltip('Queue')));
+      await tester.tap(inScreen(find.byTooltip('Now playing')));
       await tester.pumpAndSettle();
       expect(tester.widget<PageView>(pages).controller!.page, 0);
 
-      await tester.tap(inScreen(find.byTooltip('Now Playing')));
+      await tester.tap(inScreen(find.byTooltip('Song')));
       await tester.pumpAndSettle();
       expect(tester.widget<PageView>(pages).controller!.page, 1);
     });

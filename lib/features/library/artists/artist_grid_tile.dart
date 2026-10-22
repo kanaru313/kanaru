@@ -5,7 +5,7 @@ import '../../../shared/artist_summaries.dart';
 import '../../../shared/widgets/artist_avatar.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
-import '../widgets/library_rescan_button.dart';
+import '../library_browse_body.dart';
 import '../widgets/round_grid_tile.dart';
 
 /// One artist in a grid: round avatar, name, "N songs".
@@ -57,7 +57,7 @@ class ArtistGrid extends StatelessWidget {
           albumGridPadding,
           0,
           albumGridPadding,
-          libraryRescanClearance,
+          libraryBottomInset,
         ),
         gridDelegate: libraryGridDelegate(
           context,

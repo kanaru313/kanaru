@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/library_startup.dart';
+import '../../features/library/widgets/library_rescan_button.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'app_destination.dart';
@@ -17,9 +19,9 @@ const topBarHeight = 64.0;
 /// gets their space. Mouse side buttons still move through the history.
 const _historyButtonsMinWidth = 560.0;
 
-/// Header above every page: back/forward, search, settings and, when the app
-/// draws its own title bar, the window buttons. Empty space drags the window.
-/// On narrow bars back/forward are left out.
+/// Header above every page: back/forward, search, rescan, settings and,
+/// when the app draws its own title bar, the window buttons. Empty space
+/// drags the window. On narrow bars back/forward are left out.
 class TopBar extends ConsumerWidget {
   const TopBar({super.key, this.onMenuPressed});
 
@@ -83,6 +85,9 @@ class TopBar extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (ref.watch(libraryDatabaseProvider) != null &&
+                    ref.watch(libraryHasRootsProvider))
+                  const WindowDragExclusion(child: LibraryRescanButton()),
                 WindowDragExclusion(
                   child: TopBarButton(
                     icon: AppIcons.settingsOutlined,

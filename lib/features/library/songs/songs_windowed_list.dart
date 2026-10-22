@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
-import '../widgets/library_rescan_button.dart';
+import '../library_browse_body.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'song_row_cache.dart';
 import '../../../shared/widgets/song_tile.dart';
@@ -85,7 +85,7 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
   Widget build(BuildContext context) {
     return ListView.builder(
       controller: widget.controller,
-      padding: const EdgeInsets.only(bottom: libraryRescanClearance),
+      padding: libraryListBottomPadding,
       // Measured from a row, so larger text sizes do not clip rows.
       prototypeItem: SongTile(song: prototypeSong, onTap: () {}),
       itemCount: widget.songs.ids.length,

@@ -59,7 +59,7 @@ void main() {
   }
 
   Future<void> openSheet(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Open queue'));
+    await tester.tap(find.byTooltip('Show now playing list'));
     await tester.pumpAndSettle();
   }
 
@@ -97,7 +97,7 @@ void main() {
       await openSheet(tester);
 
       expect(find.byType(QueuePanel), findsOneWidget);
-      expect(find.text('Queue'), findsOneWidget);
+      expect(find.text('Now playing'), findsOneWidget);
       expect(find.text('4 tracks'), findsOneWidget);
       expect(find.byType(QueueTile), findsNWidgets(4));
       expect(tester.getSize(find.byType(QueuePanel)).width, 400);
@@ -106,7 +106,7 @@ void main() {
       expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
       // Clear and show-current live in the header, as icons.
       expect(find.byTooltip('Clear queue'), findsOneWidget);
-      expect(find.byTooltip('Now playing'), findsOneWidget);
+      expect(find.byTooltip('Jump to current song'), findsOneWidget);
       expect(find.byType(TextButton), findsNothing);
     });
 
@@ -131,7 +131,7 @@ void main() {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await tester.tap(find.byTooltip('Close queue'));
+      await tester.tap(find.byTooltip('Close now playing list'));
       await tester.pumpAndSettle();
 
       expect(find.byType(QueuePanel), findsNothing);
@@ -204,7 +204,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(NowPlayingScreen),
-          matching: find.byTooltip('Open queue'),
+          matching: find.byTooltip('Show now playing list'),
         ),
       );
       await tester.pumpAndSettle();
@@ -227,7 +227,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(NowPlayingScreen),
-          matching: find.byTooltip('Open queue'),
+          matching: find.byTooltip('Show now playing list'),
         ),
       );
       await tester.pumpAndSettle();
@@ -264,7 +264,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(NowPlayingScreen),
-          matching: find.byTooltip('Open queue'),
+          matching: find.byTooltip('Show now playing list'),
         ),
       );
       await tester.pumpAndSettle();
@@ -282,7 +282,10 @@ void main() {
       await tester.pumpAndSettle();
       final screen = find.byType(NowPlayingScreen);
       await tester.tap(
-        find.descendant(of: screen, matching: find.byTooltip('Open queue')),
+        find.descendant(
+          of: screen,
+          matching: find.byTooltip('Show now playing list'),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -508,7 +511,7 @@ void main() {
       );
       expect(row('t0'), findsNothing);
 
-      await tester.tap(find.byTooltip('Now playing'));
+      await tester.tap(find.byTooltip('Jump to current song'));
       await tester.pumpAndSettle();
 
       expect(row('t0'), findsOneWidget);

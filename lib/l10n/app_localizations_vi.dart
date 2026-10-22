@@ -786,22 +786,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingComingSoon => 'Sắp có';
 
   @override
-  String get nowPlayingTabQueue => 'Hàng đợi';
+  String get nowPlayingTabQueue => 'Đang phát';
 
   @override
-  String get nowPlayingTabTrack => 'Đang phát';
+  String get nowPlayingTabTrack => 'Bài hát';
 
   @override
-  String get nowPlayingBackToTrack => 'Quay lại bài đang phát';
+  String get nowPlayingBackToTrack => 'Quay lại bài hát';
 
   @override
   String get nowPlayingLyricsOnly => 'Chỉ hiện lời bài hát';
 
   @override
-  String get queueOpen => 'Mở hàng đợi';
+  String get queueOpen => 'Mở danh sách đang phát';
 
   @override
-  String get queueTitle => 'Hàng đợi';
+  String get queueTitle => 'Đang phát';
 
   @override
   String queueTrackCount(int count) {
@@ -823,10 +823,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override
-  String get queueShowCurrent => 'Đang phát';
+  String get queueShowCurrent => 'Tới bài đang phát';
 
   @override
-  String get queueClose => 'Đóng hàng đợi';
+  String get queueClose => 'Đóng danh sách đang phát';
 
   @override
   String get settingsLibrary => 'Thư viện';

@@ -413,12 +413,12 @@
   "nowPlayingFavorite": "Add to favorites",
   "nowPlayingAddToPlaylist": "Add to playlist",
   "nowPlayingComingSoon": "Coming soon",
-  "nowPlayingTabQueue": "Queue",
-  "nowPlayingTabTrack": "Now Playing",
-  "nowPlayingBackToTrack": "Back to Now Playing",
+  "nowPlayingTabQueue": "Now playing",
+  "nowPlayingTabTrack": "Song",
+  "nowPlayingBackToTrack": "Back to the song",
   "nowPlayingLyricsOnly": "Lyrics only",
-  "queueOpen": "Open queue",
-  "queueTitle": "Queue",
+  "queueOpen": "Show now playing list",
+  "queueTitle": "Now playing",
   "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",
   "@queueTrackCount": {
     "placeholders": {
@@ -428,8 +428,8 @@
   "queueClear": "Clear queue",
   "queueRemove": "Remove from queue",
   "queueReorder": "Drag to reorder",
-  "queueShowCurrent": "Now playing",
-  "queueClose": "Close queue",
+  "queueShowCurrent": "Jump to current song",
+  "queueClose": "Close now playing list",
 
   "settingsLibrary": "Library",
   "settingsRescanLibrary": "Rescan library",

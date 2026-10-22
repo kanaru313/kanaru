@@ -15,7 +15,6 @@ import '../../../shared/directory_picker_provider.dart';
 import '../../../shared/root_rejection_message.dart';
 import '../../../shared/widgets/library_keys_updating.dart';
 import '../../../shared/widgets/library_loading.dart';
-import '../widgets/library_rescan_button.dart';
 import '../widgets/library_sort_controls.dart';
 import 'shuffle_all_button.dart';
 import 'songs_empty_view.dart';
@@ -23,8 +22,8 @@ import 'songs_list_view.dart';
 
 final _log = Logger('library');
 
-/// The scanned library as a flat list in the saved sort, with the floating
-/// rescan button. Tapping a song plays the whole list from it.
+/// The scanned library as a flat list in the saved sort. Tapping a song plays
+/// the whole list from it.
 class SongsScreen extends ConsumerStatefulWidget {
   /// [pickDirectory] opens the folder picker; defaults to
   /// [directoryPickerProvider].
@@ -114,7 +113,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
           ),
         ],
       ],
-      body: LibraryRescanStack(child: body),
+      body: body,
     );
   }
 }

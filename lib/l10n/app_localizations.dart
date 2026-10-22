@@ -1313,19 +1313,19 @@ abstract class AppLocalizations {
   /// No description provided for @nowPlayingTabQueue.
   ///
   /// In en, this message translates to:
-  /// **'Queue'**
+  /// **'Now playing'**
   String get nowPlayingTabQueue;
 
   /// No description provided for @nowPlayingTabTrack.
   ///
   /// In en, this message translates to:
-  /// **'Now Playing'**
+  /// **'Song'**
   String get nowPlayingTabTrack;
 
   /// No description provided for @nowPlayingBackToTrack.
   ///
   /// In en, this message translates to:
-  /// **'Back to Now Playing'**
+  /// **'Back to the song'**
   String get nowPlayingBackToTrack;
 
   /// No description provided for @nowPlayingLyricsOnly.
@@ -1337,13 +1337,13 @@ abstract class AppLocalizations {
   /// No description provided for @queueOpen.
   ///
   /// In en, this message translates to:
-  /// **'Open queue'**
+  /// **'Show now playing list'**
   String get queueOpen;
 
   /// No description provided for @queueTitle.
   ///
   /// In en, this message translates to:
-  /// **'Queue'**
+  /// **'Now playing'**
   String get queueTitle;
 
   /// No description provided for @queueTrackCount.
@@ -1373,13 +1373,13 @@ abstract class AppLocalizations {
   /// No description provided for @queueShowCurrent.
   ///
   /// In en, this message translates to:
-  /// **'Now playing'**
+  /// **'Jump to current song'**
   String get queueShowCurrent;
 
   /// No description provided for @queueClose.
   ///
   /// In en, this message translates to:
-  /// **'Close queue'**
+  /// **'Close now playing list'**
   String get queueClose;
 
   /// No description provided for @settingsLibrary.

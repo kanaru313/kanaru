@@ -27,7 +27,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 |---|---|---|
 | `lib/main.dart` | 1 / 85 | Startup sequence, provider overrides |
 | `lib/app/` | 19 / 1,909 | Shell, router, theme, window integration, navigation history |
-| `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart`, `top_bar_search_field.dart` (live search), `navigation_history.dart`, `app_destination.dart`, `sidebar/` (incl. `sidebar_playlists_section.dart`, `sidebar_playlists_rail.dart`), `window/` |
+| `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart` (incl. the rescan button, `features/library/widgets/library_rescan_button.dart`), `top_bar_search_field.dart` (live search), `navigation_history.dart`, `app_destination.dart`, `sidebar/` (incl. `sidebar_playlists_section.dart`, `sidebar_playlists_rail.dart`), `window/` |
 | `lib/core/database/` | 37 / 13,804 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, library counts (`library_stats_queries.dart`), folder queries (`folder_queries.dart`: directory counts and subtree reads), genre queries and name splitting (`genre_queries.dart`, `genre_names.dart`), text keys, key backfill, v4 and v5 migrations, user-data tables (`user_data_tables.dart`: `plays`, `play_stats`, `playlists`, `playlist_entries`; triggers in `listen_history.drift`), FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries, playlist queries, writes, row models and cover keys (`playlist_*.dart`) |
 | `lib/core/indexer/` | 16 / 1,614 | Folder walk, tag reading via Rust, diff, scan orchestration, covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
@@ -54,12 +54,12 @@ Key files by area:
 | Session restore | `core/player/session/playback_session_file.dart`, `playback_session_saver.dart`, `playback_session_codec.dart` |
 | Indexing | `core/indexer/library_indexer.dart`, `walk_audio_files.dart`, `scan_diff.dart`, `tracks_from_tags.dart`, `rust_tag_reader.dart` |
 | Playlists | `core/database/playlist_queries.dart`, `playlist_writes.dart`, `playlist_providers.dart`, `playlist_cover_keys.dart`; `shared/widgets/add_to_playlist/add_to_playlist_flow.dart`; `features/playlists/playlist_screen.dart`, `playlist_entries_view.dart`; `app/shell/sidebar/sidebar_playlists_section.dart` |
-| Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_browse_track_links.dart`, `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
+| Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_browse_track_links.dart`, `library_browse_now_playing.dart` (album of the playing path), `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
 | Search | `core/database/library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`, `library_migration_v4.dart`; `features/search/search_providers.dart`, `search_screen.dart`; `app/shell/top_bar_search_field.dart`, `navigation_history.dart` |
 | Startup DB | `core/database/library_startup.dart` |
 | Library folders | `core/database/library_root_queries.dart` (watch, count, remove, replace; the settings UI no longer calls replace), `core/indexer/library_roots_controller.dart` (add, remove, replace), `core/indexer/library_startup_tasks.dart` (post-frame rescan), `features/settings/library_folders_list.dart` |
 | MPRIS | `core/media_controls/mpris/mpris_media_controls.dart`, `mpris_method_handler.dart`, `mpris_properties.dart` |
-| Browse UI | `features/library/library_browse_body.dart` (state machine), `songs/song_row_cache.dart`, `albums/album_screen.dart`, `artists/artist_screen.dart`, `genres/genre_screen.dart`, `folders/folder_screen.dart` |
+| Browse UI | `features/library/library_browse_body.dart` (state machine), `songs/song_row_cache.dart`, `albums/album_screen.dart`, `artists/artist_screen.dart`, `genres/genre_screen.dart`, `folders/folder_screen.dart`; `features/player/now_playing/now_playing_album_line.dart` (album line in Now Playing) |
 | Now Playing | `features/player/now_playing/now_playing_overlay.dart`, `now_playing_auto_hide.dart`, `now_playing_tabs.dart` |
 | Settings | `core/settings/settings_provider.dart`, `settings_codec.dart`, `settings_file.dart`; library counts: `core/database/library_stats_queries.dart` + `features/settings/library_stats_provider.dart` |
 | Logging | `core/logging/app_logging.dart`, `rotating_log_file.dart`, `log_redaction.dart` |

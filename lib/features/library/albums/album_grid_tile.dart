@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
+import '../library_browse_body.dart';
 import '../../../shared/widgets/album_artwork.dart';
-import '../widgets/library_rescan_button.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'album_tile_data.dart';
 
@@ -144,7 +144,7 @@ class AlbumGrid extends StatelessWidget {
           albumGridPadding,
           0,
           albumGridPadding,
-          libraryRescanClearance,
+          libraryBottomInset,
         ),
         gridDelegate: albumGridDelegate(
           context,

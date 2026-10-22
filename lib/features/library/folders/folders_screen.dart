@@ -90,7 +90,7 @@ class FoldersScreen extends ConsumerWidget {
               onAction: act,
             ),
             AlbumsView.list => ListView.builder(
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: libraryListBottomPadding,
               itemCount: folders.length,
               itemBuilder: (context, i) => FolderListTile(
                 folder: folders[i],

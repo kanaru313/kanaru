@@ -98,7 +98,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 
 Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
 
-Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries.
+Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries. It sits in the top bar, left of Settings, and stays at every window width (no floating button on the pages).
 
 ## Playlist screens
 
