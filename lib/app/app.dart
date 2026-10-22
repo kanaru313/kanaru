@@ -2,6 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/cover_colors/playing_cover_palette_provider.dart';
 import '../core/settings/applied_appearance_provider.dart';
 import '../core/settings/settings_provider.dart';
 import '../features/player/player_shortcuts.dart';
@@ -29,15 +30,27 @@ class KanaruApp extends ConsumerWidget {
         )
         ? Locale(languageCode!)
         : null;
+    // The playing cover's seed when "colors from the cover" is on and the
+    // cover has a usable color; otherwise the system accent.
+    final coverSeed = ref.watch(appCoverPaletteProvider.select((p) => p?.seed));
+    final themeAnimationDuration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : coverThemeTransition;
 
     // Uses the platform accent color when available (GTK theme on Linux,
-    // Material You on Android), otherwise falls back to Kanaru's seed color.
+    // Material You on Android), otherwise falls back to Kanaru's seed color;
+    // the playing cover's color comes first when there is one.
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) => MaterialApp.router(
         onGenerateTitle: (context) => context.l10n.appTitle,
         debugShowCheckedModeBanner: false,
-        theme: buildTheme(lightDynamic, Brightness.light),
-        darkTheme: buildTheme(darkDynamic, Brightness.dark),
+        theme: buildTheme(lightDynamic, Brightness.light, coverSeed: coverSeed),
+        darkTheme: buildTheme(
+          darkDynamic,
+          Brightness.dark,
+          coverSeed: coverSeed,
+        ),
+        themeAnimationDuration: themeAnimationDuration,
         themeMode: switch (theme) {
           ThemePreference.system => ThemeMode.system,
           ThemePreference.light => ThemeMode.light,

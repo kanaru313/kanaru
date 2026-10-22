@@ -4,10 +4,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import 'coming_soon_rows.dart';
+import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Appearance options that are not wired yet (shown from the saved values,
-/// off): motion, colors from the cover, and text size.
+/// Appearance options: colors from the cover (a working switch), and motion
+/// and text size, which are not wired yet (shown from the saved values,
+/// off).
 class DisplaySettingRows extends ConsumerWidget {
   const DisplaySettingRows({super.key});
 
@@ -24,10 +26,15 @@ class DisplaySettingRows extends ConsumerWidget {
           subtitle: l10n.settingsAnimationsHint,
           value: settings.animations,
         ),
-        ComingSoonSwitchRow(
+        SettingRow.single(
           title: l10n.settingsColorFromCover,
           subtitle: l10n.settingsColorFromCoverHint,
-          value: settings.display.colorFromCover,
+          control: Switch(
+            value: settings.display.colorFromCover,
+            onChanged: (on) => ref
+                .read(settingsProvider.notifier)
+                .setDisplay(settings.display.copyWith(colorFromCover: on)),
+          ),
         ),
         ComingSoonDropdownRow<double>(
           title: l10n.settingsFontScale,
