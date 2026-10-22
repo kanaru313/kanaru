@@ -4,18 +4,16 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_rows.dart';
-import '../../shared/enqueue_tracks.dart';
-import '../../shared/play_tracks.dart';
 import '../../shared/widgets/library_loading.dart';
-import 'playlist_entries_view.dart';
-import 'playlist_page_actions.dart';
+import 'playlist_page_body.dart';
 import 'playlist_page_data.dart';
 import 'playlist_routes.dart';
 import 'playlist_screen_states.dart';
 
 final _log = Logger('playlists');
 
-/// One playlist at `/playlists/:id`: header, then its entries. [routeId] is
+/// One playlist at `/playlists/:id`: header, then its entries. The Favorites
+/// playlist shows here as on `/favorites` (no redirect). [routeId] is
 /// the URL text; a malformed id or a playlist that is gone shows "not found".
 class PlaylistScreen extends ConsumerStatefulWidget {
   const PlaylistScreen({super.key, required this.routeId});
@@ -33,14 +31,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
   Widget _data(PlaylistPage? page) {
     if (page != null) {
       _lastPage = page;
-      return _PlaylistBody(page);
+      return PlaylistPageBody(page);
     }
     // Deleting a playlist leaves its page first, but the page stays on screen
     // until its exit animation ends. Meanwhile the delete empties the query;
     // "not found" would flash on a page that is already leaving.
     final last = _lastPage;
     if (last != null && ModalRoute.of(context)?.isActive == false) {
-      return _PlaylistBody(last);
+      return PlaylistPageBody(last);
     }
     return const PlaylistNotFound();
   }
@@ -77,46 +75,5 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     }
     // A detail page in a branch needs its own Material for the ink of rows.
     return Material(type: MaterialType.transparency, child: body);
-  }
-}
-
-class _PlaylistBody extends ConsumerWidget {
-  const _PlaylistBody(this.page);
-
-  final PlaylistPage page;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final playlist = page.playlist;
-    final covers = ref.watch(coverCacheDirectoryProvider);
-
-    return PlaylistEntriesView(
-      page: page,
-      onMove: (entryId, to) =>
-          movePlaylistEntryOrReport(ref, context, playlist.id, entryId, to),
-      onRemove: (entryId) =>
-          removePlaylistEntryOrReport(ref, context, playlist.id, entryId),
-      onPlayFrom: (shown, index) => playTracks(
-        ref,
-        playableTracks(shown, covers),
-        playableIndex(shown, index),
-      ),
-      onQueueAction: (shown, action) => enqueueLoaded(
-        ref,
-        context,
-        action,
-        playableTracks(shown, covers),
-        playlist.name,
-      ),
-      onEntryQueueAction: (entry, action) {
-        final track = entry.track;
-        if (track == null) return;
-        enqueueLoaded(ref, context, action, [
-          playlistTrack(track, covers),
-        ], track.title);
-      },
-      onRename: () => renamePlaylistInteractively(ref, context, playlist),
-      onDelete: () => deletePlaylistInteractively(ref, context, playlist),
-    );
   }
 }

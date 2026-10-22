@@ -22,8 +22,8 @@ class PlaylistEntriesView extends StatefulWidget {
     required this.onPlayFrom,
     this.onQueueAction,
     this.onEntryQueueAction,
-    required this.onRename,
-    required this.onDelete,
+    this.onRename,
+    this.onDelete,
   });
 
   final PlaylistPage page;
@@ -50,8 +50,10 @@ class PlaylistEntriesView extends StatefulWidget {
   /// Queue menu of one row.
   final void Function(PlaylistEntryRow entry, QueueAction action)?
   onEntryQueueAction;
-  final VoidCallback onRename;
-  final VoidCallback onDelete;
+
+  /// Null leaves the item out of the header menu (the Favorites playlist).
+  final VoidCallback? onRename;
+  final VoidCallback? onDelete;
 
   @override
   State<PlaylistEntriesView> createState() => _PlaylistEntriesViewState();
@@ -130,6 +132,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     final shown = _shown;
     final firstPlayable = shown.indexWhere((e) => e.track != null);
     final onQueueAction = widget.onQueueAction;
+    final favorites = widget.page.playlist.isFavorites;
 
     return CustomScrollView(
       slivers: [
@@ -150,11 +153,17 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
           // EmptyState scrolls on its own and measures with a LayoutBuilder,
           // which a non-scrolling fill cannot size.
           SliverFillRemaining(
-            child: EmptyState(
-              icon: AppIcons.playlist,
-              title: l10n.playlistEmptyTitle,
-              message: l10n.playlistEmptyMessage,
-            ),
+            child: favorites
+                ? EmptyState(
+                    icon: AppIcons.favoriteOutline,
+                    title: l10n.navFavorites,
+                    message: l10n.favoritesEmptyMessage,
+                  )
+                : EmptyState(
+                    icon: AppIcons.playlist,
+                    title: l10n.playlistEmptyTitle,
+                    message: l10n.playlistEmptyMessage,
+                  ),
           )
         else
           SliverReorderableList(
@@ -175,6 +184,8 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
                     ? null
                     : () => widget.onPlayFrom(shown, index),
                 onRemove: () => widget.onRemove(entry.entryId),
+                // Removing a row of Favorites unlikes the song.
+                removeTooltip: favorites ? l10n.favoritesRemove : null,
                 onQueueAction: entry.track == null || onEntryAction == null
                     ? null
                     : (action) => onEntryAction(entry, action),

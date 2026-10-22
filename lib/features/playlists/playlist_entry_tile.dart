@@ -28,6 +28,7 @@ class PlaylistEntryTile extends ConsumerWidget {
     this.onTap,
     required this.onRemove,
     this.onQueueAction,
+    this.removeTooltip,
   });
 
   final PlaylistEntryRow entry;
@@ -38,6 +39,9 @@ class PlaylistEntryTile extends ConsumerWidget {
   /// Plays from this row; null on an entry that cannot play.
   final VoidCallback? onTap;
   final VoidCallback onRemove;
+
+  /// Tooltip of the remove button; null is "Remove from playlist".
+  final String? removeTooltip;
 
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
@@ -119,7 +123,7 @@ class PlaylistEntryTile extends ConsumerWidget {
         IconButton(
           icon: const Icon(AppIcons.closeRounded),
           iconSize: 20,
-          tooltip: l10n.playlistRemoveEntry,
+          tooltip: removeTooltip ?? l10n.playlistRemoveEntry,
           onPressed: onRemove,
         ),
       ],

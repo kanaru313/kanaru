@@ -6,19 +6,21 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
+import 'playlist_display_name.dart';
 
 enum _PlaylistAction { rename, delete }
 
 /// Collage, name, song count, a Play button, the queue menu and a
-/// rename / delete menu.
+/// rename / delete menu. The menu holds only the actions given; with none
+/// it is left out.
 class PlaylistHeader extends StatelessWidget {
   const PlaylistHeader({
     super.key,
     required this.page,
     this.onPlay,
     this.onQueueAction,
-    required this.onRename,
-    required this.onDelete,
+    this.onRename,
+    this.onDelete,
   });
 
   final PlaylistPage page;
@@ -28,14 +30,18 @@ class PlaylistHeader extends StatelessWidget {
 
   /// Null hides the queue menu (nothing to enqueue).
   final ValueChanged<QueueAction>? onQueueAction;
-  final VoidCallback onRename;
-  final VoidCallback onDelete;
+
+  /// Null leaves the item out of the menu (the Favorites playlist).
+  final VoidCallback? onRename;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final queueAction = onQueueAction;
+    final rename = onRename;
+    final delete = onDelete;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -56,7 +62,7 @@ class PlaylistHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      page.playlist.name,
+                      playlistDisplayName(page.playlist, l10n),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.headlineMedium?.copyWith(
@@ -82,25 +88,28 @@ class PlaylistHeader extends StatelessWidget {
                         ),
                         if (queueAction != null)
                           QueueActionsButton(onSelected: queueAction),
-                        PopupMenuButton<_PlaylistAction>(
-                          tooltip: l10n.playlistActions,
-                          // Not the kebab of the queue menu beside it.
-                          icon: const Icon(AppIcons.edit),
-                          onSelected: (action) => switch (action) {
-                            _PlaylistAction.rename => onRename(),
-                            _PlaylistAction.delete => onDelete(),
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: _PlaylistAction.rename,
-                              child: Text(l10n.playlistRename),
-                            ),
-                            PopupMenuItem(
-                              value: _PlaylistAction.delete,
-                              child: Text(l10n.playlistDelete),
-                            ),
-                          ],
-                        ),
+                        if (rename != null || delete != null)
+                          PopupMenuButton<_PlaylistAction>(
+                            tooltip: l10n.playlistActions,
+                            // Not the kebab of the queue menu beside it.
+                            icon: const Icon(AppIcons.edit),
+                            onSelected: (action) => switch (action) {
+                              _PlaylistAction.rename => rename?.call(),
+                              _PlaylistAction.delete => delete?.call(),
+                            },
+                            itemBuilder: (context) => [
+                              if (rename != null)
+                                PopupMenuItem(
+                                  value: _PlaylistAction.rename,
+                                  child: Text(l10n.playlistRename),
+                                ),
+                              if (delete != null)
+                                PopupMenuItem(
+                                  value: _PlaylistAction.delete,
+                                  child: Text(l10n.playlistDelete),
+                                ),
+                            ],
+                          ),
                       ],
                     ),
                   ],
