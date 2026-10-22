@@ -179,10 +179,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
   bool get isRunning => _running != null;
 
   /// Scans because files changed on disk (the folder watcher). Like a scan
-  /// at app start it is quiet, but it leaves everything that [scan] resets
-  /// alone: skipped covers, the automatic-follow-up guard, and it never asks
-  /// the cover pass to yield. Files modified in the last [settleWindow] are
-  /// left for the next pass. During a scan it only queues one more pass.
+  /// at app start it is quiet and counts as an automatic scan, and unlike
+  /// [scan] it keeps the skipped covers and never asks the cover pass to
+  /// yield. Files modified in the last [settleWindow] are left for the next
+  /// pass. During a scan it only queues one more pass.
   Future<void> scanForChanges() {
     _changesPending = true;
     final running = _running;

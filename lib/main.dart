@@ -114,9 +114,10 @@ Future<void> main() async {
 }
 
 /// Work that waits for the first frame. The files the app was launched with
-/// start first, so their tag read is queued in the native pool before the
-/// library scan's first batch; they then replace the restored queue (the
-/// session restore never overwrites a queue the user already opened).
+/// start first, so their tag read usually reaches the native pool before the
+/// library scan's first batch (not guaranteed); they then replace the restored
+/// queue (the session restore never overwrites a queue the user already
+/// opened).
 Future<void> _runStartupTasks(ProviderContainer container) async {
   final opening = startOpenFiles(container);
   // The scan keeps running; waiting for it would delay the files.

@@ -407,6 +407,9 @@
   "excludedFoldersAlreadyExcluded": "Thư mục này đã bị loại trừ.",
   "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" },
   "settingsWatchFolders": "Theo dõi thư mục nhạc",
+  "@settingsWatchFolders": { "description": "Title of the switch that makes Kanaru rescan by itself when files in the music folders change" },
   "settingsWatchFoldersHint": "Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi",
-  "settingsWatchFoldersLimit": "Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại."
+  "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
+  "settingsWatchFoldersLimit": "Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.",
+  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" }
 }
