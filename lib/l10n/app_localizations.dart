@@ -530,6 +530,60 @@ abstract class AppLocalizations {
   /// **'Rescan'**
   String get libraryRescan;
 
+  /// No description provided for @libraryShuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get libraryShuffle;
+
+  /// No description provided for @libraryShowArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Show artist'**
+  String get libraryShowArtist;
+
+  /// No description provided for @libraryShowAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Show album'**
+  String get libraryShowAlbum;
+
+  /// No description provided for @libraryShowInFileManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in file manager'**
+  String get libraryShowInFileManager;
+
+  /// No description provided for @libraryFileManagerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the file manager'**
+  String get libraryFileManagerFailed;
+
+  /// No description provided for @libraryTrackGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This song is no longer in the library'**
+  String get libraryTrackGone;
+
+  /// No description provided for @libraryNoAlbumToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'This song has no album'**
+  String get libraryNoAlbumToShow;
+
+  /// No description provided for @libraryNoArtistToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'This song has no artist'**
+  String get libraryNoArtistToShow;
+
+  /// No description provided for @libraryChooseArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an artist'**
+  String get libraryChooseArtist;
+
   /// No description provided for @libraryKeysUpdatingTitle.
   ///
   /// In en, this message translates to:

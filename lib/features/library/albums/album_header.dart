@@ -3,9 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/format_duration.dart';
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../play_shuffle_actions.dart';
 
 /// Artwork, title, artist, "year · N songs · duration" and a Play button.
 class AlbumHeader extends StatelessWidget {
@@ -14,6 +14,7 @@ class AlbumHeader extends StatelessWidget {
     required this.albumKey,
     required this.album,
     required this.onPlay,
+    required this.onShuffle,
     required this.onQueueAction,
     this.artist,
   });
@@ -21,6 +22,7 @@ class AlbumHeader extends StatelessWidget {
   final AlbumKey albumKey;
   final AlbumSummary album;
   final VoidCallback onPlay;
+  final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
 
   /// Replaces the plain artist name, for example with a link.
@@ -73,17 +75,11 @@ class AlbumHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FilledButton.icon(
-                      onPressed: onPlay,
-                      icon: const Icon(AppIcons.play),
-                      label: Text(l10n.albumsPlay),
-                    ),
-                    const SizedBox(width: 4),
-                    QueueActionsButton(onSelected: onQueueAction),
-                  ],
+                PlayShuffleActions(
+                  playLabel: l10n.albumsPlay,
+                  onPlay: onPlay,
+                  onShuffle: onShuffle,
+                  onQueueAction: onQueueAction,
                 ),
               ],
             ),

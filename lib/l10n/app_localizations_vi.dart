@@ -267,6 +267,33 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryRescan => 'Quét lại';
 
   @override
+  String get libraryShuffle => 'Phát ngẫu nhiên';
+
+  @override
+  String get libraryShowArtist => 'Xem nghệ sĩ';
+
+  @override
+  String get libraryShowAlbum => 'Xem album';
+
+  @override
+  String get libraryShowInFileManager => 'Mở trong trình quản lý tệp';
+
+  @override
+  String get libraryFileManagerFailed => 'Không mở được trình quản lý tệp';
+
+  @override
+  String get libraryTrackGone => 'Bài này không còn trong thư viện';
+
+  @override
+  String get libraryNoAlbumToShow => 'Bài này không có album';
+
+  @override
+  String get libraryNoArtistToShow => 'Bài này không có nghệ sĩ';
+
+  @override
+  String get libraryChooseArtist => 'Chọn nghệ sĩ';
+
+  @override
   String get libraryKeysUpdatingTitle => 'Đang cập nhật thư viện…';
 
   @override

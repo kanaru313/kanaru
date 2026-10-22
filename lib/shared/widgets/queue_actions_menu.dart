@@ -10,28 +10,63 @@ import '../icons/app_icons.dart';
 /// picker instead of `enqueueTracks`.
 enum QueueAction { playNext, addToQueue, addToPlaylist }
 
-List<PopupMenuEntry<QueueAction>> _items(BuildContext context) {
+/// A menu row: [icon] and [label], which shortens instead of overflowing
+/// when a translation is long. A disabled row is greyed out.
+PopupMenuItem<T> menuRow<T>(
+  T value,
+  IconData icon,
+  String label, {
+  bool enabled = true,
+}) => PopupMenuItem(
+  value: value,
+  enabled: enabled,
+  child: Row(
+    children: [
+      Icon(icon),
+      const SizedBox(width: 12),
+      Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+    ],
+  ),
+);
+
+/// The three queue rows, each valued [toValue] of its action, so a menu with
+/// more rows can share them.
+List<PopupMenuEntry<T>> queueActionItems<T>(
+  BuildContext context,
+  T Function(QueueAction action) toValue,
+) {
   final l10n = context.l10n;
-  PopupMenuItem<QueueAction> item(
-    QueueAction action,
-    IconData icon,
-    String label,
-  ) => PopupMenuItem(
-    value: action,
-    child: Row(
-      children: [
-        Icon(icon),
-        const SizedBox(width: 12),
-        // A long translation shortens instead of overflowing the menu.
-        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-      ],
-    ),
-  );
   return [
-    item(QueueAction.playNext, AppIcons.playlistPlay, l10n.queuePlayNext),
-    item(QueueAction.addToQueue, AppIcons.addToQueue, l10n.queueAddToQueue),
-    item(QueueAction.addToPlaylist, AppIcons.addToPlaylist, l10n.playlistAddTo),
+    menuRow(
+      toValue(QueueAction.playNext),
+      AppIcons.playlistPlay,
+      l10n.queuePlayNext,
+    ),
+    menuRow(
+      toValue(QueueAction.addToQueue),
+      AppIcons.addToQueue,
+      l10n.queueAddToQueue,
+    ),
+    menuRow(
+      toValue(QueueAction.addToPlaylist),
+      AppIcons.addToPlaylist,
+      l10n.playlistAddTo,
+    ),
   ];
+}
+
+/// Where a menu with its corner at [position] (global) goes.
+RelativeRect menuPositionAt(BuildContext context, Offset position) {
+  // The menu is laid out in the overlay of the nearest navigator, which on
+  // the wide layout does not start at the window's corner (the sidebar and
+  // top bar sit outside it): so the point goes into its coordinates.
+  final overlay =
+      Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+  final local = overlay.globalToLocal(position);
+  return RelativeRect.fromRect(
+    Rect.fromLTWH(local.dx, local.dy, 0, 0),
+    Offset.zero & overlay.size,
+  );
 }
 
 /// Opens the queue menu with its corner at [position] (global) and returns
@@ -39,22 +74,11 @@ List<PopupMenuEntry<QueueAction>> _items(BuildContext context) {
 Future<QueueAction?> showQueueActionsMenu(
   BuildContext context,
   Offset position,
-) {
-  // The menu is laid out in the overlay of the nearest navigator, which on
-  // the wide layout does not start at the window's corner (the sidebar and
-  // top bar sit outside it): so the point goes into its coordinates.
-  final overlay =
-      Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
-  final local = overlay.globalToLocal(position);
-  return showMenu<QueueAction>(
-    context: context,
-    position: RelativeRect.fromRect(
-      Rect.fromLTWH(local.dx, local.dy, 0, 0),
-      Offset.zero & overlay.size,
-    ),
-    items: _items(context),
-  );
-}
+) => showMenu<QueueAction>(
+  context: context,
+  position: menuPositionAt(context, position),
+  items: queueActionItems(context, (action) => action),
+);
 
 /// Opens the queue menu at the pointer on a right click or a long press of
 /// [child], and reports the chosen action to [onAction]. Without
@@ -95,7 +119,7 @@ class QueueActionsButton extends StatelessWidget {
       tooltip: context.l10n.queueActionsTooltip,
       icon: const Icon(AppIcons.more),
       onSelected: onSelected,
-      itemBuilder: _items,
+      itemBuilder: (context) => queueActionItems(context, (action) => action),
     );
   }
 }

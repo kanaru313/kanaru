@@ -11,7 +11,6 @@ import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
-import '../../../shared/widgets/artist_avatar.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -19,6 +18,7 @@ import '../../../shared/widgets/song_tile.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
 import '../library_detail_body.dart';
+import 'artist_header.dart';
 import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
 
@@ -75,62 +75,15 @@ class _ArtistPage extends ConsumerWidget {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
-            child: Row(
-              children: [
-                ArtistAvatar(
-                  artistKey: artistKey,
-                  name: sections.name,
-                  size: 120,
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        sections.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${l10n.artistsAlbumCount(sections.albumCount)} · '
-                        '${l10n.albumsSongCount(songs.length)}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: () => playTracks(ref, queue(), 0),
-                            icon: const Icon(AppIcons.play),
-                            label: Text(l10n.artistsPlay),
-                          ),
-                          const SizedBox(width: 4),
-                          QueueActionsButton(
-                            onSelected: (action) => enqueueLoaded(
-                              ref,
-                              context,
-                              action,
-                              queue(),
-                              sections.name,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          child: ArtistHeader(
+            artistKey: artistKey,
+            name: sections.name,
+            albumCount: sections.albumCount,
+            songCount: songs.length,
+            onPlay: () => playTracks(ref, queue(), 0),
+            onShuffle: () => shuffleTracks(ref, queue()),
+            onQueueAction: (action) =>
+                enqueueLoaded(ref, context, action, queue(), sections.name),
           ),
         ),
         if (sections.albums.isNotEmpty) ...[

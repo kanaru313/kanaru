@@ -272,6 +272,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryRescan => 'Rescan';
 
   @override
+  String get libraryShuffle => 'Shuffle';
+
+  @override
+  String get libraryShowArtist => 'Show artist';
+
+  @override
+  String get libraryShowAlbum => 'Show album';
+
+  @override
+  String get libraryShowInFileManager => 'Show in file manager';
+
+  @override
+  String get libraryFileManagerFailed => 'Couldn\'t open the file manager';
+
+  @override
+  String get libraryTrackGone => 'This song is no longer in the library';
+
+  @override
+  String get libraryNoAlbumToShow => 'This song has no album';
+
+  @override
+  String get libraryNoArtistToShow => 'This song has no artist';
+
+  @override
+  String get libraryChooseArtist => 'Choose an artist';
+
+  @override
   String get libraryKeysUpdatingTitle => 'Updating library…';
 
   @override

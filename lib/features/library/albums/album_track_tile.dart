@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../shared/format_duration.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/track_actions_menu.dart';
 
 /// One track of an album page: number, title, the track artist when it is
 /// not the album artist, and the duration.
@@ -55,6 +56,13 @@ class AlbumTrackTile extends StatelessWidget {
             ),
       onTap: onTap,
     );
-    return QueueActionsRegion(onAction: onQueueAction, child: tile);
+    return TrackActionsRegion(
+      trackId: track.id,
+      path: track.path,
+      showAlbum: false,
+      hasArtist: artist?.isNotEmpty ?? false,
+      onQueueAction: onQueueAction,
+      child: tile,
+    );
   }
 }
