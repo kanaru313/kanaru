@@ -34,10 +34,18 @@ double _cardHeight(BuildContext context, double width) {
 
 /// Every playlist as a card: collage, name (two lines at most) and count.
 class PlaylistsGrid extends StatelessWidget {
-  const PlaylistsGrid({super.key, required this.cards, required this.onOpen});
+  const PlaylistsGrid({
+    super.key,
+    required this.cards,
+    required this.onOpen,
+    this.emptyAction,
+  });
 
   final List<PlaylistCard> cards;
   final ValueChanged<PlaylistSummary> onOpen;
+
+  /// Shown under the message when there are no playlists.
+  final Widget? emptyAction;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +55,7 @@ class PlaylistsGrid extends StatelessWidget {
         icon: Icons.queue_music,
         title: l10n.sidebarNoPlaylists,
         message: l10n.playlistsEmptyMessage,
+        action: emptyAction,
       );
     }
     return LayoutBuilder(

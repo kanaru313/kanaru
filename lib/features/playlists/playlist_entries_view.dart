@@ -41,8 +41,10 @@ class PlaylistEntriesView extends StatefulWidget {
   /// cannot play; the receiver skips them.
   final void Function(List<PlaylistEntryRow> shown, int index) onPlayFrom;
 
-  /// Queue menu of the header, for the whole playlist.
-  final ValueChanged<QueueAction>? onQueueAction;
+  /// Queue menu of the header, for the whole playlist. `shown` is the list
+  /// as displayed, as for [onPlayFrom]; it may hold entries that cannot play.
+  final void Function(List<PlaylistEntryRow> shown, QueueAction action)?
+  onQueueAction;
 
   /// Queue menu of one row.
   final void Function(PlaylistEntryRow entry, QueueAction action)?
@@ -104,6 +106,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     final l10n = context.l10n;
     final shown = _shown;
     final firstPlayable = shown.indexWhere((e) => e.track != null);
+    final onQueueAction = widget.onQueueAction;
 
     return CustomScrollView(
       slivers: [
@@ -113,7 +116,9 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
             onPlay: firstPlayable < 0
                 ? null
                 : () => widget.onPlayFrom(shown, firstPlayable),
-            onQueueAction: firstPlayable < 0 ? null : widget.onQueueAction,
+            onQueueAction: firstPlayable < 0 || onQueueAction == null
+                ? null
+                : (action) => onQueueAction(shown, action),
             onRename: widget.onRename,
             onDelete: widget.onDelete,
           ),

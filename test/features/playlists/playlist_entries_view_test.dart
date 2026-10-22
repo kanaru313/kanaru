@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -75,7 +76,7 @@ void main() {
             missing(2),
           ], name: 'A very long playlist name that needs two lines at least'),
           width: width,
-          onQueueAction: (_) {},
+          onQueueAction: (_, _) {},
         );
 
         expect(tester.takeException(), isNull);
@@ -107,7 +108,7 @@ void main() {
     testWidgets('the playlist menu has its own icon beside the queue menu', (
       tester,
     ) async {
-      await view.pump(tester, pageOf([available(1)]), onQueueAction: (_) {});
+      await view.pump(tester, pageOf([available(1)]), onQueueAction: (_, _) {});
 
       expect(find.byIcon(Icons.more_vert), findsOneWidget);
       expect(find.byTooltip('Playlist actions'), findsOneWidget);
@@ -116,9 +117,25 @@ void main() {
     testWidgets('the queue button is hidden when nothing can play', (
       tester,
     ) async {
-      await view.pump(tester, pageOf([missing(1)]), onQueueAction: (_) {});
+      await view.pump(tester, pageOf([missing(1)]), onQueueAction: (_, _) {});
 
       expect(find.byIcon(Icons.more_vert), findsNothing);
+    });
+
+    testWidgets('the queue menu gets the rows as shown', (tester) async {
+      List<PlaylistEntryRow>? received;
+      await view.pump(
+        tester,
+        pageOf([available(1), available(2)]),
+        onQueueAction: (rows, _) => received = rows,
+      );
+
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Add to queue'));
+      await tester.pumpAndSettle();
+
+      expect(received!.map((e) => e.entryId), [1, 2]);
     });
 
     testWidgets('the menu renames and deletes', (tester) async {

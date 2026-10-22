@@ -66,7 +66,7 @@ class EntriesViewHarness {
     WidgetTester tester,
     PlaylistPage page, {
     double width = 1280,
-    ValueChanged<QueueAction>? onQueueAction,
+    void Function(List<PlaylistEntryRow>, QueueAction)? onQueueAction,
     void Function(PlaylistEntryRow, QueueAction)? onEntryQueueAction,
   }) {
     tester.view
