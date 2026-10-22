@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 
@@ -11,6 +12,20 @@ import 'track.dart';
 
 final _log = Logger('player');
 final _mpvLog = Logger('mpv');
+
+/// Level for an mpv log line. `error`/`fatal` are SEVERE, the rest WARNING,
+/// except the failed file open of `lavf`: media_kit's `open` stops the
+/// playlist first, which aborts an open still in progress, and mpv prints the
+/// same line as for a broken file. A broken file is reported by the playlist
+/// tracker as a warning (and by `cplayer`/`stream` errors), so this one is
+/// only debug detail.
+@visibleForTesting
+Level mpvLogLevel(String prefix, String level, String text) {
+  if (prefix == 'lavf' && text.startsWith('avformat_open_input() failed')) {
+    return Level.FINE;
+  }
+  return level == 'error' || level == 'fatal' ? Level.SEVERE : Level.WARNING;
+}
 
 /// [AudioBackend] on top of a media_kit (libmpv) [Player].
 ///
@@ -74,11 +89,10 @@ class MediaKitBackend implements AudioBackend {
     // No de-duplication here or in media_kit: its `distinct` compares
     // `PlayerLog` objects, which have no `==`, so every line gets through.
     _forwardLog = _player.stream.log.listen((entry) {
-      final level = switch (entry.level) {
-        'error' || 'fatal' => Level.SEVERE,
-        _ => Level.WARNING,
-      };
-      _mpvLog.log(level, '${entry.prefix}: ${entry.text}');
+      _mpvLog.log(
+        mpvLogLevel(entry.prefix, entry.level, entry.text),
+        '${entry.prefix}: ${entry.text}',
+      );
     });
     _forwardDuration = _player.stream.duration.listen((duration) {
       _duration.add(duration);
