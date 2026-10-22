@@ -16,16 +16,22 @@ import 'package:drift/drift.dart';
 //    A moved file or replaced folder orphans its rows until a re-link exists.
 // 3. Plays are log rows. `path` and `played_at` are not changed in normal
 //    use; only the recorder updates `listened_ms` of the play it is
-//    recording. Rows are otherwise inserted or deleted.
+//    recording. Rows are otherwise inserted or deleted. The recorder updates
+//    `listened_ms` coarsely (pause, stop, track end, reaching the count
+//    threshold), not per tick: drift cannot see the trigger's WHEN filter, so
+//    every `plays` update re-runs all `play_stats` watchers.
 // 4. Stats are stored and kept by triggers (`listen_history.drift`). Never
 //    write `play_stats` from Dart, including clear-all (`DELETE FROM plays`
-//    alone is enough). Write `plays` through drift APIs or
+//    alone is enough). The triggers are only correct with
+//    `PRAGMA recursive_triggers = ON` on every connection that writes `plays`:
+//    a REPLACE conflict deletes the old row without firing delete triggers
+//    otherwise. Write `plays` through drift APIs or
 //    `customUpdate(updates: {plays})`, never a bare `customStatement`, so
 //    watchers of `play_stats` re-run.
 // 5. Dense positions. Writers keep `position` = 0..n-1 per playlist and
 //    change positions only inside one transaction. Readers order by
 //    `position, id`.
-// 6. The playlist cover is computed (first entries by position), not stored.
+// 6. The playlist cover is computed (first 4 entries by position), not stored.
 // 7. This data lives in `library.db`: a "reset library" must delete roots and
 //    tracks, never the file.
 

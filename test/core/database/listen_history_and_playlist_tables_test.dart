@@ -37,6 +37,18 @@ void main() {
   setUp(() => db = LibraryDatabase(NativeDatabase.memory()));
   tearDown(() => db.close());
 
+  test(
+    'connection pragmas the triggers and cascades depend on are on',
+    () async {
+      final pragmas = await db
+          .customSelect('PRAGMA recursive_triggers')
+          .getSingle();
+      expect(pragmas.data.values.single, 1);
+      final fk = await db.customSelect('PRAGMA foreign_keys').getSingle();
+      expect(fk.data.values.single, 1);
+    },
+  );
+
   Future<void> play(String path, int at, {int? listened, int? id}) => db
       .into(db.plays)
       .insert(

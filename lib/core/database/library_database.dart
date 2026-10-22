@@ -55,7 +55,7 @@ class LibraryDatabase extends _$LibraryDatabase {
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).
     // recursive_triggers: REPLACE deletes must fire the search-index delete
-    // trigger.
+    // trigger and the play_stats delete trigger.
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA recursive_triggers = ON');

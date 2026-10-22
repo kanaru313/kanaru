@@ -2,6 +2,9 @@ import 'user_data_tables.dart';
 
 -- Keeps `play_stats` equal to
 -- SELECT path, COUNT(*), MIN(played_at), MAX(played_at) FROM plays GROUP BY path.
+-- Correct only with `PRAGMA recursive_triggers = ON` on every connection that
+-- writes `plays`: a REPLACE conflict deletes the old row without firing the
+-- delete trigger otherwise.
 -- The insert side is an UPSERT on purpose: an `INSERT OR ...` inside a trigger
 -- takes the outer statement's conflict policy, an ON CONFLICT clause does not.
 CREATE TRIGGER plays_stats_insert AFTER INSERT ON plays BEGIN
