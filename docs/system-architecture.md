@@ -534,7 +534,7 @@ Planned schema work: collapsing the history to v1 before the first release (PKG-
 
 ### Playlists
 
-Code: `lib/core/database/playlist_queries.dart` (reads, extension `PlaylistQueries`), `playlist_writes.dart` (writes, `PlaylistWrites`), `playlist_rows.dart` (row models), `playlist_cover_keys.dart` (collage rule), `playlist_providers.dart` (`playlistSummariesProvider`); UI in `lib/features/playlists/`, `lib/shared/widgets/add_to_playlist/` and `lib/app/shell/sidebar/sidebar_playlists_section.dart`.
+Code: `lib/core/database/playlist_queries.dart` (reads, extension `PlaylistQueries`), `playlist_writes.dart` (writes, `PlaylistWrites`), `playlist_rows.dart` (row models), `playlist_cover_keys.dart` (collage rule), `playlist_favorites.dart` (the Favorites playlist, `PlaylistFavorites`), `playlist_library_paths.dart` (`libraryPathsAmong`: which of a list of paths are library rows, one `json_each` query), `playlist_providers.dart` (`playlistSummariesProvider`, `favoritePathsProvider`, `favoritesPlaylistIdProvider`); UI in `lib/features/playlists/`, `lib/shared/widgets/add_to_playlist/` and `lib/app/shell/sidebar/sidebar_playlists_section.dart`.
 
 | Topic | Rule |
 |---|---|
@@ -545,6 +545,7 @@ Code: `lib/core/database/playlist_queries.dart` (reads, extension `PlaylistQueri
 | Reorder in the UI | The list keeps the order the user dropped in `OptimisticOrder` (entry ids plus a count of moves in flight) until the write finishes, so the rows never jump back. A failed move rolls back and reports `playlistSaveFailed`. |
 | Add flow | Every queue menu ends in `enqueueLoaded` or `enqueueFromDatabase`, which send `QueueAction.addToPlaylist` to `addTracksToPlaylist` instead of `enqueueTracks` (which refuses it). The flow takes the database, messenger, localizations and the root navigator before its first `await`, because the row that opened the menu can be rebuilt away by a rescan while the picker is open; it never reads the caller's `ref` or `context` afterwards. |
 | Now Playing | The button adds the current track only when its path is a library row (`coverKeyOf`), so no non-canonical path is ever written. |
+| Favorites | The playlist with `kind = 'favorites'` ([Playlist kinds](#playlist-kinds)). `ensureFavoritesPlaylist` reads the id first and only runs the invariant-8 create (`INSERT OR IGNORE`, then `SELECT id`) when there is none: an ignored insert still tells drift that `playlists` changed, which would reload every open playlist page. `setFavorite(path, favorite:)` sets the wanted state, not a toggle: when it already holds it writes nothing; adding appends at the end (creating the playlist on the first like); removing deletes every entry of that path and renumbers, and never creates the playlist. `renamePlaylist` and `deletePlaylist` filter `kind IS NOT 'favorites'`, so they are no-ops on it (`IS NOT`, not `!=`, which would drop the NULL kind of every ordinary playlist). `watchPlaylistSummaries` and `playlistCards` leave it out, so the sidebar, the `/playlists` grid and the add-to-playlist picker never list it; `playlistSummary(id)` keeps it and sets `isFavorites`. `favoritePathsProvider` watches only the playlist tables and emits only when the set changes; `isFavorite(path)` reads once, for callers that cannot rely on a live stream (Riverpod pauses a stream with no listener). |
 
 ---
 
