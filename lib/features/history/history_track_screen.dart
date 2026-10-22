@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
+import '../../core/database/library_rows.dart' show TrackListItem;
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
+import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
@@ -37,23 +40,19 @@ class HistoryTrackScreen extends ConsumerStatefulWidget {
 }
 
 class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
-  final _undo = HistoryDeleteUndo();
+  /// The queue entry of the library song; the path is the `tracks` row's.
+  Track _trackOf(TrackListItem track) => trackFromItem(
+    path: track.path,
+    title: track.title,
+    artist: track.artist,
+    durationMs: track.durationMs,
+    artPath: coverPath(ref.read(coverCacheDirectoryProvider), track.coverKey),
+  );
 
   void _play(HistoryTrackSummary summary) {
     final track = summary.track;
     if (track == null) return;
-    playTracks(ref, [
-      trackFromItem(
-        path: track.path,
-        title: track.title,
-        artist: track.artist,
-        durationMs: track.durationMs,
-        artPath: coverPath(
-          ref.read(coverCacheDirectoryProvider),
-          track.coverKey,
-        ),
-      ),
-    ], 0);
+    playTracks(ref, [_trackOf(track)], 0);
   }
 
   /// Opens the menu of [row]. The play is the one the menu was opened on:
@@ -69,17 +68,27 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
       canQueue: summary.track != null,
       canShowTrackHistory: false,
     );
-    if (choice != HistoryPlayChoice.delete || !mounted) return;
+    if (choice == null || !mounted) return;
+    final action = historyQueueActionOf(choice);
+    final item = summary.track;
+    if (action != null) {
+      if (item == null) return;
+      enqueueLoaded(ref, context, action, [_trackOf(item)], item.title);
+      return;
+    }
+    if (choice != HistoryPlayChoice.delete) return;
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
     unawaited(
-      _undo.delete(
-        db: db,
-        messenger: ScaffoldMessenger.of(context),
-        l10n: context.l10n,
-        version: ref.read(historyPlaysVersionProvider.notifier),
-        playId: row.id,
-      ),
+      ref
+          .read(historyDeleteUndoProvider)
+          .delete(
+            db: db,
+            messenger: ScaffoldMessenger.of(context),
+            l10n: context.l10n,
+            version: ref.read(historyPlaysVersionProvider.notifier),
+            playId: row.id,
+          ),
     );
   }
 

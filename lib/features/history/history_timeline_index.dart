@@ -59,13 +59,25 @@ class HistoryTimelineIndex {
   /// The line of the header of the day starting at [dayStart] (epoch ms), or
   /// -1 when that day has no plays.
   int firstIndexOfDay(int dayStart) {
+    final day = _dayIndexOfStart(dayStart);
+    return day < 0 ? -1 : _starts[day];
+  }
+
+  /// Plays the list shows for the day starting at [dayStart] (epoch ms), or
+  /// -1 when that day has no plays.
+  int countOfDay(int dayStart) {
+    final day = _dayIndexOfStart(dayStart);
+    return day < 0 ? -1 : days[day].count;
+  }
+
+  int _dayIndexOfStart(int dayStart) {
     var lo = 0;
     var hi = days.length - 1;
     // Days run newest first, so their starts decrease.
     while (lo <= hi) {
       final mid = (lo + hi) >> 1;
       final start = days[mid].dayStart;
-      if (start == dayStart) return _starts[mid];
+      if (start == dayStart) return mid;
       if (start > dayStart) {
         lo = mid + 1;
       } else {

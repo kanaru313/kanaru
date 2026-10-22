@@ -110,7 +110,10 @@ class _HistoryTopViewState extends ConsumerState<HistoryTopView> {
       loading = top.isLoading;
       failed = top.hasError;
     }
-    final rows = _shown;
+    // One row past the limit was read only to know the list was cut.
+    final read = _shown;
+    final capped = read != null && read.length > historyTopLimit;
+    final rows = capped ? read.sublist(0, historyTopLimit) : read;
 
     Widget body;
     if (failed) {
@@ -150,6 +153,7 @@ class _HistoryTopViewState extends ConsumerState<HistoryTopView> {
         ),
         HistoryTopActions(
           rows: rows ?? const [],
+          capped: capped,
           rangeText: historyRangeText(context, _range, now),
         ),
         SizedBox(

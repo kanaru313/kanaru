@@ -19,6 +19,12 @@ typedef HistoryDayLoader = Future<List<HistoryPlayRow>> Function(int dayStart);
 /// the others wait, newest request first: a fast scroll asks for many days it
 /// has already left. A waiting day nobody asked for within [wantedFor] is
 /// skipped; the list asks again for days still on screen each time it draws.
+///
+/// A failed read calls `onChanged` too, so a list that dropped the day from
+/// its view redraws. That redraw asks for the failed day again at once, so a
+/// day that failed is not read again for [retryAfter] (until [invalidate]
+/// at the latest): a failing database is tried again on a later draw, never
+/// in a tight loop.
 class HistoryDayRowCache {
   HistoryDayRowCache({
     required this.load,
@@ -26,6 +32,7 @@ class HistoryDayRowCache {
     this.maxDays = 40,
     this.maxReads = 2,
     this.wantedFor = const Duration(milliseconds: 300),
+    this.retryAfter = const Duration(seconds: 2),
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
@@ -36,6 +43,7 @@ class HistoryDayRowCache {
   final int maxDays;
   final int maxReads;
   final Duration wantedFor;
+  final Duration retryAfter;
   final DateTime Function() _now;
 
   var _generation = 0;
@@ -53,6 +61,9 @@ class HistoryDayRowCache {
   /// Days waiting for a free read, the newest request last.
   final _queue = <int>[];
   final _askedAt = <int, DateTime>{};
+
+  /// When each day last failed, under the current generation.
+  final _failedAt = <int, DateTime>{};
 
   /// Reads started and not ended, of any generation.
   var _reading = 0;
@@ -79,6 +90,7 @@ class HistoryDayRowCache {
     _loading.clear();
     _queue.clear();
     _askedAt.clear();
+    _failedAt.clear();
   }
 
   /// Drops everything, and every read still running.
@@ -90,6 +102,8 @@ class HistoryDayRowCache {
 
   void _ask(int day) {
     if (_disposed) return;
+    final failed = _failedAt[day];
+    if (failed != null && _now().difference(failed) < retryAfter) return;
     _askedAt[day] = _now();
     if (!_loading.add(day)) {
       // Waiting: it is the newest request now.
@@ -136,10 +150,12 @@ class HistoryDayRowCache {
         onError: (Object error, StackTrace stackTrace) {
           _reading--;
           if (generation == _generation) {
-            // Asked for again when the list next draws this day.
+            // Asked for again by a draw after [retryAfter].
             _loading.remove(day);
             _askedAt.remove(day);
+            _failedAt[day] = _now();
             logHistoryError('Reading the plays of a day failed', error);
+            if (!_disposed) onChanged();
           }
           _startReads();
         },

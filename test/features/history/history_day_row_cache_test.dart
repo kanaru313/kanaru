@@ -152,14 +152,56 @@ void main() {
     expect(cache.rowsOf(1)!.single.id, 2);
   });
 
-  test('a failed read is asked for again on the next draw', () async {
-    cache.rowsOf(1);
+  test(
+    'a failed read redraws, and is asked for again after the wait',
+    () async {
+      cache.rowsOf(1);
+      reads.fail(1);
+      await tick();
+      expect(changed, 1);
+
+      // The redraw the failure caused asks at once: no new read.
+      expect(cache.rowsOf(1), isNull);
+      expect(reads.started, [1]);
+
+      clock = clock.add(cache.retryAfter);
+      expect(cache.rowsOf(1), isNull);
+      expect(reads.started, [1, 1]);
+    },
+  );
+
+  test('a failing day does not loop through redraws', () async {
+    late final HistoryDayRowCache looping;
+    looping = HistoryDayRowCache(
+      load: reads.load,
+      onChanged: () {
+        changed++;
+        // What the list does on a change: draw, asking for the day again.
+        if (changed < 50) looping.rowsOf(1);
+      },
+      now: () => clock,
+    );
+    looping.rowsOf(1);
     reads.fail(1);
     await tick();
-    expect(cache.rowsOf(1), isNull);
+    await tick();
 
-    expect(reads.started, [1, 1]);
+    expect(changed, 1);
+    expect(reads.started, [1]);
   });
+
+  test(
+    'an invalidated day is asked for again at once after a failure',
+    () async {
+      cache.rowsOf(1);
+      reads.fail(1);
+      await tick();
+      cache.invalidate();
+      cache.rowsOf(1);
+
+      expect(reads.started, [1, 1]);
+    },
+  );
 
   test('a disposed cache serves nothing and starts nothing', () async {
     cache.rowsOf(1);

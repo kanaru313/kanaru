@@ -164,6 +164,20 @@ void main() {
       expect(_queue(h), ['/m/A.flac']);
     });
 
+    testWidgets('the row menu queues the song', (tester) async {
+      await insertTracks(tester, h, [song('A')]);
+      await _insert(tester, h, '/m/A.flac', _at(22));
+      await h.pump(tester, hasRoots: true);
+      goTo(tester, h, historyTrackLocation('/m/A.flac'));
+      await settleHistory(tester);
+
+      await _menuOfRow(tester, 0, 'Add to queue');
+      expect(_queue(h), ['/m/A.flac']);
+
+      await _menuOfRow(tester, 0, 'Play next');
+      expect(_queue(h), ['/m/A.flac', '/m/A.flac']);
+    });
+
     testWidgets('an address that is not a library song cannot play', (
       tester,
     ) async {

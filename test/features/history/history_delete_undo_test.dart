@@ -136,6 +136,31 @@ void main() {
     await _expectStatsMatch(tester, h);
   });
 
+  testWidgets('removals on pages of different years share one snackbar', (
+    tester,
+  ) async {
+    await insertTracks(tester, h, [song('A'), song('B'), song('C')]);
+    ids = await seedPlays(tester, h, [
+      ('A', DateTime(2026, 10, 23, 8)),
+      ('B', DateTime(2025, 6, 1, 9)),
+      ('C', DateTime(2025, 6, 1, 10)),
+    ]);
+    await h.pump(tester, hasRoots: true);
+    goTo(tester, h, '/history');
+    await settleHistory(tester);
+
+    // The last play of 2026 goes: the page moves on to 2025's body.
+    await _remove(tester, 'A');
+    await _remove(tester, 'B');
+    await tester.pumpAndSettle();
+
+    // One Undo, and it is for the latest removal.
+    expect(find.text('Undo'), findsOneWidget);
+    await _pressUndo(tester);
+    expect(find.text('B'), findsOneWidget);
+    expect(await _ids(tester, h), {ids[1], ids[2]});
+  });
+
   testWidgets('another message on screen is never closed', (tester) async {
     await open(tester);
     _messenger(tester).showSnackBar(

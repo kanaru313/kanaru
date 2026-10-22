@@ -34,7 +34,7 @@ SELECT p.id, p.path, p.played_at, p.listened_ms,
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at > p.played_at)
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at = p.played_at AND q.id > p.id)
     AS nth,
-  t.id AS track_id, t.title, t.artist, t.album, t.duration_ms, t.cover_key
+  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.duration_ms, t.cover_key
 FROM plays p
 LEFT JOIN play_stats s ON s.path = p.path
 LEFT JOIN tracks t ON t.path = p.path
@@ -42,7 +42,7 @@ WHERE p.played_at >= ?1 AND p.played_at < ?2
 ORDER BY p.played_at DESC, p.id DESC''';
 
 const _topColumns =
-    'a.path, a.n, a.last, t.id AS track_id, t.title, t.artist, t.album, '
+    'a.path, a.n, a.last, t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, '
     't.duration_ms, t.cover_key';
 
 @visibleForTesting
@@ -115,7 +115,7 @@ extension HistoryQueries on LibraryDatabase {
           playedAt: r.read<int>('played_at'),
           listenedMs: r.readNullable<int>('listened_ms'),
           nth: r.readNullable<int>('nth'),
-          track: _track(r, r.read<String>('path')),
+          track: _track(r),
         ),
     ];
   }
@@ -146,7 +146,7 @@ extension HistoryQueries on LibraryDatabase {
           path: r.read<String>('path'),
           count: r.read<int>('n'),
           lastPlayedAt: r.read<int>('last'),
-          track: _track(r, r.read<String>('path')),
+          track: _track(r),
         ),
     ];
   }
@@ -156,7 +156,7 @@ extension HistoryQueries on LibraryDatabase {
     final row = await customSelect(
       '''
 SELECT s.play_count, s.first_played_at, s.last_played_at,
-  t.id AS track_id, t.title, t.artist, t.album, t.duration_ms, t.cover_key
+  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.duration_ms, t.cover_key
 FROM (SELECT ?1 AS path) k
 LEFT JOIN play_stats s ON s.path = k.path
 LEFT JOIN tracks t ON t.path = k.path''',
@@ -165,7 +165,7 @@ LEFT JOIN tracks t ON t.path = k.path''',
     ).getSingle();
     return HistoryTrackSummary(
       path: path,
-      track: _track(row, path),
+      track: _track(row),
       count: row.readNullable<int>('play_count') ?? 0,
       firstPlayedAt: row.readNullable<int>('first_played_at'),
       lastPlayedAt: row.readNullable<int>('last_played_at'),
@@ -212,12 +212,13 @@ LEFT JOIN tracks t ON t.path = k.path''',
 
 // Same shape as the playlist reader's row mapper; that one is private to a
 // file this lane does not own.
-TrackListItem? _track(QueryRow row, String path) {
+// The player URI comes from the `tracks` row, never from a plays path.
+TrackListItem? _track(QueryRow row) {
   final trackId = row.readNullable<int>('track_id');
   if (trackId == null) return null;
   return TrackListItem(
     id: trackId,
-    path: path,
+    path: row.read<String>('track_path'),
     title: row.read<String>('title'),
     artist: row.readNullable<String>('artist'),
     album: row.readNullable<String>('album'),

@@ -82,6 +82,29 @@ void main() {
 
   setUp(() => h = historyHarness());
 
+  group('cap', () {
+    Future<void> openWith(WidgetTester tester, int songs) async {
+      await openHistory(
+        tester,
+        h,
+        plays: [for (var i = 0; i < songs; i++) ('g$i', _at(10, 22, i % 24))],
+      );
+      await _showTab(tester, 'Most played');
+    }
+
+    testWidgets('exactly the limit shows no note', (tester) async {
+      await openWith(tester, 500);
+
+      expect(find.text('Showing first 500'), findsNothing);
+    });
+
+    testWidgets('one more than the limit shows the note', (tester) async {
+      await openWith(tester, 501);
+
+      expect(find.text('Showing first 500'), findsOneWidget);
+    });
+  });
+
   group('ranking', () {
     testWidgets('starts at 30 days, ties broken by the earlier last play', (
       tester,

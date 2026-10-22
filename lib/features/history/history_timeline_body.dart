@@ -64,7 +64,6 @@ class HistoryTimelineBody extends ConsumerStatefulWidget {
 
 class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
   final _controller = ScrollController();
-  final _undo = HistoryDeleteUndo();
   late final HistoryDayRowCache _cache;
 
   /// What the list shows; null until the first read.
@@ -96,14 +95,28 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
     super.dispose();
   }
 
-  Future<List<HistoryPlayRow>> _loadDay(int dayStart) {
+  Future<List<HistoryPlayRow>> _loadDay(int dayStart) async {
     final end = addDays(
       localDay(DateTime.fromMillisecondsSinceEpoch(dayStart)),
       1,
     );
-    return ref
+    final rows = await ref
         .read(libraryDatabaseProvider)!
         .historyDayPlays(dayStart, end.millisecondsSinceEpoch);
+    return _heldRows(dayStart, rows);
+  }
+
+  /// While a read is held back the header of a day says how many plays it had
+  /// then, so its rows must be that many too: a read that finds more has the
+  /// held plays, which are the newest (the recorder stamps the start of a
+  /// play with the time it is written, and rows run newest first), so they
+  /// are the leading rows and are cut. Taking the last rows is the same cut
+  /// without needing the time or id of the newest play shown. Removals and
+  /// changes are never held, so a day cannot have fewer rows than its count.
+  List<HistoryPlayRow> _heldRows(int dayStart, List<HistoryPlayRow> rows) {
+    final shown = _index?.countOfDay(dayStart) ?? -1;
+    if (_held == null || shown < 0 || rows.length <= shown) return rows;
+    return rows.sublist(rows.length - shown);
   }
 
   bool get _scrolledAway =>
@@ -180,13 +193,15 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
     unawaited(
-      _undo.delete(
-        db: db,
-        messenger: ScaffoldMessenger.of(context),
-        l10n: context.l10n,
-        version: ref.read(historyPlaysVersionProvider.notifier),
-        playId: row.id,
-      ),
+      ref
+          .read(historyDeleteUndoProvider)
+          .delete(
+            db: db,
+            messenger: ScaffoldMessenger.of(context),
+            l10n: context.l10n,
+            version: ref.read(historyPlaysVersionProvider.notifier),
+            playId: row.id,
+          ),
     );
   }
 

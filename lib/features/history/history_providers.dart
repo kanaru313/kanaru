@@ -61,7 +61,8 @@ final historyPlayedRangeProvider =
     }, retry: _noRetry);
 
 /// The most played songs in `[start, end)` (all time when both are null),
-/// at most [historyTopLimit]. It reads again after a change to the plays and,
+/// at most `historyTopLimit + 1` (the extra row tells the page the list was
+/// cut). It reads again after a change to the plays and,
 /// at most once per browse interval, after a scan.
 final historyTopProvider = StreamProvider.autoDispose
     .family<List<HistoryTopRow>, ({int? start, int? end})>((ref, window) {
@@ -73,7 +74,7 @@ final historyTopProvider = StreamProvider.autoDispose
           return await db.historyTopPlays(
             start: window.start,
             end: window.end,
-            limit: historyTopLimit,
+            limit: historyTopLimit + 1,
           );
         } on Object catch (error) {
           logHistoryError('Reading the most played failed', error);

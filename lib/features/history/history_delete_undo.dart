@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_play_writes.dart';
@@ -26,6 +27,13 @@ class _UndoMessage {
   bool visible = false;
   bool closed = false;
 }
+
+/// The one [HistoryDeleteUndo] of the app. The pages that remove plays (the
+/// timeline of a year, the page of a song) come and go, and each would
+/// otherwise keep an Undo snackbar of its own beside the others.
+final historyDeleteUndoProvider = Provider<HistoryDeleteUndo>(
+  (ref) => HistoryDeleteUndo(),
+);
 
 /// Removes plays from the History and offers to put the last one back.
 ///
@@ -113,9 +121,8 @@ class HistoryDeleteUndo {
   ) async {
     // The put-back play is a new row to the page, which would hold it back
     // when scrolled away from the top.
-    version.applyNextNow();
     try {
-      await db.restorePlay(play);
+      await version.applyOwnInsert(() => db.restorePlay(play));
     } on Object catch (error) {
       logHistoryError('Restoring a play failed', error);
       _say(messenger, l10n.historyRestoreFailed);

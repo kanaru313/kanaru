@@ -109,10 +109,71 @@ void main() {
     await _settle();
     version.applied();
 
-    version.applyNextNow();
-    await db.restorePlay(play);
+    final restored = await version.applyOwnInsert(() => db.restorePlay(play));
     await _settle();
 
+    expect(restored, isTrue);
+    expect(version.mustApplyNow, isTrue);
+  });
+
+  test(
+    'a restore that wrote nothing leaves no flag for the next insert',
+    () async {
+      final version = container.read(historyPlaysVersionProvider.notifier);
+      final id = await _insert(db, 1);
+      final play = (await db.deletePlay(id))!;
+      await db.restorePlay(play);
+      await _settle();
+      version.applied();
+
+      // The play is back already, so this one writes nothing.
+      final again = await version.applyOwnInsert(() => db.restorePlay(play));
+      await _insert(db, 5);
+      await _settle();
+
+      expect(again, isFalse);
+      expect(version.mustApplyNow, isFalse);
+    },
+  );
+
+  test('a restore that throws leaves no flag for the next insert', () async {
+    final version = container.read(historyPlaysVersionProvider.notifier);
+    await expectLater(
+      version.applyOwnInsert(() => throw StateError('x')),
+      throwsStateError,
+    );
+    await _insert(db, 5);
+    await _settle();
+
+    expect(version.mustApplyNow, isFalse);
+  });
+
+  test('a debounce already running does not use up the restore flag', () async {
+    final version = container.read(historyPlaysVersionProvider.notifier);
+    final id = await _insert(db, 1);
+    final play = (await db.deletePlay(id))!;
+    await _settle();
+    version.applied();
+    seen.clear();
+
+    // A recorder insert starts the debounce; the Undo is pressed late in it
+    // and its write lands after that debounce ended.
+    await _insert(db, 7);
+    await Future<void>.delayed(
+      historyPlaysDebounce - const Duration(milliseconds: 40),
+    );
+    final restore = version.applyOwnInsert(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      return db.restorePlay(play);
+    });
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    expect(seen, hasLength(1));
+    expect(version.mustApplyNow, isFalse);
+
+    await restore;
+    await _settle();
+
+    expect(seen, hasLength(2));
     expect(version.mustApplyNow, isTrue);
   });
 

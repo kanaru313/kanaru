@@ -21,10 +21,14 @@ class HistoryTopActions extends ConsumerWidget {
     super.key,
     required this.rows,
     required this.rangeText,
+    this.capped = false,
   });
 
   final List<HistoryTopRow> rows;
   final String rangeText;
+
+  /// More songs were played than [rows] holds.
+  final bool capped;
 
   Future<void> _createPlaylist(BuildContext context, WidgetRef ref) async {
     final db = ref.read(libraryDatabaseProvider);
@@ -80,7 +84,7 @@ class HistoryTopActions extends ConsumerWidget {
                 ? () => unawaited(_createPlaylist(context, ref))
                 : null,
           ),
-          if (rows.length >= historyTopLimit)
+          if (capped)
             Text(l10n.historyTopCapped(historyTopLimit), style: small),
         ],
       ),

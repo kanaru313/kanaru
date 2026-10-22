@@ -309,6 +309,44 @@ void main() {
       expect(listText('31 listens'), findsOneWidget);
     });
 
+    testWidgets('a day read again while a play is held keeps the shown rows', (
+      tester,
+    ) async {
+      await openHistory(
+        tester,
+        h,
+        tracks: [for (var i = 0; i < 30; i++) song('S$i'), song('New')],
+        plays: [for (var i = 0; i < 30; i++) ('S$i', _at(23, 0, i))],
+      );
+      await scrollTimelineTo(tester, rowExtent * 6);
+      await seedPlays(tester, h, [('New', _at(23, 11, 59))]);
+      await settleHistory(tester);
+
+      // A scan makes the page read the rows of the day again.
+      await tester.runAsync(
+        () => h.db.customUpdate(
+          "UPDATE tracks SET title = 'T' || title WHERE path = '/m/S0.flac'",
+          updates: {h.db.tracks},
+        ),
+      );
+      await settleHistory(tester);
+
+      // Still the 30 plays the header counts: the held one is not drawn and
+      // the oldest one is not pushed out.
+      expect(find.text('New'), findsNothing);
+      expect(timelineOffset(tester), rowExtent * 6);
+      await scrollTimelineTo(tester, rowExtent * 28);
+      expect(find.text('TS0'), findsOneWidget);
+      expect(find.text('New'), findsNothing);
+      expect(listText('31 listens'), findsNothing);
+
+      await scrollTimelineTo(tester, 0);
+      expect(find.text('New'), findsOneWidget);
+      expect(listText('31 listens'), findsOneWidget);
+      await scrollTimelineTo(tester, rowExtent * 28);
+      expect(find.text('TS0'), findsOneWidget);
+    });
+
     testWidgets('a removal shows at once even when scrolled', (tester) async {
       await openHistory(
         tester,
