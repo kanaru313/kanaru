@@ -1703,7 +1703,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsInfiniteQueueHint.
   ///
   /// In en, this message translates to:
-  /// **'When the queue ends, Next goes back to the first song, whatever the repeat mode.'**
+  /// **'When the queue ends, Next goes back to the first song, and Previous on the first song goes to the last, whatever the repeat mode.'**
   String get settingsInfiniteQueueHint;
 
   /// No description provided for @settingsListenAfterTime.

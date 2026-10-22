@@ -20,10 +20,11 @@ int intInRange(Object? value, int min, int max, int fallback) {
   final int number;
   if (value is int) {
     number = value;
-  } else if (value is double && value.isFinite && value.abs() >= _twoPow53) {
-    // Too big for an exact int and always whole: past every bound.
+  } else if (value is double && value.abs() >= _twoPow53) {
+    // Too big for an exact int and always whole (so is +-Infinity): past
+    // every bound.
     number = value.isNegative ? min : max;
-  } else if (value is double && value == value.truncate()) {
+  } else if (value is double && value.isFinite && value == value.truncate()) {
     number = value.toInt();
   } else {
     return fallback;

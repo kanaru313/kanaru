@@ -546,7 +546,7 @@
   "settingsFadeOnPause": "Fade out on pause",
   "settingsFadeOnPauseHint": "Lower the volume slowly before playback pauses.",
   "settingsInfiniteQueue": "Endless queue",
-  "settingsInfiniteQueueHint": "When the queue ends, Next goes back to the first song, whatever the repeat mode.",
+  "settingsInfiniteQueueHint": "When the queue ends, Next goes back to the first song, and Previous on the first song goes to the last, whatever the repeat mode.",
   "settingsListenAfterTime": "A listen counts after",
   "settingsListenAfterTimeHint": "This long, or the share below of the song, whichever comes first.",
   "settingsListenAfterShare": "A listen counts after (share of the song)",

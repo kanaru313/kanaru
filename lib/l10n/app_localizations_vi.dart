@@ -1075,7 +1075,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsInfiniteQueueHint =>
-      'Hết hàng đợi thì Tiếp theo quay về bài đầu, bất kể chế độ lặp.';
+      'Hết hàng đợi thì Bài tiếp quay về bài đầu, và Bài trước ở bài đầu nhảy tới bài cuối, bất kể chế độ lặp.';
 
   @override
   String get settingsListenAfterTime => 'Một lượt nghe được tính sau';

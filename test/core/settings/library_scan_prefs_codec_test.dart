@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/library_scan_prefs.dart';
 import 'package:kanaru/core/settings/library_scan_prefs_codec.dart';
@@ -94,6 +96,17 @@ void main() {
     expect(high.minFileSizeKb, maxMinFileSizeKb);
     expect(high.minDurationSeconds, maxMinDurationSeconds);
     expect(low.minFileSizeKb, 0);
+  });
+
+  test('infinity from JSON clamps to the bound and never throws', () {
+    final json = jsonDecode(
+      '{"minFileSizeKb":1e400,"minDurationSeconds":-1e400}',
+    );
+
+    final prefs = decodeLibraryScanPrefs(json).$1;
+
+    expect(prefs.minFileSizeKb, maxMinFileSizeKb);
+    expect(prefs.minDurationSeconds, 0);
   });
 
   test('keys this version does not know inside the grouping are kept', () {
