@@ -443,6 +443,31 @@
       "target": { "type": "String" }
     }
   },
+  "settingsLibraryStats": "In your library",
+  "settingsStatsTracks": "{count, plural, =1{{count} track} other{{count} tracks}}",
+  "@settingsStatsTracks": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsStatsAlbums": "{count, plural, =1{{count} album} other{{count} albums}}",
+  "@settingsStatsAlbums": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsStatsArtists": "{count, plural, =1{{count} artist} other{{count} artists}}",
+  "@settingsStatsArtists": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "settingsStatsGenres": "{count, plural, =1{{count} genre} other{{count} genres}}",
+  "@settingsStatsGenres": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts. Coming soon.",

@@ -1382,6 +1382,36 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open {target}'**
   String settingsOpenFailed(String target);
 
+  /// No description provided for @settingsLibraryStats.
+  ///
+  /// In en, this message translates to:
+  /// **'In your library'**
+  String get settingsLibraryStats;
+
+  /// No description provided for @settingsStatsTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} track} other{{count} tracks}}'**
+  String settingsStatsTracks(int count);
+
+  /// No description provided for @settingsStatsAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} album} other{{count} albums}}'**
+  String settingsStatsAlbums(int count);
+
+  /// No description provided for @settingsStatsArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} artist} other{{count} artists}}'**
+  String settingsStatsArtists(int count);
+
+  /// No description provided for @settingsStatsGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} genre} other{{count} genres}}'**
+  String settingsStatsGenres(int count);
+
   /// No description provided for @settingsAdvanced.
   ///
   /// In en, this message translates to:

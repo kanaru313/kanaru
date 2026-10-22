@@ -850,6 +850,69 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsLibraryStats => 'In your library';
+
+  @override
+  String settingsStatsTracks(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tracks',
+      one: '$countString track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsStatsAlbums(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString albums',
+      one: '$countString album',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsStatsArtists(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString artists',
+      one: '$countString artist',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsStatsGenres(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString genres',
+      one: '$countString genre',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get settingsAdvanced => 'Advanced';
 
   @override

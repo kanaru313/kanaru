@@ -839,6 +839,45 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get settingsLibraryStats => 'Trong thư viện';
+
+  @override
+  String settingsStatsTracks(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString bài';
+  }
+
+  @override
+  String settingsStatsAlbums(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString album';
+  }
+
+  @override
+  String settingsStatsArtists(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString nghệ sĩ';
+  }
+
+  @override
+  String settingsStatsGenres(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString thể loại';
+  }
+
+  @override
   String get settingsAdvanced => 'Nâng cao';
 
   @override
