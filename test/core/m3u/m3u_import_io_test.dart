@@ -171,9 +171,9 @@ file://${p('music/sub/b')}%00.mp3
 
   test('a file that reports size 0 is still read to the end', () async {
     // procfs reports 0 for its files, as some network mounts do.
-    final bytes = await readM3uBytes('/proc/self/status');
-    expect(bytes, isNotEmpty);
-    expect(String.fromCharCodes(bytes), contains('Name:'));
+    // smaps runs to tens of KiB, far past what one read returns there.
+    final bytes = await readM3uBytes('/proc/self/smaps');
+    expect(bytes.length, greaterThan(16 * 1024));
   }, skip: Platform.isLinux ? false : 'procfs is Linux only');
 
   test('cancelling stops the import', () async {

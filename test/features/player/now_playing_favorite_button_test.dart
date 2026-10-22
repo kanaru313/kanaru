@@ -151,6 +151,44 @@ void main() {
     expect(iconButton(tester, heart).isSelected, isTrue);
   });
 
+  testWidgets('a failed write keeps the newer press on the next song', (
+    tester,
+  ) async {
+    final gate = GatedQueryInterceptor();
+    h = LibraryHarness(refreshInterval: Duration.zero, interceptor: gate);
+    await openApp(tester, h, ['a', 'b']);
+    final paths = await trackPaths(tester, h);
+    await settleDb(tester);
+    await play(tester, Track(uri: paths['a']!, title: 'a'));
+    final heart = heartIn(PlayerBar);
+
+    // Hold the write for a while the song changes and b is liked, then make
+    // it fail: the failure must not drop the newer press on b.
+    final release = gate.holdNext('SELECT 1 FROM playlist_entries e');
+    gate.failNext('SELECT DISTINCT path FROM playlist_entries');
+    await tester.tap(heart);
+    await settleDb(tester);
+    expect(gate.count('SELECT 1 FROM playlist_entries e'), 1);
+    await play(tester, Track(uri: paths['b']!, title: 'b'));
+    expect(iconButton(tester, heart).isSelected, isFalse);
+    await tester.tap(heart);
+    await tester.pump();
+    expect(iconButton(tester, heart).isSelected, isTrue);
+    // Not read back here: a read would wait behind the held write.
+
+    release();
+    await settleDb(tester);
+    await settleDb(tester);
+
+    expect(
+      find.text("Couldn't save the playlist. See the log for details."),
+      findsOneWidget,
+    );
+    expect(await stored(tester, paths['a']!), isFalse);
+    expect(await stored(tester, paths['b']!), isTrue);
+    expect(iconButton(tester, heart).isSelected, isTrue);
+  });
+
   testWidgets('a favorites read error leaves the heart usable', (tester) async {
     h = LibraryHarness(
       refreshInterval: Duration.zero,
