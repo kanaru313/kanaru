@@ -6,6 +6,7 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   StreamController<Duration> get _seeked;
   bool get _wantsPlaying;
+  bool get _ended;
   Future<void> _play(
     int index, {
     bool play = true,
@@ -32,7 +33,17 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
     _saver = null;
     final file = ref.watch(playbackSessionFileProvider);
     if (file == null) return PlayerState();
-    final session = file.load();
+    var session = file.load();
+    final queue = session?.toQueue();
+    // A position at or past the saved length would make the engine reach the
+    // end at once and move on to the next track.
+    final length = queue?.current?.duration;
+    if (session != null &&
+        length != null &&
+        length > Duration.zero &&
+        session.position >= length) {
+      session = session.withPosition(Duration.zero);
+    }
     final saver = PlaybackSessionSaver(
       file,
       initial: session,
@@ -45,9 +56,8 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
       seeks.cancel();
       saver.dispose();
     });
-    if (session == null) return PlayerState();
+    if (session == null || queue == null) return PlayerState();
 
-    final queue = session.toQueue();
     final token = Object();
     _sessionBuild = token;
     Future.microtask(() => _restoreEngine(token));
@@ -70,6 +80,16 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
     unawaited(_backend.setVolume(state.volume));
     unawaited(_backend.setRepeat(state.queue.repeat));
     if (_openedSinceBuild || state.queue.isEmpty) return;
+    if (state.stopped) {
+      // A stop made before this ran stays: the track is loaded paused at the
+      // start, the engine state `stop()` leaves. A queue that already ran out
+      // loads nothing; play restarts it.
+      if (_ended) return;
+      unawaited(_play(state.queue.index, play: false));
+      // `_play` marks the player as not stopped before its first await.
+      state = state.copyWith(stopped: true);
+      return;
+    }
     unawaited(
       _play(state.queue.index, play: _wantsPlaying, start: state.position),
     );

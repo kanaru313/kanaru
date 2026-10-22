@@ -66,6 +66,19 @@ class PlaybackSession {
   /// Whether there is a track to restore.
   bool get hasTrack => order.isNotEmpty;
 
+  /// The same session at another [position].
+  PlaybackSession withPosition(Duration position) => PlaybackSession(
+    tracks: tracks,
+    order: order,
+    unshuffledOrder: unshuffledOrder,
+    index: index,
+    shuffled: shuffled,
+    repeat: repeat,
+    position: position,
+    volume: volume,
+    volumeBeforeMute: volumeBeforeMute,
+  );
+
   /// The queue as it was. Tracks no longer in [order] (removed ones) are
   /// dropped and the indexes renumbered, so [tracks] does not grow for as
   /// long as the queue is edited across restarts.
