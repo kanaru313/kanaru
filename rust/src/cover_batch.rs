@@ -64,6 +64,19 @@ pub fn read_covers(paths: Vec<String>, sink: &CoverSink) -> Vec<TrackCover> {
     }
 }
 
+/// Runs `work` on the cover threads, so it gives way to playback and the UI
+/// like the thumbnails do. When the threads could not start it runs on the
+/// calling thread instead.
+pub(crate) fn in_cover_pool<R: Send>(work: impl FnOnce() -> R + Send) -> R {
+    match &*COVER_POOL {
+        Ok(pool) => pool.install(work),
+        Err(reason) => {
+            report_pool_failure(reason);
+            work()
+        }
+    }
+}
+
 /// Reports once why the cover threads could not start; every cover then
 /// fails, and the reason would otherwise be lost.
 fn report_pool_failure(reason: &str) {

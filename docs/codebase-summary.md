@@ -29,6 +29,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/app/` | 20 / 2,006 | Shell, router, theme, window integration, navigation history |
 | `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart` (incl. the rescan button, `features/library/widgets/library_rescan_button.dart`), `top_bar_search_field.dart` (live search), `missing_roots_notice.dart` (startup warning about missing music folders), `navigation_history.dart`, `app_destination.dart`, `sidebar/` (incl. `sidebar_playlists_section.dart`, `sidebar_playlists_rail.dart`), `window/` |
 | `lib/core/database/` | 39 / 15,303 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, library counts (`library_stats_queries.dart`), folder queries (`folder_queries.dart`: directory counts and subtree reads), genre queries and name splitting (`genre_queries.dart`, `genre_names.dart`), text keys, key backfill, v4, v5 and v6 migrations, user-data tables (`user_data_tables.dart`: `plays`, `play_stats`, `playlists`, `playlist_entries`; triggers in `listen_history.drift`), FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries, playlist queries, writes, row models and cover keys (`playlist_*.dart`) |
+| `lib/core/cover_colors/` | | Colors from the cover (UI-03): `CoverColorExtractor` and its Rust version, palette codec and `coverColorAlgoVersion`, the scan's color round, the playing cover's palette (`playingCoverPaletteProvider`, `appCoverPaletteProvider`) |
 | `lib/core/indexer/` | 27 / 3,046 | Folder walk, tag reading via Rust, scan rules (`.nomedia`, size, duration, excluded folders: `scan_rules.dart`, `root_short_track_rules.dart`, `excluded_folders_controller.dart`), diff, scan orchestration, folder watcher (`folder_watcher.dart`, `change_debouncer.dart`, `scanned_folders.dart`), covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
@@ -71,11 +72,12 @@ Key files by area:
 
 | Path | Files / lines | Purpose |
 |---|---|---|
-| `rust/src/api/` | 2 / 126 | Public bridged API (`tags.rs`) |
+| `rust/src/api/` | 3 | Public bridged API (`tags.rs`; `cover_colors.rs`: `extract_cover_colors`) |
 | `rust/src/tag_reader.rs` | | Per-file read via lofty; `PERMANENT_ERROR_PREFIX` |
 | `rust/src/tag_mapping.rs` | | lofty tags to `TrackTags` |
 | `rust/src/tag_batch.rs` | | Batch read on a rayon pool |
 | `rust/src/cover_art.rs`, `cover_thumbnail.rs`, `cover_cache.rs` | | Embedded and sidecar art, 512 px JPEG thumbnails, blake3 cache keys |
+| `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Wu clusters, one nearest-cluster count, Score), `COLOR_ALGO_REVISION` |
 | `rust/src/frb_generated.rs` | 763 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |
 

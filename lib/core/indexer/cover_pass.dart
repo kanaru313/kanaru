@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:drift/drift.dart' show TableUpdate, UpdateKind;
 import 'package:logging/logging.dart';
 
+import '../cover_colors/cover_color_extractor.dart';
+import '../cover_colors/cover_color_round.dart';
 import '../database/library_database.dart';
 import 'cover_paths.dart';
 import 'tag_reader.dart';
@@ -25,6 +27,15 @@ class CoverPassProgress {
   /// Tracks whose cover failed (or timed out) in this session. Passed over
   /// until the user asks for a scan.
   final Set<int> skipIds = {};
+
+  /// Cover keys whose colors failed (or timed out) in this session; the
+  /// color round passes over them until the app restarts.
+  final Set<String> skipColorKeys = {};
+
+  /// A color batch that timed out and may still be running on the cover
+  /// threads; no color round starts until it returns, so colors never keep
+  /// those threads from the thumbnails. Null when none.
+  Future<void>? colorCallPending;
 }
 
 /// How one cover pass ended.
@@ -33,7 +44,12 @@ class CoverPassResult {
 
   int found = 0, none = 0, failed = 0, skipped = 0, batches = 0;
 
+  /// Covers whose colors were stored, or could not be worked out, by the
+  /// color round.
+  int colorsDone = 0, colorsFailed = 0;
+
   /// Every eligible track was looked at; false when the pass stopped early.
+  /// Only about thumbnails: the color round never changes it.
   bool completed = false;
 
   /// Why the pass stopped early, for the log.
@@ -59,6 +75,15 @@ class CoverPassResult {
 /// meanwhile. [onProgress] gets (tracks looked at, tracks waiting when the
 /// pass started) before the first batch and after each one, only when there
 /// is something to do. Errors from the reader or the database are thrown.
+///
+/// Once every thumbnail is done, and only when [colorExtractor] is given and
+/// [shouldExtractColors] says so, a color round follows (see
+/// [runCoverColorRound]): it never calls [onStuck], never throws and never
+/// changes [CoverPassResult.completed]; its timeouts and failures go to
+/// [CoverPassProgress.skipColorKeys], and a timed-out call holds back later
+/// rounds until it returns ([CoverPassProgress.colorCallPending]). It yields
+/// on [shouldYieldColors] (default [shouldYield]): a color round can be long,
+/// so callers may let it give way to more than a rescan.
 Future<CoverPassResult> runCoverPass({
   required LibraryDatabase db,
   required TagReader reader,
@@ -69,6 +94,9 @@ Future<CoverPassResult> runCoverPass({
   required bool Function() shouldStop,
   required void Function(Future<List<TrackCover>> pending) onStuck,
   void Function(int done, int total)? onProgress,
+  CoverColorExtractor? colorExtractor,
+  bool Function()? shouldExtractColors,
+  bool Function()? shouldYieldColors,
 }) async {
   final result = CoverPassResult();
   var done = 0, total = 0;
@@ -106,7 +134,7 @@ Future<CoverPassResult> runCoverPass({
         progress.cursor = null;
         if (wrapped) {
           result.completed = true;
-          return result;
+          break;
         }
         wrapped = true;
         continue;
@@ -164,6 +192,40 @@ Future<CoverPassResult> runCoverPass({
     // A write that went through before an error still reaches the lists.
     if (unannounced && !shouldStop()) _announce(db);
   }
+  final colors = colorExtractor;
+  final colorsWanted = shouldExtractColors ?? () => false;
+  if (colors != null && colorsWanted() && progress.colorCallPending == null) {
+    final round = await runCoverColorRound(
+      db: db,
+      extractor: colors,
+      rootIds: rootIds,
+      skip: progress.skipColorKeys,
+      timeout: timeout,
+      enabled: colorsWanted,
+      shouldYield: shouldYieldColors ?? shouldYield,
+      shouldStop: shouldStop,
+      onStuck: (pending) {
+        final call = progress.colorCallPending = pending.then<void>(
+          (_) {},
+          onError: (_) {},
+        );
+        call.whenComplete(() {
+          if (identical(progress.colorCallPending, call)) {
+            progress.colorCallPending = null;
+          }
+        });
+      },
+    );
+    result
+      ..colorsDone = round.done
+      ..colorsFailed = round.failed
+      ..nativeTime += round.nativeTime
+      ..dbTime += round.dbTime;
+    if (round.stoppedBecause != null) {
+      _log.info('Cover colors stopped: ${round.stoppedBecause}');
+    }
+  }
+  return result;
 }
 
 void _announce(LibraryDatabase db) =>

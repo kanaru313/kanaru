@@ -13,7 +13,7 @@ Dependency direction: `app → features → core`, with `shared` allowed to use 
 | `lib/shared/` | `core/`, `l10n/` | `app/`, `features/` |
 | `lib/core/` | `core/` | `app/`, `features/`, `shared/` |
 
-Checked by grep on the 2026-10-21 snapshot, over relative imports: no feature imports `app/`, no feature imports another feature, no `core/` file imports `features/`, `app/` or `shared/`, and only `core/indexer/` imports `src/rust/`.
+Checked by grep on the 2026-10-21 snapshot, over relative imports: no feature imports `app/`, no feature imports another feature, no `core/` file imports `features/`, `app/` or `shared/`, and only `core/` imports `src/rust/` (`core/indexer/rust_tag_reader.dart`, `core/native/rust_library.dart`, `core/player/rust_original_cover_reader.dart`, `core/cover_colors/rust_cover_color_extractor.dart`), each behind a Dart interface that tests replace with a fake.
 
 Rules that follow from it:
 
@@ -77,13 +77,14 @@ Startup overrides are assembled in [lib/main.dart](../lib/main.dart) into one ma
 
 ## Version constants
 
-Three constants tell the app to redo work on existing libraries. Bump only the one that matches your change. The full procedure is in [development.md](./development.md#library-version-constants).
+Four constants tell the app to redo work on existing libraries. Bump only the one that matches your change. The full procedure is in [development.md](./development.md#library-version-constants).
 
 | Constant | Location | Bump when |
 |---|---|---|
 | `textKeysVersion` | `lib/core/database/text_keys.dart` (currently `2`) | Rules of `groupKey`, `sortKey`, `artistSortKey` change, a Dart SDK change alters `toLowerCase` output, or `trackKeysFor` starts writing a new key |
 | `coverScanVersion` | `lib/core/database/library_rows.dart` (currently `1`) | Cover extraction or thumbnail rules change (also when `THUMBNAIL_SIDE` or the `covers/<size>` directory changes) |
 | `tagReaderVersion` | `lib/core/database/library_rows.dart` (currently `1`) | The Rust reader starts accepting files it used to reject |
+| `coverColorAlgoVersion` | `lib/core/cover_colors/cover_palette.dart` (currently `100512`: `coverColorAlgoRevision * 100000 + coverThumbnailSize`) | Bump `coverColorAlgoRevision` together with `COLOR_ALGO_REVISION` in `rust/src/cover_colors.rs` when the colors for the same thumbnail change; a new thumbnail size changes it by itself |
 | `PERMANENT_ERROR_PREFIX` | `rust/src/tag_reader.rs` (currently `permanent:v1:`) | Must carry the same `N` as `tagReaderVersion` |
 
 Other version numbers that must stay in step:

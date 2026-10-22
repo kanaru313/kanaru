@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../database/cover_color_queries.dart';
 import '../database/library_database.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
 import '../settings/settings_provider.dart';
+import 'cover_cache_cleanup.dart';
+import 'cover_pass_state.dart';
 import 'root_path.dart';
 
 final _log = Logger('indexer');
@@ -59,6 +62,12 @@ class LibraryRootsController {
 
   /// Removes root [id] with its tracks. Idempotent: a root that is already
   /// gone counts as removed. Never throws.
+  ///
+  /// No scan follows a removal, so it cleans up itself: the stored colors no
+  /// track points at any more, and the thumbnails only this root's tracks
+  /// used (unless a cover pass is running: it may be writing one of them for
+  /// another root, and the scan's own cleanup comes after it). A failed
+  /// cleanup is logged; the next scan's cleanup catches up.
   Future<RootChangeResult> removeRoot(int id) => _chain(() async {
     final db = _ref.read(libraryDatabaseProvider);
     if (db == null) {
@@ -66,11 +75,29 @@ class LibraryRootsController {
         rejection: RootRejection.libraryUnavailable,
       );
     }
+    final coverDirectory = _ref.read(coverCacheDirectoryProvider);
+    final startedAt = DateTime.now();
+    var rootKeys = const <String>{};
+    if (coverDirectory != null) {
+      try {
+        rootKeys = await db.coverKeysOfRoot(id);
+      } catch (error, stackTrace) {
+        _log.warning(
+          'Could not list the covers of a folder',
+          error,
+          stackTrace,
+        );
+      }
+    }
     try {
       await db.removeRoot(id);
     } catch (error, stackTrace) {
       _log.severe('Could not remove library folder', error, stackTrace);
       return const RootChangeResult(rejection: RootRejection.writeFailed);
+    }
+    await _deleteOrphanColors(db);
+    if (coverDirectory != null && rootKeys.isNotEmpty) {
+      await _deleteRootThumbnails(db, coverDirectory, rootKeys, startedAt);
     }
     // The root is gone for good; failing to learn whether it was the last
     // one must not report the removal as failed.
@@ -87,6 +114,10 @@ class LibraryRootsController {
   /// [addRoots] apply, except against the root being replaced, so a parent or
   /// child folder of it is fine. An unknown [id] gives
   /// [RootRejection.notFound]. Never throws.
+  ///
+  /// The colors no track points at any more are deleted; the thumbnails are
+  /// left for the scan the caller runs next (the new folder often holds the
+  /// same files, and the scan's cleanup deletes what is left over).
   Future<RootChangeResult> replaceRoot(int id, String newPath) =>
       _chain(() async {
         final db = _ref.read(libraryDatabaseProvider);
@@ -125,8 +156,44 @@ class LibraryRootsController {
           _log.severe('Could not replace library folder', error, stackTrace);
           return const RootChangeResult(rejection: RootRejection.writeFailed);
         }
+        await _deleteOrphanColors(db);
         return const RootChangeResult();
       });
+
+  /// Deletes the stored colors no track points at; never throws.
+  Future<void> _deleteOrphanColors(LibraryDatabase db) async {
+    try {
+      await db.deleteOrphanCoverColors();
+    } catch (error, stackTrace) {
+      _log.warning('Could not delete unused cover colors', error, stackTrace);
+    }
+  }
+
+  /// Deletes the thumbnails of [rootKeys] no track points at any more,
+  /// unless a cover pass is running; never throws.
+  Future<void> _deleteRootThumbnails(
+    LibraryDatabase db,
+    String directory,
+    Set<String> rootKeys,
+    DateTime before,
+  ) async {
+    if (_ref.read(coverPassProvider) is CoverPassRunning) return;
+    try {
+      final unused = rootKeys.difference(await db.coverKeysInUse());
+      // A pass may have started while the keys were read. One starting
+      // after this check can still point a track at a deleted thumbnail;
+      // the next scan's repair of missing covers makes it again.
+      if (_ref.read(coverPassProvider) is CoverPassRunning) return;
+      final deleted = await deleteUnusedThumbnails(
+        directory,
+        unused,
+        before: before,
+      );
+      if (deleted > 0) _log.info('Deleted $deleted unused cover thumbnails');
+    } catch (error, stackTrace) {
+      _log.warning('Could not delete unused thumbnails', error, stackTrace);
+    }
+  }
 
   Future<void> _syncHasRoots(LibraryDatabase db) async {
     if (!await db.hasLibraryRoots()) {

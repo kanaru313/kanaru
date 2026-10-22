@@ -121,6 +121,12 @@ pub fn sidecar_candidates(audio: &Path, listing: &ImageListing) -> Vec<PathBuf> 
 /// is no usable image. `Err` when it is there but cannot be opened or read
 /// (permissions, a network share hiccup), so the caller can try again later.
 pub fn read_bounded(path: &Path) -> io::Result<Option<Vec<u8>>> {
+    read_capped(path, MAX_COVER_BYTES)
+}
+
+/// [`read_bounded`] with a cap of `max_bytes` instead of
+/// [`MAX_COVER_BYTES`].
+pub fn read_capped(path: &Path, max_bytes: u64) -> io::Result<Option<Vec<u8>>> {
     let file = match open_nonblocking(path) {
         Ok(file) => file,
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
@@ -130,8 +136,8 @@ pub fn read_bounded(path: &Path) -> io::Result<Option<Vec<u8>>> {
         return Ok(None);
     }
     let mut bytes = Vec::new();
-    file.take(MAX_COVER_BYTES + 1).read_to_end(&mut bytes)?;
-    Ok((bytes.len() as u64 <= MAX_COVER_BYTES).then_some(bytes))
+    file.take(max_bytes + 1).read_to_end(&mut bytes)?;
+    Ok((bytes.len() as u64 <= max_bytes).then_some(bytes))
 }
 
 /// Opens `path` for reading without blocking on FIFOs and devices: the open

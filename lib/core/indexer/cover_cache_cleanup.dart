@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:logging/logging.dart';
+
+import '../database/cover_color_queries.dart';
 import '../database/library_database.dart';
 import 'cover_paths.dart';
 
@@ -20,7 +23,10 @@ Future<int?> repairMissingCovers(LibraryDatabase db, String directory) async {
   return missing.length;
 }
 
-/// Deletes the thumbnails no track points at, and leftover temp files.
+final _log = Logger('indexer.covers');
+
+/// Deletes the stored colors and the thumbnails no track points at, and
+/// leftover temp files.
 ///
 /// Only touches real files directly inside real shard folders of
 /// [directory], named like a thumbnail or a temp file; links are never
@@ -35,8 +41,33 @@ Future<int> cleanCoverCache(
   String directory,
   DateTime scanStartedAt,
 ) async {
+  final colors = await db.deleteOrphanCoverColors();
+  if (colors > 0) _log.info('Deleted the colors of $colors unused covers');
   final inUse = await db.coverKeysInUse();
-  return Isolate.run(() => _deleteOrphans(directory, inUse, scanStartedAt));
+  return Isolate.run(
+    () => _deleteFiles(
+      directory,
+      scanStartedAt,
+      (key) => !inUse.contains(key),
+      withTemps: true,
+    ),
+  );
+}
+
+/// Deletes the thumbnails of [keys] in [directory], last modified before
+/// [before], with the same care as [cleanCoverCache] (real files in real
+/// shard folders only, links never followed). The caller makes sure no
+/// track points at [keys]. Temp files are left alone: a scan may be writing
+/// them. Returns how many files were deleted.
+Future<int> deleteUnusedThumbnails(
+  String directory,
+  Set<String> keys, {
+  required DateTime before,
+}) {
+  if (keys.isEmpty) return Future.value(0);
+  return Isolate.run(
+    () => _deleteFiles(directory, before, keys.contains, withTemps: false),
+  );
 }
 
 /// Keys of the non-empty thumbnails in [directory]; empty when it does not
@@ -55,16 +86,23 @@ Set<String>? _presentKeys(String directory) {
   return present;
 }
 
-int _deleteOrphans(String directory, Set<String> inUse, DateTime before) {
+/// Deletes the files of [directory] (see [_thumbnails]) whose key passes
+/// [delete] and that were last modified before [before].
+int _deleteFiles(
+  String directory,
+  DateTime before,
+  bool Function(String key) delete, {
+  required bool withTemps,
+}) {
   var deleted = 0;
   final Iterable<(String, File)> candidates;
   try {
-    candidates = _thumbnails(directory, withTemps: true).toList();
+    candidates = _thumbnails(directory, withTemps: withTemps).toList();
   } on FileSystemException {
     return 0;
   }
   for (final (key, file) in candidates) {
-    if (inUse.contains(key)) continue;
+    if (!delete(key)) continue;
     try {
       if (!file.statSync().modified.isBefore(before)) continue;
       file.deleteSync();

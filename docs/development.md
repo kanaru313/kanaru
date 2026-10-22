@@ -160,13 +160,14 @@ Notes on the Rust side:
 
 ### Library version constants
 
-Three constants tell the app to redo work on libraries that already exist. Bump only the one that matches your change.
+Four constants tell the app to redo work on libraries that already exist. Bump only the one that matches your change.
 
 | Constant | Where | Bump when | Effect on existing libraries |
 |---|---|---|---|
 | `textKeysVersion` | `lib/core/database/text_keys.dart` | a rule in `groupKey`, `sortKey` or `artistSortKey` changes, a Dart SDK upgrade changes `toLowerCase` output, or `trackKeysFor` starts writing a new key | Rows with an older version are keyed again in the background on the next start. Album, artist and sort order come from these keys. |
 | `tagReaderVersion` | `lib/core/database/library_rows.dart` | the Rust reader learns to read files it used to reject | Files marked permanently unreadable by an older reader are read again on the next scan. |
 | `PERMANENT_ERROR_PREFIX` | `rust/src/tag_reader.rs` | bumped together with `tagReaderVersion` | Its `permanent:v<N>:` prefix must carry the same `N` as `tagReaderVersion`. |
+| `coverColorAlgoRevision` | `lib/core/cover_colors/cover_palette.dart`, with `COLOR_ALGO_REVISION` in `rust/src/cover_colors.rs` | the color function gives other colors for the same thumbnail | Stored cover colors count as missing (`coverColorAlgoVersion` also holds the thumbnail size); the next scan with "Colors from the cover" on, or playing the track, works them out again. |
 
 Steps for `textKeysVersion`:
 

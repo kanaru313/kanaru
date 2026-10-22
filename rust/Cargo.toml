@@ -31,6 +31,10 @@ fast_image_resize = { version = "=6.1.0", default-features = false, features = [
 jpeg-encoder = { version = "=0.7.1", default-features = false, features = ["std", "simd"] }
 # Cover cache keys: hash of the original image bytes. `pure` skips the C/asm build.
 blake3 = { version = "=1.8.7", default-features = false, features = ["std", "pure"] }
+# Cover colors (seed + palette) with the quantizer and scoring Flutter uses
+# for `ColorScheme.fromImageProvider`. 0.4.2 keeps rust-version 1.89 (0.5
+# needs 1.97). `libm` is the no_std build: no serde, no second getrandom.
+material-colors = { version = "=0.4.2", default-features = false, features = ["libm"] }
 # O_NONBLOCK when opening sidecar images, so a FIFO named cover.jpg cannot hang a scan.
 libc = "0.2"
 # Atomic writes into the cover cache (temp file in the same directory, then rename).

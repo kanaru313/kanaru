@@ -81,7 +81,7 @@ source means implementing one `StorageProvider` interface.
 
 | Area            | Choice                                                                  |
 | --------------- | ----------------------------------------------------------------------- |
-| UI              | Flutter, Material Design 3, `dynamic_color` (`material_color_utilities` planned) |
+| UI              | Flutter, Material Design 3, `dynamic_color`, cover colors via `material-colors` (Rust) |
 | State / routing | Riverpod, go_router                                                     |
 | Playback        | `media_kit` (libmpv)                                                    |
 | Database        | `drift` (SQLite, FTS5 index)                                            |
@@ -109,7 +109,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [x] Full-text search over songs, albums and artists
 - [ ] Playlists: create, rename, delete, add, remove and reorder work; M3U import/export not started
 - [ ] Gapless, ReplayGain: gapless configured; ReplayGain and output device choice in Settings > Advanced
-- [ ] Dynamic color from album art: not started
+- [x] Dynamic color from album art
 - [ ] Packaging: AppImage done; Flatpak, `.deb` not started
 - [ ] Before the first release: collapse the database schema history into v1
 
