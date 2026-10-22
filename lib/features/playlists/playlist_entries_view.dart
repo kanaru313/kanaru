@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
@@ -27,7 +28,8 @@ class PlaylistEntriesView extends StatefulWidget {
   final PlaylistPage page;
 
   /// Moves [entryId] so it ends up at index [to] of the list; completes with
-  /// whether the move was saved.
+  /// whether the move was saved. A throw counts as not saved. Drops are
+  /// ignored while a move is running.
   final Future<bool> Function(int entryId, int to) onMove;
 
   /// Removes the entry with this id.
@@ -52,6 +54,8 @@ class PlaylistEntriesView extends StatefulWidget {
   State<PlaylistEntriesView> createState() => _PlaylistEntriesViewState();
 }
 
+final _log = Logger('playlists');
+
 class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
   final _order = OptimisticOrder();
 
@@ -69,7 +73,9 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
   }
 
   Future<void> _onReorder(int from, int to) async {
-    if (from == to) return;
+    // One write at a time: a second drop would be counted against an order
+    // the database may never get if the first write fails.
+    if (from == to || _order.busy) return;
     final moved = [..._shown];
     final entry = moved.removeAt(from);
     moved.insert(to, entry);
@@ -77,6 +83,9 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     var ok = false;
     try {
       ok = await widget.onMove(entry.entryId, to);
+    } catch (error, stack) {
+      // Same as a reported failure: the rows go back.
+      _log.warning('Moving a playlist entry failed', error, stack);
     } finally {
       if (mounted) setState(() => _order.end(ok: ok));
     }

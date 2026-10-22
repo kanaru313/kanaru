@@ -38,7 +38,7 @@ void main() {
     });
 
     test('stops looking after the scan limit', () {
-      // Distinct keys 3 and 4 only show up after the 64th non-null key.
+      // The 64th non-null key is the last one looked at; 'd' is never seen.
       final keys = <String?>[
         for (var i = 0; i < playlistCollageScanLimit - 1; i++)
           i.isEven ? 'a' : 'b',

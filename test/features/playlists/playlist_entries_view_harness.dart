@@ -49,6 +49,9 @@ class EntriesViewHarness {
   int? playedIndex;
   var moveResult = Completer<bool>();
 
+  /// When set, a move throws this instead of waiting for [moveResult].
+  Object? moveError;
+
   /// Clears what was recorded; call from `setUp`.
   void reset() {
     moves = [];
@@ -56,6 +59,7 @@ class EntriesViewHarness {
     renamed = deleted = 0;
     playedRows = playedIndex = null;
     moveResult = Completer<bool>();
+    moveError = null;
   }
 
   Future<void> pump(
@@ -63,6 +67,7 @@ class EntriesViewHarness {
     PlaylistPage page, {
     double width = 1280,
     ValueChanged<QueueAction>? onQueueAction,
+    void Function(PlaylistEntryRow, QueueAction)? onEntryQueueAction,
   }) {
     tester.view
       ..physicalSize = Size(width, 900)
@@ -78,6 +83,8 @@ class EntriesViewHarness {
               page: page,
               onMove: (id, to) {
                 moves.add((id, to));
+                final error = moveError;
+                if (error != null) return Future.error(error);
                 return moveResult.future;
               },
               onRemove: removed.add,
@@ -86,6 +93,7 @@ class EntriesViewHarness {
                 playedIndex = index;
               },
               onQueueAction: onQueueAction,
+              onEntryQueueAction: onEntryQueueAction,
               onRename: () => renamed++,
               onDelete: () => deleted++,
             ),

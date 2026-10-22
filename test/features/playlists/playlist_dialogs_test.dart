@@ -104,6 +104,16 @@ void main() {
     expect(result, isNull);
   });
 
+  testWidgets('a tap outside the dialog returns null', (tester) async {
+    await open(tester, initialName: 'x');
+
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+
+    expect(closed, isTrue);
+    expect(result, isNull);
+  });
+
   testWidgets('keeps at most 200 characters', (tester) async {
     await open(tester);
     await tester.enterText(find.byType(TextField), 'a' * 201);

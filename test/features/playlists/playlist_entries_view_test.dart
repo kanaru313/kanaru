@@ -34,6 +34,23 @@ void main() {
       expect(view.playedRows!.map((e) => e.entryId), [1, 2]);
     });
 
+    testWidgets('only a playable row has a queue menu', (tester) async {
+      await view.pump(
+        tester,
+        pageOf([missing(1), available(2)]),
+        onEntryQueueAction: (_, _) {},
+      );
+
+      final tiles = find.byType(PlaylistEntryTile);
+      await tester.longPress(tiles.at(0));
+      await tester.pumpAndSettle();
+      expect(find.text('Play next'), findsNothing);
+
+      await tester.longPress(tiles.at(1));
+      await tester.pumpAndSettle();
+      expect(find.text('Play next'), findsOneWidget);
+    });
+
     testWidgets('the remove button reports the entry id', (tester) async {
       await view.pump(tester, pageOf([available(1), available(2)]));
 
@@ -85,6 +102,23 @@ void main() {
         ),
       );
       expect(play.onPressed, isNull);
+    });
+
+    testWidgets('the playlist menu has its own icon beside the queue menu', (
+      tester,
+    ) async {
+      await view.pump(tester, pageOf([available(1)]), onQueueAction: (_) {});
+
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
+      expect(find.byTooltip('Playlist actions'), findsOneWidget);
+    });
+
+    testWidgets('the queue button is hidden when nothing can play', (
+      tester,
+    ) async {
+      await view.pump(tester, pageOf([missing(1)]), onQueueAction: (_) {});
+
+      expect(find.byIcon(Icons.more_vert), findsNothing);
     });
 
     testWidgets('the menu renames and deletes', (tester) async {

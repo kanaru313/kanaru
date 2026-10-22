@@ -62,7 +62,7 @@ void main() {
     );
   });
 
-  for (final width in [480.0, 1280.0]) {
+  for (final width in [480.0, 720.0, 1280.0]) {
     testWidgets('a two-line name at large text fits at $width px', (
       tester,
     ) async {

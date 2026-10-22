@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @playlistDeleteTitle.
   ///
   /// In en, this message translates to:
-  /// **'Delete \"{name}\"?'**
+  /// **'Delete “{name}”?'**
   String playlistDeleteTitle(String name);
 
   /// No description provided for @playlistDeleteBody.

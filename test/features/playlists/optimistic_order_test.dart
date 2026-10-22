@@ -88,4 +88,12 @@ void main() {
 
     expect(shown([1, 3]), [3, 1]);
   });
+
+  test('is busy from begin until the write ends', () {
+    expect(order.busy, isFalse);
+    order.begin([2, 3, 1]);
+    expect(order.busy, isTrue);
+    order.end(ok: true);
+    expect(order.busy, isFalse);
+  });
 }

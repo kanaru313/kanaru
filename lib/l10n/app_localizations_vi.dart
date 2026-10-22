@@ -83,7 +83,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String playlistDeleteTitle(String name) {
-    return 'Xoá \"$name\"?';
+    return 'Xoá “$name”?';
   }
 
   @override
@@ -101,7 +101,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistDeleteConfirm => 'Xoá';
 
   @override
-  String get playlistActions => 'Tác vụ playlist';
+  String get playlistActions => 'Thao tác playlist';
 
   @override
   String playlistTrackCount(int count) {
@@ -137,7 +137,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistRemoveEntry => 'Bỏ khỏi playlist';
 
   @override
-  String get playlistReorder => 'Kéo để sắp xếp';
+  String get playlistReorder => 'Kéo để sắp xếp lại';
 
   @override
   String get playlistAddTo => 'Thêm vào playlist…';

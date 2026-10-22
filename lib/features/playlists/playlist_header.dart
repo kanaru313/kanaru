@@ -83,6 +83,8 @@ class PlaylistHeader extends StatelessWidget {
                           QueueActionsButton(onSelected: queueAction),
                         PopupMenuButton<_PlaylistAction>(
                           tooltip: l10n.playlistActions,
+                          // Not the kebab of the queue menu beside it.
+                          icon: const Icon(Icons.edit_outlined),
                           onSelected: (action) => switch (action) {
                             _PlaylistAction.rename => onRename(),
                             _PlaylistAction.delete => onDelete(),

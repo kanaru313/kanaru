@@ -27,7 +27,7 @@
   "playlistRenameTitle": "Rename playlist",
   "playlistNameLabel": "Name",
   "playlistDelete": "Delete playlist",
-  "playlistDeleteTitle": "Delete \"{name}\"?",
+  "playlistDeleteTitle": "Delete “{name}”?",
   "@playlistDeleteTitle": {
     "placeholders": {
       "name": { "type": "String" }

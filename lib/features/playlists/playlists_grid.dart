@@ -5,9 +5,16 @@ import '../../l10n/l10n.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/playlist_cover.dart';
 
+/// Space around the whole grid.
 const _gridPadding = 24.0;
+
+/// Space between a card's edge and its cover and text.
 const _cardPadding = 8.0;
+
+/// Space between the cover and the name.
 const _gap = 8.0;
+
+/// Widest a card grows; the column count follows from it.
 const _maxCardWidth = 200.0;
 
 /// Height of a card [width] wide: the square cover plus a name of two lines

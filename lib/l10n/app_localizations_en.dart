@@ -83,7 +83,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String playlistDeleteTitle(String name) {
-    return 'Delete \"$name\"?';
+    return 'Delete “$name”?';
   }
 
   @override

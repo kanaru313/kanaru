@@ -1,11 +1,13 @@
-import 'package:flutter/foundation.dart';
-
 /// Order shown while reorders are on their way to the database, so a
 /// dropped row stays where it landed instead of jumping back until the
 /// stream catches up.
 class OptimisticOrder {
   List<int>? _pending;
   int _inFlight = 0;
+
+  /// Whether a write is under way. The view ignores new drops meanwhile, so
+  /// each write is counted against an order the database already has.
+  bool get busy => _inFlight > 0;
 
   /// [rows] in the pending order. Ids gone from [rows] are dropped; ids new
   /// in [rows] (a concurrent add) keep their place after the known ones.
@@ -39,6 +41,14 @@ class OptimisticOrder {
   /// repeats the previous value after [end] would drop the pending order
   /// and paint the old one for a frame.
   void onData(List<int> ids) {
-    if (_inFlight == 0 || listEquals(ids, _pending)) _pending = null;
+    if (_inFlight == 0 || _sameIds(ids, _pending)) _pending = null;
   }
+}
+
+bool _sameIds(List<int> a, List<int>? b) {
+  if (b == null || a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
