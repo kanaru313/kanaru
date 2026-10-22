@@ -1244,6 +1244,60 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open {target}'**
   String settingsOpenFailed(String target);
 
+  /// No description provided for @listenHistorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen history'**
+  String get listenHistorySection;
+
+  /// No description provided for @listenHistoryRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record listen history'**
+  String get listenHistoryRecord;
+
+  /// No description provided for @listenHistoryRecordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept only on this device. Turning it off keeps what is already recorded.'**
+  String get listenHistoryRecordHint;
+
+  /// No description provided for @listenHistoryClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear listen history'**
+  String get listenHistoryClear;
+
+  /// No description provided for @listenHistoryClearButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get listenHistoryClearButton;
+
+  /// No description provided for @listenHistoryClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all listen history?'**
+  String get listenHistoryClearTitle;
+
+  /// No description provided for @listenHistoryClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every recorded listen, with play counts and last-played times, is removed from Kanaru. This cannot be undone.'**
+  String get listenHistoryClearBody;
+
+  /// No description provided for @listenHistoryCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Listen history cleared} =1{Listen history cleared (1 listen)} other{Listen history cleared ({count} listens)}}'**
+  String listenHistoryCleared(int count);
+
+  /// No description provided for @listenHistoryClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear listen history'**
+  String get listenHistoryClearFailed;
+
   /// No description provided for @playbackUnavailableTitle.
   ///
   /// In en, this message translates to:

@@ -47,6 +47,7 @@ void main() {
     await pumpSettings(tester);
 
     expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Listen history'), findsOneWidget);
     expect(find.text('Rescan library'), findsOneWidget);
     expect(
       tester
@@ -111,6 +112,7 @@ void main() {
     await pumpSettings(tester, open: (_) async => false);
 
     await tester.ensureVisible(find.text('Source code'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Source code'));
     await tester.pump();
 
@@ -145,6 +147,7 @@ void main() {
     );
 
     await tester.ensureVisible(find.text('Source code'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Source code'));
     await tester.pump();
 
