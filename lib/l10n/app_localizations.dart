@@ -818,11 +818,47 @@ abstract class AppLocalizations {
   /// **'Results for “{query}”'**
   String searchResultsTitle(String query);
 
-  /// No description provided for @searchNotReadyMessage.
+  /// No description provided for @searchShowAll.
   ///
   /// In en, this message translates to:
-  /// **'Search will work once your library has been scanned.'**
-  String get searchNotReadyMessage;
+  /// **'Show all ({count})'**
+  String searchShowAll(int count);
+
+  /// No description provided for @searchShowTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Show top {count}'**
+  String searchShowTop(int count);
+
+  /// No description provided for @searchShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get searchShowLess;
+
+  /// No description provided for @searchFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get searchFailedTitle;
+
+  /// No description provided for @searchNoResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get searchNoResultsTitle;
+
+  /// No description provided for @searchNoResultsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{query}”. Try fewer or shorter words.'**
+  String searchNoResultsMessage(String query);
+
+  /// No description provided for @searchMoreSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the top {shown} of {total} songs. Add words to narrow it down.'**
+  String searchMoreSongs(int shown, int total);
 
   /// No description provided for @playerOpenMenu.
   ///

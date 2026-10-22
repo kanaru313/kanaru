@@ -240,8 +240,8 @@ void main() {
     });
   });
 
-  test('text keys version starts at 1', () {
-    expect(textKeysVersion, 1);
+  test('text keys version covers the search columns', () {
+    expect(textKeysVersion, 2);
   });
 
   test('keys 100k mixed names fast enough for a background backfill', () {
@@ -270,6 +270,16 @@ void main() {
       'Beyonce\u0301': ['beyonc\u00e9', 'beyonce', 'beyonce'],
       '\u0110en V\u00e2u': ['\u0111en v\u00e2u', 'den vau', 'den vau'],
       'Nguye\u0302\u0303n': ['nguy\u1ec5n', 'nguyen', 'nguyen'],
+      'S\u01a1n T\u00f9ng M-TP': [
+        's\u01a1n t\u00f9ng m-tp',
+        'son tung m-tp',
+        'son tung m-tp',
+      ],
+      '\u0110\u1eebng L\u00e0m': [
+        '\u0111\u1eebng l\u00e0m',
+        'dung lam',
+        'dung lam',
+      ],
       '\u00d8lsen': ['\u00f8lsen', 'olsen', 'olsen'],
       'Stra\u00dfe': ['stra\u00dfe', 'strasse', 'strasse'],
       '\u00c6on': ['\u00e6on', 'aeon', 'aeon'],

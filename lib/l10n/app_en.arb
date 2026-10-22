@@ -260,7 +260,34 @@
       "query": { "type": "String" }
     }
   },
-  "searchNotReadyMessage": "Search will work once your library has been scanned.",
+  "searchShowAll": "Show all ({count})",
+  "@searchShowAll": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "searchShowTop": "Show top {count}",
+  "@searchShowTop": {
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "searchShowLess": "Show less",
+  "searchFailedTitle": "Search failed",
+  "searchNoResultsTitle": "No results",
+  "searchNoResultsMessage": "Nothing matches “{query}”. Try fewer or shorter words.",
+  "@searchNoResultsMessage": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "searchMoreSongs": "Showing the top {shown} of {total} songs. Add words to narrow it down.",
+  "@searchMoreSongs": {
+    "placeholders": {
+      "shown": { "type": "int", "format": "decimalPattern" },
+      "total": { "type": "int", "format": "decimalPattern" }
+    }
+  },
 
   "playerOpenMenu": "Open music",
   "playerOpenFiles": "Open files…",

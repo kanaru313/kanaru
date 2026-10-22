@@ -25,7 +25,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 
 - 🎵 Plays almost anything — MP3, FLAC, ALAC, AAC/M4A, OGG Vorbis, Opus, WAV, APE, WavPack… (powered by libmpv)
 - 📚 Library browsing by albums, artists, album artists, genres, years, folders *(albums, artists and songs so far)*
-- 🔍 Fast full-text search *(Phase 1)*
+- 🔍 Full-text search of songs, albums and artists, ignoring accents
 - 📝 Playlists *(Phase 1)*, queue management, shuffle / repeat
 - 🎧 Gapless playback, ReplayGain *(Phase 1)*
 - 🎨 Material You — light/dark themes and system accent; dynamic colors from album art *(Phase 1)*
@@ -84,7 +84,7 @@ source means implementing one `StorageProvider` interface.
 | UI              | Flutter, Material Design 3, `dynamic_color` (`material_color_utilities` planned) |
 | State / routing | Riverpod, go_router                                                     |
 | Playback        | `media_kit` (libmpv)                                                    |
-| Database        | `drift` (SQLite; FTS5 planned)                                          |
+| Database        | `drift` (SQLite, FTS5 index)                                            |
 | Tag reading     | `lofty` (Rust) via `flutter_rust_bridge`                                |
 | Media controls  | MPRIS (D-Bus, built in-house); `smtc_windows`, `audio_service` planned  |
 | Credentials     | `flutter_secure_storage` (libsecret / Keychain / Keystore), planned     |
@@ -106,7 +106,8 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [x] Folder scanning & tag reading, embedded / folder artwork
 - [ ] Library database & browsing: albums, artists, songs done; genres, folders open
 - [ ] Now Playing, mini player, queue, shuffle / repeat: shipped; hero transition and queue history open
-- [ ] Search, playlists (incl. M3U import/export): not started
+- [x] Full-text search over songs, albums and artists
+- [ ] Playlists (incl. M3U import/export): not started
 - [ ] Gapless, ReplayGain: gapless configured; ReplayGain not started
 - [ ] Dynamic color from album art: not started
 - [ ] Packaging: AppImage, Flatpak, `.deb`: not started

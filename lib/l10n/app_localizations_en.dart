@@ -478,8 +478,48 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get searchNotReadyMessage =>
-      'Search will work once your library has been scanned.';
+  String searchShowAll(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Show all ($countString)';
+  }
+
+  @override
+  String searchShowTop(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Show top $countString';
+  }
+
+  @override
+  String get searchShowLess => 'Show less';
+
+  @override
+  String get searchFailedTitle => 'Search failed';
+
+  @override
+  String get searchNoResultsTitle => 'No results';
+
+  @override
+  String searchNoResultsMessage(String query) {
+    return 'Nothing matches “$query”. Try fewer or shorter words.';
+  }
+
+  @override
+  String searchMoreSongs(int shown, int total) {
+    final intl.NumberFormat shownNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String shownString = shownNumberFormat.format(shown);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Showing the top $shownString of $totalString songs. Add words to narrow it down.';
+  }
 
   @override
   String get playerOpenMenu => 'Open music';

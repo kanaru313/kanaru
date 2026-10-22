@@ -80,12 +80,12 @@ Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no
 | Rust | `1.89`+ | `rust/Cargo.toml` |
 | libmpv | `>= 0.36` | [development.md](./development.md#what-you-need) |
 | GTK | `>= 3.24` | same |
-| Database | SQLite via drift, `schemaVersion = 3` | [system-architecture.md](./system-architecture.md#7-library-database-schema) |
+| Database | SQLite via drift, `schemaVersion = 4` | [system-architecture.md](./system-architecture.md#7-library-database-schema) |
 | License | GPL-3.0-or-later | [LICENSE](../LICENSE) |
 
 ## Current status
 
-Snapshot at HEAD `1cd20bc`: 208 commits, PRs #1 to #22, between 2026-10-18 and 2026-10-21.
+Status on 2026-10-21, with the search work on `feat/search`. Commit and PR counts are from `1cd20bc`: 208 commits, PRs #1 to #22, between 2026-10-18 and 2026-10-21.
 
 | Area | State |
 |---|---|
@@ -96,7 +96,7 @@ Snapshot at HEAD `1cd20bc`: 208 commits, PRs #1 to #22, between 2026-10-18 and 2
 | Library browse: Songs, Albums, Artists | Shipped |
 | Library browse: Genres, Folders, Favorites, Recent | Not started (placeholder screens) |
 | Now Playing overlay and queue sheet | Shipped; hero transition not built |
-| Search | Not started (placeholder screen) |
+| Search | Shipped: songs, albums and artists, live from the top bar; typo tolerance not done (SEARCH-04) |
 | Playlists | Not started (placeholder in sidebar) |
 | Settings | Shipped in part (library rescan, appearance, about) |
 | Packaging (AppImage, Flatpak, deb, rpm) | Not started |
@@ -119,7 +119,6 @@ Scope of the first release, derived from the P0 items of Phase 1 (features.md).
 
 | Requirement | ID | Priority | State |
 |---|---|---|---|
-| Full-text search, grouped results, diacritic-insensitive | SEARCH-01 to SEARCH-03 | P0 | Not started |
 | Playlists: create, edit, delete, add and reorder | PL-01, PL-02 | P0 | Not started |
 | AppImage package | PKG-01 | P0 | Not started |
 | Collapse DB schema history to v1 before release | PKG-08 | P0 | Not started |
@@ -163,3 +162,4 @@ Decisions the owner has not made (features.md, section "Câu hỏi mở"):
 | Date | Change |
 |---|---|
 | 2026-10-21 | Initial overview and PDR. Status snapshot at HEAD `1cd20bc`. |
+| 2026-10-21 | Search shipped (SEARCH-01 to SEARCH-03); schema v4 with the FTS5 index. |

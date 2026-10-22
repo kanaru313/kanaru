@@ -1,0 +1,32 @@
+import 'library_tables.dart';
+
+-- Full-text index over the folded tags of `tracks`. External content: the
+-- index stores no text of its own, only tokens, and the triggers below are
+-- its only writers.
+CREATE VIRTUAL TABLE track_search USING fts5(
+  title_sort, artist_search, album_search, album_artist_search, genre_search,
+  content='tracks', content_rowid='id',
+  tokenize='unicode61 remove_diacritics 0', prefix='1 2 3');
+
+CREATE TRIGGER tracks_search_insert AFTER INSERT ON tracks BEGIN
+  INSERT INTO track_search(rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)
+  VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);
+END;
+
+CREATE TRIGGER tracks_search_delete AFTER DELETE ON tracks BEGIN
+  INSERT INTO track_search(track_search, rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)
+  VALUES ('delete', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);
+END;
+
+CREATE TRIGGER tracks_search_update AFTER UPDATE OF title_sort, artist_search, album_search, album_artist_search, genre_search ON tracks
+WHEN old.title_sort IS NOT new.title_sort
+  OR old.artist_search IS NOT new.artist_search
+  OR old.album_search IS NOT new.album_search
+  OR old.album_artist_search IS NOT new.album_artist_search
+  OR old.genre_search IS NOT new.genre_search
+BEGIN
+  INSERT INTO track_search(track_search, rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)
+  VALUES ('delete', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);
+  INSERT INTO track_search(rowid, title_sort, artist_search, album_search, album_artist_search, genre_search)
+  VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);
+END;

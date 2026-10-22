@@ -5,6 +5,8 @@ import 'package:drift_dev/api/migrations_native.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_keys_backfill.dart';
 import 'package:kanaru/core/database/library_migration_v3.dart';
+import 'package:kanaru/core/database/library_migration_v4.dart';
+import 'package:kanaru/core/database/text_keys.dart';
 import 'package:kanaru/core/database/library_database.steps.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -13,6 +15,7 @@ import 'generated/schema.dart';
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
+import 'generated/schema_v4.dart' as v4;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -211,11 +214,15 @@ void main() {
       final db = LibraryDatabase(schema.newConnection());
       addTearDown(db.close);
       expect(await backfillLibraryKeys(db), 2);
+      await db.customStatement(
+        "INSERT INTO track_search(track_search, rank) "
+        "VALUES ('integrity-check', 1)",
+      );
 
       final rows = await (db.select(
         db.tracks,
       )..orderBy([(t) => OrderingTerm.asc(t.id)])).get();
-      expect(rows.map((r) => r.keysVersion), everyElement(1));
+      expect(rows.map((r) => r.keysVersion), everyElement(textKeysVersion));
       expect(rows[0].albumArtistKey, 'beyoncé');
       expect(rows[0].albumTitleKey, 'i am');
       expect(rows[0].titleSort, 'halo');
@@ -279,6 +286,163 @@ void main() {
         Schema3(database: db),
       );
       await verifier.migrateAndValidate(db, 3);
+    });
+  });
+
+  group('v3 to v4', () {
+    final oldTracks = [
+      const v3.TracksData(
+        id: 1,
+        rootId: 1,
+        path: '/m/1.flac',
+        mtimeMs: 1,
+        sizeBytes: 1,
+        title: 'Halo',
+        artist: 'Beyoncé',
+        album: 'I Am',
+        genre: 'Pop',
+        addedAt: 1,
+        updatedAt: 1,
+        coverScanVersion: 1,
+        albumArtistKey: 'beyoncé',
+        albumTitleKey: 'i am',
+        albumDisplayArtist: 'Beyoncé',
+        titleSort: 'halo',
+        artistSort: 'beyonce',
+        albumSort: 'i am',
+        keysVersion: 1,
+      ),
+      const v3.TracksData(
+        id: 2,
+        rootId: 1,
+        path: '/m/2.flac',
+        mtimeMs: 1,
+        sizeBytes: 1,
+        title: 'Đừng Làm',
+        artist: 'The Beatles',
+        genre: 'Rock',
+        addedAt: 1,
+        updatedAt: 1,
+        coverScanVersion: 1,
+        titleSort: 'dung lam',
+        artistSort: 'beatles',
+        keysVersion: 1,
+      ),
+    ];
+
+    Future<void> insertRoot(GeneratedDatabase db) => db.customStatement(
+      "INSERT INTO library_roots (id, path, added_at) VALUES (1, '/m', 1)",
+    );
+
+    Future<List<int>> matching(GeneratedDatabase db, String fts) async => [
+      for (final r
+          in await db
+              .customSelect(
+                'SELECT rowid FROM track_search WHERE track_search MATCH ?1 '
+                'ORDER BY rowid',
+                variables: [Variable.withString(fts)],
+              )
+              .get())
+        r.read<int>('rowid'),
+    ];
+
+    Future<void> expectIntact(GeneratedDatabase db) => db.customStatement(
+      "INSERT INTO track_search(track_search, rank) "
+      "VALUES ('integrity-check', 1)",
+    );
+
+    test(
+      'keeps rows, adds empty search columns and indexes the stored titles',
+      () async {
+        await verifier.testWithDataIntegrity(
+          oldVersion: 3,
+          newVersion: 4,
+          createOld: v3.DatabaseAtV3.new,
+          createNew: v4.DatabaseAtV4.new,
+          openTestedDatabase: LibraryDatabase.new,
+          createItems: (batch, oldDb) {
+            batch.insertAll(oldDb.libraryRoots, [
+              const v3.LibraryRootsData(id: 1, path: '/m', addedAt: 1),
+            ]);
+            batch.insertAll(oldDb.tracks, oldTracks);
+          },
+          validateItems: (newDb) async {
+            final rows = await (newDb.select(
+              newDb.tracks,
+            )..orderBy([(t) => OrderingTerm.asc(t.id)])).get();
+            expect(rows.map((r) => r.title), ['Halo', 'Đừng Làm']);
+            for (final row in rows) {
+              expect(row.artistSearch, isNull);
+              expect(row.albumSearch, isNull);
+              expect(row.albumArtistSearch, isNull);
+              expect(row.genreSearch, isNull);
+              expect(row.keysVersion, 1);
+            }
+            // The rebuild ran: stored titles are findable right away.
+            expect(await matching(newDb, 'halo'), [1]);
+            expect(await matching(newDb, 'dun*'), [2]);
+            await expectIntact(newDb);
+          },
+        );
+      },
+    );
+
+    test('rows from v3 are searchable by artist and genre after the '
+        'backfill', () async {
+      final schema = await verifier.schemaAt(3);
+      final old = v3.DatabaseAtV3(schema.newConnection());
+      await insertRoot(old);
+      await old.batch((b) => b.insertAll(old.tracks, oldTracks));
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      expect(await backfillLibraryKeys(db), 2);
+
+      expect(await matching(db, 'artist_search:beyonce'), [1]);
+      expect(await matching(db, 'artist_search:the'), [2]);
+      expect(await matching(db, 'genre_search:rock'), [2]);
+      expect(await matching(db, 'dung'), [2]);
+      expect(await matching(db, 'genre_search:pop'), [1]);
+      await expectIntact(db);
+    });
+
+    test('runs again on a half-migrated file and on a migrated one', () async {
+      final schema = await verifier.schemaAt(3);
+      final old = v3.DatabaseAtV3(schema.newConnection());
+      await insertRoot(old);
+      await old.batch((b) => b.insertAll(old.tracks, oldTracks));
+      // A crashed earlier attempt: some columns and the index exist, the
+      // triggers do not.
+      await old.customStatement(
+        'ALTER TABLE tracks ADD COLUMN artist_search TEXT NULL',
+      );
+      await old.customStatement(
+        'ALTER TABLE tracks ADD COLUMN album_search TEXT NULL',
+      );
+      await old.customStatement(
+        'CREATE VIRTUAL TABLE track_search USING fts5('
+        'title_sort, artist_search, album_search, album_artist_search, '
+        "genre_search, content='tracks', content_rowid='id', "
+        "tokenize='unicode61 remove_diacritics 0', prefix='1 2 3')",
+      );
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 4);
+      expect(await matching(db, 'halo'), [1]);
+      await expectIntact(db);
+
+      // Once more on the finished schema.
+      await migrateLibraryToSchema4(
+        db,
+        db.createMigrator(),
+        Schema4(database: db),
+      );
+      await verifier.migrateAndValidate(db, 4);
+      expect(await matching(db, 'halo'), [1]);
+      await expectIntact(db);
     });
   });
 }

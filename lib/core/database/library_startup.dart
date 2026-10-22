@@ -82,6 +82,9 @@ void applyLibraryPragmas(Database rawDb) {
   rawDb.execute('PRAGMA journal_mode = WAL;');
   rawDb.execute('PRAGMA synchronous = NORMAL;');
   rawDb.execute('PRAGMA foreign_keys = ON;');
+  // A REPLACE conflict deletes the old row; without this its delete trigger
+  // does not fire and the search index keeps tokens of a row that is gone.
+  rawDb.execute('PRAGMA recursive_triggers = ON;');
   rawDb.execute('PRAGMA busy_timeout = 5000;');
 }
 

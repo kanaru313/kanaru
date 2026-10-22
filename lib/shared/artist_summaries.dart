@@ -1,7 +1,7 @@
 import '../core/database/library_database.dart';
 import 'sort_compare.dart';
 
-/// One artist of the Artists list.
+/// One artist row (Artists list, search results).
 class ArtistSummary {
   const ArtistSummary({
     required this.key,

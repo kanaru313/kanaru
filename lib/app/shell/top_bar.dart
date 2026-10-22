@@ -6,6 +6,7 @@ import '../../features/player/open_media.dart';
 import '../../l10n/l10n.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
+import 'top_bar_search_field.dart';
 import 'window/desktop_window.dart';
 import 'window/window_buttons.dart';
 import 'window/window_drag_area.dart';
@@ -24,16 +25,6 @@ class TopBar extends ConsumerWidget {
 
   /// Opens the sidebar drawer on narrow windows. `null` hides the button.
   final VoidCallback? onMenuPressed;
-
-  void _search(BuildContext context, String text) {
-    final query = text.trim();
-    context.go(
-      Uri(
-        path: AppDestination.search.path,
-        queryParameters: query.isEmpty ? null : {'q': query},
-      ).toString(),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,16 +78,7 @@ class TopBar extends ConsumerWidget {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 320),
                       child: WindowDragExclusion(
-                        child: SearchBar(
-                          hintText: l10n.topBarSearchHint,
-                          leading: const Icon(Icons.search, size: 20),
-                          elevation: const WidgetStatePropertyAll(0),
-                          constraints: const BoxConstraints(minHeight: 40),
-                          padding: const WidgetStatePropertyAll(
-                            EdgeInsets.symmetric(horizontal: 12),
-                          ),
-                          onSubmitted: (text) => _search(context, text),
-                        ),
+                        child: const TopBarSearchField(),
                       ),
                     ),
                   ),

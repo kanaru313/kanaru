@@ -32,7 +32,9 @@ Future<void> _insert(LibraryDatabase db, int n, {String? artist}) async {
   await db.customStatement(
     "UPDATE tracks SET keys_version = 0, title_sort = '', "
     'artist_sort = NULL, album_sort = NULL, album_artist_key = NULL, '
-    'album_title_key = NULL, album_display_artist = NULL',
+    'album_title_key = NULL, album_display_artist = NULL, '
+    'artist_search = NULL, album_search = NULL, album_artist_search = NULL, '
+    'genre_search = NULL',
   );
   await db.customStatement('DELETE FROM track_artists');
 }
@@ -64,6 +66,9 @@ Future<void> _untilStatus(
       .timeout(const Duration(seconds: 20))
       .whenComplete(sub.close);
 }
+
+// The version the default run writes.
+const v = textKeysVersion;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -120,7 +125,7 @@ void main() {
       "BEGIN SELECT RAISE(ABORT, 'refused'); END",
     );
     await backfillLibraryKeys(db, chunkSize: 5);
-    expect(await _versions(db), [1, 1, 0, 1, 1]);
+    expect(await _versions(db), [v, v, 0, v, v]);
     // The refused track keeps its old (empty) credits.
     expect(await _credits(db), 8);
   });
@@ -136,7 +141,7 @@ void main() {
           'WHERE id = 2',
         ),
       );
-      expect(await _versions(db), [1, 0, 1]);
+      expect(await _versions(db), [v, 0, v]);
       final credits = await db
           .customSelect(
             'SELECT count(*) AS n FROM track_artists WHERE track_id = 2',
@@ -161,7 +166,7 @@ void main() {
         db,
         afterRead: () => db.customStatement('DELETE FROM tracks WHERE id = 2'),
       );
-      expect(await _versions(db), [1, 1]);
+      expect(await _versions(db), [v, v]);
       expect(await _credits(db), 4);
     },
   );
@@ -183,13 +188,13 @@ void main() {
       ),
       throwsStateError,
     );
-    expect(await _versions(first), [1, 1, 1, 1, 0, 0, 0, 0, 0]);
+    expect(await _versions(first), [v, v, v, v, 0, 0, 0, 0, 0]);
     await first.close();
 
     first = LibraryDatabase(NativeDatabase(file));
     addTearDown(first.close);
     expect(await backfillLibraryKeys(first, chunkSize: 4), 5);
-    expect(await _versions(first), everyElement(1));
+    expect(await _versions(first), everyElement(textKeysVersion));
     expect(await _credits(first), 18);
   });
 
@@ -225,7 +230,7 @@ void main() {
       expect(seen.last.done, 5);
       expect(seen.last.total, 5);
       expect(seen.last.fraction, 1.0);
-      expect(await _versions(db), everyElement(1));
+      expect(await _versions(db), everyElement(textKeysVersion));
     });
 
     test(
@@ -234,7 +239,7 @@ void main() {
         await _insert(db, keysInPlaceLimit + 100, artist: 'Solo');
         final seen = <(int, int)>[];
         await runKeysBackfillInBackground(db, (d, t) => seen.add((d, t)));
-        expect(await _versions(db), everyElement(1));
+        expect(await _versions(db), everyElement(textKeysVersion));
         expect(seen.last, (keysInPlaceLimit + 100, keysInPlaceLimit + 100));
       },
     );
@@ -286,7 +291,7 @@ void main() {
       await runKeysBackfillInBackground(fileDb, (_, _) {});
       await pumpEventQueue();
 
-      expect(await _versions(fileDb), everyElement(1));
+      expect(await _versions(fileDb), everyElement(textKeysVersion));
       expect(
         notices.expand((n) => n).where((u) => u.table == 'tracks'),
         isNotEmpty,
@@ -305,7 +310,7 @@ void main() {
 
       await c.read(libraryKeysProvider.notifier).keyStaleRows();
 
-      expect(await _versions(db), everyElement(1));
+      expect(await _versions(db), everyElement(textKeysVersion));
       expect(seen, isEmpty, reason: 'the lists keep showing');
     });
 
@@ -350,7 +355,7 @@ void main() {
       c.read(keysReadyProvider);
       await _untilStatus(c, (s) => s.ready && s.done == 3);
       expect(calls, 2);
-      expect(await _versions(db), everyElement(1));
+      expect(await _versions(db), everyElement(textKeysVersion));
     });
 
     test('progress never exceeds the total', () async {

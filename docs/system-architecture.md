@@ -32,11 +32,12 @@ flowchart TD
         Library["library"]
         Player["player"]
         Settings["settings"]
-        Placeholders["home, search"]
+        Search["search"]
+        Placeholders["home"]
     end
 
-    subgraph SHARED ["lib/shared/widgets"]
-        Widgets["CoverArt, EmptyState, PageScaffold, ScanProgress"]
+    subgraph SHARED ["lib/shared"]
+        Widgets["widgets and tiles: CoverArt, EmptyState, SongTile; play and enqueue helpers"]
     end
 
     subgraph CORE ["lib/core: engine"]
@@ -63,6 +64,7 @@ flowchart TD
     FEAT --> SHARED
     SHARED --> CORE
     Library --> Database
+    Search --> Database
     Library --> Indexer
     Player --> PlayerCore
     Settings --> SettingsCore
@@ -269,7 +271,7 @@ Reset targets: `make reset-library`, `make reset-covers`, `make reset-all` (see 
 
 ## 7. Library database schema
 
-drift, `schemaVersion = 3`, file `library.db`. Times are epoch milliseconds. Browse queries are raw SQL (`customSelect`) that read `tracks`; there are no `albums`, `artists` or `playlists` tables yet. Albums and artists are `GROUP BY` over the text keys.
+drift, `schemaVersion = 4`, file `library.db`. Times are epoch milliseconds. Browse queries are raw SQL (`customSelect`) that read `tracks`; there are no `albums`, `artists` or `playlists` tables yet. Albums and artists are `GROUP BY` over the text keys.
 
 ```mermaid
 erDiagram
@@ -307,6 +309,17 @@ erDiagram
         text artist_sort
         text album_sort
         int keys_version
+        text artist_search "folded tag, null without the tag"
+        text album_search "folded tag, null without the tag"
+        text album_artist_search "folded tag, null without the tag"
+        text genre_search "folded tag, null without the tag"
+    }
+    TRACK_SEARCH {
+        text title_sort "FTS5 external content, rowid = tracks.id"
+        text artist_search
+        text album_search
+        text album_artist_search
+        text genre_search
     }
     TRACK_ARTISTS {
         text artist_key PK
@@ -315,11 +328,12 @@ erDiagram
     }
     LIBRARY_ROOTS ||--o{ TRACKS : "root_id"
     TRACKS ||--o{ TRACK_ARTISTS : "track_id"
+    TRACKS ||--|| TRACK_SEARCH : "indexed, kept by triggers"
 ```
 
 Only the main columns are shown; see `lib/core/database/library_tables.dart` for the full list.
 
-Indexes: `tracks_root(root_id)`, `tracks_title_sort(title_sort, id)`, `tracks_album_key(album_artist_key, album_title_key)`, `tracks_keys_version(keys_version)`, `track_artists_track(track_id)`.
+Indexes: `tracks_root(root_id)`, `tracks_title_sort(title_sort, id)`, `tracks_album_key(album_artist_key, album_title_key)`, `tracks_keys_version(keys_version)`, `track_artists_track(track_id)`. Full-text index: `track_search`, a virtual table (see [Full-text search](#full-text-search)).
 
 Writes and reads:
 
@@ -330,10 +344,24 @@ Writes and reads:
 | Whole-library lists | `throttledTracksQuery` replaces drift `.watch()`, because `.watch()` restarts on every write and starves during scans. Dirty flag, no overlapping loads, cooldown. |
 | Songs paging | IDs come from `group_concat`; pages of 200; `songsByIds` in chunks of 200 keeps order; `songQueueFrom(trackId)` reads in one transaction. |
 | Ordering | Songs: NULLs last in both directions, ties by `title_sort`, `id`. Albums and artists are sorted in Dart by code point, matching the database. |
-| Text keys | Pure Dart (`text_keys.dart`, generated tables in `text_key_tables.dart`). `textKeysVersion = 1`. Stale rows are re-keyed in place when few (≤ 500), or in a background isolate. Conditional writes let a concurrent scan win. |
-| Migrations | Step-by-step (`library_database.steps.dart`). v1 → v2 adds cover columns; v2 → v3 is schema-only and re-runnable (`library_migration_v3.dart`). Values are filled by the background key backfill. |
+| Text keys | Pure Dart (`text_keys.dart`, generated tables in `text_key_tables.dart`). `textKeysVersion = 2` (version 2 added the search columns). Stale rows are re-keyed in place when few (≤ 500), or in a background isolate. Conditional writes let a concurrent scan win. |
+| Migrations | Step-by-step (`library_database.steps.dart`). v1 → v2 adds cover columns; v2 → v3 is schema-only and re-runnable (`library_migration_v3.dart`). v3 → v4 adds the four search columns, creates `track_search` and its triggers, and runs one index `rebuild` (`library_migration_v4.dart`). Values are filled by the background key backfill. |
+| Full-text index | External-content FTS5 table `track_search` over `title_sort`, `artist_search`, `album_search`, `album_artist_search`, `genre_search`; `unicode61 remove_diacritics 0`, prefixes 1 to 3. The three triggers in `library_search.drift` are its only writers; Dart never writes it. They fire on insert, on delete (including a root cascade), and on update of an indexed column whose value changed. `recursive_triggers` is on, so `REPLACE` deletes fire too. |
+| Search query | `searchTerms` splits the query into words folded like the columns; each becomes `"word"*` and all are required. Songs: `bm25` with weights 20, 2, 1.5, 1, 0.5 in column order, then `title_sort`, `id` (weighted, not strict). One-character single-word queries order by `title_sort`, `id`. One statement returns at most 200 songs and the total match count. Albums and artists are filtered in Dart over `albums()` and `artistCredits()` with the same terms (`SearchNameIndex`). A corrupt index is rebuilt once per database and the search retried. |
 
-Planned schema work: full-text search (FTS5, SEARCH-01), playlists, play statistics, and collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md).
+### Full-text search
+
+Data flow: the scan and the key backfill write `tracks`, with the folded columns from `trackKeysFor`; the triggers copy them into `track_search`. A search goes top bar → `/search?q=…` → `searchTerms` → `searchSongs` (SQL) and the Dart filters for albums and artists → the search page. Dart issues only `rebuild`, in the migration and in corruption repair.
+
+Known limits (the user-facing list is in [features.md](./features.md), section 6):
+
+- `mtp` does not match `M-TP`: punctuation splits words.
+- CJK text matches only from the start of a run of characters.
+- No typo tolerance (SEARCH-04).
+- Characters assigned after Unicode 6.1 (for example newer emoji) are not token separators for `unicode61`, while the Dart side splits on them.
+- Tags are indexed up to 256 characters (`maxKeyLength`).
+
+Planned schema work: playlists, play statistics, and collapsing the history to v1 before the first release (PKG-08). See [project-roadmap.md](./project-roadmap.md).
 
 ---
 

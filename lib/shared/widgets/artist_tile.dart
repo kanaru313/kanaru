@@ -5,7 +5,7 @@ import '../artist_summaries.dart';
 import 'artist_avatar.dart';
 import 'queue_actions_menu.dart';
 
-/// One artist of the Artists list: avatar, name, "N albums · M songs".
+/// One artist row: avatar, name, "N albums · M songs".
 class ArtistTile extends StatelessWidget {
   const ArtistTile({
     super.key,

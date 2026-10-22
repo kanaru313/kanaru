@@ -5,7 +5,7 @@ import '../../l10n/l10n.dart';
 import 'album_artwork.dart';
 import 'queue_actions_menu.dart';
 
-/// One album in the list view: artwork, title, "artist · year · N songs".
+/// One album row: artwork, title, "artist · year · N songs".
 class AlbumListTile extends StatelessWidget {
   const AlbumListTile({
     super.key,

@@ -11,8 +11,9 @@ import 'text_key_tables.dart';
 /// Version of the rules in this file. Rows keyed with an older version are
 /// keyed again. Bump it when a rule changes, and also after a Dart SDK
 /// upgrade that changes the output of `toLowerCase`; the recorded-output test
-/// in `text_keys_test.dart` fails when that happens.
-const textKeysVersion = 1;
+/// in `text_keys_test.dart` fails when that happens. Also bump it when
+/// `trackKeysFor` starts writing a new key.
+const textKeysVersion = 2;
 
 /// Longest key kept, in characters, so route keys stay bounded even for
 /// huge tags.
