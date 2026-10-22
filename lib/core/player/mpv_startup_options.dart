@@ -9,10 +9,16 @@ const mpvStartupOptions = <(String, String)>[
   // file cache". Audio fits the RAM cache; remote streams will be cached by
   // the local proxy, not by mpv.
   ('cache-on-disk', 'no'),
-  // A local file named `.mp3` that holds an M3U or HLS playlist makes mpv
-  // fetch the URLs in it (measured: one request per file to a local server).
-  // Without references mpv plays the file itself and follows nothing. It
-  // also turns off CUE, EDL and ordered chapters that point at other files;
-  // the app plays none of those.
-  ('access-references', 'no'),
+  // A local file named `.mp3` that holds an M3U or HLS playlist makes mpv's
+  // own playlist demuxer fetch the URLs in it (measured: one request per
+  // file to a local server). Forcing libavformat for every played file skips
+  // that demuxer; libavformat refuses such a file, and its nested opens
+  // (HLS, concat) may only use local files. `access-references=no` would
+  // also stop it, but media_kit's `open` loads the track through `loadlist`
+  // of a temporary playlist file, which that option refuses, so nothing
+  // would play. The playlist given to `loadlist` is still read: it forces
+  // the playlist format and does not use `demuxer`. Remote sources will
+  // need the whitelist widened for the local HTTP proxy.
+  ('demuxer', 'lavf'),
+  ('demuxer-lavf-o', 'protocol_whitelist=file'),
 ];
