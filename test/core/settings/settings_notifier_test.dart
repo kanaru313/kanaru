@@ -81,6 +81,30 @@ void main() {
     },
   );
 
+  test('each group setter is saved and a language change keeps them', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+    const scan = LibraryScanPrefs(minFileSizeKb: 500);
+    const playback = PlaybackPrefs(gapless: false);
+    final display = DisplayPrefs(sidebarTabs: {SidebarTab.songs});
+
+    notifier.setLibraryScan(scan);
+    notifier.setPlayback(playback);
+    notifier.setDisplay(display);
+    notifier.setLanguage('vi');
+    notifier.setAnimations(false);
+    await notifier.flush();
+
+    final settings = container.read(settingsProvider);
+    expect(settings.libraryScan, scan);
+    expect(settings.playback, playback);
+    expect(settings.display, display);
+    expect(settings.animations, isFalse);
+    expect((stored()['libraryScan']! as Map)['minFileSizeKb'], 500);
+    expect((stored()['playback']! as Map)['gapless'], false);
+    expect((stored()['display']! as Map)['sidebarTabs'], ['songs']);
+  });
+
   test('several changes end up on disk with the last value', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

@@ -85,6 +85,17 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setAnimations(bool enabled) =>
       _update(state.copyWith(animations: enabled));
 
+  // The group setters are for the options that are not wired yet: the
+  // settings screen shows those rows disabled and does not call them.
+  void setLibraryScan(LibraryScanPrefs prefs) =>
+      _update(state.copyWith(libraryScan: prefs));
+
+  void setPlayback(PlaybackPrefs prefs) =>
+      _update(state.copyWith(playback: prefs));
+
+  void setDisplay(DisplayPrefs prefs) =>
+      _update(state.copyWith(display: prefs));
+
   /// Records that the first-run source picker is done for good.
   void markLibraryOnboarded() =>
       _update(state.copyWith(libraryOnboarded: true));

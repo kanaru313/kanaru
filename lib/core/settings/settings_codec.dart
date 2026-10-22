@@ -1,4 +1,9 @@
 import 'app_settings.dart';
+import 'display_prefs_codec.dart';
+import 'library_scan_prefs_codec.dart';
+import 'playback_prefs_codec.dart';
+import 'library_sort_codec.dart';
+import 'settings_codec_values.dart';
 
 /// Version written to `settings.json`. Bump it when a key changes meaning,
 /// and add a migration for the old shape.
@@ -14,6 +19,9 @@ const _rescanOnStartupKey = 'rescanOnStartup';
 const _libraryOnboardedKey = 'libraryOnboarded';
 const _recordListenHistoryKey = 'recordListenHistory';
 const _animationsKey = 'animations';
+const _libraryScanKey = 'libraryScan';
+const _playbackKey = 'playback';
+const _displayKey = 'display';
 const _knownKeys = {
   _versionKey,
   _themeKey,
@@ -25,15 +33,10 @@ const _knownKeys = {
   _libraryOnboardedKey,
   _recordListenHistoryKey,
   _animationsKey,
+  _libraryScanKey,
+  _playbackKey,
+  _displayKey,
 };
-
-// Screens inside `librarySort`, and the fields of each.
-const _songsScreen = 'songs';
-const _albumsScreen = 'albums';
-const _artistsScreen = 'artists';
-const _knownScreens = {_songsScreen, _albumsScreen, _artistsScreen};
-const _byKey = 'by';
-const _descendingKey = 'descending';
 
 final _languagePattern = RegExp(r'^[a-z]{2,3}$');
 
@@ -44,6 +47,7 @@ class DecodedSettings {
     this.version,
     this.unknownKeys, [
     this.librarySortExtra = const {},
+    this.groupExtras = const {},
   ]);
 
   final AppSettings settings;
@@ -58,6 +62,10 @@ class DecodedSettings {
   /// Screens inside `librarySort` this version does not know (for example
   /// one added by a newer build), kept for the same reason.
   final Map<String, Object?> librarySortExtra;
+
+  /// For each of `libraryScan`, `playback` and `display`: the keys inside it
+  /// this version does not know, kept for the same reason.
+  final Map<String, Map<String, Object?>> groupExtras;
 }
 
 /// Reads settings from decoded JSON. Never fails: a missing key, a value of
@@ -72,50 +80,58 @@ DecodedSettings decodeSettings(Object? json) {
   final language = json[_languageKey];
   final sorts = json[_librarySortKey];
   final sortJson = sorts is Map<String, Object?> ? sorts : const {};
+  final (libraryScan, libraryScanExtra) = decodeLibraryScanPrefs(
+    json[_libraryScanKey],
+  );
+  final (playback, playbackExtra) = decodePlaybackPrefs(json[_playbackKey]);
+  final (display, displayExtra) = decodeDisplayPrefs(json[_displayKey]);
   return DecodedSettings(
     AppSettings(
-      theme: _enumOr(ThemePreference.values, json[_themeKey], defaults.theme),
+      theme: enumOr(ThemePreference.values, json[_themeKey], defaults.theme),
       languageCode: language is String && _languagePattern.hasMatch(language)
           ? language
           : defaults.languageCode,
-      titleBar: _enumOr(
+      titleBar: enumOr(
         TitleBarPreference.values,
         json[_titleBarKey],
         defaults.titleBar,
       ),
-      songSort: _decodeSort(
-        sortJson[_songsScreen],
+      songSort: decodeSort(
+        sortJson[songsScreen],
         SongSortField.values,
         defaults.songSort,
       ),
-      albumSort: _decodeSort(
-        sortJson[_albumsScreen],
+      albumSort: decodeSort(
+        sortJson[albumsScreen],
         AlbumSortField.values,
         defaults.albumSort,
       ),
-      artistSort: _decodeSort(
-        sortJson[_artistsScreen],
+      artistSort: decodeSort(
+        sortJson[artistsScreen],
         ArtistSortField.values,
         defaults.artistSort,
       ),
-      albumsView: _enumOr(
+      albumsView: enumOr(
         AlbumsView.values,
         json[_albumsViewKey],
         defaults.albumsView,
       ),
-      rescanOnStartup: _boolOr(
+      rescanOnStartup: boolOr(
         json[_rescanOnStartupKey],
         defaults.rescanOnStartup,
       ),
-      libraryOnboarded: _boolOr(
+      libraryOnboarded: boolOr(
         json[_libraryOnboardedKey],
         defaults.libraryOnboarded,
       ),
-      recordListenHistory: _boolOr(
+      recordListenHistory: boolOr(
         json[_recordListenHistoryKey],
         defaults.recordListenHistory,
       ),
-      animations: _boolOr(json[_animationsKey], defaults.animations),
+      animations: boolOr(json[_animationsKey], defaults.animations),
+      libraryScan: libraryScan,
+      playback: playback,
+      display: display,
     ),
     version is int && version > 0 ? version : settingsSchemaVersion,
     {
@@ -124,17 +140,23 @@ DecodedSettings decodeSettings(Object? json) {
     },
     {
       for (final MapEntry(:key, :value) in sortJson.entries)
-        if (!_knownScreens.contains(key)) key: value,
+        if (!knownSortScreens.contains(key)) key: value,
+    },
+    {
+      _libraryScanKey: libraryScanExtra,
+      _playbackKey: playbackExtra,
+      _displayKey: displayExtra,
     },
   );
 }
 
 /// The JSON object for [settings], with [unknownKeys] and
-/// [librarySortExtra] carried over.
+/// [librarySortExtra] and [groupExtras] carried over.
 Map<String, Object?> encodeSettings(
   AppSettings settings, {
   Map<String, Object?> unknownKeys = const {},
   Map<String, Object?> librarySortExtra = const {},
+  Map<String, Map<String, Object?>> groupExtras = const {},
 }) => {
   ...unknownKeys,
   _versionKey: settingsSchemaVersion,
@@ -143,41 +165,25 @@ Map<String, Object?> encodeSettings(
   _titleBarKey: settings.titleBar.name,
   _librarySortKey: {
     ...librarySortExtra,
-    _songsScreen: _encodeSort(settings.songSort),
-    _albumsScreen: _encodeSort(settings.albumSort),
-    _artistsScreen: _encodeSort(settings.artistSort),
+    songsScreen: encodeSort(settings.songSort),
+    albumsScreen: encodeSort(settings.albumSort),
+    artistsScreen: encodeSort(settings.artistSort),
   },
   _albumsViewKey: settings.albumsView.name,
   _rescanOnStartupKey: settings.rescanOnStartup,
   _libraryOnboardedKey: settings.libraryOnboarded,
   _recordListenHistoryKey: settings.recordListenHistory,
   _animationsKey: settings.animations,
+  _libraryScanKey: encodeLibraryScanPrefs(
+    settings.libraryScan,
+    extra: groupExtras[_libraryScanKey] ?? const {},
+  ),
+  _playbackKey: encodePlaybackPrefs(
+    settings.playback,
+    extra: groupExtras[_playbackKey] ?? const {},
+  ),
+  _displayKey: encodeDisplayPrefs(
+    settings.display,
+    extra: groupExtras[_displayKey] ?? const {},
+  ),
 };
-
-/// Each part falls back on its own: a bad `by` keeps a valid `descending`.
-SortChoice<F> _decodeSort<F extends Enum>(
-  Object? json,
-  List<F> values,
-  SortChoice<F> fallback,
-) {
-  if (json is! Map<String, Object?>) return fallback;
-  final descending = json[_descendingKey];
-  return SortChoice(
-    _enumOr(values, json[_byKey], fallback.field),
-    descending: descending is bool ? descending : fallback.descending,
-  );
-}
-
-Map<String, Object?> _encodeSort(SortChoice<Enum> choice) => {
-  _byKey: choice.field.name,
-  _descendingKey: choice.descending,
-};
-
-bool _boolOr(Object? value, bool fallback) => value is bool ? value : fallback;
-
-T _enumOr<T extends Enum>(List<T> values, Object? name, T fallback) {
-  for (final value in values) {
-    if (value.name == name) return value;
-  }
-  return fallback;
-}
