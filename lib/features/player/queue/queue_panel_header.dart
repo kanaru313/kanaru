@@ -5,18 +5,23 @@ import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 
 /// Top of the queue panel: title and track count on the left; on the right
-/// icon buttons to clear the queue, scroll to the playing track and, in the
-/// side sheet, close it.
+/// icon buttons to save the queue as a playlist, clear it, scroll to the
+/// playing track and, in the side sheet, close it.
 class QueuePanelHeader extends StatelessWidget {
   const QueuePanelHeader({
     super.key,
     required this.trackCount,
+    this.onSave,
     required this.onClear,
     required this.onShowCurrent,
     this.onClose,
   });
 
   final int trackCount;
+
+  /// Saves the queue as a playlist; `null` greys the button out (no
+  /// library).
+  final VoidCallback? onSave;
 
   /// `null` greys the button out: nothing left to clear.
   final VoidCallback? onClear;
@@ -57,6 +62,12 @@ class QueuePanelHeader extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(AppIcons.saveQueue),
+            iconSize: playerIconSize,
+            tooltip: l10n.queueSaveAsPlaylist,
+            onPressed: onSave,
           ),
           // The playing track stays, so clearing needs no confirmation.
           IconButton(

@@ -9,6 +9,7 @@ class PlaylistSummary {
     required this.name,
     required this.createdAt,
     required this.entryCount,
+    this.isFavorites = false,
   });
 
   final int id;
@@ -18,16 +19,21 @@ class PlaylistSummary {
   final int createdAt;
   final int entryCount;
 
+  /// Whether this is the Favorites playlist (`kind = 'favorites'`): shown
+  /// with the localized name, never renamed or deleted.
+  final bool isFavorites;
+
   @override
   bool operator ==(Object other) =>
       other is PlaylistSummary &&
       other.id == id &&
       other.name == name &&
       other.createdAt == createdAt &&
-      other.entryCount == entryCount;
+      other.entryCount == entryCount &&
+      other.isFavorites == isFavorites;
 
   @override
-  int get hashCode => Object.hash(id, name, createdAt, entryCount);
+  int get hashCode => Object.hash(id, name, createdAt, entryCount, isFavorites);
 }
 
 /// Whether [a] and [b] hold equal summaries in the same order.

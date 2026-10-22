@@ -794,9 +794,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingAddToPlaylist => 'Thêm vào playlist';
 
   @override
-  String get nowPlayingComingSoon => 'Sắp có';
-
-  @override
   String get nowPlayingTabQueue => 'Đang phát';
 
   @override
@@ -1582,4 +1579,134 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get historyPlay => 'Phát';
+
+  @override
+  String get favoritesRemove => 'Bỏ khỏi yêu thích';
+
+  @override
+  String get favoritesAdded => 'Đã thêm vào Yêu thích';
+
+  @override
+  String get favoritesRemoved => 'Đã bỏ khỏi Yêu thích';
+
+  @override
+  String get playlistM3uImport => 'Nhập M3U…';
+
+  @override
+  String get playlistM3uAllFiles => 'Mọi tệp';
+
+  @override
+  String get playlistM3uImporting => 'Đang nhập playlist…';
+
+  @override
+  String playlistM3uImported(int count, String name) {
+    return 'Đã nhập $count bài vào $name';
+  }
+
+  @override
+  String playlistM3uImportedNotInLibrary(int count) {
+    return '$count bài chưa có trong thư viện';
+  }
+
+  @override
+  String get playlistM3uImportReportTitle => 'Đã nhập playlist';
+
+  @override
+  String playlistM3uImportReportSummary(int added, int total) {
+    return 'Đã thêm $added trên $total dòng.';
+  }
+
+  @override
+  String playlistM3uImportReportNotInLibrary(int count) {
+    return '$count bài chưa có trong thư viện: sẽ hiện khi thêm thư mục chứa chúng.';
+  }
+
+  @override
+  String playlistM3uImportReportDuplicates(int count) {
+    return 'Đã gộp $count dòng trùng.';
+  }
+
+  @override
+  String playlistM3uImportReportUnresolved(int count) {
+    return '$count dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:';
+  }
+
+  @override
+  String playlistM3uImportReportTruncated(int limit) {
+    return 'Chỉ đọc $limit bài đầu tiên.';
+  }
+
+  @override
+  String playlistM3uImportReportLine(int line, String text) {
+    return 'Dòng $line: $text';
+  }
+
+  @override
+  String playlistM3uImportReportMore(int count) {
+    return 'và $count dòng khác';
+  }
+
+  @override
+  String get playlistM3uImportNothingFound =>
+      'Không tìm thấy tệp nhạc cục bộ nào của playlist này. Chưa nhập gì.';
+
+  @override
+  String get playlistM3uImportTooLarge => 'Tệp này quá lớn để là một playlist.';
+
+  @override
+  String get playlistM3uImportFailed =>
+      'Không đọc được tệp playlist. Xem log để biết chi tiết.';
+
+  @override
+  String get playlistM3uExportAbsolute => 'Xuất M3U (đường dẫn đầy đủ)…';
+
+  @override
+  String get playlistM3uExportRelative => 'Xuất M3U (đường dẫn tương đối)…';
+
+  @override
+  String playlistM3uExported(int count, String file) {
+    return 'Đã lưu $count bài vào $file';
+  }
+
+  @override
+  String playlistM3uExportSkipped(int count) {
+    return 'bỏ $count đường dẫn có ký tự xuống dòng';
+  }
+
+  @override
+  String get playlistM3uExportFailed =>
+      'Không lưu được tệp playlist. Xem log để biết chi tiết.';
+
+  @override
+  String playlistM3uOverwriteTitle(String file) {
+    return 'Thay thế $file?';
+  }
+
+  @override
+  String get playlistM3uOverwriteConfirm => 'Thay thế';
+
+  @override
+  String get queueSaveAsPlaylist => 'Lưu hàng đợi thành playlist';
+
+  @override
+  String queueSaveDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Hàng đợi $dateString';
+  }
+
+  @override
+  String queueSaved(int count, String name) {
+    return 'Đã lưu $count bài vào $name';
+  }
+
+  @override
+  String queueSavedSkipped(int count, int skipped, String name) {
+    return 'Đã lưu $count bài vào $name, bỏ $skipped bài (không có trong thư viện hoặc trùng)';
+  }
+
+  @override
+  String get queueSaveNothing =>
+      'Không bài nào trong hàng đợi có trong thư viện';
 }

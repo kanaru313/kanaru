@@ -23,3 +23,10 @@ class ShowAlbumChoice extends TrackMenuChoice {
 class ShowInFileManagerChoice extends TrackMenuChoice {
   const ShowInFileManagerChoice();
 }
+
+/// Puts the song in Favorites ([favorite] true) or takes it out.
+class FavoriteChoice extends TrackMenuChoice {
+  const FavoriteChoice({required this.favorite});
+
+  final bool favorite;
+}

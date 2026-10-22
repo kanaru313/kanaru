@@ -10,6 +10,7 @@ import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
+import 'm3u_import_flow.dart';
 import 'playlist_page_data.dart';
 import 'playlist_routes.dart';
 import 'playlist_screen_states.dart';
@@ -17,8 +18,8 @@ import 'playlists_grid.dart';
 
 final _log = Logger('playlists');
 
-/// `/playlists`: every playlist as a card, newest first, and a button to
-/// create one (which then opens it).
+/// `/playlists`: every playlist as a card, newest first, a button to create
+/// one (which then opens it) and one to import an M3U file.
 class PlaylistsScreen extends ConsumerWidget {
   const PlaylistsScreen({super.key});
 
@@ -55,7 +56,10 @@ class PlaylistsScreen extends ConsumerWidget {
 
     return PageScaffold(
       title: l10n.sidebarPlaylists,
-      actions: [_NewPlaylistButton(onPressed: () => _create(ref, context))],
+      actions: [
+        const _ImportM3uButton(),
+        _NewPlaylistButton(onPressed: () => _create(ref, context)),
+      ],
       body: ref
           .watch(playlistCardsProvider)
           .when(
@@ -100,6 +104,46 @@ class _NewPlaylistButton extends StatelessWidget {
     return FilledButton.tonalIcon(
       onPressed: onPressed,
       icon: const Icon(AppIcons.add),
+      label: Text(label),
+    );
+  }
+}
+
+/// The page's "Import M3U…" button; icon only on a narrow header. Disabled
+/// while an import runs.
+class _ImportM3uButton extends ConsumerStatefulWidget {
+  const _ImportM3uButton();
+
+  @override
+  ConsumerState<_ImportM3uButton> createState() => _ImportM3uButtonState();
+}
+
+class _ImportM3uButtonState extends ConsumerState<_ImportM3uButton> {
+  bool _busy = false;
+
+  Future<void> _import() async {
+    setState(() => _busy = true);
+    try {
+      await importM3uInteractively(ref, context);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = context.l10n.playlistM3uImport;
+    final onPressed = _busy ? null : _import;
+    if (PageScaffold.compactActionsOf(context)) {
+      return IconButton(
+        onPressed: onPressed,
+        icon: const Icon(AppIcons.importPlaylist),
+        tooltip: label,
+      );
+    }
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(AppIcons.importPlaylist),
       label: Text(label),
     );
   }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
+import 'playlist_favorites.dart';
 
 /// Playlist writes. Each one is a single transaction, so positions stay
 /// `0..n-1` and watchers see the final state only.
@@ -24,18 +25,19 @@ extension PlaylistWrites on LibraryDatabase {
     });
   }
 
-  /// Renames playlist [id]; does nothing when it is gone. An empty name
-  /// throws [ArgumentError].
+  /// Renames playlist [id]; does nothing when it is gone or is the Favorites
+  /// playlist, which is never renamed. An empty name throws [ArgumentError].
   Future<void> renamePlaylist(int id, String name) async {
     final trimmed = _validName(name);
-    await (update(playlists)..where((p) => p.id.equals(id))).write(
+    await (update(playlists)..where((p) => _userNamed(p, id))).write(
       PlaylistsCompanion(name: Value(trimmed)),
     );
   }
 
-  /// Deletes playlist [id]; its entries go with it (cascade).
+  /// Deletes playlist [id]; its entries go with it (cascade). Never deletes
+  /// the Favorites playlist (a no-op, like a playlist that is gone).
   Future<void> deletePlaylist(int id) =>
-      (delete(playlists)..where((p) => p.id.equals(id))).go();
+      (delete(playlists)..where((p) => _userNamed(p, id))).go();
 
   /// Appends to playlist [id] the paths of [paths] it does not hold yet, in
   /// order, first occurrence only, and returns how many were added and how
@@ -162,6 +164,11 @@ WHERE e.id = r.id AND e.position != r.rn''',
     });
   }
 }
+
+/// Playlist [id] unless it is Favorites. `isNotValue` is SQL `IS NOT`, true
+/// for the NULL kind of an ordinary playlist.
+Expression<bool> _userNamed($PlaylistsTable p, int id) =>
+    p.id.equals(id) & p.kind.isNotValue(favoritesKind);
 
 String _validName(String name) {
   final trimmed = name.trim();

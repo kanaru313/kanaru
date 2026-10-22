@@ -2,38 +2,45 @@ import 'package:drift/drift.dart';
 
 import 'library_database.dart';
 import 'playlist_cover_keys.dart';
+import 'playlist_favorites.dart';
 import 'playlist_rows.dart';
 
 export 'playlist_writes.dart';
 
 const _summarySql = '''
-SELECT p.id, p.name, p.created_at,
+SELECT p.id, p.name, p.created_at, p.kind,
   (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n
 FROM playlists p''';
+
+/// Lists leave out the Favorites playlist: it has its own page and nav entry.
+/// `IS NOT` keeps ordinary playlists, whose kind is NULL (`!=` would drop
+/// them), and any other kind (invariant 8).
+const _listed = " WHERE p.kind IS NOT '$favoritesKind'";
 
 const _newestFirst = ' ORDER BY p.created_at DESC, p.id DESC';
 
 /// Playlist reads. Writes are in `playlist_writes.dart`.
 extension PlaylistQueries on LibraryDatabase {
-  /// Every playlist, newest first, with its entry count. Re-queries on writes
+  /// Every playlist but Favorites, newest first, with its entry count. Re-queries on writes
   /// to `playlists` and `playlist_entries` only, never on scans, and emits
   /// only when the result changed (a reorder does not change it).
   Stream<List<PlaylistSummary>> watchPlaylistSummaries() => customSelect(
-    _summarySql + _newestFirst,
+    _summarySql + _listed + _newestFirst,
     readsFrom: {playlists, playlistEntries},
   ).map(_summary).watch().distinct(samePlaylistSummaries);
 
-  /// One playlist with its count, or null when it does not exist.
+  /// One playlist with its count, or null when it does not exist. Favorites
+  /// included (see [PlaylistSummary.isFavorites]).
   Future<PlaylistSummary?> playlistSummary(int id) => customSelect(
     '$_summarySql WHERE p.id = ?1',
     variables: [Variable.withInt(id)],
     readsFrom: {playlists, playlistEntries},
   ).map(_summary).getSingleOrNull();
 
-  /// Summaries with their collage keys. Reads `tracks`, so callers wrap it
+  /// Summaries with their collage keys, Favorites left out. Reads `tracks`, so callers wrap it
   /// in `throttledTracksQuery`.
   Future<List<PlaylistCard>> playlistCards() => transaction(() async {
-    final summaries = await customSelect(_summarySql + _newestFirst)
+    final summaries = await customSelect(_summarySql + _listed + _newestFirst)
         .map(_summary)
         .get();
     return [
@@ -86,6 +93,7 @@ PlaylistSummary _summary(QueryRow row) => PlaylistSummary(
   name: row.read<String>('name'),
   createdAt: row.read<int>('created_at'),
   entryCount: row.read<int>('n'),
+  isFavorites: row.readNullable<String>('kind') == favoritesKind,
 );
 
 PlaylistEntryRow _entry(QueryRow row) {

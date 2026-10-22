@@ -225,7 +225,6 @@
   "nowPlayingClose": "Đóng màn hình đang phát",
   "nowPlayingFavorite": "Thêm vào yêu thích",
   "nowPlayingAddToPlaylist": "Thêm vào playlist",
-  "nowPlayingComingSoon": "Sắp có",
   "nowPlayingTabQueue": "Đang phát",
   "nowPlayingTabTrack": "Bài hát",
   "nowPlayingBackToTrack": "Quay lại bài hát",
@@ -541,5 +540,112 @@
   "historyTrackNotFound": "Không tìm thấy bài hát",
   "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
   "historyPlay": "Phát",
-  "@historyPlay": { "description": "Button on the song history page that plays the song" }
+  "@historyPlay": { "description": "Button on the song history page that plays the song" },
+  "favoritesRemove": "Bỏ khỏi yêu thích",
+  "@favoritesRemove": { "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites" },
+  "favoritesAdded": "Đã thêm vào Yêu thích",
+  "@favoritesAdded": { "description": "Snackbar after liking a song from its menu" },
+  "favoritesRemoved": "Đã bỏ khỏi Yêu thích",
+  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" },
+  "playlistM3uImport": "Nhập M3U…",
+  "@playlistM3uImport": { "description": "Button on the playlists page that imports an M3U playlist file" },
+  "playlistM3uAllFiles": "Mọi tệp",
+  "@playlistM3uAllFiles": { "description": "File type filter of the M3U file picker that shows every file" },
+  "playlistM3uImporting": "Đang nhập playlist…",
+  "@playlistM3uImporting": { "description": "Progress dialog while an M3U file is imported" },
+  "playlistM3uImported": "Đã nhập {count} bài vào {name}",
+  "@playlistM3uImported": {
+    "description": "Snackbar after a clean M3U import",
+    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+  },
+  "playlistM3uImportedNotInLibrary": "{count} bài chưa có trong thư viện",
+  "@playlistM3uImportedNotInLibrary": {
+    "description": "Added after the import snackbar when some imported files are not library songs yet",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportTitle": "Đã nhập playlist",
+  "@playlistM3uImportReportTitle": { "description": "Title of the dialog that reports an M3U import" },
+  "playlistM3uImportReportSummary": "Đã thêm {added} trên {total} dòng.",
+  "@playlistM3uImportReportSummary": {
+    "description": "First line of the M3U import report",
+    "placeholders": { "added": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "playlistM3uImportReportNotInLibrary": "{count} bài chưa có trong thư viện: sẽ hiện khi thêm thư mục chứa chúng.",
+  "@playlistM3uImportReportNotInLibrary": {
+    "description": "M3U import report: files that exist but are not library songs",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportDuplicates": "Đã gộp {count} dòng trùng.",
+  "@playlistM3uImportReportDuplicates": {
+    "description": "M3U import report: lines naming a file already imported",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportUnresolved": "{count} dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:",
+  "@playlistM3uImportReportUnresolved": {
+    "description": "M3U import report: heading of the lines that could not be used",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportTruncated": "Chỉ đọc {limit} bài đầu tiên.",
+  "@playlistM3uImportReportTruncated": {
+    "description": "M3U import report: the file had more lines than the limit",
+    "placeholders": { "limit": { "type": "int" } }
+  },
+  "playlistM3uImportReportLine": "Dòng {line}: {text}",
+  "@playlistM3uImportReportLine": {
+    "description": "M3U import report: one unused line with its line number",
+    "placeholders": { "line": { "type": "int" }, "text": { "type": "String" } }
+  },
+  "playlistM3uImportReportMore": "và {count} dòng khác",
+  "@playlistM3uImportReportMore": {
+    "description": "M3U import report: unused lines not listed",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportNothingFound": "Không tìm thấy tệp nhạc cục bộ nào của playlist này. Chưa nhập gì.",
+  "@playlistM3uImportNothingFound": { "description": "M3U import report when no line could be used" },
+  "playlistM3uImportTooLarge": "Tệp này quá lớn để là một playlist.",
+  "@playlistM3uImportTooLarge": { "description": "Snackbar when the picked M3U file is over the size limit" },
+  "playlistM3uImportFailed": "Không đọc được tệp playlist. Xem log để biết chi tiết.",
+  "@playlistM3uImportFailed": { "description": "Snackbar when the picked M3U file cannot be read" },
+  "playlistM3uExportAbsolute": "Xuất M3U (đường dẫn đầy đủ)…",
+  "@playlistM3uExportAbsolute": { "description": "Playlist menu item: save as M3U with absolute paths" },
+  "playlistM3uExportRelative": "Xuất M3U (đường dẫn tương đối)…",
+  "@playlistM3uExportRelative": { "description": "Playlist menu item: save as M3U with paths relative to the file" },
+  "playlistM3uExported": "Đã lưu {count} bài vào {file}",
+  "@playlistM3uExported": {
+    "description": "Snackbar after exporting a playlist",
+    "placeholders": { "count": { "type": "int" }, "file": { "type": "String" } }
+  },
+  "playlistM3uExportSkipped": "bỏ {count} đường dẫn có ký tự xuống dòng",
+  "@playlistM3uExportSkipped": {
+    "description": "Added to the export snackbar when some paths cannot be written as M3U lines",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uExportFailed": "Không lưu được tệp playlist. Xem log để biết chi tiết.",
+  "@playlistM3uExportFailed": { "description": "Snackbar when writing the M3U file failed" },
+  "playlistM3uOverwriteTitle": "Thay thế {file}?",
+  "@playlistM3uOverwriteTitle": {
+    "description": "Title of the dialog asking before overwriting an existing file",
+    "placeholders": { "file": { "type": "String" } }
+  },
+  "playlistM3uOverwriteConfirm": "Thay thế",
+  "@playlistM3uOverwriteConfirm": { "description": "Button that overwrites the existing file" },
+  "queueSaveAsPlaylist": "Lưu hàng đợi thành playlist",
+  "@queueSaveAsPlaylist": { "description": "Tooltip of the queue panel button that saves the queue as a new playlist" },
+  "queueSaveDefaultName": "Hàng đợi {date}",
+  "@queueSaveDefaultName": {
+    "description": "Default name of a playlist saved from the queue",
+    "placeholders": { "date": { "type": "DateTime", "format": "yMMMd" } }
+  },
+  "queueSaved": "Đã lưu {count} bài vào {name}",
+  "@queueSaved": {
+    "description": "Snackbar after saving the queue as a playlist",
+    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+  },
+  "queueSavedSkipped": "Đã lưu {count} bài vào {name}, bỏ {skipped} bài (không có trong thư viện hoặc trùng)",
+  "@queueSavedSkipped": {
+    "description": "Snackbar after saving the queue when some queue songs were not saved",
+    "placeholders": { "count": { "type": "int" }, "skipped": { "type": "int" }, "name": { "type": "String" } }
+  },
+  "queueSaveNothing": "Không bài nào trong hàng đợi có trong thư viện",
+  "@queueSaveNothing": { "description": "Snackbar when no queue song can be saved in a playlist" }
 }
