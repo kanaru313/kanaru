@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/cover_progress_indicator.dart';
 import '../../../shared/widgets/scan_progress.dart';
 
@@ -52,7 +53,7 @@ class LibraryRescanButton extends ConsumerWidget {
             tooltip: l10n.libraryRescan,
             onPressed: () =>
                 unawaited(ref.read(libraryIndexerProvider.notifier).scan()),
-            child: const Icon(Icons.refresh),
+            child: const Icon(AppIcons.refresh),
           );
         }
         return FloatingActionButton(

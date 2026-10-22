@@ -5,6 +5,7 @@ import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/format_duration.dart';
+import '../../../shared/icons/app_icons.dart';
 
 /// Fixed row height, which lets the list place and jump to rows without
 /// measuring them.
@@ -46,7 +47,7 @@ class QueueTile extends ConsumerWidget {
     if (current) {
       final playing = ref.watch(playerServiceProvider.select((s) => s.playing));
       leading = Icon(
-        playing ? Icons.graphic_eq_rounded : Icons.music_note_rounded,
+        playing ? AppIcons.equalizerRounded : AppIcons.musicNoteRounded,
         color: colors.primary,
       );
     } else {
@@ -92,7 +93,7 @@ class QueueTile extends ConsumerWidget {
                         message: l10n.queueReorder,
                         child: const Padding(
                           padding: EdgeInsets.all(8),
-                          child: Icon(Icons.drag_handle_rounded, size: 20),
+                          child: Icon(AppIcons.dragHandle, size: 20),
                         ),
                       ),
                     ),
@@ -136,7 +137,7 @@ class QueueTile extends ConsumerWidget {
                       ),
                     ),
                   IconButton(
-                    icon: const Icon(Icons.delete_rounded),
+                    icon: const Icon(AppIcons.deleteRounded),
                     iconSize: 20,
                     tooltip: l10n.queueRemove,
                     onPressed: () => player.removeTrack(position),

@@ -5,6 +5,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/database/playlist_providers.dart';
 import '../../../features/playlists/playlist_routes.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../navigation_history.dart';
 import 'sidebar_item.dart';
@@ -117,14 +118,14 @@ class _SidebarPlaylistsSectionState
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(AppIcons.add, size: 18),
                 tooltip: l10n.sidebarNewPlaylist,
                 visualDensity: VisualDensity.compact,
                 onPressed: onCreate,
               ),
               IconButton(
                 icon: Icon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  _expanded ? AppIcons.expandLess : AppIcons.expandMore,
                   size: 18,
                 ),
                 tooltip: _expanded ? l10n.sidebarCollapse : l10n.sidebarExpand,
@@ -146,8 +147,8 @@ class _SidebarPlaylistsSectionState
           for (final playlist in playlists)
             SidebarItem(
               key: ValueKey(playlist.id),
-              icon: Icons.queue_music_outlined,
-              selectedIcon: Icons.queue_music,
+              icon: AppIcons.playlistOutlined,
+              selectedIcon: AppIcons.playlist,
               label: playlist.name,
               selected: currentId == playlist.id,
               onTap: () => widget.onOpenLocation(playlistLocation(playlist.id)),

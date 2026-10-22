@@ -8,6 +8,7 @@ import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
 import '../../core/database/search_terms.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_keys_updating.dart';
 import '../../shared/widgets/library_loading.dart';
@@ -53,7 +54,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       return PageScaffold(
         title: l10n.navSearch,
         body: EmptyState(
-          icon: Icons.search,
+          icon: AppIcons.search,
           title: l10n.searchEmptyTitle,
           message: l10n.searchEmptyMessage,
         ),
@@ -70,14 +71,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final l10n = context.l10n;
     if (ref.watch(libraryDatabaseProvider) == null) {
       return EmptyState(
-        icon: Icons.error_outline,
+        icon: AppIcons.errorOutline,
         title: l10n.libraryUnavailableTitle,
         message: l10n.libraryUnavailableMessage,
       );
     }
     if (!ref.watch(libraryHasRootsProvider)) {
       return EmptyState(
-        icon: Icons.music_note_outlined,
+        icon: AppIcons.musicNoteOutlined,
         title: l10n.libraryEmptyTitle,
         message: l10n.libraryEmptyMessage,
       );
@@ -101,7 +102,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     // failure of this query is shown as such.
     if (fresh == null && async.hasError) {
       return EmptyState(
-        icon: Icons.error_outline,
+        icon: AppIcons.errorOutline,
         title: l10n.searchFailedTitle,
         message: l10n.libraryUnexpectedError,
       );
@@ -116,7 +117,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         return const LibraryLoading();
       }
       return EmptyState(
-        icon: Icons.search_off,
+        icon: AppIcons.searchOff,
         title: l10n.searchNoResultsTitle,
         message: l10n.searchNoResultsMessage(shown.query),
       );

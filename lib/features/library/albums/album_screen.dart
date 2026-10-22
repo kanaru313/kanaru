@@ -7,6 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_detail_body.dart';
@@ -143,7 +144,7 @@ class _AlbumNotFound extends StatelessWidget {
     return PageScaffold(
       title: l10n.navAlbums,
       body: EmptyState(
-        icon: Icons.album_outlined,
+        icon: AppIcons.albumOutlined,
         title: l10n.albumsNotFound,
         message: l10n.albumsNotFoundMessage,
       ),

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
@@ -76,7 +77,7 @@ class PlaylistHeader extends StatelessWidget {
                       children: [
                         FilledButton.icon(
                           onPressed: onPlay,
-                          icon: const Icon(Icons.play_arrow),
+                          icon: const Icon(AppIcons.play),
                           label: Text(l10n.albumsPlay),
                         ),
                         if (queueAction != null)
@@ -84,7 +85,7 @@ class PlaylistHeader extends StatelessWidget {
                         PopupMenuButton<_PlaylistAction>(
                           tooltip: l10n.playlistActions,
                           // Not the kebab of the queue menu beside it.
-                          icon: const Icon(Icons.edit_outlined),
+                          icon: const Icon(AppIcons.edit),
                           onSelected: (action) => switch (action) {
                             _PlaylistAction.rename => onRename(),
                             _PlaylistAction.delete => onDelete(),

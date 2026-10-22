@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/playlist_rows.dart';
 import '../../../l10n/l10n.dart';
+import '../../icons/app_icons.dart';
 
 /// The rows of the "add to playlist" picker: a "New playlist…" row, then
 /// one row per playlist in the order given. The caller bounds its height.
@@ -24,7 +25,7 @@ class PlaylistPickerView extends StatelessWidget {
     return ListView(
       children: [
         ListTile(
-          leading: const Icon(Icons.add),
+          leading: const Icon(AppIcons.add),
           title: Text(l10n.playlistPickerNew),
           onTap: onCreate,
         ),
@@ -40,7 +41,7 @@ class PlaylistPickerView extends StatelessWidget {
           ),
         for (final playlist in playlists)
           ListTile(
-            leading: const Icon(Icons.queue_music),
+            leading: const Icon(AppIcons.playlist),
             title: Text(
               playlist.name,
               maxLines: 1,

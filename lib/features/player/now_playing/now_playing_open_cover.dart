@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import 'now_playing_open_provider.dart';
 
 /// Makes [child], the cover on the player bar, open Now Playing. Hovering
@@ -65,7 +66,7 @@ class _NowPlayingOpenCoverState extends ConsumerState<NowPlayingOpenCover> {
                         scale: _hovered ? 1 : 0.6,
                         duration: _duration,
                         child: const Icon(
-                          Icons.open_in_full,
+                          AppIcons.openFull,
                           size: 30,
                           color: Colors.white,
                         ),

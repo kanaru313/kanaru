@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/page_scaffold.dart';
 
@@ -14,7 +15,7 @@ class PlaylistsUnavailable extends StatelessWidget {
     return PageScaffold(
       title: l10n.sidebarPlaylists,
       body: EmptyState(
-        icon: Icons.error_outline,
+        icon: AppIcons.errorOutline,
         title: l10n.libraryUnavailableTitle,
         message: l10n.libraryUnavailableMessage,
       ),
@@ -32,7 +33,7 @@ class PlaylistNotFound extends StatelessWidget {
     return PageScaffold(
       title: l10n.sidebarPlaylists,
       body: EmptyState(
-        icon: Icons.queue_music,
+        icon: AppIcons.playlist,
         title: l10n.playlistNotFound,
         message: l10n.playlistNotFoundMessage,
       ),

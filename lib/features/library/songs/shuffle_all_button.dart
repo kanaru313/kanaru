@@ -9,6 +9,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/play_tracks.dart';
@@ -95,12 +96,12 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
     if (PageScaffold.compactActionsOf(context)) {
       return IconButton(
         tooltip: l10n.songsShuffleAll,
-        icon: const Icon(Icons.shuffle_rounded),
+        icon: const Icon(AppIcons.shuffle),
         onPressed: onPressed,
       );
     }
     return TextButton.icon(
-      icon: const Icon(Icons.shuffle_rounded),
+      icon: const Icon(AppIcons.shuffle),
       label: Text(l10n.songsShuffleAll),
       onPressed: onPressed,
     );

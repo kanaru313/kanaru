@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/empty_state.dart';
 
 /// What the songs page shows when there is nothing to list.
@@ -29,22 +30,22 @@ class SongsEmptyView extends StatelessWidget {
 
     return switch (kind) {
       SongsEmptyKind.unavailable => EmptyState(
-        icon: Icons.error_outline,
+        icon: AppIcons.errorOutline,
         title: l10n.libraryUnavailableTitle,
         message: l10n.libraryUnavailableMessage,
       ),
       SongsEmptyKind.noTracks => EmptyState(
-        icon: Icons.music_off_outlined,
+        icon: AppIcons.musicOff,
         title: l10n.libraryNoTracksTitle,
         message: l10n.libraryNoTracksMessage,
       ),
       SongsEmptyKind.noRoots => EmptyState(
-        icon: Icons.music_note_outlined,
+        icon: AppIcons.musicNoteOutlined,
         title: l10n.libraryEmptyTitle,
         message: l10n.libraryEmptyMessage,
         action: FilledButton.icon(
           onPressed: onChooseFolder,
-          icon: const Icon(Icons.folder_open_outlined),
+          icon: const Icon(AppIcons.folderOpen),
           label: Text(l10n.libraryChooseFolder),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// How a finished scan went, which picks the icon and title.
 enum _Outcome { done, warning, failed }
@@ -118,9 +119,9 @@ class _ScanResultContent extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final (icon, iconColor) = switch (outcome) {
-      _Outcome.done => (Icons.check_circle_rounded, colors.primary),
-      _Outcome.warning => (Icons.warning_amber_rounded, colors.tertiary),
-      _Outcome.failed => (Icons.error_rounded, colors.error),
+      _Outcome.done => (AppIcons.success, colors.primary),
+      _Outcome.warning => (AppIcons.warningRounded, colors.tertiary),
+      _Outcome.failed => (AppIcons.errorRounded, colors.error),
     };
 
     return Row(

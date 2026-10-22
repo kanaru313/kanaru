@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/logging/app_logging.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'open_external.dart';
 import 'settings_section.dart';
 
@@ -30,7 +31,7 @@ class AboutSettingsSection extends ConsumerWidget {
         ListTile(
           title: Text(l10n.settingsSourceCode),
           subtitle: const Text(_repositoryUrl),
-          trailing: const Icon(Icons.open_in_new),
+          trailing: const Icon(AppIcons.openExternal),
           onTap: () async {
             final messenger = ScaffoldMessenger.of(context);
             if (await ref.read(openExternalProvider)(_repositoryUrl)) return;

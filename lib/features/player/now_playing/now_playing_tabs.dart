@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../queue/queue_button.dart';
 import 'now_playing_actions.dart';
 import 'now_playing_compact_page.dart';
@@ -84,7 +85,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                           // On the queue page the same spot leads back.
                           if (_page == _Tab.queue.index)
                             IconButton(
-                              icon: const Icon(Icons.arrow_back_rounded),
+                              icon: const Icon(AppIcons.back),
                               tooltip: l10n.nowPlayingBackToTrack,
                               onPressed: () => _select(_Tab.track),
                             )

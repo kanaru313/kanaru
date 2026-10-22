@@ -10,6 +10,7 @@ import '../../../core/indexer/root_path.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/directory_picker_provider.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/root_rejection_message.dart';
 import 'onboarding_folder_list.dart';
 import 'suggested_music_folder_provider.dart';
@@ -149,7 +150,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Icon(
-                  Icons.library_music_outlined,
+                  AppIcons.library,
                   size: 64,
                   color: theme.colorScheme.primary,
                 ),
@@ -183,7 +184,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: _busy || _picking ? null : _addFolder,
-                    icon: const Icon(Icons.create_new_folder_outlined),
+                    icon: const Icon(AppIcons.addFolder),
                     label: Text(l10n.onboardingAddFolder),
                   ),
                 ),

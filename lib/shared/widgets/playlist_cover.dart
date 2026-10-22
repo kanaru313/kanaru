@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
+import '../icons/app_icons.dart';
 import 'cover_art.dart';
 import 'placeholder_colors.dart';
 
@@ -47,7 +48,7 @@ class PlaylistCover extends ConsumerWidget {
         radius: radius,
         placeholder: ColoredBox(
           color: background,
-          child: Icon(Icons.queue_music, size: size * 0.4, color: foreground),
+          child: Icon(AppIcons.playlist, size: size * 0.4, color: foreground),
         ),
       );
     }

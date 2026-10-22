@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 
 enum _FolderAction { change, remove }
 
@@ -39,9 +40,7 @@ class LibraryFolderRow extends StatelessWidget {
         : theme.textTheme.bodyLarge;
 
     return ListTile(
-      leading: Icon(
-        missing ? Icons.folder_off_outlined : Icons.folder_outlined,
-      ),
+      leading: Icon(missing ? AppIcons.folderOff : AppIcons.folderOutlined),
       title: Tooltip(
         message: path,
         child: Text(
@@ -54,7 +53,7 @@ class LibraryFolderRow extends StatelessWidget {
       subtitle: missing ? Text(l10n.settingsFolderMissing) : null,
       trailing: missing
           ? IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: const Icon(AppIcons.deleteOutline),
               tooltip: l10n.settingsRemoveFolder,
               onPressed: enabled ? onRemove : null,
             )

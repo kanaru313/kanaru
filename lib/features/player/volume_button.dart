@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'playback_controls.dart';
 
 /// Volume step for one scroll notch.
@@ -86,10 +87,10 @@ class _VolumeButtonState extends ConsumerState<VolumeButton> {
       playerServiceProvider.select((s) => (s.volume, s.muted)),
     );
     final icon = muted || volume == 0
-        ? Icons.volume_off_rounded
+        ? AppIcons.volumeOffRounded
         : volume < 50
-        ? Icons.volume_down_rounded
-        : Icons.volume_up_rounded;
+        ? AppIcons.volumeDown
+        : AppIcons.volumeUp;
 
     return CompositedTransformTarget(
       link: _link,

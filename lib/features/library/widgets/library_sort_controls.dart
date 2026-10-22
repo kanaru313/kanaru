@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/settings/library_sort.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 
 /// Sort controls of a library screen, for the page title row:
@@ -118,7 +119,7 @@ class _SortMenuState<T> extends State<_SortMenu<T>> {
                 const SizedBox(width: 4),
               ],
               Text(widget.options[widget.selected] ?? ''),
-              const Icon(Icons.expand_more, size: 18),
+              const Icon(AppIcons.expandMore, size: 18),
             ],
           ),
         ),

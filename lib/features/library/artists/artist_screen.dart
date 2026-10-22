@@ -8,6 +8,7 @@ import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/artist_avatar.dart';
@@ -110,7 +111,7 @@ class _ArtistPage extends ConsumerWidget {
                         children: [
                           FilledButton.icon(
                             onPressed: () => playTracks(ref, queue(), 0),
-                            icon: const Icon(Icons.play_arrow),
+                            icon: const Icon(AppIcons.play),
                             label: Text(l10n.artistsPlay),
                           ),
                           const SizedBox(width: 4),
@@ -185,7 +186,7 @@ class _ArtistNotFound extends StatelessWidget {
     return PageScaffold(
       title: l10n.navArtists,
       body: EmptyState(
-        icon: Icons.person_outline,
+        icon: AppIcons.artistOutline,
         title: l10n.artistsNotFound,
         message: l10n.artistsNotFoundMessage,
       ),

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 import 'queue_sheet_host.dart';
 
@@ -26,7 +27,7 @@ class QueueButton extends ConsumerWidget {
       isLabelVisible: count > 0,
       label: Text(count > _badgeMax ? '$_badgeMax+' : '$count'),
       child: IconButton(
-        icon: const Icon(Icons.queue_music_rounded),
+        icon: const Icon(AppIcons.queue),
         iconSize: playerIconSize,
         tooltip: context.l10n.queueOpen,
         onPressed: count == 0

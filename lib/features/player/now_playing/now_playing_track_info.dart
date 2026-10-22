@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/track.dart';
+import '../../../shared/icons/app_icons.dart';
 import 'now_playing_artwork.dart';
 
 /// Large cover of the playing track, then [track]'s title and artist,
@@ -81,7 +82,7 @@ class NowPlayingTitle extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
               children: [
-                const Icon(Icons.person_rounded, size: 20),
+                const Icon(AppIcons.artistRounded, size: 20),
                 Flexible(
                   child: Text(
                     artist,
