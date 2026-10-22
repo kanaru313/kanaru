@@ -105,6 +105,8 @@
   "libraryScanFailedTags": "{count, plural, other{{count} file không đọc được tag}}",
   "libraryScanUndecodableNames": "{count, plural, other{Đã bỏ qua {count} file hoặc thư mục: tên không phải UTF-8 hợp lệ}}",
   "libraryScanRootMissing": "Không tìm thấy {path}",
+  "libraryMissingRoots": "{count, plural, =1{Không tìm thấy thư mục nhạc: {path}} other{{count} thư mục nhạc không còn tồn tại}}",
+  "libraryMissingRootsAction": "Cài đặt",
   "libraryScanRootEmpty": "{path} đang trống, giữ nguyên thư viện",
   "libraryScanRootTimedOut": "{path} mất quá nhiều thời gian nên đã dừng. Nếu thư mục vẫn đang được đọc, việc quét sẽ tự hoàn tất khi đọc xong",
   "libraryScanRootReaderStuck": "Chưa đọc {path}: một lần đọc trước đó vẫn đang chạy. Kanaru sẽ tự thử lại khi lần đọc đó xong; nếu nó không bao giờ xong, hãy khởi động lại Kanaru",

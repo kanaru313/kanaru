@@ -26,9 +26,9 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | Path | Files / lines | Purpose |
 |---|---|---|
 | `lib/main.dart` | 1 / 85 | Startup sequence, provider overrides |
-| `lib/app/` | 19 / 1,909 | Shell, router, theme, window integration, navigation history |
-| `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart` (incl. the rescan button, `features/library/widgets/library_rescan_button.dart`), `top_bar_search_field.dart` (live search), `navigation_history.dart`, `app_destination.dart`, `sidebar/` (incl. `sidebar_playlists_section.dart`, `sidebar_playlists_rail.dart`), `window/` |
-| `lib/core/database/` | 37 / 13,804 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, library counts (`library_stats_queries.dart`), folder queries (`folder_queries.dart`: directory counts and subtree reads), genre queries and name splitting (`genre_queries.dart`, `genre_names.dart`), text keys, key backfill, v4 and v5 migrations, user-data tables (`user_data_tables.dart`: `plays`, `play_stats`, `playlists`, `playlist_entries`; triggers in `listen_history.drift`), FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries, playlist queries, writes, row models and cover keys (`playlist_*.dart`) |
+| `lib/app/` | 20 / 2,021 | Shell, router, theme, window integration, navigation history |
+| `lib/app/shell/` | | `app_shell.dart` (layout), `top_bar.dart` (incl. the rescan button, `features/library/widgets/library_rescan_button.dart`), `top_bar_search_field.dart` (live search), `missing_roots_notice.dart` (startup warning about missing music folders), `navigation_history.dart`, `app_destination.dart`, `sidebar/` (incl. `sidebar_playlists_section.dart`, `sidebar_playlists_rail.dart`), `window/` |
+| `lib/core/database/` | 37 / 13,813 (incl. generated) | drift `LibraryDatabase`, tables, browse/paging queries, library counts (`library_stats_queries.dart`), folder queries (`folder_queries.dart`: directory counts and subtree reads), genre queries and name splitting (`genre_queries.dart`, `genre_names.dart`), text keys, key backfill, v4 and v5 migrations, user-data tables (`user_data_tables.dart`: `plays`, `play_stats`, `playlists`, `playlist_entries`; triggers in `listen_history.drift`), FTS5 search (`library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`), library root queries, playlist queries, writes, row models and cover keys (`playlist_*.dart`) |
 | `lib/core/indexer/` | 16 / 1,614 | Folder walk, tag reading via Rust, diff, scan orchestration, covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
@@ -54,7 +54,7 @@ Key files by area:
 | Session restore | `core/player/session/playback_session_file.dart`, `playback_session_saver.dart`, `playback_session_codec.dart` |
 | Indexing | `core/indexer/library_indexer.dart`, `walk_audio_files.dart`, `scan_diff.dart`, `tracks_from_tags.dart`, `rust_tag_reader.dart` |
 | Playlists | `core/database/playlist_queries.dart`, `playlist_writes.dart`, `playlist_providers.dart`, `playlist_cover_keys.dart`; `shared/widgets/add_to_playlist/add_to_playlist_flow.dart`; `features/playlists/playlist_screen.dart`, `playlist_entries_view.dart`; `app/shell/sidebar/sidebar_playlists_section.dart` |
-| Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_browse_track_links.dart`, `library_browse_now_playing.dart` (album of the playing path), `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
+| Library DB | `core/database/library_database.dart`, `library_tables.dart`, `library_browse_queries.dart`, `library_browse_track_links.dart`, `library_browse_now_playing.dart` (album of the playing path), `library_browse_missing_roots.dart` (roots that are no longer folders), `library_song_paging.dart`, `library_keys_provider.dart`, `throttled_tracks_query.dart` |
 | Search | `core/database/library_search.drift`, `library_search_queries.dart`, `search_terms.dart`, `search_name_index.dart`, `library_migration_v4.dart`; `features/search/search_providers.dart`, `search_screen.dart`; `app/shell/top_bar_search_field.dart`, `navigation_history.dart` |
 | Startup DB | `core/database/library_startup.dart` |
 | Library folders | `core/database/library_root_queries.dart` (watch, count, remove, replace; the settings UI no longer calls replace), `core/indexer/library_roots_controller.dart` (add, remove, replace), `core/indexer/library_startup_tasks.dart` (post-frame rescan), `features/settings/library_folders_list.dart` |
@@ -83,7 +83,7 @@ Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
 
 | Path | Purpose |
 |---|---|
-| `test/` | Dart tests; 170 `*_test.dart` files under `core/`, `features/`, `app/`, `shared/`, `drift/` |
+| `test/` | Dart tests; 203 `*_test.dart` files under `core/`, `features/`, `app/`, `shared/`, `drift/` |
 | `test/drift/library_db/generated/` | **Generated** schema test code for v1–v6 |
 | `drift_schemas/library_db/` | drift schema snapshots `drift_schema_v1..v6.json` (generated by `make-migrations`) |
 | `rust_builder/` | Vendored cargokit glue that builds the Rust crate inside Flutter builds |
@@ -98,10 +98,10 @@ Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
 
 | Module | Files | Lines |
 |---|---|---|
-| `lib/` (excludes `*.g.dart`, `lib/src/rust/`, `lib/l10n/`; includes the two generated files `library_database.steps.dart` and `text_key_tables.dart`) | 240 | 26,692 |
+| `lib/` (excludes `*.g.dart`, `lib/src/rust/`, `lib/l10n/`; includes the two generated files `library_database.steps.dart` and `text_key_tables.dart`) | 289 | 30,663 |
 | `rust/src/` | 10 | 1,751 |
 | `linux/` | 10 | 570 |
-| `test/` (all `.dart`, helpers included) | 192 | 43,536 |
+| `test/` (all `.dart`, helpers included) | 227 | 49,257 |
 
 Largest non-generated Dart files: `core/indexer/library_indexer.dart` (553), `core/database/library_database.dart` (348), `core/player/media_kit_backend.dart` (422), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (1,654, generated).
 

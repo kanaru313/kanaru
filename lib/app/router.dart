@@ -23,6 +23,7 @@ import '../features/settings/settings_screen.dart';
 import '../l10n/l10n.dart';
 import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
+import 'shell/missing_roots_notice.dart';
 
 /// First-run source picker, outside the shell (no sidebar or player bar).
 const _welcomePath = '/welcome';
@@ -51,8 +52,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingScreen(),
       ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            AppShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => MissingRootsNotice(
+          child: AppShell(navigationShell: navigationShell),
+        ),
         branches: [
           for (final destination in AppDestination.values)
             StatefulShellBranch(

@@ -128,6 +128,8 @@ sequenceDiagram
     Note over A: /welcome if DB exists, no roots and not yet onboarded, else /home
     A->>C: after the first frame, runLibraryStartupTasks
     Note over C: marks a library with roots as onboarded, quiet scan if enabled
+    A->>A: after the first frame, the shell checks every root with isDirectory
+    Note over A: once per launch; a snackbar with a Settings action names missing folders
 ```
 
 After `runApp`, `PlayerService.build()` restores the saved queue synchronously and paused (see [section 4](#4-playback)). The library starts with its keys phase in `unknown`, then `updating` or `ready` (see [section 7](#7-library-database-schema)).

@@ -402,6 +402,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String libraryMissingRoots(int count, String path) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count music folders not found',
+      one: 'Music folder not found: $path',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryMissingRootsAction => 'Settings';
+
+  @override
   String libraryScanRootEmpty(String path) {
     return '$path is empty, library kept as it was';
   }

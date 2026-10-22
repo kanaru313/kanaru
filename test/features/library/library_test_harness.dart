@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/core/database/library_browse_missing_roots.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
@@ -34,6 +35,7 @@ class LibraryHarness {
     this.refreshInterval = Duration.zero,
     this.coverCacheDirectory,
     this.interceptor,
+    this.rootIsDirectory,
   }) : reader = reader ?? FakeTagReader();
 
   final bool hasDatabase;
@@ -54,6 +56,10 @@ class LibraryHarness {
   /// Replaces the roots controller (which otherwise counts its additions in
   /// flight for [settleIo]).
   final LibraryRootsController? rootsController;
+
+  /// Answers whether a root is still a folder; roots in tests are made-up
+  /// paths, so by default every one is.
+  final Future<bool> Function(String)? rootIsDirectory;
 
   /// Sees every statement the database runs, when given.
   final QueryInterceptor? interceptor;
@@ -112,6 +118,9 @@ class LibraryHarness {
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
         libraryBrowseRefreshIntervalProvider.overrideWithValue(refreshInterval),
+        rootIsDirectoryProvider.overrideWithValue(
+          rootIsDirectory ?? (_) async => true,
+        ),
         ...overrides,
       ],
     );

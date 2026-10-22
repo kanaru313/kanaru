@@ -680,6 +680,18 @@ abstract class AppLocalizations {
   /// **'{path} was not found'**
   String libraryScanRootMissing(String path);
 
+  /// No description provided for @libraryMissingRoots.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Music folder not found: {path}} other{{count} music folders not found}}'**
+  String libraryMissingRoots(int count, String path);
+
+  /// No description provided for @libraryMissingRootsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get libraryMissingRootsAction;
+
   /// No description provided for @libraryScanRootEmpty.
   ///
   /// In en, this message translates to:

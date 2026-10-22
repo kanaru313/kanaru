@@ -395,6 +395,20 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String libraryMissingRoots(int count, String path) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count thư mục nhạc không còn tồn tại',
+      one: 'Không tìm thấy thư mục nhạc: $path',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryMissingRootsAction => 'Cài đặt';
+
+  @override
   String libraryScanRootEmpty(String path) {
     return '$path đang trống, giữ nguyên thư viện';
   }

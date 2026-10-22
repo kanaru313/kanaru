@@ -63,7 +63,7 @@ Ordered by what blocks a first usable release. IDs are from [features.md](./feat
 | 1 | Playlists: create, rename, delete, add, reorder | PL-01, PL-02 | Done (feat/playlists) on the v5 tables. Open: QUEUE-06 (save the queue as a playlist) reuses `createPlaylist(paths:)`. |
 | 2 | Listen recorder (no UI yet) | STAT-01, STAT-10 | Done (PR #31). P0. History cannot be backfilled, so recording starts before the history UI. Last.fm rule (> 30 s, listened ≥ min(50 %, 4 min)); append-only `plays` rows in the library DB. |
 | 3 | Root removal and folder edits in Settings | IDX-01 (remainder) | Done (feat/library-folders). Add, change and remove in Settings → Library; onboarding only on first run. |
-| 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. |
+| 4 | Startup rescan option | IDX-06 | Done (feat/library-folders). On by default, switch in Settings, quiet unless something changed. A snackbar with a Settings action warns once per launch about missing music folders, whether or not the rescan is on. |
 | 5 | AppImage package | PKG-01 | Done (PR #32). P0. libmpv is bundled by the AppImage recipe. |
 | 6 | CI for `flutter analyze`, `flutter test`, `cargo test --locked` | Phase 0 CI item | Blocks trustworthy releases. Needs a workflow file. |
 | 7 | ReplayGain, folder watching | PLAY-07, IDX-04 | P1, larger changes. ReplayGain (PLAY-07): done (feat/audio-replaygain-output). |

@@ -187,6 +187,14 @@
       "path": { "type": "String" }
     }
   },
+  "libraryMissingRoots": "{count, plural, =1{Music folder not found: {path}} other{{count} music folders not found}}",
+  "@libraryMissingRoots": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "path": { "type": "String" }
+    }
+  },
+  "libraryMissingRootsAction": "Settings",
   "libraryScanRootEmpty": "{path} is empty, library kept as it was",
   "@libraryScanRootEmpty": {
     "placeholders": {
