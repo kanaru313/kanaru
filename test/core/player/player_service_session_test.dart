@@ -380,4 +380,38 @@ void main() {
     await service().pause();
     expect(state().queue.current, a);
   });
+
+  group('flushSession', () {
+    test('writes a volume change before the debounce would', () async {
+      live = launch();
+      await service().openTracks([a, b]);
+      await service().setVolume(35);
+
+      await service().flushSession();
+
+      expect(PlaybackSessionFile(sessionPath).load()?.volume, 35);
+    });
+
+    test('writes the paused position', () async {
+      live = launch();
+      await service().openTracks([a, b, c], start: 1);
+      await service().seek(const Duration(seconds: 70));
+      await service().pause();
+
+      await service().flushSession();
+
+      final saved = PlaybackSessionFile(sessionPath).load();
+      expect(saved?.position, const Duration(seconds: 70));
+    });
+
+    test('without a settings file completes', () async {
+      backend = FakeAudioBackend();
+      live = ProviderContainer(
+        overrides: [audioBackendProvider.overrideWithValue(backend)],
+      );
+      live!.listen(playerServiceProvider, (_, _) {});
+
+      await service().flushSession();
+    });
+  });
 }

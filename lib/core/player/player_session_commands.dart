@@ -75,6 +75,9 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
     );
   }
 
+  /// Writes the latest session now and waits for the disk, for the app's exit.
+  Future<void> flushSession() => _saver?.flush() ?? Future.value();
+
   /// A track loaded: the restored session works, so saving can go on.
   void _sessionTrackLoaded() => _saver?.unfreeze();
 

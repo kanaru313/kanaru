@@ -24,6 +24,38 @@ class _RecordingFile extends PlaybackSessionFile {
   }
 }
 
+/// Saves that stay in flight until the test completes them; [flush] waits
+/// for the pending ones, like the real file.
+class _SlowFile extends PlaybackSessionFile {
+  _SlowFile() : super('/nonexistent/playback-session.json');
+
+  final saves = <PlaybackSession>[];
+  final _pending = <Completer<bool>>[];
+
+  /// Completes every save in flight with [saved].
+  void finish({required bool saved}) {
+    for (final c in _pending) {
+      c.complete(saved);
+    }
+    _pending.clear();
+  }
+
+  @override
+  Future<bool> save(PlaybackSession session) {
+    saves.add(session);
+    final done = Completer<bool>();
+    _pending.add(done);
+    return done.future;
+  }
+
+  @override
+  Future<void> flush() async {
+    for (final c in [..._pending]) {
+      await c.future;
+    }
+  }
+}
+
 /// Timer that only fires when the test says so.
 class _ManualTimer implements Timer {
   _ManualTimer(this.delay, this._callback);
@@ -271,5 +303,70 @@ void main() {
     emit(state.copyWith(volume: 20));
     saver.onSeeked(Duration.zero);
     expect(file.saves, hasLength(1));
+  });
+
+  group('flush', () {
+    test('writes a pending coalesced change without the timer', () async {
+      emit(state.copyWith(volume: 30));
+      expect(file.saves, isEmpty);
+
+      await saver.flush();
+
+      expect(file.saves.single.volume, 30);
+      // The timer that was pending has nothing left to write.
+      fireAll(PlaybackSessionSaver.coalesceDelay);
+      expect(file.saves, hasLength(1));
+    });
+
+    test('while frozen writes nothing', () async {
+      saver = makeSaver(frozen: true);
+      state = PlayerState(queue: queue);
+      saver.onState(null, state);
+      emit(state.copyWith(volume: 30));
+
+      await saver.flush();
+
+      expect(file.saves, isEmpty);
+    });
+
+    test('after a pause leaves the paused position in the file', () async {
+      emit(state.copyWith(playing: true));
+      emit(state.copyWith(position: const Duration(seconds: 42)));
+      emit(state.copyWith(playing: false));
+
+      await saver.flush();
+
+      expect(file.saves.last.position, const Duration(seconds: 42));
+    });
+
+    test('writes again when the write in flight fails', () async {
+      final slow = _SlowFile();
+      saver = PlaybackSessionSaver(slow, timer: (d, c) => _ManualTimer(d, c));
+      state = PlayerState(queue: queue);
+      saver.onState(null, state);
+      emit(state.copyWith(playing: true));
+      emit(state.copyWith(position: const Duration(seconds: 42)));
+      emit(state.copyWith(playing: false));
+      expect(slow.saves, hasLength(1));
+
+      // The close arrives while the pause write is still running, then it
+      // fails.
+      final flushing = saver.flush();
+      await Future<void>.delayed(Duration.zero);
+      slow.finish(saved: false);
+      await Future<void>.delayed(Duration.zero);
+      slow.finish(saved: true);
+      await flushing;
+
+      expect(slow.saves, hasLength(2));
+      expect(slow.saves.last.position, const Duration(seconds: 42));
+    });
+
+    test('stays usable afterwards', () async {
+      await saver.flush();
+      emit(state.copyWith(volume: 60));
+      fireAll(PlaybackSessionSaver.coalesceDelay);
+      expect(file.saves.last.volume, 60);
+    });
   });
 }

@@ -10,16 +10,16 @@ typedef SessionTimerFactory = Timer Function(
   void Function() callback,
 );
 
-/// Saves the playback session while the app runs. There is no hook that
-/// runs when the window closes, so the file is kept close to the live state
-/// instead:
+/// Saves the playback session while the app runs. A clean window close calls
+/// [flush]; a kill (SIGTERM, logout) runs nothing, so the file is also kept
+/// close to the live state:
 /// - right away when the track changes, playback pauses or stops, or the
 ///   user seeks;
 /// - [coalesceDelay] after queue, shuffle, repeat or volume changes, so a
 ///   dragged volume slider is one write;
 /// - every [positionInterval] while playing, for the position.
 ///
-/// Quitting while paused therefore restores the exact position; quitting
+/// Quitting while paused therefore restores the exact position; being killed
 /// while playing loses at most [positionInterval].
 ///
 /// The position saved is the saver's own, not the engine's last tick: right
@@ -105,6 +105,16 @@ class PlaybackSessionSaver {
     if (!_frozen || _disposed) return;
     _frozen = false;
     _saveSoon();
+  }
+
+  /// Gets the latest state onto the disk and waits for it, for the app's exit.
+  /// The first wait lets a write already running finish: when it failed,
+  /// [_written] is reset and the save after it writes the snapshot again.
+  /// The saver stays usable.
+  Future<void> flush() async {
+    await _file.flush();
+    _saveNow();
+    await _file.flush();
   }
 
   /// Writes what is still pending and stops all timers.

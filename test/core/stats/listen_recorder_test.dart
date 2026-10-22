@@ -258,6 +258,77 @@ void main() {
     });
   });
 
+  group('flush', () {
+    test('updates the listened time of a stored row', () async {
+      sim.open(trackA);
+      sim.listen(95);
+      await recorder.idle;
+      sim.listen(20);
+
+      await recorder.flush();
+
+      final row = (await plays()).single;
+      expect(row.listenedMs, 115000);
+    });
+
+    test('keeps recording: the same row is updated, never a second', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.flush();
+
+      sim.listen(40);
+      sim.open(trackB);
+      final rows = await plays();
+
+      expect(rows, hasLength(1));
+      expect(rows.single.listenedMs, 140000);
+    });
+
+    test('writes nothing twice when nothing was listened since', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.flush();
+      gate.statements.clear();
+
+      await recorder.flush();
+
+      expect(gate.statements, isEmpty);
+    });
+
+    test('completes with nothing open', () async {
+      await recorder.flush();
+      sim.open(trackA);
+      sim.stop();
+      await recorder.flush();
+      expect(await plays(), isEmpty);
+    });
+
+    test('writes nothing while recording is off', () async {
+      sim.open(trackA);
+      sim.listen(10);
+      recorder.setEnabled(false);
+      gate.statements.clear();
+
+      await recorder.flush();
+
+      expect(gate.statements, isEmpty);
+    });
+
+    test('writes nothing while the history is being cleared', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+      final cleared = recorder.clearHistory();
+      gate.statements.clear();
+
+      await recorder.flush();
+      await cleared;
+
+      expect(gate.count(_update), 0);
+      expect(await plays(), isEmpty);
+    });
+  });
+
   group('while the insert is still queued', () {
     // Holds the insert, listens 10 s more, then runs [boundary] in the same
     // synchronous run, so the row id is unknown when it happens.
@@ -285,6 +356,24 @@ void main() {
         expect(row.listenedMs, 100000);
       });
     }
+
+    test('flush waits for the insert and ends with the flushed time', () async {
+      final release = gate.holdNext(_insert);
+      sim.open(trackA);
+      sim.listen(100);
+      sim.listen(5);
+
+      var flushed = false;
+      final flushing = recorder.flush().then((_) => flushed = true);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(flushed, isFalse);
+
+      release();
+      await flushing;
+
+      final row = (await plays()).single;
+      expect(row.listenedMs, 105000);
+    });
 
     test('clear: no row, and the next play can insert its own', () async {
       late Future<int?> cleared;
