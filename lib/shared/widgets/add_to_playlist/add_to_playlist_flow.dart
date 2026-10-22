@@ -68,9 +68,13 @@ Future<void> addTracksToPlaylist(
     _log.severe('Adding to a playlist failed', error, stack);
     text = l10n.playlistSaveFailed;
   }
-  // The songs are saved: failing to say so is no saving failure.
+  // The songs are saved: failing to say so is no saving failure. An older
+  // message (a queue pick, an earlier add) gives way instead of holding this
+  // one back.
   try {
-    messenger.showSnackBar(SnackBar(content: Text(text)));
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(text)));
   } catch (error, stack) {
     _log.warning('Showing the playlist message failed', error, stack);
   }

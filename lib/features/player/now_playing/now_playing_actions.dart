@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
@@ -8,6 +9,8 @@ import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/add_to_playlist/add_to_playlist_flow.dart';
 import '../playback_controls.dart';
+
+final _log = Logger('playlists');
 
 void _comingSoon(BuildContext context) {
   ScaffoldMessenger.of(context)
@@ -31,32 +34,51 @@ class NowPlayingFavoriteButton extends StatelessWidget {
 /// Add to playlist: opens the playlist picker for the current track. Only a
 /// song that is a row of the library can go in a playlist (the entries are
 /// matched to library rows by path); any other says so.
-class NowPlayingPlaylistButton extends ConsumerWidget {
+class NowPlayingPlaylistButton extends ConsumerStatefulWidget {
   const NowPlayingPlaylistButton({super.key});
 
-  Future<void> _add(
-    WidgetRef ref,
-    BuildContext context,
-    String path,
-    String title,
-  ) async {
+  @override
+  ConsumerState<NowPlayingPlaylistButton> createState() =>
+      _NowPlayingPlaylistButtonState();
+}
+
+class _NowPlayingPlaylistButtonState
+    extends ConsumerState<NowPlayingPlaylistButton> {
+  /// A pick is under way (the cover lookup or the picker is open): another
+  /// press must not open a second picker.
+  bool _busy = false;
+
+  Future<void> _add(String path, String title) async {
+    if (_busy) return;
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
+    _busy = true;
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
-    final inLibrary = await db.coverKeyOf(path) != null;
-    if (!inLibrary) {
+    try {
+      final inLibrary = await db.coverKeyOf(path) != null;
+      if (!inLibrary) {
+        messenger
+          ..clearSnackBars()
+          ..showSnackBar(
+            SnackBar(content: Text(l10n.playlistTrackNotInLibrary)),
+          );
+        return;
+      }
+      if (!mounted) return;
+      await addTracksToPlaylist(ref, context, () async => [path], title);
+    } catch (error, stack) {
+      _log.severe('Adding the current song to a playlist failed', error, stack);
       messenger
         ..clearSnackBars()
-        ..showSnackBar(SnackBar(content: Text(l10n.playlistTrackNotInLibrary)));
-      return;
+        ..showSnackBar(SnackBar(content: Text(l10n.playlistSaveFailed)));
+    } finally {
+      _busy = false;
     }
-    if (!context.mounted) return;
-    await addTracksToPlaylist(ref, context, () async => [path], title);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final track = ref.watch(
       playerServiceProvider.select((s) => s.queue.current),
     );
@@ -66,7 +88,7 @@ class NowPlayingPlaylistButton extends ConsumerWidget {
       icon: const Icon(Icons.playlist_add_rounded),
       iconSize: playerIconSize,
       tooltip: context.l10n.nowPlayingAddToPlaylist,
-      onPressed: enabled ? () => _add(ref, context, path, track!.title) : null,
+      onPressed: enabled ? () => _add(path, track!.title) : null,
     );
   }
 }

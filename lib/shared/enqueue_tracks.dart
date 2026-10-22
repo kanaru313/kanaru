@@ -93,9 +93,9 @@ void _showQueueMessage(
 /// Puts the tracks [read] returns behind the playing one ([QueueAction.playNext])
 /// or at the end of the queue, then says so in a snackbar naming [label]
 /// (or that [label] is playing, when the queue was empty and it started).
-/// Runs after every earlier call, whatever happened to them. Everything it needs from the widget tree
-/// ([messenger], [l10n]) is passed in, as the caller may be gone by the time
-/// the read finishes. [QueueAction.addToPlaylist] is not a queue action:
+/// Runs after every earlier call, whatever happened to them. Everything it
+/// needs from the widget tree ([messenger], [l10n]) is passed in, as the
+/// caller may be gone by the time the read finishes. [QueueAction.addToPlaylist] is not a queue action:
 /// `enqueueLoaded` and `enqueueFromDatabase` handle it, and passing it here
 /// throws [ArgumentError].
 Future<void> enqueueTracks(
@@ -117,21 +117,16 @@ Future<void> enqueueTracks(
       final tracks = await read();
       // The album or artist vanished in a rescan: nothing to queue.
       if (tracks.isEmpty) return;
-      final started = switch (action) {
-        QueueAction.playNext => await player.playNext(tracks),
-        QueueAction.addToQueue => await player.addToQueue(tracks),
-        // Unreachable: rejected on entry; here for exhaustiveness.
-        QueueAction.addToPlaylist => throw StateError('not a queue action'),
-      };
+      // The guard on entry leaves just these two.
+      final next = action == QueueAction.playNext;
+      final started = next
+          ? await player.playNext(tracks)
+          : await player.addToQueue(tracks);
       text = started
           ? l10n.queuePlaying(label)
-          : switch (action) {
-              QueueAction.playNext => l10n.queuePlayingNext(label),
-              QueueAction.addToQueue => l10n.queueAddedToQueue(label),
-              QueueAction.addToPlaylist => throw StateError(
-                'not a queue action',
-              ),
-            };
+          : next
+          ? l10n.queuePlayingNext(label)
+          : l10n.queueAddedToQueue(label);
     } catch (error, stackTrace) {
       _log.severe('Queuing tracks failed', error, stackTrace);
       messenger.showSnackBar(

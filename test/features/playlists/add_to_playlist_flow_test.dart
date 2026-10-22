@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../library/browse_test_data.dart'
     show TestTrack, goTo, insertTracks, openWithTracks;
 import '../library/library_test_harness.dart';
+import '../search/search_test_data.dart' show openSearch;
 import 'add_to_playlist_test_support.dart';
 import 'playlist_test_data.dart';
 
@@ -213,5 +214,83 @@ void main() {
       find.text("Couldn't save the playlist. See the log for details."),
       findsOneWidget,
     );
+  });
+
+  group('other sources', () {
+    testWidgets('an artist row adds all their songs', (tester) async {
+      await openWithTracks(tester, h, _album, location: '/artists');
+      final id = await seedPlaylist(tester, h, 'Mix', const []);
+      await settleDb(tester);
+
+      await addVia(tester, h, find.text('Ann'), 'Mix');
+
+      expect(find.text('Added to Mix: Ann'), findsOneWidget);
+      expect(await titlesIn(tester, id), ['a1', 'a2', 'a3']);
+    });
+
+    testWidgets('a search result adds that song', (tester) async {
+      await openSearch(tester, h, 'adele');
+      final id = await seedPlaylist(tester, h, 'Mix', const []);
+      await settleDb(tester);
+
+      await addVia(tester, h, find.text('Hello'), 'Mix');
+
+      expect(find.text('Added to Mix: Hello'), findsOneWidget);
+      expect(await titlesIn(tester, id), ['Hello']);
+    });
+
+    testWidgets('a row of another playlist adds that song', (tester) async {
+      await openApp(tester, h, ['a', 'b']);
+      final from = await seedPlaylist(tester, h, 'From', ['a', 'b']);
+      final to = await seedPlaylist(tester, h, 'To', const [], now: 2);
+      goTo(tester, h, '/playlists/$from');
+      await settleDb(tester);
+
+      await addVia(tester, h, find.text('b'), 'To');
+
+      expect(find.text('Added to To: b'), findsOneWidget);
+      expect(await titlesIn(tester, to), ['b']);
+      expect(await titlesIn(tester, from), ['a', 'b']);
+    });
+  });
+
+  testWidgets('a message about an earlier add gives way to the next', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a', 'b'], location: '/songs');
+    await seedPlaylist(tester, h, 'Mix', const []);
+    await settleDb(tester);
+
+    await addVia(tester, h, find.text('a'), 'Mix');
+    expect(find.text('Added to Mix: a'), findsOneWidget);
+    await addVia(tester, h, find.text('b'), 'Mix');
+
+    expect(find.text('Added to Mix: b'), findsOneWidget);
+    expect(find.text('Added to Mix: a'), findsNothing);
+  });
+
+  testWidgets('a failed create says so once and adds nothing', (tester) async {
+    await openApp(tester, h, ['a'], location: '/songs');
+    await breakWrites(tester, h, 'playlists', 'INSERT');
+    await settleDb(tester);
+
+    await openMenuOf(tester, find.text('a'));
+    await tester.tap(find.text('Add to playlist…'));
+    await tester.pumpAndSettle();
+    await tester.tap(inPicker('New playlist…'));
+    await tester.pumpAndSettle();
+    await tester.enterText(nameField, 'Road trip');
+    await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+    await settleDb(tester);
+
+    expect(
+      find.text("Couldn't save the playlist. See the log for details."),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Added to'), findsNothing);
+    final rows = await tester.runAsync(
+      () => h.db.watchPlaylistSummaries().first,
+    );
+    expect(rows, isEmpty);
   });
 }

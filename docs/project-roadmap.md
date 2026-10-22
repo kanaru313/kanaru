@@ -4,7 +4,7 @@ Phases follow the README roadmap. Status is what the code does on 2026-10-21 (`m
 
 Status labels: **Done** (shipped, merged), **Partial** (some of the requirement shipped), **Open** (not started), **Known issue** (shipped, with a documented limit).
 
-Last updated: 2026-10-21.
+Last updated: 2026-10-22.
 
 ## Summary
 

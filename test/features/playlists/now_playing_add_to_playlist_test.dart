@@ -89,4 +89,78 @@ void main() {
       isNull,
     );
   });
+
+  testWidgets('a failing library read says so and throws nothing', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a']);
+    await seedPlaylist(tester, h, 'Mix', const []);
+    final paths = await trackPaths(tester, h);
+    await settleDb(tester);
+    await openNowPlaying(tester, Track(uri: paths['a']!, title: 'a'));
+    // The cover lookup then fails inside SQLite.
+    await tester.runAsync(
+      () => h.db.customStatement('ALTER TABLE tracks RENAME TO tracks_gone'),
+    );
+
+    await tester.tap(button);
+    await settleDb(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(picker, findsNothing);
+    expect(
+      find.text("Couldn't save the playlist. See the log for details."),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a second press while the picker is open opens no second', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a']);
+    await seedPlaylist(tester, h, 'Mix', const []);
+    final paths = await trackPaths(tester, h);
+    await settleDb(tester);
+    await openNowPlaying(tester, Track(uri: paths['a']!, title: 'a'));
+
+    final first = tester
+        .widget<IconButton>(
+          find.ancestor(of: button, matching: find.byType(IconButton)),
+        )
+        .onPressed!;
+    first();
+    first();
+    await settleDb(tester);
+
+    expect(picker, findsOneWidget);
+    await tester.tap(inPicker('Mix'));
+    await settleDb(tester);
+    expect(find.text('Added to Mix: a'), findsOneWidget);
+    expect(find.text('Already in Mix: a'), findsNothing);
+  });
+
+  testWidgets('with no library open the button is disabled', (tester) async {
+    final container = ProviderContainer(
+      overrides: [audioBackendProvider.overrideWithValue(FakeAudioBackend())],
+    );
+    addTearDown(container.dispose);
+    await container.read(playerServiceProvider.notifier).openTracks([
+      const Track(uri: '/music/a.mp3', title: 'a'),
+    ]);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: NowPlayingPlaylistButton()),
+        ),
+      ),
+    );
+
+    expect(
+      tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+      isNull,
+    );
+  });
 }

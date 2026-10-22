@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 
+import 'package:material_ui/material_ui.dart' show DecoratedBox, BoxDecoration;
+
 import 'playlist_entries_view_harness.dart';
 
 void main() {
@@ -19,6 +21,33 @@ void main() {
 
       expect(view.moves, [(0, 2)]);
       expect(view.shownIds(tester), [1, 2, 0], reason: 'before the write ends');
+    });
+
+    testWidgets('the dragged row lifts as the card, not its padded slot', (
+      tester,
+    ) async {
+      await view.pump(tester, pageOf(rows));
+      final slot = tester.getRect(find.byType(PlaylistEntryTile).first);
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(view.handle(0)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture.moveBy(const Offset(0, 24));
+      await tester.pump(const Duration(milliseconds: 16));
+
+      final plate = find.byWidgetPredicate(
+        (w) =>
+            w is DecoratedBox &&
+            w.decoration is BoxDecoration &&
+            (w.decoration as BoxDecoration).boxShadow != null,
+      );
+      expect(plate, findsOneWidget);
+      final card = tester.getSize(plate);
+      expect(card.width, slot.width - playlistEntryInset.horizontal);
+      expect(card.height, slot.height - playlistEntryInset.vertical);
+      await gesture.up();
+      await tester.pumpAndSettle();
     });
 
     testWidgets('a failed write puts the rows back', (tester) async {
