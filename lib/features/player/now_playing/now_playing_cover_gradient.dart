@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../app/theme.dart' show coverThemeTransition;
+import '../../../core/cover_colors/cover_palette.dart';
 import '../../../core/cover_colors/playing_cover_palette_provider.dart';
 
 /// Stops in the Now Playing gradient, at most.
@@ -22,6 +22,10 @@ const _darkTint = 0.45, _lightTint = 0.35, _tintStep = 0.05;
 /// opaque (the shell lies under Now Playing). A new cover's gradient fades in
 /// over [coverThemeTransition], or at once when the system asks for reduced
 /// motion.
+///
+/// The gradient is a translucent layer over the surface, so while the theme
+/// itself moves to the new cover's colors the surface follows it frame by
+/// frame and the tint does not restart its fade.
 class NowPlayingCoverGradient extends ConsumerWidget {
   const NowPlayingCoverGradient({super.key, required this.child});
 
@@ -32,7 +36,7 @@ class NowPlayingCoverGradient extends ConsumerWidget {
     final colors = ref.watch(appCoverPaletteProvider.select((p) => p?.colors));
     final scheme = Theme.of(context).colorScheme;
     final stops = colors == null
-        ? List.filled(_maxStops, scheme.surface)
+        ? List.filled(_maxStops, const Color(0x00000000))
         : _padded(
             readableGradientStops(
               colors,
@@ -71,18 +75,19 @@ class NowPlayingCoverGradient extends ConsumerWidget {
   }
 }
 
-/// Opaque gradient stops from a cover's [palette] over [surface], each faint
-/// enough that [onSurface] text keeps a contrast of at least 4.5:1: the
-/// tint starts at 0.45 (dark) or 0.35 (light) and drops in 0.05 steps until
-/// the contrast holds (down to the bare surface). Two to four stops: one
-/// color gives itself and a shade of it toward the surface.
+/// Translucent gradient stops of a cover's [palette], to paint over
+/// [surface], each faint enough that [onSurface] text on the blend keeps a
+/// contrast of at least 4.5:1: the tint starts at 0.45 (dark) or 0.35
+/// (light) and drops in 0.05 steps until the contrast holds (down to fully
+/// transparent). Two to four stops: one color gives itself and a shade of it
+/// toward the surface.
 List<Color> readableGradientStops(
   List<Color> palette, {
   required Color surface,
   required Color onSurface,
   required Brightness brightness,
 }) {
-  if (palette.isEmpty) return [surface, surface];
+  if (palette.isEmpty) return const [Color(0x00000000), Color(0x00000000)];
   final dark = brightness == Brightness.dark;
   final colors = palette.length == 1
       ? [palette.first, _shade(palette.first, dark)]
@@ -101,10 +106,12 @@ List<Color> readableGradientStops(
 
 Color _readableTint(Color color, Color surface, Color onSurface, double start) {
   for (var alpha = start; alpha > 0; alpha -= _tintStep) {
-    final stop = Color.alphaBlend(color.withValues(alpha: alpha), surface);
-    if (_contrast(onSurface, stop) >= _minContrast) return stop;
+    final tint = color.withValues(alpha: alpha);
+    if (_contrast(onSurface, Color.alphaBlend(tint, surface)) >= _minContrast) {
+      return tint;
+    }
   }
-  return surface;
+  return color.withValues(alpha: 0);
 }
 
 /// [color] 12 points (of 100) of lightness toward the surface: darker on a

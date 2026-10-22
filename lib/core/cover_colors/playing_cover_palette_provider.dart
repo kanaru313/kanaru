@@ -40,13 +40,17 @@ final playingCoverPaletteProvider = FutureProvider<CoverPalette?>((ref) async {
   }
   final key = art!.substring(directory.length + 1);
   final failed = ref.read(_failedPlayingKeysProvider);
+  // Read before the first await: once the track changes or the setting goes
+  // off, this run is stale and its ref unusable.
+  final extractor = ref.read(coverColorExtractorProvider);
   try {
     final stored = await db.coverPaletteOf(key);
-    if (stored != null || failed.contains(key)) return stored;
-    final samples = await ref
-        .read(coverColorExtractorProvider)
+    if (stored != null || failed.contains(key) || !ref.mounted) return stored;
+    final samples = await extractor
         .extract([key], background: false)
         .timeout(playingCoverColorTimeout);
+    // A stale run stores nothing: the setting may be off by now.
+    if (!ref.mounted) return null;
     final sample = samples.where((s) => s.key == key && s.ok).firstOrNull;
     if (sample == null) {
       failed.add(key);
@@ -58,11 +62,11 @@ final playingCoverPaletteProvider = FutureProvider<CoverPalette?>((ref) async {
       palette: encodePalette(sample.palette.take(maxPaletteColors).toList()),
     );
   } on TimeoutException {
-    failed.add(key);
+    if (ref.mounted) failed.add(key);
     _log.warning('Cover colors took over $playingCoverColorTimeout: $key');
     return null;
   } catch (error, stackTrace) {
-    failed.add(key);
+    if (ref.mounted) failed.add(key);
     _log.warning('Could not get the cover colors of $key', error, stackTrace);
     return null;
   }

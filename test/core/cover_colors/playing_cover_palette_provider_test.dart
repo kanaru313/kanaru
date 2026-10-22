@@ -44,6 +44,8 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
+    // Listened, as the app's theme listens to it.
+    container.listen(appCoverPaletteProvider, (_, _) {});
     if (initialArt != null) {
       container.read(_artProvider.notifier).play(initialArt);
     }
@@ -167,6 +169,50 @@ void main() {
     await palette();
     await pumpEventQueue();
     expect(container.read(appCoverPaletteProvider), isNull);
+  });
+
+  test(
+    'a track change mid-way neither blocks nor stores the old cover',
+    () async {
+      final a = keyFor(1), b = keyFor(2);
+      extractor.gate = Completer<void>();
+      start(initialArt: '$_dir/$a');
+      final first = palette();
+      await pumpEventQueue();
+      expect(extractor.calls.length, 1);
+      play('$_dir/$b');
+      // The app listens, so the provider rebuilds for the new track at once.
+      await pumpEventQueue();
+      extractor.gate!.complete();
+      extractor.gate = null;
+      await first;
+      await palette();
+      expect(
+        await db.coverPaletteOf(a),
+        isNull,
+        reason: 'stale run stores nothing',
+      );
+
+      play('$_dir/$a');
+      expect(await palette(), isNotNull, reason: 'not skipped for the session');
+      expect(await db.coverPaletteOf(a), isNotNull);
+    },
+  );
+
+  test('turning the setting off mid-way stores nothing', () async {
+    final a = keyFor(1);
+    extractor.gate = Completer<void>();
+    start(initialArt: '$_dir/$a');
+    final first = palette();
+    await pumpEventQueue();
+    container
+        .read(settingsProvider.notifier)
+        .setDisplay(const DisplayPrefs(colorFromCover: false));
+    await pumpEventQueue();
+    extractor.gate!.complete();
+    await first;
+    expect(await palette(), isNull);
+    expect(await storedRows(), 0);
   });
 
   test('colors already known when the app starts are shown at once', () async {

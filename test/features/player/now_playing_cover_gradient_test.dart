@@ -44,9 +44,11 @@ void main() {
             brightness: brightness,
           );
           for (final stop in stops) {
-            expect(stop.a, 1.0, reason: 'opaque');
             expect(
-              _contrast(scheme.onSurface, stop),
+              _contrast(
+                scheme.onSurface,
+                Color.alphaBlend(stop, scheme.surface),
+              ),
               greaterThanOrEqualTo(4.5),
               reason: '$stop',
             );
@@ -113,10 +115,7 @@ void main() {
 
     testWidgets('without colors it is the bare surface', (tester) async {
       await pump(tester);
-      final surface = Theme.of(tester.element(find.byType(SizedBox)))
-          .colorScheme
-          .surface;
-      expect(gradient(tester).toSet(), {surface});
+      expect(gradient(tester).every((stop) => stop.a == 0), isTrue);
     });
 
     testWidgets('cover colors fade in over 300 ms', (tester) async {
@@ -131,6 +130,7 @@ void main() {
       final end = gradient(tester).first;
       expect(end, isNot(halfway));
       expect(end.r, greaterThan(end.b), reason: 'tinted red first');
+      expect(end.a, greaterThan(0));
       await tester.pumpAndSettle();
       expect(gradient(tester).first, end);
     });

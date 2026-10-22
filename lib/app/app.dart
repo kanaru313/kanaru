@@ -2,6 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/cover_colors/cover_palette.dart';
 import '../core/cover_colors/playing_cover_palette_provider.dart';
 import '../core/settings/applied_appearance_provider.dart';
 import '../core/settings/settings_provider.dart';

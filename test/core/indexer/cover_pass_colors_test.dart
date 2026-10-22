@@ -118,27 +118,30 @@ void main() {
     expect(await storedColors(), 5);
   });
 
-  test('stops between batches when a rescan waits or colors go off', () async {
-    await addWithCovers(70);
-    var yieldNow = false;
-    colors.gate = null;
-    final extractor = _AfterFirst(colors, () => yieldNow = true);
-    final yielded = await pass(
-      extractor: extractor,
-      wanted: () => true,
-      shouldYield: () => yieldNow,
-    );
-    expect(yielded.completed, isTrue);
-    expect(yielded.colorsDone, 32);
+  test(
+    'stops for a waiting rescan; stores nothing once colors go off',
+    () async {
+      await addWithCovers(70);
+      var yieldNow = false;
+      colors.gate = null;
+      final extractor = _AfterFirst(colors, () => yieldNow = true);
+      final yielded = await pass(
+        extractor: extractor,
+        wanted: () => true,
+        shouldYield: () => yieldNow,
+      );
+      expect(yielded.completed, isTrue);
+      expect(yielded.colorsDone, 32);
 
-    var on = true;
-    final turnedOff = await pass(
-      extractor: _AfterFirst(colors, () => on = false),
-      wanted: () => on,
-    );
-    expect(turnedOff.colorsDone, 32);
-    expect(await storedColors(), 64);
-  });
+      var on = true;
+      final turnedOff = await pass(
+        extractor: _AfterFirst(colors, () => on = false),
+        wanted: () => on,
+      );
+      expect(turnedOff.colorsDone, 0, reason: 'answer came back after off');
+      expect(await storedColors(), 32);
+    },
+  );
 
   test('an extractor error ends the round, not the pass', () async {
     await addWithCovers(3);

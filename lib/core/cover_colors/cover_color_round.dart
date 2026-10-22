@@ -29,7 +29,8 @@ class CoverColorRoundResult {
 ///
 /// Before each batch it stops when [shouldStop] (the app is closing),
 /// [shouldYield] (a rescan is waiting) or not [enabled] (the user turned
-/// cover colors off). A key whose colors cannot be worked out is added to
+/// cover colors off), and a batch that comes back after the user turned
+/// cover colors off is not stored. A key whose colors cannot be worked out is added to
 /// [skip]; so is every key of a batch that outlasts [timeout], and the round
 /// stops there (the native call may still be running). Never throws: an
 /// error is logged and ends the round.
@@ -84,6 +85,11 @@ Future<CoverColorRoundResult> runCoverColorRound({
         break;
       }
       result.nativeTime += nativeTime.elapsed;
+      // Turned off while the batch ran: store nothing more.
+      if (!enabled()) {
+        result.stoppedBecause = 'cover colors turned off';
+        break;
+      }
       final good = <CoverColorSample>[];
       for (final sample in samples) {
         if (sample.ok) {

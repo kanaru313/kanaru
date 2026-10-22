@@ -180,6 +180,10 @@ class LibraryRootsController {
     if (_ref.read(coverPassProvider) is CoverPassRunning) return;
     try {
       final unused = rootKeys.difference(await db.coverKeysInUse());
+      // A pass may have started while the keys were read. One starting
+      // after this check can still point a track at a deleted thumbnail;
+      // the next scan's repair of missing covers makes it again.
+      if (_ref.read(coverPassProvider) is CoverPassRunning) return;
       final deleted = await deleteUnusedThumbnails(
         directory,
         unused,
