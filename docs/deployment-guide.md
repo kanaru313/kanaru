@@ -153,7 +153,7 @@ update-desktop-database "$HOME/.local/share/applications"
 
 | Limit | Status |
 |---|---|
-| "Open with Kanaru" starts or raises the app but does not play the file | Until SYS-08 (command-line file arguments) |
+| `--play-pause`, `--next` and similar command-line flags | Not built (SYS-08); file arguments and "Open with Kanaru" play the file (IDX-09) |
 | Second launch does not raise the window under niri | SYS-15 |
 | Network streams (`http`, `https`) | Not built in. FFmpeg is configured with `--disable-network` and only the `file` protocol |
 | Video | Not supported. The libmpv build has audio decoders only |
@@ -271,7 +271,7 @@ Steps 2 to 5 become CI jobs once workflows exist. The repo has no `.github/` dir
 | AppImage: `fuse: failed to open /dev/fuse` or `fusermount: not found` | Run with `--appimage-extract-and-run`, or install `fuse3` and make sure `/dev/fuse` exists. |
 | AppImage does not start on NixOS | Not supported (`appimage-run` fails with `libepoxy.so.0` missing). Build from source, or wait for a Nix package (PKG-05). |
 | Log has `SEVERE mpv: ... _setProperty(osc, 1)` on every start | Harmless, see [Limits](#limits). |
-| "Open with Kanaru" opens the app but does not play the file | Expected until SYS-08. |
+| "Open with Kanaru" does not play the file | Only local audio files play; check the path and that the extension is a supported audio type. |
 | Folder picker does not open | GTK schemas missing: install the GTK 3 package of your distro. |
 | Library empty after start | Check Settings → Library: the folders must exist (a missing one is struck through) and "Rescan when Kanaru opens" should be on. Press the rescan button. |
 | Window does not come forward on second launch under niri | Known limit (SYS-15). |

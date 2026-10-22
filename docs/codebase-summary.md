@@ -104,7 +104,7 @@ Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
 | `linux/` | 10 | 570 |
 | `test/` (all `.dart`, helpers included) | 255 | 58,604 |
 
-Largest non-generated Dart files: `core/indexer/library_indexer.dart` (553), `core/database/library_database.dart` (348), `core/player/media_kit_backend.dart` (422), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (1,654, generated).
+Largest non-generated Dart files: `core/indexer/library_indexer.dart` (624), `core/database/library_database.dart` (348), `core/player/media_kit_backend.dart` (422), `features/settings/full_or_compact_control.dart` (302). Generated and large: `core/database/text_key_tables.dart` (1,963, generated), `core/database/library_database.steps.dart` (1,654, generated).
 
 Non-generated Dart files over the 200-line guideline in [CLAUDE.md](../CLAUDE.md) are candidates for splitting: 18 of them, the largest listed above. The search files are all under 200 lines.
 

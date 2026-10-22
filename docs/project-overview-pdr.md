@@ -36,7 +36,7 @@ Requirements are defined in [features.md](./features.md) with stable IDs, priori
 |---|---|---|
 | Playback engine | 1 | PLAY-01 to PLAY-04, PLAY-12, PLAY-13 |
 | Queue and modes | 2 | QUEUE-01 to QUEUE-05 |
-| Scanning and index | 3 | IDX-01 to IDX-03, IDX-06, IDX-09 |
+| Scanning and index | 3 | IDX-01 to IDX-05, IDX-06, IDX-09, IDX-13 |
 | Metadata and artwork | 4 | META-01, META-03, META-04 |
 | Library browsing | 5 | LIB-01 to LIB-03, LIB-07 |
 | Search | 6 | SEARCH-01 to SEARCH-03 |
@@ -123,7 +123,7 @@ Scope of the first release, derived from the P0 items of Phase 1 (features.md).
 | AppImage package | PKG-01 | P0 | Not started |
 | Collapse DB schema history to v1 before release | PKG-08 | P0 | Not started |
 | Startup rescan option | IDX-06 | P1 | Done |
-| Folder watching | IDX-04 | P1 | Not started |
+| Folder watching | IDX-04 | P1 | Done (switch in Settings, off by default) |
 | Root removal and folder edits in Settings | IDX-01 (remainder) | P0 | Done |
 | ReplayGain | PLAY-07 | P1 | Not started |
 | Dynamic color from artwork | UI-03 | P1 | Not started |
