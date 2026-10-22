@@ -2545,6 +2545,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Removed from Favorites'**
   String get favoritesRemoved;
+
+  /// Button on the playlists page that imports an M3U playlist file
+  ///
+  /// In en, this message translates to:
+  /// **'Import M3U…'**
+  String get playlistM3uImport;
+
+  /// File type filter of the M3U file picker that shows every file
+  ///
+  /// In en, this message translates to:
+  /// **'All files'**
+  String get playlistM3uAllFiles;
+
+  /// Progress dialog while an M3U file is imported
+  ///
+  /// In en, this message translates to:
+  /// **'Importing playlist…'**
+  String get playlistM3uImporting;
+
+  /// Snackbar after a clean M3U import
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Imported 1 song into {name}} other{Imported {count} songs into {name}}}'**
+  String playlistM3uImported(int count, String name);
+
+  /// Added after the import snackbar when some imported files are not library songs yet
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 is not in your library yet} other{{count} are not in your library yet}}'**
+  String playlistM3uImportedNotInLibrary(int count);
+
+  /// Title of the dialog that reports an M3U import
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist imported'**
+  String get playlistM3uImportReportTitle;
+
+  /// First line of the M3U import report
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added} of {total} lines.'**
+  String playlistM3uImportReportSummary(int added, int total);
+
+  /// M3U import report: files that exist but are not library songs
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song is not in your library yet: it shows once its folder is added.} other{{count} songs are not in your library yet: they show once their folder is added.}}'**
+  String playlistM3uImportReportNotInLibrary(int count);
+
+  /// M3U import report: lines naming a file already imported
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 repeated line was merged.} other{{count} repeated lines were merged.}}'**
+  String playlistM3uImportReportDuplicates(int count);
+
+  /// M3U import report: heading of the lines that could not be used
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line is not a local music file or was not found:} other{{count} lines are not local music files or were not found:}}'**
+  String playlistM3uImportReportUnresolved(int count);
+
+  /// M3U import report: the file had more lines than the limit
+  ///
+  /// In en, this message translates to:
+  /// **'Only the first {limit} songs were read.'**
+  String playlistM3uImportReportTruncated(int limit);
+
+  /// M3U import report: one unused line with its line number
+  ///
+  /// In en, this message translates to:
+  /// **'Line {line}: {text}'**
+  String playlistM3uImportReportLine(int line, String text);
+
+  /// M3U import report: unused lines not listed
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{and 1 more line} other{and {count} more lines}}'**
+  String playlistM3uImportReportMore(int count);
+
+  /// M3U import report when no line could be used
+  ///
+  /// In en, this message translates to:
+  /// **'No local music file of this playlist was found. Nothing was imported.'**
+  String get playlistM3uImportNothingFound;
+
+  /// Snackbar when the picked M3U file is over the size limit
+  ///
+  /// In en, this message translates to:
+  /// **'That file is too large to be a playlist.'**
+  String get playlistM3uImportTooLarge;
+
+  /// Snackbar when the picked M3U file cannot be read
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read that playlist file. See the log for details.'**
+  String get playlistM3uImportFailed;
+
+  /// Playlist menu item: save as M3U with absolute paths
+  ///
+  /// In en, this message translates to:
+  /// **'Export M3U (full paths)…'**
+  String get playlistM3uExportAbsolute;
+
+  /// Playlist menu item: save as M3U with paths relative to the file
+  ///
+  /// In en, this message translates to:
+  /// **'Export M3U (relative paths)…'**
+  String get playlistM3uExportRelative;
+
+  /// Snackbar after exporting a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved 1 song to {file}} other{Saved {count} songs to {file}}}'**
+  String playlistM3uExported(int count, String file);
+
+  /// Added to the export snackbar when some paths cannot be written as M3U lines
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 path with a line break was left out} other{{count} paths with line breaks were left out}}'**
+  String playlistM3uExportSkipped(int count);
+
+  /// Snackbar when writing the M3U file failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the playlist file. See the log for details.'**
+  String get playlistM3uExportFailed;
+
+  /// Title of the dialog asking before overwriting an existing file
+  ///
+  /// In en, this message translates to:
+  /// **'Replace {file}?'**
+  String playlistM3uOverwriteTitle(String file);
+
+  /// Button that overwrites the existing file
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get playlistM3uOverwriteConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -1644,4 +1644,150 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get favoritesRemoved => 'Removed from Favorites';
+
+  @override
+  String get playlistM3uImport => 'Import M3U…';
+
+  @override
+  String get playlistM3uAllFiles => 'All files';
+
+  @override
+  String get playlistM3uImporting => 'Importing playlist…';
+
+  @override
+  String playlistM3uImported(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Imported $count songs into $name',
+      one: 'Imported 1 song into $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistM3uImportedNotInLibrary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count are not in your library yet',
+      one: '1 is not in your library yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistM3uImportReportTitle => 'Playlist imported';
+
+  @override
+  String playlistM3uImportReportSummary(int added, int total) {
+    return 'Added $added of $total lines.';
+  }
+
+  @override
+  String playlistM3uImportReportNotInLibrary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count songs are not in your library yet: they show once their folder is added.',
+      one: '1 song is not in your library yet: it shows once its folder is added.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistM3uImportReportDuplicates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repeated lines were merged.',
+      one: '1 repeated line was merged.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistM3uImportReportUnresolved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines are not local music files or were not found:',
+      one: '1 line is not a local music file or was not found:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistM3uImportReportTruncated(int limit) {
+    return 'Only the first $limit songs were read.';
+  }
+
+  @override
+  String playlistM3uImportReportLine(int line, String text) {
+    return 'Line $line: $text';
+  }
+
+  @override
+  String playlistM3uImportReportMore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count more lines',
+      one: 'and 1 more line',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistM3uImportNothingFound =>
+      'No local music file of this playlist was found. Nothing was imported.';
+
+  @override
+  String get playlistM3uImportTooLarge =>
+      'That file is too large to be a playlist.';
+
+  @override
+  String get playlistM3uImportFailed =>
+      'Couldn\'t read that playlist file. See the log for details.';
+
+  @override
+  String get playlistM3uExportAbsolute => 'Export M3U (full paths)…';
+
+  @override
+  String get playlistM3uExportRelative => 'Export M3U (relative paths)…';
+
+  @override
+  String playlistM3uExported(int count, String file) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count songs to $file',
+      one: 'Saved 1 song to $file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistM3uExportSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count paths with line breaks were left out',
+      one: '1 path with a line break was left out',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistM3uExportFailed =>
+      'Couldn\'t save the playlist file. See the log for details.';
+
+  @override
+  String playlistM3uOverwriteTitle(String file) {
+    return 'Replace $file?';
+  }
+
+  @override
+  String get playlistM3uOverwriteConfirm => 'Replace';
 }

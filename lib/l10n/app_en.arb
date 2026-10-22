@@ -820,5 +820,87 @@
   "favoritesAdded": "Added to Favorites",
   "@favoritesAdded": { "description": "Snackbar after liking a song from its menu" },
   "favoritesRemoved": "Removed from Favorites",
-  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" }
+  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" },
+  "playlistM3uImport": "Import M3U…",
+  "@playlistM3uImport": { "description": "Button on the playlists page that imports an M3U playlist file" },
+  "playlistM3uAllFiles": "All files",
+  "@playlistM3uAllFiles": { "description": "File type filter of the M3U file picker that shows every file" },
+  "playlistM3uImporting": "Importing playlist…",
+  "@playlistM3uImporting": { "description": "Progress dialog while an M3U file is imported" },
+  "playlistM3uImported": "{count, plural, =1{Imported 1 song into {name}} other{Imported {count} songs into {name}}}",
+  "@playlistM3uImported": {
+    "description": "Snackbar after a clean M3U import",
+    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+  },
+  "playlistM3uImportedNotInLibrary": "{count, plural, =1{1 is not in your library yet} other{{count} are not in your library yet}}",
+  "@playlistM3uImportedNotInLibrary": {
+    "description": "Added after the import snackbar when some imported files are not library songs yet",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportTitle": "Playlist imported",
+  "@playlistM3uImportReportTitle": { "description": "Title of the dialog that reports an M3U import" },
+  "playlistM3uImportReportSummary": "Added {added} of {total} lines.",
+  "@playlistM3uImportReportSummary": {
+    "description": "First line of the M3U import report",
+    "placeholders": { "added": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "playlistM3uImportReportNotInLibrary": "{count, plural, =1{1 song is not in your library yet: it shows once its folder is added.} other{{count} songs are not in your library yet: they show once their folder is added.}}",
+  "@playlistM3uImportReportNotInLibrary": {
+    "description": "M3U import report: files that exist but are not library songs",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportDuplicates": "{count, plural, =1{1 repeated line was merged.} other{{count} repeated lines were merged.}}",
+  "@playlistM3uImportReportDuplicates": {
+    "description": "M3U import report: lines naming a file already imported",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportUnresolved": "{count, plural, =1{1 line is not a local music file or was not found:} other{{count} lines are not local music files or were not found:}}",
+  "@playlistM3uImportReportUnresolved": {
+    "description": "M3U import report: heading of the lines that could not be used",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportReportTruncated": "Only the first {limit} songs were read.",
+  "@playlistM3uImportReportTruncated": {
+    "description": "M3U import report: the file had more lines than the limit",
+    "placeholders": { "limit": { "type": "int" } }
+  },
+  "playlistM3uImportReportLine": "Line {line}: {text}",
+  "@playlistM3uImportReportLine": {
+    "description": "M3U import report: one unused line with its line number",
+    "placeholders": { "line": { "type": "int" }, "text": { "type": "String" } }
+  },
+  "playlistM3uImportReportMore": "{count, plural, =1{and 1 more line} other{and {count} more lines}}",
+  "@playlistM3uImportReportMore": {
+    "description": "M3U import report: unused lines not listed",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uImportNothingFound": "No local music file of this playlist was found. Nothing was imported.",
+  "@playlistM3uImportNothingFound": { "description": "M3U import report when no line could be used" },
+  "playlistM3uImportTooLarge": "That file is too large to be a playlist.",
+  "@playlistM3uImportTooLarge": { "description": "Snackbar when the picked M3U file is over the size limit" },
+  "playlistM3uImportFailed": "Couldn't read that playlist file. See the log for details.",
+  "@playlistM3uImportFailed": { "description": "Snackbar when the picked M3U file cannot be read" },
+  "playlistM3uExportAbsolute": "Export M3U (full paths)…",
+  "@playlistM3uExportAbsolute": { "description": "Playlist menu item: save as M3U with absolute paths" },
+  "playlistM3uExportRelative": "Export M3U (relative paths)…",
+  "@playlistM3uExportRelative": { "description": "Playlist menu item: save as M3U with paths relative to the file" },
+  "playlistM3uExported": "{count, plural, =1{Saved 1 song to {file}} other{Saved {count} songs to {file}}}",
+  "@playlistM3uExported": {
+    "description": "Snackbar after exporting a playlist",
+    "placeholders": { "count": { "type": "int" }, "file": { "type": "String" } }
+  },
+  "playlistM3uExportSkipped": "{count, plural, =1{1 path with a line break was left out} other{{count} paths with line breaks were left out}}",
+  "@playlistM3uExportSkipped": {
+    "description": "Added to the export snackbar when some paths cannot be written as M3U lines",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistM3uExportFailed": "Couldn't save the playlist file. See the log for details.",
+  "@playlistM3uExportFailed": { "description": "Snackbar when writing the M3U file failed" },
+  "playlistM3uOverwriteTitle": "Replace {file}?",
+  "@playlistM3uOverwriteTitle": {
+    "description": "Title of the dialog asking before overwriting an existing file",
+    "placeholders": { "file": { "type": "String" } }
+  },
+  "playlistM3uOverwriteConfirm": "Replace",
+  "@playlistM3uOverwriteConfirm": { "description": "Button that overwrites the existing file" }
 }

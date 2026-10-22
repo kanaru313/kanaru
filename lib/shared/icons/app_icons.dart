@@ -118,4 +118,5 @@ abstract final class AppIcons {
 
   // Favorites and playlist files.
   static const IconData favoriteRounded = Icons.favorite_rounded;
+  static const IconData importPlaylist = Icons.file_open_outlined;
 }

@@ -2,6 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
+import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
@@ -24,6 +25,7 @@ class PlaylistEntriesView extends StatefulWidget {
     this.onEntryQueueAction,
     this.onRename,
     this.onDelete,
+    this.onExport,
   });
 
   final PlaylistPage page;
@@ -54,6 +56,9 @@ class PlaylistEntriesView extends StatefulWidget {
   /// Null leaves the item out of the header menu (the Favorites playlist).
   final VoidCallback? onRename;
   final VoidCallback? onDelete;
+
+  /// Export items of the header menu; null leaves them out.
+  final ValueChanged<M3uPathStyle>? onExport;
 
   @override
   State<PlaylistEntriesView> createState() => _PlaylistEntriesViewState();
@@ -147,6 +152,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
                 : (action) => onQueueAction(shown, action),
             onRename: widget.onRename,
             onDelete: widget.onDelete,
+            onExport: widget.onExport,
           ),
         ),
         if (shown.isEmpty)

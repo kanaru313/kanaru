@@ -6,12 +6,13 @@ import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
+import 'm3u_export_flow.dart';
 import 'playlist_display_name.dart';
 import 'playlist_entries_view.dart';
 import 'playlist_page_actions.dart';
 
 /// The body of a playlist page, shared by `/playlists/:id` and
-/// `/favorites`: play, reorder, remove and queue. The Favorites
+/// `/favorites`: play, reorder, remove, queue and export as M3U. The Favorites
 /// playlist has no rename or delete; removing one of its rows unlikes the
 /// song.
 class PlaylistPageBody extends ConsumerWidget {
@@ -56,6 +57,8 @@ class PlaylistPageBody extends ConsumerWidget {
       onDelete: playlist.isFavorites
           ? null
           : () => deletePlaylistInteractively(ref, context, playlist),
+      onExport: (style) =>
+          exportPlaylistInteractively(ref, context, page, style),
     );
   }
 }

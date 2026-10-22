@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
+import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/page_scaffold.dart';
@@ -8,11 +9,11 @@ import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_display_name.dart';
 
-enum _PlaylistAction { rename, delete }
+enum _PlaylistAction { rename, delete, exportAbsolute, exportRelative }
 
 /// Collage, name, song count, a Play button, the queue menu and a
-/// rename / delete menu. The menu holds only the actions given; with none
-/// it is left out.
+/// rename / delete / export menu. The menu holds only the actions given;
+/// with none it is left out.
 class PlaylistHeader extends StatelessWidget {
   const PlaylistHeader({
     super.key,
@@ -21,6 +22,7 @@ class PlaylistHeader extends StatelessWidget {
     this.onQueueAction,
     this.onRename,
     this.onDelete,
+    this.onExport,
   });
 
   final PlaylistPage page;
@@ -35,6 +37,10 @@ class PlaylistHeader extends StatelessWidget {
   final VoidCallback? onRename;
   final VoidCallback? onDelete;
 
+  /// Saves the playlist as an M3U file with paths of the given style; null
+  /// leaves the two export items out.
+  final ValueChanged<M3uPathStyle>? onExport;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -42,6 +48,7 @@ class PlaylistHeader extends StatelessWidget {
     final queueAction = onQueueAction;
     final rename = onRename;
     final delete = onDelete;
+    final export = onExport;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -88,7 +95,7 @@ class PlaylistHeader extends StatelessWidget {
                         ),
                         if (queueAction != null)
                           QueueActionsButton(onSelected: queueAction),
-                        if (rename != null || delete != null)
+                        if (rename != null || delete != null || export != null)
                           PopupMenuButton<_PlaylistAction>(
                             tooltip: l10n.playlistActions,
                             // Not the kebab of the queue menu beside it.
@@ -96,6 +103,12 @@ class PlaylistHeader extends StatelessWidget {
                             onSelected: (action) => switch (action) {
                               _PlaylistAction.rename => rename?.call(),
                               _PlaylistAction.delete => delete?.call(),
+                              _PlaylistAction.exportAbsolute => export?.call(
+                                M3uPathStyle.absolute,
+                              ),
+                              _PlaylistAction.exportRelative => export?.call(
+                                M3uPathStyle.relative,
+                              ),
                             },
                             itemBuilder: (context) => [
                               if (rename != null)
@@ -108,6 +121,16 @@ class PlaylistHeader extends StatelessWidget {
                                   value: _PlaylistAction.delete,
                                   child: Text(l10n.playlistDelete),
                                 ),
+                              if (export != null) ...[
+                                PopupMenuItem(
+                                  value: _PlaylistAction.exportAbsolute,
+                                  child: Text(l10n.playlistM3uExportAbsolute),
+                                ),
+                                PopupMenuItem(
+                                  value: _PlaylistAction.exportRelative,
+                                  child: Text(l10n.playlistM3uExportRelative),
+                                ),
+                              ],
                             ],
                           ),
                       ],
