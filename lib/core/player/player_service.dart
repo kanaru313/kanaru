@@ -4,7 +4,12 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../database/library_startup.dart';
+import '../settings/settings_provider.dart';
+import 'album_run_lookup.dart';
 import 'audio_backend.dart';
+import 'audio_output_devices_provider.dart';
+import 'audio_output_sync.dart';
 import 'media_kit_backend.dart';
 import 'play_queue.dart';
 import 'playback_error.dart';
@@ -14,6 +19,7 @@ import 'session/playback_session_provider.dart';
 import 'session/playback_session_saver.dart';
 import 'track.dart';
 
+part 'player_audio_output.dart';
 part 'player_queue_commands.dart';
 part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
@@ -38,6 +44,7 @@ final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
 /// when it moved on to that one by itself.
 class PlayerService extends Notifier<PlayerState>
     with
+        _PlayerAudioOutput,
         _PlayerSettingsCommands,
         _PlayerTransportCommands,
         _PlayerQueueCommands,
@@ -137,6 +144,7 @@ class PlayerService extends Notifier<PlayerState>
       _errors.close();
       _seeked.close();
     });
+    _startAudioOutput();
     return _startSession();
   }
 
