@@ -1,3 +1,7 @@
+import 'package:logging/logging.dart';
+
+final _log = Logger('player');
+
 /// mpv options set once, before the first track opens: `(name, value)`.
 const mpvStartupOptions = <(String, String)>[
   // mpv's default today, set so gapless does not depend on it. `weak` joins
@@ -19,6 +23,42 @@ const mpvStartupOptions = <(String, String)>[
   // would play. The playlist given to `loadlist` is still read: it forces
   // the playlist format and does not use `demuxer`. Remote sources will
   // need the whitelist widened for the local HTTP proxy.
+  // Setting `demuxer-lavf-o` replaces media_kit's whole value
+  // (`seg_max_retry=5,strict=experimental,allowed_extensions=ALL,
+  // protocol_whitelist=...`, media_kit `real.dart`). That is fine for local
+  // files; remote sources may need the `-append` form to keep those keys.
   ('demuxer', 'lavf'),
   ('demuxer-lavf-o', 'protocol_whitelist=file'),
 ];
+
+/// Options whose value is read back after they are set: mpv ignores a failed
+/// `set_property` on them silently, and they are what keeps a file from
+/// making mpv fetch URLs.
+const _verifiedOptions = {'demuxer', 'demuxer-lavf-o'};
+
+/// Sets [mpvStartupOptions] with [setProperty], then reads the verified ones
+/// back with [getProperty] and logs a warning for each that did not take. A
+/// failing call is logged and does not stop the rest.
+Future<void> applyMpvStartupOptions({
+  required Future<void> Function(String name, String value) setProperty,
+  required Future<String> Function(String name) getProperty,
+}) async {
+  for (final (name, value) in mpvStartupOptions) {
+    try {
+      await setProperty(name, value);
+    } on Object catch (error) {
+      _log.warning('Could not set the mpv option $name', error);
+    }
+  }
+  for (final (name, value) in mpvStartupOptions) {
+    if (!_verifiedOptions.contains(name)) continue;
+    try {
+      final actual = await getProperty(name);
+      if (actual != value) {
+        _log.warning('The mpv option $name did not take: expected "$value"');
+      }
+    } on Object catch (error) {
+      _log.warning('Could not read back the mpv option $name', error);
+    }
+  }
+}

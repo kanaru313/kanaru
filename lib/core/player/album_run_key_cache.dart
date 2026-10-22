@@ -40,6 +40,7 @@ class AlbumRunKeyCache {
   /// Completes once every path in [paths] is cached or its lookup failed.
   /// Paths already being read are waited for, not asked for again.
   Future<void> ensure(Iterable<String> paths) {
+    if (_disposed) return Future.value();
     final waits = <Future<void>>[];
     final fresh = <String>[];
     for (final path in paths) {

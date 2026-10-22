@@ -60,14 +60,16 @@ class MediaKitBackend implements AudioBackend {
     );
     _audio = MpvAudioOutput(_player, _native);
     // Through the chain, so they apply before the first `open`.
-    for (final (name, value) in mpvStartupOptions) {
-      unawaited(
-        _serial(() => _native.setProperty(name, value))
-            .catchError((Object error) {
-              _log.warning('Could not set the mpv option $name', error);
-            }),
-      );
-    }
+    unawaited(
+      _serial(
+        () => applyMpvStartupOptions(
+          setProperty: _native.setProperty,
+          getProperty: _native.getProperty,
+        ),
+      ).catchError((Object error) {
+        _log.warning('Could not set the mpv startup options', error);
+      }),
+    );
     // Through the chain, so the end of the last track is not reported after
     // the user picked another one.
     _forwardCompleted = _player.stream.completed.listen((done) {
