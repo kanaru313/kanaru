@@ -7,9 +7,9 @@ final _schemeWithAuthority = RegExp(r'^[A-Za-z][A-Za-z0-9+.\-]*://');
 
 /// The canonical path of a local audio file named by [input], or `null`.
 ///
-/// This is the one check every path from outside the library goes through
-/// before it reaches the player or the database (files opened from the
-/// command line, M3U lines, restored sessions). The player hands strings to
+/// This is the one check every path from outside the library must go
+/// through before it reaches the player or the database (files opened from
+/// the command line, M3U lines, restored sessions). The player hands strings to
 /// mpv as they are, and mpv opens `http://`, `edl://`, `av://lavfi:` and other
 /// protocols, so only a plain local file may pass.
 ///
@@ -32,6 +32,12 @@ final _schemeWithAuthority = RegExp(r'^[A-Za-z][A-Za-z0-9+.\-]*://');
 /// it names an existing regular file (a symlink to one counts) whose
 /// extension is in `audioExtensions`; folders, missing files, other file
 /// types and names containing a NUL byte give `null`.
+///
+/// Limits: the name is not looked up on disk, so on a case-insensitive
+/// mount (vfat, exFAT, casefold folders) a name spelled with other case
+/// passes as written and will not match `tracks.path`. A local file is
+/// accepted by name and extension only: what mpv does with its content
+/// (for example an EDL or playlist inside) is the player's setting.
 Future<String?> localAudioPath(String input, {String? baseDirectory}) async {
   final path = _absolutePath(input, baseDirectory);
   if (path == null || path.contains('\u0000')) return null;

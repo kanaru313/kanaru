@@ -180,6 +180,22 @@ void main() {
       expect(reset.audioDeviceDescription, isNull);
       expect(reset, const PlaybackPrefs(gapless: false));
 
+      // Every other field survives a device change.
+      final custom = const PlaybackPrefs(
+        preferEmbeddedLyrics: false,
+        gapless: false,
+        infiniteQueue: true,
+        crossfadeSeconds: 6,
+        fadeOnPlayMs: 300,
+        fadeOnPauseMs: 500,
+        listenThresholdMinutes: 2,
+        listenThresholdPercent: 30,
+        replayGainMode: ReplayGainMode.album,
+        replayGainPreampDb: 3.5,
+        replayGainPreventClipping: false,
+      );
+      expect(custom.withAudioDevice(name: 'a').withAudioDevice(), custom);
+
       // A description without a name is dropped.
       expect(
         const PlaybackPrefs().withAudioDevice(description: 'X'),
