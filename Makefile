@@ -82,25 +82,26 @@ migrations: ## New drift migration step, after bumping schemaVersion
 
 .PHONY: logs
 logs: ## Follow the app log
-	tail -F $(CACHE_DIR)/logs/kanaru.log
+	tail -F "$(CACHE_DIR)/logs/kanaru.log"
 
 .PHONY: reset-covers
 reset-covers: ## Drop cover thumbnails; the next rescan reads them again
-	command rm -rf $(CACHE_DIR)/covers
+	command rm -rf "$(CACHE_DIR)/covers"
 
 .PHONY: reset-library
 reset-library: ## Forget scanned folders and tracks (keeps playlists and listen history), drop covers
 	@db="$(DATA_DIR)/library.db"; \
 	if [ ! -f "$$db" ]; then echo "No library database at $$db: nothing to reset."; exit 0; fi; \
-	if [ -n "$$(find /proc/[0-9]*/fd -lname "$$(realpath "$$db")" 2>/dev/null | head -n 1)" ]; then \
+	pat="$$(realpath "$$db" | sed 's/[][*?\\]/\\&/g')"; \
+	if [ -n "$$(find /proc/[0-9]*/fd -lname "$$pat" 2>/dev/null | head -n 1)" ]; then \
 	  echo "Kanaru (or another process) has $$db open. Quit it first." >&2; exit 1; fi; \
-	$(SQLITE) -bail "$$db" < packaging/dev/reset-library.sql \
-	  && command rm -rf $(CACHE_DIR)/covers \
-	  && echo "Library cleared. Playlists and listen history kept; next start shows the folder picker."
+	$(SQLITE) -bail "$$db" < "$(CURDIR)/packaging/dev/reset-library.sql" \
+	  && command rm -rf "$(CACHE_DIR)/covers" \
+	  && echo "Library cleared. Playlists and listen history kept; next start opens the empty library (add folders in Settings > Library)."
 
 .PHONY: reset-all
 reset-all: ## Like a fresh install: library, playlists, listen history, settings, session, covers, logs
-	command rm -rf $(DATA_DIR) $(CONFIG_DIR) $(CACHE_DIR)
+	command rm -rf "$(DATA_DIR)" "$(CONFIG_DIR)" "$(CACHE_DIR)"
 
 ##@ Package
 
