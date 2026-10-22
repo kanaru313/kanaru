@@ -2,7 +2,7 @@
 
 Kanaru is a Material 3 music player for GNU/Linux first, built with Flutter. It plays and manages a local library offline, with no account and no telemetry. Remote sources and premium features come later.
 
-Status date: 2026-10-21. Pre-release (`0.1.0+1`, no tags, no packages, no CI). See [Current status](#current-status).
+Status date: 2026-10-23. Pre-release (`0.1.0+1`, no tags, no CI; one package, an x86_64 AppImage built locally with `make appimage`). See [Current status](#current-status).
 
 ## Vision
 
@@ -64,10 +64,10 @@ From [features.md section 19](./features.md). Targets, not guarantees: measured 
 | NFR-01 | Startup to library visible | < 1.5 s, 20k tracks, cold SSD | Not measured in CI |
 | NFR-02 | Memory during playback | < 200 MB, 20k tracks | Not measured |
 | NFR-03 | Large library | Browse, search and scroll at 60 fps, 100k tracks | Benchmarks gated by `KANARU_BENCH=1` (no stored reference numbers) |
-| NFR-04 | Package size | AppImage < 60 MB | No package yet |
+| NFR-04 | Package size | AppImage < 60 MB | Measured once by hand: 15.6 MiB on the first AppImage build ([deployment-guide.md](./deployment-guide.md)) |
 | NFR-05 | Stability | Bad files, bad tags, lost network or dead remote do not crash | Error handling is per file and per batch; see [code-standards.md](./code-standards.md#error-handling) |
-| NFR-06 | Data integrity | Migrations tested; playlists and ratings survive upgrades | Migration tests exist; playlists and ratings not built |
-| NFR-07 | Testing | Unit tests for core, widget tests for main flows | About 1,064 Dart tests and 53 Rust tests (scout count) |
+| NFR-06 | Data integrity | Migrations tested; playlists and ratings survive upgrades | Migration tests exist; playlists (with Favorites) are built and covered by them; ratings are not planned |
+| NFR-07 | Testing | Unit tests for core, widget tests for main flows | About 2,600 Dart tests and 116 Rust tests (`test`/`testWidgets` and `#[test]` declarations counted at `ff93a6c`) |
 
 Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no telemetry, no account, network features behind explicit switches, credentials only in the system keyring (planned).
 
@@ -80,26 +80,26 @@ Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no
 | Rust | `1.89`+ | `rust/Cargo.toml` |
 | libmpv | `>= 0.36` | [development.md](./development.md#what-you-need) |
 | GTK | `>= 3.24` | same |
-| Database | SQLite via drift, `schemaVersion = 4` | [system-architecture.md](./system-architecture.md#7-library-database-schema) |
+| Database | SQLite via drift, `schemaVersion = 6` | [system-architecture.md](./system-architecture.md#7-library-database-schema) |
 | License | GPL-3.0-or-later | [LICENSE](../LICENSE) |
 
 ## Current status
 
-Status on 2026-10-21, with the search work on `feat/search`. Commit and PR counts are from `1cd20bc`: 208 commits, PRs #1 to #22, between 2026-10-18 and 2026-10-21.
+Status on 2026-10-23. Commit and PR counts are from `ff93a6c`: 418 commits, PRs #1 to #46, between 2026-10-18 and 2026-10-22.
 
 | Area | State |
 |---|---|
-| Shell, theme (M3), i18n (en, vi), desktop title bar | Shipped |
-| Playback (media_kit, queue, shuffle, repeat, session restore) | Shipped; gapless configured but not verified (PLAY-06); ReplayGain and output device not done |
+| Shell, theme (M3), i18n (en, vi), desktop title bar | Shipped, with colors from the playing cover (UI-03, switch in Settings) |
+| Playback (media_kit, queue, shuffle, repeat, session restore) | Shipped; gapless configured but not verified (PLAY-06); ReplayGain (PLAY-07) and output device choice done |
 | MPRIS (own D-Bus implementation) | Shipped |
-| Folder scan, tags (Rust, lofty), embedded and folder artwork | Shipped, with startup rescan and root removal; file watching not done |
+| Folder scan, tags (Rust, lofty), embedded and folder artwork | Shipped, with startup rescan, root removal, `.nomedia`, size and duration filters, excluded folders, folder watching (off by default) and opening files from outside the app |
 | Library browse: Songs, Albums, Artists, Genres, Folders | Shipped |
-| Library browse: Favorites, History | Not started (placeholder screens) |
+| Library browse: Favorites, History | Shipped: Favorites playlist page; History with listen journal, most played by date range and per-song history |
 | Now Playing overlay and queue sheet | Shipped; hero transition not built |
 | Search | Shipped: songs, albums and artists, live from the top bar; typo tolerance not done (SEARCH-04) |
 | Playlists | Done: create, rename, delete, add, remove, reorder (PL-01, PL-02), Favorites (PL-03), M3U import and export (PL-04, PL-05), save the queue (QUEUE-06) |
-| Settings | Shipped in part (library folders, rescan, appearance, about) |
-| Packaging (AppImage, Flatpak, deb, rpm) | Not started |
+| Settings | Shipped in part (library folders, excluded folders, scan filters, rescan and watching, appearance, playback with ReplayGain, output device, listen history, about); other options are shown as coming soon |
+| Packaging (AppImage, Flatpak, deb, rpm) | AppImage done (PKG-01, `make appimage`); Flatpak, deb and rpm not started |
 | CI | Not started (no `.github/` workflows) |
 | Remote sources, cache, licensing | Not started |
 
@@ -120,12 +120,12 @@ Scope of the first release, derived from the P0 items of Phase 1 (features.md).
 | Requirement | ID | Priority | State |
 |---|---|---|---|
 | Playlists: create, edit, delete, add and reorder | PL-01, PL-02 | P0 | Done |
-| AppImage package | PKG-01 | P0 | Not started |
+| AppImage package | PKG-01 | P0 | Done (`make appimage`) |
 | Collapse DB schema history to v1 before release | PKG-08 | P0 | Not started |
 | Startup rescan option | IDX-06 | P1 | Done |
 | Folder watching | IDX-04 | P1 | Done (switch in Settings, off by default) |
 | Root removal and folder edits in Settings | IDX-01 (remainder) | P0 | Done |
-| ReplayGain | PLAY-07 | P1 | Not started |
+| ReplayGain | PLAY-07 | P1 | Done (off, track, album, auto; preamp; clipping protection) |
 | Dynamic color from artwork | UI-03 | P1 | Done |
 | Flatpak and deb/rpm | PKG-02, PKG-03 | P1 | Not started |
 | CI for analyze, test and cargo test | Phase 0 item | — | Not started |
@@ -163,3 +163,4 @@ Decisions the owner has not made (features.md, section "Câu hỏi mở"):
 |---|---|
 | 2026-10-21 | Initial overview and PDR. Status snapshot at HEAD `1cd20bc`. |
 | 2026-10-21 | Search shipped (SEARCH-01 to SEARCH-03); schema v4 with the FTS5 index. |
+| 2026-10-23 | Status at `ff93a6c`: schema v6, AppImage, ReplayGain and output device, scan filters and folder watching, colors from the cover, History and Favorites pages, M3U import and export. |
