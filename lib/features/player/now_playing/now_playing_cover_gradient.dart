@@ -156,7 +156,16 @@ class _StopsTween extends Tween<_Stops> {
     final from = begin ?? end!, to = end!;
     return _Stops([
       for (var i = 0; i < _maxStops; i++)
-        Color.lerp(from.colors[i], to.colors[i], t)!,
+        Color.lerp(
+          _towards(from.colors[i], to.colors[i]),
+          _towards(to.colors[i], from.colors[i]),
+          t,
+        )!,
     ]);
   }
 }
+
+/// A fully transparent [stop] takes [other]'s hue, so fading between a
+/// cover and no colors changes only the opacity, never through a dark tint.
+Color _towards(Color stop, Color other) =>
+    stop.a == 0 ? other.withValues(alpha: 0) : stop;
