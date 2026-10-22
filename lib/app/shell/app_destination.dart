@@ -13,7 +13,7 @@ enum AppDestination {
   genres('/genres', AppIcons.genreOutlined, AppIcons.genre),
   folders('/folders', AppIcons.folderOutlined, AppIcons.folder),
   favorites('/favorites', AppIcons.favoriteOutline, AppIcons.favorite),
-  recentlyPlayed('/recent', AppIcons.history, AppIcons.history),
+  history('/history', AppIcons.history, AppIcons.history),
   playlists('/playlists', AppIcons.playlistOutlined, AppIcons.playlist),
   search('/search', AppIcons.search, AppIcons.search),
   settings('/settings', AppIcons.settingsOutlined, AppIcons.settings);
@@ -32,7 +32,7 @@ enum AppDestination {
     genres => l10n.genresTitle,
     folders => l10n.navFolders,
     favorites => l10n.navFavorites,
-    recentlyPlayed => l10n.navRecentlyPlayed,
+    history => l10n.navHistory,
     playlists => l10n.sidebarPlaylists,
     search => l10n.navSearch,
     settings => l10n.navSettings,
@@ -51,5 +51,5 @@ const sidebarGroups = [
     AppDestination.genres,
     AppDestination.folders,
   ],
-  [AppDestination.favorites, AppDestination.recentlyPlayed],
+  [AppDestination.favorites, AppDestination.history],
 ];

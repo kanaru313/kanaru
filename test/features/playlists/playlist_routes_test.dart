@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/shell/app_destination.dart';
+import 'package:kanaru/features/playlists/favorites_routes.dart';
 import 'package:kanaru/features/playlists/playlist_routes.dart';
 
 import '../library/browse_test_data.dart';
@@ -10,6 +11,7 @@ void main() {
   test('the route literal matches the destination', () {
     expect(playlistsPath, AppDestination.playlists.path);
     expect(playlistLocation(3), '/playlists/3');
+    expect(favoritesPath, AppDestination.favorites.path);
   });
 
   test('only a positive whole number is a playlist id', () {

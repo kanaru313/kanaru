@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/database/library_startup.dart';
 import '../core/settings/settings_provider.dart';
+import '../features/history/history_routes.dart';
+import '../features/history/history_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/library/albums/album_screen.dart';
 import '../features/library/albums/albums_screen.dart';
@@ -13,14 +15,14 @@ import '../features/library/folders/folder_screen.dart';
 import '../features/library/folders/folders_screen.dart';
 import '../features/library/genres/genre_screen.dart';
 import '../features/library/genres/genres_screen.dart';
-import '../features/library/library_section_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
+import '../features/playlists/favorites_routes.dart';
+import '../features/playlists/favorites_screen.dart';
 import '../features/playlists/playlist_screen.dart';
 import '../features/playlists/playlists_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/settings/settings_screen.dart';
-import '../l10n/l10n.dart';
 import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
 import 'shell/missing_roots_notice.dart';
@@ -61,8 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               routes: [
                 GoRoute(
                   path: destination.path,
-                  builder: (context, state) =>
-                      _buildPage(context, state, destination),
+                  builder: (context, state) => _buildPage(state, destination),
                   routes: switch (destination) {
                     AppDestination.albums => [
                       GoRoute(
@@ -108,6 +109,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                         },
                       ),
                     ],
+                    AppDestination.favorites => favoritesRoutes,
+                    AppDestination.history => historyRoutes,
                     AppDestination.playlists => [
                       GoRoute(
                         path: ':id',
@@ -129,21 +132,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-Widget _buildPage(
-  BuildContext context,
-  GoRouterState state,
-  AppDestination destination,
-) {
-  final l10n = context.l10n;
-
-  LibrarySectionScreen section(String emptyMessage, {String? emptyTitle}) =>
-      LibrarySectionScreen(
-        title: destination.label(l10n),
-        icon: destination.icon,
-        emptyTitle: emptyTitle ?? l10n.libraryEmptyTitle,
-        emptyMessage: emptyMessage,
-      );
-
+Widget _buildPage(GoRouterState state, AppDestination destination) {
   return switch (destination) {
     AppDestination.home => const HomeScreen(),
     AppDestination.songs => const SongsScreen(),
@@ -151,14 +140,8 @@ Widget _buildPage(
     AppDestination.artists => const ArtistsScreen(),
     AppDestination.genres => const GenresScreen(),
     AppDestination.folders => const FoldersScreen(),
-    AppDestination.favorites => section(
-      l10n.favoritesEmptyMessage,
-      emptyTitle: l10n.navFavorites,
-    ),
-    AppDestination.recentlyPlayed => section(
-      l10n.recentlyPlayedEmptyMessage,
-      emptyTitle: l10n.navRecentlyPlayed,
-    ),
+    AppDestination.favorites => const FavoritesScreen(),
+    AppDestination.history => const HistoryScreen(),
     AppDestination.playlists => const PlaylistsScreen(),
     AppDestination.search => SearchScreen(
       query: state.uri.queryParameters['q'] ?? '',

@@ -31,7 +31,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get navFavorites => 'Yêu thích';
 
   @override
-  String get navRecentlyPlayed => 'Phát gần đây';
+  String get navHistory => 'Lịch sử';
 
   @override
   String get navSearch => 'Tìm kiếm';
