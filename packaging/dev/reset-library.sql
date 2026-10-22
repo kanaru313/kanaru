@@ -11,6 +11,11 @@ PRAGMA foreign_keys = ON;
 PRAGMA recursive_triggers = ON;
 
 BEGIN IMMEDIATE;
+-- The delete trigger removes each track's tokens by value. If the index has
+-- drifted from `tracks` (a crash, a bug, a hand edit), those deletes fail with
+-- "database disk image is malformed" and the reset would be impossible exactly
+-- when it is needed. Rebuilding first makes the index match `tracks` again.
+INSERT INTO track_search(track_search) VALUES ('rebuild');
 DELETE FROM track_artists;
 DELETE FROM tracks;
 DELETE FROM library_roots;
