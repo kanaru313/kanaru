@@ -582,5 +582,40 @@
   },
   "listenHistoryClearFailed": "Could not clear listen history",
   "playbackUnavailableTitle": "Audio engine not found",
-  "playbackUnavailableBody": "libmpv could not be loaded. You can browse your library, but playback is turned off."
+  "playbackUnavailableBody": "libmpv could not be loaded. You can browse your library, but playback is turned off.",
+  "settingsAudioOutputDevice": "Output device",
+  "settingsAudioOutputDeviceHint": "Where Kanaru plays. Automatic follows the system default.",
+  "audioDeviceAuto": "Automatic (system default)",
+  "audioDeviceMissing": "{name} — not available, using Automatic",
+  "@audioDeviceMissing": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "audioDeviceDialogTitle": "Output device",
+  "audioDeviceNoneFound": "No other output devices found",
+  "audioDeviceOtherOutputs": "Other outputs",
+  "audioDeviceFailed": "{name} — could not be opened, using Automatic",
+  "@audioDeviceFailed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "audioDeviceChange": "Change",
+  "settingsAudioReplayGain": "ReplayGain",
+  "settingsAudioReplayGainHint": "Evens out loudness with the ReplayGain tags in your files. Automatic uses album gain while tracks of one album play in a row, and track gain otherwise.",
+  "replayGainModeOff": "Off",
+  "replayGainModeTrack": "Track",
+  "replayGainModeAlbum": "Album",
+  "replayGainModeAuto": "Automatic",
+  "settingsAudioReplayGainPreamp": "ReplayGain preamp",
+  "settingsAudioReplayGainPreampHint": "Gain added on top of the ReplayGain value. Files without ReplayGain tags keep their level.",
+  "settingsAudioDecibels": "{value} dB",
+  "@settingsAudioDecibels": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "settingsAudioPreventClipping": "Prevent clipping",
+  "settingsAudioPreventClippingHint": "Lower the gain when a boost would distort the loudest peaks."
 }

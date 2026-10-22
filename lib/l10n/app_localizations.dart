@@ -1891,6 +1891,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'libmpv could not be loaded. You can browse your library, but playback is turned off.'**
   String get playbackUnavailableBody;
+
+  /// No description provided for @settingsAudioOutputDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Output device'**
+  String get settingsAudioOutputDevice;
+
+  /// No description provided for @settingsAudioOutputDeviceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Where Kanaru plays. Automatic follows the system default.'**
+  String get settingsAudioOutputDeviceHint;
+
+  /// No description provided for @audioDeviceAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic (system default)'**
+  String get audioDeviceAuto;
+
+  /// No description provided for @audioDeviceMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — not available, using Automatic'**
+  String audioDeviceMissing(String name);
+
+  /// No description provided for @audioDeviceDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Output device'**
+  String get audioDeviceDialogTitle;
+
+  /// No description provided for @audioDeviceNoneFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No other output devices found'**
+  String get audioDeviceNoneFound;
+
+  /// No description provided for @audioDeviceOtherOutputs.
+  ///
+  /// In en, this message translates to:
+  /// **'Other outputs'**
+  String get audioDeviceOtherOutputs;
+
+  /// No description provided for @audioDeviceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — could not be opened, using Automatic'**
+  String audioDeviceFailed(String name);
+
+  /// No description provided for @audioDeviceChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get audioDeviceChange;
+
+  /// No description provided for @settingsAudioReplayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'ReplayGain'**
+  String get settingsAudioReplayGain;
+
+  /// No description provided for @settingsAudioReplayGainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Evens out loudness with the ReplayGain tags in your files. Automatic uses album gain while tracks of one album play in a row, and track gain otherwise.'**
+  String get settingsAudioReplayGainHint;
+
+  /// No description provided for @replayGainModeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get replayGainModeOff;
+
+  /// No description provided for @replayGainModeTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get replayGainModeTrack;
+
+  /// No description provided for @replayGainModeAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get replayGainModeAlbum;
+
+  /// No description provided for @replayGainModeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get replayGainModeAuto;
+
+  /// No description provided for @settingsAudioReplayGainPreamp.
+  ///
+  /// In en, this message translates to:
+  /// **'ReplayGain preamp'**
+  String get settingsAudioReplayGainPreamp;
+
+  /// No description provided for @settingsAudioReplayGainPreampHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain added on top of the ReplayGain value. Files without ReplayGain tags keep their level.'**
+  String get settingsAudioReplayGainPreampHint;
+
+  /// No description provided for @settingsAudioDecibels.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} dB'**
+  String settingsAudioDecibels(String value);
+
+  /// No description provided for @settingsAudioPreventClipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Prevent clipping'**
+  String get settingsAudioPreventClipping;
+
+  /// No description provided for @settingsAudioPreventClippingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower the gain when a boost would distort the loudest peaks.'**
+  String get settingsAudioPreventClippingHint;
 }
 
 class _AppLocalizationsDelegate

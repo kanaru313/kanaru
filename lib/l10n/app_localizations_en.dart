@@ -1228,4 +1228,74 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get playbackUnavailableBody =>
       'libmpv could not be loaded. You can browse your library, but playback is turned off.';
+
+  @override
+  String get settingsAudioOutputDevice => 'Output device';
+
+  @override
+  String get settingsAudioOutputDeviceHint =>
+      'Where Kanaru plays. Automatic follows the system default.';
+
+  @override
+  String get audioDeviceAuto => 'Automatic (system default)';
+
+  @override
+  String audioDeviceMissing(String name) {
+    return '$name — not available, using Automatic';
+  }
+
+  @override
+  String get audioDeviceDialogTitle => 'Output device';
+
+  @override
+  String get audioDeviceNoneFound => 'No other output devices found';
+
+  @override
+  String get audioDeviceOtherOutputs => 'Other outputs';
+
+  @override
+  String audioDeviceFailed(String name) {
+    return '$name — could not be opened, using Automatic';
+  }
+
+  @override
+  String get audioDeviceChange => 'Change';
+
+  @override
+  String get settingsAudioReplayGain => 'ReplayGain';
+
+  @override
+  String get settingsAudioReplayGainHint =>
+      'Evens out loudness with the ReplayGain tags in your files. Automatic uses album gain while tracks of one album play in a row, and track gain otherwise.';
+
+  @override
+  String get replayGainModeOff => 'Off';
+
+  @override
+  String get replayGainModeTrack => 'Track';
+
+  @override
+  String get replayGainModeAlbum => 'Album';
+
+  @override
+  String get replayGainModeAuto => 'Automatic';
+
+  @override
+  String get settingsAudioReplayGainPreamp => 'ReplayGain preamp';
+
+  @override
+  String get settingsAudioReplayGainPreampHint =>
+      'Gain added on top of the ReplayGain value. Files without ReplayGain tags keep their level.';
+
+  @override
+  String settingsAudioDecibels(String value) {
+    return '$value dB';
+  }
+
+  @override
+  String get settingsAudioPreventClipping => 'Prevent clipping';
+
+  @override
+  String get settingsAudioPreventClippingHint =>
+      'Lower the gain when a boost would distort the loudest peaks.';
 }

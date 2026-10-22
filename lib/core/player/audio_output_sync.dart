@@ -108,6 +108,14 @@ class AudioOutputSync {
     _setFailed(name);
   }
 
+  /// The failure mark was cleared from outside (the user picked the failed
+  /// device again): use the saved device again if it is listed.
+  void retryDevice() {
+    if (_disposed || _failed == null) return;
+    _setFailed(null);
+    _applyDevice();
+  }
+
   /// A new queue: follow the track that plays, and read the album keys of
   /// the tracks around it ahead of their turn.
   void setQueue(PlayQueue queue) {

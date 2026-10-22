@@ -21,6 +21,11 @@ mixin _PlayerAudioOutput on Notifier<PlayerState> {
       (_, prefs) => sync.setPrefs(prefs),
       fireImmediately: true,
     );
+    // The UI clears the mark to retry the saved device; the sync's own clears
+    // find `_failed` already null and do nothing.
+    ref.listen(audioOutputFailedDeviceProvider, (previous, name) {
+      if (previous != null && name == null) sync.retryDevice();
+    });
     final subscriptions = [
       _backend.audioDevicesChanged.listen(sync.setDevices),
       _backend.audioDeviceFailed.listen(sync.markDeviceFailed),

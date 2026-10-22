@@ -17,6 +17,10 @@ class AudioOutputFailedDevice extends Notifier<String?> {
   String? build() => null;
 
   void set(String? name) => state = name;
+
+  /// The user picked the failed device again: forget the failure so the
+  /// player tries it. The settings do not change then, so nothing else would.
+  void retry() => state = null;
 }
 
 final audioOutputFailedDeviceProvider =

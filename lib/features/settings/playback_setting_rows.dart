@@ -3,12 +3,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import 'audio_output_device_setting_rows.dart';
+import 'audio_replay_gain_setting_rows.dart';
 import 'coming_soon_rows.dart';
 import 'settings_number_presets.dart';
 
-/// Playback options that are not wired yet (shown from the saved values,
-/// off): lyrics, gapless, crossfade, fades, endless queue, and when a play
-/// counts as a listen.
+/// Playback options. The output device and ReplayGain are wired; the rest are
+/// not yet (shown from the saved values, off): lyrics, gapless, crossfade,
+/// fades, endless queue, and when a play counts as a listen.
 class PlaybackSettingRows extends ConsumerWidget {
   const PlaybackSettingRows({super.key});
 
@@ -20,6 +22,8 @@ class PlaybackSettingRows extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const AudioOutputDeviceSettingRow(),
+        const ReplayGainSettingRows(),
         ComingSoonSwitchRow(
           title: l10n.settingsPreferEmbeddedLyrics,
           subtitle: l10n.settingsPreferEmbeddedLyricsHint,

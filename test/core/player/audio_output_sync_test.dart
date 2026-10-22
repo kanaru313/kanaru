@@ -404,6 +404,20 @@ void main() {
       expect(failedReports, [x, null]);
     });
 
+    test('retrying clears the failure and uses the saved device again', () {
+      sync.setPrefs(saved());
+      sync.setDevices([device('auto'), device(x)]);
+      sync.markDeviceFailed(x);
+      fake.audioCalls.clear();
+
+      sync.retryDevice();
+      sync.retryDevice(); // nothing left to retry
+
+      expect(fake.audioCalls, ['setAudioDevice($x)']);
+      expect(sync.failedDevice, isNull);
+      expect(failedReports, [x, null]);
+    });
+
     testWidgets('a failed device that leaves and returns is tried again', (
       tester,
     ) async {
