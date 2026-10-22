@@ -17,6 +17,27 @@ class PlaylistSummary {
   /// Milliseconds since the epoch.
   final int createdAt;
   final int entryCount;
+
+  @override
+  bool operator ==(Object other) =>
+      other is PlaylistSummary &&
+      other.id == id &&
+      other.name == name &&
+      other.createdAt == createdAt &&
+      other.entryCount == entryCount;
+
+  @override
+  int get hashCode => Object.hash(id, name, createdAt, entryCount);
+}
+
+/// Whether [a] and [b] hold equal summaries in the same order.
+bool samePlaylistSummaries(List<PlaylistSummary> a, List<PlaylistSummary> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 /// A summary with its collage keys (see `pickCollageKeys`).

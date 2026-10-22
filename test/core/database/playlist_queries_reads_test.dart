@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show TableUpdateQuery, Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -96,6 +96,46 @@ void main() {
     });
   });
 
+  group('collage', () {
+    TracksCompanion covered(String path, String cover) =>
+        track(root, path).copyWith(coverKey: Value(cover));
+
+    test(
+      'keys past the 64-entry scan limit are left out, page and card agree',
+      () async {
+        await db.upsertTracks([
+          for (var i = 0; i < 66; i++) covered('/m/$i', 'x'),
+          covered('/m/66', 'y'),
+          covered('/m/67', 'z'),
+        ]);
+        final id = await db.createPlaylist(
+          'A',
+          now: 1,
+          paths: [for (var i = 0; i < 68; i++) '/m/$i'],
+        );
+
+        expect((await db.playlistCards()).single.coverKeys, ['x']);
+        expect((await db.playlistPage(id))!.coverKeys, ['x']);
+      },
+    );
+
+    test('missing and uncovered tracks at the head do not count', () async {
+      await db.upsertTracks([
+        track(root, '/m/plain'),
+        covered('/m/a', 'x'),
+        covered('/m/b', 'y'),
+      ]);
+      final id = await db.createPlaylist(
+        'A',
+        now: 1,
+        paths: ['/m/gone', '/m/plain', '/m/a', '/m/b'],
+      );
+
+      expect((await db.playlistCards()).single.coverKeys, ['x', 'y']);
+      expect((await db.playlistPage(id))!.coverKeys, ['x', 'y']);
+    });
+  });
+
   group('streams', () {
     test('summaries re-emit on playlist writes', () async {
       final events = <List<String>>[];
@@ -110,7 +150,7 @@ void main() {
       await settle();
       final id = await db.createPlaylist('A', now: 1);
       await settle();
-      await db.addToPlaylist(id, ['/m/a']);
+      await db.addMissingToPlaylist(id, ['/m/a']);
       await settle();
       await db.deletePlaylist(id);
       await settle();
@@ -130,6 +170,7 @@ void main() {
       addTearDown(sub.cancel);
       await Future<void>.delayed(const Duration(milliseconds: 50));
       final before = emissions;
+      expect(before, 1);
 
       await db.upsertTracks([track(root, '/m/a'), track(root, '/m/b')]);
       await db.upsertTracks([
@@ -138,6 +179,74 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
       expect(emissions, before);
+    });
+
+    test('rename, move and remove each reach the watchers', () async {
+      final id = await db.createPlaylist(
+        'A',
+        now: 1,
+        paths: ['/m/a', '/m/b', '/m/c'],
+      );
+      final entries = (await db.playlistPage(id))!.entries;
+      final names = <String>[];
+      final nameSub = db.watchPlaylistSummaries().listen(
+        (list) => names.add([for (final s in list) s.name].join()),
+      );
+      var entryUpdates = 0;
+      final entrySub = db
+          .tableUpdates(TableUpdateQuery.onTable(db.playlistEntries))
+          .listen((_) => entryUpdates++);
+      addTearDown(nameSub.cancel);
+      addTearDown(entrySub.cancel);
+      Future<void> settle() =>
+          Future<void>.delayed(const Duration(milliseconds: 50));
+      await settle();
+
+      await db.renamePlaylist(id, 'B');
+      await settle();
+      expect(names, ['A', 'B']);
+
+      await db.movePlaylistEntry(id, entries.first.entryId, 2);
+      await settle();
+      expect(entryUpdates, 1);
+
+      await db.removePlaylistEntries(id, {entries.last.entryId});
+      await settle();
+      expect(entryUpdates, 2);
+    });
+
+    test('a remove that deletes nothing wakes nobody', () async {
+      final id = await db.createPlaylist('A', now: 1, paths: ['/m/a']);
+      var entryUpdates = 0;
+      final sub = db
+          .tableUpdates(TableUpdateQuery.onTable(db.playlistEntries))
+          .listen((_) => entryUpdates++);
+      addTearDown(sub.cancel);
+
+      await db.removePlaylistEntries(id, {9999});
+      await db.removePlaylistEntries(999, {1});
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(entryUpdates, 0);
+    });
+
+    test('a move does not re-emit the summaries', () async {
+      final id = await db.createPlaylist(
+        'A',
+        now: 1,
+        paths: ['/m/a', '/m/b', '/m/c'],
+      );
+      final first = (await db.playlistPage(id))!.entries.first.entryId;
+      var emissions = 0;
+      final sub = db.watchPlaylistSummaries().listen((_) => emissions++);
+      addTearDown(sub.cancel);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(emissions, 1);
+
+      await db.movePlaylistEntry(id, first, 2);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(emissions, 1);
     });
   });
 }

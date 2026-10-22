@@ -15,12 +15,13 @@ const _newestFirst = ' ORDER BY p.created_at DESC, p.id DESC';
 
 /// Playlist reads. Writes are in `playlist_writes.dart`.
 extension PlaylistQueries on LibraryDatabase {
-  /// Every playlist, newest first, with its entry count. Emits on writes to
-  /// `playlists` and `playlist_entries` only, never on scans.
+  /// Every playlist, newest first, with its entry count. Re-queries on writes
+  /// to `playlists` and `playlist_entries` only, never on scans, and emits
+  /// only when the result changed (a reorder does not change it).
   Stream<List<PlaylistSummary>> watchPlaylistSummaries() => customSelect(
     _summarySql + _newestFirst,
     readsFrom: {playlists, playlistEntries},
-  ).map(_summary).watch();
+  ).map(_summary).watch().distinct(samePlaylistSummaries);
 
   /// One playlist with its count, or null when it does not exist.
   Future<PlaylistSummary?> playlistSummary(int id) => customSelect(

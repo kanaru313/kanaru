@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
@@ -35,34 +37,47 @@ extension PlaylistWrites on LibraryDatabase {
   Future<void> deletePlaylist(int id) =>
       (delete(playlists)..where((p) => p.id.equals(id))).go();
 
-  /// Appends [paths] in order and returns how many were added. Throws, and
-  /// adds nothing, when the playlist is gone. Repeated paths are stored as
-  /// given: skipping duplicates is the caller's job (`playlistPathsAmong`).
-  Future<int> addToPlaylist(int id, List<String> paths) {
-    if (paths.isEmpty) return Future.value(0);
-    return transaction(() async {
-      final count = playlistEntries.id.count();
-      final row =
-          await (selectOnly(playlistEntries)
-                ..addColumns([count])
-                ..where(playlistEntries.playlistId.equals(id)))
-              .getSingle();
-      await _append(id, paths, start: row.read(count) ?? 0);
-      return paths.length;
-    });
-  }
-
-  /// The subset of [paths] that playlist [id] already holds.
-  Future<Set<String>> playlistPathsAmong(int id, Iterable<String> paths) async {
+  /// Appends to playlist [id] the paths of [paths] it does not hold yet, in
+  /// order, first occurrence only, and returns how many were added and how
+  /// many distinct paths were skipped because the playlist already had them.
+  /// The check and the append are one transaction, so concurrent calls never
+  /// store the same path twice. Duplicates already stored are left alone.
+  /// Throws, and adds nothing, when the playlist is gone.
+  Future<({int added, int skipped})> addMissingToPlaylist(
+    int id,
+    List<String> paths,
+  ) {
     final wanted = paths.toSet();
-    if (wanted.isEmpty) return {};
-    final rows =
-        await (selectOnly(playlistEntries, distinct: true)
-              ..addColumns([playlistEntries.path])
-              ..where(playlistEntries.playlistId.equals(id)))
-            .get();
-    return {for (final row in rows) ?row.read(playlistEntries.path)}
-        .intersection(wanted);
+    if (wanted.isEmpty) return Future.value((added: 0, skipped: 0));
+    return transaction(() async {
+      // One JSON array instead of one variable per path: SQLite caps the
+      // variables of a statement, and a folder can hold thousands of songs.
+      final rows = await customSelect(
+        'SELECT DISTINCT path FROM playlist_entries '
+        'WHERE playlist_id = ?1 '
+        'AND path IN (SELECT value FROM json_each(?2))',
+        variables: [
+          Variable.withInt(id),
+          Variable.withString(jsonEncode(wanted.toList())),
+        ],
+        readsFrom: {playlistEntries},
+      ).get();
+      final present = {for (final row in rows) row.read<String>('path')};
+      final fresh = [
+        for (final path in wanted)
+          if (!present.contains(path)) path,
+      ];
+      if (fresh.isNotEmpty) {
+        final count = playlistEntries.id.count();
+        final row =
+            await (selectOnly(playlistEntries)
+                  ..addColumns([count])
+                  ..where(playlistEntries.playlistId.equals(id)))
+                .getSingle();
+        await _append(id, fresh, start: row.read(count) ?? 0);
+      }
+      return (added: fresh.length, skipped: present.length);
+    });
   }
 
   /// Deletes the entries [entryIds] of playlist [id] and closes the gaps.
@@ -70,9 +85,11 @@ extension PlaylistWrites on LibraryDatabase {
   Future<void> removePlaylistEntries(int id, Set<int> entryIds) {
     if (entryIds.isEmpty) return Future.value();
     return transaction(() async {
-      await (delete(
+      final deleted = await (delete(
         playlistEntries,
       )..where((e) => e.playlistId.equals(id) & e.id.isIn(entryIds))).go();
+      // Nothing deleted: no gap to close, and no reason to wake watchers.
+      if (deleted == 0) return;
       await customUpdate(
         '''
 UPDATE playlist_entries AS e SET position = r.rn
