@@ -1148,12 +1148,6 @@ abstract class AppLocalizations {
   /// **'Songs you like will show up here.'**
   String get favoritesEmptyMessage;
 
-  /// No description provided for @recentlyPlayedEmptyMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Songs you play will show up here.'**
-  String get recentlyPlayedEmptyMessage;
-
   /// No description provided for @searchEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -2263,6 +2257,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.'**
   String get settingsWatchFoldersLimit;
+
+  /// Message of the History page when nothing was played yet
+  ///
+  /// In en, this message translates to:
+  /// **'Songs you play will show up here.'**
+  String get historyEmptyMessage;
+
+  /// Header of the History day that is today
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get historyToday;
+
+  /// Header of the History day that is yesterday
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get historyYesterday;
+
+  /// How many plays a History day holds
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
+  String historyDayPlayCount(int count);
+
+  /// Badge on a History row: this is the Nth time the song was played
+  ///
+  /// In en, this message translates to:
+  /// **'#{n}'**
+  String historyNthPlay(int n);
+
+  /// Tooltip and screen reader text of the Nth play badge
+  ///
+  /// In en, this message translates to:
+  /// **'Listen number {n}'**
+  String historyNthPlayLabel(int n);
+
+  /// Note on a History row whose file is no longer in the library
+  ///
+  /// In en, this message translates to:
+  /// **'Not in library'**
+  String get historyTrackMissing;
+
+  /// Menu item that removes one play from the History
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from history'**
+  String get historyDeletePlay;
+
+  /// Snackbar after one play was removed from the History
+  ///
+  /// In en, this message translates to:
+  /// **'Removed one listen from history'**
+  String get historyPlayDeleted;
+
+  /// Snackbar action that puts a removed play back
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get historyUndo;
+
+  /// Snackbar when removing a play failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t remove the listen. See the log for details.'**
+  String get historyDeleteFailed;
+
+  /// Snackbar when undoing a removal failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t restore the listen. See the log for details.'**
+  String get historyRestoreFailed;
+
+  /// Tooltip of the button that opens the History calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to a day'**
+  String get historyCalendar;
+
+  /// Note on the empty History page when recording is off in Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Recording listen history is turned off'**
+  String get historyRecordingOff;
+
+  /// Title of the History page when there is no library database
+  ///
+  /// In en, this message translates to:
+  /// **'History is not available'**
+  String get historyUnavailable;
+
+  /// Message of the History page when reading it failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the history. See the log for details.'**
+  String get historyLoadFailed;
+
+  /// Tooltip of the more button on a History row
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get historyMore;
+
+  /// Last row of the History list: switches to an older year
+  ///
+  /// In en, this message translates to:
+  /// **'Show {year}'**
+  String historyOlderYear(int year);
+
+  /// Tab of the History page that lists every play by day
+  ///
+  /// In en, this message translates to:
+  /// **'Journal'**
+  String get historyTabTimeline;
+
+  /// Tab of the History page that ranks songs by plays in a date range
+  ///
+  /// In en, this message translates to:
+  /// **'Most played'**
+  String get historyTabTop;
+
+  /// Most played range chip and label for the current day
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get historyRangeToday;
+
+  /// Most played range chip: the last 7 days
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get historyRange7Days;
+
+  /// Most played range chip: the last 30 days
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get historyRange30Days;
+
+  /// Most played range chip: the last 6 months
+  ///
+  /// In en, this message translates to:
+  /// **'6 months'**
+  String get historyRange6Months;
+
+  /// Most played range chip: the last 12 months
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get historyRangeYear;
+
+  /// Most played range chip and label for the whole history
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get historyRangeAll;
+
+  /// Most played range chip that opens the date range picker
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get historyRangeCustom;
+
+  /// Tooltip of the button that moves the Most played range back
+  ///
+  /// In en, this message translates to:
+  /// **'Previous period'**
+  String get historyRangePrevious;
+
+  /// Tooltip of the button that moves the Most played range forward
+  ///
+  /// In en, this message translates to:
+  /// **'Next period'**
+  String get historyRangeNext;
+
+  /// First and last day of the Most played range
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String historyRangeLabel(String start, String end);
+
+  /// Plays of a song on a Most played row
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
+  String historyTopPlayCount(int count);
+
+  /// Note under the Most played list when it was cut at its limit
+  ///
+  /// In en, this message translates to:
+  /// **'Showing first {count}'**
+  String historyTopCapped(int count);
+
+  /// Button that plays the Most played list from the top
+  ///
+  /// In en, this message translates to:
+  /// **'Play all'**
+  String get historyPlayAll;
+
+  /// Button that saves the Most played list as a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Create playlist'**
+  String get historyCreatePlaylist;
+
+  /// Suggested name of a playlist made from the Most played list
+  ///
+  /// In en, this message translates to:
+  /// **'Most played · {range}'**
+  String historyTopPlaylistName(String range);
+
+  /// Snackbar after a playlist was made from the Most played list
+  ///
+  /// In en, this message translates to:
+  /// **'Created playlist {name}'**
+  String historyPlaylistCreated(String name);
+
+  /// Message of the Most played tab when the range has no plays
+  ///
+  /// In en, this message translates to:
+  /// **'No listens in this range'**
+  String get historyTopEmpty;
+
+  /// Row menu item that opens the history page of a song
+  ///
+  /// In en, this message translates to:
+  /// **'Song history'**
+  String get historyShowTrackHistory;
+
+  /// Title of the song history page when no song is named
+  ///
+  /// In en, this message translates to:
+  /// **'Song history'**
+  String get historyTrackTitle;
+
+  /// Number of plays of a song in the header of its history page
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
+  String historyTrackStats(int count);
+
+  /// Day of the first play in the header of a song history page
+  ///
+  /// In en, this message translates to:
+  /// **'First {date}'**
+  String historyTrackFirst(String date);
+
+  /// Day and time of the latest play in the header of a song history page
+  ///
+  /// In en, this message translates to:
+  /// **'Last {date}'**
+  String historyTrackLast(String date);
+
+  /// How long a play was listened to, on a row of the song history page
+  ///
+  /// In en, this message translates to:
+  /// **'listened {duration}'**
+  String historyListened(String duration);
+
+  /// Message of the song history page when the song has no plays
+  ///
+  /// In en, this message translates to:
+  /// **'No listens yet'**
+  String get historyTrackNoPlays;
+
+  /// Message of the song history page opened without a song
+  ///
+  /// In en, this message translates to:
+  /// **'Song not found'**
+  String get historyTrackNotFound;
+
+  /// Button on the song history page that plays the song
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get historyPlay;
 }
 
 class _AppLocalizationsDelegate

@@ -473,6 +473,50 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Playlist cover | Computed, nothing is stored: the first up to 4 distinct non-null cover keys among the first 64 covered entries by position (tracks of one album share a cover, so repeats count once). |
 | Reset | A library reset deletes roots and tracks, never the file. `make reset-library` runs `packaging/dev/reset-library.sql`: it removes `library_roots`, `tracks`, `track_artists` and `cover_colors` (scan output) and keeps the user-data tables and `excluded_folders` (user configuration). The target refuses a database below schema 6. |
 
+### Listen history reads
+
+`history_queries.dart` (reads) and `history_play_writes.dart` (delete and restore of one play) sit on `LibraryDatabase`. Each read is a one-shot `Future`; the provider layer decides when to run it again.
+
+| Rule | Detail |
+|---|---|
+| Time bounds | The caller computes every bound from local calendar dates (`DateTime(y, m, d)`, so DST days are 23 or 25 hours) and passes epoch ms as half-open `[start, end)`. SQL never uses `localtime` or `strftime`. Bucket counts take the ascending bounds as one JSON array (`json_each`); empty buckets are dropped, newest first. |
+| Indexes | Range counts and the top query search `plays_played_at`; per-track reads and the "Nth listen" subqueries search `plays_path_played` or `plays_played_at`. A test runs `EXPLAIN QUERY PLAN` and fails on a full scan of `plays` under any alias. |
+| Order and "Nth listen" | The journal order is `played_at DESC, id DESC`. `nth` is `play_stats.play_count` minus the plays of the same path that come later in `(played_at, id)` order; it is null when the path has no `play_stats` row. |
+| Top | `count DESC`, then the earlier last play inside the range, then `path`; the caller gives the limit. With no range it reads `play_stats` instead of scanning `plays`. |
+| Missing tracks | Rows are joined to `tracks` by path with a left join; a path no longer in the library still comes back, with a null track. |
+| Delete and restore | `deletePlay` returns the removed row (or null if it is gone); `restorePlay` inserts it again with the same `id`, safe because `plays.id` is AUTOINCREMENT, and returns false when the id exists. Both go through drift's API, so the `play_stats` triggers and watchers run. A recorder checkpoint that landed while the row was absent is lost, so a restored `listened_ms` can be lower than the real time. |
+
+The History page (`features/history/`) reads them as follows.
+
+| Rule | Detail |
+|---|---|
+| Layout | One fixed-extent list (64 px) holds every day header and play of the selected year, so lines are placed without measuring and a flat index finds the day of a line by binary search. The sticky header is an overlay drawn from `offset ~/ extent`, not part of the scroll. A year is one `HistoryTimelineBody`; a chip or the "Show <year>" line builds a new one. |
+| One signal | One subscription to the `plays` table per page. Batches where every update is `UpdateKind.update` (the recorder's `listened_ms` checkpoints) are ignored; an insert, a delete or an update with no kind counts. Changes are collected for 250 ms and then bump one version number that the year and day-count providers watch. |
+| Day rows | `HistoryDayRowCache` reads the plays of a day when a line of it is first drawn: at most two reads at once, newest request first, a request nobody renewed for 300 ms is dropped, 40 days kept (least recently used out). A new version marks every day stale but keeps drawing the old rows until the read returns, so rows do not flash. A `tracks` change (a scan) marks them stale at most once per `libraryBrowseRefreshInterval`. |
+| Inserts while scrolled | A new play arriving while the list is more than one line from the top is held back and shown when the reader scrolls back near the top or changes year, so nothing moves under them; a day read again meanwhile keeps only as many rows as its header counts (the held plays are the newest rows and are cut). Deletes, restores and a cleared history show at once. There is no scroll anchoring (`jumpTo`). |
+| Tap and menu | A tap queues the day's songs, each once at its first place, skipping songs gone from the library. The player gets only the `tracks` row path, never `plays.path`. Removal is only in the row menu, which keeps the play id it was opened on. |
+
+The Most played tab (`HistoryTopView`) reads the top query as follows.
+
+| Rule | Detail |
+|---|---|
+| Ranges | `history_range.dart` is pure. Today, 7 days, 30 days (default), 6 months, 1 year, All and Custom, all whole local days ending at midnight after today. 6 months and 1 year are rolling windows of calendar days (`addMonthsClamped`), not calendar years; a calendar year is a Custom range. Period `k` back ends where period `k - 1` starts, so periods tile with no gap or overlap; a Custom range shifts by its own length in days, and Next is off once the range reaches today. |
+| Full-history range | A range that takes in the first and the last play (preset or custom) reads the all-time `play_stats` branch: the same answer, cheaper. All reads `play_stats` too. |
+| Order and cap | Plays descending, then the earlier last play inside the range, then `path` (done in SQL). At most 500 rows (`historyTopLimit`); the query asks for 501 and the page says "Showing first 500" only when the extra row came back. |
+| Playing | A tap queues the songs still in the library in rank order, starting at the tapped one (the index is recomputed after skipping missing ones). Play all and Create playlist use the same songs, so a missing song is never queued or added; the playlist is named after the range and the page does not open it. |
+| Reloading | The provider is a family keyed by the window in epoch ms and watches the one plays version, so a new play or a new range reads again. The page keeps the list it showed and draws a thin progress bar until the read returns. |
+| Hidden tab | Both tabs sit in an `IndexedStack`, which does not stop tickers; the hidden one is wrapped in `TickerMode(enabled: false)`, which pauses its providers. A play recorded while it is hidden costs no top query, and it reads once when shown again. |
+| Picker | `showDateRangePicker` gets `firstDate = min(first play day, today)`, `lastDate = max(last play day, today)` and the current Custom range cut to them (dropped when nothing is left), as the picker asserts on dates outside its bounds. The Custom chip is off while there is no play. |
+
+The song page (`HistoryTrackScreen`, `/history/track?path=`) reads one song's totals and plays as follows.
+
+| Rule | Detail |
+|---|---|
+| Address | `historyTrackLocation(path)` builds the location with `Uri(path:, queryParameters:)`, so every character of the path is percent-encoded and decoded back unchanged (tests cover `+`, `%`, `#`, `?`, `&`, `=`, spaces, non-ASCII and a 4000-character path). The route lives in `historyRoutes`, a sub-route of the History branch; `app/` is not touched. Opening it uses `context.go`: going back rebuilds `/history` with its tab and range, as the page below stays mounted. |
+| One read | `historyTrackProvider` runs `historyTrackSummary` and `historyTrackPlays` in one transaction, so the count in the header and the list agree. It reads again on the shared plays version (insert and delete, not checkpoints) and, at most once per browse interval, after a scan. |
+| Path | The query path is only used to look the song up and to name it when it has no library row. The player gets the path of the `tracks` row that matches, never the query string; with no match (an orphan path, `http://…`, a missing or empty parameter) there is no Play button and the player is never called. |
+| Removal | Only through the row menu, capturing `plays.id` when it opens, with the same Undo as the journal. Removing every play leaves the page open with "No listens yet". |
+
 ### Playlist kinds
 
 `playlists.kind` (invariant 8 in `user_data_tables.dart`): NULL is an ordinary playlist; `'favorites'` is the Favorites playlist, at most one row, enforced by the partial unique index `playlists_favorites_unique`; `'queue'` is reserved and may repeat. Writers store no other value; readers treat an unknown kind as ordinary. Favorites is created lazily, never seeded: in one transaction, `INSERT OR IGNORE` (drift `InsertMode.insertOrIgnore`) and then `SELECT id FROM playlists WHERE kind = 'favorites'`. `insertReturning` is not used (an ignored insert returns no row) and neither is `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects for a partial index). Favorites entries follow the same path, order and no-foreign-key rules as any playlist.

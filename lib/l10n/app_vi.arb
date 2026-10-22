@@ -195,7 +195,6 @@
   "foldersEmptyFolder": "Thư mục này không có bài hát",
 
   "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
-  "recentlyPlayedEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
 
   "searchEmptyTitle": "Tìm trong thư viện",
   "searchEmptyMessage": "Tìm bài hát, album và nghệ sĩ.",
@@ -411,5 +410,136 @@
   "settingsWatchFoldersHint": "Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi",
   "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
   "settingsWatchFoldersLimit": "Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.",
-  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" }
+  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" },
+  "historyEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
+  "@historyEmptyMessage": { "description": "Message of the History page when nothing was played yet" },
+  "historyToday": "Hôm nay",
+  "@historyToday": { "description": "Header of the History day that is today" },
+  "historyYesterday": "Hôm qua",
+  "@historyYesterday": { "description": "Header of the History day that is yesterday" },
+  "historyDayPlayCount": "{count, plural, other{{count} lượt nghe}}",
+  "@historyDayPlayCount": {
+    "description": "How many plays a History day holds",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyNthPlay": "#{n}",
+  "@historyNthPlay": {
+    "description": "Badge on a History row: this is the Nth time the song was played",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyNthPlayLabel": "Lượt nghe thứ {n}",
+  "@historyNthPlayLabel": {
+    "description": "Tooltip and screen reader text of the Nth play badge",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyTrackMissing": "Không có trong thư viện",
+  "@historyTrackMissing": { "description": "Note on a History row whose file is no longer in the library" },
+  "historyDeletePlay": "Xoá khỏi lịch sử",
+  "@historyDeletePlay": { "description": "Menu item that removes one play from the History" },
+  "historyPlayDeleted": "Đã xoá một lượt nghe",
+  "@historyPlayDeleted": { "description": "Snackbar after one play was removed from the History" },
+  "historyUndo": "Hoàn tác",
+  "@historyUndo": { "description": "Snackbar action that puts a removed play back" },
+  "historyDeleteFailed": "Không xoá được lượt nghe. Xem chi tiết trong nhật ký.",
+  "@historyDeleteFailed": { "description": "Snackbar when removing a play failed" },
+  "historyRestoreFailed": "Không khôi phục được lượt nghe. Xem chi tiết trong nhật ký.",
+  "@historyRestoreFailed": { "description": "Snackbar when undoing a removal failed" },
+  "historyCalendar": "Nhảy tới ngày",
+  "@historyCalendar": { "description": "Tooltip of the button that opens the History calendar" },
+  "historyRecordingOff": "Đang tắt ghi lịch sử nghe",
+  "@historyRecordingOff": { "description": "Note on the empty History page when recording is off in Settings" },
+  "historyUnavailable": "Lịch sử không khả dụng",
+  "@historyUnavailable": { "description": "Title of the History page when there is no library database" },
+  "historyLoadFailed": "Không đọc được lịch sử. Xem chi tiết trong nhật ký.",
+  "@historyLoadFailed": { "description": "Message of the History page when reading it failed" },
+  "historyMore": "Thêm",
+  "@historyMore": { "description": "Tooltip of the more button on a History row" },
+  "historyOlderYear": "Xem năm {year}",
+  "@historyOlderYear": {
+    "description": "Last row of the History list: switches to an older year",
+    "placeholders": { "year": { "type": "int" } }
+  },
+  "historyTabTimeline": "Nhật ký",
+  "@historyTabTimeline": { "description": "Tab of the History page that lists every play by day" },
+  "historyTabTop": "Phát nhiều nhất",
+  "@historyTabTop": { "description": "Tab of the History page that ranks songs by plays in a date range" },
+  "historyRangeToday": "Hôm nay",
+  "@historyRangeToday": { "description": "Most played range chip and label for the current day" },
+  "historyRange7Days": "7 ngày",
+  "@historyRange7Days": { "description": "Most played range chip: the last 7 days" },
+  "historyRange30Days": "30 ngày",
+  "@historyRange30Days": { "description": "Most played range chip: the last 30 days" },
+  "historyRange6Months": "6 tháng",
+  "@historyRange6Months": { "description": "Most played range chip: the last 6 months" },
+  "historyRangeYear": "1 năm",
+  "@historyRangeYear": { "description": "Most played range chip: the last 12 months" },
+  "historyRangeAll": "Tất cả",
+  "@historyRangeAll": { "description": "Most played range chip and label for the whole history" },
+  "historyRangeCustom": "Tuỳ chọn",
+  "@historyRangeCustom": { "description": "Most played range chip that opens the date range picker" },
+  "historyRangePrevious": "Kỳ trước",
+  "@historyRangePrevious": { "description": "Tooltip of the button that moves the Most played range back" },
+  "historyRangeNext": "Kỳ sau",
+  "@historyRangeNext": { "description": "Tooltip of the button that moves the Most played range forward" },
+  "historyRangeLabel": "{start} – {end}",
+  "@historyRangeLabel": {
+    "description": "First and last day of the Most played range",
+    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+  },
+  "historyTopPlayCount": "{count, plural, other{{count} lượt}}",
+  "@historyTopPlayCount": {
+    "description": "Plays of a song on a Most played row",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTopCapped": "Hiện {count} bài đầu",
+  "@historyTopCapped": {
+    "description": "Note under the Most played list when it was cut at its limit",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyPlayAll": "Phát tất cả",
+  "@historyPlayAll": { "description": "Button that plays the Most played list from the top" },
+  "historyCreatePlaylist": "Tạo playlist",
+  "@historyCreatePlaylist": { "description": "Button that saves the Most played list as a playlist" },
+  "historyTopPlaylistName": "Nghe nhiều nhất · {range}",
+  "@historyTopPlaylistName": {
+    "description": "Suggested name of a playlist made from the Most played list",
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "historyPlaylistCreated": "Đã tạo playlist {name}",
+  "@historyPlaylistCreated": {
+    "description": "Snackbar after a playlist was made from the Most played list",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "historyTopEmpty": "Không có lượt nghe trong khoảng này",
+  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" },
+  "historyShowTrackHistory": "Lịch sử bài này",
+  "@historyShowTrackHistory": { "description": "Row menu item that opens the history page of a song" },
+  "historyTrackTitle": "Lịch sử bài hát",
+  "@historyTrackTitle": { "description": "Title of the song history page when no song is named" },
+  "historyTrackStats": "{count, plural, other{{count} lượt nghe}}",
+  "@historyTrackStats": {
+    "description": "Number of plays of a song in the header of its history page",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTrackFirst": "Lần đầu {date}",
+  "@historyTrackFirst": {
+    "description": "Day of the first play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyTrackLast": "Lần cuối {date}",
+  "@historyTrackLast": {
+    "description": "Day and time of the latest play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyListened": "đã nghe {duration}",
+  "@historyListened": {
+    "description": "How long a play was listened to, on a row of the song history page",
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "historyTrackNoPlays": "Chưa có lượt nghe nào",
+  "@historyTrackNoPlays": { "description": "Message of the song history page when the song has no plays" },
+  "historyTrackNotFound": "Không tìm thấy bài hát",
+  "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
+  "historyPlay": "Phát",
+  "@historyPlay": { "description": "Button on the song history page that plays the song" }
 }

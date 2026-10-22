@@ -73,6 +73,7 @@ Startup overrides are assembled in [lib/main.dart](../lib/main.dart) into one ma
 | **Logging never throws** | `core/logging/` | The write path swallows its own failures and falls back to stderr when the log file cannot be opened. Logs are redacted (`log_redaction.dart`) and repeated errors are folded for 10 s. |
 | **Playback errors** | `core/player/` | A track that never reports duration is treated as failed. When every queued track fails in a row, the queue stops (no endless retry). |
 | **Scan errors** | `core/indexer/` | Per-file parse errors are stored on the track row (`scan_error`). Permanent errors are not retried until the file changes or `tagReaderVersion` changes. Transient I/O errors are retried on every scan. Stalled walks and tag batches time out at 60 s and trigger one automatic rescan. |
+| **Snackbar with an action** | any `SnackBar(action: …)` | Set `persist: false` and an explicit `duration`. `material_ui` defaults `persist` to true when there is an action, so a snackbar with an action and no `persist: false` never closes by itself. Close a snackbar you own only while it is the one on screen (`onVisible` seen, not yet closed); closing another one hides whichever is current. |
 | **Rust** | `rust/src/tag_batch.rs` | A batch never fails as a whole: each path gets a `TrackTags` result. Each file is wrapped in `catch_unwind`, so do not set `panic = "abort"` in the Cargo profile. |
 
 ## Version constants

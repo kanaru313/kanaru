@@ -686,9 +686,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override
-  String get recentlyPlayedEmptyMessage => 'Bài hát bạn đã phát sẽ hiện ở đây.';
-
-  @override
   String get searchEmptyTitle => 'Tìm trong thư viện';
 
   @override
@@ -1403,4 +1400,186 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsWatchFoldersLimit =>
       'Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.';
+
+  @override
+  String get historyEmptyMessage => 'Bài hát bạn đã phát sẽ hiện ở đây.';
+
+  @override
+  String get historyToday => 'Hôm nay';
+
+  @override
+  String get historyYesterday => 'Hôm qua';
+
+  @override
+  String historyDayPlayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt nghe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyNthPlay(int n) {
+    return '#$n';
+  }
+
+  @override
+  String historyNthPlayLabel(int n) {
+    return 'Lượt nghe thứ $n';
+  }
+
+  @override
+  String get historyTrackMissing => 'Không có trong thư viện';
+
+  @override
+  String get historyDeletePlay => 'Xoá khỏi lịch sử';
+
+  @override
+  String get historyPlayDeleted => 'Đã xoá một lượt nghe';
+
+  @override
+  String get historyUndo => 'Hoàn tác';
+
+  @override
+  String get historyDeleteFailed =>
+      'Không xoá được lượt nghe. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get historyRestoreFailed =>
+      'Không khôi phục được lượt nghe. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get historyCalendar => 'Nhảy tới ngày';
+
+  @override
+  String get historyRecordingOff => 'Đang tắt ghi lịch sử nghe';
+
+  @override
+  String get historyUnavailable => 'Lịch sử không khả dụng';
+
+  @override
+  String get historyLoadFailed =>
+      'Không đọc được lịch sử. Xem chi tiết trong nhật ký.';
+
+  @override
+  String get historyMore => 'Thêm';
+
+  @override
+  String historyOlderYear(int year) {
+    return 'Xem năm $year';
+  }
+
+  @override
+  String get historyTabTimeline => 'Nhật ký';
+
+  @override
+  String get historyTabTop => 'Phát nhiều nhất';
+
+  @override
+  String get historyRangeToday => 'Hôm nay';
+
+  @override
+  String get historyRange7Days => '7 ngày';
+
+  @override
+  String get historyRange30Days => '30 ngày';
+
+  @override
+  String get historyRange6Months => '6 tháng';
+
+  @override
+  String get historyRangeYear => '1 năm';
+
+  @override
+  String get historyRangeAll => 'Tất cả';
+
+  @override
+  String get historyRangeCustom => 'Tuỳ chọn';
+
+  @override
+  String get historyRangePrevious => 'Kỳ trước';
+
+  @override
+  String get historyRangeNext => 'Kỳ sau';
+
+  @override
+  String historyRangeLabel(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String historyTopPlayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyTopCapped(int count) {
+    return 'Hiện $count bài đầu';
+  }
+
+  @override
+  String get historyPlayAll => 'Phát tất cả';
+
+  @override
+  String get historyCreatePlaylist => 'Tạo playlist';
+
+  @override
+  String historyTopPlaylistName(String range) {
+    return 'Nghe nhiều nhất · $range';
+  }
+
+  @override
+  String historyPlaylistCreated(String name) {
+    return 'Đã tạo playlist $name';
+  }
+
+  @override
+  String get historyTopEmpty => 'Không có lượt nghe trong khoảng này';
+
+  @override
+  String get historyShowTrackHistory => 'Lịch sử bài này';
+
+  @override
+  String get historyTrackTitle => 'Lịch sử bài hát';
+
+  @override
+  String historyTrackStats(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt nghe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String historyTrackFirst(String date) {
+    return 'Lần đầu $date';
+  }
+
+  @override
+  String historyTrackLast(String date) {
+    return 'Lần cuối $date';
+  }
+
+  @override
+  String historyListened(String duration) {
+    return 'đã nghe $duration';
+  }
+
+  @override
+  String get historyTrackNoPlays => 'Chưa có lượt nghe nào';
+
+  @override
+  String get historyTrackNotFound => 'Không tìm thấy bài hát';
+
+  @override
+  String get historyPlay => 'Phát';
 }

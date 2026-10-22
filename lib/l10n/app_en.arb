@@ -358,7 +358,6 @@
   "foldersEmptyFolder": "No songs in this folder",
 
   "favoritesEmptyMessage": "Songs you like will show up here.",
-  "recentlyPlayedEmptyMessage": "Songs you play will show up here.",
 
   "searchEmptyTitle": "Search your library",
   "searchEmptyMessage": "Find songs, albums and artists.",
@@ -685,5 +684,136 @@
   "settingsWatchFoldersHint": "Pick up added, changed and removed files while Kanaru runs, a few seconds after they stop changing",
   "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
   "settingsWatchFoldersLimit": "Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.",
-  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" }
+  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" },
+  "historyEmptyMessage": "Songs you play will show up here.",
+  "@historyEmptyMessage": { "description": "Message of the History page when nothing was played yet" },
+  "historyToday": "Today",
+  "@historyToday": { "description": "Header of the History day that is today" },
+  "historyYesterday": "Yesterday",
+  "@historyYesterday": { "description": "Header of the History day that is yesterday" },
+  "historyDayPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyDayPlayCount": {
+    "description": "How many plays a History day holds",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyNthPlay": "#{n}",
+  "@historyNthPlay": {
+    "description": "Badge on a History row: this is the Nth time the song was played",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyNthPlayLabel": "Listen number {n}",
+  "@historyNthPlayLabel": {
+    "description": "Tooltip and screen reader text of the Nth play badge",
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "historyTrackMissing": "Not in library",
+  "@historyTrackMissing": { "description": "Note on a History row whose file is no longer in the library" },
+  "historyDeletePlay": "Remove from history",
+  "@historyDeletePlay": { "description": "Menu item that removes one play from the History" },
+  "historyPlayDeleted": "Removed one listen from history",
+  "@historyPlayDeleted": { "description": "Snackbar after one play was removed from the History" },
+  "historyUndo": "Undo",
+  "@historyUndo": { "description": "Snackbar action that puts a removed play back" },
+  "historyDeleteFailed": "Couldn't remove the listen. See the log for details.",
+  "@historyDeleteFailed": { "description": "Snackbar when removing a play failed" },
+  "historyRestoreFailed": "Couldn't restore the listen. See the log for details.",
+  "@historyRestoreFailed": { "description": "Snackbar when undoing a removal failed" },
+  "historyCalendar": "Jump to a day",
+  "@historyCalendar": { "description": "Tooltip of the button that opens the History calendar" },
+  "historyRecordingOff": "Recording listen history is turned off",
+  "@historyRecordingOff": { "description": "Note on the empty History page when recording is off in Settings" },
+  "historyUnavailable": "History is not available",
+  "@historyUnavailable": { "description": "Title of the History page when there is no library database" },
+  "historyLoadFailed": "Couldn't read the history. See the log for details.",
+  "@historyLoadFailed": { "description": "Message of the History page when reading it failed" },
+  "historyMore": "More",
+  "@historyMore": { "description": "Tooltip of the more button on a History row" },
+  "historyOlderYear": "Show {year}",
+  "@historyOlderYear": {
+    "description": "Last row of the History list: switches to an older year",
+    "placeholders": { "year": { "type": "int" } }
+  },
+  "historyTabTimeline": "Journal",
+  "@historyTabTimeline": { "description": "Tab of the History page that lists every play by day" },
+  "historyTabTop": "Most played",
+  "@historyTabTop": { "description": "Tab of the History page that ranks songs by plays in a date range" },
+  "historyRangeToday": "Today",
+  "@historyRangeToday": { "description": "Most played range chip and label for the current day" },
+  "historyRange7Days": "7 days",
+  "@historyRange7Days": { "description": "Most played range chip: the last 7 days" },
+  "historyRange30Days": "30 days",
+  "@historyRange30Days": { "description": "Most played range chip: the last 30 days" },
+  "historyRange6Months": "6 months",
+  "@historyRange6Months": { "description": "Most played range chip: the last 6 months" },
+  "historyRangeYear": "1 year",
+  "@historyRangeYear": { "description": "Most played range chip: the last 12 months" },
+  "historyRangeAll": "All time",
+  "@historyRangeAll": { "description": "Most played range chip and label for the whole history" },
+  "historyRangeCustom": "Custom",
+  "@historyRangeCustom": { "description": "Most played range chip that opens the date range picker" },
+  "historyRangePrevious": "Previous period",
+  "@historyRangePrevious": { "description": "Tooltip of the button that moves the Most played range back" },
+  "historyRangeNext": "Next period",
+  "@historyRangeNext": { "description": "Tooltip of the button that moves the Most played range forward" },
+  "historyRangeLabel": "{start} – {end}",
+  "@historyRangeLabel": {
+    "description": "First and last day of the Most played range",
+    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+  },
+  "historyTopPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyTopPlayCount": {
+    "description": "Plays of a song on a Most played row",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTopCapped": "Showing first {count}",
+  "@historyTopCapped": {
+    "description": "Note under the Most played list when it was cut at its limit",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyPlayAll": "Play all",
+  "@historyPlayAll": { "description": "Button that plays the Most played list from the top" },
+  "historyCreatePlaylist": "Create playlist",
+  "@historyCreatePlaylist": { "description": "Button that saves the Most played list as a playlist" },
+  "historyTopPlaylistName": "Most played · {range}",
+  "@historyTopPlaylistName": {
+    "description": "Suggested name of a playlist made from the Most played list",
+    "placeholders": { "range": { "type": "String" } }
+  },
+  "historyPlaylistCreated": "Created playlist {name}",
+  "@historyPlaylistCreated": {
+    "description": "Snackbar after a playlist was made from the Most played list",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "historyTopEmpty": "No listens in this range",
+  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" },
+  "historyShowTrackHistory": "Song history",
+  "@historyShowTrackHistory": { "description": "Row menu item that opens the history page of a song" },
+  "historyTrackTitle": "Song history",
+  "@historyTrackTitle": { "description": "Title of the song history page when no song is named" },
+  "historyTrackStats": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyTrackStats": {
+    "description": "Number of plays of a song in the header of its history page",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "historyTrackFirst": "First {date}",
+  "@historyTrackFirst": {
+    "description": "Day of the first play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyTrackLast": "Last {date}",
+  "@historyTrackLast": {
+    "description": "Day and time of the latest play in the header of a song history page",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "historyListened": "listened {duration}",
+  "@historyListened": {
+    "description": "How long a play was listened to, on a row of the song history page",
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "historyTrackNoPlays": "No listens yet",
+  "@historyTrackNoPlays": { "description": "Message of the song history page when the song has no plays" },
+  "historyTrackNotFound": "Song not found",
+  "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
+  "historyPlay": "Play",
+  "@historyPlay": { "description": "Button on the song history page that plays the song" }
 }
