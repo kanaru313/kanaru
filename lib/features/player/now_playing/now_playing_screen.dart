@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../queue/queue_panel.dart';
 import '../queue/queue_sheet_host.dart';
 import 'now_playing_auto_hide.dart';
+import 'now_playing_cover_gradient.dart';
 import 'now_playing_footer.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_title_bar.dart';
@@ -89,15 +90,19 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           child: QueueSheetHost(
             onMouseBack: _close,
             onOpenChanged: (open) => open ? _chrome.pin() : _chrome.unpin(),
-            child: Scaffold(
-              body: wide
-                  ? AutoHideRegion(controller: _chrome, child: _wide())
-                  : NowPlayingTabs(
-                      wrapHeader: _wrapHeader,
-                      excludeFromDrag: _exclude,
-                      queuePage: const QueuePanel(),
-                      onClose: _close,
-                    ),
+            // The background is the gradient's, which is always opaque.
+            child: NowPlayingCoverGradient(
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: wide
+                    ? AutoHideRegion(controller: _chrome, child: _wide())
+                    : NowPlayingTabs(
+                        wrapHeader: _wrapHeader,
+                        excludeFromDrag: _exclude,
+                        queuePage: const QueuePanel(),
+                        onClose: _close,
+                      ),
+              ),
             ),
           ),
         ),

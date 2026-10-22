@@ -22,7 +22,7 @@ Related: [code-standards.md](./code-standards.md) (widget conventions), [feature
 | System accent | `dynamic_color` (`DynamicColorBuilder`) supplies the GTK accent on Linux; the scheme is harmonized with it | `lib/app/app.dart`, `lib/app/theme.dart` |
 | Modes | Light, dark, system. Changes apply immediately; the applied appearance is debounced by 600 ms (`appliedAppearanceProvider`) | `core/settings/applied_appearance_provider.dart` |
 | AMOLED black | Not built (UI-08) | features.md |
-| Artwork color | With "Colors from the cover" on, the playing cover's seed replaces the system accent (`ColorScheme.fromSeed`, tonal spot) in both themes; a gray cover, no cover or nothing playing keeps the system accent. The change takes 300 ms (`coverThemeTransition`, also used between light and dark), none when the system asks for reduced motion (UI-03) | `lib/app/theme.dart`, `lib/app/app.dart`, `core/cover_colors/playing_cover_palette_provider.dart` |
+| Artwork color | With "Colors from the cover" on, the playing cover's seed replaces the system accent (`ColorScheme.fromSeed`, tonal spot) in both themes; a gray cover, no cover or nothing playing keeps the system accent. Now Playing gets a gradient of the cover's colors over the surface (text keeps 4.5:1 contrast; a gray cover still tints it). The change takes 300 ms (`coverThemeTransition`, also used between light and dark), none when the system asks for reduced motion (UI-03) | `lib/app/theme.dart`, `lib/app/app.dart`, `core/cover_colors/playing_cover_palette_provider.dart` |
 
 ## Breakpoints
 
