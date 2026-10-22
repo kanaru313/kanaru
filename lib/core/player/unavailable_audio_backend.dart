@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:logging/logging.dart';
 
 import 'audio_backend.dart';
+import 'audio_output_device.dart';
 import 'playback_error.dart';
 import 'player_service.dart';
 import 'repeat_mode.dart';
+import 'replay_gain_options.dart';
 import 'track.dart';
 
 final _log = Logger('UnavailableAudioBackend');
@@ -71,6 +73,22 @@ class UnavailableAudioBackend implements AudioBackend {
 
   @override
   Future<void> setRepeat(RepeatMode mode) async {}
+
+  @override
+  Future<void> setReplayGain(ReplayGainOptions options) async {}
+
+  @override
+  Future<void> setAudioDevice(String name) async {}
+
+  @override
+  List<AudioOutputDevice> get audioDevices => const [];
+
+  @override
+  Stream<List<AudioOutputDevice>> get audioDevicesChanged =>
+      const Stream.empty();
+
+  @override
+  Stream<String> get audioDeviceFailed => const Stream.empty();
 
   @override
   Stream<Track> get advanced => _advanced.stream;

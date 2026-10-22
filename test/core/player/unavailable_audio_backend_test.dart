@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/audio_backend.dart';
+import 'package:kanaru/core/player/audio_output_device.dart';
 import 'package:kanaru/core/player/playback_error.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
+import 'package:kanaru/core/player/replay_gain_options.dart';
 import 'package:kanaru/core/player/session/playback_session.dart';
 import 'package:kanaru/core/player/session/playback_session_file.dart';
 import 'package:kanaru/core/player/session/playback_session_provider.dart';
@@ -76,6 +78,26 @@ void main() {
       await backend.dispose();
       await done;
     });
+
+    test(
+      'has no audio output: setters do nothing, no devices, no events',
+      () async {
+        final backend = UnavailableAudioBackend();
+        final devices = <List<AudioOutputDevice>>[];
+        final failed = <String>[];
+        backend.audioDevicesChanged.listen(devices.add);
+        backend.audioDeviceFailed.listen(failed.add);
+
+        await backend.setReplayGain(ReplayGainOptions.engineDefault);
+        await backend.setAudioDevice('pipewire/x');
+        await Future<void>.delayed(Duration.zero);
+
+        expect(backend.audioDevices, isEmpty);
+        expect(devices, isEmpty);
+        expect(failed, isEmpty);
+        await backend.dispose();
+      },
+    );
 
     test('open after dispose does not throw', () async {
       final backend = UnavailableAudioBackend();
