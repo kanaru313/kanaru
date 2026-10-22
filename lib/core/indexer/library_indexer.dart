@@ -342,7 +342,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
     _log.info(
       'Covers: ${r.found} found, ${r.none} without cover, '
       '${r.failed} failed, ${r.skipped} skipped; '
-      '${r.batches} batches, ${elapsed.elapsedMilliseconds} ms; '
+      '${r.batches} batches, ${elapsed.elapsedMilliseconds} ms '
+      '(native ${r.nativeTime.inMilliseconds} ms, '
+      'db ${r.dbTime.inMilliseconds} ms); '
       '${r.completed ? 'completed' : 'stopped: ${r.stoppedBecause}'}',
     );
     return r.completed;
