@@ -75,13 +75,10 @@ void main() {
 
     expect(find.text('1,200 of 1,500 music files'), findsOneWidget);
     expect(find.textContaining('folders not scanned'), findsNothing);
-    expect(
-      find.text(
-        'In .nomedia folders: 10 files · In left-out folders: 20 files · '
-        'Under minimum size: 30 files · Under minimum length: 40 files',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('In .nomedia folders: 10 files'), findsOneWidget);
+    expect(find.text('In left-out folders: 20 files'), findsOneWidget);
+    expect(find.text('Under minimum size: 30 files'), findsOneWidget);
+    expect(find.text('Under minimum length: 40 files'), findsOneWidget);
     expect(find.text('2 songs stored without readable tags'), findsOneWidget);
     expect(
       find.text('321 images made for 1,000 songs with art'),

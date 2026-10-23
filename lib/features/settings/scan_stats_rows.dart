@@ -37,57 +37,64 @@ class ScanStatsRows extends ConsumerWidget {
       children: [
         _StatLine(
           title: l10n.scanStatsTracksTitle,
-          value: counts == null
-              ? placeholder
-              : session == null
-              ? '${l10n.scanStatsSongs(counts.tracks)} · $notScanned'
-              // Stored and seen are both counted over the roots the scan
-              // finished, so the first never exceeds the second by rows of
-              // a folder that was missing.
-              : l10n.scanStatsTracksOfFiles(session.stored, session.seen),
+          value: [
+            counts == null
+                ? placeholder
+                : session == null
+                ? '${l10n.scanStatsSongs(counts.tracks)} · $notScanned'
+                // Stored and seen are both counted over the roots the scan
+                // finished, so the first never exceeds the second by rows of
+                // a folder that was missing.
+                : l10n.scanStatsTracksOfFiles(session.stored, session.seen),
+          ],
           note: session != null && session.unfinishedRoots > 0
               ? l10n.scanStatsUnfinishedRoots(session.unfinishedRoots)
               : null,
         ),
         _StatLine(
           title: l10n.scanStatsLeftOutTitle,
-          value: session == null ? notScanned : _leftOut(context, session),
+          value: session == null ? [notScanned] : _leftOut(context, session),
         ),
         _StatLine(
           title: l10n.scanStatsTagErrorsTitle,
-          value: counts == null
-              ? placeholder
-              : l10n.scanStatsTagErrors(counts.tagErrors),
+          value: [
+            counts == null
+                ? placeholder
+                : l10n.scanStatsTagErrors(counts.tagErrors),
+          ],
         ),
         _StatLine(
           title: l10n.scanStatsCoversTitle,
-          value: counts == null ? placeholder : _covers(context, counts),
+          value: [counts == null ? placeholder : _covers(context, counts)],
           note: l10n.scanStatsCoversHint,
         ),
       ],
     );
   }
 
-  static String _leftOut(BuildContext context, ScanStats stats) {
+  // One reason per line, instead of one wrapped paragraph joined by '·':
+  // easier to scan for the one reason that actually has files.
+  static List<String> _leftOut(BuildContext context, ScanStats stats) {
     final l10n = context.l10n;
     return [
       l10n.scanStatsNomedia(stats.nomedia),
       l10n.scanStatsExcluded(stats.excluded),
       l10n.scanStatsTooSmall(stats.tooSmall),
       l10n.scanStatsTooShort(stats.tooShort),
-    ].join(' · ');
+    ];
   }
 
   static String _covers(BuildContext context, ScanDbStats counts) =>
       context.l10n.scanStatsCovers(counts.covers, counts.withCover);
 }
 
-/// One row: a title, its value under it, and an optional smaller note.
+/// One row: a title, its value under it (one line per entry), and an
+/// optional smaller note.
 class _StatLine extends StatelessWidget {
   const _StatLine({required this.title, required this.value, this.note});
 
   final String title;
-  final String value;
+  final List<String> value;
   final String? note;
 
   @override
@@ -105,7 +112,7 @@ class _StatLine extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(title, style: theme.textTheme.bodyLarge),
-            Text(value, style: muted),
+            for (final line in value) Text(line, style: muted),
             if (note case final note?) Text(note, style: muted),
           ],
         ),
