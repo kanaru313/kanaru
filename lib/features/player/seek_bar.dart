@@ -27,8 +27,12 @@ class SeekBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final (position, duration, playing) = ref.watch(
-      playerServiceProvider.select((s) => (s.position, s.duration, s.playing)),
+    // The label shows whole seconds: the row rebuilds once a second, not on
+    // every position tick.
+    final (second, duration, playing) = ref.watch(
+      playerServiceProvider.select(
+        (s) => (s.position.inSeconds, s.duration, s.playing),
+      ),
     );
     final theme = Theme.of(context);
     final style = theme.textTheme.bodySmall?.copyWith(
@@ -50,7 +54,7 @@ class SeekBar extends ConsumerWidget {
         child: Row(
           spacing: 8,
           children: [
-            Text(formatDuration(position), style: style),
+            Text(formatDuration(Duration(seconds: second)), style: style),
             Expanded(
               child: SeekGestureArea(
                 height: _hitHeight,
