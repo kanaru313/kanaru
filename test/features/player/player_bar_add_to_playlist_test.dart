@@ -19,10 +19,6 @@ void main() {
   );
 
   Future<void> play(WidgetTester tester, Track track) async {
-    // The seek bar's wave never settles while music plays.
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await h.container.read(playerServiceProvider.notifier).openTracks([track]);
     await tester.pumpAndSettle();
   }

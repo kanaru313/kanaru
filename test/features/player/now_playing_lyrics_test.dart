@@ -14,10 +14,6 @@ void main() {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    // The seek bar's wave never settles while music plays.
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     final container = ProviderContainer(
       overrides: [audioBackendProvider.overrideWithValue(FakeAudioBackend())],
     );

@@ -24,9 +24,7 @@ Future<void> _pumpApp(
   tester.view.devicePixelRatio = 1;
   tester.platformDispatcher.localesTestValue = const [Locale('en')];
   tester.platformDispatcher.textScaleFactorTestValue = systemTextScale;
-  // The seek bar's wave never settles while music plays, so tests with a
-  // track turn motion off from the system side as the other player tests do.
-  if (systemReducedMotion || withTrack) {
+  if (systemReducedMotion) {
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
   }

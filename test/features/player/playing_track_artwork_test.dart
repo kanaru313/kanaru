@@ -31,10 +31,6 @@ void main() {
   /// The app at [size] with one library track without a cover, playing.
   /// Returns the track's path.
   Future<String> playUncovered(WidgetTester tester, Size size) async {
-    // The seek bar's wave never settles while music plays.
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     h = LibraryHarness(coverCacheDirectory: _covers);
     await openWithTracks(tester, h, [
       const TestTrack('a'),

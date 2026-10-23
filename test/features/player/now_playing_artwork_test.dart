@@ -36,10 +36,6 @@ void main() {
 
   /// The app at [size] with library tracks a and b; [paths] are theirs.
   Future<void> launch(WidgetTester tester, Size size) async {
-    // The seek bar's wave never settles while music plays.
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     reader = FakeOriginalCoverReader();
     h = LibraryHarness(
       overrides: [originalCoverReaderProvider.overrideWithValue(reader)],

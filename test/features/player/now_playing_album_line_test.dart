@@ -27,10 +27,6 @@ void main() {
     Track track, {
     Size size = const Size(1280, 800),
   }) async {
-    // The seek bar's wave never settles while music plays.
-    tester.platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     tester.view.physicalSize = size;
     await h.container.read(playerServiceProvider.notifier).openTracks([track]);
     await tester.pumpAndSettle();

@@ -26,8 +26,7 @@ void main() {
   bool isOpen() => container.read(nowPlayingOpenProvider);
   final screen = find.byType(NowPlayingScreen);
 
-  /// Animations off by default: the seek bar's wave never settles while
-  /// music plays, and the slide would need explicit pumps.
+  /// Animations off by default: the slide would need explicit pumps.
   Future<void> pumpApp(
     WidgetTester tester, {
     Size size = const Size(1280, 800),
