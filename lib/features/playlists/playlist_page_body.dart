@@ -27,9 +27,18 @@ final _log = Logger('playlists');
 /// The entries are read a window at a time by [PlaylistEntriesView]; the play
 /// queue is read from the database when the user asks for it.
 class PlaylistPageBody extends ConsumerStatefulWidget {
-  const PlaylistPageBody(this.head, {super.key, required this.headSeq});
+  const PlaylistPageBody(
+    this.head, {
+    super.key,
+    required this.headSeq,
+    this.canRenameAndDelete = true,
+  });
 
   final PlaylistPageHead head;
+
+  /// False leaves rename and delete out of the header menu (a saved queue,
+  /// which its own page manages). Favorites never has them.
+  final bool canRenameAndDelete;
 
   /// `PlaylistHeadLoad.seq` of [head].
   final int headSeq;
@@ -124,10 +133,10 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
           playlistTrack(track, covers),
         ], track.title);
       },
-      onRename: playlist.isFavorites
+      onRename: playlist.isFavorites || !widget.canRenameAndDelete
           ? null
           : () => renamePlaylistInteractively(ref, context, playlist),
-      onDelete: playlist.isFavorites
+      onDelete: playlist.isFavorites || !widget.canRenameAndDelete
           ? null
           : () => deletePlaylistInteractively(ref, context, playlist),
       onExport: (style) =>
