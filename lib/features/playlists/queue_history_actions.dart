@@ -5,7 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
-import '../../core/database/playlist_queries.dart';
+import '../../core/database/playlist_page_queries.dart';
 import '../../core/database/queue_history_queries.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
@@ -13,7 +13,7 @@ import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import 'playlist_page_actions.dart' show playableTracks;
+import 'playlist_page_actions.dart' show playlistTrack;
 
 final _log = Logger('queue_history');
 
@@ -80,10 +80,12 @@ Future<void> runQueueSnapshotAction(
           QueueSnapshotAction.shuffle ||
           QueueSnapshotAction.playNext ||
           QueueSnapshotAction.addToQueue:
-        final page = await db.playlistPage(id);
+        final playable = await db.playlistPlayableTracks(id);
         // The row may be gone (deleted, pruned, another page): `ref` with it.
         if (!context.mounted) return;
-        final tracks = playableTracks(page?.entries ?? const [], covers);
+        final tracks = [
+          for (final p in playable) playlistTrack(p.track, covers),
+        ];
         if (tracks.isEmpty) {
           say(l10n.queueHistoryNothingToPlay);
           return;

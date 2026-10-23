@@ -178,9 +178,9 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
 
 | ID    | Tính năng            | Mô tả / tiêu chí hoàn thành                                                                         | Ưu tiên | Phase | H   |
 | ----- | -------------------- | --------------------------------------------------------------------------------------------------- | ------- | ----- | --- |
-| PL-01 | Tạo / đổi tên / xoá  | CRUD playlist; ảnh đại diện ghép từ tối đa 4 ảnh bìa khác nhau của các bài đầu tiên; hoặc ảnh tuỳ chọn (Namida, chưa làm) — ✅ đã làm       | P0      | 1     | H   |
+| PL-01 | Tạo / đổi tên / xoá  | CRUD playlist; ảnh đại diện ghép từ tối đa 4 ảnh bìa khác nhau của các bài đầu tiên; hoặc ảnh tuỳ chọn (Namida, chưa làm) — ✅ đã làm; trang playlist đọc theo cửa sổ (đầu trang + 100 dòng mỗi lần), mở playlist 50k bài dưới 30 ms | P0      | 1     | H   |
 | PL-02 | Thêm / bớt / sắp xếp | Thêm từ menu ngữ cảnh, kéo thả để sắp xếp; bài trùng bị bỏ qua và snackbar báo số bài đã thêm / đã có; thêm lên đầu playlist (Namida, chưa làm) — ✅ đã làm | P0      | 1     | H   |
-| PL-03 | Playlist "Yêu thích" | Playlist hệ thống, tự cập nhật theo META-11 — ✅ đã làm (trang `/favorites`, không đổi tên/xoá, ẩn khỏi danh sách playlist) | P1      | 1     | H   |
+| PL-03 | Playlist "Yêu thích" | Playlist hệ thống, tự cập nhật theo META-11 — ✅ đã làm (trang `/favorites`, không đổi tên/xoá, ẩn khỏi danh sách playlist; cùng trang đọc theo cửa sổ như playlist) | P1      | 1     | H   |
 | PL-04 | Import M3U/M3U8      | Nhập playlist; đường dẫn tương đối/tuyệt đối; báo các bài không tìm thấy — ✅ đã làm (nút ở `/playlists`, tạo playlist mới); tự đồng bộ khi file M3U đổi (Namida, chưa làm); tuỳ chọn có trong Settings (Sắp có), chưa nối (đọc m3u khi quét) | P1      | 1     |     |
 | PL-05 | Export M3U/M3U8      | Xuất playlist, chọn đường dẫn tương đối hoặc tuyệt đối — ✅ đã làm | P1      | 1     |     |
 | PL-06 | Smart playlist       | Playlist theo quy tắc (thể loại = X, năm trong khoảng, rating ≥ 4, chưa phát 30 ngày…), tự cập nhật; giới hạn theo số bài, thời lượng, dung lượng; theo nghệ sĩ, album, thể loại, thư mục; số lượt theo tháng; xáo ngẫu nhiên mỗi ngày; chỉ bài rating cao; sắp xếp nhiều cấp; dùng được trong tìm kiếm (Namida, chưa làm) | P2      | 4     |     |

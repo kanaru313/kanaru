@@ -57,7 +57,7 @@ void main() {
     );
     expect(await storedPaths(tester, h, id), [for (final t in moved) paths[t]]);
 
-    h.container.invalidate(playlistPageProvider(id));
+    h.container.invalidate(playlistPageHeadProvider(id));
     await settleDb(tester);
     expect(shownTitles(tester), moved);
   });

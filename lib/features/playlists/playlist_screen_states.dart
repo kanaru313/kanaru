@@ -40,3 +40,26 @@ class PlaylistNotFound extends StatelessWidget {
     );
   }
 }
+
+/// An empty playlist, or the Favorites playlist before any like.
+class PlaylistEmptyState extends StatelessWidget {
+  const PlaylistEmptyState({super.key, required this.favorites});
+
+  final bool favorites;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return favorites
+        ? EmptyState(
+            icon: AppIcons.favoriteOutline,
+            title: l10n.navFavorites,
+            message: l10n.favoritesEmptyMessage,
+          )
+        : EmptyState(
+            icon: AppIcons.playlist,
+            title: l10n.playlistEmptyTitle,
+            message: l10n.playlistEmptyMessage,
+          );
+  }
+}

@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
-import 'playlist_cover_keys.dart';
 import 'playlist_favorites.dart';
+import 'playlist_page_shared.dart';
 import 'playlist_rows.dart';
 
 export 'playlist_writes.dart';
@@ -48,7 +48,7 @@ extension PlaylistQueries on LibraryDatabase {
         .get();
     return [
       for (final playlist in summaries)
-        PlaylistCard(playlist, await _collageKeys(playlist.id)),
+        PlaylistCard(playlist, await playlistCollageKeys(playlist.id)),
     ];
   });
 
@@ -71,24 +71,9 @@ ORDER BY e.position, e.id''',
     ).get();
     return PlaylistPage(
       playlist: playlist,
-      entries: [for (final row in rows) _entry(row)],
+      entries: [for (final row in rows) playlistEntryFromRow(row)],
     );
   });
-
-  /// Cover keys of the first covered entries by position, at most
-  /// [playlistCollageScanLimit] of them, reduced to the collage.
-  Future<List<String>> _collageKeys(int playlistId) async {
-    final rows = await customSelect(
-      '''
-SELECT t.cover_key FROM playlist_entries e
-JOIN tracks t ON t.path = e.path
-WHERE e.playlist_id = ?1 AND t.cover_key IS NOT NULL
-ORDER BY e.position, e.id
-LIMIT $playlistCollageScanLimit''',
-      variables: [Variable.withInt(playlistId)],
-    ).get();
-    return pickCollageKeys(rows.map((r) => r.read<String>('cover_key')));
-  }
 }
 
 PlaylistSummary _summary(QueryRow row) => PlaylistSummary(
@@ -98,23 +83,3 @@ PlaylistSummary _summary(QueryRow row) => PlaylistSummary(
   entryCount: row.read<int>('n'),
   isFavorites: row.readNullable<String>('kind') == favoritesKind,
 );
-
-PlaylistEntryRow _entry(QueryRow row) {
-  final trackId = row.readNullable<int>('track_id');
-  final path = row.read<String>('path');
-  return PlaylistEntryRow(
-    entryId: row.read<int>('entry_id'),
-    path: path,
-    track: trackId == null
-        ? null
-        : TrackListItem(
-            id: trackId,
-            path: path,
-            title: row.read<String>('title'),
-            artist: row.readNullable<String>('artist'),
-            album: row.readNullable<String>('album'),
-            durationMs: row.readNullable<int>('duration_ms'),
-            coverKey: row.readNullable<String>('cover_key'),
-          ),
-  );
-}
