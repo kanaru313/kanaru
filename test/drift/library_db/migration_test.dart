@@ -8,6 +8,7 @@ import 'package:kanaru/core/database/library_migration_v3.dart';
 import 'package:kanaru/core/database/library_migration_v4.dart';
 import 'package:kanaru/core/database/library_migration_v5.dart';
 import 'package:kanaru/core/database/library_migration_v6.dart';
+import 'package:kanaru/core/database/library_migration_v7.dart';
 import 'package:kanaru/core/database/text_keys.dart';
 import 'package:kanaru/core/database/library_database.steps.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +20,7 @@ import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
+import 'generated/schema_v6.dart' as v6;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -741,6 +743,94 @@ void main() {
       addTearDown(db.close);
       await verifier.migrateAndValidate(db, 6);
       await expectV5DataKept(db);
+    });
+  });
+
+  group('v6 to v7', () {
+    Future<void> insertV6Data(GeneratedDatabase db) async {
+      for (final sql in [
+        "INSERT INTO library_roots (id, path, added_at) VALUES (1, '/m', 1)",
+        'INSERT INTO tracks (id, root_id, path, mtime_ms, size_bytes, title, '
+            'added_at, updated_at, title_sort) '
+            "VALUES (1, 1, '/m/1.flac', 777, 1, 'Halo', 4242, 9, 'halo')",
+        "INSERT INTO plays (path, played_at) VALUES ('/m/1.flac', 10)",
+        "INSERT INTO playlists (id, name, created_at) VALUES (1, 'Mix', 5)",
+        'INSERT INTO playlist_entries (playlist_id, path, position) '
+            "VALUES (1, '/m/1.flac', 0)",
+      ]) {
+        await db.customStatement(sql);
+      }
+    }
+
+    Future<int> count(GeneratedDatabase db, String table) async =>
+        (await db.customSelect('SELECT COUNT(*) AS n FROM $table').getSingle())
+            .read<int>('n');
+
+    Future<void> expectMigrated(GeneratedDatabase db) async {
+      final columns = await db.customSelect('PRAGMA table_info(tracks)').get();
+      expect(columns.map((c) => c.read<String>('name')), contains('language'));
+      final indexes = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'index' "
+            "AND name IN ('tracks_language', 'tracks_added_at')",
+          )
+          .get();
+      expect(indexes.map((i) => i.read<String>('name')), {
+        'tracks_language',
+        'tracks_added_at',
+      });
+      final track = await db
+          .customSelect('SELECT mtime_ms, added_at, language FROM tracks')
+          .getSingle();
+      expect(track.read<int>('mtime_ms'), -1);
+      expect(track.read<int>('added_at'), 4242);
+      expect(track.read<String?>('language'), isNull);
+      expect(await count(db, 'plays'), 1);
+      expect(await count(db, 'playlists'), 1);
+      expect(await count(db, 'playlist_entries'), 1);
+    }
+
+    test(
+      'adds the column and indexes, forces a re-read, keeps user data',
+      () async {
+        final schema = await verifier.schemaAt(6);
+        final old = v6.DatabaseAtV6(schema.newConnection());
+        await insertV6Data(old);
+        await old.close();
+
+        final db = LibraryDatabase(schema.newConnection());
+        addTearDown(db.close);
+        await verifier.migrateAndValidate(db, 7);
+        await expectMigrated(db);
+      },
+    );
+
+    test('runs on a file that already has the column and an index', () async {
+      final schema = await verifier.schemaAt(6);
+      final old = v6.DatabaseAtV6(schema.newConnection());
+      await insertV6Data(old);
+      // A crashed earlier attempt: the column and one index exist.
+      await old.customStatement(
+        'ALTER TABLE tracks ADD COLUMN language TEXT NULL',
+      );
+      await old.customStatement(
+        'CREATE INDEX tracks_language ON tracks (language)',
+      );
+      await old.close();
+
+      final db = LibraryDatabase(schema.newConnection());
+      addTearDown(db.close);
+      await verifier.migrateAndValidate(db, 7);
+      await expectMigrated(db);
+
+      // Once more on the finished schema.
+      await migrateLibraryToSchema7(
+        db,
+        db.createMigrator(),
+        Schema7(database: db),
+      );
+      await verifier.migrateAndValidate(db, 7);
+      await expectMigrated(db);
     });
   });
 }

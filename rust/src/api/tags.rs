@@ -49,6 +49,8 @@ pub struct TrackTags {
     pub genre: Option<String>,
     pub composer: Option<String>,
     pub comment: Option<String>,
+    /// Language tag as written (ID3 `TLAN`, Vorbis `LANGUAGE`), trimmed.
+    pub language: Option<String>,
     pub duration_ms: Option<i64>,
     /// Overall bitrate in kbps.
     pub bitrate: Option<u32>,

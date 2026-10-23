@@ -19,6 +19,7 @@ void main() {
           album: 'Alb',
           trackNo: 2,
           year: 2020,
+          language: 'vie',
           durationMs: 1234,
           sampleRate: 44100,
         ),
@@ -34,6 +35,7 @@ void main() {
     expect(row.artist.value, 'A; B');
     expect(row.trackNo.value, 2);
     expect(row.year.value, 2020);
+    expect(row.language.value, 'vie');
     expect(row.durationMs.value, 1234);
     expect(row.addedAt.value, 99);
     expect(row.updatedAt.value, 99);
@@ -51,6 +53,7 @@ void main() {
     expect(row.title.value, 'Song One');
     expect(row.artist.value, isNull);
     expect(row.year.value, isNull);
+    expect(row.language.value, isNull);
     expect(row.trackNo.value, isNull);
   });
 

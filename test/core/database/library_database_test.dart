@@ -10,6 +10,7 @@ TracksCompanion track(
   String path, {
   String title = 'T',
   String? artist,
+  String? language,
   int mtimeMs = 1,
   int now = 100,
 }) => TracksCompanion.insert(
@@ -19,6 +20,7 @@ TracksCompanion track(
   sizeBytes: 10,
   title: title,
   artist: Value(artist),
+  language: Value(language),
   addedAt: now,
   updatedAt: now,
 );
@@ -72,6 +74,17 @@ void main() {
       expect(second.title, 'New');
       expect(second.artist, 'Ann');
       expect(second.updatedAt, 200);
+    });
+
+    test('re-upsert replaces the language and can clear it', () async {
+      Future<String?> stored() async =>
+          (await db.select(db.tracks).getSingle()).language;
+      await db.upsertTracks([track(rootId, '/m/a.mp3', language: 'vie')]);
+      expect(await stored(), 'vie');
+      await db.upsertTracks([track(rootId, '/m/a.mp3', language: 'jpn')]);
+      expect(await stored(), 'jpn');
+      await db.upsertTracks([track(rootId, '/m/a.mp3')]);
+      expect(await stored(), isNull);
     });
 
     test('snapshot lists the tracks of one root', () async {
@@ -166,7 +179,7 @@ void main() {
     final row = await db.select(db.tracks).getSingle();
     expect(row.coverKey, isNull);
     expect(row.coverScanVersion, 0);
-    expect(db.schemaVersion, 6);
+    expect(db.schemaVersion, 7);
   });
 
   group('cover keys', () {

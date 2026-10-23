@@ -802,6 +802,7 @@ impl SseDecode for crate::api::tags::TrackTags {
         let mut var_genre = <Option<String>>::sse_decode(deserializer);
         let mut var_composer = <Option<String>>::sse_decode(deserializer);
         let mut var_comment = <Option<String>>::sse_decode(deserializer);
+        let mut var_language = <Option<String>>::sse_decode(deserializer);
         let mut var_durationMs = <Option<i64>>::sse_decode(deserializer);
         let mut var_bitrate = <Option<u32>>::sse_decode(deserializer);
         let mut var_sampleRate = <Option<u32>>::sse_decode(deserializer);
@@ -822,6 +823,7 @@ impl SseDecode for crate::api::tags::TrackTags {
             genre: var_genre,
             composer: var_composer,
             comment: var_comment,
+            language: var_language,
             duration_ms: var_durationMs,
             bitrate: var_bitrate,
             sample_rate: var_sampleRate,
@@ -1059,6 +1061,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::tags::TrackTags {
             self.genre.into_into_dart().into_dart(),
             self.composer.into_into_dart().into_dart(),
             self.comment.into_into_dart().into_dart(),
+            self.language.into_into_dart().into_dart(),
             self.duration_ms.into_into_dart().into_dart(),
             self.bitrate.into_into_dart().into_dart(),
             self.sample_rate.into_into_dart().into_dart(),
@@ -1321,6 +1324,7 @@ impl SseEncode for crate::api::tags::TrackTags {
         <Option<String>>::sse_encode(self.genre, serializer);
         <Option<String>>::sse_encode(self.composer, serializer);
         <Option<String>>::sse_encode(self.comment, serializer);
+        <Option<String>>::sse_encode(self.language, serializer);
         <Option<i64>>::sse_encode(self.duration_ms, serializer);
         <Option<u32>>::sse_encode(self.bitrate, serializer);
         <Option<u32>>::sse_encode(self.sample_rate, serializer);

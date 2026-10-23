@@ -153,7 +153,7 @@ Commands: [development.md](./development.md#tests--lints). Layout: [codebase-sum
 - File opens use `O_NONBLOCK` (through `libc`, see `rust/src/cover_art.rs`), so a FIFO cannot block a batch.
 - Rayon pool is named `kanaru-tags-N`, sized `max(cpus/2, 2)`, with 8 MiB stacks.
 - Public API lives in `rust/src/api/` only. The bridge reads `crate::api` (`flutter_rust_bridge.yaml`).
-- Text limits are enforced in Rust: 1 KB for title, artist, album, album artist, genre, composer; 4 KB comment; 32 artists. Covers are capped at 4096 px (a baseline JPEG, decoded scaled down, up to 8192 px), 16 MB source, 64 MB decode; the alpha blend and resize work on the decoded buffer, so the peak stays near the decode size (RGBA 4096² measured at about 74 MiB).
+- Text limits are enforced in Rust: 1 KB for title, artist, album, album artist, genre, composer; 128 bytes language; 4 KB comment; 32 artists. Covers are capped at 4096 px (a baseline JPEG, decoded scaled down, up to 8192 px), 16 MB source, 64 MB decode; the alpha blend and resize work on the decoded buffer, so the peak stays near the decode size (RGBA 4096² measured at about 74 MiB).
 
 ## Commits and branches
 

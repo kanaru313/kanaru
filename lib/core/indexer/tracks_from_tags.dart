@@ -45,6 +45,7 @@ TracksCompanion _row(int rootId, WalkedFile file, TrackTags? tags, int now) {
     genre: Value(tags?.genre),
     composer: Value(tags?.composer),
     comment: Value(tags?.comment),
+    language: Value(tags?.language),
     durationMs: Value(tags?.durationMs),
     bitrate: Value(tags?.bitrate),
     sampleRate: Value(tags?.sampleRate),

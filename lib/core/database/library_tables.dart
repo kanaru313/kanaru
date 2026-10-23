@@ -23,6 +23,8 @@ class LibraryRoots extends Table {
   columns: {#albumArtistKey, #albumTitleKey},
 )
 @TableIndex(name: 'tracks_keys_version', columns: {#keysVersion})
+@TableIndex(name: 'tracks_language', columns: {#language})
+@TableIndex(name: 'tracks_added_at', columns: {#addedAt})
 class Tracks extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -55,6 +57,11 @@ class Tracks extends Table {
   TextColumn get genre => text().nullable()();
   TextColumn get composer => text().nullable()();
   TextColumn get comment => text().nullable()();
+
+  /// The language tag as written, trimmed, at most 128 bytes. It may list
+  /// several languages or use any naming; split and normalized at read time
+  /// by `language_tags.dart`.
+  TextColumn get language => text().nullable()();
 
   IntColumn get durationMs => integer().nullable()();
   IntColumn get bitrate => integer().nullable()();
