@@ -16,6 +16,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   set _wantsPlaying(bool wanted);
   Future<void> _play(int index);
   void _userActed();
+  void _queueReplaced(PlayQueue previous);
 
   Future<void> playPause() async {
     if (state.queue.isEmpty) return;
@@ -107,6 +108,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     _userActed();
     _userQueueChanges++;
     _upNext.clear();
+    final previous = state.queue;
     final queue = PlayQueue.open(
       tracks,
       start,
@@ -115,6 +117,8 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
       random: _random,
     );
     state = state.copyWith(queue: queue);
+    // After the new queue is in place, before the engine loads its track.
+    _queueReplaced(previous);
     await jump(queue.index);
   }
 

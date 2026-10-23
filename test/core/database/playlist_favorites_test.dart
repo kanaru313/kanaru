@@ -174,7 +174,7 @@ void main() {
       final fav = await db.ensureFavoritesPlaylist(now: 1);
       final plain = await db.createPlaylist('Mix', now: 2);
       await db.customStatement(
-        "INSERT INTO playlists (name, created_at, kind) VALUES ('Q', 3, 'queue')",
+        "INSERT INTO playlists (name, created_at, kind) VALUES ('Q', 3, 'other')",
       );
 
       final summaries = await db.watchPlaylistSummaries().first;

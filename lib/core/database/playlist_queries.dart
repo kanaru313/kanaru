@@ -12,18 +12,21 @@ SELECT p.id, p.name, p.created_at, p.kind,
   (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n
 FROM playlists p''';
 
-/// Lists leave out the Favorites playlist: it has its own page and nav entry.
-/// `IS NOT` keeps ordinary playlists, whose kind is NULL (`!=` would drop
-/// them), and any other kind (invariant 8).
-const _listed = " WHERE p.kind IS NOT '$favoritesKind'";
+/// Lists leave out the Favorites playlist, which has its own page and nav
+/// entry, and saved queues. Ordinary playlists, whose kind is NULL, are kept
+/// by `IS NULL` (`NOT IN` alone gives NULL for them and would drop them), and
+/// so is any other kind (invariant 8).
+const _listed =
+    " WHERE (p.kind IS NULL OR p.kind NOT IN ('$favoritesKind', '$queueKind'))";
 
 const _newestFirst = ' ORDER BY p.created_at DESC, p.id DESC';
 
 /// Playlist reads. Writes are in `playlist_writes.dart`.
 extension PlaylistQueries on LibraryDatabase {
-  /// Every playlist but Favorites, newest first, with its entry count. Re-queries on writes
-  /// to `playlists` and `playlist_entries` only, never on scans, and emits
-  /// only when the result changed (a reorder does not change it).
+  /// Every playlist but Favorites and saved queues, newest first, with its
+  /// entry count. Re-queries on writes to `playlists` and `playlist_entries`
+  /// only, never on scans, and emits only when the result changed (a reorder
+  /// does not change it).
   Stream<List<PlaylistSummary>> watchPlaylistSummaries() => customSelect(
     _summarySql + _listed + _newestFirst,
     readsFrom: {playlists, playlistEntries},
@@ -37,8 +40,8 @@ extension PlaylistQueries on LibraryDatabase {
     readsFrom: {playlists, playlistEntries},
   ).map(_summary).getSingleOrNull();
 
-  /// Summaries with their collage keys, Favorites left out. Reads `tracks`, so callers wrap it
-  /// in `throttledTracksQuery`.
+  /// Summaries with their collage keys, Favorites and saved queues left out.
+  /// Reads `tracks`, so callers wrap it in `throttledTracksQuery`.
   Future<List<PlaylistCard>> playlistCards() => transaction(() async {
     final summaries = await customSelect(_summarySql + _listed + _newestFirst)
         .map(_summary)
