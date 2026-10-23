@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
+import 'menu_keyboard_region.dart';
 
 /// What the menu of a song, album or artist can do.
 ///
@@ -81,8 +82,9 @@ Future<QueueAction?> showQueueActionsMenu(
 );
 
 /// Opens the queue menu at the pointer on a right click or a long press of
-/// [child], and reports the chosen action to [onAction]. Without
-/// [onAction], [child] is returned as is.
+/// [child], or at the row from the keyboard (Menu key, Shift+F10, see
+/// [MenuKeyboardRegion]), and reports the chosen action to [onAction].
+/// Without [onAction], [child] is returned as is.
 class QueueActionsRegion extends StatelessWidget {
   const QueueActionsRegion({super.key, this.onAction, required this.child});
 
@@ -97,11 +99,14 @@ class QueueActionsRegion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (onAction == null) return child;
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onSecondaryTapUp: (details) => _open(context, details.globalPosition),
-      onLongPressStart: (details) => _open(context, details.globalPosition),
-      child: child,
+    return MenuKeyboardRegion(
+      onOpen: (position) => _open(context, position),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onSecondaryTapUp: (details) => _open(context, details.globalPosition),
+        onLongPressStart: (details) => _open(context, details.globalPosition),
+        child: child,
+      ),
     );
   }
 }

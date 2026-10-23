@@ -239,7 +239,7 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
 | UI-08 | AMOLED đen tuyệt đối       | Chế độ tối dùng nền `#000000`                                                           | P2      | 1     |     |
 | UI-09 | Font & cỡ chữ              | Chọn font, scale cỡ chữ; tuỳ chọn có trong Settings (Sắp có), chưa nối (chỉ cỡ chữ; chọn font chưa làm) | P3      | 1     |     |
 | UI-10 | Đa ngôn ngữ                | i18n (`flutter_localizations` + ARB); bắt đầu với tiếng Anh và tiếng Việt — ✅ đã làm | P1      | 1     | H   |
-| UI-11 | Trợ năng                   | Semantics cho screen reader, điều hướng hoàn toàn bằng bàn phím, đủ độ tương phản       | P1      | 1     |     |
+| UI-11 | Trợ năng                   | Semantics cho screen reader, điều hướng hoàn toàn bằng bàn phím, đủ độ tương phản. Đã có: phím Menu / Shift+F10 trên dòng đang focus (bài, album, nghệ sĩ, thư mục, hàng đợi, lịch sử hàng đợi) mở đúng menu chuột phải, neo ở dòng; Esc đóng, focus về dòng | P1      | 1     |     |
 | UI-12 | Material 2 style           | Tuỳ chọn giao diện M2 như Harmonoid                                                     | P3      | 4     | H   |
 | UI-13 | Ẩn và sắp xếp mục thư viện và sidebar | Ẩn, bật và đổi thứ tự tab thư viện và mục sidebar (hàng đợi hiện tại, yêu thích, lịch sử, playlist) (Namida, con-ton-dong §7 và §11). Chưa làm; tuỳ chọn có trong Settings (Sắp có), chưa nối (chỉ ẩn tab; đổi thứ tự chưa làm) | P2      | 1     |     |
 | UI-14 | Lưu bảng màu lúc quét | Trích bảng màu từ ảnh bìa khi quét và lưu vào DB, không trích lại lúc phát nhạc (con-ton-dong §7). Chưa làm | P2      | 1     |     |

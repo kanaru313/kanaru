@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/menu_keyboard_region.dart';
 
 /// What the menu of a folder can do, on all the songs below it.
 enum FolderAction {
@@ -42,7 +43,8 @@ List<PopupMenuEntry<FolderAction>> folderMenuItems(
 }
 
 /// Opens the folder menu at the pointer on a right click or a long press of
-/// [child], and reports the chosen action to [onAction].
+/// [child], or at the row from the keyboard (Menu key, Shift+F10), and
+/// reports the chosen action to [onAction].
 class FolderActionsRegion extends StatelessWidget {
   const FolderActionsRegion({
     super.key,
@@ -63,11 +65,14 @@ class FolderActionsRegion extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    behavior: HitTestBehavior.translucent,
-    onSecondaryTapUp: (details) => _open(context, details.globalPosition),
-    onLongPressStart: (details) => _open(context, details.globalPosition),
-    child: child,
+  Widget build(BuildContext context) => MenuKeyboardRegion(
+    onOpen: (position) => _open(context, position),
+    child: GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onSecondaryTapUp: (details) => _open(context, details.globalPosition),
+      onLongPressStart: (details) => _open(context, details.globalPosition),
+      child: child,
+    ),
   );
 }
 

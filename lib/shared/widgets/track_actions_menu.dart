@@ -10,6 +10,7 @@ import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
 import '../track_menu_actions.dart';
 import '../track_menu_choice.dart';
+import 'menu_keyboard_region.dart';
 import 'queue_actions_menu.dart';
 
 final _log = Logger('track_menu');
@@ -64,7 +65,8 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
 }
 
 /// Opens the song menu at the pointer on a right click or a long press of
-/// [child]. Queue rows go to [onQueueAction]; the links are followed here by
+/// [child], or at the row from the keyboard (Menu key, Shift+F10, see
+/// [MenuKeyboardRegion]). Queue rows go to [onQueueAction]; the links are followed here by
 /// the song's [trackId] and [path]. Without [onQueueAction], [child] is
 /// returned as is.
 class TrackActionsRegion extends ConsumerWidget {
@@ -135,13 +137,16 @@ class TrackActionsRegion extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (onQueueAction == null) return child;
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onSecondaryTapUp: (details) =>
-          _open(context, ref, details.globalPosition),
-      onLongPressStart: (details) =>
-          _open(context, ref, details.globalPosition),
-      child: child,
+    return MenuKeyboardRegion(
+      onOpen: (position) => _open(context, ref, position),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onSecondaryTapUp: (details) =>
+            _open(context, ref, details.globalPosition),
+        onLongPressStart: (details) =>
+            _open(context, ref, details.globalPosition),
+        child: child,
+      ),
     );
   }
 }

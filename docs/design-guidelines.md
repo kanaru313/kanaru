@@ -203,6 +203,7 @@ Reduced motion comes from the platform setting. Every new animation must check i
 - Focus is restored after an overlay or sheet closes.
 - Contrast: use theme `on*` color pairs. Do not place text on artwork without a scrim (guideline, not enforced by a test).
 - Screen reader coverage is partial (UI-11).
+- Every row with a right-click menu opens the same menu from the keyboard (Menu key or Shift+F10 while focus is in the row), anchored on the row; Esc closes it and focus returns to the row (`shared/widgets/menu_keyboard_region.dart`). Queue rows have a menu too: the heart (add a library song to Favorites, or take any song out) and remove.
 
 ## Localization
 
