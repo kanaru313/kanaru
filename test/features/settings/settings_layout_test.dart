@@ -149,6 +149,16 @@ Future<void> _checkLayout(
       l10n.settingsRespectNomediaHint,
     ),
     (
+      l10n.separatorsArtistsTitle,
+      inRow(l10n.separatorsArtistsTitle, find.byType(FilledButton)),
+      '${l10n.separatorsArtistsHint}\n${l10n.separatorsSummary(8, 1)}',
+    ),
+    (
+      l10n.separatorsGenresTitle,
+      inRow(l10n.separatorsGenresTitle, find.byType(FilledButton)),
+      '${l10n.separatorsGenresHint}\n${l10n.separatorsSummary(1, 0)}',
+    ),
+    (
       l10n.settingsMinFileSize,
       inRow(l10n.settingsMinFileSize, find.byType(DropdownMenu<int>)),
       l10n.settingsMinFileSizeHint,
@@ -185,9 +195,9 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(21),
+    hasLength(23),
     reason:
-        'eight buttons, four choices and nine dropdowns: the output device, '
+        'ten buttons (two open the separator dialogs), four choices and nine dropdowns: the output device, '
         'ReplayGain mode, preamp and two scan filters are wired, six options '
         'are not yet',
   );

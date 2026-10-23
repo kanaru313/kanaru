@@ -3,7 +3,7 @@
 /// again on the next scan even when the file is unchanged. Bump it when those
 /// rules change; when the thumbnail size changes, also rename the size folder
 /// of the cover cache (`covers/<size>`) so old and new thumbnails never mix.
-const coverScanVersion = 1;
+const coverScanVersion = 2;
 
 /// Version of the Rust tag reader's idea of unreadable files. Bump it (and
 /// `PERMANENT_ERROR_PREFIX` in `rust/src/tag_reader.rs`) when the reader

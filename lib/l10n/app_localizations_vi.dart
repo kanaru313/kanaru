@@ -1786,4 +1786,218 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get coverCacheClearFailed => 'Không xoá được cache ảnh bìa';
+
+  @override
+  String get genresUnknown => 'Không rõ thể loại';
+
+  @override
+  String get separatorsArtistsTitle => 'Tách nghệ sĩ';
+
+  @override
+  String get separatorsGenresTitle => 'Tách thể loại';
+
+  @override
+  String get separatorsArtistsHint => 'Áp dụng ngay, cập nhật thư viện ở nền.';
+
+  @override
+  String get separatorsGenresHint => 'Áp dụng ngay, không cần quét lại.';
+
+  @override
+  String separatorsSummary(int separators, int keepWhole) {
+    return '$separators dấu phân cách · $keepWhole tên giữ nguyên';
+  }
+
+  @override
+  String get separatorsEditButton => 'Chỉnh sửa';
+
+  @override
+  String separatorsTabSeparators(int count) {
+    return 'Dấu phân cách ($count)';
+  }
+
+  @override
+  String separatorsTabKeepWhole(int count) {
+    return 'Không tách ($count)';
+  }
+
+  @override
+  String get separatorsAddSeparatorLabel => 'Dấu phân cách mới';
+
+  @override
+  String get separatorsAddKeepLabel => 'Tên giữ nguyên';
+
+  @override
+  String get separatorsSeparatorHelp =>
+      'Không cần thêm khoảng trắng hai đầu. Chữ như feat. chỉ tách khi có khoảng trắng hai bên.';
+
+  @override
+  String get separatorsKeepHelpArtist =>
+      'Gõ tên như trong tag, không phân biệt hoa thường. Ví dụ AC/DC vẫn là một nghệ sĩ.';
+
+  @override
+  String get separatorsKeepHelpGenre =>
+      'Gõ tên như trong tag, không phân biệt hoa thường. Ví dụ Funk/Soul vẫn là một thể loại.';
+
+  @override
+  String get separatorsAdd => 'Thêm';
+
+  @override
+  String get separatorsErrorEmpty => 'Nhập nội dung cần thêm';
+
+  @override
+  String get separatorsErrorDuplicate => 'Đã có trong danh sách';
+
+  @override
+  String separatorsErrorTooLong(int max) {
+    return 'Tối đa $max ký tự';
+  }
+
+  @override
+  String separatorsErrorFull(int max) {
+    return 'Danh sách chứa tối đa $max mục';
+  }
+
+  @override
+  String separatorsRemove(String entry) {
+    return 'Xoá $entry';
+  }
+
+  @override
+  String get separatorsEmptyList => 'Chưa có mục nào';
+
+  @override
+  String get separatorsEmptySeparators =>
+      'Chưa có mục nào, nên không tách gì cả';
+
+  @override
+  String separatorsPage(int page, int total) {
+    return 'Trang $page / $total';
+  }
+
+  @override
+  String get separatorsReset => 'Khôi phục mặc định';
+
+  @override
+  String get separatorsResetConfirmTitle => 'Khôi phục mặc định?';
+
+  @override
+  String get separatorsResetConfirmBody => 'Cả hai danh sách trở về mặc định.';
+
+  @override
+  String get separatorsResetConfirm => 'Khôi phục';
+
+  @override
+  String get separatorsClose => 'Đóng';
+
+  @override
+  String get scanStatsTracksTitle => 'Bài trong thư viện';
+
+  @override
+  String scanStatsTracksOfFiles(int tracks, int files) {
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+    final intl.NumberFormat filesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String filesString = filesNumberFormat.format(files);
+
+    return '$tracksString trên $filesString file nhạc';
+  }
+
+  @override
+  String get scanStatsNotScanned => 'Chưa quét trong phiên này';
+
+  @override
+  String get scanStatsLeftOutTitle => 'Bị loại do luật quét';
+
+  @override
+  String scanStatsNomedia(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'File trong thư mục có .nomedia: $countString';
+  }
+
+  @override
+  String scanStatsExcluded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'File trong thư mục loại trừ: $countString';
+  }
+
+  @override
+  String scanStatsTooSmall(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'File dưới cỡ tối thiểu: $countString';
+  }
+
+  @override
+  String scanStatsTooShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'File ngắn hơn thời lượng tối thiểu: $countString';
+  }
+
+  @override
+  String get scanStatsTagErrorsTitle => 'Lỗi tag';
+
+  @override
+  String scanStatsTagErrors(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString bài không đọc được tag (vẫn lưu)',
+      zero: 'Không có bài lỗi tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scanStatsCoversTitle => 'Ảnh bìa';
+
+  @override
+  String scanStatsCovers(int images, int tracks) {
+    final intl.NumberFormat imagesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String imagesString = imagesNumberFormat.format(images);
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+
+    return '$imagesString ảnh đã tạo cho $tracksString bài có ảnh';
+  }
+
+  @override
+  String scanStatsSongs(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString bài';
+  }
+
+  @override
+  String scanStatsUnfinishedRoots(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString thư mục chưa quét xong';
+  }
+
+  @override
+  String get scanStatsCoversHint =>
+      'Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash).';
 }

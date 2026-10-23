@@ -7,7 +7,7 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 
 use image::{ImageDecoder, ImageFormat, ImageReader, Limits};
 
-use crate::cover_art::MAX_COVER_SIDE;
+use crate::cover_art::{MAX_COVER_SIDE, MAX_SCALED_JPEG_SIDE};
 use crate::cover_thumbnail::{MAX_DECODE_BYTES, THUMBNAIL_SIDE};
 use crate::jpeg_header::{self, JpegHeader};
 
@@ -15,7 +15,8 @@ use crate::jpeg_header::{self, JpegHeader};
 /// still at least [`THUMBNAIL_SIDE`]: most of the decode work is skipped.
 const SCALED_DECODE_ABOVE: u32 = 1024;
 
-/// The limits of a full decode.
+/// The limits of a full decode: [`MAX_COVER_SIDE`] a side, whatever the
+/// format.
 pub(crate) fn decode_limits() -> Limits {
     let mut limits = Limits::default();
     limits.max_image_width = Some(MAX_COVER_SIDE);
@@ -36,7 +37,8 @@ pub(crate) struct ScaledPlan<'a> {
 }
 
 /// The scaled decode of `bytes`, when it applies: a JPEG whose longest side
-/// is over [`SCALED_DECODE_ABOVE`] and within [`MAX_COVER_SIDE`], gray or
+/// is over [`SCALED_DECODE_ABOVE`] and within [`MAX_SCALED_JPEG_SIDE`] (more
+/// than the [`MAX_COVER_SIDE`] of the full decode), gray or
 /// YCbCr (or RGB; CMYK and YCCK take the full path), whose decode needs no
 /// more than [`MAX_DECODE_BYTES`] (see [`progressive_coefficient_bytes`]).
 /// Only headers are read.
@@ -46,7 +48,7 @@ pub(crate) fn scaled_plan(bytes: &[u8], format: ImageFormat) -> Option<ScaledPla
     }
     let header = jpeg_header::parse(bytes)?;
     let side = u32::from(header.width.max(header.height));
-    if side <= SCALED_DECODE_ABOVE || side > MAX_COVER_SIDE || header.sampling.len() == 4 {
+    if side <= SCALED_DECODE_ABOVE || side > MAX_SCALED_JPEG_SIDE || header.sampling.len() == 4 {
         return None;
     }
     let mut decoder = jpeg_decoder::Decoder::new(Cursor::new(bytes));
@@ -211,20 +213,48 @@ mod tests {
         let samples = [
             ("baseline 100", jpeg(100, Rgb, false), ImageFormat::Jpeg),
             ("baseline 2048", jpeg(2048, Rgb, false), ImageFormat::Jpeg),
+            ("baseline 6000", jpeg(6000, Rgb, false), ImageFormat::Jpeg),
             ("progressive 1000", jpeg(1000, Rgb, true), ImageFormat::Jpeg),
             ("progressive 3000", jpeg(3000, Rgb, true), ImageFormat::Jpeg),
             ("progressive 4096", jpeg(4096, Rgb, true), ImageFormat::Jpeg),
+            ("progressive 6000", jpeg(6000, Rgb, true), ImageFormat::Jpeg),
             ("cmyk 2000", jpeg(2000, Cmyk, false), ImageFormat::Jpeg),
+            ("cmyk 5000", jpeg(5000, Cmyk, false), ImageFormat::Jpeg),
             ("png 64", png(64, 64, false), ImageFormat::Png),
             ("png rgba16 3000", png(3000, 3000, true), ImageFormat::Png),
+            ("png rgb 5000", png(5000, 5000, false), ImageFormat::Png),
         ];
-        for (name, bytes, format) in samples {
+        for (name, bytes, format) in &samples {
             assert_eq!(
-                decode_fits(&bytes, format),
-                make_jpeg(&bytes, format).is_some(),
+                decode_fits(bytes, *format),
+                make_jpeg(bytes, *format).is_some(),
                 "{name}"
             );
         }
+        // What is taken or refused, not only that both sides agree.
+        let verdicts = [
+            ("baseline 6000", true),
+            ("progressive 6000", false),
+            ("cmyk 5000", false),
+            ("png rgb 5000", false),
+        ];
+        for (name, taken) in verdicts {
+            let (_, bytes, format) = samples.iter().find(|s| s.0 == name).unwrap();
+            assert_eq!(decode_fits(bytes, *format), taken, "{name}");
+        }
+    }
+
+    #[test]
+    fn a_jpeg_longer_than_the_scaled_limit_is_refused() {
+        // Header only: 8193×64 declares more than a scaled decode may take.
+        let mut bytes = jpeg(64, jpeg_encoder::ColorType::Rgb, false);
+        let at = bytes.windows(2).position(|w| w == [0xFF, 0xC0]).unwrap();
+        // SOF0: marker (2), length (2), precision (1), height (2), width (2).
+        bytes[at + 5..at + 7].copy_from_slice(&64u16.to_be_bytes());
+        bytes[at + 7..at + 9].copy_from_slice(&8193u16.to_be_bytes());
+        assert!(!decode_fits(&bytes, ImageFormat::Jpeg));
+        bytes[at + 7..at + 9].copy_from_slice(&8192u16.to_be_bytes());
+        assert!(decode_fits(&bytes, ImageFormat::Jpeg));
     }
 
     #[test]

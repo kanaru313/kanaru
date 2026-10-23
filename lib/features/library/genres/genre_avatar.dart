@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/library_route_keys.dart' show unknownGenreKey;
 import '../../../shared/widgets/placeholder_colors.dart';
 
 /// Round placeholder for a genre: the genre icon on a color picked from
@@ -21,7 +22,11 @@ class GenreAvatar extends StatelessWidget {
       radius: size / 2,
       backgroundColor: background,
       foregroundColor: foreground,
-      child: Icon(AppIcons.genre, size: size * 0.45),
+      // The tracks with no genre get the outlined icon.
+      child: Icon(
+        genreKey == unknownGenreKey ? AppIcons.genreOutlined : AppIcons.genre,
+        size: size * 0.45,
+      ),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
+import '../database/separator_rules_provider.dart';
 import '../settings/settings_provider.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
@@ -19,6 +20,7 @@ import 'root_scan_result.dart';
 import 'root_short_track_rules.dart';
 import 'scan_diff.dart';
 import 'scan_rules.dart';
+import 'scan_stats.dart';
 import 'scan_totals.dart';
 import 'scanned_folders.dart';
 import 'short_track_memo.dart';
@@ -313,6 +315,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
         'tags ${totals.tagTime.inMilliseconds} ms, '
         'db ${totals.dbTime.inMilliseconds} ms',
       );
+      if (ref.mounted) {
+        await ref.read(lastScanStatsProvider.notifier).publishScan(db, totals);
+      }
       _publish(IndexerFinished(summary, quiet: _quiet));
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
@@ -458,6 +463,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _awaitingWalkOf = null;
       if (!keepWalk) _abandonedWalks.remove(root.path);
     }
+    final seen = walk.files.length;
     walk = applyWalkRules(
       walk,
       root.path,
@@ -560,7 +566,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
       // stored with an error too.
       failedTags += rows.where((r) => r.scanError.value != null).length;
       dbTime.start();
-      await db.upsertTracks(rows);
+      // Read per batch: rows keep the version of the rules that keyed them.
+      final artistRules = ref.read(artistSplitRulesProvider);
+      await db.upsertTracks(rows, artistRules: artistRules);
       dbTime.stop();
       final storedPaths = {for (final row in rows) row.path.value};
       for (final file in batch.where((f) => storedPaths.contains(f.path))) {
@@ -588,6 +596,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
       skippedFolderNames: skippedFolders,
       dirs: walk.dirs,
       deferred: walk.deferred,
+      stats: ScanStats.ofRoot(
+        walk,
+        seen: seen,
+        tooShort: shortRules.tooShortFiles,
+      ),
       walkTime: walkTime.elapsed,
       tagTime: tagTime.elapsed,
       dbTime: dbTime.elapsed,

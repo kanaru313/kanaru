@@ -21,9 +21,10 @@ import 'genres_provider.dart';
 
 final _log = Logger('library');
 
-/// Row used to measure the list.
+/// Row used to measure the list. Its key is not `unknownGenreKey`, so it is
+/// built as a named genre.
 const _prototypeGenre = GenreSummary(
-  key: '',
+  key: 'prototype',
   name: 'Genre',
   songCount: 1,
   raws: [],

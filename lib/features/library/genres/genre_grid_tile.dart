@@ -6,6 +6,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
 import '../widgets/round_grid_tile.dart';
 import 'genre_avatar.dart';
+import 'genre_display_name.dart';
 
 /// One genre in a grid: round avatar, name, "N songs".
 class GenreGridTile extends StatelessWidget {
@@ -25,7 +26,7 @@ class GenreGridTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RoundGridTile(
     avatarBuilder: (size) => GenreAvatar(genreKey: genre.key, size: size),
-    title: genre.name,
+    title: genreDisplayName(context.l10n, genre.key, genre.name),
     subtitle: context.l10n.albumsSongCount(genre.songCount),
     onTap: onTap,
     onQueueAction: onQueueAction,

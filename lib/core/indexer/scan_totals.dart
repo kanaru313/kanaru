@@ -1,5 +1,6 @@
 import 'indexer_state.dart';
 import 'root_scan_result.dart';
+import 'scan_stats.dart';
 import 'scanned_folders.dart';
 import 'walk_audio_files.dart' show maxUndecodableSamples;
 
@@ -13,6 +14,9 @@ class ScanTotals {
 
   int added = 0, updated = 0, removed = 0, failedTags = 0, filtered = 0;
   int undecodableNames = 0;
+
+  /// What the roots saw and left out, by reason.
+  ScanStats stats = const ScanStats();
   final undecodableDirs = <String>[];
   final skippedFolderNames = <String>{};
   final skipped = <String, SkipReason>{};
@@ -28,6 +32,7 @@ class ScanTotals {
     updated += result.updated;
     removed += result.removed;
     filtered += result.filtered;
+    stats += result.stats;
     failedTags += result.failedTags;
     undecodableNames += result.undecodableNames;
     skippedFolderNames.addAll(result.skippedFolderNames);

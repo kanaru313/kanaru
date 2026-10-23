@@ -1910,4 +1910,269 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coverCacheClearFailed => 'Could not clear the cover cache';
+
+  @override
+  String get genresUnknown => 'Unknown genre';
+
+  @override
+  String get separatorsArtistsTitle => 'Split artists';
+
+  @override
+  String get separatorsGenresTitle => 'Split genres';
+
+  @override
+  String get separatorsArtistsHint =>
+      'Applies at once, the library updates in the background.';
+
+  @override
+  String get separatorsGenresHint => 'Applies at once, no rescan needed.';
+
+  @override
+  String separatorsSummary(int separators, int keepWhole) {
+    String _temp0 = intl.Intl.pluralLogic(
+      separators,
+      locale: localeName,
+      other: '$separators separators',
+      one: '1 separator',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      keepWhole,
+      locale: localeName,
+      other: '$keepWhole kept whole',
+      one: '1 kept whole',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get separatorsEditButton => 'Edit';
+
+  @override
+  String separatorsTabSeparators(int count) {
+    return 'Separators ($count)';
+  }
+
+  @override
+  String separatorsTabKeepWhole(int count) {
+    return 'Keep whole ($count)';
+  }
+
+  @override
+  String get separatorsAddSeparatorLabel => 'New separator';
+
+  @override
+  String get separatorsAddKeepLabel => 'Name to keep whole';
+
+  @override
+  String get separatorsSeparatorHelp =>
+      'No need to add spaces around it. Words like feat. split only with a space on each side.';
+
+  @override
+  String get separatorsKeepHelpArtist =>
+      'Type the name as it is in the tag, any case. AC/DC, for example, stays one artist.';
+
+  @override
+  String get separatorsKeepHelpGenre =>
+      'Type the name as it is in the tag, any case. Funk/Soul, for example, stays one genre.';
+
+  @override
+  String get separatorsAdd => 'Add';
+
+  @override
+  String get separatorsErrorEmpty => 'Type something to add';
+
+  @override
+  String get separatorsErrorDuplicate => 'Already in the list';
+
+  @override
+  String separatorsErrorTooLong(int max) {
+    return 'At most $max characters';
+  }
+
+  @override
+  String separatorsErrorFull(int max) {
+    return 'The list holds at most $max entries';
+  }
+
+  @override
+  String separatorsRemove(String entry) {
+    return 'Remove $entry';
+  }
+
+  @override
+  String get separatorsEmptyList => 'Nothing here yet';
+
+  @override
+  String get separatorsEmptySeparators =>
+      'Nothing here yet, so nothing is split';
+
+  @override
+  String separatorsPage(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get separatorsReset => 'Restore defaults';
+
+  @override
+  String get separatorsResetConfirmTitle => 'Restore defaults?';
+
+  @override
+  String get separatorsResetConfirmBody =>
+      'Both lists go back to their defaults.';
+
+  @override
+  String get separatorsResetConfirm => 'Restore';
+
+  @override
+  String get separatorsClose => 'Close';
+
+  @override
+  String get scanStatsTracksTitle => 'Songs in the library';
+
+  @override
+  String scanStatsTracksOfFiles(int tracks, int files) {
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+    final intl.NumberFormat filesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String filesString = filesNumberFormat.format(files);
+
+    return '$tracksString of $filesString music files';
+  }
+
+  @override
+  String get scanStatsNotScanned => 'Not scanned in this session';
+
+  @override
+  String get scanStatsLeftOutTitle => 'Left out by scan rules';
+
+  @override
+  String scanStatsNomedia(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'In .nomedia folders: $_temp0';
+  }
+
+  @override
+  String scanStatsExcluded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'In left-out folders: $_temp0';
+  }
+
+  @override
+  String scanStatsTooSmall(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'Under minimum size: $_temp0';
+  }
+
+  @override
+  String scanStatsTooShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'Under minimum length: $_temp0';
+  }
+
+  @override
+  String get scanStatsTagErrorsTitle => 'Tag errors';
+
+  @override
+  String scanStatsTagErrors(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString songs',
+      one: '1 song',
+      zero: 'No songs',
+    );
+    return '$_temp0 stored without readable tags';
+  }
+
+  @override
+  String get scanStatsCoversTitle => 'Cover art';
+
+  @override
+  String scanStatsCovers(int images, int tracks) {
+    final intl.NumberFormat imagesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String imagesString = imagesNumberFormat.format(images);
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+
+    return '$imagesString images made for $tracksString songs with art';
+  }
+
+  @override
+  String scanStatsSongs(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString songs',
+      one: '1 song',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scanStatsUnfinishedRoots(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString folders not scanned to the end',
+      one: '1 folder not scanned to the end',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scanStatsCoversHint =>
+      'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).';
 }

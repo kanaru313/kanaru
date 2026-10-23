@@ -2827,6 +2827,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not clear the cover cache'**
   String get coverCacheClearFailed;
+
+  /// Name of the Genres entry that holds songs with no genre tag, always last in the list
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown genre'**
+  String get genresUnknown;
+
+  /// Title of the settings row and dialog that edit how artist tags are split
+  ///
+  /// In en, this message translates to:
+  /// **'Split artists'**
+  String get separatorsArtistsTitle;
+
+  /// Title of the settings row and dialog that edit how genre tags are split
+  ///
+  /// In en, this message translates to:
+  /// **'Split genres'**
+  String get separatorsGenresTitle;
+
+  /// Subtitle of the artist split row, first line
+  ///
+  /// In en, this message translates to:
+  /// **'Applies at once, the library updates in the background.'**
+  String get separatorsArtistsHint;
+
+  /// Subtitle of the genre split row, first line
+  ///
+  /// In en, this message translates to:
+  /// **'Applies at once, no rescan needed.'**
+  String get separatorsGenresHint;
+
+  /// Second line of a split row: how many separators and keep-whole names are set
+  ///
+  /// In en, this message translates to:
+  /// **'{separators, plural, =1{1 separator} other{{separators} separators}} · {keepWhole, plural, =1{1 kept whole} other{{keepWhole} kept whole}}'**
+  String separatorsSummary(int separators, int keepWhole);
+
+  /// Button of a split row that opens its dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get separatorsEditButton;
+
+  /// Dialog tab listing the separators, with how many there are
+  ///
+  /// In en, this message translates to:
+  /// **'Separators ({count})'**
+  String separatorsTabSeparators(int count);
+
+  /// Dialog tab listing names that are never split, with how many there are
+  ///
+  /// In en, this message translates to:
+  /// **'Keep whole ({count})'**
+  String separatorsTabKeepWhole(int count);
+
+  /// Label of the field that adds a separator
+  ///
+  /// In en, this message translates to:
+  /// **'New separator'**
+  String get separatorsAddSeparatorLabel;
+
+  /// Label of the field that adds a name that is never split
+  ///
+  /// In en, this message translates to:
+  /// **'Name to keep whole'**
+  String get separatorsAddKeepLabel;
+
+  /// Help under the separator field
+  ///
+  /// In en, this message translates to:
+  /// **'No need to add spaces around it. Words like feat. split only with a space on each side.'**
+  String get separatorsSeparatorHelp;
+
+  /// Help under the keep-whole field of the artist dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Type the name as it is in the tag, any case. AC/DC, for example, stays one artist.'**
+  String get separatorsKeepHelpArtist;
+
+  /// Help under the keep-whole field of the genre dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Type the name as it is in the tag, any case. Funk/Soul, for example, stays one genre.'**
+  String get separatorsKeepHelpGenre;
+
+  /// Button that adds the typed entry
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get separatorsAdd;
+
+  /// Error under the field when nothing was typed
+  ///
+  /// In en, this message translates to:
+  /// **'Type something to add'**
+  String get separatorsErrorEmpty;
+
+  /// Error under the field when the entry is in the list already, in any case
+  ///
+  /// In en, this message translates to:
+  /// **'Already in the list'**
+  String get separatorsErrorDuplicate;
+
+  /// Error under the field when the entry is too long
+  ///
+  /// In en, this message translates to:
+  /// **'At most {max} characters'**
+  String separatorsErrorTooLong(int max);
+
+  /// Error under the field when the list is full
+  ///
+  /// In en, this message translates to:
+  /// **'The list holds at most {max} entries'**
+  String separatorsErrorFull(int max);
+
+  /// Tooltip of the button that removes an entry
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {entry}'**
+  String separatorsRemove(String entry);
+
+  /// Shown in place of an empty list
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get separatorsEmptyList;
+
+  /// Shown in place of an empty separator list
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet, so nothing is split'**
+  String get separatorsEmptySeparators;
+
+  /// Tooltip of a page dot below a long list
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String separatorsPage(int page, int total);
+
+  /// Button that puts both lists of the dialog back to their defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Restore defaults'**
+  String get separatorsReset;
+
+  /// Title of the confirmation before restoring the defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Restore defaults?'**
+  String get separatorsResetConfirmTitle;
+
+  /// Body of the confirmation before restoring the defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Both lists go back to their defaults.'**
+  String get separatorsResetConfirmBody;
+
+  /// Button that confirms restoring the defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get separatorsResetConfirm;
+
+  /// Button that closes the dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get separatorsClose;
+
+  /// Title of the scan statistics row with the songs found and the music files seen
+  ///
+  /// In en, this message translates to:
+  /// **'Songs in the library'**
+  String get scanStatsTracksTitle;
+
+  /// Songs stored out of the music files the last scan of this session saw
+  ///
+  /// In en, this message translates to:
+  /// **'{tracks} of {files} music files'**
+  String scanStatsTracksOfFiles(int tracks, int files);
+
+  /// Shown instead of the numbers only a scan knows, until the first scan of the session ends
+  ///
+  /// In en, this message translates to:
+  /// **'Not scanned in this session'**
+  String get scanStatsNotScanned;
+
+  /// Title of the scan statistics row with the files the scan rules left out
+  ///
+  /// In en, this message translates to:
+  /// **'Left out by scan rules'**
+  String get scanStatsLeftOutTitle;
+
+  /// Files left out for being in a folder that holds a .nomedia entry
+  ///
+  /// In en, this message translates to:
+  /// **'In .nomedia folders: {count, plural, =1{1 file} other{{count} files}}'**
+  String scanStatsNomedia(int count);
+
+  /// Files left out for being in a folder the user left out
+  ///
+  /// In en, this message translates to:
+  /// **'In left-out folders: {count, plural, =1{1 file} other{{count} files}}'**
+  String scanStatsExcluded(int count);
+
+  /// Files left out for being smaller than the minimum file size
+  ///
+  /// In en, this message translates to:
+  /// **'Under minimum size: {count, plural, =1{1 file} other{{count} files}}'**
+  String scanStatsTooSmall(int count);
+
+  /// Files left out for being shorter than the minimum length
+  ///
+  /// In en, this message translates to:
+  /// **'Under minimum length: {count, plural, =1{1 file} other{{count} files}}'**
+  String scanStatsTooShort(int count);
+
+  /// Title of the scan statistics row with the songs whose tags could not be read
+  ///
+  /// In en, this message translates to:
+  /// **'Tag errors'**
+  String get scanStatsTagErrorsTitle;
+
+  /// Songs stored without tags because reading them failed
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No songs} =1{1 song} other{{count} songs}} stored without readable tags'**
+  String scanStatsTagErrors(int count);
+
+  /// Title of the scan statistics row with the cover art made
+  ///
+  /// In en, this message translates to:
+  /// **'Cover art'**
+  String get scanStatsCoversTitle;
+
+  /// Distinct cover thumbnails, and the songs that have one
+  ///
+  /// In en, this message translates to:
+  /// **'{images} images made for {tracks} songs with art'**
+  String scanStatsCovers(int images, int tracks);
+
+  /// Songs stored, before the first scan of the session
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}}'**
+  String scanStatsSongs(int count);
+
+  /// Note under the songs row: folders the last scan skipped (missing, timed out), whose files the numbers leave out
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 folder not scanned to the end} other{{count} folders not scanned to the end}}'**
+  String scanStatsUnfinishedRoots(int count);
+
+  /// Note under the cover art numbers
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).'**
+  String get scanStatsCoversHint;
 }
 
 class _AppLocalizationsDelegate

@@ -55,15 +55,50 @@ class ArtistPageSections {
 }
 
 /// The preferred spelling of [key] among the tracks that credit it.
+///
+/// Independent of the artist split rules (which a person can change and
+/// which the page does not know): a track's name comes from the default
+/// split when that gives [key]; otherwise from the text of the tag itself,
+/// at a place where a name spelled like [key] stands alone.
 String? _displayName(String key, List<BrowseTrack> tracks) {
   String? best;
   for (final track in tracks) {
-    for (final name in splitArtists(track.artist)) {
-      if (artistKey(name) == key) best = preferredSpelling(best, name);
+    final names = _namesOf(key, track.artist);
+    for (final name in names) {
+      best = preferredSpelling(best, name);
     }
   }
   return best;
 }
+
+/// The spellings of [key] in [tag]: from the default split, else every
+/// stretch of the tag that has the key and is set off from letters and
+/// digits around it. Nothing when the tag does not spell [key] that way.
+Iterable<String> _namesOf(String key, String? tag) sync* {
+  if (tag == null || tag.isEmpty) return;
+  var found = false;
+  for (final name in splitArtists(tag)) {
+    if (artistKey(name) == key) {
+      found = true;
+      yield name;
+    }
+  }
+  if (found || key.isEmpty) return;
+  // Case folding that changes the length would shift the positions.
+  final lower = tag.toLowerCase();
+  if (lower.length != tag.length) return;
+  for (var at = lower.indexOf(key); at >= 0; at = lower.indexOf(key, at + 1)) {
+    final end = at + key.length;
+    if (at > 0 && _letterOrDigit.hasMatch(tag[at - 1])) continue;
+    if (end < tag.length && _letterOrDigit.hasMatch(tag[end])) continue;
+    final candidate = tag.substring(at, end);
+    if (candidate.trim() == candidate && artistKey(candidate) == key) {
+      yield candidate;
+    }
+  }
+}
+
+final _letterOrDigit = RegExp(r'[\p{L}\p{N}]', unicode: true);
 
 /// Year ascending (unknown last), then the title sort key, then the key.
 int _byYearThenTitle(AlbumSummary a, AlbumSummary b) {

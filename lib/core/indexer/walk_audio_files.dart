@@ -50,6 +50,9 @@ class WalkResult {
     this.dirs = const [],
     this.nomediaDirs = const [],
     this.filteredOut = 0,
+    this.nomediaOut = 0,
+    this.excludedOut = 0,
+    this.tooSmallOut = 0,
     this.deferred = 0,
   });
 
@@ -67,6 +70,12 @@ class WalkResult {
   /// `applyWalkRules`, never by the walk). A rescan that finds no file
   /// because of them is a deliberate filter, not an empty mount.
   final int filteredOut;
+
+  /// Of the files in [filteredOut], those dropped for each reason (set by
+  /// `applyWalkRules`): inside a folder holding `.nomedia`, inside a folder
+  /// the user left out, or under the minimum size. A file inside a folder of
+  /// both kinds counts for the nearest.
+  final int nomediaOut, excludedOut, tooSmallOut;
 
   /// Files left unread for now because they changed too recently, so their
   /// stored rows stay (set by `applyWalkRules`).
@@ -109,6 +118,9 @@ class WalkResult {
     List<String>? emptyDirs,
     List<String>? dirs,
     int? filteredOut,
+    int? nomediaOut,
+    int? excludedOut,
+    int? tooSmallOut,
     int? deferred,
   }) => WalkResult(
     files: files ?? this.files,
@@ -122,6 +134,9 @@ class WalkResult {
     dirs: dirs ?? this.dirs,
     nomediaDirs: nomediaDirs,
     filteredOut: filteredOut ?? this.filteredOut,
+    nomediaOut: nomediaOut ?? this.nomediaOut,
+    excludedOut: excludedOut ?? this.excludedOut,
+    tooSmallOut: tooSmallOut ?? this.tooSmallOut,
     deferred: deferred ?? this.deferred,
   );
 }

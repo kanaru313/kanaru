@@ -32,6 +32,14 @@ void main() {
     );
   });
 
+  test('the unknown genre key is empty and still a valid route', () {
+    expect(unknownGenreKey, isEmpty);
+    final key = encodeGenreRouteKey(unknownGenreKey);
+    expect(key, isNotEmpty);
+    expect(decodeGenreRouteKey(key), unknownGenreKey);
+    expect(genreLocation(unknownGenreKey), '/genres/$key');
+  });
+
   test('folder keys round-trip any path', () {
     for (final path in [...odd, '/m/😀 dir/a b', '/日本/Ünï']) {
       expect(decodeFolderRouteKey(encodeFolderRouteKey(path)), path);

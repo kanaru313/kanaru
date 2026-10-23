@@ -17,6 +17,7 @@ import '../../../shared/widgets/song_tile.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
 import '../library_detail_body.dart';
+import 'genre_display_name.dart';
 import 'genre_header.dart';
 import 'genre_page_data.dart';
 
@@ -51,6 +52,7 @@ class _GenrePage extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final songs = data.tracks;
+    final name = genreDisplayName(l10n, genreKey, data.name);
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
     List<player.Track> queue() => [
@@ -69,13 +71,13 @@ class _GenrePage extends ConsumerWidget {
         SliverToBoxAdapter(
           child: GenreHeader(
             genreKey: genreKey,
-            name: data.name,
+            name: name,
             albumCount: data.albums.length,
             songCount: songs.length,
             onPlay: () => playTracks(ref, queue(), 0),
             onShuffle: () => shuffleTracks(ref, queue()),
             onQueueAction: (action) =>
-                enqueueLoaded(ref, context, action, queue(), data.name),
+                enqueueLoaded(ref, context, action, queue(), name),
           ),
         ),
         if (data.albums.isNotEmpty) ...[
