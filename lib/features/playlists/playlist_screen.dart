@@ -3,7 +3,6 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
-import '../../core/database/playlist_rows.dart';
 import '../../shared/widgets/library_loading.dart';
 import 'playlist_page_body.dart';
 import 'playlist_page_data.dart';
@@ -25,20 +24,24 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 }
 
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
-  /// The last page shown, kept for a page that is on its way out.
-  PlaylistPage? _lastPage;
+  /// The last head shown, kept for a page that is on its way out.
+  PlaylistHeadLoad? _lastLoad;
 
-  Widget _data(PlaylistPage? page) {
-    if (page != null) {
-      _lastPage = page;
-      return PlaylistPageBody(page);
+  Widget _data(PlaylistHeadLoad load) {
+    final head = load.head;
+    if (head != null) {
+      _lastLoad = load;
+      return PlaylistPageBody(head, headSeq: load.seq);
     }
     // Deleting a playlist leaves its page first, but the page stays on screen
     // until its exit animation ends. Meanwhile the delete empties the query;
     // "not found" would flash on a page that is already leaving.
-    final last = _lastPage;
-    if (last != null && ModalRoute.of(context)?.isActive == false) {
-      return PlaylistPageBody(last);
+    final last = _lastLoad;
+    final lastHead = last?.head;
+    if (last != null &&
+        lastHead != null &&
+        ModalRoute.of(context)?.isActive == false) {
+      return PlaylistPageBody(lastHead, headSeq: last.seq);
     }
     return const PlaylistNotFound();
   }
@@ -52,7 +55,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     } else if (id == null) {
       body = const PlaylistNotFound();
     } else {
-      ref.listen(playlistPageProvider(id), (previous, next) {
+      ref.listen(playlistPageHeadProvider(id), (previous, next) {
         if (next.hasError && !(previous?.hasError ?? false)) {
           _log.severe(
             'Reading the playlist failed',
@@ -62,10 +65,10 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
         }
       });
       body = ref
-          .watch(playlistPageProvider(id))
+          .watch(playlistPageHeadProvider(id))
           .when(
             // A reload after an edit keeps showing the page until the new
-            // one arrives.
+            // head arrives.
             skipLoadingOnReload: true,
             skipError: true,
             loading: () => const LibraryLoading(),

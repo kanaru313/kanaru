@@ -53,21 +53,23 @@ class _FavoritesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(playlistPageProvider(id), (previous, next) {
+    ref.listen(playlistPageHeadProvider(id), (previous, next) {
       if (next.hasError && !(previous?.hasError ?? false)) {
         _log.severe('Reading favorites failed', next.error, next.stackTrace);
       }
     });
     return ref
-        .watch(playlistPageProvider(id))
+        .watch(playlistPageHeadProvider(id))
         .when(
           skipLoadingOnReload: true,
           skipError: true,
           loading: () => const LibraryLoading(),
           error: (error, stack) => const PlaylistsUnavailable(),
           // Gone (deleted outside the app): the id stream catches up.
-          data: (page) =>
-              page == null ? const _NoFavorites() : PlaylistPageBody(page),
+          data: (load) => switch (load.head) {
+            final head? => PlaylistPageBody(head, headSeq: load.seq),
+            null => const _NoFavorites(),
+          },
         );
   }
 }

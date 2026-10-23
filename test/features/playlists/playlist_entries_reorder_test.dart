@@ -1,7 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 
-import 'package:material_ui/material_ui.dart' show DecoratedBox, BoxDecoration;
+import 'package:material_ui/material_ui.dart'
+    show
+        BoxDecoration,
+        DecoratedBox,
+        Icons,
+        Scrollable,
+        ScrollableState,
+        SizedBox;
 
 import 'playlist_entries_view_harness.dart';
 
@@ -15,7 +23,7 @@ void main() {
     testWidgets('a drop reports the entry and its final index at once', (
       tester,
     ) async {
-      await view.pump(tester, pageOf(rows));
+      await view.pump(tester, rows);
 
       await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
 
@@ -26,7 +34,7 @@ void main() {
     testWidgets('the dragged row lifts as the card, not its padded slot', (
       tester,
     ) async {
-      await view.pump(tester, pageOf(rows));
+      await view.pump(tester, rows);
       final slot = tester.getRect(find.byType(PlaylistEntryTile).first);
 
       final gesture = await tester.startGesture(
@@ -51,35 +59,66 @@ void main() {
     });
 
     testWidgets('a failed write puts the rows back', (tester) async {
-      await view.pump(tester, pageOf(rows));
+      await view.pump(tester, rows);
       await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
 
       await view.finishMove(tester, ok: false);
+      expect(view.settled, 1, reason: 'the owner reloads the head');
+      await view.reloadHead(tester);
 
       expect(view.shownIds(tester), [0, 1, 2]);
     });
 
-    testWidgets('keeps the new order when the same page is shown again', (
+    testWidgets('keeps the new order when the same head is shown again', (
       tester,
     ) async {
-      final old = pageOf(rows);
-      await view.pump(tester, old);
+      final old = headOf(rows);
+      await view.pump(tester, rows);
       await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
 
       await view.finishMove(tester, ok: true);
       expect(view.shownIds(tester), [1, 2, 0]);
 
-      // A reload state renders the previous page object once more.
-      await view.pump(tester, old);
+      // A reload state renders the previous head object once more.
+      await view.showHead(tester, old, seq: 1);
       expect(view.shownIds(tester), [1, 2, 0], reason: 'not the old order');
 
-      // The stream catches up with the moved order.
-      await view.pump(tester, pageOf([rows[1], rows[2], rows[0]]));
+      // The head read after the write has the moved order.
+      await view.reloadHead(tester);
       expect(view.shownIds(tester), [1, 2, 0]);
     });
 
+    testWidgets('a head read before the write ended is ignored', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.finishMove(tester, ok: true);
+
+      // A new object, read before the settle: it would reset the rows to
+      // what the old list order says.
+      final reads = view.loads.length;
+      await view.showHead(tester, headOf(rows), seq: view.minSeq - 1);
+      expect(view.shownIds(tester), [1, 2, 0]);
+      expect(view.loads, hasLength(reads), reason: 'no reread: stale head');
+
+      await view.reloadHead(tester);
+      expect(view.shownIds(tester), [1, 2, 0]);
+      expect(view.loads, hasLength(reads + 1), reason: 'reread once');
+    });
+
+    testWidgets('a head that arrives mid-write is ignored', (tester) async {
+      await view.pump(tester, rows);
+      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+
+      await view.showHead(tester, headOf(rows));
+
+      expect(view.shownIds(tester), [1, 2, 0]);
+      expect(view.loads, [(0, 3)]);
+    });
+
     testWidgets('a drop while a move is saving is ignored', (tester) async {
-      await view.pump(tester, pageOf(rows));
+      await view.pump(tester, rows);
       await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
       expect(view.shownIds(tester), [1, 2, 0]);
 
@@ -89,29 +128,255 @@ void main() {
       expect(view.shownIds(tester), [1, 2, 0]);
 
       await view.finishMove(tester, ok: false);
+      await view.reloadHead(tester);
       expect(view.shownIds(tester), [0, 1, 2]);
     });
 
     testWidgets('a move that throws puts the rows back', (tester) async {
       view.moveError = StateError('gone');
-      await view.pump(tester, pageOf(rows));
+      await view.pump(tester, rows);
       await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+      expect(view.settled, 1);
+      await view.reloadHead(tester);
       expect(view.shownIds(tester), [0, 1, 2]);
     });
 
-    testWidgets('a tap during the move plays the order on screen', (
+    testWidgets('a tap during the move plays only after it ends', (
       tester,
     ) async {
-      await view.pump(tester, pageOf(rows));
+      await view.pump(tester, rows);
       await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
 
       await tester.tap(find.text('T1'));
+      await tester.pump();
+      expect(view.played, isEmpty, reason: 'waits for the write');
 
-      expect(view.playedIndex, 0);
-      expect(view.playedRows!.map((e) => e.entryId), [1, 2, 0]);
+      await view.finishMove(tester, ok: true);
+
+      expect(view.played, [(1, 0)], reason: 'the row that was tapped');
+    });
+
+    testWidgets('a second tap while a play waits is ignored', (tester) async {
+      await view.pump(tester, rows);
+      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+
+      await tester.tap(find.text('T1'));
+      await tester.tap(find.text('T2'));
+      await tester.pump();
+      await view.finishMove(tester, ok: true);
+
+      expect(view.played, [(1, 0)]);
+    });
+
+    testWidgets('leaving the page while a play waits for a write is quiet', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await tester.tap(find.text('T1'));
+      await tester.pump();
+
+      await tester.pumpWidget(const SizedBox());
+      await view.finishMove(tester, ok: true);
+
+      expect(tester.takeException(), isNull);
+      expect(view.played, isEmpty, reason: 'the page was gone');
+    });
+
+    Future<TestGesture> dragBy(WidgetTester tester, double dy) async {
+      final gesture = await tester.startGesture(
+        tester.getCenter(view.handle(0)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      for (var moved = 0.0; moved < dy; moved += 8) {
+        await gesture.moveBy(const Offset(0, 8));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      return gesture;
+    }
+
+    testWidgets('a head during a drag waits, and the picked row is moved', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      final gesture = await dragBy(tester, 2 * playlistEntryExtent);
+      final reads = view.loads.length;
+
+      // Meanwhile the database order changed under the row in hand.
+      view.store = [rows[2], rows[1], rows[0]];
+      await view.showHead(tester, headOf(view.store));
+      expect(view.loads, hasLength(reads), reason: 'no read under the hand');
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(view.moves, [(0, 2)], reason: 'the row that was picked up');
+    });
+
+    testWidgets('a head during a drag that goes nowhere is taken at the drop', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      // Past the touch slop, so the drag starts, but not into the next slot.
+      final gesture = await dragBy(tester, 24);
+      view.store = [rows[2], rows[1], rows[0]];
+      await view.showHead(tester, headOf(view.store));
+      expect(view.shownIds(tester), [0, 1, 2]);
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(view.moves, isEmpty);
+      expect(view.shownIds(tester), [2, 1, 0]);
+    });
+
+    testWidgets('a cancelled drag does not hold later heads back', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      final gesture = await dragBy(tester, 24);
+      view.store = [rows[2], rows[1], rows[0]];
+      await view.showHead(tester, headOf(view.store));
+      expect(view.shownIds(tester), [0, 1, 2], reason: 'held during the drag');
+
+      await gesture.cancel();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle(); // the rows are read again
+      expect(view.shownIds(tester), [2, 1, 0], reason: 'the head is taken');
+
+      // Later heads are taken again: a failed removal rolls back on screen.
+      await tester.tap(find.byTooltip('Remove from playlist').at(0));
+      await tester.pump();
+      await view.finishRemove(tester, ok: false);
+      await view.reloadHead(tester);
+      expect(view.shownIds(tester), [2, 1, 0]);
+    });
+
+    testWidgets('a drop back in the first slot takes the head that waited', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      // Down two slots and up again: the list reports the slot below the
+      // row it started in.
+      final gesture = await dragBy(tester, 2 * playlistEntryExtent);
+      for (var i = 0; i < 16; i++) {
+        await gesture.moveBy(const Offset(0, -8));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      view.store = [rows[2], rows[1], rows[0]];
+      await view.showHead(tester, headOf(view.store));
+      expect(view.shownIds(tester), [0, 1, 2], reason: 'held during the drag');
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(view.moves, isEmpty);
+      expect(view.shownIds(tester), [2, 1, 0]);
+    });
+  });
+
+  group('remove', () {
+    final rows = [available(0), available(1), available(2)];
+
+    testWidgets('the row goes at once and stays gone while saving', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+
+      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await tester.pump();
+
+      expect(view.shownIds(tester), [0, 2]);
+      expect(find.text('2 songs'), findsOneWidget);
+
+      // The old head arrives while the write runs: not what is heading to
+      // the screen.
+      await view.showHead(tester, headOf(rows));
+      expect(view.shownIds(tester), [0, 2]);
+      expect(find.text('2 songs'), findsOneWidget);
+
+      await view.finishRemove(tester, ok: true);
+      expect(view.shownIds(tester), [0, 2]);
+      await view.reloadHead(tester);
+      expect(view.shownIds(tester), [0, 2]);
+      expect(find.text('2 songs'), findsOneWidget);
+    });
+
+    testWidgets('a failed removal brings the row back with the next head', (
+      tester,
+    ) async {
+      await view.pump(tester, rows);
+      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await tester.pump();
+
+      await view.finishRemove(tester, ok: false);
+      await view.reloadHead(tester);
+
+      expect(view.shownIds(tester), [0, 1, 2]);
+      expect(find.text('3 songs'), findsOneWidget);
+    });
+
+    testWidgets('a removal while a move is saving is allowed', (tester) async {
+      await view.pump(tester, rows);
+      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      expect(view.shownIds(tester), [1, 2, 0]);
+
+      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await tester.pump();
+      expect(view.removed, [2], reason: 'by entry id, not by index');
+      expect(view.shownIds(tester), [1, 0]);
+
+      await view.finishMove(tester, ok: true);
+      await view.finishRemove(tester, ok: true);
+      expect(view.settled, 1, reason: 'one settle for both writes');
+      await view.reloadHead(tester);
+      expect(view.shownIds(tester), [1, 0]);
+    });
+
+    testWidgets('two removals in one frame each take the right row', (
+      tester,
+    ) async {
+      await view.pump(tester, [for (var i = 0; i < 4; i++) available(i)]);
+
+      await tester.tap(find.byTooltip('Remove from playlist').at(0));
+      // No frame between: the second row is still where it was drawn.
+      await tester.tap(find.byTooltip('Remove from playlist').at(2));
+      await tester.pump();
+
+      expect(view.removed, [0, 2]);
+      expect(view.shownIds(tester), [1, 3]);
+      expect(find.text('2 songs'), findsOneWidget);
+    });
+
+    testWidgets('removing the last row shows the empty state', (tester) async {
+      await view.pump(tester, [available(0)]);
+
+      await tester.tap(find.byTooltip('Remove from playlist'));
+      await tester.pump();
+
+      expect(find.text('This playlist is empty'), findsOneWidget);
+    });
+  });
+
+  group('slots', () {
+    testWidgets('a row not read yet is a slot that cannot be dragged', (
+      tester,
+    ) async {
+      await view.pump(tester, [for (var i = 0; i < 250; i++) available(i)]);
+      // Page 0 is on screen; jump to a place whose page is not read.
+      final scroll = tester.state<ScrollableState>(find.byType(Scrollable));
+      scroll.position.jumpTo(150 * playlistEntryExtent);
+      await tester.pump();
+
+      expect(find.byType(PlaylistEntryPlaceholder), findsWidgets);
+      expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
+
+      await tester.pumpAndSettle();
+      expect(find.byType(PlaylistEntryPlaceholder), findsNothing);
+      expect(view.loads, [(0, 100), (100, 100)]);
     });
   });
 }

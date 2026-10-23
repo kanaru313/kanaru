@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/library_startup.dart';
+import '../../core/database/playlist_queries.dart';
 import '../../core/database/playlist_rows.dart';
 import '../../core/m3u/m3u_export.dart';
 import '../../core/m3u/m3u_write.dart';
@@ -17,23 +19,26 @@ final _log = Logger('playlists');
 /// Set while an export runs: a second one waits for no dialog of its own.
 bool _exporting = false;
 
-/// Asks where to save [page] as an M3U file with [style] paths and writes
+/// Asks where to save [playlist] as an M3U file with [style] paths and writes
 /// it. Adds `.m3u8` to a name without an M3U extension, and asks before
-/// overwriting a file (the system save dialog does not). Entries are written
-/// in their saved order; entries not in the library keep their path.
+/// overwriting a file (the system save dialog does not). The entries are read
+/// once the file is chosen, the one place that needs the whole playlist at
+/// hand; they are written in their saved order, and entries not in the
+/// library keep their path.
 ///
 /// Everything from the widget tree is captured before the first `await`.
 /// Failures are logged and reported, never thrown.
 Future<void> exportPlaylistInteractively(
   WidgetRef ref,
   BuildContext context,
-  PlaylistPage page,
+  PlaylistSummary playlist,
   M3uPathStyle style,
 ) async {
   if (_exporting) return;
   _exporting = true;
   try {
     final save = ref.read(m3uSavePickerProvider);
+    final db = ref.read(libraryDatabaseProvider);
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
     final navigator = Navigator.of(context, rootNavigator: true);
@@ -42,7 +47,7 @@ Future<void> exportPlaylistInteractively(
       ..showSnackBar(SnackBar(content: Text(text)));
 
     final name = playlistNameFromM3uFile(
-      playlistDisplayName(page.playlist, l10n),
+      playlistDisplayName(playlist, l10n),
       l10n.playlistDefaultName,
     );
     try {
@@ -56,6 +61,13 @@ Future<void> exportPlaylistInteractively(
         if (!navigator.mounted) return;
         final file = target.substring(target.lastIndexOf('/') + 1);
         if (!await _confirmOverwrite(navigator.context, file)) return;
+      }
+      final page = db == null ? null : await db.playlistPage(playlist.id);
+      if (page == null) {
+        // Deleted since the page opened, or no library: nothing to write.
+        _log.warning('Exporting playlist ${playlist.id}: it is not readable');
+        say(l10n.playlistM3uExportFailed);
+        return;
       }
       final result = await exportM3uFile(target, [
         for (final entry in page.entries)

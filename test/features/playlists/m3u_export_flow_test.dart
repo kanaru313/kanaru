@@ -8,6 +8,7 @@ import 'package:kanaru/features/playlists/m3u_file_pickers.dart';
 import 'package:kanaru/features/playlists/m3u_import_report_dialog.dart';
 import 'package:kanaru/features/playlists/playlist_routes.dart';
 import 'package:kanaru/features/playlists/playlist_page_actions.dart';
+import 'package:kanaru/core/database/playlist_page_queries.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -35,16 +36,21 @@ void main() {
     String? picked;
     final suggested = <String>[];
 
+    /// Runs while the save dialog is open.
+    Future<void> Function()? whileDialogOpen;
+
     setUp(() async {
       tmp = await Directory.systemTemp.createTemp('kanaru-m3u-export-flow');
       root = await tmp.resolveSymbolicLinks();
       picked = null;
+      whileDialogOpen = null;
       suggested.clear();
       h = LibraryHarness(
         refreshInterval: Duration.zero,
         overrides: [
           m3uSavePickerProvider.overrideWithValue((name) async {
             suggested.add(name);
+            await whileDialogOpen?.call();
             return picked;
           }),
         ],
@@ -131,6 +137,25 @@ void main() {
       expect(result!.paths, ['$root/music/a.flac', '$root/music/b.flac']);
     });
 
+    testWidgets('a playlist deleted while the dialog is open reports failure', (
+      tester,
+    ) async {
+      final id = await openMix(tester);
+      picked = '$root/gone';
+      whileDialogOpen = () => h.db.deletePlaylist(id);
+
+      await tester.tap(find.byTooltip('Playlist actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Export M3U (full paths)…'));
+      await settleIoUi(tester, snackbarOnly: true);
+
+      expect(
+        find.text("Couldn't save the playlist file. See the log for details."),
+        findsOneWidget,
+      );
+      expect(await read(tester, '$root/gone.m3u8'), isNull);
+    });
+
     testWidgets('a cancelled save dialog writes nothing', (tester) async {
       await openMix(tester);
 
@@ -186,9 +211,11 @@ void main() {
           paths: ['$root/gone.flac', '$root/a.flac'],
         ),
       );
-      final page = await tester.runAsync(() => h.db.playlistPage(id!));
+      final playable = await tester.runAsync(
+        () => h.db.playlistPlayableTracks(id!),
+      );
 
-      final tracks = playableTracks(page!.entries, null);
+      final tracks = [for (final p in playable!) playlistTrack(p.track, null)];
 
       expect([for (final t in tracks) t.uri], ['$root/a.flac']);
     });

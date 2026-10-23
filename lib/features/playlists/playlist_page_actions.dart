@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
@@ -19,16 +17,6 @@ import 'playlist_routes.dart';
 
 final _log = Logger('playlists');
 
-/// The queue entries for [rows] whose file is in the library, in order.
-/// [coverDir] is the cover cache directory (null when covers are off).
-List<player.Track> playableTracks(
-  List<PlaylistEntryRow> rows,
-  String? coverDir,
-) => [
-  for (final row in rows)
-    if (row.track case final track?) playlistTrack(track, coverDir),
-];
-
 /// The queue entry of one library track of a playlist.
 player.Track playlistTrack(TrackListItem track, String? coverDir) =>
     trackFromItem(
@@ -39,10 +27,24 @@ player.Track playlistTrack(TrackListItem track, String? coverDir) =>
       artPath: coverPath(coverDir, track.coverKey),
     );
 
-/// Where `rows[index]` lands in [playableTracks] of the same rows: the
-/// number of playable rows before it.
-int playableIndex(List<PlaylistEntryRow> rows, int index) =>
-    rows.take(index).where((row) => row.track != null).length;
+/// Where a play queue built from [playable] starts: the entry [entryId]
+/// when it is still there, otherwise the first playable entry stored at
+/// [indexHint] or later (the tapped entry was removed meanwhile, and the
+/// next song is the closest thing to what the user pointed at). Null when
+/// nothing is left to play. A null [entryId] starts at the first playable
+/// entry.
+int? playableStartIndex(
+  List<PlaylistPlayableTrack> playable,
+  int? entryId,
+  int indexHint,
+) {
+  if (entryId != null) {
+    final exact = playable.indexWhere((p) => p.entryId == entryId);
+    if (exact >= 0) return exact;
+  }
+  final next = playable.indexWhere((p) => p.position >= indexHint);
+  return next < 0 ? null : next;
+}
 
 /// Moves [entryId] of playlist [playlistId] to index [to]. Completes with
 /// whether it was saved; a failure is logged and reported in a snackbar.
@@ -66,32 +68,25 @@ Future<bool> movePlaylistEntryOrReport(
   }
 }
 
-/// Removes entry [entryId] from playlist [playlistId]; a failure is logged
-/// and reported in a snackbar.
-void removePlaylistEntryOrReport(
+/// Removes entry [entryId] from playlist [playlistId]. Completes with
+/// whether it was saved; a failure is logged and reported in a snackbar.
+Future<bool> removePlaylistEntryOrReport(
   WidgetRef ref,
   BuildContext context,
   int playlistId,
   int entryId,
-) {
+) async {
   final db = ref.read(libraryDatabaseProvider);
-  if (db == null) return;
+  if (db == null) return false;
   final messenger = ScaffoldMessenger.of(context);
   final l10n = context.l10n;
-  unawaited(
-    db.removePlaylistEntries(playlistId, {entryId}).catchError((
-      Object error,
-      StackTrace stack,
-    ) {
-      _reportFailure(
-        messenger,
-        l10n,
-        'Removing a playlist entry',
-        error,
-        stack,
-      );
-    }),
-  );
+  try {
+    await db.removePlaylistEntries(playlistId, {entryId});
+    return true;
+  } catch (error, stack) {
+    _reportFailure(messenger, l10n, 'Removing a playlist entry', error, stack);
+    return false;
+  }
 }
 
 /// Asks for a new name for [playlist] and saves it.

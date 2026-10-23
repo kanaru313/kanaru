@@ -26,7 +26,8 @@ class PlaylistEntryTile extends ConsumerWidget {
     required this.entry,
     required this.index,
     this.onTap,
-    required this.onRemove,
+    this.onRemove,
+    this.reorderable = true,
     this.onQueueAction,
     this.removeTooltip,
   });
@@ -38,7 +39,12 @@ class PlaylistEntryTile extends ConsumerWidget {
 
   /// Plays from this row; null on an entry that cannot play.
   final VoidCallback? onTap;
-  final VoidCallback onRemove;
+
+  /// Null leaves the remove button out (a read-only list).
+  final VoidCallback? onRemove;
+
+  /// Whether the drag handle shows; the list reorders only by it.
+  final bool reorderable;
 
   /// Tooltip of the remove button; null is "Remove from playlist".
   final String? removeTooltip;
@@ -60,19 +66,22 @@ class PlaylistEntryTile extends ConsumerWidget {
 
     final row = Row(
       children: [
-        ReorderableDragStartListener(
-          index: index,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.grab,
-            child: Tooltip(
-              message: l10n.playlistReorder,
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(AppIcons.dragHandle, size: 20),
+        if (reorderable)
+          ReorderableDragStartListener(
+            index: index,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.grab,
+              child: Tooltip(
+                message: l10n.playlistReorder,
+                child: const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(AppIcons.dragHandle, size: 20),
+                ),
               ),
             ),
-          ),
-        ),
+          )
+        else
+          const SizedBox(width: 12),
         CoverArt(
           path: coverPath(
             ref.watch(coverCacheDirectoryProvider),
@@ -120,12 +129,13 @@ class PlaylistEntryTile extends ConsumerWidget {
               ),
             ),
           ),
-        IconButton(
-          icon: const Icon(AppIcons.closeRounded),
-          iconSize: 20,
-          tooltip: removeTooltip ?? l10n.playlistRemoveEntry,
-          onPressed: onRemove,
-        ),
+        if (onRemove != null)
+          IconButton(
+            icon: const Icon(AppIcons.closeRounded),
+            iconSize: 20,
+            tooltip: removeTooltip ?? l10n.playlistRemoveEntry,
+            onPressed: onRemove,
+          ),
       ],
     );
 

@@ -77,3 +77,43 @@ class PlaylistPage {
   final List<PlaylistEntryRow> entries;
   final List<String> coverKeys;
 }
+
+/// What the header of the playlist page shows, without any entry: the
+/// summary (with the entry count), the collage and whether anything can play.
+/// No `==`: the page view tells a fresh read from a repeated one by identity.
+class PlaylistPageHead {
+  PlaylistPageHead({
+    required this.playlist,
+    required this.coverKeys,
+    required this.hasPlayable,
+  });
+
+  final PlaylistSummary playlist;
+  final List<String> coverKeys;
+
+  /// Whether at least one entry has its file in the library.
+  final bool hasPlayable;
+}
+
+/// An entry with the position it is stored at. Positions are dense
+/// (`0..n-1`) in a healthy playlist; a reader that places rows by position
+/// copes with a gap or a duplicate left by an outside tool.
+class PlaylistPositionedEntry {
+  const PlaylistPositionedEntry(this.position, this.entry);
+
+  final int position;
+  final PlaylistEntryRow entry;
+}
+
+/// An entry whose file is in the library, for building a play queue.
+class PlaylistPlayableTrack {
+  const PlaylistPlayableTrack({
+    required this.entryId,
+    required this.position,
+    required this.track,
+  });
+
+  final int entryId;
+  final int position;
+  final TrackListItem track;
+}

@@ -67,8 +67,10 @@ void main() {
       // Watch the page the way the screen does, so the test can tell when
       // the reload after the delete has arrived.
       var reloadedAsGone = false;
-      h.container.listen(playlistPageProvider(id), (_, next) {
-        if (next is AsyncData && next.value == null) reloadedAsGone = true;
+      h.container.listen(playlistPageHeadProvider(id), (_, next) {
+        if (next is AsyncData && next.value?.head == null) {
+          reloadedAsGone = true;
+        }
       });
 
       await openMenu(tester, 'Delete playlist');
@@ -163,6 +165,7 @@ void main() {
 
       expect(find.text(_saveFailed), findsOneWidget);
       expect(shownTitles(tester), mixTitles);
+      expect(find.text('4 songs'), findsOneWidget);
       expect(await storedPaths(tester, h, id), hasLength(4));
     });
   });

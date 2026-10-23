@@ -17,7 +17,8 @@ enum _PlaylistAction { rename, delete, exportAbsolute, exportRelative }
 class PlaylistHeader extends StatelessWidget {
   const PlaylistHeader({
     super.key,
-    required this.page,
+    required this.head,
+    required this.count,
     this.onPlay,
     this.onQueueAction,
     this.onRename,
@@ -25,7 +26,11 @@ class PlaylistHeader extends StatelessWidget {
     this.onExport,
   });
 
-  final PlaylistPage page;
+  final PlaylistPageHead head;
+
+  /// Entries in the list now, which may differ from the head while an edit
+  /// is on its way to the database.
+  final int count;
 
   /// Null while nothing in the playlist can play: Play is disabled.
   final VoidCallback? onPlay;
@@ -59,9 +64,9 @@ class PlaylistHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               PlaylistCover(
-                coverKeys: page.coverKeys,
+                coverKeys: head.coverKeys,
                 size: compact ? 112 : 160,
-                seed: 'playlist:${page.playlist.id}',
+                seed: 'playlist:${head.playlist.id}',
               ),
               const SizedBox(width: 24),
               Expanded(
@@ -69,7 +74,7 @@ class PlaylistHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      playlistDisplayName(page.playlist, l10n),
+                      playlistDisplayName(head.playlist, l10n),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.headlineMedium?.copyWith(
@@ -78,7 +83,7 @@ class PlaylistHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l10n.playlistTrackCount(page.playlist.entryCount),
+                      l10n.playlistTrackCount(count),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
