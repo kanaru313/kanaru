@@ -1130,7 +1130,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsClearCoverCacheHint =>
-      'Ảnh bìa biến mất cho đến khi lần quét sau tạo lại.';
+      'Xoá ảnh bìa đã tạo; quét lại chạy ngay và tạo lại chúng.';
 
   @override
   String get settingsClearCoverCacheButton => 'Xoá';
@@ -1766,4 +1766,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTab => 'Lời bài hát';
+
+  @override
+  String get coverCacheClearTitle => 'Xoá cache ảnh bìa?';
+
+  @override
+  String get coverCacheClearBody =>
+      'Mọi ảnh bìa biến mất khỏi thư viện cho tới khi được tạo lại. Kanaru quét lại ngay và tạo lại ảnh ở nền; thư viện lớn có thể mất một lúc. Màu lấy từ ảnh bìa được giữ.';
+
+  @override
+  String coverCacheCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count ảnh bìa. Quét lại sẽ tạo lại chúng.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get coverCacheClearFailed => 'Không xoá được cache ảnh bìa';
 }

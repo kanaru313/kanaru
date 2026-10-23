@@ -1799,7 +1799,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsClearCoverCacheHint.
   ///
   /// In en, this message translates to:
-  /// **'Covers disappear until the next rescan makes them again.'**
+  /// **'Deletes the cover thumbnails; a rescan starts at once and makes them again.'**
   String get settingsClearCoverCacheHint;
 
   /// No description provided for @settingsClearCoverCacheButton.
@@ -2803,6 +2803,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lyrics'**
   String get lyricsTab;
+
+  /// Title of the dialog that confirms deleting the cover thumbnails
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the cover cache?'**
+  String get coverCacheClearTitle;
+
+  /// Body of the dialog that confirms deleting the cover thumbnails
+  ///
+  /// In en, this message translates to:
+  /// **'Every cover disappears from the library until it is made again. Kanaru rescans right away and makes them in the background, which can take a while for a large library. Colors taken from the covers are kept.'**
+  String get coverCacheClearBody;
+
+  /// Snackbar after the cover thumbnails were deleted
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Deleted 1 cover. A rescan makes them again.} other{Deleted {count} covers. A rescan makes them again.}}'**
+  String coverCacheCleared(int count);
+
+  /// Snackbar when the cover thumbnails could not be deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear the cover cache'**
+  String get coverCacheClearFailed;
 }
 
 class _AppLocalizationsDelegate

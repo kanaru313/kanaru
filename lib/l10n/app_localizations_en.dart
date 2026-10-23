@@ -1179,7 +1179,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClearCoverCacheHint =>
-      'Covers disappear until the next rescan makes them again.';
+      'Deletes the cover thumbnails; a rescan starts at once and makes them again.';
 
   @override
   String get settingsClearCoverCacheButton => 'Clear';
@@ -1889,4 +1889,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTab => 'Lyrics';
+
+  @override
+  String get coverCacheClearTitle => 'Clear the cover cache?';
+
+  @override
+  String get coverCacheClearBody =>
+      'Every cover disappears from the library until it is made again. Kanaru rescans right away and makes them in the background, which can take a while for a large library. Colors taken from the covers are kept.';
+
+  @override
+  String coverCacheCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count covers. A rescan makes them again.',
+      one: 'Deleted 1 cover. A rescan makes them again.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get coverCacheClearFailed => 'Could not clear the cover cache';
 }
