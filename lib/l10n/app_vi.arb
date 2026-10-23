@@ -647,5 +647,19 @@
     "placeholders": { "count": { "type": "int" }, "skipped": { "type": "int" }, "name": { "type": "String" } }
   },
   "queueSaveNothing": "Không bài nào trong hàng đợi có trong thư viện",
-  "@queueSaveNothing": { "description": "Snackbar when no queue song can be saved in a playlist" }
+  "@queueSaveNothing": { "description": "Snackbar when no queue song can be saved in a playlist" },
+  "queueHistoryTitle": "Lịch sử hàng đợi",
+  "queueHistoryEmptyTitle": "Chưa có lịch sử hàng đợi",
+  "queueHistoryEmptyMessage": "Khi bạn phát thứ khác, hàng đợi bị thay sẽ được giữ ở đây.",
+  "queueHistorySavedAt": "{date} · {time}",
+  "queueHistoryPlay": "Phát",
+  "queueHistoryShuffle": "Phát ngẫu nhiên",
+  "queueHistorySaveAsPlaylist": "Lưu thành playlist",
+  "queueHistorySavedAsPlaylist": "Đã lưu thành {name}",
+  "queueHistoryDelete": "Xoá",
+  "queueHistoryDeleteTitle": "Xoá hàng đợi này?",
+  "queueHistoryDeleteMessage": "Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.",
+  "queueHistoryDeleted": "Đã xoá hàng đợi",
+  "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
+  "sidebarCurrentQueue": "Hàng đợi hiện tại"
 }

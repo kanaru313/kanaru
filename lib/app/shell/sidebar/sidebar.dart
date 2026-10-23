@@ -5,6 +5,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../app_destination.dart';
 import '../top_bar.dart';
 import '../window/window_drag_area.dart';
+import 'sidebar_current_queue_item.dart';
 import 'sidebar_item.dart';
 import 'sidebar_playlists_section.dart';
 
@@ -26,6 +27,7 @@ class Sidebar extends StatelessWidget {
     required this.selected,
     required this.onSelected,
     required this.onOpenLocation,
+    this.onQueueToggled,
   });
 
   /// Highlighted destination. Pages not in the sidebar highlight nothing.
@@ -34,6 +36,10 @@ class Sidebar extends StatelessWidget {
 
   /// Opens a location that is not a destination root, such as a playlist.
   final ValueChanged<String> onOpenLocation;
+
+  /// Called after "Current queue" opened or closed the queue sheet (the
+  /// drawer closes itself then).
+  final VoidCallback? onQueueToggled;
 
   @override
   Widget build(BuildContext context) {
@@ -61,15 +67,21 @@ class Sidebar extends StatelessWidget {
                   children: [
                     for (final (i, group) in sidebarGroups.indexed) ...[
                       if (i > 0) divider,
-                      for (final destination in group)
-                        SidebarItem(
-                          icon: destination.icon,
-                          selectedIcon: destination.selectedIcon,
-                          label: destination.label(l10n),
-                          selected: destination == selected,
-                          compact: compact,
-                          onTap: () => onSelected(destination),
-                        ),
+                      for (final entry in group)
+                        switch (entry) {
+                          SidebarDestination(:final destination) => SidebarItem(
+                            icon: destination.icon,
+                            selectedIcon: destination.selectedIcon,
+                            label: destination.label(l10n),
+                            selected: destination == selected,
+                            compact: compact,
+                            onTap: () => onSelected(destination),
+                          ),
+                          SidebarCurrentQueue() => SidebarCurrentQueueItem(
+                            compact: compact,
+                            onToggled: onQueueToggled,
+                          ),
+                        },
                     ],
                     divider,
                     SidebarPlaylistsSection(

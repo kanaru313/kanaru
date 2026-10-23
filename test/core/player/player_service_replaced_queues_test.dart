@@ -97,10 +97,33 @@ void main() {
     await service().setRepeat(RepeatMode.all);
     await service().moveTrack(0, 1);
     await service().removeTrack(state().queue.order.length - 1);
-    await service().clearQueue();
     await settle();
 
     expect(replaced, isEmpty);
+  });
+
+  test('clearing the queue announces the queue as it was', () async {
+    await service().openTracks(albumA);
+    await service().playNext([song('n')]);
+    final before = state().queue;
+    service().replacedQueues.listen(replaced.add);
+
+    await service().clearQueue();
+    await settle();
+
+    expect(replaced, hasLength(1));
+    expect(identical(replaced.single, before), isTrue);
+    expect(state().queue.tracks, hasLength(1));
+  });
+
+  test('clearing a queue of one track still announces it', () async {
+    await service().openTracks([song('solo')]);
+    service().replacedQueues.listen(replaced.add);
+
+    await service().clearQueue();
+    await settle();
+
+    expect(replaced.single.tracks.single.title, 'solo');
   });
 
   test('a rebuilt service closes the old stream and uses a new one', () async {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:logging/logging.dart';
 
 import '../../indexer/audio_file_types.dart' show isAudioFile;
@@ -23,24 +25,52 @@ const playbackSessionVersion = 1;
 /// A thumbnail inside [coverDirectory] is stored as its `coverKey` (the path
 /// below that folder), so the file survives a moved cache and stays small;
 /// any other art keeps its `artUri`. `coverKey` is an optional per-track key
-/// that older readers ignore, so the version stays the same.
+/// that older readers ignore, so the version stays the same; so is
+/// `upNext`, left out when empty.
 Map<String, Object?> encodePlaybackSession(
   PlaybackSession session, {
   String? coverDirectory,
 }) => {
-  'version': playbackSessionVersion,
-  'tracks': [
-    for (final track in session.tracks) _encodeTrack(track, coverDirectory),
-  ],
+  ...encodePlaybackSessionLight(session),
+  'tracks': encodePlaybackSessionTracks(session.tracks, coverDirectory),
   'order': session.order,
   'unshuffledOrder': session.unshuffledOrder,
+};
+
+/// The fields of [encodePlaybackSession] that stay small however long the
+/// queue is: everything but `tracks`, `order` and `unshuffledOrder`.
+Map<String, Object?> encodePlaybackSessionLight(PlaybackSession session) => {
+  'version': playbackSessionVersion,
   'index': session.index,
   'shuffled': session.shuffled,
   'repeat': session.repeat.name,
   'positionMs': session.position.inMilliseconds,
   'volume': session.volume,
   'volumeBeforeMute': session.volumeBeforeMute,
+  if (session.upNext.isNotEmpty) 'upNext': session.upNext,
 };
+
+/// The `tracks` list of [encodePlaybackSession].
+List<Map<String, Object?>> encodePlaybackSessionTracks(
+  List<Track> tracks,
+  String? coverDirectory,
+) => [for (final track in tracks) _encodeTrack(track, coverDirectory)];
+
+/// The text of [encodePlaybackSession] from its parts: [light] as a map and
+/// the three heavy fields as JSON text already encoded, so a part that did
+/// not change since the last write need not be encoded again.
+String composePlaybackSessionJson({
+  required Map<String, Object?> light,
+  required String tracksJson,
+  required String orderJson,
+  required String unshuffledJson,
+}) {
+  final rest = jsonEncode(light);
+  // `rest` is a non-empty object (it always holds the version): its fields
+  // follow the heavy ones inside one object.
+  return '{"tracks":$tracksJson,"order":$orderJson,'
+      '"unshuffledOrder":$unshuffledJson,${rest.substring(1)}';
+}
 
 /// The `version` of a decoded file, or `null` when it has none that makes
 /// sense.
@@ -116,6 +146,7 @@ PlaybackSession decodePlaybackSession(
   }
 
   final session = PlaybackSession(
+    upNext: _upNext(json['upNext'], tracks.length),
     tracks: tracks,
     order: order,
     unshuffledOrder: unshuffledOrder,
@@ -187,7 +218,21 @@ PlaybackSession _withoutUnrestorable(PlaybackSession session) {
     position: position,
     volume: session.volume,
     volumeBeforeMute: session.volumeBeforeMute,
+    upNext: renumber(session.upNext),
   );
+}
+
+/// The "play next" entries of a decoded file: indexes into the [count]
+/// tracks, each once. Anything else (a missing or broken value, an entry out
+/// of range) is dropped rather than failing the session: losing the
+/// "play next" mark is better than losing the queue.
+List<int> _upNext(Object? raw, int count) {
+  if (raw is! List) return const [];
+  final seen = <int>{};
+  return List.unmodifiable([
+    for (final entry in raw)
+      if (entry is int && entry >= 0 && entry < count && seen.add(entry)) entry,
+  ]);
 }
 
 Map<String, Object?> _encodeTrack(Track track, String? coverDirectory) {

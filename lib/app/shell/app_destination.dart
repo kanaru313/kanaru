@@ -14,6 +14,11 @@ enum AppDestination {
   folders('/folders', AppIcons.folderOutlined, AppIcons.folder),
   favorites('/favorites', AppIcons.favoriteOutline, AppIcons.favorite),
   history('/history', AppIcons.history, AppIcons.history),
+  queueHistory(
+    '/queue-history',
+    AppIcons.queueHistoryOutlined,
+    AppIcons.queueHistory,
+  ),
   playlists('/playlists', AppIcons.playlistOutlined, AppIcons.playlist),
   search('/search', AppIcons.search, AppIcons.search),
   settings('/settings', AppIcons.settingsOutlined, AppIcons.settings);
@@ -33,23 +38,47 @@ enum AppDestination {
     folders => l10n.navFolders,
     favorites => l10n.navFavorites,
     history => l10n.navHistory,
+    queueHistory => l10n.queueHistoryTitle,
     playlists => l10n.sidebarPlaylists,
     search => l10n.navSearch,
     settings => l10n.navSettings,
   };
 }
 
-/// Destinations listed in the sidebar, grouped by dividers. Search and
-/// settings are reached from the top bar instead; playlists have their own
-/// section below the groups.
-const sidebarGroups = [
-  [AppDestination.home],
+/// One row of the sidebar groups: a page, or an action.
+sealed class SidebarEntry {
+  const SidebarEntry();
+}
+
+/// A row that opens [destination].
+class SidebarDestination extends SidebarEntry {
+  const SidebarDestination(this.destination);
+
+  final AppDestination destination;
+}
+
+/// "Current queue": opens and closes the queue side sheet of the shell, lit
+/// while it is open. Not a page, so nothing else is unselected by it.
+class SidebarCurrentQueue extends SidebarEntry {
+  const SidebarCurrentQueue();
+}
+
+/// Rows listed in the sidebar, grouped by dividers. Search and settings are
+/// reached from the top bar instead; playlists have their own section below
+/// the groups.
+const sidebarGroups = <List<SidebarEntry>>[
+  [SidebarDestination(AppDestination.home)],
   [
-    AppDestination.songs,
-    AppDestination.albums,
-    AppDestination.artists,
-    AppDestination.genres,
-    AppDestination.folders,
+    SidebarDestination(AppDestination.songs),
+    SidebarDestination(AppDestination.albums),
+    SidebarDestination(AppDestination.artists),
+    SidebarDestination(AppDestination.genres),
+    SidebarDestination(AppDestination.folders),
   ],
-  [AppDestination.favorites, AppDestination.history],
+  [
+    SidebarDestination(AppDestination.queueHistory),
+    SidebarCurrentQueue(),
+    SidebarDestination(AppDestination.favorites),
+    SidebarDestination(AppDestination.history),
+  ],
 ];

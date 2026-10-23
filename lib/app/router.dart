@@ -21,6 +21,8 @@ import '../features/playlists/favorites_routes.dart';
 import '../features/playlists/favorites_screen.dart';
 import '../features/playlists/playlist_screen.dart';
 import '../features/playlists/playlists_screen.dart';
+import '../features/playlists/queue_history_routes.dart';
+import '../features/playlists/queue_history_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/settings/settings_screen.dart';
 import 'shell/app_destination.dart';
@@ -111,6 +113,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     ],
                     AppDestination.favorites => favoritesRoutes,
                     AppDestination.history => historyRoutes,
+                    AppDestination.queueHistory => queueHistoryRoutes,
                     AppDestination.playlists => [
                       GoRoute(
                         path: ':id',
@@ -142,6 +145,7 @@ Widget _buildPage(GoRouterState state, AppDestination destination) {
     AppDestination.folders => const FoldersScreen(),
     AppDestination.favorites => const FavoritesScreen(),
     AppDestination.history => const HistoryScreen(),
+    AppDestination.queueHistory => const QueueHistoryScreen(),
     AppDestination.playlists => const PlaylistsScreen(),
     AppDestination.search => SearchScreen(
       query: state.uri.queryParameters['q'] ?? '',

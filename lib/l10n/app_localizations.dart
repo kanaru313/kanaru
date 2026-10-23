@@ -2713,6 +2713,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing in the queue is in your library'**
   String get queueSaveNothing;
+
+  /// Name of the page listing the queues the user replaced, in the sidebar and as its title
+  ///
+  /// In en, this message translates to:
+  /// **'Queue history'**
+  String get queueHistoryTitle;
+
+  /// Title on the queue history page before any queue was replaced
+  ///
+  /// In en, this message translates to:
+  /// **'No queue history yet'**
+  String get queueHistoryEmptyTitle;
+
+  /// Message on the empty queue history page
+  ///
+  /// In en, this message translates to:
+  /// **'When you play something new, the queue it replaces is kept here.'**
+  String get queueHistoryEmptyMessage;
+
+  /// Name of a saved queue: when it was saved
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · {time}'**
+  String queueHistorySavedAt(DateTime date, DateTime time);
+
+  /// Menu row and button that play a saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get queueHistoryPlay;
+
+  /// Menu row that plays a saved queue shuffled
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get queueHistoryShuffle;
+
+  /// Menu row that copies a saved queue into a new playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Save as playlist'**
+  String get queueHistorySaveAsPlaylist;
+
+  /// Snackbar after a saved queue was copied into a new playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as {name}'**
+  String queueHistorySavedAsPlaylist(String name);
+
+  /// Menu row and dialog button that delete a saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get queueHistoryDelete;
+
+  /// Title of the dialog confirming that a saved queue is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this queue?'**
+  String get queueHistoryDeleteTitle;
+
+  /// Body of the dialog confirming that a saved queue is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'It is removed from your queue history. The songs stay in your library.'**
+  String get queueHistoryDeleteMessage;
+
+  /// Snackbar after a saved queue was deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Queue deleted'**
+  String get queueHistoryDeleted;
+
+  /// Snackbar when a saved queue has no song that can play
+  ///
+  /// In en, this message translates to:
+  /// **'None of these songs are in your library'**
+  String get queueHistoryNothingToPlay;
+
+  /// Sidebar item that opens and closes the queue side sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Current queue'**
+  String get sidebarCurrentQueue;
 }
 
 class _AppLocalizationsDelegate

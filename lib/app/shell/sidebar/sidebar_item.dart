@@ -5,7 +5,7 @@ import 'sidebar_tooltip.dart';
 /// One navigation row in the sidebar. The selected row gets an accent-tinted
 /// background with an accent bar on its left edge. In [compact] mode (the
 /// collapsed rail) only the icon is shown and the label becomes a tooltip
-/// on its right.
+/// on its right. Without [onTap] the row is disabled and dimmed.
 class SidebarItem extends StatelessWidget {
   const SidebarItem({
     super.key,
@@ -21,17 +21,20 @@ class SidebarItem extends StatelessWidget {
   final IconData selectedIcon;
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final enabled = onTap != null;
     final iconWidget = Icon(
       selected ? selectedIcon : icon,
       size: 22,
-      color: selected ? colors.primary : colors.onSurfaceVariant,
+      color: selected
+          ? colors.primary
+          : colors.onSurfaceVariant.withValues(alpha: enabled ? 1 : 0.38),
     );
 
     final content = compact
@@ -48,7 +51,9 @@ class SidebarItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.onSurface,
+                      color: colors.onSurface.withValues(
+                        alpha: enabled ? 1 : 0.38,
+                      ),
                       fontWeight: selected ? FontWeight.w600 : null,
                     ),
                   ),
@@ -70,6 +75,7 @@ class SidebarItem extends StatelessWidget {
           child: Semantics(
             selected: selected,
             button: true,
+            enabled: enabled,
             label: compact ? label : null,
             child: SizedBox(
               height: 44,

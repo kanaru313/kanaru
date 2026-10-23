@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -18,6 +19,11 @@ const _scrimAlpha = 0.5;
 /// Opens and closes the queue sheet of the nearest [QueueSheetHost].
 abstract interface class QueueSheetController {
   bool get isOpen;
+
+  /// [isOpen] for widgets that light up while the sheet is open (the
+  /// sidebar's "Current queue"). Turns true when the sheet starts opening
+  /// and false when it starts closing.
+  ValueListenable<bool> get openListenable;
   void open();
   void close();
 }
@@ -80,13 +86,19 @@ class _QueueSheetHostState extends State<QueueSheetHost>
   late final CurvedAnimation _curved;
   final _focus = FocusScopeNode(debugLabel: 'Queue sheet');
 
-  bool _open = false;
+  final _openNotifier = ValueNotifier(false);
+
+  bool get _open => _openNotifier.value;
+  set _open(bool open) => _openNotifier.value = open;
 
   /// What had focus before opening, to give it back after closing.
   FocusNode? _previousFocus;
 
   @override
   bool get isOpen => _open;
+
+  @override
+  ValueListenable<bool> get openListenable => _openNotifier;
 
   @override
   void initState() {
@@ -101,6 +113,7 @@ class _QueueSheetHostState extends State<QueueSheetHost>
     _curved.dispose();
     _animation.dispose();
     _focus.dispose();
+    _openNotifier.dispose();
     super.dispose();
   }
 

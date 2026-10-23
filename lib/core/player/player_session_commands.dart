@@ -1,12 +1,14 @@
 part of 'player_service.dart';
 
-/// Bringing the last playback session back on launch, paused, and saving it
-/// while the app runs (see [PlaybackSessionSaver] for when it writes).
+/// Bringing the last playback session back on launch, paused, with the
+/// "play next" tracks still to come, and saving it while the app runs (see
+/// [PlaybackSessionSaver] for when it writes).
 mixin _PlayerSessionCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   StreamController<Duration> get _seeked;
   bool get _wantsPlaying;
   bool get _ended;
+  Set<int> get _upNext;
   Future<void> _play(
     int index, {
     bool play = true,
@@ -48,6 +50,7 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
       file,
       initial: session,
       frozen: session?.hasTrack ?? false,
+      upNext: () => _upNext,
     );
     _saver = saver;
     listenSelf(saver.onState);
@@ -57,6 +60,9 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
       saver.dispose();
     });
     if (session == null || queue == null) return PlayerState();
+    // "Play next" tracks still to come stay marked, so the next "play next"
+    // goes behind them as before the restart.
+    _upNext.addAll(session.restoredUpNext());
 
     final token = Object();
     _sessionBuild = token;

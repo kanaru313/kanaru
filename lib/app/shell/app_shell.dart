@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/indexer_providers.dart';
+import '../../core/queue_history/queue_history_recorder.dart';
 import '../../features/library/scan_result_snack_bar.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../features/player/now_playing/now_playing_overlay.dart';
@@ -68,6 +69,10 @@ class AppShell extends ConsumerWidget {
       // folder refused on the welcome screen) must stay readable.
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
+
+    // Keeps the queues the user replaces for the queue history page, for as
+    // long as the shell is up (the first-run screen has no queue).
+    ref.listen(queueHistoryRecorderProvider, (_, _) {});
 
     final wide = MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
     final selected = AppDestination.values[navigationShell.currentIndex];
@@ -137,6 +142,8 @@ class AppShell extends ConsumerWidget {
                       Navigator.of(context).pop();
                       GoRouter.of(context).go(location);
                     },
+                    // The sheet covers the drawer; close the drawer under it.
+                    onQueueToggled: () => Navigator.of(context).pop(),
                   ),
                 ),
               ),
