@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/genre_queries.dart';
 import '../../../core/database/library_keys_provider.dart';
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/separator_rules_provider.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../shared/genre_summaries.dart';
 import '../../../shared/library_browse_refresh.dart';
@@ -15,9 +16,11 @@ final genresProvider = StreamProvider<List<GenreSummary>>((ref) {
   if (db == null) return Stream.value(const []);
   // Wait for the keys: becoming ready rebuilds this and loads afresh.
   if (!ref.watch(keysReadyProvider)) return const Stream.empty();
+  // Genres are split on read, so new rules only rebuild the list.
+  final rules = ref.watch(genreSplitRulesProvider);
   return throttledTracksQuery(
     db,
     db.genreCounts,
     interval: ref.watch(libraryBrowseRefreshIntervalProvider),
-  ).map(buildGenreSummaries);
+  ).map((counts) => buildGenreSummaries(counts, rules: rules));
 });

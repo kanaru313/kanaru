@@ -1,43 +1,26 @@
+import 'separator_rules.dart';
 import 'text_keys.dart';
 
-/// What separates genres inside one stored genre string. The scanner keeps
-/// the first genre of a file only, so this only matters for tags a person
-/// typed as "Rock; Pop".
-const defaultGenreSeparators = [';'];
-
-final _separatorPatterns = <String, RegExp>{};
-
-/// One pattern per distinct list of separators, made on first use.
-RegExp _patternFor(List<String> separators) => _separatorPatterns.putIfAbsent(
-  separators.join('\u0000'),
-  () => RegExp('\\s*(?:${separators.map(RegExp.escape).join('|')})\\s*'),
-);
+export 'separator_rules.dart' show SplitRules, defaultGenreRules;
 
 /// Identifies a genre: [name] with case, accents and width folded, so "Nhạc
 /// Trẻ" and "nhac tre" are one genre. Empty when [name] has nothing to
 /// compare (blank or only invisible characters).
 String genreKey(String name) => sortKey(name);
 
-/// The genres named in a stored genre string: split on any of [separators]
-/// (empty entries ignored), trimmed, without empty parts, and without
-/// repeats by [genreKey] (the first spelling stays). Empty for null.
-List<String> splitGenres(
-  String? tag, {
-  List<String> separators = defaultGenreSeparators,
-}) {
+/// The genres named in a stored genre string: split by [rules] (by default on
+/// `;`), trimmed, without empty parts, and without repeats by [genreKey]
+/// (the first spelling stays). Empty for null. Separators are literal text,
+/// not patterns; see [SplitRules] for how words and symbols differ.
+List<String> splitGenres(String? tag, {SplitRules rules = defaultGenreRules}) {
   if (tag == null) return const [];
-  final parts = separators.isEmpty || separators.every((s) => s.isEmpty)
-      ? [tag]
-      : tag.split(
-          _patternFor([
-            for (final s in separators)
-              if (s.isNotEmpty) s,
-          ]),
-        );
+  final splitter = rules.splitter;
+  final parts = splitter.maySplit(tag, brackets: false)
+      ? splitter.split(tag, brackets: false)
+      : [tag.trim()];
   final seen = <String>{};
   final genres = <String>[];
-  for (final part in parts) {
-    final name = part.trim();
+  for (final name in parts) {
     final key = genreKey(name);
     if (key.isNotEmpty && seen.add(key)) genres.add(name);
   }

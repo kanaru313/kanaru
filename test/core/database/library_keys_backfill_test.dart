@@ -9,6 +9,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_keys_backfill.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/database/separator_rules.dart';
 import 'package:kanaru/core/database/text_keys.dart';
 
 Future<void> _insert(LibraryDatabase db, int n, {String? artist}) async {
@@ -238,7 +239,11 @@ void main() {
       () async {
         await _insert(db, keysInPlaceLimit + 100, artist: 'Solo');
         final seen = <(int, int)>[];
-        await runKeysBackfillInBackground(db, (d, t) => seen.add((d, t)));
+        await runKeysBackfillInBackground(
+          db,
+          defaultArtistRules,
+          (d, t) => seen.add((d, t)),
+        );
         expect(await _versions(db), everyElement(textKeysVersion));
         expect(seen.last, (keysInPlaceLimit + 100, keysInPlaceLimit + 100));
       },
@@ -259,7 +264,7 @@ void main() {
     test('the lists wait while the count of stale rows is pending', () async {
       final count = Completer<void>();
       final c = container(
-        runner: (_, _) async {
+        runner: (_, _, _) async {
           await count.future;
         },
       );
@@ -288,7 +293,7 @@ void main() {
       addTearDown(sub.cancel);
 
       // No provider here: only the notices the run itself sends are seen.
-      await runKeysBackfillInBackground(fileDb, (_, _) {});
+      await runKeysBackfillInBackground(fileDb, defaultArtistRules, (_, _) {});
       await pumpEventQueue();
 
       expect(await _versions(fileDb), everyElement(textKeysVersion));
@@ -317,7 +322,7 @@ void main() {
     test('keying after a scan does nothing when all rows are keyed', () async {
       var calls = 0;
       final c = container(
-        runner: (_, _) async {
+        runner: (_, _, _) async {
           calls++;
         },
       );
@@ -329,7 +334,7 @@ void main() {
     test('a failing run is retried, then lets the lists show', () async {
       var calls = 0;
       final c = container(
-        runner: (_, _) {
+        runner: (_, _, _) {
           calls++;
           throw StateError('disk full');
         },
@@ -347,9 +352,9 @@ void main() {
       await _insert(db, 3);
       var calls = 0;
       final c = container(
-        runner: (db, onProgress) {
+        runner: (db, rules, onProgress) {
           if (++calls == 1) throw StateError('locked');
-          return backfillLibraryKeys(db, onProgress: onProgress);
+          return backfillLibraryKeys(db, rules: rules, onProgress: onProgress);
         },
       );
       c.read(keysReadyProvider);
@@ -360,7 +365,7 @@ void main() {
 
     test('progress never exceeds the total', () async {
       final c = container(
-        runner: (_, onProgress) async {
+        runner: (_, _, onProgress) async {
           onProgress(0, 4);
           onProgress(6, 4);
         },

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/separator_rules.dart';
 import 'package:kanaru/shared/genre_summaries.dart';
 
 void main() {
@@ -35,10 +36,9 @@ void main() {
   });
 
   test('custom separators reach the split', () {
-    final summaries = buildGenreSummaries(
-      [(raw: 'Rock/Pop', count: 2)],
-      separators: ['/'],
-    );
+    final summaries = buildGenreSummaries([
+      (raw: 'Rock/Pop', count: 2),
+    ], rules: const SplitRules(separators: ['/'], keepWhole: []));
 
     expect([for (final g in summaries) g.key], ['pop', 'rock']);
     expect(summaries.first.songCount, 2);

@@ -10,6 +10,7 @@ import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
+import '../database/separator_rules_provider.dart';
 import '../settings/settings_provider.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
@@ -560,7 +561,12 @@ class LibraryIndexer extends Notifier<IndexerState> {
       // stored with an error too.
       failedTags += rows.where((r) => r.scanError.value != null).length;
       dbTime.start();
-      await db.upsertTracks(rows);
+      // The rules are read per batch: a change mid-scan keys the rest with
+      // the new ones, and the rows already written carry the old version.
+      await db.upsertTracks(
+        rows,
+        artistRules: ref.read(artistSplitRulesProvider),
+      );
       dbTime.stop();
       final storedPaths = {for (final row in rows) row.path.value};
       for (final file in batch.where((f) => storedPaths.contains(f.path))) {

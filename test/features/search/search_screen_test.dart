@@ -55,7 +55,11 @@ void main() {
     final finish = Completer<void>();
     final h = LibraryHarness(
       overrides: [
-        libraryKeysRunnerProvider.overrideWithValue((db, onProgress) async {
+        libraryKeysRunnerProvider.overrideWithValue((
+          db,
+          rules,
+          onProgress,
+        ) async {
           onProgress(2000, 10000);
           await finish.future;
         }),

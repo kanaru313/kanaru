@@ -46,17 +46,21 @@ class TrackKeys {
 }
 
 /// Keys for a track with these tags. [artist], [albumArtist] and [genre] are
-/// the raw tag strings (multiple values joined with "; ").
+/// the raw tag strings (multiple values joined with "; "). The artists are
+/// split by [artistRules]; the rows are stored with `keysVersionFor` of them.
 TrackKeys trackKeysFor({
   required String title,
   String? artist,
   String? album,
   String? albumArtist,
   String? genre,
+  SplitRules artistRules = defaultArtistRules,
 }) {
-  final names = splitArtists(artist);
+  final names = splitArtists(artist, rules: artistRules);
   return TrackKeys(
-    albumArtistKey: album == null ? null : albumArtistKey(albumArtist, artist),
+    albumArtistKey: album == null
+        ? null
+        : albumArtistKey(albumArtist, artist, rules: artistRules),
     albumTitleKey: album == null ? null : albumTitleKey(album),
     albumDisplayArtist: albumArtist ?? names.firstOrNull,
     titleSort: sortKey(title),
@@ -74,10 +78,14 @@ TrackKeys trackKeysFor({
 /// [albumArtistKeySeparator], else the key of the first track artist, else
 /// `''`. Each artist key is whole; the joined string is not cut, so
 /// `AlbumKey.artistKeys` gets every key back.
-String albumArtistKey(String? albumArtist, String? artist) {
-  final owners = artistKeys(albumArtist);
+String albumArtistKey(
+  String? albumArtist,
+  String? artist, {
+  SplitRules rules = defaultArtistRules,
+}) {
+  final owners = artistKeys(albumArtist, rules: rules);
   if (owners.isNotEmpty) return owners.join(albumArtistKeySeparator);
-  return artistKeys(artist).firstOrNull ?? '';
+  return artistKeys(artist, rules: rules).firstOrNull ?? '';
 }
 
 /// Title part of an album key.

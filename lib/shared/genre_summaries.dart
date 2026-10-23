@@ -26,16 +26,17 @@ class GenreSummary {
 }
 
 /// The list rows for [counts] (stored genre string and its tracks), one per
-/// [genreKey], sorted by key. A string naming several genres counts for each.
+/// [genreKey], sorted by key. A string naming several genres counts for each. [rules]
+/// split the strings.
 List<GenreSummary> buildGenreSummaries(
   List<({String raw, int count})> counts, {
-  List<String> separators = defaultGenreSeparators,
+  SplitRules rules = defaultGenreRules,
 }) {
   final names = <String, String>{};
   final songs = <String, int>{};
   final raws = <String, Set<String>>{};
   for (final (:raw, :count) in counts) {
-    for (final name in splitGenres(raw, separators: separators)) {
+    for (final name in splitGenres(raw, rules: rules)) {
       final key = genreKey(name);
       names[key] = preferredSpelling(names[key], name);
       songs[key] = (songs[key] ?? 0) + count;

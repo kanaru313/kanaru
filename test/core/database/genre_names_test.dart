@@ -35,24 +35,53 @@ void main() {
   });
 
   test('custom separators split on any of them', () {
-    expect(splitGenres('Rock/Pop; Jazz', separators: ['/', ';']), [
-      'Rock',
-      'Pop',
-      'Jazz',
-    ]);
+    expect(
+      splitGenres(
+        'Rock/Pop; Jazz',
+        rules: const SplitRules(separators: ['/', ';'], keepWhole: []),
+      ),
+      ['Rock', 'Pop', 'Jazz'],
+    );
   });
 
   test('separators are literal text, not a pattern', () {
-    expect(splitGenres('Rock|Pop.Jazz', separators: ['|']), [
-      'Rock',
-      'Pop.Jazz',
-    ]);
-    expect(splitGenres('a.b', separators: ['.']), ['a', 'b']);
-    expect(splitGenres('axb', separators: ['.']), ['axb']);
+    expect(
+      splitGenres(
+        'Rock|Pop.Jazz',
+        rules: const SplitRules(separators: ['|'], keepWhole: []),
+      ),
+      ['Rock', 'Pop.Jazz'],
+    );
+    expect(
+      splitGenres(
+        'a.b',
+        rules: const SplitRules(separators: ['.'], keepWhole: []),
+      ),
+      ['a', 'b'],
+    );
+    expect(
+      splitGenres(
+        'axb',
+        rules: const SplitRules(separators: ['.'], keepWhole: []),
+      ),
+      ['axb'],
+    );
   });
 
   test('no usable separator keeps the text whole', () {
-    expect(splitGenres('Rock; Pop', separators: const []), ['Rock; Pop']);
-    expect(splitGenres('Rock; Pop', separators: ['']), ['Rock; Pop']);
+    expect(
+      splitGenres(
+        'Rock; Pop',
+        rules: const SplitRules(separators: [], keepWhole: []),
+      ),
+      ['Rock; Pop'],
+    );
+    expect(
+      splitGenres(
+        'Rock; Pop',
+        rules: const SplitRules(separators: [''], keepWhole: []),
+      ),
+      ['Rock; Pop'],
+    );
   });
 }

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:logging/logging.dart';
 
 import 'library_database.dart';
-import 'text_keys.dart';
+import 'separator_rules.dart';
 import 'track_keys.dart';
 
 final _log = Logger('library.keys');
@@ -12,22 +12,28 @@ final _log = Logger('library.keys');
 /// never wait long for the write lock.
 const keysBackfillChunkSize = 2000;
 
-/// Keys every track whose `keys_version` is below [version], in chunks by id,
-/// and returns how many it keyed. Resumable: a chunk commits as a whole, so
-/// an interrupted run leaves the rest for the next one. Re-keying after a
-/// rule change is the same call with a higher [version].
+/// Keys every track whose `keys_version` is not [version] (by default
+/// `keysVersionFor(rules)`), in chunks by id, and returns how many it keyed.
+/// Resumable: a chunk commits as a whole, so an interrupted run leaves the
+/// rest for the next one. Re-keying after a rule change is the same call: the
+/// artists are split by [rules], and rows keyed under other rules differ in
+/// version, so they are keyed again. Versions are compared for inequality,
+/// not order, because the rule-dependent ones do not grow; a caller that
+/// finds its rules changed during a run runs again.
 ///
 /// A row whose keys cannot be made or written is logged and left at its old
 /// version; it never stops the run. [onProgress] gets (done, total) after each
 /// chunk, `total` being the rows found stale when the run began.
 Future<int> backfillLibraryKeys(
   LibraryDatabase db, {
-  int version = textKeysVersion,
+  SplitRules rules = defaultArtistRules,
+  int? version,
   int chunkSize = keysBackfillChunkSize,
   void Function(int done, int total)? onProgress,
   @visibleForTesting Future<void> Function()? afterRead,
 }) async {
-  final total = await countStaleKeys(db, version);
+  final keysVersion = version ?? keysVersionFor(rules);
+  final total = await countStaleKeys(db, keysVersion);
   onProgress?.call(0, total);
   var done = 0;
   var lastId = 0;
@@ -35,10 +41,11 @@ Future<int> backfillLibraryKeys(
     final rows = await db
         .customSelect(
           'SELECT id, title, artist, album, album_artist, genre FROM tracks '
-          'WHERE id > ?1 AND keys_version < ?2 ORDER BY id LIMIT ?3',
+          'WHERE id > ?1 AND (keys_version < ?2 OR keys_version > ?2) '
+          'ORDER BY id LIMIT ?3',
           variables: [
             Variable.withInt(lastId),
-            Variable.withInt(version),
+            Variable.withInt(keysVersion),
             Variable.withInt(chunkSize),
           ],
         )
@@ -72,6 +79,7 @@ Future<int> backfillLibraryKeys(
             album: tags[2] as String?,
             albumArtist: tags[3] as String?,
             genre: tags[4] as String?,
+            artistRules: rules,
           ),
           tags,
         ));
@@ -81,14 +89,14 @@ Future<int> backfillLibraryKeys(
     }
     await afterRead?.call();
     try {
-      await db.transaction(() => _writeChunk(db, keyed, version));
+      await db.transaction(() => _writeChunk(db, keyed, keysVersion));
     } catch (error, stackTrace) {
       // One row the database refuses must not cost the whole chunk: write the
       // rows one by one and skip the bad ones.
       _log.warning('Keys chunk failed, retrying per row', error, stackTrace);
       for (final entry in keyed) {
         try {
-          await db.transaction(() => _writeChunk(db, [entry], version));
+          await db.transaction(() => _writeChunk(db, [entry], keysVersion));
         } catch (error, stackTrace) {
           _log.warning('Keys of track ${entry.$1} skipped', error, stackTrace);
         }
@@ -99,11 +107,12 @@ Future<int> backfillLibraryKeys(
   }
 }
 
-/// How many tracks have keys older than [version].
+/// How many tracks have keys of a version other than [version].
 Future<int> countStaleKeys(LibraryDatabase db, int version) async {
   final row = await db
       .customSelect(
-        'SELECT count(*) AS n FROM tracks WHERE keys_version < ?1',
+        'SELECT count(*) AS n FROM tracks '
+        'WHERE keys_version < ?1 OR keys_version > ?1',
         variables: [Variable.withInt(version)],
       )
       .getSingle();
@@ -114,7 +123,7 @@ Future<int> countStaleKeys(LibraryDatabase db, int version) async {
 /// it in a transaction.
 ///
 /// Tags were read before this transaction, so every write is conditional on
-/// the row still holding those tags and an older version: a track a scan
+/// the row still holding those tags and a different version: a track a scan
 /// changed in between keeps its stale version for a later pass, and a track
 /// deleted in between is left alone (its credits would break the foreign
 /// key).
@@ -136,7 +145,8 @@ Future<void> _writeChunk(
         'album_display_artist = ?, title_sort = ?, artist_sort = ?, '
         'album_sort = ?, artist_search = ?, album_search = ?, '
         'album_artist_search = ?, genre_search = ?, keys_version = ? '
-        'WHERE id = ? AND keys_version < ? AND title IS ? AND artist IS ? '
+        'WHERE id = ? AND (keys_version < ? OR keys_version > ?) '
+        'AND title IS ? AND artist IS ? '
         'AND album IS ? AND album_artist IS ? AND genre IS ?',
         [
           keys.albumArtistKey,
@@ -151,6 +161,7 @@ Future<void> _writeChunk(
           keys.genreSearch,
           version,
           id,
+          version,
           version,
           ...tags,
         ],

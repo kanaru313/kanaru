@@ -8,7 +8,8 @@ import 'package:logging/logging.dart';
 import 'library_database.dart';
 import 'library_keys_backfill.dart';
 import 'library_startup.dart';
-import 'text_keys.dart';
+import 'separator_rules.dart';
+import 'separator_rules_provider.dart';
 
 final _log = Logger('library.keys');
 
@@ -47,9 +48,11 @@ class LibraryKeysStatus {
   double? get fraction => total == 0 ? null : (done / total).clamp(0.0, 1.0);
 }
 
-/// Runs the backfill for [db], reporting (done, total). Replaced in tests.
+/// Runs the backfill for [db] with the artist [rules], reporting (done,
+/// total). Replaced in tests.
 typedef KeysBackfillRunner = Future<void> Function(
   LibraryDatabase db,
+  SplitRules rules,
   void Function(int done, int total) onProgress,
 );
 
@@ -74,45 +77,85 @@ const keysAttempts = 3;
 /// first count of stale rows is back, so they never read unkeyed rows. A
 /// library with nothing to key (every start after the first) goes straight
 /// to ready and never shows the updating state.
+///
+/// Changing the artist split rules keys the library again, with the same
+/// updating state and progress as the first run. A run keys with the rules it
+/// began with; when the rules differ at its end (changed meanwhile, or a scan
+/// wrote rows with them), it runs again, so the rows converge on the current
+/// rules.
 class LibraryKeys extends Notifier<LibraryKeysStatus> {
   bool _running = false;
+
+  /// [keyStaleRows] was called while a run was going: some rows may have been
+  /// written after the run counted, so it runs once more.
+  bool _staleSeen = false;
 
   @override
   LibraryKeysStatus build() {
     final db = ref.watch(libraryDatabaseProvider);
     if (db == null) return const LibraryKeysStatus(phase: KeysPhase.ready);
-    unawaited(Future.microtask(() => _run(db, first: true)));
+    // Listened, not watched: a rules change must not rebuild (and so reset)
+    // the status; it only asks for another run.
+    ref.listen(artistSplitRulesProvider, (_, _) => _rulesChanged());
+    unawaited(Future.microtask(() => _run(db, progress: true)));
     return const LibraryKeysStatus();
+  }
+
+  void _rulesChanged() {
+    final db = ref.read(libraryDatabaseProvider);
+    // A running first pass reads the rules at its start or checks them at its
+    // end, so only an idle, settled notifier starts a run of its own.
+    if (db == null || _running || state.phase == KeysPhase.unknown) return;
+    unawaited(_run(db, progress: true));
   }
 
   /// Keys rows a scan left without current keys (a row the first run
   /// skipped, or one it gave up on), without touching the lists' state. Call
-  /// when a scan finishes; does nothing when every row is keyed or a run is
-  /// already going.
+  /// when a scan finishes; does nothing when every row is keyed. During a run
+  /// it asks for one more pass instead.
   Future<void> keyStaleRows() async {
     final db = ref.read(libraryDatabaseProvider);
-    if (db == null || _running || !state.ready) return;
+    if (db == null) return;
+    if (_running) {
+      _staleSeen = true;
+      return;
+    }
+    if (!state.ready) return;
     try {
-      if (await countStaleKeys(db, textKeysVersion) == 0) return;
+      final version = keysVersionFor(ref.read(artistSplitRulesProvider));
+      if (await countStaleKeys(db, version) == 0) return;
     } catch (error, stackTrace) {
       _log.warning('Counting unkeyed tracks failed', error, stackTrace);
       return;
     }
-    if (ref.mounted && !_running) await _run(db, first: false);
+    if (ref.mounted && !_running) await _run(db, progress: false);
   }
 
-  /// [first]: the run that decides the phase of the lists. Later runs keep
-  /// the lists as they are and only refresh them when they end.
-  Future<void> _run(LibraryDatabase db, {required bool first}) async {
+  /// [progress]: the run decides the phase of the lists (the first run, and
+  /// a rules change). A run for stale rows keeps the lists as they are and
+  /// only refreshes them when it ends.
+  Future<void> _run(LibraryDatabase db, {required bool progress}) async {
     _running = true;
+    var showed = false;
     try {
-      await _attempts(db, first: first);
+      while (true) {
+        showed |= progress;
+        final rules = ref.read(artistSplitRulesProvider);
+        _staleSeen = false;
+        await _attempts(db, rules, progress: progress);
+        if (!ref.mounted) return;
+        final rulesChanged =
+            keysVersionFor(ref.read(artistSplitRulesProvider)) !=
+            keysVersionFor(rules);
+        if (!rulesChanged && !_staleSeen) break;
+        progress = rulesChanged;
+      }
     } finally {
       _running = false;
     }
     if (!ref.mounted) return;
     // Also after giving up, so the app stays usable on what is stored.
-    if (first) {
+    if (showed) {
       state = LibraryKeysStatus(
         phase: KeysPhase.ready,
         done: state.total,
@@ -121,12 +164,16 @@ class LibraryKeys extends Notifier<LibraryKeysStatus> {
     }
   }
 
-  Future<void> _attempts(LibraryDatabase db, {required bool first}) async {
+  Future<void> _attempts(
+    LibraryDatabase db,
+    SplitRules rules, {
+    required bool progress,
+  }) async {
     final delay = ref.read(libraryKeysRetryDelayProvider);
     for (var attempt = 1; attempt <= keysAttempts; attempt++) {
       try {
-        await ref.read(libraryKeysRunnerProvider)(db, (done, total) {
-          if (!first || !ref.mounted || total == 0) return;
+        await ref.read(libraryKeysRunnerProvider)(db, rules, (done, total) {
+          if (!progress || !ref.mounted || total == 0) return;
           // Rows added during the run can push done past the first count.
           state = LibraryKeysStatus(
             phase: KeysPhase.updating,
@@ -176,11 +223,13 @@ const keysInPlaceChunkSize = 100;
 /// cannot be shared, run in place.
 Future<void> runKeysBackfillInBackground(
   LibraryDatabase db,
+  SplitRules rules,
   void Function(int done, int total) onProgress,
 ) async {
-  if (await countStaleKeys(db, textKeysVersion) <= keysInPlaceLimit) {
+  if (await countStaleKeys(db, keysVersionFor(rules)) <= keysInPlaceLimit) {
     await backfillLibraryKeys(
       db,
+      rules: rules,
       chunkSize: keysInPlaceChunkSize,
       onProgress: onProgress,
     );
@@ -195,19 +244,23 @@ Future<void> runKeysBackfillInBackground(
   try {
     await db.computeWithDatabase<void, LibraryDatabase>(
       connect: LibraryDatabase.new,
-      computation: _isolateComputation(port.sendPort),
+      computation: _isolateComputation(port.sendPort, rules),
     );
   } on UnsupportedError catch (_) {
-    await backfillLibraryKeys(db, onProgress: onProgress);
+    await backfillLibraryKeys(db, rules: rules, onProgress: onProgress);
   } finally {
     port.close();
   }
 }
 
 /// Built apart from [runKeysBackfillInBackground] so the closure that crosses
-/// to the isolate captures only the port.
-Future<void> Function(LibraryDatabase) _isolateComputation(SendPort port) =>
+/// to the isolate captures only the port and the rules (lists of strings).
+Future<void> Function(LibraryDatabase) _isolateComputation(
+  SendPort port,
+  SplitRules rules,
+) =>
     (db) => backfillLibraryKeys(
       db,
+      rules: rules,
       onProgress: (done, total) => port.send([done, total]),
     );

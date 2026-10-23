@@ -12,6 +12,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_keys_backfill.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/database/separator_rules.dart';
 import 'package:kanaru/core/database/track_keys.dart';
 
 const _total = 100000;
@@ -127,7 +128,11 @@ void main() {
       await _unkey(db);
       final watch = Stopwatch()..start();
       var lastDone = 0;
-      await runKeysBackfillInBackground(db, (done, total) => lastDone = done);
+      await runKeysBackfillInBackground(
+        db,
+        defaultArtistRules,
+        (done, total) => lastDone = done,
+      );
       watch.stop();
       print('backfill $_total tracks: ${watch.elapsedMilliseconds} ms');
       expect(lastDone, _total);

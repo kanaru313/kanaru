@@ -7,7 +7,7 @@ import 'library_migration_v5.dart';
 import 'library_migration_v6.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
-import 'text_keys.dart';
+import 'separator_rules.dart';
 import 'track_keys.dart';
 import 'user_data_tables.dart';
 
@@ -135,16 +135,20 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// transaction. An update keeps the row's `id`, `addedAt` and `rootId`
   /// (hence no `INSERT OR REPLACE`, which would assign a new id).
   ///
-  /// Every row is written with its keys (`trackKeysFor`, `keys_version =
-  /// textKeysVersion`) and its `track_artists` rows are replaced in the same
+  /// Every row is written with its keys (`trackKeysFor` with [artistRules],
+  /// `keys_version = keysVersionFor(artistRules)`) and its `track_artists` rows are replaced in the same
   /// transaction, on insert and on update alike, so a rescan that changes a
   /// title or an artist re-keys the track. [rows] carry the tags (title,
   /// artist, album, album artist, genre) the keys come from. [rows] must name
   /// them all, as `tracksFromTags` builds them: a tag left out (absent) is
   /// written as empty, so the keys never disagree with the stored text, and
   /// a rescan clears it.
-  Future<void> upsertTracks(List<TracksCompanion> rows) {
+  Future<void> upsertTracks(
+    List<TracksCompanion> rows, {
+    SplitRules artistRules = defaultArtistRules,
+  }) {
     if (rows.isEmpty) return Future.value();
+    final keysVersion = keysVersionFor(artistRules);
     final keyed = [
       for (final row in rows)
         (
@@ -162,6 +166,7 @@ class LibraryDatabase extends _$LibraryDatabase {
             album: row.album.value,
             albumArtist: row.albumArtist.value,
             genre: row.genre.value,
+            artistRules: artistRules,
           ),
         ),
     ];
@@ -179,7 +184,7 @@ class LibraryDatabase extends _$LibraryDatabase {
             albumSearch: Value(keys.albumSearch),
             albumArtistSearch: Value(keys.albumArtistSearch),
             genreSearch: Value(keys.genreSearch),
-            keysVersion: const Value(textKeysVersion),
+            keysVersion: Value(keysVersion),
           );
           b.insert(
             tracks,
