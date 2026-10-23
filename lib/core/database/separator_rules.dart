@@ -67,10 +67,26 @@ const defaultGenreRules = SplitRules(
 /// different version: stale. Compare versions for inequality, not order.
 /// Two different rules share a version with odds of 2^-30; the rows then
 /// keep their keys until the next change.
-int keysVersionFor(SplitRules artistRules) {
+///
+/// The album [grouping] is part of the keys too: the default grouping adds
+/// nothing, so the result is exactly the one above; any other adds its two
+/// switches to the hashed text, so it differs from the defaults and from the
+/// other groupings.
+int keysVersionFor(
+  SplitRules artistRules, [
+  AlbumGrouping grouping = const AlbumGrouping(),
+]) {
   final canonical = artistRules.canonical;
-  if (canonical == defaultArtistRules.canonical) return textKeysVersion;
-  final hash = _fnv1a32(utf8.encode('$textKeysVersion|$canonical'));
+  final defaultGrouping = grouping == const AlbumGrouping();
+  if (canonical == defaultArtistRules.canonical && defaultGrouping) {
+    return textKeysVersion;
+  }
+  final groupingPart = defaultGrouping
+      ? ''
+      : '\u0003g:${grouping.byAlbumArtist ? 1 : 0},${grouping.byYear ? 1 : 0}';
+  final hash = _fnv1a32(
+    utf8.encode('$textKeysVersion|$canonical$groupingPart'),
+  );
   return textKeysVersion + 1 + (hash & 0x3fffffff);
 }
 

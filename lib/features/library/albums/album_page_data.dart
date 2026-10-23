@@ -18,7 +18,7 @@ class AlbumPageData {
     required this.album,
     required this.tracks,
   }) : groups = groupByDisc(tracks),
-       linkedArtistKey = _linkedArtistKey(key, tracks);
+       linkedArtistKey = _linkedArtistKey(key, album, tracks);
 
   final AlbumSummary album;
   final List<BrowseTrack> tracks;
@@ -43,11 +43,18 @@ class AlbumPageData {
   }();
 }
 
-String? _linkedArtistKey(AlbumKey key, List<BrowseTrack> tracks) {
-  final artistKey = key.artistKeys.firstOrNull;
-  return artistKey != null &&
-          tracks.any((t) => artistKeys(t.artist).contains(artistKey))
-      ? artistKey
+String? _linkedArtistKey(
+  AlbumKey key,
+  AlbumSummary album,
+  List<BrowseTrack> tracks,
+) {
+  // A key without artists (albums not told apart by artist) falls back to the
+  // artist shown on the album.
+  final candidate =
+      key.artistKeys.firstOrNull ?? artistKeys(album.artist).firstOrNull;
+  return candidate != null &&
+          tracks.any((t) => artistKeys(t.artist).contains(candidate))
+      ? candidate
       : null;
 }
 
