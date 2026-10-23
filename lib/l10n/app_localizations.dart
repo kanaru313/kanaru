@@ -3097,6 +3097,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hidden'**
   String get foldersHiddenLabel;
+
+  /// Tooltip and menu title of the moon button that pauses playback later
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer'**
+  String get sleepTimer;
+
+  /// Tooltip and screen reader label of the moon button while the timer runs; state is the time left or the mode
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer: {state}'**
+  String sleepTimerActive(String state);
+
+  /// Preset in the sleep timer menu
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute} other{{count} minutes}}'**
+  String sleepTimerMinutes(int count);
+
+  /// Sleep timer menu item that asks for a number of minutes
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get sleepTimerCustom;
+
+  /// Sleep timer mode: pause when the current track ends
+  ///
+  /// In en, this message translates to:
+  /// **'End of track'**
+  String get sleepTimerEndOfTrack;
+
+  /// Sleep timer mode: pause when the album ends
+  ///
+  /// In en, this message translates to:
+  /// **'End of album'**
+  String get sleepTimerEndOfAlbum;
+
+  /// Sleep timer mode: pause when the last track of the queue ends
+  ///
+  /// In en, this message translates to:
+  /// **'End of queue'**
+  String get sleepTimerEndOfQueue;
+
+  /// Header of the sleep timer menu while counting minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{time} left'**
+  String sleepTimerLeft(String time);
+
+  /// Header of the sleep timer menu while the countdown is on hold
+  ///
+  /// In en, this message translates to:
+  /// **'{time} left (paused)'**
+  String sleepTimerLeftPaused(String time);
+
+  /// Sleep timer menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Add 5 minutes'**
+  String get sleepTimerAdd;
+
+  /// Sleep timer menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Remove 5 minutes'**
+  String get sleepTimerSubtract;
+
+  /// Sleep timer menu item that holds the countdown
+  ///
+  /// In en, this message translates to:
+  /// **'Pause counting'**
+  String get sleepTimerPauseCounting;
+
+  /// Sleep timer menu item that continues a held countdown
+  ///
+  /// In en, this message translates to:
+  /// **'Resume counting'**
+  String get sleepTimerResumeCounting;
+
+  /// Sleep timer menu item that turns the timer off
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel timer'**
+  String get sleepTimerCancel;
+
+  /// Title of the dialog that asks for minutes
+  ///
+  /// In en, this message translates to:
+  /// **'Custom sleep timer'**
+  String get sleepTimerCustomTitle;
+
+  /// Field label in the custom sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get sleepTimerCustomLabel;
+
+  /// Validation message in the custom sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from {min} to {max}'**
+  String sleepTimerCustomInvalid(int min, int max);
+
+  /// Button of the custom sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get sleepTimerStart;
+
+  /// Short label beside the moon button while the timer waits for the end of the track
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get sleepTimerLabelTrack;
+
+  /// Short label beside the moon button while the timer waits for the end of the album
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get sleepTimerLabelAlbum;
+
+  /// Short label beside the moon button while the timer waits for the end of the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get sleepTimerLabelQueue;
 }
 
 class _AppLocalizationsDelegate

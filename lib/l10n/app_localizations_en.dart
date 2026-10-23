@@ -2179,4 +2179,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foldersHiddenLabel => 'Hidden';
+
+  @override
+  String get sleepTimer => 'Sleep timer';
+
+  @override
+  String sleepTimerActive(String state) {
+    return 'Sleep timer: $state';
+  }
+
+  @override
+  String sleepTimerMinutes(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sleepTimerCustom => 'Custom…';
+
+  @override
+  String get sleepTimerEndOfTrack => 'End of track';
+
+  @override
+  String get sleepTimerEndOfAlbum => 'End of album';
+
+  @override
+  String get sleepTimerEndOfQueue => 'End of queue';
+
+  @override
+  String sleepTimerLeft(String time) {
+    return '$time left';
+  }
+
+  @override
+  String sleepTimerLeftPaused(String time) {
+    return '$time left (paused)';
+  }
+
+  @override
+  String get sleepTimerAdd => 'Add 5 minutes';
+
+  @override
+  String get sleepTimerSubtract => 'Remove 5 minutes';
+
+  @override
+  String get sleepTimerPauseCounting => 'Pause counting';
+
+  @override
+  String get sleepTimerResumeCounting => 'Resume counting';
+
+  @override
+  String get sleepTimerCancel => 'Cancel timer';
+
+  @override
+  String get sleepTimerCustomTitle => 'Custom sleep timer';
+
+  @override
+  String get sleepTimerCustomLabel => 'Minutes';
+
+  @override
+  String sleepTimerCustomInvalid(int min, int max) {
+    return 'Enter a whole number from $min to $max';
+  }
+
+  @override
+  String get sleepTimerStart => 'Start';
+
+  @override
+  String get sleepTimerLabelTrack => 'Track';
+
+  @override
+  String get sleepTimerLabelAlbum => 'Album';
+
+  @override
+  String get sleepTimerLabelQueue => 'Queue';
 }

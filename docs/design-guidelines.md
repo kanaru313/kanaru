@@ -64,6 +64,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - Shown when a queue exists (`playerBarVisibleProvider`).
 - Seek bar: a straight track like the volume slider: played part in primary, a gap, an upright pill thumb, a gap, the rest in secondaryContainer. It does not animate while playing; it follows playback in pixel-sized steps (250/500/1000 ms).
 - Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
+- Sleep timer (PLAY-14): moon button left of volume. Outlined while off; filled in primary with a short label (`m:ss`, `h:mm:ss`, or Track/Album/Queue) while on, dimmed while counting is held. The label shows only from a 1280 px window; the tooltip always has the full text. The button is left out below about 900 px (the controls column keeps its width); the compact layout shows the icon only, with no label. When the moon appears, the controls column steps down by 96 px (48 px per side) to make room. The menu (`MenuAnchor`) lists presets, Custom… and the end-of modes; while on it adds a header, +/- 5 minutes, pause or resume counting, and cancel.
 - Icon buttons carry tooltips.
 
 ## Now Playing overlay
@@ -78,6 +79,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
 | Narrow (< 720 px) | One column with tabs in a `PageView`: queue, track, and lyrics on the right when the track has them. |
 | Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
+| Sleep timer | The moon button sits in the right group before volume, with the same menu and label rules (label from a 200 px right group). |
 | Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
 | Favorite | The favorite button (heart) likes and unlikes the current song. |
 

@@ -130,4 +130,8 @@ abstract final class AppIcons {
   // Show or hide hidden folders and files.
   static const IconData showHidden = Icons.visibility_outlined;
   static const IconData hideHidden = Icons.visibility_off_outlined;
+
+  // Sleep timer.
+  static const IconData sleepTimer = Icons.bedtime_outlined;
+  static const IconData sleepTimerActive = Icons.bedtime;
 }
