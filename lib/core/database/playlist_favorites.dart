@@ -8,6 +8,10 @@ import 'playlist_writes.dart';
 /// `user_data_tables.dart`).
 const favoritesKind = 'favorites';
 
+/// `playlists.kind` of a saved queue (invariant 8 in `user_data_tables.dart`):
+/// kept for queue history, never listed with the playlists.
+const queueKind = 'queue';
+
 /// What `playlists.name` holds for the Favorites playlist. Only a fallback
 /// for tools that read the database directly: the app always shows the
 /// localized `navFavorites` instead.
