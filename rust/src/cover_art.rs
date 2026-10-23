@@ -25,8 +25,10 @@ pub const MAX_COVER_SIDE: u32 = 4096;
 
 /// A JPEG that is decoded scaled down (see `cover_decode_limits::scaled_plan`)
 /// may have a longer side, up to this: a baseline JPEG decodes row by row at
-/// 1/2, 1/4 or 1/8 size, so its memory does not grow with the picture. One that
-/// would take the full decode is cut at [`MAX_COVER_SIDE`] later.
+/// 1/2, 1/4 or 1/8 size, so its memory stays near the scaled size. A very flat
+/// picture cannot shrink that far; its decoded size is bounded by
+/// `MAX_DECODE_BYTES`, checked in `scaled_plan`. One that would take the full
+/// decode is cut at [`MAX_COVER_SIDE`] later.
 pub const MAX_SCALED_JPEG_SIDE: u32 = 8192;
 
 /// Sidecar images larger than this are not read. Matches lofty's own

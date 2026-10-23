@@ -58,6 +58,35 @@ void main() {
     expect(c.read(genreSplitRulesProvider), defaultGenreRules);
   });
 
+  test('rules of a session are cleaned like the stored ones', () {
+    final c = container((_, _, _) async {});
+    setArtistSplit(
+      c,
+      SplitPrefs(
+        separators: [' | ', 'a\u0000b', '|', 'x' * 65],
+        keepWhole: const [],
+      ),
+    );
+    expect(
+      c.read(artistSplitRulesProvider),
+      const SplitRules(separators: ['|', 'ab'], keepWhole: []),
+    );
+    setArtistSplit(
+      c,
+      SplitPrefs(
+        separators: [for (var i = 0; i < 200; i++) 's$i'],
+        keepWhole: const [],
+      ),
+    );
+    expect(
+      c.read(artistSplitRulesProvider),
+      SplitRules(
+        separators: [for (var i = 0; i < maxSplitEntries; i++) 's$i'],
+        keepWhole: const [],
+      ),
+    );
+  });
+
   test('changing the rules shows the updating state, then ready', () async {
     final seenRules = <SplitRules>[];
     final gate = Completer<void>();

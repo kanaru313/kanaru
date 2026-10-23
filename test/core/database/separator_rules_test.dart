@@ -207,4 +207,17 @@ void main() {
       expect(keysVersionFor(rules(['|'])), lessThan(1 << 31));
     });
   });
+
+  test(
+    'a keep-whole name holding ";" stops ";" eating the spaces around it',
+    () {
+      // With such a name the matcher reads ";" like "/": no whitespace is
+      // taken with it, so a word separator after it still splits.
+      final plain = rules([';', 'with']);
+      final holding = rules([';', 'with'], ['A;B']);
+      expect(splitArtists('X ; with Y', rules: plain), ['X', 'with Y']);
+      expect(splitArtists('X ; with Y', rules: holding), ['X', 'Y']);
+      expect(splitArtists('A;B with Y', rules: holding), ['A;B', 'Y']);
+    },
+  );
 }

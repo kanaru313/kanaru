@@ -289,6 +289,18 @@ fn thumbnail_of<P: image::Pixel<Subpixel = u8> + 'static>(
 mod tests {
     use super::*;
 
+    #[test]
+    fn guarded_turns_a_panic_into_none() {
+        let out: Option<u8> = guarded(|| panic!("a decoder gave up"));
+        assert_eq!(out, None);
+    }
+
+    #[test]
+    fn guarded_passes_a_result_through() {
+        assert_eq!(guarded(|| Some(7)), Some(7));
+        assert_eq!(guarded(|| None::<u8>), None);
+    }
+
     fn header() -> JpegHeader {
         JpegHeader {
             width: 400,

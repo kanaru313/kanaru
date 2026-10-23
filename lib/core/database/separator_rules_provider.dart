@@ -9,7 +9,7 @@ final artistSplitRulesProvider = Provider<SplitRules>((ref) {
   final split = ref.watch(
     settingsProvider.select((s) => s.libraryScan.artistSplit),
   );
-  return SplitRules(separators: split.separators, keepWhole: split.keepWhole);
+  return _rulesOf(split);
 });
 
 /// How stored genre strings are split now, from the settings.
@@ -17,5 +17,12 @@ final genreSplitRulesProvider = Provider<SplitRules>((ref) {
   final split = ref.watch(
     settingsProvider.select((s) => s.libraryScan.genreSplit),
   );
-  return SplitRules(separators: split.separators, keepWhole: split.keepWhole);
+  return _rulesOf(split);
 });
+
+/// Rules from [split] after the same clean-up the stored settings get, so the
+/// rules of this session equal the ones after a restart.
+SplitRules _rulesOf(SplitPrefs split) => SplitRules(
+  separators: cleanSplitEntries(split.separators),
+  keepWhole: cleanSplitEntries(split.keepWhole),
+);

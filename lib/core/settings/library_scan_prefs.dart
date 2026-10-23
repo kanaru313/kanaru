@@ -85,6 +85,27 @@ bool _sameStrings(List<String> a, List<String> b) {
   return true;
 }
 
+/// The usable entries of a [SplitPrefs] list: without control characters
+/// (U+0000-U+001F, U+007F), trimmed, not empty, at most
+/// [maxSplitEntryLength] characters (a longer one is dropped, not cut),
+/// without repeats (any case), at most [maxSplitEntries] of them. Applied
+/// both when settings are read and when rules are made from them, so the
+/// rules of a session are the ones the next start gives.
+List<String> cleanSplitEntries(Iterable<String> entries) {
+  final seen = <String>{};
+  final out = <String>[];
+  for (final item in entries) {
+    if (out.length >= maxSplitEntries) break;
+    final text = String.fromCharCodes([
+      for (final unit in item.codeUnits)
+        if (unit >= 0x20 && unit != 0x7f) unit,
+    ]).trim();
+    if (text.isEmpty || text.runes.length > maxSplitEntryLength) continue;
+    if (seen.add(text.toLowerCase())) out.add(text);
+  }
+  return out;
+}
+
 const defaultArtistSplit = SplitPrefs(
   separators: defaultArtistSeparators,
   keepWhole: defaultArtistKeepWhole,

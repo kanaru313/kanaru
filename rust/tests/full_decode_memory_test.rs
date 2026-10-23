@@ -51,9 +51,10 @@ fn peak_growth(bytes: &[u8], format: ImageFormat) -> u64 {
 #[cfg(target_os = "linux")]
 #[test]
 fn rgba_4096_squares_stay_near_the_decoded_size() {
-    // The decoded RGBA buffer is 64 MiB; blending into a second RGB buffer
-    // used to put the peak at 112 MiB.
-    let limit = 80 << 20;
+    // The decoded RGBA buffer is 64 MiB and the peak measures about 74 MiB.
+    // Blending into a second RGB buffer used to put it at 112 MiB, so 96 MiB
+    // leaves room for allocator noise and still catches that regression.
+    let limit = 96 << 20;
     let png = rgba_4096(ImageFormat::Png);
     let grew = peak_growth(&png, ImageFormat::Png);
     assert!(grew < limit, "png: peak grew by {} MiB", grew >> 20);

@@ -89,30 +89,14 @@ SplitPrefs _decodeSplit(Map<String, Object?> json, SplitPrefs fallback) =>
       keepWhole: _entries(json[_keepWholeKey], fallback.keepWhole),
     );
 
-/// The usable entries of a stored list: strings only, without control
-/// characters, trimmed, not empty, at most [maxSplitEntryLength] characters
-/// (a longer one is dropped, not cut), without repeats (any case), at most
-/// [maxSplitEntries] of them. An empty list is valid (nothing splits); a
-/// value that is not a list gives [fallback].
+/// The usable entries of a stored list (see [cleanSplitEntries]). An empty
+/// list is valid (nothing splits). A value that is not a list, or a list with
+/// anything but strings in it, is damaged as a whole and gives [fallback]:
+/// half a list would silently change how the whole library is split.
 List<String> _entries(Object? value, List<String> fallback) {
-  if (value is! List) return fallback;
-  final seen = <String>{};
-  final out = <String>[];
-  for (final item in value) {
-    if (out.length >= maxSplitEntries) break;
-    if (item is! String) continue;
-    final text = _withoutControl(item).trim();
-    if (text.isEmpty || text.runes.length > maxSplitEntryLength) continue;
-    if (seen.add(text.toLowerCase())) out.add(text);
-  }
-  return out;
+  if (value is! List || value.any((item) => item is! String)) return fallback;
+  return cleanSplitEntries(value.cast<String>());
 }
-
-/// [text] without U+0000-U+001F and U+007F.
-String _withoutControl(String text) => String.fromCharCodes([
-  for (final unit in text.codeUnits)
-    if (unit >= 0x20 && unit != 0x7f) unit,
-]);
 
 /// The `libraryScan` object, with [extra] (unknown keys) carried over.
 Map<String, Object?> encodeLibraryScanPrefs(
