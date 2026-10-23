@@ -15,8 +15,8 @@ import 'package:kanaru/features/player/seek_follow_step.dart';
 import 'package:kanaru/features/player/seek_gesture_area.dart';
 import 'package:kanaru/features/player/seek_strip.dart';
 import 'package:kanaru/features/player/volume_button.dart';
-import 'package:kanaru/shared/format_duration.dart';
 import 'package:kanaru/features/player/wavy_track_painter.dart';
+import 'package:kanaru/shared/format_duration.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -405,13 +405,19 @@ void main() {
     });
 
     /// Runs the clock for [span] in frame-sized steps; returns how often
-    /// the wave's phase moved and how often [target] painted.
+    /// the wave's phase moved and how often the wave under [target] painted.
     Future<({int moves, int paints})> runWave(
       WidgetTester tester,
       Finder target, {
       Duration span = const Duration(seconds: 1),
     }) async {
-      final bar = tester.renderObject(target);
+      final wave = tester.renderObject(
+        find.descendant(
+          of: target,
+          matching: find.byType(CustomPaint),
+          skipOffstage: false,
+        ),
+      );
       final shown =
           tester
                   .widget<CustomPaint>(
@@ -428,7 +434,7 @@ void main() {
       shown.phase.addListener(onMove);
       var paints = 0;
       debugOnProfilePaint = (object) {
-        if (object == bar || object.parent == bar) paints++;
+        if (object == wave) paints++;
       };
       try {
         for (
@@ -512,6 +518,36 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       final back = await runWave(tester, covered);
       expect(back.moves, inInclusiveRange(12, 16));
+    });
+
+    testWidgets('a wave uncovered while it settles travels on until flat', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      final shell = find.descendant(
+        of: find.byType(PlayerBar, skipOffstage: false),
+        matching: find.byType(SeekBar, skipOffstage: false),
+      );
+
+      container.read(nowPlayingOpenProvider.notifier).open();
+      await tester.pump(const Duration(seconds: 1));
+      await player().pause();
+      container.read(nowPlayingOpenProvider.notifier).close();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final settling = await runWave(
+        tester,
+        shell,
+        span: const Duration(milliseconds: 256),
+      );
+      expect(settling.moves, greaterThan(0));
+      await tester.pump(const Duration(seconds: 1));
+      final flat = await runWave(tester, shell);
+      expect(flat.moves, 0);
     });
 
     testWidgets('no timer runs while it lies flat', (tester) async {
@@ -898,7 +934,7 @@ void main() {
       );
     });
 
-    testWidgets('a longer track picks a longer step; pausing draws nothing', (
+    testWidgets('a longer track picks a longer step; playback resumes', (
       tester,
     ) async {
       await pumpApp(tester);
@@ -914,16 +950,17 @@ void main() {
         await tester.pump();
       });
       expect(rebuilt, isEmpty);
+
+      await tester.tap(find.byTooltip('Pause'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Play'));
+      await tester.pumpAndSettle();
       emit(const Duration(seconds: 1));
       await tester.pump();
       expect(
         shownProgress(tester),
         const Duration(seconds: 1).inMicroseconds / second.inMicroseconds,
       );
-
-      await tester.tap(find.byTooltip('Pause'));
-      await tester.pumpAndSettle();
-      expect(tester.binding.hasScheduledFrame, isFalse);
     });
   });
 

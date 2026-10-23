@@ -104,7 +104,7 @@ class _WavyTrack extends StatefulWidget {
 }
 
 class _WavyTrackState extends State<_WavyTrack>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final _amplitude = AnimationController(vsync: this, duration: _waveRise);
 
   /// Where the wave is in its travel, from 0 to 1.
@@ -154,17 +154,23 @@ class _WavyTrackState extends State<_WavyTrack>
     final visible = TickerMode.valuesOf(context).enabled;
     if (widget.waving && _focused && visible) {
       _amplitude.forward();
-      _travel ??= Timer.periodic(_waveFrame, (_) => _step());
+      _startTravel();
       return;
     }
     // A covered wave is muted: its amplitude cannot settle, and nothing may
     // keep drawing under the covering screen.
     if (!visible) _stopTravel();
     // Keeps travelling while it flattens, then stops for good. Waving again
-    // before then cancels the flattening, and the wave keeps going.
+    // before then cancels the flattening, and the wave keeps going. A wave
+    // uncovered mid-settle travels on for the rest of it.
+    if (visible && !_amplitude.isDismissed) _startTravel();
     _amplitude.reverse().whenCompleteOrCancel(() {
       if (mounted && _amplitude.isDismissed) _stopTravel();
     });
+  }
+
+  void _startTravel() {
+    _travel ??= Timer.periodic(_waveFrame, (_) => _step());
   }
 
   void _step() {
