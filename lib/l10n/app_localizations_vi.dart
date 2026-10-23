@@ -1757,9 +1757,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không bài nào trong đây có trong thư viện';
 
   @override
-  String get sidebarCurrentQueue => 'Hàng đợi hiện tại';
-
-  @override
   String get lyricsTab => 'Lời bài hát';
 
   @override
@@ -2081,4 +2078,14 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sleepTimerLabelQueue => 'Hàng đợi';
+
+  @override
+  String get navLanguages => 'Ngôn ngữ';
+
+  @override
+  String get languagesComingSoonTitle => 'Ngôn ngữ sắp có';
+
+  @override
+  String get languagesComingSoonMessage =>
+      'Chưa thể duyệt bài hát theo ngôn ngữ.';
 }

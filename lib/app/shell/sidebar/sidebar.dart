@@ -1,11 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../app_destination.dart';
 import '../top_bar.dart';
 import '../window/window_drag_area.dart';
-import 'sidebar_current_queue_item.dart';
 import 'sidebar_item.dart';
 import 'sidebar_playlists_section.dart';
 
@@ -21,13 +22,12 @@ const _compactBelow = 180.0;
 /// Left navigation column: app logo, grouped destinations and playlists.
 /// Fills the width its parent gives it and switches to an icon-only rail
 /// when that width is small.
-class Sidebar extends StatelessWidget {
+class Sidebar extends ConsumerWidget {
   const Sidebar({
     super.key,
     required this.selected,
     required this.onSelected,
     required this.onOpenLocation,
-    this.onQueueToggled,
   });
 
   /// Highlighted destination. Pages not in the sidebar highlight nothing.
@@ -37,13 +37,12 @@ class Sidebar extends StatelessWidget {
   /// Opens a location that is not a destination root, such as a playlist.
   final ValueChanged<String> onOpenLocation;
 
-  /// Called after "Current queue" opened or closed the queue sheet (the
-  /// drawer closes itself then).
-  final VoidCallback? onQueueToggled;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final groups = visibleSidebarGroups(
+      ref.watch(settingsProvider.select((s) => s.display.sidebarTabs)),
+    );
 
     // A slightly raised surface sets the sidebar apart from the page.
     return ColoredBox(
@@ -65,23 +64,17 @@ class Sidebar extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                   children: [
-                    for (final (i, group) in sidebarGroups.indexed) ...[
+                    for (final (i, group) in groups.indexed) ...[
                       if (i > 0) divider,
-                      for (final entry in group)
-                        switch (entry) {
-                          SidebarDestination(:final destination) => SidebarItem(
-                            icon: destination.icon,
-                            selectedIcon: destination.selectedIcon,
-                            label: destination.label(l10n),
-                            selected: destination == selected,
-                            compact: compact,
-                            onTap: () => onSelected(destination),
-                          ),
-                          SidebarCurrentQueue() => SidebarCurrentQueueItem(
-                            compact: compact,
-                            onToggled: onQueueToggled,
-                          ),
-                        },
+                      for (final destination in group)
+                        SidebarItem(
+                          icon: destination.icon,
+                          selectedIcon: destination.selectedIcon,
+                          label: destination.label(l10n),
+                          selected: destination == selected,
+                          compact: compact,
+                          onTap: () => onSelected(destination),
+                        ),
                     ],
                     divider,
                     SidebarPlaylistsSection(

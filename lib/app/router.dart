@@ -6,6 +6,7 @@ import '../core/database/library_startup.dart';
 import '../core/settings/settings_provider.dart';
 import '../features/history/history_routes.dart';
 import '../features/history/history_screen.dart';
+import '../features/home/home_routes.dart';
 import '../features/home/home_screen.dart';
 import '../features/library/albums/album_screen.dart';
 import '../features/library/albums/albums_screen.dart';
@@ -15,6 +16,8 @@ import '../features/library/folders/folder_screen.dart';
 import '../features/library/folders/folders_screen.dart';
 import '../features/library/genres/genre_screen.dart';
 import '../features/library/genres/genres_screen.dart';
+import '../features/library/languages/languages_routes.dart';
+import '../features/library/languages/languages_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
 import '../features/playlists/favorites_routes.dart';
@@ -67,6 +70,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                   path: destination.path,
                   builder: (context, state) => _buildPage(state, destination),
                   routes: switch (destination) {
+                    AppDestination.home => homeRoutes,
+                    AppDestination.languages => languagesRoutes,
                     AppDestination.albums => [
                       GoRoute(
                         path: ':key',
@@ -142,6 +147,7 @@ Widget _buildPage(GoRouterState state, AppDestination destination) {
     AppDestination.albums => const AlbumsScreen(),
     AppDestination.artists => const ArtistsScreen(),
     AppDestination.genres => const GenresScreen(),
+    AppDestination.languages => const LanguagesScreen(),
     AppDestination.folders => const FoldersScreen(),
     AppDestination.favorites => const FavoritesScreen(),
     AppDestination.history => const HistoryScreen(),

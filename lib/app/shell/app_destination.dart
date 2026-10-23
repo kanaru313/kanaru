@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/settings/display_prefs.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 
@@ -11,6 +12,7 @@ enum AppDestination {
   albums('/albums', AppIcons.albumOutlined, AppIcons.album),
   artists('/artists', AppIcons.artistOutline, AppIcons.artist),
   genres('/genres', AppIcons.genreOutlined, AppIcons.genre),
+  languages('/languages', AppIcons.languageOutlined, AppIcons.language),
   folders('/folders', AppIcons.folderOutlined, AppIcons.folder),
   favorites('/favorites', AppIcons.favoriteOutline, AppIcons.favorite),
   history('/history', AppIcons.history, AppIcons.history),
@@ -35,6 +37,7 @@ enum AppDestination {
     albums => l10n.navAlbums,
     artists => l10n.navArtists,
     genres => l10n.genresTitle,
+    languages => l10n.navLanguages,
     folders => l10n.navFolders,
     favorites => l10n.navFavorites,
     history => l10n.navHistory,
@@ -45,40 +48,52 @@ enum AppDestination {
   };
 }
 
-/// One row of the sidebar groups: a page, or an action.
-sealed class SidebarEntry {
-  const SidebarEntry();
-}
-
-/// A row that opens [destination].
-class SidebarDestination extends SidebarEntry {
-  const SidebarDestination(this.destination);
-
-  final AppDestination destination;
-}
-
-/// "Current queue": opens and closes the queue side sheet of the shell, lit
-/// while it is open. Not a page, so nothing else is unselected by it.
-class SidebarCurrentQueue extends SidebarEntry {
-  const SidebarCurrentQueue();
-}
-
-/// Rows listed in the sidebar, grouped by dividers. Search and settings are
-/// reached from the top bar instead; playlists have their own section below
-/// the groups.
-const sidebarGroups = <List<SidebarEntry>>[
-  [SidebarDestination(AppDestination.home)],
-  [
-    SidebarDestination(AppDestination.songs),
-    SidebarDestination(AppDestination.albums),
-    SidebarDestination(AppDestination.artists),
-    SidebarDestination(AppDestination.genres),
-    SidebarDestination(AppDestination.folders),
-  ],
-  [
-    SidebarDestination(AppDestination.queueHistory),
-    SidebarCurrentQueue(),
-    SidebarDestination(AppDestination.favorites),
-    SidebarDestination(AppDestination.history),
-  ],
+/// Library pages the user can hide, in the order the sidebar lists them
+/// (not the order of [SidebarTab]).
+const sidebarLibraryOrder = <AppDestination>[
+  AppDestination.songs,
+  AppDestination.albums,
+  AppDestination.artists,
+  AppDestination.genres,
+  AppDestination.languages,
+  AppDestination.folders,
 ];
+
+/// The setting that shows or hides [destination] in the sidebar, or `null`
+/// for pages that are always listed (or not listed at all).
+SidebarTab? sidebarTabOf(AppDestination destination) => switch (destination) {
+  AppDestination.songs => SidebarTab.songs,
+  AppDestination.albums => SidebarTab.albums,
+  AppDestination.artists => SidebarTab.artists,
+  AppDestination.genres => SidebarTab.genres,
+  AppDestination.languages => SidebarTab.languages,
+  AppDestination.folders => SidebarTab.folders,
+  AppDestination.home ||
+  AppDestination.favorites ||
+  AppDestination.history ||
+  AppDestination.queueHistory ||
+  AppDestination.playlists ||
+  AppDestination.search ||
+  AppDestination.settings => null,
+};
+
+/// Rows listed in the sidebar, grouped by dividers: Home; the library pages
+/// whose tab is in [tabs]; queue history, favorites and history (always).
+/// Search and settings are reached from the top bar instead; playlists have
+/// their own section below the groups. A group left empty is dropped, so no
+/// two dividers sit side by side.
+List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
+  final library = [
+    for (final d in sidebarLibraryOrder)
+      if (tabs.contains(sidebarTabOf(d))) d,
+  ];
+  return [
+    [AppDestination.home],
+    if (library.isNotEmpty) library,
+    [
+      AppDestination.queueHistory,
+      AppDestination.favorites,
+      AppDestination.history,
+    ],
+  ];
+}

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/features/history/history_routes.dart' as history;
 import 'package:kanaru/shared/library_route_keys.dart';
 
 void main() {
@@ -28,6 +29,18 @@ void main() {
     expect(decodeGenreRouteKey('!!'), isNull);
     expect(
       decodeGenreRouteKey(encodeAlbumRouteKey(const AlbumKey('a', 'b'))),
+      isNull,
+    );
+  });
+
+  test('language keys round-trip any text', () {
+    for (final name in odd) {
+      expect(decodeLanguageRouteKey(encodeLanguageRouteKey(name)), name);
+    }
+    expect(decodeLanguageRouteKey('!!'), isNull);
+    expect(decodeLanguageRouteKey(''), isNull);
+    expect(
+      decodeLanguageRouteKey(encodeAlbumRouteKey(const AlbumKey('a', 'b'))),
       isNull,
     );
   });
@@ -117,6 +130,13 @@ void main() {
     expect(artistsPath, AppDestination.artists.path);
     expect(genresPath, AppDestination.genres.path);
     expect(foldersPath, AppDestination.folders.path);
+    expect(languagesPath, AppDestination.languages.path);
+    expect(historyPath, AppDestination.history.path);
+    expect(historyPath, history.historyPath);
+    expect(
+      languageLocation('vi'),
+      '/languages/${encodeLanguageRouteKey('vi')}',
+    );
     expect(folderLocation('/m/a'), '/folders/${encodeFolderRouteKey('/m/a')}');
     expect(genreLocation('rock'), '/genres/${encodeGenreRouteKey('rock')}');
     const key = AlbumKey('a', 'b');

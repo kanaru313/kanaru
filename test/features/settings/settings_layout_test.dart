@@ -174,7 +174,8 @@ Future<void> _checkLayout(
       l10n.settingsClearCoverCacheHint,
     ),
   ]) {
-    final title = tester.getRect(find.text(label));
+    // `.last`: the sidebar can list the same word (Languages) before the page.
+    final title = tester.getRect(find.text(label).last);
     final text = title.expandToInclude(tester.getRect(find.text(subtitle)));
     final rect = tester.getRect(control);
     expect(

@@ -107,6 +107,7 @@ abstract final class AppIcons {
   static const IconData themeLight = Icons.light_mode_outlined;
   static const IconData themeDark = Icons.dark_mode_outlined;
   static const IconData language = Icons.translate;
+  static const IconData languageOutlined = Icons.translate_outlined;
   static const IconData windowCustom = Icons.web_asset;
   static const IconData windowSystem = Icons.desktop_windows_outlined;
   static const IconData windowFrameless = Icons.crop_free;
@@ -124,9 +125,6 @@ abstract final class AppIcons {
   // Queue history.
   static const IconData queueHistory = Icons.manage_history_rounded;
   static const IconData queueHistoryOutlined = Icons.manage_history_outlined;
-  static const IconData currentQueue = Icons.queue_music_rounded;
-  static const IconData currentQueueOutlined = Icons.queue_music_outlined;
-
   // Show or hide hidden folders and files.
   static const IconData showHidden = Icons.visibility_outlined;
   static const IconData hideHidden = Icons.visibility_off_outlined;

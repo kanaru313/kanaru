@@ -6,8 +6,19 @@ import '../../l10n/l10n.dart';
 import 'setting_row.dart';
 import 'settings_chips_row.dart';
 
-/// Interface options: which sidebar tabs show (not wired yet: shown from the
-/// saved value, off), and track numbers on album pages (live).
+/// Chip order: the order the sidebar lists the tabs (a test keeps it equal to
+/// `sidebarLibraryOrder`; features cannot import `app/`).
+const sidebarTabChipOrder = <SidebarTab>[
+  SidebarTab.songs,
+  SidebarTab.albums,
+  SidebarTab.artists,
+  SidebarTab.genres,
+  SidebarTab.languages,
+  SidebarTab.folders,
+];
+
+/// Interface options: which library tabs the sidebar shows, and track numbers
+/// on album pages.
 class InterfaceSettingRows extends ConsumerWidget {
   const InterfaceSettingRows({super.key});
 
@@ -24,6 +35,7 @@ class InterfaceSettingRows extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final display = ref.watch(settingsProvider.select((s) => s.display));
+    final tabs = display.sidebarTabs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -31,13 +43,23 @@ class InterfaceSettingRows extends ConsumerWidget {
         SettingsChipsRow(
           title: l10n.settingsSidebarTabs,
           subtitle: l10n.settingsSidebarTabsHint,
-          comingSoon: true,
           chips: [
-            for (final tab in SidebarTab.values)
+            for (final tab in sidebarTabChipOrder)
               FilterChip(
                 label: Text(_tabLabel(l10n, tab)),
-                selected: display.sidebarTabs.contains(tab),
-                onSelected: null,
+                selected: tabs.contains(tab),
+                // The last tab shown stays: the set is never empty.
+                onSelected: tabs.contains(tab) && tabs.length == 1
+                    ? null
+                    : (on) => ref
+                          .read(settingsProvider.notifier)
+                          .setDisplay(
+                            display.copyWith(
+                              sidebarTabs: on
+                                  ? {...tabs, tab}
+                                  : ({...tabs}..remove(tab)),
+                            ),
+                          ),
               ),
           ],
         ),

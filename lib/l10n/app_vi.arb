@@ -660,7 +660,6 @@
   "queueHistoryDeleteMessage": "Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.",
   "queueHistoryDeleted": "Đã xoá hàng đợi",
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
-  "sidebarCurrentQueue": "Hàng đợi hiện tại",
   "lyricsTab": "Lời bài hát",
   "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" },
   "coverCacheClearTitle": "Xoá cache ảnh bìa?",
@@ -789,5 +788,8 @@
   "sleepTimerStart": "Bắt đầu",
   "sleepTimerLabelTrack": "Bài",
   "sleepTimerLabelAlbum": "Album",
-  "sleepTimerLabelQueue": "Hàng đợi"
+  "sleepTimerLabelQueue": "Hàng đợi",
+  "navLanguages": "Ngôn ngữ",
+  "languagesComingSoonTitle": "Ngôn ngữ sắp có",
+  "languagesComingSoonMessage": "Chưa thể duyệt bài hát theo ngôn ngữ."
 }
