@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../lyrics/lyrics_view.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_screen.dart';
 import 'now_playing_title_bar.dart';
@@ -101,6 +102,8 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
     // Only a finished slide-in covers the shell; closing or reduced motion
     // flips this in the same frame the screen's state changes.
     final covered = open && _controller.isCompleted;
+    // Lyrics are looked for only while the screen is there.
+    final hasLyrics = screenShown && ref.watch(nowPlayingHasLyricsProvider);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -111,7 +114,10 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
             // Opaque to pointers, so nothing reaches the shell underneath.
             child: Listener(
               behavior: HitTestBehavior.opaque,
-              child: NowPlayingScreen(titleBar: widget.titleBar),
+              child: NowPlayingScreen(
+                titleBar: widget.titleBar,
+                lyrics: hasLyrics ? const LyricsView() : null,
+              ),
             ),
           ),
       ],

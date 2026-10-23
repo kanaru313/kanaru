@@ -7,6 +7,7 @@
 // ignore_for_file: argument_type_not_assignable
 
 import 'api/cover_colors.dart';
+import 'api/lyrics.dart';
 import 'api/tags.dart';
 
 import 'dart:async';
@@ -31,6 +32,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  EmbeddedLyrics dco_decode_box_autoadd_embedded_lyrics(dynamic raw);
+
+  @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
 
   @protected
@@ -47,6 +51,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CoverStatus dco_decode_cover_status(dynamic raw);
+
+  @protected
+  EmbeddedLyrics dco_decode_embedded_lyrics(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -67,6 +74,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<SyncedLyricLine> dco_decode_list_synced_lyric_line(dynamic raw);
+
+  @protected
   List<TrackCover> dco_decode_list_track_cover(dynamic raw);
 
   @protected
@@ -74,6 +84,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  EmbeddedLyrics? dco_decode_opt_box_autoadd_embedded_lyrics(dynamic raw);
 
   @protected
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
@@ -86,6 +99,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  SyncedLyricLine dco_decode_synced_lyric_line(dynamic raw);
 
   @protected
   TrackCover dco_decode_track_cover(dynamic raw);
@@ -109,6 +125,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  EmbeddedLyrics sse_decode_box_autoadd_embedded_lyrics(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
@@ -125,6 +146,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CoverStatus sse_decode_cover_status(SseDeserializer deserializer);
+
+  @protected
+  EmbeddedLyrics sse_decode_embedded_lyrics(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -147,6 +171,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<SyncedLyricLine> sse_decode_list_synced_lyric_line(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<TrackCover> sse_decode_list_track_cover(SseDeserializer deserializer);
 
   @protected
@@ -154,6 +183,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  EmbeddedLyrics? sse_decode_opt_box_autoadd_embedded_lyrics(
+    SseDeserializer deserializer,
+  );
 
   @protected
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
@@ -166,6 +200,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  SyncedLyricLine sse_decode_synced_lyric_line(SseDeserializer deserializer);
 
   @protected
   TrackCover sse_decode_track_cover(SseDeserializer deserializer);
@@ -187,6 +224,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_embedded_lyrics(
+    EmbeddedLyrics self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_i_64(
@@ -216,6 +259,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_cover_status(CoverStatus self, SseSerializer serializer);
 
   @protected
+  void sse_encode_embedded_lyrics(
+    EmbeddedLyrics self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
 
   @protected
@@ -243,6 +292,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_synced_lyric_line(
+    List<SyncedLyricLine> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_track_cover(
     List<TrackCover> self,
     SseSerializer serializer,
@@ -256,6 +311,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_embedded_lyrics(
+    EmbeddedLyrics? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_i_64(
@@ -272,6 +333,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_prim_u_8_strict(
     Uint8List? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_synced_lyric_line(
+    SyncedLyricLine self,
     SseSerializer serializer,
   );
 

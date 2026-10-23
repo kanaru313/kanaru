@@ -76,9 +76,10 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Exit | Esc (mapped to `DismissIntent`). Focus returns to the control that opened it. |
 | Auto-hide | Header and footer fade out after 3 s of inactivity; pointer movement brings them back. |
 | Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
-| Narrow (< 720 px) | One column with two tabs in a `PageView`: queue and track. |
+| Narrow (< 720 px) | One column with tabs in a `PageView`: queue, track, and lyrics on the right when the track has them. |
 | Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
-| Placeholders | The lyrics button exists and does nothing yet (Phase 4). The favorite button (heart) likes and unlikes the current song. |
+| Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (300 ms, a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
+| Favorite | The favorite button (heart) likes and unlikes the current song. |
 
 ## Queue sheet
 

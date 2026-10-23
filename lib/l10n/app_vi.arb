@@ -661,5 +661,7 @@
   "queueHistoryDeleteMessage": "Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.",
   "queueHistoryDeleted": "Đã xoá hàng đợi",
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
-  "sidebarCurrentQueue": "Hàng đợi hiện tại"
+  "sidebarCurrentQueue": "Hàng đợi hiện tại",
+  "lyricsTab": "Lời bài hát",
+  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" }
 }

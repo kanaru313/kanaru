@@ -22,8 +22,9 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   /// See `NowPlayingOverlay.titleBar`.
   final NowPlayingTitleBar? titleBar;
 
-  /// Lyrics view (none exists yet, so `null`). With it the cover block takes
-  /// half the width and the header shows the lyrics-only toggle.
+  /// Lyrics view, `null` when the track has none. With it the cover block
+  /// takes half the width and the header shows the lyrics-only toggle; the
+  /// narrow layout shows it as a page right of the track.
   final Widget? lyrics;
 
   bool get hasLyrics => lyrics != null;
@@ -100,6 +101,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         wrapHeader: _wrapHeader,
                         excludeFromDrag: _exclude,
                         queuePage: const QueuePanel(),
+                        lyricsPage: widget.lyrics,
                         onClose: _close,
                       ),
               ),

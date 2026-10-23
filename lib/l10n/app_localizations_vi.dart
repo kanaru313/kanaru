@@ -1763,4 +1763,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sidebarCurrentQueue => 'Hàng đợi hiện tại';
+
+  @override
+  String get lyricsTab => 'Lời bài hát';
 }
