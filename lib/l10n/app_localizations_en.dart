@@ -1107,7 +1107,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAnimationsHint =>
-      'Off: pages and panels switch without motion.';
+      'Off: pages, panels, tabs and the sidebar change at once, without motion.';
 
   @override
   String get settingsColorFromCover => 'Colors from the cover';

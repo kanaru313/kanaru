@@ -555,7 +555,7 @@
     }
   },
   "settingsAnimations": "Animations",
-  "settingsAnimationsHint": "Off: pages and panels switch without motion.",
+  "settingsAnimationsHint": "Off: pages, panels, tabs and the sidebar change at once, without motion.",
   "settingsColorFromCover": "Colors from the cover",
   "settingsColorFromCoverHint": "Tint the app with the colors of the cover that is playing.",
   "settingsFontScale": "Text size",

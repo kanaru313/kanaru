@@ -66,11 +66,18 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
     super.dispose();
   }
 
-  void _select(_Tab tab) => _controller.animateToPage(
-    tab.index,
-    duration: _pageDuration,
-    curve: Curves.easeOutQuart,
-  );
+  void _select(_Tab tab) {
+    // animateToPage refuses a zero duration.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.jumpToPage(tab.index);
+      return;
+    }
+    _controller.animateToPage(
+      tab.index,
+      duration: _pageDuration,
+      curve: Curves.easeOutQuart,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +181,9 @@ class _DotState extends State<_Dot> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _pageDuration;
     return Semantics(
       button: true,
       selected: widget.selected,
@@ -193,10 +203,10 @@ class _DotState extends State<_Dot> {
               padding: const EdgeInsets.all(10),
               child: AnimatedScale(
                 scale: _hovered ? 1.3 : 1,
-                duration: _pageDuration,
+                duration: duration,
                 curve: Curves.easeOutQuart,
                 child: AnimatedContainer(
-                  duration: _pageDuration,
+                  duration: duration,
                   curve: Curves.easeOutQuart,
                   width: widget.selected ? 16 : 6,
                   height: 6,

@@ -52,7 +52,9 @@ class _SidebarToggleState extends ConsumerState<SidebarToggle> {
               height: 64,
               child: TweenAnimationBuilder<double>(
                 tween: Tween(end: _hovered ? 1 : 0),
-                duration: const Duration(milliseconds: 150),
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 150),
                 curve: Curves.easeOut,
                 builder: (context, bend, _) => CustomPaint(
                   painter: _HandlePainter(

@@ -31,10 +31,13 @@ class SeekStrip extends StatelessWidget {
           height: seekStripHitHeight,
           builder: (context, state) {
             final thick = state.active;
+            final animation = MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : _animation;
             return Stack(
               children: [
                 AnimatedPositioned(
-                  duration: _animation,
+                  duration: animation,
                   left: 0,
                   right: 0,
                   top: _barBottom - (thick ? _thickBar : _thinBar),
@@ -59,7 +62,7 @@ class SeekStrip extends StatelessWidget {
                   ),
                   top: _barBottom - _thickBar / 2 - _thumbSize / 2,
                   child: AnimatedScale(
-                    duration: _animation,
+                    duration: animation,
                     scale: thick ? 1 : 0,
                     child: Container(
                       width: _thumbSize,

@@ -286,7 +286,7 @@
   "settingsUnitMinutes": "{count} phút",
   "settingsUnitPercent": "{count}%",
   "settingsAnimations": "Hiệu ứng chuyển động",
-  "settingsAnimationsHint": "Tắt: trang và bảng chuyển không có chuyển động.",
+  "settingsAnimationsHint": "Tắt: trang, bảng, tab và thanh bên đổi ngay, không chuyển động.",
   "settingsColorFromCover": "Màu theo ảnh bìa",
   "settingsColorFromCoverHint": "Phủ màu của ảnh bìa đang phát lên giao diện.",
   "settingsFontScale": "Cỡ chữ",

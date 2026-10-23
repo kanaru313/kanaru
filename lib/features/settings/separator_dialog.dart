@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/motion_tab_controller.dart';
 import 'separator_entry_tab.dart';
 import 'settings_confirm_dialog.dart';
 
@@ -36,9 +37,23 @@ class SeparatorDialog extends ConsumerStatefulWidget {
 }
 
 class _SeparatorDialogState extends ConsumerState<SeparatorDialog>
-    with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(length: 2, vsync: this)
-    ..addListener(() => setState(() {}));
+    with TickerProviderStateMixin {
+  TabController? _built;
+  TabController get _tabs => _built!;
+
+  void _onTab() => setState(() {});
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _built = motionTabController(
+      context,
+      current: _built,
+      length: 2,
+      vsync: this,
+      onChanged: _onTab,
+    );
+  }
 
   @override
   void dispose() {

@@ -27,6 +27,9 @@ class _NowPlayingOpenCoverState extends ConsumerState<NowPlayingOpenCover> {
   @override
   Widget build(BuildContext context) {
     final label = context.l10n.nowPlayingOpen;
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _duration;
     return Semantics(
       button: true,
       label: label,
@@ -45,7 +48,7 @@ class _NowPlayingOpenCoverState extends ConsumerState<NowPlayingOpenCover> {
                 children: [
                   AnimatedScale(
                     scale: _hovered ? 1.2 : 1,
-                    duration: _duration,
+                    duration: duration,
                     child: widget.child,
                   ),
                   // Brightness .6 on hover.
@@ -53,7 +56,7 @@ class _NowPlayingOpenCoverState extends ConsumerState<NowPlayingOpenCover> {
                     child: IgnorePointer(
                       child: AnimatedOpacity(
                         opacity: _hovered ? 0.4 : 0,
-                        duration: _duration,
+                        duration: duration,
                         child: const ColoredBox(color: Colors.black),
                       ),
                     ),
@@ -61,10 +64,10 @@ class _NowPlayingOpenCoverState extends ConsumerState<NowPlayingOpenCover> {
                   IgnorePointer(
                     child: AnimatedOpacity(
                       opacity: _hovered ? 1 : 0,
-                      duration: _duration,
+                      duration: duration,
                       child: AnimatedScale(
                         scale: _hovered ? 1 : 0.6,
-                        duration: _duration,
+                        duration: duration,
                         child: const Icon(
                           AppIcons.openFull,
                           size: 30,

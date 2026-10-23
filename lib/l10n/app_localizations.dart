@@ -1673,7 +1673,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAnimationsHint.
   ///
   /// In en, this message translates to:
-  /// **'Off: pages and panels switch without motion.'**
+  /// **'Off: pages, panels, tabs and the sidebar change at once, without motion.'**
   String get settingsAnimationsHint;
 
   /// No description provided for @settingsColorFromCover.

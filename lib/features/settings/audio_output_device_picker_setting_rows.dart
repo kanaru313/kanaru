@@ -145,6 +145,10 @@ class _AudioOutputDeviceDialogState
                   ListTile(title: Text(l10n.audioDeviceNoneFound)),
                 if (others.isNotEmpty)
                   ExpansionTile(
+                    expansionAnimationStyle:
+                        MediaQuery.disableAnimationsOf(context)
+                        ? AnimationStyle.noAnimation
+                        : null,
                     title: Text(l10n.audioDeviceOtherOutputs),
                     initiallyExpanded: others.any((d) => d.name == saved),
                     children: [

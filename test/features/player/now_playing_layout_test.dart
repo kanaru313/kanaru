@@ -317,6 +317,19 @@ void main() {
       expect(tester.widget<PageView>(pages).controller!.page, 1);
     });
 
+    testWidgets('with reduced motion a dot switches the page in one frame', (
+      tester,
+    ) async {
+      await pumpOpen(tester, const Size(600, 700));
+      final pages = inScreen(find.byType(PageView));
+
+      await tester.tap(inScreen(find.byTooltip('Now playing')));
+      await tester.pump();
+
+      expect(tester.widget<PageView>(pages).controller!.page, 0);
+      expect(tester.hasRunningAnimations, isFalse);
+    });
+
     testWidgets('closes from the page', (tester) async {
       await pumpOpen(tester, const Size(600, 700));
 

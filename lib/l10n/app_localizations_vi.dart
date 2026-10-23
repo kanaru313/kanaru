@@ -1058,7 +1058,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsAnimationsHint =>
-      'Tắt: trang và bảng chuyển không có chuyển động.';
+      'Tắt: trang, bảng, tab và thanh bên đổi ngay, không chuyển động.';
 
   @override
   String get settingsColorFromCover => 'Màu theo ảnh bìa';

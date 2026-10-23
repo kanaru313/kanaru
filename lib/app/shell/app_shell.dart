@@ -192,7 +192,9 @@ class _CollapsibleSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 400),
       curve: Curves.easeInOutCubic,
       width: (expanded ? sidebarWidth : sidebarCompactWidth) + 1,
       child: Row(

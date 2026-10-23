@@ -234,6 +234,32 @@ void main() {
     expect(find.text('half'), findsOneWidget);
   });
 
+  testWidgets('with reduced motion tabs and pages change in one frame', (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await _open(tester);
+    await _type(tester, '&');
+    await _tapAdd(tester);
+    expect(find.text('&').hitTestable(), findsOneWidget);
+
+    // Ink ripples are the framework's and still run; the page and the tab
+    // indicator must not.
+    await tester.tap(find.byTooltip('Page 1 of 2'));
+    await tester.pump();
+    final pages = tester.widget<PageView>(find.byType(PageView)).controller!;
+    expect(pages.page, 0);
+    expect(find.text(';').hitTestable(), findsOneWidget);
+
+    await tester.tap(find.textContaining('Keep whole'));
+    await tester.pump();
+    final tabs = tester.widget<TabBar>(find.byType(TabBar)).controller!;
+    expect(tabs.index, 1);
+    expect(tabs.animation!.value, 1);
+  });
+
   group('paging', () {
     testWidgets('eight entries fit one page without dots', (tester) async {
       await _open(tester);

@@ -43,7 +43,9 @@ class SeparatorPageDots extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 250),
                     curve: Curves.easeOutQuart,
                     width: i == selected ? 16 : 6,
                     height: 6,

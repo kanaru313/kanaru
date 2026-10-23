@@ -89,6 +89,14 @@ class _AutoHideState extends State<AutoHide> {
   }
 
   void _onVisible() {
+    // Without motion no fade-out ends to say so. The builder ignores this
+    // flag then, but it keeps the tickers muted if motion comes back while
+    // hidden.
+    if (!widget.controller.visible.value &&
+        MediaQuery.disableAnimationsOf(context)) {
+      _fadedOut = true;
+      return;
+    }
     if (_fadedOut && widget.controller.visible.value) {
       setState(() => _fadedOut = false);
     }
@@ -126,23 +134,33 @@ class _AutoHideState extends State<AutoHide> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: widget.controller.visible,
-      builder: (context, visible, child) => IgnorePointer(
-        ignoring: !visible,
-        child: AnimatedOpacity(
-          opacity: visible ? 1 : 0,
-          // Quick in, slower out, both eased.
-          duration: Duration(milliseconds: visible ? 150 : 100),
-          curve: Curves.easeInOut,
-          onEnd: () {
-            if (!widget.controller.visible.value) {
-              setState(() => _fadedOut = true);
-            }
-          },
-          // Muted tickers schedule no frames, and Riverpod consumers below
-          // stop rebuilding on position ticks nobody sees.
-          child: TickerMode(enabled: visible || !_fadedOut, child: child!),
-        ),
-      ),
+      builder: (context, visible, child) {
+        // Without motion the fade ends inside this build, where onEnd may
+        // not set state; nothing is left to fade out, so mute at once.
+        final still = MediaQuery.disableAnimationsOf(context);
+        return IgnorePointer(
+          ignoring: !visible,
+          child: AnimatedOpacity(
+            opacity: visible ? 1 : 0,
+            // Quick in, slower out, both eased.
+            duration: still
+                ? Duration.zero
+                : Duration(milliseconds: visible ? 150 : 100),
+            curve: Curves.easeInOut,
+            onEnd: () {
+              if (!still && !widget.controller.visible.value) {
+                setState(() => _fadedOut = true);
+              }
+            },
+            // Muted tickers schedule no frames, and Riverpod consumers below
+            // stop rebuilding on position ticks nobody sees.
+            child: TickerMode(
+              enabled: visible || (!still && !_fadedOut),
+              child: child!,
+            ),
+          ),
+        );
+      },
       child: MouseRegion(
         onEnter: (_) => _setPinned(true),
         onExit: (_) => _setPinned(false),

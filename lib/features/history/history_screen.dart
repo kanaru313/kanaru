@@ -5,6 +5,7 @@ import '../../core/database/history_rows.dart';
 import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/motion_tab_controller.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'history_calendar_dialog.dart';
@@ -28,9 +29,23 @@ class HistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _HistoryScreenState extends ConsumerState<HistoryScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 2, vsync: this)
-    ..addListener(() => setState(() {}));
+    with TickerProviderStateMixin {
+  TabController? _built;
+  TabController get _tabs => _built!;
+
+  void _onTab() => setState(() {});
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _built = motionTabController(
+      context,
+      current: _built,
+      length: 2,
+      vsync: this,
+      onChanged: _onTab,
+    );
+  }
 
   /// The year the user picked; null (or one with no plays left) shows the
   /// newest year.

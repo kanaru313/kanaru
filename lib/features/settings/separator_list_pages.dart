@@ -66,12 +66,21 @@ class _SeparatorListPagesState extends State<SeparatorListPages> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_controller.hasClients) return;
       if (_controller.page?.round() == target) return;
-      _controller.animateToPage(
-        target,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutQuart,
-      );
+      _goTo(target);
     });
+  }
+
+  void _goTo(int page) {
+    // animateToPage refuses a zero duration.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.jumpToPage(page);
+      return;
+    }
+    _controller.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutQuart,
+    );
   }
 
   @override
@@ -127,11 +136,7 @@ class _SeparatorListPagesState extends State<SeparatorListPages> {
               ? SeparatorPageDots(
                   count: pages,
                   selected: _page,
-                  onSelect: (page) => _controller.animateToPage(
-                    page,
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutQuart,
-                  ),
+                  onSelect: _goTo,
                 )
               : null,
         ),

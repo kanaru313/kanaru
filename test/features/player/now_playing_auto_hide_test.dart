@@ -109,6 +109,23 @@ void main() {
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
+  testWidgets('with reduced motion a hidden footer schedules no frames', (
+    tester,
+  ) async {
+    await pumpOpen(tester);
+    backend.emitDuration.add(const Duration(minutes: 3));
+    await mouse(tester);
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(footerOpacity(tester), 0);
+
+    backend.emitPosition.add(const Duration(seconds: 1));
+    await tester.pump(const Duration(milliseconds: 64));
+    backend.emitPosition.add(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 64));
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
   testWidgets('the footer catches up on the position once it shows', (
     tester,
   ) async {
