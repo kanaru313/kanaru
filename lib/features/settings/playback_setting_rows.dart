@@ -11,10 +11,10 @@ import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Playback options. The output device, ReplayGain, the endless queue and
-/// when a play counts as a listen are wired; lyrics have their own rows; the
-/// rest are not yet (shown from the saved values, off): gapless, crossfade
-/// and fades.
+/// Playback options. The output device, ReplayGain, the play/pause fades,
+/// the endless queue and when a play counts as a listen are wired; lyrics
+/// have their own rows; gapless and crossfade are not yet (shown from the
+/// saved values, off).
 class PlaybackSettingRows extends ConsumerWidget {
   const PlaybackSettingRows({super.key});
 
@@ -45,25 +45,33 @@ class PlaybackSettingRows extends ConsumerWidget {
           ),
           selected: p.crossfadeSeconds,
         ),
-        ComingSoonDropdownRow<int>(
+        SettingRow.single(
           title: l10n.settingsFadeOnPlay,
           subtitle: l10n.settingsFadeOnPlayHint,
-          options: presetOptions(
-            fadePresetsMs,
-            p.fadeOnPlayMs,
-            (ms) => formatMs(l10n, ms),
+          control: SettingDropdown<int>(
+            options: presetOptions(
+              fadePresetsMs,
+              p.fadeOnPlayMs,
+              (ms) => formatMs(l10n, ms),
+            ),
+            selected: p.fadeOnPlayMs,
+            onSelected: (ms) =>
+                settings.setPlayback(p.copyWith(fadeOnPlayMs: ms)),
           ),
-          selected: p.fadeOnPlayMs,
         ),
-        ComingSoonDropdownRow<int>(
+        SettingRow.single(
           title: l10n.settingsFadeOnPause,
           subtitle: l10n.settingsFadeOnPauseHint,
-          options: presetOptions(
-            fadePresetsMs,
-            p.fadeOnPauseMs,
-            (ms) => formatMs(l10n, ms),
+          control: SettingDropdown<int>(
+            options: presetOptions(
+              fadePresetsMs,
+              p.fadeOnPauseMs,
+              (ms) => formatMs(l10n, ms),
+            ),
+            selected: p.fadeOnPauseMs,
+            onSelected: (ms) =>
+                settings.setPlayback(p.copyWith(fadeOnPauseMs: ms)),
           ),
-          selected: p.fadeOnPauseMs,
         ),
         SettingRow.single(
           title: l10n.settingsInfiniteQueue,

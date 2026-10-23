@@ -47,7 +47,10 @@ void main() {
       find.descendant(of: row(title), matching: find.byType(TextField)),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(MenuItemButton, option).last);
+    // Every dropdown keeps its menu items; only the open one can be hit.
+    await tester.tap(
+      find.widgetWithText(MenuItemButton, option).hitTestable().first,
+    );
     await tester.pumpAndSettle();
   }
 
@@ -71,5 +74,15 @@ void main() {
     );
     await tester.pump();
     expect(prefs().infiniteQueue, isTrue);
+  });
+
+  testWidgets('the fade rows save the picked lengths', (tester) async {
+    await pump(tester);
+
+    await pick(tester, 'Fade in on play', '300 ms');
+    expect(prefs().fadeOnPlayMs, 300);
+
+    await pick(tester, 'Fade out on pause', '500 ms');
+    expect(prefs().fadeOnPauseMs, 500);
   });
 }

@@ -3,6 +3,12 @@ import 'dart:math';
 import 'repeat_mode.dart';
 import 'track.dart';
 
+// The transport commands (a part of `player_service.dart`) use the fader;
+// a part cannot import, and this is the library of that file this lane may
+// edit. Move to an import in `player_service.dart` when that file is free.
+export 'playback_fade.dart' show playbackFadeClockProvider;
+export 'playback_fade_controller.dart' show PlayPauseFader;
+
 /// Immutable play queue: the tracks as opened, the order they play in, the
 /// current position, shuffle and repeat. Every change returns a new queue.
 ///

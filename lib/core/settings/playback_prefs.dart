@@ -64,7 +64,9 @@ class PlaybackPrefs {
   /// Overlap of two tracks; 0 is off.
   final int crossfadeSeconds;
 
-  /// Fade in on play and fade out on pause; 0 is off.
+  /// Fade in on play and fade out on pause; 0 is off. Read by the player
+  /// when play/pause is toggled (`PlayPauseFader`); the absolute pause of
+  /// external controllers never fades.
   final int fadeOnPlayMs;
   final int fadeOnPauseMs;
 

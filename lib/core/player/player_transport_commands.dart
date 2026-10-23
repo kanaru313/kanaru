@@ -1,8 +1,8 @@
 part of 'player_service.dart';
 
-/// Opening, play, pause, stop, seek and track changes. [play] and [pause] are
-/// absolute, for external controllers that must not flip the state by
-/// accident.
+/// Opening, play, pause, stop, seek and track changes, with the play/pause
+/// fades. [play] and [pause] are absolute, for external controllers that
+/// must not flip the state by accident; [pause] never fades.
 mixin _PlayerTransportCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   bool get _ended;
@@ -18,6 +18,11 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   void _userActed();
   void _queueReplaced(PlayQueue previous);
 
+  /// Toggles play and pause, fading the engine's volume in or out when the
+  /// fade settings ask for it (PLAY-02). A pause with a fade shows paused at
+  /// once and pauses the engine when the fade ends; pressing again before
+  /// then turns the fade around. The returned future does not wait for a
+  /// fade.
   Future<void> playPause() async {
     if (state.queue.isEmpty) return;
     _userActed();
@@ -28,18 +33,29 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
       playing: play,
       stopped: play ? false : state.stopped,
     );
-    await (play ? _backend.play() : _backend.pause());
+    final prefs = ref.read(settingsProvider).playback;
+    await (play
+        ? _fades.play(prefs.fadeOnPlayMs)
+        : _fades.pause(prefs.fadeOnPauseMs));
   }
 
   Future<void> play() async {
     if (!state.playing) await playPause();
   }
 
-  /// Also records the wish when the engine already reported a pause on its
-  /// own, so a track that then fails moves on paused.
+  /// Pauses at once, without a fade, and ends a fade-out under way: an
+  /// external controller (or the app's exit) wants silence now. Also
+  /// records the wish when the engine already reported a pause on its own,
+  /// so a track that then fails moves on paused.
   Future<void> pause() async {
-    if (state.playing) return playPause();
+    if (state.playing) {
+      _userActed();
+      _wantsPlaying = false;
+      state = state.copyWith(playing: false);
+      return _fades.pause(0);
+    }
     _wantsPlaying = false;
+    if (_fadesNow?.pausePending ?? false) _settleFade();
   }
 
   /// Pauses and rewinds to the start but keeps the queue; [play] then plays
@@ -48,6 +64,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   Future<void> stop() async {
     if (state.queue.isEmpty) return;
     _userActed();
+    _settleFade();
     _wantsPlaying = false;
     state = state.copyWith(
       playing: false,
@@ -65,6 +82,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     if (state.queue.isEmpty) return;
     if (_ended && state.duration <= Duration.zero) return;
     _userActed();
+    _settleFade();
     var target = position < Duration.zero ? Duration.zero : position;
     // Seeking back into a finished track resumes it rather than the queue.
     if (state.duration > Duration.zero) {
@@ -125,6 +143,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   /// Plays the track at [index] in play order, as picked by the user.
   Future<void> jump(int index) {
     _userActed();
+    _settleFade();
     _failuresInRow = 0;
     return _play(index);
   }
@@ -145,4 +164,34 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   }
 
   bool get _endlessQueue => ref.read(settingsProvider).playback.infiniteQueue;
+
+  // Fades (PLAY-02). Mixin fields outlive a provider rebuild, so the fader is
+  // tied to the build that made it through `_seeked`, which every build
+  // makes anew; that build's disposal stops it without touching the engine.
+  PlayPauseFader? _fader;
+  StreamController<Duration>? _faderBuild;
+
+  /// The fader of this build, made on first use.
+  PlayPauseFader get _fades {
+    final existing = _fadesNow;
+    if (existing != null) return existing;
+    _fader?.dispose();
+    final fader = PlayPauseFader(
+      clock: ref.read(playbackFadeClockProvider),
+      backend: _backend,
+      state: () => state,
+    );
+    _fader = fader;
+    _faderBuild = _seeked;
+    ref.onDispose(fader.dispose);
+    return fader;
+  }
+
+  /// The fader of this build if it was made; never makes one.
+  PlayPauseFader? get _fadesNow =>
+      identical(_faderBuild, _seeked) ? _fader : null;
+
+  /// Ends a fade at once (see [PlayPauseFader.settle]) before a seek, a stop
+  /// or a track change.
+  void _settleFade() => _fadesNow?.settle();
 }
