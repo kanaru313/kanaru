@@ -1915,6 +1915,119 @@ class AppLocalizationsEn extends AppLocalizations {
   String get genresUnknown => 'Unknown genre';
 
   @override
+  String get separatorsArtistsTitle => 'Split artists';
+
+  @override
+  String get separatorsGenresTitle => 'Split genres';
+
+  @override
+  String get separatorsArtistsHint =>
+      'Applies at once, the library updates in the background.';
+
+  @override
+  String get separatorsGenresHint => 'Applies at once, no rescan needed.';
+
+  @override
+  String separatorsSummary(int separators, int keepWhole) {
+    String _temp0 = intl.Intl.pluralLogic(
+      separators,
+      locale: localeName,
+      other: '$separators separators',
+      one: '1 separator',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      keepWhole,
+      locale: localeName,
+      other: '$keepWhole kept whole',
+      one: '1 kept whole',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get separatorsEditButton => 'Edit';
+
+  @override
+  String separatorsTabSeparators(int count) {
+    return 'Separators ($count)';
+  }
+
+  @override
+  String separatorsTabKeepWhole(int count) {
+    return 'Keep whole ($count)';
+  }
+
+  @override
+  String get separatorsAddSeparatorLabel => 'New separator';
+
+  @override
+  String get separatorsAddKeepLabel => 'Name to keep whole';
+
+  @override
+  String get separatorsSeparatorHelp =>
+      'No need to add spaces. Words like feat. split only with a space on each side.';
+
+  @override
+  String get separatorsKeepHelpArtist =>
+      'No need to add spaces. AC/DC, for example, stays one artist.';
+
+  @override
+  String get separatorsKeepHelpGenre =>
+      'No need to add spaces. Funk/Soul, for example, stays one genre.';
+
+  @override
+  String get separatorsAdd => 'Add';
+
+  @override
+  String get separatorsErrorEmpty => 'Type something to add';
+
+  @override
+  String get separatorsErrorDuplicate => 'Already in the list';
+
+  @override
+  String separatorsErrorTooLong(int max) {
+    return 'At most $max characters';
+  }
+
+  @override
+  String separatorsErrorFull(int max) {
+    return 'The list holds at most $max entries';
+  }
+
+  @override
+  String separatorsRemove(String entry) {
+    return 'Remove $entry';
+  }
+
+  @override
+  String get separatorsEmptyList => 'Nothing here yet';
+
+  @override
+  String get separatorsEmptySeparators =>
+      'Nothing here yet, so nothing is split';
+
+  @override
+  String separatorsPage(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get separatorsReset => 'Restore defaults';
+
+  @override
+  String get separatorsResetConfirmTitle => 'Restore defaults?';
+
+  @override
+  String get separatorsResetConfirmBody =>
+      'Both lists go back to their defaults.';
+
+  @override
+  String get separatorsResetConfirm => 'Restore';
+
+  @override
+  String get separatorsClose => 'Close';
+
+  @override
   String get scanStatsTracksTitle => 'Songs found';
 
   @override

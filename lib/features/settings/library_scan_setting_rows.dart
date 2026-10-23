@@ -9,12 +9,14 @@ import 'cover_cache_setting_rows.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_chips_row.dart';
+import 'separator_setting_rows.dart';
 import 'settings_number_presets.dart';
 
 /// Scan options: what a scan skips (folders with `.nomedia`, small files,
 /// short tracks), which work from the next scan on, and those not wired yet
 /// (shown from the saved values, off): duplicates, playlists and album
-/// grouping. The cover cache rows come last. Skip options are off without a
+/// grouping. The artist and genre separator rows follow the album grouping;
+/// the cover cache rows come last. Skip options are off without a
 /// library database, like "rescan on open".
 class LibraryScanSettingRows extends ConsumerWidget {
   const LibraryScanSettingRows({super.key});
@@ -74,6 +76,7 @@ class LibraryScanSettingRows extends ConsumerWidget {
             ),
           ],
         ),
+        const SeparatorSettingRows(),
         SettingRow.single(
           title: l10n.settingsMinFileSize,
           subtitle: l10n.settingsMinFileSizeHint,

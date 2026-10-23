@@ -2834,6 +2834,168 @@ abstract class AppLocalizations {
   /// **'Unknown genre'**
   String get genresUnknown;
 
+  /// Title of the settings row and dialog that edit how artist tags are split
+  ///
+  /// In en, this message translates to:
+  /// **'Split artists'**
+  String get separatorsArtistsTitle;
+
+  /// Title of the settings row and dialog that edit how genre tags are split
+  ///
+  /// In en, this message translates to:
+  /// **'Split genres'**
+  String get separatorsGenresTitle;
+
+  /// Subtitle of the artist split row, first line
+  ///
+  /// In en, this message translates to:
+  /// **'Applies at once, the library updates in the background.'**
+  String get separatorsArtistsHint;
+
+  /// Subtitle of the genre split row, first line
+  ///
+  /// In en, this message translates to:
+  /// **'Applies at once, no rescan needed.'**
+  String get separatorsGenresHint;
+
+  /// Second line of a split row: how many separators and keep-whole names are set
+  ///
+  /// In en, this message translates to:
+  /// **'{separators, plural, =1{1 separator} other{{separators} separators}} · {keepWhole, plural, =1{1 kept whole} other{{keepWhole} kept whole}}'**
+  String separatorsSummary(int separators, int keepWhole);
+
+  /// Button of a split row that opens its dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get separatorsEditButton;
+
+  /// Dialog tab listing the separators, with how many there are
+  ///
+  /// In en, this message translates to:
+  /// **'Separators ({count})'**
+  String separatorsTabSeparators(int count);
+
+  /// Dialog tab listing names that are never split, with how many there are
+  ///
+  /// In en, this message translates to:
+  /// **'Keep whole ({count})'**
+  String separatorsTabKeepWhole(int count);
+
+  /// Label of the field that adds a separator
+  ///
+  /// In en, this message translates to:
+  /// **'New separator'**
+  String get separatorsAddSeparatorLabel;
+
+  /// Label of the field that adds a name that is never split
+  ///
+  /// In en, this message translates to:
+  /// **'Name to keep whole'**
+  String get separatorsAddKeepLabel;
+
+  /// Help under the separator field
+  ///
+  /// In en, this message translates to:
+  /// **'No need to add spaces. Words like feat. split only with a space on each side.'**
+  String get separatorsSeparatorHelp;
+
+  /// Help under the keep-whole field of the artist dialog
+  ///
+  /// In en, this message translates to:
+  /// **'No need to add spaces. AC/DC, for example, stays one artist.'**
+  String get separatorsKeepHelpArtist;
+
+  /// Help under the keep-whole field of the genre dialog
+  ///
+  /// In en, this message translates to:
+  /// **'No need to add spaces. Funk/Soul, for example, stays one genre.'**
+  String get separatorsKeepHelpGenre;
+
+  /// Button that adds the typed entry
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get separatorsAdd;
+
+  /// Error under the field when nothing was typed
+  ///
+  /// In en, this message translates to:
+  /// **'Type something to add'**
+  String get separatorsErrorEmpty;
+
+  /// Error under the field when the entry is in the list already, in any case
+  ///
+  /// In en, this message translates to:
+  /// **'Already in the list'**
+  String get separatorsErrorDuplicate;
+
+  /// Error under the field when the entry is too long
+  ///
+  /// In en, this message translates to:
+  /// **'At most {max} characters'**
+  String separatorsErrorTooLong(int max);
+
+  /// Error under the field when the list is full
+  ///
+  /// In en, this message translates to:
+  /// **'The list holds at most {max} entries'**
+  String separatorsErrorFull(int max);
+
+  /// Tooltip of the button that removes an entry
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {entry}'**
+  String separatorsRemove(String entry);
+
+  /// Shown in place of an empty list
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get separatorsEmptyList;
+
+  /// Shown in place of an empty separator list
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet, so nothing is split'**
+  String get separatorsEmptySeparators;
+
+  /// Tooltip of a page dot below a long list
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String separatorsPage(int page, int total);
+
+  /// Button that puts both lists of the dialog back to their defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Restore defaults'**
+  String get separatorsReset;
+
+  /// Title of the confirmation before restoring the defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Restore defaults?'**
+  String get separatorsResetConfirmTitle;
+
+  /// Body of the confirmation before restoring the defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Both lists go back to their defaults.'**
+  String get separatorsResetConfirmBody;
+
+  /// Button that confirms restoring the defaults
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get separatorsResetConfirm;
+
+  /// Button that closes the dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get separatorsClose;
+
   /// Title of the scan statistics row with the songs found and the music files seen
   ///
   /// In en, this message translates to:

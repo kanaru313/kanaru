@@ -1791,6 +1791,105 @@ class AppLocalizationsVi extends AppLocalizations {
   String get genresUnknown => 'Không rõ thể loại';
 
   @override
+  String get separatorsArtistsTitle => 'Tách nghệ sĩ';
+
+  @override
+  String get separatorsGenresTitle => 'Tách thể loại';
+
+  @override
+  String get separatorsArtistsHint => 'Áp dụng ngay, cập nhật thư viện ở nền.';
+
+  @override
+  String get separatorsGenresHint => 'Áp dụng ngay, không cần quét lại.';
+
+  @override
+  String separatorsSummary(int separators, int keepWhole) {
+    return '$separators dấu · $keepWhole không tách';
+  }
+
+  @override
+  String get separatorsEditButton => 'Chỉnh sửa';
+
+  @override
+  String separatorsTabSeparators(int count) {
+    return 'Dấu phân cách ($count)';
+  }
+
+  @override
+  String separatorsTabKeepWhole(int count) {
+    return 'Không tách ($count)';
+  }
+
+  @override
+  String get separatorsAddSeparatorLabel => 'Dấu phân cách mới';
+
+  @override
+  String get separatorsAddKeepLabel => 'Tên giữ nguyên';
+
+  @override
+  String get separatorsSeparatorHelp =>
+      'Không cần thêm khoảng trắng. Chữ như feat. chỉ tách khi có khoảng trắng hai bên.';
+
+  @override
+  String get separatorsKeepHelpArtist =>
+      'Không cần thêm khoảng trắng. Ví dụ AC/DC vẫn là một nghệ sĩ.';
+
+  @override
+  String get separatorsKeepHelpGenre =>
+      'Không cần thêm khoảng trắng. Ví dụ Funk/Soul vẫn là một thể loại.';
+
+  @override
+  String get separatorsAdd => 'Thêm';
+
+  @override
+  String get separatorsErrorEmpty => 'Nhập nội dung cần thêm';
+
+  @override
+  String get separatorsErrorDuplicate => 'Đã có trong danh sách';
+
+  @override
+  String separatorsErrorTooLong(int max) {
+    return 'Tối đa $max ký tự';
+  }
+
+  @override
+  String separatorsErrorFull(int max) {
+    return 'Danh sách chứa tối đa $max mục';
+  }
+
+  @override
+  String separatorsRemove(String entry) {
+    return 'Xoá $entry';
+  }
+
+  @override
+  String get separatorsEmptyList => 'Chưa có mục nào';
+
+  @override
+  String get separatorsEmptySeparators =>
+      'Chưa có mục nào, nên không tách gì cả';
+
+  @override
+  String separatorsPage(int page, int total) {
+    return 'Trang $page / $total';
+  }
+
+  @override
+  String get separatorsReset => 'Khôi phục mặc định';
+
+  @override
+  String get separatorsResetConfirmTitle => 'Khôi phục mặc định?';
+
+  @override
+  String get separatorsResetConfirmBody => 'Cả hai danh sách trở về mặc định.';
+
+  @override
+  String get separatorsResetConfirm => 'Khôi phục';
+
+  @override
+  String get separatorsClose => 'Đóng';
+
+  @override
   String get scanStatsTracksTitle => 'Bài lấy được';
 
   @override
