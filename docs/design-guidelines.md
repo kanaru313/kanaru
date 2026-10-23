@@ -185,7 +185,9 @@ The Home placeholder screen uses `EmptyState` with a one-sentence message. Favor
 | Auto-hide fade | 100 to 150 ms | Not gated |
 | Seek bar wave | continuous while playing | Flat (`seek_bar.dart`) |
 
-Reduced motion comes from the platform setting. Every new animation must check it. Settings → Appearance has an Animations row, shown as coming soon: the `animations` flag is stored, but nothing forces reduced motion yet (wire it by overriding `MediaQuery.disableAnimations` in `MaterialApp.builder`). The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+Reduced motion comes from the platform setting, or from Settings → Appearance → Animations turned off: the app's builder (`lib/app/app.dart`) then sets `MediaQuery.disableAnimations` for every page, dialog and menu, and the theme change (`themeAnimationDuration`) is instant too. Turned on, the platform setting decides. Every new animation must check `MediaQuery.disableAnimationsOf`, never the setting itself. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+
+**Text size.** Settings → Appearance → Text size (80 % to 150 %) multiplies the system's text scale in the same builder (`appTextScaler`). Enlarging stops at 2× (or at the system's scale when that is larger, so a large accessibility size is never undone). Layouts size rows and grid tiles from `MediaQuery.textScalerOf`, never from fixed heights.
 
 ## Focus, keyboard and accessibility
 

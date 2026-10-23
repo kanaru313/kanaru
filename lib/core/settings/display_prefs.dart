@@ -18,9 +18,10 @@ const minFontScale = 0.8;
 const maxFontScale = 1.5;
 
 /// How the app looks beyond the theme. The defaults are what the app shows
-/// today. Only [colorFromCover] is read (the cover palette and the scan);
-/// [fontScale], [sidebarTabs] and [trackNumbersInAlbum] are stored for
-/// display options that do not exist yet: nothing reads them.
+/// today. Read: [colorFromCover] (the cover palette and the scan) and
+/// [fontScale] (the app's builder, `lib/app/app.dart`); [sidebarTabs] and
+/// [trackNumbersInAlbum] are stored for display options that do not exist
+/// yet: nothing reads them.
 class DisplayPrefs {
   const DisplayPrefs({
     this.colorFromCover = false,
@@ -32,7 +33,9 @@ class DisplayPrefs {
   /// Tint the app with colors taken from the cover being played.
   final bool colorFromCover;
 
-  /// Multiplies every text size; 1.0 leaves them alone.
+  /// Multiplies every text size, on top of the system's text scale; 1.0
+  /// leaves them alone. Enlarging stops at twice the normal size (or the
+  /// system's scale when larger), see `appTextScaler`.
   final double fontScale;
 
   /// The sidebar destinations that show. Never empty. The file stores the

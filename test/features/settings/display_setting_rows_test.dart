@@ -59,11 +59,32 @@ void main() {
     expect(container.read(settingsProvider).display.colorFromCover, isFalse);
   });
 
-  testWidgets('the other display options are still coming soon', (
-    tester,
-  ) async {
+  testWidgets('the animations switch is live', (tester) async {
     await pump(tester);
-    expect(tester.widget<SettingRow>(row('Animations')).comingSoon, isTrue);
-    expect(tester.widget<SettingRow>(row('Text size')).comingSoon, isTrue);
+    expect(tester.widget<SettingRow>(row('Animations')).comingSoon, isFalse);
+    final toggle = find.descendant(
+      of: row('Animations'),
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(container.read(settingsProvider).animations, isFalse);
+    expect(tester.widget<Switch>(toggle).value, isFalse);
+  });
+
+  testWidgets('the text size dropdown saves the picked size', (tester) async {
+    await pump(tester);
+    expect(tester.widget<SettingRow>(row('Text size')).comingSoon, isFalse);
+
+    await tester.tap(
+      find.descendant(of: row('Text size'), matching: find.byType(TextField)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(MenuItemButton, '125%').last);
+    await tester.pumpAndSettle();
+
+    expect(container.read(settingsProvider).display.fontScale, 1.25);
   });
 }

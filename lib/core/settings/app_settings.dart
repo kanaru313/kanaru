@@ -73,15 +73,16 @@ class AppSettings {
   final bool recordListenHistory;
 
   /// `false` forces reduced motion everywhere; `true` follows the system's
-  /// reduced-motion setting. Stored for the option that is not wired yet:
-  /// nothing reads it.
+  /// reduced-motion setting. Read by the app's builder (`lib/app/app.dart`),
+  /// which sets `MediaQuery.disableAnimations` for every page.
   final bool animations;
 
   /// Library scan, playback and display options, grouped so that this class
   /// stays small. Their defaults are today's behavior. Read today: the scan
   /// filters (`.nomedia`, size, duration) and folder watching, ReplayGain
-  /// and the output device, and the color taken from the cover. The others
-  /// are stored for features that are not built yet: nothing reads them.
+  /// and the output device, the color taken from the cover and the font
+  /// size. The others are stored for features that are not built yet:
+  /// nothing reads them.
   final LibraryScanPrefs libraryScan;
   final PlaybackPrefs playback;
   final DisplayPrefs display;
