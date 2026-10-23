@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Thickness of both track segments.
@@ -21,7 +22,8 @@ const _gap = 4.0;
 /// Seek track: the played part on the left, a gap, an upright pill thumb at
 /// [progress], a gap, then the part still to play. The played part is a
 /// sine wave scaled by [amplitude] (0 is a straight line) that travels
-/// along the track as [phase] runs from 0 to 1.
+/// along the track as [phase] runs from 0 to 1. It repaints whenever either
+/// changes.
 class WavyTrackPainter extends CustomPainter {
   WavyTrackPainter({
     required this.progress,
@@ -33,7 +35,7 @@ class WavyTrackPainter extends CustomPainter {
 
   final double progress;
   final Animation<double> amplitude;
-  final Animation<double> phase;
+  final ValueListenable<double> phase;
   final Color playedColor;
   final Color restColor;
 

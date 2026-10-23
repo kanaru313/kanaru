@@ -15,7 +15,9 @@ const lyricsAnchor = 0.4;
 /// How long auto-scroll waits after the user last scrolled by hand.
 const lyricsManualScrollPause = Duration(seconds: 3);
 
-const _scrollDuration = Duration(milliseconds: 300);
+/// How long the glide to a new current line takes. It matches the line's own
+/// style change, so the view stops drawing frames when both are done.
+const _scrollDuration = Duration(milliseconds: 200);
 
 /// Synced lyrics that follow playback, centered: the current line is
 /// highlighted and kept at [lyricsAnchor]; scrolling by hand pauses that

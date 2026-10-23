@@ -5,13 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/repeat_mode.dart' as kanaru show RepeatMode;
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
+import 'package:kanaru/features/player/seek_follow_step.dart';
 import 'package:kanaru/features/player/seek_gesture_area.dart';
 import 'package:kanaru/features/player/seek_strip.dart';
 import 'package:kanaru/features/player/volume_button.dart';
 import 'package:kanaru/features/player/wavy_track_painter.dart';
+import 'package:kanaru/shared/format_duration.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -399,6 +404,183 @@ void main() {
       expect(painter(tester).phase.value, isNot(phase));
     });
 
+    /// Runs the clock for [span] in frame-sized steps; returns how often
+    /// the wave's phase moved and how often the wave under [target] painted.
+    Future<({int moves, int paints})> runWave(
+      WidgetTester tester,
+      Finder target, {
+      Duration span = const Duration(seconds: 1),
+    }) async {
+      final wave = tester.renderObject(
+        find.descendant(
+          of: target,
+          matching: find.byType(CustomPaint),
+          skipOffstage: false,
+        ),
+      );
+      final shown =
+          tester
+                  .widget<CustomPaint>(
+                    find.descendant(
+                      of: target,
+                      matching: find.byType(CustomPaint),
+                      skipOffstage: false,
+                    ),
+                  )
+                  .painter!
+              as WavyTrackPainter;
+      var moves = 0;
+      void onMove() => moves++;
+      shown.phase.addListener(onMove);
+      var paints = 0;
+      debugOnProfilePaint = (object) {
+        if (object == wave) paints++;
+      };
+      try {
+        for (
+          var t = Duration.zero;
+          t < span;
+          t += const Duration(milliseconds: 16)
+        ) {
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+      } finally {
+        debugOnProfilePaint = null;
+        shown.phase.removeListener(onMove);
+      }
+      return (moves: moves, paints: paints);
+    }
+
+    testWidgets('travels at about 15 frames a second', (tester) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(painter(tester).amplitude.value, 1);
+
+      final run = await runWave(tester, find.byType(SeekBar));
+
+      expect(run.moves, inInclusiveRange(12, 16));
+      expect(run.paints, lessThanOrEqualTo(16));
+    });
+
+    testWidgets('keeps its speed: one wave takes 1.5 seconds', (tester) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      final start = painter(tester).phase.value;
+      await tester.pump(const Duration(milliseconds: 750));
+      final half = (painter(tester).phase.value - start) % 1;
+      expect(half, moreOrLessEquals(0.5, epsilon: 0.05));
+    });
+
+    testWidgets('stops drawing under Now Playing and travels in its footer', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      final covered = find.descendant(
+        of: find.byType(PlayerBar),
+        matching: find.byType(SeekBar),
+      );
+      expect(covered, findsOneWidget);
+
+      container.read(nowPlayingOpenProvider.notifier).open();
+      // Past the slide-in; the shell is muted and no longer painted.
+      await tester.pump(const Duration(seconds: 1));
+
+      final under = await runWave(
+        tester,
+        find.descendant(
+          of: find.byType(PlayerBar, skipOffstage: false),
+          matching: find.byType(SeekBar, skipOffstage: false),
+        ),
+      );
+      expect(under.moves, 0);
+      expect(under.paints, 0);
+
+      final footer = find.descendant(
+        of: find.byType(NowPlayingScreen),
+        matching: find.byType(SeekBar),
+      );
+      final shown = await runWave(tester, footer);
+      expect(shown.moves, inInclusiveRange(12, 16));
+
+      // Closing brings the shell's wave back.
+      container.read(nowPlayingOpenProvider.notifier).close();
+      await tester.pump(const Duration(seconds: 1));
+      final back = await runWave(tester, covered);
+      expect(back.moves, inInclusiveRange(12, 16));
+    });
+
+    testWidgets('a wave uncovered while it settles travels on until flat', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      final shell = find.descendant(
+        of: find.byType(PlayerBar, skipOffstage: false),
+        matching: find.byType(SeekBar, skipOffstage: false),
+      );
+
+      container.read(nowPlayingOpenProvider.notifier).open();
+      await tester.pump(const Duration(seconds: 1));
+      await player().pause();
+      container.read(nowPlayingOpenProvider.notifier).close();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final settling = await runWave(
+        tester,
+        shell,
+        span: const Duration(milliseconds: 256),
+      );
+      expect(settling.moves, greaterThan(0));
+      await tester.pump(const Duration(seconds: 1));
+      final flat = await runWave(tester, shell);
+      expect(flat.moves, 0);
+    });
+
+    testWidgets('no timer runs while it lies flat', (tester) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+      expect(painter(tester).amplitude.value, 0);
+
+      final run = await runWave(tester, find.byType(SeekBar));
+      expect(run.moves, 0);
+      expect(run.paints, 0);
+    });
+
+    testWidgets('leaves no timer behind when it goes away mid-wave', (
+      tester,
+    ) async {
+      await pumpApp(tester, animations: true);
+      await player().openTracks(songs);
+      backend.emitDuration.add(const Duration(minutes: 3));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
     testWidgets('lies flat with animations turned off', (tester) async {
       await pumpApp(tester);
       await openSongs(tester);
@@ -499,6 +681,286 @@ void main() {
       expect(counts[text(tester, 'First Song')], isNull);
       // The scaffold around the bar is not painted again.
       expect(counts[tester.renderObject(find.byType(PlayerBar))], isNull);
+    });
+
+    /// The progress the seek bar's wave or the strip's fill shows.
+    double shownProgress(WidgetTester tester) {
+      final wave = find.descendant(
+        of: find.byType(SeekBar),
+        matching: find.byType(CustomPaint),
+      );
+      if (wave.evaluate().isNotEmpty) {
+        return (tester.widget<CustomPaint>(wave).painter! as WavyTrackPainter)
+            .progress;
+      }
+      return tester
+          .widget<FractionallySizedBox>(
+            find.descendant(
+              of: find.byType(SeekStrip),
+              matching: find.byType(FractionallySizedBox),
+            ),
+          )
+          .widthFactor!;
+    }
+
+    /// The widgets that rebuilt while [body] ran. Riverpod's own scope is
+    /// left out: in debug mode it rebuilds on every provider change to
+    /// check that nothing modifies a provider while building, so a frame
+    /// is scheduled after any tick, however little the tick changes.
+    Future<List<Type>> rebuiltDuring(Future<void> Function() body) async {
+      final types = <Type>[];
+      debugOnRebuildDirtyWidget = (element, _) {
+        final type = element.widget.runtimeType;
+        if (!'$type'.contains('UncontrolledProviderScope')) types.add(type);
+      };
+      try {
+        await body();
+      } finally {
+        debugOnRebuildDirtyWidget = null;
+      }
+      return types;
+    }
+
+    /// Opens the songs with a duration that stands for [millisPerPixel] per
+    /// logical pixel of the seek track, so the follow step does not depend
+    /// on the layout.
+    Future<({Duration duration, Duration step, double width})> openTrack(
+      WidgetTester tester,
+      double millisPerPixel,
+    ) async {
+      await openSongs(tester);
+      final width = tester.getSize(find.byType(SeekGestureArea)).width;
+      final duration = Duration(milliseconds: (width * millisPerPixel).round());
+      backend.emitDuration.add(duration);
+      await tester.pump();
+      return (
+        duration: duration,
+        step: seekFollowStep(duration, width),
+        width: width,
+      );
+    }
+
+    void emit(Duration position) => backend.emitPosition.add(position);
+
+    /// Ticks inside the step the thumb stands on draw nothing; the tick on
+    /// the step's end draws one frame and moves the thumb.
+    Future<void> expectFollowsInSteps(
+      WidgetTester tester,
+      ({Duration duration, Duration step, double width}) track,
+      Duration expectedStep,
+    ) async {
+      expect(track.step, expectedStep);
+      const start = Duration(seconds: 10);
+      emit(start);
+      await tester.pump();
+      expect(
+        shownProgress(tester),
+        start.inMicroseconds / track.duration.inMicroseconds,
+      );
+
+      for (final offset in [
+        const Duration(milliseconds: 1),
+        track.step ~/ 2,
+        track.step - const Duration(milliseconds: 1),
+      ]) {
+        late final Map<RenderObject, int> painted;
+        final rebuilt = await rebuiltDuring(() async {
+          painted = await paints(tester, () async {
+            emit(start + offset);
+            await tester.pump();
+          });
+        });
+        expect(rebuilt, isEmpty, reason: '$offset');
+        expect(painted, isEmpty, reason: '$offset');
+        expect(
+          shownProgress(tester),
+          start.inMicroseconds / track.duration.inMicroseconds,
+          reason: '$offset',
+        );
+      }
+
+      late final Map<RenderObject, int> painted;
+      final rebuilt = await rebuiltDuring(() async {
+        painted = await paints(tester, () async {
+          emit(start + track.step);
+          await tester.pump();
+        });
+      });
+      expect(rebuilt, isNotEmpty);
+      expect(painted, isNotEmpty);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      expect(
+        shownProgress(tester),
+        (start + track.step).inMicroseconds / track.duration.inMicroseconds,
+      );
+    }
+
+    for (final (name, millisPerPixel, step) in [
+      ('250 ms', 200.0, const Duration(milliseconds: 250)),
+      ('500 ms', 400.0, const Duration(milliseconds: 500)),
+      ('one second', 800.0, const Duration(seconds: 1)),
+      ('one second on a long track', 3000.0, const Duration(seconds: 1)),
+    ]) {
+      testWidgets('the seek bar follows playback in steps of $name', (
+        tester,
+      ) async {
+        await pumpApp(tester);
+        final track = await openTrack(tester, millisPerPixel);
+        await expectFollowsInSteps(tester, track, step);
+      });
+    }
+
+    testWidgets('the seek strip follows playback in steps too', (tester) async {
+      await pumpApp(tester, size: const Size(480, 640));
+      final track = await openTrack(tester, 400);
+      await expectFollowsInSteps(
+        tester,
+        track,
+        const Duration(milliseconds: 500),
+      );
+    });
+
+    testWidgets('the label and the spoken time change with the thumb', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpApp(tester);
+      final track = await openTrack(tester, 400);
+      final total = formatDuration(track.duration);
+      String? spoken() =>
+          tester.getSemantics(find.bySemanticsLabel('Seek')).value;
+
+      emit(const Duration(seconds: 1));
+      await tester.pump();
+      expect(find.text('0:01'), findsOneWidget);
+      expect(spoken(), '0:01 / $total');
+
+      emit(const Duration(milliseconds: 1999));
+      await tester.pump();
+      expect(find.text('0:01'), findsOneWidget);
+      expect(spoken(), '0:01 / $total');
+
+      emit(const Duration(seconds: 2));
+      await tester.pump();
+      expect(find.text('0:02'), findsOneWidget);
+      expect(spoken(), '0:02 / $total');
+      expect(
+        shownProgress(tester),
+        const Duration(seconds: 2).inMicroseconds /
+            track.duration.inMicroseconds,
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('a narrower window can switch to a longer step', (
+      tester,
+    ) async {
+      await pumpApp(tester, size: const Size(1280, 800));
+      final wide = await openTrack(tester, 240);
+      expect(wide.step, const Duration(milliseconds: 250));
+      emit(const Duration(seconds: 10));
+      await tester.pump();
+
+      tester.view.physicalSize = const Size(900, 800);
+      await tester.pumpAndSettle();
+      final width = tester.getSize(find.byType(SeekGestureArea)).width;
+      expect(
+        seekFollowStep(wide.duration, width),
+        const Duration(milliseconds: 500),
+      );
+
+      // 10.25 s ends a step only for the old step.
+      final rebuilt = await rebuiltDuring(() async {
+        emit(const Duration(milliseconds: 10250));
+        await tester.pump();
+      });
+      expect(rebuilt, isEmpty);
+      emit(const Duration(milliseconds: 10500));
+      await tester.pump();
+      expect(
+        shownProgress(tester),
+        const Duration(milliseconds: 10500).inMicroseconds /
+            wide.duration.inMicroseconds,
+      );
+    });
+
+    testWidgets('a seek and a loop show at once', (tester) async {
+      await pumpApp(tester);
+      final track = await openTrack(tester, 800);
+      emit(const Duration(seconds: 30));
+      await tester.pump();
+
+      await player().seek(const Duration(seconds: 90));
+      await tester.pump();
+      expect(
+        shownProgress(tester),
+        const Duration(seconds: 90).inMicroseconds /
+            track.duration.inMicroseconds,
+      );
+
+      await player().setRepeat(kanaru.RepeatMode.one);
+      backend.emitLooped.add(songs.first);
+      await tester.pump();
+      expect(shownProgress(tester), 0);
+    });
+
+    testWidgets('dragging shows the pointer while ticks keep coming', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      final track = await openTrack(tester, 800);
+      emit(const Duration(seconds: 10));
+      await tester.pump();
+
+      final area = tester.getRect(find.byType(SeekGestureArea));
+      final drag = await tester.startGesture(
+        Offset(area.left + area.width / 4, area.center.dy),
+        kind: PointerDeviceKind.mouse,
+      );
+      await drag.moveBy(Offset(area.width / 4, 0));
+      await tester.pump();
+      emit(const Duration(seconds: 12));
+      await tester.pump();
+      expect(shownProgress(tester), moreOrLessEquals(0.5, epsilon: 0.01));
+
+      await drag.up();
+      await tester.pump();
+      final seeks = backend.calls.where((c) => c.startsWith('seek')).toList();
+      expect(seeks, hasLength(1));
+      expect(
+        seeks.single,
+        'seek(${track.duration * 0.5})',
+        reason: 'the target is the pointer, not the floored thumb',
+      );
+    });
+
+    testWidgets('a longer track picks a longer step; playback resumes', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      final first = await openTrack(tester, 200);
+      expect(first.step, const Duration(milliseconds: 250));
+
+      final second = first.duration * 4;
+      backend.emitDuration.add(second);
+      emit(Duration.zero);
+      await tester.pump();
+      final rebuilt = await rebuiltDuring(() async {
+        emit(const Duration(milliseconds: 250));
+        await tester.pump();
+      });
+      expect(rebuilt, isEmpty);
+
+      await tester.tap(find.byTooltip('Pause'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Play'));
+      await tester.pumpAndSettle();
+      emit(const Duration(seconds: 1));
+      await tester.pump();
+      expect(
+        shownProgress(tester),
+        const Duration(seconds: 1).inMicroseconds / second.inMicroseconds,
+      );
     });
   });
 

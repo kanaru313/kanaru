@@ -5,6 +5,7 @@ import '../../core/player/player_service.dart';
 import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/format_duration.dart';
+import 'seek_follow_step.dart';
 
 /// Keyboard and assistive-tech seek step.
 const _step = Duration(seconds: 5);
@@ -74,19 +75,14 @@ class _SeekGestureAreaState extends ConsumerState<SeekGestureArea> {
 
   @override
   Widget build(BuildContext context) {
-    final (position, duration) = ref.watch(
-      playerServiceProvider.select((s) => (s.position, s.duration)),
+    // Whole seconds are all the spoken value shows, so only a change of the
+    // second rebuilds this; the thumb follows in [Consumer] below, in steps.
+    final (second, duration) = ref.watch(
+      playerServiceProvider.select((s) => (s.position.inSeconds, s.duration)),
     );
+    final position = Duration(seconds: second);
     final player = ref.read(playerServiceProvider.notifier);
     final enabled = duration > Duration.zero;
-    final progress = enabled
-        ? (_dragging && _pointer != null
-              ? _pointer!
-              : (position.inMilliseconds / duration.inMilliseconds).clamp(
-                  0.0,
-                  1.0,
-                ))
-        : 0.0;
     String spoken(Duration at) {
       final clamped = at < Duration.zero
           ? Duration.zero
@@ -97,6 +93,7 @@ class _SeekGestureAreaState extends ConsumerState<SeekGestureArea> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        final step = seekFollowStep(duration, width);
         return Semantics(
           slider: true,
           label: context.l10n.playerSeek,
@@ -156,12 +153,30 @@ class _SeekGestureAreaState extends ConsumerState<SeekGestureArea> {
                   onHorizontalDragCancel: _endDrag,
                   child: SizedBox(
                     height: widget.height,
-                    child: widget.builder(context, (
-                      progress: progress,
-                      width: width,
-                      active: enabled && (_hovered || _dragging),
-                      dragging: _dragging,
-                    )),
+                    // The only part that follows playback in [step]s: a
+                    // position tick inside a step builds nothing.
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final shown = ref.watch(
+                          playerServiceProvider.select(
+                            (s) => seekShownPosition(s.position, step),
+                          ),
+                        );
+                        final progress = !enabled
+                            ? 0.0
+                            : (_dragging && _pointer != null
+                                  ? _pointer!
+                                  : (shown.inMicroseconds /
+                                            duration.inMicroseconds)
+                                        .clamp(0.0, 1.0));
+                        return widget.builder(context, (
+                          progress: progress,
+                          width: width,
+                          active: enabled && (_hovered || _dragging),
+                          dragging: _dragging,
+                        ));
+                      },
+                    ),
                   ),
                 ),
               ),

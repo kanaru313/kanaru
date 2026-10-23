@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
@@ -109,6 +110,47 @@ void main() {
       same(before),
     );
     expect(tester.element(find.text('line 4')), same(lineElement));
+  });
+
+  testWidgets('a line change glides for 200 ms, then nothing draws', (
+    tester,
+  ) async {
+    await pump(tester);
+    await playAt(tester, const Duration(milliseconds: 4500));
+
+    backend.emitPosition.add(const Duration(milliseconds: 5500));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final midway = centerY(tester, 'line 4');
+    await tester.pump(const Duration(milliseconds: 100));
+    final arrived = centerY(tester, 'line 4');
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(arrived, centerY(tester, 'line 4'), reason: 'done after 200 ms');
+    expect(midway, isNot(arrived), reason: 'not instant');
+    expect(isCurrent(tester, 'line 4'), isTrue);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('a line change draws only the lines that change', (tester) async {
+    await pump(tester);
+    await playAt(tester, const Duration(milliseconds: 4500));
+    final bystander = tester.renderObject(find.text('line 8'));
+    final changing = tester.renderObject(find.text('line 4'));
+
+    final painted = <RenderObject, int>{};
+    debugOnProfilePaint = (object) =>
+        painted.update(object, (n) => n + 1, ifAbsent: () => 1);
+    try {
+      backend.emitPosition.add(const Duration(milliseconds: 5500));
+      await tester.pumpAndSettle();
+    } finally {
+      debugOnProfilePaint = null;
+    }
+
+    // The view scrolled past it, but its picture was reused.
+    expect(painted[bystander], isNull);
+    expect(painted[changing], isNotNull);
   });
 
   testWidgets('pressing a line seeks to it', (tester) async {

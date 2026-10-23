@@ -8,7 +8,10 @@ import 'lyrics_text_style.dart';
 const _styleDuration = Duration(milliseconds: 200);
 
 /// One line of synced lyrics. Rebuilds only when [current] flips, never on
-/// a position tick; pressing it seeks to the line.
+/// a position tick; pressing it seeks to the line. Its text has its own
+/// repaint boundary, so the view scrolling past, or a neighbour changing
+/// style, draws the picture it already has instead of laying the text out
+/// and painting it again on every frame.
 class LyricsLine extends StatelessWidget {
   const LyricsLine({
     super.key,
@@ -33,14 +36,16 @@ class LyricsLine extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: ValueListenableBuilder<bool>(
-            valueListenable: current,
-            builder: (context, isCurrent, _) => AnimatedDefaultTextStyle(
-              style: lyricsLineStyle(context, current: isCurrent),
-              duration: reduceMotion ? Duration.zero : _styleDuration,
-              curve: Curves.easeOutCubic,
-              textAlign: TextAlign.center,
-              child: Text(line.text),
+          child: RepaintBoundary(
+            child: ValueListenableBuilder<bool>(
+              valueListenable: current,
+              builder: (context, isCurrent, _) => AnimatedDefaultTextStyle(
+                style: lyricsLineStyle(context, current: isCurrent),
+                duration: reduceMotion ? Duration.zero : _styleDuration,
+                curve: Curves.easeOutCubic,
+                textAlign: TextAlign.center,
+                child: Text(line.text),
+              ),
             ),
           ),
         ),
