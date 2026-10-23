@@ -5,7 +5,9 @@ import 'package:logging/logging.dart';
 
 import '../../settings/settings_file.dart';
 import 'playback_session.dart';
+import '../track.dart';
 import 'playback_session_codec.dart';
+import 'playback_session_off_thread.dart';
 
 final _log = Logger('session');
 
@@ -30,7 +32,11 @@ PlaybackSessionFile? playbackSessionFileFor(
 /// Reads and writes the playback session.
 ///
 /// Writes are atomic: the JSON goes to `<path>.<pid>.tmp` and is renamed over
-/// the file. The directory entry is not synced, so a power loss right after
+/// the file. Encoding and writing run on another isolate
+/// (`writePlaybackSessionOffThread`), and the parts that grow with the queue
+/// (tracks, order, unshuffled order) are encoded only when their list
+/// changed since the last successful write: a save every few seconds while
+/// playing re-encodes only the position, volume and the like. The directory entry is not synced, so a power loss right after
 /// a write may bring back the session before it, which is fine for state
 /// that is rewritten every few seconds anyway.
 ///
@@ -54,6 +60,16 @@ class PlaybackSessionFile {
   /// one is kept.
   PlaybackSession? _queued;
   Future<bool>? _writing;
+
+  /// JSON text of the heavy parts last written, and the lists they were
+  /// encoded from. Queue lists are never changed in place (every edit makes
+  /// a new list), so the same list object means the same text.
+  List<Track>? _tracksSource;
+  String? _tracksJson;
+  List<int>? _orderSource;
+  String? _orderJson;
+  List<int>? _unshuffledSource;
+  String? _unshuffledJson;
 
   /// Whether [save] skips the disk for the rest of the run.
   bool get readOnly => _readOnly;
@@ -148,24 +164,47 @@ class PlaybackSessionFile {
   }
 
   Future<bool> _write(PlaybackSession session) async {
-    File? temporary;
+    final tracksJson = identical(session.tracks, _tracksSource)
+        ? _tracksJson
+        : null;
+    final orderJson = identical(session.order, _orderSource)
+        ? _orderJson
+        : null;
+    final unshuffledJson = identical(session.unshuffledOrder, _unshuffledSource)
+        ? _unshuffledJson
+        : null;
     try {
-      await File(path).parent.create(recursive: true);
-      temporary = File('$path.$pid.tmp');
-      await temporary.writeAsString(
-        jsonEncode(
-          encodePlaybackSession(session, coverDirectory: coverDirectory),
-        ),
-        flush: true,
+      final encoded = await writePlaybackSessionOffThread(
+        path: path,
+        light: encodePlaybackSessionLight(session),
+        tracksJson: tracksJson,
+        tracks: tracksJson == null ? session.tracks : null,
+        coverDirectory: coverDirectory,
+        orderJson: orderJson,
+        order: orderJson == null ? session.order : null,
+        unshuffledJson: unshuffledJson,
+        encodeUnshuffled: unshuffledJson == null,
+        unshuffledOrder: session.unshuffledOrder,
       );
-      await temporary.rename(path);
+      if (encoded.tracks case final text?) {
+        _tracksSource = session.tracks;
+        _tracksJson = text;
+      }
+      if (encoded.order case final text?) {
+        _orderSource = session.order;
+        _orderJson = text;
+      }
+      if (encoded.unshuffledOrder case final text?) {
+        _unshuffledSource = session.unshuffledOrder;
+        _unshuffledJson = text;
+      }
       return true;
     } catch (error) {
       _log.warning(
         'Could not save playback-session.json (${_describe(error)})',
       );
       try {
-        await temporary?.delete();
+        await File(playbackSessionTemporaryPath(path)).delete();
       } on FileSystemException {
         // Never created, or already renamed.
       }

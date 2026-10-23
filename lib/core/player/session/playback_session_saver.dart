@@ -37,6 +37,7 @@ class PlaybackSessionSaver {
     PlaybackSession? initial,
     this._frozen = false,
     SessionTimerFactory? timer,
+    this._upNext,
   }) : _written = initial,
        _position = initial?.position ?? Duration.zero,
        _timer = timer ?? Timer.new;
@@ -46,6 +47,11 @@ class PlaybackSessionSaver {
 
   final PlaybackSessionFile _file;
   final SessionTimerFactory _timer;
+
+  /// The player's "play next" entries that have not played yet, read at
+  /// every save. They only change together with the queue or the track,
+  /// which already make the saver write.
+  final Iterable<int> Function()? _upNext;
 
   /// Last snapshot loaded or written successfully: an equal one is never
   /// written again.
@@ -143,7 +149,11 @@ class PlaybackSessionSaver {
     _soon = null;
     final state = _state;
     if (_frozen || _disposed || state == null) return;
-    final snapshot = PlaybackSession.fromState(state, position: _position);
+    final snapshot = PlaybackSession.fromState(
+      state,
+      position: _position,
+      upNext: _upNext?.call() ?? const [],
+    );
     if (snapshot == _written) return;
     _written = snapshot;
     // Never throws. A failed write counts as not written, so the next save
