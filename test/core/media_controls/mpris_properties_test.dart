@@ -94,6 +94,25 @@ void main() {
       expect(wrap['CanGoNext'], const DBusBoolean(true));
     });
 
+    test('the endless queue setting enables next and previous at the ends', () {
+      Map<String, DBusValue> wrapped(PlayQueue queue) {
+        final state = stateOf(queue);
+        return playerProperties(
+          state,
+          MprisTrackIds()..observe(state.queue),
+          artUri: null,
+          wrapQueue: true,
+        );
+      }
+
+      final last = wrapped(PlayQueue(original: tracks, index: 2));
+      expect(last['CanGoNext'], const DBusBoolean(true));
+      final first = wrapped(PlayQueue(original: tracks));
+      expect(first['CanGoPrevious'], const DBusBoolean(true));
+      final empty = wrapped(PlayQueue());
+      expect(empty['CanGoNext'], const DBusBoolean(false));
+    });
+
     test('CanSeek needs a known duration', () {
       final queue = PlayQueue(original: tracks);
       expect(props(stateOf(queue))['CanSeek'], const DBusBoolean(false));

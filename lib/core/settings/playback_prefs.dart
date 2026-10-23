@@ -54,7 +54,11 @@ class PlaybackPrefs {
   /// No gap between tracks that follow each other.
   final bool gapless;
 
-  /// When the queue ends, keep playing similar tracks.
+  /// Endless queue (QUEUE-15): pressing Next on the last track goes to the
+  /// first and Previous on the first goes to the last, whatever the repeat
+  /// mode. Only manual presses wrap; the queue running out on its own still
+  /// follows repeat. Read by `PlayerService.next`/`previous`, the player
+  /// buttons and MPRIS `CanGoNext`/`CanGoPrevious`.
   final bool infiniteQueue;
 
   /// Overlap of two tracks; 0 is off.

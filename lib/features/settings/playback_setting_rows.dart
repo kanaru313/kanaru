@@ -11,10 +11,10 @@ import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Playback options. The output device, ReplayGain and when a play counts as
-/// a listen are wired; lyrics have their own rows; the rest are not yet
-/// (shown from the saved values, off): gapless, crossfade, fades and the
-/// endless queue.
+/// Playback options. The output device, ReplayGain, the endless queue and
+/// when a play counts as a listen are wired; lyrics have their own rows; the
+/// rest are not yet (shown from the saved values, off): gapless, crossfade
+/// and fades.
 class PlaybackSettingRows extends ConsumerWidget {
   const PlaybackSettingRows({super.key});
 
@@ -65,10 +65,14 @@ class PlaybackSettingRows extends ConsumerWidget {
           ),
           selected: p.fadeOnPauseMs,
         ),
-        ComingSoonSwitchRow(
+        SettingRow.single(
           title: l10n.settingsInfiniteQueue,
           subtitle: l10n.settingsInfiniteQueueHint,
-          value: p.infiniteQueue,
+          control: Switch(
+            value: p.infiniteQueue,
+            onChanged: (on) =>
+                settings.setPlayback(p.copyWith(infiniteQueue: on)),
+          ),
         ),
         // Two rows, not two controls in one: a row's control is one compact
         // width, too narrow for two dropdowns.

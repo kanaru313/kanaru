@@ -320,7 +320,7 @@
   "settingsFadeOnPause": "Giảm dần âm lượng khi tạm dừng",
   "settingsFadeOnPauseHint": "Giảm âm lượng từ từ trước khi tạm dừng.",
   "settingsInfiniteQueue": "Hàng đợi vô hạn",
-  "settingsInfiniteQueueHint": "Hết hàng đợi thì Bài tiếp quay về bài đầu, và Bài trước ở bài đầu nhảy tới bài cuối, bất kể chế độ lặp.",
+  "settingsInfiniteQueueHint": "Bài tiếp ở bài cuối về bài đầu, Bài trước ở bài đầu tới bài cuối, bất kể chế độ lặp.",
   "settingsListenAfterTime": "Một lượt nghe được tính sau",
   "settingsListenAfterTimeHint": "Khoảng thời gian này, hoặc tỉ lệ bên dưới của bài, tuỳ điều kiện nào đến trước.",
   "settingsListenAfterShare": "Một lượt nghe được tính sau (tỉ lệ của bài)",

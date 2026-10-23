@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../player/player_service.dart';
 import '../../player/player_state.dart';
 import '../../player/playing_track_art.dart';
+import '../../settings/settings_provider.dart';
 import '../media_controls.dart';
 import 'mpris_bus_name.dart';
 import 'mpris_method_handler.dart';
@@ -34,9 +35,9 @@ class MprisMediaControls implements MediaControls {
   /// (`DBusClient.session` throws `FormatException`) only leaves the controls
   /// idle. The client is closed by [dispose]. [onRaise] answers `Raise()`.
   /// [coalesceWindow] is how long changes are collected before one signal
-  /// goes out. [buildProperties] makes the published properties from a state
-  /// and the current track's art; it is only replaced to observe how often
-  /// that work happens.
+  /// goes out. [buildProperties] makes the published properties from a state,
+  /// the current track's art and the endless queue setting; it is only
+  /// replaced to observe how often that work happens.
   MprisMediaControls(
     Ref ref,
     this._createClient, {
@@ -52,6 +53,7 @@ class MprisMediaControls implements MediaControls {
       _art,
       _ids,
       () => !_disposed,
+      wrapQueue: _wrapQueue,
     );
     // Listening starts before the first await so no change is missed while
     // the connection is still being set up. Listeners only schedule a flush,
@@ -71,6 +73,11 @@ class MprisMediaControls implements MediaControls {
     _artSubscription = ref.listen(playingTrackArtProvider, (_, _) {
       _schedule();
     });
+    // The endless queue setting changes CanGoNext and CanGoPrevious.
+    _wrapSubscription = ref.listen(
+      settingsProvider.select((s) => s.playback.infiniteQueue),
+      (_, _) => _schedule(),
+    );
     _listenToSeeked();
     _started = _start();
   }
@@ -81,6 +88,7 @@ class MprisMediaControls implements MediaControls {
     PlayerState,
     MprisTrackIds, {
     required String? artUri,
+    bool wrapQueue,
   })
   _buildProperties;
   final DBusClient Function() _createClient;
@@ -90,6 +98,7 @@ class MprisMediaControls implements MediaControls {
   late final MprisObject _object;
   late final ProviderSubscription<PlayerState> _stateSubscription;
   late final ProviderSubscription<String?> _artSubscription;
+  late final ProviderSubscription<bool> _wrapSubscription;
   StreamSubscription<Duration>? _seekedSubscription;
   Stream<Duration>? _seekedStream;
   late final Future<void> _started;
@@ -175,11 +184,18 @@ class MprisMediaControls implements MediaControls {
 
   String? _art() => _ref.read(playingTrackArtProvider);
 
+  bool _wrapQueue() => _ref.read(settingsProvider).playback.infiniteQueue;
+
   /// The properties as they are now, the art read with the state.
   Map<String, DBusValue> _build() {
     final state = _ref.read(playerServiceProvider);
     _ids.observe(state.queue);
-    return _buildProperties(state, _ids, artUri: _art());
+    return _buildProperties(
+      state,
+      _ids,
+      artUri: _art(),
+      wrapQueue: _wrapQueue(),
+    );
   }
 
   /// Something published may have changed: flush after the coalescing
@@ -243,6 +259,7 @@ class MprisMediaControls implements MediaControls {
     _timer?.cancel();
     _stateSubscription.close();
     _artSubscription.close();
+    _wrapSubscription.close();
     await _seekedSubscription?.cancel();
     // Let a start that is still waiting on the bus finish, so the name it
     // may be about to get is released too.

@@ -126,12 +126,14 @@ DBusValue mprisMetadata(
 }
 
 /// All properties of `org.mpris.MediaPlayer2.Player` for [state], with
-/// [artUri] as the current track's art (see [mprisMetadata]).
+/// [artUri] as the current track's art (see [mprisMetadata]). [wrapQueue] is
+/// the endless queue setting: Next and Previous then work at both ends.
 /// [ids] must have observed `state.queue` already.
 Map<String, DBusValue> playerProperties(
   PlayerState state,
   MprisTrackIds ids, {
   required String? artUri,
+  bool wrapQueue = false,
 }) {
   final queue = state.queue;
   return {
@@ -144,8 +146,10 @@ Map<String, DBusValue> playerProperties(
     'Position': DBusInt64(state.position.inMicroseconds),
     'MinimumRate': const DBusDouble(1),
     'MaximumRate': const DBusDouble(1),
-    'CanGoNext': DBusBoolean(queue.nextIndex != null),
-    'CanGoPrevious': DBusBoolean(queue.previousIndex != null),
+    'CanGoNext': DBusBoolean(queue.manualNextIndex(wrap: wrapQueue) != null),
+    'CanGoPrevious': DBusBoolean(
+      queue.manualPreviousIndex(wrap: wrapQueue) != null,
+    ),
     'CanPlay': DBusBoolean(!queue.isEmpty),
     'CanPause': DBusBoolean(!queue.isEmpty),
     'CanSeek': DBusBoolean(state.duration > Duration.zero),

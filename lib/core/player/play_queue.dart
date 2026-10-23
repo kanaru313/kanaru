@@ -96,6 +96,18 @@ class PlayQueue {
     return repeat == RepeatMode.all ? order.length - 1 : null;
   }
 
+  /// Index the Next button goes to. With [wrap] (the endless queue setting,
+  /// QUEUE-15) the last track goes on to the first whatever the repeat mode,
+  /// and a one-track queue plays its track again. Playing on by itself never
+  /// wraps: that keeps to [nextIndex].
+  int? manualNextIndex({required bool wrap}) =>
+      nextIndex ?? (wrap && !isEmpty ? 0 : null);
+
+  /// Index the Previous button goes to; with [wrap] the first track goes back
+  /// to the last whatever the repeat mode.
+  int? manualPreviousIndex({required bool wrap}) =>
+      previousIndex ?? (wrap && !isEmpty ? order.length - 1 : null);
+
   PlayQueue copyWith({
     List<int>? order,
     int? index,

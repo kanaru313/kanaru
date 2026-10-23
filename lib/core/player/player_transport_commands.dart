@@ -129,15 +129,20 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     return _play(index);
   }
 
+  /// Goes to the next track; on the last one does nothing unless the whole
+  /// queue repeats or the endless queue setting is on (then to the first).
   Future<void> next() async {
-    final index = state.queue.nextIndex;
+    final index = state.queue.manualNextIndex(wrap: _endlessQueue);
     if (index != null) await jump(index);
   }
 
-  /// Goes to the previous track; does nothing on the first one unless the
-  /// whole queue repeats.
+  /// Goes to the previous track; on the first one does nothing unless the
+  /// whole queue repeats or the endless queue setting is on (then to the
+  /// last).
   Future<void> previous() async {
-    final index = state.queue.previousIndex;
+    final index = state.queue.manualPreviousIndex(wrap: _endlessQueue);
     if (index != null) await jump(index);
   }
+
+  bool get _endlessQueue => ref.read(settingsProvider).playback.infiniteQueue;
 }

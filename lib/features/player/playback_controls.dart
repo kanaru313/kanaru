@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
 import '../../core/player/player_service.dart';
 import '../../core/player/repeat_mode.dart';
+import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 
@@ -11,7 +12,7 @@ const playerIconSize = 28.0;
 
 /// Shuffle · previous · play/pause · next · repeat. Disabled while the
 /// queue is empty; previous and next also on the first and last track
-/// unless the queue repeats.
+/// unless the queue repeats or the endless queue setting is on.
 class PlaybackControls extends ConsumerWidget {
   const PlaybackControls({
     super.key,
@@ -41,9 +42,15 @@ class PlaybackControls extends ConsumerWidget {
         (s) => (s.queue.isEmpty, s.playing, s.queue.shuffled, s.queue.repeat),
       ),
     );
+    final wrap = ref.watch(
+      settingsProvider.select((s) => s.playback.infiniteQueue),
+    );
     final (hasPrevious, hasNext) = ref.watch(
       playerServiceProvider.select(
-        (s) => (s.queue.previousIndex != null, s.queue.nextIndex != null),
+        (s) => (
+          s.queue.manualPreviousIndex(wrap: wrap) != null,
+          s.queue.manualNextIndex(wrap: wrap) != null,
+        ),
       ),
     );
     final player = ref.read(playerServiceProvider.notifier);

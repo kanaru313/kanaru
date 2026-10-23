@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/media_controls/mpris/mpris_properties.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:logging/logging.dart';
 
 import 'mpris_test_harness.dart';
@@ -163,6 +164,28 @@ void main() {
       expect(metadata['xesam:title'], const DBusString('c'));
       expect(metadata['mpris:length'], const DBusInt64(90000000));
       expect(changes.single['CanSeek'], const DBusBoolean(true));
+    });
+
+    test('the endless queue setting changes CanGoNext', () async {
+      await h.service.openTracks(songs, start: 2);
+      await h.start();
+      await h.settle();
+      final changes = await h.watchChanges();
+
+      await h.changeAfter(() async {
+        final settings = h.container.read(settingsProvider.notifier);
+        settings.setPlayback(
+          h.container
+              .read(settingsProvider)
+              .playback
+              .copyWith(infiniteQueue: true),
+        );
+      });
+
+      expect(changes, hasLength(1));
+      expect(changes.single['CanGoNext'], const DBusBoolean(true));
+      final player = await h.remote.getAllProperties(mprisPlayerInterface);
+      expect(player['CanGoNext'], const DBusBoolean(true));
     });
 
     test('position ticks send nothing', () async {

@@ -62,4 +62,14 @@ void main() {
     await pick(tester, 'A listen counts after (share of the song)', '75%');
     expect(prefs().listenThresholdPercent, 75);
   });
+
+  testWidgets('the endless queue switch is live', (tester) async {
+    await pump(tester);
+    expect(tester.widget<SettingRow>(row('Endless queue')).comingSoon, isFalse);
+    await tester.tap(
+      find.descendant(of: row('Endless queue'), matching: find.byType(Switch)),
+    );
+    await tester.pump();
+    expect(prefs().infiniteQueue, isTrue);
+  });
 }
