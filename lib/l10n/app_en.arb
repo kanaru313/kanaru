@@ -1068,5 +1068,11 @@
   "scanStatsUnfinishedRoots": "{count, plural, =1{1 folder not scanned to the end} other{{count} folders not scanned to the end}}",
   "@scanStatsUnfinishedRoots": { "description": "Note under the songs row: folders the last scan skipped (missing, timed out), whose files the numbers leave out", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
   "scanStatsCoversHint": "Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).",
-  "@scanStatsCoversHint": { "description": "Note under the cover art numbers" }
+  "@scanStatsCoversHint": { "description": "Note under the cover art numbers" },
+  "foldersHiddenShow": "Show hidden items",
+  "@foldersHiddenShow": { "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are not shown" },
+  "foldersHiddenHide": "Hide hidden items",
+  "@foldersHiddenHide": { "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are shown" },
+  "foldersHiddenLabel": "Hidden",
+  "@foldersHiddenLabel": { "description": "Small label on a folder or song whose name starts with a dot, shown when hidden items are on" }
 }

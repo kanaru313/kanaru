@@ -765,5 +765,8 @@
   "scanStatsCovers": "{images} ảnh đã tạo cho {tracks} bài có ảnh",
   "scanStatsSongs": "{count} bài",
   "scanStatsUnfinishedRoots": "{count} thư mục chưa quét xong",
-  "scanStatsCoversHint": "Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash)."
+  "scanStatsCoversHint": "Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash).",
+  "foldersHiddenShow": "Hiện mục ẩn",
+  "foldersHiddenHide": "Ẩn các mục ẩn",
+  "foldersHiddenLabel": "Ẩn"
 }

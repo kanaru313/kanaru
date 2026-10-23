@@ -2170,4 +2170,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scanStatsCoversHint =>
       'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).';
+
+  @override
+  String get foldersHiddenShow => 'Show hidden items';
+
+  @override
+  String get foldersHiddenHide => 'Hide hidden items';
+
+  @override
+  String get foldersHiddenLabel => 'Hidden';
 }

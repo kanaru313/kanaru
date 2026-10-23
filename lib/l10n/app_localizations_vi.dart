@@ -1995,4 +1995,13 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get scanStatsCoversHint =>
       'Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash).';
+
+  @override
+  String get foldersHiddenShow => 'Hiện mục ẩn';
+
+  @override
+  String get foldersHiddenHide => 'Ẩn các mục ẩn';
+
+  @override
+  String get foldersHiddenLabel => 'Ẩn';
 }
