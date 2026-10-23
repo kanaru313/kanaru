@@ -65,7 +65,8 @@ class PlaybackPrefs {
   final int fadeOnPauseMs;
 
   /// A play counts as a listen after this many minutes or this share of the
-  /// track, whichever comes first.
+  /// track, whichever comes first. Read by the listen recorder
+  /// (`listenRecorderProvider`), which applies a change at once.
   final int listenThresholdMinutes;
   final int listenThresholdPercent;
 

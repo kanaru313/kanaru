@@ -41,6 +41,46 @@ void main() {
     });
   });
 
+  group('ListenThreshold', () {
+    const t2m25 = ListenThreshold(minutes: 2, percent: 25);
+
+    test('the standard threshold is 4 minutes or half', () {
+      expect(ListenThreshold.standard.requiredFor(s(180)), s(90));
+      expect(ListenThreshold.standard.requiredFor(s(600)), s(240));
+      expect(ListenThreshold.standard.requiredFor(null), s(240));
+    });
+
+    test('a custom share and length take the smaller', () {
+      expect(qualifiesAsListen(s(44.75), s(180), t2m25), isFalse);
+      expect(qualifiesAsListen(s(45), s(180), t2m25), isTrue);
+      expect(qualifiesAsListen(s(119), s(1200), t2m25), isFalse);
+      expect(qualifiesAsListen(s(120), s(1200), t2m25), isTrue);
+    });
+
+    test('an unknown length needs the minutes', () {
+      expect(qualifiesAsListen(s(119), null, t2m25), isFalse);
+      expect(qualifiesAsListen(s(120), null, t2m25), isTrue);
+    });
+
+    test('the whole track is reachable at 100 %', () {
+      const whole = ListenThreshold(minutes: 10, percent: 100);
+      // The last tick comes a moment before the end.
+      expect(qualifiesAsListen(s(179.25), s(180), whole), isTrue);
+      expect(qualifiesAsListen(s(178.75), s(180), whole), isFalse);
+      // Longer than the minutes: the minutes win.
+      expect(qualifiesAsListen(s(600), s(900), whole), isTrue);
+    });
+
+    test(
+      'tracks of 30 seconds or less never count, whatever the threshold',
+      () {
+        const low = ListenThreshold(minutes: 1, percent: 10);
+        expect(qualifiesAsListen(s(30), s(30), low), isFalse);
+        expect(qualifiesAsListen(s(3.1), s(31), low), isTrue);
+      },
+    );
+  });
+
   group('ListenAccumulator', () {
     test('counts ordinary ticks', () {
       final acc = fresh();

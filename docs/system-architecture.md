@@ -490,6 +490,10 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Playlist cover | Computed, nothing is stored: the first up to 4 distinct non-null cover keys among the first 64 covered entries by position (tracks of one album share a cover, so repeats count once). |
 | Reset | A library reset deletes roots and tracks, never the file. `make reset-library` runs `packaging/dev/reset-library.sql`: it removes `library_roots`, `tracks`, `track_artists` and `cover_colors` (scan output) and keeps the user-data tables and `excluded_folders` (user configuration). The target refuses a database below schema 6. |
 
+### Listen recording
+
+`ListenRecorder` (`core/stats/`, kept alive from `main.dart`) follows the player state and writes `plays`. A play counts once the track is longer than 30 s and the listening time (`ListenAccumulator`: position deltas while playing, seeks and pauses left out) reaches `ListenThreshold.requiredFor`: the smaller of the share (`listenThresholdPercent`, kept within the length minus 1 s so 100 % is reachable) and the minutes (`listenThresholdMinutes`), the minutes alone when the length is unknown. Defaults 4 min / 50 %. `listenRecorderProvider` listens (does not watch) to the two settings and sets `recorder.threshold`, so a change applies to the playthrough under way from the next player state, without rebuilding the recorder; a row already written stays.
+
 ### Listen history reads
 
 `history_queries.dart` (reads) and `history_play_writes.dart` (delete and restore of one play) sit on `LibraryDatabase`. Each read is a one-shot `Future`; the provider layer decides when to run it again.
