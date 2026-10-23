@@ -33,14 +33,18 @@ void main() {
   });
   tearDown(() => db.close());
 
-  ProviderContainer launch({LibraryDatabase? library, bool record = true}) {
+  ProviderContainer launch({
+    LibraryDatabase? library,
+    bool record = true,
+    PlaybackPrefs playback = const PlaybackPrefs(),
+  }) {
     final container = ProviderContainer(
       overrides: [
         audioBackendProvider.overrideWithValue(backend),
         libraryDatabaseProvider.overrideWithValue(library),
         listenClockProvider.overrideWithValue(time.clock),
         initialSettingsProvider.overrideWithValue(
-          AppSettings(recordListenHistory: record),
+          AppSettings(recordListenHistory: record, playback: playback),
         ),
       ],
     );
@@ -74,6 +78,45 @@ void main() {
     final row = (await plays(container)).single;
     expect(row.path, trackA.uri);
     expect(await db.select(db.playStats).get(), hasLength(1));
+  });
+
+  test('the stored threshold decides when a play counts', () async {
+    final container = launch(
+      library: db,
+      playback: const PlaybackPrefs(
+        listenThresholdMinutes: 1,
+        listenThresholdPercent: 100,
+      ),
+    );
+    await container.read(playerServiceProvider.notifier).openTracks([trackA]);
+    backend.emitDuration.add(trackA.duration!);
+
+    tick(59);
+    expect(await plays(container), isEmpty);
+    tick(1, from: 59);
+    expect(await plays(container), hasLength(1));
+  });
+
+  test('a new threshold applies to the play under way', () async {
+    final container = launch(library: db);
+    final recorder = container.read(listenRecorderProvider);
+    await container.read(playerServiceProvider.notifier).openTracks([trackA]);
+    backend.emitDuration.add(trackA.duration!);
+
+    tick(40);
+    expect(await plays(container), isEmpty);
+    final settings = container.read(settingsProvider.notifier);
+    settings.setPlayback(
+      container
+          .read(settingsProvider)
+          .playback
+          .copyWith(listenThresholdPercent: 10),
+    );
+    // The recorder is kept: the playthrough goes on.
+    expect(identical(container.read(listenRecorderProvider), recorder), isTrue);
+    tick(1, from: 40);
+
+    expect(await plays(container), hasLength(1));
   });
 
   test('switching the setting off stops new rows', () async {

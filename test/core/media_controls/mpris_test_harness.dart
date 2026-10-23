@@ -91,6 +91,7 @@ class MprisHarness {
       PlayerState,
       MprisTrackIds, {
       required String? artUri,
+      bool wrapQueue,
     })?
     buildProperties,
   }) {

@@ -92,8 +92,8 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 
 | Screen | Layout |
 |---|---|
-| Songs | Virtualized list, one row per track, read in pages of 200. Tap plays the list from that row in the displayed order. |
-| Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc. |
+| Songs | Virtualized list, one row per track, read in pages of 200; or a grid of covers (title and artist under each), read the same way. The header button switches them per session (not kept across restarts) and a switch starts at the top. Tap plays the list from that song in the displayed order; right click opens the song menu in both. |
+| Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc, each with its track number, or its cover when Settings → Interface → Track numbers in albums is off. |
 | Artists | Round avatars in a grid or a list, switched per session (not kept across restarts); artist page has Play, Shuffle and queue buttons, then sections for albums, songs and appears-on. |
 | Genres | Round tiles in a grid or a list, switched per session. Genre page has Play, Shuffle and queue buttons, then its albums and songs. |
 | Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. |
@@ -185,7 +185,9 @@ The Home placeholder screen uses `EmptyState` with a one-sentence message. Favor
 | Auto-hide fade | 100 to 150 ms | Not gated |
 | Seek bar wave | continuous while playing | Flat (`seek_bar.dart`) |
 
-Reduced motion comes from the platform setting. Every new animation must check it. Settings → Appearance has an Animations row, shown as coming soon: the `animations` flag is stored, but nothing forces reduced motion yet (wire it by overriding `MediaQuery.disableAnimations` in `MaterialApp.builder`). The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+Reduced motion comes from the platform setting, or from Settings → Appearance → Animations turned off: the app's builder (`lib/app/app.dart`) then sets `MediaQuery.disableAnimations` for every page, dialog and menu, and the theme change (`themeAnimationDuration`) is instant too. Turned on, the platform setting decides. Every new animation must check `MediaQuery.disableAnimationsOf`, never the setting itself. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+
+**Text size.** Settings → Appearance → Text size (80 % to 150 %) multiplies the system's text scale in the same builder (`appTextScaler`). Enlarging stops at 2× (or at the system's scale when that is larger, so a large accessibility size is never undone). Layouts size rows and grid tiles from `MediaQuery.textScalerOf`, never from fixed heights.
 
 ## Focus, keyboard and accessibility
 

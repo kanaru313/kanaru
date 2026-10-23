@@ -576,7 +576,7 @@
   "settingsMinDuration": "Minimum length",
   "settingsMinDurationHint": "Shorter songs stay out of the library. Applies at the next rescan.",
   "settingsClearCoverCache": "Clear cover cache",
-  "settingsClearCoverCacheHint": "Covers disappear until the next rescan makes them again.",
+  "settingsClearCoverCacheHint": "Deletes the cover thumbnails; a rescan starts at once and makes them again.",
   "settingsClearCoverCacheButton": "Clear",
   "settingsPreferEmbeddedLyrics": "Prefer embedded lyrics",
   "settingsPreferEmbeddedLyricsHint": "Use lyrics stored in the song file before lyric files next to it.",
@@ -589,7 +589,7 @@
   "settingsFadeOnPause": "Fade out on pause",
   "settingsFadeOnPauseHint": "Lower the volume slowly before playback pauses.",
   "settingsInfiniteQueue": "Endless queue",
-  "settingsInfiniteQueueHint": "When the queue ends, Next goes back to the first song, and Previous on the first song goes to the last, whatever the repeat mode.",
+  "settingsInfiniteQueueHint": "Next on the last song goes to the first, and Previous on the first song to the last, whatever the repeat mode.",
   "settingsListenAfterTime": "A listen counts after",
   "settingsListenAfterTimeHint": "This long, or the share below of the song, whichever comes first.",
   "settingsListenAfterShare": "A listen counts after (share of the song)",
@@ -599,7 +599,7 @@
   "settingsTabGenres": "Genres",
   "settingsTabLanguages": "Languages",
   "settingsTrackNumbers": "Track numbers in albums",
-  "settingsTrackNumbersHint": "Show each song's number on an album page.",
+  "settingsTrackNumbersHint": "On: each song's number on an album page. Off: its cover.",
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreRow": "Back up and restore data",
@@ -951,5 +951,16 @@
   "sidebarCurrentQueue": "Current queue",
   "@sidebarCurrentQueue": {"description": "Sidebar item that opens and closes the queue side sheet"},
   "lyricsTab": "Lyrics",
-  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" }
+  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" },
+  "coverCacheClearTitle": "Clear the cover cache?",
+  "@coverCacheClearTitle": { "description": "Title of the dialog that confirms deleting the cover thumbnails" },
+  "coverCacheClearBody": "Every cover disappears from the library until it is made again. Kanaru rescans right away and makes them in the background, which can take a while for a large library. Colors taken from the covers are kept.",
+  "@coverCacheClearBody": { "description": "Body of the dialog that confirms deleting the cover thumbnails" },
+  "coverCacheCleared": "{count, plural, =1{Deleted 1 cover. A rescan makes them again.} other{Deleted {count} covers. A rescan makes them again.}}",
+  "@coverCacheCleared": {
+    "description": "Snackbar after the cover thumbnails were deleted",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "coverCacheClearFailed": "Could not clear the cover cache",
+  "@coverCacheClearFailed": { "description": "Snackbar when the cover thumbnails could not be deleted" }
 }

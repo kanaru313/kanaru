@@ -1,29 +1,68 @@
-import 'dart:math' as math;
-
 /// Tracks of this length or shorter never count as a listen.
 const listenMinTrackLength = Duration(seconds: 30);
 
-/// A listen needs at most this much listening time, however long the track.
+/// A listen needs at most this much listening time, however long the track,
+/// with the default threshold.
 const listenThresholdCap = Duration(minutes: 4);
+
+/// The share of a track that counts is never more than its length minus
+/// this: the last position the player reports comes a few hundred
+/// milliseconds before the end, so "100 %" could never be reached.
+const listenEndSlack = Duration(seconds: 1);
 
 /// The position may run ahead of the clock by this much and still count as
 /// played (ticks delivered late, in a burst); more than that is a seek.
 const listenSeekSlack = Duration(seconds: 1);
 
+/// When a play counts as a listen: after [minutes] of listening or
+/// [percent] of the track, whichever comes first (Settings → Advanced).
+class ListenThreshold {
+  const ListenThreshold({required this.minutes, required this.percent});
+
+  /// The Last.fm / ListenBrainz rule: 4 minutes or half the track.
+  static const standard = ListenThreshold(minutes: 4, percent: 50);
+
+  final int minutes;
+  final int percent;
+
+  /// Listening time [length] needs: the share, kept within the track minus
+  /// [listenEndSlack], or the minutes when that is less. An unknown [length]
+  /// needs the minutes.
+  Duration requiredFor(Duration? length) {
+    final cap = Duration(minutes: minutes);
+    if (length == null) return cap;
+    final share = Duration(
+      microseconds: length.inMicroseconds * percent ~/ 100,
+    );
+    final reachable = length - listenEndSlack;
+    final needed = share < reachable ? share : reachable;
+    return needed < cap ? needed : cap;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is ListenThreshold &&
+      other.minutes == minutes &&
+      other.percent == percent;
+
+  @override
+  int get hashCode => Object.hash(minutes, percent);
+
+  @override
+  String toString() => 'ListenThreshold($minutes min, $percent %)';
+}
+
 /// Whether [listened] makes a listen of a track that is [length] long
-/// (STAT-01): longer than 30 s, and heard for half of it or 4 minutes,
-/// whichever is less. An unknown [length] needs the 4 minutes.
-bool qualifiesAsListen(Duration listened, Duration? length) {
+/// (STAT-01): longer than 30 s, and heard for the [threshold] (by default
+/// half of it or 4 minutes, whichever is less). An unknown [length] needs
+/// the threshold's minutes.
+bool qualifiesAsListen(
+  Duration listened,
+  Duration? length, [
+  ListenThreshold threshold = ListenThreshold.standard,
+]) {
   if (length != null && length <= listenMinTrackLength) return false;
-  final threshold = length == null
-      ? listenThresholdCap
-      : Duration(
-          microseconds: math.min(
-            length.inMicroseconds ~/ 2,
-            listenThresholdCap.inMicroseconds,
-          ),
-        );
-  return listened >= threshold;
+  return listened >= threshold.requiredFor(length);
 }
 
 /// Listening time of one playthrough. Feed it every player observation.

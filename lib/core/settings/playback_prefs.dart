@@ -54,18 +54,25 @@ class PlaybackPrefs {
   /// No gap between tracks that follow each other.
   final bool gapless;
 
-  /// When the queue ends, keep playing similar tracks.
+  /// Endless queue (QUEUE-15): pressing Next on the last track goes to the
+  /// first and Previous on the first goes to the last, whatever the repeat
+  /// mode. Only manual presses wrap; the queue running out on its own still
+  /// follows repeat. Read by `PlayerService.next`/`previous`, the player
+  /// buttons and MPRIS `CanGoNext`/`CanGoPrevious`.
   final bool infiniteQueue;
 
   /// Overlap of two tracks; 0 is off.
   final int crossfadeSeconds;
 
-  /// Fade in on play and fade out on pause; 0 is off.
+  /// Fade in on play and fade out on pause; 0 is off. Read by the player
+  /// when play/pause is toggled (`PlayPauseFader`); the absolute pause of
+  /// external controllers never fades.
   final int fadeOnPlayMs;
   final int fadeOnPauseMs;
 
   /// A play counts as a listen after this many minutes or this share of the
-  /// track, whichever comes first.
+  /// track, whichever comes first. Read by the listen recorder
+  /// (`listenRecorderProvider`), which applies a change at once.
   final int listenThresholdMinutes;
   final int listenThresholdPercent;
 
