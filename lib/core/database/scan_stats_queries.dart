@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart' show Variable;
+
 import 'library_database.dart';
 
 /// What the stored tracks say about the scan: [tracks] stored, [tagErrors]
@@ -28,4 +30,15 @@ extension ScanStatsQueries on LibraryDatabase {
             ),
           )
           .getSingle();
+
+  /// Tracks stored under the roots [rootIds] (0 for none).
+  Future<int> storedTrackCount(List<int> rootIds) async {
+    if (rootIds.isEmpty) return 0;
+    final marks = List.filled(rootIds.length, '?').join(',');
+    final row = await customSelect(
+      'SELECT count(*) AS n FROM tracks WHERE root_id IN ($marks)',
+      variables: [for (final id in rootIds) Variable.withInt(id)],
+    ).getSingle();
+    return row.read<int>('n');
+  }
 }

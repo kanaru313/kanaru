@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -10,7 +11,12 @@ import 'separator_page_dots.dart';
 /// Entries shown on one page of a separator list.
 const separatorPageSize = 8;
 
-const _rowHeight = 36.0;
+const _minRowHeight = 36.0;
+
+/// Height of one entry row: the text line (about 20 px at the normal size)
+/// plus its padding, grown with the text scale so a large font is not cut.
+double separatorRowHeight(BuildContext context) =>
+    math.max(_minRowHeight, MediaQuery.textScalerOf(context).scale(20) + 16);
 
 /// The entries of a separator list, [separatorPageSize] to a page. A longer
 /// list is swiped in horizontal pages with pagination dots below, never
@@ -46,6 +52,8 @@ class _SeparatorListPagesState extends State<SeparatorListPages> {
   @override
   void didUpdateWidget(SeparatorListPages oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Only a change of the list moves the page, not every parent rebuild.
+    if (listEquals(widget.entries, oldWidget.entries)) return;
     final last = _pageCount(widget.entries.length) - 1;
     final grew = widget.entries.length > oldWidget.entries.length;
     final target = grew ? last : math.min(_page, last);
@@ -76,11 +84,12 @@ class _SeparatorListPagesState extends State<SeparatorListPages> {
   Widget build(BuildContext context) {
     final entries = widget.entries;
     final pages = _pageCount(entries.length);
+    final rowHeight = separatorRowHeight(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: separatorPageSize * _rowHeight,
+          height: separatorPageSize * rowHeight,
           child: entries.isEmpty
               ? Center(
                   child: Text(
@@ -104,6 +113,7 @@ class _SeparatorListPagesState extends State<SeparatorListPages> {
                         _EntryRow(
                           key: ValueKey(entry),
                           entry: entry,
+                          height: rowHeight,
                           onRemove: () => widget.onRemove(entry),
                         ),
                     ],
@@ -133,16 +143,22 @@ class _SeparatorListPagesState extends State<SeparatorListPages> {
 /// One entry in monospace, so symbols such as `;` and `/` read clearly, and
 /// the button that removes it.
 class _EntryRow extends StatelessWidget {
-  const _EntryRow({super.key, required this.entry, required this.onRemove});
+  const _EntryRow({
+    super.key,
+    required this.entry,
+    required this.height,
+    required this.onRemove,
+  });
 
   final String entry;
+  final double height;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SizedBox(
-      height: _rowHeight,
+      height: height,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: DecoratedBox(

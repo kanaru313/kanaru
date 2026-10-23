@@ -1804,7 +1804,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String separatorsSummary(int separators, int keepWhole) {
-    return '$separators dấu · $keepWhole không tách';
+    return '$separators dấu phân cách · $keepWhole tên giữ nguyên';
   }
 
   @override
@@ -1828,15 +1828,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get separatorsSeparatorHelp =>
-      'Không cần thêm khoảng trắng. Chữ như feat. chỉ tách khi có khoảng trắng hai bên.';
+      'Không cần thêm khoảng trắng hai đầu. Chữ như feat. chỉ tách khi có khoảng trắng hai bên.';
 
   @override
   String get separatorsKeepHelpArtist =>
-      'Không cần thêm khoảng trắng. Ví dụ AC/DC vẫn là một nghệ sĩ.';
+      'Gõ tên như trong tag, không phân biệt hoa thường. Ví dụ AC/DC vẫn là một nghệ sĩ.';
 
   @override
   String get separatorsKeepHelpGenre =>
-      'Không cần thêm khoảng trắng. Ví dụ Funk/Soul vẫn là một thể loại.';
+      'Gõ tên như trong tag, không phân biệt hoa thường. Ví dụ Funk/Soul vẫn là một thể loại.';
 
   @override
   String get separatorsAdd => 'Thêm';
@@ -1890,7 +1890,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get separatorsClose => 'Đóng';
 
   @override
-  String get scanStatsTracksTitle => 'Bài lấy được';
+  String get scanStatsTracksTitle => 'Bài trong thư viện';
 
   @override
   String scanStatsTracksOfFiles(int tracks, int files) {
@@ -1916,7 +1916,7 @@ class AppLocalizationsVi extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Thư mục .nomedia: $countString';
+    return 'File trong thư mục có .nomedia: $countString';
   }
 
   @override
@@ -1925,7 +1925,7 @@ class AppLocalizationsVi extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Thư mục loại trừ: $countString';
+    return 'File trong thư mục loại trừ: $countString';
   }
 
   @override
@@ -1934,7 +1934,7 @@ class AppLocalizationsVi extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Dưới cỡ file tối thiểu: $countString';
+    return 'File dưới cỡ tối thiểu: $countString';
   }
 
   @override
@@ -1943,7 +1943,7 @@ class AppLocalizationsVi extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Dưới thời lượng tối thiểu: $countString';
+    return 'File ngắn hơn thời lượng tối thiểu: $countString';
   }
 
   @override
@@ -1955,7 +1955,13 @@ class AppLocalizationsVi extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '$countString bài lưu không đọc được tag';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString bài không đọc được tag (vẫn lưu)',
+      zero: 'Không có bài lỗi tag',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1974,5 +1980,24 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get scanStatsCoversHint => 'Ảnh trùng chỉ lưu một lần (theo hash).';
+  String scanStatsSongs(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString bài';
+  }
+
+  @override
+  String scanStatsUnfinishedRoots(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString thư mục chưa quét xong';
+  }
+
+  @override
+  String get scanStatsCoversHint =>
+      'Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash).';
 }

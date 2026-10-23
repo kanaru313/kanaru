@@ -28,29 +28,31 @@ class SeparatorPageDots extends StatelessWidget {
             button: true,
             selected: i == selected,
             label: l10n.separatorsPage(i + 1, count),
+            // The tap is on the node itself: a screen reader can open the
+            // page, and the button inside is left out of the tree.
+            onTap: () => onSelect(i),
             excludeSemantics: true,
             child: Tooltip(
               message: l10n.separatorsPage(i + 1, count),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onSelect(i),
-                  // A roomy hit area around the tiny indicator.
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutQuart,
-                      width: i == selected ? 16 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: i == selected
-                            ? colors.primary
-                            : colors.onSurfaceVariant.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(
-                          i == selected ? 4 : 3,
-                        ),
+              // A real button: Tab reaches it, Enter and Space open the page.
+              child: InkResponse(
+                onTap: () => onSelect(i),
+                radius: 16,
+                mouseCursor: SystemMouseCursors.click,
+                // A roomy hit area around the tiny indicator.
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutQuart,
+                    width: i == selected ? 16 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: i == selected
+                          ? colors.primary
+                          : colors.onSurfaceVariant.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(
+                        i == selected ? 4 : 3,
                       ),
                     ),
                   ),

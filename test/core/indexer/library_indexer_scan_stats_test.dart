@@ -1,12 +1,12 @@
-import 'package:kanaru/core/database/excluded_folder_queries.dart';
-
 import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/excluded_folder_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/database/scan_stats_queries.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/scan_stats.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -80,6 +80,7 @@ void main() {
         excluded: 0,
         tooSmall: 0,
         tooShort: 1,
+        stored: 2,
       ),
     );
   });
@@ -103,6 +104,7 @@ void main() {
         excluded: 1,
         tooSmall: 1,
         tooShort: 0,
+        stored: 1,
       ),
     );
   });
@@ -151,5 +153,61 @@ void main() {
     await scan();
 
     expect(stats(), before);
+  });
+
+  test('a folder that is gone keeps its rows out of both numbers', () async {
+    touch('a.mp3');
+    touch('b.mp3');
+    await scan();
+    expect(stats()!.stored, 2);
+    expect(stats()!.unfinishedRoots, 0);
+
+    Directory(root).renameSync('$root-away');
+    await scan();
+
+    expect(stats()!.seen, 0);
+    expect(stats()!.stored, 0, reason: 'not the rows of the missing folder');
+    expect(stats()!.unfinishedRoots, 1);
+    expect(await db.storedTrackCount([1]), 2, reason: 'rows are kept');
+  });
+
+  test(
+    'a file left out by another rule is not also counted as short',
+    () async {
+      touch('out/short.mp3');
+      touch('a.mp3');
+      reader.durationByName['out/short.mp3'] = 5000;
+      reader.durationByName['short.mp3'] = 5000;
+      reader.durationByName['a.mp3'] = 60000;
+      await scan();
+
+      container
+          .read(settingsProvider.notifier)
+          .setLibraryScan(const LibraryScanPrefs(minDurationSeconds: 10));
+      await db.addExcludedFolder('$root/out', 1);
+      reader.reset();
+      await scan();
+
+      expect(stats()!.excluded, 1);
+      expect(stats()!.tooShort, 0);
+    },
+  );
+
+  test('a short file deleted from the disk is not counted as short', () async {
+    touch('a.mp3');
+    touch('short.mp3');
+    reader.durationByName['short.mp3'] = 5000;
+    reader.durationByName['a.mp3'] = 60000;
+    await scan();
+
+    File('$root/short.mp3').deleteSync();
+    container
+        .read(settingsProvider.notifier)
+        .setLibraryScan(const LibraryScanPrefs(minDurationSeconds: 10));
+    reader.reset();
+    await scan();
+
+    expect(stats()!.seen, 1);
+    expect(stats()!.tooShort, 0);
   });
 }

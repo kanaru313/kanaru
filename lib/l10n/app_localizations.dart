@@ -2897,19 +2897,19 @@ abstract class AppLocalizations {
   /// Help under the separator field
   ///
   /// In en, this message translates to:
-  /// **'No need to add spaces. Words like feat. split only with a space on each side.'**
+  /// **'No need to add spaces around it. Words like feat. split only with a space on each side.'**
   String get separatorsSeparatorHelp;
 
   /// Help under the keep-whole field of the artist dialog
   ///
   /// In en, this message translates to:
-  /// **'No need to add spaces. AC/DC, for example, stays one artist.'**
+  /// **'Type the name as it is in the tag, any case. AC/DC, for example, stays one artist.'**
   String get separatorsKeepHelpArtist;
 
   /// Help under the keep-whole field of the genre dialog
   ///
   /// In en, this message translates to:
-  /// **'No need to add spaces. Funk/Soul, for example, stays one genre.'**
+  /// **'Type the name as it is in the tag, any case. Funk/Soul, for example, stays one genre.'**
   String get separatorsKeepHelpGenre;
 
   /// Button that adds the typed entry
@@ -2999,7 +2999,7 @@ abstract class AppLocalizations {
   /// Title of the scan statistics row with the songs found and the music files seen
   ///
   /// In en, this message translates to:
-  /// **'Songs found'**
+  /// **'Songs in the library'**
   String get scanStatsTracksTitle;
 
   /// Songs stored out of the music files the last scan of this session saw
@@ -3023,25 +3023,25 @@ abstract class AppLocalizations {
   /// Files left out for being in a folder that holds a .nomedia entry
   ///
   /// In en, this message translates to:
-  /// **'.nomedia folders: {count}'**
+  /// **'In .nomedia folders: {count, plural, =1{1 file} other{{count} files}}'**
   String scanStatsNomedia(int count);
 
   /// Files left out for being in a folder the user left out
   ///
   /// In en, this message translates to:
-  /// **'Left-out folders: {count}'**
+  /// **'In left-out folders: {count, plural, =1{1 file} other{{count} files}}'**
   String scanStatsExcluded(int count);
 
   /// Files left out for being smaller than the minimum file size
   ///
   /// In en, this message translates to:
-  /// **'Under minimum size: {count}'**
+  /// **'Under minimum size: {count, plural, =1{1 file} other{{count} files}}'**
   String scanStatsTooSmall(int count);
 
   /// Files left out for being shorter than the minimum length
   ///
   /// In en, this message translates to:
-  /// **'Under minimum length: {count}'**
+  /// **'Under minimum length: {count, plural, =1{1 file} other{{count} files}}'**
   String scanStatsTooShort(int count);
 
   /// Title of the scan statistics row with the songs whose tags could not be read
@@ -3068,10 +3068,22 @@ abstract class AppLocalizations {
   /// **'{images} images made for {tracks} songs with art'**
   String scanStatsCovers(int images, int tracks);
 
+  /// Songs stored, before the first scan of the session
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}}'**
+  String scanStatsSongs(int count);
+
+  /// Note under the songs row: folders the last scan skipped (missing, timed out), whose files the numbers leave out
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 folder not scanned to the end} other{{count} folders not scanned to the end}}'**
+  String scanStatsUnfinishedRoots(int count);
+
   /// Note under the cover art numbers
   ///
   /// In en, this message translates to:
-  /// **'An image repeated in many songs is stored once (by hash).'**
+  /// **'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).'**
   String get scanStatsCoversHint;
 }
 

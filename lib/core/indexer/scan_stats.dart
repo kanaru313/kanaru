@@ -12,6 +12,8 @@ class ScanStats {
     this.excluded = 0,
     this.tooSmall = 0,
     this.tooShort = 0,
+    this.stored = 0,
+    this.unfinishedRoots = 0,
   });
 
   /// The counts of one root: [walk] is its walk after the scan rules,
@@ -32,6 +34,27 @@ class ScanStats {
   /// Audio files the walks listed, before any rule.
   final int seen;
 
+  /// Tracks stored for the roots this scan finished, counted when it ended:
+  /// the same roots [seen] counts, so the two can be set side by side. 0 on
+  /// the counts of one root; the indexer fills it in once for the scan.
+  final int stored;
+
+  /// Roots the scan did not finish (missing, timed out, empty or stuck);
+  /// their files are in neither [seen] nor [stored].
+  final int unfinishedRoots;
+
+  /// These counts with the figures only the end of the scan knows.
+  ScanStats withEnd({required int stored, required int unfinishedRoots}) =>
+      ScanStats(
+        seen: seen,
+        nomedia: nomedia,
+        excluded: excluded,
+        tooSmall: tooSmall,
+        tooShort: tooShort,
+        stored: stored,
+        unfinishedRoots: unfinishedRoots,
+      );
+
   /// Files left out for being inside a folder with a `.nomedia`, inside a
   /// folder the user left out, under the minimum size, or under the minimum
   /// length.
@@ -43,6 +66,8 @@ class ScanStats {
     excluded: excluded + other.excluded,
     tooSmall: tooSmall + other.tooSmall,
     tooShort: tooShort + other.tooShort,
+    stored: stored + other.stored,
+    unfinishedRoots: unfinishedRoots + other.unfinishedRoots,
   );
 
   @override
@@ -52,10 +77,20 @@ class ScanStats {
       nomedia == other.nomedia &&
       excluded == other.excluded &&
       tooSmall == other.tooSmall &&
-      tooShort == other.tooShort;
+      tooShort == other.tooShort &&
+      stored == other.stored &&
+      unfinishedRoots == other.unfinishedRoots;
 
   @override
-  int get hashCode => Object.hash(seen, nomedia, excluded, tooSmall, tooShort);
+  int get hashCode => Object.hash(
+    seen,
+    nomedia,
+    excluded,
+    tooSmall,
+    tooShort,
+    stored,
+    unfinishedRoots,
+  );
 }
 
 /// The counts of the latest scan of this session that ended without error;

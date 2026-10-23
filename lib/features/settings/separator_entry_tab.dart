@@ -102,13 +102,11 @@ class _SeparatorEntryTabState extends State<SeparatorEntryTab> {
               ),
             ),
             const SizedBox(width: 12),
-            // As tall as the field, whatever the text under it.
-            SizedBox(
-              height: 56,
-              child: FilledButton.tonal(
-                onPressed: _submit,
-                child: Text(l10n.separatorsAdd),
-              ),
+            // As tall as the field at least; grows with the text scale.
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
+              onPressed: _submit,
+              child: Text(l10n.separatorsAdd),
             ),
           ],
         ),

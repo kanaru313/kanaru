@@ -61,14 +61,19 @@ class RootShortTrackRules {
 
   /// [diffDeletes] plus every track of [rootId] too short, found now or
   /// stored by an earlier scan with a lower minimum (those unchanged files
-  /// were not read, so they are counted in [tooShortFiles] here).
+  /// were not read, so they are counted in [tooShortFiles] here). A stored
+  /// track already in [diffDeletes] is not counted: its file is gone or left
+  /// out by another rule, and that has its own count.
   Future<Set<int>> deletes(
     LibraryDatabase db,
     int rootId,
     Iterable<int> diffDeletes,
   ) async {
+    final gone = diffDeletes.toSet();
     final stored = await db.shortTrackIds(rootId, minMs);
-    tooShortFiles += stored.where((id) => !_tooShort.contains(id)).length;
-    return {...diffDeletes, ..._tooShort, ...stored};
+    tooShortFiles += stored
+        .where((id) => !_tooShort.contains(id) && !gone.contains(id))
+        .length;
+    return {...gone, ..._tooShort, ...stored};
   }
 }

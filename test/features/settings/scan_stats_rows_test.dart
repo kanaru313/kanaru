@@ -69,14 +69,16 @@ void main() {
         excluded: 20,
         tooSmall: 30,
         tooShort: 40,
+        stored: 1200,
       ),
     );
 
-    expect(find.text('1,234 of 1,500 music files'), findsOneWidget);
+    expect(find.text('1,200 of 1,500 music files'), findsOneWidget);
+    expect(find.textContaining('folders not scanned'), findsNothing);
     expect(
       find.text(
-        '.nomedia folders: 10 · Left-out folders: 20 · '
-        'Under minimum size: 30 · Under minimum length: 40',
+        'In .nomedia folders: 10 files · In left-out folders: 20 files · '
+        'Under minimum size: 30 files · Under minimum length: 40 files',
       ),
       findsOneWidget,
     );
@@ -86,17 +88,33 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('An image repeated in many songs is stored once (by hash).'),
+      find.textContaining('An image repeated in many songs is stored once'),
       findsOneWidget,
     );
     expect(find.textContaining('Not scanned'), findsNothing);
   });
 
+  testWidgets(
+    'a folder the scan could not finish is said, with its own count',
+    (tester) async {
+      // The database still holds the missing folder's rows; the figure beside
+      // the files seen leaves them out, so it never exceeds them.
+      await pump(
+        tester,
+        db: Stream.value(_db),
+        session: const ScanStats(seen: 0, stored: 0, unfinishedRoots: 1),
+      );
+
+      expect(find.text('0 of 0 music files'), findsOneWidget);
+      expect(find.text('1 folder not scanned to the end'), findsOneWidget);
+    },
+  );
+
   testWidgets('says so when no scan ended in this session', (tester) async {
     await pump(tester, db: Stream.value(_db));
 
     expect(
-      find.text('1,234 tracks · Not scanned in this session'),
+      find.text('1,234 songs · Not scanned in this session'),
       findsOneWidget,
     );
     expect(find.text('Not scanned in this session'), findsOneWidget);
@@ -107,20 +125,21 @@ void main() {
     await pump(
       tester,
       db: Stream.value(_db),
-      session: const ScanStats(seen: 1500),
+      session: const ScanStats(seen: 1500, stored: 1400, unfinishedRoots: 2),
       locale: 'vi',
     );
 
-    expect(find.text('Bài lấy được'), findsOneWidget);
-    expect(find.text('1.234 trên 1.500 file nhạc'), findsOneWidget);
-    expect(find.text('2 bài lưu không đọc được tag'), findsOneWidget);
-    expect(find.text('Ảnh trùng chỉ lưu một lần (theo hash).'), findsOneWidget);
+    expect(find.text('Bài trong thư viện'), findsOneWidget);
+    expect(find.text('1.400 trên 1.500 file nhạc'), findsOneWidget);
+    expect(find.text('2 thư mục chưa quét xong'), findsOneWidget);
+    expect(find.text('2 bài không đọc được tag (vẫn lưu)'), findsOneWidget);
+    expect(find.textContaining('Ảnh trùng chỉ lưu một lần'), findsOneWidget);
   });
 
   testWidgets('is hidden without a library', (tester) async {
     await pump(tester, db: Stream.value(null));
 
-    expect(find.text('Songs found'), findsNothing);
+    expect(find.text('Songs in the library'), findsNothing);
   });
 
   testWidgets('shows dots while loading and dashes when the count fails', (
@@ -143,7 +162,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Songs found'), findsOneWidget);
+    expect(find.text('Songs in the library'), findsOneWidget);
     expect(find.text('—'), findsNWidgets(3));
   });
 }

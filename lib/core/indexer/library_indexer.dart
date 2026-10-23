@@ -10,6 +10,7 @@ import '../database/library_database.dart';
 import '../database/library_keys_provider.dart';
 import '../database/library_root_queries.dart';
 import '../database/library_startup.dart';
+import '../database/scan_stats_queries.dart';
 import '../database/separator_rules_provider.dart';
 import '../settings/settings_provider.dart';
 import 'cover_cache_cleanup.dart';
@@ -315,9 +316,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         'tags ${totals.tagTime.inMilliseconds} ms, '
         'db ${totals.dbTime.inMilliseconds} ms',
       );
-      if (ref.mounted) {
-        ref.read(lastScanStatsProvider.notifier).publish(totals.stats);
-      }
+      if (ref.mounted) await _publishStats(db, totals);
       _publish(IndexerFinished(summary, quiet: _quiet));
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
@@ -639,6 +638,26 @@ class LibraryIndexer extends Notifier<IndexerState> {
 
   /// Runs a cover cache step; any error is logged and gives `null`, since
   /// the cache can always be rebuilt and must never fail a scan.
+  /// Publishes the counts of the scan, with the tracks stored for the roots
+  /// it finished so "stored of seen" compares the same files. A failed count
+  /// leaves the previous numbers rather than failing a scan that worked.
+  Future<void> _publishStats(LibraryDatabase db, ScanTotals totals) async {
+    try {
+      final stored = await db.storedTrackCount(totals.okRootIds);
+      if (!ref.mounted) return;
+      ref
+          .read(lastScanStatsProvider.notifier)
+          .publish(
+            totals.stats.withEnd(
+              stored: stored,
+              unfinishedRoots: totals.skipped.length,
+            ),
+          );
+    } catch (error, stackTrace) {
+      _log.warning('Scan statistics not published', error, stackTrace);
+    }
+  }
+
   Future<int?> _coverStep(String name, Future<int?> Function() step) async {
     try {
       return await step();

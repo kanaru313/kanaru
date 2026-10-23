@@ -1965,15 +1965,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get separatorsSeparatorHelp =>
-      'No need to add spaces. Words like feat. split only with a space on each side.';
+      'No need to add spaces around it. Words like feat. split only with a space on each side.';
 
   @override
   String get separatorsKeepHelpArtist =>
-      'No need to add spaces. AC/DC, for example, stays one artist.';
+      'Type the name as it is in the tag, any case. AC/DC, for example, stays one artist.';
 
   @override
   String get separatorsKeepHelpGenre =>
-      'No need to add spaces. Funk/Soul, for example, stays one genre.';
+      'Type the name as it is in the tag, any case. Funk/Soul, for example, stays one genre.';
 
   @override
   String get separatorsAdd => 'Add';
@@ -2028,7 +2028,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get separatorsClose => 'Close';
 
   @override
-  String get scanStatsTracksTitle => 'Songs found';
+  String get scanStatsTracksTitle => 'Songs in the library';
 
   @override
   String scanStatsTracksOfFiles(int tracks, int files) {
@@ -2054,7 +2054,13 @@ class AppLocalizationsEn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '.nomedia folders: $countString';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'In .nomedia folders: $_temp0';
   }
 
   @override
@@ -2063,7 +2069,13 @@ class AppLocalizationsEn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Left-out folders: $countString';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'In left-out folders: $_temp0';
   }
 
   @override
@@ -2072,7 +2084,13 @@ class AppLocalizationsEn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Under minimum size: $countString';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'Under minimum size: $_temp0';
   }
 
   @override
@@ -2081,7 +2099,13 @@ class AppLocalizationsEn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return 'Under minimum length: $countString';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString files',
+      one: '1 file',
+    );
+    return 'Under minimum length: $_temp0';
   }
 
   @override
@@ -2119,6 +2143,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String scanStatsSongs(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString songs',
+      one: '1 song',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scanStatsUnfinishedRoots(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString folders not scanned to the end',
+      one: '1 folder not scanned to the end',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get scanStatsCoversHint =>
-      'An image repeated in many songs is stored once (by hash).';
+      'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).';
 }

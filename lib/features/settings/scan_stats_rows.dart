@@ -7,11 +7,13 @@ import '../../l10n/l10n.dart';
 import 'scan_stats_provider.dart';
 
 /// What the scan did, as rows without a control (laid out like
-/// `LibraryStatsRow`): the songs found out of the music files seen, the
+/// `LibraryStatsRow`): the songs stored out of the music files seen, the
 /// files the scan rules left out by reason, the songs stored without tags,
 /// and the covers made. The songs, tag errors and covers come from the
-/// database; what only a scan knows (files seen, left out) comes from the
-/// latest scan of this session, and reads "not scanned" until there is one.
+/// database; what only a scan knows (files seen, left out, and the songs
+/// stored for the folders it finished, to set against the files seen) comes
+/// from the latest scan of this session, and reads "not scanned" until there
+/// is one.
 /// Hidden without a library; "…" until the first count is in, "—" if it
 /// fails, and the last count is kept if a later reload fails.
 class ScanStatsRows extends ConsumerWidget {
@@ -37,8 +39,14 @@ class ScanStatsRows extends ConsumerWidget {
           value: counts == null
               ? placeholder
               : session == null
-              ? '${l10n.settingsStatsTracks(counts.tracks)} · $notScanned'
-              : l10n.scanStatsTracksOfFiles(counts.tracks, session.seen),
+              ? '${l10n.scanStatsSongs(counts.tracks)} · $notScanned'
+              // Stored and seen are both counted over the roots the scan
+              // finished, so the first never exceeds the second by rows of
+              // a folder that was missing.
+              : l10n.scanStatsTracksOfFiles(session.stored, session.seen),
+          note: session != null && session.unfinishedRoots > 0
+              ? l10n.scanStatsUnfinishedRoots(session.unfinishedRoots)
+              : null,
         ),
         _StatLine(
           title: l10n.scanStatsLeftOutTitle,

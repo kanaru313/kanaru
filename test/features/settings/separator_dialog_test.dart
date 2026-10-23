@@ -1,4 +1,7 @@
-import 'dart:ui' show PointerDeviceKind;
+import 'dart:ui' show PointerDeviceKind, SemanticsAction, Tristate;
+
+import 'package:flutter/rendering.dart' show RenderParagraph;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -83,7 +86,7 @@ void main() {
     }
     expect(
       find.text(
-        'No need to add spaces. '
+        'No need to add spaces around it. '
         'Words like feat. split only with a space on each side.',
       ),
       findsOneWidget,
@@ -258,6 +261,80 @@ void main() {
       await tester.tap(find.byTooltip('Page 2 of 2'));
       await tester.pumpAndSettle();
       expect(find.text('&').hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('a dot is a button for a screen reader', (tester) async {
+      final handle = tester.ensureSemantics();
+      await _open(tester);
+      await _type(tester, '&');
+      await _tapAdd(tester);
+
+      final first = tester.getSemantics(find.bySemanticsLabel('Page 1 of 2'));
+      final data = first.getSemanticsData();
+      expect(data.hasAction(SemanticsAction.tap), isTrue);
+      expect(data.flagsCollection.isButton, isTrue);
+      expect(data.flagsCollection.isSelected, Tristate.isFalse);
+      final second = tester.getSemantics(find.bySemanticsLabel('Page 2 of 2'));
+      expect(
+        second.getSemanticsData().flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
+
+      tester.semantics.tap(find.semantics.byLabel('Page 1 of 2'));
+      await tester.pumpAndSettle();
+      expect(find.text(';').hitTestable(), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('Tab reaches a dot and Enter or Space opens its page', (
+      tester,
+    ) async {
+      await _open(tester);
+      await _type(tester, '&');
+      await _tapAdd(tester);
+      expect(find.text(';'), findsNothing, reason: 'on the second page');
+
+      Future<void> tabTo(String tooltip) async {
+        for (var i = 0; i < 40; i++) {
+          final focus = FocusManager.instance.primaryFocus?.context;
+          if (focus?.findAncestorWidgetOfExactType<Tooltip>()?.message ==
+              tooltip) {
+            return;
+          }
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pump();
+        }
+        fail('Tab never reached $tooltip');
+      }
+
+      await tabTo('Page 1 of 2');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(find.text(';').hitTestable(), findsOneWidget);
+      expect(find.text('&'), findsNothing);
+
+      await tabTo('Page 2 of 2');
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pumpAndSettle();
+      expect(find.text('&').hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('a large text size does not cut the entries', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await _open(tester);
+
+      expect(tester.takeException(), isNull);
+      final paragraph = tester.renderObject<RenderParagraph>(find.text(';'));
+      final painter = TextPainter(
+        text: paragraph.text,
+        textDirection: TextDirection.ltr,
+        textScaler: paragraph.textScaler,
+        maxLines: 1,
+      )..layout();
+      expect(paragraph.size.height, greaterThanOrEqualTo(painter.height));
+      // Eight rows still make one page at this size.
+      expect(find.text('with').hitTestable(), findsOneWidget);
     });
 
     testWidgets('removing the only entry of the last page steps back', (
