@@ -43,6 +43,22 @@ fn header_check_rejects_oversized_images_without_decoding() {
 }
 
 #[test]
+fn header_check_limit_depends_on_the_format() {
+    // A JPEG may be scaled down while decoding, so it may be twice as long.
+    assert_eq!(validate_header(&jpeg(8192, 8, 1)), Some(ImageFormat::Jpeg));
+    assert_eq!(validate_header(&jpeg(8, 8192, 1)), Some(ImageFormat::Jpeg));
+    assert_eq!(validate_header(&jpeg(8193, 64, 1)), None);
+    assert_eq!(validate_header(&jpeg(64, 8193, 1)), None);
+    // PNG and WebP only have the full decode.
+    assert_eq!(validate_header(&png(4097, 8, 1)), None);
+    assert_eq!(validate_header(&png(8, 4097, 1)), None);
+    let webp = |width, height| image_bytes(width, height, ImageFormat::WebP, 1);
+    assert_eq!(validate_header(&webp(4096, 8)), Some(ImageFormat::WebP));
+    assert_eq!(validate_header(&webp(4097, 8)), None);
+    assert_eq!(validate_header(&webp(8, 4097)), None);
+}
+
+#[test]
 fn thumbnail_keeps_aspect_ratio_and_never_enlarges() {
     let big = make_jpeg(&png(2000, 1000, 1), ImageFormat::Png).unwrap();
     assert_eq!(

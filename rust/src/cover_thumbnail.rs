@@ -16,16 +16,17 @@ pub const THUMBNAIL_SIDE: u32 = 512;
 
 /// Upper bound on the buffers one decode may allocate, in the format the
 /// decoder produces (the pixel buffer, and for a progressive JPEG its
-/// coefficients, see `cover_decode_limits`). It does not cover what comes
-/// after: `into_rgb8` and the alpha flattening allocate a new RGB buffer while
-/// the decoded one is still alive, and the resize and the turn add smaller
-/// ones. So the peak of one cover thread is a multiple of this limit that
-/// depends on the pixel format: about 1x for RGB8, 1.75x for RGBA8, up to 3.5x
-/// for gray with alpha and up to 4x for 8-bit gray (the decode buffer plus a
-/// three times larger RGB copy). On top of that come the pictures lofty read
-/// from the file the thread is working on (each at most `MAX_COVER_BYTES`).
-/// Each thread runs one decode at a time, so the total grows with the thread
-/// count chosen in `tag_batch`.
+/// coefficients, see `cover_decode_limits`). What comes after stays within
+/// about one more such buffer: the alpha blend and the resize work in place on
+/// the decoded pixels (see [`flatten_and_shrink`]), and only a format that
+/// needs converting to 8 bits (16-bit PNG) or to a different channel count
+/// (anything but gray, gray with alpha, RGB, RGBA) allocates a copy of that
+/// size. The resized picture and the turn are at most 512 px. On top of that
+/// come the pictures lofty read from the file the thread is working on (each
+/// at most `MAX_COVER_BYTES`) and whatever a decoder keeps internally (the
+/// WebP decoder holds a second, RGBA-sized buffer). Each thread runs one
+/// decode at a time, so the total grows with the thread count chosen in
+/// `tag_batch`.
 pub const MAX_DECODE_BYTES: u64 = 64 * 1024 * 1024;
 
 const JPEG_QUALITY: u8 = 85;
@@ -43,6 +44,12 @@ const MAX_PASSTHROUGH_BYTES: usize = 200 * 1024;
 /// [`scaled_decode`]). Every shortcut falls back to the full path on any
 /// trouble. `None` when the image breaks a decode limit or is corrupt.
 pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
+    // A panic anywhere (decode, blend, resize, turn, encode) means this source
+    // is unusable, so the caller moves on to the next one.
+    guarded(|| build_jpeg(bytes, format))
+}
+
+fn build_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
     let image = match guarded(|| scaled_decode(bytes, format)) {
         Some(image) => image,
         None => {
@@ -59,11 +66,11 @@ pub fn make_jpeg(bytes: &[u8], format: ImageFormat) -> Option<Vec<u8>> {
         }
     };
 
-    // Flattened first: blending over black, then averaging, is what a
-    // resize with premultiplied alpha followed by the blend would give.
-    let rgb = shrink(flatten_on_black(image));
-    // After the shrink: turning a thumbnail costs next to nothing and needs
-    // no buffer the size of the original.
+    // Blended over black before the resize: averaging blended colours is what
+    // a resize with premultiplied alpha gives. The turn comes after the
+    // shrink: turning a thumbnail costs next to nothing and needs no buffer
+    // the size of the original.
+    let rgb = flatten_and_shrink(image)?;
     encode(&turn_upright(rgb, exif_orientation(bytes, format)))
 }
 
@@ -174,45 +181,108 @@ fn fits_as_is(header: &JpegHeader, decoded: (u32, u32)) -> bool {
         && size == decoded
 }
 
-/// `rgb` fitted within [`THUMBNAIL_SIDE`] (aspect kept, rounded like
-/// `image`'s `thumbnail`), or as is when it already fits. Resized with
-/// fast_image_resize (Lanczos3, SIMD chosen at run time); on any error, with
-/// `image`.
-fn shrink(rgb: RgbImage) -> RgbImage {
-    let (width, height) = rgb.dimensions();
+/// `image` blended over black and fitted within [`THUMBNAIL_SIDE`] (aspect
+/// kept, rounded like `image`'s `thumbnail`), or at its own size when it
+/// already fits. The work happens on the decoded buffer in its own channel
+/// layout (gray, gray with alpha, RGB, RGBA): the blend is in place and the
+/// resize reads the buffer as is, so no second buffer the size of the original
+/// exists. Only the small result is widened to RGB.
+fn flatten_and_shrink(image: DynamicImage) -> Option<RgbImage> {
+    let (width, height) = (image.width(), image.height());
+    let channels = usize::from(image.color().channel_count());
+    let mut data = match channels {
+        1 => image.into_luma8().into_raw(),
+        2 => image.into_luma_alpha8().into_raw(),
+        3 => image.into_rgb8().into_raw(),
+        _ => image.into_rgba8().into_raw(),
+    };
+    if channels % 2 == 0 {
+        blend_on_black(&mut data, channels);
+    }
+    let (new_width, new_height) = fitted_size(width, height);
+    if (new_width, new_height) != (width, height) {
+        data = resize(width, height, channels, data, (new_width, new_height))?;
+    }
+    let mut rgb = Vec::with_capacity(new_width as usize * new_height as usize * 3);
+    for pixel in data.chunks_exact(channels) {
+        match channels {
+            1 | 2 => rgb.extend_from_slice(&[pixel[0]; 3]),
+            _ => rgb.extend_from_slice(&pixel[..3]),
+        }
+    }
+    RgbImage::from_raw(new_width, new_height, rgb)
+}
+
+/// The size of a `width`×`height` image fitted within [`THUMBNAIL_SIDE`].
+fn fitted_size(width: u32, height: u32) -> (u32, u32) {
     let longest = width.max(height);
     if longest <= THUMBNAIL_SIDE {
-        return rgb;
+        return (width, height);
     }
     let ratio = f64::from(THUMBNAIL_SIDE) / f64::from(longest);
     let fit = |side: u32| ((f64::from(side) * ratio).round() as u32).max(1);
-    let (new_width, new_height) = (fit(width), fit(height));
-    guarded(|| {
-        use fast_image_resize as fir;
-        let source =
-            fir::images::ImageRef::new(width, height, rgb.as_raw(), fir::PixelType::U8x3).ok()?;
-        let mut target = fir::images::Image::new(new_width, new_height, fir::PixelType::U8x3);
+    (fit(width), fit(height))
+}
+
+/// JPEG has no alpha channel: multiplies every colour channel by its pixel's
+/// alpha (the last channel), in place. The alpha channel itself is left, and
+/// dropped later.
+fn blend_on_black(data: &mut [u8], channels: usize) {
+    for pixel in data.chunks_exact_mut(channels) {
+        let (colors, alpha) = pixel.split_at_mut(channels - 1);
+        let alpha = u16::from(alpha[0]);
+        for color in colors {
+            *color = ((u16::from(*color) * alpha + 127) / 255) as u8;
+        }
+    }
+}
+
+/// `data` (`width`×`height`, `channels` 8-bit channels, no alpha handling)
+/// resized to `to` with fast_image_resize (Lanczos3, SIMD chosen at run
+/// time); on any error, with `image`.
+fn resize(
+    width: u32,
+    height: u32,
+    channels: usize,
+    data: Vec<u8>,
+    to: (u32, u32),
+) -> Option<Vec<u8>> {
+    use fast_image_resize as fir;
+    let pixel_type = match channels {
+        1 => fir::PixelType::U8,
+        2 => fir::PixelType::U8x2,
+        3 => fir::PixelType::U8x3,
+        _ => fir::PixelType::U8x4,
+    };
+    let resized = guarded(|| {
+        let source = fir::images::ImageRef::new(width, height, &data, pixel_type).ok()?;
+        let mut target = fir::images::Image::new(to.0, to.1, pixel_type);
+        // The channels were blended already: no alpha handling of its own.
         let options = fir::ResizeOptions::new()
-            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3));
+            .resize_alg(fir::ResizeAlg::Convolution(fir::FilterType::Lanczos3))
+            .use_alpha(false);
         fir::Resizer::new()
             .resize(&source, &mut target, &options)
             .ok()?;
-        RgbImage::from_raw(new_width, new_height, target.into_vec())
+        Some(target.into_vec())
+    });
+    resized.or_else(|| match channels {
+        1 => thumbnail_of::<image::Luma<u8>>(width, height, data, to),
+        2 => thumbnail_of::<image::LumaA<u8>>(width, height, data, to),
+        3 => thumbnail_of::<image::Rgb<u8>>(width, height, data, to),
+        _ => thumbnail_of::<image::Rgba<u8>>(width, height, data, to),
     })
-    .unwrap_or_else(|| image::imageops::thumbnail(&rgb, new_width, new_height))
 }
 
-/// JPEG has no alpha channel: blends every pixel over black.
-fn flatten_on_black(image: DynamicImage) -> RgbImage {
-    if !image.color().has_alpha() {
-        return image.into_rgb8();
-    }
-    let rgba = image.into_rgba8();
-    RgbImage::from_fn(rgba.width(), rgba.height(), |x, y| {
-        let [r, g, b, a] = rgba.get_pixel(x, y).0;
-        let blend = |c: u8| ((u16::from(c) * u16::from(a) + 127) / 255) as u8;
-        image::Rgb([blend(r), blend(g), blend(b)])
-    })
+/// The fallback resize, with `image`.
+fn thumbnail_of<P: image::Pixel<Subpixel = u8> + 'static>(
+    width: u32,
+    height: u32,
+    data: Vec<u8>,
+    to: (u32, u32),
+) -> Option<Vec<u8>> {
+    let image = image::ImageBuffer::<P, Vec<u8>>::from_raw(width, height, data)?;
+    Some(image::imageops::thumbnail(&image, to.0, to.1).into_raw())
 }
 
 #[cfg(test)]
@@ -278,14 +348,14 @@ mod tests {
     }
 
     #[test]
-    fn shrink_rings_at_edges() {
+    fn resize_rings_at_edges() {
         // A step edge in the middle: a convolution with negative lobes
         // (Lanczos) overshoots on both sides, a bilinear blend never does.
         let step = RgbImage::from_fn(1024, 8, |x, _| {
             let level = if x < 512 { 64 } else { 192 };
             image::Rgb([level; 3])
         });
-        let shrunk = shrink(step);
+        let shrunk = flatten_and_shrink(DynamicImage::ImageRgb8(step)).unwrap();
         assert_eq!(shrunk.dimensions(), (512, 4));
         assert!(shrunk.pixels().any(|p| p.0[0] < 64 || p.0[0] > 192));
     }

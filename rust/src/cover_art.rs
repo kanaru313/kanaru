@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{self, Cursor, Read};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 
 use image::{ImageFormat, ImageReader};
@@ -18,8 +19,15 @@ use lofty::file::{TaggedFile, TaggedFileExt};
 use lofty::picture::PictureType;
 use lofty::tag::TagExt;
 
-/// Images with a longer side are rejected before any decode.
+/// PNG and WebP images, and every image taking the full decode, are rejected
+/// before any decode when a side is longer.
 pub const MAX_COVER_SIDE: u32 = 4096;
+
+/// A JPEG that is decoded scaled down (see `cover_decode_limits::scaled_plan`)
+/// may have a longer side, up to this: a baseline JPEG decodes row by row at
+/// 1/2, 1/4 or 1/8 size, so its memory does not grow with the picture. One that
+/// would take the full decode is cut at [`MAX_COVER_SIDE`] later.
+pub const MAX_SCALED_JPEG_SIDE: u32 = 8192;
 
 /// Sidecar images larger than this are not read. Matches lofty's own
 /// allocation limit for embedded pictures.
@@ -32,9 +40,11 @@ const FOLDER_NAMES: [&str; 3] = ["cover", "folder", "front"];
 pub type ImageListing = HashMap<String, OsString>;
 
 /// The format of `bytes` when it is a JPEG, PNG or WebP whose header declares
-/// both sides at most [`MAX_COVER_SIDE`]. Nothing is decoded. Other formats
-/// (GIF, BMP, TIFF, AVIF, HEIC, URL pictures) are rejected: the MIME type in a
-/// tag is often wrong, so only the content counts.
+/// both sides within the limit of that format: [`MAX_SCALED_JPEG_SIDE`] for a
+/// JPEG, [`MAX_COVER_SIDE`] for PNG and WebP. Nothing is decoded. Other
+/// formats (GIF, BMP, TIFF, AVIF, HEIC, URL pictures) are rejected: the MIME
+/// type in a tag is often wrong, so only the content counts. A header the
+/// parser panics on counts as invalid.
 pub fn validate_header(bytes: &[u8]) -> Option<ImageFormat> {
     let format = match bytes {
         [0xFF, 0xD8, 0xFF, ..] => ImageFormat::Jpeg,
@@ -42,10 +52,17 @@ pub fn validate_header(bytes: &[u8]) -> Option<ImageFormat> {
         [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => ImageFormat::WebP,
         _ => return None,
     };
-    let (width, height) = ImageReader::with_format(Cursor::new(bytes), format)
-        .into_dimensions()
-        .ok()?;
-    let fits = width > 0 && height > 0 && width <= MAX_COVER_SIDE && height <= MAX_COVER_SIDE;
+    let limit = if format == ImageFormat::Jpeg {
+        MAX_SCALED_JPEG_SIDE
+    } else {
+        MAX_COVER_SIDE
+    };
+    let (width, height) = catch_unwind(AssertUnwindSafe(|| {
+        ImageReader::with_format(Cursor::new(bytes), format).into_dimensions()
+    }))
+    .ok()?
+    .ok()?;
+    let fits = width > 0 && height > 0 && width <= limit && height <= limit;
     fits.then_some(format)
 }
 

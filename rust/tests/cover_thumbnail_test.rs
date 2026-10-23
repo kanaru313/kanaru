@@ -469,3 +469,36 @@ fn webp_exif_chunk_longer_than_the_file_is_not_applied() {
         }
     }
 }
+
+#[test]
+fn damaged_images_give_no_thumbnail_instead_of_a_panic() {
+    // Headers and bodies of all three formats with random bytes changed:
+    // whatever the decoder, the blend, the resize or the turn does with them,
+    // `make_jpeg` answers `Some` or `None` and never unwinds, so the next
+    // source of the file still gets its turn.
+    let bases = [
+        (jpeg(700, 600, 3), ImageFormat::Jpeg),
+        (png(700, 600, 3), ImageFormat::Png),
+        (
+            image_bytes(700, 600, ImageFormat::WebP, 3),
+            ImageFormat::WebP,
+        ),
+    ];
+    let mut state = 0x9E37_79B9_7F4A_7C15u64;
+    let mut next = move || {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        state
+    };
+    for (base, format) in bases {
+        for _ in 0..60 {
+            let mut bytes = base.clone();
+            for _ in 0..6 {
+                let at = (next() % bytes.len().min(300) as u64) as usize;
+                bytes[at] = next() as u8;
+            }
+            let _ = make_jpeg(&bytes, format);
+        }
+    }
+}
