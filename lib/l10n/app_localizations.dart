@@ -1889,20 +1889,14 @@ abstract class AppLocalizations {
   /// No description provided for @settingsListenAfterTimeHint.
   ///
   /// In en, this message translates to:
-  /// **'This long, or the share below of the song, whichever comes first.'**
+  /// **'This long, or this share of the song, whichever comes first.'**
   String get settingsListenAfterTimeHint;
 
-  /// No description provided for @settingsListenAfterShare.
+  /// No description provided for @settingsListenAfterOr.
   ///
   /// In en, this message translates to:
-  /// **'A listen counts after (share of the song)'**
-  String get settingsListenAfterShare;
-
-  /// No description provided for @settingsListenAfterShareHint.
-  ///
-  /// In en, this message translates to:
-  /// **'This share of the song, or the time above, whichever comes first.'**
-  String get settingsListenAfterShareHint;
+  /// **'or'**
+  String get settingsListenAfterOr;
 
   /// No description provided for @settingsSidebarTabs.
   ///

@@ -109,6 +109,10 @@ void main() {
         .widget<TextField>(_inRow(title, find.byType(TextField)))
         .controller!
         .text;
+    String dropdownTextAt(String title, int index) => tester
+        .widget<TextField>(_inRow(title, find.byType(TextField)).at(index))
+        .controller!
+        .text;
     bool chip(String label) => tester
         .widget<FilterChip>(find.widgetWithText(FilterChip, label))
         .selected;
@@ -122,8 +126,8 @@ void main() {
     expect(dropdownText('Minimum length'), '30 s');
     expect(dropdownText('Crossfade'), '6 s');
     expect(dropdownText('Text size'), '125%');
-    expect(dropdownText('A listen counts after'), '3 min');
-    expect(dropdownText('A listen counts after (share of the song)'), '75%');
+    expect(dropdownTextAt('A listen counts after', 0), '3 min');
+    expect(dropdownTextAt('A listen counts after', 1), '75%');
     expect(chip('Album title'), isTrue);
     expect(chip('Album artist'), isFalse);
     expect(chip('Year'), isTrue);

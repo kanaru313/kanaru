@@ -41,10 +41,17 @@ void main() {
 
   PlaybackPrefs prefs() => container.read(settingsProvider).playback;
 
-  Future<void> pick(WidgetTester tester, String title, String option) async {
+  Future<void> pick(
+    WidgetTester tester,
+    String title,
+    String option, {
+    int dropdown = 0,
+  }) async {
     expect(tester.widget<SettingRow>(row(title)).comingSoon, isFalse);
     await tester.tap(
-      find.descendant(of: row(title), matching: find.byType(TextField)),
+      find
+          .descendant(of: row(title), matching: find.byType(TextField))
+          .at(dropdown),
     );
     await tester.pumpAndSettle();
     // Every dropdown keeps its menu items; only the open one can be hit.
@@ -54,7 +61,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('the listen threshold rows save the picked values', (
+  testWidgets('the listen threshold row saves the picked values', (
     tester,
   ) async {
     await pump(tester);
@@ -62,7 +69,7 @@ void main() {
     await pick(tester, 'A listen counts after', '2 min');
     expect(prefs().listenThresholdMinutes, 2);
 
-    await pick(tester, 'A listen counts after (share of the song)', '75%');
+    await pick(tester, 'A listen counts after', '75%', dropdown: 1);
     expect(prefs().listenThresholdPercent, 75);
   });
 

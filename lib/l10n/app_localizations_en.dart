@@ -1231,15 +1231,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsListenAfterTimeHint =>
-      'This long, or the share below of the song, whichever comes first.';
+      'This long, or this share of the song, whichever comes first.';
 
   @override
-  String get settingsListenAfterShare =>
-      'A listen counts after (share of the song)';
-
-  @override
-  String get settingsListenAfterShareHint =>
-      'This share of the song, or the time above, whichever comes first.';
+  String get settingsListenAfterOr => 'or';
 
   @override
   String get settingsSidebarTabs => 'Sidebar tabs';

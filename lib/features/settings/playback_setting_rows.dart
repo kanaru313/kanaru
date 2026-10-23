@@ -82,38 +82,82 @@ class PlaybackSettingRows extends ConsumerWidget {
                 settings.setPlayback(p.copyWith(infiniteQueue: on)),
           ),
         ),
-        // Two rows, not two controls in one: a row's control is one compact
-        // width, too narrow for two dropdowns.
-        SettingRow.single(
+        SettingRow(
           title: l10n.settingsListenAfterTime,
           subtitle: l10n.settingsListenAfterTimeHint,
-          control: SettingDropdown<int>(
-            options: presetOptions(
-              listenMinutesPresets,
-              p.listenThresholdMinutes,
-              l10n.settingsUnitMinutes,
-            ),
-            selected: p.listenThresholdMinutes,
-            onSelected: (minutes) => settings.setPlayback(
-              p.copyWith(listenThresholdMinutes: minutes),
-            ),
+          control: (compact) => _ListenThresholdControl(
+            p: p,
+            settings: settings,
+            compact: compact,
           ),
         ),
-        SettingRow.single(
-          title: l10n.settingsListenAfterShare,
-          subtitle: l10n.settingsListenAfterShareHint,
-          control: SettingDropdown<int>(
-            options: presetOptions(
-              listenPercentPresets,
-              p.listenThresholdPercent,
-              (percent) => formatPercent(l10n, percent),
-            ),
-            selected: p.listenThresholdPercent,
-            onSelected: (percent) => settings.setPlayback(
-              p.copyWith(listenThresholdPercent: percent),
-            ),
-          ),
-        ),
+      ],
+    );
+  }
+}
+
+/// The two listen-threshold dropdowns (time, percent) side by side with an
+/// "or" between them, one control for the one row. [compact] mirrors the
+/// one [SettingRow] gets from [FullOrCompactControl]: full gives each
+/// dropdown its natural width, compact splits the shared compact width
+/// evenly between them.
+class _ListenThresholdControl extends StatelessWidget {
+  const _ListenThresholdControl({
+    required this.p,
+    required this.settings,
+    required this.compact,
+  });
+
+  final PlaybackPrefs p;
+  final SettingsNotifier settings;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final minutes = SettingDropdown<int>(
+      options: presetOptions(
+        listenMinutesPresets,
+        p.listenThresholdMinutes,
+        l10n.settingsUnitMinutes,
+      ),
+      selected: p.listenThresholdMinutes,
+      onSelected: (minutes) =>
+          settings.setPlayback(p.copyWith(listenThresholdMinutes: minutes)),
+    );
+    final percent = SettingDropdown<int>(
+      options: presetOptions(
+        listenPercentPresets,
+        p.listenThresholdPercent,
+        (percent) => formatPercent(l10n, percent),
+      ),
+      selected: p.listenThresholdPercent,
+      onSelected: (percent) =>
+          settings.setPlayback(p.copyWith(listenThresholdPercent: percent)),
+    );
+    final or = Text(
+      l10n.settingsListenAfterOr,
+      style: Theme.of(context).textTheme.bodySmall,
+    );
+    if (!compact) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          minutes,
+          const SizedBox(width: 8),
+          or,
+          const SizedBox(width: 8),
+          percent,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: minutes),
+        const SizedBox(width: 6),
+        or,
+        const SizedBox(width: 6),
+        Expanded(child: percent),
       ],
     );
   }

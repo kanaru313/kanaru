@@ -1181,15 +1181,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsListenAfterTimeHint =>
-      'Khoảng thời gian này, hoặc tỉ lệ bên dưới của bài, tuỳ điều kiện nào đến trước.';
+      'Khoảng thời gian này, hoặc tỉ lệ này của bài, tuỳ điều kiện nào đến trước.';
 
   @override
-  String get settingsListenAfterShare =>
-      'Một lượt nghe được tính sau (tỉ lệ của bài)';
-
-  @override
-  String get settingsListenAfterShareHint =>
-      'Tỉ lệ này của bài, hoặc thời gian bên trên, tuỳ điều kiện nào đến trước.';
+  String get settingsListenAfterOr => 'hoặc';
 
   @override
   String get settingsSidebarTabs => 'Tab thanh bên';
