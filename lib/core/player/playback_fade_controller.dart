@@ -123,8 +123,9 @@ class PlayPauseFader {
     _ramp.cancel();
     final turn = ++_turn;
     _ramp.gain = 0;
-    await _backend.setVolume(0);
-    await _backend.play();
+    // Both are sent before awaiting, so a pause or settle that comes while
+    // the engine works lands after the play, never before it.
+    await Future.wait([_backend.setVolume(0), _backend.play()]);
     // A pause, seek or track change while the engine started settled it.
     if (turn != _turn || _disposed) return;
     _mark();

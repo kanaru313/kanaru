@@ -80,9 +80,10 @@ class AppSettings {
   /// Library scan, playback and display options, grouped so that this class
   /// stays small. Their defaults are today's behavior. Read today: the scan
   /// filters (`.nomedia`, size, duration) and folder watching, ReplayGain
-  /// and the output device, the color taken from the cover and the font
-  /// size. The others are stored for features that are not built yet:
-  /// nothing reads them.
+  /// and the output device, the play/pause fades, the endless queue, the
+  /// listen threshold, the color taken from the cover, the font size and the
+  /// track numbers on album pages. The others are stored for features that
+  /// are not built yet: nothing reads them.
   final LibraryScanPrefs libraryScan;
   final PlaybackPrefs playback;
   final DisplayPrefs display;

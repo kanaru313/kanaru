@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/playback_fade.dart';
@@ -24,8 +26,12 @@ void main() {
   bool playing() => container.read(playerServiceProvider).playing;
 
   /// Opens the songs playing, with both fades [fadeMs] long.
-  Future<void> launch({int fadeMs = 100, int start = 0}) async {
-    backend = FakeAudioBackend();
+  Future<void> launch({
+    int fadeMs = 100,
+    int start = 0,
+    FakeAudioBackend? engine,
+  }) async {
+    backend = engine ?? FakeAudioBackend();
     time = ManualFadeClock();
     volumes = [];
     container = ProviderContainer(
@@ -252,4 +258,41 @@ void main() {
 
     expect(backend.calls.where((c) => c != 'dispose'), hasLength(count));
   });
+
+  test(
+    'a pause while the engine starts a fade-in lands after the play',
+    () async {
+      final engine = _SlowVolumeBackend();
+      await launch(engine: engine);
+      await service().pause();
+      backend.calls.clear();
+
+      engine.volumeGate = Completer<void>();
+      final starting = service().playPause();
+      await pumpMicrotasks();
+      await service().pause();
+      engine.volumeGate!.complete();
+      engine.volumeGate = null;
+      await starting;
+      await time.advance(_ms100);
+
+      expect(playing(), isFalse);
+      final play = backend.calls.indexOf('play');
+      expect(play, greaterThanOrEqualTo(0));
+      expect(backend.calls.lastIndexOf('pause'), greaterThan(play));
+      expect(backend.calls.last, 'setVolume(100.0)');
+    },
+  );
+}
+
+/// The fake engine with a `setVolume` that waits for [volumeGate], like a
+/// real engine busy with earlier commands.
+class _SlowVolumeBackend extends FakeAudioBackend {
+  Completer<void>? volumeGate;
+
+  @override
+  Future<void> setVolume(double volume) async {
+    calls.add('setVolume($volume)');
+    await volumeGate?.future;
+  }
 }
