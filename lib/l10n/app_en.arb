@@ -949,5 +949,7 @@
   "queueHistoryNothingToPlay": "None of these songs are in your library",
   "@queueHistoryNothingToPlay": {"description": "Snackbar when a saved queue has no song that can play"},
   "sidebarCurrentQueue": "Current queue",
-  "@sidebarCurrentQueue": {"description": "Sidebar item that opens and closes the queue side sheet"}
+  "@sidebarCurrentQueue": {"description": "Sidebar item that opens and closes the queue side sheet"},
+  "lyricsTab": "Lyrics",
+  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" }
 }
