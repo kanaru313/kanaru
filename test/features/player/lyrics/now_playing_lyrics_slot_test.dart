@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
@@ -15,6 +17,7 @@ import '../../../core/player/fake_audio_backend.dart';
 
 const _withLyrics = Track(uri: '/m/sung.flac', title: 'Sung', artist: 'A');
 const _without = Track(uri: '/m/instrumental.flac', title: 'Instrumental');
+const _alsoSung = Track(uri: '/m/also.flac', title: 'Also sung');
 
 void main() {
   late FakeEmbeddedLyricsReader embedded;
@@ -94,6 +97,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(LyricsView), findsNothing);
     expect(find.text('First words'), findsNothing);
+  });
+
+  testWidgets('while the next track loads, the slot stays but shows nothing '
+      'of the previous track', (tester) async {
+    await pump(tester, tracks: const [_withLyrics, _alsoSung]);
+    final gate = Completer<void>();
+    sidecar
+      ..byPath['/m/also.flac'] = '[00:00.00]Other words'
+      ..gates['/m/also.flac'] = gate;
+
+    await player().next();
+    await tester.pump();
+    expect(find.byType(LyricsView), findsOneWidget);
+    expect(find.text('First words'), findsNothing);
+    expect(find.text('Other words'), findsNothing);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Other words'), findsOneWidget);
   });
 
   testWidgets('narrow: a lyrics page right of the track', (tester) async {

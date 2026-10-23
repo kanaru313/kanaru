@@ -8,8 +8,12 @@ const maxLyricLines = 10000;
 /// `[mm:ss.fff]`, or `[mm:ss:ff]`.
 final _timeTag = RegExp(r'^\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]');
 
-/// A tag that is not a time: `[ar:Artist]`, `[offset:+250]`, `[by:]`.
-final _metaTag = RegExp(r'^\[([A-Za-z#]+):([^\]]*)\]\s*$');
+/// An LRC meta tag line: `[ar:Artist]`, `[offset:+250]`, `[by:]`. Only the
+/// known keys: a section header such as `[Chorus: Someone]` is lyrics.
+final _metaTag = RegExp(
+  r'^\[(ar|al|ti|au|by|re|ve|tool|length|offset|lang|la|id|#):([^\]]*)\]\s*$',
+  caseSensitive: false,
+);
 
 /// Word timings of enhanced LRC (`<00:12.34>`), dropped from the text.
 final _wordTag = RegExp(r'<\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?>');
@@ -17,10 +21,11 @@ final _wordTag = RegExp(r'<\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?>');
 /// Parses lyrics [text]: LRC when at least one line starts with a time tag,
 /// plain lyrics otherwise. `null` when nothing is left to show.
 ///
-/// LRC: a line may carry several time tags (one line per tag); meta tags
+/// LRC: a line may carry several time tags (one line per tag); known meta
+/// tags
 /// are skipped, and `[offset:ms]` (positive means earlier) applies to every
 /// line wherever it stands; times below zero become zero. Lines without a
-/// time tag are dropped, timed blank lines kept. Lines are sorted by time,
+/// time tag are dropped, timed blank lines kept (all blank gives `null`). Lines are sorted by time,
 /// keeping the file's order for equal times.
 ///
 /// Plain: meta tag lines are dropped and blank lines around the text
@@ -40,7 +45,8 @@ Lyrics? parseLyricsText(String text, LyricsSource source) {
       match = _timeTag.firstMatch(rest)
     ) {
       times.add(_timeOf(match));
-      rest = rest.substring(match.end);
+      // Stacked tags may be spaced: `[00:01] [00:02]text`.
+      rest = rest.substring(match.end).trimLeft();
     }
     if (times.isNotEmpty) {
       final words = rest.replaceAll(_wordTag, '').trim();
@@ -59,7 +65,8 @@ Lyrics? parseLyricsText(String text, LyricsSource source) {
     if (plain.length < maxLyricLines) plain.add(row.trimRight());
   }
 
-  if (timed.isNotEmpty) {
+  // Timed lines that are all blank leave nothing to show.
+  if (timed.any((line) => line.text.isNotEmpty)) {
     final shift = Duration(milliseconds: offsetMs);
     final lines = [
       for (final line in timed)

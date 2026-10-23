@@ -45,6 +45,10 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
   /// taken for the user's.
   bool _scrollingItself = false;
 
+  /// Counts this view's own scrolls: an animation replaced by a newer one
+  /// completes early and must not clear [_scrollingItself] for the newer.
+  int _scrollGeneration = 0;
+
   /// Running while auto-scroll is paused after a manual scroll.
   Timer? _resume;
   double? _viewportHeight;
@@ -93,6 +97,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
         .clamp(position.minScrollExtent, position.maxScrollExtent);
     if ((target - position.pixels).abs() < 0.5) return;
     _scrollingItself = true;
+    final generation = ++_scrollGeneration;
     if (!animate || MediaQuery.disableAnimationsOf(context)) {
       _scroll.jumpTo(target);
       _scrollingItself = false;
@@ -104,7 +109,9 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
           duration: _scrollDuration,
           curve: Curves.easeOutCubic,
         )
-        .whenComplete(() => _scrollingItself = false);
+        .whenComplete(() {
+          if (generation == _scrollGeneration) _scrollingItself = false;
+        });
   }
 
   bool _onScroll(ScrollUpdateNotification notification) {

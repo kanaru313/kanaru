@@ -46,6 +46,18 @@ void main() {
       ]);
     });
 
+    test('stacked tags may be separated by spaces', () {
+      final lyrics = _parse('[00:01.00] [00:03.00]  Twice')!;
+      expect(lyrics.lines, [
+        LyricLine(_ms(1000), 'Twice'),
+        LyricLine(_ms(3000), 'Twice'),
+      ]);
+    });
+
+    test('only blank timed lines is no lyrics', () {
+      expect(_parse('[00:01.00]\n[00:02.00]  \n[ar:Someone]'), isNull);
+    });
+
     test('word timings of enhanced LRC are removed', () {
       final lyrics = _parse('[00:01.00]<00:01.00>Hel<00:01.50>lo')!;
       expect(lyrics.lines.single.text, 'Hello');
@@ -95,9 +107,23 @@ void main() {
       expect(lyrics.lineAt(const Duration(minutes: 1)), -1);
     });
 
-    test('bracketed section names stay', () {
-      final lyrics = _parse('[Chorus]\nLa la')!;
-      expect(lyrics.lines.map((l) => l.text), ['[Chorus]', 'La la']);
+    test('bracketed section names stay, with or without a colon', () {
+      final lyrics = _parse(
+        '[Chorus]\nLa la\n[Intro: Drake]\n[Verse 2: Someone]',
+      )!;
+      expect(lyrics.lines.map((l) => l.text), [
+        '[Chorus]',
+        'La la',
+        '[Intro: Drake]',
+        '[Verse 2: Someone]',
+      ]);
+    });
+
+    test('meta keys match in any case', () {
+      expect(
+        _parse('[AR:Someone]\n[Ti:Song]\nWords')!.lines.single.text,
+        'Words',
+      );
     });
 
     test('nothing to show gives null', () {

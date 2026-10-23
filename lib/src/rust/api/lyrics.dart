@@ -11,7 +11,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 /// The lyrics stored in the audio file at `path`, read when the track plays
 /// (never during a scan). `None` when the file is gone, not a regular file
-/// (a FIFO is never waited on), cannot be parsed, or holds no lyrics.
+/// (a FIFO is never waited on), cannot be parsed, holds no lyrics, or the
+/// read takes longer than 10 s.
 ///
 /// Never panics: the read runs on its own thread with the tag reader's
 /// stack size, and a panic inside the parser gives `None`. Text over 1 MiB

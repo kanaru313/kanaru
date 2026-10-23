@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 
@@ -16,15 +18,17 @@ class FakeEmbeddedLyricsReader implements EmbeddedLyricsReader {
 }
 
 /// `.lrc` text by audio path; records every read. A path in [failing]
-/// throws.
+/// throws; a path in [gates] waits for its completer before answering.
 class FakeLrcSidecarReader implements LrcSidecarReader {
   final byPath = <String, String>{};
   final failing = <String>{};
+  final gates = <String, Completer<void>>{};
   final reads = <String>[];
 
   @override
   Future<String?> read(String audioPath) async {
     reads.add(audioPath);
+    await gates[audioPath]?.future;
     if (failing.contains(audioPath)) throw StateError('broken file');
     return byPath[audioPath];
   }

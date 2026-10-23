@@ -1,6 +1,8 @@
 //! Lyrics reading API exposed to Dart.
 
 use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::sync::mpsc;
+use std::time::Duration;
 
 use crate::lyrics_reader::read_lyrics;
 use crate::tag_batch::WORKER_STACK_BYTES;
@@ -25,19 +27,29 @@ pub struct EmbeddedLyrics {
     pub synced: Vec<SyncedLyricLine>,
 }
 
+/// Longest wait for one read. A file on a mount that stopped answering can
+/// block a read forever; the caller then gets `None` and the stuck thread
+/// is left behind instead of holding a bridge worker.
+const READ_TIMEOUT: Duration = Duration::from_secs(10);
+
 /// The lyrics stored in the audio file at `path`, read when the track plays
 /// (never during a scan). `None` when the file is gone, not a regular file
-/// (a FIFO is never waited on), cannot be parsed, or holds no lyrics.
+/// (a FIFO is never waited on), cannot be parsed, holds no lyrics, or the
+/// read takes longer than 10 s.
 ///
 /// Never panics: the read runs on its own thread with the tag reader's
 /// stack size, and a panic inside the parser gives `None`. Text over 1 MiB
 /// and synced lines past 10 000 lines or 1 MiB are dropped.
 pub fn read_embedded_lyrics(path: String) -> Option<EmbeddedLyrics> {
+    let (sender, receiver) = mpsc::channel();
     std::thread::Builder::new()
         .name("kanaru-lyrics".to_owned())
         .stack_size(WORKER_STACK_BYTES)
-        .spawn(move || catch_unwind(AssertUnwindSafe(|| read_lyrics(&path))).unwrap_or(None))
-        .ok()?
-        .join()
-        .unwrap_or(None)
+        .spawn(move || {
+            let lyrics = catch_unwind(AssertUnwindSafe(|| read_lyrics(&path))).unwrap_or(None);
+            // The caller may have stopped waiting; nothing to do then.
+            let _ = sender.send(lyrics);
+        })
+        .ok()?;
+    receiver.recv_timeout(READ_TIMEOUT).ok().flatten()
 }

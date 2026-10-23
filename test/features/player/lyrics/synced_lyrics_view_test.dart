@@ -142,6 +142,21 @@ void main() {
     expect(centerY(tester, 'line 3'), closeTo(160, 30));
   });
 
+  testWidgets('lines closer than the scroll animation do not pause it', (
+    tester,
+  ) async {
+    await pump(tester);
+    backend.emitPosition.add(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 100));
+    backend.emitPosition.add(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+
+    // Still following: a later line is scrolled to at once.
+    await playAt(tester, const Duration(seconds: 20));
+    expect(centerY(tester, 'line 19'), closeTo(160, 30));
+  });
+
   testWidgets('with reduced motion the view jumps instead of animating', (
     tester,
   ) async {
