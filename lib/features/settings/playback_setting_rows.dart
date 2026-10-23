@@ -7,12 +7,14 @@ import 'audio_output_device_setting_rows.dart';
 import 'audio_replay_gain_setting_rows.dart';
 import 'coming_soon_rows.dart';
 import 'lyrics_setting_rows.dart';
+import 'setting_choice.dart';
+import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Playback options. The output device and ReplayGain are wired; lyrics have
-/// their own rows; the rest are not yet (shown from the saved values, off):
-/// gapless, crossfade, fades, endless queue, and when a play counts as a
-/// listen.
+/// Playback options. The output device, ReplayGain and when a play counts as
+/// a listen are wired; lyrics have their own rows; the rest are not yet
+/// (shown from the saved values, off): gapless, crossfade, fades and the
+/// endless queue.
 class PlaybackSettingRows extends ConsumerWidget {
   const PlaybackSettingRows({super.key});
 
@@ -20,6 +22,7 @@ class PlaybackSettingRows extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final p = ref.watch(settingsProvider.select((s) => s.playback));
+    final settings = ref.read(settingsProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -69,25 +72,35 @@ class PlaybackSettingRows extends ConsumerWidget {
         ),
         // Two rows, not two controls in one: a row's control is one compact
         // width, too narrow for two dropdowns.
-        ComingSoonDropdownRow<int>(
+        SettingRow.single(
           title: l10n.settingsListenAfterTime,
           subtitle: l10n.settingsListenAfterTimeHint,
-          options: presetOptions(
-            listenMinutesPresets,
-            p.listenThresholdMinutes,
-            l10n.settingsUnitMinutes,
+          control: SettingDropdown<int>(
+            options: presetOptions(
+              listenMinutesPresets,
+              p.listenThresholdMinutes,
+              l10n.settingsUnitMinutes,
+            ),
+            selected: p.listenThresholdMinutes,
+            onSelected: (minutes) => settings.setPlayback(
+              p.copyWith(listenThresholdMinutes: minutes),
+            ),
           ),
-          selected: p.listenThresholdMinutes,
         ),
-        ComingSoonDropdownRow<int>(
+        SettingRow.single(
           title: l10n.settingsListenAfterShare,
           subtitle: l10n.settingsListenAfterShareHint,
-          options: presetOptions(
-            listenPercentPresets,
-            p.listenThresholdPercent,
-            (percent) => formatPercent(l10n, percent),
+          control: SettingDropdown<int>(
+            options: presetOptions(
+              listenPercentPresets,
+              p.listenThresholdPercent,
+              (percent) => formatPercent(l10n, percent),
+            ),
+            selected: p.listenThresholdPercent,
+            onSelected: (percent) => settings.setPlayback(
+              p.copyWith(listenThresholdPercent: percent),
+            ),
           ),
-          selected: p.listenThresholdPercent,
         ),
       ],
     );
