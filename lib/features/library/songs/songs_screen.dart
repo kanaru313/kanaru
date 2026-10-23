@@ -12,9 +12,11 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../shared/directory_picker_provider.dart';
+import '../../../shared/icons/app_icons.dart';
 import '../../../shared/root_rejection_message.dart';
 import '../../../shared/widgets/library_keys_updating.dart';
 import '../../../shared/widgets/library_loading.dart';
+import '../library_view_modes.dart';
 import '../widgets/library_sort_controls.dart';
 import 'shuffle_all_button.dart';
 import 'songs_empty_view.dart';
@@ -22,8 +24,8 @@ import 'songs_list_view.dart';
 
 final _log = Logger('library');
 
-/// The scanned library as a flat list in the saved sort. Tapping a song plays
-/// the whole list from it.
+/// The scanned library as a flat list (or a grid of covers) in the saved
+/// sort. Tapping a song plays the whole list from it.
 class SongsScreen extends ConsumerStatefulWidget {
   /// [pickDirectory] opens the folder picker; defaults to
   /// [directoryPickerProvider].
@@ -105,6 +107,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         if (hasDb && hasRoots) ...[
           const ShuffleAllButton(),
           const SizedBox(width: 8),
+          _SongsViewToggle(
+            view: ref.watch(libraryViewModesProvider.select((m) => m.songs)),
+          ),
+          const SizedBox(width: 8),
           LibrarySortControls<SongSortField>(
             choice: ref.watch(settingsProvider.select((s) => s.songSort)),
             fields: SongSortField.values,
@@ -114,6 +120,35 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         ],
       ],
       body: body,
+    );
+  }
+}
+
+/// Shows the current view; a tap switches to the other one. Remembered while
+/// the app runs, like the other library pages.
+class _SongsViewToggle extends ConsumerWidget {
+  const _SongsViewToggle({required this.view});
+
+  final AlbumsView view;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    return IconButton(
+      tooltip: switch (view) {
+        AlbumsView.grid => l10n.albumsGridView,
+        AlbumsView.list => l10n.albumsListView,
+      },
+      icon: Icon(switch (view) {
+        AlbumsView.grid => AppIcons.viewGrid,
+        AlbumsView.list => AppIcons.viewList,
+      }),
+      onPressed: () => ref.read(libraryViewModesProvider.notifier).setSongsView(
+        switch (view) {
+          AlbumsView.grid => AlbumsView.list,
+          AlbumsView.list => AlbumsView.grid,
+        },
+      ),
     );
   }
 }

@@ -6,12 +6,14 @@ import '../../core/settings/library_sort.dart';
 /// Kept for the running app only: a restart goes back to the defaults.
 class LibraryViewModesState {
   const LibraryViewModesState({
+    this.songs = AlbumsView.list,
     this.artists = AlbumsView.list,
     this.genres = AlbumsView.list,
     this.folders = AlbumsView.list,
     this.foldersHierarchy = true,
   });
 
+  final AlbumsView songs;
   final AlbumsView artists;
   final AlbumsView genres;
   final AlbumsView folders;
@@ -21,11 +23,13 @@ class LibraryViewModesState {
   final bool foldersHierarchy;
 
   LibraryViewModesState copyWith({
+    AlbumsView? songs,
     AlbumsView? artists,
     AlbumsView? genres,
     AlbumsView? folders,
     bool? foldersHierarchy,
   }) => LibraryViewModesState(
+    songs: songs ?? this.songs,
     artists: artists ?? this.artists,
     genres: genres ?? this.genres,
     folders: folders ?? this.folders,
@@ -36,6 +40,8 @@ class LibraryViewModesState {
 class LibraryViewModes extends Notifier<LibraryViewModesState> {
   @override
   LibraryViewModesState build() => const LibraryViewModesState();
+
+  void setSongsView(AlbumsView view) => state = state.copyWith(songs: view);
 
   void setArtistsView(AlbumsView view) => state = state.copyWith(artists: view);
 
