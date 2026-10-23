@@ -24,7 +24,8 @@ const shortestFade = Duration(milliseconds: 50);
 ///
 /// A fade stops on its own, settling at once, when what it was started for
 /// changes: another playthrough (a new track, repeat one looping) or a new
-/// volume or mute.
+/// volume or mute. The sleep fade-out ([fadeOutForSleep]) is the exception
+/// for a new playthrough: it goes on into the next track.
 class PlayPauseFader {
   PlayPauseFader({
     required FadeClock clock,
@@ -52,6 +53,9 @@ class PlayPauseFader {
   int _turn = 0;
   bool _disposed = false;
 
+  /// The running fade, or the silence it left, is the sleep fade-out.
+  bool _sleepFade = false;
+
   /// What the running fade was started for.
   ({int playthrough, double volume, double? beforeMute})? _for;
 
@@ -61,6 +65,9 @@ class PlayPauseFader {
   /// A fade is running or left the engine's volume scaled.
   bool get busy => _ramp.active || _ramp.gain != 1;
 
+  /// A sleep fade-out is running or left the engine's volume lowered.
+  bool get sleepFading => _sleepFade;
+
   /// Pauses the engine, fading out over [fadeMs] scaled by the volume left
   /// (a fade-in turned around takes only as long as it had come). The fade
   /// never runs past the end of the track, where the engine would move on.
@@ -68,6 +75,7 @@ class PlayPauseFader {
   /// wait for the fade.
   Future<void> pause(int fadeMs) async {
     if (_disposed) return;
+    _sleepFade = false;
     final state = _state();
     var length = Duration(
       microseconds: (fadeMs * 1000 * (busy ? _ramp.gain : 1)).round(),
@@ -103,6 +111,7 @@ class PlayPauseFader {
   /// never paused, so the fade turns around from where it is.
   Future<void> play(int fadeMs) async {
     if (_disposed) return;
+    _sleepFade = false;
     if (_pauseAfterFade) {
       _pauseAfterFade = false;
       _turn++;
@@ -136,6 +145,27 @@ class PlayPauseFader {
     );
   }
 
+  /// Ramps the engine's volume from where it is to silence over [length]
+  /// for the sleep timer, without pausing the engine or touching the
+  /// player's state: the track plays on silently until the player pauses,
+  /// whose settle sends the user's volume back. Unlike the other fades it
+  /// goes on across a new playthrough (the engine moving on to the next
+  /// track); a volume or mute change still settles it. Does nothing while a
+  /// pause waits for its fade-out, which goes to silence already.
+  void fadeOutForSleep(Duration length) {
+    if (_disposed || _pauseAfterFade) return;
+    _turn++;
+    _sleepFade = true;
+    _mark();
+    _ramp.run(to: 0, length: length, onDone: () {});
+  }
+
+  /// Ends a sleep fade-out at once, sending the user's volume back. Any
+  /// other fade is left alone.
+  void endSleepFade() {
+    if (_sleepFade) settle();
+  }
+
   /// Ends any fade at once: a pause it was waiting for reaches the engine
   /// now, then the user's volume. Synchronous, so both go out before
   /// whatever the player sends next (a seek, the next track).
@@ -143,6 +173,7 @@ class PlayPauseFader {
     if (_disposed) return;
     _turn++;
     _ramp.cancel();
+    _sleepFade = false;
     final pause = _pauseAfterFade;
     _pauseAfterFade = false;
     if (pause) _call(_backend.pause);
@@ -157,6 +188,7 @@ class PlayPauseFader {
     _disposed = true;
     _ramp.cancel();
     _pauseAfterFade = false;
+    _sleepFade = false;
   }
 
   void _mark() {
@@ -173,7 +205,7 @@ class PlayPauseFader {
     final state = _state();
     return !_disposed &&
         marked != null &&
-        marked.playthrough == state.playthrough &&
+        (_sleepFade || marked.playthrough == state.playthrough) &&
         marked.volume == state.volume &&
         marked.beforeMute == state.volumeBeforeMute;
   }
