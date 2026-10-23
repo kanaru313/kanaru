@@ -18,15 +18,15 @@ final _metaTag = RegExp(
 /// Word timings of enhanced LRC (`<00:12.34>`), dropped from the text.
 final _wordTag = RegExp(r'<\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?>');
 
-/// Parses lyrics [text]: LRC when at least one line starts with a time tag,
-/// plain lyrics otherwise. `null` when nothing is left to show.
+/// Parses lyrics [text]: LRC when at least one timed line has words, plain
+/// lyrics otherwise (timed lines that are all blank are ignored, so only the
+/// untimed text is left). `null` when nothing is left to show.
 ///
 /// LRC: a line may carry several time tags (one line per tag); known meta
-/// tags
-/// are skipped, and `[offset:ms]` (positive means earlier) applies to every
-/// line wherever it stands; times below zero become zero. Lines without a
-/// time tag are dropped, timed blank lines kept (all blank gives `null`). Lines are sorted by time,
-/// keeping the file's order for equal times.
+/// tags are skipped, and `[offset:ms]` (positive means earlier) applies to
+/// every line wherever it stands; times below zero become zero. Lines
+/// without a time tag are dropped, timed blank lines kept. Lines are sorted
+/// by time, keeping the file's order for equal times.
 ///
 /// Plain: meta tag lines are dropped and blank lines around the text
 /// trimmed. Either way at most [maxLyricLines] lines are kept.

@@ -54,6 +54,12 @@ void main() {
       ]);
     });
 
+    test('blank timed lines alone leave the untimed text as plain', () {
+      final lyrics = _parse('[00:01.00]\nHello')!;
+      expect(lyrics.synced, isFalse);
+      expect(lyrics.lines.single.text, 'Hello');
+    });
+
     test('only blank timed lines is no lyrics', () {
       expect(_parse('[00:01.00]\n[00:02.00]  \n[ar:Someone]'), isNull);
     });
