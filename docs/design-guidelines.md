@@ -62,7 +62,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - Height 96 px. Shows artwork, title and artist, transport (previous, play or pause, next), seek bar, volume, shuffle, repeat, and the queue button.
 - Below 720 px: compact layout with a thin seek strip on the top edge. Controls stay in the bar.
 - Shown when a queue exists (`playerBarVisibleProvider`).
-- Seek bar: the played part is a wavy line while playing and flat when paused, while dragging, when the window is unfocused, or under reduced motion.
+- Seek bar: the played part is a wavy line while playing and flat when paused, while dragging, when the window is unfocused, or under reduced motion. It travels at about 15 frames a second (each frame composites the whole window on GTK, so 60 a second is not worth it) and does not move at all while Now Playing covers the bar.
 - Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
 - Icon buttons carry tooltips.
 
@@ -184,7 +184,7 @@ The Home placeholder screen uses `EmptyState` with a one-sentence message. Favor
 | Now Playing slide | 500 ms | Checked (`now_playing_overlay.dart`) |
 | Auto-hide fade | 100 to 150 ms | Not gated |
 | Now Playing cover gradient fade | 300 ms | Instant (`now_playing_cover_gradient.dart`) |
-| Seek bar wave | continuous while playing | Flat (`seek_bar.dart`) |
+| Seek bar wave | about 15 frames a second while playing | Flat (`seek_bar.dart`) |
 
 Reduced motion comes from the platform setting, or from Settings → Appearance → Animations turned off: the app's builder (`lib/app/app.dart`) then sets `MediaQuery.disableAnimations` for every page, dialog and menu, and the Now Playing gradient fade is instant too. The theme change itself (`themeAnimationDuration`) is always instant. Turned on, the platform setting decides. Every new animation must check `MediaQuery.disableAnimationsOf`, never the setting itself. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
 

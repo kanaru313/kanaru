@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,12 @@ const _waveRise = Duration(milliseconds: 300);
 
 /// How long one full wave takes to travel its own length.
 const _waveTravel = Duration(milliseconds: 1500);
+
+/// How often the travelling wave moves on: about 15 times a second. On GTK
+/// each frame composites the whole window, so a wave drawn at the display's
+/// rate (60 a second) costs about four times as much for a motion that looks
+/// the same on a 4 px thick line.
+const _waveFrame = Duration(milliseconds: 66);
 
 /// Elapsed time · track · total time, under the playback controls. While
 /// music plays the played part of the track turns into a travelling wave;
@@ -76,9 +83,16 @@ class SeekBar extends ConsumerWidget {
   }
 }
 
-/// Owns the wave's animations: they tick only while the wave moves or
+/// Owns the wave's animations: they run only while the wave moves or
 /// settles, and stop once it lies flat. The wave moves only while the app is
-/// `resumed`: an unfocused or minimized window lets it settle.
+/// `resumed` and the widget is not muted by a covering screen
+/// ([TickerMode], as Now Playing does to the shell under it): an unfocused or
+/// minimized window lets it settle, a covered one stops at once.
+///
+/// The amplitude rises and settles on a vsync-driven controller, which asks
+/// for a frame only while it runs. The phase moves on a timer instead, a
+/// [_waveFrame] at a time: a ticker would ask for a frame on every vsync
+/// whether or not the phase changed.
 class _WavyTrack extends StatefulWidget {
   const _WavyTrack({required this.progress, required this.waving});
 
@@ -92,7 +106,16 @@ class _WavyTrack extends StatefulWidget {
 class _WavyTrackState extends State<_WavyTrack>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   late final _amplitude = AnimationController(vsync: this, duration: _waveRise);
-  late final _phase = AnimationController(vsync: this, duration: _waveTravel);
+
+  /// Where the wave is in its travel, from 0 to 1.
+  final _phase = ValueNotifier<double>(0);
+
+  /// Moves [_phase] on; running only while the wave travels.
+  Timer? _travel;
+
+  /// Timer ticks made so far. The phase is counted from them, not read from
+  /// a clock, so it does not depend on how late a tick fired.
+  int _steps = 0;
 
   /// Whether the window has focus. Unknown counts as focused.
   bool _focused = _isFocused(WidgetsBinding.instance.lifecycleState);
@@ -104,6 +127,12 @@ class _WavyTrackState extends State<_WavyTrack>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Runs once after [initState] and again when [TickerMode] changes.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _sync();
   }
 
@@ -122,21 +151,38 @@ class _WavyTrackState extends State<_WavyTrack>
   }
 
   void _sync() {
-    if (widget.waving && _focused) {
+    final visible = TickerMode.valuesOf(context).enabled;
+    if (widget.waving && _focused && visible) {
       _amplitude.forward();
-      if (!_phase.isAnimating) _phase.repeat();
+      _travel ??= Timer.periodic(_waveFrame, (_) => _step());
       return;
     }
+    // A covered wave is muted: its amplitude cannot settle, and nothing may
+    // keep drawing under the covering screen.
+    if (!visible) _stopTravel();
     // Keeps travelling while it flattens, then stops for good. Waving again
     // before then cancels the flattening, and the wave keeps going.
     _amplitude.reverse().whenCompleteOrCancel(() {
-      if (mounted && _amplitude.isDismissed) _phase.stop();
+      if (mounted && _amplitude.isDismissed) _stopTravel();
     });
+  }
+
+  void _step() {
+    _steps++;
+    _phase.value =
+        (_steps * _waveFrame.inMicroseconds % _waveTravel.inMicroseconds) /
+        _waveTravel.inMicroseconds;
+  }
+
+  void _stopTravel() {
+    _travel?.cancel();
+    _travel = null;
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _stopTravel();
     _amplitude.dispose();
     _phase.dispose();
     super.dispose();
