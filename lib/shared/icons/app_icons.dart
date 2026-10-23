@@ -120,4 +120,10 @@ abstract final class AppIcons {
   static const IconData favoriteRounded = Icons.favorite_rounded;
   static const IconData importPlaylist = Icons.file_open_outlined;
   static const IconData saveQueue = Icons.playlist_add_check_rounded;
+
+  // Queue history.
+  static const IconData queueHistory = Icons.manage_history_rounded;
+  static const IconData queueHistoryOutlined = Icons.manage_history_outlined;
+  static const IconData currentQueue = Icons.queue_music_rounded;
+  static const IconData currentQueueOutlined = Icons.queue_music_outlined;
 }

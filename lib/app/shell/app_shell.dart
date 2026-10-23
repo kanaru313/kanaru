@@ -137,6 +137,8 @@ class AppShell extends ConsumerWidget {
                       Navigator.of(context).pop();
                       GoRouter.of(context).go(location);
                     },
+                    // The sheet covers the drawer; close the drawer under it.
+                    onQueueToggled: () => Navigator.of(context).pop(),
                   ),
                 ),
               ),

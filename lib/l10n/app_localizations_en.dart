@@ -1832,4 +1832,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueSaveNothing => 'Nothing in the queue is in your library';
+
+  @override
+  String get queueHistoryTitle => 'Queue history';
+
+  @override
+  String get queueHistoryEmptyTitle => 'No queue history yet';
+
+  @override
+  String get queueHistoryEmptyMessage =>
+      'When you play something new, the queue it replaces is kept here.';
+
+  @override
+  String queueHistorySavedAt(DateTime date, DateTime time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+    final intl.DateFormat timeDateFormat = intl.DateFormat.Hm(localeName);
+    final String timeString = timeDateFormat.format(time);
+
+    return '$dateString · $timeString';
+  }
+
+  @override
+  String get queueHistoryPlay => 'Play';
+
+  @override
+  String get queueHistoryShuffle => 'Shuffle';
+
+  @override
+  String get queueHistorySaveAsPlaylist => 'Save as playlist';
+
+  @override
+  String queueHistorySavedAsPlaylist(String name) {
+    return 'Saved as $name';
+  }
+
+  @override
+  String get queueHistoryDelete => 'Delete';
+
+  @override
+  String get queueHistoryDeleteTitle => 'Delete this queue?';
+
+  @override
+  String get queueHistoryDeleteMessage =>
+      'It is removed from your queue history. The songs stay in your library.';
+
+  @override
+  String get queueHistoryDeleted => 'Queue deleted';
+
+  @override
+  String get queueHistoryNothingToPlay =>
+      'None of these songs are in your library';
+
+  @override
+  String get sidebarCurrentQueue => 'Current queue';
 }

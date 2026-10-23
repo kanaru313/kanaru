@@ -1709,4 +1709,58 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get queueSaveNothing =>
       'Không bài nào trong hàng đợi có trong thư viện';
+
+  @override
+  String get queueHistoryTitle => 'Lịch sử hàng đợi';
+
+  @override
+  String get queueHistoryEmptyTitle => 'Chưa có lịch sử hàng đợi';
+
+  @override
+  String get queueHistoryEmptyMessage =>
+      'Khi bạn phát thứ khác, hàng đợi bị thay sẽ được giữ ở đây.';
+
+  @override
+  String queueHistorySavedAt(DateTime date, DateTime time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+    final intl.DateFormat timeDateFormat = intl.DateFormat.Hm(localeName);
+    final String timeString = timeDateFormat.format(time);
+
+    return '$dateString · $timeString';
+  }
+
+  @override
+  String get queueHistoryPlay => 'Phát';
+
+  @override
+  String get queueHistoryShuffle => 'Phát ngẫu nhiên';
+
+  @override
+  String get queueHistorySaveAsPlaylist => 'Lưu thành playlist';
+
+  @override
+  String queueHistorySavedAsPlaylist(String name) {
+    return 'Đã lưu thành $name';
+  }
+
+  @override
+  String get queueHistoryDelete => 'Xoá';
+
+  @override
+  String get queueHistoryDeleteTitle => 'Xoá hàng đợi này?';
+
+  @override
+  String get queueHistoryDeleteMessage =>
+      'Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.';
+
+  @override
+  String get queueHistoryDeleted => 'Đã xoá hàng đợi';
+
+  @override
+  String get queueHistoryNothingToPlay =>
+      'Không bài nào trong đây có trong thư viện';
+
+  @override
+  String get sidebarCurrentQueue => 'Hàng đợi hiện tại';
 }
