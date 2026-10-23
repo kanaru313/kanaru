@@ -20,6 +20,7 @@ import 'root_scan_result.dart';
 import 'root_short_track_rules.dart';
 import 'scan_diff.dart';
 import 'scan_rules.dart';
+import 'scan_stats.dart';
 import 'scan_totals.dart';
 import 'scanned_folders.dart';
 import 'short_track_memo.dart';
@@ -314,6 +315,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
         'tags ${totals.tagTime.inMilliseconds} ms, '
         'db ${totals.dbTime.inMilliseconds} ms',
       );
+      if (ref.mounted) {
+        ref.read(lastScanStatsProvider.notifier).publish(totals.stats);
+      }
       _publish(IndexerFinished(summary, quiet: _quiet));
     } catch (error, stackTrace) {
       _log.severe('Scan failed', error, stackTrace);
@@ -459,6 +463,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
       _awaitingWalkOf = null;
       if (!keepWalk) _abandonedWalks.remove(root.path);
     }
+    final seen = walk.files.length;
     walk = applyWalkRules(
       walk,
       root.path,
@@ -594,6 +599,11 @@ class LibraryIndexer extends Notifier<IndexerState> {
       skippedFolderNames: skippedFolders,
       dirs: walk.dirs,
       deferred: walk.deferred,
+      stats: ScanStats.ofRoot(
+        walk,
+        seen: seen,
+        tooShort: shortRules.tooShortFiles,
+      ),
       walkTime: walkTime.elapsed,
       tagTime: tagTime.elapsed,
       dbTime: dbTime.elapsed,

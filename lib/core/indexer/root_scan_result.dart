@@ -1,4 +1,5 @@
 import 'indexer_state.dart';
+import 'scan_stats.dart';
 
 /// What scanning one library root produced: counts to add to the scan totals,
 /// and why the root was left unfinished, if it was.
@@ -16,6 +17,7 @@ class RootScanResult {
     this.error,
     this.dirs,
     this.deferred = 0,
+    this.stats = const ScanStats(),
     this.walkTime = Duration.zero,
     this.tagTime = Duration.zero,
     this.dbTime = Duration.zero,
@@ -38,7 +40,8 @@ class RootScanResult {
        skippedFolderNames = const [],
        skipReason = null,
        dirs = null,
-       deferred = 0;
+       deferred = 0,
+       stats = const ScanStats();
 
   final int added;
   final int updated;
@@ -71,6 +74,10 @@ class RootScanResult {
 
   /// Files left unread because they changed too recently.
   final int deferred;
+
+  /// What the scan saw and left out of this root; zero when it was left
+  /// unfinished before the end.
+  final ScanStats stats;
 
   final Duration walkTime;
   final Duration tagTime;

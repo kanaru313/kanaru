@@ -42,12 +42,7 @@ void main() {
   tearDown(() => db.close());
 
   test('an empty library counts zero', () async {
-    expect(await db.libraryStats(), (
-      tracks: 0,
-      albums: 0,
-      artists: 0,
-      genres: 0,
-    ));
+    expect(await db.libraryStats(), (tracks: 0, albums: 0, artists: 0));
   });
 
   test(
@@ -79,30 +74,12 @@ void main() {
     },
   );
 
-  test('genres fold case and spaces and skip empty and missing ones', () async {
-    await db.upsertTracks([
-      _row(genre: 'Rock'),
-      _row(genre: 'rock'),
-      _row(genre: ' ROCK '),
-      _row(genre: 'Pop'),
-      _row(genre: ''),
-      _row(),
-    ]);
-
-    expect((await db.libraryStats()).genres, 2);
-  });
-
   test('removing the folder empties the counts', () async {
     await db.upsertTracks([_row(artist: 'Ann', album: 'One', genre: 'Rock')]);
     expect((await db.libraryStats()).tracks, 1);
 
     await db.removeRoot(_rootId);
 
-    expect(await db.libraryStats(), (
-      tracks: 0,
-      albums: 0,
-      artists: 0,
-      genres: 0,
-    ));
+    expect(await db.libraryStats(), (tracks: 0, albums: 0, artists: 0));
   });
 }

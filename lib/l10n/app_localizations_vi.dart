@@ -1789,4 +1789,91 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get genresUnknown => 'Không rõ thể loại';
+
+  @override
+  String get scanStatsTracksTitle => 'Bài lấy được';
+
+  @override
+  String scanStatsTracksOfFiles(int tracks, int files) {
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+    final intl.NumberFormat filesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String filesString = filesNumberFormat.format(files);
+
+    return '$tracksString trên $filesString file nhạc';
+  }
+
+  @override
+  String get scanStatsNotScanned => 'Chưa quét trong phiên này';
+
+  @override
+  String get scanStatsLeftOutTitle => 'Bị loại do luật quét';
+
+  @override
+  String scanStatsNomedia(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Thư mục .nomedia: $countString';
+  }
+
+  @override
+  String scanStatsExcluded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Thư mục loại trừ: $countString';
+  }
+
+  @override
+  String scanStatsTooSmall(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Dưới cỡ file tối thiểu: $countString';
+  }
+
+  @override
+  String scanStatsTooShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Dưới thời lượng tối thiểu: $countString';
+  }
+
+  @override
+  String get scanStatsTagErrorsTitle => 'Lỗi tag';
+
+  @override
+  String scanStatsTagErrors(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString bài lưu không đọc được tag';
+  }
+
+  @override
+  String get scanStatsCoversTitle => 'Ảnh bìa';
+
+  @override
+  String scanStatsCovers(int images, int tracks) {
+    final intl.NumberFormat imagesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String imagesString = imagesNumberFormat.format(images);
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+
+    return '$imagesString ảnh đã tạo cho $tracksString bài có ảnh';
+  }
+
+  @override
+  String get scanStatsCoversHint => 'Ảnh trùng chỉ lưu một lần (theo hash).';
 }

@@ -99,9 +99,7 @@ void main() {
     expect(find.text('Unknown genre'), findsNothing);
   });
 
-  testWidgets('the page says not found when no song is left', (
-    tester,
-  ) async {
+  testWidgets('the page says not found when no song is left', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, const [
       TestTrack('x', genre: 'Rock'),

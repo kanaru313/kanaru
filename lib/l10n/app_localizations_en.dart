@@ -1913,4 +1913,99 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get genresUnknown => 'Unknown genre';
+
+  @override
+  String get scanStatsTracksTitle => 'Songs found';
+
+  @override
+  String scanStatsTracksOfFiles(int tracks, int files) {
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+    final intl.NumberFormat filesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String filesString = filesNumberFormat.format(files);
+
+    return '$tracksString of $filesString music files';
+  }
+
+  @override
+  String get scanStatsNotScanned => 'Not scanned in this session';
+
+  @override
+  String get scanStatsLeftOutTitle => 'Left out by scan rules';
+
+  @override
+  String scanStatsNomedia(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '.nomedia folders: $countString';
+  }
+
+  @override
+  String scanStatsExcluded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Left-out folders: $countString';
+  }
+
+  @override
+  String scanStatsTooSmall(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Under minimum size: $countString';
+  }
+
+  @override
+  String scanStatsTooShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Under minimum length: $countString';
+  }
+
+  @override
+  String get scanStatsTagErrorsTitle => 'Tag errors';
+
+  @override
+  String scanStatsTagErrors(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString songs',
+      one: '1 song',
+      zero: 'No songs',
+    );
+    return '$_temp0 stored without readable tags';
+  }
+
+  @override
+  String get scanStatsCoversTitle => 'Cover art';
+
+  @override
+  String scanStatsCovers(int images, int tracks) {
+    final intl.NumberFormat imagesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String imagesString = imagesNumberFormat.format(images);
+    final intl.NumberFormat tracksNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String tracksString = tracksNumberFormat.format(tracks);
+
+    return '$imagesString images made for $tracksString songs with art';
+  }
+
+  @override
+  String get scanStatsCoversHint =>
+      'An image repeated in many songs is stored once (by hash).';
 }

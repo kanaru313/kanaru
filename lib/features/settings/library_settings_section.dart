@@ -16,10 +16,11 @@ import 'folder_watch_row.dart';
 import 'library_folders_list.dart';
 import 'library_scan_setting_rows.dart';
 import 'library_stats_row.dart';
+import 'scan_stats_rows.dart';
 import 'setting_row.dart';
 import 'settings_section.dart';
 
-/// Library settings: the library's counts, the music folders, whether to
+/// Library settings: the library's counts and what the scan did, the music folders, whether to
 /// rescan when the app opens or watch the folders, and a rescan button. The
 /// button is disabled while the library is unavailable, has no music folder
 /// yet, or is being scanned or its covers are being made (it then shows a
@@ -39,6 +40,7 @@ class LibrarySettingsSection extends ConsumerWidget {
       title: l10n.settingsLibrary,
       children: [
         const LibraryStatsRow(),
+        const ScanStatsRows(),
         const LibraryFoldersList(),
         const ExcludedFoldersList(),
         SettingRow.single(

@@ -24,6 +24,10 @@ class RootShortTrackRules {
   /// Ids of stored tracks found too short, to delete with the diff's own.
   final Set<int> _tooShort = {};
 
+  /// Files left out for their length so far in this scan: skipped as
+  /// remembered, or read and found short.
+  int tooShortFiles = 0;
+
   /// The files of [toRead] still worth reading: one already found too short
   /// and unchanged is skipped, and its old row (if any) is to be deleted.
   List<WalkedFile> filterToRead(Iterable<WalkedFile> toRead) {
@@ -31,7 +35,10 @@ class RootShortTrackRules {
     for (final file in toRead) {
       if (!_memo.skips(file, minMs)) {
         keep.add(file);
-      } else if (_idByPath[file.path] case final id?) {
+        continue;
+      }
+      tooShortFiles++;
+      if (_idByPath[file.path] case final id?) {
         _tooShort.add(id);
       }
     }
@@ -45,6 +52,7 @@ class RootShortTrackRules {
     List<TracksCompanion> read,
   ) {
     final (:kept, :shortPaths) = _memo.splitShort(batch, read, minMs);
+    tooShortFiles += shortPaths.length;
     for (final path in shortPaths) {
       if (_idByPath[path] case final id?) _tooShort.add(id);
     }
@@ -52,14 +60,15 @@ class RootShortTrackRules {
   }
 
   /// [diffDeletes] plus every track of [rootId] too short, found now or
-  /// stored by an earlier scan with a lower minimum.
+  /// stored by an earlier scan with a lower minimum (those unchanged files
+  /// were not read, so they are counted in [tooShortFiles] here).
   Future<Set<int>> deletes(
     LibraryDatabase db,
     int rootId,
     Iterable<int> diffDeletes,
-  ) async => {
-    ...diffDeletes,
-    ..._tooShort,
-    ...await db.shortTrackIds(rootId, minMs),
-  };
+  ) async {
+    final stored = await db.shortTrackIds(rootId, minMs);
+    tooShortFiles += stored.where((id) => !_tooShort.contains(id)).length;
+    return {...diffDeletes, ..._tooShort, ...stored};
+  }
 }

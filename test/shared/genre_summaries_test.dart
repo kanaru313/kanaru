@@ -34,7 +34,9 @@ void main() {
   test('nothing in, nothing out', () {
     expect(buildGenreSummaries(const []), isEmpty);
     expect(
-      [for (final g in buildGenreSummaries([(raw: ' ; ', count: 4)])) g.key],
+      [
+        for (final g in buildGenreSummaries([(raw: ' ; ', count: 4)])) g.key,
+      ],
       [unknownGenreKey],
       reason: 'a string with no genre in it is the unknown genre',
     );

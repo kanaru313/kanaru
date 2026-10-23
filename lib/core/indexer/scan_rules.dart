@@ -61,7 +61,8 @@ class ScanRules {
 /// deferring it would never end.
 ///
 /// `filteredOut` counts the files dropped and the blocked folders the walk
-/// listed. With no rule at work the result is [walk] itself.
+/// listed; `nomediaOut`, `excludedOut` and `tooSmallOut` split the files
+/// among them by reason. With no rule at work the result is [walk] itself.
 WalkResult applyWalkRules(
   WalkResult walk,
   String root,
@@ -69,39 +70,51 @@ WalkResult applyWalkRules(
   int? settledBeforeMs,
   int? settleUntilMs,
 }) {
-  final blocked = <String>{
+  final excluded = <String>{
     for (final path in rules.excludedPaths)
       if (path != root && isSameOrInside(root, path)) path,
-    if (rules.respectNomedia) ...walk.nomediaDirs,
   };
+  final nomedia = rules.respectNomedia ? walk.nomediaDirs.toSet() : <String>{};
+  final blocked = {...excluded, ...nomedia};
   if (blocked.isEmpty &&
       rules.minFileSizeBytes <= 0 &&
       settledBeforeMs == null) {
     return walk;
   }
 
-  // Walks up from [path] to the root: no scan of every blocked folder per file.
-  bool inBlocked(String path) {
-    if (blocked.isEmpty) return false;
+  // The nearest blocked folder above [path] (itself included), or null.
+  // Walks up to the root: no scan of every blocked folder per file.
+  String? blockedAt(String path) {
+    if (blocked.isEmpty) return null;
     var current = path;
     while (current.length > root.length) {
-      if (blocked.contains(current)) return true;
+      if (blocked.contains(current)) return current;
       final slash = current.lastIndexOf('/');
       if (slash <= 0) break;
       current = current.substring(0, slash);
     }
-    return false;
+    return null;
   }
 
-  var dropped = 0, deferred = 0;
+  bool inBlocked(String path) => blockedAt(path) != null;
+
+  var dropped = 0, deferred = 0, byNomedia = 0, byExcluded = 0, bySize = 0;
   final files = <WalkedFile>[];
   final unstattable = [
     for (final path in walk.unstattable)
       if (!inBlocked(path)) path,
   ];
   for (final file in walk.files) {
-    if (inBlocked(file.path) || file.sizeBytes < rules.minFileSizeBytes) {
+    final blockedBy = blockedAt(file.path);
+    if (blockedBy != null || file.sizeBytes < rules.minFileSizeBytes) {
       dropped++;
+      if (blockedBy == null) {
+        bySize++;
+      } else if (excluded.contains(blockedBy)) {
+        byExcluded++;
+      } else {
+        byNomedia++;
+      }
     } else if (settledBeforeMs != null &&
         file.mtimeMs > settledBeforeMs &&
         (settleUntilMs == null || file.mtimeMs <= settleUntilMs)) {
@@ -129,6 +142,9 @@ WalkResult applyWalkRules(
         if (!inBlocked(dir)) dir,
     ],
     filteredOut: walk.filteredOut + dropped + blockedListed,
+    nomediaOut: walk.nomediaOut + byNomedia,
+    excludedOut: walk.excludedOut + byExcluded,
+    tooSmallOut: walk.tooSmallOut + bySize,
     deferred: walk.deferred + deferred,
   );
 }

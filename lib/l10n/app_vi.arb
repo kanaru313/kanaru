@@ -676,5 +676,18 @@
   "coverCacheClearFailed": "Không xoá được cache ảnh bìa",
   "@coverCacheClearFailed": { "description": "Snackbar when the cover thumbnails could not be deleted" },
   "genresUnknown": "Không rõ thể loại",
-  "@genresUnknown": { "description": "Name of the Genres entry that holds songs with no genre tag, always last in the list" }
+  "@genresUnknown": { "description": "Name of the Genres entry that holds songs with no genre tag, always last in the list" },
+  "scanStatsTracksTitle": "Bài lấy được",
+  "scanStatsTracksOfFiles": "{tracks} trên {files} file nhạc",
+  "scanStatsNotScanned": "Chưa quét trong phiên này",
+  "scanStatsLeftOutTitle": "Bị loại do luật quét",
+  "scanStatsNomedia": "Thư mục .nomedia: {count}",
+  "scanStatsExcluded": "Thư mục loại trừ: {count}",
+  "scanStatsTooSmall": "Dưới cỡ file tối thiểu: {count}",
+  "scanStatsTooShort": "Dưới thời lượng tối thiểu: {count}",
+  "scanStatsTagErrorsTitle": "Lỗi tag",
+  "scanStatsTagErrors": "{count} bài lưu không đọc được tag",
+  "scanStatsCoversTitle": "Ảnh bìa",
+  "scanStatsCovers": "{images} ảnh đã tạo cho {tracks} bài có ảnh",
+  "scanStatsCoversHint": "Ảnh trùng chỉ lưu một lần (theo hash)."
 }

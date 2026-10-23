@@ -2833,6 +2833,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown genre'**
   String get genresUnknown;
+
+  /// Title of the scan statistics row with the songs found and the music files seen
+  ///
+  /// In en, this message translates to:
+  /// **'Songs found'**
+  String get scanStatsTracksTitle;
+
+  /// Songs stored out of the music files the last scan of this session saw
+  ///
+  /// In en, this message translates to:
+  /// **'{tracks} of {files} music files'**
+  String scanStatsTracksOfFiles(int tracks, int files);
+
+  /// Shown instead of the numbers only a scan knows, until the first scan of the session ends
+  ///
+  /// In en, this message translates to:
+  /// **'Not scanned in this session'**
+  String get scanStatsNotScanned;
+
+  /// Title of the scan statistics row with the files the scan rules left out
+  ///
+  /// In en, this message translates to:
+  /// **'Left out by scan rules'**
+  String get scanStatsLeftOutTitle;
+
+  /// Files left out for being in a folder that holds a .nomedia entry
+  ///
+  /// In en, this message translates to:
+  /// **'.nomedia folders: {count}'**
+  String scanStatsNomedia(int count);
+
+  /// Files left out for being in a folder the user left out
+  ///
+  /// In en, this message translates to:
+  /// **'Left-out folders: {count}'**
+  String scanStatsExcluded(int count);
+
+  /// Files left out for being smaller than the minimum file size
+  ///
+  /// In en, this message translates to:
+  /// **'Under minimum size: {count}'**
+  String scanStatsTooSmall(int count);
+
+  /// Files left out for being shorter than the minimum length
+  ///
+  /// In en, this message translates to:
+  /// **'Under minimum length: {count}'**
+  String scanStatsTooShort(int count);
+
+  /// Title of the scan statistics row with the songs whose tags could not be read
+  ///
+  /// In en, this message translates to:
+  /// **'Tag errors'**
+  String get scanStatsTagErrorsTitle;
+
+  /// Songs stored without tags because reading them failed
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No songs} =1{1 song} other{{count} songs}} stored without readable tags'**
+  String scanStatsTagErrors(int count);
+
+  /// Title of the scan statistics row with the cover art made
+  ///
+  /// In en, this message translates to:
+  /// **'Cover art'**
+  String get scanStatsCoversTitle;
+
+  /// Distinct cover thumbnails, and the songs that have one
+  ///
+  /// In en, this message translates to:
+  /// **'{images} images made for {tracks} songs with art'**
+  String scanStatsCovers(int images, int tracks);
+
+  /// Note under the cover art numbers
+  ///
+  /// In en, this message translates to:
+  /// **'An image repeated in many songs is stored once (by hash).'**
+  String get scanStatsCoversHint;
 }
 
 class _AppLocalizationsDelegate
