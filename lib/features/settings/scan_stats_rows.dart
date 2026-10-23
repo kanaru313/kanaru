@@ -32,6 +32,7 @@ class ScanStatsRows extends ConsumerWidget {
     final notScanned = l10n.scanStatsNotScanned;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         _StatLine(
