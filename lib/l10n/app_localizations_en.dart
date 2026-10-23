@@ -1886,4 +1886,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sidebarCurrentQueue => 'Current queue';
+
+  @override
+  String get lyricsTab => 'Lyrics';
 }

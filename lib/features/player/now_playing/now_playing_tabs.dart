@@ -8,14 +8,16 @@ import 'now_playing_compact_page.dart';
 import 'now_playing_footer.dart' show nowPlayingHeaderHeight;
 import 'now_playing_title_bar.dart';
 
-/// Pages of the narrow layout, left to right. Lyrics will join on the right.
-enum _Tab { queue, track }
+/// Pages of the narrow layout, left to right. Lyrics only when the track has
+/// them.
+enum _Tab { queue, track, lyrics }
 
 const _pageDuration = Duration(milliseconds: 300);
 
 /// Narrow layout: dot tabs on top over horizontally swiped pages, the queue
-/// on the left and the playing track (the start page) on the right. Close
-/// and queue buttons sit at the top left of the header.
+/// on the left, the playing track (the start page) in the middle and, when
+/// the track has lyrics, the lyrics on the right. Close and queue buttons
+/// sit at the top left of the header.
 class NowPlayingTabs extends StatefulWidget {
   const NowPlayingTabs({
     super.key,
@@ -23,6 +25,7 @@ class NowPlayingTabs extends StatefulWidget {
     required this.excludeFromDrag,
     required this.queuePage,
     required this.onClose,
+    this.lyricsPage,
   });
 
   /// Adds the window drag area and buttons around the tab header.
@@ -35,6 +38,9 @@ class NowPlayingTabs extends StatefulWidget {
   final Widget queuePage;
   final VoidCallback onClose;
 
+  /// The lyrics page; `null` when the track has none, and then no tab.
+  final Widget? lyricsPage;
+
   @override
   State<NowPlayingTabs> createState() => _NowPlayingTabsState();
 }
@@ -42,6 +48,17 @@ class NowPlayingTabs extends StatefulWidget {
 class _NowPlayingTabsState extends State<NowPlayingTabs> {
   final _controller = PageController(initialPage: _Tab.track.index);
   int _page = _Tab.track.index;
+
+  @override
+  void didUpdateWidget(NowPlayingTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The lyrics page went away while shown: land on the track, not on a
+    // page that no longer exists.
+    if (widget.lyricsPage == null && _page == _Tab.lyrics.index) {
+      _page = _Tab.track.index;
+      if (_controller.hasClients) _controller.jumpToPage(_page);
+    }
+  }
 
   @override
   void dispose() {
@@ -58,9 +75,12 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final lyricsPage = widget.lyricsPage;
+    final tabs = [_Tab.queue, _Tab.track, if (lyricsPage != null) _Tab.lyrics];
     final labels = {
       _Tab.queue: l10n.nowPlayingTabQueue,
       _Tab.track: l10n.nowPlayingTabTrack,
+      _Tab.lyrics: l10n.lyricsTab,
     };
     return Column(
       children: [
@@ -103,7 +123,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    for (final tab in _Tab.values)
+                    for (final tab in tabs)
                       _Dot(
                         label: labels[tab]!,
                         selected: _page == tab.index,
@@ -119,7 +139,11 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
           child: PageView(
             controller: _controller,
             onPageChanged: (page) => setState(() => _page = page),
-            children: [widget.queuePage, const NowPlayingCompactPage()],
+            children: [
+              widget.queuePage,
+              const NowPlayingCompactPage(),
+              ?lyricsPage,
+            ],
           ),
         ),
       ],

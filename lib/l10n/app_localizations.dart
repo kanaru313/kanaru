@@ -2797,6 +2797,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current queue'**
   String get sidebarCurrentQueue;
+
+  /// Name of the lyrics page of the narrow Now Playing layout
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get lyricsTab;
 }
 
 class _AppLocalizationsDelegate
