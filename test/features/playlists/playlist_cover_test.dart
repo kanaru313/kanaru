@@ -109,24 +109,20 @@ void main() {
       expect(tester.getSize(find.byType(PlaylistCover)), const Size(120, 120));
     });
 
-    testWidgets('one to three keys show the first cover at full size', (
-      tester,
-    ) async {
+    testWidgets('one key shows the cover at full size', (tester) async {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      for (final count in [1, 3]) {
-        final keys = writeCovers(['ab', 'cd', 'ef'].take(count).toList());
-        await pump(tester, keys);
+      final keys = writeCovers(['ab']);
+      await pump(tester, keys);
 
-        final shown = images(tester);
-        expect(shown, hasLength(1), reason: '$count keys');
-        final resized = shown.single.image as ResizeImage;
-        expect(resized.width, coverDecodeWidth(120 * 1.0));
-        expect(
-          (resized.imageProvider as FileImage).file.path,
-          '${dir.path}/${keys.first}',
-        );
-      }
+      final shown = images(tester);
+      expect(shown, hasLength(1));
+      final resized = shown.single.image as ResizeImage;
+      expect(resized.width, coverDecodeWidth(120 * 1.0));
+      expect(
+        (resized.imageProvider as FileImage).file.path,
+        '${dir.path}/${keys.first}',
+      );
     });
 
     testWidgets('four keys show a 2x2 grid decoded at tile size', (

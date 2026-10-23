@@ -7,10 +7,10 @@ import '../icons/app_icons.dart';
 import 'cover_art.dart';
 import 'placeholder_colors.dart';
 
-/// Square cover of a playlist: its first four distinct covers as a 2x2
-/// collage, the first cover alone when there are one to three, else a
-/// colored placeholder picked from [seed], so a playlist keeps its color
-/// across launches.
+/// Square cover of a playlist: its first one to four distinct covers as a
+/// collage (one full, two side-by-side halves, three as a left half plus two
+/// right quarters, four as a 2x2 grid), else a colored placeholder picked
+/// from [seed], so a playlist keeps its color across launches.
 class PlaylistCover extends ConsumerWidget {
   const PlaylistCover({
     super.key,
@@ -40,8 +40,8 @@ class PlaylistCover extends ConsumerWidget {
     );
 
     // Covers off or none resolving: one placeholder with the icon, never
-    // four tiles of bare color.
-    if (paths.length < 4) {
+    // tiles of bare color. One cover fills the whole square.
+    if (paths.length < 2) {
       return CoverArt(
         path: paths.firstOrNull,
         size: size,
@@ -53,22 +53,77 @@ class PlaylistCover extends ConsumerWidget {
       );
     }
 
-    final tile = size / 2;
-    Widget quarter(String path) => CoverArt(
+    final half = size / 2;
+    Widget tile(String path, double width, double height) => _CollageTile(
       path: path,
-      size: tile,
-      radius: 0,
+      width: width,
+      height: height,
       placeholder: ColoredBox(color: background),
     );
+    final Widget collage = switch (paths.length) {
+      2 => Row(
+        children: [tile(paths[0], half, size), tile(paths[1], half, size)],
+      ),
+      3 => Row(
+        children: [
+          tile(paths[0], half, size),
+          Column(
+            children: [tile(paths[1], half, half), tile(paths[2], half, half)],
+          ),
+        ],
+      ),
+      _ => Column(
+        children: [
+          Row(
+            children: [tile(paths[0], half, half), tile(paths[1], half, half)],
+          ),
+          Row(
+            children: [tile(paths[2], half, half), tile(paths[3], half, half)],
+          ),
+        ],
+      ),
+    };
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius ?? (size < 64 ? 4 : 8)),
-      child: SizedBox.square(
-        dimension: size,
-        child: Column(
-          children: [
-            Row(children: [quarter(paths[0]), quarter(paths[1])]),
-            Row(children: [quarter(paths[2]), quarter(paths[3])]),
-          ],
+      child: SizedBox.square(dimension: size, child: collage),
+    );
+  }
+}
+
+/// One cell of the collage. Covers are square, so the cover is drawn square
+/// at the cell's largest side (decoded at that size, like [CoverArt]) and
+/// the overflow is cropped around the center, which is a cover-fit.
+class _CollageTile extends StatelessWidget {
+  const _CollageTile({
+    required this.path,
+    required this.width,
+    required this.height,
+    required this.placeholder,
+  });
+
+  final String path;
+  final double width;
+  final double height;
+  final Widget placeholder;
+
+  @override
+  Widget build(BuildContext context) {
+    final side = width > height ? width : height;
+    return SizedBox(
+      width: width,
+      height: height,
+      child: ClipRect(
+        child: OverflowBox(
+          minWidth: side,
+          maxWidth: side,
+          minHeight: side,
+          maxHeight: side,
+          child: CoverArt(
+            path: path,
+            size: side,
+            radius: 0,
+            placeholder: placeholder,
+          ),
         ),
       ),
     );

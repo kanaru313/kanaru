@@ -108,7 +108,7 @@ Rescan is a button with a progress ring. The ring spins until the first batch fi
 | Screen | Layout |
 |---|---|
 | Playlists (`/playlists`) | Grid of playlist cards, newest first, with a "New playlist" button; an empty state explains how to start. A card shows the cover collage, the name (up to two lines) and the song count. |
-| Playlist page (`/playlists/<id>`) | Header with the collage (up to four distinct covers of the first songs: none gives a placeholder, one or three show the first cover, four a 2×2), name, count, Play, the queue menu button and an actions menu (Rename, Delete). Below it 64 px rows with a drag handle, the song, its duration and a remove button. Tap plays the available songs from that row. |
+| Playlist page (`/playlists/<id>`) | Header with the collage (up to four distinct covers of the first songs: none gives a placeholder, one shows that cover, two show vertical halves, three a left half plus two right quarters, four a 2×2), name, count, Play, the queue menu button and an actions menu (Rename, Delete). Below it 64 px rows with a drag handle, the song, its duration and a remove button. Tap plays the available songs from that row. |
 | Not in library | A row whose file is not in the library shows its file name and "Not in library", is dimmed, can be moved and removed, and is skipped on play. |
 | Delete | Asks first and says how many songs go; the songs stay in the library. Leaves the page before deleting. |
 

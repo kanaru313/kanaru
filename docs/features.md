@@ -178,7 +178,7 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
 
 | ID    | Tính năng            | Mô tả / tiêu chí hoàn thành                                                                         | Ưu tiên | Phase | H   |
 | ----- | -------------------- | --------------------------------------------------------------------------------------------------- | ------- | ----- | --- |
-| PL-01 | Tạo / đổi tên / xoá  | CRUD playlist; ảnh đại diện ghép từ tối đa 4 ảnh bìa khác nhau của các bài đầu tiên; hoặc ảnh tuỳ chọn (Namida, chưa làm) — ✅ đã làm; trang playlist đọc theo cửa sổ (đầu trang + 100 dòng mỗi lần), mở playlist 50k bài dưới 30 ms | P0      | 1     | H   |
+| PL-01 | Tạo / đổi tên / xoá  | CRUD playlist; ảnh đại diện ghép từ 1-4 ảnh bìa khác nhau của các bài đầu tiên (1 ảnh đầy đủ, 2 nửa dọc, 3 nửa trái + 2 phần tư phải, 4 lưới 2×2); hoặc ảnh tuỳ chọn (Namida, chưa làm) — ✅ đã làm; trang playlist đọc theo cửa sổ (đầu trang + 100 dòng mỗi lần), mở playlist 50k bài dưới 30 ms | P0      | 1     | H   |
 | PL-02 | Thêm / bớt / sắp xếp | Thêm từ menu ngữ cảnh, kéo thả để sắp xếp; bài trùng bị bỏ qua và snackbar báo số bài đã thêm / đã có; thêm lên đầu playlist (Namida, chưa làm) — ✅ đã làm | P0      | 1     | H   |
 | PL-03 | Playlist "Yêu thích" | Playlist hệ thống, tự cập nhật theo META-11 — ✅ đã làm (trang `/favorites`, không đổi tên/xoá, ẩn khỏi danh sách playlist; cùng trang đọc theo cửa sổ như playlist) | P1      | 1     | H   |
 | PL-04 | Import M3U/M3U8      | Nhập playlist; đường dẫn tương đối/tuyệt đối; báo các bài không tìm thấy — ✅ đã làm (nút ở `/playlists`, tạo playlist mới); tự đồng bộ khi file M3U đổi (Namida, chưa làm); tuỳ chọn có trong Settings (Sắp có), chưa nối (đọc m3u khi quét) | P1      | 1     |     |
