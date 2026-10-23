@@ -176,7 +176,6 @@ void main() {
     () async {
       touch('out/short.mp3');
       touch('a.mp3');
-      reader.durationByName['out/short.mp3'] = 5000;
       reader.durationByName['short.mp3'] = 5000;
       reader.durationByName['a.mp3'] = 60000;
       await scan();
