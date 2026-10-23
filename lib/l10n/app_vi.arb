@@ -307,7 +307,7 @@
   "settingsMinDuration": "Thời lượng tối thiểu",
   "settingsMinDurationHint": "Bài ngắn hơn không vào thư viện. Có hiệu lực ở lần quét sau.",
   "settingsClearCoverCache": "Xoá cache ảnh bìa",
-  "settingsClearCoverCacheHint": "Ảnh bìa biến mất cho đến khi lần quét sau tạo lại.",
+  "settingsClearCoverCacheHint": "Xoá ảnh bìa đã tạo; quét lại chạy ngay và tạo lại chúng.",
   "settingsClearCoverCacheButton": "Xoá",
   "settingsPreferEmbeddedLyrics": "Ưu tiên lời nhúng trong file",
   "settingsPreferEmbeddedLyricsHint": "Dùng lời lưu trong file nhạc trước các file lời đặt cạnh nó.",
@@ -320,7 +320,7 @@
   "settingsFadeOnPause": "Giảm dần âm lượng khi tạm dừng",
   "settingsFadeOnPauseHint": "Giảm âm lượng từ từ trước khi tạm dừng.",
   "settingsInfiniteQueue": "Hàng đợi vô hạn",
-  "settingsInfiniteQueueHint": "Hết hàng đợi thì Bài tiếp quay về bài đầu, và Bài trước ở bài đầu nhảy tới bài cuối, bất kể chế độ lặp.",
+  "settingsInfiniteQueueHint": "Bài tiếp ở bài cuối về bài đầu, Bài trước ở bài đầu tới bài cuối, bất kể chế độ lặp.",
   "settingsListenAfterTime": "Một lượt nghe được tính sau",
   "settingsListenAfterTimeHint": "Khoảng thời gian này, hoặc tỉ lệ bên dưới của bài, tuỳ điều kiện nào đến trước.",
   "settingsListenAfterShare": "Một lượt nghe được tính sau (tỉ lệ của bài)",
@@ -330,7 +330,7 @@
   "settingsTabGenres": "Thể loại",
   "settingsTabLanguages": "Ngôn ngữ bài hát",
   "settingsTrackNumbers": "Số thứ tự bài trong album",
-  "settingsTrackNumbersHint": "Hiện số thứ tự của từng bài trên trang album.",
+  "settingsTrackNumbersHint": "Bật: số thứ tự của từng bài trên trang album. Tắt: ảnh bìa của bài.",
   "settingsAdvanced": "Nâng cao",
   "settingsBackupRestore": "Sao lưu & khôi phục",
   "settingsBackupRestoreRow": "Sao lưu và khôi phục dữ liệu",
@@ -663,5 +663,16 @@
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
   "sidebarCurrentQueue": "Hàng đợi hiện tại",
   "lyricsTab": "Lời bài hát",
-  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" }
+  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" },
+  "coverCacheClearTitle": "Xoá cache ảnh bìa?",
+  "@coverCacheClearTitle": { "description": "Title of the dialog that confirms deleting the cover thumbnails" },
+  "coverCacheClearBody": "Mọi ảnh bìa biến mất khỏi thư viện cho tới khi được tạo lại. Kanaru quét lại ngay và tạo lại ảnh ở nền; thư viện lớn có thể mất một lúc. Màu lấy từ ảnh bìa được giữ.",
+  "@coverCacheClearBody": { "description": "Body of the dialog that confirms deleting the cover thumbnails" },
+  "coverCacheCleared": "{count, plural, other{Đã xoá {count} ảnh bìa. Quét lại sẽ tạo lại chúng.}}",
+  "@coverCacheCleared": {
+    "description": "Snackbar after the cover thumbnails were deleted",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "coverCacheClearFailed": "Không xoá được cache ảnh bìa",
+  "@coverCacheClearFailed": { "description": "Snackbar when the cover thumbnails could not be deleted" }
 }

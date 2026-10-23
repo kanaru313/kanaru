@@ -22,15 +22,23 @@ typedef ListenClock = ({DateTime Function() now, Duration Function() elapsed});
 /// pause with at least [pauseWriteMin] new, and every [checkpointInterval]
 /// of listening. Only `plays` is written; the triggers keep `play_stats`.
 class ListenRecorder {
-  ListenRecorder(this._db, {required bool enabled, required ListenClock clock})
-    : _recording = enabled,
-      _time = clock;
+  ListenRecorder(
+    this._db, {
+    required bool enabled,
+    required ListenClock clock,
+    this.threshold = ListenThreshold.standard,
+  }) : _recording = enabled,
+       _time = clock;
 
   static const checkpointInterval = Duration(seconds: 30);
   static const pauseWriteMin = Duration(seconds: 5);
 
   final LibraryDatabase _db;
   final ListenClock _time;
+
+  /// When a play counts. A change applies from the next player state, also
+  /// to the playthrough under way; a row already written stays.
+  ListenThreshold threshold;
   bool _recording;
   bool _disposed = false;
   PlayerState? _last;
@@ -185,7 +193,7 @@ class ListenRecorder {
     );
     final listened = p.acc.listened;
     if (p.row == PlayRow.none) {
-      if (qualifiesAsListen(listened, p.length)) _rows.insert(p);
+      if (qualifiesAsListen(listened, p.length, threshold)) _rows.insert(p);
       return;
     }
     final fresh = listened - p.queued;
@@ -204,7 +212,8 @@ class ListenRecorder {
 
   /// Inserts [p] when it qualifies, or brings its stored row up to date.
   void _writeProgress(ListenPlaythrough p) {
-    if (p.row == PlayRow.none && qualifiesAsListen(p.acc.listened, p.length)) {
+    if (p.row == PlayRow.none &&
+        qualifiesAsListen(p.acc.listened, p.length, threshold)) {
       _rows.insert(p);
     } else if ((p.row == PlayRow.pending || p.row == PlayRow.stored) &&
         p.acc.listened > p.queued) {

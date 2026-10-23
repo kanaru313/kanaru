@@ -3,6 +3,12 @@ import 'dart:math';
 import 'repeat_mode.dart';
 import 'track.dart';
 
+// The transport commands (a part of `player_service.dart`) use the fader;
+// a part cannot import, and this is the library of that file this lane may
+// edit. Move to an import in `player_service.dart` when that file is free.
+export 'playback_fade.dart' show playbackFadeClockProvider;
+export 'playback_fade_controller.dart' show PlayPauseFader;
+
 /// Immutable play queue: the tracks as opened, the order they play in, the
 /// current position, shuffle and repeat. Every change returns a new queue.
 ///
@@ -95,6 +101,18 @@ class PlayQueue {
     if (index > 0) return index - 1;
     return repeat == RepeatMode.all ? order.length - 1 : null;
   }
+
+  /// Index the Next button goes to. With [wrap] (the endless queue setting,
+  /// QUEUE-15) the last track goes on to the first whatever the repeat mode,
+  /// and a one-track queue plays its track again. Playing on by itself never
+  /// wraps: that keeps to [nextIndex].
+  int? manualNextIndex({required bool wrap}) =>
+      nextIndex ?? (wrap && !isEmpty ? 0 : null);
+
+  /// Index the Previous button goes to; with [wrap] the first track goes back
+  /// to the last whatever the repeat mode.
+  int? manualPreviousIndex({required bool wrap}) =>
+      previousIndex ?? (wrap && !isEmpty ? order.length - 1 : null);
 
   PlayQueue copyWith({
     List<int>? order,

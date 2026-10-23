@@ -12,8 +12,17 @@ final _log = Logger('mpris');
 /// catch what a handler throws, which leaves the caller waiting for a reply
 /// that never comes, so every entry point turns errors into `Failed`.
 class MprisObject extends DBusObject {
-  MprisObject(this._handler, this._state, this._art, this._ids, this._isActive)
-    : super(DBusObjectPath(mprisObjectPath));
+  MprisObject(
+    this._handler,
+    this._state,
+    this._art,
+    this._ids,
+    this._isActive, {
+    bool Function()? wrapQueue,
+  }) : _wrapQueue = wrapQueue ?? _never,
+       super(DBusObjectPath(mprisObjectPath));
+
+  static bool _never() => false;
 
   final MprisMethodHandler _handler;
   final PlayerState Function() _state;
@@ -25,6 +34,9 @@ class MprisObject extends DBusObject {
   /// False once the owner is disposed; the player state is then out of reach.
   final bool Function() _isActive;
 
+  /// The endless queue setting, read with the state.
+  final bool Function() _wrapQueue;
+
   /// Properties of [interface], or `null` for an interface we do not have.
   Map<String, DBusValue>? _properties(String interface) {
     switch (interface) {
@@ -33,7 +45,12 @@ class MprisObject extends DBusObject {
       case mprisPlayerInterface:
         final state = _state();
         _ids.observe(state.queue);
-        return playerProperties(state, _ids, artUri: _art());
+        return playerProperties(
+          state,
+          _ids,
+          artUri: _art(),
+          wrapQueue: _wrapQueue(),
+        );
       default:
         return null;
     }

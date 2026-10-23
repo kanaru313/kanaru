@@ -4,8 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
+import '../albums/album_grid_tile.dart' show albumGridPadding;
 import '../library_browse_body.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import 'song_grid_tile.dart';
 import 'song_row_cache.dart';
 import '../../../shared/widgets/song_tile.dart';
 import 'songs_list_provider.dart';
@@ -20,10 +22,10 @@ const prototypeSong = TrackListItem(
   durationMs: 1000,
 );
 
-/// The Songs list for [songs]: one slot per id, so any position of a large
-/// library can be scrolled to, with rows read a page at a time as they come
-/// into view (see [SongRowCache]) and a placeholder until then. [seed] rows,
-/// read before the ids, show without waiting.
+/// The Songs list (or with [grid], grid) for [songs]: one slot per id, so any
+/// position of a large library can be scrolled to, with rows read a page at a
+/// time as they come into view (see [SongRowCache]) and a placeholder until
+/// then. [seed] rows, read before the ids, show without waiting.
 class SongsWindowedList extends ConsumerStatefulWidget {
   const SongsWindowedList({
     super.key,
@@ -32,6 +34,7 @@ class SongsWindowedList extends ConsumerStatefulWidget {
     required this.onTap,
     this.onQueueAction,
     this.seed = const [],
+    this.grid = false,
   });
 
   final SongIds songs;
@@ -43,6 +46,9 @@ class SongsWindowedList extends ConsumerStatefulWidget {
   /// An action picked from the menu of a row; no menus without it.
   final void Function(TrackListItem song, QueueAction action)? onQueueAction;
   final List<TrackListItem> seed;
+
+  /// Covers in a grid instead of rows.
+  final bool grid;
 
   @override
   ConsumerState<SongsWindowedList> createState() => _SongsWindowedListState();
@@ -83,7 +89,42 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
 
   @override
   Widget build(BuildContext context) {
+    final onQueueAction = widget.onQueueAction;
+    ValueChanged<QueueAction>? menuOf(TrackListItem song) =>
+        onQueueAction == null ? null : (action) => onQueueAction(song, action);
+
+    if (widget.grid) {
+      return LayoutBuilder(
+        builder: (context, constraints) => GridView.builder(
+          // Its own scroll position: switching views starts at the top, as
+          // on the other library pages.
+          key: const ValueKey('songs-grid'),
+          controller: widget.controller,
+          padding: const EdgeInsets.fromLTRB(
+            albumGridPadding,
+            0,
+            albumGridPadding,
+            libraryBottomInset,
+          ),
+          gridDelegate: songGridDelegate(
+            context,
+            constraints.maxWidth - albumGridPadding * 2,
+          ),
+          itemCount: widget.songs.ids.length,
+          itemBuilder: (context, i) {
+            final song = _cache.rowAt(i);
+            if (song == null) return const SongGridTilePlaceholder();
+            return SongGridTile(
+              song: song,
+              onTap: () => widget.onTap(song.id),
+              onQueueAction: menuOf(song),
+            );
+          },
+        ),
+      );
+    }
     return ListView.builder(
+      key: const ValueKey('songs-list'),
       controller: widget.controller,
       padding: libraryListBottomPadding,
       // Measured from a row, so larger text sizes do not clip rows.
@@ -92,13 +133,10 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
       itemBuilder: (context, i) {
         final song = _cache.rowAt(i);
         if (song == null) return const SongTilePlaceholder();
-        final onQueueAction = widget.onQueueAction;
         return SongTile(
           song: song,
           onTap: () => widget.onTap(song.id),
-          onQueueAction: onQueueAction == null
-              ? null
-              : (action) => onQueueAction(song, action),
+          onQueueAction: menuOf(song),
         );
       },
     );

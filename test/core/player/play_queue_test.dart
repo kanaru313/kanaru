@@ -294,4 +294,54 @@ void main() {
       }
     });
   });
+
+  group('manual next and previous', () {
+    final three = [
+      for (final name in ['a', 'b', 'c']) Track.fromPath('/music/$name.mp3'),
+    ];
+
+    test('without wrap they match nextIndex and previousIndex', () {
+      for (final repeat in RepeatMode.values) {
+        for (var i = 0; i < 3; i++) {
+          final queue = PlayQueue(original: three, index: i, repeat: repeat);
+          expect(queue.manualNextIndex(wrap: false), queue.nextIndex);
+          expect(queue.manualPreviousIndex(wrap: false), queue.previousIndex);
+        }
+      }
+    });
+
+    test('with wrap the ends meet whatever the repeat mode', () {
+      for (final repeat in RepeatMode.values) {
+        final last = PlayQueue(original: three, index: 2, repeat: repeat);
+        expect(last.manualNextIndex(wrap: true), 0, reason: repeat.name);
+        final first = PlayQueue(original: three, repeat: repeat);
+        expect(first.manualPreviousIndex(wrap: true), 2, reason: repeat.name);
+      }
+    });
+
+    test('with wrap the middle moves one step', () {
+      final queue = PlayQueue(original: three, index: 1);
+      expect(queue.manualNextIndex(wrap: true), 2);
+      expect(queue.manualPreviousIndex(wrap: true), 0);
+    });
+
+    test('a one-track queue plays its track again', () {
+      final queue = PlayQueue(original: [three.first]);
+      expect(queue.manualNextIndex(wrap: true), 0);
+      expect(queue.manualPreviousIndex(wrap: true), 0);
+      expect(queue.manualNextIndex(wrap: false), isNull);
+    });
+
+    test('an empty queue goes nowhere', () {
+      final queue = PlayQueue();
+      expect(queue.manualNextIndex(wrap: true), isNull);
+      expect(queue.manualPreviousIndex(wrap: true), isNull);
+    });
+
+    test('wrapping leaves nextIndex alone', () {
+      final queue = PlayQueue(original: three, index: 2);
+      queue.manualNextIndex(wrap: true);
+      expect(queue.nextIndex, isNull);
+    });
+  });
 }

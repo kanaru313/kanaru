@@ -3,11 +3,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
-import 'coming_soon_rows.dart';
+import 'setting_row.dart';
 import 'settings_chips_row.dart';
 
-/// Interface options that are not wired yet (shown from the saved values,
-/// off): which sidebar tabs show, and track numbers on album pages.
+/// Interface options: which sidebar tabs show (not wired yet: shown from the
+/// saved value, off), and track numbers on album pages (live).
 class InterfaceSettingRows extends ConsumerWidget {
   const InterfaceSettingRows({super.key});
 
@@ -41,10 +41,15 @@ class InterfaceSettingRows extends ConsumerWidget {
               ),
           ],
         ),
-        ComingSoonSwitchRow(
+        SettingRow.single(
           title: l10n.settingsTrackNumbers,
           subtitle: l10n.settingsTrackNumbersHint,
-          value: display.trackNumbersInAlbum,
+          control: Switch(
+            value: display.trackNumbersInAlbum,
+            onChanged: (on) => ref
+                .read(settingsProvider.notifier)
+                .setDisplay(display.copyWith(trackNumbersInAlbum: on)),
+          ),
         ),
       ],
     );
