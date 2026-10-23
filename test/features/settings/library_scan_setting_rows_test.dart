@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
+import 'package:kanaru/features/settings/settings_chips_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
@@ -82,6 +83,72 @@ void main() {
     expect(
       h.container.read(settingsProvider).libraryScan,
       const LibraryScanPrefs(),
+    );
+  });
+
+  testWidgets('the album grouping chips are saved and carry no badge', (
+    tester,
+  ) async {
+    final h = await _open(tester, hasDatabase: true);
+    AlbumGrouping grouping() =>
+        h.container.read(settingsProvider).libraryScan.albumGrouping;
+
+    final row = tester.widget<SettingsChipsRow>(
+      find.byType(SettingsChipsRow).first,
+    );
+    expect(row.comingSoon, isFalse);
+    expect(grouping(), const AlbumGrouping());
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Year'));
+    await tester.pumpAndSettle();
+    expect(grouping(), const AlbumGrouping(byYear: true));
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Album artist'));
+    await tester.pumpAndSettle();
+    expect(grouping(), const AlbumGrouping(byAlbumArtist: false, byYear: true));
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Year'));
+    await tester.pumpAndSettle();
+    expect(grouping(), const AlbumGrouping(byAlbumArtist: false));
+  });
+
+  testWidgets('the album title chip is selected and cannot be cleared', (
+    tester,
+  ) async {
+    final h = await _open(tester, hasDatabase: true);
+
+    final title = tester.widget<FilterChip>(
+      find.widgetWithText(FilterChip, 'Album title'),
+    );
+    expect(title.selected, isTrue);
+    expect(title.onSelected, isNull);
+    await tester.tap(find.widgetWithText(FilterChip, 'Album title'));
+    await tester.pumpAndSettle();
+    expect(
+      h.container.read(settingsProvider).libraryScan.albumGrouping,
+      const AlbumGrouping(),
+    );
+  });
+
+  testWidgets('without a library database the grouping chips are disabled', (
+    tester,
+  ) async {
+    final h = await _open(tester, hasDatabase: false);
+
+    for (final label in ['Album title', 'Album artist', 'Year']) {
+      expect(
+        tester
+            .widget<FilterChip>(find.widgetWithText(FilterChip, label))
+            .onSelected,
+        isNull,
+        reason: label,
+      );
+    }
+    await tester.tap(find.widgetWithText(FilterChip, 'Year'));
+    await tester.pumpAndSettle();
+    expect(
+      h.container.read(settingsProvider).libraryScan.albumGrouping,
+      const AlbumGrouping(),
     );
   });
 }

@@ -567,7 +567,7 @@
   "settingsM3uPlaylists": "Read m3u playlists",
   "settingsM3uPlaylistsHint": "Add the .m3u files found in the music folders as playlists. Applies at the next rescan.",
   "settingsAlbumGrouping": "Group albums by",
-  "settingsAlbumGroupingHint": "Songs with the same album title are one album; pick what else must match. Applies at the next rescan.",
+  "settingsAlbumGroupingHint": "Songs with the same album title are one album; pick what else must match. Applies at once, the library updates in the background.",
   "settingsAlbumGroupTitle": "Album title",
   "settingsAlbumGroupArtist": "Album artist",
   "settingsAlbumGroupYear": "Year",

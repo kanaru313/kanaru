@@ -1149,7 +1149,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAlbumGroupingHint =>
-      'Songs with the same album title are one album; pick what else must match. Applies at the next rescan.';
+      'Songs with the same album title are one album; pick what else must match. Applies at once, the library updates in the background.';
 
   @override
   String get settingsAlbumGroupTitle => 'Album title';

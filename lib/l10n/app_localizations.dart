@@ -1745,7 +1745,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAlbumGroupingHint.
   ///
   /// In en, this message translates to:
-  /// **'Songs with the same album title are one album; pick what else must match. Applies at the next rescan.'**
+  /// **'Songs with the same album title are one album; pick what else must match. Applies at once, the library updates in the background.'**
   String get settingsAlbumGroupingHint;
 
   /// No description provided for @settingsAlbumGroupTitle.

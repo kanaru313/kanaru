@@ -1100,7 +1100,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsAlbumGroupingHint =>
-      'Bài cùng tên album là một album; chọn thêm điều kiện phải trùng. Có hiệu lực ở lần quét sau.';
+      'Bài cùng tên album là một album; chọn thêm điều kiện phải trùng. Áp dụng ngay, cập nhật thư viện ở nền.';
 
   @override
   String get settingsAlbumGroupTitle => 'Tên album';

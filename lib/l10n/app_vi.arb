@@ -298,7 +298,7 @@
   "settingsM3uPlaylists": "Đọc playlist m3u",
   "settingsM3uPlaylistsHint": "Thêm các file .m3u trong thư mục nhạc thành playlist. Có hiệu lực ở lần quét sau.",
   "settingsAlbumGrouping": "Nhóm album theo",
-  "settingsAlbumGroupingHint": "Bài cùng tên album là một album; chọn thêm điều kiện phải trùng. Có hiệu lực ở lần quét sau.",
+  "settingsAlbumGroupingHint": "Bài cùng tên album là một album; chọn thêm điều kiện phải trùng. Áp dụng ngay, cập nhật thư viện ở nền.",
   "settingsAlbumGroupTitle": "Tên album",
   "settingsAlbumGroupArtist": "Album artist",
   "settingsAlbumGroupYear": "Năm",
