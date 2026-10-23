@@ -1,6 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
+import '../database/library_database.dart';
+import '../database/scan_stats_queries.dart';
+import 'scan_totals.dart';
 import 'walk_audio_files.dart' show WalkResult;
+
+final _log = Logger('indexer');
 
 /// What the last scan saw and left out, counted per reason. Only the scan
 /// knows these (the files it left out are never stored), so they live for
@@ -100,6 +106,25 @@ class LastScanStats extends Notifier<ScanStats?> {
   ScanStats? build() => null;
 
   void publish(ScanStats stats) => state = stats;
+
+  /// Publishes the counts of a scan that ended without error ([totals]),
+  /// with the tracks now stored for the roots it finished, so "stored of
+  /// seen" compares the same files. A failed count keeps the previous
+  /// numbers rather than failing a scan that worked.
+  Future<void> publishScan(LibraryDatabase db, ScanTotals totals) async {
+    try {
+      final stored = await db.storedTrackCount(totals.okRootIds);
+      if (!ref.mounted) return;
+      publish(
+        totals.stats.withEnd(
+          stored: stored,
+          unfinishedRoots: totals.skipped.length,
+        ),
+      );
+    } catch (error, stackTrace) {
+      _log.warning('Scan statistics not published', error, stackTrace);
+    }
+  }
 }
 
 final lastScanStatsProvider = NotifierProvider<LastScanStats, ScanStats?>(
