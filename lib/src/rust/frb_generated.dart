@@ -4,6 +4,7 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api/cover_colors.dart';
+import 'api/lyrics.dart';
 import 'api/tags.dart';
 
 import 'dart:async';
@@ -70,7 +71,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1175052783;
+  int get rustContentHash => 773311073;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -88,6 +89,8 @@ abstract class RustLibApi extends BaseApi {
 
   Future<CoverStatus> crateApiTagsCoverStatusDefault();
 
+  Future<EmbeddedLyrics> crateApiLyricsEmbeddedLyricsDefault();
+
   Future<List<CoverColorResult>> crateApiCoverColorsExtractCoverColors({
     required String coverDir,
     required List<String> keys,
@@ -101,11 +104,17 @@ abstract class RustLibApi extends BaseApi {
     required String coverDir,
   });
 
+  Future<EmbeddedLyrics?> crateApiLyricsReadEmbeddedLyrics({
+    required String path,
+  });
+
   Future<Uint8List?> crateApiTagsReadOriginalCover({required String path});
 
   Future<List<TrackTags>> crateApiTagsReadTagsBatch({
     required List<String> paths,
   });
+
+  Future<SyncedLyricLine> crateApiLyricsSyncedLyricLineDefault();
 
   Future<TrackCover> crateApiTagsTrackCoverDefault();
 
@@ -213,6 +222,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "cover_status_default", argNames: []);
 
   @override
+  Future<EmbeddedLyrics> crateApiLyricsEmbeddedLyricsDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_embedded_lyrics,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLyricsEmbeddedLyricsDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLyricsEmbeddedLyricsDefaultConstMeta =>
+      const TaskConstMeta(debugName: "embedded_lyrics_default", argNames: []);
+
+  @override
   Future<List<CoverColorResult>> crateApiCoverColorsExtractCoverColors({
     required String coverDir,
     required List<String> keys,
@@ -228,7 +264,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 5,
             port: port_,
           );
         },
@@ -258,7 +294,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },
@@ -290,7 +326,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 7,
             port: port_,
           );
         },
@@ -312,6 +348,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<EmbeddedLyrics?> crateApiLyricsReadEmbeddedLyrics({
+    required String path,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(path, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_box_autoadd_embedded_lyrics,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLyricsReadEmbeddedLyricsConstMeta,
+        argValues: [path],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLyricsReadEmbeddedLyricsConstMeta =>
+      const TaskConstMeta(
+        debugName: "read_embedded_lyrics",
+        argNames: ["path"],
+      );
+
+  @override
   Future<Uint8List?> crateApiTagsReadOriginalCover({required String path}) {
     return handler.executeNormal(
       NormalTask(
@@ -321,7 +390,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 9,
             port: port_,
           );
         },
@@ -351,7 +420,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 10,
             port: port_,
           );
         },
@@ -370,6 +439,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "read_tags_batch", argNames: ["paths"]);
 
   @override
+  Future<SyncedLyricLine> crateApiLyricsSyncedLyricLineDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 11,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_synced_lyric_line,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiLyricsSyncedLyricLineDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLyricsSyncedLyricLineDefaultConstMeta =>
+      const TaskConstMeta(debugName: "synced_lyric_line_default", argNames: []);
+
+  @override
   Future<TrackCover> crateApiTagsTrackCoverDefault() {
     return handler.executeNormal(
       NormalTask(
@@ -378,7 +474,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 12,
             port: port_,
           );
         },
@@ -405,7 +501,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 13,
             port: port_,
           );
         },
@@ -437,7 +533,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 14,
             port: port_,
           );
         },
@@ -468,6 +564,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
+  }
+
+  @protected
+  EmbeddedLyrics dco_decode_box_autoadd_embedded_lyrics(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_embedded_lyrics(raw);
   }
 
   @protected
@@ -515,6 +617,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EmbeddedLyrics dco_decode_embedded_lyrics(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return EmbeddedLyrics(
+      text: dco_decode_opt_String(arr[0]),
+      synced: dco_decode_list_synced_lyric_line(arr[1]),
+    );
+  }
+
+  @protected
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -551,6 +665,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SyncedLyricLine> dco_decode_list_synced_lyric_line(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_synced_lyric_line).toList();
+  }
+
+  @protected
   List<TrackCover> dco_decode_list_track_cover(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_track_cover).toList();
@@ -566,6 +686,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  EmbeddedLyrics? dco_decode_opt_box_autoadd_embedded_lyrics(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_embedded_lyrics(raw);
   }
 
   @protected
@@ -590,6 +716,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_prim_u_8_strict(raw);
+  }
+
+  @protected
+  SyncedLyricLine dco_decode_synced_lyric_line(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SyncedLyricLine(
+      timeMs: dco_decode_u_32(arr[0]),
+      text: dco_decode_String(arr[1]),
+    );
   }
 
   @protected
@@ -666,6 +804,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EmbeddedLyrics sse_decode_box_autoadd_embedded_lyrics(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_embedded_lyrics(deserializer));
+  }
+
+  @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_i_64(deserializer));
@@ -710,6 +856,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return CoverStatus.values[inner];
+  }
+
+  @protected
+  EmbeddedLyrics sse_decode_embedded_lyrics(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_text = sse_decode_opt_String(deserializer);
+    var var_synced = sse_decode_list_synced_lyric_line(deserializer);
+    return EmbeddedLyrics(text: var_text, synced: var_synced);
   }
 
   @protected
@@ -765,6 +919,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SyncedLyricLine> sse_decode_list_synced_lyric_line(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SyncedLyricLine>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_synced_lyric_line(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<TrackCover> sse_decode_list_track_cover(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -794,6 +962,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  EmbeddedLyrics? sse_decode_opt_box_autoadd_embedded_lyrics(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_embedded_lyrics(deserializer));
     } else {
       return null;
     }
@@ -841,6 +1022,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     } else {
       return null;
     }
+  }
+
+  @protected
+  SyncedLyricLine sse_decode_synced_lyric_line(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_timeMs = sse_decode_u_32(deserializer);
+    var var_text = sse_decode_String(deserializer);
+    return SyncedLyricLine(timeMs: var_timeMs, text: var_text);
   }
 
   @protected
@@ -927,6 +1116,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_embedded_lyrics(
+    EmbeddedLyrics self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_embedded_lyrics(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_i_64(
     PlatformInt64 self,
     SseSerializer serializer,
@@ -972,6 +1170,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_cover_status(CoverStatus self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_embedded_lyrics(
+    EmbeddedLyrics self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.text, serializer);
+    sse_encode_list_synced_lyric_line(self.synced, serializer);
   }
 
   @protected
@@ -1028,6 +1236,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_synced_lyric_line(
+    List<SyncedLyricLine> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_synced_lyric_line(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_track_cover(
     List<TrackCover> self,
     SseSerializer serializer,
@@ -1058,6 +1278,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_embedded_lyrics(
+    EmbeddedLyrics? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_embedded_lyrics(self, serializer);
     }
   }
 
@@ -1105,6 +1338,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     if (self != null) {
       sse_encode_list_prim_u_8_strict(self, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_synced_lyric_line(
+    SyncedLyricLine self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.timeMs, serializer);
+    sse_encode_String(self.text, serializer);
   }
 
   @protected

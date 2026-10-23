@@ -264,6 +264,14 @@ Behavior:
 - **Exit hook** (`main.dart`, `core/player/app_exit_flush.dart`): window_manager disconnects Flutter's close handler, so the app calls `setPreventClose(true)` (after `runApp`, only when the desktop window was set up) and handles `onWindowClose`. Order: hide the window, pause, flush (capped at 2 s), `destroy()` (1 s timeout, then `exit(0)`); a second close while flushing calls `exit(0)`; the close request that `destroy()` itself makes GTK emit is ignored, and a 1 s timer after a successful `destroy()` calls `exit(0)` if the process is still alive. The flush is `ListenRecorder.flush` (a checkpoint of the open playthrough: recording goes on, the same row is updated) and `PlaybackSessionSaver.flush` (waits for an in-flight write, saves again if it failed or a change is pending, waits again). Not covered: SIGTERM, SIGKILL and a logout kill run nothing, so the 30 s listen and 10 s session checkpoints bound the loss; a blocked UI isolate leaves the close ignored. media_kit is not disposed: its delayed `mpv_terminate_destroy` is crash-prone.
 - **Not built**: crossfade, volume above 100%, speed and pitch, sleep timer, equalizer.
 
+### Lyrics
+
+Lyrics are read when a track plays, for the playing track only, and never stored (no column, no cache; wave decision D3). Offline only: online lyrics (LYR-03) are not built.
+
+| Part | Behavior | Files |
+|---|---|---|
+| Embedded (Rust) | `read_embedded_lyrics(path)` returns the lyrics text and the `SYLT` lines of one file. Text: the first non-blank `Lyrics` then `UnsyncLyrics` value of lofty's generic tag, primary tag first (Vorbis `LYRICS`/`UNSYNCEDLYRICS`, ID3v2 `USLT`, MP4 `©lyr`, APE `Lyrics`), returned raw (it may be LRC). MPEG, WAV and AIFF are read as their concrete lofty type, because the generic tag drops binary frames: their ID3v2 tag also gives `SYLT` (one frame: the first typed lyrics, else the first typed other; millisecond timestamps only; a junk language code is patched before parsing; syllable frames, where an entry led by a line break opens a line, are joined into lines) and `TXXX:LYRICS`/`TXXX:UNSYNCEDLYRICS`. Caps: text over 1 MiB is dropped, `SYLT` keeps at most 10 000 lines and 1 MiB. The file is opened with `O_NONBLOCK` and must be a regular file (a FIFO is never waited on); covers and audio properties are not read. Each call runs on its own thread with the tag reader's 8 MiB stack inside `catch_unwind`, so a parser panic gives `None`. Not read: foobar2000's Vorbis `UNSYNCED LYRICS` (lofty's generic tag drops unknown keys) and `SYLT` in FLAC, MP4 or APE files. | `rust/src/api/lyrics.rs`, `rust/src/lyrics_reader.rs`, `rust/src/lyrics_sylt.rs` |
+
 ---
 
 ## 5. System media controls (MPRIS)

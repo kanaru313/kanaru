@@ -2,4 +2,5 @@
 //! `flutter_rust_bridge.yaml`). Keep the types here flat and plain.
 
 pub mod cover_colors;
+pub mod lyrics;
 pub mod tags;
