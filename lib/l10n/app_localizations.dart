@@ -2827,6 +2827,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not clear the cover cache'**
   String get coverCacheClearFailed;
+
+  /// Name of the Genres entry that holds songs with no genre tag, always last in the list
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown genre'**
+  String get genresUnknown;
 }
 
 class _AppLocalizationsDelegate

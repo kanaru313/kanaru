@@ -49,6 +49,12 @@ String encodeArtistRouteKey(String artistKey) => _encode([artistKey]);
 
 String? decodeArtistRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
 
+/// The key of the genre page for tracks with no usable genre (no tag, or one
+/// with nothing but blanks and separators). Never a real [genreKey]: that is
+/// never empty, because `splitGenres` drops names whose key is empty. Encoded
+/// like any key, so `genreLocation(unknownGenreKey)` is a valid route.
+const unknownGenreKey = '';
+
 String encodeGenreRouteKey(String genreKey) => _encode([genreKey]);
 
 String? decodeGenreRouteKey(String routeKey) => _decode(routeKey, 1)?.single;

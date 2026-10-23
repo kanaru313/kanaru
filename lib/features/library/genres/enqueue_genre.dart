@@ -7,6 +7,8 @@ import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/genre_summaries.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../l10n/l10n.dart';
+import 'genre_display_name.dart';
 
 /// [enqueueTracks] for a genre: its songs, in the order of its page.
 void enqueueGenre(
@@ -14,9 +16,18 @@ void enqueueGenre(
   BuildContext context,
   QueueAction action,
   GenreSummary genre,
-) => enqueueFromDatabase(ref, context, action, genre.name, (db, covers) async {
-  return [
-    for (final t in await db.genreTracks(genre.raws))
-      trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
-  ];
-});
+) => enqueueFromDatabase(
+  ref,
+  context,
+  action,
+  genreDisplayName(context.l10n, genre.key, genre.name),
+  (db, covers) async {
+    return [
+      for (final t in await db.genreTracks(
+        genre.raws,
+        includeNull: genre.withoutGenre,
+      ))
+        trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+    ];
+  },
+);

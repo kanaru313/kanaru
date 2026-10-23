@@ -4,6 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/genre_summaries.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'genre_avatar.dart';
+import 'genre_display_name.dart';
 
 /// One genre row: round avatar, name, "N songs".
 class GenreTile extends StatelessWidget {
@@ -25,7 +26,11 @@ class GenreTile extends StatelessWidget {
     final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
       leading: GenreAvatar(genreKey: genre.key, size: 40),
-      title: Text(genre.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(
+        genreDisplayName(context.l10n, genre.key, genre.name),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       subtitle: Text(
         context.l10n.albumsSongCount(genre.songCount),
         maxLines: 1,

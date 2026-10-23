@@ -25,33 +25,40 @@ class GenrePageData {
   final List<BrowseTrack> tracks;
 }
 
-/// What the page needs of a genre from the Genres list: its name and the
-/// stored strings that name it. Equal when both are, so a list reload that
-/// changes neither leaves the page alone.
+/// What the page needs of a genre from the Genres list: its name, the
+/// stored strings that name it and whether it also holds the tracks with no
+/// genre. Equal when all are, so a list reload that changes none leaves the
+/// page alone.
 class _GenreRaws {
-  const _GenreRaws(this.name, this.raws);
+  const _GenreRaws(this.name, this.raws, this.withoutGenre);
 
   final String name;
   final List<String> raws;
+  final bool withoutGenre;
 
   @override
   bool operator ==(Object other) =>
-      other is _GenreRaws && other.name == name && listEquals(other.raws, raws);
+      other is _GenreRaws &&
+      other.name == name &&
+      other.withoutGenre == withoutGenre &&
+      listEquals(other.raws, raws);
 
   @override
-  int get hashCode => Object.hash(name, Object.hashAll(raws));
+  int get hashCode => Object.hash(name, withoutGenre, Object.hashAll(raws));
 }
 
 /// Reads the page of the genre called [name], held by the stored strings
-/// [raws], in one transaction. Null when no track is left in it.
+/// [raws] (and, with [includeNull], the tracks with no genre), in one
+/// transaction. Null when no track is left in it.
 Future<GenrePageData?> readGenrePage(
   LibraryDatabase db,
   String name,
-  List<String> raws,
-) => db.transaction(() async {
+  List<String> raws, {
+  bool includeNull = false,
+}) => db.transaction(() async {
   final (tracks, albums) = await (
-    db.genreTracks(raws),
-    db.genreAlbums(raws),
+    db.genreTracks(raws, includeNull: includeNull),
+    db.genreAlbums(raws, includeNull: includeNull),
   ).wait;
   if (tracks.isEmpty) return null;
   albums.sort(_byTitle);
@@ -89,7 +96,9 @@ final genrePageProvider = StreamProvider.autoDispose
         genresProvider.select(
           (genres) => genres.whenData((list) {
             final found = list.where((g) => g.key == genreKey).firstOrNull;
-            return found == null ? null : _GenreRaws(found.name, found.raws);
+            return found == null
+                ? null
+                : _GenreRaws(found.name, found.raws, found.withoutGenre);
           }),
         ),
       );
@@ -100,7 +109,12 @@ final genrePageProvider = StreamProvider.autoDispose
       if (raws == null) return Stream.value(null);
       return throttledTracksQuery(
         db,
-        () => readGenrePage(db, raws.name, raws.raws),
+        () => readGenrePage(
+          db,
+          raws.name,
+          raws.raws,
+          includeNull: raws.withoutGenre,
+        ),
         interval: ref.watch(libraryBrowseRefreshIntervalProvider),
       );
     });

@@ -1786,4 +1786,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get coverCacheClearFailed => 'Không xoá được cache ảnh bìa';
+
+  @override
+  String get genresUnknown => 'Không rõ thể loại';
 }

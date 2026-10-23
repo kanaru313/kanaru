@@ -1910,4 +1910,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coverCacheClearFailed => 'Could not clear the cover cache';
+
+  @override
+  String get genresUnknown => 'Unknown genre';
 }
