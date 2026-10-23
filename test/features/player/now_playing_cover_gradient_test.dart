@@ -142,6 +142,91 @@ void main() {
       expect(gradient(tester).first, end);
     });
 
+    testWidgets('still fades when the app theme changes at once', (
+      tester,
+    ) async {
+      container = ProviderContainer(
+        overrides: [appCoverPaletteProvider.overrideWith(_Palette.new)],
+      );
+      addTearDown(container.dispose);
+      // Like KanaruApp: the theme follows the cover's seed, with no
+      // theme animation.
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: Consumer(
+            builder: (context, ref, _) {
+              final seed = ref.watch(
+                appCoverPaletteProvider.select((p) => p?.seed),
+              );
+              return MaterialApp(
+                themeAnimationDuration: Duration.zero,
+                theme: ThemeData(
+                  colorScheme: ColorScheme.fromSeed(
+                    seedColor: seed ?? Colors.blue,
+                  ),
+                ),
+                home: const NowPlayingCoverGradient(child: SizedBox.expand()),
+              );
+            },
+          ),
+        ),
+      );
+      final first = gradient(tester).first;
+      show(red);
+      await tester.pump();
+      final start = gradient(tester).first;
+      await tester.pump(const Duration(milliseconds: 150));
+      final halfway = gradient(tester).first;
+      await tester.pump(const Duration(milliseconds: 200));
+      final end = gradient(tester).first;
+      expect(halfway, isNot(start), reason: 'the tint is still moving');
+      expect(end, isNot(halfway));
+      expect(end, isNot(first));
+    });
+
+    testWidgets('a light/dark switch starts at the new stops, no fade', (
+      tester,
+    ) async {
+      container = ProviderContainer(
+        overrides: [appCoverPaletteProvider.overrideWith(_Palette.new)],
+      );
+      addTearDown(container.dispose);
+      final mode = ValueNotifier(ThemeMode.light);
+      addTearDown(mode.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: ValueListenableBuilder(
+            valueListenable: mode,
+            builder: (context, mode, _) => MaterialApp(
+              themeAnimationDuration: Duration.zero,
+              themeMode: mode,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+              ),
+              darkTheme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.blue,
+                  brightness: Brightness.dark,
+                ),
+              ),
+              home: const NowPlayingCoverGradient(child: SizedBox.expand()),
+            ),
+          ),
+        ),
+      );
+      show(red);
+      await tester.pumpAndSettle();
+      final light = gradient(tester).first;
+      mode.value = ThemeMode.dark;
+      await tester.pump();
+      final atOnce = gradient(tester).first;
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(gradient(tester).first, atOnce, reason: 'no fade from light');
+      expect(atOnce, isNot(light), reason: 'dark has its own stops');
+    });
+
     testWidgets('reduced motion switches on the next frame', (tester) async {
       tester.platformDispatcher.accessibilityFeaturesTestValue =
           const FakeAccessibilityFeatures(disableAnimations: true);

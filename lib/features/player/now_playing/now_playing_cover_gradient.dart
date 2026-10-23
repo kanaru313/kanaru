@@ -23,9 +23,9 @@ const _darkTint = 0.45, _lightTint = 0.35, _tintStep = 0.05;
 /// over [coverThemeTransition], or at once when the system asks for reduced
 /// motion.
 ///
-/// The gradient is a translucent layer over the surface, so while the theme
-/// itself moves to the new cover's colors the surface follows it frame by
-/// frame and the tint does not restart its fade.
+/// The gradient is a translucent layer over the surface, so when the theme
+/// jumps to the new cover's colors the surface changes at once and only the
+/// tint fades; the tint does not restart its fade.
 class NowPlayingCoverGradient extends ConsumerWidget {
   const NowPlayingCoverGradient({super.key, required this.child});
 
@@ -51,6 +51,10 @@ class NowPlayingCoverGradient extends ConsumerWidget {
         Positioned.fill(
           child: RepaintBoundary(
             child: TweenAnimationBuilder<_Stops>(
+              // The surface jumps at once on a light/dark switch; a fade from
+              // the other brightness's stops could briefly break the text
+              // contrast, so a new brightness starts at its own stops.
+              key: ValueKey(scheme.brightness),
               tween: _StopsTween(end: _Stops(stops)),
               duration: MediaQuery.disableAnimationsOf(context)
                   ? Duration.zero

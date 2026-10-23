@@ -22,7 +22,7 @@ Related: [code-standards.md](./code-standards.md) (widget conventions), [feature
 | System accent | `dynamic_color` (`DynamicColorBuilder`) supplies the GTK accent on Linux; the scheme is harmonized with it | `lib/app/app.dart`, `lib/app/theme.dart` |
 | Modes | Light, dark, system. Changes apply immediately; the applied appearance is debounced by 600 ms (`appliedAppearanceProvider`) | `core/settings/applied_appearance_provider.dart` |
 | AMOLED black | Not built (UI-08) | features.md |
-| Artwork color | With "Colors from the cover" on, the playing cover's seed replaces the system accent (`ColorScheme.fromSeed`, tonal spot) in both themes; a gray cover, no cover or nothing playing keeps the system accent. Now Playing gets a gradient of the cover's colors over the surface (text keeps 4.5:1 contrast; a gray cover still tints it). The change takes 300 ms (`coverThemeTransition`, also used between light and dark), none when the system asks for reduced motion (UI-03) | `lib/app/theme.dart`, `lib/app/app.dart`, `core/cover_colors/playing_cover_palette_provider.dart` |
+| Artwork color | With "Colors from the cover" on, the playing cover's seed replaces the system accent (`ColorScheme.fromSeed`, tonal spot) in both themes; a gray cover, no cover or nothing playing keeps the system accent. Now Playing gets a gradient of the cover's colors over the surface (text keeps 4.5:1 contrast; a gray cover still tints it). The app's colors change at once (no theme animation, also between light and dark); only the Now Playing gradient fades, over 300 ms (`coverThemeTransition`), at once when the system asks for reduced motion (UI-03) | `lib/app/theme.dart`, `lib/app/app.dart`, `core/cover_colors/playing_cover_palette_provider.dart` |
 
 ## Breakpoints
 
@@ -183,9 +183,10 @@ The Home placeholder screen uses `EmptyState` with a one-sentence message. Favor
 | Queue sheet | 400 ms | Checked (`queue_sheet_host.dart`) |
 | Now Playing slide | 500 ms | Checked (`now_playing_overlay.dart`) |
 | Auto-hide fade | 100 to 150 ms | Not gated |
+| Now Playing cover gradient fade | 300 ms | Instant (`now_playing_cover_gradient.dart`) |
 | Seek bar wave | continuous while playing | Flat (`seek_bar.dart`) |
 
-Reduced motion comes from the platform setting, or from Settings → Appearance → Animations turned off: the app's builder (`lib/app/app.dart`) then sets `MediaQuery.disableAnimations` for every page, dialog and menu, and the theme change (`themeAnimationDuration`) is instant too. Turned on, the platform setting decides. Every new animation must check `MediaQuery.disableAnimationsOf`, never the setting itself. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
+Reduced motion comes from the platform setting, or from Settings → Appearance → Animations turned off: the app's builder (`lib/app/app.dart`) then sets `MediaQuery.disableAnimations` for every page, dialog and menu, and the Now Playing gradient fade is instant too. The theme change itself (`themeAnimationDuration`) is always instant. Turned on, the platform setting decides. Every new animation must check `MediaQuery.disableAnimationsOf`, never the setting itself. The sidebar collapse does not appear to check it yet; treat that as a bug to fix, not a pattern to copy.
 
 **Text size.** Settings → Appearance → Text size (80 % to 150 %) multiplies the system's text scale in the same builder (`appTextScaler`). Enlarging stops at 2× (or at the system's scale when that is larger, so a large accessibility size is never undone). Layouts size rows and grid tiles from `MediaQuery.textScalerOf`, never from fixed heights.
 
