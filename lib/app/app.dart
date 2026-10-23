@@ -4,7 +4,6 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../core/cover_colors/cover_palette.dart';
 import '../core/cover_colors/playing_cover_palette_provider.dart';
 import '../core/settings/applied_appearance_provider.dart';
 import '../core/settings/settings_provider.dart';
@@ -36,14 +35,6 @@ class KanaruApp extends ConsumerWidget {
     // The playing cover's seed when "colors from the cover" is on and the
     // cover has a usable color; otherwise the system accent.
     final coverSeed = ref.watch(appCoverPaletteProvider.select((p) => p?.seed));
-    // Read here, above the builder's override, so the setting is checked
-    // along with the system's reduced motion.
-    final animations = ref.watch(settingsProvider.select((s) => s.animations));
-    final themeAnimationDuration =
-        !animations || MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : coverThemeTransition;
-
     // Uses the platform accent color when available (GTK theme on Linux,
     // Material You on Android), otherwise falls back to Kanaru's seed color;
     // the playing cover's color comes first when there is one.
@@ -57,7 +48,11 @@ class KanaruApp extends ConsumerWidget {
           Brightness.dark,
           coverSeed: coverSeed,
         ),
-        themeAnimationDuration: themeAnimationDuration,
+        // A new cover or a light/dark switch changes the theme at once:
+        // animating it lerps ThemeData and rebuilds every Theme.of
+        // dependant on each frame (100-180 ms a frame in Debug). Now
+        // Playing fades its own gradient.
+        themeAnimationDuration: Duration.zero,
         themeMode: switch (theme) {
           ThemePreference.system => ThemeMode.system,
           ThemePreference.light => ThemeMode.light,

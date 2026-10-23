@@ -13,9 +13,9 @@ const coverColorAlgoRevision = 1;
 const coverColorAlgoVersion =
     coverColorAlgoRevision * 100000 + coverThumbnailSize;
 
-/// How long the app (theme and Now Playing background) takes to move to the
-/// colors of a new cover; the theme also uses it between light and dark.
-/// Zero when the system asks for reduced motion.
+/// How long the Now Playing background takes to fade to the colors of a new
+/// cover; zero when the system asks for reduced motion. The app theme itself
+/// changes at once.
 const coverThemeTransition = Duration(milliseconds: 300);
 
 /// How many colors a stored palette may hold.
