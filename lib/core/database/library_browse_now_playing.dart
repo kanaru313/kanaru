@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import 'library_browse_track_links.dart';
 import 'library_database.dart';
 
 /// The album of the playing song: the tag text and, when the album has a
@@ -33,5 +34,19 @@ extension LibraryBrowseNowPlaying on LibraryDatabase {
           ? null
           : AlbumKey(row.readNullable<String>('ak') ?? '', titleKey),
     );
+  }
+
+  /// The artists credited to the library row at [path] (tag order, like
+  /// [LibraryBrowseTrackLinks.trackLinks]); empty when the file is not in
+  /// the library or has no artist tag.
+  Future<List<({String key, String name})>> artistsOfPath(String path) async {
+    final row = await customSelect(
+      'SELECT id FROM tracks WHERE path = ?1',
+      variables: [Variable(path)],
+      readsFrom: {tracks},
+    ).getSingleOrNull();
+    final id = row?.read<int>('id');
+    if (id == null) return const [];
+    return (await trackLinks(id))?.artists ?? const [];
   }
 }

@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/track.dart';
-import '../../../shared/icons/app_icons.dart';
 import 'now_playing_album_line.dart';
+import 'now_playing_artist_line.dart';
 import 'now_playing_artwork.dart';
 
 /// Large cover of the playing track, then [track]'s title, artist and album,
@@ -77,24 +77,7 @@ class NowPlayingTitle extends StatelessWidget {
               ),
         if (artist != null) ...[
           const SizedBox(height: 8),
-          Opacity(
-            opacity: 0.7,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 4,
-              children: [
-                const Icon(AppIcons.artistRounded, size: 20),
-                Flexible(
-                  child: Text(
-                    artist,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyLarge,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          NowPlayingArtistLine(artist: artist),
         ],
         NowPlayingAlbumLine(centered: centered),
       ],

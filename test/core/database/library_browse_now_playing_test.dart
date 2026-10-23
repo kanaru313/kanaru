@@ -66,4 +66,22 @@ void main() {
     expect(album!.key, isNotNull);
     expect(album.key!.artistKey, '');
   });
+
+  test('gives the credited artists of the path', () async {
+    await store('/m/a.flac', artist: 'Ann; Bob');
+    expect(await db.artistsOfPath('/m/a.flac'), [
+      (key: 'ann', name: 'Ann'),
+      (key: 'bob', name: 'Bob'),
+    ]);
+  });
+
+  test('a song without an artist tag gives an empty list', () async {
+    await store('/m/a.flac', album: 'Al');
+    expect(await db.artistsOfPath('/m/a.flac'), isEmpty);
+  });
+
+  test('a path outside the library gives an empty list', () async {
+    await store('/m/a.flac', artist: 'Ann');
+    expect(await db.artistsOfPath('/elsewhere/a.flac'), isEmpty);
+  });
 }
