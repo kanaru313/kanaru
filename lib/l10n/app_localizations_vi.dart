@@ -1208,7 +1208,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsTrackNumbersHint =>
-      'Hiện số thứ tự của từng bài trên trang album.';
+      'Bật: số thứ tự của từng bài trên trang album. Tắt: ảnh bìa của bài.';
 
   @override
   String get settingsAdvanced => 'Nâng cao';

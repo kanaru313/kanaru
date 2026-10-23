@@ -93,7 +93,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Screen | Layout |
 |---|---|
 | Songs | Virtualized list, one row per track, read in pages of 200. Tap plays the list from that row in the displayed order. |
-| Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc. |
+| Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc, each with its track number, or its cover when Settings → Interface → Track numbers in albums is off. |
 | Artists | Round avatars in a grid or a list, switched per session (not kept across restarts); artist page has Play, Shuffle and queue buttons, then sections for albums, songs and appears-on. |
 | Genres | Round tiles in a grid or a list, switched per session. Genre page has Play, Shuffle and queue buttons, then its albums and songs. |
 | Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. |

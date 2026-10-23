@@ -1937,7 +1937,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTrackNumbersHint.
   ///
   /// In en, this message translates to:
-  /// **'Show each song\'s number on an album page.'**
+  /// **'On: each song\'s number on an album page. Off: its cover.'**
   String get settingsTrackNumbersHint;
 
   /// No description provided for @settingsAdvanced.

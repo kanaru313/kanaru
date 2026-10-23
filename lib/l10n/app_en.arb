@@ -599,7 +599,7 @@
   "settingsTabGenres": "Genres",
   "settingsTabLanguages": "Languages",
   "settingsTrackNumbers": "Track numbers in albums",
-  "settingsTrackNumbersHint": "Show each song's number on an album page.",
+  "settingsTrackNumbersHint": "On: each song's number on an album page. Off: its cover.",
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreRow": "Back up and restore data",

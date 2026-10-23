@@ -1259,7 +1259,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTrackNumbersHint =>
-      'Show each song\'s number on an album page.';
+      'On: each song\'s number on an album page. Off: its cover.';
 
   @override
   String get settingsAdvanced => 'Advanced';

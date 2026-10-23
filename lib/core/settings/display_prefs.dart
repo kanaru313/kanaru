@@ -18,10 +18,10 @@ const minFontScale = 0.8;
 const maxFontScale = 1.5;
 
 /// How the app looks beyond the theme. The defaults are what the app shows
-/// today. Read: [colorFromCover] (the cover palette and the scan) and
-/// [fontScale] (the app's builder, `lib/app/app.dart`); [sidebarTabs] and
-/// [trackNumbersInAlbum] are stored for display options that do not exist
-/// yet: nothing reads them.
+/// today. Read: [colorFromCover] (the cover palette and the scan),
+/// [fontScale] (the app's builder, `lib/app/app.dart`) and
+/// [trackNumbersInAlbum] (album pages); [sidebarTabs] is stored for a
+/// display option that does not exist yet: nothing reads it.
 class DisplayPrefs {
   const DisplayPrefs({
     this.colorFromCover = false,
@@ -42,7 +42,8 @@ class DisplayPrefs {
   /// hidden ones instead, so a destination added later shows by default.
   final Set<SidebarTab> sidebarTabs;
 
-  /// Show the track number in front of each song on an album page.
+  /// Show the track number in front of each song on an album page; off shows
+  /// the song's cover there instead.
   final bool trackNumbersInAlbum;
 
   DisplayPrefs copyWith({
