@@ -278,11 +278,21 @@ Future<void> _checkLayout(
         .map((e) => tester.getRect(find.byWidget(e.widget)))
         .toList();
     expect(dropdowns, hasLength(13));
-    for (final rect in dropdowns.skip(1)) {
-      expect(rect.width, dropdowns.first.width);
-      expect(rect.right, dropdowns.first.right);
+    // The listen threshold row splits the compact width between its time
+    // and share dropdowns; every other row has one.
+    bool shared(Rect r) => dropdowns.where((o) => o.top == r.top).length > 1;
+    final single = dropdowns.where((r) => !shared(r)).toList();
+    final paired = dropdowns.where(shared).toList();
+    expect(paired, hasLength(2));
+    for (final rect in single.skip(1)) {
+      expect(rect.width, single.first.width);
+      expect(rect.right, single.first.right);
     }
-    expect(tester.getRect(rescanButton).right, dropdowns.first.right);
+    expect(paired.first.width, paired.last.width);
+    expect(paired.first.right, lessThanOrEqualTo(paired.last.left));
+    expect(paired.last.right, single.first.right);
+    expect(paired.first.left, greaterThanOrEqualTo(single.first.left));
+    expect(tester.getRect(rescanButton).right, single.first.right);
   }
   if (size.width > 760 && size.width < 1280) {
     expect(
