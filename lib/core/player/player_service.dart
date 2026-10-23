@@ -122,8 +122,8 @@ class PlayerService extends Notifier<PlayerState>
   /// between, so it is not the replacement of that event. Opening the same
   /// tracks again still counts as a replacement. Restoring the last
   /// session, play next, add to queue, the engine moving on, repeat, shuffle
-  /// and other queue edits never show up here. The service makes a new stream when
-  /// its provider rebuilds, so a listener must subscribe again.
+  /// and other queue edits never show up here. The service makes a new
+  /// stream when its provider rebuilds, so a listener must subscribe again.
   Stream<PlayQueue> get replacedQueues => _replacedQueues.stream;
 
   /// Announces [previous] on [replacedQueues] unless it held no track. Every

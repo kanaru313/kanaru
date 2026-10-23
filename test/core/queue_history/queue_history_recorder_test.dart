@@ -136,7 +136,7 @@ void main() {
     ]);
   });
 
-  test('queuePaths keeps local files in play order', () {
+  test('queuePaths of an empty queue is empty', () {
     expect(queuePaths(app.read(playerServiceProvider).queue), isEmpty);
   });
 }

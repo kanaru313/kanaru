@@ -1,7 +1,8 @@
 part of 'player_service.dart';
 
 /// Bringing the last playback session back on launch, paused, with the
-/// "play next" tracks still to come, and saving it while the app runs (see [PlaybackSessionSaver] for when it writes).
+/// "play next" tracks still to come, and saving it while the app runs (see
+/// [PlaybackSessionSaver] for when it writes).
 mixin _PlayerSessionCommands on Notifier<PlayerState> {
   AudioBackend get _backend;
   StreamController<Duration> get _seeked;
