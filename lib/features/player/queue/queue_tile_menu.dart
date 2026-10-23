@@ -64,6 +64,12 @@ class QueueTileMenuRegion extends ConsumerWidget {
     final player = ref.read(playerServiceProvider.notifier);
     final db = ref.read(libraryDatabaseProvider);
     final path = localPathOf(track.uri);
+    // The entry, not the track: the same Track object may be queued twice.
+    final container = ProviderScope.containerOf(context, listen: false);
+    final queueAtOpen = container.read(playerServiceProvider).queue;
+    final entry = this.position < queueAtOpen.order.length
+        ? queueAtOpen.order[this.position]
+        : null;
     final state = await _favoriteState(ref, path);
     if (!context.mounted) return;
     final action = await showMenu<_QueueTileAction>(
@@ -96,11 +102,13 @@ class QueueTileMenuRegion extends ConsumerWidget {
       case null:
         return;
       case _QueueTileAction.remove:
-        // The row may have moved while the menu was open: remove this track
-        // only if it is still at that position.
-        final queue = ref.read(playerServiceProvider).queue;
-        if (this.position < queue.order.length &&
-            identical(queue.trackAt(this.position), track)) {
+        // The queue may have changed while the menu was open: remove the
+        // entry only if it is still at that position. Read through the
+        // container taken before the menu opened, as the row may be gone.
+        final queue = container.read(playerServiceProvider).queue;
+        if (entry != null &&
+            this.position < queue.order.length &&
+            queue.order[this.position] == entry) {
           await player.removeTrack(this.position);
         }
       case _QueueTileAction.like || _QueueTileAction.unlike:

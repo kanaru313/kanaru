@@ -1,6 +1,8 @@
+import 'playlist_favorites.dart' show queueKind;
+
 /// `playlists.kind` of a saved queue (invariant 8 of `user_data_tables.dart`):
 /// one row per queue the user replaced. Playlist lists leave these rows out.
-const queueSnapshotKind = 'queue';
+const queueSnapshotKind = queueKind;
 
 /// Most saved queues kept: saving one more deletes the oldest in the same
 /// transaction.

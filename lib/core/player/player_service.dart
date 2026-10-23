@@ -116,12 +116,13 @@ class PlayerService extends Notifier<PlayerState>
   Stream<Duration> get seeked => _seeked.stream;
 
   /// The queue the user replaced, once per open or open shuffled that swaps
-  /// out a queue with at least one track. `state.queue` already holds the new
+  /// out a queue with at least one track, and once per clear queue (with the
+  /// queue as it was before the clear). `state.queue` already holds the new
   /// queue when a listener hears of it, but a later open may have landed in
   /// between, so it is not the replacement of that event. Opening the same
   /// tracks again still counts as a replacement. Restoring the last
   /// session, play next, add to queue, the engine moving on, repeat, shuffle
-  /// and queue edits never show up here. The service makes a new stream when
+  /// and other queue edits never show up here. The service makes a new stream when
   /// its provider rebuilds, so a listener must subscribe again.
   Stream<PlayQueue> get replacedQueues => _replacedQueues.stream;
 

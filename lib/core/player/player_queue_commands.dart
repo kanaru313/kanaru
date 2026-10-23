@@ -22,6 +22,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   Future<void> jump(int index);
   Future<void> _play(int index, {bool play = true});
   void _userActed();
+  void _queueReplaced(PlayQueue previous);
 
   /// Puts [tracks] right after the playing track, behind the ones earlier
   /// calls put there that have not played yet, so they play in the order
@@ -117,7 +118,8 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   }
 
   /// Removes every track but the playing one, without interrupting it.
-  /// Removing that one too is what empties the queue.
+  /// Removing that one too is what empties the queue. The queue as it was is
+  /// announced on `replacedQueues`, so the queue history keeps it.
   Future<void> clearQueue() async {
     if (state.queue.isEmpty) return;
     _userActed();
@@ -125,7 +127,9 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     _upNext.clear();
     // The entries are renumbered, so the numbers handed over are void.
     _handedNext.clear();
+    final previous = state.queue;
     state = state.copyWith(queue: state.queue.keepOnlyCurrent());
+    _queueReplaced(previous);
     await _queueNext();
   }
 

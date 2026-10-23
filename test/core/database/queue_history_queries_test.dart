@@ -2,7 +2,6 @@ import 'package:drift/drift.dart' show Value, Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/core/database/library_root_queries.dart';
 import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/database/queue_history_kind.dart';
@@ -130,6 +129,13 @@ void main() {
   });
 
   group('reads', () {
+    test('saved queues stay out of the playlist list', () async {
+      final mine = await db.createPlaylist('Mine', now: 1);
+      await db.recordQueueSnapshot(_paths(2), now: 5);
+      final listed = await db.watchPlaylistSummaries().first;
+      expect(listed.map((s) => s.id), [mine]);
+    });
+
     test('newest first, with the collage of library covers', () async {
       await db.upsertTracks([
         track(root, '/m/a0.flac').copyWith(coverKey: const Value('k0')),

@@ -33,9 +33,11 @@ String queueSnapshotName(AppLocalizations l10n, int savedAt) {
   return l10n.queueHistorySavedAt(when, when);
 }
 
-/// Carries out [action] on saved queue [id], saved at [savedAt]. What is
-/// needed from the widget tree is captured before the first `await`;
-/// failures are logged and reported in a snackbar, never thrown.
+/// Carries out [action] on saved queue [id], saved at [savedAt]. The
+/// messenger, navigator and texts are captured before the first `await`;
+/// playing or queuing after the read needs [ref], so it is dropped when the
+/// row left the tree meanwhile. Failures are logged and reported in a
+/// snackbar, never thrown.
 Future<void> runQueueSnapshotAction(
   WidgetRef ref,
   BuildContext context,
@@ -79,6 +81,8 @@ Future<void> runQueueSnapshotAction(
           QueueSnapshotAction.playNext ||
           QueueSnapshotAction.addToQueue:
         final page = await db.playlistPage(id);
+        // The row may be gone (deleted, pruned, another page): `ref` with it.
+        if (!context.mounted) return;
         final tracks = playableTracks(page?.entries ?? const [], covers);
         if (tracks.isEmpty) {
           say(l10n.queueHistoryNothingToPlay);

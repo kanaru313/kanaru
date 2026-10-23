@@ -12,7 +12,6 @@ import 'package:kanaru/features/playlists/queue_history_routes.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../core/player/fake_audio_backend.dart';
 import 'app_shell_test.dart' show narrow, pumpApp, wide;
 
 Finder _inSidebar(String label) =>
