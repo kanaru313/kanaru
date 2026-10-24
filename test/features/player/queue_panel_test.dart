@@ -321,11 +321,17 @@ void main() {
   });
 
   group('rows', () {
-    testWidgets('mark the playing track and dim the played ones', (
+    testWidgets('mark the playing track and dim the earlier ones', (
       tester,
     ) async {
       await pumpApp(tester, start: 2);
       await openSheet(tester);
+
+      // The earlier tracks are folded away until the toggle is pressed.
+      expect(find.text('Earlier (2)'), findsOneWidget);
+      expect(find.byType(QueueTile), findsNWidgets(2));
+      await tester.tap(find.text('Earlier (2)'));
+      await tester.pumpAndSettle();
 
       Opacity opacity(int row) => tester.widget<Opacity>(
         find
@@ -335,6 +341,8 @@ void main() {
             )
             .first,
       );
+      // Rows follow the scroll order: the newest earlier track is nearest to
+      // the playing one.
       expect(opacity(0).opacity, 0.6);
       expect(opacity(1).opacity, 0.6);
       expect(opacity(2).opacity, 1);
@@ -346,7 +354,7 @@ void main() {
         findsOneWidget,
       );
       Finder number(String text) => find.descendant(
-        of: find.byType(ReorderableListView),
+        of: find.byType(CustomScrollView),
         matching: find.text(text),
       );
       expect(number('1'), findsOneWidget);
@@ -400,18 +408,26 @@ void main() {
   });
 
   group('editing', () {
+    testWidgets('the playing row has no drag handle', (tester) async {
+      await pumpApp(tester);
+      await openSheet(tester);
+
+      expect(handle(0), findsNothing);
+      expect(handle(1), findsOneWidget);
+    });
+
     testWidgets('dragging a row down reorders without interrupting', (
       tester,
     ) async {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await dragHandle(tester, handle(0), 128);
+      await dragHandle(tester, handle(1), 128);
 
-      expect(titles(), ['t1', 't2', 't0', 't3']);
+      expect(titles(), ['t0', 't2', 't3', 't1']);
       expect(current()!.title, 't0');
-      expect(container.read(playerServiceProvider).queue.index, 2);
-      expect(backend.calls, ['setNext(t3)']);
+      expect(container.read(playerServiceProvider).queue.index, 0);
+      expect(backend.calls, ['setNext(t2)']);
     });
 
     testWidgets('dragging a row up reorders without interrupting', (
@@ -523,11 +539,12 @@ void main() {
       await openSheet(tester);
 
       expect(find.byType(QueueTile).evaluate().length, lessThan(50));
-      // The playing track is the second row.
+      // The playing track is the first row, under the folded earlier ones.
       final tiles = tester.widgetList<QueueTile>(find.byType(QueueTile));
-      expect(tiles.elementAt(1).track.title, 't5000');
-      expect(tiles.elementAt(1).current, isTrue);
-      expect(tiles.first.track.title, 't4999');
+      expect(tiles.first.track.title, 't5000');
+      expect(tiles.first.current, isTrue);
+      expect(tiles.elementAt(1).track.title, 't5001');
+      expect(find.text('Earlier (5000)'), findsOneWidget);
     });
 
     testWidgets('"Now playing" scrolls back to the playing track', (
@@ -535,15 +552,12 @@ void main() {
     ) async {
       await pumpApp(tester, count: 200);
       await openSheet(tester);
-      await tester.drag(
-        find.byType(ReorderableListView),
-        const Offset(0, -2000),
-      );
-      await tester.pumpAndSettle();
       Finder row(String title) => find.descendant(
-        of: find.byType(ReorderableListView),
+        of: find.byType(CustomScrollView),
         matching: find.text(title),
       );
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -2000));
+      await tester.pumpAndSettle();
       expect(row('t0'), findsNothing);
 
       await tester.tap(find.byTooltip('Jump to current song'));

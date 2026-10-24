@@ -95,13 +95,14 @@ void main() {
 
   testWidgets('filtered rows cannot be dragged or removed', (tester) async {
     await openSheet(tester);
-    expect(find.byIcon(Icons.drag_handle_rounded), findsNWidgets(4));
+    // The playing row cannot be dragged, so it has no handle.
+    expect(find.byIcon(Icons.drag_handle_rounded), findsNWidgets(3));
 
     await filterBy(tester, 'one');
 
     expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
     expect(find.byIcon(Icons.delete_rounded), findsNothing);
-    expect(find.byType(ReorderableListView), findsNothing);
+    expect(find.byType(SliverReorderableList), findsNothing);
   });
 
   testWidgets('tapping a row jumps to it without changing the queue', (

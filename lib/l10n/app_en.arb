@@ -548,6 +548,30 @@
   "queueClear": "Clear queue",
   "queueRemove": "Remove from queue",
   "queueReorder": "Drag to reorder",
+  "queueSectionPlayNext": "Play next ({count})",
+  "@queueSectionPlayNext": {
+    "description": "Label above the tracks the user queued to play right after the current one",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueSectionUpNext": "Up next",
+  "queueSectionEarlier": "Earlier ({count})",
+  "@queueSectionEarlier": {
+    "description": "Toggle row above the playing track: the tracks before it in the queue",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueShowEarlier": "Show earlier tracks",
+  "queueHideEarlier": "Hide earlier tracks",
+  "queueRepeatsFromStart": "Then the queue starts over",
+  "queueMoveToPlayNext": "Move to Play next",
+  "queueRemoveFromPlayNext": "Remove from Play next",
   "queueShowCurrent": "Jump to current song",
   "queueClose": "Close now playing list",
   "queueSummary": "{tracks} · {timeLeft}",

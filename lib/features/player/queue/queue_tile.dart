@@ -25,6 +25,7 @@ class QueueTile extends ConsumerWidget {
     required this.current,
     required this.played,
     this.editable = true,
+    this.dragIndex,
   });
 
   final Track track;
@@ -41,6 +42,13 @@ class QueueTile extends ConsumerWidget {
   /// `false` for a row shown by the filter: no drag handle and no remove
   /// button, since the rows are not the whole queue. The row menu is kept.
   final bool editable;
+
+  /// Index of this row in the reorderable list it sits in, which is what the
+  /// drag handle needs (it is not the play position: the list holds only the
+  /// upcoming rows). `null` for a row that cannot be dragged, like the
+  /// playing one and the earlier ones; those keep an empty slot where the
+  /// handle would be.
+  final int? dragIndex;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -96,9 +104,9 @@ class QueueTile extends ConsumerWidget {
                 onTap: current ? null : () => player.jump(position),
                 child: Row(
                   children: [
-                    if (editable)
+                    if (editable && dragIndex != null)
                       ReorderableDragStartListener(
-                        index: position,
+                        index: dragIndex!,
                         child: MouseRegion(
                           cursor: SystemMouseCursors.grab,
                           child: Tooltip(

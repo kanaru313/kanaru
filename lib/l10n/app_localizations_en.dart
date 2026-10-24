@@ -905,6 +905,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueReorder => 'Drag to reorder';
 
   @override
+  String queueSectionPlayNext(int count) {
+    return 'Play next ($count)';
+  }
+
+  @override
+  String get queueSectionUpNext => 'Up next';
+
+  @override
+  String queueSectionEarlier(int count) {
+    return 'Earlier ($count)';
+  }
+
+  @override
+  String get queueShowEarlier => 'Show earlier tracks';
+
+  @override
+  String get queueHideEarlier => 'Hide earlier tracks';
+
+  @override
+  String get queueRepeatsFromStart => 'Then the queue starts over';
+
+  @override
+  String get queueMoveToPlayNext => 'Move to Play next';
+
+  @override
+  String get queueRemoveFromPlayNext => 'Remove from Play next';
+
+  @override
   String get queueShowCurrent => 'Jump to current song';
 
   @override

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -13,14 +11,15 @@ import '../../../shared/widgets/in_page_search_field.dart';
 import 'queue_filter_results.dart';
 import 'queue_panel_header.dart';
 import 'queue_save_flow.dart';
+import 'queue_section_list.dart';
 import 'queue_sheet_host.dart';
-import 'queue_tile.dart';
 import 'queue_time_left.dart';
 
-/// The play queue, editable: drag a row by its handle to reorder, remove a
-/// row, play one by tapping it. Only the rows on screen are built, so a
-/// queue of tens of thousands of tracks stays light. Used in the side sheet
-/// and, on narrow windows, as a page of its own.
+/// The play queue, editable, in sections (earlier, now playing, play next, up
+/// next): drag a row by its handle to reorder or to move it between play next
+/// and up next, remove a row, play one by tapping it. Only the rows on screen
+/// are built, so a queue of tens of thousands of tracks stays light. Used in
+/// the side sheet and, on narrow windows, as a page of its own.
 class QueuePanel extends ConsumerStatefulWidget {
   const QueuePanel({super.key, this.onClose});
 
@@ -37,7 +36,13 @@ const _queueFilterLayer = 10;
 
 class _QueuePanelState extends ConsumerState<QueuePanel>
     with InPageFilterHost<QueuePanel> {
-  late final ScrollController _scroll;
+  /// Offset 0 is always the playing track (the list is centered on it), so
+  /// the controller needs no initial offset.
+  final _scroll = ScrollController();
+
+  /// Whether the earlier tracks are shown; kept here so it lasts as long as
+  /// the panel, across opening and closing the filter.
+  var _earlierExpanded = false;
   final _filterButtonFocus = FocusNode(debugLabel: 'queue filter button');
 
   /// The filter lives as long as the panel: closing the sheet drops it.
@@ -56,19 +61,6 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
   bool get filterAvailable =>
       ref.read(playerServiceProvider).queue.order.isNotEmpty;
 
-  /// Offset that puts the playing track on the second row, so the track
-  /// just played stays in view above it.
-  double _currentOffset() {
-    final index = ref.read(playerServiceProvider).queue.index;
-    return max(0, index - 1) * queueTileExtent;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _scroll = ScrollController(initialScrollOffset: _currentOffset());
-  }
-
   @override
   void dispose() {
     _filter.dispose();
@@ -85,7 +77,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
   }
 
   /// Closes the filter first (the full queue comes back), then scrolls once
-  /// its list is built again.
+  /// its list is built again. The playing track is at offset 0.
   void _showCurrent() {
     if (_filter.isOpen) {
       _filter.close();
@@ -99,13 +91,12 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
 
   void _scrollToCurrent() {
     if (!_scroll.hasClients) return;
-    final target = min(_currentOffset(), _scroll.position.maxScrollExtent);
     if (MediaQuery.disableAnimationsOf(context)) {
-      _scroll.jumpTo(target);
+      _scroll.jumpTo(0);
       return;
     }
     _scroll.animateTo(
-      target,
+      0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutQuart,
     );
@@ -116,6 +107,9 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
     // Not the whole player state: the position ticks must not rebuild rows.
     final queue = ref.watch(playerServiceProvider.select((s) => s.queue));
     final player = ref.read(playerServiceProvider.notifier);
+    // Read in the same build that watches the queue: every command updates
+    // the Play next run before it swaps the queue, so the two agree.
+    final playNext = player.upNextRun;
     final hasLibrary = ref.watch(libraryDatabaseProvider) != null;
     // An emptied queue leaves nothing to show: close the sheet it is in.
     ref.listen(playerServiceProvider.select((s) => s.queue.isEmpty), (
@@ -161,23 +155,13 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
                     ),
                     query: _filter.query,
                   )
-                : ReorderableListView.builder(
-                    scrollController: _scroll,
-                    itemExtent: queueTileExtent,
-                    buildDefaultDragHandles: false,
-                    itemCount: queue.order.length,
-                    // `onReorderItem` already gives the final index of the
-                    // dropped row.
-                    onReorderItem: player.moveTrack,
-                    itemBuilder: (context, position) => QueueTile(
-                      // The index in the opened queue: stable while rows move,
-                      // and never shared by two copies of the same file.
-                      key: ValueKey(queue.order[position]),
-                      track: queue.trackAt(position),
-                      position: position,
-                      current: position == queue.index,
-                      played: position < queue.index,
-                    ),
+                : QueueSectionList(
+                    queue: queue,
+                    playNext: playNext,
+                    controller: _scroll,
+                    earlierExpanded: _earlierExpanded,
+                    onEarlierExpandedChanged: (expanded) =>
+                        setState(() => _earlierExpanded = expanded),
                   ),
           ),
         ],

@@ -881,6 +881,34 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override
+  String queueSectionPlayNext(int count) {
+    return 'Phát tiếp theo ($count)';
+  }
+
+  @override
+  String get queueSectionUpNext => 'Tiếp theo';
+
+  @override
+  String queueSectionEarlier(int count) {
+    return 'Trước đó ($count)';
+  }
+
+  @override
+  String get queueShowEarlier => 'Hiện các bài trước đó';
+
+  @override
+  String get queueHideEarlier => 'Ẩn các bài trước đó';
+
+  @override
+  String get queueRepeatsFromStart => 'Sau đó hàng đợi phát lại từ đầu';
+
+  @override
+  String get queueMoveToPlayNext => 'Chuyển sang Phát tiếp theo';
+
+  @override
+  String get queueRemoveFromPlayNext => 'Bỏ khỏi Phát tiếp theo';
+
+  @override
   String get queueShowCurrent => 'Tới bài đang phát';
 
   @override

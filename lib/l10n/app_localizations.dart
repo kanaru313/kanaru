@@ -1466,6 +1466,54 @@ abstract class AppLocalizations {
   /// **'Drag to reorder'**
   String get queueReorder;
 
+  /// Label above the tracks the user queued to play right after the current one
+  ///
+  /// In en, this message translates to:
+  /// **'Play next ({count})'**
+  String queueSectionPlayNext(int count);
+
+  /// No description provided for @queueSectionUpNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next'**
+  String get queueSectionUpNext;
+
+  /// Toggle row above the playing track: the tracks before it in the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier ({count})'**
+  String queueSectionEarlier(int count);
+
+  /// No description provided for @queueShowEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Show earlier tracks'**
+  String get queueShowEarlier;
+
+  /// No description provided for @queueHideEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide earlier tracks'**
+  String get queueHideEarlier;
+
+  /// No description provided for @queueRepeatsFromStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Then the queue starts over'**
+  String get queueRepeatsFromStart;
+
+  /// No description provided for @queueMoveToPlayNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to Play next'**
+  String get queueMoveToPlayNext;
+
+  /// No description provided for @queueRemoveFromPlayNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Play next'**
+  String get queueRemoveFromPlayNext;
+
   /// No description provided for @queueShowCurrent.
   ///
   /// In en, this message translates to:
