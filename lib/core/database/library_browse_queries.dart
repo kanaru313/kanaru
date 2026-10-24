@@ -54,12 +54,15 @@ FROM tracks WHERE album_title_key IS NOT NULL AND
 $albumGroupSql''';
 
 /// One row per artist key, from `track_artists`: the shown spelling (the
-/// smallest), the tracks crediting it and the distinct albums they are on.
-/// Names only found as album artist are not artists here.
+/// smallest), the tracks crediting it, the distinct albums they are on, the
+/// first and last year (0 counts as unknown) and the total length. Names
+/// only found as album artist are not artists here.
 const artistCreditsSql = '''
 SELECT ta.artist_key AS artist_key, min(ta.artist_name) AS name,
   count(*) AS n,
-  count(DISTINCT t.album_artist_key || char(31) || t.album_title_key) AS albums
+  count(DISTINCT t.album_artist_key || char(31) || t.album_title_key) AS albums,
+  min(nullif(t.year, 0)) AS year_lo, max(nullif(t.year, 0)) AS year_hi,
+  sum(t.duration_ms) AS ms
 FROM track_artists AS ta JOIN tracks AS t ON t.id = ta.track_id
 GROUP BY ta.artist_key''';
 
@@ -137,6 +140,9 @@ extension LibraryBrowseQueries on LibraryDatabase {
           name: row.read<String>('name'),
           trackCount: row.read<int>('n'),
           albumCount: row.read<int>('albums'),
+          firstYear: row.readNullable<int>('year_lo'),
+          lastYear: row.readNullable<int>('year_hi'),
+          durationMs: row.readNullable<int>('ms'),
         );
       }).get();
 

@@ -26,9 +26,9 @@ void main() {
 
     expect(find.byType(ArtistTile), findsNWidgets(3));
     expect(find.text('Various Artists'), findsNothing);
-    expect(find.text('1 album · 2 songs'), findsNWidgets(1));
-    expect(find.text('1 album · 3 songs'), findsOneWidget);
-    expect(find.text('1 album · 1 song'), findsOneWidget);
+    expect(find.text('1 album • 2 songs'), findsNWidgets(1));
+    expect(find.text('1 album • 3 songs'), findsOneWidget);
+    expect(find.text('1 album • 1 song'), findsOneWidget);
     expect(top('Ann'), lessThan(top('Bob')));
     expect(top('Bob'), lessThan(top('Guest')));
 

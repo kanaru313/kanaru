@@ -582,6 +582,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albumsPlayAlbum => 'Play album';
 
   @override
+  String libraryHoursMinutes(int hours, int minutes) {
+    final intl.NumberFormat hoursNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String hoursString = hoursNumberFormat.format(hours);
+
+    return '$hoursString h $minutes min';
+  }
+
+  @override
+  String get artistsPlayArtist => 'Play artist';
+
+  @override
   String get albumsPlay => 'Play';
 
   @override

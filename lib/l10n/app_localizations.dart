@@ -944,6 +944,18 @@ abstract class AppLocalizations {
   /// **'Play album'**
   String get albumsPlayAlbum;
 
+  /// A total length of an hour or more in a library row
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String libraryHoursMinutes(int hours, int minutes);
+
+  /// Tooltip of the play button shown on an artist row on hover
+  ///
+  /// In en, this message translates to:
+  /// **'Play artist'**
+  String get artistsPlayArtist;
+
   /// No description provided for @albumsPlay.
   ///
   /// In en, this message translates to:

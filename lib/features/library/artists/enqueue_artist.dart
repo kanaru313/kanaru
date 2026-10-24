@@ -22,3 +22,14 @@ void enqueueArtist(
       trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
   ];
 });
+
+/// Replaces the queue with the songs of the artist's page, in its order, and
+/// plays from the first; see [playFromDatabase].
+Future<void> playArtist(WidgetRef ref, String artistKey) =>
+    playFromDatabase(ref, 'Playing an artist failed', (db, covers) async {
+      final sections = await readArtistSections(db, artistKey);
+      return [
+        for (final t in sections?.songs ?? const <BrowseTrack>[])
+          trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+      ];
+    });

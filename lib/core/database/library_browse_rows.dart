@@ -94,12 +94,23 @@ class ArtistCredit {
     required this.name,
     required this.trackCount,
     required this.albumCount,
+    this.firstYear,
+    this.lastYear,
+    this.durationMs,
   });
 
   final String key;
   final String name;
   final int trackCount;
   final int albumCount;
+
+  /// The smallest and largest year above 0 among those tracks; null when
+  /// none has one, or for a row read without them (Home).
+  final int? firstYear;
+  final int? lastYear;
+
+  /// Sum of the known durations of those tracks; null when none is known.
+  final int? durationMs;
 }
 
 /// A track row for the album and artist pages.

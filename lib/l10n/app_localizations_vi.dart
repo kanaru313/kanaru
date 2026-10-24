@@ -574,6 +574,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get albumsPlayAlbum => 'Phát album';
 
   @override
+  String libraryHoursMinutes(int hours, int minutes) {
+    final intl.NumberFormat hoursNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String hoursString = hoursNumberFormat.format(hours);
+
+    return '$hoursString giờ $minutes phút';
+  }
+
+  @override
+  String get artistsPlayArtist => 'Phát nghệ sĩ';
+
+  @override
   String get albumsPlay => 'Phát';
 
   @override

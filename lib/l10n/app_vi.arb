@@ -141,6 +141,8 @@
   "albumsSongCount": "{count, plural, other{{count} bài}}",
   "albumsMinutes": "{count} phút",
   "albumsPlayAlbum": "Phát album",
+  "libraryHoursMinutes": "{hours} giờ {minutes} phút",
+  "artistsPlayArtist": "Phát nghệ sĩ",
   "albumsPlay": "Phát",
   "albumsDisc": "Đĩa {number}",
   "albumsUnknownDisc": "Đĩa không rõ",

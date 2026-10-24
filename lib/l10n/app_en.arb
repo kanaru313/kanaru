@@ -386,6 +386,23 @@
   "@albumsPlayAlbum": {
     "description": "Tooltip of the play button shown on an album row on hover"
   },
+  "libraryHoursMinutes": "{hours} h {minutes} min",
+  "@libraryHoursMinutes": {
+    "description": "A total length of an hour or more in a library row",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "artistsPlayArtist": "Play artist",
+  "@artistsPlayArtist": {
+    "description": "Tooltip of the play button shown on an artist row on hover"
+  },
   "albumsPlay": "Play",
   "albumsDisc": "Disc {number}",
   "@albumsDisc": {

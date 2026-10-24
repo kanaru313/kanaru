@@ -8,6 +8,9 @@ class ArtistSummary {
     required this.name,
     required this.songCount,
     required this.albumCount,
+    this.firstYear,
+    this.lastYear,
+    this.durationMs,
   });
 
   /// `artistKey(name)`; identifies the artist page.
@@ -19,6 +22,11 @@ class ArtistSummary {
 
   /// Albums holding at least one of the artist's tracks.
   final int albumCount;
+
+  /// See the fields of the same name in `ArtistCredit`.
+  final int? firstYear;
+  final int? lastYear;
+  final int? durationMs;
 }
 
 /// The list rows for [credits], one per artist key.
@@ -29,6 +37,9 @@ List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) => [
       name: credit.name,
       songCount: credit.trackCount,
       albumCount: credit.albumCount,
+      firstYear: credit.firstYear,
+      lastYear: credit.lastYear,
+      durationMs: credit.durationMs,
     ),
 ];
 

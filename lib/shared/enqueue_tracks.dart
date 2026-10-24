@@ -218,6 +218,20 @@ Future<void> playAlbum(WidgetRef ref, AlbumKey key) => playFromDatabase(
   ],
 );
 
+/// Replaces the queue with the tracks crediting [artistKey], album by album
+/// as Home's artist cards queue them, and plays from the first; see
+/// [playFromDatabase]. The artist page orders them by its album tiles, which
+/// only the library feature knows.
+Future<void> playArtistTracks(WidgetRef ref, String artistKey) =>
+    playFromDatabase(
+      ref,
+      'Playing an artist failed',
+      (db, covers) async => [
+        for (final t in await db.artistTracks(artistKey))
+          trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+      ],
+    );
+
 /// Replaces the queue with the tracks [read] returns and plays from the
 /// first. Waits for the queue picks started before it, so it is not
 /// overtaken by them, and drops its tracks when a newer action changed the

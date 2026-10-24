@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
@@ -28,6 +30,8 @@ const _prototypeArtist = ArtistSummary(
   name: 'Artist',
   songCount: 1,
   albumCount: 1,
+  firstYear: 2000,
+  durationMs: 60000,
 );
 
 /// Every artist named in the tracks (guests included), in the saved sort.
@@ -103,6 +107,7 @@ class ArtistsScreen extends ConsumerWidget {
               itemBuilder: (context, i) => ArtistTile(
                 artist: artists[i],
                 onTap: () => open(artists[i]),
+                onPlay: () => unawaited(playArtist(ref, artists[i].key)),
                 onQueueAction: (action) => enqueue(artists[i], action),
               ),
             ),
