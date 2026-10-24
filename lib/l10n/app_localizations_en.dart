@@ -2476,4 +2476,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get albumVariousArtists => 'Various artists';
+
+  @override
+  String get inPageSearchHint => 'Filter songs';
+
+  @override
+  String get inPageSearchOpen => 'Filter in this page';
+
+  @override
+  String get inPageSearchClear => 'Clear filter';
+
+  @override
+  String inPageSearchNoMatch(String query) {
+    return 'No songs match “$query”';
+  }
 }

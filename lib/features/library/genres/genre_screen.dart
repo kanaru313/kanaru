@@ -13,9 +13,12 @@ import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
-import '../../../shared/widgets/song_tile.dart';
+import '../../../shared/in_page_filter.dart';
+import '../../../shared/in_page_filter_host.dart';
+import '../../../shared/widgets/in_page_no_match.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
+import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
 import 'genre_display_name.dart';
 import 'genre_header.dart';
@@ -41,79 +44,105 @@ class GenreScreen extends ConsumerWidget {
   }
 }
 
-class _GenrePage extends ConsumerWidget {
+class _GenrePage extends ConsumerStatefulWidget {
   const _GenrePage({required this.genreKey, required this.data});
 
   final String genreKey;
   final GenrePageData data;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_GenrePage> createState() => _GenrePageState();
+}
+
+class _GenrePageState extends ConsumerState<_GenrePage>
+    with InPageFilterHost<_GenrePage> {
+  /// The filter dies with the page, so leaving it clears it.
+  final _filter = InPageFilterController();
+
+  @override
+  InPageFilterController get filterController => _filter;
+
+  final _view = InPageFilterView<BrowseTrack>(
+    (t) => (title: t.title, artist: t.artist, album: t.album),
+  );
+
+  @override
+  void dispose() {
+    _filter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final data = widget.data;
     final songs = data.tracks;
-    final name = genreDisplayName(l10n, genreKey, data.name);
+    final name = genreDisplayName(l10n, widget.genreKey, data.name);
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
-    List<player.Track> queue() => [
-      for (final t in songs)
+    List<player.Track> queueOf(List<BrowseTrack> list) => [
+      for (final t in list)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
-    Widget heading(String text) => SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
-        child: Text(text, style: theme.textTheme.titleLarge),
-      ),
-    );
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: GenreHeader(
-            genreKey: genreKey,
-            name: name,
-            albumCount: data.albums.length,
-            songCount: songs.length,
-            onPlay: () => playTracks(ref, queue(), 0),
-            onShuffle: () => shuffleTracks(ref, queue()),
-            onQueueAction: (action) =>
-                enqueueLoaded(ref, context, action, queue(), name),
-          ),
-        ),
-        if (data.albums.isNotEmpty) ...[
-          heading(l10n.genresAlbums),
-          SliverAlbumGrid(
-            albums: data.albums,
-            onTap: (AlbumTileData album) =>
-                context.go(albumLocation(album.key)),
-            onQueueAction: (album, action) =>
-                enqueueAlbum(ref, context, action, album.key, album.title),
-          ),
-        ],
-        heading(l10n.genresSongs),
-        SliverList.builder(
-          itemCount: songs.length,
-          itemBuilder: (context, i) => SongTile(
-            song: TrackListItem(
-              id: songs[i].id,
-              path: songs[i].path,
-              title: songs[i].title,
-              artist: songs[i].artist,
-              album: songs[i].album,
-              durationMs: songs[i].durationMs,
-              coverKey: songs[i].coverKey,
-            ),
-            onTap: () => playTracks(ref, queue(), i),
-            onQueueAction: (action) => enqueueLoaded(ref, context, action, [
-              trackFromBrowse(
-                songs[i],
-                artPath: coverPath(coverDirectory, songs[i].coverKey),
+    return ListenableBuilder(
+      listenable: _filter,
+      builder: (context, _) {
+        // Play and Shuffle in the header always take every song.
+        final filtering = _filter.isFiltering;
+        final shown = _view.apply(songs, _filter.terms);
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: GenreHeader(
+                genreKey: widget.genreKey,
+                name: name,
+                albumCount: data.albums.length,
+                songCount: songs.length,
+                onPlay: () => playTracks(ref, queueOf(songs), 0),
+                onShuffle: () => shuffleTracks(ref, queueOf(songs)),
+                onQueueAction: (action) =>
+                    enqueueLoaded(ref, context, action, queueOf(songs), name),
               ),
-            ], songs[i].title),
-          ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-      ],
+            ),
+            if (!filtering && data.albums.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
+                  child: Text(
+                    l10n.genresAlbums,
+                    style: theme.textTheme.titleLarge,
+                  ),
+                ),
+              ),
+              SliverAlbumGrid(
+                albums: data.albums,
+                onTap: (AlbumTileData album) =>
+                    context.go(albumLocation(album.key)),
+                onQueueAction: (album, action) =>
+                    enqueueAlbum(ref, context, action, album.key, album.title),
+              ),
+            ],
+            SliverSongsHeading(title: l10n.genresSongs, filter: _filter),
+            if (filtering && shown.isEmpty)
+              SliverToBoxAdapter(child: InPageNoMatch(query: _filter.query))
+            else
+              SliverBrowseSongs(
+                songs: shown,
+                onTap: (i) => playTracks(ref, queueOf(shown), i),
+                onQueueAction: (song, action) => enqueueLoaded(
+                  ref,
+                  context,
+                  action,
+                  queueOf([song]),
+                  song.title,
+                ),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        );
+      },
     );
   }
 }

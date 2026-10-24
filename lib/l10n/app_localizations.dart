@@ -3637,6 +3637,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Various artists'**
   String get albumVariousArtists;
+
+  /// Hint of the filter box inside a page or the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Filter songs'**
+  String get inPageSearchHint;
+
+  /// Tooltip of the button that opens the filter box of a page or the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Filter in this page'**
+  String get inPageSearchOpen;
+
+  /// Tooltip of the button that empties the filter box
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get inPageSearchClear;
+
+  /// Shown when the filter of a page or the queue matches no song
+  ///
+  /// In en, this message translates to:
+  /// **'No songs match “{query}”'**
+  String inPageSearchNoMatch(String query);
 }
 
 class _AppLocalizationsDelegate

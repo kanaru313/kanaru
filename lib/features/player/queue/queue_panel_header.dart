@@ -5,12 +5,15 @@ import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 
 /// Top of the queue panel: title and track count on the left; on the right
-/// icon buttons to save the queue as a playlist, clear it, scroll to the
-/// playing track and, in the side sheet, close it.
+/// icon buttons to filter the queue, save the queue as a playlist, clear it,
+/// scroll to the playing track and, in the side sheet, close it.
 class QueuePanelHeader extends StatelessWidget {
   const QueuePanelHeader({
     super.key,
     required this.trackCount,
+    required this.filterOpen,
+    required this.onFilter,
+    this.filterFocus,
     this.onSave,
     required this.onClear,
     required this.onShowCurrent,
@@ -18,6 +21,15 @@ class QueuePanelHeader extends StatelessWidget {
   });
 
   final int trackCount;
+
+  /// Whether the filter box is shown below the header.
+  final bool filterOpen;
+
+  /// Opens the filter box, or closes it when it is open.
+  final VoidCallback onFilter;
+
+  /// Focus of the filter button, so Esc in the box can return to it.
+  final FocusNode? filterFocus;
 
   /// Saves the queue as a playlist; `null` greys the button out (no
   /// library).
@@ -62,6 +74,14 @@ class QueuePanelHeader extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            focusNode: filterFocus,
+            icon: const Icon(AppIcons.search),
+            iconSize: playerIconSize,
+            tooltip: l10n.inPageSearchOpen,
+            isSelected: filterOpen,
+            onPressed: onFilter,
           ),
           IconButton(
             icon: const Icon(AppIcons.saveQueue),

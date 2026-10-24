@@ -2295,4 +2295,18 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get albumVariousArtists => 'Nhiều nghệ sĩ';
+
+  @override
+  String get inPageSearchHint => 'Lọc bài hát';
+
+  @override
+  String get inPageSearchOpen => 'Lọc trong trang';
+
+  @override
+  String get inPageSearchClear => 'Xoá bộ lọc';
+
+  @override
+  String inPageSearchNoMatch(String query) {
+    return 'Không có bài nào khớp «$query»';
+  }
 }

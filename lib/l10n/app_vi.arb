@@ -859,5 +859,9 @@
   "languagesSongs": "Bài hát",
   "languagesNotFound": "Không tìm thấy ngôn ngữ",
   "languagesNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag.",
-  "albumVariousArtists": "Nhiều nghệ sĩ"
+  "albumVariousArtists": "Nhiều nghệ sĩ",
+  "inPageSearchHint": "Lọc bài hát",
+  "inPageSearchOpen": "Lọc trong trang",
+  "inPageSearchClear": "Xoá bộ lọc",
+  "inPageSearchNoMatch": "Không có bài nào khớp «{query}»"
 }

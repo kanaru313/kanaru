@@ -1244,5 +1244,18 @@
   "albumVariousArtists": "Various artists",
   "@albumVariousArtists": {
     "description": "Artist line of an album merged from several album artists"
+  },
+  "inPageSearchHint": "Filter songs",
+  "@inPageSearchHint": { "description": "Hint of the filter box inside a page or the queue" },
+  "inPageSearchOpen": "Filter in this page",
+  "@inPageSearchOpen": { "description": "Tooltip of the button that opens the filter box of a page or the queue" },
+  "inPageSearchClear": "Clear filter",
+  "@inPageSearchClear": { "description": "Tooltip of the button that empties the filter box" },
+  "inPageSearchNoMatch": "No songs match “{query}”",
+  "@inPageSearchNoMatch": {
+    "description": "Shown when the filter of a page or the queue matches no song",
+    "placeholders": {
+      "query": { "type": "String" }
+    }
   }
 }

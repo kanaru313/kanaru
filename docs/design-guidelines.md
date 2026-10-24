@@ -82,6 +82,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
 | Sleep timer | The moon button sits in the right group before volume, with the same menu and label rules (label from a 200 px right group). |
 | Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
+| Queue tab | The queue tab (narrow window) is the same queue panel, so it also has the filter button in its header. |
 | Favorite | The favorite button (heart) likes and unlikes the current song. |
 
 ## Queue sheet
@@ -89,6 +90,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 - A panel on the right, at most 400 px wide. Not a route; Esc or the mouse back button closes it while it is open. Focus returns on close.
 - Rows are 64 px. Drag handle reorders; a remove control per row; clear-all in the header.
 - The current row uses the primary color (`queue_tile.dart`).
+- A search button in the header opens a filter box under it (`Ctrl+F` reaches it while the sheet is open, Esc closes the box first). Matches are the real rows, best match first, without drag handle or remove button; tapping one jumps to it and leaves the queue as it is. Closing the sheet drops the filter.
 - Opens and closes in 400 ms.
 
 ## Library screens
@@ -105,6 +107,8 @@ The Languages tab lists the languages named by the language tag as round tiles (
 | Genres | Round tiles in a grid (default) or a list, switched per session. Genre page has Play, Shuffle and queue buttons, then its albums and songs. |
 | Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid (default) or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. An eye button (tree view only, per session) shows hidden items: dot-named subfolders and audio files of the viewed folder appear dimmed with a "Hidden" label, and a hidden folder opens a page read from the disk without counts. |
 | Onboarding | Full-page first-run picker, outside the shell, shown once after install (adding a folder or "Later" ends it for good). Suggests the XDG music folder. |
+
+Album, artist and genre pages have a filter button (`Ctrl+F` opens it, Esc closes and clears it): on the album page in a right-aligned row under the header, on artist and genre pages at the end of the "Songs" heading. While it filters, the album page drops the disc groups and shows the matches as one list, and the artist and genre pages hide the album sections; Play and Shuffle in the header still take every song, tapping a match plays the filtered list from it. Leaving the page drops the filter.
 
 Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
 
