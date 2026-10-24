@@ -4,7 +4,6 @@ import '../../../core/player/play_queue.dart';
 import '../../../core/player/track.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
-import 'queue_row_extent.dart';
 import 'queue_tile.dart';
 
 /// Play positions in [queue] of the tracks that match [terms], best first.
@@ -60,7 +59,7 @@ class QueueFilterResults extends StatelessWidget {
       );
     }
     return ListView.builder(
-      itemExtent: queueRowExtent(context),
+      itemExtent: queueTileExtent,
       itemCount: positions.length,
       itemBuilder: (context, i) {
         final position = positions[i];

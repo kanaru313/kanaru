@@ -40,14 +40,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   }
 
   /// How many "play next" tracks sit right after the current track.
-  ///
-  /// Every command updates the play-next set before the last `state` write of
-  /// the command, with no await in between, so reading this in the same build
-  /// that watches `state.queue` never sees a stale count. Keep that order in
-  /// new commands.
-  int get upNextRun => _upNextRun(state.queue);
-
-  /// Same count for [queue].
   int _upNextRun(PlayQueue queue) {
     var count = 0;
     final start = queue.index + 1;
@@ -90,39 +82,13 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   }
 
   /// Moves the track at play position [from] to [to]. The playing track is
-  /// never interrupted, even when it is the one dragged. A track dropped into
-  /// the play-next run ([playNext] true) stays or becomes a play-next track;
-  /// dropped anywhere else it stops being one. Dropping a track where it is
-  /// still changes its play-next membership when [playNext] differs.
-  Future<void> moveTrack(int from, int to, {bool playNext = false}) async {
-    final queue = state.queue;
-    if (from < 0 || from >= queue.order.length) return;
-    final entry = queue.order[from];
-    // The playing track and earlier ones can never be "play next"; a drop
-    // that ends up there counts as a plain move. A track from before the
-    // playing one dropped on its slot lands right after it (the playing
-    // track shifts back by one), so that drop can join the run.
-    final landsAfterPlaying =
-        from != queue.index &&
-        (from < queue.index ? to >= queue.index : to > queue.index);
-    final inRun = playNext && landsAfterPlaying;
-    final changesMembership = _upNext.contains(entry) != inRun;
-    final moved = queue.move(from, to);
-    if (identical(moved, queue) && !(from == to && changesMembership)) return;
-    if (inRun) {
-      _upNext.add(entry);
-    } else {
-      _upNext.remove(entry);
-    }
+  /// never interrupted, even when it is the one dragged.
+  Future<void> moveTrack(int from, int to) async {
+    final moved = state.queue.move(from, to);
+    if (identical(moved, state.queue)) return;
+    _upNext.remove(state.queue.order[from]);
     _userActed();
     _failuresInRow = 0;
-    // A same-position drop keeps the order but needs a new queue object, so
-    // listeners of the queue (and the session saver) see the new membership.
-    // The next track is unchanged, so the engine is left alone.
-    if (identical(moved, queue)) {
-      state = state.copyWith(queue: queue.copyWith());
-      return;
-    }
     state = state.copyWith(queue: moved);
     await _queueNext();
   }

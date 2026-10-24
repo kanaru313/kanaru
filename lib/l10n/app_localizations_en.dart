@@ -905,56 +905,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueReorder => 'Drag to reorder';
 
   @override
-  String queueSectionPlayNext(int count) {
-    return 'Play next ($count)';
-  }
-
-  @override
-  String get queueSectionUpNext => 'Up next';
-
-  @override
-  String queueSectionEarlier(int count) {
-    return 'Earlier ($count)';
-  }
-
-  @override
-  String get queueShowEarlier => 'Show earlier tracks';
-
-  @override
-  String get queueHideEarlier => 'Hide earlier tracks';
-
-  @override
-  String get queueRepeatsFromStart => 'Then the queue starts over';
-
-  @override
-  String get queueMoveToPlayNext => 'Move to Play next';
-
-  @override
-  String get queueRemoveFromPlayNext => 'Remove from Play next';
-
-  @override
   String get queueShowCurrent => 'Jump to current song';
 
   @override
   String get queueClose => 'Close now playing list';
-
-  @override
-  String queueSummary(String tracks, String timeLeft) {
-    return '$tracks · $timeLeft';
-  }
-
-  @override
-  String queueTimeLeftHours(int hours, int minutes) {
-    return '$hours h $minutes min left';
-  }
-
-  @override
-  String queueTimeLeftMinutes(int minutes) {
-    return '$minutes min left';
-  }
-
-  @override
-  String get queueMoreActions => 'More actions';
 
   @override
   String get settingsLibrary => 'Library';
@@ -2595,16 +2549,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeRetry => 'Retry';
-
-  @override
-  String get sidePanelClose => 'Close side panel';
-
-  @override
-  String get sidePanelShowLyrics => 'Show lyrics';
-
-  @override
-  String get sidePanelHideLyrics => 'Hide lyrics';
-
-  @override
-  String get lyricsNone => 'This song has no lyrics';
 }

@@ -8,7 +8,6 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_filter_results.dart';
 import 'package:kanaru/shared/in_page_filter.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
-import 'package:kanaru/features/player/queue/queue_now_playing_tile.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/shared/in_page_filter_registry.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
@@ -31,15 +30,9 @@ void main() {
   List<String> queueTitles() => [
     for (final t in container.read(playerServiceProvider).queue.tracks) t.title,
   ];
-
-  /// Titles of the built rows, plain or Now playing, in list order.
   List<String> rows(WidgetTester tester) => [
-    for (final tile in tester.widgetList(
-      find.byWidgetPredicate((w) => w is QueueTile || w is QueueNowPlayingTile),
-    ))
-      tile is QueueTile
-          ? tile.track.title
-          : (tile as QueueNowPlayingTile).track.title,
+    for (final tile in tester.widgetList<QueueTile>(find.byType(QueueTile)))
+      tile.track.title,
   ];
 
   Future<void> openSheet(WidgetTester tester) async {
@@ -102,20 +95,13 @@ void main() {
 
   testWidgets('filtered rows cannot be dragged or removed', (tester) async {
     await openSheet(tester);
-    // The playing row cannot be dragged, so it has no handle.
-    expect(find.byIcon(Icons.drag_handle_rounded), findsNWidgets(3));
+    expect(find.byIcon(Icons.drag_handle_rounded), findsNWidgets(4));
 
     await filterBy(tester, 'one');
 
     expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byType(QueueTile),
-        matching: find.byIcon(Icons.close),
-      ),
-      findsNothing,
-    );
-    expect(find.byType(SliverReorderableList), findsNothing);
+    expect(find.byIcon(Icons.delete_rounded), findsNothing);
+    expect(find.byType(ReorderableListView), findsNothing);
   });
 
   testWidgets('tapping a row jumps to it without changing the queue', (
@@ -264,12 +250,7 @@ void main() {
     await openSheet(tester);
     await filterBy(tester, 'one');
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(QueuePanel),
-        matching: find.byTooltip('Close now playing list'),
-      ),
-    );
+    await tester.tap(find.byTooltip('Close now playing list'));
     await tester.pumpAndSettle();
     expect(find.byType(QueuePanel), findsNothing);
     expect(InPageFilterRegistry.instance.openTop(), isFalse);

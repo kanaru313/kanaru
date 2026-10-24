@@ -767,25 +767,4 @@ void main() {
     expect(tester.getRect(find.byType(PlayerBar)).left, 0);
     expect(tester.takeException(), isNull);
   });
-
-  group('lyrics button', () {
-    final lyrics = find.byTooltip('Show lyrics');
-
-    testWidgets('is in the bar where the side panel can dock', (tester) async {
-      await pumpApp(tester, size: const Size(1400, 800));
-      await openSongs(tester);
-
-      expect(lyrics, findsOneWidget);
-      final queue = find.byTooltip('Show now playing list');
-      expect(tester.getCenter(lyrics).dx, lessThan(tester.getCenter(queue).dx));
-    });
-
-    testWidgets('is left out on a window too narrow to dock', (tester) async {
-      await pumpApp(tester, size: const Size(1300, 800));
-      await openSongs(tester);
-
-      expect(lyrics, findsNothing);
-      expect(find.byTooltip('Show now playing list'), findsOneWidget);
-    });
-  });
 }

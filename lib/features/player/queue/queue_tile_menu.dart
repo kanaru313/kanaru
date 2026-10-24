@@ -12,22 +12,14 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/menu_keyboard_region.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import 'queue_sections.dart';
 
 final _log = Logger('queue');
 
-enum _QueueTileAction {
-  like,
-  unlike,
-  remove,
-  moveToPlayNext,
-  removeFromPlayNext,
-}
+enum _QueueTileAction { like, unlike, remove }
 
 /// The menu of a queue row, on a right click, a long press or the menu key:
-/// add the song to Favorites or take it out (the heart), move it into or out
-/// of the Play next run (the way to do it without dragging), and remove it
-/// from the queue. Only a song of the library can be added, as everywhere else;
+/// add the song to Favorites or take it out (the heart), and remove it from
+/// the queue. Only a song of the library can be added, as everywhere else;
 /// any song in Favorites can be taken out.
 class QueueTileMenuRegion extends ConsumerWidget {
   const QueueTileMenuRegion({
@@ -78,18 +70,8 @@ class QueueTileMenuRegion extends ConsumerWidget {
     final entry = this.position < queueAtOpen.order.length
         ? queueAtOpen.order[this.position]
         : null;
-    // The Play next run at open time decides which section move to offer.
-    final section = QueueSections(
-      index: queueAtOpen.index,
-      playNext: player.upNextRun,
-      length: queueAtOpen.order.length,
-    );
     final state = await _favoriteState(ref, path);
     if (!context.mounted) return;
-    final current = this.position == section.index;
-    final inRun =
-        this.position > section.index &&
-        section.isPlayNextRow(this.position - section.index - 1);
     final action = await showMenu<_QueueTileAction>(
       context: context,
       position: menuPositionAt(context, position),
@@ -106,18 +88,6 @@ class QueueTileMenuRegion extends ConsumerWidget {
             AppIcons.favoriteOutline,
             l10n.nowPlayingFavorite,
           ),
-        if (!current && !inRun)
-          menuRow(
-            _QueueTileAction.moveToPlayNext,
-            AppIcons.playlistPlay,
-            l10n.queueMoveToPlayNext,
-          ),
-        if (inRun)
-          menuRow(
-            _QueueTileAction.removeFromPlayNext,
-            AppIcons.queue,
-            l10n.queueRemoveFromPlayNext,
-          ),
         menuRow(
           _QueueTileAction.remove,
           AppIcons.deleteRounded,
@@ -131,24 +101,15 @@ class QueueTileMenuRegion extends ConsumerWidget {
     switch (action) {
       case null:
         return;
-      case _QueueTileAction.remove ||
-          _QueueTileAction.moveToPlayNext ||
-          _QueueTileAction.removeFromPlayNext:
-        // The queue may have changed while the menu was open: act on the
-        // entry only if it is still at that position and the Play next run
-        // is the one the menu was built for. Read through the container
-        // taken before the menu opened, as the row may be gone.
+      case _QueueTileAction.remove:
+        // The queue may have changed while the menu was open: remove the
+        // entry only if it is still at that position. Read through the
+        // container taken before the menu opened, as the row may be gone.
         final queue = container.read(playerServiceProvider).queue;
-        if (entry == null ||
-            this.position >= queue.order.length ||
-            queue.order[this.position] != entry) {
-          return;
-        }
-        if (action == _QueueTileAction.remove) {
+        if (entry != null &&
+            this.position < queue.order.length &&
+            queue.order[this.position] == entry) {
           await player.removeTrack(this.position);
-        } else if (player.upNextRun == section.playNext &&
-            queue.index == section.index) {
-          await _moveBetweenSections(player, section, toPlayNext: !inRun);
         }
       case _QueueTileAction.like || _QueueTileAction.unlike:
         if (db == null || path == null) return;
@@ -165,20 +126,6 @@ class QueueTileMenuRegion extends ConsumerWidget {
           say(l10n.playlistSaveFailed);
         }
     }
-  }
-
-  /// Moves this row to the end of the Play next run ([toPlayNext]) or to the
-  /// first Up next slot. A row from before the playing track lands one
-  /// position earlier, as the playing track shifts back when it leaves.
-  Future<void> _moveBetweenSections(
-    PlayerService player,
-    QueueSections section, {
-    required bool toPlayNext,
-  }) {
-    final end = section.index + section.playNext;
-    if (!toPlayNext) return player.moveTrack(position, end, playNext: false);
-    final to = position < section.index ? end : end + 1;
-    return player.moveTrack(position, to, playNext: true);
   }
 
   @override

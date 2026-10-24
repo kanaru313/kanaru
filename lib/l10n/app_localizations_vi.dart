@@ -881,56 +881,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override
-  String queueSectionPlayNext(int count) {
-    return 'Phát tiếp theo ($count)';
-  }
-
-  @override
-  String get queueSectionUpNext => 'Tiếp theo';
-
-  @override
-  String queueSectionEarlier(int count) {
-    return 'Trước đó ($count)';
-  }
-
-  @override
-  String get queueShowEarlier => 'Hiện các bài trước đó';
-
-  @override
-  String get queueHideEarlier => 'Ẩn các bài trước đó';
-
-  @override
-  String get queueRepeatsFromStart => 'Sau đó hàng đợi phát lại từ đầu';
-
-  @override
-  String get queueMoveToPlayNext => 'Chuyển sang Phát tiếp theo';
-
-  @override
-  String get queueRemoveFromPlayNext => 'Bỏ khỏi Phát tiếp theo';
-
-  @override
   String get queueShowCurrent => 'Tới bài đang phát';
 
   @override
   String get queueClose => 'Đóng danh sách đang phát';
-
-  @override
-  String queueSummary(String tracks, String timeLeft) {
-    return '$tracks · $timeLeft';
-  }
-
-  @override
-  String queueTimeLeftHours(int hours, int minutes) {
-    return 'Còn $hours giờ $minutes phút';
-  }
-
-  @override
-  String queueTimeLeftMinutes(int minutes) {
-    return 'Còn $minutes phút';
-  }
-
-  @override
-  String get queueMoreActions => 'Thêm thao tác';
 
   @override
   String get settingsLibrary => 'Thư viện';
@@ -2410,16 +2364,4 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get homeRetry => 'Thử lại';
-
-  @override
-  String get sidePanelClose => 'Đóng bảng bên';
-
-  @override
-  String get sidePanelShowLyrics => 'Hiện lời bài hát';
-
-  @override
-  String get sidePanelHideLyrics => 'Ẩn lời bài hát';
-
-  @override
-  String get lyricsNone => 'Bài hát này không có lời';
 }

@@ -1466,54 +1466,6 @@ abstract class AppLocalizations {
   /// **'Drag to reorder'**
   String get queueReorder;
 
-  /// Label above the tracks the user queued to play right after the current one
-  ///
-  /// In en, this message translates to:
-  /// **'Play next ({count})'**
-  String queueSectionPlayNext(int count);
-
-  /// No description provided for @queueSectionUpNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Up next'**
-  String get queueSectionUpNext;
-
-  /// Toggle row above the playing track: the tracks before it in the queue
-  ///
-  /// In en, this message translates to:
-  /// **'Earlier ({count})'**
-  String queueSectionEarlier(int count);
-
-  /// No description provided for @queueShowEarlier.
-  ///
-  /// In en, this message translates to:
-  /// **'Show earlier tracks'**
-  String get queueShowEarlier;
-
-  /// No description provided for @queueHideEarlier.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide earlier tracks'**
-  String get queueHideEarlier;
-
-  /// No description provided for @queueRepeatsFromStart.
-  ///
-  /// In en, this message translates to:
-  /// **'Then the queue starts over'**
-  String get queueRepeatsFromStart;
-
-  /// No description provided for @queueMoveToPlayNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Move to Play next'**
-  String get queueMoveToPlayNext;
-
-  /// No description provided for @queueRemoveFromPlayNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove from Play next'**
-  String get queueRemoveFromPlayNext;
-
   /// No description provided for @queueShowCurrent.
   ///
   /// In en, this message translates to:
@@ -1525,30 +1477,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close now playing list'**
   String get queueClose;
-
-  /// Second line of the queue header: track count and time left
-  ///
-  /// In en, this message translates to:
-  /// **'{tracks} · {timeLeft}'**
-  String queueSummary(String tracks, String timeLeft);
-
-  /// No description provided for @queueTimeLeftHours.
-  ///
-  /// In en, this message translates to:
-  /// **'{hours} h {minutes} min left'**
-  String queueTimeLeftHours(int hours, int minutes);
-
-  /// No description provided for @queueTimeLeftMinutes.
-  ///
-  /// In en, this message translates to:
-  /// **'{minutes} min left'**
-  String queueTimeLeftMinutes(int minutes);
-
-  /// No description provided for @queueMoreActions.
-  ///
-  /// In en, this message translates to:
-  /// **'More actions'**
-  String get queueMoreActions;
 
   /// No description provided for @settingsLibrary.
   ///
@@ -3835,30 +3763,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get homeRetry;
-
-  /// Tooltip and name of the close button of the docked side panel
-  ///
-  /// In en, this message translates to:
-  /// **'Close side panel'**
-  String get sidePanelClose;
-
-  /// Tooltip of the player bar button that opens the docked side panel on the lyrics tab
-  ///
-  /// In en, this message translates to:
-  /// **'Show lyrics'**
-  String get sidePanelShowLyrics;
-
-  /// Tooltip of the player bar lyrics button while the side panel shows the lyrics
-  ///
-  /// In en, this message translates to:
-  /// **'Hide lyrics'**
-  String get sidePanelHideLyrics;
-
-  /// Shown on the lyrics tab of the side panel when the playing song has no lyrics
-  ///
-  /// In en, this message translates to:
-  /// **'This song has no lyrics'**
-  String get lyricsNone;
 }
 
 class _AppLocalizationsDelegate
