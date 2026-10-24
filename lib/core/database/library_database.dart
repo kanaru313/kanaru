@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import 'album_grouping_keys.dart';
 import 'library_database.steps.dart';
 import 'library_migration_v3.dart';
 import 'library_migration_v4.dart';
@@ -137,20 +138,23 @@ class LibraryDatabase extends _$LibraryDatabase {
   /// transaction. An update keeps the row's `id`, `addedAt` and `rootId`
   /// (hence no `INSERT OR REPLACE`, which would assign a new id).
   ///
-  /// Every row is written with its keys (`trackKeysFor` with [artistRules],
-  /// `keys_version = keysVersionFor(artistRules)`) and its `track_artists` rows are replaced in the same
-  /// transaction, on insert and on update alike, so a rescan that changes a
-  /// title or an artist re-keys the track. [rows] carry the tags (title,
-  /// artist, album, album artist, genre) the keys come from. [rows] must name
-  /// them all, as `tracksFromTags` builds them: a tag left out (absent) is
-  /// written as empty, so the keys never disagree with the stored text, and
-  /// a rescan clears it.
+  /// Every row is written with its keys (`trackKeysFor` with [artistRules]
+  /// and the album grouping registered for this database,
+  /// `keys_version = keysVersionFor(artistRules, grouping)`) and its
+  /// `track_artists` rows are replaced in the same transaction, on insert and
+  /// on update alike, so a rescan that changes a title or an artist re-keys
+  /// the track. [rows] carry the tags (title, artist, album, album artist,
+  /// genre, year) the keys come from. [rows] must name them all, as
+  /// `tracksFromTags` builds them: a tag left out (absent) is written as
+  /// empty, so the keys never disagree with the stored text, and a rescan
+  /// clears it.
   Future<void> upsertTracks(
     List<TracksCompanion> rows, {
     SplitRules artistRules = defaultArtistRules,
   }) {
     if (rows.isEmpty) return Future.value();
-    final keysVersion = keysVersionFor(artistRules);
+    final grouping = albumGroupingFor(this);
+    final keysVersion = keysVersionFor(artistRules, grouping);
     final keyed = [
       for (final row in rows)
         (
@@ -161,6 +165,7 @@ class LibraryDatabase extends _$LibraryDatabase {
               row.albumArtist.present ? row.albumArtist.value : null,
             ),
             genre: Value(row.genre.present ? row.genre.value : null),
+            year: Value(row.year.present ? row.year.value : null),
           ),
           keys: trackKeysFor(
             title: row.title.value,
@@ -168,7 +173,9 @@ class LibraryDatabase extends _$LibraryDatabase {
             album: row.album.value,
             albumArtist: row.albumArtist.value,
             genre: row.genre.value,
+            year: row.year.present ? row.year.value : null,
             artistRules: artistRules,
+            grouping: grouping,
           ),
         ),
     ];

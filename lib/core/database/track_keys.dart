@@ -1,3 +1,5 @@
+import '../settings/library_scan_prefs.dart';
+import 'album_grouping_keys.dart';
 import 'artist_names.dart';
 import 'library_browse_rows.dart' show albumArtistKeySeparator;
 import 'text_keys.dart';
@@ -47,21 +49,30 @@ class TrackKeys {
 
 /// Keys for a track with these tags. [artist], [albumArtist] and [genre] are
 /// the raw tag strings (multiple values joined with "; "). The artists are
-/// split by [artistRules]; the rows are stored with `keysVersionFor` of them.
+/// split by [artistRules]; [year] is the year tag. [grouping] decides what
+/// tells albums apart; the rows are stored with `keysVersionFor` of the rules
+/// and the grouping. Without [AlbumGrouping.byAlbumArtist] the artist part of
+/// every album key is `''`, so albums with the same title key merge.
 TrackKeys trackKeysFor({
   required String title,
   String? artist,
   String? album,
   String? albumArtist,
   String? genre,
+  int? year,
   SplitRules artistRules = defaultArtistRules,
+  AlbumGrouping grouping = const AlbumGrouping(),
 }) {
   final names = splitArtists(artist, rules: artistRules);
   return TrackKeys(
     albumArtistKey: album == null
         ? null
-        : albumArtistKey(albumArtist, artist, rules: artistRules),
-    albumTitleKey: album == null ? null : albumTitleKey(album),
+        : grouping.byAlbumArtist
+        ? albumArtistKey(albumArtist, artist, rules: artistRules)
+        : '',
+    albumTitleKey: album == null
+        ? null
+        : albumTitleKey(album, year: year, byYear: grouping.byYear),
     albumDisplayArtist: albumArtist ?? names.firstOrNull,
     titleSort: sortKey(title),
     artistSort: artist == null ? null : artistSortKey(artist),
@@ -88,5 +99,9 @@ String albumArtistKey(
   return artistKeys(artist, rules: rules).firstOrNull ?? '';
 }
 
-/// Title part of an album key.
-String albumTitleKey(String album) => groupKey(album);
+/// Title part of an album key: the group key of the title, followed by
+/// [albumYearKeySeparator] and the year (nothing when it is null) when
+/// [byYear].
+String albumTitleKey(String album, {int? year, bool byYear = false}) => byYear
+    ? '${groupKey(album)}$albumYearKeySeparator${year ?? ''}'
+    : groupKey(album);

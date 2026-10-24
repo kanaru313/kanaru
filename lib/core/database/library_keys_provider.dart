@@ -2,9 +2,13 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../settings/library_scan_prefs.dart';
+import 'album_grouping_keys.dart';
+import 'album_grouping_provider.dart';
 import 'library_database.dart';
 import 'library_keys_backfill.dart';
 import 'library_startup.dart';
@@ -48,8 +52,9 @@ class LibraryKeysStatus {
   double? get fraction => total == 0 ? null : (done / total).clamp(0.0, 1.0);
 }
 
-/// Runs the backfill for [db] with the artist [rules], reporting (done,
-/// total). Replaced in tests.
+/// Runs the backfill for [db] with the artist [rules] and the album grouping
+/// registered for [db] (`albumGroupingFor`), reporting (done, total).
+/// Replaced in tests.
 typedef KeysBackfillRunner = Future<void> Function(
   LibraryDatabase db,
   SplitRules rules,
@@ -83,6 +88,10 @@ const keysAttempts = 3;
 /// began with; when the rules differ at its end (changed meanwhile, or a scan
 /// wrote rows with them), it runs again, so the rows converge on the current
 /// rules.
+///
+/// The album grouping works the same way: it is registered for the database
+/// (`useAlbumGrouping`) as soon as this is built, so scans key with it, and
+/// changing it keys the library again.
 class LibraryKeys extends Notifier<LibraryKeysStatus> {
   bool _running = false;
 
@@ -97,6 +106,13 @@ class LibraryKeys extends Notifier<LibraryKeysStatus> {
     // Listened, not watched: a rules change must not rebuild (and so reset)
     // the status; it only asks for another run.
     ref.listen(artistSplitRulesProvider, (_, _) => _rulesChanged());
+    // Registered before any scan can start (the indexer reads this provider
+    // first), and again on a change before the run it asks for.
+    useAlbumGrouping(db, ref.read(albumGroupingProvider));
+    ref.listen(albumGroupingProvider, (_, grouping) {
+      useAlbumGrouping(db, grouping);
+      _rulesChanged();
+    });
     unawaited(Future.microtask(() => _run(db, progress: true)));
     return const LibraryKeysStatus();
   }
@@ -122,7 +138,10 @@ class LibraryKeys extends Notifier<LibraryKeysStatus> {
     }
     if (!state.ready) return;
     try {
-      final version = keysVersionFor(ref.read(artistSplitRulesProvider));
+      final version = keysVersionFor(
+        ref.read(artistSplitRulesProvider),
+        ref.read(albumGroupingProvider),
+      );
       if (await countStaleKeys(db, version) == 0) return;
     } catch (error, stackTrace) {
       _log.warning('Counting unkeyed tracks failed', error, stackTrace);
@@ -141,12 +160,16 @@ class LibraryKeys extends Notifier<LibraryKeysStatus> {
       while (true) {
         showed |= progress;
         final rules = ref.read(artistSplitRulesProvider);
+        final grouping = ref.read(albumGroupingProvider);
         _staleSeen = false;
         await _attempts(db, rules, progress: progress);
         if (!ref.mounted) return;
         final rulesChanged =
-            keysVersionFor(ref.read(artistSplitRulesProvider)) !=
-            keysVersionFor(rules);
+            keysVersionFor(
+              ref.read(artistSplitRulesProvider),
+              ref.read(albumGroupingProvider),
+            ) !=
+            keysVersionFor(rules, grouping);
         if (!rulesChanged && !_staleSeen) break;
         progress = rulesChanged;
       }
@@ -226,10 +249,13 @@ Future<void> runKeysBackfillInBackground(
   SplitRules rules,
   void Function(int done, int total) onProgress,
 ) async {
-  if (await countStaleKeys(db, keysVersionFor(rules)) <= keysInPlaceLimit) {
+  final grouping = albumGroupingFor(db);
+  final stale = await countStaleKeys(db, keysVersionFor(rules, grouping));
+  if (stale <= keysInPlaceLimit) {
     await backfillLibraryKeys(
       db,
       rules: rules,
+      grouping: grouping,
       chunkSize: keysInPlaceChunkSize,
       onProgress: onProgress,
     );
@@ -244,23 +270,32 @@ Future<void> runKeysBackfillInBackground(
   try {
     await db.computeWithDatabase<void, LibraryDatabase>(
       connect: LibraryDatabase.new,
-      computation: _isolateComputation(port.sendPort, rules),
+      computation: isolateKeysComputation(port.sendPort, rules, grouping),
     );
   } on UnsupportedError catch (_) {
-    await backfillLibraryKeys(db, rules: rules, onProgress: onProgress);
+    await backfillLibraryKeys(
+      db,
+      rules: rules,
+      grouping: grouping,
+      onProgress: onProgress,
+    );
   } finally {
     port.close();
   }
 }
 
 /// Built apart from [runKeysBackfillInBackground] so the closure that crosses
-/// to the isolate captures only the port and the rules (lists of strings).
-Future<void> Function(LibraryDatabase) _isolateComputation(
+/// to the isolate captures only the port, the rules (lists of strings) and the
+/// grouping (two flags): the isolate's database has no registered grouping.
+@visibleForTesting
+Future<void> Function(LibraryDatabase) isolateKeysComputation(
   SendPort port,
   SplitRules rules,
+  AlbumGrouping grouping,
 ) =>
     (db) => backfillLibraryKeys(
       db,
       rules: rules,
+      grouping: grouping,
       onProgress: (done, total) => port.send([done, total]),
     );

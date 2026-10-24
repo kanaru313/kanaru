@@ -5,12 +5,16 @@ const albumArtistKeySeparator = '; ';
 /// Identifies an album while there is no albums table: the keys of its album
 /// artists (else of the first track artist) and the group key of its title
 /// (`groupKey` in `text_keys.dart`: NFC, lower case, accents kept), each key
-/// cut to 256 characters.
+/// cut to 256 characters. With the album grouping settings the artist key is
+/// empty for every album (grouping ignores album artists), and the title key
+/// may be up to 256 characters plus a U+001F separator and the year
+/// (`albumYearKeySeparator`).
 class AlbumKey {
   const AlbumKey(this.artistKey, this.titleKey);
 
   /// The keys of its album artists joined by [albumArtistKeySeparator], or
-  /// of its first track artist. Empty when the album has neither.
+  /// of its first track artist. Empty when the album has neither, or when
+  /// albums are not told apart by artist.
   final String artistKey;
   final String titleKey;
 

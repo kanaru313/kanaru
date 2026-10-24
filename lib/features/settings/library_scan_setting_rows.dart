@@ -13,11 +13,12 @@ import 'separator_setting_rows.dart';
 import 'settings_number_presets.dart';
 
 /// Scan options: what a scan skips (folders with `.nomedia`, small files,
-/// short tracks), which work from the next scan on, and those not wired yet
-/// (shown from the saved values, off): duplicates, playlists and album
-/// grouping. The artist and genre separator rows follow the album grouping;
-/// the cover cache rows come last. Skip options are off without a
-/// library database, like "rescan on open".
+/// short tracks), which work from the next scan on; the album grouping, which
+/// applies at once (the library re-keys in the background); and those not
+/// wired yet (shown from the saved values, off): duplicates and playlists.
+/// The artist and genre separator rows follow the album grouping; the cover
+/// cache rows come last. Skip and grouping options are off without a library
+/// database, like "rescan on open".
 class LibraryScanSettingRows extends ConsumerWidget {
   const LibraryScanSettingRows({super.key});
 
@@ -56,7 +57,6 @@ class LibraryScanSettingRows extends ConsumerWidget {
         SettingsChipsRow(
           title: l10n.settingsAlbumGrouping,
           subtitle: l10n.settingsAlbumGroupingHint,
-          comingSoon: true,
           chips: [
             // The title always counts, so this chip is selected for good.
             FilterChip(
@@ -67,12 +67,30 @@ class LibraryScanSettingRows extends ConsumerWidget {
             FilterChip(
               label: Text(l10n.settingsAlbumGroupArtist),
               selected: scan.albumGrouping.byAlbumArtist,
-              onSelected: null,
+              onSelected: live
+                  ? (value) => settings.setLibraryScan(
+                      scan.copyWith(
+                        albumGrouping: AlbumGrouping(
+                          byAlbumArtist: value,
+                          byYear: scan.albumGrouping.byYear,
+                        ),
+                      ),
+                    )
+                  : null,
             ),
             FilterChip(
               label: Text(l10n.settingsAlbumGroupYear),
               selected: scan.albumGrouping.byYear,
-              onSelected: null,
+              onSelected: live
+                  ? (value) => settings.setLibraryScan(
+                      scan.copyWith(
+                        albumGrouping: AlbumGrouping(
+                          byAlbumArtist: scan.albumGrouping.byAlbumArtist,
+                          byYear: value,
+                        ),
+                      ),
+                    )
+                  : null,
             ),
           ],
         ),

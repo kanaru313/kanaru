@@ -1149,7 +1149,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAlbumGroupingHint =>
-      'Songs with the same album title are one album; pick what else must match. Applies at the next rescan.';
+      'Songs with the same album title are one album; pick what else must match. Applies at once, the library updates in the background.';
 
   @override
   String get settingsAlbumGroupTitle => 'Album title';
@@ -2269,4 +2269,156 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get languagesComingSoonMessage =>
       'Browsing songs by language is not available yet.';
+
+  @override
+  String get languageNameEng => 'English';
+
+  @override
+  String get languageNameVie => 'Vietnamese';
+
+  @override
+  String get languageNameJpn => 'Japanese';
+
+  @override
+  String get languageNameKor => 'Korean';
+
+  @override
+  String get languageNameZho => 'Chinese';
+
+  @override
+  String get languageNameFra => 'French';
+
+  @override
+  String get languageNameDeu => 'German';
+
+  @override
+  String get languageNameSpa => 'Spanish';
+
+  @override
+  String get languageNameIta => 'Italian';
+
+  @override
+  String get languageNameRus => 'Russian';
+
+  @override
+  String get languageNamePor => 'Portuguese';
+
+  @override
+  String get languageNameTha => 'Thai';
+
+  @override
+  String get languageNameInd => 'Indonesian';
+
+  @override
+  String get languageNameHin => 'Hindi';
+
+  @override
+  String get languageNameAra => 'Arabic';
+
+  @override
+  String get languageNameNld => 'Dutch';
+
+  @override
+  String get languageNameSwe => 'Swedish';
+
+  @override
+  String get languageNamePol => 'Polish';
+
+  @override
+  String get languageNameTur => 'Turkish';
+
+  @override
+  String get languageNameUkr => 'Ukrainian';
+
+  @override
+  String get languageNameCes => 'Czech';
+
+  @override
+  String get languageNameEll => 'Greek';
+
+  @override
+  String get languageNameFas => 'Persian';
+
+  @override
+  String get languageNameRon => 'Romanian';
+
+  @override
+  String get languageNameMsa => 'Malay';
+
+  @override
+  String get languageNameHeb => 'Hebrew';
+
+  @override
+  String get languageNameFin => 'Finnish';
+
+  @override
+  String get languageNameDan => 'Danish';
+
+  @override
+  String get languageNameNor => 'Norwegian';
+
+  @override
+  String get languageNameHun => 'Hungarian';
+
+  @override
+  String get languageNameCym => 'Welsh';
+
+  @override
+  String get languageNameSlk => 'Slovak';
+
+  @override
+  String get languageNameSqi => 'Albanian';
+
+  @override
+  String get languageNameHye => 'Armenian';
+
+  @override
+  String get languageNameEus => 'Basque';
+
+  @override
+  String get languageNameMya => 'Burmese';
+
+  @override
+  String get languageNameKat => 'Georgian';
+
+  @override
+  String get languageNameIsl => 'Icelandic';
+
+  @override
+  String get languageNameMkd => 'Macedonian';
+
+  @override
+  String get languageNameMri => 'Maori';
+
+  @override
+  String get languageNameBod => 'Tibetan';
+
+  @override
+  String get languageNameZxx => 'No lyrics';
+
+  @override
+  String get languageNameMul => 'Multiple languages';
+
+  @override
+  String get languagesNoRootsMessage => 'Add a music folder in Songs.';
+
+  @override
+  String get languagesEmptyTitle => 'No languages yet';
+
+  @override
+  String get languagesEmptyMessage =>
+      'Songs with a language tag (TLAN in MP3, LANGUAGE in FLAC and Ogg) show up here by language. Rescan your folders to read the tags.';
+
+  @override
+  String get languagesAlbums => 'Albums';
+
+  @override
+  String get languagesSongs => 'Songs';
+
+  @override
+  String get languagesNotFound => 'Language not found';
+
+  @override
+  String get languagesNotFoundMessage =>
+      'Its songs may have been removed or retagged.';
 }

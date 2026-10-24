@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:logging/logging.dart';
 
+import '../settings/library_scan_prefs.dart';
 import 'library_database.dart';
 import 'separator_rules.dart';
 import 'track_keys.dart';
@@ -13,13 +14,14 @@ final _log = Logger('library.keys');
 const keysBackfillChunkSize = 2000;
 
 /// Keys every track whose `keys_version` is not [version] (by default
-/// `keysVersionFor(rules)`), in chunks by id, and returns how many it keyed.
-/// Resumable: a chunk commits as a whole, so an interrupted run leaves the
-/// rest for the next one. Re-keying after a rule change is the same call: the
-/// artists are split by [rules], and rows keyed under other rules differ in
-/// version, so they are keyed again. Versions are compared for inequality,
-/// not order, because the rule-dependent ones do not grow; a caller that
-/// finds its rules changed during a run runs again.
+/// `keysVersionFor(rules, grouping)`), in chunks by id, and returns how many it
+/// keyed. Resumable: a chunk commits as a whole, so an interrupted run leaves
+/// the rest for the next one. Re-keying after a rule change is the same call:
+/// the artists are split by [rules], and rows keyed under other rules differ in
+/// version, so they are keyed again. Versions are compared for inequality, not
+/// order, because the rule-dependent ones do not grow; a caller that finds its
+/// rules or grouping changed during a run runs again. Albums are keyed by
+/// [grouping].
 ///
 /// A row whose keys cannot be made or written is logged and left at its old
 /// version; it never stops the run. [onProgress] gets (done, total) after each
@@ -27,12 +29,13 @@ const keysBackfillChunkSize = 2000;
 Future<int> backfillLibraryKeys(
   LibraryDatabase db, {
   SplitRules rules = defaultArtistRules,
+  AlbumGrouping grouping = const AlbumGrouping(),
   int? version,
   int chunkSize = keysBackfillChunkSize,
   void Function(int done, int total)? onProgress,
   @visibleForTesting Future<void> Function()? afterRead,
 }) async {
-  final keysVersion = version ?? keysVersionFor(rules);
+  final keysVersion = version ?? keysVersionFor(rules, grouping);
   final total = await countStaleKeys(db, keysVersion);
   onProgress?.call(0, total);
   var done = 0;
@@ -40,7 +43,8 @@ Future<int> backfillLibraryKeys(
   while (true) {
     final rows = await db
         .customSelect(
-          'SELECT id, title, artist, album, album_artist, genre FROM tracks '
+          'SELECT id, title, artist, album, album_artist, genre, year '
+          'FROM tracks '
           'WHERE id > ?1 AND (keys_version < ?2 OR keys_version > ?2) '
           'ORDER BY id LIMIT ?3',
           variables: [
@@ -69,6 +73,7 @@ Future<int> backfillLibraryKeys(
         row.readNullable<String>('album'),
         row.readNullable<String>('album_artist'),
         row.readNullable<String>('genre'),
+        row.readNullable<int>('year'),
       ];
       try {
         keyed.add((
@@ -79,7 +84,9 @@ Future<int> backfillLibraryKeys(
             album: tags[2] as String?,
             albumArtist: tags[3] as String?,
             genre: tags[4] as String?,
+            year: tags[5] as int?,
             artistRules: rules,
+            grouping: grouping,
           ),
           tags,
         ));
@@ -122,10 +129,10 @@ Future<int> countStaleKeys(LibraryDatabase db, int version) async {
 /// Replaces the keys and `track_artists` rows of [chunk]; the caller wraps
 /// it in a transaction.
 ///
-/// Tags were read before this transaction, so every write is conditional on
-/// the row still holding those tags and a different version: a track a scan
-/// changed in between keeps its stale version for a later pass, and a track
-/// deleted in between is left alone (its credits would break the foreign
+/// Tags were read before this transaction, so every write is conditional on the
+/// row still holding those tags (and year) and a different version: a track a
+/// scan changed in between keeps its stale version for a later pass, and a
+/// track deleted in between is left alone (its credits would break the foreign
 /// key).
 Future<void> _writeChunk(
   LibraryDatabase db,
@@ -137,7 +144,7 @@ Future<void> _writeChunk(
   const keyed =
       'EXISTS (SELECT 1 FROM tracks WHERE id = ? AND keys_version = ? '
       'AND title IS ? AND artist IS ? AND album IS ? AND album_artist IS ? '
-      'AND genre IS ?)';
+      'AND genre IS ? AND year IS ?)';
   await db.batch((b) {
     for (final (id, keys, tags) in chunk) {
       b.customStatement(
@@ -147,7 +154,7 @@ Future<void> _writeChunk(
         'album_artist_search = ?, genre_search = ?, keys_version = ? '
         'WHERE id = ? AND (keys_version < ? OR keys_version > ?) '
         'AND title IS ? AND artist IS ? '
-        'AND album IS ? AND album_artist IS ? AND genre IS ?',
+        'AND album IS ? AND album_artist IS ? AND genre IS ? AND year IS ?',
         [
           keys.albumArtistKey,
           keys.albumTitleKey,

@@ -191,7 +191,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(LanguagesScreen), findsOneWidget);
-    expect(find.text('Languages are coming soon'), findsOneWidget);
+    // No library database in this harness, so the page reports it.
+    expect(find.text("Couldn't open the library"), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(LanguagesScreen),
+        matching: find.text('Languages'),
+      ),
+      findsOneWidget,
+    );
     expect(
       container
           .read(routerProvider)

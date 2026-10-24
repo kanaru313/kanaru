@@ -91,7 +91,8 @@ const _englishNames = <String, String>{
   'arabic': 'ara',
 };
 
-/// Every key [languageKey] can return through one of the tables above.
+/// Every key [languageKey] can return through one of the tables above (not
+/// `zxx` and `mul`, which are never produced by a table).
 final Set<String> knownLanguageKeys = Set.unmodifiable({
   ..._iso1To2.values,
   ..._iso2bTo2t.values,
@@ -100,12 +101,30 @@ final Set<String> knownLanguageKeys = Set.unmodifiable({
 
 final _separators = RegExp(r'[;/,|\u0000]');
 
-/// The grouping key of one language value: trimmed and lower-cased, then
-/// mapped to its ISO 639-2/T code when it is a known ISO 639-1 code, a
-/// 639-2/B code or a common English name. Other values stay lower-cased, so
-/// `"fre"`, `"fra"` and `"fr"` share a key and `"x-klingon"` keeps its own.
+/// A two or three letter language code followed only by BCP 47 shaped
+/// subtags: a 4 letter script (`Hant`), a 2 letter region (`US`) or a 3 digit
+/// region (`419`), as in `en-US`, `pt_BR`, `zh-Hant-TW`. Group 1 is the
+/// language code. Longer words (`old-english`, `eng-instrumental`) do not
+/// match and keep their own key.
+final _regionTag = RegExp(
+  r'^([a-z]{2,3})(?:[-_](?:[a-z]{4}|[a-z]{2}|\d{3}))+$',
+);
+
+/// Keys that are not shown as a language: `und` (undetermined) says nothing
+/// about the song, so such tracks count as untagged. `zxx` (no linguistic
+/// content, instrumentals) and `mul` (several languages) are real keys with
+/// their own labels.
+const hiddenLanguageKeys = {'und'};
+
+/// The grouping key of one language value: trimmed and lower-cased, a region
+/// or script subtag dropped (`en-US` is `en`), then mapped to its ISO 639-2/T
+/// code when it is a known ISO 639-1 code, a 639-2/B code or a common English
+/// name. Other values stay lower-cased, so `"fre"`, `"fra"`, `"fr"` and
+/// `"fr-CA"` share a key and `"x-klingon"` keeps its own.
 String languageKey(String value) {
-  final lower = value.trim().toLowerCase();
+  var lower = value.trim().toLowerCase();
+  final base = _regionTag.firstMatch(lower)?.group(1);
+  if (base != null) lower = base;
   return _iso1To2[lower] ?? _iso2bTo2t[lower] ?? _englishNames[lower] ?? lower;
 }
 

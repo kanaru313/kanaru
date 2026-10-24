@@ -1745,7 +1745,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAlbumGroupingHint.
   ///
   /// In en, this message translates to:
-  /// **'Songs with the same album title are one album; pick what else must match. Applies at the next rescan.'**
+  /// **'Songs with the same album title are one album; pick what else must match. Applies at once, the library updates in the background.'**
   String get settingsAlbumGroupingHint;
 
   /// No description provided for @settingsAlbumGroupTitle.
@@ -3235,6 +3235,306 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Browsing songs by language is not available yet.'**
   String get languagesComingSoonMessage;
+
+  /// Name of the language with ISO 639-2 code eng
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageNameEng;
+
+  /// Name of the language with ISO 639-2 code vie
+  ///
+  /// In en, this message translates to:
+  /// **'Vietnamese'**
+  String get languageNameVie;
+
+  /// Name of the language with ISO 639-2 code jpn
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese'**
+  String get languageNameJpn;
+
+  /// Name of the language with ISO 639-2 code kor
+  ///
+  /// In en, this message translates to:
+  /// **'Korean'**
+  String get languageNameKor;
+
+  /// Name of the language with ISO 639-2 code zho
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese'**
+  String get languageNameZho;
+
+  /// Name of the language with ISO 639-2 code fra
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get languageNameFra;
+
+  /// Name of the language with ISO 639-2 code deu
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get languageNameDeu;
+
+  /// Name of the language with ISO 639-2 code spa
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get languageNameSpa;
+
+  /// Name of the language with ISO 639-2 code ita
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get languageNameIta;
+
+  /// Name of the language with ISO 639-2 code rus
+  ///
+  /// In en, this message translates to:
+  /// **'Russian'**
+  String get languageNameRus;
+
+  /// Name of the language with ISO 639-2 code por
+  ///
+  /// In en, this message translates to:
+  /// **'Portuguese'**
+  String get languageNamePor;
+
+  /// Name of the language with ISO 639-2 code tha
+  ///
+  /// In en, this message translates to:
+  /// **'Thai'**
+  String get languageNameTha;
+
+  /// Name of the language with ISO 639-2 code ind
+  ///
+  /// In en, this message translates to:
+  /// **'Indonesian'**
+  String get languageNameInd;
+
+  /// Name of the language with ISO 639-2 code hin
+  ///
+  /// In en, this message translates to:
+  /// **'Hindi'**
+  String get languageNameHin;
+
+  /// Name of the language with ISO 639-2 code ara
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get languageNameAra;
+
+  /// Name of the language with ISO 639-2 code nld
+  ///
+  /// In en, this message translates to:
+  /// **'Dutch'**
+  String get languageNameNld;
+
+  /// Name of the language with ISO 639-2 code swe
+  ///
+  /// In en, this message translates to:
+  /// **'Swedish'**
+  String get languageNameSwe;
+
+  /// Name of the language with ISO 639-2 code pol
+  ///
+  /// In en, this message translates to:
+  /// **'Polish'**
+  String get languageNamePol;
+
+  /// Name of the language with ISO 639-2 code tur
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish'**
+  String get languageNameTur;
+
+  /// Name of the language with ISO 639-2 code ukr
+  ///
+  /// In en, this message translates to:
+  /// **'Ukrainian'**
+  String get languageNameUkr;
+
+  /// Name of the language with ISO 639-2 code ces
+  ///
+  /// In en, this message translates to:
+  /// **'Czech'**
+  String get languageNameCes;
+
+  /// Name of the language with ISO 639-2 code ell
+  ///
+  /// In en, this message translates to:
+  /// **'Greek'**
+  String get languageNameEll;
+
+  /// Name of the language with ISO 639-2 code fas
+  ///
+  /// In en, this message translates to:
+  /// **'Persian'**
+  String get languageNameFas;
+
+  /// Name of the language with ISO 639-2 code ron
+  ///
+  /// In en, this message translates to:
+  /// **'Romanian'**
+  String get languageNameRon;
+
+  /// Name of the language with ISO 639-2 code msa
+  ///
+  /// In en, this message translates to:
+  /// **'Malay'**
+  String get languageNameMsa;
+
+  /// Name of the language with ISO 639-2 code heb
+  ///
+  /// In en, this message translates to:
+  /// **'Hebrew'**
+  String get languageNameHeb;
+
+  /// Name of the language with ISO 639-2 code fin
+  ///
+  /// In en, this message translates to:
+  /// **'Finnish'**
+  String get languageNameFin;
+
+  /// Name of the language with ISO 639-2 code dan
+  ///
+  /// In en, this message translates to:
+  /// **'Danish'**
+  String get languageNameDan;
+
+  /// Name of the language with ISO 639-2 code nor
+  ///
+  /// In en, this message translates to:
+  /// **'Norwegian'**
+  String get languageNameNor;
+
+  /// Name of the language with ISO 639-2 code hun
+  ///
+  /// In en, this message translates to:
+  /// **'Hungarian'**
+  String get languageNameHun;
+
+  /// Name of the language with ISO 639-2 code cym
+  ///
+  /// In en, this message translates to:
+  /// **'Welsh'**
+  String get languageNameCym;
+
+  /// Name of the language with ISO 639-2 code slk
+  ///
+  /// In en, this message translates to:
+  /// **'Slovak'**
+  String get languageNameSlk;
+
+  /// Name of the language with ISO 639-2 code sqi
+  ///
+  /// In en, this message translates to:
+  /// **'Albanian'**
+  String get languageNameSqi;
+
+  /// Name of the language with ISO 639-2 code hye
+  ///
+  /// In en, this message translates to:
+  /// **'Armenian'**
+  String get languageNameHye;
+
+  /// Name of the language with ISO 639-2 code eus
+  ///
+  /// In en, this message translates to:
+  /// **'Basque'**
+  String get languageNameEus;
+
+  /// Name of the language with ISO 639-2 code mya
+  ///
+  /// In en, this message translates to:
+  /// **'Burmese'**
+  String get languageNameMya;
+
+  /// Name of the language with ISO 639-2 code kat
+  ///
+  /// In en, this message translates to:
+  /// **'Georgian'**
+  String get languageNameKat;
+
+  /// Name of the language with ISO 639-2 code isl
+  ///
+  /// In en, this message translates to:
+  /// **'Icelandic'**
+  String get languageNameIsl;
+
+  /// Name of the language with ISO 639-2 code mkd
+  ///
+  /// In en, this message translates to:
+  /// **'Macedonian'**
+  String get languageNameMkd;
+
+  /// Name of the language with ISO 639-2 code mri
+  ///
+  /// In en, this message translates to:
+  /// **'Maori'**
+  String get languageNameMri;
+
+  /// Name of the language with ISO 639-2 code bod
+  ///
+  /// In en, this message translates to:
+  /// **'Tibetan'**
+  String get languageNameBod;
+
+  /// Name of the language with ISO 639-2 code zxx
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics'**
+  String get languageNameZxx;
+
+  /// Name of the language with ISO 639-2 code mul
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple languages'**
+  String get languageNameMul;
+
+  /// No description provided for @languagesNoRootsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a music folder in Songs.'**
+  String get languagesNoRootsMessage;
+
+  /// No description provided for @languagesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No languages yet'**
+  String get languagesEmptyTitle;
+
+  /// No description provided for @languagesEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs with a language tag (TLAN in MP3, LANGUAGE in FLAC and Ogg) show up here by language. Rescan your folders to read the tags.'**
+  String get languagesEmptyMessage;
+
+  /// No description provided for @languagesAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get languagesAlbums;
+
+  /// No description provided for @languagesSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get languagesSongs;
+
+  /// No description provided for @languagesNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Language not found'**
+  String get languagesNotFound;
+
+  /// No description provided for @languagesNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Its songs may have been removed or retagged.'**
+  String get languagesNotFoundMessage;
 }
 
 class _AppLocalizationsDelegate
