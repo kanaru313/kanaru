@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/settings/library_sort.dart';
 
 /// How the library screens that offer a grid or a list lay out their items.
-/// Library pages opened from the sidebar default to the grid. Kept for the
-/// running app only: a restart goes back to the defaults.
+/// Songs defaults to the list, the other library pages opened from the
+/// sidebar to the grid. Kept for the running app only: a restart goes back
+/// to the defaults.
 class LibraryViewModesState {
   const LibraryViewModesState({
-    this.songs = AlbumsView.grid,
+    this.songs = AlbumsView.list,
     this.artists = AlbumsView.grid,
     this.genres = AlbumsView.grid,
     this.folders = AlbumsView.grid,

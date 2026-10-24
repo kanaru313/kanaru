@@ -29,10 +29,10 @@ void main() {
   Future<void> open(WidgetTester tester, String location) =>
       openWithTracks(tester, LibraryHarness(), tracks, location: location);
 
-  testWidgets('Songs opens as a grid', (tester) async {
+  testWidgets('Songs opens as a list', (tester) async {
     await open(tester, '/songs');
-    expect(find.byType(SongGridTile), findsNWidgets(2));
-    expect(find.byType(SongTile), findsNothing);
+    expect(find.byType(SongTile), findsNWidgets(2));
+    expect(find.byType(SongGridTile), findsNothing);
   });
 
   testWidgets('Artists opens as a grid', (tester) async {
