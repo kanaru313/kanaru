@@ -100,6 +100,7 @@ class _LanguagePage extends ConsumerWidget {
               title: songs[i].title,
               artist: songs[i].artist,
               album: songs[i].album,
+              year: songs[i].year,
               durationMs: songs[i].durationMs,
               coverKey: songs[i].coverKey,
             ),

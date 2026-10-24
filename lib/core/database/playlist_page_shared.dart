@@ -31,8 +31,8 @@ LIMIT $playlistCollageScanLimit''',
 }
 
 /// The entry in [row], which holds `entry_id`, `path` and the left-joined
-/// track columns (`track_id`, `title`, `artist`, `album`, `duration_ms`,
-/// `cover_key`); the track is null when `track_id` is.
+/// track columns (`track_id`, `title`, `artist`, `album`, `year`,
+/// `duration_ms`, `cover_key`); the track is null when `track_id` is.
 PlaylistEntryRow playlistEntryFromRow(QueryRow row) {
   final trackId = row.readNullable<int>('track_id');
   final path = row.read<String>('path');
@@ -47,6 +47,7 @@ PlaylistEntryRow playlistEntryFromRow(QueryRow row) {
             title: row.read<String>('title'),
             artist: row.readNullable<String>('artist'),
             album: row.readNullable<String>('album'),
+            year: row.readNullable<int>('year'),
             durationMs: row.readNullable<int>('duration_ms'),
             coverKey: row.readNullable<String>('cover_key'),
           ),

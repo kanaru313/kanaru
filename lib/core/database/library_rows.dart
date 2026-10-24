@@ -46,6 +46,7 @@ class TrackListItem {
     required this.title,
     this.artist,
     this.album,
+    this.year,
     this.durationMs,
     this.coverKey,
   });
@@ -55,6 +56,7 @@ class TrackListItem {
   final String title;
   final String? artist;
   final String? album;
+  final int? year;
   final int? durationMs;
 
   /// Cover thumbnail key in the cover cache; null when there is no cover.

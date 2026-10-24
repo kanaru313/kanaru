@@ -32,6 +32,7 @@ class SliverBrowseSongs extends StatelessWidget {
           title: song.title,
           artist: song.artist,
           album: song.album,
+          year: song.year,
           durationMs: song.durationMs,
           coverKey: song.coverKey,
         ),

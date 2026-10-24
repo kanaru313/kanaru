@@ -15,7 +15,8 @@ import 'library_browse_queries.dart' show albumColumns;
 // and scan it.
 
 const _trackColumns =
-    't.id, t.path, t.title, t.artist, t.album, t.duration_ms, t.cover_key';
+    't.id, t.path, t.title, t.artist, t.album, t.year, t.duration_ms, '
+    't.cover_key';
 
 /// `?1` limit, `?2` offset. One row per played track still in the library.
 const homeRecentlyPlayedSql =

@@ -12,13 +12,15 @@ import 'song_row_cache.dart';
 import '../../../shared/widgets/song_tile.dart';
 import 'songs_list_provider.dart';
 
-/// Row used to measure the list: two lines and a duration, the tallest a
-/// row gets, so rows without an artist are not squeezed.
+/// Row used to measure the list: every line and a duration, the tallest a
+/// row gets, so rows without an artist or album are not squeezed.
 const prototypeSong = TrackListItem(
   id: 0,
   path: '',
   title: 'Title',
   artist: 'Artist',
+  album: 'Album',
+  year: 2000,
   durationMs: 1000,
 );
 

@@ -34,7 +34,7 @@ SELECT p.id, p.path, p.played_at, p.listened_ms,
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at > p.played_at)
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at = p.played_at AND q.id > p.id)
     AS nth,
-  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.duration_ms, t.cover_key
+  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.year, t.duration_ms, t.cover_key
 FROM plays p
 LEFT JOIN play_stats s ON s.path = p.path
 LEFT JOIN tracks t ON t.path = p.path
@@ -43,7 +43,7 @@ ORDER BY p.played_at DESC, p.id DESC''';
 
 const _topColumns =
     'a.path, a.n, a.last, t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, '
-    't.duration_ms, t.cover_key';
+    't.year, t.duration_ms, t.cover_key';
 
 @visibleForTesting
 const historyTopRangeSql =
@@ -156,7 +156,7 @@ extension HistoryQueries on LibraryDatabase {
     final row = await customSelect(
       '''
 SELECT s.play_count, s.first_played_at, s.last_played_at,
-  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.duration_ms, t.cover_key
+  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.year, t.duration_ms, t.cover_key
 FROM (SELECT ?1 AS path) k
 LEFT JOIN play_stats s ON s.path = k.path
 LEFT JOIN tracks t ON t.path = k.path''',
@@ -222,6 +222,7 @@ TrackListItem? _track(QueryRow row) {
     title: row.read<String>('title'),
     artist: row.readNullable<String>('artist'),
     album: row.readNullable<String>('album'),
+    year: row.readNullable<int>('year'),
     durationMs: row.readNullable<int>('duration_ms'),
     coverKey: row.readNullable<String>('cover_key'),
   );

@@ -37,7 +37,7 @@ extension SearchPlaylistQueries on LibraryDatabase {
     final rows = await customSelect(
       '''
 SELECT e.id AS entry_id, e.position, e.path, t.id AS track_id, t.title,
-  t.artist, t.album, t.duration_ms, t.cover_key
+  t.artist, t.album, t.year, t.duration_ms, t.cover_key
 FROM playlist_entries e
 JOIN tracks t ON t.path = e.path
 WHERE e.playlist_id = ?1

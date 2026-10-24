@@ -83,7 +83,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Sleep timer | The moon button sits in the right group before volume, with the same menu and label rules (label from a 200 px right group). |
 | Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
 | Queue tab | The queue tab (narrow window) is the same queue panel, so it also has the filter button in its header. |
-| Favorite | The favorite button (heart) likes and unlikes the current song. |
+| Favorite | The favorite button (heart) likes and unlikes the current song; it pops (shrinks, overshoots, settles) on each press, like the heart of song rows. |
 
 ## Queue sheet
 
@@ -101,7 +101,7 @@ The Languages tab lists the languages named by the language tag as round tiles (
 
 | Screen | Layout |
 |---|---|
-| Songs | Virtualized list, one row per track, read in pages of 200; or a grid of covers (title and artist under each, the default), read the same way. The header button switches them per session (not kept across restarts) and a switch starts at the top. Tap plays the list from that song in the displayed order; right click opens the song menu in both. |
+| Songs | Virtualized list, one row per track, read in pages of 200; or a grid of covers (title and artist under each, the default), read the same way. The header button switches them per session (not kept across restarts) and a switch starts at the top. Tap plays the list from that song in the displayed order; right click opens the song menu in both. A list row (`SongTile`, also on search, Home lists, folder, artist, genre and language pages) is 80 px: a 64 px cover, then the title (semi-bold), the artist and "album • year", then the duration above a heart that likes or unlikes the song. |
 | Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc, each with its track number, or its cover when Settings → Interface → Track numbers in albums is off. An album merged from several artists (Album artist grouping off; judged by the album artist, or by the first track artist when the album has no album-artist tag) shows "Various artists" on its tiles and page header, without an artist link. |
 | Artists | Round avatars in a grid (default) or a list, switched per session (not kept across restarts); artist page has Play, Shuffle and queue buttons, then sections for albums, songs and appears-on. |
 | Genres | Round tiles in a grid (default) or a list, switched per session. Genre page has Play, Shuffle and queue buttons, then its albums and songs. |

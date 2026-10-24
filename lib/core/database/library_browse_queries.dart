@@ -93,7 +93,8 @@ WHERE ta.artist_key = ?1
 ORDER BY t.album_artist_key, t.album_title_key, $discTrackOrderSql''';
 
 /// The columns of a [TrackListItem].
-const songColumns = 'id, path, title, artist, album, duration_ms, cover_key';
+const songColumns =
+    'id, path, title, artist, album, year, duration_ms, cover_key';
 
 /// ORDER BY of the Songs list. Unknown values go last in both directions;
 /// [descending] flips only the main key; ties fall back to title then id.
@@ -164,6 +165,7 @@ TrackListItem trackListItemFromRow(QueryRow row) => TrackListItem(
   title: row.read<String>('title'),
   artist: row.readNullable<String>('artist'),
   album: row.readNullable<String>('album'),
+  year: row.readNullable<int>('year'),
   durationMs: row.readNullable<int>('duration_ms'),
   coverKey: row.readNullable<String>('cover_key'),
 );

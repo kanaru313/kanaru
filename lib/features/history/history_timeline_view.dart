@@ -77,7 +77,7 @@ class HistoryTimelineView extends StatelessWidget {
     if (rows == null || row >= rows.length) {
       return const SizedBox(
         height: historyRowExtent,
-        child: ClipRect(child: SongTilePlaceholder()),
+        child: ClipRect(child: SongTilePlaceholder(compact: true)),
       );
     }
     final play = rows[row];
