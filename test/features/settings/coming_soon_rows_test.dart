@@ -87,7 +87,7 @@ void main() {
     await _openSettings(tester, const AppSettings());
 
     final rows = _comingSoonRows().toList();
-    expect(rows, hasLength(6));
+    expect(rows, hasLength(5));
     expect(find.text('Coming soon'), findsNWidgets(rows.length));
     for (final row in rows) {
       final title = row.widget is SettingRow
