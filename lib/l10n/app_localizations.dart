@@ -932,6 +932,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 song} other{{count} songs}}'**
   String albumsSongCount(int count);
 
+  /// Total length of an album in its list row, in whole minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String albumsMinutes(int count);
+
+  /// Tooltip of the play button shown on an album row on hover
+  ///
+  /// In en, this message translates to:
+  /// **'Play album'**
+  String get albumsPlayAlbum;
+
   /// No description provided for @albumsPlay.
   ///
   /// In en, this message translates to:

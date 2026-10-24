@@ -207,6 +207,29 @@ void enqueueAlbum(
   ],
 );
 
+/// Replaces the queue with the tracks of album [key], in the order of its
+/// page, and plays from the first. Waits for the queue picks started before
+/// it, so it is not overtaken by them. Does nothing when no library is open
+/// or the album has no tracks left.
+Future<void> playAlbum(WidgetRef ref, AlbumKey key) async {
+  final db = ref.read(libraryDatabaseProvider);
+  if (db == null) return;
+  final covers = ref.read(coverCacheDirectoryProvider);
+  // Read before any await: the row that asked may be gone by then.
+  final player = ref.read(playerServiceProvider.notifier);
+  final picks = pendingQueuePicks(ref);
+  try {
+    await picks;
+    final tracks = [
+      for (final t in await db.albumTracks(key))
+        trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+    ];
+    if (tracks.isNotEmpty) await player.openTracks(tracks);
+  } catch (error, stackTrace) {
+    _log.severe('Playing an album failed', error, stackTrace);
+  }
+}
+
 /// Queues the tracks [read] returns, naming them [label]; see [enqueueTracks].
 /// [read] gets the open library and the cover cache directory (null when
 /// covers are off). Does nothing, silently, when [context] is unmounted or no

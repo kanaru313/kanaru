@@ -372,6 +372,20 @@
       }
     }
   },
+  "albumsMinutes": "{count} min",
+  "@albumsMinutes": {
+    "description": "Total length of an album in its list row, in whole minutes",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "albumsPlayAlbum": "Play album",
+  "@albumsPlayAlbum": {
+    "description": "Tooltip of the play button shown on an album row on hover"
+  },
   "albumsPlay": "Play",
   "albumsDisc": "Disc {number}",
   "@albumsDisc": {

@@ -133,7 +133,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AlbumListTile), findsNWidgets(3));
-    expect(find.text('Amy · 2005 · 1 song'), findsOneWidget);
+    expect(find.text('Amy • 2005'), findsOneWidget);
     expect(h.container.read(settingsProvider).albumsView, AlbumsView.list);
     expect(find.byTooltip('List'), findsOneWidget);
 

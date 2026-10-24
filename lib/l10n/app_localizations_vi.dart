@@ -562,6 +562,18 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String albumsMinutes(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString phút';
+  }
+
+  @override
+  String get albumsPlayAlbum => 'Phát album';
+
+  @override
   String get albumsPlay => 'Phát';
 
   @override
