@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/search/search_prefs_provider.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:kanaru/shared/widgets/artist_tile.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
@@ -299,5 +300,62 @@ void main() {
       find.textContaining('Không tìm thấy kết quả cho “zzzz”'),
       findsOneWidget,
     );
+  });
+
+  group('search history', () {
+    List<String> history(LibraryHarness h) =>
+        h.container.read(searchPrefsProvider).value!.history;
+
+    testWidgets('playing a result remembers the query as typed', (
+      tester,
+    ) async {
+      final h = LibraryHarness();
+      await openSearch(tester, h, 'artist:"son tung"');
+      expect(history(h), isEmpty);
+
+      await tester.tap(find.text('Lạc Trôi'));
+      await tester.pump();
+
+      expect(history(h), ['artist:"son tung"']);
+    });
+
+    testWidgets('typing different queries remembers nothing', (tester) async {
+      final h = LibraryHarness();
+      await openSearch(tester, h, 'son');
+      goTo(tester, h, '/search?q=son+t');
+      await tester.pumpAndSettle();
+      goTo(tester, h, '/search?q=son+tung');
+      await tester.pumpAndSettle();
+
+      expect(history(h), isEmpty);
+    });
+
+    testWidgets('the queue menu of a song remembers the query', (tester) async {
+      final h = LibraryHarness();
+      await openSearch(tester, h, 'son tung');
+
+      await tester.tap(find.text('Lạc Trôi'), buttons: kSecondaryMouseButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Add to queue'));
+      await tester.pumpAndSettle();
+
+      expect(history(h), ['son tung']);
+    });
+
+    testWidgets('opening an album or an artist remembers the query', (
+      tester,
+    ) async {
+      final h = LibraryHarness();
+      await openSearch(tester, h, 'son tung');
+      await tester.tap(find.byType(AlbumListTile));
+      await tester.pumpAndSettle();
+      expect(history(h), ['son tung']);
+
+      goTo(tester, h, '/search?q=adele');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(ArtistTile));
+      await tester.pumpAndSettle();
+      expect(history(h), ['adele', 'son tung']);
+    });
   });
 }

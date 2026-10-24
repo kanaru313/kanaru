@@ -764,6 +764,44 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String searchNoResultsNarrowFields(String query) {
+    return 'Nothing matches “$query” in the chosen fields. Try turning on more search fields.';
+  }
+
+  @override
+  String get searchFieldsButton => 'Search fields';
+
+  @override
+  String get searchFieldsFiltered => 'Search fields (filtered)';
+
+  @override
+  String get searchPresetAll => 'All fields';
+
+  @override
+  String get searchPresetTitleOnly => 'Titles only';
+
+  @override
+  String get searchFieldTitle => 'Title';
+
+  @override
+  String get searchFieldArtist => 'Artist';
+
+  @override
+  String get searchFieldAlbum => 'Album';
+
+  @override
+  String get searchFieldAlbumArtist => 'Album artist';
+
+  @override
+  String get searchFieldGenre => 'Genre';
+
+  @override
+  String get searchFieldFileName => 'File name';
+
+  @override
+  String get searchFieldComment => 'Description';
+
+  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }

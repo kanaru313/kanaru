@@ -85,6 +85,7 @@ abstract final class AppIcons {
   // Actions.
   static const IconData search = Icons.search;
   static const IconData searchOff = Icons.search_off;
+  static const IconData searchFields = Icons.tune;
   static const IconData add = Icons.add;
   static const IconData remove = Icons.remove;
   static const IconData close = Icons.close;

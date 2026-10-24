@@ -1208,6 +1208,78 @@ abstract class AppLocalizations {
   /// **'Showing the top {shown} of {total} songs. Add words to narrow it down.'**
   String searchMoreSongs(int shown, int total);
 
+  /// No description provided for @searchNoResultsNarrowFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{query}” in the chosen fields. Try turning on more search fields.'**
+  String searchNoResultsNarrowFields(String query);
+
+  /// No description provided for @searchFieldsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Search fields'**
+  String get searchFieldsButton;
+
+  /// No description provided for @searchFieldsFiltered.
+  ///
+  /// In en, this message translates to:
+  /// **'Search fields (filtered)'**
+  String get searchFieldsFiltered;
+
+  /// No description provided for @searchPresetAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All fields'**
+  String get searchPresetAll;
+
+  /// No description provided for @searchPresetTitleOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles only'**
+  String get searchPresetTitleOnly;
+
+  /// No description provided for @searchFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get searchFieldTitle;
+
+  /// No description provided for @searchFieldArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get searchFieldArtist;
+
+  /// No description provided for @searchFieldAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get searchFieldAlbum;
+
+  /// No description provided for @searchFieldAlbumArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Album artist'**
+  String get searchFieldAlbumArtist;
+
+  /// No description provided for @searchFieldGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get searchFieldGenre;
+
+  /// No description provided for @searchFieldFileName.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get searchFieldFileName;
+
+  /// No description provided for @searchFieldComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get searchFieldComment;
+
   /// No description provided for @playerPlaybackError.
   ///
   /// In en, this message translates to:

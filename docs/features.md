@@ -159,12 +159,12 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | SEARCH-03 | Không phân biệt dấu  | "son tung" khớp "Sơn Tùng"; xử lý dấu tiếng Việt, ký tự Unicode, viết hoa/thường — ✅ đã làm (feat/search) | P0      | 1     |     |
 | SEARCH-04 | Tìm gần đúng         | Chấp nhận gõ sai nhẹ, khớp tiền tố                                                              | P2      | 1     |     |
 | SEARCH-05 | Lịch sử tìm kiếm     | Gợi ý các lần tìm trước, có nút xoá                                                             | P2      | 1     |     |
-| SEARCH-06 | Cú pháp nâng cao     | `artist:`, `year:>2010`, `genre:jazz`, `format:flac`; hoặc bộ lọc giống smart playlist (Namida 6.2.5, chưa làm)                                            | P3      | 4     |     |
+| SEARCH-06 | Cú pháp nâng cao     | `artist:`, `album:`, `genre:` (lọc theo cột), `year:2010`, `year:>2010`, `year:<2000`, `year:2010-2015`, `format:flac`; giá trị có dấu cách đặt trong ngoặc kép; tiền tố lạ hoặc giá trị hỏng coi là chữ thường; chỉ bộ lọc vẫn ra bài — ✅ đã làm (feat/search-complete), trừ `language:` (chờ cột ngôn ngữ). Bộ lọc giống smart playlist (Namida 6.2.5) chưa làm | P3      | 4     |     |
 | SEARCH-07 | Phím tắt mở tìm kiếm | `Ctrl+F` hoặc `/` để focus ô tìm kiếm                                                           | P1      | 1     |     |
-| SEARCH-08 | Chọn trường tìm kiếm | Chọn trường được tìm (tiêu đề, nghệ sĩ, album, thể loại, tên file, lời, mô tả) bằng picker, có preset sẵn (Namida 8.4). Chưa làm | P2      | 1     |     |
+| SEARCH-08 | Chọn trường tìm kiếm | Menu "Trường tìm" trên trang Search: tiêu đề, nghệ sĩ, album, nghệ sĩ album, thể loại, tên file, mô tả; preset "Tất cả trường" (5 trường tag, mặc định) và "Chỉ tiêu đề"; không tắt được trường cuối; nhớ qua restart (cùng file với lịch sử tìm) — ✅ đã làm (feat/search-complete). Tìm trong lời bài hát chưa làm (lời không lưu trong DB) | P2      | 1     |     |
 | SEARCH-09 | Tìm trong danh sách con và hàng đợi | Ô tìm kiếm trong trang album, nghệ sĩ, thể loại, playlist và hàng đợi; kết quả xếp theo mức khớp (Namida). Chưa làm | P2      | 1     |     |
 
-Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
+Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-08):
 
 - `mtp` không khớp `M-TP`: dấu gạch ngang và dấu câu tách từ. Gõ `m-tp` hoặc `m tp` thì khớp.
 - Chữ Trung, Nhật, Hàn: chỉ khớp từ đầu của một chuỗi chữ liên tục. Gõ `本` không tìm ra `日本語`.
@@ -173,6 +173,8 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-03):
 - Ký tự được gán sau Unicode 6.1 (emoji mới, ví dụ) không được FTS5 coi là dấu tách từ: `love🥰you` là một từ, nên gõ `you` không khớp.
 - Tag dài: chỉ 256 ký tự đầu của mỗi tag được lập chỉ mục.
 - Một truy vấn dùng tối đa 8 từ; từ thừa bị bỏ qua.
+- Cú pháp (SEARCH-06) và chọn trường (SEARCH-08): từ khoá chỉ có tiếng Anh. Bộ lọc (`year:`, `format:`) và `artist:`/`album:`/`genre:` chỉ áp cho nhóm Bài; nhóm Album và Nghệ sĩ chỉ dùng phần chữ thường. Nhóm Album chỉ hiện khi bật trường album hoặc nghệ sĩ album, nhóm Nghệ sĩ khi bật trường nghệ sĩ.
+- Tên file và mô tả không trộn với trường tag: một bài khớp khi mọi từ nằm trong các trường tag đã chọn, hoặc mọi từ nằm trong tên file/mô tả (phần tên file không gồm thư mục và đuôi).
 
 ## 7. Playlist
 

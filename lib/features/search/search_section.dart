@@ -43,10 +43,7 @@ List<Widget> searchSectionSlivers<T>({
           alignment: Alignment.centerLeft,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextButton(
-              onPressed: onToggle,
-              child: Text(label),
-            ),
+            child: TextButton(onPressed: onToggle, child: Text(label)),
           ),
         ),
       ),

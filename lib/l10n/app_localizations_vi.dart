@@ -741,6 +741,44 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String searchNoResultsNarrowFields(String query) {
+    return 'Không tìm thấy kết quả cho “$query” trong các trường đã chọn. Thử chọn thêm trường tìm.';
+  }
+
+  @override
+  String get searchFieldsButton => 'Trường tìm';
+
+  @override
+  String get searchFieldsFiltered => 'Trường tìm (đã lọc)';
+
+  @override
+  String get searchPresetAll => 'Tất cả trường';
+
+  @override
+  String get searchPresetTitleOnly => 'Chỉ tiêu đề';
+
+  @override
+  String get searchFieldTitle => 'Tiêu đề';
+
+  @override
+  String get searchFieldArtist => 'Nghệ sĩ';
+
+  @override
+  String get searchFieldAlbum => 'Album';
+
+  @override
+  String get searchFieldAlbumArtist => 'Nghệ sĩ album';
+
+  @override
+  String get searchFieldGenre => 'Thể loại';
+
+  @override
+  String get searchFieldFileName => 'Tên file';
+
+  @override
+  String get searchFieldComment => 'Mô tả';
+
+  @override
   String playerPlaybackError(String title) {
     return 'Không phát được $title';
   }

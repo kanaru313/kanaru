@@ -396,6 +396,24 @@
     }
   },
 
+  "searchNoResultsNarrowFields": "Nothing matches “{query}” in the chosen fields. Try turning on more search fields.",
+  "@searchNoResultsNarrowFields": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "searchFieldsButton": "Search fields",
+  "searchFieldsFiltered": "Search fields (filtered)",
+  "searchPresetAll": "All fields",
+  "searchPresetTitleOnly": "Titles only",
+  "searchFieldTitle": "Title",
+  "searchFieldArtist": "Artist",
+  "searchFieldAlbum": "Album",
+  "searchFieldAlbumArtist": "Album artist",
+  "searchFieldGenre": "Genre",
+  "searchFieldFileName": "File name",
+  "searchFieldComment": "Description",
+
   "playerPlaybackError": "Couldn't play {title}",
   "@playerPlaybackError": {
     "placeholders": {
