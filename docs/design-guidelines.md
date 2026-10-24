@@ -94,6 +94,8 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 
 Pages opened from the sidebar (Songs, Artists, Genres, Folders, Languages) open as a grid by default; a switch to the list is remembered for the session only.
 
+The Languages tab lists the languages named by the language tag as round tiles (name and song count), sorted by code; a language page has Play, Shuffle, its albums and its songs like a genre page, and the tab's empty state says the tags come from `TLAN` or `LANGUAGE` and that a rescan reads them.
+
 | Screen | Layout |
 |---|---|
 | Songs | Virtualized list, one row per track, read in pages of 200; or a grid of covers (title and artist under each, the default), read the same way. The header button switches them per session (not kept across restarts) and a switch starts at the top. Tap plays the list from that song in the displayed order; right click opens the song menu in both. |

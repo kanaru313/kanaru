@@ -58,6 +58,44 @@ void main() {
       expect(languageKey('xyz'), 'xyz');
     });
 
+    test('a region or script subtag is dropped', () {
+      expect(languageKey('en-US'), 'eng');
+      expect(languageKey('pt_BR'), 'por');
+      expect(languageKey('zh-Hant'), 'zho');
+      expect(languageKey('fre-CA'), 'fra');
+      expect(languageKey('x-klingon'), 'x-klingon');
+      expect(splitLanguages('en-US; en-GB, eng'), ['en-US']);
+    });
+
+    test('only BCP 47 shaped subtags are dropped', () {
+      for (final (value, key) in [
+        ('en-US', 'eng'),
+        ('pt_BR', 'por'),
+        ('zh-Hant', 'zho'),
+        ('zh-Hant-TW', 'zho'),
+        ('es-419', 'spa'),
+        ('fre-CA', 'fra'),
+      ]) {
+        expect(languageKey(value), key, reason: value);
+      }
+      for (final value in [
+        'old-english',
+        'old-norse',
+        'non-english',
+        'eng-instrumental',
+      ]) {
+        expect(languageKey(value), value, reason: value);
+      }
+    });
+
+    test('und is hidden, zxx and mul are real keys', () {
+      expect(hiddenLanguageKeys, {'und'});
+      expect(languageKey('UND'), 'und');
+      expect(languageKey('zxx'), 'zxx');
+      expect(languageKey('mul'), 'mul');
+      expect(knownLanguageKeys, isNot(contains('zxx')));
+    });
+
     test('known keys include the mapped codes and not raw spellings', () {
       expect(knownLanguageKeys, containsAll(['eng', 'vie', 'fra', 'cym']));
       expect(knownLanguageKeys, isNot(contains('fre')));

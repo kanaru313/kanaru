@@ -2088,4 +2088,156 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get languagesComingSoonMessage =>
       'Chưa thể duyệt bài hát theo ngôn ngữ.';
+
+  @override
+  String get languageNameEng => 'Tiếng Anh';
+
+  @override
+  String get languageNameVie => 'Tiếng Việt';
+
+  @override
+  String get languageNameJpn => 'Tiếng Nhật';
+
+  @override
+  String get languageNameKor => 'Tiếng Hàn';
+
+  @override
+  String get languageNameZho => 'Tiếng Trung';
+
+  @override
+  String get languageNameFra => 'Tiếng Pháp';
+
+  @override
+  String get languageNameDeu => 'Tiếng Đức';
+
+  @override
+  String get languageNameSpa => 'Tiếng Tây Ban Nha';
+
+  @override
+  String get languageNameIta => 'Tiếng Ý';
+
+  @override
+  String get languageNameRus => 'Tiếng Nga';
+
+  @override
+  String get languageNamePor => 'Tiếng Bồ Đào Nha';
+
+  @override
+  String get languageNameTha => 'Tiếng Thái';
+
+  @override
+  String get languageNameInd => 'Tiếng Indonesia';
+
+  @override
+  String get languageNameHin => 'Tiếng Hindi';
+
+  @override
+  String get languageNameAra => 'Tiếng Ả Rập';
+
+  @override
+  String get languageNameNld => 'Tiếng Hà Lan';
+
+  @override
+  String get languageNameSwe => 'Tiếng Thụy Điển';
+
+  @override
+  String get languageNamePol => 'Tiếng Ba Lan';
+
+  @override
+  String get languageNameTur => 'Tiếng Thổ Nhĩ Kỳ';
+
+  @override
+  String get languageNameUkr => 'Tiếng Ukraina';
+
+  @override
+  String get languageNameCes => 'Tiếng Séc';
+
+  @override
+  String get languageNameEll => 'Tiếng Hy Lạp';
+
+  @override
+  String get languageNameFas => 'Tiếng Ba Tư';
+
+  @override
+  String get languageNameRon => 'Tiếng Romania';
+
+  @override
+  String get languageNameMsa => 'Tiếng Mã Lai';
+
+  @override
+  String get languageNameHeb => 'Tiếng Do Thái';
+
+  @override
+  String get languageNameFin => 'Tiếng Phần Lan';
+
+  @override
+  String get languageNameDan => 'Tiếng Đan Mạch';
+
+  @override
+  String get languageNameNor => 'Tiếng Na Uy';
+
+  @override
+  String get languageNameHun => 'Tiếng Hungary';
+
+  @override
+  String get languageNameCym => 'Tiếng Wales';
+
+  @override
+  String get languageNameSlk => 'Tiếng Slovak';
+
+  @override
+  String get languageNameSqi => 'Tiếng Albania';
+
+  @override
+  String get languageNameHye => 'Tiếng Armenia';
+
+  @override
+  String get languageNameEus => 'Tiếng Basque';
+
+  @override
+  String get languageNameMya => 'Tiếng Miến Điện';
+
+  @override
+  String get languageNameKat => 'Tiếng Georgia';
+
+  @override
+  String get languageNameIsl => 'Tiếng Iceland';
+
+  @override
+  String get languageNameMkd => 'Tiếng Bắc Macedonia';
+
+  @override
+  String get languageNameMri => 'Tiếng Maori';
+
+  @override
+  String get languageNameBod => 'Tiếng Tây Tạng';
+
+  @override
+  String get languageNameZxx => 'Không lời';
+
+  @override
+  String get languageNameMul => 'Nhiều ngôn ngữ';
+
+  @override
+  String get languagesNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
+
+  @override
+  String get languagesEmptyTitle => 'Chưa có ngôn ngữ nào';
+
+  @override
+  String get languagesEmptyMessage =>
+      'Bài hát có tag ngôn ngữ (TLAN trong MP3, LANGUAGE trong FLAC và Ogg) sẽ hiện ở đây theo ngôn ngữ. Quét lại thư mục để đọc tag.';
+
+  @override
+  String get languagesAlbums => 'Album';
+
+  @override
+  String get languagesSongs => 'Bài hát';
+
+  @override
+  String get languagesNotFound => 'Không tìm thấy ngôn ngữ';
+
+  @override
+  String get languagesNotFoundMessage =>
+      'Có thể bài hát đã bị xoá hoặc đổi tag.';
 }
