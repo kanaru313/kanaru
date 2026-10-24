@@ -151,7 +151,7 @@ Future<void> _checkLayout(
     (
       l10n.separatorsArtistsTitle,
       inRow(l10n.separatorsArtistsTitle, find.byType(FilledButton)),
-      '${l10n.separatorsArtistsHint}\n${l10n.separatorsSummary(8, 1)}',
+      '${l10n.separatorsArtistsHint}\n${l10n.separatorsSummary(defaultArtistSeparators.length, 1)}',
     ),
     (
       l10n.separatorsGenresTitle,

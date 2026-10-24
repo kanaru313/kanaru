@@ -72,16 +72,33 @@ Future<void> _openKeepTab(WidgetTester tester, int count) async {
 AppSettings _withArtist(SplitPrefs split) =>
     AppSettings(libraryScan: LibraryScanPrefs(artistSplit: split));
 
+/// How many default artist separators there are.
+final _defaultCount = defaultArtistSeparators.length;
+
+/// Settings whose artist list is exactly one page long.
+AppSettings _onePage() => _withArtist(
+  SplitPrefs(
+    separators: defaultArtistSeparators.take(separatorPageSize).toList(),
+    keepWhole: defaultArtistKeepWhole,
+  ),
+);
+
 void main() {
   testWidgets('shows two tabs with the number of entries', (tester) async {
     await _open(tester);
 
     expect(find.text('Split artists'), findsOneWidget);
     expect(find.byType(Tab), findsNWidgets(2));
-    expect(find.text('Separators (9)'), findsOneWidget);
+    expect(find.text('Separators ($_defaultCount)'), findsOneWidget);
     expect(find.text('Keep whole (1)'), findsOneWidget);
-    // The defaults are listed, symbols included.
-    for (final entry in defaultArtistSeparators) {
+    // The defaults are listed, symbols included, one page at a time.
+    expect(_defaultCount, greaterThan(separatorPageSize));
+    for (final entry in defaultArtistSeparators.take(separatorPageSize)) {
+      expect(find.text(entry), findsOneWidget, reason: entry);
+    }
+    await tester.tap(find.byTooltip('Page 2 of 2'));
+    await tester.pumpAndSettle();
+    for (final entry in defaultArtistSeparators.skip(separatorPageSize)) {
       expect(find.text(entry), findsOneWidget, reason: entry);
     }
     expect(
@@ -102,7 +119,7 @@ void main() {
 
     expect(_artist().separators.last, '&');
     expect(_artist().keepWhole, defaultArtistKeepWhole);
-    expect(find.text('Separators (9)'), findsOneWidget);
+    expect(find.text('Separators (${_defaultCount + 1})'), findsOneWidget);
     expect(find.text('&'), findsOneWidget);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
@@ -184,6 +201,8 @@ void main() {
     tester,
   ) async {
     await _open(tester);
+    await tester.tap(find.byTooltip('Page 2 of 2'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Remove with'));
     await tester.pumpAndSettle();
 
@@ -191,7 +210,7 @@ void main() {
       for (final s in defaultArtistSeparators)
         if (s != 'with') s,
     ]);
-    expect(find.text('Separators (7)'), findsOneWidget);
+    expect(find.text('Separators (${_defaultCount - 1})'), findsOneWidget);
     expect(find.text('with'), findsNothing);
   });
 
@@ -228,7 +247,7 @@ void main() {
     await _open(tester);
     await _type(tester, 'half');
     await _openKeepTab(tester, 1);
-    await tester.tap(find.text('Separators (9)'));
+    await tester.tap(find.text('Separators ($_defaultCount)'));
     await tester.pumpAndSettle();
 
     expect(find.text('half'), findsOneWidget);
@@ -262,14 +281,13 @@ void main() {
 
   group('paging', () {
     testWidgets('eight entries fit one page without dots', (tester) async {
-      await _open(tester);
+      await _open(tester, settings: _onePage());
       expect(find.byType(PageView), findsOneWidget);
       expect(find.byTooltip('Page 1 of 2'), findsNothing);
     });
 
     testWidgets('a ninth entry opens a second page with dots', (tester) async {
-      await _open(tester);
-      expect(defaultArtistSeparators, hasLength(separatorPageSize));
+      await _open(tester, settings: _onePage());
       await _type(tester, '&');
       await _tapAdd(tester);
 
@@ -348,7 +366,7 @@ void main() {
     testWidgets('a large text size does not cut the entries', (tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      await _open(tester);
+      await _open(tester, settings: _onePage());
 
       expect(tester.takeException(), isNull);
       final paragraph = tester.renderObject<RenderParagraph>(find.text(';'));
@@ -360,13 +378,16 @@ void main() {
       )..layout();
       expect(paragraph.size.height, greaterThanOrEqualTo(painter.height));
       // Eight rows still make one page at this size.
-      expect(find.text('with').hitTestable(), findsOneWidget);
+      expect(
+        find.text(defaultArtistSeparators[separatorPageSize - 1]).hitTestable(),
+        findsOneWidget,
+      );
     });
 
     testWidgets('removing the only entry of the last page steps back', (
       tester,
     ) async {
-      await _open(tester);
+      await _open(tester, settings: _onePage());
       await _type(tester, '&');
       await _tapAdd(tester);
       await tester.tap(find.byTooltip('Remove &'));
@@ -426,7 +447,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
       await tester.pumpAndSettle();
       expect(_artist(), defaultArtistSplit);
-      expect(find.text('Separators (9)'), findsOneWidget);
+      expect(find.text('Separators ($_defaultCount)'), findsOneWidget);
     });
   });
 
@@ -466,7 +487,7 @@ void main() {
     await _open(tester, language: 'vi');
 
     expect(find.text('Tách nghệ sĩ'), findsOneWidget);
-    expect(find.text('Dấu phân cách (9)'), findsOneWidget);
+    expect(find.text('Dấu phân cách ($_defaultCount)'), findsOneWidget);
     expect(find.text('Không tách (1)'), findsOneWidget);
     expect(find.textContaining('Không cần thêm khoảng trắng'), findsOneWidget);
 
@@ -479,6 +500,6 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Thêm'));
     await tester.pumpAndSettle();
     expect(find.text('Đã có trong danh sách'), findsOneWidget);
-    expect(find.byTooltip('Xoá with'), findsOneWidget);
+    expect(find.byTooltip('Xoá featuring'), findsOneWidget);
   });
 }

@@ -37,7 +37,7 @@ void main() {
     expect(
       find.text(
         'Applies at once, the library updates in the background.\n'
-        '8 separators · 1 kept whole',
+        '${defaultArtistSeparators.length} separators · 1 kept whole',
       ),
       findsOneWidget,
     );
@@ -69,7 +69,12 @@ void main() {
       contains('&'),
     );
     // The row shows the new count behind the closed dialog.
-    expect(find.textContaining('9 separators · 1 kept whole'), findsOneWidget);
+    expect(
+      find.textContaining(
+        '${defaultArtistSeparators.length + 1} separators · 1 kept whole',
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(_rowButton('Split genres'));
     await tester.pumpAndSettle();
