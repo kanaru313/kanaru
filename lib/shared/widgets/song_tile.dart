@@ -37,7 +37,7 @@ class SongTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final styles = libraryRowStyles(Theme.of(context));
-    final albumLine = joinRowDetails([song.album, song.year?.toString()]);
+    final albumLine = joinRowDetails([song.album, rowYear(song.year)]);
     final durationMs = song.durationMs;
 
     final tile = InkWell(

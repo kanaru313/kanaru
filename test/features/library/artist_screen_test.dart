@@ -3,6 +3,7 @@ import 'package:kanaru/app/shell/sidebar/sidebar_item.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
@@ -39,15 +40,20 @@ void main() {
     expect(find.text('Mine'), findsOneWidget);
     expect(onPage('Songs'), findsOneWidget);
     expect(find.text('Appears on'), findsOneWidget);
+    // The song row of 'guest' shows its album name too: look in the grid.
+    final theirsTile = find.descendant(
+      of: find.byType(AlbumGridTile),
+      matching: find.text('Theirs'),
+    );
     await tester.scrollUntilVisible(
-      find.text('Theirs'),
+      theirsTile,
       200,
       scrollable: find.descendant(
         of: find.byType(CustomScrollView),
         matching: find.byType(Scrollable),
       ),
     );
-    expect(find.text('Theirs'), findsOneWidget);
+    expect(theirsTile, findsOneWidget);
     expect(find.text('anna'), findsNothing, reason: 'Anna is someone else');
   });
 

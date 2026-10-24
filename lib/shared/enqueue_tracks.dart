@@ -208,10 +208,26 @@ void enqueueAlbum(
 );
 
 /// Replaces the queue with the tracks of album [key], in the order of its
-/// page, and plays from the first. Waits for the queue picks started before
-/// it, so it is not overtaken by them. Does nothing when no library is open
-/// or the album has no tracks left.
-Future<void> playAlbum(WidgetRef ref, AlbumKey key) async {
+/// page, and plays from the first; see [playFromDatabase].
+Future<void> playAlbum(WidgetRef ref, AlbumKey key) => playFromDatabase(
+  ref,
+  'Playing an album failed',
+  (db, covers) async => [
+    for (final t in await db.albumTracks(key))
+      trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+  ],
+);
+
+/// Replaces the queue with the tracks [read] returns and plays from the
+/// first. Waits for the queue picks started before it, so it is not
+/// overtaken by them, and drops its tracks when a newer action changed the
+/// queue while they were read. Does nothing when no library is open or
+/// [read] finds no tracks; a failure is logged as [failure].
+Future<void> playFromDatabase(
+  WidgetRef ref,
+  String failure,
+  Future<List<Track>> Function(LibraryDatabase db, String? covers) read,
+) async {
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;
   final covers = ref.read(coverCacheDirectoryProvider);
@@ -220,13 +236,12 @@ Future<void> playAlbum(WidgetRef ref, AlbumKey key) async {
   final picks = pendingQueuePicks(ref);
   try {
     await picks;
-    final tracks = [
-      for (final t in await db.albumTracks(key))
-        trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
-    ];
-    if (tracks.isNotEmpty) await player.openTracks(tracks);
+    final changesBefore = player.userQueueChanges;
+    final tracks = await read(db, covers);
+    if (tracks.isEmpty || player.userQueueChanges != changesBefore) return;
+    await player.openTracks(tracks);
   } catch (error, stackTrace) {
-    _log.severe('Playing an album failed', error, stackTrace);
+    _log.severe(failure, error, stackTrace);
   }
 }
 

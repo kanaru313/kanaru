@@ -54,7 +54,7 @@ class _AlbumListTileState extends ConsumerState<AlbumListTile> {
         artist: album.artist,
         variousArtists: album.variousArtists,
       ),
-      album.year?.toString(),
+      rowYear(album.year),
     ]);
     final durationMs = album.durationMs;
     final countLine = joinRowDetails([
@@ -86,15 +86,18 @@ class _AlbumListTileState extends ConsumerState<AlbumListTile> {
         // of the focus order: Enter on the row opens the album, and the
         // button would hide again as focus left the row for it.
         trailing: ExcludeFocus(
-          child: IgnorePointer(
-            ignoring: !showPlay,
-            child: AnimatedOpacity(
-              opacity: showPlay ? 1 : 0,
-              duration: const Duration(milliseconds: 150),
-              child: IconButton.filledTonal(
-                icon: const Icon(AppIcons.playRounded),
-                tooltip: l10n.albumsPlayAlbum,
-                onPressed: () => unawaited(playAlbum(ref, album.key)),
+          child: ExcludeSemantics(
+            excluding: !showPlay,
+            child: IgnorePointer(
+              ignoring: !showPlay,
+              child: AnimatedOpacity(
+                opacity: showPlay ? 1 : 0,
+                duration: const Duration(milliseconds: 150),
+                child: IconButton.filledTonal(
+                  icon: const Icon(AppIcons.playRounded),
+                  tooltip: l10n.albumsPlayAlbum,
+                  onPressed: () => unawaited(playAlbum(ref, album.key)),
+                ),
               ),
             ),
           ),

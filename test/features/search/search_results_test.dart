@@ -22,6 +22,14 @@ final _results = find
     )
     .first;
 
+/// The album result row's title; song rows show the album name too.
+Finder _albumRow(String title) =>
+    find.descendant(of: find.byType(AlbumListTile), matching: find.text(title));
+
+/// The artist result row's name; song and album rows show it too.
+Finder _artistRow(String name) =>
+    find.descendant(of: find.byType(ArtistTile), matching: find.text(name));
+
 /// A song result row's title, not a Home card behind the search page.
 Finder _resultSong(String title) => find.descendant(
   of: find.byType(SongTile),
@@ -40,8 +48,8 @@ void main() {
     }
     expect(find.text('Lạc Trôi'), findsOneWidget);
     expect(find.text('Chạy Ngay Đi'), findsOneWidget);
-    expect(find.text('Sky Tour'), findsOneWidget);
-    expect(find.text('Sơn Tùng M-TP'), findsOneWidget);
+    expect(_albumRow('Sky Tour'), findsOneWidget);
+    expect(_artistRow('Sơn Tùng M-TP'), findsOneWidget);
     expect(find.text('Hello'), findsNothing);
   });
 
@@ -186,7 +194,7 @@ void main() {
     final h = LibraryHarness();
     await openSearch(tester, h, 'son tung');
 
-    await tester.tap(find.text('Sky Tour'));
+    await tester.tap(_albumRow('Sky Tour'));
     await tester.pumpAndSettle();
 
     expect(location(h), startsWith('/albums/'));
@@ -198,7 +206,7 @@ void main() {
     final h = LibraryHarness();
     await openSearch(tester, h, 'son tung');
 
-    await tester.tap(find.text('Sơn Tùng M-TP'));
+    await tester.tap(_artistRow('Sơn Tùng M-TP'));
     await tester.pumpAndSettle();
 
     expect(location(h), startsWith('/artists/'));
@@ -207,7 +215,7 @@ void main() {
   testWidgets('back from an album returns to the same results', (tester) async {
     final h = LibraryHarness();
     await openSearch(tester, h, 'son tung');
-    await tester.tap(find.text('Sky Tour'));
+    await tester.tap(_albumRow('Sky Tour'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Back'));

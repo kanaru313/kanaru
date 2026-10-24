@@ -12,6 +12,9 @@ const libraryRowMinHeight = libraryRowCoverSize + 16;
 String joinRowDetails(Iterable<String?> parts) =>
     parts.whereType<String>().where((s) => s.isNotEmpty).join(' • ');
 
+/// [year] as text, or null when unknown (no tag, or a tag of 0).
+String? rowYear(int? year) => year == null || year <= 0 ? null : '$year';
+
 /// The title style (semi-bold) and the details style of a library row.
 ({TextStyle title, TextStyle detail}) libraryRowStyles(ThemeData theme) => (
   title: theme.textTheme.bodyLarge!.copyWith(
