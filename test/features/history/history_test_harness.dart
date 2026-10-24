@@ -7,6 +7,7 @@ import 'package:kanaru/features/history/history_play_tile.dart';
 import 'package:kanaru/features/history/history_timeline_view.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/stats/gated_query_interceptor.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 
@@ -74,16 +75,19 @@ Future<void> settleHistory(WidgetTester tester) async {
 }
 
 /// Opens the app on the History page with [tracks] in the library and
-/// [plays] played.
+/// [plays] played. A [gate] forgets what Home read before History opens.
 Future<void> openHistory(
   WidgetTester tester,
   LibraryHarness h, {
   List<TestTrack> tracks = const [],
   List<SeedPlay> plays = const [],
+  GatedQueryInterceptor? gate,
 }) async {
   await insertTracks(tester, h, tracks);
   await seedPlays(tester, h, plays);
   await h.pump(tester, hasRoots: true);
+  // Home (the start page) has read by now; [gate] should see only History.
+  gate?.statements.clear();
   goTo(tester, h, '/history');
   await settleHistory(tester);
 }
