@@ -214,6 +214,7 @@ Home uses `EmptyState` ("Your library is empty") only when the library has no so
 | Motion | Duration | Reduced motion |
 |---|---|---|
 | Page transition | 300 ms (reverse 220 ms) | Fade only (`app/page_transition.dart`) |
+| Branch transition | 300 ms | Fade only (`app/shell/branch_transition_container.dart`) |
 | Sidebar collapse | 400 ms | Not gated in the code found by grep. Known gap; see below. |
 | Queue sheet | 400 ms | Checked (`queue_sheet_host.dart`) |
 | Now Playing slide | 500 ms | Checked (`now_playing_overlay.dart`) |
