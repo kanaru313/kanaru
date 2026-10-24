@@ -64,7 +64,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - Below 720 px: compact layout with a thin seek strip on the top edge. Controls stay in the bar.
 - Shown when a queue exists (`playerBarVisibleProvider`).
 - Seek bar: a straight track like the volume slider: played part in primary, a gap, an upright pill thumb, a gap, the rest in secondaryContainer. It does not animate while playing; it follows playback in pixel-sized steps (250/500/1000 ms).
-- Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
+- Volume: hover popup that hides itself: only the vertical slider, with no card behind it and no percent. Scroll wheel changes volume (PLAY-04).
 - Sleep timer (PLAY-14): moon button left of volume. Outlined while off; filled in primary with a short label (`m:ss`, `h:mm:ss`, or Track/Album/Queue) while on, dimmed while counting is held. The label shows only from a 1280 px window; the tooltip always has the full text. The button is left out below about 900 px (the controls column keeps its width); the compact layout shows the icon only, with no label. When the moon appears, the controls column steps down by 96 px (48 px per side) to make room. The menu (`MenuAnchor`) lists presets, Custom… and the end-of modes; while on it adds a header, +/- 5 minutes, pause or resume counting, and cancel.
 - Icon buttons carry tooltips.
 

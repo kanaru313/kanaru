@@ -109,7 +109,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     final popup = find.descendant(
       of: find.byType(Overlay),
-      matching: find.text('100%'),
+      matching: find.byType(Slider),
     );
     expect(popup, findsWidgets);
     await gesture.moveTo(tester.getCenter(popup.first));

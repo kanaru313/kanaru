@@ -722,7 +722,9 @@ void main() {
     });
   });
 
-  testWidgets('the volume popup shows the volume in percent', (tester) async {
+  testWidgets('the volume popup shows only the slider, at the volume', (
+    tester,
+  ) async {
     await pumpApp(tester);
     await openSongs(tester);
     await player().setVolume(37);
@@ -732,7 +734,16 @@ void main() {
     await mouse.moveTo(tester.getCenter(find.byType(VolumeButton)));
     await tester.pumpAndSettle();
 
-    expect(find.text('37%'), findsOneWidget);
+    final slider = find.descendant(
+      of: find.byType(Overlay),
+      matching: find.byType(Slider),
+    );
+    expect(tester.widget<Slider>(slider).value, 37);
+    expect(find.text('37%'), findsNothing);
+    expect(
+      find.descendant(of: find.byType(Overlay), matching: find.byType(Card)),
+      findsNothing,
+    );
   });
 
   testWidgets('the grown seek strip takes clicks along its whole height', (

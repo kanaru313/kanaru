@@ -12,8 +12,8 @@ import 'playback_controls.dart';
 /// Volume step for one scroll notch.
 const _scrollStep = 5.0;
 
-/// Click mutes/unmutes. Hovering (or a long press on touch) shows a vertical
-/// slider above the button, the volume in percent on top; scrolling on
+/// Click mutes/unmutes. Hovering (or a long press on touch) shows a bare
+/// vertical slider above the button, with no card behind it; scrolling on
 /// either changes the volume.
 class VolumeButton extends ConsumerStatefulWidget {
   const VolumeButton({super.key, this.onPopupChanged});
@@ -129,36 +129,21 @@ class _VolumeSlider extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 3,
+    // The overlay has no Material, which the slider needs for its ink.
+    return Material(
+      type: MaterialType.transparency,
       child: SizedBox(
         width: 48,
-        height: 184,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                '${volume.round()}%',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-            Expanded(
-              child: RotatedBox(
-                quarterTurns: 3,
-                child: Slider(
-                  value: volume.clamp(0, 100),
-                  max: 100,
-                  label: context.l10n.playerVolume,
-                  semanticFormatterCallback: (value) => '${value.round()}%',
-                  onChanged: ref.read(playerServiceProvider.notifier).setVolume,
-                ),
-              ),
-            ),
-          ],
+        height: 160,
+        child: RotatedBox(
+          quarterTurns: 3,
+          child: Slider(
+            value: volume.clamp(0, 100),
+            max: 100,
+            label: context.l10n.playerVolume,
+            semanticFormatterCallback: (value) => '${value.round()}%',
+            onChanged: ref.read(playerServiceProvider.notifier).setVolume,
+          ),
         ),
       ),
     );
