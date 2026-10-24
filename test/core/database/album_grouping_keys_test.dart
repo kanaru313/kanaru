@@ -47,6 +47,8 @@ TracksCompanion _track(
 );
 
 void main() {
+  // The registry test opens a second database on purpose.
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   late LibraryDatabase db;
 
   setUp(() async {
