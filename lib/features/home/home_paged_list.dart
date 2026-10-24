@@ -72,6 +72,10 @@ class HomePagedList<T> extends Notifier<HomePagedState<T>> {
   var _generation = 0;
   LibraryDatabase? _db;
 
+  /// The failure on show came from a reload, not a page read: [retry] reads
+  /// the loaded rows again instead of the next page (which may not exist).
+  var _failedReload = false;
+
   @override
   HomePagedState<T> build() {
     _db = ref.watch(libraryDatabaseProvider);
@@ -96,6 +100,7 @@ class HomePagedList<T> extends Notifier<HomePagedState<T>> {
   /// Does nothing unless the last read failed.
   Future<void> retry() async {
     if (state.loading || !state.failed) return;
+    if (_failedReload) return _reload();
     state = state.copyWith(failed: false);
     await _loadPage();
   }
@@ -124,6 +129,7 @@ class HomePagedList<T> extends Notifier<HomePagedState<T>> {
       // Only the type: SQLite puts the statement's parameters in a message.
       _log.warning('Reading a Home list failed: ${error.runtimeType}');
       if (generation != _generation || !ref.mounted) return;
+      _failedReload = false;
       state = current.copyWith(loading: false, failed: true);
     }
   }
@@ -152,7 +158,8 @@ class HomePagedList<T> extends Notifier<HomePagedState<T>> {
     } on Object catch (error) {
       _log.warning('Reading a Home list failed: ${error.runtimeType}');
       if (generation != _generation || !ref.mounted) return;
-      // Keep what is shown; the next change reads again.
+      // Keep what is shown; the next change or a retry reads again.
+      _failedReload = true;
       state = current.copyWith(loading: false, failed: true);
     }
   }

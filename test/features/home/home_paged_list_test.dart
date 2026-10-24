@@ -181,6 +181,20 @@ void main() {
     expect(reads, hasLength(3), reason: 'retry does nothing without a failure');
   });
 
+  test('retry after a failed reload of a short list reads it again', () async {
+    start(rows: 30);
+    await settle();
+    total = 35;
+    failNext = true;
+    version.bump();
+    await settle();
+    expect(container.read(pages).failed, isTrue);
+    await container.read(pages.notifier).retry();
+    expect(reads.last, (200, 0));
+    expect(container.read(pages).rows, hasLength(35));
+    expect(container.read(pages).failed, isFalse);
+  });
+
   test('a reload during a page read drops that page', () async {
     start();
     await settle();
