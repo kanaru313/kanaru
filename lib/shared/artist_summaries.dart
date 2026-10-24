@@ -8,8 +8,6 @@ class ArtistSummary {
     required this.name,
     required this.songCount,
     required this.albumCount,
-    this.firstYear,
-    this.lastYear,
     this.durationMs,
   });
 
@@ -23,9 +21,7 @@ class ArtistSummary {
   /// Albums holding at least one of the artist's tracks.
   final int albumCount;
 
-  /// See the fields of the same name in `ArtistCredit`.
-  final int? firstYear;
-  final int? lastYear;
+  /// See `ArtistCredit.durationMs`.
   final int? durationMs;
 }
 
@@ -37,8 +33,6 @@ List<ArtistSummary> buildArtistSummaries(List<ArtistCredit> credits) => [
       name: credit.name,
       songCount: credit.trackCount,
       albumCount: credit.albumCount,
-      firstYear: credit.firstYear,
-      lastYear: credit.lastYear,
       durationMs: credit.durationMs,
     ),
 ];

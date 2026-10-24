@@ -30,7 +30,6 @@ const _prototypeArtist = ArtistSummary(
   name: 'Artist',
   songCount: 1,
   albumCount: 1,
-  firstYear: 2000,
   durationMs: 60000,
 );
 

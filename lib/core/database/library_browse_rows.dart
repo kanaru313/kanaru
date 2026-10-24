@@ -95,8 +95,6 @@ class ArtistCredit {
     required this.name,
     required this.trackCount,
     required this.albumCount,
-    this.firstYear,
-    this.lastYear,
     this.durationMs,
   });
 
@@ -105,13 +103,8 @@ class ArtistCredit {
   final int trackCount;
   final int albumCount;
 
-  /// The smallest and largest year above 0 among those tracks; null when
-  /// none has one, or for a row read without them (Home).
-  final int? firstYear;
-  final int? lastYear;
-
-  /// Sum of the known durations of those tracks; null when none is known or
-  /// they add up to 0.
+  /// Sum of the known durations of those tracks; null when none is known,
+  /// they add up to 0, or for a row read without it (Home).
   final int? durationMs;
 }
 

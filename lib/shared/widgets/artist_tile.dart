@@ -6,17 +6,8 @@ import 'artist_avatar.dart';
 import 'library_row.dart';
 import 'queue_actions_menu.dart';
 
-/// "2012 – 2024", one year when both ends are the same, or null when no
-/// track of the artist has a year.
-String? _yearSpan(int? first, int? last) {
-  final from = rowYear(first);
-  final to = rowYear(last);
-  if (from == null || to == null) return from ?? to;
-  return from == to ? from : '$from – $to';
-}
-
-/// One artist row: avatar, then three lines (name, "N albums • M songs",
-/// "first year – last year • total length"), then a play button shown while
+/// One artist row: avatar, then three lines (name, "N albums",
+/// "M songs • total length"), then a play button shown while
 /// the row is hovered or focused; no button without [onPlay]. Every line is
 /// always laid out, so all rows have the height of the list's prototype row.
 class ArtistTile extends StatelessWidget {
@@ -49,12 +40,9 @@ class ArtistTile extends StatelessWidget {
       ),
       lines: [
         artist.name,
+        l10n.artistsAlbumCount(artist.albumCount),
         joinRowDetails([
-          l10n.artistsAlbumCount(artist.albumCount),
           l10n.albumsSongCount(artist.songCount),
-        ]),
-        joinRowDetails([
-          _yearSpan(artist.firstYear, artist.lastYear),
           if (durationMs != null) rowLength(l10n, durationMs),
         ]),
       ],

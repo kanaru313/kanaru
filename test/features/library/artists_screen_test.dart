@@ -26,9 +26,11 @@ void main() {
 
     expect(find.byType(ArtistTile), findsNWidgets(3));
     expect(find.text('Various Artists'), findsNothing);
-    expect(find.text('1 album • 2 songs'), findsNWidgets(1));
-    expect(find.text('1 album • 3 songs'), findsOneWidget);
-    expect(find.text('1 album • 1 song'), findsOneWidget);
+    expect(find.text('1 album'), findsNWidgets(3));
+    // Every test track lasts a second; a length above zero shows as 1 min.
+    expect(find.text('2 songs • 1 min'), findsOneWidget);
+    expect(find.text('3 songs • 1 min'), findsOneWidget);
+    expect(find.text('1 song • 1 min'), findsOneWidget);
     expect(top('Ann'), lessThan(top('Bob')));
     expect(top('Bob'), lessThan(top('Guest')));
 
