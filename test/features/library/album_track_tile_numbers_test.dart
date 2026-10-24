@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/player/playing_track_path.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/albums/album_track_tile.dart';
 import 'package:kanaru/l10n/l10n.dart';
@@ -29,6 +30,7 @@ void main() {
           AppSettings(display: DisplayPrefs(trackNumbersInAlbum: numbers)),
         ),
         coverCacheDirectoryProvider.overrideWithValue('/cache/covers/512'),
+        playingTrackPathProvider.overrideWithValue(null),
       ],
     );
     addTearDown(container.dispose);
@@ -70,6 +72,7 @@ void main() {
         initialSettingsProvider.overrideWithValue(
           const AppSettings(display: DisplayPrefs(trackNumbersInAlbum: false)),
         ),
+        playingTrackPathProvider.overrideWithValue(null),
       ],
     );
     addTearDown(container.dispose);

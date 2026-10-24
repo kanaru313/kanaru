@@ -27,7 +27,15 @@ void main() {
   /// Ink is painted (and clipped) by the nearest [Material]. The test fails
   /// when that Material reaches above the scroll view, which lets the ink
   /// spill over the page title.
-  Future<void> expectInkClipped(WidgetTester tester, Finder tile) async {
+  ///
+  /// [inkHost] finds the element whose nearest [Material] paints the ink
+  /// (the tile itself by default). A host given here is a Material of the
+  /// row, which must sit inside the scroll view to be clipped by it.
+  Future<void> expectInkClipped(
+    WidgetTester tester,
+    Finder tile, {
+    Finder? inkHost,
+  }) async {
     final scrollable = find
         .ancestor(of: tile.first, matching: find.byType(Scrollable))
         .first;
@@ -43,7 +51,22 @@ void main() {
     await mouse.moveTo(Offset(first.center.dx, viewport.top + 4));
     await tester.pumpAndSettle();
 
-    final ink = Material.of(tester.element(tile.first)) as RenderBox;
+    final host = inkHost ?? tile;
+    final ink = Material.of(tester.element(host.first)) as RenderBox;
+    if (inkHost != null) {
+      // The row paints its own ink, cut off by the scroll view like the row.
+      RenderObject? parent = ink.parent;
+      final scrollBox = tester.renderObject(scrollable);
+      while (parent != null && parent != scrollBox) {
+        parent = parent.parent;
+      }
+      expect(
+        parent,
+        isNotNull,
+        reason: 'the ink host is inside the scroll view',
+      );
+      return;
+    }
     final inkArea = ink.localToGlobal(Offset.zero) & ink.size;
     expect(
       inkArea.top,
@@ -67,7 +90,14 @@ void main() {
   testWidgets('song list hover stays inside the list', (tester) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/songs');
-    await expectInkClipped(tester, find.byType(SongTile));
+    final tile = find.byType(SongTile);
+    // A song row has its own Material, so the ink host is found from its
+    // InkWell: a lookup from the row would skip it and measure the page.
+    final inkWell = find.descendant(
+      of: tile.first,
+      matching: find.byType(InkWell),
+    );
+    await expectInkClipped(tester, tile, inkHost: inkWell);
   });
 
   testWidgets('artist page album grid hover stays inside the page', (

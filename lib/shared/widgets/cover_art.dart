@@ -17,9 +17,12 @@ int coverDecodeWidth(double physicalPixels) {
   return coverDecodeMaxWidth;
 }
 
+/// Corner radius of a cover [size] px wide: 4 below 64 px, 8 from there up.
+double coverArtRadius(double size) => size < 64 ? 4 : 8;
+
 /// A square cover picture from the file at [path], or [placeholder] when
 /// there is no path or the file cannot be shown (missing, empty, corrupt).
-/// Corners are rounded by [radius], else 4 below 64 px and 8 above.
+/// Corners are rounded by [radius], else by [coverArtRadius].
 class CoverArt extends StatelessWidget {
   const CoverArt({
     super.key,
@@ -39,7 +42,7 @@ class CoverArt extends StatelessWidget {
     final file = path;
     final dpr = MediaQuery.devicePixelRatioOf(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(radius ?? (size < 64 ? 4 : 8)),
+      borderRadius: BorderRadius.circular(radius ?? coverArtRadius(size)),
       child: SizedBox.square(
         dimension: size,
         child: file == null

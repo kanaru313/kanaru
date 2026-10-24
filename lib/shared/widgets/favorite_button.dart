@@ -29,6 +29,7 @@ class FavoriteButton extends ConsumerStatefulWidget {
     required this.path,
     this.iconSize,
     this.compact = false,
+    this.color,
   });
 
   final String? path;
@@ -37,6 +38,10 @@ class FavoriteButton extends ConsumerStatefulWidget {
   /// A 28 px button with no padding, small enough to sit under the duration
   /// in the 48 px trailing slot of a list tile.
   final bool compact;
+
+  /// Color of the heart while the song is not a favorite; null keeps the
+  /// theme's. A favorite keeps its selected (primary) color.
+  final Color? color;
 
   @override
   ConsumerState<FavoriteButton> createState() => _FavoriteButtonState();
@@ -173,7 +178,7 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
       isSelected: favorite,
       icon: ScaleTransition(
         scale: _scale,
-        child: const Icon(AppIcons.favoriteBorderRounded),
+        child: Icon(AppIcons.favoriteBorderRounded, color: widget.color),
       ),
       selectedIcon: ScaleTransition(
         scale: _scale,
