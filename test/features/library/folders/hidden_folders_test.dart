@@ -7,6 +7,7 @@ import 'package:kanaru/features/library/folders/show_hidden_provider.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library_test_harness.dart';
+import '../list_view_modes_override.dart';
 import 'hidden_folders_support.dart';
 
 void main() {
@@ -54,7 +55,7 @@ void main() {
   testWidgets('a hidden subfolder appears dimmed and tagged with the eye on', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openMusic(
       tester,
       h,
