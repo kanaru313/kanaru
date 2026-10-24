@@ -7,9 +7,11 @@ import '../../core/database/throttled_tracks_query.dart';
 import '../../core/search/search_fields.dart';
 import '../../core/search/search_prefs_provider.dart';
 import '../../core/search/search_query.dart';
+import '../../core/search/typo_correction.dart';
 import '../../shared/artist_summaries.dart';
 import '../../shared/library_browse_refresh.dart';
 import 'search_providers.dart';
+import 'search_typo_providers.dart';
 
 /// Whether [a] and [b] hold the same fields.
 bool sameSearchFields(Set<SearchField> a, Set<SearchField> b) =>
@@ -97,15 +99,81 @@ final searchResultsProvider = Provider.autoDispose
         final e = failed.first;
         return AsyncError(e.error!, e.stackTrace ?? StackTrace.empty);
       }
-      final song = songs.requireValue;
+      var song = songs.requireValue;
+      var albumList = albums?.requireValue.match(free) ?? const [];
+      var artistList = artists?.requireValue.match(free) ?? const [];
+      var corrections = const <String, String>{};
+      // Few songs: try again with the misspelt words fixed, real matches
+      // first. Waits for the dictionary; goes on without it if it fails
+      // (a failed reload keeps the dictionary it had).
+      final needsVocabulary =
+          song.total < typoRetryBelow && hasCorrectableWord(request);
+      if (needsVocabulary) {
+        ref.listen(searchVocabularyProvider, logVocabularyFailure);
+        final vocab = ref.watch(searchVocabularyProvider);
+        final dictionary = vocab.value;
+        if (dictionary == null && !vocab.hasError) {
+          return const AsyncLoading();
+        }
+        final files = free.isNotEmpty && usesFileText(fields)
+            ? ref.watch(searchFileTextIndexProvider).value
+            : null;
+        final fix = dictionary == null
+            ? null
+            : ref.watch(
+                searchTypoCorrectionProvider((request, dictionary, files)),
+              );
+        if (fix != null) {
+          final fixed = ref.watch(searchSongsProvider(fix.request));
+          if (fixed.value == null && !fixed.hasError) {
+            return const AsyncLoading();
+          }
+          final fixedFree = fix.request.query.freeTerms;
+          final mergedSongs = fixed.value == null
+              ? song
+              : mergeCorrectedSongs(song, fixed.requireValue);
+          final mergedAlbums = albums == null
+              ? albumList
+              : _union(
+                  albumList,
+                  albums.requireValue.match(fixedFree),
+                  (a) => a.key,
+                );
+          final mergedArtists = artists == null
+              ? artistList
+              : _union(
+                  artistList,
+                  artists.requireValue.match(fixedFree),
+                  (a) => a.key,
+                );
+          if (!identical(mergedSongs, song) ||
+              mergedAlbums.length != albumList.length ||
+              mergedArtists.length != artistList.length) {
+            song = mergedSongs;
+            albumList = mergedAlbums;
+            artistList = mergedArtists;
+            corrections = fix.replacements;
+          }
+        }
+      }
       return AsyncData(
         SearchResults(
           songs: song.songs,
           songTotal: song.total,
-          albums: albums?.requireValue.match(free) ?? const [],
-          artists: artists == null
-              ? const []
-              : buildArtistSummaries(artists.requireValue.match(free)),
+          albums: albumList,
+          artists: buildArtistSummaries(artistList),
+          corrections: corrections,
+          needsVocabulary: needsVocabulary,
         ),
       );
     });
+
+/// [first] then the items of [second] whose key it lacks.
+List<T> _union<T, K>(List<T> first, List<T> second, K Function(T) key) {
+  final have = {for (final t in first) key(t)};
+  return [
+    ...first,
+    for (final t in second)
+      if (have.add(key(t))) t,
+  ];
+}

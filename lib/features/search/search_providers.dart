@@ -47,6 +47,8 @@ class SearchResults {
     required this.songTotal,
     required this.albums,
     required this.artists,
+    this.corrections = const {},
+    this.needsVocabulary = false,
   });
 
   /// The best songs, at most `searchSongLimit`.
@@ -56,6 +58,14 @@ class SearchResults {
   final int songTotal;
   final List<AlbumSummary> albums;
   final List<ArtistSummary> artists;
+
+  /// Misspelt words of the query and what they were read as: not empty when
+  /// part of these results come from the corrected query.
+  final Map<String, String> corrections;
+
+  /// Whether the real songs were few and a word of the query could be
+  /// corrected: the typo dictionary is worth keeping loaded.
+  final bool needsVocabulary;
 
   bool get isEmpty => songs.isEmpty && albums.isEmpty && artists.isEmpty;
 }

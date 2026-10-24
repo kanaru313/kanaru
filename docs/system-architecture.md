@@ -480,11 +480,13 @@ Data flow: the scan and the key backfill write `tracks`, with the folded columns
 
 Query syntax: `parseSearchQuery` (`core/search/search_query_parser.dart`) splits the raw query on spaces outside double quotes (an unclosed quote runs to the end). `artist:`, `album:` and `genre:` (prefix case-insensitive) give per-field terms; `year:` takes `2010`, `>2010`, `<2000`, `>=`, `<=` or `2010-2015` (a reversed range swaps; years 1 to 9999; several `year:` all apply); `format:` takes an extension from `audioExtensions` (several are alternatives). Anything else, such as an unknown prefix, an empty or invalid value, stays free text. Free and per-field terms together are capped at `maxSearchTerms` (8, last dropped); filters are not capped. Keywords are English only. The result is a `ParsedSearchQuery`; with the chosen `SearchField` set (`search_fields.dart`; the default "all" preset is the five tag fields, file name and comment are opt-in) it becomes a `SearchRequest` whose normalized `key` identifies it for providers.
 
+Typo tolerance: when a search finds fewer than `typoRetryBelow` (5) songs and a word is at least 4 characters, not CJK/Thai and not the start of an indexed word, the page reads the library's words from `temp.track_search_vocab`, an `fts5vocab(main, 'track_search', 'row')` table created with `IF NOT EXISTS` on the database connection by `searchVocabulary()` (`search_vocabulary.dart`; a temp table, so not in the drift schema; 'row' lists whole words with their song count, not the prefix entries). `searchVocabularyProvider` loads it only when needed and reloads it throttled while the library changes. `TypoDictionary` (`core/search/typo_correction.dart`, pure Dart) replaces each such word with the closest word by optimal-string-alignment distance (at most 1, or 2 from 8 characters; ties go to the word in more songs, then alphabetical). The request is searched again with the fixed words; real matches come first, then the new ones without repeats, and albums and artists are merged the same way. Nothing new found means no change. The history keeps what was typed.
+
 Known limits (the user-facing list is in [features.md](./features.md), section 6):
 
 - `mtp` does not match `M-TP`: punctuation splits words.
 - CJK text matches only from the start of a run of characters.
-- No typo tolerance (SEARCH-04).
+- Typo tolerance (SEARCH-04) is a retry for fewer than 5 songs and fixes whole words only: no fuzzy prefix, no words under 4 characters, no CJK/Thai.
 - Characters assigned after Unicode 6.1 (for example newer emoji) are not token separators for `unicode61`, while the Dart side splits on them.
 - Tags are indexed up to 256 characters (`maxKeyLength`).
 

@@ -11,6 +11,7 @@ import '../../core/indexer/indexer_state.dart';
 import '../../core/search/search_prefs_provider.dart';
 import '../../core/search/search_query.dart';
 import '../../core/search/search_query_parser.dart';
+import '../../core/search/typo_correction.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
@@ -21,6 +22,7 @@ import 'search_field_picker.dart';
 import 'search_providers.dart';
 import 'search_request_provider.dart';
 import 'search_results_view.dart';
+import 'search_typo_providers.dart';
 
 final _log = Logger('library.search');
 
@@ -59,6 +61,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     // search after clearing the field does not load the library again.
     ref.listen(searchAlbumIndexProvider, (_, _) {});
     ref.listen(searchArtistIndexProvider, (_, _) {});
+    // The dictionary of a typo-tolerant retry stays loaded while the page
+    // keeps finding few songs, so typing on does not read it again.
+    if (_shown?.results.needsVocabulary ?? false) {
+      ref.listen(searchVocabularyProvider, (_, _) {});
+    }
     final parsed = parseSearchQuery(widget.query);
     // Shown even without a query, to choose before typing.
     const actions = [SearchFieldPicker()];
@@ -154,6 +161,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return SearchResultsView(
       key: ValueKey(shown.requestKey),
       results: shown.results,
+      correctedQuery: shown.results.corrections.isEmpty
+          ? null
+          : correctedQueryText(shown.query, shown.results.corrections),
       onOpened: _remember,
     );
   }

@@ -1280,6 +1280,12 @@ abstract class AppLocalizations {
   /// **'Description'**
   String get searchFieldComment;
 
+  /// No description provided for @searchCorrectedResultsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Results for “{query}”'**
+  String searchCorrectedResultsFor(String query);
+
   /// No description provided for @playerPlaybackError.
   ///
   /// In en, this message translates to:

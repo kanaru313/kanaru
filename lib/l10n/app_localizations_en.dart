@@ -802,6 +802,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchFieldComment => 'Description';
 
   @override
+  String searchCorrectedResultsFor(String query) {
+    return 'Results for “$query”';
+  }
+
+  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }

@@ -779,6 +779,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searchFieldComment => 'Mô tả';
 
   @override
+  String searchCorrectedResultsFor(String query) {
+    return 'Kết quả cho “$query”';
+  }
+
+  @override
   String playerPlaybackError(String title) {
     return 'Không phát được $title';
   }

@@ -413,6 +413,12 @@
   "searchFieldGenre": "Genre",
   "searchFieldFileName": "File name",
   "searchFieldComment": "Description",
+  "searchCorrectedResultsFor": "Results for “{query}”",
+  "@searchCorrectedResultsFor": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
 
   "playerPlaybackError": "Couldn't play {title}",
   "@playerPlaybackError": {

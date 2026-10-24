@@ -219,6 +219,7 @@
   "searchFieldGenre": "Thể loại",
   "searchFieldFileName": "Tên file",
   "searchFieldComment": "Mô tả",
+  "searchCorrectedResultsFor": "Kết quả cho “{query}”",
 
   "playerPlaybackError": "Không phát được {title}",
   "playerPlay": "Phát",

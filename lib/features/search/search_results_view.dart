@@ -15,6 +15,7 @@ import '../../shared/widgets/album_list_tile.dart';
 import '../../shared/widgets/artist_tile.dart';
 import '../../shared/widgets/song_tile.dart';
 
+import 'search_corrected_banner.dart';
 import 'search_providers.dart';
 import 'search_section.dart';
 
@@ -26,9 +27,14 @@ class SearchResultsView extends ConsumerStatefulWidget {
     super.key,
     required this.results,
     required this.onOpened,
+    this.correctedQuery,
   });
 
   final SearchResults results;
+
+  /// The query with its misspelt words fixed, when part of [results] comes
+  /// from it; shown above the groups.
+  final String? correctedQuery;
 
   /// Called when the user opens a result (plays or queues a song, opens an
   /// album or artist): the moment the query is worth remembering.
@@ -58,6 +64,8 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
     final r = widget.results;
     return CustomScrollView(
       slivers: [
+        if (widget.correctedQuery case final corrected?)
+          SliverToBoxAdapter(child: SearchCorrectedBanner(query: corrected)),
         if (r.songs.isNotEmpty)
           ...searchSectionSlivers<TrackListItem>(
             context: context,

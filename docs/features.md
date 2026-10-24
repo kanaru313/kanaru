@@ -157,7 +157,7 @@ Indexer nằm trong `lib/core/indexer/`; đọc tag bằng lofty (Rust); lưu v�
 | SEARCH-01 | Tìm toàn văn         | SQLite FTS5 trên title, artist, album, album artist, genre; tuỳ chọn thêm tên file, lời và mô tả (Namida, chưa làm); kết quả chia nhóm bài/album/nghệ sĩ — ✅ đã làm (feat/search) | P0      | 1     | H   |
 | SEARCH-02 | Tìm khi gõ           | Kết quả cập nhật trong < 50 ms với thư viện 50k bài — ✅ đã làm (feat/search), đo bằng benchmark `KANARU_BENCH=1` trên dữ liệu tổng hợp (p95 khoảng 30–45 ms, trường hợp xấu nhất là truy vấn khớp một nửa thư viện) | P0      | 1     | H   |
 | SEARCH-03 | Không phân biệt dấu  | "son tung" khớp "Sơn Tùng"; xử lý dấu tiếng Việt, ký tự Unicode, viết hoa/thường — ✅ đã làm (feat/search) | P0      | 1     |     |
-| SEARCH-04 | Tìm gần đúng         | Chấp nhận gõ sai nhẹ, khớp tiền tố                                                              | P2      | 1     |     |
+| SEARCH-04 | Tìm gần đúng         | Sửa lỗi gõ nhẹ khi ít kết quả (dưới 5 bài): từ tự do hoặc sau `artist:` … dài từ 4 ký tự, không là đầu của từ nào trong thư viện, được thay bằng từ gần nhất (1 lỗi, 2 lỗi từ 8 ký tự; chuyển vị tính 1 lỗi); khớp thật luôn đứng trước, trang ghi “Kết quả cho “…”” — ✅ đã làm (feat/search-complete). Khớp tiền tố có từ SEARCH-01 | P2      | 1     |     |
 | SEARCH-05 | Lịch sử tìm kiếm     | Gợi ý các lần tìm trước, có nút xoá                                                             | P2      | 1     |     |
 | SEARCH-06 | Cú pháp nâng cao     | `artist:`, `album:`, `genre:` (lọc theo cột), `year:2010`, `year:>2010`, `year:<2000`, `year:2010-2015`, `format:flac`; giá trị có dấu cách đặt trong ngoặc kép; tiền tố lạ hoặc giá trị hỏng coi là chữ thường; chỉ bộ lọc vẫn ra bài — ✅ đã làm (feat/search-complete), trừ `language:` (chờ cột ngôn ngữ). Bộ lọc giống smart playlist (Namida 6.2.5) chưa làm | P3      | 4     |     |
 | SEARCH-07 | Phím tắt mở tìm kiếm | `Ctrl+F` hoặc `/` để focus ô tìm kiếm                                                           | P1      | 1     |     |
@@ -169,7 +169,7 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-08):
 - `mtp` không khớp `M-TP`: dấu gạch ngang và dấu câu tách từ. Gõ `m-tp` hoặc `m tp` thì khớp.
 - Chữ Trung, Nhật, Hàn: chỉ khớp từ đầu của một chuỗi chữ liên tục. Gõ `本` không tìm ra `日本語`.
 - Tiếng Thái và một số chữ Ấn Độ: dấu tách từ, nên `กิน` bị tách thành `ก` và `น`.
-- Không sửa lỗi gõ: `sonn tung` không khớp. Việc này thuộc SEARCH-04.
+- Sửa lỗi gõ (SEARCH-04) chỉ chạy khi truy vấn ra dưới 5 bài, chỉ sửa từ từ 4 ký tự trở lên (không phải chữ Hán, Nhật, Hàn, Thái), tối đa 1 lỗi (2 lỗi từ 8 ký tự), và không sửa từ đang gõ dở (đầu của một từ có trong thư viện): `beatl` không bị sửa. Không so tiền tố gần đúng (`bwatl`).
 - Ký tự được gán sau Unicode 6.1 (emoji mới, ví dụ) không được FTS5 coi là dấu tách từ: `love🥰you` là một từ, nên gõ `you` không khớp.
 - Tag dài: chỉ 256 ký tự đầu của mỗi tag được lập chỉ mục.
 - Một truy vấn dùng tối đa 8 từ; từ thừa bị bỏ qua.
