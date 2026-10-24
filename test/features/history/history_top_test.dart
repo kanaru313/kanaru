@@ -31,8 +31,15 @@ Future<void> _openTop(
   WidgetTester tester,
   LibraryHarness h, {
   List<SeedPlay>? plays,
+  GatedQueryInterceptor? gate,
 }) async {
-  await openHistory(tester, h, tracks: _tracks, plays: plays ?? _plays);
+  await openHistory(
+    tester,
+    h,
+    tracks: _tracks,
+    plays: plays ?? _plays,
+    gate: gate,
+  );
   await _showTab(tester, 'Most played');
 }
 
@@ -167,7 +174,7 @@ void main() {
     ) async {
       final gate = GatedQueryInterceptor();
       h = historyHarness(interceptor: gate);
-      await _openTop(tester, h);
+      await _openTop(tester, h, gate: gate);
 
       await _chip(tester, 'All time');
       expect(_names(tester), ['D', 'B', 'A', 'Ghost', 'C']);
@@ -185,7 +192,7 @@ void main() {
     ) async {
       final gate = GatedQueryInterceptor();
       h = historyHarness(interceptor: gate);
-      await _openTop(tester, h);
+      await _openTop(tester, h, gate: gate);
 
       expect(gate.count('FROM play_stats'), 0);
       expect(gate.count('FROM plays'), greaterThan(0));
@@ -439,7 +446,7 @@ void main() {
     ) async {
       final gate = GatedQueryInterceptor();
       h = historyHarness(interceptor: gate);
-      await openHistory(tester, h, tracks: _tracks, plays: _plays);
+      await openHistory(tester, h, tracks: _tracks, plays: _plays, gate: gate);
       await _showTab(tester, 'Most played');
       await _showTab(tester, 'Journal');
       final before = gate.count(_topSql);
@@ -474,7 +481,7 @@ void main() {
     ) async {
       final gate = GatedQueryInterceptor();
       h = historyHarness(interceptor: gate);
-      await _openTop(tester, h);
+      await _openTop(tester, h, gate: gate);
       expect(find.byType(LinearProgressIndicator), findsNothing);
 
       final release = gate.holdNext(_topSql);

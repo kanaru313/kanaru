@@ -142,6 +142,23 @@ Dragging a row lifts the card itself (shadow, no wider slab); the order changes 
 | Most played | A chip per range (Today, 7 days, 30 days, 6 months, 1 year, All time, Custom), then Previous period, the range label and Next period (hidden for All time; Next is off on the current period). "Play all" and "Create playlist" sit above the list and are off when no song can play. Rows are 64 px: rank, cover, title, "artist · album", listens and a more button; a tap queues the playable songs by rank from that row. The menu is the Journal one without Remove. A song not in the library is dimmed and skipped. At 500 rows a note says "Showing first 500"; a thin bar runs over the old list while a new one is read; an empty range says "No listens in this range". |
 | Song history | Row menus of Journal and Most played end the queue rows with "Song history", which opens `/history/track?path=…` (the top bar's back returns to the same tab and range). Title is the song (or its file name, with "Not in library"), then "artist · album". The header has the cover, "N listens · First <date> · Last <date time>" and a Play button, shown only for a song in the library (it queues that song alone). Below, one 56 px row per play, newest first: date and time, "listened m:ss" (hidden when unknown), a `#N` badge and a more button; the menu has the queue rows and Remove from history (no Song history item), with the same Undo snackbar. No plays left shows "No listens yet"; a missing or empty path shows "Song not found". |
 
+## Home page
+
+The greeting is the page title. With songs in the library the body is five sections, always in this order, one scrolling column. Without songs (or without a library) it is the empty state; while the first read runs the body is blank, with no spinner.
+
+| Part | Behavior |
+|---|---|
+| Section header | Title (`titleLarge`, a heading for screen readers) and a chevron button "See all" right beside it, margin 32 like the page title. The button opens the section's full list (see the next two rows). |
+| See all | Recently played opens History. Recently added opens `/home/recently-added?window=<1d\|3d\|7d\|30d\|all>` on the chip in effect (without `window` while that default is still being read). Lost memories, Recent albums and Recent artists open `/home/memories`, `/home/recent-albums` and `/home/recent-artists`. The button stays enabled when a section is empty. It uses `go`, so Back in the top bar returns to Home. |
+| Full lists | Page title is the section title. Songs: one `SongTile` row each (tap plays the loaded songs from the tapped one; the menu queues only that song). Albums and artists: a grid of the shelf cards, each card 168 px wide with 24 px side padding; the columns are as many as fit, so each cell is at least 168 px wide (not the 200 px maximum of the library grids). Rows are read 200 at a time and the next 200 when the end is within one screen; there is no cap. When the data changes the loaded rows are read again in one query and swapped in, so the scroll position stays. Recently added shows the same chips under the title; a `?window=` that is unknown or missing opens on the window in effect; a chip tap remembers the pick for Home and replaces the location, so the list restarts at the top. Empty: one `EmptyState` sentence ("No songs were added in this period", the memories sentence, "No albums played yet", "No artists played yet"); a failed read shows "Could not load the list" with a Retry text button (under the rows when some are loaded). These pages are screens of their own, so they keep an empty state; the rule of no placeholder text applies to the Home sections. |
+| Recently played | Songs by their latest listen. Card: square cover, title, artist. A tap queues the songs of the row (at most 20) and starts at the tapped one. Right click, long press and the menu key open the song menu. |
+| Recently added | Songs added inside the chip in effect, newest first, same card. Chips under the title: 1 day, 3 days, 7 days, 30 days, All. Until the user picks one, the smallest window that holds the newest song is on; a pick lasts for the session and survives leaving the page. |
+| Lost memories | Songs played within three days of today's date last year, most played first, same card. With none, the one sentence "No music from this time last year" in `onSurfaceVariant`, shown only after a read finished with no rows (never while reading or after a failure with nothing to show). |
+| Recent albums | Albums by their latest listen. Card: artwork, title, "artist · year" (an album merged from several artists says "Various artists"). A tap opens the album (Albums branch); the menu is the queue menu (Play next, Add to queue, Add to playlist…). |
+| Recent artists | Artists by their latest listen. Card: round avatar, name, song count. A tap opens the artist; the menu is the queue menu. |
+| Empty row | An empty row draws nothing: no shelf, no text, only an 8 px gap under the header (Lost memories is the one exception above). A row still being read for the first time shows placeholder squares so the page keeps its height; a later read keeps the old cards until the new ones arrive. |
+| Shelf | A horizontal row of cards, each 168 px wide and as tall as cover plus two text lines at the current text scale. Round tonal arrow buttons sit on the edges, only on a side that has more cards, and scroll 80 % of the width (300 ms, an instant jump with reduced motion). The mouse drags the row; a trackpad or Shift + wheel scrolls it sideways; the plain wheel scrolls the page; Tab moves through the cards and brings the focused one into view. |
+
 ## Search page
 
 Opens from the top bar at `/search?q=…`. An empty query shows "Search your library".
@@ -179,7 +196,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 
-The Home placeholder screen uses `EmptyState` with a one-sentence message. Favorites uses `EmptyState` only before the first like or when its playlist is empty.
+Home uses `EmptyState` ("Your library is empty") only when the library has no song or cannot be opened. Favorites uses `EmptyState` only before the first like or when its playlist is empty.
 
 ## Settings
 

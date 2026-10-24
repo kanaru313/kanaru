@@ -2314,4 +2314,56 @@ class AppLocalizationsVi extends AppLocalizations {
   String inPageSearchTooMany(int count) {
     return 'Hiện $count bài đầu, gõ thêm chữ để thu hẹp.';
   }
+
+  @override
+  String get homeRecentlyPlayedTitle => 'Lượt nghe gần đây';
+
+  @override
+  String get homeRecentlyAddedTitle => 'Gần đây nhất';
+
+  @override
+  String get homeMemoriesTitle => 'Kí ức đã mất';
+
+  @override
+  String get homeRecentAlbumsTitle => 'Album gần đây';
+
+  @override
+  String get homeRecentArtistsTitle => 'Nghệ sĩ gần đây';
+
+  @override
+  String get homeMemoriesEmpty =>
+      'Khoảng thời gian này không có bất kỳ bản nhạc nào';
+
+  @override
+  String get homeAddedWindowAll => 'Tất cả';
+
+  @override
+  String get homeSeeAll => 'Xem tất cả';
+
+  @override
+  String get homeScrollBack => 'Cuộn lùi';
+
+  @override
+  String get homeScrollForward => 'Cuộn tới';
+
+  @override
+  String homeAddedWindowDays(int count) {
+    return '$count ngày';
+  }
+
+  @override
+  String get homeRecentlyAddedEmpty =>
+      'Không có bài nào được thêm trong khoảng này';
+
+  @override
+  String get homeRecentAlbumsEmpty => 'Chưa nghe album nào';
+
+  @override
+  String get homeRecentArtistsEmpty => 'Chưa nghe nghệ sĩ nào';
+
+  @override
+  String get homeLoadFailed => 'Không đọc được danh sách';
+
+  @override
+  String get homeRetry => 'Thử lại';
 }

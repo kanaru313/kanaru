@@ -2495,4 +2495,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String inPageSearchTooMany(int count) {
     return 'Showing the first $count songs. Type more to narrow it down.';
   }
+
+  @override
+  String get homeRecentlyPlayedTitle => 'Recently played';
+
+  @override
+  String get homeRecentlyAddedTitle => 'Recently added';
+
+  @override
+  String get homeMemoriesTitle => 'Lost memories';
+
+  @override
+  String get homeRecentAlbumsTitle => 'Recent albums';
+
+  @override
+  String get homeRecentArtistsTitle => 'Recent artists';
+
+  @override
+  String get homeMemoriesEmpty => 'No music from this time last year';
+
+  @override
+  String get homeAddedWindowAll => 'All';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String get homeScrollBack => 'Scroll back';
+
+  @override
+  String get homeScrollForward => 'Scroll forward';
+
+  @override
+  String homeAddedWindowDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeRecentlyAddedEmpty => 'No songs were added in this period';
+
+  @override
+  String get homeRecentAlbumsEmpty => 'No albums played yet';
+
+  @override
+  String get homeRecentArtistsEmpty => 'No artists played yet';
+
+  @override
+  String get homeLoadFailed => 'Could not load the list';
+
+  @override
+  String get homeRetry => 'Retry';
 }

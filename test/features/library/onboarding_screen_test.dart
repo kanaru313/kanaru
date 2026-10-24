@@ -133,7 +133,8 @@ void main() {
     h.container.read(routerProvider).go('/welcome');
     await tester.pumpAndSettle();
     expect(find.byType(OnboardingScreen), findsNothing);
-    expect(find.text('Your library is empty'), findsOneWidget);
+    // Home, with the scanned song in its library.
+    expect(find.text('Recently played'), findsOneWidget);
   });
 
   testWidgets('a rejected folder keeps the screen open', (tester) async {

@@ -3667,6 +3667,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Showing the first {count} songs. Type more to narrow it down.'**
   String inPageSearchTooMany(int count);
+
+  /// Title of the recently played section on Home
+  ///
+  /// In en, this message translates to:
+  /// **'Recently played'**
+  String get homeRecentlyPlayedTitle;
+
+  /// Title of the recently added section on Home
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get homeRecentlyAddedTitle;
+
+  /// Title of the section with songs played around this date last year
+  ///
+  /// In en, this message translates to:
+  /// **'Lost memories'**
+  String get homeMemoriesTitle;
+
+  /// Title of the recent albums section on Home
+  ///
+  /// In en, this message translates to:
+  /// **'Recent albums'**
+  String get homeRecentAlbumsTitle;
+
+  /// Title of the recent artists section on Home
+  ///
+  /// In en, this message translates to:
+  /// **'Recent artists'**
+  String get homeRecentArtistsTitle;
+
+  /// Shown when no song was played around this date last year
+  ///
+  /// In en, this message translates to:
+  /// **'No music from this time last year'**
+  String get homeMemoriesEmpty;
+
+  /// Chip that shows every added song, whatever its age
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get homeAddedWindowAll;
+
+  /// Tooltip of the button beside a Home section title
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get homeSeeAll;
+
+  /// Tooltip of the left arrow on a Home row
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll back'**
+  String get homeScrollBack;
+
+  /// Tooltip of the right arrow on a Home row
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll forward'**
+  String get homeScrollForward;
+
+  /// Chip that shows songs added in the last N days
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String homeAddedWindowDays(int count);
+
+  /// Shown on the full recently added list when no song was added in the chosen period
+  ///
+  /// In en, this message translates to:
+  /// **'No songs were added in this period'**
+  String get homeRecentlyAddedEmpty;
+
+  /// Shown on the full recent albums list when no album was played
+  ///
+  /// In en, this message translates to:
+  /// **'No albums played yet'**
+  String get homeRecentAlbumsEmpty;
+
+  /// Shown on the full recent artists list when no artist was played
+  ///
+  /// In en, this message translates to:
+  /// **'No artists played yet'**
+  String get homeRecentArtistsEmpty;
+
+  /// Shown on a full Home list when a page could not be read
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the list'**
+  String get homeLoadFailed;
+
+  /// Text button under the failure sentence of a full Home list that reads the list again
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get homeRetry;
 }
 
 class _AppLocalizationsDelegate

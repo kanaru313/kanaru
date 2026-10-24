@@ -22,6 +22,12 @@ final _results = find
     )
     .first;
 
+/// A song result row's title, not a Home card behind the search page.
+Finder _resultSong(String title) => find.descendant(
+  of: find.byType(SongTile),
+  matching: find.text(title, skipOffstage: false),
+);
+
 void main() {
   testWidgets('groups matching songs, albums and artists', (tester) async {
     final h = LibraryHarness();
@@ -62,7 +68,7 @@ void main() {
     await openSearch(tester, h, 'song', tracks: tracks);
 
     expect(find.text('Song 17'), findsOneWidget);
-    expect(find.text('Song 18', skipOffstage: false), findsNothing);
+    expect(_resultSong('Song 18'), findsNothing);
     expect(find.text('Show all (12)'), findsOneWidget);
 
     await tester.tap(find.text('Show all (12)'));
@@ -84,7 +90,7 @@ void main() {
     // The toggle keeps the same button, so keyboard focus stays on it.
     await tester.tap(find.text('Show less'));
     await tester.pumpAndSettle();
-    expect(find.text('Song 21', skipOffstage: false), findsNothing);
+    expect(_resultSong('Song 21'), findsNothing);
     expect(find.text('Show all (12)'), findsOneWidget);
     await tester.tap(find.text('Show all (12)'));
     await tester.pumpAndSettle();
@@ -92,7 +98,7 @@ void main() {
     goTo(tester, h, '/search?q=song+1');
     await tester.pumpAndSettle();
     // "song 1" matches ten songs but starts collapsed.
-    expect(find.text('Song 18', skipOffstage: false), findsNothing);
+    expect(_resultSong('Song 18'), findsNothing);
     expect(find.text('Show all (10)'), findsOneWidget);
   });
 

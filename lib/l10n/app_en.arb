@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "appTitle": "Kanaru",
-
   "navHome": "Home",
   "navSongs": "Songs",
   "navAlbums": "Albums",
@@ -11,7 +10,6 @@
   "navHistory": "History",
   "navSearch": "Search",
   "navSettings": "Settings",
-
   "sidebarPlaylists": "Playlists",
   "sidebarNoPlaylists": "No playlists yet",
   "sidebarNewPlaylist": "New playlist",
@@ -19,7 +17,6 @@
   "sidebarCollapse": "Collapse",
   "sidebarShrink": "Collapse sidebar",
   "sidebarGrow": "Expand sidebar",
-
   "playlistDefaultName": "New playlist",
   "playlistCreateTitle": "New playlist",
   "playlistCreateConfirm": "Create",
@@ -30,13 +27,17 @@
   "playlistDeleteTitle": "Delete “{name}”?",
   "@playlistDeleteTitle": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "playlistDeleteBody": "{count, plural, =0{It has no songs.} =1{It has 1 song.} other{It has {count} songs.}} The songs stay in your library.",
   "@playlistDeleteBody": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "playlistDeleteConfirm": "Delete",
@@ -44,7 +45,9 @@
   "playlistTrackCount": "{count, plural, =0{No songs} =1{1 song} other{{count} songs}}",
   "@playlistTrackCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "playlistEmptyTitle": "This playlist is empty",
@@ -61,42 +64,52 @@
   "playlistAdded": "Added to {playlist}: {name}",
   "@playlistAdded": {
     "placeholders": {
-      "name": { "type": "String" },
-      "playlist": { "type": "String" }
+      "name": {
+        "type": "String"
+      },
+      "playlist": {
+        "type": "String"
+      }
     }
   },
   "playlistAddedSkipped": "{added, plural, =1{Added 1 song to {playlist}} other{Added {added} songs to {playlist}}}, {skipped, plural, =1{1 was already there} other{{skipped} were already there}}",
   "@playlistAddedSkipped": {
     "placeholders": {
-      "added": { "type": "int" },
-      "skipped": { "type": "int" },
-      "playlist": { "type": "String" }
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      },
+      "playlist": {
+        "type": "String"
+      }
     }
   },
   "playlistAlreadyIn": "Already in {playlist}: {name}",
   "@playlistAlreadyIn": {
     "placeholders": {
-      "name": { "type": "String" },
-      "playlist": { "type": "String" }
+      "name": {
+        "type": "String"
+      },
+      "playlist": {
+        "type": "String"
+      }
     }
   },
   "playlistSaveFailed": "Couldn't save the playlist. See the log for details.",
   "playlistTrackNotInLibrary": "This song isn't in your library, so it can't go in a playlist.",
-
   "topBarBack": "Back",
   "topBarForward": "Forward",
   "topBarSearchHint": "Search songs, albums, artists",
-
   "windowMinimize": "Minimize",
   "windowMaximize": "Maximize",
   "windowRestore": "Restore",
   "windowClose": "Close",
-
   "homeGreetingMorning": "Good morning",
   "homeGreetingAfternoon": "Good afternoon",
   "homeGreetingEvening": "Good evening",
   "homeSubtitle": "Pick up where the music left off",
-
   "libraryEmptyTitle": "Your library is empty",
   "libraryEmptyMessage": "Add a music folder to start building your library.",
   "onboardingTitle": "Welcome to Kanaru",
@@ -107,7 +120,6 @@
   "onboardingRemoveFolder": "Remove",
   "onboardingLater": "Later",
   "onboardingStart": "Start",
-
   "libraryUnavailableTitle": "Couldn't open the library",
   "libraryUnavailableMessage": "Playback still works. The log has the details.",
   "libraryChooseFolder": "Choose music folder",
@@ -128,23 +140,41 @@
   "libraryKeysUpdatingProgress": "{done} / {total}",
   "@libraryKeysUpdatingProgress": {
     "placeholders": {
-      "done": { "type": "int", "format": "decimalPattern" },
-      "total": { "type": "int", "format": "decimalPattern" }
+      "done": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "libraryCoverProgress": "Making covers… {done} / {total}",
   "@libraryCoverProgress": {
     "placeholders": {
-      "done": { "type": "int", "format": "decimalPattern" },
-      "total": { "type": "int", "format": "decimalPattern" }
+      "done": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "libraryScanDiscovering": "Looking for music files…",
   "libraryScanReading": "Reading tags {done} / {total}",
   "@libraryScanReading": {
     "placeholders": {
-      "done": { "type": "int", "format": "decimalPattern" },
-      "total": { "type": "int", "format": "decimalPattern" }
+      "done": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "libraryScanDoneTitle": "Scan complete",
@@ -154,100 +184,134 @@
   "libraryScanAdded": "{count} new",
   "@libraryScanAdded": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "libraryScanUpdated": "{count} updated",
   "@libraryScanUpdated": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "libraryScanRemoved": "{count} removed",
   "@libraryScanRemoved": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "libraryScanFailedTags": "{count, plural, one{1 file couldn't be read} other{{count} files couldn't be read}}",
   "@libraryScanFailedTags": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "libraryScanUndecodableNames": "{count, plural, one{1 file or folder skipped: its name is not valid UTF-8} other{{count} files or folders skipped: names are not valid UTF-8}}",
   "@libraryScanUndecodableNames": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "libraryScanRootMissing": "{path} was not found",
   "@libraryScanRootMissing": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryMissingRoots": "{count, plural, =1{Music folder not found: {path}} other{{count} music folders not found}}",
   "@libraryMissingRoots": {
     "placeholders": {
-      "count": { "type": "int" },
-      "path": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryMissingRootsAction": "Settings",
   "libraryScanRootEmpty": "{path} is empty, library kept as it was",
   "@libraryScanRootEmpty": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryScanRootTimedOut": "{path} took too long, stopped. If the folder was still being read, the scan finishes by itself when it is done",
   "@libraryScanRootTimedOut": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryScanRootReaderStuck": "{path} was not read: an earlier read is still running. It is tried again automatically when that read finishes; if it never does, restart Kanaru",
   "@libraryScanRootReaderStuck": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryRootNotFound": "{path} was not found",
   "@libraryRootNotFound": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryRootNotDirectory": "{path} is not a folder",
   "@libraryRootNotDirectory": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryRootDuplicate": "{path} is already added",
   "@libraryRootDuplicate": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryRootNested": "{path} overlaps a folder that is already added",
   "@libraryRootNested": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryRootUnavailable": "The library is not available",
   "libraryRootTooBroad": "{path} is too broad to be a music folder",
   "@libraryRootTooBroad": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryRootWriteFailed": "Couldn't save {path}. See the log for details.",
   "@libraryRootWriteFailed": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "libraryUnexpectedError": "Something went wrong. See the log for details.",
@@ -260,22 +324,27 @@
   "queuePlayingNext": "Playing next: {name}",
   "@queuePlayingNext": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "queuePlaying": "Playing: {name}",
   "@queuePlaying": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "queueAddedToQueue": "Added to queue: {name}",
   "@queueAddedToQueue": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
-
   "sortBy": "Sort by:",
   "sortOrder": "Order:",
   "sortAscending": "Ascending",
@@ -289,7 +358,6 @@
   "sortName": "Name",
   "sortSongCount": "Songs",
   "sortAlbumCount": "Albums",
-
   "albumsGridView": "Grid",
   "albumsListView": "List",
   "albumsNoRootsMessage": "Add a music folder in Songs.",
@@ -299,27 +367,32 @@
   "albumsSongCount": "{count, plural, =1{1 song} other{{count} songs}}",
   "@albumsSongCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "albumsPlay": "Play",
   "albumsDisc": "Disc {number}",
   "@albumsDisc": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "albumsUnknownDisc": "Unknown disc",
   "albumsNotFound": "Album not found",
   "albumsNotFoundMessage": "It may have been removed or renamed by a rescan.",
-
   "artistsNoRootsMessage": "Add a music folder in Songs.",
   "artistsEmptyTitle": "No artists yet",
   "artistsEmptyMessage": "Songs with an artist tag show up here by artist.",
   "artistsAlbumCount": "{count, plural, =1{1 album} other{{count} albums}}",
   "@artistsAlbumCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "artistsAlbums": "Albums",
@@ -328,7 +401,6 @@
   "artistsPlay": "Play",
   "artistsNotFound": "Artist not found",
   "artistsNotFoundMessage": "Their songs may have been removed or retagged.",
-
   "genresTitle": "Genres",
   "genresNoRootsMessage": "Add a music folder in Songs.",
   "genresEmptyTitle": "No genres yet",
@@ -337,7 +409,6 @@
   "genresSongs": "Songs",
   "genresNotFound": "Genre not found",
   "genresNotFoundMessage": "Its songs may have been removed or retagged.",
-
   "foldersEmptyTitle": "No folders yet",
   "foldersEmptyMessage": "Folders with songs show up here.",
   "foldersNoRootsMessage": "Add a music folder in Songs.",
@@ -350,33 +421,43 @@
   "foldersCounts": "{songs, plural, =1{1 song} other{{songs} songs}}, {folders, plural, =0{no subfolders} =1{1 subfolder} other{{folders} subfolders}}",
   "@foldersCounts": {
     "placeholders": {
-      "songs": { "type": "int" },
-      "folders": { "type": "int" }
+      "songs": {
+        "type": "int"
+      },
+      "folders": {
+        "type": "int"
+      }
     }
   },
   "foldersCreatePlaylist": "Create playlist",
   "foldersEmptyFolder": "No songs in this folder",
-
   "favoritesEmptyMessage": "Songs you like will show up here.",
-
   "searchEmptyTitle": "Search your library",
   "searchEmptyMessage": "Find songs, albums and artists.",
   "searchResultsTitle": "Results for “{query}”",
   "@searchResultsTitle": {
     "placeholders": {
-      "query": { "type": "String" }
+      "query": {
+        "type": "String"
+      }
     }
   },
   "searchShowAll": "Show all ({count})",
   "@searchShowAll": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "searchShowTop": "Show top {count}",
   "@searchShowTop": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "searchShowLess": "Show less",
@@ -385,21 +466,30 @@
   "searchNoResultsMessage": "Nothing matches “{query}”. Try fewer or shorter words.",
   "@searchNoResultsMessage": {
     "placeholders": {
-      "query": { "type": "String" }
+      "query": {
+        "type": "String"
+      }
     }
   },
   "searchMoreSongs": "Showing the top {shown} of {total} songs. Add words to narrow it down.",
   "@searchMoreSongs": {
     "placeholders": {
-      "shown": { "type": "int", "format": "decimalPattern" },
-      "total": { "type": "int", "format": "decimalPattern" }
+      "shown": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
-
   "searchNoResultsNarrowFields": "Nothing matches “{query}” in the chosen fields. Try turning on more search fields.",
   "@searchNoResultsNarrowFields": {
     "placeholders": {
-      "query": { "type": "String" }
+      "query": {
+        "type": "String"
+      }
     }
   },
   "searchFieldsButton": "Search fields",
@@ -416,17 +506,20 @@
   "searchCorrectedResultsFor": "Results for “{query}”",
   "@searchCorrectedResultsFor": {
     "placeholders": {
-      "query": { "type": "String" }
+      "query": {
+        "type": "String"
+      }
     }
   },
   "searchHistoryTitle": "Recent searches",
   "searchHistoryRemove": "Remove from history",
   "searchHistoryClearAll": "Clear all",
-
   "playerPlaybackError": "Couldn't play {title}",
   "@playerPlaybackError": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "playerPlay": "Play",
@@ -441,7 +534,6 @@
   "playerUnmute": "Unmute",
   "playerVolume": "Volume",
   "playerSeek": "Seek",
-
   "nowPlayingOpen": "Open Now Playing",
   "nowPlayingClose": "Close Now Playing",
   "nowPlayingFavorite": "Add to favorites",
@@ -455,7 +547,9 @@
   "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",
   "@queueTrackCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "queueClear": "Clear queue",
@@ -463,7 +557,6 @@
   "queueReorder": "Drag to reorder",
   "queueShowCurrent": "Jump to current song",
   "queueClose": "Close now playing list",
-
   "settingsLibrary": "Library",
   "settingsRescanLibrary": "Rescan library",
   "settingsFolders": "Music folders",
@@ -474,14 +567,18 @@
   "settingsRemoveFolderBody": "{count, plural, =0{No songs will leave the library.} =1{1 song will leave the library.} other{{count} songs will leave the library.}} Files on disk are not deleted.",
   "@settingsRemoveFolderBody": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "settingsRemoveFolderConfirm": "Remove",
   "settingsRemoveFolderFailed": "Couldn't remove {path}. See the log for details.",
   "@settingsRemoveFolderFailed": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "settingsRescanOnStartup": "Rescan when Kanaru opens",
@@ -500,7 +597,9 @@
   "settingsReadOnly": "Settings can't be saved this session ({path})",
   "@settingsReadOnly": {
     "placeholders": {
-      "path": { "type": "String" }
+      "path": {
+        "type": "String"
+      }
     }
   },
   "settingsAbout": "About",
@@ -510,32 +609,46 @@
   "settingsOpenFailed": "Couldn't open {target}",
   "@settingsOpenFailed": {
     "placeholders": {
-      "target": { "type": "String" }
+      "target": {
+        "type": "String"
+      }
     }
   },
   "settingsLibraryStats": "In your library",
   "settingsStatsTracks": "{count, plural, =1{{count} track} other{{count} tracks}}",
   "@settingsStatsTracks": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsStatsAlbums": "{count, plural, =1{{count} album} other{{count} albums}}",
   "@settingsStatsAlbums": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsStatsArtists": "{count, plural, =1{{count} artist} other{{count} artists}}",
   "@settingsStatsArtists": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsStatsGenres": "{count, plural, =1{{count} genre} other{{count} genres}}",
   "@settingsStatsGenres": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsOpenLogFolder": "Log files",
@@ -548,37 +661,55 @@
   "settingsUnitKb": "{count} KB",
   "@settingsUnitKb": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsUnitMb": "{value} MB",
   "@settingsUnitMb": {
     "placeholders": {
-      "value": { "type": "double", "format": "decimalPattern" }
+      "value": {
+        "type": "double",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsUnitSeconds": "{count} s",
   "@settingsUnitSeconds": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsUnitMs": "{count} ms",
   "@settingsUnitMs": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsUnitMinutes": "{count} min",
   "@settingsUnitMinutes": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsUnitPercent": "{count}%",
   "@settingsUnitPercent": {
     "placeholders": {
-      "count": { "type": "int", "format": "decimalPattern" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
     }
   },
   "settingsAnimations": "Animations",
@@ -646,7 +777,9 @@
   "listenHistoryCleared": "{count, plural, =0{Listen history cleared} =1{Listen history cleared (1 listen)} other{Listen history cleared ({count} listens)}}",
   "@listenHistoryCleared": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "listenHistoryClearFailed": "Could not clear listen history",
@@ -657,7 +790,9 @@
   "audioDeviceMissing": "{name} — not available, using Automatic",
   "@audioDeviceMissing": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "audioDeviceDialogTitle": "Output device",
@@ -666,7 +801,9 @@
   "audioDeviceFailed": "{name} — could not be opened, using Automatic",
   "@audioDeviceFailed": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "audioDeviceChange": "Change",
@@ -681,559 +818,1210 @@
   "settingsAudioDecibels": "{value} dB",
   "@settingsAudioDecibels": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "settingsAudioPreventClipping": "Prevent clipping",
   "settingsAudioPreventClippingHint": "Lower the gain when a boost would distort the loudest peaks.",
   "excludedFoldersTitle": "Excluded folders",
-  "@excludedFoldersTitle": { "description": "Title of the excluded folders setting" },
+  "@excludedFoldersTitle": {
+    "description": "Title of the excluded folders setting"
+  },
   "excludedFoldersHint": "Folders inside your music folders that Kanaru skips. Songs in them leave the library. Files are never deleted.",
-  "@excludedFoldersHint": { "description": "Explains what excluding a folder does" },
+  "@excludedFoldersHint": {
+    "description": "Explains what excluding a folder does"
+  },
   "excludedFoldersAdd": "Exclude folder",
-  "@excludedFoldersAdd": { "description": "Button that picks a folder to exclude" },
+  "@excludedFoldersAdd": {
+    "description": "Button that picks a folder to exclude"
+  },
   "excludedFoldersRemove": "Stop excluding",
-  "@excludedFoldersRemove": { "description": "Tooltip of the button that stops excluding a folder" },
+  "@excludedFoldersRemove": {
+    "description": "Tooltip of the button that stops excluding a folder"
+  },
   "excludedFoldersNotInLibrary": "Not inside a music folder, so it has no effect",
-  "@excludedFoldersNotInLibrary": { "description": "Note on an excluded folder that is not below any library folder" },
+  "@excludedFoldersNotInLibrary": {
+    "description": "Note on an excluded folder that is not below any library folder"
+  },
   "excludedFoldersMissing": "Folder not found",
-  "@excludedFoldersMissing": { "description": "Note on an excluded folder that no longer exists" },
+  "@excludedFoldersMissing": {
+    "description": "Note on an excluded folder that no longer exists"
+  },
   "excludedFoldersSameAsRoot": "That is a music folder. Remove it from the folders above instead.",
-  "@excludedFoldersSameAsRoot": { "description": "Shown when the folder to exclude is a library folder" },
+  "@excludedFoldersSameAsRoot": {
+    "description": "Shown when the folder to exclude is a library folder"
+  },
   "excludedFoldersOutsideLibrary": "That folder is not inside a music folder.",
-  "@excludedFoldersOutsideLibrary": { "description": "Shown when the folder to exclude is not below a library folder" },
+  "@excludedFoldersOutsideLibrary": {
+    "description": "Shown when the folder to exclude is not below a library folder"
+  },
   "excludedFoldersAlreadyExcluded": "That folder is already excluded.",
-  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" },
+  "@excludedFoldersAlreadyExcluded": {
+    "description": "Shown when the folder is already excluded"
+  },
   "settingsWatchFolders": "Watch music folders",
-  "@settingsWatchFolders": { "description": "Title of the switch that makes Kanaru rescan by itself when files in the music folders change" },
+  "@settingsWatchFolders": {
+    "description": "Title of the switch that makes Kanaru rescan by itself when files in the music folders change"
+  },
   "settingsWatchFoldersHint": "Pick up added, changed and removed files while Kanaru runs, a few seconds after they stop changing",
-  "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
+  "@settingsWatchFoldersHint": {
+    "description": "Subtitle of the watch music folders switch"
+  },
   "settingsWatchFoldersLimit": "Too many folders to watch on this system. Raise fs.inotify.max_user_watches, or use Rescan.",
-  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" },
+  "@settingsWatchFoldersLimit": {
+    "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)"
+  },
   "historyEmptyMessage": "Songs you play will show up here.",
-  "@historyEmptyMessage": { "description": "Message of the History page when nothing was played yet" },
+  "@historyEmptyMessage": {
+    "description": "Message of the History page when nothing was played yet"
+  },
   "historyToday": "Today",
-  "@historyToday": { "description": "Header of the History day that is today" },
+  "@historyToday": {
+    "description": "Header of the History day that is today"
+  },
   "historyYesterday": "Yesterday",
-  "@historyYesterday": { "description": "Header of the History day that is yesterday" },
+  "@historyYesterday": {
+    "description": "Header of the History day that is yesterday"
+  },
   "historyDayPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
   "@historyDayPlayCount": {
     "description": "How many plays a History day holds",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyNthPlay": "#{n}",
   "@historyNthPlay": {
     "description": "Badge on a History row: this is the Nth time the song was played",
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "historyNthPlayLabel": "Listen number {n}",
   "@historyNthPlayLabel": {
     "description": "Tooltip and screen reader text of the Nth play badge",
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "historyTrackMissing": "Not in library",
-  "@historyTrackMissing": { "description": "Note on a History row whose file is no longer in the library" },
+  "@historyTrackMissing": {
+    "description": "Note on a History row whose file is no longer in the library"
+  },
   "historyDeletePlay": "Remove from history",
-  "@historyDeletePlay": { "description": "Menu item that removes one play from the History" },
+  "@historyDeletePlay": {
+    "description": "Menu item that removes one play from the History"
+  },
   "historyPlayDeleted": "Removed one listen from history",
-  "@historyPlayDeleted": { "description": "Snackbar after one play was removed from the History" },
+  "@historyPlayDeleted": {
+    "description": "Snackbar after one play was removed from the History"
+  },
   "historyUndo": "Undo",
-  "@historyUndo": { "description": "Snackbar action that puts a removed play back" },
+  "@historyUndo": {
+    "description": "Snackbar action that puts a removed play back"
+  },
   "historyDeleteFailed": "Couldn't remove the listen. See the log for details.",
-  "@historyDeleteFailed": { "description": "Snackbar when removing a play failed" },
+  "@historyDeleteFailed": {
+    "description": "Snackbar when removing a play failed"
+  },
   "historyRestoreFailed": "Couldn't restore the listen. See the log for details.",
-  "@historyRestoreFailed": { "description": "Snackbar when undoing a removal failed" },
+  "@historyRestoreFailed": {
+    "description": "Snackbar when undoing a removal failed"
+  },
   "historyCalendar": "Jump to a day",
-  "@historyCalendar": { "description": "Tooltip of the button that opens the History calendar" },
+  "@historyCalendar": {
+    "description": "Tooltip of the button that opens the History calendar"
+  },
   "historyRecordingOff": "Recording listen history is turned off",
-  "@historyRecordingOff": { "description": "Note on the empty History page when recording is off in Settings" },
+  "@historyRecordingOff": {
+    "description": "Note on the empty History page when recording is off in Settings"
+  },
   "historyUnavailable": "History is not available",
-  "@historyUnavailable": { "description": "Title of the History page when there is no library database" },
+  "@historyUnavailable": {
+    "description": "Title of the History page when there is no library database"
+  },
   "historyLoadFailed": "Couldn't read the history. See the log for details.",
-  "@historyLoadFailed": { "description": "Message of the History page when reading it failed" },
+  "@historyLoadFailed": {
+    "description": "Message of the History page when reading it failed"
+  },
   "historyMore": "More",
-  "@historyMore": { "description": "Tooltip of the more button on a History row" },
+  "@historyMore": {
+    "description": "Tooltip of the more button on a History row"
+  },
   "historyOlderYear": "Show {year}",
   "@historyOlderYear": {
     "description": "Last row of the History list: switches to an older year",
-    "placeholders": { "year": { "type": "int" } }
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
   },
   "historyTabTimeline": "Journal",
-  "@historyTabTimeline": { "description": "Tab of the History page that lists every play by day" },
+  "@historyTabTimeline": {
+    "description": "Tab of the History page that lists every play by day"
+  },
   "historyTabTop": "Most played",
-  "@historyTabTop": { "description": "Tab of the History page that ranks songs by plays in a date range" },
+  "@historyTabTop": {
+    "description": "Tab of the History page that ranks songs by plays in a date range"
+  },
   "historyRangeToday": "Today",
-  "@historyRangeToday": { "description": "Most played range chip and label for the current day" },
+  "@historyRangeToday": {
+    "description": "Most played range chip and label for the current day"
+  },
   "historyRange7Days": "7 days",
-  "@historyRange7Days": { "description": "Most played range chip: the last 7 days" },
+  "@historyRange7Days": {
+    "description": "Most played range chip: the last 7 days"
+  },
   "historyRange30Days": "30 days",
-  "@historyRange30Days": { "description": "Most played range chip: the last 30 days" },
+  "@historyRange30Days": {
+    "description": "Most played range chip: the last 30 days"
+  },
   "historyRange6Months": "6 months",
-  "@historyRange6Months": { "description": "Most played range chip: the last 6 months" },
+  "@historyRange6Months": {
+    "description": "Most played range chip: the last 6 months"
+  },
   "historyRangeYear": "1 year",
-  "@historyRangeYear": { "description": "Most played range chip: the last 12 months" },
+  "@historyRangeYear": {
+    "description": "Most played range chip: the last 12 months"
+  },
   "historyRangeAll": "All time",
-  "@historyRangeAll": { "description": "Most played range chip and label for the whole history" },
+  "@historyRangeAll": {
+    "description": "Most played range chip and label for the whole history"
+  },
   "historyRangeCustom": "Custom",
-  "@historyRangeCustom": { "description": "Most played range chip that opens the date range picker" },
+  "@historyRangeCustom": {
+    "description": "Most played range chip that opens the date range picker"
+  },
   "historyRangePrevious": "Previous period",
-  "@historyRangePrevious": { "description": "Tooltip of the button that moves the Most played range back" },
+  "@historyRangePrevious": {
+    "description": "Tooltip of the button that moves the Most played range back"
+  },
   "historyRangeNext": "Next period",
-  "@historyRangeNext": { "description": "Tooltip of the button that moves the Most played range forward" },
+  "@historyRangeNext": {
+    "description": "Tooltip of the button that moves the Most played range forward"
+  },
   "historyRangeLabel": "{start} – {end}",
   "@historyRangeLabel": {
     "description": "First and last day of the Most played range",
-    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
   },
   "historyTopPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
   "@historyTopPlayCount": {
     "description": "Plays of a song on a Most played row",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyTopCapped": "Showing first {count}",
   "@historyTopCapped": {
     "description": "Note under the Most played list when it was cut at its limit",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyPlayAll": "Play all",
-  "@historyPlayAll": { "description": "Button that plays the Most played list from the top" },
+  "@historyPlayAll": {
+    "description": "Button that plays the Most played list from the top"
+  },
   "historyCreatePlaylist": "Create playlist",
-  "@historyCreatePlaylist": { "description": "Button that saves the Most played list as a playlist" },
+  "@historyCreatePlaylist": {
+    "description": "Button that saves the Most played list as a playlist"
+  },
   "historyTopPlaylistName": "Most played · {range}",
   "@historyTopPlaylistName": {
     "description": "Suggested name of a playlist made from the Most played list",
-    "placeholders": { "range": { "type": "String" } }
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
   },
   "historyPlaylistCreated": "Created playlist {name}",
   "@historyPlaylistCreated": {
     "description": "Snackbar after a playlist was made from the Most played list",
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "historyTopEmpty": "No listens in this range",
-  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" },
+  "@historyTopEmpty": {
+    "description": "Message of the Most played tab when the range has no plays"
+  },
   "historyShowTrackHistory": "Song history",
-  "@historyShowTrackHistory": { "description": "Row menu item that opens the history page of a song" },
+  "@historyShowTrackHistory": {
+    "description": "Row menu item that opens the history page of a song"
+  },
   "historyTrackTitle": "Song history",
-  "@historyTrackTitle": { "description": "Title of the song history page when no song is named" },
+  "@historyTrackTitle": {
+    "description": "Title of the song history page when no song is named"
+  },
   "historyTrackStats": "{count, plural, =1{1 listen} other{{count} listens}}",
   "@historyTrackStats": {
     "description": "Number of plays of a song in the header of its history page",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyTrackFirst": "First {date}",
   "@historyTrackFirst": {
     "description": "Day of the first play in the header of a song history page",
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "historyTrackLast": "Last {date}",
   "@historyTrackLast": {
     "description": "Day and time of the latest play in the header of a song history page",
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "historyListened": "listened {duration}",
   "@historyListened": {
     "description": "How long a play was listened to, on a row of the song history page",
-    "placeholders": { "duration": { "type": "String" } }
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
   },
   "historyTrackNoPlays": "No listens yet",
-  "@historyTrackNoPlays": { "description": "Message of the song history page when the song has no plays" },
+  "@historyTrackNoPlays": {
+    "description": "Message of the song history page when the song has no plays"
+  },
   "historyTrackNotFound": "Song not found",
-  "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
+  "@historyTrackNotFound": {
+    "description": "Message of the song history page opened without a song"
+  },
   "historyPlay": "Play",
-  "@historyPlay": { "description": "Button on the song history page that plays the song" },
+  "@historyPlay": {
+    "description": "Button on the song history page that plays the song"
+  },
   "favoritesRemove": "Remove from favorites",
-  "@favoritesRemove": { "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites" },
+  "@favoritesRemove": {
+    "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites"
+  },
   "favoritesAdded": "Added to Favorites",
-  "@favoritesAdded": { "description": "Snackbar after liking a song from its menu" },
+  "@favoritesAdded": {
+    "description": "Snackbar after liking a song from its menu"
+  },
   "favoritesRemoved": "Removed from Favorites",
-  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" },
+  "@favoritesRemoved": {
+    "description": "Snackbar after unliking a song from its menu"
+  },
   "playlistM3uImport": "Import M3U…",
-  "@playlistM3uImport": { "description": "Button on the playlists page that imports an M3U playlist file" },
+  "@playlistM3uImport": {
+    "description": "Button on the playlists page that imports an M3U playlist file"
+  },
   "playlistM3uAllFiles": "All files",
-  "@playlistM3uAllFiles": { "description": "File type filter of the M3U file picker that shows every file" },
+  "@playlistM3uAllFiles": {
+    "description": "File type filter of the M3U file picker that shows every file"
+  },
   "playlistM3uImporting": "Importing playlist…",
-  "@playlistM3uImporting": { "description": "Progress dialog while an M3U file is imported" },
+  "@playlistM3uImporting": {
+    "description": "Progress dialog while an M3U file is imported"
+  },
   "playlistM3uImported": "{count, plural, =1{Imported 1 song into {name}} other{Imported {count} songs into {name}}}",
   "@playlistM3uImported": {
     "description": "Snackbar after a clean M3U import",
-    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uImportedNotInLibrary": "{count, plural, =1{1 is not in your library yet} other{{count} are not in your library yet}}",
   "@playlistM3uImportedNotInLibrary": {
     "description": "Added after the import snackbar when some imported files are not library songs yet",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportTitle": "Playlist imported",
-  "@playlistM3uImportReportTitle": { "description": "Title of the dialog that reports an M3U import" },
+  "@playlistM3uImportReportTitle": {
+    "description": "Title of the dialog that reports an M3U import"
+  },
   "playlistM3uImportReportSummary": "Added {added} of {total} lines.",
   "@playlistM3uImportReportSummary": {
     "description": "First line of the M3U import report",
-    "placeholders": { "added": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportNotInLibrary": "{count, plural, =1{1 song is not in your library yet: it shows once its folder is added.} other{{count} songs are not in your library yet: they show once their folder is added.}}",
   "@playlistM3uImportReportNotInLibrary": {
     "description": "M3U import report: files that exist but are not library songs",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportDuplicates": "{count, plural, =1{1 repeated line was merged.} other{{count} repeated lines were merged.}}",
   "@playlistM3uImportReportDuplicates": {
     "description": "M3U import report: lines naming a file already imported",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportUnresolved": "{count, plural, =1{1 line is not a local music file or was not found:} other{{count} lines are not local music files or were not found:}}",
   "@playlistM3uImportReportUnresolved": {
     "description": "M3U import report: heading of the lines that could not be used",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportTruncated": "Only the first {limit} songs were read.",
   "@playlistM3uImportReportTruncated": {
     "description": "M3U import report: the file had more lines than the limit",
-    "placeholders": { "limit": { "type": "int" } }
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportLine": "Line {line}: {text}",
   "@playlistM3uImportReportLine": {
     "description": "M3U import report: one unused line with its line number",
-    "placeholders": { "line": { "type": "int" }, "text": { "type": "String" } }
+    "placeholders": {
+      "line": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uImportReportMore": "{count, plural, =1{and 1 more line} other{and {count} more lines}}",
   "@playlistM3uImportReportMore": {
     "description": "M3U import report: unused lines not listed",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportNothingFound": "No local music file of this playlist was found. Nothing was imported.",
-  "@playlistM3uImportNothingFound": { "description": "M3U import report when no line could be used" },
+  "@playlistM3uImportNothingFound": {
+    "description": "M3U import report when no line could be used"
+  },
   "playlistM3uImportTooLarge": "That file is too large to be a playlist.",
-  "@playlistM3uImportTooLarge": { "description": "Snackbar when the picked M3U file is over the size limit" },
+  "@playlistM3uImportTooLarge": {
+    "description": "Snackbar when the picked M3U file is over the size limit"
+  },
   "playlistM3uImportFailed": "Couldn't read that playlist file. See the log for details.",
-  "@playlistM3uImportFailed": { "description": "Snackbar when the picked M3U file cannot be read" },
+  "@playlistM3uImportFailed": {
+    "description": "Snackbar when the picked M3U file cannot be read"
+  },
   "playlistM3uExportAbsolute": "Export M3U (full paths)…",
-  "@playlistM3uExportAbsolute": { "description": "Playlist menu item: save as M3U with absolute paths" },
+  "@playlistM3uExportAbsolute": {
+    "description": "Playlist menu item: save as M3U with absolute paths"
+  },
   "playlistM3uExportRelative": "Export M3U (relative paths)…",
-  "@playlistM3uExportRelative": { "description": "Playlist menu item: save as M3U with paths relative to the file" },
+  "@playlistM3uExportRelative": {
+    "description": "Playlist menu item: save as M3U with paths relative to the file"
+  },
   "playlistM3uExported": "{count, plural, =1{Saved 1 song to {file}} other{Saved {count} songs to {file}}}",
   "@playlistM3uExported": {
     "description": "Snackbar after exporting a playlist",
-    "placeholders": { "count": { "type": "int" }, "file": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "file": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uExportSkipped": "{count, plural, =1{1 path with a line break was left out} other{{count} paths with line breaks were left out}}",
   "@playlistM3uExportSkipped": {
     "description": "Added to the export snackbar when some paths cannot be written as M3U lines",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uExportFailed": "Couldn't save the playlist file. See the log for details.",
-  "@playlistM3uExportFailed": { "description": "Snackbar when writing the M3U file failed" },
+  "@playlistM3uExportFailed": {
+    "description": "Snackbar when writing the M3U file failed"
+  },
   "playlistM3uOverwriteTitle": "Replace {file}?",
   "@playlistM3uOverwriteTitle": {
     "description": "Title of the dialog asking before overwriting an existing file",
-    "placeholders": { "file": { "type": "String" } }
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uOverwriteConfirm": "Replace",
-  "@playlistM3uOverwriteConfirm": { "description": "Button that overwrites the existing file" },
+  "@playlistM3uOverwriteConfirm": {
+    "description": "Button that overwrites the existing file"
+  },
   "queueSaveAsPlaylist": "Save queue as playlist",
-  "@queueSaveAsPlaylist": { "description": "Tooltip of the queue panel button that saves the queue as a new playlist" },
+  "@queueSaveAsPlaylist": {
+    "description": "Tooltip of the queue panel button that saves the queue as a new playlist"
+  },
   "queueSaveDefaultName": "Queue {date}",
   "@queueSaveDefaultName": {
     "description": "Default name of a playlist saved from the queue",
-    "placeholders": { "date": { "type": "DateTime", "format": "yMMMd" } }
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
   "queueSaved": "{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}",
   "@queueSaved": {
     "description": "Snackbar after saving the queue as a playlist",
-    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "queueSavedSkipped": "{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library or repeated)} other{{skipped} left out (not in your library or repeated)}}",
   "@queueSavedSkipped": {
     "description": "Snackbar after saving the queue when some queue songs were not saved",
-    "placeholders": { "count": { "type": "int" }, "skipped": { "type": "int" }, "name": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "queueSaveNothing": "Nothing in the queue is in your library",
-  "@queueSaveNothing": { "description": "Snackbar when no queue song can be saved in a playlist" },
+  "@queueSaveNothing": {
+    "description": "Snackbar when no queue song can be saved in a playlist"
+  },
   "queueHistoryTitle": "Queue history",
-  "@queueHistoryTitle": {"description": "Name of the page listing the queues the user replaced, in the sidebar and as its title"},
+  "@queueHistoryTitle": {
+    "description": "Name of the page listing the queues the user replaced, in the sidebar and as its title"
+  },
   "queueHistoryEmptyTitle": "No queue history yet",
-  "@queueHistoryEmptyTitle": {"description": "Title on the queue history page before any queue was replaced"},
+  "@queueHistoryEmptyTitle": {
+    "description": "Title on the queue history page before any queue was replaced"
+  },
   "queueHistoryEmptyMessage": "When you play something new, the queue it replaces is kept here.",
-  "@queueHistoryEmptyMessage": {"description": "Message on the empty queue history page"},
+  "@queueHistoryEmptyMessage": {
+    "description": "Message on the empty queue history page"
+  },
   "queueHistorySavedAt": "{date} · {time}",
-  "@queueHistorySavedAt": {"description": "Name of a saved queue: when it was saved", "placeholders": {"date": {"type": "DateTime", "format": "yMMMd"}, "time": {"type": "DateTime", "format": "Hm"}}},
+  "@queueHistorySavedAt": {
+    "description": "Name of a saved queue: when it was saved",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "Hm"
+      }
+    }
+  },
   "queueHistoryPlay": "Play",
-  "@queueHistoryPlay": {"description": "Menu row and button that play a saved queue"},
+  "@queueHistoryPlay": {
+    "description": "Menu row and button that play a saved queue"
+  },
   "queueHistoryShuffle": "Shuffle",
-  "@queueHistoryShuffle": {"description": "Menu row that plays a saved queue shuffled"},
+  "@queueHistoryShuffle": {
+    "description": "Menu row that plays a saved queue shuffled"
+  },
   "queueHistorySaveAsPlaylist": "Save as playlist",
-  "@queueHistorySaveAsPlaylist": {"description": "Menu row that copies a saved queue into a new playlist"},
+  "@queueHistorySaveAsPlaylist": {
+    "description": "Menu row that copies a saved queue into a new playlist"
+  },
   "queueHistorySavedAsPlaylist": "Saved as {name}",
-  "@queueHistorySavedAsPlaylist": {"description": "Snackbar after a saved queue was copied into a new playlist", "placeholders": {"name": {"type": "String"}}},
+  "@queueHistorySavedAsPlaylist": {
+    "description": "Snackbar after a saved queue was copied into a new playlist",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "queueHistoryDelete": "Delete",
-  "@queueHistoryDelete": {"description": "Menu row and dialog button that delete a saved queue"},
+  "@queueHistoryDelete": {
+    "description": "Menu row and dialog button that delete a saved queue"
+  },
   "queueHistoryDeleteTitle": "Delete this queue?",
-  "@queueHistoryDeleteTitle": {"description": "Title of the dialog confirming that a saved queue is deleted"},
+  "@queueHistoryDeleteTitle": {
+    "description": "Title of the dialog confirming that a saved queue is deleted"
+  },
   "queueHistoryDeleteMessage": "It is removed from your queue history. The songs stay in your library.",
-  "@queueHistoryDeleteMessage": {"description": "Body of the dialog confirming that a saved queue is deleted"},
+  "@queueHistoryDeleteMessage": {
+    "description": "Body of the dialog confirming that a saved queue is deleted"
+  },
   "queueHistoryDeleted": "Queue deleted",
-  "@queueHistoryDeleted": {"description": "Snackbar after a saved queue was deleted"},
+  "@queueHistoryDeleted": {
+    "description": "Snackbar after a saved queue was deleted"
+  },
   "queueHistoryNothingToPlay": "None of these songs are in your library",
-  "@queueHistoryNothingToPlay": {"description": "Snackbar when a saved queue has no song that can play"},
+  "@queueHistoryNothingToPlay": {
+    "description": "Snackbar when a saved queue has no song that can play"
+  },
   "lyricsTab": "Lyrics",
-  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" },
+  "@lyricsTab": {
+    "description": "Name of the lyrics page of the narrow Now Playing layout"
+  },
   "coverCacheClearTitle": "Clear the cover cache?",
-  "@coverCacheClearTitle": { "description": "Title of the dialog that confirms deleting the cover thumbnails" },
+  "@coverCacheClearTitle": {
+    "description": "Title of the dialog that confirms deleting the cover thumbnails"
+  },
   "coverCacheClearBody": "Every cover disappears from the library until it is made again. Kanaru rescans right away and makes them in the background, which can take a while for a large library. Colors taken from the covers are kept.",
-  "@coverCacheClearBody": { "description": "Body of the dialog that confirms deleting the cover thumbnails" },
+  "@coverCacheClearBody": {
+    "description": "Body of the dialog that confirms deleting the cover thumbnails"
+  },
   "coverCacheCleared": "{count, plural, =1{Deleted 1 cover. A rescan makes them again.} other{Deleted {count} covers. A rescan makes them again.}}",
   "@coverCacheCleared": {
     "description": "Snackbar after the cover thumbnails were deleted",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "coverCacheClearFailed": "Could not clear the cover cache",
-  "@coverCacheClearFailed": { "description": "Snackbar when the cover thumbnails could not be deleted" },
+  "@coverCacheClearFailed": {
+    "description": "Snackbar when the cover thumbnails could not be deleted"
+  },
   "genresUnknown": "Unknown genre",
-  "@genresUnknown": { "description": "Name of the Genres entry that holds songs with no genre tag, always last in the list" },
+  "@genresUnknown": {
+    "description": "Name of the Genres entry that holds songs with no genre tag, always last in the list"
+  },
   "separatorsArtistsTitle": "Split artists",
-  "@separatorsArtistsTitle": { "description": "Title of the settings row and dialog that edit how artist tags are split" },
+  "@separatorsArtistsTitle": {
+    "description": "Title of the settings row and dialog that edit how artist tags are split"
+  },
   "separatorsGenresTitle": "Split genres",
-  "@separatorsGenresTitle": { "description": "Title of the settings row and dialog that edit how genre tags are split" },
+  "@separatorsGenresTitle": {
+    "description": "Title of the settings row and dialog that edit how genre tags are split"
+  },
   "separatorsArtistsHint": "Applies at once, the library updates in the background.",
-  "@separatorsArtistsHint": { "description": "Subtitle of the artist split row, first line" },
+  "@separatorsArtistsHint": {
+    "description": "Subtitle of the artist split row, first line"
+  },
   "separatorsGenresHint": "Applies at once, no rescan needed.",
-  "@separatorsGenresHint": { "description": "Subtitle of the genre split row, first line" },
+  "@separatorsGenresHint": {
+    "description": "Subtitle of the genre split row, first line"
+  },
   "separatorsSummary": "{separators, plural, =1{1 separator} other{{separators} separators}} · {keepWhole, plural, =1{1 kept whole} other{{keepWhole} kept whole}}",
   "@separatorsSummary": {
     "description": "Second line of a split row: how many separators and keep-whole names are set",
-    "placeholders": { "separators": { "type": "int" }, "keepWhole": { "type": "int" } }
+    "placeholders": {
+      "separators": {
+        "type": "int"
+      },
+      "keepWhole": {
+        "type": "int"
+      }
+    }
   },
   "separatorsEditButton": "Edit",
-  "@separatorsEditButton": { "description": "Button of a split row that opens its dialog" },
+  "@separatorsEditButton": {
+    "description": "Button of a split row that opens its dialog"
+  },
   "separatorsTabSeparators": "Separators ({count})",
   "@separatorsTabSeparators": {
     "description": "Dialog tab listing the separators, with how many there are",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "separatorsTabKeepWhole": "Keep whole ({count})",
   "@separatorsTabKeepWhole": {
     "description": "Dialog tab listing names that are never split, with how many there are",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "separatorsAddSeparatorLabel": "New separator",
-  "@separatorsAddSeparatorLabel": { "description": "Label of the field that adds a separator" },
+  "@separatorsAddSeparatorLabel": {
+    "description": "Label of the field that adds a separator"
+  },
   "separatorsAddKeepLabel": "Name to keep whole",
-  "@separatorsAddKeepLabel": { "description": "Label of the field that adds a name that is never split" },
+  "@separatorsAddKeepLabel": {
+    "description": "Label of the field that adds a name that is never split"
+  },
   "separatorsSeparatorHelp": "No need to add spaces around it. Words like feat. split only with a space on each side.",
-  "@separatorsSeparatorHelp": { "description": "Help under the separator field" },
+  "@separatorsSeparatorHelp": {
+    "description": "Help under the separator field"
+  },
   "separatorsKeepHelpArtist": "Type the name as it is in the tag, any case. AC/DC, for example, stays one artist.",
-  "@separatorsKeepHelpArtist": { "description": "Help under the keep-whole field of the artist dialog" },
+  "@separatorsKeepHelpArtist": {
+    "description": "Help under the keep-whole field of the artist dialog"
+  },
   "separatorsKeepHelpGenre": "Type the name as it is in the tag, any case. Funk/Soul, for example, stays one genre.",
-  "@separatorsKeepHelpGenre": { "description": "Help under the keep-whole field of the genre dialog" },
+  "@separatorsKeepHelpGenre": {
+    "description": "Help under the keep-whole field of the genre dialog"
+  },
   "separatorsAdd": "Add",
-  "@separatorsAdd": { "description": "Button that adds the typed entry" },
+  "@separatorsAdd": {
+    "description": "Button that adds the typed entry"
+  },
   "separatorsErrorEmpty": "Type something to add",
-  "@separatorsErrorEmpty": { "description": "Error under the field when nothing was typed" },
+  "@separatorsErrorEmpty": {
+    "description": "Error under the field when nothing was typed"
+  },
   "separatorsErrorDuplicate": "Already in the list",
-  "@separatorsErrorDuplicate": { "description": "Error under the field when the entry is in the list already, in any case" },
+  "@separatorsErrorDuplicate": {
+    "description": "Error under the field when the entry is in the list already, in any case"
+  },
   "separatorsErrorTooLong": "At most {max} characters",
   "@separatorsErrorTooLong": {
     "description": "Error under the field when the entry is too long",
-    "placeholders": { "max": { "type": "int" } }
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
   },
   "separatorsErrorFull": "The list holds at most {max} entries",
   "@separatorsErrorFull": {
     "description": "Error under the field when the list is full",
-    "placeholders": { "max": { "type": "int" } }
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
   },
   "separatorsRemove": "Remove {entry}",
   "@separatorsRemove": {
     "description": "Tooltip of the button that removes an entry",
-    "placeholders": { "entry": { "type": "String" } }
+    "placeholders": {
+      "entry": {
+        "type": "String"
+      }
+    }
   },
   "separatorsEmptyList": "Nothing here yet",
-  "@separatorsEmptyList": { "description": "Shown in place of an empty list" },
+  "@separatorsEmptyList": {
+    "description": "Shown in place of an empty list"
+  },
   "separatorsEmptySeparators": "Nothing here yet, so nothing is split",
-  "@separatorsEmptySeparators": { "description": "Shown in place of an empty separator list" },
+  "@separatorsEmptySeparators": {
+    "description": "Shown in place of an empty separator list"
+  },
   "separatorsPage": "Page {page} of {total}",
   "@separatorsPage": {
     "description": "Tooltip of a page dot below a long list",
-    "placeholders": { "page": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "separatorsReset": "Restore defaults",
-  "@separatorsReset": { "description": "Button that puts both lists of the dialog back to their defaults" },
+  "@separatorsReset": {
+    "description": "Button that puts both lists of the dialog back to their defaults"
+  },
   "separatorsResetConfirmTitle": "Restore defaults?",
-  "@separatorsResetConfirmTitle": { "description": "Title of the confirmation before restoring the defaults" },
+  "@separatorsResetConfirmTitle": {
+    "description": "Title of the confirmation before restoring the defaults"
+  },
   "separatorsResetConfirmBody": "Both lists go back to their defaults.",
-  "@separatorsResetConfirmBody": { "description": "Body of the confirmation before restoring the defaults" },
+  "@separatorsResetConfirmBody": {
+    "description": "Body of the confirmation before restoring the defaults"
+  },
   "separatorsResetConfirm": "Restore",
-  "@separatorsResetConfirm": { "description": "Button that confirms restoring the defaults" },
+  "@separatorsResetConfirm": {
+    "description": "Button that confirms restoring the defaults"
+  },
   "separatorsClose": "Close",
-  "@separatorsClose": { "description": "Button that closes the dialog" },
+  "@separatorsClose": {
+    "description": "Button that closes the dialog"
+  },
   "scanStatsTracksTitle": "Songs in the library",
-  "@scanStatsTracksTitle": { "description": "Title of the scan statistics row with the songs found and the music files seen" },
+  "@scanStatsTracksTitle": {
+    "description": "Title of the scan statistics row with the songs found and the music files seen"
+  },
   "scanStatsTracksOfFiles": "{tracks} of {files} music files",
-  "@scanStatsTracksOfFiles": { "description": "Songs stored out of the music files the last scan of this session saw", "placeholders": { "tracks": { "type": "int", "format": "decimalPattern" }, "files": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsTracksOfFiles": {
+    "description": "Songs stored out of the music files the last scan of this session saw",
+    "placeholders": {
+      "tracks": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "files": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsNotScanned": "Not scanned in this session",
-  "@scanStatsNotScanned": { "description": "Shown instead of the numbers only a scan knows, until the first scan of the session ends" },
+  "@scanStatsNotScanned": {
+    "description": "Shown instead of the numbers only a scan knows, until the first scan of the session ends"
+  },
   "scanStatsLeftOutTitle": "Left out by scan rules",
-  "@scanStatsLeftOutTitle": { "description": "Title of the scan statistics row with the files the scan rules left out" },
+  "@scanStatsLeftOutTitle": {
+    "description": "Title of the scan statistics row with the files the scan rules left out"
+  },
   "scanStatsNomedia": "In .nomedia folders: {count, plural, =1{1 file} other{{count} files}}",
-  "@scanStatsNomedia": { "description": "Files left out for being in a folder that holds a .nomedia entry", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsNomedia": {
+    "description": "Files left out for being in a folder that holds a .nomedia entry",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsExcluded": "In left-out folders: {count, plural, =1{1 file} other{{count} files}}",
-  "@scanStatsExcluded": { "description": "Files left out for being in a folder the user left out", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsExcluded": {
+    "description": "Files left out for being in a folder the user left out",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsTooSmall": "Under minimum size: {count, plural, =1{1 file} other{{count} files}}",
-  "@scanStatsTooSmall": { "description": "Files left out for being smaller than the minimum file size", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsTooSmall": {
+    "description": "Files left out for being smaller than the minimum file size",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsTooShort": "Under minimum length: {count, plural, =1{1 file} other{{count} files}}",
-  "@scanStatsTooShort": { "description": "Files left out for being shorter than the minimum length", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsTooShort": {
+    "description": "Files left out for being shorter than the minimum length",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsTagErrorsTitle": "Tag errors",
-  "@scanStatsTagErrorsTitle": { "description": "Title of the scan statistics row with the songs whose tags could not be read" },
+  "@scanStatsTagErrorsTitle": {
+    "description": "Title of the scan statistics row with the songs whose tags could not be read"
+  },
   "scanStatsTagErrors": "{count, plural, =0{No songs} =1{1 song} other{{count} songs}} stored without readable tags",
-  "@scanStatsTagErrors": { "description": "Songs stored without tags because reading them failed", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsTagErrors": {
+    "description": "Songs stored without tags because reading them failed",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsCoversTitle": "Cover art",
-  "@scanStatsCoversTitle": { "description": "Title of the scan statistics row with the cover art made" },
+  "@scanStatsCoversTitle": {
+    "description": "Title of the scan statistics row with the cover art made"
+  },
   "scanStatsCovers": "{images} images made for {tracks} songs with art",
-  "@scanStatsCovers": { "description": "Distinct cover thumbnails, and the songs that have one", "placeholders": { "images": { "type": "int", "format": "decimalPattern" }, "tracks": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsCovers": {
+    "description": "Distinct cover thumbnails, and the songs that have one",
+    "placeholders": {
+      "images": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tracks": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsSongs": "{count, plural, =1{1 song} other{{count} songs}}",
-  "@scanStatsSongs": { "description": "Songs stored, before the first scan of the session", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsSongs": {
+    "description": "Songs stored, before the first scan of the session",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsUnfinishedRoots": "{count, plural, =1{1 folder not scanned to the end} other{{count} folders not scanned to the end}}",
-  "@scanStatsUnfinishedRoots": { "description": "Note under the songs row: folders the last scan skipped (missing, timed out), whose files the numbers leave out", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@scanStatsUnfinishedRoots": {
+    "description": "Note under the songs row: folders the last scan skipped (missing, timed out), whose files the numbers leave out",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scanStatsCoversHint": "Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).",
-  "@scanStatsCoversHint": { "description": "Note under the cover art numbers" },
+  "@scanStatsCoversHint": {
+    "description": "Note under the cover art numbers"
+  },
   "foldersHiddenShow": "Show hidden items",
-  "@foldersHiddenShow": { "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are not shown" },
+  "@foldersHiddenShow": {
+    "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are not shown"
+  },
   "foldersHiddenHide": "Hide hidden items",
-  "@foldersHiddenHide": { "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are shown" },
+  "@foldersHiddenHide": {
+    "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are shown"
+  },
   "foldersHiddenLabel": "Hidden",
-  "@foldersHiddenLabel": { "description": "Small label on a folder or song whose name starts with a dot, shown when hidden items are on" },
+  "@foldersHiddenLabel": {
+    "description": "Small label on a folder or song whose name starts with a dot, shown when hidden items are on"
+  },
   "sleepTimer": "Sleep timer",
-  "@sleepTimer": { "description": "Tooltip and menu title of the moon button that pauses playback later" },
+  "@sleepTimer": {
+    "description": "Tooltip and menu title of the moon button that pauses playback later"
+  },
   "sleepTimerActive": "Sleep timer: {state}",
-  "@sleepTimerActive": { "description": "Tooltip and screen reader label of the moon button while the timer runs; state is the time left or the mode", "placeholders": { "state": { "type": "String" } } },
+  "@sleepTimerActive": {
+    "description": "Tooltip and screen reader label of the moon button while the timer runs; state is the time left or the mode",
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
   "sleepTimerMinutes": "{count, plural, =1{1 minute} other{{count} minutes}}",
-  "@sleepTimerMinutes": { "description": "Preset in the sleep timer menu", "placeholders": { "count": { "type": "int", "format": "decimalPattern" } } },
+  "@sleepTimerMinutes": {
+    "description": "Preset in the sleep timer menu",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "sleepTimerCustom": "Custom…",
-  "@sleepTimerCustom": { "description": "Sleep timer menu item that asks for a number of minutes" },
+  "@sleepTimerCustom": {
+    "description": "Sleep timer menu item that asks for a number of minutes"
+  },
   "sleepTimerEndOfTrack": "End of track",
-  "@sleepTimerEndOfTrack": { "description": "Sleep timer mode: pause when the current track ends" },
+  "@sleepTimerEndOfTrack": {
+    "description": "Sleep timer mode: pause when the current track ends"
+  },
   "sleepTimerEndOfAlbum": "End of album",
-  "@sleepTimerEndOfAlbum": { "description": "Sleep timer mode: pause when the album ends" },
+  "@sleepTimerEndOfAlbum": {
+    "description": "Sleep timer mode: pause when the album ends"
+  },
   "sleepTimerEndOfQueue": "End of queue",
-  "@sleepTimerEndOfQueue": { "description": "Sleep timer mode: pause when the last track of the queue ends" },
+  "@sleepTimerEndOfQueue": {
+    "description": "Sleep timer mode: pause when the last track of the queue ends"
+  },
   "sleepTimerLeft": "{time} left",
-  "@sleepTimerLeft": { "description": "Header of the sleep timer menu while counting minutes", "placeholders": { "time": { "type": "String" } } },
+  "@sleepTimerLeft": {
+    "description": "Header of the sleep timer menu while counting minutes",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "sleepTimerLeftPaused": "{time} left (paused)",
-  "@sleepTimerLeftPaused": { "description": "Header of the sleep timer menu while the countdown is on hold", "placeholders": { "time": { "type": "String" } } },
+  "@sleepTimerLeftPaused": {
+    "description": "Header of the sleep timer menu while the countdown is on hold",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "sleepTimerAdd": "Add 5 minutes",
-  "@sleepTimerAdd": { "description": "Sleep timer menu item" },
+  "@sleepTimerAdd": {
+    "description": "Sleep timer menu item"
+  },
   "sleepTimerSubtract": "Remove 5 minutes",
-  "@sleepTimerSubtract": { "description": "Sleep timer menu item" },
+  "@sleepTimerSubtract": {
+    "description": "Sleep timer menu item"
+  },
   "sleepTimerPauseCounting": "Pause counting",
-  "@sleepTimerPauseCounting": { "description": "Sleep timer menu item that holds the countdown" },
+  "@sleepTimerPauseCounting": {
+    "description": "Sleep timer menu item that holds the countdown"
+  },
   "sleepTimerResumeCounting": "Resume counting",
-  "@sleepTimerResumeCounting": { "description": "Sleep timer menu item that continues a held countdown" },
+  "@sleepTimerResumeCounting": {
+    "description": "Sleep timer menu item that continues a held countdown"
+  },
   "sleepTimerCancel": "Cancel timer",
-  "@sleepTimerCancel": { "description": "Sleep timer menu item that turns the timer off" },
+  "@sleepTimerCancel": {
+    "description": "Sleep timer menu item that turns the timer off"
+  },
   "sleepTimerCustomTitle": "Custom sleep timer",
-  "@sleepTimerCustomTitle": { "description": "Title of the dialog that asks for minutes" },
+  "@sleepTimerCustomTitle": {
+    "description": "Title of the dialog that asks for minutes"
+  },
   "sleepTimerCustomLabel": "Minutes",
-  "@sleepTimerCustomLabel": { "description": "Field label in the custom sleep timer dialog" },
+  "@sleepTimerCustomLabel": {
+    "description": "Field label in the custom sleep timer dialog"
+  },
   "sleepTimerCustomInvalid": "Enter a whole number from {min} to {max}",
-  "@sleepTimerCustomInvalid": { "description": "Validation message in the custom sleep timer dialog", "placeholders": { "min": { "type": "int" }, "max": { "type": "int" } } },
+  "@sleepTimerCustomInvalid": {
+    "description": "Validation message in the custom sleep timer dialog",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "sleepTimerStart": "Start",
-  "@sleepTimerStart": { "description": "Button of the custom sleep timer dialog" },
+  "@sleepTimerStart": {
+    "description": "Button of the custom sleep timer dialog"
+  },
   "sleepTimerLabelTrack": "Track",
-  "@sleepTimerLabelTrack": { "description": "Short label beside the moon button while the timer waits for the end of the track" },
+  "@sleepTimerLabelTrack": {
+    "description": "Short label beside the moon button while the timer waits for the end of the track"
+  },
   "sleepTimerLabelAlbum": "Album",
-  "@sleepTimerLabelAlbum": { "description": "Short label beside the moon button while the timer waits for the end of the album" },
+  "@sleepTimerLabelAlbum": {
+    "description": "Short label beside the moon button while the timer waits for the end of the album"
+  },
   "sleepTimerLabelQueue": "Queue",
-  "@sleepTimerLabelQueue": { "description": "Short label beside the moon button while the timer waits for the end of the queue" },
+  "@sleepTimerLabelQueue": {
+    "description": "Short label beside the moon button while the timer waits for the end of the queue"
+  },
   "navLanguages": "Languages",
-  "@navLanguages": { "description": "Sidebar and page title for song languages" },
+  "@navLanguages": {
+    "description": "Sidebar and page title for song languages"
+  },
   "languagesComingSoonTitle": "Languages are coming soon",
-  "@languagesComingSoonTitle": { "description": "Title of the empty Languages page" },
+  "@languagesComingSoonTitle": {
+    "description": "Title of the empty Languages page"
+  },
   "languagesComingSoonMessage": "Browsing songs by language is not available yet.",
-  "@languagesComingSoonMessage": { "description": "Message of the empty Languages page" },
+  "@languagesComingSoonMessage": {
+    "description": "Message of the empty Languages page"
+  },
   "languageNameEng": "English",
-  "@languageNameEng": { "description": "Name of the language with ISO 639-2 code eng" },
+  "@languageNameEng": {
+    "description": "Name of the language with ISO 639-2 code eng"
+  },
   "languageNameVie": "Vietnamese",
-  "@languageNameVie": { "description": "Name of the language with ISO 639-2 code vie" },
+  "@languageNameVie": {
+    "description": "Name of the language with ISO 639-2 code vie"
+  },
   "languageNameJpn": "Japanese",
-  "@languageNameJpn": { "description": "Name of the language with ISO 639-2 code jpn" },
+  "@languageNameJpn": {
+    "description": "Name of the language with ISO 639-2 code jpn"
+  },
   "languageNameKor": "Korean",
-  "@languageNameKor": { "description": "Name of the language with ISO 639-2 code kor" },
+  "@languageNameKor": {
+    "description": "Name of the language with ISO 639-2 code kor"
+  },
   "languageNameZho": "Chinese",
-  "@languageNameZho": { "description": "Name of the language with ISO 639-2 code zho" },
+  "@languageNameZho": {
+    "description": "Name of the language with ISO 639-2 code zho"
+  },
   "languageNameFra": "French",
-  "@languageNameFra": { "description": "Name of the language with ISO 639-2 code fra" },
+  "@languageNameFra": {
+    "description": "Name of the language with ISO 639-2 code fra"
+  },
   "languageNameDeu": "German",
-  "@languageNameDeu": { "description": "Name of the language with ISO 639-2 code deu" },
+  "@languageNameDeu": {
+    "description": "Name of the language with ISO 639-2 code deu"
+  },
   "languageNameSpa": "Spanish",
-  "@languageNameSpa": { "description": "Name of the language with ISO 639-2 code spa" },
+  "@languageNameSpa": {
+    "description": "Name of the language with ISO 639-2 code spa"
+  },
   "languageNameIta": "Italian",
-  "@languageNameIta": { "description": "Name of the language with ISO 639-2 code ita" },
+  "@languageNameIta": {
+    "description": "Name of the language with ISO 639-2 code ita"
+  },
   "languageNameRus": "Russian",
-  "@languageNameRus": { "description": "Name of the language with ISO 639-2 code rus" },
+  "@languageNameRus": {
+    "description": "Name of the language with ISO 639-2 code rus"
+  },
   "languageNamePor": "Portuguese",
-  "@languageNamePor": { "description": "Name of the language with ISO 639-2 code por" },
+  "@languageNamePor": {
+    "description": "Name of the language with ISO 639-2 code por"
+  },
   "languageNameTha": "Thai",
-  "@languageNameTha": { "description": "Name of the language with ISO 639-2 code tha" },
+  "@languageNameTha": {
+    "description": "Name of the language with ISO 639-2 code tha"
+  },
   "languageNameInd": "Indonesian",
-  "@languageNameInd": { "description": "Name of the language with ISO 639-2 code ind" },
+  "@languageNameInd": {
+    "description": "Name of the language with ISO 639-2 code ind"
+  },
   "languageNameHin": "Hindi",
-  "@languageNameHin": { "description": "Name of the language with ISO 639-2 code hin" },
+  "@languageNameHin": {
+    "description": "Name of the language with ISO 639-2 code hin"
+  },
   "languageNameAra": "Arabic",
-  "@languageNameAra": { "description": "Name of the language with ISO 639-2 code ara" },
+  "@languageNameAra": {
+    "description": "Name of the language with ISO 639-2 code ara"
+  },
   "languageNameNld": "Dutch",
-  "@languageNameNld": { "description": "Name of the language with ISO 639-2 code nld" },
+  "@languageNameNld": {
+    "description": "Name of the language with ISO 639-2 code nld"
+  },
   "languageNameSwe": "Swedish",
-  "@languageNameSwe": { "description": "Name of the language with ISO 639-2 code swe" },
+  "@languageNameSwe": {
+    "description": "Name of the language with ISO 639-2 code swe"
+  },
   "languageNamePol": "Polish",
-  "@languageNamePol": { "description": "Name of the language with ISO 639-2 code pol" },
+  "@languageNamePol": {
+    "description": "Name of the language with ISO 639-2 code pol"
+  },
   "languageNameTur": "Turkish",
-  "@languageNameTur": { "description": "Name of the language with ISO 639-2 code tur" },
+  "@languageNameTur": {
+    "description": "Name of the language with ISO 639-2 code tur"
+  },
   "languageNameUkr": "Ukrainian",
-  "@languageNameUkr": { "description": "Name of the language with ISO 639-2 code ukr" },
+  "@languageNameUkr": {
+    "description": "Name of the language with ISO 639-2 code ukr"
+  },
   "languageNameCes": "Czech",
-  "@languageNameCes": { "description": "Name of the language with ISO 639-2 code ces" },
+  "@languageNameCes": {
+    "description": "Name of the language with ISO 639-2 code ces"
+  },
   "languageNameEll": "Greek",
-  "@languageNameEll": { "description": "Name of the language with ISO 639-2 code ell" },
+  "@languageNameEll": {
+    "description": "Name of the language with ISO 639-2 code ell"
+  },
   "languageNameFas": "Persian",
-  "@languageNameFas": { "description": "Name of the language with ISO 639-2 code fas" },
+  "@languageNameFas": {
+    "description": "Name of the language with ISO 639-2 code fas"
+  },
   "languageNameRon": "Romanian",
-  "@languageNameRon": { "description": "Name of the language with ISO 639-2 code ron" },
+  "@languageNameRon": {
+    "description": "Name of the language with ISO 639-2 code ron"
+  },
   "languageNameMsa": "Malay",
-  "@languageNameMsa": { "description": "Name of the language with ISO 639-2 code msa" },
+  "@languageNameMsa": {
+    "description": "Name of the language with ISO 639-2 code msa"
+  },
   "languageNameHeb": "Hebrew",
-  "@languageNameHeb": { "description": "Name of the language with ISO 639-2 code heb" },
+  "@languageNameHeb": {
+    "description": "Name of the language with ISO 639-2 code heb"
+  },
   "languageNameFin": "Finnish",
-  "@languageNameFin": { "description": "Name of the language with ISO 639-2 code fin" },
+  "@languageNameFin": {
+    "description": "Name of the language with ISO 639-2 code fin"
+  },
   "languageNameDan": "Danish",
-  "@languageNameDan": { "description": "Name of the language with ISO 639-2 code dan" },
+  "@languageNameDan": {
+    "description": "Name of the language with ISO 639-2 code dan"
+  },
   "languageNameNor": "Norwegian",
-  "@languageNameNor": { "description": "Name of the language with ISO 639-2 code nor" },
+  "@languageNameNor": {
+    "description": "Name of the language with ISO 639-2 code nor"
+  },
   "languageNameHun": "Hungarian",
-  "@languageNameHun": { "description": "Name of the language with ISO 639-2 code hun" },
+  "@languageNameHun": {
+    "description": "Name of the language with ISO 639-2 code hun"
+  },
   "languageNameCym": "Welsh",
-  "@languageNameCym": { "description": "Name of the language with ISO 639-2 code cym" },
+  "@languageNameCym": {
+    "description": "Name of the language with ISO 639-2 code cym"
+  },
   "languageNameSlk": "Slovak",
-  "@languageNameSlk": { "description": "Name of the language with ISO 639-2 code slk" },
+  "@languageNameSlk": {
+    "description": "Name of the language with ISO 639-2 code slk"
+  },
   "languageNameSqi": "Albanian",
-  "@languageNameSqi": { "description": "Name of the language with ISO 639-2 code sqi" },
+  "@languageNameSqi": {
+    "description": "Name of the language with ISO 639-2 code sqi"
+  },
   "languageNameHye": "Armenian",
-  "@languageNameHye": { "description": "Name of the language with ISO 639-2 code hye" },
+  "@languageNameHye": {
+    "description": "Name of the language with ISO 639-2 code hye"
+  },
   "languageNameEus": "Basque",
-  "@languageNameEus": { "description": "Name of the language with ISO 639-2 code eus" },
+  "@languageNameEus": {
+    "description": "Name of the language with ISO 639-2 code eus"
+  },
   "languageNameMya": "Burmese",
-  "@languageNameMya": { "description": "Name of the language with ISO 639-2 code mya" },
+  "@languageNameMya": {
+    "description": "Name of the language with ISO 639-2 code mya"
+  },
   "languageNameKat": "Georgian",
-  "@languageNameKat": { "description": "Name of the language with ISO 639-2 code kat" },
+  "@languageNameKat": {
+    "description": "Name of the language with ISO 639-2 code kat"
+  },
   "languageNameIsl": "Icelandic",
-  "@languageNameIsl": { "description": "Name of the language with ISO 639-2 code isl" },
+  "@languageNameIsl": {
+    "description": "Name of the language with ISO 639-2 code isl"
+  },
   "languageNameMkd": "Macedonian",
-  "@languageNameMkd": { "description": "Name of the language with ISO 639-2 code mkd" },
+  "@languageNameMkd": {
+    "description": "Name of the language with ISO 639-2 code mkd"
+  },
   "languageNameMri": "Maori",
-  "@languageNameMri": { "description": "Name of the language with ISO 639-2 code mri" },
+  "@languageNameMri": {
+    "description": "Name of the language with ISO 639-2 code mri"
+  },
   "languageNameBod": "Tibetan",
-  "@languageNameBod": { "description": "Name of the language with ISO 639-2 code bod" },
+  "@languageNameBod": {
+    "description": "Name of the language with ISO 639-2 code bod"
+  },
   "languageNameZxx": "No lyrics",
-  "@languageNameZxx": { "description": "Name of the language with ISO 639-2 code zxx" },
+  "@languageNameZxx": {
+    "description": "Name of the language with ISO 639-2 code zxx"
+  },
   "languageNameMul": "Multiple languages",
-  "@languageNameMul": { "description": "Name of the language with ISO 639-2 code mul" },
+  "@languageNameMul": {
+    "description": "Name of the language with ISO 639-2 code mul"
+  },
   "languagesNoRootsMessage": "Add a music folder in Songs.",
   "languagesEmptyTitle": "No languages yet",
   "languagesEmptyMessage": "Songs with a language tag (TLAN in MP3, LANGUAGE in FLAC and Ogg) show up here by language. Rescan your folders to read the tags.",
@@ -1246,23 +2034,92 @@
     "description": "Artist line of an album merged from several album artists"
   },
   "inPageSearchHint": "Filter songs",
-  "@inPageSearchHint": { "description": "Hint of the filter box inside a page or the queue" },
+  "@inPageSearchHint": {
+    "description": "Hint of the filter box inside a page or the queue"
+  },
   "inPageSearchOpen": "Filter in this page",
-  "@inPageSearchOpen": { "description": "Tooltip of the button that opens the filter box of a page or the queue" },
+  "@inPageSearchOpen": {
+    "description": "Tooltip of the button that opens the filter box of a page or the queue"
+  },
   "inPageSearchClear": "Clear filter",
-  "@inPageSearchClear": { "description": "Tooltip of the button that empties the filter box" },
+  "@inPageSearchClear": {
+    "description": "Tooltip of the button that empties the filter box"
+  },
   "inPageSearchNoMatch": "No songs match “{query}”",
   "@inPageSearchNoMatch": {
     "description": "Shown when the filter of a page or the queue matches no song",
     "placeholders": {
-      "query": { "type": "String" }
+      "query": {
+        "type": "String"
+      }
     }
   },
   "inPageSearchTooMany": "Showing the first {count} songs. Type more to narrow it down.",
   "@inPageSearchTooMany": {
     "description": "Shown under the filtered playlist when more songs matched than it lists",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
-  }
+  },
+  "homeRecentlyPlayedTitle": "Recently played",
+  "@homeRecentlyPlayedTitle": {
+    "description": "Title of the recently played section on Home"
+  },
+  "homeRecentlyAddedTitle": "Recently added",
+  "@homeRecentlyAddedTitle": {
+    "description": "Title of the recently added section on Home"
+  },
+  "homeMemoriesTitle": "Lost memories",
+  "@homeMemoriesTitle": {
+    "description": "Title of the section with songs played around this date last year"
+  },
+  "homeRecentAlbumsTitle": "Recent albums",
+  "@homeRecentAlbumsTitle": {
+    "description": "Title of the recent albums section on Home"
+  },
+  "homeRecentArtistsTitle": "Recent artists",
+  "@homeRecentArtistsTitle": {
+    "description": "Title of the recent artists section on Home"
+  },
+  "homeMemoriesEmpty": "No music from this time last year",
+  "@homeMemoriesEmpty": {
+    "description": "Shown when no song was played around this date last year"
+  },
+  "homeAddedWindowAll": "All",
+  "@homeAddedWindowAll": {
+    "description": "Chip that shows every added song, whatever its age"
+  },
+  "homeSeeAll": "See all",
+  "@homeSeeAll": {
+    "description": "Tooltip of the button beside a Home section title"
+  },
+  "homeScrollBack": "Scroll back",
+  "@homeScrollBack": {
+    "description": "Tooltip of the left arrow on a Home row"
+  },
+  "homeScrollForward": "Scroll forward",
+  "@homeScrollForward": {
+    "description": "Tooltip of the right arrow on a Home row"
+  },
+  "homeAddedWindowDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@homeAddedWindowDays": {
+    "description": "Chip that shows songs added in the last N days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeRecentlyAddedEmpty": "No songs were added in this period",
+  "@homeRecentlyAddedEmpty": { "description": "Shown on the full recently added list when no song was added in the chosen period" },
+  "homeRecentAlbumsEmpty": "No albums played yet",
+  "@homeRecentAlbumsEmpty": { "description": "Shown on the full recent albums list when no album was played" },
+  "homeRecentArtistsEmpty": "No artists played yet",
+  "@homeRecentArtistsEmpty": { "description": "Shown on the full recent artists list when no artist was played" },
+  "homeLoadFailed": "Could not load the list",
+  "@homeLoadFailed": { "description": "Shown on a full Home list when a page could not be read" },
+  "homeRetry": "Retry",
+  "@homeRetry": { "description": "Text button under the failure sentence of a full Home list that reads the list again" }
 }
