@@ -42,7 +42,7 @@ void main() {
       location: albumLocation(const AlbumKey('ann', 'al')),
     );
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Shuffle'));
+    await tester.tap(find.byTooltip('Shuffle'));
     await tester.pump();
 
     expectShuffledPage(h, ['a', 'b', 'c']);

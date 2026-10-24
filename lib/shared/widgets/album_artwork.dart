@@ -17,6 +17,7 @@ class AlbumArtwork extends ConsumerWidget {
     required this.albumKey,
     required this.size,
     this.coverKey,
+    this.radius,
   });
 
   final AlbumKey albumKey;
@@ -24,6 +25,9 @@ class AlbumArtwork extends ConsumerWidget {
 
   /// The album's cover key; null shows the placeholder.
   final String? coverKey;
+
+  /// Corner radius; null keeps the [CoverArt] default.
+  final double? radius;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,6 +39,7 @@ class AlbumArtwork extends ConsumerWidget {
     return CoverArt(
       path: coverPath(ref.watch(coverCacheDirectoryProvider), coverKey),
       size: size,
+      radius: radius,
       placeholder: ColoredBox(
         color: background,
         child: Icon(AppIcons.album, size: size * 0.4, color: foreground),

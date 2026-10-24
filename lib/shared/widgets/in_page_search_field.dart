@@ -13,10 +13,18 @@ const inPageSearchWidth = 280.0;
 /// it and closes it; [onEscape] then gets the focus back to where the box
 /// was opened from.
 class InPageSearchBox extends StatelessWidget {
-  const InPageSearchBox({super.key, required this.controller, this.onEscape});
+  const InPageSearchBox({
+    super.key,
+    required this.controller,
+    this.onEscape,
+    this.width = inPageSearchWidth,
+  });
 
   final InPageFilterController controller;
   final VoidCallback? onEscape;
+
+  /// Width of the box; `double.infinity` fills the row it sits in.
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +40,7 @@ class InPageSearchBox extends StatelessWidget {
         return KeyEventResult.handled;
       },
       child: SizedBox(
-        width: inPageSearchWidth,
+        width: width,
         child: TextField(
           controller: controller.text,
           focusNode: controller.focus,
