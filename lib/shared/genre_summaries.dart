@@ -11,6 +11,7 @@ class GenreSummary {
     required this.songCount,
     required this.raws,
     this.withoutGenre = false,
+    this.coverKeys = const [],
   });
 
   /// `genreKey(name)`; identifies the genre page. [unknownGenreKey] for the
@@ -32,6 +33,20 @@ class GenreSummary {
   /// (stored as null), which no string in [raws] reaches. Only for
   /// [unknownGenreKey].
   final bool withoutGenre;
+
+  /// Up to four distinct cover keys for the tile collage (`PlaylistCover`).
+  /// Empty until a provider fetches them; [buildGenreSummaries] does not.
+  final List<String> coverKeys;
+
+  /// This genre with [coverKeys] attached.
+  GenreSummary withCoverKeys(List<String> coverKeys) => GenreSummary(
+    key: key,
+    name: name,
+    songCount: songCount,
+    raws: raws,
+    withoutGenre: withoutGenre,
+    coverKeys: coverKeys,
+  );
 }
 
 /// The list rows for [counts] (stored genre string and its tracks), one per
