@@ -62,7 +62,8 @@ class AlbumSummary {
   final int? year;
   final int trackCount;
 
-  /// Sum of the known track durations; null when none is known.
+  /// Sum of the known track durations; null when none is known or they add
+  /// up to 0.
   final int? durationMs;
 
   /// When its most recently added track was indexed.
@@ -109,7 +110,8 @@ class ArtistCredit {
   final int? firstYear;
   final int? lastYear;
 
-  /// Sum of the known durations of those tracks; null when none is known.
+  /// Sum of the known durations of those tracks; null when none is known or
+  /// they add up to 0.
   final int? durationMs;
 }
 

@@ -20,7 +20,7 @@ import 'library_database.dart';
 const albumColumns = '''
 album_artist_key AS ak, album_title_key AS tk, min(album) AS title,
   min(album_display_artist) AS artist, max(year) AS year, count(*) AS n,
-  sum(duration_ms) AS duration, max(added_at) AS added,
+  nullif(sum(duration_ms), 0) AS duration, max(added_at) AS added,
   min(cover_key) AS cover, min(album_sort) AS title_sort,
   min(album_display_artist COLLATE NOCASE) AS artist_lo,
   max(album_display_artist COLLATE NOCASE) AS artist_hi''';
@@ -62,7 +62,7 @@ SELECT ta.artist_key AS artist_key, min(ta.artist_name) AS name,
   count(*) AS n,
   count(DISTINCT t.album_artist_key || char(31) || t.album_title_key) AS albums,
   min(nullif(t.year, 0)) AS year_lo, max(nullif(t.year, 0)) AS year_hi,
-  sum(t.duration_ms) AS ms
+  nullif(sum(t.duration_ms), 0) AS ms
 FROM track_artists AS ta JOIN tracks AS t ON t.id = ta.track_id
 GROUP BY ta.artist_key''';
 
