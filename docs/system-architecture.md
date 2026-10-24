@@ -478,6 +478,8 @@ Data flow: the scan and the key backfill write `tracks`, with the folded columns
 
 Known limits (the user-facing list is in [features.md](./features.md), section 6):
 
+Query syntax: `parseSearchQuery` (`core/search/search_query_parser.dart`) splits the raw query on spaces outside double quotes (an unclosed quote runs to the end). `artist:`, `album:` and `genre:` (prefix case-insensitive) give per-field terms; `year:` takes `2010`, `>2010`, `<2000`, `>=`, `<=` or `2010-2015` (a reversed range swaps; years 1 to 9999; several `year:` all apply); `format:` takes an extension from `audioExtensions` (several are alternatives). Anything else, such as an unknown prefix, an empty or invalid value, stays free text. Free and per-field terms together are capped at `maxSearchTerms` (8, last dropped); filters are not capped. Keywords are English only. The result is a `ParsedSearchQuery`; with the chosen `SearchField` set (`search_fields.dart`; the default "all" preset is the five tag fields, file name and comment are opt-in) it becomes a `SearchRequest` whose normalized `key` identifies it for providers.
+
 - `mtp` does not match `M-TP`: punctuation splits words.
 - CJK text matches only from the start of a run of characters.
 - No typo tolerance (SEARCH-04).
