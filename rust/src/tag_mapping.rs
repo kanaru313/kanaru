@@ -14,6 +14,9 @@ const MAX_TEXT_BYTES: usize = 1024;
 /// Longest stored comment, in bytes.
 const MAX_COMMENT_BYTES: usize = 4096;
 
+/// Longest stored language tag, in bytes.
+const MAX_LANGUAGE_BYTES: usize = 128;
+
 /// Most artist values joined into the artist field.
 const MAX_ARTISTS: usize = 32;
 
@@ -54,6 +57,7 @@ pub fn apply_tag(out: &mut TrackTags, tag: &Tag) {
         MAX_TEXT_BYTES,
     );
     out.comment = capped(non_empty(tag.comment()), MAX_COMMENT_BYTES);
+    out.language = languages(tag);
 }
 
 /// Copies the audio properties into [`out`]. Zero means "unknown" in several
@@ -88,6 +92,24 @@ fn artists(tag: &Tag) -> Option<String> {
     } else {
         Some(all.join(ARTIST_SEPARATOR))
     }
+}
+
+/// Every language value joined with [`ARTIST_SEPARATOR`] (ID3v2.4 null-separated
+/// `TLAN`, repeated Vorbis `LANGUAGE`). Cut to [`MAX_LANGUAGE_BYTES`] and
+/// trimmed again, so a cut after a separator leaves no dangling `;` or space.
+fn languages(tag: &Tag) -> Option<String> {
+    let all: Vec<&str> = tag
+        .get_strings(ItemKey::Language)
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .collect();
+    if all.is_empty() {
+        return None;
+    }
+    let joined = all.join(ARTIST_SEPARATOR);
+    let cut = cut(&joined, MAX_LANGUAGE_BYTES)
+        .trim_end_matches(|c: char| c.is_whitespace() || c == ';');
+    (!cut.is_empty()).then(|| cut.to_owned())
 }
 
 /// [`value`] cut to at most [`max_bytes`] bytes at a character boundary, so
@@ -232,5 +254,68 @@ mod tests {
         let mut out = TrackTags::default();
         apply_tag(&mut out, &tag);
         assert_eq!(out.year, Some(2019));
+    }
+
+    #[test]
+    fn language_is_read_from_vorbis_and_id3() {
+        for tag_type in [TagType::VorbisComments, TagType::Id3v2] {
+            let mut tag = Tag::new(tag_type);
+            tag.insert_text(ItemKey::Language, " vie ".into());
+            let mut out = TrackTags::default();
+            apply_tag(&mut out, &tag);
+            assert_eq!(out.language.as_deref(), Some("vie"));
+        }
+    }
+
+    #[test]
+    fn blank_or_missing_language_is_none() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        assert_eq!(out.language, None);
+        tag.insert_text(ItemKey::Language, "  \t ".into());
+        apply_tag(&mut out, &tag);
+        assert_eq!(out.language, None);
+    }
+
+    #[test]
+    fn long_multibyte_language_is_cut_at_a_character_boundary() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        // 200 bytes of 3-byte characters: 128 is not a multiple of 3.
+        tag.insert_text(ItemKey::Language, "語".repeat(67));
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        let language = out.language.unwrap();
+        assert_eq!(language.len(), 126);
+        assert!(language.chars().all(|c| c == '語'));
+    }
+
+    #[test]
+    fn several_language_values_are_joined() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        for code in ["eng", " jpn ", ""] {
+            tag.push(lofty::tag::TagItem::new(
+                ItemKey::Language,
+                lofty::tag::ItemValue::Text(code.into()),
+            ));
+        }
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        assert_eq!(out.language.as_deref(), Some("eng; jpn"));
+    }
+
+    #[test]
+    fn language_cut_after_a_separator_has_no_trailing_separator() {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        // 126 + "; " puts the cut right after the separator at byte 128.
+        for value in ["a".repeat(126), "bbb".to_owned()] {
+            tag.push(lofty::tag::TagItem::new(
+                ItemKey::Language,
+                lofty::tag::ItemValue::Text(value),
+            ));
+        }
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        assert_eq!(out.language.unwrap(), "a".repeat(126));
     }
 }

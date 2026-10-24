@@ -747,8 +747,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TrackTags dco_decode_track_tags(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 19)
-      throw Exception('unexpected arr length: expect 19 but see ${arr.length}');
+    if (arr.length != 20)
+      throw Exception('unexpected arr length: expect 20 but see ${arr.length}');
     return TrackTags(
       path: dco_decode_String(arr[0]),
       title: dco_decode_opt_String(arr[1]),
@@ -763,12 +763,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       genre: dco_decode_opt_String(arr[10]),
       composer: dco_decode_opt_String(arr[11]),
       comment: dco_decode_opt_String(arr[12]),
-      durationMs: dco_decode_opt_box_autoadd_i_64(arr[13]),
-      bitrate: dco_decode_opt_box_autoadd_u_32(arr[14]),
-      sampleRate: dco_decode_opt_box_autoadd_u_32(arr[15]),
-      bitDepth: dco_decode_opt_box_autoadd_u_8(arr[16]),
-      channels: dco_decode_opt_box_autoadd_u_8(arr[17]),
-      error: dco_decode_opt_String(arr[18]),
+      language: dco_decode_opt_String(arr[13]),
+      durationMs: dco_decode_opt_box_autoadd_i_64(arr[14]),
+      bitrate: dco_decode_opt_box_autoadd_u_32(arr[15]),
+      sampleRate: dco_decode_opt_box_autoadd_u_32(arr[16]),
+      bitDepth: dco_decode_opt_box_autoadd_u_8(arr[17]),
+      channels: dco_decode_opt_box_autoadd_u_8(arr[18]),
+      error: dco_decode_opt_String(arr[19]),
     );
   }
 
@@ -1057,6 +1058,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_genre = sse_decode_opt_String(deserializer);
     var var_composer = sse_decode_opt_String(deserializer);
     var var_comment = sse_decode_opt_String(deserializer);
+    var var_language = sse_decode_opt_String(deserializer);
     var var_durationMs = sse_decode_opt_box_autoadd_i_64(deserializer);
     var var_bitrate = sse_decode_opt_box_autoadd_u_32(deserializer);
     var var_sampleRate = sse_decode_opt_box_autoadd_u_32(deserializer);
@@ -1077,6 +1079,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       genre: var_genre,
       composer: var_composer,
       comment: var_comment,
+      language: var_language,
       durationMs: var_durationMs,
       bitrate: var_bitrate,
       sampleRate: var_sampleRate,
@@ -1374,6 +1377,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_String(self.genre, serializer);
     sse_encode_opt_String(self.composer, serializer);
     sse_encode_opt_String(self.comment, serializer);
+    sse_encode_opt_String(self.language, serializer);
     sse_encode_opt_box_autoadd_i_64(self.durationMs, serializer);
     sse_encode_opt_box_autoadd_u_32(self.bitrate, serializer);
     sse_encode_opt_box_autoadd_u_32(self.sampleRate, serializer);

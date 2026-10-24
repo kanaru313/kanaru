@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 String _name(int i) => 's${i.toString().padLeft(4, '0')}';
 
@@ -25,7 +26,7 @@ void main() {
   testWidgets('any position of a large list can be scrolled to', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, [
       for (var i = 0; i < 5000; i++) TestTrack(_name(i)),
     ], location: '/songs');
@@ -62,8 +63,10 @@ void main() {
   group('tap', () {
     // The ids snapshot does not refresh during the test: the library changes
     // between the list loading and the tap.
-    LibraryHarness harness() =>
-        LibraryHarness(refreshInterval: const Duration(hours: 1));
+    LibraryHarness harness() => LibraryHarness(
+      refreshInterval: const Duration(hours: 1),
+      overrides: [listViewModesOverride],
+    );
 
     Future<void> release(WidgetTester tester, LibraryHarness h) async {
       // The refresh timer must not outlive the test.

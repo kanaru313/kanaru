@@ -1880,9 +1880,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'None of these songs are in your library';
 
   @override
-  String get sidebarCurrentQueue => 'Current queue';
-
-  @override
   String get lyricsTab => 'Lyrics';
 
   @override
@@ -2262,4 +2259,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sleepTimerLabelQueue => 'Queue';
+
+  @override
+  String get navLanguages => 'Languages';
+
+  @override
+  String get languagesComingSoonTitle => 'Languages are coming soon';
+
+  @override
+  String get languagesComingSoonMessage =>
+      'Browsing songs by language is not available yet.';
 }

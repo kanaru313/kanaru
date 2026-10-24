@@ -1732,6 +1732,17 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _languageMeta = const VerificationMeta(
+    'language',
+  );
+  @override
+  late final GeneratedColumn<String> language = GeneratedColumn<String>(
+    'language',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _durationMsMeta = const VerificationMeta(
     'durationMs',
   );
@@ -1986,6 +1997,7 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     genre,
     composer,
     comment,
+    language,
     durationMs,
     bitrate,
     sampleRate,
@@ -2130,6 +2142,12 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
       context.handle(
         _commentMeta,
         comment.isAcceptableOrUnknown(data['comment']!, _commentMeta),
+      );
+    }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
       );
     }
     if (data.containsKey('duration_ms')) {
@@ -2366,6 +2384,10 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         DriftSqlType.string,
         data['${effectivePrefix}comment'],
       ),
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      ),
       durationMs: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}duration_ms'],
@@ -2488,6 +2510,11 @@ class Track extends DataClass implements Insertable<Track> {
   final String? genre;
   final String? composer;
   final String? comment;
+
+  /// The language tag as written, trimmed, at most 128 bytes. It may list
+  /// several languages or use any naming; split and normalized at read time
+  /// by `language_tags.dart`.
+  final String? language;
   final int? durationMs;
   final int? bitrate;
   final int? sampleRate;
@@ -2556,6 +2583,7 @@ class Track extends DataClass implements Insertable<Track> {
     this.genre,
     this.composer,
     this.comment,
+    this.language,
     this.durationMs,
     this.bitrate,
     this.sampleRate,
@@ -2619,6 +2647,9 @@ class Track extends DataClass implements Insertable<Track> {
     }
     if (!nullToAbsent || comment != null) {
       map['comment'] = Variable<String>(comment);
+    }
+    if (!nullToAbsent || language != null) {
+      map['language'] = Variable<String>(language);
     }
     if (!nullToAbsent || durationMs != null) {
       map['duration_ms'] = Variable<int>(durationMs);
@@ -2715,6 +2746,9 @@ class Track extends DataClass implements Insertable<Track> {
       comment: comment == null && nullToAbsent
           ? const Value.absent()
           : Value(comment),
+      language: language == null && nullToAbsent
+          ? const Value.absent()
+          : Value(language),
       durationMs: durationMs == null && nullToAbsent
           ? const Value.absent()
           : Value(durationMs),
@@ -2794,6 +2828,7 @@ class Track extends DataClass implements Insertable<Track> {
       genre: serializer.fromJson<String?>(json['genre']),
       composer: serializer.fromJson<String?>(json['composer']),
       comment: serializer.fromJson<String?>(json['comment']),
+      language: serializer.fromJson<String?>(json['language']),
       durationMs: serializer.fromJson<int?>(json['durationMs']),
       bitrate: serializer.fromJson<int?>(json['bitrate']),
       sampleRate: serializer.fromJson<int?>(json['sampleRate']),
@@ -2842,6 +2877,7 @@ class Track extends DataClass implements Insertable<Track> {
       'genre': serializer.toJson<String?>(genre),
       'composer': serializer.toJson<String?>(composer),
       'comment': serializer.toJson<String?>(comment),
+      'language': serializer.toJson<String?>(language),
       'durationMs': serializer.toJson<int?>(durationMs),
       'bitrate': serializer.toJson<int?>(bitrate),
       'sampleRate': serializer.toJson<int?>(sampleRate),
@@ -2884,6 +2920,7 @@ class Track extends DataClass implements Insertable<Track> {
     Value<String?> genre = const Value.absent(),
     Value<String?> composer = const Value.absent(),
     Value<String?> comment = const Value.absent(),
+    Value<String?> language = const Value.absent(),
     Value<int?> durationMs = const Value.absent(),
     Value<int?> bitrate = const Value.absent(),
     Value<int?> sampleRate = const Value.absent(),
@@ -2923,6 +2960,7 @@ class Track extends DataClass implements Insertable<Track> {
     genre: genre.present ? genre.value : this.genre,
     composer: composer.present ? composer.value : this.composer,
     comment: comment.present ? comment.value : this.comment,
+    language: language.present ? language.value : this.language,
     durationMs: durationMs.present ? durationMs.value : this.durationMs,
     bitrate: bitrate.present ? bitrate.value : this.bitrate,
     sampleRate: sampleRate.present ? sampleRate.value : this.sampleRate,
@@ -2976,6 +3014,7 @@ class Track extends DataClass implements Insertable<Track> {
       genre: data.genre.present ? data.genre.value : this.genre,
       composer: data.composer.present ? data.composer.value : this.composer,
       comment: data.comment.present ? data.comment.value : this.comment,
+      language: data.language.present ? data.language.value : this.language,
       durationMs: data.durationMs.present
           ? data.durationMs.value
           : this.durationMs,
@@ -3044,6 +3083,7 @@ class Track extends DataClass implements Insertable<Track> {
           ..write('genre: $genre, ')
           ..write('composer: $composer, ')
           ..write('comment: $comment, ')
+          ..write('language: $language, ')
           ..write('durationMs: $durationMs, ')
           ..write('bitrate: $bitrate, ')
           ..write('sampleRate: $sampleRate, ')
@@ -3088,6 +3128,7 @@ class Track extends DataClass implements Insertable<Track> {
     genre,
     composer,
     comment,
+    language,
     durationMs,
     bitrate,
     sampleRate,
@@ -3131,6 +3172,7 @@ class Track extends DataClass implements Insertable<Track> {
           other.genre == this.genre &&
           other.composer == this.composer &&
           other.comment == this.comment &&
+          other.language == this.language &&
           other.durationMs == this.durationMs &&
           other.bitrate == this.bitrate &&
           other.sampleRate == this.sampleRate &&
@@ -3172,6 +3214,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
   final Value<String?> genre;
   final Value<String?> composer;
   final Value<String?> comment;
+  final Value<String?> language;
   final Value<int?> durationMs;
   final Value<int?> bitrate;
   final Value<int?> sampleRate;
@@ -3211,6 +3254,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.genre = const Value.absent(),
     this.composer = const Value.absent(),
     this.comment = const Value.absent(),
+    this.language = const Value.absent(),
     this.durationMs = const Value.absent(),
     this.bitrate = const Value.absent(),
     this.sampleRate = const Value.absent(),
@@ -3251,6 +3295,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.genre = const Value.absent(),
     this.composer = const Value.absent(),
     this.comment = const Value.absent(),
+    this.language = const Value.absent(),
     this.durationMs = const Value.absent(),
     this.bitrate = const Value.absent(),
     this.sampleRate = const Value.absent(),
@@ -3297,6 +3342,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Expression<String>? genre,
     Expression<String>? composer,
     Expression<String>? comment,
+    Expression<String>? language,
     Expression<int>? durationMs,
     Expression<int>? bitrate,
     Expression<int>? sampleRate,
@@ -3337,6 +3383,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
       if (genre != null) 'genre': genre,
       if (composer != null) 'composer': composer,
       if (comment != null) 'comment': comment,
+      if (language != null) 'language': language,
       if (durationMs != null) 'duration_ms': durationMs,
       if (bitrate != null) 'bitrate': bitrate,
       if (sampleRate != null) 'sample_rate': sampleRate,
@@ -3380,6 +3427,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Value<String?>? genre,
     Value<String?>? composer,
     Value<String?>? comment,
+    Value<String?>? language,
     Value<int?>? durationMs,
     Value<int?>? bitrate,
     Value<int?>? sampleRate,
@@ -3420,6 +3468,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
       genre: genre ?? this.genre,
       composer: composer ?? this.composer,
       comment: comment ?? this.comment,
+      language: language ?? this.language,
       durationMs: durationMs ?? this.durationMs,
       bitrate: bitrate ?? this.bitrate,
       sampleRate: sampleRate ?? this.sampleRate,
@@ -3497,6 +3546,9 @@ class TracksCompanion extends UpdateCompanion<Track> {
     }
     if (comment.present) {
       map['comment'] = Variable<String>(comment.value);
+    }
+    if (language.present) {
+      map['language'] = Variable<String>(language.value);
     }
     if (durationMs.present) {
       map['duration_ms'] = Variable<int>(durationMs.value);
@@ -3584,6 +3636,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
           ..write('genre: $genre, ')
           ..write('composer: $composer, ')
           ..write('comment: $comment, ')
+          ..write('language: $language, ')
           ..write('durationMs: $durationMs, ')
           ..write('bitrate: $bitrate, ')
           ..write('sampleRate: $sampleRate, ')
@@ -4930,6 +4983,14 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     'tracks_keys_version',
     'CREATE INDEX tracks_keys_version ON tracks (keys_version)',
   );
+  late final Index tracksLanguage = Index(
+    'tracks_language',
+    'CREATE INDEX tracks_language ON tracks (language)',
+  );
+  late final Index tracksAddedAt = Index(
+    'tracks_added_at',
+    'CREATE INDEX tracks_added_at ON tracks (added_at)',
+  );
   late final Index trackArtistsTrack = Index(
     'track_artists_track',
     'CREATE INDEX track_artists_track ON track_artists (track_id)',
@@ -4963,6 +5024,8 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     tracksTitleSort,
     tracksAlbumKey,
     tracksKeysVersion,
+    tracksLanguage,
+    tracksAddedAt,
     trackArtistsTrack,
   ];
   @override
@@ -6286,6 +6349,7 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   Value<String?> genre,
   Value<String?> composer,
   Value<String?> comment,
+  Value<String?> language,
   Value<int?> durationMs,
   Value<int?> bitrate,
   Value<int?> sampleRate,
@@ -6326,6 +6390,7 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<String?> genre,
   Value<String?> composer,
   Value<String?> comment,
+  Value<String?> language,
   Value<int?> durationMs,
   Value<int?> bitrate,
   Value<int?> sampleRate,
@@ -6475,6 +6540,11 @@ class $$TracksTableFilterComposer
 
   ColumnFilters<String> get comment => $composableBuilder(
     column: $table.comment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6721,6 +6791,11 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get durationMs => $composableBuilder(
     column: $table.durationMs,
     builder: (column) => ColumnOrderings(column),
@@ -6911,6 +6986,9 @@ class $$TracksTableAnnotationComposer
   GeneratedColumn<String> get comment =>
       $composableBuilder(column: $table.comment, builder: (column) => column);
 
+  GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+
   GeneratedColumn<int> get durationMs => $composableBuilder(
     column: $table.durationMs,
     builder: (column) => column,
@@ -7092,6 +7170,7 @@ class $$TracksTableTableManager
                 Value<String?> genre = const Value.absent(),
                 Value<String?> composer = const Value.absent(),
                 Value<String?> comment = const Value.absent(),
+                Value<String?> language = const Value.absent(),
                 Value<int?> durationMs = const Value.absent(),
                 Value<int?> bitrate = const Value.absent(),
                 Value<int?> sampleRate = const Value.absent(),
@@ -7131,6 +7210,7 @@ class $$TracksTableTableManager
                 genre: genre,
                 composer: composer,
                 comment: comment,
+                language: language,
                 durationMs: durationMs,
                 bitrate: bitrate,
                 sampleRate: sampleRate,
@@ -7172,6 +7252,7 @@ class $$TracksTableTableManager
                 Value<String?> genre = const Value.absent(),
                 Value<String?> composer = const Value.absent(),
                 Value<String?> comment = const Value.absent(),
+                Value<String?> language = const Value.absent(),
                 Value<int?> durationMs = const Value.absent(),
                 Value<int?> bitrate = const Value.absent(),
                 Value<int?> sampleRate = const Value.absent(),
@@ -7211,6 +7292,7 @@ class $$TracksTableTableManager
                 genre: genre,
                 composer: composer,
                 comment: comment,
+                language: language,
                 durationMs: durationMs,
                 bitrate: bitrate,
                 sampleRate: sampleRate,

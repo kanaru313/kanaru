@@ -2786,12 +2786,6 @@ abstract class AppLocalizations {
   /// **'None of these songs are in your library'**
   String get queueHistoryNothingToPlay;
 
-  /// Sidebar item that opens and closes the queue side sheet
-  ///
-  /// In en, this message translates to:
-  /// **'Current queue'**
-  String get sidebarCurrentQueue;
-
   /// Name of the lyrics page of the narrow Now Playing layout
   ///
   /// In en, this message translates to:
@@ -3223,6 +3217,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Queue'**
   String get sleepTimerLabelQueue;
+
+  /// Sidebar and page title for song languages
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get navLanguages;
+
+  /// Title of the empty Languages page
+  ///
+  /// In en, this message translates to:
+  /// **'Languages are coming soon'**
+  String get languagesComingSoonTitle;
+
+  /// Message of the empty Languages page
+  ///
+  /// In en, this message translates to:
+  /// **'Browsing songs by language is not available yet.'**
+  String get languagesComingSoonMessage;
 }
 
 class _AppLocalizationsDelegate

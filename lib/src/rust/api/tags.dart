@@ -116,6 +116,9 @@ class TrackTags {
   final String? genre;
   final String? composer;
   final String? comment;
+
+  /// Language tag as written (ID3 `TLAN`, Vorbis `LANGUAGE`), trimmed.
+  final String? language;
   final PlatformInt64? durationMs;
 
   /// Overall bitrate in kbps.
@@ -141,6 +144,7 @@ class TrackTags {
     this.genre,
     this.composer,
     this.comment,
+    this.language,
     this.durationMs,
     this.bitrate,
     this.sampleRate,
@@ -176,6 +180,7 @@ class TrackTags {
       genre.hashCode ^
       composer.hashCode ^
       comment.hashCode ^
+      language.hashCode ^
       durationMs.hashCode ^
       bitrate.hashCode ^
       sampleRate.hashCode ^
@@ -201,6 +206,7 @@ class TrackTags {
           genre == other.genre &&
           composer == other.composer &&
           comment == other.comment &&
+          language == other.language &&
           durationMs == other.durationMs &&
           bitrate == other.bitrate &&
           sampleRate == other.sampleRate &&

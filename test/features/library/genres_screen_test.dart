@@ -10,6 +10,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('r1', genre: 'Rock', album: 'A'),
@@ -29,7 +30,7 @@ void main() {
   testWidgets('lists every genre with its song count, round and sorted', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
     double top(String text) => tester.getTopLeft(find.text(text)).dy;
 
@@ -49,7 +50,7 @@ void main() {
   testWidgets('the toggle switches to round grid tiles and back', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
 
     await toGrid(tester);
@@ -70,7 +71,7 @@ void main() {
   testWidgets('the grid view survives leaving and re-entering the tab', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
     await toGrid(tester);
 
@@ -85,7 +86,7 @@ void main() {
   testWidgets('tapping a genre opens its page, in the list and the grid', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
 
     await tester.tap(find.text('Jazz'));
@@ -123,7 +124,7 @@ void main() {
   testWidgets('large text does not overflow the grid', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
     await toGrid(tester);
 
@@ -136,7 +137,7 @@ void main() {
   });
 
   testWidgets('without songs the page says so', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, const [], location: '/genres');
 
     expect(find.text('No genres yet'), findsOneWidget);

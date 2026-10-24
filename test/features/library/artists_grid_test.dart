@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('a1', artist: 'Ann', album: 'A'),
@@ -25,7 +26,7 @@ void main() {
   testWidgets('starts as a list and the toggle switches to a grid', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     expect(find.byType(ArtistTile), findsNWidgets(2));
     expect(find.byType(ArtistGridTile), findsNothing);
@@ -48,7 +49,7 @@ void main() {
   testWidgets('the grid view survives leaving and re-entering the tab', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     await toGrid(tester);
 
@@ -61,7 +62,7 @@ void main() {
   });
 
   testWidgets('tapping a tile opens the artist page', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     await toGrid(tester);
 
@@ -72,7 +73,7 @@ void main() {
   });
 
   testWidgets('right click offers Play next for the artist', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     await toGrid(tester);
 
@@ -93,7 +94,7 @@ void main() {
   testWidgets('large text does not overflow the tiles', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     await toGrid(tester);
 

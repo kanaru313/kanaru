@@ -947,8 +947,6 @@
   "@queueHistoryDeleted": {"description": "Snackbar after a saved queue was deleted"},
   "queueHistoryNothingToPlay": "None of these songs are in your library",
   "@queueHistoryNothingToPlay": {"description": "Snackbar when a saved queue has no song that can play"},
-  "sidebarCurrentQueue": "Current queue",
-  "@sidebarCurrentQueue": {"description": "Sidebar item that opens and closes the queue side sheet"},
   "lyricsTab": "Lyrics",
   "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" },
   "coverCacheClearTitle": "Clear the cover cache?",
@@ -1116,5 +1114,11 @@
   "sleepTimerLabelAlbum": "Album",
   "@sleepTimerLabelAlbum": { "description": "Short label beside the moon button while the timer waits for the end of the album" },
   "sleepTimerLabelQueue": "Queue",
-  "@sleepTimerLabelQueue": { "description": "Short label beside the moon button while the timer waits for the end of the queue" }
+  "@sleepTimerLabelQueue": { "description": "Short label beside the moon button while the timer waits for the end of the queue" },
+  "navLanguages": "Languages",
+  "@navLanguages": { "description": "Sidebar and page title for song languages" },
+  "languagesComingSoonTitle": "Languages are coming soon",
+  "@languagesComingSoonTitle": { "description": "Title of the empty Languages page" },
+  "languagesComingSoonMessage": "Browsing songs by language is not available yet.",
+  "@languagesComingSoonMessage": { "description": "Message of the empty Languages page" }
 }

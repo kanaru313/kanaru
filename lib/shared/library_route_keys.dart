@@ -8,7 +8,13 @@ import '../core/database/library_database.dart' show AlbumKey;
 const albumsPath = '/albums';
 const artistsPath = '/artists';
 const genresPath = '/genres';
+const languagesPath = '/languages';
 const foldersPath = '/folders';
+
+/// Same text as `historyPath` in `features/history/history_routes.dart`,
+/// repeated for features that may not import each other; a test keeps them
+/// equal.
+const historyPath = '/history';
 
 /// Longest route key accepted. Each key part holds at most 256 characters
 /// (an album artist key may join several), and the worst characters (4-byte
@@ -59,6 +65,10 @@ String encodeGenreRouteKey(String genreKey) => _encode([genreKey]);
 
 String? decodeGenreRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
 
+String encodeLanguageRouteKey(String languageKey) => _encode([languageKey]);
+
+String? decodeLanguageRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
+
 String encodeFolderRouteKey(String path) => _encode([path]);
 
 String? decodeFolderRouteKey(String routeKey) => _decode(routeKey, 1)?.single;
@@ -77,6 +87,10 @@ String artistAlbumLocation(String artistKey, AlbumKey albumKey) =>
 /// A genre page; [genreKey] comes from `genreKey` in `genre_names.dart`.
 String genreLocation(String genreKey) =>
     '$genresPath/${encodeGenreRouteKey(genreKey)}';
+
+/// A language page; [languageKey] is the normalized language code or name.
+String languageLocation(String languageKey) =>
+    '$languagesPath/${encodeLanguageRouteKey(languageKey)}';
 
 /// A folder page; [path] is the absolute path without a trailing `/`.
 String folderLocation(String path) =>
