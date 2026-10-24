@@ -780,7 +780,7 @@
   "settingsTabGenres": "Genres",
   "settingsTabLanguages": "Languages",
   "settingsTrackNumbers": "Track numbers in albums",
-  "settingsTrackNumbersHint": "On: each song's number on an album page. Off: its cover.",
+  "settingsTrackNumbersHint": "Shows each song's number before its cover on an album page.",
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreRow": "Back up and restore data",

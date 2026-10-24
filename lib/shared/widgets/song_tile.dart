@@ -16,16 +16,18 @@ import 'track_actions_menu.dart';
 /// playlist and album track rows).
 const songCoverSize = 40.0;
 
-/// One song row: cover, then three lines (title, artist, "album • year"),
-/// then the duration above a heart. Without a cover the row shows a music
-/// note. Every line is always laid out, empty or not, so all rows have the
-/// height of the list's prototype row.
+/// One song row: an optional [number] column, the cover, then three lines
+/// (title, artist, "album • year"), then the duration above a heart. Without
+/// a cover the row shows a music note. Every line is always laid out, empty
+/// or not, so all rows have the height of the list's prototype row.
 class SongTile extends ConsumerWidget {
   const SongTile({
     super.key,
     required this.song,
     required this.onTap,
     this.onQueueAction,
+    this.number,
+    this.showAlbum = true,
   });
 
   final TrackListItem song;
@@ -34,23 +36,46 @@ class SongTile extends ConsumerWidget {
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
+  /// Shown right-aligned in a column before the cover (a track number on an
+  /// album page; empty keeps the column); no column when null.
+  final String? number;
+
+  /// False leaves Show album out of the menu (rows on the album's own page).
+  final bool showAlbum;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final styles = libraryRowStyles(Theme.of(context));
     final albumLine = joinRowDetails([song.album, rowYear(song.year)]);
     final durationMs = song.durationMs;
 
+    final number = this.number;
+    final cover = CoverArt(
+      path: coverPath(ref.watch(coverCacheDirectoryProvider), song.coverKey),
+      size: libraryRowCoverSize,
+      placeholder: const Center(child: Icon(AppIcons.musicNoteOutlined)),
+    );
+
     final tile = InkWell(
       onTap: onTap,
       child: LibraryRowLayout(
-        leading: CoverArt(
-          path: coverPath(
-            ref.watch(coverCacheDirectoryProvider),
-            song.coverKey,
-          ),
-          size: libraryRowCoverSize,
-          placeholder: const Center(child: Icon(AppIcons.musicNoteOutlined)),
-        ),
+        leading: number == null
+            ? cover
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 16,
+                children: [
+                  SizedBox(
+                    width: 32,
+                    child: Text(
+                      number,
+                      textAlign: TextAlign.end,
+                      style: styles.detail,
+                    ),
+                  ),
+                  cover,
+                ],
+              ),
         body: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,6 +102,7 @@ class SongTile extends ConsumerWidget {
     return TrackActionsRegion(
       trackId: song.id,
       path: song.path,
+      showAlbum: showAlbum,
       hasArtist: song.artist?.isNotEmpty ?? false,
       hasAlbum: song.album?.isNotEmpty ?? false,
       onQueueAction: onQueueAction,

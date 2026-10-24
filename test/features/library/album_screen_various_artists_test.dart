@@ -72,7 +72,7 @@ void main() {
     expect(find.text('Bob'), findsOneWidget);
   });
 
-  testWidgets('a single-artist album does not repeat the album artist', (
+  testWidgets('a single-artist album row names its artist like Songs', (
     tester,
   ) async {
     final h = LibraryHarness(
@@ -84,8 +84,8 @@ void main() {
     );
     await openWithTracks(tester, h, const [], location: albumLocation(_key));
 
-    // "Ann" once in the header; her row stays quiet.
-    expect(find.text('Ann'), findsOneWidget);
+    // "Ann" in the header and on her row, which is the Songs list row.
+    expect(find.text('Ann'), findsNWidgets(2));
     expect(find.text('Bob'), findsOneWidget);
   });
 }

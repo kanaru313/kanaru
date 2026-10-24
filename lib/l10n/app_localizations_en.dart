@@ -1328,7 +1328,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTrackNumbersHint =>
-      'On: each song\'s number on an album page. Off: its cover.';
+      'Shows each song\'s number before its cover on an album page.';
 
   @override
   String get settingsAdvanced => 'Advanced';

@@ -39,24 +39,25 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: AlbumTrackTile(
-              track: _track,
-              albumArtist: null,
-              onTap: () {},
-            ),
+            body: AlbumTrackTile(track: _track, onTap: () {}),
           ),
         ),
       ),
     );
   }
 
-  testWidgets('track numbers on show the number', (tester) async {
+  testWidgets('track numbers on show the number before the cover', (
+    tester,
+  ) async {
     await pump(tester, numbers: true);
     expect(find.text('7'), findsOneWidget);
-    expect(find.byType(CoverArt), findsNothing);
+    expect(
+      tester.getTopLeft(find.text('7')).dx,
+      lessThan(tester.getTopLeft(find.byType(CoverArt)).dx),
+    );
   });
 
-  testWidgets('track numbers off show the song cover instead', (tester) async {
+  testWidgets('track numbers off leave only the song cover', (tester) async {
     await pump(tester, numbers: false);
     expect(find.text('7'), findsNothing);
     final cover = tester.widget<CoverArt>(find.byType(CoverArt));
@@ -77,11 +78,7 @@ void main() {
         container: container,
         child: MaterialApp(
           home: Scaffold(
-            body: AlbumTrackTile(
-              track: _track,
-              albumArtist: null,
-              onTap: () {},
-            ),
+            body: AlbumTrackTile(track: _track, onTap: () {}),
           ),
         ),
       ),
@@ -89,9 +86,7 @@ void main() {
     expect(tester.widget<CoverArt>(find.byType(CoverArt)).path, isNull);
   });
 
-  testWidgets('changing the setting switches the leading at once', (
-    tester,
-  ) async {
+  testWidgets('changing the setting hides the number at once', (tester) async {
     await pump(tester, numbers: true);
     container
         .read(settingsProvider.notifier)

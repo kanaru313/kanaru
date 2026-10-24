@@ -31,14 +31,12 @@ class SliverAlbumFilteredTracks extends StatelessWidget {
   const SliverAlbumFilteredTracks({
     super.key,
     required this.tracks,
-    required this.albumArtist,
     required this.query,
     required this.onTap,
     required this.onQueueAction,
   });
 
   final List<BrowseTrack> tracks;
-  final String? albumArtist;
 
   /// What was typed, for the message when nothing matches.
   final String query;
@@ -54,7 +52,6 @@ class SliverAlbumFilteredTracks extends StatelessWidget {
       itemCount: tracks.length,
       itemBuilder: (context, i) => AlbumTrackTile(
         track: tracks[i],
-        albumArtist: albumArtist,
         onTap: () => onTap(i),
         onQueueAction: (action) => onQueueAction(tracks[i], action),
       ),

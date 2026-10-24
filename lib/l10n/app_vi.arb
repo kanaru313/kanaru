@@ -332,7 +332,7 @@
   "settingsTabGenres": "Thể loại",
   "settingsTabLanguages": "Ngôn ngữ bài hát",
   "settingsTrackNumbers": "Số thứ tự bài trong album",
-  "settingsTrackNumbersHint": "Bật: số thứ tự của từng bài trên trang album. Tắt: ảnh bìa của bài.",
+  "settingsTrackNumbersHint": "Hiện số thứ tự của từng bài trước ảnh bìa trên trang album.",
   "settingsAdvanced": "Nâng cao",
   "settingsBackupRestore": "Sao lưu & khôi phục",
   "settingsBackupRestoreRow": "Sao lưu và khôi phục dữ liệu",

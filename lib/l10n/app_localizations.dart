@@ -2051,7 +2051,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTrackNumbersHint.
   ///
   /// In en, this message translates to:
-  /// **'On: each song\'s number on an album page. Off: its cover.'**
+  /// **'Shows each song\'s number before its cover on an album page.'**
   String get settingsTrackNumbersHint;
 
   /// No description provided for @settingsAdvanced.
