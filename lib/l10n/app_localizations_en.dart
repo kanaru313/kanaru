@@ -911,6 +911,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueClose => 'Close now playing list';
 
   @override
+  String queueSummary(String tracks, String timeLeft) {
+    return '$tracks · $timeLeft';
+  }
+
+  @override
+  String queueTimeLeftHours(int hours, int minutes) {
+    return '$hours h $minutes min left';
+  }
+
+  @override
+  String queueTimeLeftMinutes(int minutes) {
+    return '$minutes min left';
+  }
+
+  @override
+  String get queueMoreActions => 'More actions';
+
+  @override
   String get settingsLibrary => 'Library';
 
   @override

@@ -87,8 +87,10 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 
 ## Queue sheet
 
-- A panel on the right, at most 400 px wide. Not a route; Esc or the mouse back button closes it while it is open. Focus returns on close.
-- Rows are 64 px. Drag handle reorders; a remove control per row; clear-all in the header.
+- A panel on the right, at most 400 px wide, in a solid `surfaceContainerLow` (nothing shows through). The scrim and the panel end at the top of the player bar, which stays visible and clickable. Not a route; the mouse back button closes it, and Esc closes it from anywhere, also when a click moved focus to a bar control (a bar menu opened with the mouse does not hold focus, so Esc closes the sheet and leaves that menu open until a click; the queue's own `⋮` menu closes with the sheet). Opening Now Playing closes it. Focus returns on close.
+- Header in two rows: the title "Now playing" with the close button, then a summary line ("876 tracks · 3 h 12 min left", or only the count under repeat or when a track has no known duration; rounded up to minutes, rebuilt once per minute) with the filter, jump-to-current and a `⋮` menu (Save queue as playlist, Clear queue; each greyed out when it cannot run). The `⋮` button has an explicit accessible name.
+- The queue button in the player bar toggles the sheet: pressed while it is open it closes it, is shown selected and its tooltip says "Close". Its count badge uses `secondaryContainer`, not the error color.
+- Rows are 64 px. Drag handle reorders; a remove control per row.
 - The current row uses the primary color (`queue_tile.dart`).
 - A search button in the header opens a filter box under it (`Ctrl+F` reaches it while the sheet is open, Esc closes the box first). Matches are the real rows, best match first, without drag handle or remove button; tapping one jumps to it and leaves the queue as it is. Closing the sheet drops the filter.
 - Opens and closes in 400 ms.

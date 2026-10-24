@@ -15,6 +15,7 @@ import 'queue_panel_header.dart';
 import 'queue_save_flow.dart';
 import 'queue_sheet_host.dart';
 import 'queue_tile.dart';
+import 'queue_time_left.dart';
 
 /// The play queue, editable: drag a row by its handle to reorder, remove a
 /// row, play one by tapping it. Only the rows on screen are built, so a
@@ -129,7 +130,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
       builder: (context, _) => Column(
         children: [
           QueuePanelHeader(
-            trackCount: queue.order.length,
+            summary: const QueueSummaryText(),
             filterOpen: _filter.isOpen,
             onFilter: _filter.isOpen ? _filter.close : _filter.open,
             filterFocus: _filterButtonFocus,

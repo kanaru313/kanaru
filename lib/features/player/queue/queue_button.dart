@@ -10,8 +10,8 @@ import 'queue_sheet_host.dart';
 /// Largest count the badge shows; more reads as `9999+`.
 const _badgeMax = 9999;
 
-/// Queue icon with the number of tracks queued. Opens the queue sheet of the
-/// nearest [QueueSheetHost].
+/// Queue icon with the number of tracks queued. Toggles the queue sheet of
+/// the nearest [QueueSheetHost]: opens it, or closes it while it is open.
 class QueueButton extends ConsumerWidget {
   const QueueButton({super.key, this.onPressed});
 
@@ -23,17 +23,27 @@ class QueueButton extends ConsumerWidget {
     final count = ref.watch(
       playerServiceProvider.select((s) => s.queue.order.length),
     );
+    final l10n = context.l10n;
+    final colors = Theme.of(context).colorScheme;
+    final open = QueueSheetHost.isOpenOf(context);
     return Badge(
+      backgroundColor: colors.secondaryContainer,
+      textColor: colors.onSecondaryContainer,
       isLabelVisible: count > 0,
       label: Text(count > _badgeMax ? '$_badgeMax+' : '$count'),
       child: IconButton(
         icon: const Icon(AppIcons.queue),
         iconSize: playerIconSize,
-        tooltip: context.l10n.queueOpen,
-        onPressed: count == 0
-            ? null
-            : onPressed ?? () => QueueSheetHost.of(context).open(),
+        isSelected: open,
+        tooltip: open ? l10n.queueClose : l10n.queueOpen,
+        onPressed: count == 0 && !open ? null : onPressed ?? _toggle(context),
       ),
     );
   }
+
+  /// Closes the open sheet, or opens it when closed.
+  VoidCallback _toggle(BuildContext context) => () {
+    final sheet = QueueSheetHost.of(context);
+    sheet.isOpen ? sheet.close() : sheet.open();
+  };
 }

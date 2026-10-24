@@ -91,6 +91,10 @@ class AppShell extends ConsumerWidget {
     // sheet is open (back closes it). While Now Playing is open the shell
     // gets no pointer events; Now Playing handles them itself.
     final shell = QueueSheetHost(
+      // The sheet stops above the player bar, which stays clickable, and
+      // gives way to Now Playing when that opens.
+      bottomInset: playerBar == null ? 0 : playerBarHeight,
+      closed: nowPlayingOpen,
       onMouseBack: history.back,
       onMouseForward: history.forward,
       child: wide
