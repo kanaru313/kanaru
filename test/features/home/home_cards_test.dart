@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/album_grouping_keys.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/settings/library_scan_prefs.dart';
 import 'package:kanaru/features/home/home_screen.dart';
 
 import 'home_test_harness.dart';
@@ -75,6 +77,22 @@ void main() {
       await tester.tap(find.text('Alpha'));
       await tester.pumpAndSettle();
       expect(find.textContaining('at /albums/'), findsOneWidget);
+    });
+
+    testWidgets('an album card shows the artist, or various artists', (
+      tester,
+    ) async {
+      final h = HomeHarness();
+      useAlbumGrouping(h.db, const AlbumGrouping(byAlbumArtist: false));
+      await h.addTrack('/a', artist: 'Ann', album: 'Alpha');
+      await h.addTrack('/m1', artist: 'Ann', album: 'Mix');
+      await h.addTrack('/m2', artist: 'Bob', album: 'Mix');
+      await play(h, '/a', daysAgo(1));
+      await play(h, '/m1', daysAgo(0));
+      await open(tester, h);
+
+      expect(find.text('Various artists'), findsOneWidget);
+      expect(find.text('Ann'), findsWidgets);
     });
 
     testWidgets('an artist card shows its song count and opens the page', (

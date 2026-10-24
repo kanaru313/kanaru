@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/album_grouping_keys.dart';
 import 'package:kanaru/core/database/home_queries.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/settings/library_scan_prefs.dart';
 
 void main() {
   late LibraryDatabase db;
@@ -185,6 +187,20 @@ void main() {
   });
 
   group('homeRecentAlbums', () {
+    test('an untagged album of several artists is various artists', () async {
+      useAlbumGrouping(db, const AlbumGrouping(byAlbumArtist: false));
+      await track('/m1', artist: 'Ann', album: 'Mix');
+      await track('/m2', artist: 'Bob', album: 'Mix');
+      await track('/s1', artist: 'Ann', album: 'Solo');
+      await play('/m1', 10);
+      await play('/s1', 20);
+      final albums = await db.homeRecentAlbums(limit: 10);
+      expect(
+        {for (final a in albums) a.title: a.variousArtists},
+        {'Mix': true, 'Solo': false},
+      );
+    });
+
     test(
       'latest listen first, counts every track, skips no-album tracks',
       () async {
