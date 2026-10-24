@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 String _name(int i) => 's${i.toString().padLeft(4, '0')}';
 
@@ -35,10 +36,8 @@ void main() {
     TestTrack('c', artist: 'Cy', album: 'Al'),
   ];
 
-  testWidgets('the view button switches between list and grid', (
-    tester,
-  ) async {
-    final h = LibraryHarness();
+  testWidgets('the view button switches between list and grid', (tester) async {
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, tracks, location: '/songs');
     expect(find.byType(SongTile), findsNWidgets(3));
     expect(find.byType(SongGridTile), findsNothing);
@@ -47,10 +46,7 @@ void main() {
     expect(find.byType(SongGridTile), findsNWidgets(3));
     expect(find.byType(SongTile), findsNothing);
     expect(find.text('Ann'), findsOneWidget);
-    expect(
-      h.container.read(libraryViewModesProvider).songs,
-      AlbumsView.grid,
-    );
+    expect(h.container.read(libraryViewModesProvider).songs, AlbumsView.grid);
 
     await tester.tap(find.byTooltip('Grid'));
     await tester.pumpAndSettle();
@@ -58,7 +54,7 @@ void main() {
   });
 
   testWidgets('the grid view stays while the app runs', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, tracks, location: '/songs');
     await toGrid(tester);
 
@@ -72,7 +68,7 @@ void main() {
   });
 
   testWidgets('tapping a tile plays the whole list from it', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, tracks, location: '/songs');
     await toGrid(tester);
 
@@ -85,7 +81,7 @@ void main() {
   });
 
   testWidgets('a right click opens the song menu', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, tracks, location: '/songs');
     await toGrid(tester);
 
@@ -97,7 +93,7 @@ void main() {
   });
 
   testWidgets('a large library reads only the tiles in view', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, [
       for (var i = 0; i < 5000; i++) TestTrack(_name(i)),
     ], location: '/songs');

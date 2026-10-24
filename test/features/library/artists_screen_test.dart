@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('a1', artist: 'Ann', album: 'A'),
@@ -19,7 +20,7 @@ void main() {
   testWidgets('lists every credited artist with counts, sorted', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     double top(String text) => tester.getTopLeft(find.text(text)).dy;
 

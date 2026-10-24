@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('rock one', genre: 'Rock', album: 'Loud', albumArtist: 'X'),
@@ -26,7 +27,7 @@ void main() {
   testWidgets('the list ends with Unknown genre and its song count', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
 
     final tiles = tester.widgetList<GenreTile>(find.byType(GenreTile)).toList();
@@ -37,7 +38,7 @@ void main() {
   });
 
   testWidgets('the grid shows it too', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/genres');
 
     await tester.tap(find.byTooltip('List'));
@@ -78,7 +79,7 @@ void main() {
   testWidgets('with only untagged songs the list is just that entry', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, const [
       TestTrack('x'),
     ], location: '/genres');

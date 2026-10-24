@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('b2', path: '/m/Rock/b2.flac'),
@@ -41,7 +42,7 @@ void main() {
   testWidgets('one music folder is listed as a folder, not skipped into', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     expect(find.byType(FolderListTile), findsOneWidget);
@@ -53,7 +54,7 @@ void main() {
   testWidgets('tapping the music folder opens its page with the children', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     await tester.tap(folderTile('m'));
@@ -65,7 +66,7 @@ void main() {
   });
 
   testWidgets('several music folders are all listed', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
     await addSecondRoot(tester, h);
     await settleIo(tester, h);
@@ -77,7 +78,7 @@ void main() {
   });
 
   testWidgets('a music folder without songs is still listed', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, const [], location: '/folders');
     await tester.runAsync(() => h.db.addRoots(['/empty'], now: 1));
     await insertTracks(tester, h, const [TestTrack('x', path: '/m/x.flac')]);
@@ -89,7 +90,7 @@ void main() {
   testWidgets('the counts line shows songs and folders below, recursively', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     final line = find.descendant(
@@ -117,7 +118,7 @@ void main() {
   testWidgets('without subfolders the counts line has songs only', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, const [
       TestTrack('x', path: '/m/x.flac'),
     ], location: '/folders');
@@ -132,7 +133,7 @@ void main() {
   testWidgets('the tree toggle lists every folder with songs, by label', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     await tester.tap(find.byTooltip('Folder tree'));
@@ -167,7 +168,7 @@ void main() {
   });
 
   testWidgets('the grid toggle shows folder tiles and back', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     await tester.tap(find.byTooltip('List'));
@@ -186,7 +187,7 @@ void main() {
   testWidgets('the view and the tree setting survive leaving the tab', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
     await tester.tap(find.byTooltip('List'));
     await tester.tap(find.byTooltip('Folder tree'));
@@ -201,7 +202,7 @@ void main() {
   });
 
   testWidgets('a folder in the grid opens its page', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
     await tester.tap(find.byTooltip('List'));
     await tester.pumpAndSettle();
@@ -213,7 +214,7 @@ void main() {
   });
 
   testWidgets('right click on a folder offers the six actions', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     await tester.tap(folderTile('m'), buttons: kSecondaryButton);
@@ -234,7 +235,7 @@ void main() {
   testWidgets('Play next on a folder queues its whole subtree in order', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     await tester.tap(folderTile('m'), buttons: kSecondaryButton);
@@ -254,7 +255,7 @@ void main() {
   testWidgets('a large text size does not overflow the grid', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
     await tester.tap(find.byTooltip('List'));
     await tester.pumpAndSettle();
@@ -308,7 +309,7 @@ void main() {
   testWidgets('music folders with the same name also show their path', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await h.pump(tester, hasRoots: true);
     await tester.runAsync(
       () => h.db.addRoots(['/a/Music', '/b/Music'], now: 1),

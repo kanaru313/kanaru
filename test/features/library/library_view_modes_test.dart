@@ -17,62 +17,84 @@ void main() {
     expect(container.read(libraryViewModesProvider).artists, AlbumsView.grid);
   });
 
-  test('artists default to the list and can be switched', () {
+  test('every library page defaults to the grid', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    expect(container.read(libraryViewModesProvider).artists, AlbumsView.list);
+    final modes = container.read(libraryViewModesProvider);
+    expect(modes.songs, AlbumsView.grid);
+    expect(modes.artists, AlbumsView.grid);
+    expect(modes.genres, AlbumsView.grid);
+    expect(modes.folders, AlbumsView.grid);
+    expect(modes.languages, AlbumsView.grid);
+    expect(modes.foldersHierarchy, isTrue);
+  });
+
+  test('artists can be switched to the list', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
     container
         .read(libraryViewModesProvider.notifier)
-        .setArtistsView(AlbumsView.grid);
+        .setArtistsView(AlbumsView.list);
 
-    expect(container.read(libraryViewModesProvider).artists, AlbumsView.grid);
+    expect(container.read(libraryViewModesProvider).artists, AlbumsView.list);
+  });
+
+  test('languages can be switched apart from the other pages', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    container
+        .read(libraryViewModesProvider.notifier)
+        .setLanguagesView(AlbumsView.list);
+
+    final modes = container.read(libraryViewModesProvider);
+    expect(modes.languages, AlbumsView.list);
+    expect(modes.songs, AlbumsView.grid);
+    expect(modes.artists, AlbumsView.grid);
   });
 
   test('a new container starts from the defaults again', () {
     final first = ProviderContainer();
     first
         .read(libraryViewModesProvider.notifier)
-        .setArtistsView(AlbumsView.grid);
+        .setArtistsView(AlbumsView.list);
     first.dispose();
     final second = ProviderContainer();
     addTearDown(second.dispose);
 
-    expect(second.read(libraryViewModesProvider).artists, AlbumsView.list);
+    expect(second.read(libraryViewModesProvider).artists, AlbumsView.grid);
   });
 
-  test('genres default to the list and can be switched apart from artists', () {
+  test('genres can be switched apart from artists', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    expect(container.read(libraryViewModesProvider).genres, AlbumsView.list);
     container
         .read(libraryViewModesProvider.notifier)
-        .setGenresView(AlbumsView.grid);
+        .setGenresView(AlbumsView.list);
 
     final modes = container.read(libraryViewModesProvider);
-    expect(modes.genres, AlbumsView.grid);
-    expect(modes.artists, AlbumsView.list);
+    expect(modes.genres, AlbumsView.list);
+    expect(modes.artists, AlbumsView.grid);
   });
 
-  test('folders default to the list with the tree on, each set apart', () {
+  test('folders view and the tree are set apart', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    final modes = container.read(libraryViewModesProvider);
-    expect(modes.folders, AlbumsView.list);
-    expect(modes.foldersHierarchy, isTrue);
 
     container
         .read(libraryViewModesProvider.notifier)
-        .setFoldersView(AlbumsView.grid);
+        .setFoldersView(AlbumsView.list);
     container
         .read(libraryViewModesProvider.notifier)
         .setFoldersHierarchy(false);
 
     final changed = container.read(libraryViewModesProvider);
-    expect(changed.folders, AlbumsView.grid);
+    expect(changed.folders, AlbumsView.list);
     expect(changed.foldersHierarchy, isFalse);
-    expect(changed.artists, AlbumsView.list);
-    expect(changed.genres, AlbumsView.list);
+    expect(changed.artists, AlbumsView.grid);
+    expect(changed.genres, AlbumsView.grid);
   });
 }

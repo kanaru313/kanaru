@@ -13,6 +13,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/indexer/fake_tag_reader.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _covers = '/cache/kanaru/covers/512';
 final _red = fakeCoverKey('red');
@@ -78,7 +79,10 @@ void main() {
   });
 
   testWidgets('songs show their cover, else the music note', (tester) async {
-    final h = _harness();
+    final h = LibraryHarness(
+      coverCacheDirectory: _covers,
+      overrides: [listViewModesOverride],
+    );
     await openWithTracks(tester, h, tracks, location: '/songs');
 
     Finder song(String title) =>
@@ -146,7 +150,10 @@ void main() {
   ) async {
     final covers = Directory.systemTemp.createTempSync('library_covers');
     addTearDown(() => covers.deleteSync(recursive: true));
-    final h = LibraryHarness(coverCacheDirectory: covers.path);
+    final h = LibraryHarness(
+      coverCacheDirectory: covers.path,
+      overrides: [listViewModesOverride],
+    );
     h.reader
       ..coverDirectory = covers.path
       ..coverByName['one.mp3'] = 'red'

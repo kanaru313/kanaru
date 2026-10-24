@@ -16,6 +16,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/indexer/fake_tag_reader.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 /// A tag reader that waits for [release] so a test can look at a scan in
 /// progress.
@@ -60,7 +61,7 @@ void main() {
   testWidgets('lists scanned songs in title order and plays from the tap', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     final music = h.folder('music');
     h.touch(music, 'b.mp3');
     h.touch(music, 'a.mp3');
@@ -277,7 +278,7 @@ void main() {
     testWidgets(
       're-sorts, keeps rows meanwhile, saves and plays the new order',
       (tester) async {
-        final h = LibraryHarness();
+        final h = LibraryHarness(overrides: [listViewModesOverride]);
         await openWithTracks(tester, h, many, location: '/songs');
         expect(find.text('s00'), findsOneWidget);
 
@@ -324,6 +325,7 @@ void main() {
       final streams = <StreamController<SongIds>>[];
       final h = LibraryHarness(
         overrides: [
+          listViewModesOverride,
           songIdsProvider.overrideWith((ref) {
             ref.watch(settingsProvider.select((s) => s.songSort));
             final controller = StreamController<SongIds>();

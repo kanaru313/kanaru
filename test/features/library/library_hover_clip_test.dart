@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 /// Enough tracks, albums and artists to scroll every page.
 final _tracks = [
@@ -58,13 +59,13 @@ void main() {
   });
 
   testWidgets('artist list hover stays inside the list', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
     await expectInkClipped(tester, find.byType(ArtistTile));
   });
 
   testWidgets('song list hover stays inside the list', (tester) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/songs');
     await expectInkClipped(tester, find.byType(SongTile));
   });

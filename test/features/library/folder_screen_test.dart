@@ -13,6 +13,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/stats/gated_query_interceptor.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('b2', path: '/m/Rock/b2.flac'),
@@ -60,7 +61,7 @@ void main() {
   testWidgets('shows the subfolders, then the songs, both in natural order', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: _rock);
     double top(String text) => tester.getTopLeft(onPage(text)).dy;
 
@@ -221,7 +222,7 @@ void main() {
   testWidgets('Create playlist on a folder without songs only says so', (
     tester,
   ) async {
-    final h = LibraryHarness();
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
     await tester.runAsync(() => h.db.addRoots(['/empty'], now: 2));
     await insertTracks(tester, h, const [TestTrack('k', path: '/m/k.flac')]);
