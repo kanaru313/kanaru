@@ -5,12 +5,16 @@ const _colorFromCoverKey = 'colorFromCover';
 const _fontScaleKey = 'fontScale';
 const _hiddenSidebarTabsKey = 'hiddenSidebarTabs';
 const _trackNumbersInAlbumKey = 'trackNumbersInAlbum';
+const _sidePanelOpenKey = 'sidePanelOpen';
+const _sidePanelTabKey = 'sidePanelTab';
 final Set<SidebarTab> _allTabs = const DisplayPrefs().sidebarTabs;
 const _knownKeys = {
   _colorFromCoverKey,
   _fontScaleKey,
   _hiddenSidebarTabsKey,
   _trackNumbersInAlbumKey,
+  _sidePanelOpenKey,
+  _sidePanelTabKey,
 };
 
 /// Reads the `display` object; each key falls back on its own. The second
@@ -34,6 +38,12 @@ const _knownKeys = {
       trackNumbersInAlbum: boolOr(
         map[_trackNumbersInAlbumKey],
         d.trackNumbersInAlbum,
+      ),
+      sidePanelOpen: boolOr(map[_sidePanelOpenKey], d.sidePanelOpen),
+      sidePanelTab: enumOr(
+        SidePanelTab.values,
+        map[_sidePanelTabKey],
+        d.sidePanelTab,
       ),
     ),
     {
@@ -79,5 +89,7 @@ Map<String, Object?> encodeDisplayPrefs(
       if (unknownHidden is List) ...unknownHidden,
     ],
     _trackNumbersInAlbumKey: prefs.trackNumbersInAlbum,
+    _sidePanelOpenKey: prefs.sidePanelOpen,
+    _sidePanelTabKey: prefs.sidePanelTab.name,
   };
 }
