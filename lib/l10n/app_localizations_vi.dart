@@ -1995,4 +1995,90 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get scanStatsCoversHint =>
       'Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash).';
+
+  @override
+  String get foldersHiddenShow => 'Hiện mục ẩn';
+
+  @override
+  String get foldersHiddenHide => 'Ẩn các mục ẩn';
+
+  @override
+  String get foldersHiddenLabel => 'Ẩn';
+
+  @override
+  String get sleepTimer => 'Hẹn giờ ngủ';
+
+  @override
+  String sleepTimerActive(String state) {
+    return 'Hẹn giờ ngủ: $state';
+  }
+
+  @override
+  String sleepTimerMinutes(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString phút';
+  }
+
+  @override
+  String get sleepTimerCustom => 'Tuỳ chỉnh…';
+
+  @override
+  String get sleepTimerEndOfTrack => 'Hết bài';
+
+  @override
+  String get sleepTimerEndOfAlbum => 'Hết album';
+
+  @override
+  String get sleepTimerEndOfQueue => 'Hết hàng đợi';
+
+  @override
+  String sleepTimerLeft(String time) {
+    return 'Còn $time';
+  }
+
+  @override
+  String sleepTimerLeftPaused(String time) {
+    return 'Còn $time (tạm dừng đếm)';
+  }
+
+  @override
+  String get sleepTimerAdd => 'Thêm 5 phút';
+
+  @override
+  String get sleepTimerSubtract => 'Bớt 5 phút';
+
+  @override
+  String get sleepTimerPauseCounting => 'Tạm dừng đếm';
+
+  @override
+  String get sleepTimerResumeCounting => 'Tiếp tục đếm';
+
+  @override
+  String get sleepTimerCancel => 'Huỷ hẹn giờ';
+
+  @override
+  String get sleepTimerCustomTitle => 'Hẹn giờ ngủ tuỳ chỉnh';
+
+  @override
+  String get sleepTimerCustomLabel => 'Số phút';
+
+  @override
+  String sleepTimerCustomInvalid(int min, int max) {
+    return 'Nhập số nguyên từ $min đến $max';
+  }
+
+  @override
+  String get sleepTimerStart => 'Bắt đầu';
+
+  @override
+  String get sleepTimerLabelTrack => 'Bài';
+
+  @override
+  String get sleepTimerLabelAlbum => 'Album';
+
+  @override
+  String get sleepTimerLabelQueue => 'Hàng đợi';
 }

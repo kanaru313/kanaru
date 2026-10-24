@@ -25,6 +25,7 @@ part 'player_queue_commands.dart';
 part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
 part 'player_transport_commands.dart';
+part 'sleep_timer_stop_after_current.dart';
 
 final _log = Logger('player');
 
@@ -49,7 +50,8 @@ class PlayerService extends Notifier<PlayerState>
         _PlayerSettingsCommands,
         _PlayerTransportCommands,
         _PlayerQueueCommands,
-        _PlayerSessionCommands {
+        _PlayerSessionCommands,
+        _PlayerSleepStop {
   PlayerService({this._random});
 
   @override
@@ -148,8 +150,11 @@ class PlayerService extends Notifier<PlayerState>
     _errors = StreamController.broadcast();
     _seeked = StreamController.broadcast();
     _replacedQueues = StreamController.broadcast();
+    _startSleepStop();
     final subscriptions = [
-      _backend.advanced.listen(_onAdvanced),
+      _backend.advanced.listen(
+        (track) => _advanceWithSleepStop(track, _onAdvanced),
+      ),
       _backend.playing.listen((v) => state = state.copyWith(playing: v)),
       _backend.completed.listen((done) {
         if (done) _onCompleted();
@@ -194,18 +199,27 @@ class PlayerService extends Notifier<PlayerState>
       playthrough: state.playthrough + 1,
     );
     _seeked.add(Duration.zero);
+    // Stop after the current track under repeat one: the engine already
+    // started it over, so it rests paused at 0, with the next track that
+    // the stop held back handed again.
+    if (_takeSleepStop()) {
+      _restAtStart();
+      _followEngine('queue the next track', _queueNext);
+    }
   }
 
   /// The engine stopped. With a track still to come, the current one failed
   /// or the engine ran out of tracks before it got the next one: go on.
   /// Otherwise playback is over and nothing is wanted playing any more, so
-  /// a later queue edit loads its track paused.
+  /// a later queue edit loads its track paused. After a stop after the
+  /// current track, the next one is loaded paused.
   void _onCompleted() {
     final next = state.queue.nextIndex;
+    final sleep = _takeSleepStop();
     if (next != null && !_allFailed) {
       _followEngine(
         'continue after the engine stopped',
-        () => _play(next, play: _wantsPlaying),
+        () => _play(next, play: _wantsPlaying && !sleep),
       );
       return;
     }
@@ -221,11 +235,12 @@ class PlayerService extends Notifier<PlayerState>
   @override
   void _userActed() => _sessionUserActed();
 
-  /// Hands the engine the track that follows the current one.
+  /// Hands the engine the track that follows the current one; none while
+  /// playback stops after the current track.
   @override
   Future<void> _queueNext() {
     final queue = state.queue;
-    final next = queue.nextIndex;
+    final next = _stopAfterCurrent ? null : queue.nextIndex;
     if (next != null) {
       final entry = queue.order[next];
       // Edits that keep the same next track would otherwise pile it up.
@@ -248,9 +263,7 @@ class PlayerService extends Notifier<PlayerState>
     _turn++;
     _wantsPlaying = play;
     _openedSinceBuild = true;
-    final next = queue.nextIndex;
     _handedNext.clear();
-    if (next != null) _handedNext.add(queue.order[next]);
     // A track loaded without playing is paused, not stopped.
     state = state.copyWith(
       queue: queue,
@@ -260,6 +273,12 @@ class PlayerService extends Notifier<PlayerState>
       duration: Duration.zero,
       playthrough: state.playthrough + 1,
     );
+    // Read after the update: a listener may have turned the stop after the
+    // current track on or off (and handed the next track for it already).
+    final next = _stopAfterCurrent ? null : queue.nextIndex;
+    if (next != null && _handedNext.lastOrNull != queue.order[next]) {
+      _handedNext.add(queue.order[next]);
+    }
     await _backend.open(
       queue.trackAt(index),
       next: next == null ? null : queue.trackAt(next),

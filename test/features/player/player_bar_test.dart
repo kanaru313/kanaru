@@ -617,7 +617,9 @@ void main() {
       emit(const Duration(seconds: 10));
       await tester.pump();
 
-      tester.view.physicalSize = const Size(900, 800);
+      // Wide enough for the sleep timer button, narrow enough to need a
+      // longer step.
+      tester.view.physicalSize = const Size(996, 800);
       await tester.pumpAndSettle();
       final width = tester.getSize(find.byType(SeekGestureArea)).width;
       expect(

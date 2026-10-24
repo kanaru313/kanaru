@@ -15,6 +15,7 @@ class FolderNode {
     required this.songs,
     required this.subfolders,
     required this.children,
+    this.hidden = false,
   });
 
   /// Absolute path without a trailing `/`.
@@ -45,6 +46,10 @@ class FolderNode {
 
   /// Its direct subfolders, in natural order of their names.
   final List<FolderNode> children;
+
+  /// A folder found on the disk with a name starting with a dot: it is not in
+  /// the library, so it has no counts and no folder actions.
+  final bool hidden;
 
   bool get isRoot => path == rootPath;
 }

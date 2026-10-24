@@ -6,6 +6,7 @@ import '../widgets/round_grid_tile.dart';
 import 'folder_counts_line.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
+import 'hidden_entries.dart';
 
 /// One folder in a grid: a large folder icon, [title] and the counts line.
 class FolderGridTile extends StatelessWidget {
@@ -39,25 +40,34 @@ class FolderGridTile extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
             children: [
-              SizedBox.square(
-                dimension: constraints.maxWidth,
-                child: Center(
-                  child: Icon(
-                    AppIcons.folderOutlined,
-                    size: constraints.maxWidth * 0.6,
-                    color: theme.colorScheme.primary,
+              dimmedIf(
+                folder.hidden,
+                SizedBox.square(
+                  dimension: constraints.maxWidth,
+                  child: Center(
+                    child: Icon(
+                      AppIcons.folderOutlined,
+                      size: constraints.maxWidth * 0.6,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: gridTileGap),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleSmall,
+              dimmedIf(
+                folder.hidden,
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleSmall,
+                ),
               ),
-              FolderCountsLine(folder: folder),
+              if (folder.hidden)
+                const HiddenLabel()
+              else
+                FolderCountsLine(folder: folder),
             ],
           ),
         ),
@@ -85,7 +95,7 @@ Widget _tile(
   title: entry.title,
   onTap: () => onTap(entry.folder),
   showPath: entry.folder.ambiguousRoot && showPaths,
-  onAction: onAction == null
+  onAction: onAction == null || entry.folder.hidden
       ? null
       : (action) => onAction(entry.folder, action),
 );

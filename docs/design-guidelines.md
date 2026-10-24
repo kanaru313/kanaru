@@ -64,6 +64,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - Shown when a queue exists (`playerBarVisibleProvider`).
 - Seek bar: a straight track like the volume slider: played part in primary, a gap, an upright pill thumb, a gap, the rest in secondaryContainer. It does not animate while playing; it follows playback in pixel-sized steps (250/500/1000 ms).
 - Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
+- Sleep timer (PLAY-14): moon button left of volume. Outlined while off; filled in primary with a short label (`m:ss`, `h:mm:ss`, or Track/Album/Queue) while on, dimmed while counting is held. The label shows only from a 1280 px window; the tooltip always has the full text. The button is left out below about 900 px (the controls column keeps its width); the compact layout shows the icon only, with no label. When the moon appears, the controls column steps down by 96 px (48 px per side) to make room. The menu (`MenuAnchor`) lists presets, Custom… and the end-of modes; while on it adds a header, +/- 5 minutes, pause or resume counting, and cancel.
 - Icon buttons carry tooltips.
 
 ## Now Playing overlay
@@ -78,6 +79,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
 | Narrow (< 720 px) | One column with tabs in a `PageView`: queue, track, and lyrics on the right when the track has them. |
 | Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
+| Sleep timer | The moon button sits in the right group before volume, with the same menu and label rules (label from a 200 px right group). |
 | Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
 | Favorite | The favorite button (heart) likes and unlikes the current song. |
 
@@ -96,7 +98,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Albums | Grid of covers or list, switched and remembered (`albumsView` setting). Album page lists tracks grouped by disc, each with its track number, or its cover when Settings → Interface → Track numbers in albums is off. |
 | Artists | Round avatars in a grid or a list, switched per session (not kept across restarts); artist page has Play, Shuffle and queue buttons, then sections for albums, songs and appears-on. |
 | Genres | Round tiles in a grid or a list, switched per session. Genre page has Play, Shuffle and queue buttons, then its albums and songs. |
-| Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. |
+| Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. An eye button (tree view only, per session) shows hidden items: dot-named subfolders and audio files of the viewed folder appear dimmed with a "Hidden" label, and a hidden folder opens a page read from the disk without counts. |
 | Onboarding | Full-page first-run picker, outside the shell, shown once after install (adding a folder or "Later" ends it for good). Suggests the XDG music folder. |
 
 Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
@@ -108,7 +110,7 @@ Rescan is a button with a progress ring. The ring spins until the first batch fi
 | Screen | Layout |
 |---|---|
 | Playlists (`/playlists`) | Grid of playlist cards, newest first, with a "New playlist" button; an empty state explains how to start. A card shows the cover collage, the name (up to two lines) and the song count. |
-| Playlist page (`/playlists/<id>`) | Header with the collage (up to four distinct covers of the first songs: none gives a placeholder, one or three show the first cover, four a 2×2), name, count, Play, the queue menu button and an actions menu (Rename, Delete). Below it 64 px rows with a drag handle, the song, its duration and a remove button. Tap plays the available songs from that row. |
+| Playlist page (`/playlists/<id>`) | Header with the collage (up to four distinct covers of the first songs: none gives a placeholder, one shows that cover, two show vertical halves, three a left half plus two right quarters, four a 2×2), name, count, Play, the queue menu button and an actions menu (Rename, Delete). Below it 64 px rows with a drag handle, the song, its duration and a remove button. Tap plays the available songs from that row. |
 | Not in library | A row whose file is not in the library shows its file name and "Not in library", is dimmed, can be moved and removed, and is skipped on play. |
 | Delete | Asks first and says how many songs go; the songs stay in the library. Leaves the page before deleting. |
 

@@ -12,6 +12,7 @@ import 'playback_controls.dart';
 import 'queue/queue_button.dart';
 import 'seek_bar.dart';
 import 'seek_strip.dart';
+import 'sleep_timer/sleep_timer_button.dart';
 import 'volume_button.dart';
 
 const playerBarHeight = 96.0;
@@ -32,6 +33,14 @@ const _centerMaxWidth = 640.0;
 /// Width left to each side of that column at the least: the track summary
 /// on the left, volume on the right.
 const _sideMinWidth = 200.0;
+
+/// Room the sleep timer button takes from each side, and the controls column
+/// at the least; the button is left out when the column would get less.
+const _sleepButtonWidth = 48.0;
+const _centerMinWidth = 272.0;
+
+/// Width of the right side from which the sleep timer label fits as well.
+const _sleepLabelMinSide = 296.0;
 
 /// Space between the bar's three parts.
 const _gap = 8.0;
@@ -133,8 +142,15 @@ class _OneRow extends StatelessWidget {
       builder: (context, constraints) {
         // Room for the summary and volume first. At the narrowest one-row
         // width the column still fits the controls.
-        final center = (constraints.maxWidth - 2 * (_sideMinWidth + _gap))
-            .clamp(0.0, _centerMaxWidth);
+        final withSleep =
+            constraints.maxWidth -
+                2 * (_sideMinWidth + _sleepButtonWidth + _gap) >=
+            _centerMinWidth;
+        final sideMin = _sideMinWidth + (withSleep ? _sleepButtonWidth : 0);
+        final center = (constraints.maxWidth - 2 * (sideMin + _gap)).clamp(
+          0.0,
+          _centerMaxWidth,
+        );
         // A tick dirties this builder; with a boundary under it, the title
         // and buttons were not painted again in the tests.
         return RepaintBoundary(
@@ -149,17 +165,27 @@ class _OneRow extends StatelessWidget {
                   children: [PlaybackControls(), SeekBar()],
                 ),
               ),
-              const Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NowPlayingFavoriteButton(),
-                      NowPlayingPlaylistButton(),
-                      VolumeButton(),
-                      QueueButton(),
-                    ],
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, side) => Align(
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const NowPlayingFavoriteButton(),
+                        const NowPlayingPlaylistButton(),
+                        if (withSleep)
+                          // Flexible: a label too long for what is left is
+                          // cut, not overflowed.
+                          Flexible(
+                            child: SleepTimerButton(
+                              showLabel: side.maxWidth >= _sleepLabelMinSide,
+                            ),
+                          ),
+                        const VolumeButton(),
+                        const QueueButton(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -181,6 +207,7 @@ class _CompactRow extends StatelessWidget {
       children: [
         Expanded(child: NowPlayingSummary()),
         PlaybackControls(compact: true),
+        SleepTimerButton(showLabel: false),
       ],
     );
   }
