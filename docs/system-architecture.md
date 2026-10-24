@@ -329,6 +329,7 @@ flowchart TB
     Cfg --> Settings["settings.json"]
     Cfg --> Session["playback-session.json"]
     Data --> Lib["library.db (+ WAL files)"]
+    Data --> SearchHist["search_history.json"]
     Cache --> Covers["covers/512/ab/hash.jpg"]
     Cache --> Tmp["covers/ .kanaru-tmp temporary files"]
     Cache --> Logs["logs/kanaru.log, .1 to .4, kanaru.lock"]
@@ -338,6 +339,7 @@ flowchart TB
 |---|---|---|
 | `settings.json` | JSON v1 | Theme, language, title bar, library sort per screen, albums view, `rescanOnStartup` (default on), `libraryOnboarded` (first-run picker done), and the option groups `libraryScan`, `playback`, `display`. `playback` holds ReplayGain (`replayGainMode` off/track/album/auto, default off; `replayGainPreampDb` −15..15, default 0; `replayGainPreventClipping`, default true, which is mpv `replaygain-clip=no`) and the output device (`audioDeviceName`/`audioDeviceDescription`, absent = mpv `auto`); `libraryScan` holds `watchFolders` (default off). Defaults are today's behavior; the scan reads `libraryScan` (`respectNomedia`, `minFileSizeKb`, `minDurationSeconds`, `watchFolders`), the player does not read `playback` yet. A missing or wrong-typed key gives its default, a number outside its range is clamped. Unknown keys are kept. Secrets are never stored here (keyring planned). |
 | `playback-session.json` | JSON v1 | Queue, position, volume, shuffle, repeat. Strict parse. |
+| `search_history.json` | JSON v1 | Data dir. The last 20 search queries (newest first, repeats ignoring case moved up) and the fields the search looks at. Written atomically, one save after another; read async at startup. A broken file is renamed `.invalid` and the defaults are used; a newer version is read but not overwritten. Queries are never logged. Two instances: last write wins. |
 | `library.db` | SQLite (drift) | Opened with WAL, `synchronous = NORMAL`, `foreign_keys = ON`, `busy_timeout = 5000`. |
 | `covers/512/<ab>/<64-hex blake3>.jpg` | JPEG, 512 px longest side | Deduplicated by hash of the original image. Orphans are cleaned after a complete scan. |
 | `logs/kanaru.log` | text | Owner of `kanaru.lock`. Rotated at start and at 10 MiB; 5 files kept. Other instances write `kanaru-<pid>.log`. |
@@ -476,9 +478,9 @@ Writes and reads:
 
 Data flow: the scan and the key backfill write `tracks`, with the folded columns from `trackKeysFor`; the triggers copy them into `track_search`. A search goes top bar → `/search?q=…` → `searchTerms` → `searchSongs` (SQL) and the Dart filters for albums and artists → the search page. Dart issues only `rebuild`, in the migration and in corruption repair.
 
-Known limits (the user-facing list is in [features.md](./features.md), section 6):
-
 Query syntax: `parseSearchQuery` (`core/search/search_query_parser.dart`) splits the raw query on spaces outside double quotes (an unclosed quote runs to the end). `artist:`, `album:` and `genre:` (prefix case-insensitive) give per-field terms; `year:` takes `2010`, `>2010`, `<2000`, `>=`, `<=` or `2010-2015` (a reversed range swaps; years 1 to 9999; several `year:` all apply); `format:` takes an extension from `audioExtensions` (several are alternatives). Anything else, such as an unknown prefix, an empty or invalid value, stays free text. Free and per-field terms together are capped at `maxSearchTerms` (8, last dropped); filters are not capped. Keywords are English only. The result is a `ParsedSearchQuery`; with the chosen `SearchField` set (`search_fields.dart`; the default "all" preset is the five tag fields, file name and comment are opt-in) it becomes a `SearchRequest` whose normalized `key` identifies it for providers.
+
+Known limits (the user-facing list is in [features.md](./features.md), section 6):
 
 - `mtp` does not match `M-TP`: punctuation splits words.
 - CJK text matches only from the start of a run of characters.
