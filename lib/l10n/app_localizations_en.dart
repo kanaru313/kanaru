@@ -2465,4 +2465,19 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get homeRecentlyAddedEmpty => 'No songs were added in this period';
+
+  @override
+  String get homeRecentAlbumsEmpty => 'No albums played yet';
+
+  @override
+  String get homeRecentArtistsEmpty => 'No artists played yet';
+
+  @override
+  String get homeLoadFailed => 'Could not load the list';
+
+  @override
+  String get homeRetry => 'Retry';
 }

@@ -25,6 +25,7 @@ class HomeHarness {
   final backend = FakeAudioBackend();
   late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
   late ProviderContainer container;
+  late GoRouter router;
   int _rootId = 0;
 
   /// Stores a track; the first call also stores the library root.
@@ -64,6 +65,8 @@ class HomeHarness {
     double textScale = 1,
     bool disableAnimations = false,
     List<Override> overrides = const [],
+    List<RouteBase>? routes,
+    String initialLocation = '/',
   }) async {
     tester.view.physicalSize = Size(width, height);
     tester.view.devicePixelRatio = 1;
@@ -78,17 +81,20 @@ class HomeHarness {
       ...overrides,
     ];
     addTearDown(() => tester.runAsync(db.close));
-    final router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (_, _) => Scaffold(body: child),
-        ),
-        GoRoute(
-          path: '/:rest(.*)',
-          builder: (_, state) => Text('at ${state.uri.path}'),
-        ),
-      ],
+    router = GoRouter(
+      initialLocation: initialLocation,
+      routes:
+          routes ??
+          [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => Scaffold(body: child),
+            ),
+            GoRoute(
+              path: '/:rest(.*)',
+              builder: (_, state) => Text('at ${state.uri.path}'),
+            ),
+          ],
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(

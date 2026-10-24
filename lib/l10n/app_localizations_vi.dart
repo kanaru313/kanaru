@@ -2279,4 +2279,20 @@ class AppLocalizationsVi extends AppLocalizations {
   String homeAddedWindowDays(int count) {
     return '$count ngày';
   }
+
+  @override
+  String get homeRecentlyAddedEmpty =>
+      'Không có bài nào được thêm trong khoảng này';
+
+  @override
+  String get homeRecentAlbumsEmpty => 'Chưa nghe album nào';
+
+  @override
+  String get homeRecentArtistsEmpty => 'Chưa nghe nghệ sĩ nào';
+
+  @override
+  String get homeLoadFailed => 'Không đọc được danh sách';
+
+  @override
+  String get homeRetry => 'Thử lại';
 }

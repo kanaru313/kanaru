@@ -25,12 +25,15 @@ FROM play_stats AS s JOIN tracks AS t ON t.path = s.path
 ORDER BY s.last_played_at DESC, s.path
 LIMIT ?1 OFFSET ?2''';
 
-/// `?1` oldest `added_at` (null: no bound), `?2` limit, `?3` offset.
+/// `?1` oldest `added_at` (null: no bound), `?2` limit, `?3` offset. The bound
+/// is `>= coalesce(?1, min)` and not `?1 IS NULL OR ...`: an `OR` over the
+/// parameter hides the range from the planner, which then scans `tracks`;
+/// this way it walks `tracks_added_at` from the newest row.
 const homeRecentlyAddedSql =
     '''
 SELECT $_trackColumns
 FROM tracks AS t
-WHERE (?1 IS NULL OR t.added_at >= ?1)
+WHERE t.added_at >= coalesce(?1, -9223372036854775808)
 ORDER BY t.added_at DESC, t.mtime_ms DESC, t.id DESC
 LIMIT ?2 OFFSET ?3''';
 

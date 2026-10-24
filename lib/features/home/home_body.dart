@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/library_route_keys.dart';
 import 'home_added_window_chips.dart';
 import 'home_data_version.dart';
 import 'home_album_card.dart';
 import 'home_artist_card.dart';
+import 'home_locations.dart';
 import 'home_providers.dart';
 import 'home_section.dart';
 import 'home_shelf.dart';
@@ -52,15 +55,18 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
           children: [
             HomeSection(
               title: l10n.homeRecentlyPlayedTitle,
+              onSeeAll: () => context.go(historyPath),
               child: _tracks(ref.watch(homeRecentlyPlayedProvider)),
             ),
             HomeSection(
               title: l10n.homeRecentlyAddedTitle,
+              onSeeAll: _seeAllRecentlyAdded,
               below: const HomeAddedWindowChips(),
               child: _tracks(ref.watch(homeRecentlyAddedProvider)),
             ),
             HomeSection(
               title: l10n.homeMemoriesTitle,
+              onSeeAll: () => context.go(homeMemoriesLocation),
               child: _tracks(
                 ref.watch(homeMemoriesProvider),
                 emptyText: l10n.homeMemoriesEmpty,
@@ -68,6 +74,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
             ),
             HomeSection(
               title: l10n.homeRecentAlbumsTitle,
+              onSeeAll: () => context.go(homeRecentAlbumsLocation),
               child: _row<AlbumSummary>(
                 ref.watch(homeRecentAlbumsProvider),
                 (_, items, i) => HomeAlbumCard(album: items[i]),
@@ -75,6 +82,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
             ),
             HomeSection(
               title: l10n.homeRecentArtistsTitle,
+              onSeeAll: () => context.go(homeRecentArtistsLocation),
               child: _row<ArtistCredit>(
                 ref.watch(homeRecentArtistsProvider),
                 (_, items, i) => HomeArtistCard(artist: items[i]),
@@ -84,6 +92,17 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
           ],
         ),
       ],
+    );
+  }
+
+  /// Opens the full list on the chip in effect. The chip's default is still
+  /// being read at the very first moment; the page then picks it itself.
+  void _seeAllRecentlyAdded() {
+    final window = ref.read(homeEffectiveAddedWindowProvider).value;
+    context.go(
+      window == null
+          ? '$homePath/recently-added'
+          : homeRecentlyAddedLocation(window),
     );
   }
 

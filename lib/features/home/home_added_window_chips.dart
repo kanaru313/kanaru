@@ -7,13 +7,22 @@ import 'home_providers.dart';
 
 /// The "recently added" windows, one chip each; the one in effect is on.
 /// Copied from HistoryYearChips in history_year_chips.dart.
+///
+/// On Home they show and set the window in effect. A page that owns its
+/// window passes [selected] and [onPicked] instead.
 class HomeAddedWindowChips extends ConsumerWidget {
-  const HomeAddedWindowChips({super.key});
+  const HomeAddedWindowChips({super.key, this.selected, this.onPicked});
+
+  /// The chip that is on; the window in effect when null.
+  final HomeAddedWindow? selected;
+
+  /// Called with the chip tapped; remembers it as the choice when null.
+  final ValueChanged<HomeAddedWindow>? onPicked;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final selected = ref.watch(homeEffectiveAddedWindowProvider).value;
+    final on = selected ?? ref.watch(homeEffectiveAddedWindowProvider).value;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
@@ -28,10 +37,12 @@ class HomeAddedWindowChips extends ConsumerWidget {
                       ? l10n.homeAddedWindowAll
                       : l10n.homeAddedWindowDays(window.days!),
                 ),
-                selected: window == selected,
-                onSelected: (_) => ref
-                    .read(homeAddedWindowChoiceProvider.notifier)
-                    .select(window),
+                selected: window == on,
+                onSelected: (_) => onPicked != null
+                    ? onPicked!(window)
+                    : ref
+                          .read(homeAddedWindowChoiceProvider.notifier)
+                          .select(window),
               ),
             ),
         ],

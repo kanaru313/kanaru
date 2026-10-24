@@ -1213,5 +1213,10 @@
   "homeSeeAll": "Xem tất cả",
   "homeScrollBack": "Cuộn lùi",
   "homeScrollForward": "Cuộn tới",
-  "homeAddedWindowDays": "{count} ngày"
+  "homeAddedWindowDays": "{count} ngày",
+  "homeRecentlyAddedEmpty": "Không có bài nào được thêm trong khoảng này",
+  "homeRecentAlbumsEmpty": "Chưa nghe album nào",
+  "homeRecentArtistsEmpty": "Chưa nghe nghệ sĩ nào",
+  "homeLoadFailed": "Không đọc được danh sách",
+  "homeRetry": "Thử lại"
 }

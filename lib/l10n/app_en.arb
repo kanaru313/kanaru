@@ -2111,5 +2111,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "homeRecentlyAddedEmpty": "No songs were added in this period",
+  "@homeRecentlyAddedEmpty": { "description": "Shown on the full recently added list when no song was added in the chosen period" },
+  "homeRecentAlbumsEmpty": "No albums played yet",
+  "@homeRecentAlbumsEmpty": { "description": "Shown on the full recent albums list when no album was played" },
+  "homeRecentArtistsEmpty": "No artists played yet",
+  "@homeRecentArtistsEmpty": { "description": "Shown on the full recent artists list when no artist was played" },
+  "homeLoadFailed": "Could not load the list",
+  "@homeLoadFailed": { "description": "Shown on a full Home list when a page could not be read" },
+  "homeRetry": "Retry",
+  "@homeRetry": { "description": "Text button under the failure sentence of a full Home list that reads the list again" }
 }

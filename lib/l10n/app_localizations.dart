@@ -3607,6 +3607,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 day} other{{count} days}}'**
   String homeAddedWindowDays(int count);
+
+  /// Shown on the full recently added list when no song was added in the chosen period
+  ///
+  /// In en, this message translates to:
+  /// **'No songs were added in this period'**
+  String get homeRecentlyAddedEmpty;
+
+  /// Shown on the full recent albums list when no album was played
+  ///
+  /// In en, this message translates to:
+  /// **'No albums played yet'**
+  String get homeRecentAlbumsEmpty;
+
+  /// Shown on the full recent artists list when no artist was played
+  ///
+  /// In en, this message translates to:
+  /// **'No artists played yet'**
+  String get homeRecentArtistsEmpty;
+
+  /// Shown on a full Home list when a page could not be read
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the list'**
+  String get homeLoadFailed;
+
+  /// Text button under the failure sentence of a full Home list that reads the list again
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get homeRetry;
 }
 
 class _AppLocalizationsDelegate

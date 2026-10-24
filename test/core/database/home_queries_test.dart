@@ -335,6 +335,63 @@ void main() {
       await expectAllPlans();
     });
 
+    // The newest rows come off `tracks_added_at`, so a library of any size
+    // reads only the rows of the page.
+    Future<List<String>> addedPlan(List<Object?> args) async {
+      final plan = await db
+          .customSelect(
+            'EXPLAIN QUERY PLAN $homeRecentlyAddedSql',
+            variables: [for (final a in args) Variable(a)],
+          )
+          .get();
+      return [for (final r in plan) r.read<String>('detail')];
+    }
+
+    test('a bounded recently added read uses the added_at index', () async {
+      final details = await addedPlan([1040, 10, 0]);
+      expect(
+        details.any((d) => d.contains('tracks_added_at')),
+        isTrue,
+        reason: details.join('\n'),
+      );
+    });
+
+    test('an unbounded read returns the rows the OR form did', () async {
+      const orForm =
+          'SELECT t.path FROM tracks AS t '
+          'WHERE (?1 IS NULL OR t.added_at >= ?1) '
+          'ORDER BY t.added_at DESC, t.mtime_ms DESC, t.id DESC '
+          'LIMIT ?2 OFFSET ?3';
+      for (final since in <int?>[null, 1020, 5000]) {
+        final old = await db
+            .customSelect(
+              orForm,
+              variables: [
+                Variable<int>(since),
+                Variable.withInt(30),
+                Variable.withInt(5),
+              ],
+            )
+            .get();
+        final now = await db.homeRecentlyAdded(
+          since: since,
+          limit: 30,
+          offset: 5,
+        );
+        expect(paths(now), [for (final r in old) r.read<String>('path')]);
+      }
+      expect(await db.homeRecentlyAdded(limit: 1000), hasLength(50));
+    });
+
+    test('an unbounded recently added read does not scan plays', () async {
+      final details = await addedPlan([null, 10, 0]);
+      expect(
+        details.any((d) => d.contains('tracks_added_at')),
+        isTrue,
+        reason: details.join('\n'),
+      );
+    });
+
     test('same plans after ANALYZE', () async {
       await db.customStatement('ANALYZE');
       await expectAllPlans();
