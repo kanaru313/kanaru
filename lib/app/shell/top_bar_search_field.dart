@@ -4,11 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/search/search_prefs_provider.dart';
+import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../router.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
+import 'top_bar_search_history_host.dart';
+import 'top_bar_search_shortcuts.dart';
 
 /// Pause after the last keystroke before the search page is opened.
 const searchDebounce = Duration(milliseconds: 150);
@@ -32,6 +36,8 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
   /// overwrite text typed since.
   String? _sentQuery;
 
+  late final TopBarSearchShortcuts _shortcuts;
+
   @override
   void initState() {
     super.initState();
@@ -45,14 +51,37 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
         : '';
     _controller = TextEditingController(text: text);
     if (uri.path == AppDestination.search.path) _sentQuery = text;
+    _shortcuts = TopBarSearchShortcuts(
+      focusNode: _focusNode,
+      controller: _controller,
+      isNowPlayingOpen: () => ref.read(nowPlayingOpenProvider),
+    )..attach();
   }
 
   @override
   void dispose() {
+    _shortcuts.detach();
     _debounce?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  /// Fills the field with a history entry and searches for it at once.
+  void _pick(String entry) {
+    _controller.value = TextEditingValue(
+      text: entry,
+      selection: TextSelection.collapsed(offset: entry.length),
+    );
+    ref.read(searchPrefsProvider.notifier).record(entry);
+    _go(entry);
+  }
+
+  void _submit(String text) {
+    if (text.trim().isNotEmpty) {
+      ref.read(searchPrefsProvider.notifier).record(text);
+    }
+    _go(text);
   }
 
   void _go(String text) {
@@ -102,6 +131,15 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
     ref.listen(navigationHistoryProvider, (_, history) {
       _onLocationChanged(history.entries[history.index]);
     });
+    return TopBarSearchHistoryHost(
+      controller: _controller,
+      focusNode: _focusNode,
+      onPick: _pick,
+      child: _buildBar(context),
+    );
+  }
+
+  Widget _buildBar(BuildContext context) {
     return SearchBar(
       controller: _controller,
       focusNode: _focusNode,
@@ -119,7 +157,7 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
         if (_sentQuery == null && text.trim().isEmpty) return;
         _debounce = Timer(searchDebounce, () => _go(text));
       },
-      onSubmitted: _go,
+      onSubmitted: _submit,
     );
   }
 }

@@ -24,6 +24,7 @@ class QueueTile extends ConsumerWidget {
     required this.position,
     required this.current,
     required this.played,
+    this.editable = true,
   });
 
   final Track track;
@@ -36,6 +37,10 @@ class QueueTile extends ConsumerWidget {
 
   /// This track comes before the playing one.
   final bool played;
+
+  /// `false` for a row shown by the filter: no drag handle and no remove
+  /// button, since the rows are not the whole queue. The row menu is kept.
+  final bool editable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -91,19 +96,22 @@ class QueueTile extends ConsumerWidget {
                 onTap: current ? null : () => player.jump(position),
                 child: Row(
                   children: [
-                    ReorderableDragStartListener(
-                      index: position,
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.grab,
-                        child: Tooltip(
-                          message: l10n.queueReorder,
-                          child: const Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Icon(AppIcons.dragHandle, size: 20),
+                    if (editable)
+                      ReorderableDragStartListener(
+                        index: position,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.grab,
+                          child: Tooltip(
+                            message: l10n.queueReorder,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Icon(AppIcons.dragHandle, size: 20),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      )
+                    else
+                      const SizedBox(width: 36),
                     SizedBox(width: 32, child: Center(child: leading)),
                     const SizedBox(width: 8),
                     Expanded(
@@ -142,12 +150,16 @@ class QueueTile extends ConsumerWidget {
                           ),
                         ),
                       ),
-                    IconButton(
-                      icon: const Icon(AppIcons.deleteRounded),
-                      iconSize: 20,
-                      tooltip: l10n.queueRemove,
-                      onPressed: () => player.removeTrack(position),
-                    ),
+                    if (editable)
+                      IconButton(
+                        icon: const Icon(AppIcons.deleteRounded),
+                        iconSize: 20,
+                        tooltip: l10n.queueRemove,
+                        onPressed: () => player.removeTrack(position),
+                      )
+                    else
+                      // As wide as the remove button, so durations line up.
+                      const SizedBox(width: 40),
                   ],
                 ),
               ),

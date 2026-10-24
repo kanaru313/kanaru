@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
@@ -6,25 +8,35 @@ import '../../core/database/library_keys_provider.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
-import '../../core/database/search_terms.dart';
+import '../../core/search/search_prefs_provider.dart';
+import '../../core/search/search_query.dart';
+import '../../core/search/search_query_parser.dart';
+import '../../core/search/typo_correction.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_keys_updating.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
+import 'search_field_picker.dart';
 import 'search_providers.dart';
+import 'search_request_provider.dart';
 import 'search_results_view.dart';
+import 'search_typo_providers.dart';
 
 final _log = Logger('library.search');
 
 /// The results the page last had, kept while the next query loads.
 class _Shown {
-  const _Shown(this.termsKey, this.query, this.results);
+  const _Shown(this.requestKey, this.query, this.results, this.narrowFields);
 
-  final String termsKey;
+  final String requestKey;
   final String query;
   final SearchResults results;
+
+  /// Whether the fields behind these results were narrowed and the query had
+  /// free words (the only part the picker affects).
+  final bool narrowFields;
 }
 
 /// Songs, albums and artists matching [query]: the text submitted from the
@@ -49,10 +61,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     // search after clearing the field does not load the library again.
     ref.listen(searchAlbumIndexProvider, (_, _) {});
     ref.listen(searchArtistIndexProvider, (_, _) {});
-    final terms = searchTerms(widget.query);
-    if (terms.isEmpty) {
+    // The dictionary of a typo-tolerant retry stays loaded while the page
+    // keeps finding few songs, so typing on does not read it again.
+    if (_shown?.results.needsVocabulary ?? false) {
+      ref.listen(searchVocabularyProvider, (_, _) {});
+    }
+    final parsed = parseSearchQuery(widget.query);
+    // Shown even without a query, to choose before typing.
+    const actions = [SearchFieldPicker()];
+    if (parsed.isEmpty) {
       return PageScaffold(
         title: l10n.navSearch,
+        actions: actions,
         body: EmptyState(
           icon: AppIcons.search,
           title: l10n.searchEmptyTitle,
@@ -60,14 +80,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
       );
     }
-    final termsKey = terms.join(' ');
+    final fields = ref.watch(searchFieldsProvider);
+    final request = SearchRequest(query: parsed, fields: fields);
     return PageScaffold(
       title: l10n.searchResultsTitle(widget.query),
-      body: _body(context, termsKey),
+      actions: actions,
+      body: _body(context, request),
     );
   }
 
-  Widget _body(BuildContext context, String termsKey) {
+  /// Remembers the query as typed (syntax included) once a result is opened.
+  void _remember() =>
+      unawaited(ref.read(searchPrefsProvider.notifier).record(widget.query));
+
+  Widget _body(BuildContext context, SearchRequest request) {
     final l10n = context.l10n;
     if (ref.watch(libraryDatabaseProvider) == null) {
       return EmptyState(
@@ -86,7 +112,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (ref.watch(keysUpdatingProvider)) return const LibraryKeysUpdating();
     if (!ref.watch(keysReadyProvider)) return const LibraryLoading();
 
-    ref.listen(searchResultsProvider(termsKey), (previous, next) {
+    ref.listen(searchResultsProvider(request), (previous, next) {
       if (next.hasError && !(previous?.hasError ?? false)) {
         _log.severe(
           'Searching the library failed',
@@ -95,9 +121,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         );
       }
     });
-    final async = ref.watch(searchResultsProvider(termsKey));
+    final async = ref.watch(searchResultsProvider(request));
     final fresh = async.value;
-    if (fresh != null) _shown = _Shown(termsKey, widget.query, fresh);
+    if (fresh != null) {
+      _shown = _Shown(
+        request.key,
+        widget.query,
+        fresh,
+        request.query.freeTerms.isNotEmpty &&
+            !isDefaultSearchFields(request.fields),
+      );
+    }
     // The previous query's results stand in only while this one loads; a
     // failure of this query is shown as such.
     if (fresh == null && async.hasError) {
@@ -119,12 +153,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       return EmptyState(
         icon: AppIcons.searchOff,
         title: l10n.searchNoResultsTitle,
-        message: l10n.searchNoResultsMessage(shown.query),
+        message: shown.narrowFields
+            ? l10n.searchNoResultsNarrowFields(shown.query)
+            : l10n.searchNoResultsMessage(shown.query),
       );
     }
     return SearchResultsView(
-      key: ValueKey(shown.termsKey),
+      key: ValueKey(shown.requestKey),
       results: shown.results,
+      correctedQuery: shown.results.corrections.isEmpty
+          ? null
+          : correctedQueryText(shown.query, shown.results.corrections),
+      onOpened: _remember,
     );
   }
 }

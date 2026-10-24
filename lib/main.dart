@@ -24,6 +24,7 @@ import 'core/player/player_service.dart';
 import 'core/player/rust_original_cover_reader.dart';
 import 'core/player/session/playback_session_provider.dart';
 import 'core/player/unavailable_audio_backend.dart';
+import 'core/search/search_prefs_provider.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/stats/listen_recorder_provider.dart';
 
@@ -72,6 +73,9 @@ Future<void> main() async {
     overrides: [
       initialSettingsProvider.overrideWithValue(settings),
       settingsFileProvider.overrideWithValue(settingsFile),
+      searchPrefsFileProvider.overrideWithValue(
+        searchPrefsFileFor(Platform.environment),
+      ),
       customTitleBarProvider.overrideWithValue(customTitleBar),
       audioBackendOverride(
         engineReady: engineReady,

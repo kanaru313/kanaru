@@ -10,10 +10,15 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_detail_body.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/play_tracks.dart';
+import '../../../shared/in_page_filter.dart';
+import '../../../shared/in_page_filter_host.dart';
+import 'album_artist_link.dart';
+import 'album_filtered_tracks.dart';
 import 'album_header.dart';
 import 'album_track_tile.dart';
 import 'album_page_data.dart';
@@ -38,100 +43,121 @@ class AlbumScreen extends ConsumerWidget {
   }
 }
 
-class _AlbumPage extends ConsumerWidget {
+class _AlbumPage extends ConsumerStatefulWidget {
   const _AlbumPage({required this.albumKey, required this.data});
 
   final AlbumKey albumKey;
   final AlbumPageData data;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AlbumPage> createState() => _AlbumPageState();
+}
+
+class _AlbumPageState extends ConsumerState<_AlbumPage>
+    with InPageFilterHost<_AlbumPage> {
+  /// The filter dies with the page, so leaving it clears it.
+  final _filter = InPageFilterController();
+
+  @override
+  InPageFilterController get filterController => _filter;
+
+  final _view = InPageFilterView<BrowseTrack>(
+    (t) => (title: t.title, artist: t.artist, album: t.album),
+  );
+
+  @override
+  void dispose() {
+    _filter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final data = widget.data;
     final album = data.album;
     final tracks = data.tracks;
     final groups = data.groups;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
-    List<player.Track> queue() => [
-      for (final t in tracks)
+    List<player.Track> queueOf(List<BrowseTrack> list) => [
+      for (final t in list)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
     final starts = data.groupStarts;
     final artistKey = data.linkedArtistKey;
+    // Merged artists have no one album artist, so each row names its own.
+    final rowAlbumArtist = album.variousArtists ? null : album.artist;
+    void enqueueOne(BrowseTrack t, QueueAction action) =>
+        enqueueLoaded(ref, context, action, queueOf([t]), t.title);
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: AlbumHeader(
-            albumKey: albumKey,
-            album: album,
-            onPlay: () => playTracks(ref, queue(), 0),
-            onShuffle: () => shuffleTracks(ref, queue()),
-            onQueueAction: (action) =>
-                enqueueLoaded(ref, context, action, queue(), album.title),
-            artist: artistKey != null && album.artist != null
-                ? _ArtistLink(
-                    name: album.artist!,
-                    onTap: () => context.go(artistLocation(artistKey)),
-                  )
-                : null,
-          ),
-        ),
-        for (final (g, group) in groups.indexed) ...[
-          if (groups.length > 1)
+    return ListenableBuilder(
+      listenable: _filter,
+      builder: (context, _) {
+        final filtering = _filter.isFiltering;
+        final shown = _view.apply(tracks, _filter.terms);
+        return CustomScrollView(
+          slivers: [
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(32, 16, 32, 4),
-                child: Text(
-                  group.disc == null
-                      ? l10n.albumsUnknownDisc
-                      : l10n.albumsDisc(group.disc!),
-                  style: Theme.of(context).textTheme.titleSmall,
+              child: AlbumHeader(
+                albumKey: widget.albumKey,
+                album: album,
+                onPlay: () => playTracks(ref, queueOf(tracks), 0),
+                onShuffle: () => shuffleTracks(ref, queueOf(tracks)),
+                onQueueAction: (action) => enqueueLoaded(
+                  ref,
+                  context,
+                  action,
+                  queueOf(tracks),
+                  album.title,
                 ),
+                artist: artistKey != null && album.artist != null
+                    ? AlbumArtistLink(
+                        name: album.artist!,
+                        onTap: () => context.go(artistLocation(artistKey)),
+                      )
+                    : null,
               ),
             ),
-          SliverList.builder(
-            itemCount: group.tracks.length,
-            itemBuilder: (context, i) => AlbumTrackTile(
-              track: group.tracks[i],
-              albumArtist: album.artist,
-              onTap: () => playTracks(ref, queue(), starts[g] + i),
-              onQueueAction: (action) => enqueueLoaded(ref, context, action, [
-                trackFromBrowse(
-                  group.tracks[i],
-                  artPath: coverPath(coverDirectory, group.tracks[i].coverKey),
+            SliverAlbumFilterBar(filter: _filter),
+            if (filtering)
+              SliverAlbumFilteredTracks(
+                tracks: shown,
+                albumArtist: rowAlbumArtist,
+                query: _filter.query,
+                onTap: (i) => playTracks(ref, queueOf(shown), i),
+                onQueueAction: enqueueOne,
+              )
+            else
+              for (final (g, group) in groups.indexed) ...[
+                if (groups.length > 1)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 16, 32, 4),
+                      child: Text(
+                        group.disc == null
+                            ? l10n.albumsUnknownDisc
+                            : l10n.albumsDisc(group.disc!),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  ),
+                SliverList.builder(
+                  itemCount: group.tracks.length,
+                  itemBuilder: (context, i) => AlbumTrackTile(
+                    track: group.tracks[i],
+                    albumArtist: rowAlbumArtist,
+                    onTap: () =>
+                        playTracks(ref, queueOf(tracks), starts[g] + i),
+                    onQueueAction: (action) =>
+                        enqueueOne(group.tracks[i], action),
+                  ),
                 ),
-              ], group.tracks[i].title),
-            ),
-          ),
-        ],
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-      ],
-    );
-  }
-}
-
-/// The album artist's name, opening their page (in the Artists branch).
-class _ArtistLink extends StatelessWidget {
-  const _ArtistLink({required this.name, required this.onTap});
-
-  final String name;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Text(
-        name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: theme.colorScheme.primary,
-        ),
-      ),
+              ],
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        );
+      },
     );
   }
 }

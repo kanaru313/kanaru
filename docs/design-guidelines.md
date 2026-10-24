@@ -53,6 +53,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - **Sidebar.** Groups: Home | Songs, Albums, Artists, Genres, Languages, Folders | Queue history, Favorites, History | Playlists. The library group (Songs to Folders) is hideable: Settings → Interface has one chip per tab (at least one stays on), and it applies to the column, the rail and the drawer; on the page of a tab just hidden the user stays and no row is lit. Home and the third group are always shown. Languages (`/languages`) sits right after Genres. There is no "Current queue" row: the queue sheet opens from the queue button of the player bar. Queue history (`/queue-history`) lists the queues the user replaced, newest first: collage, when it was saved (date and time in the user's language), song count, a Play button and a menu (Play, Shuffle, Play next, Add to queue, Save as playlist, Delete with confirmation; also on right click, long press and the menu key). A row opens the saved queue at `/queue-history/:id` with the playlist entries view (play from a song, queue menu, export, drag and remove). The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
 - **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Settings on the right at every width. Empty space drags the window.
 - **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
+- **Search history.** While the field has focus and is empty, the last searches (up to 20) list in a panel under it, at least 280 px wide, eight rows before it scrolls. A row has a history icon, the query and a remove button; "Clear all" ends the panel. Choosing a row (click, or Up/Down and Enter) fills the field, opens the search and moves the query to the top. Typing, Esc, losing focus or removing the last row closes the panel; the buttons never take focus from the field. A query is saved on Enter, on choosing a suggestion and on opening a result on the search page, not on each keystroke.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
 - **Reselecting a sidebar item** returns that branch to its root.
 - **History.** Browser-style back and forward with a 100-entry cap. Mouse back and forward buttons work at any width.
@@ -81,6 +82,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 | Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
 | Sleep timer | The moon button sits in the right group before volume, with the same menu and label rules (label from a 200 px right group). |
 | Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
+| Queue tab | The queue tab (narrow window) is the same queue panel, so it also has the filter button in its header. |
 | Favorite | The favorite button (heart) likes and unlikes the current song. |
 
 ## Queue sheet
@@ -88,6 +90,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 - A panel on the right, at most 400 px wide. Not a route; Esc or the mouse back button closes it while it is open. Focus returns on close.
 - Rows are 64 px. Drag handle reorders; a remove control per row; clear-all in the header.
 - The current row uses the primary color (`queue_tile.dart`).
+- A search button in the header opens a filter box under it (`Ctrl+F` reaches it while the sheet is open, Esc closes the box first). Matches are the real rows, best match first, without drag handle or remove button; tapping one jumps to it and leaves the queue as it is. Closing the sheet drops the filter.
 - Opens and closes in 400 ms.
 
 ## Library screens
@@ -105,6 +108,8 @@ The Languages tab lists the languages named by the language tag as round tiles (
 | Folders | Tree on (default): the music folders, each opening its subfolders. Tree off: every folder that holds songs, with its path below the music folder. Grid (default) or list, switched per session. Folder page has Play, Shuffle and a menu of folder actions in the header; recursive song and folder counts sit under the name. An eye button (tree view only, per session) shows hidden items: dot-named subfolders and audio files of the viewed folder appear dimmed with a "Hidden" label, and a hidden folder opens a page read from the disk without counts. |
 | Onboarding | Full-page first-run picker, outside the shell, shown once after install (adding a folder or "Later" ends it for good). Suggests the XDG music folder. |
 
+Album, artist and genre pages have a filter button (`Ctrl+F` opens it, Esc closes and clears it): on the album page in a right-aligned row under the header, on artist and genre pages at the end of the "Songs" heading. While it filters, the album page drops the disc groups and shows the matches as one list, and the artist and genre pages hide the album sections; Play and Shuffle in the header still take every song, tapping a match plays the filtered list from it. Leaving the page drops the filter.
+
 Sort controls sit in the page header. Sort choices are stored per screen (`librarySort` in `settings.json`). Sort keys: songs by title, artist, album, year, date added, duration; albums by title, artist, year, date added; artists by name, song count, album count.
 
 Rescan is a button with a progress ring. The ring spins until the first batch finishes so it is visible on small libraries. It sits in the top bar, left of Settings, and stays at every window width (no floating button on the pages).
@@ -117,6 +122,8 @@ Rescan is a button with a progress ring. The ring spins until the first batch fi
 | Playlist page (`/playlists/<id>`) | Header with the collage (up to four distinct covers of the first songs: none gives a placeholder, one shows that cover, two show vertical halves, three a left half plus two right quarters, four a 2×2), name, count, Play, the queue menu button and an actions menu (Rename, Delete). Below it 64 px rows with a drag handle, the song, its duration and a remove button. Tap plays the available songs from that row. |
 | Not in library | A row whose file is not in the library shows its file name and "Not in library", is dimmed, can be moved and removed, and is skipped on play. |
 | Delete | Asks first and says how many songs go; the songs stay in the library. Leaves the page before deleting. |
+
+**Filter.** Between the header and the rows, a search button (and `Ctrl+F`) opens a filter box; the same page serves Favorites and a saved queue. With words typed, the rows are replaced by the songs of the playlist whose title, artist or album has every word as a word prefix, best match first (title starts with it, title has it, artist or album has it; ties keep playlist order). They are read from the database, since the page only holds a window of the playlist, at most 1000; past that a line says "Showing the first 1000 songs. Type more to narrow it down.". While filtering there is no drag handle and no remove button (a position in the filtered list is not a position in the playlist); the row menu still works. A tap plays the filtered songs (not the whole playlist) from that row; Play in the header still plays everything. An entry whose file is not in the library has no song to match and does not show. Esc or the clear button brings the full list back (scroll position may reset). A filter started during a drag or removal reads after that write ended; a change to the playlist while filtering reads the matches again. An empty playlist has no filter button, and `Ctrl+F` there goes to the library-wide search; if the last entry goes away while the box is open, the box closes.
 
 Dragging a row lifts the card itself (shadow, no wider slab); the order changes at once and is saved when the row drops. A failed save puts the rows back and says so in a snackbar. Reordering is by pointer only for now.
 
@@ -146,6 +153,11 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 - **Album and artist rows** open their pages. They have no queue menu.
 - **States**, checked in this order: library unavailable; no folders; "Updating library" while keys are recomputed; loading; "Search failed" (previous results stay only while a newer query loads); no results. While the first scan runs and there are no results yet, the page shows loading instead of "No results".
 - Results follow rescans while the page is open.
+- **Syntax.** The query accepts `artist:`, `album:`, `genre:` (words in that field), `year:2010`, `year:>2010`, `year:<2000`, `year:2010-2015`, `format:flac` and `language:vi` (matches by language key, so `vi`, `vie` and `Vietnamese` are the same; several are alternatives; untagged songs never match); a value with spaces goes in double quotes. Unknown prefixes and broken values count as plain words. The filters and the field prefixes apply to the Songs section only. Albums and Artists use only the plain words. A query with only filters (`year:2010`) lists songs and no other section.
+- **Field picker.** A "Search fields" button sits in the page header, also when the query is empty. It opens a menu with two presets ("All fields", "Titles only"), a divider and one checkbox per field: title, artist, album, album artist, genre, file name, description. The menu stays open while fields are toggled. The last field cannot be turned off. A dot and the label "Search fields (filtered)" show that the choice differs from "All fields"; on a narrow header the button is an icon with a tooltip. The choice is saved with the search history and kept across restarts. Lyrics are not offered.
+- **Sections follow the fields.** Albums need plain words and the album or album artist field; Artists need plain words and the artist field. Until the saved choice has loaded the page uses "All fields". When nothing matches and the fields are not "All fields", the message also suggests turning on more fields.
+- **Corrected query.** When part of the results come from a typo-fixed query (fewer than 5 songs matched as typed), a muted line “Results for “…”” sits above the first section. It shows the query with the fixed words replaced; syntax is kept. Without such results no line shows, and a query with no results at all keeps the plain “No results” state.
+- **History.** The query as typed (syntax included) is saved when the user opens a result from this page: plays or queues a song, opens an album or an artist. Typing alone saves nothing.
 
 ## Cover art
 
@@ -204,10 +216,12 @@ Reduced motion comes from the platform setting, or from Settings → Appearance 
 | Ctrl+S | Toggle shuffle | App-wide |
 | Ctrl+R | Cycle repeat | App-wide |
 | Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer |
+| Ctrl+F | Focus the top bar search field and select its text | App-wide; a page filter box takes it first, and pressing it again inside that box goes to the top bar; nothing while a dialog, menu or Now Playing is open |
+| / | Same as Ctrl+F, never opens a page filter | Only when no text input has focus; nothing while a dialog, menu or Now Playing is open |
 | Mouse back, forward | History back, forward | Anywhere |
 
-- Keys are handled by `features/player/player_shortcuts.dart`.
-- Not implemented yet (SYS-03, SEARCH-07): Ctrl+Left and Ctrl+Right for track change, Up and Down for volume, Ctrl+F or `/` for search. Scroll over the volume button already changes volume.
+- Keys are handled by `features/player/player_shortcuts.dart`; Ctrl+F and `/` by `app/shell/top_bar_search_shortcuts.dart`, a hardware keyboard handler that returns true only when it acts, so the other keys above still work.
+- Not implemented yet (SYS-03): Ctrl+Left and Ctrl+Right for track change, Up and Down for volume. Scroll over the volume button already changes volume.
 - Sliders expose slider semantics.
 - Focus is restored after an overlay or sheet closes.
 - Contrast: use theme `on*` color pairs. Do not place text on artwork without a scrim (guideline, not enforced by a test).

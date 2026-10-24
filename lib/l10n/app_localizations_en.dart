@@ -764,6 +764,58 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String searchNoResultsNarrowFields(String query) {
+    return 'Nothing matches “$query” in the chosen fields. Try turning on more search fields.';
+  }
+
+  @override
+  String get searchFieldsButton => 'Search fields';
+
+  @override
+  String get searchFieldsFiltered => 'Search fields (filtered)';
+
+  @override
+  String get searchPresetAll => 'All fields';
+
+  @override
+  String get searchPresetTitleOnly => 'Titles only';
+
+  @override
+  String get searchFieldTitle => 'Title';
+
+  @override
+  String get searchFieldArtist => 'Artist';
+
+  @override
+  String get searchFieldAlbum => 'Album';
+
+  @override
+  String get searchFieldAlbumArtist => 'Album artist';
+
+  @override
+  String get searchFieldGenre => 'Genre';
+
+  @override
+  String get searchFieldFileName => 'File name';
+
+  @override
+  String get searchFieldComment => 'Description';
+
+  @override
+  String searchCorrectedResultsFor(String query) {
+    return 'Results for “$query”';
+  }
+
+  @override
+  String get searchHistoryTitle => 'Recent searches';
+
+  @override
+  String get searchHistoryRemove => 'Remove from history';
+
+  @override
+  String get searchHistoryClearAll => 'Clear all';
+
+  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }
@@ -2424,4 +2476,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get albumVariousArtists => 'Various artists';
+
+  @override
+  String get inPageSearchHint => 'Filter songs';
+
+  @override
+  String get inPageSearchOpen => 'Filter in this page';
+
+  @override
+  String get inPageSearchClear => 'Clear filter';
+
+  @override
+  String inPageSearchNoMatch(String query) {
+    return 'No songs match “$query”';
+  }
+
+  @override
+  String inPageSearchTooMany(int count) {
+    return 'Showing the first $count songs. Type more to narrow it down.';
+  }
 }

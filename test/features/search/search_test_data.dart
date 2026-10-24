@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/search/search_fields.dart';
+import 'package:kanaru/core/search/search_query.dart';
+import 'package:kanaru/core/search/search_query_parser.dart';
 
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
@@ -41,3 +44,10 @@ Future<void> openSearch(
 List<String> queuedTitles(LibraryHarness h) => [
   for (final t in h.container.read(playerServiceProvider).queue.tracks) t.title,
 ];
+
+/// The request the page makes for [raw] with the default fields.
+SearchRequest requestFor(String raw, {Set<SearchField>? fields}) =>
+    SearchRequest(
+      query: parseSearchQuery(raw),
+      fields: fields ?? defaultSearchFields,
+    );

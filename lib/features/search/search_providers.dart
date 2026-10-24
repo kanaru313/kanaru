@@ -4,8 +4,8 @@ import '../../core/database/library_browse_queries.dart';
 import '../../core/database/library_browse_rows.dart';
 import '../../core/database/library_database.dart' show TrackListItem;
 import '../../core/database/library_keys_provider.dart';
-import '../../core/database/library_search_queries.dart';
 import '../../core/database/library_startup.dart';
+import '../../core/database/search_album_artist_names.dart';
 import '../../core/database/search_name_index.dart';
 import '../../core/database/throttled_tracks_query.dart';
 import '../../shared/artist_summaries.dart';
@@ -20,11 +20,16 @@ final searchAlbumIndexProvider =
       if (db == null) return Stream.value(albumSearchIndex(const []));
       // Becoming ready rebuilds this and loads afresh.
       if (!ref.watch(keysReadyProvider)) return const Stream.empty();
-      return throttledTracksQuery(
-        db,
-        db.albums,
-        interval: ref.watch(libraryBrowseRefreshIntervalProvider),
-      ).map(albumSearchIndex);
+      return throttledTracksQuery(db, () async {
+        final albums = await db.albums();
+        // The extra read runs whenever any album merges several artists (in
+        // practice always with album-artist grouping off). It is throttled
+        // with the rest and only runs while search is listened to.
+        final names = albums.any((a) => a.variousArtists)
+            ? await db.mergedAlbumArtistNames()
+            : const <AlbumKey, List<String>>{};
+        return albumSearchIndex(albums, artistNames: names);
+      }, interval: ref.watch(libraryBrowseRefreshIntervalProvider));
     });
 
 /// Every artist credit, ready to filter by search terms; see
@@ -41,20 +46,6 @@ final searchArtistIndexProvider =
       ).map(artistSearchIndex);
     });
 
-/// The best songs for a query, keyed by its terms joined with spaces (terms
-/// never hold one). Reloaded (throttled) while the library changes.
-final searchSongsProvider = StreamProvider.autoDispose
-    .family<SongSearchResult, String>((ref, termsKey) {
-      final db = ref.watch(libraryDatabaseProvider);
-      if (db == null) return Stream.value(SongSearchResult.empty);
-      final terms = termsKey.split(' ');
-      return throttledTracksQuery(
-        db,
-        () => db.searchSongs(terms),
-        interval: ref.watch(libraryBrowseRefreshIntervalProvider),
-      );
-    });
-
 /// What a query found, in the three groups of the search page.
 class SearchResults {
   const SearchResults({
@@ -62,6 +53,8 @@ class SearchResults {
     required this.songTotal,
     required this.albums,
     required this.artists,
+    this.corrections = const {},
+    this.needsVocabulary = false,
   });
 
   /// The best songs, at most `searchSongLimit`.
@@ -72,33 +65,13 @@ class SearchResults {
   final List<AlbumSummary> albums;
   final List<ArtistSummary> artists;
 
+  /// Misspelt words of the query and what they were read as: not empty when
+  /// part of these results come from the corrected query.
+  final Map<String, String> corrections;
+
+  /// Whether the real songs were few and a word of the query could be
+  /// corrected: the typo dictionary is worth keeping loaded.
+  final bool needsVocabulary;
+
   bool get isEmpty => songs.isEmpty && albums.isEmpty && artists.isEmpty;
 }
-
-/// The three groups for the query [termsKey] (see [searchSongsProvider]).
-/// Loading until each has a first result; keeps results through a failed or
-/// running reload, and is an error only when one failed with nothing to show.
-final searchResultsProvider = Provider.autoDispose
-    .family<AsyncValue<SearchResults>, String>((ref, termsKey) {
-      final songs = ref.watch(searchSongsProvider(termsKey));
-      final albums = ref.watch(searchAlbumIndexProvider);
-      final artists = ref.watch(searchArtistIndexProvider);
-      final song = songs.value;
-      final albumIndex = albums.value;
-      final artistIndex = artists.value;
-      if (song == null || albumIndex == null || artistIndex == null) {
-        final failed = [songs, albums, artists].where((a) => a.hasError);
-        if (failed.isEmpty) return const AsyncLoading();
-        final e = failed.first;
-        return AsyncError(e.error!, e.stackTrace ?? StackTrace.empty);
-      }
-      final terms = termsKey.split(' ');
-      return AsyncData(
-        SearchResults(
-          songs: song.songs,
-          songTotal: song.total,
-          albums: albumIndex.match(terms),
-          artists: buildArtistSummaries(artistIndex.match(terms)),
-        ),
-      );
-    });

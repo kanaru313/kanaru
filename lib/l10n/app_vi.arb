@@ -207,6 +207,20 @@
   "searchNoResultsMessage": "Không tìm thấy kết quả cho “{query}”. Thử bớt từ hoặc gõ ngắn hơn.",
   "searchMoreSongs": "Đang hiện {shown} bài đầu trong {total} bài. Thêm từ để thu hẹp kết quả.",
 
+  "searchNoResultsNarrowFields": "Không tìm thấy kết quả cho “{query}” trong các trường đã chọn. Thử chọn thêm trường tìm.",
+  "searchFieldsButton": "Trường tìm",
+  "searchFieldsFiltered": "Trường tìm (đã lọc)",
+  "searchPresetAll": "Tất cả trường",
+  "searchPresetTitleOnly": "Chỉ tiêu đề",
+  "searchFieldTitle": "Tiêu đề",
+  "searchFieldArtist": "Nghệ sĩ",
+  "searchFieldAlbum": "Album",
+  "searchFieldAlbumArtist": "Nghệ sĩ album",
+  "searchFieldGenre": "Thể loại",
+  "searchFieldFileName": "Tên file",
+  "searchFieldComment": "Mô tả",
+  "searchCorrectedResultsFor": "Kết quả cho “{query}”",
+
   "playerPlaybackError": "Không phát được {title}",
   "playerPlay": "Phát",
   "playerPause": "Tạm dừng",
@@ -359,6 +373,9 @@
       "name": { "type": "String" }
     }
   },
+  "searchHistoryTitle": "Tìm kiếm gần đây",
+  "searchHistoryRemove": "Xoá khỏi lịch sử",
+  "searchHistoryClearAll": "Xoá tất cả",
   "audioDeviceDialogTitle": "Thiết bị đầu ra",
   "audioDeviceNoneFound": "Không tìm thấy thiết bị đầu ra nào khác",
   "audioDeviceOtherOutputs": "Đầu ra khác",
@@ -842,5 +859,10 @@
   "languagesSongs": "Bài hát",
   "languagesNotFound": "Không tìm thấy ngôn ngữ",
   "languagesNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag.",
-  "albumVariousArtists": "Nhiều nghệ sĩ"
+  "albumVariousArtists": "Nhiều nghệ sĩ",
+  "inPageSearchHint": "Lọc bài hát",
+  "inPageSearchOpen": "Lọc trong trang",
+  "inPageSearchClear": "Xoá bộ lọc",
+  "inPageSearchNoMatch": "Không có bài nào khớp «{query}»",
+  "inPageSearchTooMany": "Hiện {count} bài đầu, gõ thêm chữ để thu hẹp."
 }

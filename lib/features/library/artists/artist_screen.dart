@@ -14,9 +14,12 @@ import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../../../shared/widgets/song_tile.dart';
+import '../../../shared/in_page_filter.dart';
+import '../../../shared/in_page_filter_host.dart';
+import '../../../shared/widgets/in_page_no_match.dart';
 import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
+import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
 import 'artist_header.dart';
 import 'artist_page_data.dart';
@@ -44,21 +47,45 @@ class ArtistScreen extends ConsumerWidget {
   }
 }
 
-class _ArtistPage extends ConsumerWidget {
+class _ArtistPage extends ConsumerStatefulWidget {
   const _ArtistPage({required this.artistKey, required this.sections});
 
   final String artistKey;
   final ArtistPageSections sections;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ArtistPage> createState() => _ArtistPageState();
+}
+
+class _ArtistPageState extends ConsumerState<_ArtistPage>
+    with InPageFilterHost<_ArtistPage> {
+  /// The filter dies with the page, so leaving it clears it.
+  final _filter = InPageFilterController();
+
+  @override
+  InPageFilterController get filterController => _filter;
+
+  final _view = InPageFilterView<BrowseTrack>(
+    (t) => (title: t.title, artist: t.artist, album: t.album),
+  );
+
+  @override
+  void dispose() {
+    _filter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final artistKey = widget.artistKey;
+    final sections = widget.sections;
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final songs = sections.songs;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
-    List<player.Track> queue() => [
-      for (final t in songs)
+    List<player.Track> queueOf(List<BrowseTrack> list) => [
+      for (final t in list)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
     void queueAlbum(AlbumTileData album, QueueAction action) =>
@@ -72,60 +99,66 @@ class _ArtistPage extends ConsumerWidget {
       ),
     );
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: ArtistHeader(
-            artistKey: artistKey,
-            name: sections.name,
-            albumCount: sections.albumCount,
-            songCount: songs.length,
-            onPlay: () => playTracks(ref, queue(), 0),
-            onShuffle: () => shuffleTracks(ref, queue()),
-            onQueueAction: (action) =>
-                enqueueLoaded(ref, context, action, queue(), sections.name),
-          ),
-        ),
-        if (sections.albums.isNotEmpty) ...[
-          heading(l10n.artistsAlbums),
-          SliverAlbumGrid(
-            albums: sections.albums,
-            onTap: openAlbum,
-            onQueueAction: queueAlbum,
-          ),
-        ],
-        heading(l10n.artistsSongs),
-        SliverList.builder(
-          itemCount: songs.length,
-          itemBuilder: (context, i) => SongTile(
-            song: TrackListItem(
-              id: songs[i].id,
-              path: songs[i].path,
-              title: songs[i].title,
-              artist: songs[i].artist,
-              album: songs[i].album,
-              durationMs: songs[i].durationMs,
-              coverKey: songs[i].coverKey,
-            ),
-            onTap: () => playTracks(ref, queue(), i),
-            onQueueAction: (action) => enqueueLoaded(ref, context, action, [
-              trackFromBrowse(
-                songs[i],
-                artPath: coverPath(coverDirectory, songs[i].coverKey),
+    return ListenableBuilder(
+      listenable: _filter,
+      builder: (context, _) {
+        // Play and Shuffle in the header always take every song.
+        final filtering = _filter.isFiltering;
+        final shown = _view.apply(songs, _filter.terms);
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: ArtistHeader(
+                artistKey: artistKey,
+                name: sections.name,
+                albumCount: sections.albumCount,
+                songCount: songs.length,
+                onPlay: () => playTracks(ref, queueOf(songs), 0),
+                onShuffle: () => shuffleTracks(ref, queueOf(songs)),
+                onQueueAction: (action) => enqueueLoaded(
+                  ref,
+                  context,
+                  action,
+                  queueOf(songs),
+                  sections.name,
+                ),
               ),
-            ], songs[i].title),
-          ),
-        ),
-        if (sections.appearsOn.isNotEmpty) ...[
-          heading(l10n.artistsAppearsOn),
-          SliverAlbumGrid(
-            albums: sections.appearsOn,
-            onTap: openAlbum,
-            onQueueAction: queueAlbum,
-          ),
-        ],
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-      ],
+            ),
+            if (!filtering && sections.albums.isNotEmpty) ...[
+              heading(l10n.artistsAlbums),
+              SliverAlbumGrid(
+                albums: sections.albums,
+                onTap: openAlbum,
+                onQueueAction: queueAlbum,
+              ),
+            ],
+            SliverSongsHeading(title: l10n.artistsSongs, filter: _filter),
+            if (filtering && shown.isEmpty)
+              SliverToBoxAdapter(child: InPageNoMatch(query: _filter.query))
+            else
+              SliverBrowseSongs(
+                songs: shown,
+                onTap: (i) => playTracks(ref, queueOf(shown), i),
+                onQueueAction: (song, action) => enqueueLoaded(
+                  ref,
+                  context,
+                  action,
+                  queueOf([song]),
+                  song.title,
+                ),
+              ),
+            if (!filtering && sections.appearsOn.isNotEmpty) ...[
+              heading(l10n.artistsAppearsOn),
+              SliverAlbumGrid(
+                albums: sections.appearsOn,
+                onTap: openAlbum,
+                onQueueAction: queueAlbum,
+              ),
+            ],
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        );
+      },
     );
   }
 }

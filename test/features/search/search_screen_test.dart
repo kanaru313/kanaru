@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_keys_provider.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
-import 'package:kanaru/features/search/search_providers.dart';
+import 'package:kanaru/features/search/search_request_provider.dart';
 
 import '../library/browse_test_data.dart';
 
@@ -110,7 +110,7 @@ void main() {
   ) async {
     final h = LibraryHarness(
       overrides: [
-        searchSongsProvider('adele')
+        searchSongsProvider(requestFor('adele'))
             .overrideWith((ref) => Stream.error(StateError('boom'))),
       ],
     );
@@ -133,7 +133,7 @@ void main() {
   testWidgets('a failed first query shows the error', (tester) async {
     final h = LibraryHarness(
       overrides: [
-        searchSongsProvider('son')
+        searchSongsProvider(requestFor('son'))
             .overrideWith((ref) => Stream.error(StateError('boom'))),
       ],
     );

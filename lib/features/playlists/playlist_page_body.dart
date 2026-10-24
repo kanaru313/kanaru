@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_page_queries.dart';
 import '../../core/database/playlist_rows.dart';
+import '../../core/database/search_playlist_queries.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
@@ -84,6 +85,26 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
     }
   }
 
+  Future<PlaylistMatches> _loadMatches(List<String> terms) async {
+    final db = ref.read(libraryDatabaseProvider);
+    return db == null
+        ? PlaylistMatches.empty
+        : db.playlistEntriesMatching(_id, terms);
+  }
+
+  /// Opens the filtered rows (those with a song in the library) as the queue.
+  void _playRows(List<PlaylistEntryRow> rows, int index) {
+    if (index < 0 || index >= rows.length || rows[index].track == null) return;
+    final covers = ref.read(coverCacheDirectoryProvider);
+    // The index among the playable rows: rows without a song are not queued.
+    final start = rows.take(index).where((r) => r.track != null).length;
+    final tracks = [
+      for (final row in rows)
+        if (row.track case final track?) playlistTrack(track, covers),
+    ];
+    playTracks(ref, tracks, start);
+  }
+
   /// A queue menu pick of the header: every playable song of the playlist,
   /// read when the pick's turn comes.
   void _queueAll(QueueAction action) {
@@ -125,6 +146,8 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
           removePlaylistEntryOrReport(ref, context, playlist.id, entryId),
       onSettled: _settled,
       onPlayFrom: _playFrom,
+      loadMatches: _loadMatches,
+      onPlayRows: (rows, index) async => _playRows(rows, index),
       onQueueAction: _queueAll,
       onEntryQueueAction: (entry, action) {
         final track = entry.track;

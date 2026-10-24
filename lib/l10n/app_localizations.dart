@@ -1208,6 +1208,102 @@ abstract class AppLocalizations {
   /// **'Showing the top {shown} of {total} songs. Add words to narrow it down.'**
   String searchMoreSongs(int shown, int total);
 
+  /// No description provided for @searchNoResultsNarrowFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{query}” in the chosen fields. Try turning on more search fields.'**
+  String searchNoResultsNarrowFields(String query);
+
+  /// No description provided for @searchFieldsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Search fields'**
+  String get searchFieldsButton;
+
+  /// No description provided for @searchFieldsFiltered.
+  ///
+  /// In en, this message translates to:
+  /// **'Search fields (filtered)'**
+  String get searchFieldsFiltered;
+
+  /// No description provided for @searchPresetAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All fields'**
+  String get searchPresetAll;
+
+  /// No description provided for @searchPresetTitleOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles only'**
+  String get searchPresetTitleOnly;
+
+  /// No description provided for @searchFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get searchFieldTitle;
+
+  /// No description provided for @searchFieldArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get searchFieldArtist;
+
+  /// No description provided for @searchFieldAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get searchFieldAlbum;
+
+  /// No description provided for @searchFieldAlbumArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Album artist'**
+  String get searchFieldAlbumArtist;
+
+  /// No description provided for @searchFieldGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get searchFieldGenre;
+
+  /// No description provided for @searchFieldFileName.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get searchFieldFileName;
+
+  /// No description provided for @searchFieldComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get searchFieldComment;
+
+  /// No description provided for @searchCorrectedResultsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Results for “{query}”'**
+  String searchCorrectedResultsFor(String query);
+
+  /// No description provided for @searchHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get searchHistoryTitle;
+
+  /// No description provided for @searchHistoryRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from history'**
+  String get searchHistoryRemove;
+
+  /// No description provided for @searchHistoryClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get searchHistoryClearAll;
+
   /// No description provided for @playerPlaybackError.
   ///
   /// In en, this message translates to:
@@ -3541,6 +3637,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Various artists'**
   String get albumVariousArtists;
+
+  /// Hint of the filter box inside a page or the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Filter songs'**
+  String get inPageSearchHint;
+
+  /// Tooltip of the button that opens the filter box of a page or the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Filter in this page'**
+  String get inPageSearchOpen;
+
+  /// Tooltip of the button that empties the filter box
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get inPageSearchClear;
+
+  /// Shown when the filter of a page or the queue matches no song
+  ///
+  /// In en, this message translates to:
+  /// **'No songs match “{query}”'**
+  String inPageSearchNoMatch(String query);
+
+  /// Shown under the filtered playlist when more songs matched than it lists
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the first {count} songs. Type more to narrow it down.'**
+  String inPageSearchTooMany(int count);
 }
 
 class _AppLocalizationsDelegate
