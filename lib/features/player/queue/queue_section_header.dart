@@ -2,22 +2,16 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
-import 'queue_tile.dart';
-
-/// Height of a section label and of the Earlier toggle.
-const queueSectionLabelExtent = 40.0;
+import 'queue_row_extent.dart';
 
 /// A section title ("Play next (2)", "Up next") over a row-wide slot of
-/// [height], the text sitting at the bottom edge.
+/// [height] (`queueSectionLabelExtent` unless given), the text sitting at the
+/// bottom edge.
 class QueueSectionLabel extends StatelessWidget {
-  const QueueSectionLabel({
-    super.key,
-    required this.text,
-    this.height = queueSectionLabelExtent,
-  });
+  const QueueSectionLabel({super.key, required this.text, this.height});
 
   final String text;
-  final double height;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +22,7 @@ class QueueSectionLabel extends StatelessWidget {
       label: text,
       excludeSemantics: true,
       child: SizedBox(
-        height: height,
+        height: height ?? queueSectionLabelExtent(context),
         child: Align(
           alignment: Alignment.bottomLeft,
           child: Padding(
@@ -78,7 +72,7 @@ class QueueEarlierToggle extends StatelessWidget {
       onTap: onToggle,
       excludeSemantics: true,
       child: SizedBox(
-        height: queueSectionLabelExtent,
+        height: queueSectionLabelExtent(context),
         child: InkWell(
           onTap: onToggle,
           child: Padding(
@@ -119,7 +113,7 @@ class QueueRepeatsFromStartRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SizedBox(
-      height: queueTileExtent,
+      height: queueRowExtent(context),
       child: Center(
         child: Text(
           context.l10n.queueRepeatsFromStart,

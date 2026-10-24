@@ -1,7 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'queue_tile.dart';
-
 /// The earlier rows, as a sliver that goes before the list's center so it
 /// grows upward. Child `i` is the `i`-th track back from the playing one
 /// ([playingIndex]), so the newest earlier track is nearest to Now playing.
@@ -12,11 +10,15 @@ class QueueEarlierSliver extends StatelessWidget {
   const QueueEarlierSliver({
     super.key,
     required this.playingIndex,
+    required this.rowExtent,
     required this.rowAt,
     required this.positionOfEntry,
   });
 
   final int playingIndex;
+
+  /// Height of every row, from `queueRowExtent`.
+  final double rowExtent;
 
   /// Builds the row for a play position.
   final Widget Function(int position) rowAt;
@@ -24,7 +26,7 @@ class QueueEarlierSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SliverFixedExtentList(
-    itemExtent: queueTileExtent,
+    itemExtent: rowExtent,
     delegate: SliverChildBuilderDelegate(
       (context, i) => rowAt(playingIndex - 1 - i),
       childCount: playingIndex,

@@ -8,8 +8,13 @@ import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/repeat_mode.dart';
 import '../../../l10n/l10n.dart';
+import 'queue_input_kind.dart';
 import 'queue_list_slivers.dart';
+import 'queue_list_trackers.dart';
+import 'queue_now_playing_tile.dart';
+import 'queue_row_extent.dart';
 import 'queue_row_focus.dart';
+import 'queue_swipe_gate.dart';
 import 'queue_section_header.dart';
 import 'queue_sections.dart';
 import 'queue_tile.dart';
@@ -54,18 +59,58 @@ class _QueueSectionListState extends ConsumerState<QueueSectionList> {
   final _centerKey = GlobalKey();
   final _focus = QueueRowFocusTracker();
 
-  /// Play position of each entry of `queue.order`, built the first time a
-  /// row needs to be found by its entry and again when the order changes.
-  List<int>? _positionOfEntry;
-  List<int>? _positionsFor;
+  final _positions = QueueEntryPositions();
+
+  /// Removes swiped rows once the list is quiet.
+  /// The provider container, taken once: swipes still pending are run on
+  /// dispose, when `ref` can no longer be used.
+  late final ProviderContainer _container;
+
+  late final _swipes = QueueSwipeGate(
+    remove: _removeEntries,
+    tokenOf: () => _container.read(playerServiceProvider).queue.original,
+  );
+
+  /// Removes the swiped entries still in the queue they were swiped in, last
+  /// position first so the positions still to remove do not shift.
+  ///
+  /// Entries number the queue's `original` list and are renumbered when the
+  /// queue is replaced, so everything is resolved against the live queue: a
+  /// swipe whose `original` is no longer the live one is dropped, as is an
+  /// entry out of range or one that is now the playing track.
+  void _removeEntries(Map<int, Object> swiped) {
+    final queue = _container.read(playerServiceProvider).queue;
+    final positions = <int>[];
+    for (final MapEntry(key: entry, value: original) in swiped.entries) {
+      if (!identical(original, queue.original)) continue;
+      if (entry < 0 || entry >= queue.original.length) continue;
+      final position = _positions.of(queue, entry);
+      if (position >= 0 && position != queue.index) positions.add(position);
+    }
+    positions.sort((a, b) => b.compareTo(a));
+    final player = _container.read(playerServiceProvider.notifier);
+    for (final position in positions) {
+      player.removeTrack(position);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _container = ProviderScope.containerOf(context, listen: false);
+  }
+
+  @override
+  void dispose() {
+    _swipes.dispose();
+    super.dispose();
+  }
 
   /// Handle on the upcoming list, to cancel a drag the queue outran.
   final _listKey = GlobalKey<SliverReorderableListState>();
 
-  /// The queue a drag started on, to refuse a drop that outlived a change
-  /// (a shuffle or Previous can keep the row count, so the list alone would
-  /// not notice). `null` when no drag is pending.
-  ({List<int> order, int index, int playNext})? _dragStart;
+  /// Refuses a drop that outlived a queue change.
+  final _drag = QueueDragGuard();
 
   @override
   void didUpdateWidget(QueueSectionList oldWidget) {
@@ -79,37 +124,14 @@ class _QueueSectionListState extends ConsumerState<QueueSectionList> {
     if (!changed) return;
     // The rows are numbered from the playing track and a drop is a pair of
     // row numbers: a drag begun on the old queue means something else now.
-    if (_dragStart != null) {
-      _dragStart = null;
+    if (_drag.dragging) {
+      _drag.clear();
       _listKey.currentState?.cancelReorder();
     }
     // Rows remount when the queue changes under them (a track change, a
     // move from the row menu): give focus back to the entry that had it.
     _focus.arm();
     SchedulerBinding.instance.addPostFrameCallback((_) => _focus.disarm());
-  }
-
-  /// Whether the queue is still the one the pending drag started on.
-  bool _dragIsCurrent() {
-    final start = _dragStart;
-    _dragStart = null;
-    if (start == null) return true;
-    return identical(start.order, widget.queue.order) &&
-        start.index == widget.queue.index &&
-        start.playNext == widget.playNext;
-  }
-
-  int _positionOf(int entry) {
-    final order = widget.queue.order;
-    if (!identical(_positionsFor, order)) {
-      final positions = List<int>.filled(widget.queue.original.length, -1);
-      for (var p = 0; p < order.length; p++) {
-        positions[order[p]] = p;
-      }
-      _positionOfEntry = positions;
-      _positionsFor = order;
-    }
-    return _positionOfEntry![entry];
   }
 
   void _toggleEarlier() {
@@ -130,7 +152,7 @@ class _QueueSectionListState extends ConsumerState<QueueSectionList> {
     if (!mounted || !controller.hasClients) return;
     final position = controller.position;
     final target = max(
-      -min(widget.queue.index, 3) * queueTileExtent,
+      -min(widget.queue.index, 3) * queueRowExtent(context),
       position.minScrollExtent,
     );
     if (position.pixels <= target) return;
@@ -148,8 +170,8 @@ class _QueueSectionListState extends ConsumerState<QueueSectionList> {
   /// A row of the queue, remembered for focus across track changes.
   Widget _row(
     int position, {
-    required bool current,
-    required bool played,
+    bool current = false,
+    bool played = false,
     int? dragIndex,
   }) {
     final queue = widget.queue;
@@ -157,13 +179,20 @@ class _QueueSectionListState extends ConsumerState<QueueSectionList> {
     return QueueRowFocus(
       entry: entry,
       tracker: _focus,
-      child: QueueTile(
-        track: queue.trackAt(position),
-        position: position,
-        current: current,
-        played: played,
-        dragIndex: dragIndex,
-      ),
+      child: current
+          ? QueueNowPlayingTile(
+              track: queue.trackAt(position),
+              position: position,
+            )
+          : QueueTile(
+              track: queue.trackAt(position),
+              position: position,
+              current: false,
+              played: played,
+              dragIndex: dragIndex,
+              swipeGate: _swipes,
+              entry: entry,
+            ),
     );
   }
 
@@ -177,81 +206,97 @@ class _QueueSectionListState extends ConsumerState<QueueSectionList> {
     );
     final l10n = context.l10n;
     final player = ref.read(playerServiceProvider.notifier);
+    final extent = queueRowExtent(context);
     final showEarlier = widget.earlierExpanded && sections.played > 0;
     final String? upcomingLabel = sections.hasUpNextHeader
         ? l10n.queueSectionPlayNext(sections.playNext)
         : (sections.upcomingTracks > 0 ? l10n.queueSectionUpNext : null);
 
-    return CustomScrollView(
-      controller: widget.controller,
-      center: _centerKey,
-      slivers: [
-        if (showEarlier)
-          QueueEarlierSliver(
-            playingIndex: sections.index,
-            positionOfEntry: _positionOf,
-            rowAt: (position) => _row(position, current: false, played: true),
-          ),
-        SliverToBoxAdapter(
-          key: _centerKey,
-          child: Column(
-            children: [
-              if (sections.played > 0)
-                QueueEarlierToggle(
-                  count: sections.played,
-                  expanded: widget.earlierExpanded,
-                  onToggle: _toggleEarlier,
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => _swipes.pointerDown(),
+      onPointerUp: (_) => _swipes.pointerUp(),
+      onPointerCancel: (_) => _swipes.pointerUp(),
+      child: QueueInputScope(
+        child: Builder(
+          builder: (context) {
+            // Read under the scope and handed to the lifted row, which is drawn
+            // in the overlay, outside it.
+            final touch = QueueInputScope.touchOf(context);
+            return CustomScrollView(
+              controller: widget.controller,
+              center: _centerKey,
+              slivers: [
+                if (showEarlier)
+                  QueueEarlierSliver(
+                    playingIndex: sections.index,
+                    rowExtent: extent,
+                    positionOfEntry: (entry) => _positions.of(queue, entry),
+                    rowAt: (position) => _row(position, played: true),
+                  ),
+                SliverToBoxAdapter(
+                  key: _centerKey,
+                  child: Column(
+                    children: [
+                      if (sections.played > 0)
+                        QueueEarlierToggle(
+                          count: sections.played,
+                          expanded: widget.earlierExpanded,
+                          onToggle: _toggleEarlier,
+                        ),
+                      if (queue.order.isNotEmpty)
+                        _row(queue.index, current: true),
+                    ],
+                  ),
                 ),
-              if (queue.order.isNotEmpty)
-                _row(queue.index, current: true, played: false),
-            ],
-          ),
-        ),
-        if (upcomingLabel != null)
-          SliverToBoxAdapter(child: QueueSectionLabel(text: upcomingLabel)),
-        SliverReorderableList(
-          key: _listKey,
-          itemExtent: queueTileExtent,
-          itemCount: sections.upcomingRows,
-          proxyDecorator: (child, index, animation) =>
-              queueDragProxy(context, child, index, animation),
-          onReorderStart: (_) => _dragStart = (
-            order: queue.order,
-            index: queue.index,
-            playNext: widget.playNext,
-          ),
-          onReorderItem: (from, to) {
-            if (!_dragIsCurrent()) return;
-            final drop = sections.drop(from, to);
-            if (drop == null) return;
-            player.moveTrack(drop.from, drop.to, playNext: drop.playNext);
-          },
-          itemBuilder: (context, row) {
-            final position = sections.positionOfRow(row);
-            if (position == null) {
-              // The "Up next" header: a row so a drag across it moves a track
-              // into or out of Play next. The list still advertises its move
-              // actions on this row (it cannot be turned off); `drop` returns
-              // null for it, so using one does nothing.
-              return KeyedSubtree(
-                key: const ValueKey('queue-up-next-header'),
-                child: QueueSectionLabel(
-                  text: l10n.queueSectionUpNext,
-                  height: queueTileExtent,
+                if (upcomingLabel != null)
+                  SliverToBoxAdapter(
+                    child: QueueSectionLabel(text: upcomingLabel),
+                  ),
+                SliverReorderableList(
+                  key: _listKey,
+                  itemExtent: extent,
+                  itemCount: sections.upcomingRows,
+                  proxyDecorator: (child, index, animation) => QueueInputValue(
+                    touch: touch,
+                    child: queueDragProxy(context, child, index, animation),
+                  ),
+                  onReorderStart: (_) => _drag.begin(queue, widget.playNext),
+                  onReorderItem: (from, to) {
+                    if (!_drag.endsOn(queue, widget.playNext)) return;
+                    final drop = sections.drop(from, to);
+                    if (drop == null) return;
+                    player.moveTrack(
+                      drop.from,
+                      drop.to,
+                      playNext: drop.playNext,
+                    );
+                  },
+                  itemBuilder: (context, row) {
+                    final position = sections.positionOfRow(row);
+                    if (position == null) {
+                      // The "Up next" header: a row so a drag across it moves a track
+                      // into or out of Play next. The list still advertises its move
+                      // actions on this row (it cannot be turned off); `drop` returns
+                      // null for it, so using one does nothing.
+                      return KeyedSubtree(
+                        key: const ValueKey('queue-up-next-header'),
+                        child: QueueSectionLabel(
+                          text: l10n.queueSectionUpNext,
+                          height: extent,
+                        ),
+                      );
+                    }
+                    return _row(position, dragIndex: row);
+                  },
                 ),
-              );
-            }
-            return _row(
-              position,
-              current: false,
-              played: false,
-              dragIndex: row,
+                if (queue.repeat == RepeatMode.all && queue.order.isNotEmpty)
+                  const SliverToBoxAdapter(child: QueueRepeatsFromStartRow()),
+              ],
             );
           },
         ),
-        if (queue.repeat == RepeatMode.all && queue.order.isNotEmpty)
-          const SliverToBoxAdapter(child: QueueRepeatsFromStartRow()),
-      ],
+      ),
     );
   }
 }

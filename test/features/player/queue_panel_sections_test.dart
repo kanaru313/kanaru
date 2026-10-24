@@ -9,7 +9,7 @@ import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
-import 'package:kanaru/features/player/queue/queue_section_header.dart';
+import 'package:kanaru/features/player/queue/queue_now_playing_tile.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -66,8 +66,17 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder tile(String title) =>
-      find.byWidgetPredicate((w) => w is QueueTile && w.track.title == title);
+  /// The row of a track, whether it is a plain row or the Now playing one.
+  Finder tile(String title) => find.byWidgetPredicate(
+    (w) =>
+        (w is QueueTile && w.track.title == title) ||
+        (w is QueueNowPlayingTile && w.track.title == title),
+  );
+
+  /// How many rows are built, of either kind.
+  int rowsBuilt() =>
+      find.byType(QueueTile).evaluate().length +
+      find.byType(QueueNowPlayingTile).evaluate().length;
 
   Finder handleOf(String title) => find.descendant(
     of: tile(title),
@@ -167,7 +176,7 @@ void main() {
       expect(y('t5'), lessThan(y('t6')));
       // The newest is nearest to the toggle and the playing track.
       // Only the toggle sits between the newest earlier row and Now playing.
-      expect(y('t8') - y('t7'), 64 + queueSectionLabelExtent);
+      expect(y('t8') - y('t7'), 56 + 40);
       expect(tester.getTopLeft(find.text('Earlier (8)')).dy, lessThan(y('t8')));
 
       await tester.tap(find.text('Earlier (8)'));
@@ -562,13 +571,13 @@ void main() {
       tester,
     ) async {
       await openSheet(tester, count: 50000, start: 40000);
-      expect(find.byType(QueueTile).evaluate().length, lessThan(50));
+      expect(rowsBuilt(), lessThan(50));
       expect(tile('t40000'), findsOneWidget);
 
       await tester.tap(find.text('Earlier (40000)'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(QueueTile).evaluate().length, lessThan(50));
+      expect(rowsBuilt(), lessThan(50));
       expect(tile('t39999'), findsOneWidget);
       expect(tile('t40000'), findsOneWidget);
     });
