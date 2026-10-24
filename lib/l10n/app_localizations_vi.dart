@@ -2240,4 +2240,7 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get languagesNotFoundMessage =>
       'Có thể bài hát đã bị xoá hoặc đổi tag.';
+
+  @override
+  String get albumVariousArtists => 'Nhiều nghệ sĩ';
 }

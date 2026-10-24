@@ -2421,4 +2421,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get languagesNotFoundMessage =>
       'Its songs may have been removed or retagged.';
+
+  @override
+  String get albumVariousArtists => 'Various artists';
 }

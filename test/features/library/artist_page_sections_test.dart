@@ -33,14 +33,20 @@ AlbumSummary albumRow(
   String? albumArtist,
   int? year,
   String? titleSort,
+  bool noArtistInKey = false,
+  bool variousArtists = false,
 }) => AlbumSummary(
-  key: AlbumKey(albumArtistKey(albumArtist, artist), albumTitleKey(title)),
+  key: AlbumKey(
+    noArtistInKey ? '' : albumArtistKey(albumArtist, artist),
+    albumTitleKey(title),
+  ),
   title: title,
   artist: albumArtist ?? artist,
   year: year,
   trackCount: 1,
   addedAt: 1,
   titleSort: titleSort,
+  variousArtists: variousArtists,
 );
 
 void main() {
@@ -172,5 +178,46 @@ void main() {
     final tiles = [for (final a in page.albums) a.title];
     expect(tiles, ['Anh', 'Ánh']);
     expect([for (final t in page.songs) t.title], ['on-anh', 'on-ánh']);
+  });
+
+  group('albums without an artist in the key', () {
+    test('a single artist owns it', () {
+      final page = ArtistPageSections.fromTracks(
+        'ann',
+        [track('s', artist: 'Ann', album: 'Mine')],
+        [albumRow('Mine', artist: 'Ann', noArtistInKey: true)],
+      );
+      expect(page.albums.map((a) => a.title), ['Mine']);
+      expect(page.appearsOn, isEmpty);
+    });
+
+    test('a merged album is under Appears on for each artist', () {
+      for (final who in ['ann', 'bob']) {
+        final page = ArtistPageSections.fromTracks(
+          who,
+          [track('s', artist: who == 'ann' ? 'Ann' : 'Bob', album: 'Mix')],
+          [
+            albumRow(
+              'Mix',
+              artist: 'Ann',
+              noArtistInKey: true,
+              variousArtists: true,
+            ),
+          ],
+        );
+        expect(page.albums, isEmpty);
+        expect(page.appearsOn.map((a) => a.title), ['Mix']);
+        expect(page.appearsOn.single.variousArtists, isTrue);
+      }
+    });
+
+    test('a key with artists is unchanged by the flag', () {
+      final page = ArtistPageSections.fromTracks(
+        'ann',
+        [track('s', artist: 'Ann', album: 'Mine', albumArtist: 'Ann')],
+        [albumRow('Mine', artist: 'Ann', albumArtist: 'Ann')],
+      );
+      expect(page.albums.map((a) => a.title), ['Mine']);
+    });
   });
 }

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart';
 import '../../l10n/l10n.dart';
+import '../album_artist_label.dart';
 import 'album_artwork.dart';
 import 'queue_actions_menu.dart';
 
@@ -24,7 +25,11 @@ class AlbumListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final details = [
-      album.artist ?? l10n.albumsUnknownArtist,
+      albumArtistLabel(
+        l10n,
+        artist: album.artist,
+        variousArtists: album.variousArtists,
+      ),
       if (album.year != null) '${album.year}',
       l10n.albumsSongCount(album.trackCount),
     ].join(' · ');

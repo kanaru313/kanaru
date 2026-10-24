@@ -9,6 +9,7 @@ AlbumSummary album(
   int? year,
   int addedAt = 0,
   String key = '',
+  bool various = false,
 }) => AlbumSummary(
   key: AlbumKey(key, title.toLowerCase()),
   title: title,
@@ -16,6 +17,7 @@ AlbumSummary album(
   year: year,
   trackCount: 1,
   addedAt: addedAt,
+  variousArtists: various,
 );
 
 void main() {
@@ -75,5 +77,21 @@ void main() {
     final input = [...albums];
     sortAlbums(input, const SortChoice(AlbumSortField.year));
     expect(input, albums);
+  });
+
+  test('a merged album sorts by artist with the unknown ones, last', () {
+    final input = [
+      album('v', artist: 'Aaa', various: true),
+      album('n', artist: 'Mid'),
+      album('u'),
+    ];
+    for (final descending in [false, true]) {
+      final sorted = sortAlbums(
+        input,
+        SortChoice(AlbumSortField.artist, descending: descending),
+      );
+      expect(sorted.first.title, 'n');
+      expect(sorted.skip(1).map((a) => a.title), ['u', 'v']);
+    }
   });
 }

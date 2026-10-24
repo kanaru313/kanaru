@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/album_artist_label.dart';
 import '../../../shared/format_duration.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -62,7 +63,11 @@ class AlbumHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 artist ??
                     Text(
-                      album.artist ?? l10n.albumsUnknownArtist,
+                      albumArtistLabel(
+                        l10n,
+                        artist: album.artist,
+                        variousArtists: album.variousArtists,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium,

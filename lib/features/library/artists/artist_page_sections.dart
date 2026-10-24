@@ -7,7 +7,8 @@ import '../../../shared/artist_summaries.dart' show preferredSpelling;
 
 /// What an artist page lists:
 /// - [albums]: albums the artist owns (one of its album artists, else its
-///   first track artist),
+///   first track artist; an album merged from several album artists is
+///   owned by none),
 /// - [songs]: every track crediting the artist, in the order of the album
 ///   tiles (the albums, then those appeared on), each album as the
 ///   query orders it (disc, track, title), tracks without an album last,
@@ -32,7 +33,7 @@ class ArtistPageSections {
     final owned = <AlbumSummary>[];
     final other = <AlbumSummary>[];
     for (final album in albumRows) {
-      (album.key.artistKeys.contains(key) ? owned : other).add(album);
+      (_owners(album).contains(key) ? owned : other).add(album);
     }
     owned.sort(_byYearThenTitle);
     other.sort(_byYearThenTitle);
@@ -42,6 +43,14 @@ class ArtistPageSections {
       songs: _inTileOrder(tracks, [...owned, ...other]),
       appearsOn: [for (final a in other) AlbumTileData.fromSummary(a)],
     );
+  }
+
+  /// The artists owning [album]: those of its key; without any (albums not
+  /// told apart by artist) the artist shown on it, or nobody when several
+  /// album artists are merged into it.
+  static List<String> _owners(AlbumSummary album) {
+    if (album.key.artistKeys.isNotEmpty) return album.key.artistKeys;
+    return album.variousArtists ? const [] : artistKeys(album.artist);
   }
 
   /// The artist's name, chosen by [preferredSpelling] like in the list.

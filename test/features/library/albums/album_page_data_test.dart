@@ -2,27 +2,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_rows.dart';
 import 'package:kanaru/features/library/albums/album_page_data.dart';
 
-AlbumPageData _page(AlbumKey key, String? artist, List<String?> credits) =>
-    AlbumPageData(
-      key: key,
-      album: AlbumSummary(
-        key: key,
-        title: 'Album',
-        artist: artist,
-        trackCount: credits.length,
-        addedAt: 1,
+AlbumPageData _page(
+  AlbumKey key,
+  String? artist,
+  List<String?> credits, {
+  bool various = false,
+}) => AlbumPageData(
+  key: key,
+  album: AlbumSummary(
+    key: key,
+    title: 'Album',
+    artist: artist,
+    trackCount: credits.length,
+    addedAt: 1,
+    variousArtists: various,
+  ),
+  tracks: [
+    for (var i = 0; i < credits.length; i++)
+      BrowseTrack(
+        id: i,
+        path: '/m/$i.flac',
+        title: 'T$i',
+        artist: credits[i],
+        album: 'Album',
       ),
-      tracks: [
-        for (var i = 0; i < credits.length; i++)
-          BrowseTrack(
-            id: i,
-            path: '/m/$i.flac',
-            title: 'T$i',
-            artist: credits[i],
-            album: 'Album',
-          ),
-      ],
-    );
+  ],
+);
 
 void main() {
   test('links the album artist key when a track credits them', () {
@@ -47,5 +52,13 @@ void main() {
     const key = AlbumKey('', 'album');
     expect(_page(key, 'Ann; Bob', ['Bob', 'Ann']).linkedArtistKey, 'ann');
     expect(_page(key, 'Ann; Bob', ['Bob']).linkedArtistKey, isNull);
+  });
+
+  test('a merged album has no artist link', () {
+    const key = AlbumKey('', 'album');
+    expect(
+      _page(key, 'Ann', ['Ann', 'Bob'], various: true).linkedArtistKey,
+      isNull,
+    );
   });
 }

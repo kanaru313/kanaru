@@ -28,7 +28,7 @@ class AlbumPageData {
 
   /// The key of the album artist when their page can be opened: only when a
   /// track here credits them, as a name found only as album artist (for
-  /// example "Various Artists") has no artist page. Else null.
+  /// example "Various Artists") has no artist page. Null too for an album merged from several artists.
   final String? linkedArtistKey;
 
   /// Where each of [groups] starts in [tracks].
@@ -48,6 +48,8 @@ String? _linkedArtistKey(
   AlbumSummary album,
   List<BrowseTrack> tracks,
 ) {
+  // Several merged album artists: no single page to open.
+  if (album.variousArtists) return null;
   // A key without artists (albums not told apart by artist) falls back to the
   // artist shown on the album.
   final candidate =
