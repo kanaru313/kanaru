@@ -1,4 +1,5 @@
-import 'package:drift/drift.dart';
+import 'dart:convert';
+
 // DriftRemoteException is how errors from the database isolate arrive.
 import 'package:drift/isolate.dart' show DriftRemoteException;
 import 'package:logging/logging.dart';
@@ -6,35 +7,14 @@ import 'package:sqlite3/common.dart' show SqliteException;
 
 import 'library_browse_queries.dart';
 import 'library_database.dart';
-import 'search_terms.dart';
+import '../search/search_fields.dart';
+import '../search/search_query.dart';
+import 'search_song_sql.dart';
 
 final _log = Logger('library.search');
 
 /// Most songs one search returns.
 const searchSongLimit = 200;
-
-/// Ranking: the full-text score, then title. The score weights the columns
-/// (title, artist, album, album artist, genre, in the order of
-/// `library_search.drift`) with the title far ahead, so a title match
-/// outranks the others unless the others are much better matches overall;
-/// the order is weighted, not strict.
-const _scoreOrder = 'score, title_sort, id';
-
-/// For a one-character single-term query about half the library matches and
-/// the score is noise, so the order is by title alone.
-const _titleOrder = 'title_sort, id';
-
-/// `?1`: the FTS query, `?2`: the limit. `total` is every match, counted
-/// before the limit, in the same statement as the page so the two agree (an
-/// uncorrelated subquery runs once; `count(*) OVER ()` forced a sort of
-/// every match and cost +50% on broad queries).
-String _songsSql(String order) =>
-    '''
-SELECT $songColumns, (SELECT count(*) FROM track_search
-        WHERE track_search MATCH ?1) AS total FROM tracks
-JOIN (SELECT rowid AS hit, bm25(track_search, 20.0, 2.0, 1.5, 1.0, 0.5) AS score
-      FROM track_search WHERE track_search MATCH ?1) ON id = hit
-ORDER BY $order LIMIT ?2''';
 
 /// The best songs of a search and how many matched in all.
 class SongSearchResult {
@@ -59,28 +39,46 @@ extension LibrarySearchQueries on LibraryDatabase {
   /// Songs whose title, artist, album, album artist or genre has every term
   /// of [terms] (see `searchTerms`) as a word prefix, best first, at most
   /// [limit]. No terms, no songs.
-  ///
-  /// A corrupt index (for example after a SQLite upgrade changed how text is
-  /// split) is rebuilt once per database and the search retried.
   Future<SongSearchResult> searchSongs(
     List<String> terms, {
     int limit = searchSongLimit,
+  }) => searchSongsFor(
+    SearchRequest(
+      query: ParsedSearchQuery(freeTerms: terms),
+      fields: defaultSearchFields,
+    ),
+    limit: limit,
+  );
+
+  /// Songs for [request], best first, at most [limit]: the free words in the
+  /// chosen tag columns, `artist:`, `album:` and `genre:` words in their own
+  /// column, and the year and format filters. A song matches when every word
+  /// is in the chosen tag fields, or every word is in its file name or
+  /// comment ([extraIds], found with `SearchFileTextIndex`); the two are not
+  /// mixed. Tag matches come first. Nothing to search for gives no songs.
+  ///
+  /// A corrupt index (for example after a SQLite upgrade changed how text is
+  /// split) is rebuilt once per database and the search retried.
+  Future<SongSearchResult> searchSongsFor(
+    SearchRequest request, {
+    List<int> extraIds = const [],
+    int limit = searchSongLimit,
   }) async {
-    if (terms.isEmpty) return SongSearchResult.empty;
     assert(limit > 0, 'limit must be positive');
-    final fts = ftsPrefixQuery(terms);
-    final order = terms.length == 1 && terms.first.runes.length == 1
-        ? _titleOrder
-        : _scoreOrder;
-    // In SQLite a negative LIMIT means no limit, so never pass less than 1.
-    final cap = limit < 1 ? 1 : limit;
+    final built = buildSongSearchSql(
+      request,
+      hasExtra: extraIds.isNotEmpty,
+      limit: limit,
+      extraIdsJson: jsonEncode(extraIds),
+    );
+    if (built == null) return SongSearchResult.empty;
     try {
-      return await _searchSongs(fts, order, cap);
+      return await _searchSongs(built);
     } catch (error) {
       if (!_isCorruption(error)) rethrow;
       final repair = _repairs[this] ??= _rebuildIndex(error);
       await repair;
-      return _searchSongs(fts, order, cap); // a second corruption propagates
+      return _searchSongs(built); // a second corruption propagates
     }
   }
 
@@ -94,14 +92,10 @@ extension LibrarySearchQueries on LibraryDatabase {
     });
   }
 
-  Future<SongSearchResult> _searchSongs(
-    String fts,
-    String order,
-    int limit,
-  ) async {
+  Future<SongSearchResult> _searchSongs(SongSearchSql built) async {
     final rows = await customSelect(
-      _songsSql(order),
-      variables: [Variable.withString(fts), Variable.withInt(limit)],
+      built.sql,
+      variables: built.variables,
       readsFrom: {tracks, trackSearch},
     ).get();
     if (rows.isEmpty) return SongSearchResult.empty;
