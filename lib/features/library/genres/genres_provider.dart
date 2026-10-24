@@ -22,5 +22,15 @@ final genresProvider = StreamProvider<List<GenreSummary>>((ref) {
     db,
     db.genreCounts,
     interval: ref.watch(libraryBrowseRefreshIntervalProvider),
-  ).map((counts) => buildGenreSummaries(counts, rules: rules));
+  ).asyncMap((counts) async {
+    final genres = buildGenreSummaries(counts, rules: rules);
+    final coverKeys = await Future.wait([
+      for (final genre in genres)
+        db.genreCoverKeys(genre.raws, includeNull: genre.withoutGenre),
+    ]);
+    return [
+      for (var i = 0; i < genres.length; i++)
+        genres[i].withCoverKeys(coverKeys[i]),
+    ];
+  });
 });

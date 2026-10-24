@@ -259,6 +259,16 @@ class PlayerService extends Notifier<PlayerState>
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
     _ended = false;
+    // Jumping forward over play-next tracks skips them for good; left marked
+    // they would count as a run again once an earlier track is replayed.
+    final before = state.queue;
+    if (index > before.index) {
+      final run = _upNextRun(before);
+      final end = min(index, before.index + 1 + run);
+      for (var at = before.index + 1; at < end; at++) {
+        _upNext.remove(before.order[at]);
+      }
+    }
     _upNext.remove(queue.order[index]);
     _turn++;
     _wantsPlaying = play;

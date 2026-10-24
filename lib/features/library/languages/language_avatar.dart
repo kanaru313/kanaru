@@ -4,7 +4,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/placeholder_colors.dart';
 
 /// Round placeholder for a language: the language icon on a color picked from
-/// [languageKey], the same on every launch. Same look as `GenreAvatar`.
+/// [languageKey], the same on every launch. Same look as `ArtistAvatar`.
 class LanguageAvatar extends StatelessWidget {
   const LanguageAvatar({
     super.key,

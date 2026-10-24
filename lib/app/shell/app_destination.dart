@@ -97,3 +97,46 @@ List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
     ],
   ];
 }
+
+/// Every page in the order it sits on screen, top to bottom: search and
+/// settings (top bar, above the page area, search before settings left to
+/// right), then the sidebar rows with every tab shown
+/// ([visibleSidebarGroups] with all of [SidebarTab.values]), then playlists
+/// last (its own section below the sidebar groups). This is only used to
+/// rank destinations for [branchDirection]; the actual sidebar render order
+/// (which hides tabs) stays [visibleSidebarGroups]. Hiding a tab only drops
+/// it from the sidebar, it never reorders the rest, so this fixed order
+/// matches the visible order for every subset of tabs.
+final destinationScreenOrder = <AppDestination>[
+  AppDestination.search,
+  AppDestination.settings,
+  ...visibleSidebarGroups(SidebarTab.values.toSet()).expand((g) => g),
+  AppDestination.playlists,
+];
+
+/// Where [AppDestination.to] sits relative to [AppDestination.from] in
+/// [destinationScreenOrder].
+enum BranchDirection {
+  /// `to` and `from` are the same destination.
+  none,
+
+  /// `to` sits below `from` in [destinationScreenOrder]; the new page
+  /// arrives from below.
+  towardsBelow,
+
+  /// `to` sits above `from` in [destinationScreenOrder]; the new page
+  /// arrives from above.
+  towardsAbove,
+}
+
+/// Ranks [from] and [to] in [destinationScreenOrder] to tell which side the
+/// new page sits on. Does not depend on which destinations are currently
+/// visible in the sidebar: every destination has a fixed rank.
+BranchDirection branchDirection(AppDestination from, AppDestination to) {
+  if (from == to) return BranchDirection.none;
+  final fromIndex = destinationScreenOrder.indexOf(from);
+  final toIndex = destinationScreenOrder.indexOf(to);
+  return toIndex > fromIndex
+      ? BranchDirection.towardsBelow
+      : BranchDirection.towardsAbove;
+}

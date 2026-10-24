@@ -2,11 +2,13 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/genre_summaries.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/library_route_keys.dart' show unknownGenreKey;
+import '../../../shared/widgets/playlist_cover.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import 'genre_avatar.dart';
 import 'genre_display_name.dart';
 
-/// One genre row: round avatar, name, "N songs".
+/// One genre row: cover collage, name, "N songs".
 class GenreTile extends StatelessWidget {
   const GenreTile({
     super.key,
@@ -25,7 +27,14 @@ class GenreTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
-      leading: GenreAvatar(genreKey: genre.key, size: 40),
+      leading: PlaylistCover(
+        coverKeys: genre.coverKeys,
+        size: 40,
+        seed: 'genre:${genre.key}',
+        icon: genre.key == unknownGenreKey
+            ? AppIcons.genreOutlined
+            : AppIcons.genre,
+      ),
       title: Text(
         genreDisplayName(context.l10n, genre.key, genre.name),
         maxLines: 1,

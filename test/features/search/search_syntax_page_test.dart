@@ -90,7 +90,7 @@ void main() {
 
     expect(find.text('No results'), findsOneWidget);
     expect(
-      find.textContaining('Nothing matches “year:1900”. Try fewer'),
+      find.textContaining('Nothing matches “1900”. Try fewer'),
       findsOneWidget,
     );
   });

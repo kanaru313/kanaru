@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart' show setEquals;
 /// `core` does not import the app shell.
 enum SidebarTab { songs, albums, artists, folders, genres, languages }
 
+/// The tab the docked side panel shows. Declared here so that `core` does
+/// not import the features.
+enum SidePanelTab { queue, lyrics }
+
 const _allTabs = {
   SidebarTab.songs,
   SidebarTab.albums,
@@ -20,13 +24,16 @@ const maxFontScale = 1.5;
 /// How the app looks beyond the theme. The defaults are what the app shows
 /// today. Read: [colorFromCover] (the cover palette and the scan),
 /// [fontScale] (the app's builder, `lib/app/app.dart`) and
-/// [trackNumbersInAlbum] (album pages) and [sidebarTabs] (the sidebar).
+/// [trackNumbersInAlbum] (album pages), [sidebarTabs] (the sidebar), and
+/// [sidePanelOpen] and [sidePanelTab] (the shell's docked side panel).
 class DisplayPrefs {
   const DisplayPrefs({
     this.colorFromCover = false,
     this.fontScale = 1.0,
     this.sidebarTabs = _allTabs,
     this.trackNumbersInAlbum = true,
+    this.sidePanelOpen = false,
+    this.sidePanelTab = SidePanelTab.queue,
   });
 
   /// Tint the app with colors taken from the cover being played.
@@ -45,11 +52,19 @@ class DisplayPrefs {
   /// the song's cover there instead.
   final bool trackNumbersInAlbum;
 
+  /// The docked side panel is open.
+  final bool sidePanelOpen;
+
+  /// The tab the docked side panel shows.
+  final SidePanelTab sidePanelTab;
+
   DisplayPrefs copyWith({
     bool? colorFromCover,
     double? fontScale,
     Set<SidebarTab>? sidebarTabs,
     bool? trackNumbersInAlbum,
+    bool? sidePanelOpen,
+    SidePanelTab? sidePanelTab,
   }) => DisplayPrefs(
     colorFromCover: colorFromCover ?? this.colorFromCover,
     fontScale: fontScale ?? this.fontScale,
@@ -57,6 +72,8 @@ class DisplayPrefs {
         ? this.sidebarTabs
         : Set.unmodifiable(sidebarTabs),
     trackNumbersInAlbum: trackNumbersInAlbum ?? this.trackNumbersInAlbum,
+    sidePanelOpen: sidePanelOpen ?? this.sidePanelOpen,
+    sidePanelTab: sidePanelTab ?? this.sidePanelTab,
   );
 
   @override
@@ -65,7 +82,9 @@ class DisplayPrefs {
       other.colorFromCover == colorFromCover &&
       other.fontScale == fontScale &&
       setEquals(other.sidebarTabs, sidebarTabs) &&
-      other.trackNumbersInAlbum == trackNumbersInAlbum;
+      other.trackNumbersInAlbum == trackNumbersInAlbum &&
+      other.sidePanelOpen == sidePanelOpen &&
+      other.sidePanelTab == sidePanelTab;
 
   @override
   int get hashCode => Object.hash(
@@ -73,11 +92,14 @@ class DisplayPrefs {
     fontScale,
     Object.hashAllUnordered(sidebarTabs),
     trackNumbersInAlbum,
+    sidePanelOpen,
+    sidePanelTab,
   );
 
   @override
   String toString() =>
       'DisplayPrefs(colorFromCover: $colorFromCover, fontScale: $fontScale, '
       'sidebarTabs: ${sidebarTabs.map((t) => t.name).join(',')}, '
-      'trackNumbersInAlbum: $trackNumbersInAlbum)';
+      'trackNumbersInAlbum: $trackNumbersInAlbum, '
+      'sidePanelOpen: $sidePanelOpen, sidePanelTab: ${sidePanelTab.name})';
 }

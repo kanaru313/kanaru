@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../queue/queue_panel.dart';
 import '../queue/queue_sheet_host.dart';
+import '../cover_tint_background.dart';
 import 'now_playing_auto_hide.dart';
-import 'now_playing_cover_gradient.dart';
 import 'now_playing_footer.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_title_bar.dart';
@@ -92,7 +92,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             onMouseBack: _close,
             onOpenChanged: (open) => open ? _chrome.pin() : _chrome.unpin(),
             // The background is the gradient's, which is always opaque.
-            child: NowPlayingCoverGradient(
+            child: CoverTintBackground(
               child: Scaffold(
                 backgroundColor: Colors.transparent,
                 body: wide

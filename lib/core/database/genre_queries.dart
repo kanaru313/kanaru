@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'library_browse_queries.dart';
 import 'library_database.dart';
+import 'playlist_cover_keys.dart';
 
 /// `?1`..: the stored genre strings. The albums holding at least one track
 /// of them (with [includeNull], also of tracks with no genre at all), each
@@ -66,6 +67,27 @@ extension GenreQueries on LibraryDatabase {
           variables: [for (final raw in raws) Variable(raw)],
           readsFrom: {tracks},
         ).map(browseTrackFromRow).get();
+
+  /// Up to [playlistCollageSize] distinct cover keys for the genre tile
+  /// collage: the most recently added tracks whose genre string is one of
+  /// [raws] (or, with [includeNull], that has none).
+  Future<List<String>> genreCoverKeys(
+    List<String> raws, {
+    bool includeNull = false,
+  }) => raws.isEmpty && !includeNull
+      ? Future.value(const [])
+      : customSelect(
+          '''
+SELECT cover_key FROM tracks
+WHERE ${_genreCondition('genre', raws.length, includeNull)}
+  AND cover_key IS NOT NULL
+ORDER BY added_at DESC, id DESC
+LIMIT $playlistCollageScanLimit''',
+          variables: [for (final raw in raws) Variable(raw)],
+          readsFrom: {tracks},
+        ).map((row) => row.read<String>('cover_key')).get().then(
+          pickCollageKeys,
+        );
 
   /// The albums with a track whose genre string is one of [raws] (or, with
   /// [includeNull], that has none), in no particular order.

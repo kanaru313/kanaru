@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/cover_colors/cover_palette.dart';
-import '../../../core/cover_colors/playing_cover_palette_provider.dart';
+import '../../core/cover_colors/cover_palette.dart';
+import '../../core/cover_colors/playing_cover_palette_provider.dart';
 
 /// Stops in the Now Playing gradient, at most.
 const _maxStops = 4;
@@ -17,17 +17,16 @@ const _minContrast = 4.5;
 /// contrast.
 const _darkTint = 0.45, _lightTint = 0.35, _tintStep = 0.05;
 
-/// The Now Playing background: the theme's surface, tinted with a gradient
-/// of the playing cover's colors when "colors from the cover" is on. Always
-/// opaque (the shell lies under Now Playing). A new cover's gradient fades in
-/// over [coverThemeTransition], or at once when the system asks for reduced
-/// motion.
+/// A background tinted with a gradient of the playing cover's colors, over
+/// the theme's surface, when "colors from the cover" is on. Always opaque.
+/// A new cover's gradient fades in over [coverThemeTransition], or at once
+/// when the system asks for reduced motion.
 ///
 /// The gradient is a translucent layer over the surface, so when the theme
 /// jumps to the new cover's colors the surface changes at once and only the
 /// tint fades; the tint does not restart its fade.
-class NowPlayingCoverGradient extends ConsumerWidget {
-  const NowPlayingCoverGradient({super.key, required this.child});
+class CoverTintBackground extends ConsumerWidget {
+  const CoverTintBackground({super.key, required this.child});
 
   final Widget child;
 

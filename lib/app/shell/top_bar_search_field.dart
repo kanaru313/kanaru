@@ -11,6 +11,7 @@ import '../../shared/icons/app_icons.dart';
 import '../router.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
+import 'search_query_highlighting_controller.dart';
 import 'top_bar_search_history_host.dart';
 import 'top_bar_search_shortcuts.dart';
 
@@ -49,7 +50,7 @@ class _TopBarSearchFieldState extends ConsumerState<TopBarSearchField> {
     final text = uri.path == AppDestination.search.path
         ? uri.queryParameters['q'] ?? ''
         : '';
-    _controller = TextEditingController(text: text);
+    _controller = SearchQueryHighlightingController(text: text);
     if (uri.path == AppDestination.search.path) _sentQuery = text;
     _shortcuts = TopBarSearchShortcuts(
       focusNode: _focusNode,

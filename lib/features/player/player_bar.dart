@@ -6,12 +6,15 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/player/playback_error.dart';
 import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
+import 'cover_tint_background.dart';
 import 'now_playing/now_playing_actions.dart';
 import 'now_playing_summary.dart';
 import 'playback_controls.dart';
 import 'queue/queue_button.dart';
 import 'seek_bar.dart';
 import 'seek_strip.dart';
+import 'side_panel/lyrics_panel_button.dart';
+import 'side_panel/side_panel_layout.dart';
 import 'sleep_timer/sleep_timer_button.dart';
 import 'volume_button.dart';
 
@@ -42,6 +45,12 @@ const _centerMinWidth = 272.0;
 /// Width of the right side from which the sleep timer label fits as well.
 const _sleepLabelMinSide = 296.0;
 
+/// What the lyrics button, there only where the side panel can dock, adds to
+/// the width the sleep label needs: its own width plus some room, since a
+/// running timer's label ("45:00") measures a little more than the 56 px the
+/// threshold above counts on.
+const _lyricsButtonExtra = 56.0;
+
 /// Space between the bar's three parts.
 const _gap = 8.0;
 
@@ -53,7 +62,8 @@ const _tooltipOffset = 34.0;
 /// playback controls over the seek bar in the middle, volume on the right.
 /// Narrow windows keep the summary, play/pause and next, with a thin seek
 /// strip on the top edge. Shows a snack bar for the latest track that
-/// failed.
+/// failed. Its background tints with the playing cover's colors, same as
+/// Now Playing's.
 class PlayerBar extends ConsumerStatefulWidget {
   const PlayerBar({super.key});
 
@@ -101,32 +111,34 @@ class _PlayerBarState extends ConsumerState<PlayerBar> {
     return RepaintBoundary(
       child: SizedBox(
         height: playerBarHeight,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < _compactBreakpoint;
-            final tooltips = TooltipTheme.of(context);
-            return RepaintBoundary(
-              child: TooltipTheme(
-                data: tooltips.copyWith(verticalOffset: _tooltipOffset),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                      child: compact ? const _CompactRow() : const _OneRow(),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      child: compact
-                          ? const SeekStrip()
-                          : const Divider(height: 1, thickness: 1),
-                    ),
-                  ],
+        child: CoverTintBackground(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < _compactBreakpoint;
+              final tooltips = TooltipTheme.of(context);
+              return RepaintBoundary(
+                child: TooltipTheme(
+                  data: tooltips.copyWith(verticalOffset: _tooltipOffset),
+                  child: Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                        child: compact ? const _CompactRow() : const _OneRow(),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        child: compact
+                            ? const SeekStrip()
+                            : const Divider(height: 1, thickness: 1),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -151,6 +163,9 @@ class _OneRow extends StatelessWidget {
           0.0,
           _centerMaxWidth,
         );
+        final sleepLabelMinSide =
+            _sleepLabelMinSide +
+            (sidePanelAvailable(context) ? _lyricsButtonExtra : 0);
         // A tick dirties this builder; with a boundary under it, the title
         // and buttons were not painted again in the tests.
         return RepaintBoundary(
@@ -179,11 +194,12 @@ class _OneRow extends StatelessWidget {
                           // cut, not overflowed.
                           Flexible(
                             child: SleepTimerButton(
-                              showLabel: side.maxWidth >= _sleepLabelMinSide,
+                              showLabel: side.maxWidth >= sleepLabelMinSide,
                             ),
                           ),
                         const VolumeButton(),
-                        const QueueButton(),
+                        const LyricsPanelButton(),
+                        const QueueButton(docks: true),
                       ],
                     ),
                   ),

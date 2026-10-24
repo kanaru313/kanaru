@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/library/genres/genre_avatar.dart';
 import 'package:kanaru/features/library/genres/genre_grid_tile.dart';
 import 'package:kanaru/features/library/genres/genre_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/album_artwork.dart';
+import 'package:kanaru/shared/widgets/playlist_cover.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
@@ -42,8 +42,7 @@ void main() {
     expect(top('Jazz'), lessThan(top('Pop')));
     expect(top('Pop'), lessThan(top('Rock')));
     expect(top('Rock'), lessThan(top('Unknown genre')));
-    expect(find.byType(GenreAvatar), findsNWidgets(4));
-    expect(find.byType(CircleAvatar), findsNWidgets(4));
+    expect(find.byType(PlaylistCover), findsNWidgets(4));
     expect(find.byType(AlbumArtwork), findsNothing);
   });
 
@@ -58,7 +57,7 @@ void main() {
     expect(find.byType(GenreGridTile), findsNWidgets(4));
     expect(find.byType(GenreTile), findsNothing);
     expect(find.byTooltip('Grid'), findsOneWidget);
-    expect(find.byType(CircleAvatar), findsNWidgets(4));
+    expect(find.byType(PlaylistCover), findsNWidgets(4));
     expect(find.byType(AlbumArtwork), findsNothing);
     expect(find.text('Rock'), findsOneWidget);
     expect(find.text('3 songs'), findsOneWidget);

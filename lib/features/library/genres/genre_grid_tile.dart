@@ -2,13 +2,15 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/genre_summaries.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/library_route_keys.dart' show unknownGenreKey;
+import '../../../shared/widgets/playlist_cover.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
 import '../widgets/round_grid_tile.dart';
-import 'genre_avatar.dart';
 import 'genre_display_name.dart';
 
-/// One genre in a grid: round avatar, name, "N songs".
+/// One genre in a grid: cover collage, name, "N songs".
 class GenreGridTile extends StatelessWidget {
   const GenreGridTile({
     super.key,
@@ -25,7 +27,14 @@ class GenreGridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RoundGridTile(
-    avatarBuilder: (size) => GenreAvatar(genreKey: genre.key, size: size),
+    avatarBuilder: (size) => PlaylistCover(
+      coverKeys: genre.coverKeys,
+      size: size,
+      seed: 'genre:${genre.key}',
+      icon: genre.key == unknownGenreKey
+          ? AppIcons.genreOutlined
+          : AppIcons.genre,
+    ),
     title: genreDisplayName(context.l10n, genre.key, genre.name),
     subtitle: context.l10n.albumsSongCount(genre.songCount),
     onTap: onTap,

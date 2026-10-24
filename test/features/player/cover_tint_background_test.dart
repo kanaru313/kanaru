@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/cover_colors/cover_palette.dart';
 import 'package:kanaru/core/cover_colors/playing_cover_palette_provider.dart';
-import 'package:kanaru/features/player/now_playing/now_playing_cover_gradient.dart';
+import 'package:kanaru/features/player/cover_tint_background.dart';
 import 'package:material_ui/material_ui.dart';
 
 double _contrast(Color a, Color b) {
@@ -70,7 +70,7 @@ void main() {
     });
   });
 
-  group('NowPlayingCoverGradient', () {
+  group('CoverTintBackground', () {
     late ProviderContainer container;
 
     Future<void> pump(WidgetTester tester) async {
@@ -85,7 +85,7 @@ void main() {
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
             ),
-            home: const NowPlayingCoverGradient(child: SizedBox.expand()),
+            home: const CoverTintBackground(child: SizedBox.expand()),
           ),
         ),
       );
@@ -93,7 +93,7 @@ void main() {
 
     List<Color> gradient(WidgetTester tester) {
       final under = find.descendant(
-        of: find.byType(NowPlayingCoverGradient),
+        of: find.byType(CoverTintBackground),
         matching: find.byType(ColoredBox),
       );
       final surface = Theme.of(tester.element(find.byType(SizedBox)))
@@ -166,7 +166,7 @@ void main() {
                     seedColor: seed ?? Colors.blue,
                   ),
                 ),
-                home: const NowPlayingCoverGradient(child: SizedBox.expand()),
+                home: const CoverTintBackground(child: SizedBox.expand()),
               );
             },
           ),
@@ -211,7 +211,7 @@ void main() {
                   brightness: Brightness.dark,
                 ),
               ),
-              home: const NowPlayingCoverGradient(child: SizedBox.expand()),
+              home: const CoverTintBackground(child: SizedBox.expand()),
             ),
           ),
         ),

@@ -100,6 +100,7 @@ class _GenrePageState extends ConsumerState<_GenrePage>
                 name: name,
                 albumCount: data.albums.length,
                 songCount: songs.length,
+                coverKeys: data.coverKeys,
                 onPlay: () => playTracks(ref, queueOf(songs), 0),
                 onShuffle: () => shuffleTracks(ref, queueOf(songs)),
                 onQueueAction: (action) =>

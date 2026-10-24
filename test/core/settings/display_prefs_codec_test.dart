@@ -15,6 +15,8 @@ void main() {
     expect(d.fontScale, 1.0);
     expect(d.sidebarTabs, SidebarTab.values.toSet());
     expect(d.trackNumbersInAlbum, isTrue);
+    expect(d.sidePanelOpen, isFalse);
+    expect(d.sidePanelTab, SidePanelTab.queue);
   });
 
   test('values round-trip, tabs in enum order', () {
@@ -23,6 +25,8 @@ void main() {
       fontScale: 1.25,
       sidebarTabs: {SidebarTab.genres, SidebarTab.songs},
       trackNumbersInAlbum: false,
+      sidePanelOpen: true,
+      sidePanelTab: SidePanelTab.lyrics,
     );
 
     final json = encodeDisplayPrefs(prefs);
@@ -34,6 +38,8 @@ void main() {
       'languages',
     ]);
     expect(json.containsKey('sidebarTabs'), isFalse);
+    expect(json['sidePanelOpen'], true);
+    expect(json['sidePanelTab'], 'lyrics');
     expect(decodeDisplayPrefs(json).$1, prefs);
   });
 
@@ -44,10 +50,45 @@ void main() {
         'fontScale': bad,
         'hiddenSidebarTabs': bad is List ? 5 : bad,
         'trackNumbersInAlbum': bad,
+        'sidePanelOpen': bad,
+        'sidePanelTab': bad,
       }).$1;
 
       expect(decoded, const DisplayPrefs(), reason: '$bad');
     }
+  });
+
+  test('side panel keys: junk falls back per key, known values load', () {
+    DisplayPrefs read(Map<String, Object?> m) => decodeDisplayPrefs(m).$1;
+
+    expect(read({'sidePanelTab': 7}).sidePanelTab, SidePanelTab.queue);
+    expect(read({'sidePanelTab': 'nope'}).sidePanelTab, SidePanelTab.queue);
+    expect(read({'sidePanelOpen': 'yes'}).sidePanelOpen, isFalse);
+    expect(read({'sidePanelOpen': 1}).sidePanelOpen, isFalse);
+    expect(read({'sidePanelTab': 'lyrics'}).sidePanelTab, SidePanelTab.lyrics);
+    expect(read({'sidePanelOpen': true}).sidePanelOpen, isTrue);
+    // A bad value of one key leaves the other alone.
+    final mixed = read({'sidePanelOpen': true, 'sidePanelTab': 7});
+    expect(mixed.sidePanelOpen, isTrue);
+    expect(mixed.sidePanelTab, SidePanelTab.queue);
+    // Not listed as unknown, so saving does not duplicate them.
+    expect(
+      decodeDisplayPrefs({'sidePanelOpen': true, 'sidePanelTab': 'x'}).$2,
+      isEmpty,
+    );
+  });
+
+  test('unknown keys are kept next to the side panel keys', () {
+    final (prefs, extra) = decodeDisplayPrefs({
+      'future': 1,
+      'sidePanelOpen': true,
+    });
+
+    expect(extra, {'future': 1});
+    final json = encodeDisplayPrefs(prefs, extra: extra);
+    expect(json['future'], 1);
+    expect(json['sidePanelOpen'], true);
+    expect(json['sidePanelTab'], 'queue');
   });
 
   test('font scale is moved into range; NaN and infinity give 1.0', () {

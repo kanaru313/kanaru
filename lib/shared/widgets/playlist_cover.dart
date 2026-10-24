@@ -18,6 +18,7 @@ class PlaylistCover extends ConsumerWidget {
     required this.size,
     required this.seed,
     this.radius,
+    this.icon = AppIcons.playlist,
   });
 
   /// Cover keys already picked (`pickCollageKeys`), at most four.
@@ -27,6 +28,9 @@ class PlaylistCover extends ConsumerWidget {
   /// Picks the placeholder color, for example `playlist:<id>`.
   final String seed;
   final double? radius;
+
+  /// Shown on the placeholder when fewer than two covers resolve.
+  final IconData icon;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +52,7 @@ class PlaylistCover extends ConsumerWidget {
         radius: radius,
         placeholder: ColoredBox(
           color: background,
-          child: Icon(AppIcons.playlist, size: size * 0.4, color: foreground),
+          child: Icon(icon, size: size * 0.4, color: foreground),
         ),
       );
     }
