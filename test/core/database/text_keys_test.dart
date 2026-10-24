@@ -241,7 +241,7 @@ void main() {
   });
 
   test('text keys version covers the search columns', () {
-    expect(textKeysVersion, 2);
+    expect(textKeysVersion, 3);
   });
 
   test('keys 100k mixed names fast enough for a background backfill', () {

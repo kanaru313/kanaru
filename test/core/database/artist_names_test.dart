@@ -17,8 +17,9 @@ void main() {
       'A (feat. B)': ['A', 'B'],
       'A [ft. B; C]': ['A', 'B', 'C'],
       'A (with B) ; C': ['A', 'B', 'C'],
-      'A/B': ['A', 'B'],
-      'A / B': ['A', 'B'],
+      'A//B': ['A', 'B'],
+      'A // B': ['A', 'B'],
+      'A, B': ['A', 'B'],
       'Ban nhạc Hương Mùa Hè;SUNI Hạ Linh': [
         'Ban nhạc Hương Mùa Hè',
         'SUNI Hạ Linh',
@@ -29,12 +30,12 @@ void main() {
     }
   });
 
-  test('keeps names with a slash exception, commas and ampersands', () {
+  test('keeps names with a slash, a slash exception and ampersands', () {
     expect(splitArtists('AC/DC'), ['AC/DC']);
     expect(splitArtists('ac/dc feat. X'), ['ac/dc', 'X']);
-    expect(splitArtists('X/AC/DC'), ['X', 'AC/DC']);
-    expect(splitArtists('A, B'), ['A, B']);
+    expect(splitArtists('X//AC/DC'), ['X', 'AC/DC']);
     expect(splitArtists('Simon & Garfunkel'), ['Simon & Garfunkel']);
+    expect(splitArtists('A/B'), ['A/B']);
   });
 
   test('featuring words split only as whole words between spaces', () {
@@ -60,10 +61,10 @@ void main() {
   });
 
   test('slash exceptions match whole names only', () {
-    expect(splitArtists('Shellac/DC Talk'), ['Shellac', 'DC Talk']);
-    expect(splitArtists('DC Talk/AC/DC'), ['DC Talk', 'AC/DC']);
-    expect(splitArtists('X / AC/DC / Y'), ['X', 'AC/DC', 'Y']);
-    expect(splitArtists('AC/DCX'), ['AC', 'DCX']);
+    expect(splitArtists('Shellac//DC Talk'), ['Shellac', 'DC Talk']);
+    expect(splitArtists('DC Talk//AC/DC'), ['DC Talk', 'AC/DC']);
+    expect(splitArtists('X // AC/DC // Y'), ['X', 'AC/DC', 'Y']);
+    expect(splitArtists('AC//DCX'), ['AC', 'DCX']);
   });
 
   test('any whitespace around featuring words splits the same way', () {

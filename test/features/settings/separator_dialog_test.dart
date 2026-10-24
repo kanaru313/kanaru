@@ -78,7 +78,7 @@ void main() {
 
     expect(find.text('Split artists'), findsOneWidget);
     expect(find.byType(Tab), findsNWidgets(2));
-    expect(find.text('Separators (8)'), findsOneWidget);
+    expect(find.text('Separators (9)'), findsOneWidget);
     expect(find.text('Keep whole (1)'), findsOneWidget);
     // The defaults are listed, symbols included.
     for (final entry in defaultArtistSeparators) {
@@ -228,7 +228,7 @@ void main() {
     await _open(tester);
     await _type(tester, 'half');
     await _openKeepTab(tester, 1);
-    await tester.tap(find.text('Separators (8)'));
+    await tester.tap(find.text('Separators (9)'));
     await tester.pumpAndSettle();
 
     expect(find.text('half'), findsOneWidget);
@@ -426,7 +426,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
       await tester.pumpAndSettle();
       expect(_artist(), defaultArtistSplit);
-      expect(find.text('Separators (8)'), findsOneWidget);
+      expect(find.text('Separators (9)'), findsOneWidget);
     });
   });
 
@@ -466,7 +466,7 @@ void main() {
     await _open(tester, language: 'vi');
 
     expect(find.text('Tách nghệ sĩ'), findsOneWidget);
-    expect(find.text('Dấu phân cách (8)'), findsOneWidget);
+    expect(find.text('Dấu phân cách (9)'), findsOneWidget);
     expect(find.text('Không tách (1)'), findsOneWidget);
     expect(find.textContaining('Không cần thêm khoảng trắng'), findsOneWidget);
 

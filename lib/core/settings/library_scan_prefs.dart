@@ -22,11 +22,12 @@ class AlbumGrouping {
       'AlbumGrouping(byAlbumArtist: $byAlbumArtist, byYear: $byYear)';
 }
 
-/// What separates the names in an artist tag: `;` and `/` anywhere, the
+/// What separates the names in an artist tag: `;`, `,` and `//` anywhere, the
 /// other entries as whole words (any case, whitespace on each side).
 const defaultArtistSeparators = [
   ';',
-  '/',
+  ',',
+  '//',
   'feat.',
   'feat',
   'ft.',

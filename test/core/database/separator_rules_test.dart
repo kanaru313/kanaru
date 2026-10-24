@@ -220,4 +220,12 @@ void main() {
       expect(splitArtists('A;B with Y', rules: holding), ['A;B', 'Y']);
     },
   );
+  group('default artist separators', () {
+    test('split on a comma and a double slash, not on a single slash', () {
+      const r = defaultArtistRules;
+      expect(splitArtists('A, B // C', rules: r), ['A', 'B', 'C']);
+      expect(splitArtists('A/B', rules: r), ['A/B']);
+      expect(splitArtists('AC/DC', rules: r), ['AC/DC']);
+    });
+  });
 }

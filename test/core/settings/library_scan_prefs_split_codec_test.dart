@@ -10,7 +10,8 @@ void main() {
     const d = LibraryScanPrefs();
     expect(d.artistSplit.separators, [
       ';',
-      '/',
+      ',',
+      '//',
       'feat.',
       'feat',
       'ft.',

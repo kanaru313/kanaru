@@ -1,12 +1,19 @@
 // The splitting code as it was before the separators became rules, copied
-// here as the oracle: the default rules must give its results for every
-// input. Do not "fix" it; a change in behaviour belongs in the rules tests.
+// here as the oracle: the rules it was written for must give its results for
+// every input. Do not "fix" it; a change in behaviour belongs in the rules tests.
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/artist_names.dart';
 import 'package:kanaru/core/database/genre_names.dart';
 import 'package:kanaru/core/database/text_keys.dart';
+
+/// The artist separators before the defaults gained `,` and `//` (and lost
+/// `/`). The oracle matches them, so these rules must give its results.
+const _oldArtistRules = SplitRules(
+  separators: [';', '/', 'feat.', 'feat', 'ft.', 'ft', 'featuring', 'with'],
+  keepWhole: ['AC/DC'],
+);
 
 /// Names containing `/` that are one artist, lower-cased. Matched only as
 /// whole names: `Shellac/DC Talk` still splits.
@@ -224,10 +231,10 @@ void main() {
     ];
   }
 
-  test('default artist rules give what the old splitting gave', () {
+  test('the old artist rules give what the old splitting gave', () {
     for (final input in [...samples, ...generated(20000)]) {
       expect(
-        splitArtists(input),
+        splitArtists(input, rules: _oldArtistRules),
         oracleSplitArtists(input),
         reason: 'input ${input.codeUnits}',
       );
@@ -245,7 +252,10 @@ void main() {
   });
 
   test('null gives nothing in both', () {
-    expect(splitArtists(null), oracleSplitArtists(null));
+    expect(
+      splitArtists(null, rules: _oldArtistRules),
+      oracleSplitArtists(null),
+    );
     expect(splitGenres(null), oracleSplitGenres(null));
   });
 }

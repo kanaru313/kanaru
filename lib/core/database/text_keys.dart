@@ -13,7 +13,7 @@ import 'text_key_tables.dart';
 /// upgrade that changes the output of `toLowerCase`; the recorded-output test
 /// in `text_keys_test.dart` fails when that happens. Also bump it when
 /// `trackKeysFor` starts writing a new key.
-const textKeysVersion = 2;
+const textKeysVersion = 3;
 
 /// Longest key kept, in characters, so route keys stay bounded even for
 /// huge tags.

@@ -387,8 +387,8 @@ void main() {
 
     test('an album artist naming several artists keys them all', () async {
       await db.upsertTracks([
-        row(artist: 'A', album: 'Duo', albumArtist: 'A / B'),
-        row(artist: 'B', album: 'Duo', albumArtist: 'A/B'),
+        row(artist: 'A', album: 'Duo', albumArtist: 'A // B'),
+        row(artist: 'B', album: 'Duo', albumArtist: 'A//B'),
       ]);
       expect((await albums()).keys, [const AlbumKey('a; b', 'duo')]);
     });
