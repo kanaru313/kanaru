@@ -14,6 +14,10 @@ mixin InPageFilterHost<T extends StatefulWidget> on State<T> {
   /// Higher layers win over lower ones (an overlay above a page).
   int get filterLayer => 0;
 
+  /// Whether the page has anything to filter right now; false keeps `Ctrl+F`
+  /// from opening a box that is not shown.
+  bool get filterAvailable => true;
+
   late final InPageFilterHandle _filterHandle;
 
   @override
@@ -24,6 +28,7 @@ mixin InPageFilterHost<T extends StatefulWidget> on State<T> {
       open: filterController.open,
       hasFocus: () => filterController.focus.hasFocus,
       layer: filterLayer,
+      isAvailable: () => filterAvailable,
     );
     InPageFilterRegistry.instance.register(_filterHandle);
   }

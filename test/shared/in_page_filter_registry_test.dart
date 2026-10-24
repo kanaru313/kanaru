@@ -11,11 +11,13 @@ void main() {
     String name, {
     bool focused = false,
     int layer = 0,
+    bool available = true,
   }) => InPageFilterHandle(
     context: context,
     open: () => opened.add(name),
     hasFocus: () => focused,
     layer: layer,
+    isAvailable: () => available,
   );
 
   setUp(() {
@@ -156,5 +158,32 @@ void main() {
 
     registry.openTop();
     expect(opened, ['b']);
+  });
+
+  testWidgets('skips a page with nothing to filter', (tester) async {
+    final context = await pump(tester);
+    final empty = handle(context, 'empty', available: false);
+    registry.register(empty);
+    addTearDown(() => registry.unregister(empty));
+
+    expect(registry.openTop(), isFalse);
+    expect(opened, isEmpty);
+  });
+
+  testWidgets('falls back to an available handle below', (tester) async {
+    final context = await pump(tester);
+    final page = handle(context, 'page');
+    final empty = handle(context, 'empty', available: false);
+    registry
+      ..register(page)
+      ..register(empty);
+    addTearDown(() {
+      registry
+        ..unregister(page)
+        ..unregister(empty);
+    });
+
+    expect(registry.openTop(), isTrue);
+    expect(opened, ['page']);
   });
 }

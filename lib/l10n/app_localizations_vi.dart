@@ -2309,4 +2309,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String inPageSearchNoMatch(String query) {
     return 'Không có bài nào khớp «$query»';
   }
+
+  @override
+  String inPageSearchTooMany(int count) {
+    return 'Hiện $count bài đầu, gõ thêm chữ để thu hẹp.';
+  }
 }

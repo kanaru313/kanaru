@@ -51,6 +51,10 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
   @override
   int get filterLayer => _queueFilterLayer;
 
+  @override
+  bool get filterAvailable =>
+      ref.read(playerServiceProvider).queue.order.isNotEmpty;
+
   /// Offset that puts the playing track on the second row, so the track
   /// just played stays in view above it.
   double _currentOffset() {

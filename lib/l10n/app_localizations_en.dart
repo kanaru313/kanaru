@@ -2490,4 +2490,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String inPageSearchNoMatch(String query) {
     return 'No songs match “$query”';
   }
+
+  @override
+  String inPageSearchTooMany(int count) {
+    return 'Showing the first $count songs. Type more to narrow it down.';
+  }
 }

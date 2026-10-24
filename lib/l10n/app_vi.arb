@@ -863,5 +863,6 @@
   "inPageSearchHint": "Lọc bài hát",
   "inPageSearchOpen": "Lọc trong trang",
   "inPageSearchClear": "Xoá bộ lọc",
-  "inPageSearchNoMatch": "Không có bài nào khớp «{query}»"
+  "inPageSearchNoMatch": "Không có bài nào khớp «{query}»",
+  "inPageSearchTooMany": "Hiện {count} bài đầu, gõ thêm chữ để thu hẹp."
 }

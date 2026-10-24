@@ -308,6 +308,27 @@ void main() {
       expect(state.field.hasFocus, isFalse);
     });
 
+    testWidgets('Ctrl+F skips a page with nothing to filter', (tester) async {
+      final state = await _pump(tester);
+      var opened = 0;
+      final handle = InPageFilterHandle(
+        context: tester.element(find.byType(Scaffold)),
+        open: () => opened++,
+        hasFocus: () => false,
+        isAvailable: () => false,
+      );
+      InPageFilterRegistry.instance.register(handle);
+      addTearDown(() => InPageFilterRegistry.instance.unregister(handle));
+      state.button.requestFocus();
+      await tester.pump();
+
+      await _ctrl(tester, LogicalKeyboardKey.keyF);
+      await tester.pump();
+
+      expect(opened, 0);
+      expect(state.field.hasFocus, isTrue);
+    });
+
     testWidgets('Ctrl+F inside the page filter goes to the field', (
       tester,
     ) async {

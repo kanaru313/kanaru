@@ -1257,5 +1257,12 @@
     "placeholders": {
       "query": { "type": "String" }
     }
+  },
+  "inPageSearchTooMany": "Showing the first {count} songs. Type more to narrow it down.",
+  "@inPageSearchTooMany": {
+    "description": "Shown under the filtered playlist when more songs matched than it lists",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

@@ -7,7 +7,10 @@ class InPageFilterHandle {
     required this.open,
     required this.hasFocus,
     this.layer = 0,
+    this.isAvailable = _always,
   });
+
+  static bool _always() => true;
 
   /// Context of the page that owns the box; must be the owning state's
   /// context so [BuildContext.mounted] tells when the page is gone. It must
@@ -24,6 +27,11 @@ class InPageFilterHandle {
   /// Boxes on a higher layer win over lower ones that are visible too (an
   /// overlay above a page). Equal layers: the latest registration wins.
   final int layer;
+
+  /// Whether the page has a box to open right now. A page with nothing to
+  /// filter (an empty playlist) says false, so `Ctrl+F` falls through to the
+  /// library-wide search instead of opening a box nobody can see.
+  final bool Function() isAvailable;
 }
 
 /// Filter boxes of the pages that are built right now. The top bar's `Ctrl+F`
@@ -51,6 +59,7 @@ class InPageFilterRegistry {
     for (final handle in _handles.reversed) {
       final context = handle.context;
       if (!context.mounted || !_isActive(context)) continue;
+      if (!handle.isAvailable()) continue;
       // `ModalRoute.of` has no public non-depending twin; the extra
       // dependency only rebuilds the page on route changes.
       if (ModalRoute.of(context)?.isCurrent == false) continue;

@@ -4,12 +4,16 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
+import '../../core/database/search_playlist_queries.dart';
 import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../l10n/l10n.dart';
+import '../../shared/in_page_filter.dart';
+import '../../shared/in_page_filter_host.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_entry_lift.dart';
 import 'playlist_entry_placeholder.dart';
 import 'playlist_entry_tile.dart';
+import 'playlist_filter_results.dart';
 import 'playlist_header.dart';
 import 'playlist_row_cache.dart';
 import 'playlist_write_gate.dart';
@@ -40,6 +44,8 @@ class PlaylistEntriesView extends StatefulWidget {
     this.onRename,
     this.onDelete,
     this.onExport,
+    this.loadMatches,
+    this.onPlayRows,
   }) : assert(
          (onMove == null && onRemove == null) || onSettled != null,
          'onSettled is needed with onMove or onRemove: without it the rows '
@@ -95,6 +101,15 @@ class PlaylistEntriesView extends StatefulWidget {
   /// Export items of the header menu; null leaves them out.
   final ValueChanged<M3uPathStyle>? onExport;
 
+  /// Reads the entries whose song matches the filter terms. Null: the page
+  /// has no filter box.
+  final Future<PlaylistMatches> Function(List<String> terms)? loadMatches;
+
+  /// Plays the filtered [rows] as the queue, from row `index`; called after
+  /// the writes under way have ended. Needed with [loadMatches].
+  final Future<void> Function(List<PlaylistEntryRow> rows, int index)?
+  onPlayRows;
+
   @override
   State<PlaylistEntriesView> createState() => _PlaylistEntriesViewState();
 }
@@ -104,7 +119,18 @@ final _log = Logger('playlists');
 /// How long after a pointer ends a drag is waited for (see `_onPointerEnd`).
 const _dragEndGrace = Duration(milliseconds: 600);
 
-class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
+class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
+    with InPageFilterHost<PlaylistEntriesView> {
+  /// Dies with the page, so leaving it clears the filter.
+  final _filter = InPageFilterController();
+
+  @override
+  InPageFilterController get filterController => _filter;
+
+  /// An empty playlist has nothing to filter and shows no box.
+  @override
+  bool get filterAvailable => widget.loadMatches != null && _cache.count > 0;
+
   late final PlaylistRowCache _cache;
   final _writes = PlaylistWriteGate();
 
@@ -158,6 +184,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     _dragTimeout?.cancel();
     _cache.dispose();
     _writes.dispose();
+    _filter.dispose();
     super.dispose();
   }
 
@@ -291,6 +318,28 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     }
   }
 
+  /// The filter reads after the writes under way, so it sees their result.
+  Future<PlaylistMatches> _matches(List<String> terms) async {
+    await _writes.afterWrites();
+    if (!mounted) return PlaylistMatches.empty;
+    return widget.loadMatches!(terms);
+  }
+
+  /// Plays the filtered rows; same guard as [_play].
+  Future<void> _playRows(List<PlaylistEntryRow> rows, int index) async {
+    if (_playing) return;
+    _playing = true;
+    try {
+      await _writes.afterWrites();
+      if (!mounted) return;
+      await widget.onPlayRows!(rows, index);
+    } catch (error, stack) {
+      _log.severe('Playing filtered playlist rows failed', error, stack);
+    } finally {
+      _playing = false;
+    }
+  }
+
   Future<void> _queueAll(QueueAction action) async {
     final onQueueAction = widget.onQueueAction;
     if (onQueueAction == null) return;
@@ -330,44 +379,67 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView> {
     final head = widget.head;
     final count = _cache.count;
     final onQueueAction = widget.onQueueAction;
+    final canFilter = filterAvailable;
+    if (!canFilter && _filter.isOpen) {
+      // The last entry went away: the box is gone, and so is its filter.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !filterAvailable) _filter.close();
+      });
+    }
 
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerUp: _onPointerEnd,
-      onPointerCancel: _onPointerEnd,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: PlaylistHeader(
-              head: head,
-              count: count,
-              onPlay: head.hasPlayable ? () => unawaited(_play(null, 0)) : null,
-              onQueueAction: !head.hasPlayable || onQueueAction == null
-                  ? null
-                  : (action) => unawaited(_queueAll(action)),
-              onRename: widget.onRename,
-              onDelete: widget.onDelete,
-              onExport: widget.onExport,
+    return ListenableBuilder(
+      listenable: _filter,
+      builder: (context, _) => Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerUp: _onPointerEnd,
+        onPointerCancel: _onPointerEnd,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: PlaylistHeader(
+                head: head,
+                count: count,
+                onPlay: head.hasPlayable
+                    ? () => unawaited(_play(null, 0))
+                    : null,
+                onQueueAction: !head.hasPlayable || onQueueAction == null
+                    ? null
+                    : (action) => unawaited(_queueAll(action)),
+                onRename: widget.onRename,
+                onDelete: widget.onDelete,
+                onExport: widget.onExport,
+              ),
             ),
-          ),
-          if (count == 0)
-            // EmptyState scrolls on its own and measures with a LayoutBuilder,
-            // which a non-scrolling fill cannot size.
-            SliverFillRemaining(
-              child: PlaylistEmptyState(favorites: head.playlist.isFavorites),
-            )
-          else
-            SliverReorderableList(
-              itemExtent: playlistEntryExtent,
-              itemCount: count,
-              onReorderStart: _onReorderStart,
-              onReorderEnd: _onReorderEnd,
-              onReorderItem: _onReorder,
-              proxyDecorator: playlistEntryLift(context),
-              itemBuilder: _row,
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
+            if (canFilter)
+              SliverToBoxAdapter(child: PlaylistFilterBar(controller: _filter)),
+            if (count == 0)
+              // EmptyState scrolls on its own and measures with a LayoutBuilder,
+              // which a non-scrolling fill cannot size.
+              SliverFillRemaining(
+                child: PlaylistEmptyState(favorites: head.playlist.isFavorites),
+              )
+            else if (canFilter && _filter.isFiltering)
+              PlaylistFilterResults(
+                terms: _filter.terms,
+                query: _filter.query,
+                refresh: head,
+                load: _matches,
+                onPlay: (rows, index) => unawaited(_playRows(rows, index)),
+                onEntryQueueAction: widget.onEntryQueueAction,
+              )
+            else
+              SliverReorderableList(
+                itemExtent: playlistEntryExtent,
+                itemCount: count,
+                onReorderStart: _onReorderStart,
+                onReorderEnd: _onReorderEnd,
+                onReorderItem: _onReorder,
+                proxyDecorator: playlistEntryLift(context),
+                itemBuilder: _row,
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        ),
       ),
     );
   }

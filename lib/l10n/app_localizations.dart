@@ -3661,6 +3661,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No songs match “{query}”'**
   String inPageSearchNoMatch(String query);
+
+  /// Shown under the filtered playlist when more songs matched than it lists
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the first {count} songs. Type more to narrow it down.'**
+  String inPageSearchTooMany(int count);
 }
 
 class _AppLocalizationsDelegate
