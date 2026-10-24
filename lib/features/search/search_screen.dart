@@ -20,6 +20,7 @@ import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'search_field_picker.dart';
 import 'search_providers.dart';
+import 'search_query_display.dart';
 import 'search_request_provider.dart';
 import 'search_results_view.dart';
 import 'search_typo_providers.dart';
@@ -83,7 +84,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final fields = ref.watch(searchFieldsProvider);
     final request = SearchRequest(query: parsed, fields: fields);
     return PageScaffold(
-      title: l10n.searchResultsTitle(widget.query),
+      title: l10n.searchResultsTitle(displaySearchQueryText(l10n, widget.query)),
       actions: actions,
       body: _body(context, request),
     );
@@ -154,8 +155,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         icon: AppIcons.searchOff,
         title: l10n.searchNoResultsTitle,
         message: shown.narrowFields
-            ? l10n.searchNoResultsNarrowFields(shown.query)
-            : l10n.searchNoResultsMessage(shown.query),
+            ? l10n.searchNoResultsNarrowFields(
+                displaySearchQueryText(l10n, shown.query),
+              )
+            : l10n.searchNoResultsMessage(
+                displaySearchQueryText(l10n, shown.query),
+              ),
       );
     }
     return SearchResultsView(

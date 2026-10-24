@@ -503,14 +503,7 @@
   "searchFieldGenre": "Genre",
   "searchFieldFileName": "File name",
   "searchFieldComment": "Description",
-  "searchCorrectedResultsFor": "Results for “{query}”",
-  "@searchCorrectedResultsFor": {
-    "placeholders": {
-      "query": {
-        "type": "String"
-      }
-    }
-  },
+  "searchCorrectedResultsForPrefix": "Results for",
   "searchHistoryTitle": "Recent searches",
   "searchHistoryRemove": "Remove from history",
   "searchHistoryClearAll": "Clear all",

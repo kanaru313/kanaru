@@ -802,9 +802,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchFieldComment => 'Description';
 
   @override
-  String searchCorrectedResultsFor(String query) {
-    return 'Results for “$query”';
-  }
+  String get searchCorrectedResultsForPrefix => 'Results for';
 
   @override
   String get searchHistoryTitle => 'Recent searches';

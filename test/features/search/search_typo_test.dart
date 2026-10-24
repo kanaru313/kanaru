@@ -51,7 +51,8 @@ void main() {
     expect(find.byType(SongTile), findsNWidgets(2));
     expect(find.text('Lạc Trôi'), findsOneWidget);
     expect(find.byType(SearchCorrectedBanner), findsOneWidget);
-    expect(find.text('Results for “son tung”'), findsOneWidget);
+    expect(find.text('Results for'), findsOneWidget);
+    expect(find.text('“son tung”'), findsOneWidget);
     expect(find.text('No results'), findsNothing);
     // The corrected words also find the album and artist.
     expect(find.byType(AlbumListTile), findsOneWidget);
@@ -70,7 +71,8 @@ void main() {
     await openSearch(tester, h, 'artist:adle');
 
     expect(find.text('Hello'), findsOneWidget);
-    expect(find.text('Results for “artist:adele”'), findsOneWidget);
+    expect(find.text('Results for'), findsOneWidget);
+    expect(find.text('Artist: adele'), findsOneWidget);
   });
 
   testWidgets('a word that starts a known word is left alone', (tester) async {
@@ -123,7 +125,8 @@ void main() {
     // Both words need to match one song; the corrected query has the same
     // word twice and finds both songs.
     expect(find.byType(SongTile), findsNWidgets(2));
-    expect(find.text('Results for “beatles beatles”'), findsOneWidget);
+    expect(find.text('Results for'), findsOneWidget);
+    expect(find.text('“beatles beatles”'), findsOneWidget);
   });
 
   testWidgets('a word far from every known word shows no results', (

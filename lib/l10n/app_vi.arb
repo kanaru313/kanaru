@@ -207,7 +207,7 @@
   "searchFieldGenre": "Thể loại",
   "searchFieldFileName": "Tên file",
   "searchFieldComment": "Mô tả",
-  "searchCorrectedResultsFor": "Kết quả cho “{query}”",
+  "searchCorrectedResultsForPrefix": "Kết quả cho",
   "playerPlaybackError": "Không phát được {title}",
   "playerPlay": "Phát",
   "playerPause": "Tạm dừng",

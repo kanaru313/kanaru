@@ -1280,11 +1280,11 @@ abstract class AppLocalizations {
   /// **'Description'**
   String get searchFieldComment;
 
-  /// No description provided for @searchCorrectedResultsFor.
+  /// No description provided for @searchCorrectedResultsForPrefix.
   ///
   /// In en, this message translates to:
-  /// **'Results for “{query}”'**
-  String searchCorrectedResultsFor(String query);
+  /// **'Results for'**
+  String get searchCorrectedResultsForPrefix;
 
   /// No description provided for @searchHistoryTitle.
   ///

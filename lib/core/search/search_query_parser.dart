@@ -7,6 +7,18 @@ import '../database/search_terms.dart';
 import '../indexer/audio_file_types.dart';
 import 'search_query.dart';
 
+/// The `field:` prefixes the search syntax recognizes, lower case. UI code
+/// uses this to tell search syntax from a plain word that happens to contain
+/// a colon.
+const recognizedSearchPrefixes = {
+  'artist',
+  'album',
+  'genre',
+  'year',
+  'format',
+  'language',
+};
+
 /// One whitespace-separated piece of the query, quotes removed.
 class _Token {
   _Token(this.text, this.colon);
