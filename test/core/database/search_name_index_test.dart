@@ -34,6 +34,27 @@ void main() {
     expect(_titles(index.match(searchTerms('other'))), ['Other']);
   });
 
+  test('a merged album matches every artist given for it', () {
+    final merged = AlbumSummary(
+      key: const AlbumKey('', 'hits'),
+      title: 'Hits',
+      artist: 'ABBA',
+      trackCount: 3,
+      addedAt: 0,
+      variousArtists: true,
+    );
+    final names = {
+      merged.key: ['ABBA', 'Madonna', 'Queen'],
+    };
+    final index = albumSearchIndex([merged], artistNames: names);
+    expect(_titles(index.match(searchTerms('madonna'))), ['Hits']);
+    expect(
+      _titles(albumSearchIndex([merged]).match(searchTerms('madonna'))),
+      isEmpty,
+    );
+    expect(_titles(index.match(searchTerms('hits queen'))), ['Hits']);
+  });
+
   test('words past the eighth of a long album title are searchable', () {
     final index = albumSearchIndex([
       _album(

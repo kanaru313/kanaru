@@ -173,7 +173,7 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-08):
 - Ký tự được gán sau Unicode 6.1 (emoji mới, ví dụ) không được FTS5 coi là dấu tách từ: `love🥰you` là một từ, nên gõ `you` không khớp.
 - Tag dài: chỉ 256 ký tự đầu của mỗi tag được lập chỉ mục.
 - Một truy vấn dùng tối đa 8 từ; từ thừa bị bỏ qua.
-- Cú pháp (SEARCH-06) và chọn trường (SEARCH-08): từ khoá chỉ có tiếng Anh. Bộ lọc (`year:`, `format:`, `language:`) và `artist:`/`album:`/`genre:` chỉ áp cho nhóm Bài; nhóm Album và Nghệ sĩ chỉ dùng phần chữ thường. Nhóm Album chỉ hiện khi bật trường album hoặc nghệ sĩ album, nhóm Nghệ sĩ khi bật trường nghệ sĩ.
+- Cú pháp (SEARCH-06) và chọn trường (SEARCH-08): từ khoá chỉ có tiếng Anh. Bộ lọc (`year:`, `format:`, `language:`) và `artist:`/`album:`/`genre:` chỉ áp cho nhóm Bài; nhóm Album và Nghệ sĩ chỉ dùng phần chữ thường. Album gộp nhiều nghệ sĩ (hiện một tên) khớp theo nghệ sĩ hiển thị của từng album gộp (tag nghệ sĩ album, không có thì nghệ sĩ bài đầu tiên). Nhóm Album chỉ hiện khi bật trường album hoặc nghệ sĩ album, nhóm Nghệ sĩ khi bật trường nghệ sĩ.
 - Tên file và mô tả không trộn với trường tag: một bài khớp khi mọi từ nằm trong các trường tag đã chọn, hoặc mọi từ nằm trong tên file/mô tả (phần tên file không gồm thư mục và đuôi).
 
 ## 7. Playlist

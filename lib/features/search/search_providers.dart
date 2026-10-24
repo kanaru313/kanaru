@@ -5,6 +5,7 @@ import '../../core/database/library_browse_rows.dart';
 import '../../core/database/library_database.dart' show TrackListItem;
 import '../../core/database/library_keys_provider.dart';
 import '../../core/database/library_startup.dart';
+import '../../core/database/search_album_artist_names.dart';
 import '../../core/database/search_name_index.dart';
 import '../../core/database/throttled_tracks_query.dart';
 import '../../shared/artist_summaries.dart';
@@ -19,11 +20,16 @@ final searchAlbumIndexProvider =
       if (db == null) return Stream.value(albumSearchIndex(const []));
       // Becoming ready rebuilds this and loads afresh.
       if (!ref.watch(keysReadyProvider)) return const Stream.empty();
-      return throttledTracksQuery(
-        db,
-        db.albums,
-        interval: ref.watch(libraryBrowseRefreshIntervalProvider),
-      ).map(albumSearchIndex);
+      return throttledTracksQuery(db, () async {
+        final albums = await db.albums();
+        // The extra read runs whenever any album merges several artists (in
+        // practice always with album-artist grouping off). It is throttled
+        // with the rest and only runs while search is listened to.
+        final names = albums.any((a) => a.variousArtists)
+            ? await db.mergedAlbumArtistNames()
+            : const <AlbumKey, List<String>>{};
+        return albumSearchIndex(albums, artistNames: names);
+      }, interval: ref.watch(libraryBrowseRefreshIntervalProvider));
     });
 
 /// Every artist credit, ready to filter by search terms; see

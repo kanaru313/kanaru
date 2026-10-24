@@ -86,6 +86,8 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
     ];
     final starts = data.groupStarts;
     final artistKey = data.linkedArtistKey;
+    // Merged artists have no one album artist, so each row names its own.
+    final rowAlbumArtist = album.variousArtists ? null : album.artist;
     void enqueueOne(BrowseTrack t, QueueAction action) =>
         enqueueLoaded(ref, context, action, queueOf([t]), t.title);
 
@@ -121,7 +123,7 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
             if (filtering)
               SliverAlbumFilteredTracks(
                 tracks: shown,
-                albumArtist: album.artist,
+                albumArtist: rowAlbumArtist,
                 query: _filter.query,
                 onTap: (i) => playTracks(ref, queueOf(shown), i),
                 onQueueAction: enqueueOne,
@@ -144,7 +146,7 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
                   itemCount: group.tracks.length,
                   itemBuilder: (context, i) => AlbumTrackTile(
                     track: group.tracks[i],
-                    albumArtist: album.artist,
+                    albumArtist: rowAlbumArtist,
                     onTap: () =>
                         playTracks(ref, queueOf(tracks), starts[g] + i),
                     onQueueAction: (action) =>

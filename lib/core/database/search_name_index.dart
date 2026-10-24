@@ -72,12 +72,22 @@ class SearchNameIndex<T> {
   }
 }
 
-/// Albums searched by title and album artist.
-SearchNameIndex<AlbumSummary> albumSearchIndex(List<AlbumSummary> albums) =>
-    SearchNameIndex._([
-      for (final (i, a) in albums.indexed)
-        _Entry(i, a, a.title, a.artist ?? '', a.trackCount),
-    ]);
+/// Albums searched by title and album artist. A merged album found in
+/// [artistNames] (see `mergedAlbumArtistNames`) is searchable by every one of
+/// its artists, though it still shows one.
+SearchNameIndex<AlbumSummary> albumSearchIndex(
+  List<AlbumSummary> albums, {
+  Map<AlbumKey, List<String>> artistNames = const {},
+}) => SearchNameIndex._([
+  for (final (i, a) in albums.indexed)
+    _Entry(
+      i,
+      a,
+      a.title,
+      (artistNames[a.key] ?? [if (a.artist != null) a.artist!]).join(' '),
+      a.trackCount,
+    ),
+]);
 
 /// Artists searched by their own name only, so a co-credited artist is never
 /// listed for the name of the other.
