@@ -1,11 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/library_route_keys.dart' show unknownGenreKey;
+import '../../../shared/widgets/playlist_cover.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../play_shuffle_actions.dart';
-import 'genre_avatar.dart';
 
-/// Avatar, name, "N albums · N songs" and the Play, Shuffle and queue
+/// Cover collage, name, "N albums · N songs" and the Play, Shuffle and queue
 /// buttons of a genre page.
 class GenreHeader extends StatelessWidget {
   const GenreHeader({
@@ -14,6 +16,7 @@ class GenreHeader extends StatelessWidget {
     required this.name,
     required this.albumCount,
     required this.songCount,
+    required this.coverKeys,
     required this.onPlay,
     required this.onShuffle,
     required this.onQueueAction,
@@ -23,6 +26,7 @@ class GenreHeader extends StatelessWidget {
   final String name;
   final int albumCount;
   final int songCount;
+  final List<String> coverKeys;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
@@ -35,7 +39,14 @@ class GenreHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
       child: Row(
         children: [
-          GenreAvatar(genreKey: genreKey, size: 120),
+          PlaylistCover(
+            coverKeys: coverKeys,
+            size: 120,
+            seed: 'genre:$genreKey',
+            icon: genreKey == unknownGenreKey
+                ? AppIcons.genreOutlined
+                : AppIcons.genre,
+          ),
           const SizedBox(width: 24),
           Expanded(
             child: Column(

@@ -18,33 +18,45 @@ class GenrePageData {
     required this.name,
     required this.albums,
     required this.tracks,
+    required this.coverKeys,
   });
 
   final String name;
   final List<AlbumTileData> albums;
   final List<BrowseTrack> tracks;
+
+  /// Up to four distinct cover keys for the header collage, from
+  /// [genresProvider].
+  final List<String> coverKeys;
 }
 
 /// What the page needs of a genre from the Genres list: its name, the
-/// stored strings that name it and whether it also holds the tracks with no
-/// genre. Equal when all are, so a list reload that changes none leaves the
-/// page alone.
+/// stored strings that name it, whether it also holds the tracks with no
+/// genre, and its cover keys. Equal when all are, so a list reload that
+/// changes none leaves the page alone.
 class _GenreRaws {
-  const _GenreRaws(this.name, this.raws, this.withoutGenre);
+  const _GenreRaws(this.name, this.raws, this.withoutGenre, this.coverKeys);
 
   final String name;
   final List<String> raws;
   final bool withoutGenre;
+  final List<String> coverKeys;
 
   @override
   bool operator ==(Object other) =>
       other is _GenreRaws &&
       other.name == name &&
       other.withoutGenre == withoutGenre &&
-      listEquals(other.raws, raws);
+      listEquals(other.raws, raws) &&
+      listEquals(other.coverKeys, coverKeys);
 
   @override
-  int get hashCode => Object.hash(name, withoutGenre, Object.hashAll(raws));
+  int get hashCode => Object.hash(
+    name,
+    withoutGenre,
+    Object.hashAll(raws),
+    Object.hashAll(coverKeys),
+  );
 }
 
 /// Reads the page of the genre called [name], held by the stored strings
@@ -55,6 +67,7 @@ Future<GenrePageData?> readGenrePage(
   String name,
   List<String> raws, {
   bool includeNull = false,
+  List<String> coverKeys = const [],
 }) => db.transaction(() async {
   final (tracks, albums) = await (
     db.genreTracks(raws, includeNull: includeNull),
@@ -66,6 +79,7 @@ Future<GenrePageData?> readGenrePage(
     name: name,
     albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
     tracks: tracks,
+    coverKeys: coverKeys,
   );
 });
 
@@ -98,7 +112,12 @@ final genrePageProvider = StreamProvider.autoDispose
             final found = list.where((g) => g.key == genreKey).firstOrNull;
             return found == null
                 ? null
-                : _GenreRaws(found.name, found.raws, found.withoutGenre);
+                : _GenreRaws(
+                    found.name,
+                    found.raws,
+                    found.withoutGenre,
+                    found.coverKeys,
+                  );
           }),
         ),
       );
@@ -114,6 +133,7 @@ final genrePageProvider = StreamProvider.autoDispose
           raws.name,
           raws.raws,
           includeNull: raws.withoutGenre,
+          coverKeys: raws.coverKeys,
         ),
         interval: ref.watch(libraryBrowseRefreshIntervalProvider),
       );
