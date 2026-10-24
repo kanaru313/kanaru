@@ -3535,6 +3535,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Its songs may have been removed or retagged.'**
   String get languagesNotFoundMessage;
+
+  /// Artist line of an album merged from several album artists
+  ///
+  /// In en, this message translates to:
+  /// **'Various artists'**
+  String get albumVariousArtists;
 }
 
 class _AppLocalizationsDelegate

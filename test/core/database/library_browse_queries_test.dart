@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/album_grouping_keys.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/text_keys.dart';
+import 'package:kanaru/core/settings/library_scan_prefs.dart';
 
 import 'songs_reference_query.dart';
 
@@ -188,6 +190,113 @@ void main() {
     expect(album.map((t) => t.title), expected);
     final artist = await db.artistTracks('a');
     expect(artist.map((t) => t.title), expected);
+  });
+
+  group('various artists', () {
+    Future<List<AlbumSummary>> withAlbumArtists(
+      List<String> names, {
+      bool grouping = false,
+    }) async {
+      useAlbumGrouping(db, AlbumGrouping(byAlbumArtist: grouping));
+      await db.upsertTracks([
+        for (final name in names)
+          row(artist: name, album: 'Hits', albumArtist: name),
+      ]);
+      return db.albums();
+    }
+
+    test(
+      'different album artists merged: flagged, one of them shown',
+      () async {
+        final rows = await withAlbumArtists(['Queen', 'ABBA']);
+        expect(rows, hasLength(1));
+        expect(rows.single.variousArtists, isTrue);
+        expect(rows.single.artist, 'ABBA');
+        expect(rows.single.trackCount, 2);
+      },
+    );
+
+    test('one name in two cases is not various', () async {
+      expect(
+        (await withAlbumArtists(['Queen', 'queen'])).single.variousArtists,
+        isFalse,
+      );
+    });
+
+    test('non-ASCII case only is not various', () async {
+      final rows = await withAlbumArtists(['Mỹ Tâm', 'MỸ TÂM']);
+      expect(rows.single.variousArtists, isFalse);
+    });
+
+    test(
+      'three spellings where min and max differ by name are various',
+      () async {
+        expect(
+          (await withAlbumArtists(['Queen', 'Zed', 'queen']))
+              .single
+              .variousArtists,
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'a case variant at the low end does not hide another artist',
+      () async {
+        expect(
+          (await withAlbumArtists(['ABBA', 'Queen', 'abba']))
+              .single
+              .variousArtists,
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'an album without album-artist tags and different track artists',
+      () async {
+        useAlbumGrouping(db, const AlbumGrouping(byAlbumArtist: false));
+        await db.upsertTracks([
+          row(artist: 'Queen', album: 'Mix'),
+          row(artist: 'ABBA', album: 'Mix'),
+        ]);
+        final rows = await db.albums();
+        expect(rows.single.variousArtists, isTrue);
+      },
+    );
+
+    test('a single artist is not various', () async {
+      final rows = await withAlbumArtists(['Queen', 'Queen']);
+      expect(rows.single.variousArtists, isFalse);
+    });
+
+    test('grouping by album artist never flags', () async {
+      final rows = await withAlbumArtists(['Queen', 'ABBA'], grouping: true);
+      expect(rows, hasLength(2));
+      expect(rows.map((a) => a.variousArtists), [false, false]);
+    });
+
+    test(
+      'grouping on with spelling variants and track artists: not various',
+      () async {
+        useAlbumGrouping(db, const AlbumGrouping());
+        await db.upsertTracks([
+          row(artist: 'Beyoncé', album: 'Lemonade', albumArtist: 'Beyoncé'),
+          row(artist: 'Jay-Z', album: 'Lemonade', albumArtist: 'Beyoncé'),
+          row(artist: 'Beyoncé', album: 'Lemonade', albumArtist: 'BEYONCÉ'),
+        ]);
+        final rows = await db.albums();
+        expect(rows.map((a) => a.variousArtists), everyElement(isFalse));
+      },
+    );
+
+    test('the flag reaches the album and artist album queries', () async {
+      await withAlbumArtists(['Queen', 'ABBA']);
+      const key = AlbumKey('', 'hits');
+      expect((await db.album(key))!.variousArtists, isTrue);
+      final byArtist = await db.artistAlbums('queen');
+      expect(byArtist.single.variousArtists, isTrue);
+    });
   });
 
   group('artists', () {

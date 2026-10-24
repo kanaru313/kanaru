@@ -47,6 +47,7 @@ class AlbumSummary {
     this.durationMs,
     this.coverKey,
     this.titleSort,
+    this.variousArtists = false,
   });
 
   final AlbumKey key;
@@ -75,6 +76,12 @@ class AlbumSummary {
   /// tracks (`artistSortKey`, without a leading "the "). Null for a row not
   /// read from the database; then sort by `artistSortKey(title)`.
   final String? titleSort;
+
+  /// Several artists merged into one album, because albums are not told apart
+  /// by artist (grouping by album artist is off). Counts the album artist, or
+  /// the first track artist when a track has no album-artist tag. [artist] is
+  /// then one of them.
+  final bool variousArtists;
 }
 
 /// One artist of the Artists list, from the `track_artists` rows: the key

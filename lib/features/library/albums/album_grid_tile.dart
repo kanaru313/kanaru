@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/album_artist_label.dart';
 import '../library_browse_body.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -50,7 +51,11 @@ class AlbumGridTile extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final subtitle = [
-      data.artist ?? l10n.albumsUnknownArtist,
+      albumArtistLabel(
+        l10n,
+        artist: data.artist,
+        variousArtists: data.variousArtists,
+      ),
       if (data.year != null) '${data.year}',
     ].join(' · ');
 

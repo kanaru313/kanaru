@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import 'artist_names.dart';
 import 'library_database.dart';
 
 // Every query reads the keys stored by `trackKeysFor` (track_keys.dart) and
@@ -9,11 +10,20 @@ import 'library_database.dart';
 /// The columns of an [AlbumSummary]: the shown title, artist and year are
 /// aggregates over the stored columns, so the list, the album page and the
 /// artist page agree whichever track order the database returns.
+///
+/// `artist_lo` and `artist_hi` are the smallest and largest album display
+/// artist (the album artist, else the first track artist), compared ignoring
+/// ASCII case. [albumSummaryFromRow] flags an album merged from several
+/// artists when its key has no artist (albums not told apart by artist) and
+/// the two differ by `artistKey`, which also folds non-ASCII case. Min and
+/// max keep the group-by-index plan (checked by the query plan tests).
 const albumColumns = '''
 album_artist_key AS ak, album_title_key AS tk, min(album) AS title,
   min(album_display_artist) AS artist, max(year) AS year, count(*) AS n,
   sum(duration_ms) AS duration, max(added_at) AS added,
-  min(cover_key) AS cover, min(album_sort) AS title_sort''';
+  min(cover_key) AS cover, min(album_sort) AS title_sort,
+  min(album_display_artist COLLATE NOCASE) AS artist_lo,
+  max(album_display_artist COLLATE NOCASE) AS artist_hi''';
 
 const albumGroupSql = 'GROUP BY album_artist_key, album_title_key';
 
@@ -180,14 +190,25 @@ BrowseTrack browseTrackFromRow(QueryRow row) {
 }
 
 /// Reads a row of [albumColumns].
-AlbumSummary albumSummaryFromRow(QueryRow row) => AlbumSummary(
-  key: AlbumKey(row.read<String>('ak'), row.read<String>('tk')),
-  title: row.read<String>('title'),
-  artist: row.readNullable<String>('artist'),
-  year: row.readNullable<int>('year'),
-  trackCount: row.read<int>('n'),
-  durationMs: row.readNullable<int>('duration'),
-  addedAt: row.read<int>('added'),
-  coverKey: row.readNullable<String>('cover'),
-  titleSort: row.readNullable<String>('title_sort'),
-);
+AlbumSummary albumSummaryFromRow(QueryRow row) {
+  final artist = row.readNullable<String>('artist');
+  final albumArtistKey = row.read<String>('ak');
+  final lo = row.readNullable<String>('artist_lo');
+  final hi = row.readNullable<String>('artist_hi');
+  return AlbumSummary(
+    key: AlbumKey(albumArtistKey, row.read<String>('tk')),
+    title: row.read<String>('title'),
+    artist: artist,
+    year: row.readNullable<int>('year'),
+    trackCount: row.read<int>('n'),
+    durationMs: row.readNullable<int>('duration'),
+    addedAt: row.read<int>('added'),
+    coverKey: row.readNullable<String>('cover'),
+    titleSort: row.readNullable<String>('title_sort'),
+    variousArtists:
+        albumArtistKey.isEmpty &&
+        lo != null &&
+        hi != null &&
+        artistKey(lo) != artistKey(hi),
+  );
+}

@@ -9,6 +9,7 @@ class AlbumTileData {
     this.artist,
     this.year,
     this.coverKey,
+    this.variousArtists = false,
   });
 
   AlbumTileData.fromSummary(AlbumSummary album)
@@ -18,6 +19,7 @@ class AlbumTileData {
         artist: album.artist,
         year: album.year,
         coverKey: album.coverKey,
+        variousArtists: album.variousArtists,
       );
 
   final AlbumKey key;
@@ -27,4 +29,7 @@ class AlbumTileData {
 
   /// Cover key of the whole album.
   final String? coverKey;
+
+  /// Several album artists merged into the album; [artist] is one of them.
+  final bool variousArtists;
 }

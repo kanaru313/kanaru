@@ -841,5 +841,6 @@
   "languagesAlbums": "Album",
   "languagesSongs": "Bài hát",
   "languagesNotFound": "Không tìm thấy ngôn ngữ",
-  "languagesNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag."
+  "languagesNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag.",
+  "albumVariousArtists": "Nhiều nghệ sĩ"
 }
