@@ -1286,6 +1286,24 @@ abstract class AppLocalizations {
   /// **'Results for “{query}”'**
   String searchCorrectedResultsFor(String query);
 
+  /// No description provided for @searchHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get searchHistoryTitle;
+
+  /// No description provided for @searchHistoryRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from history'**
+  String get searchHistoryRemove;
+
+  /// No description provided for @searchHistoryClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get searchHistoryClearAll;
+
   /// No description provided for @playerPlaybackError.
   ///
   /// In en, this message translates to:

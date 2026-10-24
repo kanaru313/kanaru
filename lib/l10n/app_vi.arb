@@ -373,6 +373,9 @@
       "name": { "type": "String" }
     }
   },
+  "searchHistoryTitle": "Tìm kiếm gần đây",
+  "searchHistoryRemove": "Xoá khỏi lịch sử",
+  "searchHistoryClearAll": "Xoá tất cả",
   "audioDeviceDialogTitle": "Thiết bị đầu ra",
   "audioDeviceNoneFound": "Không tìm thấy thiết bị đầu ra nào khác",
   "audioDeviceOtherOutputs": "Đầu ra khác",

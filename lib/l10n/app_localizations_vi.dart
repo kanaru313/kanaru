@@ -784,6 +784,15 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get searchHistoryTitle => 'Tìm kiếm gần đây';
+
+  @override
+  String get searchHistoryRemove => 'Xoá khỏi lịch sử';
+
+  @override
+  String get searchHistoryClearAll => 'Xoá tất cả';
+
+  @override
   String playerPlaybackError(String title) {
     return 'Không phát được $title';
   }

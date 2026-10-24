@@ -419,6 +419,9 @@
       "query": { "type": "String" }
     }
   },
+  "searchHistoryTitle": "Recent searches",
+  "searchHistoryRemove": "Remove from history",
+  "searchHistoryClearAll": "Clear all",
 
   "playerPlaybackError": "Couldn't play {title}",
   "@playerPlaybackError": {

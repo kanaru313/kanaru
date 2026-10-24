@@ -53,6 +53,7 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - **Sidebar.** Groups: Home | Songs, Albums, Artists, Genres, Languages, Folders | Queue history, Favorites, History | Playlists. The library group (Songs to Folders) is hideable: Settings → Interface has one chip per tab (at least one stays on), and it applies to the column, the rail and the drawer; on the page of a tab just hidden the user stays and no row is lit. Home and the third group are always shown. Languages (`/languages`) sits right after Genres. There is no "Current queue" row: the queue sheet opens from the queue button of the player bar. Queue history (`/queue-history`) lists the queues the user replaced, newest first: collage, when it was saved (date and time in the user's language), song count, a Play button and a menu (Play, Shuffle, Play next, Add to queue, Save as playlist, Delete with confirmation; also on right click, long press and the menu key). A row opens the saved queue at `/queue-history/:id` with the playlist entries view (play from a song, queue menu, export, drag and remove). The Playlists section lists the playlists newest first, with a "+" that asks for a name, creates the playlist and opens it. Its title and the rail entry open `/playlists` through the shell's branch switch like any destination (back to the last playlist page, or the grid when already there) and are highlighted on the grid and on every playlist page; the playlist on screen is highlighted too. In rail mode the section is a "+" and one Playlists icon, no per-playlist icons. Collapses between 240 px and 72 px in 400 ms. A tooltip names each icon in rail mode.
 - **Top bar.** 64 px. Back and forward (forward and back hidden below 560 px), search field, Settings on the right at every width. Empty space drags the window.
 - **Live search.** Typing opens `/search?q=…` 150 ms after the last keystroke; Enter opens it at once. Consecutive searches replace one history entry, so Back returns to the page before the search. Leaving the search page clears the field; Back or Forward onto a search restores its text from the URL.
+- **Search history.** While the field has focus and is empty, the last searches (up to 20) list in a panel under it, at least 280 px wide, eight rows before it scrolls. A row has a history icon, the query and a remove button; "Clear all" ends the panel. Choosing a row (click, or Up/Down and Enter) fills the field, opens the search and moves the query to the top. Typing, Esc, losing focus or removing the last row closes the panel; the buttons never take focus from the field. A query is saved on Enter, on choosing a suggestion and on opening a result on the search page, not on each keystroke.
 - **Custom title bar.** Window buttons appear only when the title bar setting is `kanaru`. Settings says the change needs a restart.
 - **Reselecting a sidebar item** returns that branch to its root.
 - **History.** Browser-style back and forward with a 100-entry cap. Mouse back and forward buttons work at any width.
@@ -209,10 +210,12 @@ Reduced motion comes from the platform setting, or from Settings → Appearance 
 | Ctrl+S | Toggle shuffle | App-wide |
 | Ctrl+R | Cycle repeat | App-wide |
 | Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer |
+| Ctrl+F | Focus the top bar search field and select its text | App-wide; a page filter box takes it first, and pressing it again inside that box goes to the top bar; nothing while a dialog, menu or Now Playing is open |
+| / | Same as Ctrl+F, never opens a page filter | Only when no text input has focus; nothing while a dialog, menu or Now Playing is open |
 | Mouse back, forward | History back, forward | Anywhere |
 
-- Keys are handled by `features/player/player_shortcuts.dart`.
-- Not implemented yet (SYS-03, SEARCH-07): Ctrl+Left and Ctrl+Right for track change, Up and Down for volume, Ctrl+F or `/` for search. Scroll over the volume button already changes volume.
+- Keys are handled by `features/player/player_shortcuts.dart`; Ctrl+F and `/` by `app/shell/top_bar_search_shortcuts.dart`, a hardware keyboard handler that returns true only when it acts, so the other keys above still work.
+- Not implemented yet (SYS-03): Ctrl+Left and Ctrl+Right for track change, Up and Down for volume. Scroll over the volume button already changes volume.
 - Sliders expose slider semantics.
 - Focus is restored after an overlay or sheet closes.
 - Contrast: use theme `on*` color pairs. Do not place text on artwork without a scrim (guideline, not enforced by a test).

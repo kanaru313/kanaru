@@ -807,6 +807,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get searchHistoryTitle => 'Recent searches';
+
+  @override
+  String get searchHistoryRemove => 'Remove from history';
+
+  @override
+  String get searchHistoryClearAll => 'Clear all';
+
+  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }
