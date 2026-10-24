@@ -16,7 +16,8 @@ const queueTileExtent = 64.0;
 /// one), title and artist, length and a remove button. Tapping plays it; a
 /// right click, long press or the menu key opens its menu (the heart and
 /// remove).
-/// Tracks already played are dimmed; the playing one is tinted.
+/// Tracks already played are dimmed; the playing one has the playing-song
+/// colors (primaryContainer), the same while paused.
 class QueueTile extends ConsumerWidget {
   const QueueTile({
     super.key,
@@ -49,14 +50,13 @@ class QueueTile extends ConsumerWidget {
     final colors = theme.colorScheme;
     final player = ref.read(playerServiceProvider.notifier);
     final duration = track.duration;
-    final textColor = current ? colors.primary : null;
+    final textColor = current ? colors.onPrimaryContainer : null;
 
     final Widget leading;
     if (current) {
-      final playing = ref.watch(playerServiceProvider.select((s) => s.playing));
       leading = Icon(
-        playing ? AppIcons.equalizerRounded : AppIcons.musicNoteRounded,
-        color: colors.primary,
+        AppIcons.equalizerRounded,
+        color: colors.onPrimaryContainer,
       );
     } else {
       leading = Text(
@@ -79,15 +79,13 @@ class QueueTile extends ConsumerWidget {
             position: position,
             child: Material(
               // A card: low-alpha fill so the dimmed screen behind the sheet
-              // shows through; the playing one is tinted and outlined.
+              // shows through; the playing one is opaque primaryContainer,
+              // like the playing song row.
               color: current
-                  ? colors.primary.withValues(alpha: 0.12)
+                  ? colors.primaryContainer
                   : colors.surfaceContainerHighest.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
-                side: current
-                    ? BorderSide(color: colors.primary.withValues(alpha: 0.6))
-                    : BorderSide.none,
               ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -103,9 +101,15 @@ class QueueTile extends ConsumerWidget {
                           cursor: SystemMouseCursors.grab,
                           child: Tooltip(
                             message: l10n.queueReorder,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8),
-                              child: Icon(AppIcons.dragHandle, size: 20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                AppIcons.dragHandle,
+                                size: 20,
+                                color: current
+                                    ? colors.onPrimaryContainer
+                                    : null,
+                              ),
                             ),
                           ),
                         ),
@@ -145,7 +149,9 @@ class QueueTile extends ConsumerWidget {
                         child: Text(
                           formatDuration(duration),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
+                            color: current
+                                ? colors.onPrimaryContainer
+                                : colors.onSurfaceVariant,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
@@ -154,6 +160,7 @@ class QueueTile extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(AppIcons.deleteRounded),
                         iconSize: 20,
+                        color: current ? colors.onPrimaryContainer : null,
                         tooltip: l10n.queueRemove,
                         onPressed: () => player.removeTrack(position),
                       )

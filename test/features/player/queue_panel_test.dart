@@ -343,6 +343,50 @@ void main() {
       );
       expect(number('1'), findsOneWidget);
       expect(number('4'), findsOneWidget);
+
+      final scheme = Theme.of(tester.element(find.byType(QueueTile).at(2)))
+          .colorScheme;
+      Material card(int row) => tester.widget<Material>(
+        find
+            .descendant(
+              of: find.byType(QueueTile).at(row),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(card(2).color, scheme.primaryContainer);
+      expect((card(2).shape! as RoundedRectangleBorder).side, BorderSide.none);
+      expect(card(3).color, isNot(scheme.primaryContainer));
+    });
+
+    testWidgets('the playing row keeps its look while paused', (tester) async {
+      await pumpApp(tester, start: 1);
+      expect(container.read(playerServiceProvider).playing, isTrue);
+      await player().pause();
+      expect(container.read(playerServiceProvider).playing, isFalse);
+      await tester.pumpAndSettle();
+      await openSheet(tester);
+
+      final row = find.byType(QueueTile).at(1);
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.byIcon(Icons.graphic_eq_rounded),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: row,
+          matching: find.byIcon(Icons.music_note_rounded),
+        ),
+        findsNothing,
+      );
+      final scheme = Theme.of(tester.element(row)).colorScheme;
+      final card = tester.widget<Material>(
+        find.descendant(of: row, matching: find.byType(Material)).first,
+      );
+      expect(card.color, scheme.primaryContainer);
     });
 
     testWidgets('tapping the playing row does nothing', (tester) async {
