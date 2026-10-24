@@ -12,6 +12,9 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_detail_body.dart';
+import '../widgets/cover_tint_page_background.dart';
+import '../widgets/detail_side_pane.dart';
+import '../widgets/tracks_toolbar.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/play_tracks.dart';
@@ -21,8 +24,6 @@ import 'album_artist_link.dart';
 import 'album_filtered_tracks.dart';
 import 'album_header.dart';
 import 'album_side_pane.dart';
-import 'album_tint_background.dart';
-import 'album_tracks_toolbar.dart';
 import 'album_track_tile.dart';
 import 'album_page_data.dart';
 
@@ -104,11 +105,11 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
           )
         : null;
 
-    return AlbumTintBackground(
+    return CoverTintPageBackground(
       coverKey: album.coverKey,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final wide = constraints.maxWidth >= albumSidePaneMinPageWidth;
+          final wide = constraints.maxWidth >= detailSidePaneMinPageWidth;
           final tracksView = ListenableBuilder(
             listenable: _filter,
             builder: (context, _) {
@@ -127,7 +128,11 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
                         artist: artistLink,
                       ),
                     ),
-                  SliverAlbumTracksToolbar(album: album, filter: _filter),
+                  SliverTracksToolbar(
+                    songCount: album.trackCount,
+                    durationMs: album.durationMs,
+                    filter: _filter,
+                  ),
                   if (filtering)
                     SliverAlbumFilteredTracks(
                       tracks: shown,

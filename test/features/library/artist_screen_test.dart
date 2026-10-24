@@ -3,6 +3,7 @@ import 'package:kanaru/app/shell/sidebar/sidebar_item.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/library/albums/album_artist_link.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
@@ -35,7 +36,8 @@ void main() {
       of: find.byType(CustomScrollView),
       matching: find.text(text),
     );
-    expect(find.text('2 albums · 3 songs'), findsOneWidget);
+    expect(find.text('2 albums'), findsOneWidget);
+    expect(find.text('3 songs · 0:03'), findsOneWidget);
     expect(onPage('Albums'), findsOneWidget);
     expect(find.text('Mine'), findsOneWidget);
     expect(onPage('Songs'), findsOneWidget);
@@ -63,6 +65,17 @@ void main() {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: _ann);
 
+    // The songs come after the album rows: bring the row into view.
+    await tester.scrollUntilVisible(
+      find.text('guest').last,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.tap(find.text('guest').last);
     await tester.pump();
     final queue = h.container.read(playerServiceProvider).queue;
@@ -132,7 +145,8 @@ void main() {
     );
     expect(_selectedSidebarItem(tester), 'Albums');
 
-    await tester.tap(find.text('Ann'));
+    // The song rows name the artist too: tap the link in the header.
+    await tester.tap(find.widgetWithText(AlbumArtistLink, 'Ann'));
     await tester.pumpAndSettle();
 
     expect(location(h), _ann);
@@ -203,7 +217,7 @@ void main() {
 
     goTo(tester, h, artistLocation('chau khai phong'));
     await tester.pumpAndSettle();
-    expect(find.text('1 album · 2 songs'), findsOneWidget);
+    expect(find.text('1 album'), findsOneWidget);
     expect(find.text('Châu Khải Phong Best Collection'), findsOneWidget);
   });
 }

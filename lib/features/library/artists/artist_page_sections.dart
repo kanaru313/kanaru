@@ -61,6 +61,17 @@ class ArtistPageSections {
 
   /// Albums on the page, both sections.
   int get albumCount => albums.length + appearsOn.length;
+
+  /// The cover of the first album on the page that has one (its own albums
+  /// before those it appears on), for the page's picture and colors.
+  String? get coverKey =>
+      [...albums, ...appearsOn].map((a) => a.coverKey).nonNulls.firstOrNull;
+
+  /// Length of all [songs]; null when none has a known length.
+  int? get durationMs {
+    final known = songs.map((s) => s.durationMs).nonNulls;
+    return known.isEmpty ? null : known.fold<int>(0, (a, b) => a + b);
+  }
 }
 
 /// The preferred spelling of [key] among the tracks that credit it.

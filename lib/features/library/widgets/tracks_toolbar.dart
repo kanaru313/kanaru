@@ -1,33 +1,36 @@
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/format_duration.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/widgets/in_page_search_field.dart';
 
-/// The bar over an album's tracks: "N songs · length" and the filter button.
+/// The bar over the songs of a detail page (album, artist): "N songs ·
+/// length" and the filter button.
 /// An open filter shows its box under the bar, as wide as the list, with a
 /// button that closes it. `Ctrl+F` opens it through the page's filter host.
-class SliverAlbumTracksToolbar extends StatefulWidget {
-  const SliverAlbumTracksToolbar({
+class SliverTracksToolbar extends StatefulWidget {
+  const SliverTracksToolbar({
     super.key,
-    required this.album,
+    required this.songCount,
+    required this.durationMs,
     required this.filter,
   });
 
-  final AlbumSummary album;
+  final int songCount;
+
+  /// Length of all the songs; null or zero is not shown.
+  final int? durationMs;
   final InPageFilterController filter;
 
   @override
-  State<SliverAlbumTracksToolbar> createState() =>
-      _SliverAlbumTracksToolbarState();
+  State<SliverTracksToolbar> createState() => _SliverTracksToolbarState();
 }
 
-class _SliverAlbumTracksToolbarState extends State<SliverAlbumTracksToolbar> {
-  final _buttonFocus = FocusNode(debugLabel: 'album filter button');
+class _SliverTracksToolbarState extends State<SliverTracksToolbar> {
+  final _buttonFocus = FocusNode(debugLabel: 'songs filter button');
 
   @override
   void dispose() {
@@ -46,12 +49,11 @@ class _SliverAlbumTracksToolbarState extends State<SliverAlbumTracksToolbar> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final album = widget.album;
     final filter = widget.filter;
-    final durationMs = album.durationMs;
+    final durationMs = widget.durationMs;
     final muted = theme.colorScheme.onSurfaceVariant;
     final summary = [
-      l10n.albumsSongCount(album.trackCount),
+      l10n.albumsSongCount(widget.songCount),
       if (durationMs != null && durationMs > 0)
         formatDuration(Duration(milliseconds: durationMs)),
     ].join(' · ');

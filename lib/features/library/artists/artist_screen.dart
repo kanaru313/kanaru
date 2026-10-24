@@ -17,16 +17,21 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
-import '../albums/album_grid_tile.dart';
+import '../albums/album_row.dart';
 import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
+import '../widgets/cover_tint_page_background.dart';
+import '../widgets/detail_side_pane.dart';
+import '../widgets/tracks_toolbar.dart';
 import 'artist_header.dart';
 import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
 
-/// One artist: header, then their albums, their songs, and the albums they
-/// appear on. Tapping a song plays the Songs section from it. [routeKey]
+/// One artist: header, then their albums and the albums they appear on,
+/// each as one line scrolling sideways, then their songs. A wide window
+/// puts the header in a side pane beside the rest. Tapping a song plays the
+/// Songs section from it. [routeKey]
 /// comes from the URL; a broken key or an artist without tracks shows
 /// "not found".
 class ArtistScreen extends ConsumerWidget {
@@ -98,67 +103,96 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
         child: Text(text, style: theme.textTheme.titleLarge),
       ),
     );
+    // Play and Shuffle in the header always take every song.
+    void onPlay() => playTracks(ref, queueOf(songs), 0);
+    void onShuffle() => shuffleTracks(ref, queueOf(songs));
+    void onQueueAction(QueueAction action) =>
+        enqueueLoaded(ref, context, action, queueOf(songs), sections.name);
 
-    return ListenableBuilder(
-      listenable: _filter,
-      builder: (context, _) {
-        // Play and Shuffle in the header always take every song.
-        final filtering = _filter.isFiltering;
-        final shown = _view.apply(songs, _filter.terms);
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: ArtistHeader(
+    return CoverTintPageBackground(
+      coverKey: sections.coverKey,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= detailSidePaneMinPageWidth;
+          final content = ListenableBuilder(
+            listenable: _filter,
+            builder: (context, _) {
+              final filtering = _filter.isFiltering;
+              final shown = _view.apply(songs, _filter.terms);
+              return CustomScrollView(
+                slivers: [
+                  if (!wide)
+                    SliverToBoxAdapter(
+                      child: ArtistHeader(
+                        artistKey: artistKey,
+                        name: sections.name,
+                        albumCount: sections.albumCount,
+                        onPlay: onPlay,
+                        onShuffle: onShuffle,
+                        onQueueAction: onQueueAction,
+                      ),
+                    ),
+                  if (!filtering && sections.albums.isNotEmpty) ...[
+                    heading(l10n.artistsAlbums),
+                    SliverAlbumRow(
+                      albums: sections.albums,
+                      onTap: openAlbum,
+                      onQueueAction: queueAlbum,
+                    ),
+                  ],
+                  if (!filtering && sections.appearsOn.isNotEmpty) ...[
+                    heading(l10n.artistsAppearsOn),
+                    SliverAlbumRow(
+                      albums: sections.appearsOn,
+                      onTap: openAlbum,
+                      onQueueAction: queueAlbum,
+                    ),
+                  ],
+                  heading(l10n.artistsSongs),
+                  SliverTracksToolbar(
+                    songCount: songs.length,
+                    durationMs: sections.durationMs,
+                    filter: _filter,
+                  ),
+                  if (filtering && shown.isEmpty)
+                    SliverToBoxAdapter(
+                      child: InPageNoMatch(query: _filter.query),
+                    )
+                  else
+                    SliverBrowseSongs(
+                      songs: shown,
+                      onTap: (i) => playTracks(ref, queueOf(shown), i),
+                      onQueueAction: (song, action) => enqueueLoaded(
+                        ref,
+                        context,
+                        action,
+                        queueOf([song]),
+                        song.title,
+                      ),
+                    ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              );
+            },
+          );
+          if (!wide) return content;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ArtistSidePane(
                 artistKey: artistKey,
                 name: sections.name,
+                coverKey: sections.coverKey,
                 albumCount: sections.albumCount,
-                songCount: songs.length,
-                onPlay: () => playTracks(ref, queueOf(songs), 0),
-                onShuffle: () => shuffleTracks(ref, queueOf(songs)),
-                onQueueAction: (action) => enqueueLoaded(
-                  ref,
-                  context,
-                  action,
-                  queueOf(songs),
-                  sections.name,
-                ),
+                onPlay: onPlay,
+                onShuffle: onShuffle,
+                onQueueAction: onQueueAction,
               ),
-            ),
-            if (!filtering && sections.albums.isNotEmpty) ...[
-              heading(l10n.artistsAlbums),
-              SliverAlbumGrid(
-                albums: sections.albums,
-                onTap: openAlbum,
-                onQueueAction: queueAlbum,
-              ),
+              Expanded(child: content),
             ],
-            SliverSongsHeading(title: l10n.artistsSongs, filter: _filter),
-            if (filtering && shown.isEmpty)
-              SliverToBoxAdapter(child: InPageNoMatch(query: _filter.query))
-            else
-              SliverBrowseSongs(
-                songs: shown,
-                onTap: (i) => playTracks(ref, queueOf(shown), i),
-                onQueueAction: (song, action) => enqueueLoaded(
-                  ref,
-                  context,
-                  action,
-                  queueOf([song]),
-                  song.title,
-                ),
-              ),
-            if (!filtering && sections.appearsOn.isNotEmpty) ...[
-              heading(l10n.artistsAppearsOn),
-              SliverAlbumGrid(
-                albums: sections.appearsOn,
-                onTap: openAlbum,
-                onQueueAction: queueAlbum,
-              ),
-            ],
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

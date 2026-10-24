@@ -10,13 +10,13 @@ import '../../../shared/readable_gradient_stops.dart';
 /// Now Playing screen, is too strong behind a list of rows.
 const _tintStrength = 0.5;
 
-/// Paints the album page's own background with a faint gradient of the
-/// album cover's colors, faint enough that text keeps its contrast, when
+/// Paints the background of a detail page (album, artist) with a faint
+/// gradient of the colors of its cover, faint enough that text keeps its contrast, when
 /// "colors from the cover" is on. Only the page is tinted here; the app
 /// theme follows the playing track. Off, no cover, or no colors yet,
 /// leaves the page as it was; the tint fades in once the colors are known.
-class AlbumTintBackground extends ConsumerWidget {
-  const AlbumTintBackground({
+class CoverTintPageBackground extends ConsumerWidget {
+  const CoverTintPageBackground({
     super.key,
     required this.coverKey,
     required this.child,
