@@ -1,7 +1,6 @@
 {
   "@@locale": "vi",
   "appTitle": "Kanaru",
-
   "navHome": "Trang chủ",
   "navSongs": "Bài hát",
   "navAlbums": "Album",
@@ -11,7 +10,6 @@
   "navHistory": "Lịch sử",
   "navSearch": "Tìm kiếm",
   "navSettings": "Cài đặt",
-
   "sidebarPlaylists": "Playlist",
   "sidebarNoPlaylists": "Chưa có playlist nào",
   "sidebarNewPlaylist": "Playlist mới",
@@ -19,7 +17,6 @@
   "sidebarCollapse": "Thu gọn",
   "sidebarShrink": "Thu gọn thanh bên",
   "sidebarGrow": "Mở rộng thanh bên",
-
   "playlistDefaultName": "Playlist mới",
   "playlistCreateTitle": "Tạo playlist",
   "playlistCreateConfirm": "Tạo",
@@ -48,21 +45,17 @@
   "playlistAlreadyIn": "Đã có trong {playlist}: {name}",
   "playlistSaveFailed": "Không lưu được playlist. Xem log để biết chi tiết.",
   "playlistTrackNotInLibrary": "Bài này không có trong thư viện nên không thêm vào playlist được.",
-
   "topBarBack": "Quay lại",
   "topBarForward": "Tiến tới",
   "topBarSearchHint": "Tìm bài hát, album, nghệ sĩ",
-
   "windowMinimize": "Thu nhỏ",
   "windowMaximize": "Phóng to",
   "windowRestore": "Khôi phục",
   "windowClose": "Đóng",
-
   "homeGreetingMorning": "Chào buổi sáng",
   "homeGreetingAfternoon": "Chào buổi chiều",
   "homeGreetingEvening": "Chào buổi tối",
   "homeSubtitle": "Nghe tiếp những gì bạn yêu thích",
-
   "libraryEmptyTitle": "Thư viện của bạn đang trống",
   "libraryEmptyMessage": "Thêm thư mục nhạc để bắt đầu tạo thư viện.",
   "onboardingTitle": "Chào mừng đến với Kanaru",
@@ -73,7 +66,6 @@
   "onboardingRemoveFolder": "Bỏ thư mục này",
   "onboardingLater": "Để sau",
   "onboardingStart": "Bắt đầu",
-
   "libraryUnavailableTitle": "Không mở được thư viện",
   "libraryUnavailableMessage": "Bạn vẫn có thể phát nhạc. Xem chi tiết trong nhật ký.",
   "libraryChooseFolder": "Chọn thư mục nhạc",
@@ -127,7 +119,6 @@
   "queuePlayingNext": "Phát tiếp theo: {name}",
   "queuePlaying": "Đang phát: {name}",
   "queueAddedToQueue": "Đã thêm vào hàng đợi: {name}",
-
   "sortBy": "Sắp xếp:",
   "sortOrder": "Thứ tự:",
   "sortAscending": "Tăng dần",
@@ -141,7 +132,6 @@
   "sortName": "Tên",
   "sortSongCount": "Số bài",
   "sortAlbumCount": "Số album",
-
   "albumsGridView": "Lưới",
   "albumsListView": "Danh sách",
   "albumsNoRootsMessage": "Thêm thư mục nhạc ở mục Bài hát.",
@@ -154,7 +144,6 @@
   "albumsUnknownDisc": "Đĩa không rõ",
   "albumsNotFound": "Không tìm thấy album",
   "albumsNotFoundMessage": "Có thể album đã bị xoá hoặc đổi tên sau lần quét lại.",
-
   "artistsNoRootsMessage": "Thêm thư mục nhạc ở mục Bài hát.",
   "artistsEmptyTitle": "Chưa có nghệ sĩ",
   "artistsEmptyMessage": "Bài hát có tag nghệ sĩ sẽ hiện ở đây theo nghệ sĩ.",
@@ -165,7 +154,6 @@
   "artistsPlay": "Phát",
   "artistsNotFound": "Không tìm thấy nghệ sĩ",
   "artistsNotFoundMessage": "Có thể bài hát của nghệ sĩ đã bị xoá hoặc đổi tag.",
-
   "genresTitle": "Thể loại",
   "genresNoRootsMessage": "Thêm thư mục nhạc ở mục Bài hát.",
   "genresEmptyTitle": "Chưa có thể loại",
@@ -174,7 +162,6 @@
   "genresSongs": "Bài hát",
   "genresNotFound": "Không tìm thấy thể loại",
   "genresNotFoundMessage": "Có thể bài hát đã bị xoá hoặc đổi tag.",
-
   "foldersEmptyTitle": "Chưa có thư mục",
   "foldersEmptyMessage": "Thư mục có bài hát sẽ hiện ở đây.",
   "foldersNoRootsMessage": "Thêm thư mục nhạc ở mục Bài hát.",
@@ -187,15 +174,17 @@
   "foldersCounts": "{songs} bài, {folders} thư mục con",
   "@foldersCounts": {
     "placeholders": {
-      "songs": { "type": "int" },
-      "folders": { "type": "int" }
+      "songs": {
+        "type": "int"
+      },
+      "folders": {
+        "type": "int"
+      }
     }
   },
   "foldersCreatePlaylist": "Tạo playlist",
   "foldersEmptyFolder": "Thư mục này không có bài hát",
-
   "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
-
   "searchEmptyTitle": "Tìm trong thư viện",
   "searchEmptyMessage": "Tìm bài hát, album và nghệ sĩ.",
   "searchResultsTitle": "Kết quả cho “{query}”",
@@ -206,7 +195,6 @@
   "searchNoResultsTitle": "Không có kết quả",
   "searchNoResultsMessage": "Không tìm thấy kết quả cho “{query}”. Thử bớt từ hoặc gõ ngắn hơn.",
   "searchMoreSongs": "Đang hiện {shown} bài đầu trong {total} bài. Thêm từ để thu hẹp kết quả.",
-
   "searchNoResultsNarrowFields": "Không tìm thấy kết quả cho “{query}” trong các trường đã chọn. Thử chọn thêm trường tìm.",
   "searchFieldsButton": "Trường tìm",
   "searchFieldsFiltered": "Trường tìm (đã lọc)",
@@ -220,7 +208,6 @@
   "searchFieldFileName": "Tên file",
   "searchFieldComment": "Mô tả",
   "searchCorrectedResultsFor": "Kết quả cho “{query}”",
-
   "playerPlaybackError": "Không phát được {title}",
   "playerPlay": "Phát",
   "playerPause": "Tạm dừng",
@@ -234,7 +221,6 @@
   "playerUnmute": "Bật tiếng",
   "playerVolume": "Âm lượng",
   "playerSeek": "Tua",
-
   "nowPlayingOpen": "Mở màn hình đang phát",
   "nowPlayingClose": "Đóng màn hình đang phát",
   "nowPlayingFavorite": "Thêm vào yêu thích",
@@ -251,7 +237,6 @@
   "queueReorder": "Kéo để sắp xếp lại",
   "queueShowCurrent": "Tới bài đang phát",
   "queueClose": "Đóng danh sách đang phát",
-
   "settingsLibrary": "Thư viện",
   "settingsRescanLibrary": "Quét lại thư viện",
   "settingsFolders": "Thư mục nhạc",
@@ -370,7 +355,9 @@
   "audioDeviceMissing": "{name} — không có, đang dùng Tự động",
   "@audioDeviceMissing": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "searchHistoryTitle": "Tìm kiếm gần đây",
@@ -382,7 +369,9 @@
   "audioDeviceFailed": "{name} — không mở được, đang dùng Tự động",
   "@audioDeviceFailed": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "audioDeviceChange": "Đổi",
@@ -397,273 +386,534 @@
   "settingsAudioDecibels": "{value} dB",
   "@settingsAudioDecibels": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "settingsAudioPreventClipping": "Chống méo tiếng",
   "settingsAudioPreventClippingHint": "Giảm mức khi tăng âm có thể làm méo các đỉnh to nhất.",
   "excludedFoldersTitle": "Thư mục loại trừ",
-  "@excludedFoldersTitle": { "description": "Title of the excluded folders setting" },
+  "@excludedFoldersTitle": {
+    "description": "Title of the excluded folders setting"
+  },
   "excludedFoldersHint": "Các thư mục trong thư mục nhạc mà Kanaru bỏ qua. Bài hát trong đó sẽ rời khỏi thư viện. Tệp không bao giờ bị xoá.",
-  "@excludedFoldersHint": { "description": "Explains what excluding a folder does" },
+  "@excludedFoldersHint": {
+    "description": "Explains what excluding a folder does"
+  },
   "excludedFoldersAdd": "Loại trừ thư mục",
-  "@excludedFoldersAdd": { "description": "Button that picks a folder to exclude" },
+  "@excludedFoldersAdd": {
+    "description": "Button that picks a folder to exclude"
+  },
   "excludedFoldersRemove": "Bỏ loại trừ",
-  "@excludedFoldersRemove": { "description": "Tooltip of the button that stops excluding a folder" },
+  "@excludedFoldersRemove": {
+    "description": "Tooltip of the button that stops excluding a folder"
+  },
   "excludedFoldersNotInLibrary": "Không nằm trong thư mục nhạc nào nên không có tác dụng",
-  "@excludedFoldersNotInLibrary": { "description": "Note on an excluded folder that is not below any library folder" },
+  "@excludedFoldersNotInLibrary": {
+    "description": "Note on an excluded folder that is not below any library folder"
+  },
   "excludedFoldersMissing": "Không tìm thấy thư mục",
-  "@excludedFoldersMissing": { "description": "Note on an excluded folder that no longer exists" },
+  "@excludedFoldersMissing": {
+    "description": "Note on an excluded folder that no longer exists"
+  },
   "excludedFoldersSameAsRoot": "Đây là một thư mục nhạc. Hãy xoá nó khỏi danh sách thư mục ở trên.",
-  "@excludedFoldersSameAsRoot": { "description": "Shown when the folder to exclude is a library folder" },
+  "@excludedFoldersSameAsRoot": {
+    "description": "Shown when the folder to exclude is a library folder"
+  },
   "excludedFoldersOutsideLibrary": "Thư mục này không nằm trong thư mục nhạc nào.",
-  "@excludedFoldersOutsideLibrary": { "description": "Shown when the folder to exclude is not below a library folder" },
+  "@excludedFoldersOutsideLibrary": {
+    "description": "Shown when the folder to exclude is not below a library folder"
+  },
   "excludedFoldersAlreadyExcluded": "Thư mục này đã bị loại trừ.",
-  "@excludedFoldersAlreadyExcluded": { "description": "Shown when the folder is already excluded" },
+  "@excludedFoldersAlreadyExcluded": {
+    "description": "Shown when the folder is already excluded"
+  },
   "settingsWatchFolders": "Theo dõi thư mục nhạc",
-  "@settingsWatchFolders": { "description": "Title of the switch that makes Kanaru rescan by itself when files in the music folders change" },
+  "@settingsWatchFolders": {
+    "description": "Title of the switch that makes Kanaru rescan by itself when files in the music folders change"
+  },
   "settingsWatchFoldersHint": "Tự nhận file thêm, sửa, xoá khi Kanaru đang chạy, vài giây sau khi chúng ngừng thay đổi",
-  "@settingsWatchFoldersHint": { "description": "Subtitle of the watch music folders switch" },
+  "@settingsWatchFoldersHint": {
+    "description": "Subtitle of the watch music folders switch"
+  },
   "settingsWatchFoldersLimit": "Quá nhiều thư mục để theo dõi trên hệ thống này. Hãy tăng fs.inotify.max_user_watches, hoặc dùng Quét lại.",
-  "@settingsWatchFoldersLimit": { "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)" },
+  "@settingsWatchFoldersLimit": {
+    "description": "Subtitle of the watch switch when the system limit of watches ran out (Linux inotify)"
+  },
   "historyEmptyMessage": "Bài hát bạn đã phát sẽ hiện ở đây.",
-  "@historyEmptyMessage": { "description": "Message of the History page when nothing was played yet" },
+  "@historyEmptyMessage": {
+    "description": "Message of the History page when nothing was played yet"
+  },
   "historyToday": "Hôm nay",
-  "@historyToday": { "description": "Header of the History day that is today" },
+  "@historyToday": {
+    "description": "Header of the History day that is today"
+  },
   "historyYesterday": "Hôm qua",
-  "@historyYesterday": { "description": "Header of the History day that is yesterday" },
+  "@historyYesterday": {
+    "description": "Header of the History day that is yesterday"
+  },
   "historyDayPlayCount": "{count, plural, other{{count} lượt nghe}}",
   "@historyDayPlayCount": {
     "description": "How many plays a History day holds",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyNthPlay": "#{n}",
   "@historyNthPlay": {
     "description": "Badge on a History row: this is the Nth time the song was played",
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "historyNthPlayLabel": "Lượt nghe thứ {n}",
   "@historyNthPlayLabel": {
     "description": "Tooltip and screen reader text of the Nth play badge",
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "historyTrackMissing": "Không có trong thư viện",
-  "@historyTrackMissing": { "description": "Note on a History row whose file is no longer in the library" },
+  "@historyTrackMissing": {
+    "description": "Note on a History row whose file is no longer in the library"
+  },
   "historyDeletePlay": "Xoá khỏi lịch sử",
-  "@historyDeletePlay": { "description": "Menu item that removes one play from the History" },
+  "@historyDeletePlay": {
+    "description": "Menu item that removes one play from the History"
+  },
   "historyPlayDeleted": "Đã xoá một lượt nghe",
-  "@historyPlayDeleted": { "description": "Snackbar after one play was removed from the History" },
+  "@historyPlayDeleted": {
+    "description": "Snackbar after one play was removed from the History"
+  },
   "historyUndo": "Hoàn tác",
-  "@historyUndo": { "description": "Snackbar action that puts a removed play back" },
+  "@historyUndo": {
+    "description": "Snackbar action that puts a removed play back"
+  },
   "historyDeleteFailed": "Không xoá được lượt nghe. Xem chi tiết trong nhật ký.",
-  "@historyDeleteFailed": { "description": "Snackbar when removing a play failed" },
+  "@historyDeleteFailed": {
+    "description": "Snackbar when removing a play failed"
+  },
   "historyRestoreFailed": "Không khôi phục được lượt nghe. Xem chi tiết trong nhật ký.",
-  "@historyRestoreFailed": { "description": "Snackbar when undoing a removal failed" },
+  "@historyRestoreFailed": {
+    "description": "Snackbar when undoing a removal failed"
+  },
   "historyCalendar": "Nhảy tới ngày",
-  "@historyCalendar": { "description": "Tooltip of the button that opens the History calendar" },
+  "@historyCalendar": {
+    "description": "Tooltip of the button that opens the History calendar"
+  },
   "historyRecordingOff": "Đang tắt ghi lịch sử nghe",
-  "@historyRecordingOff": { "description": "Note on the empty History page when recording is off in Settings" },
+  "@historyRecordingOff": {
+    "description": "Note on the empty History page when recording is off in Settings"
+  },
   "historyUnavailable": "Lịch sử không khả dụng",
-  "@historyUnavailable": { "description": "Title of the History page when there is no library database" },
+  "@historyUnavailable": {
+    "description": "Title of the History page when there is no library database"
+  },
   "historyLoadFailed": "Không đọc được lịch sử. Xem chi tiết trong nhật ký.",
-  "@historyLoadFailed": { "description": "Message of the History page when reading it failed" },
+  "@historyLoadFailed": {
+    "description": "Message of the History page when reading it failed"
+  },
   "historyMore": "Thêm",
-  "@historyMore": { "description": "Tooltip of the more button on a History row" },
+  "@historyMore": {
+    "description": "Tooltip of the more button on a History row"
+  },
   "historyOlderYear": "Xem năm {year}",
   "@historyOlderYear": {
     "description": "Last row of the History list: switches to an older year",
-    "placeholders": { "year": { "type": "int" } }
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
   },
   "historyTabTimeline": "Nhật ký",
-  "@historyTabTimeline": { "description": "Tab of the History page that lists every play by day" },
+  "@historyTabTimeline": {
+    "description": "Tab of the History page that lists every play by day"
+  },
   "historyTabTop": "Phát nhiều nhất",
-  "@historyTabTop": { "description": "Tab of the History page that ranks songs by plays in a date range" },
+  "@historyTabTop": {
+    "description": "Tab of the History page that ranks songs by plays in a date range"
+  },
   "historyRangeToday": "Hôm nay",
-  "@historyRangeToday": { "description": "Most played range chip and label for the current day" },
+  "@historyRangeToday": {
+    "description": "Most played range chip and label for the current day"
+  },
   "historyRange7Days": "7 ngày",
-  "@historyRange7Days": { "description": "Most played range chip: the last 7 days" },
+  "@historyRange7Days": {
+    "description": "Most played range chip: the last 7 days"
+  },
   "historyRange30Days": "30 ngày",
-  "@historyRange30Days": { "description": "Most played range chip: the last 30 days" },
+  "@historyRange30Days": {
+    "description": "Most played range chip: the last 30 days"
+  },
   "historyRange6Months": "6 tháng",
-  "@historyRange6Months": { "description": "Most played range chip: the last 6 months" },
+  "@historyRange6Months": {
+    "description": "Most played range chip: the last 6 months"
+  },
   "historyRangeYear": "1 năm",
-  "@historyRangeYear": { "description": "Most played range chip: the last 12 months" },
+  "@historyRangeYear": {
+    "description": "Most played range chip: the last 12 months"
+  },
   "historyRangeAll": "Tất cả",
-  "@historyRangeAll": { "description": "Most played range chip and label for the whole history" },
+  "@historyRangeAll": {
+    "description": "Most played range chip and label for the whole history"
+  },
   "historyRangeCustom": "Tuỳ chọn",
-  "@historyRangeCustom": { "description": "Most played range chip that opens the date range picker" },
+  "@historyRangeCustom": {
+    "description": "Most played range chip that opens the date range picker"
+  },
   "historyRangePrevious": "Kỳ trước",
-  "@historyRangePrevious": { "description": "Tooltip of the button that moves the Most played range back" },
+  "@historyRangePrevious": {
+    "description": "Tooltip of the button that moves the Most played range back"
+  },
   "historyRangeNext": "Kỳ sau",
-  "@historyRangeNext": { "description": "Tooltip of the button that moves the Most played range forward" },
+  "@historyRangeNext": {
+    "description": "Tooltip of the button that moves the Most played range forward"
+  },
   "historyRangeLabel": "{start} – {end}",
   "@historyRangeLabel": {
     "description": "First and last day of the Most played range",
-    "placeholders": { "start": { "type": "String" }, "end": { "type": "String" } }
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
   },
   "historyTopPlayCount": "{count, plural, other{{count} lượt}}",
   "@historyTopPlayCount": {
     "description": "Plays of a song on a Most played row",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyTopCapped": "Hiện {count} bài đầu",
   "@historyTopCapped": {
     "description": "Note under the Most played list when it was cut at its limit",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyPlayAll": "Phát tất cả",
-  "@historyPlayAll": { "description": "Button that plays the Most played list from the top" },
+  "@historyPlayAll": {
+    "description": "Button that plays the Most played list from the top"
+  },
   "historyCreatePlaylist": "Tạo playlist",
-  "@historyCreatePlaylist": { "description": "Button that saves the Most played list as a playlist" },
+  "@historyCreatePlaylist": {
+    "description": "Button that saves the Most played list as a playlist"
+  },
   "historyTopPlaylistName": "Nghe nhiều nhất · {range}",
   "@historyTopPlaylistName": {
     "description": "Suggested name of a playlist made from the Most played list",
-    "placeholders": { "range": { "type": "String" } }
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
   },
   "historyPlaylistCreated": "Đã tạo playlist {name}",
   "@historyPlaylistCreated": {
     "description": "Snackbar after a playlist was made from the Most played list",
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "historyTopEmpty": "Không có lượt nghe trong khoảng này",
-  "@historyTopEmpty": { "description": "Message of the Most played tab when the range has no plays" },
+  "@historyTopEmpty": {
+    "description": "Message of the Most played tab when the range has no plays"
+  },
   "historyShowTrackHistory": "Lịch sử bài này",
-  "@historyShowTrackHistory": { "description": "Row menu item that opens the history page of a song" },
+  "@historyShowTrackHistory": {
+    "description": "Row menu item that opens the history page of a song"
+  },
   "historyTrackTitle": "Lịch sử bài hát",
-  "@historyTrackTitle": { "description": "Title of the song history page when no song is named" },
+  "@historyTrackTitle": {
+    "description": "Title of the song history page when no song is named"
+  },
   "historyTrackStats": "{count, plural, other{{count} lượt nghe}}",
   "@historyTrackStats": {
     "description": "Number of plays of a song in the header of its history page",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyTrackFirst": "Lần đầu {date}",
   "@historyTrackFirst": {
     "description": "Day of the first play in the header of a song history page",
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "historyTrackLast": "Lần cuối {date}",
   "@historyTrackLast": {
     "description": "Day and time of the latest play in the header of a song history page",
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "historyListened": "đã nghe {duration}",
   "@historyListened": {
     "description": "How long a play was listened to, on a row of the song history page",
-    "placeholders": { "duration": { "type": "String" } }
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
   },
   "historyTrackNoPlays": "Chưa có lượt nghe nào",
-  "@historyTrackNoPlays": { "description": "Message of the song history page when the song has no plays" },
+  "@historyTrackNoPlays": {
+    "description": "Message of the song history page when the song has no plays"
+  },
   "historyTrackNotFound": "Không tìm thấy bài hát",
-  "@historyTrackNotFound": { "description": "Message of the song history page opened without a song" },
+  "@historyTrackNotFound": {
+    "description": "Message of the song history page opened without a song"
+  },
   "historyPlay": "Phát",
-  "@historyPlay": { "description": "Button on the song history page that plays the song" },
+  "@historyPlay": {
+    "description": "Button on the song history page that plays the song"
+  },
   "favoritesRemove": "Bỏ khỏi yêu thích",
-  "@favoritesRemove": { "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites" },
+  "@favoritesRemove": {
+    "description": "Tooltip of the filled heart and song menu item that take a song out of Favorites"
+  },
   "favoritesAdded": "Đã thêm vào Yêu thích",
-  "@favoritesAdded": { "description": "Snackbar after liking a song from its menu" },
+  "@favoritesAdded": {
+    "description": "Snackbar after liking a song from its menu"
+  },
   "favoritesRemoved": "Đã bỏ khỏi Yêu thích",
-  "@favoritesRemoved": { "description": "Snackbar after unliking a song from its menu" },
+  "@favoritesRemoved": {
+    "description": "Snackbar after unliking a song from its menu"
+  },
   "playlistM3uImport": "Nhập M3U…",
-  "@playlistM3uImport": { "description": "Button on the playlists page that imports an M3U playlist file" },
+  "@playlistM3uImport": {
+    "description": "Button on the playlists page that imports an M3U playlist file"
+  },
   "playlistM3uAllFiles": "Mọi tệp",
-  "@playlistM3uAllFiles": { "description": "File type filter of the M3U file picker that shows every file" },
+  "@playlistM3uAllFiles": {
+    "description": "File type filter of the M3U file picker that shows every file"
+  },
   "playlistM3uImporting": "Đang nhập playlist…",
-  "@playlistM3uImporting": { "description": "Progress dialog while an M3U file is imported" },
+  "@playlistM3uImporting": {
+    "description": "Progress dialog while an M3U file is imported"
+  },
   "playlistM3uImported": "Đã nhập {count} bài vào {name}",
   "@playlistM3uImported": {
     "description": "Snackbar after a clean M3U import",
-    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uImportedNotInLibrary": "{count} bài chưa có trong thư viện",
   "@playlistM3uImportedNotInLibrary": {
     "description": "Added after the import snackbar when some imported files are not library songs yet",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportTitle": "Đã nhập playlist",
-  "@playlistM3uImportReportTitle": { "description": "Title of the dialog that reports an M3U import" },
+  "@playlistM3uImportReportTitle": {
+    "description": "Title of the dialog that reports an M3U import"
+  },
   "playlistM3uImportReportSummary": "Đã thêm {added} trên {total} dòng.",
   "@playlistM3uImportReportSummary": {
     "description": "First line of the M3U import report",
-    "placeholders": { "added": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportNotInLibrary": "{count} bài chưa có trong thư viện: sẽ hiện khi thêm thư mục chứa chúng.",
   "@playlistM3uImportReportNotInLibrary": {
     "description": "M3U import report: files that exist but are not library songs",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportDuplicates": "Đã gộp {count} dòng trùng.",
   "@playlistM3uImportReportDuplicates": {
     "description": "M3U import report: lines naming a file already imported",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportUnresolved": "{count} dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:",
   "@playlistM3uImportReportUnresolved": {
     "description": "M3U import report: heading of the lines that could not be used",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportTruncated": "Chỉ đọc {limit} bài đầu tiên.",
   "@playlistM3uImportReportTruncated": {
     "description": "M3U import report: the file had more lines than the limit",
-    "placeholders": { "limit": { "type": "int" } }
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportReportLine": "Dòng {line}: {text}",
   "@playlistM3uImportReportLine": {
     "description": "M3U import report: one unused line with its line number",
-    "placeholders": { "line": { "type": "int" }, "text": { "type": "String" } }
+    "placeholders": {
+      "line": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uImportReportMore": "và {count} dòng khác",
   "@playlistM3uImportReportMore": {
     "description": "M3U import report: unused lines not listed",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uImportNothingFound": "Không tìm thấy tệp nhạc cục bộ nào của playlist này. Chưa nhập gì.",
-  "@playlistM3uImportNothingFound": { "description": "M3U import report when no line could be used" },
+  "@playlistM3uImportNothingFound": {
+    "description": "M3U import report when no line could be used"
+  },
   "playlistM3uImportTooLarge": "Tệp này quá lớn để là một playlist.",
-  "@playlistM3uImportTooLarge": { "description": "Snackbar when the picked M3U file is over the size limit" },
+  "@playlistM3uImportTooLarge": {
+    "description": "Snackbar when the picked M3U file is over the size limit"
+  },
   "playlistM3uImportFailed": "Không đọc được tệp playlist. Xem log để biết chi tiết.",
-  "@playlistM3uImportFailed": { "description": "Snackbar when the picked M3U file cannot be read" },
+  "@playlistM3uImportFailed": {
+    "description": "Snackbar when the picked M3U file cannot be read"
+  },
   "playlistM3uExportAbsolute": "Xuất M3U (đường dẫn đầy đủ)…",
-  "@playlistM3uExportAbsolute": { "description": "Playlist menu item: save as M3U with absolute paths" },
+  "@playlistM3uExportAbsolute": {
+    "description": "Playlist menu item: save as M3U with absolute paths"
+  },
   "playlistM3uExportRelative": "Xuất M3U (đường dẫn tương đối)…",
-  "@playlistM3uExportRelative": { "description": "Playlist menu item: save as M3U with paths relative to the file" },
+  "@playlistM3uExportRelative": {
+    "description": "Playlist menu item: save as M3U with paths relative to the file"
+  },
   "playlistM3uExported": "Đã lưu {count} bài vào {file}",
   "@playlistM3uExported": {
     "description": "Snackbar after exporting a playlist",
-    "placeholders": { "count": { "type": "int" }, "file": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "file": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uExportSkipped": "bỏ {count} đường dẫn có ký tự xuống dòng",
   "@playlistM3uExportSkipped": {
     "description": "Added to the export snackbar when some paths cannot be written as M3U lines",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "playlistM3uExportFailed": "Không lưu được tệp playlist. Xem log để biết chi tiết.",
-  "@playlistM3uExportFailed": { "description": "Snackbar when writing the M3U file failed" },
+  "@playlistM3uExportFailed": {
+    "description": "Snackbar when writing the M3U file failed"
+  },
   "playlistM3uOverwriteTitle": "Thay thế {file}?",
   "@playlistM3uOverwriteTitle": {
     "description": "Title of the dialog asking before overwriting an existing file",
-    "placeholders": { "file": { "type": "String" } }
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
   },
   "playlistM3uOverwriteConfirm": "Thay thế",
-  "@playlistM3uOverwriteConfirm": { "description": "Button that overwrites the existing file" },
+  "@playlistM3uOverwriteConfirm": {
+    "description": "Button that overwrites the existing file"
+  },
   "queueSaveAsPlaylist": "Lưu hàng đợi thành playlist",
-  "@queueSaveAsPlaylist": { "description": "Tooltip of the queue panel button that saves the queue as a new playlist" },
+  "@queueSaveAsPlaylist": {
+    "description": "Tooltip of the queue panel button that saves the queue as a new playlist"
+  },
   "queueSaveDefaultName": "Hàng đợi {date}",
   "@queueSaveDefaultName": {
     "description": "Default name of a playlist saved from the queue",
-    "placeholders": { "date": { "type": "DateTime", "format": "yMMMd" } }
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
   "queueSaved": "Đã lưu {count} bài vào {name}",
   "@queueSaved": {
     "description": "Snackbar after saving the queue as a playlist",
-    "placeholders": { "count": { "type": "int" }, "name": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "queueSavedSkipped": "Đã lưu {count} bài vào {name}, bỏ {skipped} bài (không có trong thư viện hoặc trùng)",
   "@queueSavedSkipped": {
     "description": "Snackbar after saving the queue when some queue songs were not saved",
-    "placeholders": { "count": { "type": "int" }, "skipped": { "type": "int" }, "name": { "type": "String" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "queueSaveNothing": "Không bài nào trong hàng đợi có trong thư viện",
-  "@queueSaveNothing": { "description": "Snackbar when no queue song can be saved in a playlist" },
+  "@queueSaveNothing": {
+    "description": "Snackbar when no queue song can be saved in a playlist"
+  },
   "queueHistoryTitle": "Lịch sử hàng đợi",
   "queueHistoryEmptyTitle": "Chưa có lịch sử hàng đợi",
   "queueHistoryEmptyMessage": "Khi bạn phát thứ khác, hàng đợi bị thay sẽ được giữ ở đây.",
@@ -678,95 +928,183 @@
   "queueHistoryDeleted": "Đã xoá hàng đợi",
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
   "lyricsTab": "Lời bài hát",
-  "@lyricsTab": { "description": "Name of the lyrics page of the narrow Now Playing layout" },
+  "@lyricsTab": {
+    "description": "Name of the lyrics page of the narrow Now Playing layout"
+  },
   "coverCacheClearTitle": "Xoá cache ảnh bìa?",
-  "@coverCacheClearTitle": { "description": "Title of the dialog that confirms deleting the cover thumbnails" },
+  "@coverCacheClearTitle": {
+    "description": "Title of the dialog that confirms deleting the cover thumbnails"
+  },
   "coverCacheClearBody": "Mọi ảnh bìa biến mất khỏi thư viện cho tới khi được tạo lại. Kanaru quét lại ngay và tạo lại ảnh ở nền; thư viện lớn có thể mất một lúc. Màu lấy từ ảnh bìa được giữ.",
-  "@coverCacheClearBody": { "description": "Body of the dialog that confirms deleting the cover thumbnails" },
+  "@coverCacheClearBody": {
+    "description": "Body of the dialog that confirms deleting the cover thumbnails"
+  },
   "coverCacheCleared": "{count, plural, other{Đã xoá {count} ảnh bìa. Quét lại sẽ tạo lại chúng.}}",
   "@coverCacheCleared": {
     "description": "Snackbar after the cover thumbnails were deleted",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "coverCacheClearFailed": "Không xoá được cache ảnh bìa",
-  "@coverCacheClearFailed": { "description": "Snackbar when the cover thumbnails could not be deleted" },
+  "@coverCacheClearFailed": {
+    "description": "Snackbar when the cover thumbnails could not be deleted"
+  },
   "genresUnknown": "Không rõ thể loại",
-  "@genresUnknown": { "description": "Name of the Genres entry that holds songs with no genre tag, always last in the list" },
+  "@genresUnknown": {
+    "description": "Name of the Genres entry that holds songs with no genre tag, always last in the list"
+  },
   "separatorsArtistsTitle": "Tách nghệ sĩ",
-  "@separatorsArtistsTitle": { "description": "Title of the settings row and dialog that edit how artist tags are split" },
+  "@separatorsArtistsTitle": {
+    "description": "Title of the settings row and dialog that edit how artist tags are split"
+  },
   "separatorsGenresTitle": "Tách thể loại",
-  "@separatorsGenresTitle": { "description": "Title of the settings row and dialog that edit how genre tags are split" },
+  "@separatorsGenresTitle": {
+    "description": "Title of the settings row and dialog that edit how genre tags are split"
+  },
   "separatorsArtistsHint": "Áp dụng ngay, cập nhật thư viện ở nền.",
-  "@separatorsArtistsHint": { "description": "Subtitle of the artist split row, first line" },
+  "@separatorsArtistsHint": {
+    "description": "Subtitle of the artist split row, first line"
+  },
   "separatorsGenresHint": "Áp dụng ngay, không cần quét lại.",
-  "@separatorsGenresHint": { "description": "Subtitle of the genre split row, first line" },
+  "@separatorsGenresHint": {
+    "description": "Subtitle of the genre split row, first line"
+  },
   "separatorsSummary": "{separators} dấu phân cách · {keepWhole} tên giữ nguyên",
   "@separatorsSummary": {
     "description": "Second line of a split row: how many separators and keep-whole names are set",
-    "placeholders": { "separators": { "type": "int" }, "keepWhole": { "type": "int" } }
+    "placeholders": {
+      "separators": {
+        "type": "int"
+      },
+      "keepWhole": {
+        "type": "int"
+      }
+    }
   },
   "separatorsEditButton": "Chỉnh sửa",
-  "@separatorsEditButton": { "description": "Button of a split row that opens its dialog" },
+  "@separatorsEditButton": {
+    "description": "Button of a split row that opens its dialog"
+  },
   "separatorsTabSeparators": "Dấu phân cách ({count})",
   "@separatorsTabSeparators": {
     "description": "Dialog tab listing the separators, with how many there are",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "separatorsTabKeepWhole": "Không tách ({count})",
   "@separatorsTabKeepWhole": {
     "description": "Dialog tab listing names that are never split, with how many there are",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "separatorsAddSeparatorLabel": "Dấu phân cách mới",
-  "@separatorsAddSeparatorLabel": { "description": "Label of the field that adds a separator" },
+  "@separatorsAddSeparatorLabel": {
+    "description": "Label of the field that adds a separator"
+  },
   "separatorsAddKeepLabel": "Tên giữ nguyên",
-  "@separatorsAddKeepLabel": { "description": "Label of the field that adds a name that is never split" },
+  "@separatorsAddKeepLabel": {
+    "description": "Label of the field that adds a name that is never split"
+  },
   "separatorsSeparatorHelp": "Không cần thêm khoảng trắng hai đầu. Chữ như feat. chỉ tách khi có khoảng trắng hai bên.",
-  "@separatorsSeparatorHelp": { "description": "Help under the separator field" },
+  "@separatorsSeparatorHelp": {
+    "description": "Help under the separator field"
+  },
   "separatorsKeepHelpArtist": "Gõ tên như trong tag, không phân biệt hoa thường. Ví dụ AC/DC vẫn là một nghệ sĩ.",
-  "@separatorsKeepHelpArtist": { "description": "Help under the keep-whole field of the artist dialog" },
+  "@separatorsKeepHelpArtist": {
+    "description": "Help under the keep-whole field of the artist dialog"
+  },
   "separatorsKeepHelpGenre": "Gõ tên như trong tag, không phân biệt hoa thường. Ví dụ Funk/Soul vẫn là một thể loại.",
-  "@separatorsKeepHelpGenre": { "description": "Help under the keep-whole field of the genre dialog" },
+  "@separatorsKeepHelpGenre": {
+    "description": "Help under the keep-whole field of the genre dialog"
+  },
   "separatorsAdd": "Thêm",
-  "@separatorsAdd": { "description": "Button that adds the typed entry" },
+  "@separatorsAdd": {
+    "description": "Button that adds the typed entry"
+  },
   "separatorsErrorEmpty": "Nhập nội dung cần thêm",
-  "@separatorsErrorEmpty": { "description": "Error under the field when nothing was typed" },
+  "@separatorsErrorEmpty": {
+    "description": "Error under the field when nothing was typed"
+  },
   "separatorsErrorDuplicate": "Đã có trong danh sách",
-  "@separatorsErrorDuplicate": { "description": "Error under the field when the entry is in the list already, in any case" },
+  "@separatorsErrorDuplicate": {
+    "description": "Error under the field when the entry is in the list already, in any case"
+  },
   "separatorsErrorTooLong": "Tối đa {max} ký tự",
   "@separatorsErrorTooLong": {
     "description": "Error under the field when the entry is too long",
-    "placeholders": { "max": { "type": "int" } }
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
   },
   "separatorsErrorFull": "Danh sách chứa tối đa {max} mục",
   "@separatorsErrorFull": {
     "description": "Error under the field when the list is full",
-    "placeholders": { "max": { "type": "int" } }
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
   },
   "separatorsRemove": "Xoá {entry}",
   "@separatorsRemove": {
     "description": "Tooltip of the button that removes an entry",
-    "placeholders": { "entry": { "type": "String" } }
+    "placeholders": {
+      "entry": {
+        "type": "String"
+      }
+    }
   },
   "separatorsEmptyList": "Chưa có mục nào",
-  "@separatorsEmptyList": { "description": "Shown in place of an empty list" },
+  "@separatorsEmptyList": {
+    "description": "Shown in place of an empty list"
+  },
   "separatorsEmptySeparators": "Chưa có mục nào, nên không tách gì cả",
-  "@separatorsEmptySeparators": { "description": "Shown in place of an empty separator list" },
+  "@separatorsEmptySeparators": {
+    "description": "Shown in place of an empty separator list"
+  },
   "separatorsPage": "Trang {page} / {total}",
   "@separatorsPage": {
     "description": "Tooltip of a page dot below a long list",
-    "placeholders": { "page": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "separatorsReset": "Khôi phục mặc định",
-  "@separatorsReset": { "description": "Button that puts both lists of the dialog back to their defaults" },
+  "@separatorsReset": {
+    "description": "Button that puts both lists of the dialog back to their defaults"
+  },
   "separatorsResetConfirmTitle": "Khôi phục mặc định?",
-  "@separatorsResetConfirmTitle": { "description": "Title of the confirmation before restoring the defaults" },
+  "@separatorsResetConfirmTitle": {
+    "description": "Title of the confirmation before restoring the defaults"
+  },
   "separatorsResetConfirmBody": "Cả hai danh sách trở về mặc định.",
-  "@separatorsResetConfirmBody": { "description": "Body of the confirmation before restoring the defaults" },
+  "@separatorsResetConfirmBody": {
+    "description": "Body of the confirmation before restoring the defaults"
+  },
   "separatorsResetConfirm": "Khôi phục",
-  "@separatorsResetConfirm": { "description": "Button that confirms restoring the defaults" },
+  "@separatorsResetConfirm": {
+    "description": "Button that confirms restoring the defaults"
+  },
   "separatorsClose": "Đóng",
-  "@separatorsClose": { "description": "Button that closes the dialog" },
+  "@separatorsClose": {
+    "description": "Button that closes the dialog"
+  },
   "scanStatsTracksTitle": "Bài trong thư viện",
   "scanStatsTracksOfFiles": "{tracks} trên {files} file nhạc",
   "scanStatsNotScanned": "Chưa quét trong phiên này",
@@ -864,5 +1202,16 @@
   "inPageSearchOpen": "Lọc trong trang",
   "inPageSearchClear": "Xoá bộ lọc",
   "inPageSearchNoMatch": "Không có bài nào khớp «{query}»",
-  "inPageSearchTooMany": "Hiện {count} bài đầu, gõ thêm chữ để thu hẹp."
+  "inPageSearchTooMany": "Hiện {count} bài đầu, gõ thêm chữ để thu hẹp.",
+  "homeRecentlyPlayedTitle": "Lượt nghe gần đây",
+  "homeRecentlyAddedTitle": "Gần đây nhất",
+  "homeMemoriesTitle": "Kí ức đã mất",
+  "homeRecentAlbumsTitle": "Album gần đây",
+  "homeRecentArtistsTitle": "Nghệ sĩ gần đây",
+  "homeMemoriesEmpty": "Khoảng thời gian này không có bất kỳ bản nhạc nào",
+  "homeAddedWindowAll": "Tất cả",
+  "homeSeeAll": "Xem tất cả",
+  "homeScrollBack": "Cuộn lùi",
+  "homeScrollForward": "Cuộn tới",
+  "homeAddedWindowDays": "{count} ngày"
 }

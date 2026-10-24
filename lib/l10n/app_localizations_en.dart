@@ -764,58 +764,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String searchNoResultsNarrowFields(String query) {
-    return 'Nothing matches “$query” in the chosen fields. Try turning on more search fields.';
-  }
-
-  @override
-  String get searchFieldsButton => 'Search fields';
-
-  @override
-  String get searchFieldsFiltered => 'Search fields (filtered)';
-
-  @override
-  String get searchPresetAll => 'All fields';
-
-  @override
-  String get searchPresetTitleOnly => 'Titles only';
-
-  @override
-  String get searchFieldTitle => 'Title';
-
-  @override
-  String get searchFieldArtist => 'Artist';
-
-  @override
-  String get searchFieldAlbum => 'Album';
-
-  @override
-  String get searchFieldAlbumArtist => 'Album artist';
-
-  @override
-  String get searchFieldGenre => 'Genre';
-
-  @override
-  String get searchFieldFileName => 'File name';
-
-  @override
-  String get searchFieldComment => 'Description';
-
-  @override
-  String searchCorrectedResultsFor(String query) {
-    return 'Results for “$query”';
-  }
-
-  @override
-  String get searchHistoryTitle => 'Recent searches';
-
-  @override
-  String get searchHistoryRemove => 'Remove from history';
-
-  @override
-  String get searchHistoryClearAll => 'Clear all';
-
-  @override
   String playerPlaybackError(String title) {
     return 'Couldn\'t play $title';
   }
@@ -2478,21 +2426,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albumVariousArtists => 'Various artists';
 
   @override
-  String get inPageSearchHint => 'Filter songs';
+  String get homeRecentlyPlayedTitle => 'Recently played';
 
   @override
-  String get inPageSearchOpen => 'Filter in this page';
+  String get homeRecentlyAddedTitle => 'Recently added';
 
   @override
-  String get inPageSearchClear => 'Clear filter';
+  String get homeMemoriesTitle => 'Lost memories';
 
   @override
-  String inPageSearchNoMatch(String query) {
-    return 'No songs match “$query”';
-  }
+  String get homeRecentAlbumsTitle => 'Recent albums';
 
   @override
-  String inPageSearchTooMany(int count) {
-    return 'Showing the first $count songs. Type more to narrow it down.';
+  String get homeRecentArtistsTitle => 'Recent artists';
+
+  @override
+  String get homeMemoriesEmpty => 'No music from this time last year';
+
+  @override
+  String get homeAddedWindowAll => 'All';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String get homeScrollBack => 'Scroll back';
+
+  @override
+  String get homeScrollForward => 'Scroll forward';
+
+  @override
+  String homeAddedWindowDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
   }
 }

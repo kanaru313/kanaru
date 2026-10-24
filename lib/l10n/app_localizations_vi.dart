@@ -741,58 +741,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String searchNoResultsNarrowFields(String query) {
-    return 'Không tìm thấy kết quả cho “$query” trong các trường đã chọn. Thử chọn thêm trường tìm.';
-  }
-
-  @override
-  String get searchFieldsButton => 'Trường tìm';
-
-  @override
-  String get searchFieldsFiltered => 'Trường tìm (đã lọc)';
-
-  @override
-  String get searchPresetAll => 'Tất cả trường';
-
-  @override
-  String get searchPresetTitleOnly => 'Chỉ tiêu đề';
-
-  @override
-  String get searchFieldTitle => 'Tiêu đề';
-
-  @override
-  String get searchFieldArtist => 'Nghệ sĩ';
-
-  @override
-  String get searchFieldAlbum => 'Album';
-
-  @override
-  String get searchFieldAlbumArtist => 'Nghệ sĩ album';
-
-  @override
-  String get searchFieldGenre => 'Thể loại';
-
-  @override
-  String get searchFieldFileName => 'Tên file';
-
-  @override
-  String get searchFieldComment => 'Mô tả';
-
-  @override
-  String searchCorrectedResultsFor(String query) {
-    return 'Kết quả cho “$query”';
-  }
-
-  @override
-  String get searchHistoryTitle => 'Tìm kiếm gần đây';
-
-  @override
-  String get searchHistoryRemove => 'Xoá khỏi lịch sử';
-
-  @override
-  String get searchHistoryClearAll => 'Xoá tất cả';
-
-  @override
   String playerPlaybackError(String title) {
     return 'Không phát được $title';
   }
@@ -2297,21 +2245,38 @@ class AppLocalizationsVi extends AppLocalizations {
   String get albumVariousArtists => 'Nhiều nghệ sĩ';
 
   @override
-  String get inPageSearchHint => 'Lọc bài hát';
+  String get homeRecentlyPlayedTitle => 'Lượt nghe gần đây';
 
   @override
-  String get inPageSearchOpen => 'Lọc trong trang';
+  String get homeRecentlyAddedTitle => 'Gần đây nhất';
 
   @override
-  String get inPageSearchClear => 'Xoá bộ lọc';
+  String get homeMemoriesTitle => 'Kí ức đã mất';
 
   @override
-  String inPageSearchNoMatch(String query) {
-    return 'Không có bài nào khớp «$query»';
-  }
+  String get homeRecentAlbumsTitle => 'Album gần đây';
 
   @override
-  String inPageSearchTooMany(int count) {
-    return 'Hiện $count bài đầu, gõ thêm chữ để thu hẹp.';
+  String get homeRecentArtistsTitle => 'Nghệ sĩ gần đây';
+
+  @override
+  String get homeMemoriesEmpty =>
+      'Khoảng thời gian này không có bất kỳ bản nhạc nào';
+
+  @override
+  String get homeAddedWindowAll => 'Tất cả';
+
+  @override
+  String get homeSeeAll => 'Xem tất cả';
+
+  @override
+  String get homeScrollBack => 'Cuộn lùi';
+
+  @override
+  String get homeScrollForward => 'Cuộn tới';
+
+  @override
+  String homeAddedWindowDays(int count) {
+    return '$count ngày';
   }
 }

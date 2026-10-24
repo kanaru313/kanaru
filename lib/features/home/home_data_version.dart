@@ -30,8 +30,10 @@ bool homeBatchChangesRows(Set<TableUpdate> batch) =>
 /// - `tracks` changed (a scan): the first change bumps at once, the ones
 ///   inside `libraryBrowseRefreshIntervalProvider` become a single bump at
 ///   the end of the interval,
-/// - the local day turns over, as the memories and the added-at windows
-///   follow the date.
+/// - the local day turned over, as the memories and the added-at windows
+///   follow the date. No timer waits for midnight; the page calls
+///   [HomeDataVersion.checkDay] when the window regains focus, so the first
+///   look after midnight shows the new day.
 ///
 /// Without a library nothing is subscribed and no timer runs.
 final homeDataVersionProvider =
@@ -40,7 +42,8 @@ final homeDataVersionProvider =
 class HomeDataVersion extends Notifier<int> {
   Timer? _playsTimer;
   Timer? _cooldown;
-  Timer? _midnight;
+  DateTime Function() _clock = DateTime.now;
+  DateTime? _day;
   var _tracksDirty = false;
 
   @override
@@ -53,10 +56,8 @@ class HomeDataVersion extends Notifier<int> {
     ref.onDispose(() {
       _playsTimer?.cancel();
       _cooldown?.cancel();
-      _midnight?.cancel();
       _playsTimer = null;
       _cooldown = null;
-      _midnight = null;
       _tracksDirty = false;
     });
     if (db == null) return 0;
@@ -69,7 +70,8 @@ class HomeDataVersion extends Notifier<int> {
         .listen((_) => _onTracks(interval));
     ref.onDispose(plays.cancel);
     ref.onDispose(tracks.cancel);
-    _armMidnight(clock);
+    _clock = clock;
+    _day = _dateOf(clock());
     return 0;
   }
 
@@ -96,14 +98,16 @@ class HomeDataVersion extends Notifier<int> {
     });
   }
 
-  void _armMidnight(DateTime Function() clock) {
-    final now = clock();
-    final next = DateTime(now.year, now.month, now.day + 1);
-    var wait = next.difference(now);
-    if (wait <= Duration.zero) wait = const Duration(seconds: 1);
-    _midnight = Timer(wait, () {
-      state = state + 1;
-      _armMidnight(clock);
-    });
+  static DateTime _dateOf(DateTime t) => DateTime(t.year, t.month, t.day);
+
+  /// Bumps when the local day is not the one the page last read for. Cheap;
+  /// safe to call at any time, and does nothing without a library.
+  void checkDay() {
+    final seen = _day;
+    if (seen == null) return;
+    final today = _dateOf(_clock());
+    if (today == seen) return;
+    _day = today;
+    state = state + 1;
   }
 }

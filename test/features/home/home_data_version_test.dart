@@ -8,22 +8,23 @@ import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/features/home/home_data_version.dart';
 import 'package:kanaru/shared/library_browse_refresh.dart';
 
-/// A fixed local time, so the midnight timer is the same at any hour the
-/// suite runs.
+/// A fixed local time, so the day is the same at any hour the suite runs.
 final _noon = DateTime(2026, 10, 24, 12);
 
 void main() {
   late LibraryDatabase db;
   late ProviderContainer container;
   late List<int> seen;
+  var clockNow = _noon;
 
   void start({Duration interval = Duration.zero, bool withDb = true}) {
+    clockNow = _noon;
     db = LibraryDatabase(NativeDatabase.memory());
     container = ProviderContainer(
       overrides: [
         libraryDatabaseProvider.overrideWithValue(withDb ? db : null),
         libraryBrowseRefreshIntervalProvider.overrideWithValue(interval),
-        homeClockProvider.overrideWithValue(() => _noon),
+        homeClockProvider.overrideWithValue(() => clockNow),
       ],
     );
     seen = [];
@@ -135,20 +136,32 @@ void main() {
     expect(seen, [1, 2]);
   });
 
-  pageTest('the day turning over bumps and arms the next midnight', (
+  pageTest('no timer waits for midnight: time passing alone does not bump', (
     tester,
   ) async {
     start();
-    await tester.pump(const Duration(hours: 11, minutes: 59));
+    await tester.pump(const Duration(days: 2));
     expect(seen, isEmpty);
+  });
 
-    await tester.pump(const Duration(minutes: 1));
-    expect(seen, [1]);
+  pageTest('checkDay bumps once when the day changed, not before', (
+    tester,
+  ) async {
+    start();
+    final notifier = container.read(homeDataVersionProvider.notifier);
 
-    // The clock is fixed at noon, so the next one is 12 hours on.
-    await tester.pump(const Duration(hours: 11, minutes: 59));
-    expect(seen, [1]);
-    await tester.pump(const Duration(minutes: 1));
+    notifier.checkDay();
+    clockNow = DateTime(2026, 10, 24, 23, 59);
+    notifier.checkDay();
+    expect(seen, isEmpty, reason: 'still the same day');
+
+    clockNow = DateTime(2026, 10, 25, 0, 1);
+    notifier.checkDay();
+    notifier.checkDay();
+    expect(seen, [1], reason: 'the new day counts once');
+
+    clockNow = DateTime(2026, 10, 26, 8);
+    notifier.checkDay();
     expect(seen, [1, 2]);
   });
 
@@ -178,6 +191,8 @@ void main() {
   ) async {
     start(withDb: false);
     expect(container.read(homeDataVersionProvider), 0);
+    clockNow = DateTime(2026, 10, 30);
+    container.read(homeDataVersionProvider.notifier).checkDay();
     await tester.pump(const Duration(days: 2));
     expect(seen, isEmpty);
   });
