@@ -2160,5 +2160,13 @@
   "homeLoadFailed": "Could not load the list",
   "@homeLoadFailed": { "description": "Shown on a full Home list when a page could not be read" },
   "homeRetry": "Retry",
-  "@homeRetry": { "description": "Text button under the failure sentence of a full Home list that reads the list again" }
+  "@homeRetry": { "description": "Text button under the failure sentence of a full Home list that reads the list again" },
+  "sidePanelClose": "Close side panel",
+  "@sidePanelClose": { "description": "Tooltip and name of the close button of the docked side panel" },
+  "sidePanelShowLyrics": "Show lyrics",
+  "@sidePanelShowLyrics": { "description": "Tooltip of the player bar button that opens the docked side panel on the lyrics tab" },
+  "sidePanelHideLyrics": "Hide lyrics",
+  "@sidePanelHideLyrics": { "description": "Tooltip of the player bar lyrics button while the side panel shows the lyrics" },
+  "lyricsNone": "This song has no lyrics",
+  "@lyricsNone": { "description": "Shown on the lyrics tab of the side panel when the playing song has no lyrics" }
 }

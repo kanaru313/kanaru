@@ -211,6 +211,7 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-09):
 | NP-11 | Hiệu ứng ảnh bìa và viền | Ảnh bìa động theo nhịp, hạt chuyển động theo đỉnh âm, viền sáng theo nhịp ở miniplayer (party mode), glow quanh ảnh bìa (Namida). Chưa làm | P3      | 4     |     |
 | NP-12 | Cử chỉ trên ảnh bìa | Bấm để xem toàn màn hình, nhấn giữ để lưu ảnh ra file người dùng chọn (chỉ ghi file ảnh, không đụng file nhạc), hoặc tới bài trong danh sách hiện tại (Namida). Chưa làm | P3      | 4     |     |
 | NP-13 | Nhấn giữ nút điều khiển | Nhấn giữ Tiếp theo: tốc độ 2× (chỉnh được); Trước: về đầu bài; thời gian hiện tại: tua lùi; tổng thời lượng: tua tới (Namida 6.3.1, 7.1.2). Chưa làm | P3      | 4     |     |
+| NP-14 | Bảng bên gắn vào cửa sổ | Từ cửa sổ rộng 1360 px: bảng 360 px bên phải trang với hai tab "Đang phát" (hàng đợi) và "Lời bài hát", mở/đóng bằng nút hàng đợi và nút lời bài hát ở thanh phát, nhớ trạng thái và tab sau khi mở lại; hẹp hơn thì nút hàng đợi mở ngăn trượt như cũ — ✅ đã làm | P2      | 1     |     |
 
 ## 9. Lời bài hát
 

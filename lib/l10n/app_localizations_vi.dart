@@ -2410,4 +2410,16 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get homeRetry => 'Thử lại';
+
+  @override
+  String get sidePanelClose => 'Đóng bảng bên';
+
+  @override
+  String get sidePanelShowLyrics => 'Hiện lời bài hát';
+
+  @override
+  String get sidePanelHideLyrics => 'Ẩn lời bài hát';
+
+  @override
+  String get lyricsNone => 'Bài hát này không có lời';
 }

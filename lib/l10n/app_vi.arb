@@ -1230,5 +1230,9 @@
   "homeRecentAlbumsEmpty": "Chưa nghe album nào",
   "homeRecentArtistsEmpty": "Chưa nghe nghệ sĩ nào",
   "homeLoadFailed": "Không đọc được danh sách",
-  "homeRetry": "Thử lại"
+  "homeRetry": "Thử lại",
+  "sidePanelClose": "Đóng bảng bên",
+  "sidePanelShowLyrics": "Hiện lời bài hát",
+  "sidePanelHideLyrics": "Ẩn lời bài hát",
+  "lyricsNone": "Bài hát này không có lời"
 }

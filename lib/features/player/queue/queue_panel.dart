@@ -21,10 +21,26 @@ import 'queue_time_left.dart';
 /// are built, so a queue of tens of thousands of tracks stays light. Used in
 /// the side sheet and, on narrow windows, as a page of its own.
 class QueuePanel extends ConsumerStatefulWidget {
-  const QueuePanel({super.key, this.onClose});
+  const QueuePanel({
+    super.key,
+    this.onClose,
+    this.docked = false,
+    this.isActive,
+  }) : assert(!docked || isActive != null, 'a docked panel needs isActive');
 
   /// Shows a close button in the header; `null` on the narrow page.
   final VoidCallback? onClose;
+
+  /// Whether the panel sits in the docked side panel, under a tab header of
+  /// its own: the title row goes, and `Ctrl+F` reaches its filter only while
+  /// the user last acted inside the panel (see [isActive]).
+  final bool docked;
+
+  /// For a [docked] panel: whether the last pointer press was inside the
+  /// side panel, or the keyboard focus moved into it, and the focus has not
+  /// left since. It supersedes the panel's own keyboard focus (which would
+  /// stay true after a click on the page). Required when [docked].
+  final bool Function()? isActive;
 
   @override
   ConsumerState<QueuePanel> createState() => _QueuePanelState();
@@ -59,7 +75,8 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
 
   @override
   bool get filterAvailable =>
-      ref.read(playerServiceProvider).queue.order.isNotEmpty;
+      ref.read(playerServiceProvider).queue.order.isNotEmpty &&
+      (!widget.docked || widget.isActive!());
 
   @override
   void dispose() {
@@ -132,6 +149,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
             onClear: queue.order.length > 1 ? player.clearQueue : null,
             onShowCurrent: _showCurrent,
             onClose: widget.onClose,
+            showTitle: !widget.docked,
           ),
           if (_filter.isOpen)
             Padding(

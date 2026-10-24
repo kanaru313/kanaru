@@ -3835,6 +3835,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get homeRetry;
+
+  /// Tooltip and name of the close button of the docked side panel
+  ///
+  /// In en, this message translates to:
+  /// **'Close side panel'**
+  String get sidePanelClose;
+
+  /// Tooltip of the player bar button that opens the docked side panel on the lyrics tab
+  ///
+  /// In en, this message translates to:
+  /// **'Show lyrics'**
+  String get sidePanelShowLyrics;
+
+  /// Tooltip of the player bar lyrics button while the side panel shows the lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Hide lyrics'**
+  String get sidePanelHideLyrics;
+
+  /// Shown on the lyrics tab of the side panel when the playing song has no lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'This song has no lyrics'**
+  String get lyricsNone;
 }
 
 class _AppLocalizationsDelegate

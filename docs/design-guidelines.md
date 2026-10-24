@@ -39,6 +39,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 | 720 | `_compactBreakpoint` (`features/player/player_bar.dart`) | Below: compact player bar with a seek strip on its top edge. |
 | 720 | `_wideBreakpoint` (`features/player/now_playing/now_playing_screen.dart`) | At or above: Now Playing shows header, body and footer. Below: one column with tabs. |
 | 720 | `maxWidth` (`features/settings/settings_screen.dart`) | Settings content column is at most 720 px wide. |
+| 1360 | `sidePanelBreakpoint` (`features/player/side_panel/side_panel_layout.dart`) | At or above: the side panel can dock beside the page (and the player bar shows the lyrics button). Below: the queue button opens the overlay sheet. |
 | 480 × 720 | window minimum (`linux/runner/my_application.cc`, `desktop_window.dart`) | Smallest window. Default is 1280 × 720. |
 
 ## Shell layout
@@ -46,6 +47,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 | Width | Sidebar | Top bar | Player bar |
 |---|---|---|---|
 | >= 720 px | Column: 240 px, or 72 px icon rail after collapse | 64 px; back, forward, search, Settings | 96 px, full width under the page |
+| >= 1360 px | As above | As above | As above, with a lyrics button; the docked side panel (360 px) may sit right of the page |
 | < 720 px | Drawer, opened from the top bar | 64 px; back, search, Settings | 96 px, compact layout with a seek strip |
 
 The banner `PlaybackUnavailableBanner` sits under the top bar when the audio engine is off (library-only mode). The page fills the rest.
@@ -66,7 +68,9 @@ The banner `PlaybackUnavailableBanner` sits under the top bar when the audio eng
 - Seek bar: a straight track like the volume slider: played part in primary, a gap, an upright pill thumb, a gap, the rest in secondaryContainer. It does not animate while playing; it follows playback in pixel-sized steps (250/500/1000 ms).
 - Volume: hover popup that hides itself. Scroll wheel changes volume (PLAY-04).
 - Sleep timer (PLAY-14): moon button left of volume. Outlined while off; filled in primary with a short label (`m:ss`, `h:mm:ss`, or Track/Album/Queue) while on, dimmed while counting is held. The label shows only from a 1280 px window; the tooltip always has the full text. The button is left out below about 900 px (the controls column keeps its width); the compact layout shows the icon only, with no label. When the moon appears, the controls column steps down by 96 px (48 px per side) to make room. The menu (`MenuAnchor`) lists presets, Custom… and the end-of modes; while on it adds a header, +/- 5 minutes, pause or resume counting, and cancel.
-- Icon buttons carry tooltips.
+- Lyrics button (before the queue button): only from 1360 px, where the side panel can dock. It shows or hides the panel on its Lyrics tab, is selected while the panel shows that tab, and never reads lyrics itself. From 1360 px the sleep label needs 56 px more side width before it shows, so it is never cut by the extra button.
+- Queue button: closes the sheet while it is open; from 1360 px it toggles the docked panel on its Now playing tab (selected only while that tab shows; a panel hidden by a narrow window never marks it); otherwise it opens the sheet. Now Playing's own queue buttons always open the sheet.
+- Icon buttons carry tooltips; the lyrics button and the panel's close button also have explicit accessible names.
 
 ## Now Playing overlay
 
@@ -96,7 +100,15 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 - Swipe: a finger or stylus swiping a row from the end removes it (a red strip with a trash icon shows behind it). A mouse or trackpad never removes by dragging. The swipe is always built, only its confirmation depends on the pointer that went down, so the row tree does not change under a gesture. A swiped row renders empty and is removed from the queue once no pointer has touched the list for 250 ms (all swiped rows together), because removing a row remounts the rows after it and would drop a swipe in progress. The playing row has no swipe and there is no undo yet.
 - The current row uses the primary color (`queue_now_playing_tile.dart`, on a tinted card, with an equalizer glyph while audio plays); tapping it does nothing.
 - A search button in the header opens a filter box under it (`Ctrl+F` reaches it while the sheet is open, Esc closes the box first). Matches are the real rows, best match first, without drag handle or remove button; tapping one jumps to it and leaves the queue as it is. Closing the sheet drops the filter.
-- Opens and closes in 400 ms.
+- Opens and closes in 400 ms. From 1360 px the queue button docks the side panel instead (see Side panel); the sheet is for narrower windows and Now Playing.
+
+## Side panel
+
+- An optional panel docked right of the page, from 1360 px (`sidePanelBreakpoint`): 360 px plus a 1 px divider, solid `surfaceContainerLow`, under the top bar (window buttons stay reachable) and above the player bar. At 1360 px with the expanded sidebar the page keeps 758 px, above the compact header width (640) and the settings column (720). No scrim: the page stays usable.
+- Shown when `display.sidePanelOpen`, the window is wide enough and the player bar is shown. Open state and tab (`display.sidePanelTab`) are remembered across restarts. Narrower than 1360 px it hides without changing the setting and the queue button opens the sheet; widening shows it again. A sheet that is open stays a sheet until closed. Show and hide are instant (a width animation would lay the page out again every frame).
+- Header: tabs "Now playing" and "Lyrics" (`TabBar.secondary`, synced with the setting; a tab press writes it) and a close button. Closing from the keyboard returns focus to where it was before it entered the panel; closing with the mouse leaves focus alone.
+- Now playing tab: the queue panel without its title row (header row 2, sections as in the sheet). Lyrics tab: the lyrics view of the playing track; nothing while they load; "This song has no lyrics" only when loaded and none; blank while Now Playing is open (the shell stays built under it). The lyrics are read only while the tab is shown. Switching tabs rebuilds the queue panel, so going to Lyrics and back resets its filter, scroll position and the expanded Earlier section (accepted).
+- Ctrl+F reaches the docked queue's filter only when the user last acted in the side panel: the keyboard focus moved into it, or the last pointer press hit the panel itself (not a menu, dialog or the queue sheet drawn over it; presses while Now Playing is open are ignored), and the keyboard focus has not moved to a control outside since (a click does not move keyboard focus, so a press on the page ends it). Otherwise it reaches the page as before. Esc in the box closes only the box. Closing the panel with the mouse leaves focus where it is.
 
 ## Library screens
 
@@ -238,8 +250,8 @@ Reduced motion comes from the platform setting, or from Settings → Appearance 
 | Left, Right | Seek minus or plus 5 s | App-wide, same exceptions |
 | Ctrl+S | Toggle shuffle | App-wide |
 | Ctrl+R | Cycle repeat | App-wide |
-| Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer |
-| Ctrl+F | Focus the top bar search field and select its text | App-wide; a page filter box takes it first, and pressing it again inside that box goes to the top bar; nothing while a dialog, menu or Now Playing is open |
+| Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer (not the docked side panel) |
+| Ctrl+F | Focus the top bar search field and select its text | App-wide; a page filter box takes it first, and pressing it again inside that box goes to the top bar; nothing while a dialog, menu or Now Playing is open. The docked queue's filter counts as a page filter only while the user last acted in the side panel (see Side panel) |
 | / | Same as Ctrl+F, never opens a page filter | Only when no text input has focus; nothing while a dialog, menu or Now Playing is open |
 | Mouse back, forward | History back, forward | Anywhere |
 

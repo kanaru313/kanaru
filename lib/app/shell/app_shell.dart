@@ -4,12 +4,15 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/indexer_providers.dart';
 import '../../core/queue_history/queue_history_recorder.dart';
+import '../../core/settings/settings_provider.dart';
 import '../../features/library/scan_result_snack_bar.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../features/player/now_playing/now_playing_overlay.dart';
 import '../../features/player/now_playing/now_playing_title_bar.dart';
 import '../../features/player/player_bar.dart';
 import '../../features/player/queue/queue_sheet_host.dart';
+import '../../features/player/side_panel/player_side_panel.dart';
+import '../../features/player/side_panel/side_panel_layout.dart';
 import 'app_destination.dart';
 import 'navigation_history.dart';
 import 'playback_unavailable_banner.dart';
@@ -118,7 +121,13 @@ class AppShell extends ConsumerWidget {
                           children: [
                             const TopBar(),
                             const PlaybackUnavailableBanner(),
-                            page,
+                            // The docked side panel sits right of the page, under
+                            // the top bar and above the player bar.
+                            Expanded(
+                              child: Row(
+                                children: [page, const _DockedSidePanelSlot()],
+                              ),
+                            ),
                           ],
                         ),
                         const Align(
@@ -205,6 +214,32 @@ class _CollapsibleSidebar extends StatelessWidget {
           const VerticalDivider(width: 1),
         ],
       ),
+    );
+  }
+}
+
+/// Where the docked side panel goes, right of the page: the panel with a
+/// divider when it is open, the window is wide enough and the player bar is
+/// shown; nothing otherwise. Appears and disappears at once: animating the
+/// width would lay out the page again every frame. Watches only what decides
+/// that, so toggling rebuilds this slot and not the top bar.
+class _DockedSidePanelSlot extends ConsumerWidget {
+  const _DockedSidePanelSlot();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final open = ref.watch(
+      settingsProvider.select((s) => s.display.sidePanelOpen),
+    );
+    final barShown = ref.watch(playerBarVisibleProvider);
+    if (!open || !barShown || !sidePanelAvailable(context)) {
+      return const SizedBox.shrink();
+    }
+    return const Row(
+      children: [
+        VerticalDivider(width: 1),
+        SizedBox(width: sidePanelWidth, child: PlayerSidePanel()),
+      ],
     );
   }
 }

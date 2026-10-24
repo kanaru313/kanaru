@@ -13,6 +13,8 @@ import 'playback_controls.dart';
 import 'queue/queue_button.dart';
 import 'seek_bar.dart';
 import 'seek_strip.dart';
+import 'side_panel/lyrics_panel_button.dart';
+import 'side_panel/side_panel_layout.dart';
 import 'sleep_timer/sleep_timer_button.dart';
 import 'volume_button.dart';
 
@@ -42,6 +44,12 @@ const _centerMinWidth = 272.0;
 
 /// Width of the right side from which the sleep timer label fits as well.
 const _sleepLabelMinSide = 296.0;
+
+/// What the lyrics button, there only where the side panel can dock, adds to
+/// the width the sleep label needs: its own width plus some room, since a
+/// running timer's label ("45:00") measures a little more than the 56 px the
+/// threshold above counts on.
+const _lyricsButtonExtra = 56.0;
 
 /// Space between the bar's three parts.
 const _gap = 8.0;
@@ -155,6 +163,9 @@ class _OneRow extends StatelessWidget {
           0.0,
           _centerMaxWidth,
         );
+        final sleepLabelMinSide =
+            _sleepLabelMinSide +
+            (sidePanelAvailable(context) ? _lyricsButtonExtra : 0);
         // A tick dirties this builder; with a boundary under it, the title
         // and buttons were not painted again in the tests.
         return RepaintBoundary(
@@ -183,11 +194,12 @@ class _OneRow extends StatelessWidget {
                           // cut, not overflowed.
                           Flexible(
                             child: SleepTimerButton(
-                              showLabel: side.maxWidth >= _sleepLabelMinSide,
+                              showLabel: side.maxWidth >= sleepLabelMinSide,
                             ),
                           ),
                         const VolumeButton(),
-                        const QueueButton(),
+                        const LyricsPanelButton(),
+                        const QueueButton(docks: true),
                       ],
                     ),
                   ),

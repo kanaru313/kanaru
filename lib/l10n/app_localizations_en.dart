@@ -2595,4 +2595,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeRetry => 'Retry';
+
+  @override
+  String get sidePanelClose => 'Close side panel';
+
+  @override
+  String get sidePanelShowLyrics => 'Show lyrics';
+
+  @override
+  String get sidePanelHideLyrics => 'Hide lyrics';
+
+  @override
+  String get lyricsNone => 'This song has no lyrics';
 }

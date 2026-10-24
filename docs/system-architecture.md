@@ -237,7 +237,7 @@ The Dart `PlayQueue` is the source of truth. The engine holds at most two entrie
 
 ```mermaid
 flowchart LR
-    UI["PlayerBar, Now Playing, Queue sheet, shortcuts"] --> PS["PlayerService (Notifier of PlayerState)"]
+    UI["PlayerBar, Now Playing, Queue sheet, docked side panel, shortcuts"] --> PS["PlayerService (Notifier of PlayerState)"]
     PS --> Parts["part mixins: transport, queue, settings, session, audio output"]
     PS --> PQ["PlayQueue: original order, index order, shuffle, repeat"]
     PS --> AB["AudioBackend interface"]
