@@ -1,18 +1,18 @@
 import 'package:material_ui/material_ui.dart';
 
 /// Page transition for every pushed screen (album, artist, …): the new page
-/// slides up a little while fading in, and slides back down while fading out
-/// when popped. The page below stays still.
+/// slides a little rightward from the left edge while fading in, and slides
+/// back to the left while fading out when popped. The page below stays still.
 ///
 /// While it moves, the page is painted on an opaque surface so the one below
 /// never shows through. Once settled the surface goes away, so ink drawn by
 /// the shell's [Material] stays visible. With reduced motion on, it only
 /// fades.
-class SlideUpPageTransitionsBuilder extends PageTransitionsBuilder {
-  const SlideUpPageTransitionsBuilder();
+class SlideFromLeftPageTransitionsBuilder extends PageTransitionsBuilder {
+  const SlideFromLeftPageTransitionsBuilder();
 
-  /// How far below its place the page starts, as a share of its height.
-  static const _startOffset = Offset(0, 0.08);
+  /// How far left of its place the page starts, as a share of its width.
+  static const _startOffset = Offset(-0.08, 0);
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 300);
@@ -28,21 +28,26 @@ class SlideUpPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    return _SlideUpPageTransition(animation: animation, child: child);
+    return _SlideFromLeftPageTransition(animation: animation, child: child);
   }
 }
 
-class _SlideUpPageTransition extends StatefulWidget {
-  const _SlideUpPageTransition({required this.animation, required this.child});
+class _SlideFromLeftPageTransition extends StatefulWidget {
+  const _SlideFromLeftPageTransition({
+    required this.animation,
+    required this.child,
+  });
 
   final Animation<double> animation;
   final Widget child;
 
   @override
-  State<_SlideUpPageTransition> createState() => _SlideUpPageTransitionState();
+  State<_SlideFromLeftPageTransition> createState() =>
+      _SlideFromLeftPageTransitionState();
 }
 
-class _SlideUpPageTransitionState extends State<_SlideUpPageTransition> {
+class _SlideFromLeftPageTransitionState
+    extends State<_SlideFromLeftPageTransition> {
   late CurvedAnimation _curved = _curve(widget.animation);
 
   CurvedAnimation _curve(Animation<double> parent) => CurvedAnimation(
@@ -63,7 +68,7 @@ class _SlideUpPageTransitionState extends State<_SlideUpPageTransition> {
   void _onStatus(AnimationStatus status) => setState(() {});
 
   @override
-  void didUpdateWidget(_SlideUpPageTransition oldWidget) {
+  void didUpdateWidget(_SlideFromLeftPageTransition oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.animation != oldWidget.animation) {
       _release();
@@ -93,7 +98,7 @@ class _SlideUpPageTransitionState extends State<_SlideUpPageTransition> {
           ? page
           : SlideTransition(
               position: Tween(
-                begin: SlideUpPageTransitionsBuilder._startOffset,
+                begin: SlideFromLeftPageTransitionsBuilder._startOffset,
                 end: Offset.zero,
               ).animate(_curved),
               child: page,

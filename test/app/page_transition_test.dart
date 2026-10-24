@@ -49,14 +49,16 @@ void main() {
       .first
       .color;
 
-  testWidgets('a pushed page slides up and fades in', (tester) async {
+  testWidgets('a pushed page slides in from the left and fades in', (
+    tester,
+  ) async {
     await pushDetail(tester);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     final slide = transitionsOfDetail<SlideTransition>(tester).single;
-    expect(slide.position.value.dx, 0);
-    expect(slide.position.value.dy, inExclusiveRange(0, 0.08));
+    expect(slide.position.value.dx, inExclusiveRange(-0.08, 0));
+    expect(slide.position.value.dy, 0);
     final fade = transitionsOfDetail<FadeTransition>(tester).single;
     expect(fade.opacity.value, inExclusiveRange(0, 1));
     // The page below does not move nor fade.
@@ -85,7 +87,9 @@ void main() {
     expect(tester.hasRunningAnimations, isFalse);
   });
 
-  testWidgets('a popped page slides down and fades out', (tester) async {
+  testWidgets('a popped page slides back to the left and fades out', (
+    tester,
+  ) async {
     await pushDetail(tester);
     await tester.pumpAndSettle();
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
@@ -93,7 +97,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     final slide = transitionsOfDetail<SlideTransition>(tester).single;
-    expect(slide.position.value.dy, inExclusiveRange(0, 0.08));
+    expect(slide.position.value.dx, inExclusiveRange(-0.08, 0));
     // Gone once the 220 ms have run (removed on the next frame).
     await tester.pump(const Duration(milliseconds: 120));
     await tester.pump(const Duration(milliseconds: 20));

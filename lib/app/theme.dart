@@ -56,7 +56,7 @@ ThemeData _buildTheme(
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
         for (final platform in TargetPlatform.values)
-          platform: const SlideUpPageTransitionsBuilder(),
+          platform: const SlideFromLeftPageTransitionsBuilder(),
       },
     ),
   );
