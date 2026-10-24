@@ -13,8 +13,8 @@ const albumSidePaneWidth = 320.0;
 const albumSidePaneMinPageWidth = 840.0;
 
 /// Left column of an album page in a wide window: the cover the width of the
-/// pane, fading into the page at its foot, then the title, artist, year and
-/// the Play buttons. It stays put while the tracks beside it scroll, and
+/// pane, fading into the page at its foot (and, over a narrow band, to
+/// half see-through at its right edge), then the title, artist, year and the Play buttons. It stays put while the tracks beside it scroll, and
 /// scrolls on its own when the window is too short for it.
 class AlbumSidePane extends StatelessWidget {
   const AlbumSidePane({
@@ -44,23 +44,19 @@ class AlbumSidePane extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ShaderMask(
-              blendMode: BlendMode.dstIn,
-              shaderCallback: (bounds) => const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0, 0.7, 1],
-                colors: [
-                  Color(0xFFFFFFFF),
-                  Color(0xFFFFFFFF),
-                  Color(0x00FFFFFF),
-                ],
-              ).createShader(bounds),
-              child: AlbumArtwork(
-                albumKey: albumKey,
-                coverKey: album.coverKey,
-                size: albumSidePaneWidth,
-                radius: 0,
+            _FadeOut(
+              end: Alignment.bottomCenter,
+              from: 0.7,
+              child: _FadeOut(
+                end: Alignment.centerRight,
+                from: 0.95,
+                edgeOpacity: 0.5,
+                child: AlbumArtwork(
+                  albumKey: albumKey,
+                  coverKey: album.coverKey,
+                  size: albumSidePaneWidth,
+                  radius: 0,
+                ),
               ),
             ),
             Padding(
@@ -79,4 +75,37 @@ class AlbumSidePane extends StatelessWidget {
       ),
     );
   }
+}
+
+/// [child] fully shown from the opposite edge up to [from] (a share of the
+/// way towards [end]), then fading out to [edgeOpacity] at [end] (fully
+/// transparent by default), so the cover melts into the page there.
+class _FadeOut extends StatelessWidget {
+  const _FadeOut({
+    required this.end,
+    required this.from,
+    required this.child,
+    this.edgeOpacity = 0,
+  });
+
+  final Alignment end;
+  final double from;
+  final double edgeOpacity;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ShaderMask(
+    blendMode: BlendMode.dstIn,
+    shaderCallback: (bounds) => LinearGradient(
+      begin: -end,
+      end: end,
+      stops: [0, from, 1],
+      colors: [
+        const Color(0xFFFFFFFF),
+        const Color(0xFFFFFFFF),
+        const Color(0xFFFFFFFF).withValues(alpha: edgeOpacity),
+      ],
+    ).createShader(bounds),
+    child: child,
+  );
 }
