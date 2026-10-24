@@ -188,6 +188,7 @@ TypoCorrection? correctRequest(
     },
     years: q.years,
     formats: q.formats,
+    languages: q.languages,
   );
   if (replacements.isEmpty) return null;
   return TypoCorrection(

@@ -1,6 +1,6 @@
-/// Reads the search syntax: `artist:`, `album:`, `genre:`, `year:` and
-/// `format:` prefixes, values with spaces in double quotes. Anything that
-/// does not parse as a filter stays plain text. Pure Dart.
+/// Reads the search syntax: `artist:`, `album:`, `genre:`, `year:`,
+/// `format:` and `language:` prefixes, values with spaces in double quotes.
+/// Anything that does not parse as a filter stays plain text. Pure Dart.
 library;
 
 import '../database/search_terms.dart';
@@ -103,6 +103,7 @@ ParsedSearchQuery parseSearchQuery(String raw) {
   final words = <_Word>[];
   final years = <YearFilter>[];
   final formats = <String>{};
+  final languages = <String>[];
 
   void addText(QueryField? field, String text) {
     for (final term in searchWords(text)) {
@@ -129,6 +130,9 @@ ParsedSearchQuery parseSearchQuery(String raw) {
       years.add(_parseYear(value)!);
     } else if (prefix == 'format' && _parseFormat(value) != null) {
       formats.add(_parseFormat(value)!);
+    } else if (prefix == 'language' && value.trim().isNotEmpty) {
+      final language = value.trim();
+      if (!languages.contains(language)) languages.add(language);
     } else {
       addText(null, token.text);
     }
@@ -154,5 +158,6 @@ ParsedSearchQuery parseSearchQuery(String raw) {
     }),
     years: List.unmodifiable(years),
     formats: Set.unmodifiable(formats),
+    languages: List.unmodifiable(languages),
   );
 }

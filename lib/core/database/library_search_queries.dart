@@ -9,6 +9,7 @@ import 'library_browse_queries.dart';
 import 'library_database.dart';
 import '../search/search_fields.dart';
 import '../search/search_query.dart';
+import 'search_language_values.dart';
 import 'search_song_sql.dart';
 
 final _log = Logger('library.search');
@@ -57,19 +58,32 @@ extension LibrarySearchQueries on LibraryDatabase {
   /// comment ([extraIds], found with `SearchFileTextIndex`); the two are not
   /// mixed. Tag matches come first. Nothing to search for gives no songs.
   ///
+  /// `language:` values match the raw tags in [distinctLanguages] (read from
+  /// the library when not given; callers that search often pass a cached
+  /// list). No matching tag gives no songs.
+  ///
   /// A corrupt index (for example after a SQLite upgrade changed how text is
   /// split) is rebuilt once per database and the search retried.
   Future<SongSearchResult> searchSongsFor(
     SearchRequest request, {
     List<int> extraIds = const [],
+    List<String>? distinctLanguages,
     int limit = searchSongLimit,
   }) async {
     assert(limit > 0, 'limit must be positive');
+    final wanted = request.query.languages;
+    final languageValues = wanted.isEmpty
+        ? null
+        : matchingLanguageValues(
+            distinctLanguages ?? await loadDistinctLanguages(this),
+            wanted,
+          );
     final built = buildSongSearchSql(
       request,
       hasExtra: extraIds.isNotEmpty,
       limit: limit,
       extraIdsJson: jsonEncode(extraIds),
+      languageValues: languageValues,
     );
     if (built == null) return SongSearchResult.empty;
     try {

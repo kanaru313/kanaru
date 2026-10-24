@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/library_search_queries.dart';
 import '../../core/database/library_startup.dart';
+import '../../core/database/search_language_values.dart';
 import '../../core/database/search_file_text_index.dart';
 import '../../core/database/throttled_tracks_query.dart';
 import '../../core/search/search_fields.dart';
@@ -42,6 +44,25 @@ final searchFileTextIndexProvider =
       );
     });
 
+/// The distinct raw language tags of the library, reloaded (throttled) while
+/// it changes. Only watched by searches that use `language:`, so typing other
+/// queries never reads it, and typing more of a query reuses the cached list.
+/// A reload that finds the same tags emits nothing, so the song searches
+/// watching it are not rebuilt.
+final searchLanguagesProvider = StreamProvider.autoDispose<List<String>>((ref) {
+  final db = ref.watch(libraryDatabaseProvider);
+  if (db == null) return Stream.value(const []);
+  return throttledTracksQuery(
+    db,
+    () => loadDistinctLanguages(db),
+    interval: ref.watch(libraryBrowseRefreshIntervalProvider),
+  ).distinct(_sameTags);
+});
+
+/// Whether [a] and [b] hold the same tags, whatever their order.
+bool _sameTags(List<String> a, List<String> b) =>
+    listEquals([...a]..sort(), [...b]..sort());
+
 /// The best songs for a request. Reloaded (throttled) while the library
 /// changes. Stays loading until the file text index is ready when the request
 /// looks at file names or comments.
@@ -66,9 +87,24 @@ final searchSongsProvider = StreamProvider.autoDispose
           comment: request.fields.contains(SearchField.comment),
         );
       }
+      List<String>? languages;
+      if (request.query.languages.isNotEmpty) {
+        final distinct = ref.watch(searchLanguagesProvider);
+        languages = distinct.value;
+        if (languages == null) {
+          if (distinct.hasError) {
+            return Stream.error(distinct.error!, distinct.stackTrace);
+          }
+          return const Stream.empty();
+        }
+      }
       return throttledTracksQuery(
         db,
-        () => db.searchSongsFor(request, extraIds: extraIds),
+        () => db.searchSongsFor(
+          request,
+          extraIds: extraIds,
+          distinctLanguages: languages,
+        ),
         interval: ref.watch(libraryBrowseRefreshIntervalProvider),
       );
     });

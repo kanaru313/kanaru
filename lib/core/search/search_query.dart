@@ -2,6 +2,7 @@
 /// per-field words and filters, plus the fields to look at. Pure Dart.
 library;
 
+import '../database/language_tags.dart' show languageKey;
 import 'search_fields.dart';
 
 /// A song field a `field:value` prefix can narrow.
@@ -40,6 +41,7 @@ class ParsedSearchQuery {
     this.fieldTerms = const {},
     this.years = const [],
     this.formats = const {},
+    this.languages = const [],
   });
 
   /// Words without a prefix: matched in the selected fields.
@@ -54,17 +56,23 @@ class ParsedSearchQuery {
   /// File extensions from `format:` (lower case); a song matches any.
   final Set<String> formats;
 
+  /// Values from `language:`, trimmed as typed; a song matches any. Compared
+  /// by language key, so `vi`, `vie` and `Vietnamese` are the same.
+  final List<String> languages;
+
   /// Nothing to search for: no word and no filter.
   bool get isEmpty =>
       freeTerms.isEmpty &&
       fieldTerms.values.every((t) => t.isEmpty) &&
       years.isEmpty &&
-      formats.isEmpty;
+      formats.isEmpty &&
+      languages.isEmpty;
 
   /// Whether the query has a filter that is not free text.
   bool get hasFilters =>
       years.isNotEmpty ||
       formats.isNotEmpty ||
+      languages.isNotEmpty ||
       fieldTerms.values.any((t) => t.isNotEmpty);
 
   /// Words after [field]'s prefix; empty when there are none.
@@ -90,6 +98,8 @@ class SearchRequest {
     ];
     final years = {for (final y in query.years) y.key}.toList()..sort();
     final formats = query.formats.toList()..sort();
+    final languages = {for (final l in query.languages) languageKey(l)}.toList()
+      ..sort();
     return [
       'f:${fieldNames.join(',')}',
       't:${query.freeTerms.join(' ')}',
@@ -97,6 +107,7 @@ class SearchRequest {
         '${f.name.substring(0, 2)}:${query.termsFor(f).join(' ')}',
       'y:${years.join(',')}',
       'x:${formats.join(',')}',
+      'l:${languages.join(',')}',
     ].join('|');
   }
 

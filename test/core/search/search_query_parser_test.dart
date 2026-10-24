@@ -134,6 +134,49 @@ void main() {
     });
   });
 
+  group('language', () {
+    test('prefix is case-insensitive and the value is trimmed', () {
+      expect(parseSearchQuery('language:vi').languages, ['vi']);
+      expect(parseSearchQuery('LANGUAGE:EN').languages, ['EN']);
+      expect(parseSearchQuery('language:" Ti\u1ebfng Vi\u1ec7t "').languages, [
+        'Ti\u1ebfng Vi\u1ec7t',
+      ]);
+    });
+
+    test('several values are kept once each', () {
+      expect(
+        parseSearchQuery('language:vi language:en language:vi').languages,
+        ['vi', 'en'],
+      );
+    });
+
+    test('empty value is plain text', () {
+      final q = parseSearchQuery('language:');
+      expect(q.languages, isEmpty);
+      expect(q.freeTerms, ['language']);
+      final blank = parseSearchQuery('language:" "');
+      expect(blank.languages, isEmpty);
+    });
+
+    test('counts as a filter and not as an empty query', () {
+      final q = parseSearchQuery('language:vi');
+      expect(q.isEmpty, isFalse);
+      expect(q.hasFilters, isTrue);
+      expect(q.freeTerms, isEmpty);
+    });
+
+    test('request key tells languages apart, ignoring spelling of one', () {
+      String key(String raw) => SearchRequest(
+        query: parseSearchQuery(raw),
+        fields: defaultSearchFields,
+      ).key;
+      expect(key('language:vi'), isNot(key('language:en')));
+      expect(key('language:vi'), key('language:vie'));
+      expect(key('language:vi language:en'), key('language:eng language:vi'));
+      expect(key('x'), isNot(key('x language:vi')));
+    });
+  });
+
   group('format', () {
     test('lower-cases and accepts audio extensions', () {
       expect(parseSearchQuery('format:FLAC').formats, {'flac'});

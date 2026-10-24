@@ -29,6 +29,7 @@ void main() {
     String? artist,
     String? album,
     String? genre,
+    String? language,
     int? year,
     String ext = 'flac',
     String? name,
@@ -43,6 +44,7 @@ void main() {
       artist: Value(artist),
       album: Value(album),
       genre: Value(genre),
+      language: Value(language),
       year: Value(year),
       comment: Value(comment),
       addedAt: 100,
@@ -104,6 +106,79 @@ void main() {
     expect(await titles('year:2010-2012'), ['Y2010', 'Y2012']);
     expect(await titles('year:>=2012'), unorderedEquals(['Y2012', 'Y2020']));
     expect(await titles('year:>2000 year:<2015'), ['Y2010', 'Y2012']);
+  });
+
+  group('language:', () {
+    test('matches by language key across spellings and lists', () async {
+      await add('Code2', language: 'vi');
+      await add('Code3', language: 'vie');
+      await add('List', language: 'Vietnamese; English');
+      await add('English', language: 'eng');
+      await add('Untagged');
+      expect(await titles('language:vi'), ['Code2', 'Code3', 'List']);
+      expect(await titles('language:en'), ['English', 'List']);
+    });
+
+    test('combines with other filters and words', () async {
+      await add('Old', language: 'vi', year: 2005);
+      await add('New', language: 'vie', year: 2015);
+      await add('Other', language: 'en', year: 2020);
+      expect(await titles('language:vi year:>2010'), ['New']);
+      await add('Hit New', language: 'vi', year: 2020);
+      expect(await titles('hit language:vi'), ['Hit New']);
+    });
+
+    test('several values are OR', () async {
+      await add('V', language: 'vi');
+      await add('E', language: 'en');
+      await add('J', language: 'ja');
+      expect(await titles('language:vi language:eng'), ['E', 'V']);
+    });
+
+    test('untagged songs never match', () async {
+      await add('Untagged');
+      await add('Tagged', language: 'vi');
+      expect(await titles('language:vi'), ['Tagged']);
+      expect(await titles('language:und'), isEmpty);
+    });
+
+    test('no stored tag matching gives no songs', () async {
+      await add('A', language: 'vi');
+      final result = await db.searchSongsFor(request('language:ja'));
+      expect(result.songs, isEmpty);
+      expect(result.total, 0);
+      expect(await titles('a language:ja'), isEmpty);
+    });
+
+    test(
+      'a given distinct list is used instead of reading the library',
+      () async {
+        await add('A', language: 'vi');
+        final result = await db.searchSongsFor(
+          request('language:vi'),
+          distinctLanguages: const ['vi'],
+        );
+        expect(result.total, 1);
+        final none = await db.searchSongsFor(
+          request('language:vi'),
+          distinctLanguages: const [],
+        );
+        expect(none.total, 0);
+      },
+    );
+
+    test('works with file name text and counts after the filter', () async {
+      await add('Untitled', language: 'vi', name: 'rain-live');
+      await add('Other', language: 'en', name: 'rain-demo');
+      final index = await SearchFileTextIndex.load(db);
+      final found = index.match(['rain'], fileName: true, comment: false);
+      final result = await db.searchSongsFor(
+        request('rain language:vi', {SearchField.fileName}),
+        extraIds: found,
+      );
+      expect([for (final s in result.songs) s.title], ['Untitled']);
+      expect(result.total, 1);
+    });
   });
 
   test('format: ignores case of the extension and ORs formats', () async {

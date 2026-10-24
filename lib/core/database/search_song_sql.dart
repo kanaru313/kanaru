@@ -2,6 +2,8 @@
 /// so the text and the variables can be tested alone.
 library;
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart' show Variable;
 
 import '../search/search_fields.dart';
@@ -31,8 +33,9 @@ const _bm25 = 'bm25(track_search, 20.0, 2.0, 1.5, 1.0, 0.5)';
 /// The final SQL and its variables: `?1` the full-text query, `?2` the JSON
 /// array of extra ids, `?3` the limit, then (only when extra ids are given and
 /// there are field terms) `?4` the field-only full-text query, then the
-/// filter values. Selected columns are [songColumns] plus
-/// `total`, the count of all matches before the limit.
+/// filter values (the `language:` list last, as a JSON array of raw tags).
+/// Selected columns are [songColumns] plus `total`, the count of all matches
+/// before the limit.
 class SongSearchSql {
   const SongSearchSql(this.sql, this.variables);
 
@@ -77,14 +80,24 @@ String? fieldTermsMatch(ParsedSearchQuery query) {
 /// [hasExtra]: ids that matched by file name or comment are bound to `?2`
 /// (see [SongSearchSql]); they rank after tag matches and still have to
 /// satisfy the `artist:`, `album:` and `genre:` terms and the filters.
+///
+/// [languageValues]: the raw `tracks.language` tags that satisfy the
+/// request's `language:` values (see `matchingLanguageValues`); an empty or
+/// missing list with `language:` in the query gives null.
 SongSearchSql? buildSongSearchSql(
   SearchRequest request, {
   required bool hasExtra,
   required int limit,
   String extraIdsJson = '[]',
+  List<String>? languageValues,
 }) {
   final query = request.query;
   if (query.isEmpty) return null;
+  // A `language:` filter that no stored tag satisfies selects nothing.
+  final languages = query.languages.isEmpty ? null : languageValues;
+  if (query.languages.isNotEmpty && (languages == null || languages.isEmpty)) {
+    return null;
+  }
   final free = freeTextMatch(request);
   final fields = fieldTermsMatch(query);
   // Free text with no tag column to look in can only match through the
@@ -121,7 +134,7 @@ SongSearchSql? buildSongSearchSql(
 
   // `?4` exists only when the extra ids are checked against field terms.
   final fieldsForExtra = hasExtra ? fields : null;
-  final filter = _filters(query, fieldsForExtra == null ? 4 : 5);
+  final filter = _filters(query, fieldsForExtra == null ? 4 : 5, languages);
   final where = filter.clauses.isEmpty
       ? ''
       : ' WHERE ${filter.clauses.join(' AND ')}';
@@ -158,6 +171,7 @@ SongSearchSql? buildSongSearchSql(
 ({List<String> clauses, List<Variable<Object>> variables}) _filters(
   ParsedSearchQuery query,
   int first,
+  List<String>? languageValues,
 ) {
   final clauses = <String>[];
   final variables = <Variable<Object>>[];
@@ -181,6 +195,11 @@ SongSearchSql? buildSongSearchSql(
       variables.add(Variable.withString('%.$format'));
     }
     clauses.add('(${parts.join(' OR ')})');
+  }
+  if (languageValues != null) {
+    // NULL never satisfies IN, so untagged songs never match.
+    clauses.add('language IN (SELECT value FROM json_each(?${next()}))');
+    variables.add(Variable.withString(jsonEncode(languageValues)));
   }
   return (clauses: clauses, variables: variables);
 }

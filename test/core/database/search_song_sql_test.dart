@@ -8,6 +8,7 @@ SearchRequest _request({
   Map<QueryField, List<String>> fields = const {},
   List<YearFilter> years = const [],
   Set<String> formats = const {},
+  List<String> languages = const [],
   Set<SearchField>? searched,
 }) => SearchRequest(
   query: ParsedSearchQuery(
@@ -15,6 +16,7 @@ SearchRequest _request({
     fieldTerms: fields,
     years: years,
     formats: formats,
+    languages: languages,
   ),
   fields: searched ?? defaultSearchFields,
 );
@@ -161,6 +163,43 @@ void main() {
       )!;
       expect(sql.sql, isNot(contains('MATCH ?1')));
       expect(sql.sql, contains('MATCH ?4'));
+    });
+
+    test('every filter numbers its variables after the field terms', () {
+      final sql = buildSongSearchSql(
+        _request(
+          free: ['son'],
+          fields: {
+            QueryField.artist: ['tung'],
+          },
+          years: const [YearFilter(min: 2010, max: 2015)],
+          formats: {'mp3', 'flac'},
+          languages: ['vi'],
+        ),
+        hasExtra: true,
+        limit: 200,
+        extraIdsJson: '[7,9]',
+        languageValues: ['vie', 'vi'],
+      )!;
+
+      expect(sql.sql, contains('track_search MATCH ?1'));
+      expect(sql.sql, contains('json_each(?2)'));
+      expect(sql.sql, contains('LIMIT ?3'));
+      expect(sql.sql, contains('MATCH ?4'));
+      expect(sql.sql, contains('year >= ?5 AND year <= ?6'));
+      expect(sql.sql, contains('lower(path) LIKE ?7 OR lower(path) LIKE ?8'));
+      expect(sql.sql, contains('json_each(?9)'));
+      expect(sql.variables.map((v) => v.value).toList(), [
+        '("son"*) AND (artist_search : ("tung"*))',
+        '[7,9]',
+        200,
+        'artist_search : ("tung"*)',
+        2010,
+        2015,
+        '%.flac',
+        '%.mp3',
+        '["vie","vi"]',
+      ]);
     });
 
     test('a one-character word orders by title', () {

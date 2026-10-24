@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show TableUpdate, UpdateKind;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:kanaru/shared/widgets/artist_tile.dart';
@@ -92,5 +93,31 @@ void main() {
       find.textContaining('Nothing matches “year:1900”. Try fewer'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('language: lists songs whose tag matches, once tags exist', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openSearch(tester, h, 'language:vi', tracks: _tracks);
+    expect(find.byType(SongTile), findsNothing);
+
+    await tester.runAsync(() async {
+      await h.db.customStatement(
+        "UPDATE tracks SET language = 'Vietnamese; English' "
+        "WHERE path = '/m/1/old.flac'",
+      );
+      await h.db.customStatement(
+        "UPDATE tracks SET language = 'eng' WHERE path = '/m/1/other.mp3'",
+      );
+      h.db.notifyUpdates({
+        TableUpdate.onTable(h.db.tracks, kind: UpdateKind.update),
+      });
+    });
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Old Song'), findsOneWidget);
+    expect(find.byType(SongTile), findsOneWidget);
   });
 }
