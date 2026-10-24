@@ -12,6 +12,7 @@ import '../../shared/play_tracks.dart';
 import '../../shared/widgets/artist_avatar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'home_tile_metrics.dart';
+import '../../shared/fixed_line_strut.dart';
 
 /// One artist on a shelf: round avatar, name, "N songs". Tapping opens the
 /// artist page. Copied from RoundGridTile in round_grid_tile.dart and
@@ -48,6 +49,7 @@ class HomeArtistCard extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: theme.textTheme.titleSmall,
+              strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
             ),
             Text(
               context.l10n.albumsSongCount(artist.trackCount),
@@ -57,6 +59,7 @@ class HomeArtistCard extends ConsumerWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
+              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
             ),
           ],
         ),

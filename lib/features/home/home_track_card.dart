@@ -10,6 +10,7 @@ import '../../shared/play_tracks.dart';
 import '../../shared/widgets/cover_art.dart';
 import '../../shared/widgets/track_actions_menu.dart';
 import 'home_tile_metrics.dart';
+import '../../shared/fixed_line_strut.dart';
 
 /// One song on a shelf: square cover, title and artist. Tapping plays the
 /// whole [row] from this song. Copied from SongGridTile in song_grid_tile.dart.
@@ -61,6 +62,7 @@ class HomeTrackCard extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleSmall,
+              strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
             ),
             Text(
               artist ?? '',
@@ -69,6 +71,7 @@ class HomeTrackCard extends ConsumerWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
+              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
             ),
           ],
         ),

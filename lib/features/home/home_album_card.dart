@@ -10,6 +10,7 @@ import '../../shared/library_route_keys.dart';
 import '../../shared/widgets/album_artwork.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'home_tile_metrics.dart';
+import '../../shared/fixed_line_strut.dart';
 
 /// One album on a shelf: square artwork, title, "artist · year". Tapping
 /// opens the album page. Copied from AlbumGridTile in album_grid_tile.dart.
@@ -48,6 +49,7 @@ class HomeAlbumCard extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleSmall,
+              strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
             ),
             Text(
               subtitle,
@@ -56,6 +58,7 @@ class HomeAlbumCard extends ConsumerWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
+              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
             ),
           ],
         ),

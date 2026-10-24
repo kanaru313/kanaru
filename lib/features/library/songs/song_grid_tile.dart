@@ -9,6 +9,7 @@ import '../../../shared/widgets/cover_art.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/track_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
+import '../../../shared/fixed_line_strut.dart';
 
 /// One song in the Songs grid: square cover, title and artist, with the same
 /// tap and menu as a song row.
@@ -63,6 +64,7 @@ class SongGridTile extends ConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall,
+                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
               ),
               Text(
                 artist ?? '',
@@ -71,6 +73,7 @@ class SongGridTile extends ConsumerWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
+                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
               ),
             ],
           ),

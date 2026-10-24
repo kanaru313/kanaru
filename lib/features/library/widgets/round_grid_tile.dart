@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
+import '../../../shared/fixed_line_strut.dart';
 
 /// Height of a [RoundGridTile] whose avatar is [width] wide, for
 /// [libraryGridDelegate]. The avatar is as wide as a square cover, so the
@@ -55,6 +56,7 @@ class RoundGridTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleSmall,
+                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
               ),
               Text(
                 subtitle,
@@ -64,6 +66,7 @@ class RoundGridTile extends StatelessWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
+                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
               ),
             ],
           ),

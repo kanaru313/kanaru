@@ -5,6 +5,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/playlist_cover.dart';
+import '../../shared/fixed_line_strut.dart';
 
 /// Space around the whole grid.
 const _gridPadding = 24.0;
@@ -115,6 +116,7 @@ class _PlaylistCardTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall,
+                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
               ),
               Text(
                 context.l10n.playlistTrackCount(playlist.entryCount),
@@ -123,6 +125,7 @@ class _PlaylistCardTile extends StatelessWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
+                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
               ),
             ],
           ),

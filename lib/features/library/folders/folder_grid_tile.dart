@@ -7,6 +7,7 @@ import 'folder_counts_line.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 import 'hidden_entries.dart';
+import '../../../shared/fixed_line_strut.dart';
 
 /// One folder in a grid: a large folder icon, [title] and the counts line.
 class FolderGridTile extends StatelessWidget {
@@ -62,6 +63,7 @@ class FolderGridTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleSmall,
+                  strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
                 ),
               ),
               if (folder.hidden)

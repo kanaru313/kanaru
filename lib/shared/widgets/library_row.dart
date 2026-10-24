@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../fixed_line_strut.dart';
 import '../icons/app_icons.dart';
 
 /// Side of the cover at the start of a library list row (songs, albums,
@@ -44,15 +45,14 @@ String rowLength(AppLocalizations l10n, int durationMs) {
   ),
 );
 
-/// One line of a library row, cut with an ellipsis. The strut holds the line
-/// at the style's own height, so a fallback font (CJK titles) cannot make a
-/// row taller than the list's prototype row.
+/// One line of a library row, cut with an ellipsis, at a fixed height so a
+/// CJK title cannot make a row taller than the list's prototype row.
 Widget libraryRowLine(String text, TextStyle style) => Text(
   text,
   maxLines: 1,
   overflow: TextOverflow.ellipsis,
   style: style,
-  strutStyle: StrutStyle.fromTextStyle(style, forceStrutHeight: true),
+  strutStyle: fixedLineStrut(style),
 );
 
 /// [leading], then [body] taking the free width, then [trailing]. Not a

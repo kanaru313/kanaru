@@ -7,6 +7,7 @@ import '../library_browse_body.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'album_tile_data.dart';
+import '../../../shared/fixed_line_strut.dart';
 
 /// Padding around the content of a grid tile and the gap between the picture
 /// and the text; shared by the round tiles, whose height is derived from here.
@@ -79,6 +80,7 @@ class AlbumGridTile extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall,
+                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
               ),
               Text(
                 subtitle,
@@ -87,6 +89,7 @@ class AlbumGridTile extends StatelessWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
+                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
               ),
             ],
           ),
