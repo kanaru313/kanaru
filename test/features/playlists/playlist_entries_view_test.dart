@@ -5,6 +5,7 @@ import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'playlist_entries_view_harness.dart';
+import 'playlist_test_data.dart' show hoverRow;
 
 void main() {
   final view = EntriesViewHarness();
@@ -15,7 +16,8 @@ void main() {
       await view.pump(tester, [available(1), available(2)]);
 
       expect(find.text('T1'), findsOneWidget);
-      expect(find.text('Artist 1 · Album 1'), findsOneWidget);
+      expect(find.text('Artist 1'), findsOneWidget);
+      expect(find.text('Album 1'), findsOneWidget);
       expect(find.text('1:02'), findsOneWidget);
       expect(find.text('2 songs'), findsOneWidget);
     });
@@ -56,6 +58,7 @@ void main() {
     testWidgets('the remove button reports the entry id', (tester) async {
       await view.pump(tester, [available(1), available(2)]);
 
+      await hoverRow(tester, 1);
       await tester.tap(find.byTooltip('Remove from playlist').last);
 
       expect(view.removed, [2]);

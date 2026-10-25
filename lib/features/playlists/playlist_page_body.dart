@@ -142,8 +142,11 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
       loadRows: _loadRows,
       onMove: (entryId, to) =>
           movePlaylistEntryOrReport(ref, context, playlist.id, entryId, to),
-      onRemove: (entryId) =>
-          removePlaylistEntryOrReport(ref, context, playlist.id, entryId),
+      // Favorites unlike through the row heart, not a remove button.
+      onRemove: playlist.isFavorites
+          ? null
+          : (entryId) =>
+                removePlaylistEntryOrReport(ref, context, playlist.id, entryId),
       onSettled: _settled,
       onPlayFrom: _playFrom,
       loadMatches: _loadMatches,

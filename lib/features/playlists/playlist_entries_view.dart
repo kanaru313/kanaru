@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/playlist_rows.dart';
 import '../../core/database/search_playlist_queries.dart';
 import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
-import '../../l10n/l10n.dart';
 import '../../shared/in_page_filter.dart';
 import '../../shared/in_page_filter_host.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
@@ -366,8 +365,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
           ? null
           : () => unawaited(_play(entry.entryId, index)),
       onRemove: widget.onRemove == null ? null : () => _onRemove(entry),
-      // Removing a row of Favorites unlikes the song.
-      removeTooltip: favorites ? context.l10n.favoritesRemove : null,
+      favorites: favorites,
       onQueueAction: entry.track == null || onEntryAction == null
           ? null
           : (action) => onEntryAction(entry, action),
@@ -426,10 +424,15 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
                 load: _matches,
                 onPlay: (rows, index) => unawaited(_playRows(rows, index)),
                 onEntryQueueAction: widget.onEntryQueueAction,
+                favorites: head.playlist.isFavorites,
               )
             else
               SliverReorderableList(
-                itemExtent: playlistEntryExtent,
+                prototypeItem: PlaylistEntryTile(
+                  entry: prototypePlaylistEntry,
+                  index: 0,
+                  onRemove: () {},
+                ),
                 itemCount: count,
                 onReorderStart: _onReorderStart,
                 onReorderEnd: _onReorderEnd,

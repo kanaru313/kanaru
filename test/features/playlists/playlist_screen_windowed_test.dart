@@ -36,8 +36,8 @@ Future<void> scrollToRow(
       .widgetList<PlaylistEntryTile>(find.byType(PlaylistEntryTile))
       .first;
   final top = tester.getTopLeft(find.byWidget(first)).dy;
-  final listTop = top - first.index * playlistEntryExtent + position.pixels;
-  position.jumpTo(listTop + row * playlistEntryExtent - at);
+  final listTop = top - first.index * rowExtent(tester) + position.pixels;
+  position.jumpTo(listTop + row * rowExtent(tester) - at);
   await tester.pump();
   await settleDb(tester);
 }
@@ -88,7 +88,7 @@ void main() {
     await openBig(tester, h);
     final position = pagePosition(tester);
 
-    position.jumpTo(150 * playlistEntryExtent);
+    position.jumpTo(150 * rowExtent(tester));
     await tester.pump();
     expect(find.byType(PlaylistEntryPlaceholder), findsWidgets);
     expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
@@ -112,7 +112,8 @@ void main() {
     );
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 50));
-    for (var i = 0; i < 34; i++) {
+    final steps = (4 * rowExtent(tester) / 8).ceil();
+    for (var i = 0; i < steps; i++) {
       await gesture.moveBy(const Offset(0, -8));
       await tester.pump(const Duration(milliseconds: 16));
     }
@@ -138,6 +139,7 @@ void main() {
     await scrollToRow(tester, 150);
 
     final row = find.widgetWithText(PlaylistEntryTile, 'S150');
+    await hoverOn(tester, row);
     await tester.tap(
       find.descendant(
         of: row,

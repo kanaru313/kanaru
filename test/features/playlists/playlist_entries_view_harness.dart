@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
+import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/playlists/playlist_entries_view.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../core/player/fake_audio_backend.dart';
 
 /// An entry whose file is a library track titled `T<id>`.
 PlaylistEntryRow available(int id) => PlaylistEntryRow(
@@ -52,6 +55,8 @@ PlaylistPageHead headOf(
 /// shows the stored state again only when [reloadHead] hands it a new head,
 /// as the screen does after `onSettled`.
 class EntriesViewHarness {
+  final _backend = FakeAudioBackend();
+
   /// What the "database" holds, in order.
   var store = <PlaylistEntryRow>[];
 
@@ -104,6 +109,7 @@ class EntriesViewHarness {
   }
 
   Widget _app(PlaylistPageHead head, int seq) => ProviderScope(
+    overrides: [audioBackendProvider.overrideWithValue(_backend)],
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
