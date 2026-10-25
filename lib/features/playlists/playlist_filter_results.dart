@@ -9,27 +9,10 @@ import '../../core/database/search_playlist_queries.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/in_page_filter.dart';
 import '../../shared/widgets/in_page_no_match.dart';
-import '../../shared/widgets/in_page_search_field.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_entry_tile.dart';
 
 final _log = Logger('playlists');
-
-/// The filter button of a playlist page, between its header and its entries.
-class PlaylistFilterBar extends StatelessWidget {
-  const PlaylistFilterBar({super.key, required this.controller});
-
-  final InPageFilterController controller;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
-    child: Align(
-      alignment: Alignment.centerRight,
-      child: InPageSearchField(controller: controller),
-    ),
-  );
-}
 
 /// The entries of a playlist whose song matches the filter, best match first,
 /// as a sliver. They are read from the database (the page only holds a window

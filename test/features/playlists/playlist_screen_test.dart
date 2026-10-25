@@ -16,7 +16,7 @@ void main() {
   testWidgets('shows the name, count and entries in order', (tester) async {
     await openMix(tester, h);
 
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     expect(shownTitles(tester), mixTitles);
   });
 
@@ -75,7 +75,7 @@ void main() {
     );
     expect(stored!.map((e) => e.position).toList()..sort(), [0, 1, 2]);
     expect(stored.every((e) => e.playlistId == id), isTrue);
-    expect(find.text('3 songs'), findsOneWidget);
+    expect(playlistSongCount('3 songs'), findsOneWidget);
   });
 
   testWidgets('an entry without a track says so and is skipped on play', (

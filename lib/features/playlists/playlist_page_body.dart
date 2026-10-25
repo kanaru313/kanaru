@@ -85,6 +85,30 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
     }
   }
 
+  /// Reads the playable tracks and shuffles them into the queue. Leaving the
+  /// page before the read ends plays nothing.
+  Future<void> _shuffle() async {
+    final db = ref.read(libraryDatabaseProvider);
+    if (db == null) return;
+    final covers = ref.read(coverCacheDirectoryProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      final playable = await db.playlistPlayableTracks(_id);
+      if (!mounted || playable.isEmpty) return;
+      shuffleTracks(ref, [
+        for (final p in playable) playlistTrack(p.track, covers),
+      ]);
+    } catch (error, stack) {
+      _log.severe('Reading the shuffle queue failed', error, stack);
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.libraryUnexpectedError)),
+        );
+      }
+    }
+  }
+
   Future<PlaylistMatches> _loadMatches(List<String> terms) async {
     final db = ref.read(libraryDatabaseProvider);
     return db == null
@@ -149,6 +173,7 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
                 removePlaylistEntryOrReport(ref, context, playlist.id, entryId),
       onSettled: _settled,
       onPlayFrom: _playFrom,
+      onShuffle: _shuffle,
       loadMatches: _loadMatches,
       onPlayRows: (rows, index) async => _playRows(rows, index),
       onQueueAction: _queueAll,

@@ -166,7 +166,7 @@ void main() {
 
       expect(find.text(_saveFailed), findsOneWidget);
       expect(shownTitles(tester), mixTitles);
-      expect(find.text('4 songs'), findsOneWidget);
+      expect(playlistSongCount('4 songs'), findsOneWidget);
       expect(await storedPaths(tester, h, id), hasLength(4));
     });
   });

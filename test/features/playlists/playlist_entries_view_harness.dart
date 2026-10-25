@@ -68,6 +68,9 @@ class EntriesViewHarness {
   var deleted = 0;
   var settled = 0;
 
+  /// Shuffles started.
+  var shuffled = 0;
+
   /// Every play: the entry id (null for the first playable) and the index
   /// hint.
   var played = <(int?, int)>[];
@@ -84,6 +87,7 @@ class EntriesViewHarness {
   var minSeq = 0;
 
   bool _readOnly = false;
+  Locale? _locale;
   void Function(QueueAction)? _onQueueAction;
   void Function(PlaylistEntryRow, QueueAction)? _onEntryQueueAction;
 
@@ -93,7 +97,7 @@ class EntriesViewHarness {
     loads = [];
     moves = [];
     removed = [];
-    renamed = deleted = settled = seqCounter = minSeq = 0;
+    renamed = deleted = settled = shuffled = seqCounter = minSeq = 0;
     played = [];
     moveResult = Completer<bool>();
     removeResult = Completer<bool>();
@@ -111,7 +115,11 @@ class EntriesViewHarness {
   Widget _app(PlaylistPageHead head, int seq) => ProviderScope(
     overrides: [audioBackendProvider.overrideWithValue(_backend)],
     child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      locale: _locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: PlaylistEntriesView(
@@ -148,6 +156,7 @@ class EntriesViewHarness {
                   return minSeq = seqCounter + 1;
                 },
           onPlayFrom: (id, hint) async => played.add((id, hint)),
+          onShuffle: () async => shuffled++,
           onQueueAction: _onQueueAction,
           onEntryQueueAction: _onEntryQueueAction,
           onRename: () => renamed++,
@@ -165,11 +174,13 @@ class EntriesViewHarness {
     bool readOnly = false,
     bool favorites = false,
     String name = 'Mix',
+    Locale? locale,
     void Function(QueueAction)? onQueueAction,
     void Function(PlaylistEntryRow, QueueAction)? onEntryQueueAction,
   }) async {
     store = [...entries];
     _readOnly = readOnly;
+    _locale = locale;
     _onQueueAction = onQueueAction;
     _onEntryQueueAction = onEntryQueueAction;
     tester.view

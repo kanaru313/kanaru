@@ -91,7 +91,7 @@ void main() {
     await settleDb(tester);
 
     expect(shownTitles(tester), isNot(contains('c')));
-    expect(find.text('2 songs'), findsOneWidget);
+    expect(playlistSongCount('2 songs'), findsOneWidget);
   });
 
   testWidgets('a liked file that left the library shows a heart that unlikes', (

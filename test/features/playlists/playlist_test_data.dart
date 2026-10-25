@@ -3,6 +3,7 @@ import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/features/playlists/playlist_details.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 
 import '../library/browse_test_data.dart';
@@ -167,3 +168,10 @@ Future<TestGesture> hoverOn(WidgetTester tester, Finder target) async {
   await tester.pump();
   return gesture;
 }
+
+/// The song count in the details of a playlist page (header or side pane).
+/// The songs toolbar shows the same count, so a bare `find.text` finds two.
+Finder playlistSongCount(String text) => find.descendant(
+  of: find.byType(PlaylistDetails),
+  matching: find.text(text),
+);

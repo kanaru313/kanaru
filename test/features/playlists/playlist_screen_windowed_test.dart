@@ -13,14 +13,17 @@ import 'playlist_test_data.dart';
 /// Titles `S000` .. `S249`: a playlist of three pages.
 final bigTitles = [for (var i = 0; i < 250; i++) 'S${'$i'.padLeft(3, '0')}'];
 
+/// The scroll position of the song list. A wide page has a second scroll
+/// view in its side pane, so the lookup starts at the list's own.
 ScrollPosition pagePosition(WidgetTester tester) => tester
     .state<ScrollableState>(
-      find
-          .descendant(
-            of: find.byType(PlaylistEntriesView),
-            matching: find.byType(Scrollable),
-          )
-          .first,
+      find.descendant(
+        of: find.descendant(
+          of: find.byType(PlaylistEntriesView),
+          matching: find.byType(CustomScrollView),
+        ),
+        matching: find.byType(Scrollable),
+      ),
     )
     .position;
 
@@ -68,7 +71,7 @@ void main() {
     tester,
   ) async {
     await openBig(tester, h);
-    expect(find.text('250 songs'), findsOneWidget);
+    expect(playlistSongCount('250 songs'), findsOneWidget);
     expect(shownTitles(tester).first, 'S000');
 
     final position = pagePosition(tester);
@@ -155,7 +158,7 @@ void main() {
     expect(await storedPaths(tester, h, id), hasLength(249));
     pagePosition(tester).jumpTo(0);
     await tester.pump();
-    expect(find.text('249 songs'), findsOneWidget);
+    expect(playlistSongCount('249 songs'), findsOneWidget);
   });
 
   testWidgets('playing from the third page queues the whole playlist', (
@@ -253,7 +256,7 @@ void main() {
     await settleDb(tester);
 
     expect(tester.takeException(), isNull);
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     expect(shownTitles(tester), ['Alpha', 'Bravo', 'Charlie']);
     expect(find.byType(PlaylistEntryPlaceholder), findsOneWidget);
   });
@@ -271,7 +274,7 @@ void main() {
     await settleDb(tester);
 
     expect(tester.takeException(), isNull);
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     // Index 1 holds the later of the two, index 2 is a gap.
     expect(shownTitles(tester), ['Alpha', 'Charlie', 'Delta']);
     expect(find.byType(PlaylistEntryPlaceholder), findsOneWidget);

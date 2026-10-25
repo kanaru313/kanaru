@@ -9,14 +9,12 @@ import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../shared/in_page_filter.dart';
 import '../../shared/in_page_filter_host.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import 'playlist_entry_lift.dart';
+import 'playlist_drag_tracking.dart';
 import 'playlist_entry_placeholder.dart';
 import 'playlist_entry_tile.dart';
-import 'playlist_filter_results.dart';
-import 'playlist_header.dart';
+import 'playlist_page_layout.dart';
 import 'playlist_row_cache.dart';
 import 'playlist_write_gate.dart';
-import 'playlist_screen_states.dart' show PlaylistEmptyState;
 
 /// A playlist page: header, then its entries as a list the user can
 /// reorder by dragging a handle.
@@ -35,6 +33,7 @@ class PlaylistEntriesView extends StatefulWidget {
     this.headSeq = 0,
     required this.loadRows,
     required this.onPlayFrom,
+    this.onShuffle,
     this.onMove,
     this.onRemove,
     this.onSettled,
@@ -68,6 +67,10 @@ class PlaylistEntriesView extends StatefulWidget {
   /// entry was in the list: the fallback when the entry is gone by the time
   /// the queue is read. Called after the writes under way have ended.
   final Future<void> Function(int? entryId, int indexHint) onPlayFrom;
+
+  /// Shuffles the playable songs of the playlist as the queue; called after
+  /// the writes under way have ended.
+  final Future<void> Function()? onShuffle;
 
   /// Moves [entryId] so it ends up at index [to] of the list; completes with
   /// whether the move was saved. A throw counts as not saved. Drops are
@@ -115,11 +118,10 @@ class PlaylistEntriesView extends StatefulWidget {
 
 final _log = Logger('playlists');
 
-/// How long after a pointer ends a drag is waited for (see `_onPointerEnd`).
-const _dragEndGrace = Duration(milliseconds: 600);
-
 class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
-    with InPageFilterHost<PlaylistEntriesView> {
+    with
+        InPageFilterHost<PlaylistEntriesView>,
+        PlaylistDragTracking<PlaylistEntriesView> {
   /// Dies with the page, so leaving it clears the filter.
   final _filter = InPageFilterController();
 
@@ -133,21 +135,17 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
   late final PlaylistRowCache _cache;
   final _writes = PlaylistWriteGate();
 
+  @override
+  PlaylistRowCache get dragCache => _cache;
+
+  @override
+  PlaylistWriteGate get dragWrites => _writes;
+
   /// Heads below this were read before the last write ended.
   var _minSeq = 0;
 
   /// A play is waiting for writes or reading its queue.
   var _playing = false;
-
-  /// A row is being dragged, and the entry the user picked up.
-  var _dragging = false;
-  int? _dragEntryId;
-  int? _dragStartIndex;
-  Timer? _dragTimeout;
-
-  /// The count of a head that arrived during a drag, to reset to when the
-  /// drag ends: the rows must not change under the user's hand.
-  int? _deferredCount;
 
   @override
   void initState() {
@@ -171,8 +169,8 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
     // After the write ends a fresh head is read, which is the one to take.
     if (_writes.busy || widget.headSeq < _minSeq) return;
     final count = widget.head.playlist.entryCount;
-    if (_dragging) {
-      _deferredCount = count;
+    if (dragging) {
+      deferredCount = count;
     } else {
       _cache.reset(count);
     }
@@ -180,7 +178,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
 
   @override
   void dispose() {
-    _dragTimeout?.cancel();
+    dragTimeout?.cancel();
     _cache.dispose();
     _writes.dispose();
     _filter.dispose();
@@ -195,7 +193,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
   ) async {
     // The head the drag put off would be read before this write: the settle
     // reads a newer one.
-    _deferredCount = null;
+    deferredCount = null;
     setState(() {
       if (_writes.begin()) _cache.hold();
       edit();
@@ -219,57 +217,11 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
     setState(() {});
   }
 
-  void _onReorderStart(int index) {
-    // The grace timer of an earlier pointer must not end this drag.
-    _dragTimeout?.cancel();
-    _dragging = true;
-    _dragStartIndex = index;
-    _dragEntryId = _cache.rowAt(index)?.entryId;
-  }
-
-  void _onReorderEnd(int index) {
-    // The list counts the slot the row is dropped at with the row itself
-    // still in it: dropping below where it started gives `start + 1`.
-    final start = _dragStartIndex;
-    final to = start != null && index > start ? index - 1 : index;
-    // A drop in another place is followed by `_onReorder`, once the drop
-    // animation ends, and the drag counts as running until then: a head that
-    // changed the count meanwhile would make the list cancel the drop. A drop
-    // where the row started gets no such call: the head is taken now.
-    if (to == start) _endDrag();
-  }
-
-  /// A drag can end without `onReorderEnd` (the pointer was cancelled, or a
-  /// second drag took over), and then `_dragging` would hold every later
-  /// head back for good. A pointer that goes up or is cancelled while a drag
-  /// is on gets this long, a drop animation and more, to be followed by the
-  /// usual calls; after that the drag is over.
-  void _onPointerEnd(PointerEvent event) {
-    if (!_dragging) return;
-    _dragTimeout?.cancel();
-    _dragTimeout = Timer(_dragEndGrace, () {
-      if (mounted && _dragging) _endDrag();
-    });
-  }
-
-  void _endDrag() {
-    _dragging = false;
-    _dragEntryId = null;
-    _takeDeferredHead();
-  }
-
-  /// Resets the cache to the count of the head that arrived during a drag.
-  void _takeDeferredHead() {
-    final count = _deferredCount;
-    _deferredCount = null;
-    if (count != null && !_writes.busy) setState(() => _cache.reset(count));
-  }
-
   void _onReorder(int from, int to) {
     final onMove = widget.onMove;
-    final picked = _dragEntryId;
-    _dragging = false;
-    _dragEntryId = null;
+    final picked = dragEntryId;
+    dragging = false;
+    dragEntryId = null;
     // One write at a time: a second drop would be counted against an order
     // the database may never get if the first write fails.
     // The row the user picked up, wherever the cache has it now. Not cached
@@ -282,7 +234,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
         entryId == null ||
         current == null ||
         current == to) {
-      _takeDeferredHead();
+      takeDeferredHead();
       return;
     }
     unawaited(
@@ -312,6 +264,21 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
       await widget.onPlayFrom(entryId, indexHint);
     } catch (error, stack) {
       _log.severe('Playing a playlist failed', error, stack);
+    } finally {
+      _playing = false;
+    }
+  }
+
+  /// Shuffles after the writes under way; same guard as [_play].
+  Future<void> _shuffle() async {
+    if (_playing) return;
+    _playing = true;
+    try {
+      await _writes.afterWrites();
+      if (!mounted) return;
+      await widget.onShuffle!();
+    } catch (error, stack) {
+      _log.severe('Shuffling a playlist failed', error, stack);
     } finally {
       _playing = false;
     }
@@ -387,62 +354,29 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
 
     return ListenableBuilder(
       listenable: _filter,
-      builder: (context, _) => Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerUp: _onPointerEnd,
-        onPointerCancel: _onPointerEnd,
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: PlaylistHeader(
-                head: head,
-                count: count,
-                onPlay: head.hasPlayable
-                    ? () => unawaited(_play(null, 0))
-                    : null,
-                onQueueAction: !head.hasPlayable || onQueueAction == null
-                    ? null
-                    : (action) => unawaited(_queueAll(action)),
-                onRename: widget.onRename,
-                onDelete: widget.onDelete,
-                onExport: widget.onExport,
-              ),
-            ),
-            if (canFilter)
-              SliverToBoxAdapter(child: PlaylistFilterBar(controller: _filter)),
-            if (count == 0)
-              // EmptyState scrolls on its own and measures with a LayoutBuilder,
-              // which a non-scrolling fill cannot size.
-              SliverFillRemaining(
-                child: PlaylistEmptyState(favorites: head.playlist.isFavorites),
-              )
-            else if (canFilter && _filter.isFiltering)
-              PlaylistFilterResults(
-                terms: _filter.terms,
-                query: _filter.query,
-                refresh: head,
-                load: _matches,
-                onPlay: (rows, index) => unawaited(_playRows(rows, index)),
-                onEntryQueueAction: widget.onEntryQueueAction,
-                favorites: head.playlist.isFavorites,
-              )
-            else
-              SliverReorderableList(
-                prototypeItem: PlaylistEntryTile(
-                  entry: prototypePlaylistEntry,
-                  index: 0,
-                  onRemove: () {},
-                ),
-                itemCount: count,
-                onReorderStart: _onReorderStart,
-                onReorderEnd: _onReorderEnd,
-                onReorderItem: _onReorder,
-                proxyDecorator: playlistEntryLift(context),
-                itemBuilder: _row,
-              ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
-        ),
+      builder: (context, _) => PlaylistPageLayout(
+        head: head,
+        count: count,
+        filter: _filter,
+        canFilter: canFilter,
+        onPointerEnd: onPointerEnd,
+        onReorderStart: onReorderStart,
+        onReorderEnd: onReorderEnd,
+        onReorder: _onReorder,
+        rowBuilder: _row,
+        loadMatches: _matches,
+        onPlayRows: (rows, index) => unawaited(_playRows(rows, index)),
+        onPlay: head.hasPlayable ? () => unawaited(_play(null, 0)) : null,
+        onShuffle: head.hasPlayable && widget.onShuffle != null
+            ? () => unawaited(_shuffle())
+            : null,
+        onQueueAction: !head.hasPlayable || onQueueAction == null
+            ? null
+            : (action) => unawaited(_queueAll(action)),
+        onEntryQueueAction: widget.onEntryQueueAction,
+        onRename: widget.onRename,
+        onDelete: widget.onDelete,
+        onExport: widget.onExport,
       ),
     );
   }

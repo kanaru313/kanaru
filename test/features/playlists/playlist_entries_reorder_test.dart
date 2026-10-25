@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/features/playlists/playlist_side_pane.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart'
     show
         BoxDecoration,
+        CustomScrollView,
         DecoratedBox,
         IconButton,
         Icons,
@@ -46,11 +48,16 @@ void main() {
       await gesture.moveBy(const Offset(0, 24));
       await tester.pump(const Duration(milliseconds: 16));
 
-      final plate = find.byWidgetPredicate(
-        (w) =>
-            w is DecoratedBox &&
-            w.decoration is BoxDecoration &&
-            (w.decoration as BoxDecoration).boxShadow != null,
+      // The cover card of the side pane has a shadow too; the lifted row is
+      // the one in the overlay.
+      final plate = find.byElementPredicate(
+        (e) =>
+            e.widget is DecoratedBox &&
+            (e.widget as DecoratedBox).decoration is BoxDecoration &&
+            ((e.widget as DecoratedBox).decoration as BoxDecoration)
+                    .boxShadow !=
+                null &&
+            e.findAncestorWidgetOfExactType<PlaylistSidePane>() == null,
       );
       expect(plate, findsOneWidget);
       final card = tester.getSize(plate);
@@ -382,7 +389,12 @@ void main() {
     ) async {
       await view.pump(tester, [for (var i = 0; i < 250; i++) available(i)]);
       // Page 0 is on screen; jump to a place whose page is not read.
-      final scroll = tester.state<ScrollableState>(find.byType(Scrollable));
+      final scroll = tester.state<ScrollableState>(
+        find.descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.byType(Scrollable),
+        ),
+      );
       scroll.position.jumpTo(150 * rowExtent(tester));
       await tester.pump();
 
