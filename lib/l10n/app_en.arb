@@ -536,6 +536,7 @@
   "nowPlayingBackToTrack": "Back to the song",
   "nowPlayingLyricsOnly": "Lyrics only",
   "nowPlayingViewSplit": "Split view",
+  "nowPlayingViewCoverOnly": "Cover only",
   "queueOpen": "Show now playing list",
   "queueTitle": "Now playing",
   "queueTrackCount": "{count, plural, one{1 track} other{{count} tracks}}",

@@ -5,6 +5,7 @@ import '../lyrics/lyrics_view.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_screen.dart';
 import 'now_playing_title_bar.dart';
+import 'now_playing_view_mode.dart';
 
 /// Slide duration and curve of Now Playing coming up from the bottom edge.
 const nowPlayingSlideDuration = Duration(milliseconds: 500);
@@ -104,6 +105,9 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
     final covered = open && _controller.isCompleted;
     // Lyrics are looked for only while the screen is there.
     final hasLyrics = screenShown && ref.watch(nowPlayingHasLyricsProvider);
+    final lyricsState = screenShown
+        ? ref.watch(nowPlayingLyricsStateProvider)
+        : NowPlayingLyricsState.unknown;
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -117,6 +121,7 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
               child: NowPlayingScreen(
                 titleBar: widget.titleBar,
                 lyrics: hasLyrics ? const LyricsView() : null,
+                lyricsState: lyricsState,
               ),
             ),
           ),

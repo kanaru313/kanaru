@@ -1436,6 +1436,12 @@ abstract class AppLocalizations {
   /// **'Split view'**
   String get nowPlayingViewSplit;
 
+  /// No description provided for @nowPlayingViewCoverOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover only'**
+  String get nowPlayingViewCoverOnly;
+
   /// No description provided for @queueOpen.
   ///
   /// In en, this message translates to:

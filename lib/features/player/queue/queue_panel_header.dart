@@ -28,6 +28,7 @@ class QueuePanelHeader extends StatelessWidget {
     this.onClose,
     this.showTitle = true,
     this.title,
+    this.onMenuOpenChanged,
   });
 
   /// Track count and time left; the parent supplies a widget that follows
@@ -64,6 +65,10 @@ class QueuePanelHeader extends StatelessWidget {
   /// title row regardless of [showTitle].
   final Widget? title;
 
+  /// Called with whether the `⋮` menu is open, so a host can keep its own
+  /// chrome and shortcuts out of the way while it floats over the page.
+  final ValueChanged<bool>? onMenuOpenChanged;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -81,7 +86,11 @@ class QueuePanelHeader extends StatelessWidget {
         label: l10n.queueShowCurrent,
         onPressed: onShowCurrent,
       ),
-      _OverflowMenu(onSave: onSave, onClear: onClear),
+      _OverflowMenu(
+        onSave: onSave,
+        onClear: onClear,
+        onOpenChanged: onMenuOpenChanged,
+      ),
     ];
     final title = this.title;
     if (title != null) {
@@ -147,16 +156,47 @@ class QueuePanelHeader extends StatelessWidget {
 
 /// The `⋮` button and its menu. The playing track stays when the queue is
 /// cleared, so clearing needs no confirmation.
-class _OverflowMenu extends StatelessWidget {
-  const _OverflowMenu({required this.onSave, required this.onClear});
+class _OverflowMenu extends StatefulWidget {
+  const _OverflowMenu({
+    required this.onSave,
+    required this.onClear,
+    required this.onOpenChanged,
+  });
 
   final VoidCallback? onSave;
   final VoidCallback? onClear;
+  final ValueChanged<bool>? onOpenChanged;
+
+  @override
+  State<_OverflowMenu> createState() => _OverflowMenuState();
+}
+
+class _OverflowMenuState extends State<_OverflowMenu> {
+  bool _open = false;
+
+  /// Reports a change only once, so the host's open and close calls stay
+  /// paired.
+  void _setOpen(bool open) {
+    if (_open == open) return;
+    _open = open;
+    widget.onOpenChanged?.call(open);
+  }
+
+  @override
+  void dispose() {
+    // The menu leaves with the panel: give back what the host holds for it.
+    _setOpen(false);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final onSave = widget.onSave;
+    final onClear = widget.onClear;
     return MenuAnchor(
+      onOpen: () => _setOpen(true),
+      onClose: () => _setOpen(false),
       menuChildren: [
         MenuItemButton(
           leadingIcon: const Icon(AppIcons.saveQueue),

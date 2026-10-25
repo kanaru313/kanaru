@@ -15,10 +15,18 @@ enum _SideTab { lyrics, queue }
 /// so the queue's actions stay at the end of its row; on the Lyrics tab the
 /// bar sits at the same spot over the lyrics.
 class NowPlayingSidePane extends StatefulWidget {
-  const NowPlayingSidePane({super.key, this.lyrics});
+  const NowPlayingSidePane({
+    super.key,
+    this.lyrics,
+    this.onQueueMenuOpenChanged,
+  });
 
   /// The lyrics view; `null` when the track has none, and then no tab.
   final Widget? lyrics;
+
+  /// Whether the queue's `⋮` menu is open; see
+  /// [QueuePanel.onMenuOpenChanged].
+  final ValueChanged<bool>? onQueueMenuOpenChanged;
 
   @override
   State<NowPlayingSidePane> createState() => _NowPlayingSidePaneState();
@@ -108,7 +116,10 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
       ),
     );
     return switch (_shown) {
-      _SideTab.queue => QueuePanel(title: bar),
+      _SideTab.queue => QueuePanel(
+        title: bar,
+        onMenuOpenChanged: widget.onQueueMenuOpenChanged,
+      ),
       _SideTab.lyrics => Column(
         children: [
           // The queue header's edges and room for its actions, so the tab

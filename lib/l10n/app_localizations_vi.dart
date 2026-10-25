@@ -859,6 +859,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nowPlayingViewSplit => 'Chia đôi';
 
   @override
+  String get nowPlayingViewCoverOnly => 'Chỉ hiện ảnh bìa';
+
+  @override
   String get queueOpen => 'Mở danh sách đang phát';
 
   @override

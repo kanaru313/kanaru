@@ -11,6 +11,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_auto_hide.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_view_mode.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -345,5 +346,54 @@ void main() {
       tester.binding.mouseTracker.debugDeviceActiveCursor(1),
       SystemMouseCursors.none,
     );
+  });
+
+  group('the queue overflow menu', () {
+    final more = find.byTooltip('More actions');
+
+    testWidgets('keeps the header while open and releases it on close', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+      await mouse(tester);
+      await tester.tap(more);
+      await tester.pumpAndSettle();
+      expect(find.text('Clear queue'), findsOneWidget);
+
+      await tester.pump(nowPlayingHideAfter + const Duration(seconds: 1));
+      expect(headerOpacity(tester), 1);
+
+      await tester.tap(more);
+      await tester.pumpAndSettle();
+      expect(find.text('Clear queue'), findsNothing);
+
+      await tester.pump(nowPlayingHideAfter + const Duration(seconds: 1));
+      await tester.pump();
+      expect(headerOpacity(tester), 0);
+    });
+
+    testWidgets('leaving with its panel while open releases the pin', (
+      tester,
+    ) async {
+      await pumpOpen(tester);
+      final pointer = await mouse(tester);
+      await tester.tap(more);
+      await tester.pumpAndSettle();
+      await tester.pump(nowPlayingHideAfter + const Duration(seconds: 1));
+      expect(headerOpacity(tester), 1);
+
+      // Cover only removes the side pane, and the menu with it.
+      container
+          .read(nowPlayingViewModeProvider.notifier)
+          .choose(NowPlayingViewMode.coverOnly);
+      await tester.pumpAndSettle();
+      expect(more, findsNothing);
+      await pointer.moveTo(const Offset(640, 400));
+      await tester.pump();
+
+      await tester.pump(nowPlayingHideAfter + const Duration(seconds: 1));
+      await tester.pump();
+      expect(headerOpacity(tester), 0);
+    });
   });
 }

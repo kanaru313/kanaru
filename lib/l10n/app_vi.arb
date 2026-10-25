@@ -230,6 +230,7 @@
   "nowPlayingBackToTrack": "Quay lại bài hát",
   "nowPlayingLyricsOnly": "Chỉ hiện lời bài hát",
   "nowPlayingViewSplit": "Chia đôi",
+  "nowPlayingViewCoverOnly": "Chỉ hiện ảnh bìa",
   "queueOpen": "Mở danh sách đang phát",
   "queueTitle": "Đang phát",
   "queueTrackCount": "{count, plural, other{{count} bài}}",
