@@ -74,4 +74,20 @@ void main() {
     );
     expect(resolveCoverCacheDirectory({}), isNull);
   });
+
+  test('waveforms live in a folder of the cache', () {
+    expect(
+      resolveWaveformCacheDirectory({...home, 'XDG_CACHE_HOME': '/x/cache'}),
+      '/x/cache/kanaru/waveforms',
+    );
+    expect(
+      resolveWaveformCacheDirectory({...home, 'XDG_CACHE_HOME': 'relative'}),
+      '/home/a/.cache/kanaru/waveforms',
+    );
+    expect(
+      resolveWaveformCacheDirectory(home),
+      '/home/a/.cache/kanaru/waveforms',
+    );
+    expect(resolveWaveformCacheDirectory({}), isNull);
+  });
 }
