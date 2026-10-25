@@ -51,6 +51,17 @@ List<bool> _underlines(WidgetTester tester) {
   ];
 }
 
+List<TextSpan> _spans(WidgetTester tester) {
+  final richText = tester.widget<RichText>(
+    find.descendant(
+      of: find.byType(HoverUnderlineLinks),
+      matching: find.byType(RichText),
+    ),
+  );
+  final root = (richText.text as TextSpan).children!.single as TextSpan;
+  return root.children!.cast<TextSpan>();
+}
+
 /// Global rect of the first occurrence of [s] in the line's paragraph.
 Rect _rect(WidgetTester tester, String s) {
   final paragraph = tester.renderObject<RenderParagraph>(
@@ -315,5 +326,87 @@ void main() {
       tester.getTopLeft(find.byType(HoverUnderlineLinks)) + const Offset(5, 5),
     );
     expect(log, ['a']);
+  });
+
+  testWidgets('all spans carry the shadow, only the hovered link underlines', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_three([]));
+    final mouse = await _mouse(tester);
+    await mouse.moveTo(_center(tester, 'Bob'));
+    await tester.pump();
+
+    final context = tester.element(find.byType(HoverUnderlineLinks));
+    final original =
+        DefaultTextStyle.of(context).style.color ??
+        Theme.of(context).colorScheme.onSurface;
+    final spans = _spans(tester);
+    for (final span in spans) {
+      final style = span.style!;
+      expect(style.color, const Color(0x00000000));
+      expect(style.shadows, hasLength(1));
+      expect(style.shadows!.single.color, original);
+      expect(style.shadows!.single.offset, const Offset(0, -3));
+    }
+    for (final i in [0, 1, 3, 4]) {
+      expect(spans[i].style!.decoration, isNull);
+    }
+    expect(spans[2].style!.decoration, TextDecoration.underline);
+    expect(spans[2].style!.decorationColor, original);
+  });
+
+  testWidgets('the text is translated (paint only) by the gap to cancel the shadow', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_three([]));
+    final transform = tester.widget<Transform>(
+      find.descendant(
+        of: find.byType(HoverUnderlineLinks),
+        matching: find.byType(Transform),
+      ),
+    );
+    expect(transform.transform.getTranslation().y, 3);
+    expect(transform.transform.getTranslation().x, 0);
+    expect(transform.transformHitTests, isFalse);
+  });
+
+  testWidgets('top and bottom rows of the glyph box hit the link', (
+    tester,
+  ) async {
+    final log = <String>[];
+    await tester.pumpWidget(_three(log));
+    // `_rect` is in painted coordinates; hit-testing is not translated, so
+    // the glyph box in hit-test coordinates is the layout box of the glyphs.
+    final glyphs = _rect(tester, 'Bob').shift(const Offset(0, -3));
+    final x = glyphs.center.dx;
+    final mouse = await _mouse(tester);
+    for (final y in [glyphs.top + 0.5, glyphs.bottom - 0.5]) {
+      await mouse.moveTo(Offset(x, y));
+      await tester.pump();
+      expect(_underlines(tester)[2], isTrue, reason: 'hover at y=$y');
+      await tester.tapAt(Offset(x, y));
+      await tester.pump();
+    }
+    expect(log, ['Bob', 'Bob']);
+    // Just outside the glyph box is a miss.
+    await mouse.moveTo(Offset(x, glyphs.top - 0.5));
+    await tester.pump();
+    expect(_underlines(tester)[2], isFalse);
+  });
+
+  testWidgets('hover does not change the paragraph size', (tester) async {
+    await tester.pumpWidget(_three([]));
+    final mouse = await _mouse(tester);
+    final paragraph = find.descendant(
+      of: find.byType(HoverUnderlineLinks),
+      matching: find.byType(RichText),
+    );
+    final before = tester.getSize(paragraph);
+    final topBefore = tester.getTopLeft(paragraph);
+    await mouse.moveTo(_center(tester, 'Bob'));
+    await tester.pump();
+    expect(_underlines(tester)[2], isTrue);
+    expect(tester.getSize(paragraph), before);
+    expect(tester.getTopLeft(paragraph), topBefore);
   });
 }

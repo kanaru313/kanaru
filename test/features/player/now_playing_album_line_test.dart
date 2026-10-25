@@ -268,7 +268,16 @@ void main() {
       );
       expect(scrollable.position.maxScrollExtent, 0);
       final view = tester.getRect(inScreen(find.byType(Scrollable)).first);
-      final album = tester.getRect(inScreen(find.text('Blue Album')));
+      // The link line's layout box (the paragraph itself is painted 3 px lower
+      // for the hover underline gap, with its glyphs shifted back up).
+      final album = tester.getRect(
+        inScreen(
+          find.ancestor(
+            of: find.text('Blue Album'),
+            matching: find.byType(HoverUnderlineLinks),
+          ),
+        ),
+      );
       expect(album.bottom, lessThanOrEqualTo(view.bottom));
       expect(album.top, greaterThanOrEqualTo(view.top));
     });

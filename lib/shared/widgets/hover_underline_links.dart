@@ -1,24 +1,34 @@
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// One piece of a [HoverUnderlineLinks] line: a link when [onTap] is set,
-/// plain text otherwise.
-class LinkSegment {
-  const LinkSegment(this.text, {this.onTap});
+import 'hover_underline_link_segment.dart';
 
-  final String text;
+export 'hover_underline_link_segment.dart';
 
-  /// Called with the global position of the tap (or the line's bottom-left
-  /// for keyboard and semantic activation). Null makes the segment plain.
-  final ValueChanged<Offset>? onTap;
-}
+/// Logical pixels between the glyphs' baseline area and the hover underline.
+///
+/// Flutter has no underline offset, so every span of a line with links is
+/// painted with a transparent fill and its glyphs drawn as a [Shadow] shifted
+/// up by this gap. Decorations are not shifted by shadows, so the underline of
+/// a hovered link stays at its normal position while the visible glyphs sit
+/// [_underlineGap] higher. The whole `Text.rich` is then wrapped in a
+/// `Transform` (with `transformHitTests: false`) of the same gap, which puts
+/// the glyphs back on their normal position and leaves the underline
+/// [_underlineGap] below it. Both the shadow and the translate are paint-only,
+/// so layout and the paragraph size never change on hover, and hit-testing
+/// stays on the layout box, which is where the glyphs end up. A custom
+/// painter or `WidgetSpan` would give the gap too, but would lose the
+/// `Text.rich` ellipsis, per-span hit-testing and semantics. Caveat: the
+/// underline is painted up to [_underlineGap] below the layout box, so an
+/// ancestor that clips tightly to the line can cut it.
+const double _underlineGap = 3.0;
 
 /// A one-line run of text links and plain text. A link looks like its
 /// neighbours until the mouse is over it, then only that link is underlined.
 /// Keyboard focus (one Tab stop for the whole line) underlines every link.
 /// Plain segments (separators) are never underlined and never tappable.
 ///
-/// The hit area is the glyphs only, and the line keeps `maxLines: 1` with an
+/// The hit area is the layout box of the line (where the glyphs are painted), and the line keeps `maxLines: 1` with an
 /// ellipsis.
 class HoverUnderlineLinks extends StatefulWidget {
   const HoverUnderlineLinks({super.key, required this.segments, this.style});
@@ -169,34 +179,50 @@ class _HoverUnderlineLinksState extends State<HoverUnderlineLinks> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.segments.any((s) => s.onTap != null)) {
+      return Text.rich(
+        TextSpan(
+          children: [for (final s in widget.segments) TextSpan(text: s.text)],
+        ),
+        style: widget.style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    final baseColor =
+        DefaultTextStyle.of(context).style.merge(widget.style).color ??
+        Theme.of(context).colorScheme.onSurface;
     final children = <InlineSpan>[];
     for (var i = 0; i < widget.segments.length; i++) {
-      final segment = widget.segments[i];
-      if (segment.onTap == null) {
-        children.add(TextSpan(text: segment.text));
-        continue;
-      }
-      final underline = _focused || _hoveredIndex == i;
+      final isLink = widget.segments[i].onTap != null;
+      final underline = isLink && (_focused || _hoveredIndex == i);
       children.add(
         TextSpan(
-          text: segment.text,
+          text: widget.segments[i].text,
           style: TextStyle(
-            // Null keeps any decoration inherited from the line's style.
+            color: const Color(0x00000000),
+            shadows: [
+              Shadow(color: baseColor, offset: const Offset(0, -_underlineGap)),
+            ],
             decoration: underline ? TextDecoration.underline : null,
+            decorationColor: underline ? baseColor : null,
           ),
           recognizer: _recognizers[i],
-          onEnter: _enters[i],
-          onExit: _exits[i],
+          onEnter: isLink ? _enters[i] : null,
+          onExit: isLink ? _exits[i] : null,
         ),
       );
     }
-    final text = Text.rich(
-      TextSpan(children: children),
-      style: widget.style,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    final text = Transform(
+      transform: Matrix4.translationValues(0, _underlineGap, 0),
+      transformHitTests: false,
+      child: Text.rich(
+        TextSpan(children: children),
+        style: widget.style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
-    if (!widget.segments.any((s) => s.onTap != null)) return text;
     return FocusableActionDetector(
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(
