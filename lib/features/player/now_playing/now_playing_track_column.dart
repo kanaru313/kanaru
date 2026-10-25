@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
 import '../playback_controls.dart';
-import '../seek_bar.dart';
+import '../seek_bar.dart' show SeekDurationLabel, SeekElapsedLabel;
 import 'now_playing_artwork.dart';
 import 'now_playing_auto_hide.dart';
 import 'now_playing_seek_slot.dart';
@@ -31,6 +31,7 @@ class NowPlayingTrackColumn extends ConsumerWidget {
     );
     if (track == null) return const SizedBox.shrink();
     final titleStyle = nowPlayingTitleStyle(context);
+    final seekHeight = ref.watch(nowPlayingSeekSlotHeightProvider);
     return AutoHidePin(
       controller: chrome,
       child: LayoutBuilder(
@@ -41,6 +42,7 @@ class NowPlayingTrackColumn extends ConsumerWidget {
             innerWidth: constraints.maxWidth - padding.horizontal,
             bodyHeight: constraints.maxHeight,
             titleStyle: titleStyle,
+            seekHeight: seekHeight,
           );
           return Padding(
             padding: padding,
@@ -51,7 +53,13 @@ class NowPlayingTrackColumn extends ConsumerWidget {
               child: FittedBox(
                 child: SizedBox(
                   width: constraints.maxWidth - padding.horizontal,
-                  height: side + splitReserve(context, titleStyle: titleStyle),
+                  height:
+                      side +
+                      splitReserve(
+                        context,
+                        titleStyle: titleStyle,
+                        seekHeight: seekHeight,
+                      ),
                   child: Column(
                     children: [
                       NowPlayingArtwork(size: side, radius: 32),
@@ -67,9 +75,9 @@ class NowPlayingTrackColumn extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: splitSeekGap),
-                      const SizedBox(
-                        height: seekHitHeight,
-                        child: NowPlayingSeekSlot(),
+                      SizedBox(
+                        height: seekHeight,
+                        child: const NowPlayingSeekSlot(),
                       ),
                       const SizedBox(height: splitTransportGap),
                       const _TransportRow(),

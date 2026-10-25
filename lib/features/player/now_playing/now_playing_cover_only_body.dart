@@ -53,8 +53,9 @@ class NowPlayingCoverOnlyBody extends ConsumerWidget {
           1,
           fallbackSize: 16,
         ).clamp(20, double.infinity);
+    final seekHeight = ref.watch(nowPlayingSeekSlotHeightProvider);
     final seekReserve = math.max(
-      seekHitHeight,
+      seekHeight,
       MediaQuery.textScalerOf(context).scale(12 * 1.5),
     );
     final controlsReserve = seekReserve + splitSeekGap + splitTransportHeight;
@@ -114,11 +115,14 @@ class NowPlayingCoverOnlyBody extends ConsumerWidget {
                           constraints: const BoxConstraints(
                             maxWidth: _overlayMaxWidth,
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              SeekBar(track: NowPlayingSeekSlot()),
-                              SizedBox(height: splitSeekGap),
-                              PlaybackControls(
+                              SeekBar(
+                                track: const NowPlayingSeekSlot(),
+                                trackHeight: seekHeight,
+                              ),
+                              const SizedBox(height: splitSeekGap),
+                              const PlaybackControls(
                                 transportOnly: true,
                                 spacing: 20,
                               ),

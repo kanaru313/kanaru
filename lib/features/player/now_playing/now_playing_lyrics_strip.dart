@@ -59,6 +59,7 @@ class NowPlayingLyricsStrip extends ConsumerWidget {
     final track = ref.watch(
       playerServiceProvider.select((s) => s.queue.current),
     );
+    final seekHeight = ref.watch(nowPlayingSeekSlotHeightProvider);
     if (track == null) return const SizedBox.shrink();
     final theme = Theme.of(context);
     final surface = theme.colorScheme.surface;
@@ -145,7 +146,12 @@ class NowPlayingLyricsStrip extends ConsumerWidget {
                         ],
                       ),
                     ),
-                  const Expanded(child: SeekBar(track: NowPlayingSeekSlot())),
+                  Expanded(
+                    child: SeekBar(
+                      track: const NowPlayingSeekSlot(),
+                      trackHeight: seekHeight,
+                    ),
+                  ),
                   const PlaybackControls(transportOnly: true),
                 ],
               );
