@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../widgets/detail_side_pane.dart';
+import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import 'album_header.dart';
 
 /// Left column of an album page in a wide window: the album cover, then

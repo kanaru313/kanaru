@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/cover_colors/cover_palette.dart';
 import '../../../core/cover_colors/cover_palette_of_provider.dart';
 import '../../../core/settings/settings_provider.dart';
-import '../../../shared/readable_gradient_stops.dart';
+import '../../readable_gradient_stops.dart';
 
 /// Share of the readable tint the page shows: the full one, made for the
 /// Now Playing screen, is too strong behind a list of rows.

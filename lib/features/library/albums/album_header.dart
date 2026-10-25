@@ -5,7 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/album_artist_label.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../play_shuffle_actions.dart';
+import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
 
 /// Header of an album page in a narrow window: artwork beside the title,
 /// artist, year and the Play buttons. The song count and length sit in the

@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/genres/genre_header.dart';
-import 'package:kanaru/features/library/genres/genre_hero_cover.dart';
+import 'package:kanaru/shared/widgets/detail_page/collage_hero_cover.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
-import 'package:kanaru/features/library/play_shuffle_actions.dart';
-import 'package:kanaru/features/library/widgets/cover_tint_page_background.dart';
+import 'package:kanaru/shared/widgets/detail_page/play_shuffle_actions.dart';
+import 'package:kanaru/shared/widgets/detail_page/cover_tint_page_background.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/card_shelf.dart';
@@ -46,8 +46,8 @@ void main() {
       greaterThanOrEqualTo(tester.getTopRight(pane).dx),
     );
 
-    final backdrop = find.byType(GenreHeroBackdrop);
-    final card = find.byType(GenreHeroCard);
+    final backdrop = find.byType(CollageHeroBackdrop);
+    final card = find.byType(CollageHeroCard);
     expect(find.descendant(of: pane, matching: backdrop), findsOneWidget);
     expect(find.descendant(of: pane, matching: card), findsOneWidget);
     expect(tester.getSize(backdrop), const Size(320, 320));
@@ -125,7 +125,7 @@ void main() {
     expect(icons.hitTestable(), findsOneWidget);
     expect(
       find.descendant(
-        of: find.byType(GenreHeroCard),
+        of: find.byType(CollageHeroCard),
         matching: find.byIcon(AppIcons.genre),
       ),
       findsOneWidget,

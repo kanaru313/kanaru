@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/cover_colors/cover_palette.dart';
 import 'package:kanaru/core/cover_colors/cover_palette_of_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/library/widgets/cover_tint_page_background.dart';
+import 'package:kanaru/shared/widgets/detail_page/cover_tint_page_background.dart';
 import 'package:kanaru/shared/readable_gradient_stops.dart';
 import 'package:material_ui/material_ui.dart';
 

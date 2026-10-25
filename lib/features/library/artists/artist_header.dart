@@ -8,8 +8,8 @@ import '../../../shared/widgets/artist_avatar.dart';
 import '../../../shared/widgets/cover_art.dart';
 import '../../../shared/widgets/placeholder_colors.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../play_shuffle_actions.dart';
-import '../widgets/detail_side_pane.dart';
+import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
+import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 
 /// Header of an artist page in a narrow window: avatar beside the name,
 /// "N albums" and the Play buttons. The song count and length sit in the

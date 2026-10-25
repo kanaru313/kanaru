@@ -5,9 +5,9 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart' show unknownGenreKey;
 import '../../../shared/widgets/playlist_cover.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../play_shuffle_actions.dart';
-import '../widgets/detail_side_pane.dart';
-import 'genre_hero_cover.dart';
+import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
+import '../../../shared/widgets/detail_page/detail_side_pane.dart';
+import '../../../shared/widgets/detail_page/collage_hero_cover.dart';
 
 /// Header of a genre page in a narrow window: cover collage beside the name,
 /// "N albums · N songs" and the Play, Shuffle and queue buttons. A wide
@@ -93,12 +93,12 @@ class GenreSidePane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DetailSidePane(
-      cover: GenreHeroBackdrop(
+      cover: CollageHeroBackdrop(
         coverKeys: coverKeys,
         seed: 'genre:$genreKey',
         icon: _genreIcon(genreKey),
       ),
-      coverOverlay: GenreHeroCard(
+      coverOverlay: CollageHeroCard(
         coverKeys: coverKeys,
         seed: 'genre:$genreKey',
         icon: _genreIcon(genreKey),

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/features/library/albums/album_header.dart';
 import 'package:kanaru/features/library/albums/album_side_pane.dart';
-import 'package:kanaru/features/library/play_shuffle_actions.dart';
+import 'package:kanaru/shared/widgets/detail_page/play_shuffle_actions.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/expanding_search_bar.dart';

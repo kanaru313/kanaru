@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
-import '../../../shared/format_duration.dart';
-import '../../../shared/icons/app_icons.dart';
-import '../../../shared/in_page_filter.dart';
-import '../../../shared/widgets/expanding_search_bar.dart';
+import '../../format_duration.dart';
+import '../../icons/app_icons.dart';
+import '../../in_page_filter.dart';
+import '../expanding_search_bar.dart';
 
 /// The bar over the songs of a detail page (album, artist, genre): "N songs ·
 /// length" and the filter button, whose box grows over the bar when opened.
