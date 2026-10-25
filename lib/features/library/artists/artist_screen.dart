@@ -148,8 +148,8 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
                       onQueueAction: queueAlbum,
                     ),
                   ],
-                  heading(l10n.artistsSongs),
                   SliverTracksToolbar(
+                    title: l10n.artistsSongs,
                     songCount: songs.length,
                     durationMs: sections.durationMs,
                     filter: _filter,

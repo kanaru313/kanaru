@@ -559,6 +559,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albumsUnknownArtist => 'Unknown artist';
 
   @override
+  String get albumsSongs => 'Songs';
+
+  @override
   String albumsSongCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

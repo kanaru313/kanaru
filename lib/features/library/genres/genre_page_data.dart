@@ -28,6 +28,12 @@ class GenrePageData {
   /// Up to four distinct cover keys for the header collage, from
   /// [genresProvider].
   final List<String> coverKeys;
+
+  /// Length of all [tracks]; null when none has a known length.
+  int? get durationMs {
+    final known = tracks.map((t) => t.durationMs).nonNulls;
+    return known.isEmpty ? null : known.fold<int>(0, (a, b) => a + b);
+  }
 }
 
 /// What the page needs of a genre from the Genres list: its name, the

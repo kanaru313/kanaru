@@ -926,6 +926,12 @@ abstract class AppLocalizations {
   /// **'Unknown artist'**
   String get albumsUnknownArtist;
 
+  /// No description provided for @albumsSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get albumsSongs;
+
   /// No description provided for @albumsSongCount.
   ///
   /// In en, this message translates to:

@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/features/library/albums/album_header.dart';
 import 'package:kanaru/features/library/albums/album_side_pane.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/expanding_search_bar.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -48,26 +50,61 @@ void main() {
     );
   });
 
-  testWidgets('the bar over the tracks shows the count and opens the filter '
-      'under it, as wide as the list; its close button hides it', (
+  testWidgets('the filter grows out of its button over the whole bar, from '
+      'the note icon to the button, which turns into a close button', (
     tester,
   ) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _album, location: _location);
     expect(find.text('2 songs · 0:02'), findsOneWidget);
-
-    await tester.tap(find.byTooltip('Filter in this page'));
-    await tester.pumpAndSettle();
-    final box = find.byType(InPageSearchBox);
-    expect(box, findsOneWidget);
-    expect(tester.getSize(box).width, greaterThan(inPageSearchWidth));
-    expect(
-      tester.getTopLeft(box).dy,
-      greaterThan(tester.getBottomLeft(find.text('2 songs · 0:02')).dy),
+    final note = tester.getTopLeft(
+      find.descendant(
+        of: find
+            .ancestor(
+              of: find.text('2 songs · 0:02'),
+              matching: find.byType(Row),
+            )
+            .first,
+        matching: find.byIcon(AppIcons.musicNoteOutlined),
+      ),
     );
 
-    await tester.tap(find.byTooltip('Close'));
+    await tester.tap(find.byTooltip('Filter in this page'));
+    await tester.pump();
+    await tester.pump(expandingSearchDuration ~/ 2);
+    final box = find.byType(InPageSearchBox);
+    final shown = find.ancestor(of: box, matching: find.byType(SizeTransition));
+    final half = tester.getTopLeft(shown).dx;
+    expect(half, greaterThan(note.dx));
+
+    await tester.pumpAndSettle();
+    expect(tester.getSize(box).width, greaterThan(inPageSearchWidth));
+    expect(tester.getTopLeft(box).dx, moreOrLessEquals(note.dx));
+    expect(tester.getTopLeft(shown).dx, lessThan(half));
+    // The Songs title before the count stays in view.
+    final title = find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.text('Songs'),
+    );
+    expect(tester.getTopRight(title).dx, lessThan(tester.getTopLeft(box).dx));
+    expect(
+      tester.getCenter(title).dy,
+      moreOrLessEquals(tester.getCenter(box).dy, epsilon: 4),
+    );
+    final close = find.byTooltip('Close');
+    expect(
+      tester.getTopRight(box).dx,
+      lessThanOrEqualTo(tester.getTopLeft(close).dx),
+    );
+    expect(
+      find.descendant(of: box, matching: find.byIcon(AppIcons.search)),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Filter in this page'), findsNothing);
+
+    await tester.tap(close);
     await tester.pumpAndSettle();
     expect(find.byType(InPageSearchBox), findsNothing);
+    expect(find.byTooltip('Filter in this page'), findsOneWidget);
   });
 }

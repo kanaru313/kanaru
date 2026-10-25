@@ -552,6 +552,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get albumsUnknownArtist => 'Nghệ sĩ không rõ';
 
   @override
+  String get albumsSongs => 'Bài hát';
+
+  @override
   String albumsSongCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

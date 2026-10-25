@@ -20,6 +20,7 @@ import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
+import '../widgets/tracks_toolbar.dart';
 import 'genre_display_name.dart';
 import 'genre_header.dart';
 import 'genre_page_data.dart';
@@ -125,7 +126,12 @@ class _GenrePageState extends ConsumerState<_GenrePage>
                     enqueueAlbum(ref, context, action, album.key, album.title),
               ),
             ],
-            SliverSongsHeading(title: l10n.genresSongs, filter: _filter),
+            SliverTracksToolbar(
+              title: l10n.genresSongs,
+              songCount: songs.length,
+              durationMs: data.durationMs,
+              filter: _filter,
+            ),
             if (filtering && shown.isEmpty)
               SliverToBoxAdapter(child: InPageNoMatch(query: _filter.query))
             else

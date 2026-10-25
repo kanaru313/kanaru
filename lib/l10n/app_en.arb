@@ -364,6 +364,7 @@
   "albumsEmptyTitle": "No albums yet",
   "albumsEmptyMessage": "Songs with an album tag show up here as albums.",
   "albumsUnknownArtist": "Unknown artist",
+  "albumsSongs": "Songs",
   "albumsSongCount": "{count, plural, =1{1 song} other{{count} songs}}",
   "@albumsSongCount": {
     "placeholders": {

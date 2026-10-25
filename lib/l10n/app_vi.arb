@@ -138,6 +138,7 @@
   "albumsEmptyTitle": "Chưa có album",
   "albumsEmptyMessage": "Bài hát có tag album sẽ hiện ở đây theo album.",
   "albumsUnknownArtist": "Nghệ sĩ không rõ",
+  "albumsSongs": "Bài hát",
   "albumsSongCount": "{count, plural, other{{count} bài}}",
   "albumsMinutes": "{count} phút",
   "albumsPlayAlbum": "Phát album",

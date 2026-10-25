@@ -1,8 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart';
-import '../../shared/in_page_filter.dart';
-import '../../shared/widgets/in_page_search_field.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile.dart';
 
@@ -40,33 +38,5 @@ class SliverBrowseSongs extends StatelessWidget {
         onQueueAction: (action) => onQueueAction(song, action),
       );
     },
-  );
-}
-
-/// The "Songs" heading of an artist or genre page, with the filter button at
-/// its end.
-class SliverSongsHeading extends StatelessWidget {
-  const SliverSongsHeading({
-    super.key,
-    required this.title,
-    required this.filter,
-  });
-
-  final String title;
-  final InPageFilterController filter;
-
-  @override
-  Widget build(BuildContext context) => SliverToBoxAdapter(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(32, 8, 32, 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-          ),
-          InPageSearchField(controller: filter),
-        ],
-      ),
-    ),
   );
 }
