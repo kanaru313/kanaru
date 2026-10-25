@@ -10,30 +10,61 @@ import '../../../shared/readable_gradient_stops.dart';
 /// Now Playing screen, is too strong behind a list of rows.
 const _tintStrength = 0.5;
 
-/// Paints the background of a detail page (album, artist) with a faint
-/// gradient of the colors of its cover, faint enough that text keeps its contrast, when
-/// "colors from the cover" is on. Only the page is tinted here; the app
-/// theme follows the playing track. Off, no cover, or no colors yet,
-/// leaves the page as it was; the tint fades in once the colors are known.
+/// Paints the background of a detail page (album, artist, genre) with a faint
+/// gradient of the colors of its cover, faint enough that text keeps its
+/// contrast, when "colors from the cover" is on. The default constructor tints
+/// from one cover; [CoverTintPageBackground.blend] from the most common color
+/// of each of several covers. Only the page is tinted here; the app theme
+/// follows the playing track. Off, no cover, or no colors yet, leaves the page
+/// as it was; the tint fades in once the colors of every cover are known.
 class CoverTintPageBackground extends ConsumerWidget {
-  const CoverTintPageBackground({
+  CoverTintPageBackground({
+    Key? key,
+    required String? coverKey,
+    required Widget child,
+  }) : this.blend(key: key, coverKeys: [?coverKey], child: child);
+
+  /// Tints from up to [maxGradientStops] of [coverKeys], in order.
+  const CoverTintPageBackground.blend({
     super.key,
-    required this.coverKey,
+    required this.coverKeys,
     required this.child,
   });
 
-  final String? coverKey;
+  final List<String> coverKeys;
   final Widget child;
+
+  /// The colors to tint with, or `null` while any cover is still loading, or
+  /// when no cover has colors. One cover with colors gives all of them; several
+  /// give the most common color of each.
+  List<Color>? _tintColors(WidgetRef ref) {
+    // Per cover: `null` while loading, empty once settled without colors.
+    final settled = [
+      for (final key in coverKeys.take(maxGradientStops))
+        ref.watch(
+          coverPaletteOfProvider(key).select(
+            (p) => p.isLoading ? null : (p.value?.colors ?? const <Color>[]),
+          ),
+        ),
+    ];
+    if (settled.contains(null)) return null;
+    final resolved = [
+      for (final colors in settled)
+        if (colors!.isNotEmpty) colors,
+    ];
+    return switch (resolved.length) {
+      0 => null,
+      1 => resolved.single,
+      _ => [for (final colors in resolved) colors.first],
+    };
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final on = ref.watch(
       settingsProvider.select((s) => s.display.colorFromCover),
     );
-    final key = on ? coverKey : null;
-    final colors = key == null
-        ? null
-        : ref.watch(coverPaletteOfProvider(key).select((p) => p.value?.colors));
+    final colors = on ? _tintColors(ref) : null;
     final scheme = Theme.of(context).colorScheme;
     return Stack(
       fit: StackFit.passthrough,
