@@ -66,6 +66,7 @@ class AlbumHeaderDetails extends StatelessWidget {
     required this.onShuffle,
     required this.onQueueAction,
     this.artist,
+    this.actionsAtEnd = false,
   });
 
   final AlbumSummary album;
@@ -73,6 +74,9 @@ class AlbumHeaderDetails extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
+
+  /// Puts the Play buttons at the right end of the column, as in the side pane.
+  final bool actionsAtEnd;
 
   /// Replaces the plain artist name, for example with a link.
   final Widget? artist;
@@ -113,11 +117,16 @@ class AlbumHeaderDetails extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        PlayShuffleActions(
-          playLabel: l10n.albumsPlay,
-          onPlay: onPlay,
-          onShuffle: onShuffle,
-          onQueueAction: onQueueAction,
+        Align(
+          alignment: actionsAtEnd
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
+          child: PlayShuffleActions(
+            playLabel: l10n.albumsPlay,
+            onPlay: onPlay,
+            onShuffle: onShuffle,
+            onQueueAction: onQueueAction,
+          ),
         ),
       ],
     );

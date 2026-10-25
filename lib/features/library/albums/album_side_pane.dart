@@ -7,7 +7,8 @@ import '../widgets/detail_side_pane.dart';
 import 'album_header.dart';
 
 /// Left column of an album page in a wide window: the album cover, then
-/// the title, artist, year and the Play buttons (see [DetailSidePane]).
+/// the title, artist, year and the Play buttons at its right end (see
+/// [DetailSidePane]).
 class AlbumSidePane extends StatelessWidget {
   const AlbumSidePane({
     super.key,
@@ -40,6 +41,7 @@ class AlbumSidePane extends StatelessWidget {
       details: AlbumHeaderDetails(
         album: album,
         artist: artist,
+        actionsAtEnd: true,
         titleStyle: Theme.of(context).textTheme.headlineSmall,
         onPlay: onPlay,
         onShuffle: onShuffle,
