@@ -757,6 +757,8 @@
   "settingsAnimationsHint": "Off: pages, panels, tabs and the sidebar change at once, without motion.",
   "settingsColorFromCover": "Colors from the cover",
   "settingsColorFromCoverHint": "Tint the app with the colors of the cover that is playing.",
+  "settingsWaveformSeekBar": "Waveform seek bar",
+  "settingsWaveformSeekBarHint": "Show the shape of the song in the seek bar of Now Playing.",
   "settingsFontScale": "Text size",
   "settingsFontScaleHint": "Makes all text in Kanaru smaller or larger.",
   "settingsRespectNomedia": "Skip folders with .nomedia",

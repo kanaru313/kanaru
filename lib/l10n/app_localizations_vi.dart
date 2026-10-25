@@ -1170,6 +1170,13 @@ class AppLocalizationsVi extends AppLocalizations {
       'Phủ màu của ảnh bìa đang phát lên giao diện.';
 
   @override
+  String get settingsWaveformSeekBar => 'Thanh tua dạng sóng';
+
+  @override
+  String get settingsWaveformSeekBarHint =>
+      'Hiện hình dạng bài hát trên thanh tua của màn hình đang phát.';
+
+  @override
   String get settingsFontScale => 'Cỡ chữ';
 
   @override

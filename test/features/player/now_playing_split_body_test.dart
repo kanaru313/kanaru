@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_now_playing.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_album_line.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_seek_slot.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_split_geometry.dart';
@@ -211,6 +212,25 @@ void main() {
             .first,
       );
       expect(header.opacity, 1);
+    });
+  });
+
+  group('seek bar style', () {
+    testWidgets('turning the waveform off gives 24 px to the cover', (
+      tester,
+    ) async {
+      await pump(tester);
+      final before = tester.getSize(cover).height;
+      expect(tester.getSize(find.byType(NowPlayingSeekSlot)).height, 48);
+
+      h.container
+          .read(settingsProvider.notifier)
+          .setDisplay(const DisplayPrefs(waveformSeekBar: false));
+      await tester.pumpAndSettle();
+
+      expect(tester.getSize(find.byType(NowPlayingSeekSlot)).height, 24);
+      expect(tester.getSize(cover).height, closeTo(before + 24, 0.5));
+      expect(tester.takeException(), isNull);
     });
   });
 }

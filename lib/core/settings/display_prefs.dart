@@ -23,12 +23,14 @@ const maxFontScale = 1.5;
 
 /// How the app looks beyond the theme. The defaults are what the app shows
 /// today. Read: [colorFromCover] (the cover palette and the scan),
+/// [waveformSeekBar] (`NowPlayingSeekSlot`),
 /// [fontScale] (the app's builder, `lib/app/app.dart`) and
 /// [trackNumbersInAlbum] (album pages), [sidebarTabs] (the sidebar), and
 /// [sidePanelOpen] and [sidePanelTab] (the shell's docked side panel).
 class DisplayPrefs {
   const DisplayPrefs({
     this.colorFromCover = false,
+    this.waveformSeekBar = true,
     this.fontScale = 1.0,
     this.sidebarTabs = _allTabs,
     this.trackNumbersInAlbum = true,
@@ -38,6 +40,10 @@ class DisplayPrefs {
 
   /// Tint the app with colors taken from the cover being played.
   final bool colorFromCover;
+
+  /// Show the shape of the song in the seek bar of Now Playing; off shows
+  /// the flat seek bar.
+  final bool waveformSeekBar;
 
   /// Multiplies every text size, on top of the system's text scale; 1.0
   /// leaves them alone. Enlarging stops at twice the normal size (or the
@@ -60,6 +66,7 @@ class DisplayPrefs {
 
   DisplayPrefs copyWith({
     bool? colorFromCover,
+    bool? waveformSeekBar,
     double? fontScale,
     Set<SidebarTab>? sidebarTabs,
     bool? trackNumbersInAlbum,
@@ -67,6 +74,7 @@ class DisplayPrefs {
     SidePanelTab? sidePanelTab,
   }) => DisplayPrefs(
     colorFromCover: colorFromCover ?? this.colorFromCover,
+    waveformSeekBar: waveformSeekBar ?? this.waveformSeekBar,
     fontScale: fontScale ?? this.fontScale,
     sidebarTabs: sidebarTabs == null
         ? this.sidebarTabs
@@ -80,6 +88,7 @@ class DisplayPrefs {
   bool operator ==(Object other) =>
       other is DisplayPrefs &&
       other.colorFromCover == colorFromCover &&
+      other.waveformSeekBar == waveformSeekBar &&
       other.fontScale == fontScale &&
       setEquals(other.sidebarTabs, sidebarTabs) &&
       other.trackNumbersInAlbum == trackNumbersInAlbum &&
@@ -89,6 +98,7 @@ class DisplayPrefs {
   @override
   int get hashCode => Object.hash(
     colorFromCover,
+    waveformSeekBar,
     fontScale,
     Object.hashAllUnordered(sidebarTabs),
     trackNumbersInAlbum,
@@ -98,7 +108,8 @@ class DisplayPrefs {
 
   @override
   String toString() =>
-      'DisplayPrefs(colorFromCover: $colorFromCover, fontScale: $fontScale, '
+      'DisplayPrefs(colorFromCover: $colorFromCover, '
+      'waveformSeekBar: $waveformSeekBar, fontScale: $fontScale, '
       'sidebarTabs: ${sidebarTabs.map((t) => t.name).join(',')}, '
       'trackNumbersInAlbum: $trackNumbersInAlbum, '
       'sidePanelOpen: $sidePanelOpen, sidePanelTab: ${sidePanelTab.name})';

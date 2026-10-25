@@ -91,6 +91,42 @@ void main() {
     expect(json['sidePanelTab'], 'queue');
   });
 
+  test('the waveform seek bar is on unless the file says otherwise', () {
+    expect(const DisplayPrefs().waveformSeekBar, isTrue);
+    expect(decodeDisplayPrefs(<String, Object?>{}).$1.waveformSeekBar, isTrue);
+    for (final bad in <Object?>['no', 0, null, <Object?>[]]) {
+      expect(
+        decodeDisplayPrefs({'waveformSeekBar': bad}).$1.waveformSeekBar,
+        isTrue,
+        reason: '$bad',
+      );
+    }
+  });
+
+  test('the waveform seek bar round-trips and is not listed as unknown', () {
+    final (prefs, extra) = decodeDisplayPrefs({'waveformSeekBar': false});
+
+    expect(prefs.waveformSeekBar, isFalse);
+    expect(extra, isEmpty);
+    final json = encodeDisplayPrefs(prefs, extra: extra);
+    expect(json['waveformSeekBar'], false);
+    expect(decodeDisplayPrefs(json).$1, prefs);
+    expect(prefs.copyWith(waveformSeekBar: true).waveformSeekBar, isTrue);
+    expect(prefs, isNot(const DisplayPrefs()));
+  });
+
+  test('unknown keys survive next to the waveform seek bar', () {
+    final (prefs, extra) = decodeDisplayPrefs({
+      'future': 1,
+      'waveformSeekBar': false,
+    });
+
+    final json = encodeDisplayPrefs(prefs, extra: extra);
+
+    expect(json['future'], 1);
+    expect(json['waveformSeekBar'], false);
+  });
+
   test('font scale is moved into range; NaN and infinity give 1.0', () {
     double scale(Object? v) =>
         decodeDisplayPrefs({'fontScale': v}).$1.fontScale;

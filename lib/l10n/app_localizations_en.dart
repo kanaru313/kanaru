@@ -1219,6 +1219,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tint the app with the colors of the cover that is playing.';
 
   @override
+  String get settingsWaveformSeekBar => 'Waveform seek bar';
+
+  @override
+  String get settingsWaveformSeekBarHint =>
+      'Show the shape of the song in the seek bar of Now Playing.';
+
+  @override
   String get settingsFontScale => 'Text size';
 
   @override

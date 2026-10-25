@@ -2,6 +2,7 @@ import 'display_prefs.dart';
 import 'settings_codec_values.dart';
 
 const _colorFromCoverKey = 'colorFromCover';
+const _waveformSeekBarKey = 'waveformSeekBar';
 const _fontScaleKey = 'fontScale';
 const _hiddenSidebarTabsKey = 'hiddenSidebarTabs';
 const _trackNumbersInAlbumKey = 'trackNumbersInAlbum';
@@ -10,6 +11,7 @@ const _sidePanelTabKey = 'sidePanelTab';
 final Set<SidebarTab> _allTabs = const DisplayPrefs().sidebarTabs;
 const _knownKeys = {
   _colorFromCoverKey,
+  _waveformSeekBarKey,
   _fontScaleKey,
   _hiddenSidebarTabsKey,
   _trackNumbersInAlbumKey,
@@ -28,6 +30,7 @@ const _knownKeys = {
   return (
     DisplayPrefs(
       colorFromCover: boolOr(map[_colorFromCoverKey], d.colorFromCover),
+      waveformSeekBar: boolOr(map[_waveformSeekBarKey], d.waveformSeekBar),
       fontScale: doubleInRange(
         map[_fontScaleKey],
         minFontScale,
@@ -80,6 +83,7 @@ Map<String, Object?> encodeDisplayPrefs(
   return {
     ...extra,
     _colorFromCoverKey: prefs.colorFromCover,
+    _waveformSeekBarKey: prefs.waveformSeekBar,
     _fontScaleKey: prefs.fontScale,
     // In enum order, whatever order the set was built in; names this version
     // does not know stay hidden.

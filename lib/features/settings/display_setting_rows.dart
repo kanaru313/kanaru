@@ -7,8 +7,8 @@ import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Appearance options: motion, colors from the cover and the text size. All
-/// apply at once.
+/// Appearance options: motion, colors from the cover, the seek bar style of
+/// Now Playing and the text size. All apply at once.
 class DisplaySettingRows extends ConsumerWidget {
   const DisplaySettingRows({super.key});
 
@@ -36,6 +36,16 @@ class DisplaySettingRows extends ConsumerWidget {
             value: settings.display.colorFromCover,
             onChanged: (on) => notifier.setDisplay(
               settings.display.copyWith(colorFromCover: on),
+            ),
+          ),
+        ),
+        SettingRow.single(
+          title: l10n.settingsWaveformSeekBar,
+          subtitle: l10n.settingsWaveformSeekBarHint,
+          control: Switch(
+            value: settings.display.waveformSeekBar,
+            onChanged: (on) => notifier.setDisplay(
+              settings.display.copyWith(waveformSeekBar: on),
             ),
           ),
         ),

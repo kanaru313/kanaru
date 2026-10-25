@@ -1868,6 +1868,18 @@ abstract class AppLocalizations {
   /// **'Tint the app with the colors of the cover that is playing.'**
   String get settingsColorFromCoverHint;
 
+  /// No description provided for @settingsWaveformSeekBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Waveform seek bar'**
+  String get settingsWaveformSeekBar;
+
+  /// No description provided for @settingsWaveformSeekBarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the shape of the song in the seek bar of Now Playing.'**
+  String get settingsWaveformSeekBarHint;
+
   /// No description provided for @settingsFontScale.
   ///
   /// In en, this message translates to:
