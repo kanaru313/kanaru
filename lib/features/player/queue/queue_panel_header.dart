@@ -4,6 +4,13 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 
+/// Edges of the header row when [QueuePanelHeader.title] is given.
+const queueHeaderTitlePadding = EdgeInsets.fromLTRB(24, 8, 12, 8);
+
+/// Space reserved for the three buttons (filter, show-current, overflow) that
+/// end that row, one 48 px touch target each.
+const queueHeaderActionsWidth = 3 * 48.0;
+
 /// Top of the queue panel, in two rows. The first has the title and, in the
 /// side sheet, the close button. The second has the [summary] line on the
 /// left and, on the right, the filter and "jump to current" buttons plus an
@@ -79,7 +86,7 @@ class QueuePanelHeader extends StatelessWidget {
     final title = this.title;
     if (title != null) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 12, 8),
+        padding: queueHeaderTitlePadding,
         child: Row(
           children: [
             Expanded(child: title),

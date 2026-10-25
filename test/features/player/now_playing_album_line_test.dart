@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_album_line.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_track_info.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:go_router/go_router.dart';
@@ -40,6 +41,11 @@ void main() {
   Finder inScreen(Finder f) =>
       find.descendant(of: find.byType(NowPlayingScreen), matching: f);
 
+  /// The playing track's own text: the queue beside it in a wide window lists
+  /// the same song.
+  Finder inColumn(Finder f) =>
+      find.descendant(of: find.byType(NowPlayingTrackColumn), matching: f);
+
   Future<Track> seededTrack(
     WidgetTester tester, {
     String? album = 'Blue Album',
@@ -58,11 +64,11 @@ void main() {
     await openNowPlaying(tester, track);
     await tester.pumpAndSettle();
 
-    final album = inScreen(find.text('Blue Album'));
+    final album = inColumn(find.text('Blue Album'));
     expect(album, findsOneWidget);
     expect(
       tester.getTopLeft(album).dy,
-      greaterThan(tester.getTopLeft(inScreen(find.text('Ann'))).dy),
+      greaterThan(tester.getTopLeft(inColumn(find.text('Ann'))).dy),
     );
 
     await tester.tap(album);
@@ -163,7 +169,7 @@ void main() {
     );
     await openNowPlaying(tester, track);
 
-    final album = inScreen(find.text('Blue Album'));
+    final album = inColumn(find.text('Blue Album'));
     expect(album, findsOneWidget);
     expect(
       find.descendant(
@@ -235,8 +241,8 @@ void main() {
   });
 
   for (final height in [480.0, 560.0]) {
-    testWidgets('at $height px high the wide body fits a two line title, the '
-        'artist and the album without scrolling', (tester) async {
+    testWidgets('at $height px high the track column fits a two line title, '
+        'the artist and the album without scrolling', (tester) async {
       await openWithTracks(tester, h, [
         const TestTrack('a', artist: 'Ann', album: 'Blue Album'),
       ], location: '/home');
@@ -251,14 +257,25 @@ void main() {
         size: Size(1280, height),
       );
 
-      final scrollable = tester.state<ScrollableState>(
-        inScreen(find.byType(Scrollable)).first,
+      // The page behind may overflow in a window this short; only the track
+      // column counts (its own overflow is tested on its own).
+      expect(tester.takeException(), isNull);
+      expect(
+        find.descendant(
+          of: find.byType(NowPlayingTrackColumn),
+          matching: find.byType(Scrollable),
+        ),
+        findsNothing,
       );
-      expect(scrollable.position.maxScrollExtent, 0);
-      final view = tester.getRect(inScreen(find.byType(Scrollable)).first);
-      final album = tester.getRect(inScreen(find.text('Blue Album')));
-      expect(album.bottom, lessThanOrEqualTo(view.bottom));
-      expect(album.top, greaterThanOrEqualTo(view.top));
+      final column = tester.getRect(find.byType(NowPlayingTrackColumn));
+      final album = tester.getRect(inColumn(find.text('Blue Album')));
+      expect(album.bottom, lessThanOrEqualTo(column.bottom));
+      expect(album.top, greaterThanOrEqualTo(column.top));
+      // The controls under it fit too.
+      expect(
+        tester.getRect(inColumn(find.byTooltip('Pause'))).bottom,
+        lessThanOrEqualTo(column.bottom),
+      );
     });
   }
 

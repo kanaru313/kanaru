@@ -4,6 +4,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
 import 'package:kanaru/features/player/now_playing_summary.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
 import 'package:material_ui/material_ui.dart';
@@ -74,6 +75,12 @@ void main() {
   final footer = find.byType(NowPlayingSummary);
   final screen = find.byType(NowPlayingScreen);
 
+  /// The cover of the playing track: in a wide window the queue beside it
+  /// has covers of its own.
+  Finder coverScope() => find.byType(NowPlayingTrackColumn).evaluate().isEmpty
+      ? screen
+      : find.byType(NowPlayingTrackColumn);
+
   testWidgets('the player bar shows a cover made while playing', (
     tester,
   ) async {
@@ -89,10 +96,10 @@ void main() {
   ) async {
     final path = await playUncovered(tester, const Size(1280, 800));
     await openNowPlaying(tester);
-    expect(artIn(tester, screen), isNull);
+    expect(artIn(tester, coverScope()), isNull);
 
     await writeCover(tester, path);
-    expect(artIn(tester, screen), _cover);
+    expect(artIn(tester, coverScope()), _cover);
   });
 
   testWidgets('narrow Now Playing shows a cover made while playing', (
@@ -100,10 +107,10 @@ void main() {
   ) async {
     final path = await playUncovered(tester, const Size(600, 700));
     await openNowPlaying(tester);
-    expect(artIn(tester, screen), isNull);
+    expect(artIn(tester, coverScope()), isNull);
 
     await writeCover(tester, path);
-    expect(artIn(tester, screen), _cover);
+    expect(artIn(tester, coverScope()), _cover);
   });
 
   testWidgets('a track outside the library shows its own art', (tester) async {

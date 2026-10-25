@@ -249,55 +249,37 @@ void main() {
       expect(container.read(navigationHistoryProvider).canGoForward, isFalse);
     });
 
-    testWidgets('the mouse back button closes the Now Playing sheet first', (
-      tester,
-    ) async {
+    testWidgets('the mouse back button closes Now Playing', (tester) async {
       await pumpApp(tester);
       container.read(nowPlayingOpenProvider.notifier).open();
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(
-          of: find.byType(NowPlayingScreen),
-          matching: find.byTooltip('Show now playing list'),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await pressMouseBack(tester);
-      expect(find.byType(QueuePanel), findsNothing);
       expect(find.byType(NowPlayingScreen), findsOneWidget);
 
       await pressMouseBack(tester);
       expect(find.byType(NowPlayingScreen), findsNothing);
     });
 
-    testWidgets('opens from the Now Playing footer, and Esc closes only it', (
+    testWidgets('wide Now Playing has the queue in a tab, no sheet button', (
       tester,
     ) async {
       await pumpApp(tester);
       container.read(nowPlayingOpenProvider.notifier).open();
       await tester.pumpAndSettle();
 
-      await tester.tap(
+      final inScreen = find.descendant(
+        of: find.byType(NowPlayingScreen),
+        matching: find.byType(QueuePanel),
+      );
+      expect(inScreen, findsOneWidget);
+      expect(
         find.descendant(
           of: find.byType(NowPlayingScreen),
           matching: find.byTooltip('Show now playing list'),
         ),
-      );
-      await tester.pumpAndSettle();
-      expect(
-        find.descendant(
-          of: find.byType(NowPlayingScreen),
-          matching: find.byType(QueuePanel),
-        ),
-        findsOneWidget,
+        findsNothing,
       );
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
-      expect(find.byType(QueuePanel), findsNothing);
-      expect(find.byType(NowPlayingScreen), findsOneWidget);
-
+      // Esc closes Now Playing; nothing sheet-like is in the way.
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(find.byType(NowPlayingScreen), findsNothing);
@@ -326,33 +308,6 @@ void main() {
       expect(tester.widget<PageView>(pages).controller!.page, 0);
       expect(find.byType(QueuePanel), findsOneWidget);
       expect(anyRow, findsNWidgets(4));
-    });
-
-    testWidgets('keeps the chrome of Now Playing shown while open', (
-      tester,
-    ) async {
-      await pumpApp(tester);
-      container.read(nowPlayingOpenProvider.notifier).open();
-      await tester.pumpAndSettle();
-      final screen = find.byType(NowPlayingScreen);
-      await tester.tap(
-        find.descendant(
-          of: screen,
-          matching: find.byTooltip('Show now playing list'),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.pump(const Duration(seconds: 10));
-
-      final header = find.descendant(
-        of: screen,
-        matching: find.byType(AnimatedOpacity),
-      );
-      expect(
-        tester.widgetList<AnimatedOpacity>(header).map((o) => o.opacity),
-        everyElement(1),
-      );
     });
 
     testWidgets('closes itself when the queue is emptied', (tester) async {

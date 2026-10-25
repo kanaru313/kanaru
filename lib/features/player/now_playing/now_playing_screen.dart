@@ -5,11 +5,10 @@ import '../queue/queue_panel.dart';
 import '../queue/queue_sheet_host.dart';
 import '../cover_tint_background.dart';
 import 'now_playing_auto_hide.dart';
-import 'now_playing_footer.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_title_bar.dart';
 import 'now_playing_tabs.dart';
-import 'now_playing_wide_body.dart';
+import 'now_playing_wide_layout.dart';
 
 /// Window width below which Now Playing becomes one column with tabs.
 const _wideBreakpoint = 720.0;
@@ -22,12 +21,10 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   /// See `NowPlayingOverlay.titleBar`.
   final NowPlayingTitleBar? titleBar;
 
-  /// Lyrics view, `null` when the track has none. With it the cover block
-  /// takes half the width and the header shows the lyrics-only toggle; the
-  /// narrow layout shows it as a page right of the track.
+  /// Lyrics view, `null` when the track has none. The wide layout shows it
+  /// in a tab next to the queue; the narrow layout as a page right of the
+  /// track.
   final Widget? lyrics;
-
-  bool get hasLyrics => lyrics != null;
 
   @override
   ConsumerState<NowPlayingScreen> createState() => _NowPlayingScreenState();
@@ -36,11 +33,18 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
 class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   final _focus = FocusNode(debugLabel: 'Now Playing');
   final _chrome = AutoHideController();
-  bool _lyricsOnly = false;
+
+  /// Whether the volume popup or the sleep timer menu is open. They float
+  /// outside the header, so the chrome stays shown meanwhile.
+  final _floatingOpen = ValueNotifier<bool>(false);
+
+  void _pinForFloating() =>
+      _floatingOpen.value ? _chrome.pin() : _chrome.unpin();
 
   @override
   void initState() {
     super.initState();
+    _floatingOpen.addListener(_pinForFloating);
     // `autofocus` alone loses to whatever the shell still has focused, which
     // is only released once this frame is built.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -51,6 +55,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
 
   @override
   void dispose() {
+    _floatingOpen
+      ..removeListener(_pinForFloating)
+      ..dispose();
     _focus.dispose();
     _chrome.dispose();
     super.dispose();
@@ -81,13 +88,14 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         },
         child: Focus(
           focusNode: _focus,
-          // Any key brings the hidden header and footer back, so focus is
+          // Any key brings the hidden header back, so focus is
           // never left on a button nobody can see.
           onKeyEvent: (_, _) {
             _chrome.poke();
             return KeyEventResult.ignored;
           },
-          // The chrome stays while the queue sheet is open.
+          // Nothing here opens the queue sheet; the host stays so the mouse
+          // back button closes Now Playing.
           child: QueueSheetHost(
             onMouseBack: _close,
             onOpenChanged: (open) => open ? _chrome.pin() : _chrome.unpin(),
@@ -96,7 +104,13 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
               child: Scaffold(
                 backgroundColor: Colors.transparent,
                 body: wide
-                    ? AutoHideRegion(controller: _chrome, child: _wide())
+                    ? NowPlayingWideLayout(
+                        chrome: _chrome,
+                        floatingOpen: _floatingOpen,
+                        onClose: _close,
+                        titleBar: widget.titleBar,
+                        lyrics: widget.lyrics,
+                      )
                     : NowPlayingTabs(
                         wrapHeader: _wrapHeader,
                         excludeFromDrag: _exclude,
@@ -109,40 +123,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _wide() {
-    return Column(
-      children: [
-        AutoHide(
-          controller: _chrome,
-          child: _wrapHeader(
-            NowPlayingWideHeader(
-              height: nowPlayingHeaderHeight,
-              excludeFromDrag: _exclude,
-              hasLyrics: widget.hasLyrics,
-              lyricsOnly: _lyricsOnly,
-              onToggleLyricsOnly: () =>
-                  setState(() => _lyricsOnly = !_lyricsOnly),
-            ),
-          ),
-        ),
-        Expanded(
-          child: NowPlayingWideBody(
-            lyrics: widget.lyrics,
-            lyricsOnly: _lyricsOnly,
-          ),
-        ),
-        AutoHide(
-          controller: _chrome,
-          child: NowPlayingFooter(
-            onClose: _close,
-            onVolumePopupChanged: (open) =>
-                open ? _chrome.pin() : _chrome.unpin(),
-          ),
-        ),
-      ],
     );
   }
 }

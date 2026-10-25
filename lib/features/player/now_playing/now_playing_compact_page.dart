@@ -28,8 +28,8 @@ class NowPlayingCompactPage extends ConsumerWidget {
         final art = (constraints.maxWidth - 48)
             .clamp(0.0, windowHeight * 0.45)
             .toDouble();
-        // The cover alone in the middle; title, seek bar and controls form
-        // a footer on the bottom edge, as on wide windows. `spaceBetween`
+        // The cover alone in the middle; title, seek bar and controls sit
+        // together on the bottom edge. `spaceBetween`
         // with an empty first child leaves equal space above and below the
         // cover. A window too short for both scrolls instead.
         return SingleChildScrollView(

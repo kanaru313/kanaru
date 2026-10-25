@@ -9,7 +9,7 @@ import 'seek_gesture_area.dart';
 import 'seek_track_painter.dart';
 
 /// Height of the track's hit area, roomy enough to hit without aiming.
-const _hitHeight = 24.0;
+const seekHitHeight = 24.0;
 
 /// Elapsed time · track · total time, under the playback controls. The track
 /// is straight and follows playback in pixel-sized steps; nothing in the bar
@@ -32,7 +32,7 @@ class SeekBar extends StatelessWidget {
     // what surrounds it either.
     return SizedBox(
       width: double.infinity,
-      height: math.max(_hitHeight, labelHeight),
+      height: math.max(seekHitHeight, labelHeight),
       // The outer boundary keeps the gesture area's own repaints (hover
       // bubble, semantics) inside the row too.
       child: RepaintBoundary(
@@ -97,7 +97,7 @@ class SeekTrack extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return SeekGestureArea(
-      height: _hitHeight,
+      height: seekHitHeight,
       builder: (context, state) => RepaintBoundary(
         child: CustomPaint(
           size: Size.infinite,

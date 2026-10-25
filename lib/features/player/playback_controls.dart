@@ -38,7 +38,7 @@ class PlaybackControls extends ConsumerWidget {
   final bool spread;
 
   /// Gap between buttons when not [spread]: tight in the player bar, roomier
-  /// in the Now Playing footer.
+  /// in Now Playing.
   final double spacing;
 
   @override

@@ -5,7 +5,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_artist_line.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
-import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:go_router/go_router.dart';
@@ -34,8 +34,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder inScreen(Finder f) =>
-      find.descendant(of: find.byType(NowPlayingScreen), matching: f);
+  /// The playing track's own text: the queue beside it lists the same song.
+  Finder inColumn(Finder f) =>
+      find.descendant(of: find.byType(NowPlayingTrackColumn), matching: f);
 
   testWidgets('a song with one artist opens the artist page on tap', (
     tester,
@@ -49,7 +50,7 @@ void main() {
       Track(uri: paths['a']!, title: 'a', artist: 'Ann'),
     );
 
-    final artist = inScreen(find.text('Ann'));
+    final artist = inColumn(find.text('Ann'));
     expect(artist, findsOneWidget);
     await tester.tap(artist);
     await tester.pumpAndSettle();
@@ -68,7 +69,7 @@ void main() {
       Track(uri: paths['a']!, title: 'a', artist: 'Ann; Bob'),
     );
 
-    await tester.tap(inScreen(find.text('Ann; Bob')));
+    await tester.tap(inColumn(find.text('Ann; Bob')));
     await tester.pumpAndSettle();
     expect(find.text('Bob'), findsOneWidget);
     expect(
@@ -95,7 +96,7 @@ void main() {
       const Track(uri: '/elsewhere/x.mp3', title: 'x', artist: 'Ann'),
     );
 
-    final artist = inScreen(find.text('Ann'));
+    final artist = inColumn(find.text('Ann'));
     expect(artist, findsOneWidget);
     expect(
       find.descendant(

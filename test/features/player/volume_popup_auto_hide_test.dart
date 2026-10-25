@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/player/now_playing/now_playing_footer.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/volume_button.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -96,12 +96,12 @@ void main() {
     await tester.pumpAndSettle();
 
     final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    await gesture.addPointer(location: const Offset(300, 300));
+    await gesture.addPointer(location: const Offset(900, 700));
     addTearDown(gesture.removePointer);
     await gesture.moveTo(
       tester.getCenter(
         find.descendant(
-          of: find.byType(NowPlayingFooter),
+          of: find.byType(NowPlayingHeader),
           matching: find.byType(VolumeButton),
         ),
       ),
@@ -117,11 +117,11 @@ void main() {
     return (container, gesture);
   }
 
-  double footerOpacity(WidgetTester tester) => tester
+  double headerOpacity(WidgetTester tester) => tester
       .widget<AnimatedOpacity>(
         find
             .ancestor(
-              of: find.byType(NowPlayingFooter),
+              of: find.byType(NowPlayingHeader),
               matching: find.byType(AnimatedOpacity),
             )
             .first,
@@ -134,14 +134,14 @@ void main() {
     final (_, gesture) = await restOnPopup(tester);
 
     await tester.pump(const Duration(seconds: 4));
-    expect(footerOpacity(tester), 1);
+    expect(headerOpacity(tester), 1);
 
-    // Off the popup and out of the footer: the popup closes, the chrome
+    // Off the popup and out of the header: the popup closes, the chrome
     // fades after the usual stillness.
-    await gesture.moveTo(const Offset(300, 300));
+    await gesture.moveTo(const Offset(900, 700));
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(seconds: 4));
-    expect(footerOpacity(tester), 0);
+    expect(headerOpacity(tester), 0);
   });
 
   testWidgets('closing Now Playing with the popup open leaves no timer', (

@@ -9,6 +9,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/lyrics_view.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_overlay.dart';
+import 'package:kanaru/features/player/queue/queue_panel.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -25,8 +26,8 @@ void main() {
   late ProviderContainer container;
 
   PlayerService player() => container.read(playerServiceProvider.notifier);
-  final lyricsOnly = find.byTooltip('Lyrics only');
   final lyricsTab = find.byTooltip('Lyrics');
+  final splitLyricsTab = find.widgetWithText(Tab, 'Lyrics');
 
   Future<void> pump(
     WidgetTester tester, {
@@ -70,19 +71,28 @@ void main() {
     expect(embedded.reads, isEmpty);
   });
 
-  testWidgets('wide: the lyrics take the right half', (tester) async {
+  testWidgets('wide: the lyrics are in the Split Lyrics tab', (tester) async {
     await pump(tester);
     expect(find.byType(LyricsView), findsOneWidget);
-    expect(lyricsOnly, findsOneWidget);
-    expect(tester.getCenter(find.text('First words')).dx, greaterThan(640));
+    expect(splitLyricsTab, findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Now playing'), findsOneWidget);
+    // Right of the track column, which takes 42% of the width.
+    expect(
+      tester.getCenter(find.text('First words')).dx,
+      greaterThan(1280 * 0.42),
+    );
+    // The queue is behind the other tab, not built.
+    expect(find.byType(QueuePanel), findsNothing);
   });
 
-  testWidgets('wide: a track without lyrics keeps the old layout', (
+  testWidgets('wide: a track without lyrics has the Queue tab only', (
     tester,
   ) async {
     await pump(tester, tracks: const [_without]);
     expect(find.byType(LyricsView), findsNothing);
-    expect(lyricsOnly, findsNothing);
+    expect(splitLyricsTab, findsNothing);
+    expect(find.widgetWithText(Tab, 'Now playing'), findsOneWidget);
+    expect(find.byType(QueuePanel), findsOneWidget);
   });
 
   testWidgets('moving to a track without lyrics removes the slot', (
@@ -93,6 +103,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(LyricsView), findsNothing);
     expect(find.text('First words'), findsNothing);
+    expect(splitLyricsTab, findsNothing);
+    expect(find.byType(QueuePanel), findsOneWidget);
   });
 
   testWidgets('while the next track loads, the slot stays but shows nothing '

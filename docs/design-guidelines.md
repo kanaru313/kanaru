@@ -37,7 +37,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 | 640 | `_centerMaxWidth` (`features/player/player_bar.dart`) | Widest the player bar's controls and seek column gets. |
 | 720 | `_sidebarBreakpoint` (`app/shell/app_shell.dart`) | At or above: sidebar is a column. Below: sidebar is a drawer. |
 | 720 | `_compactBreakpoint` (`features/player/player_bar.dart`) | Below: compact player bar with a seek strip on its top edge. |
-| 720 | `_wideBreakpoint` (`features/player/now_playing/now_playing_screen.dart`) | At or above: Now Playing shows header, body and footer. Below: one column with tabs. |
+| 720 | `_wideBreakpoint` (`features/player/now_playing/now_playing_screen.dart`) | At or above: Now Playing shows one header over the Split body (no footer). Below: one column with tabs. |
 | 720 | `maxWidth` (`features/settings/settings_screen.dart`) | Settings content column is at most 720 px wide. |
 | 1360 | `sidePanelBreakpoint` (`features/player/side_panel/side_panel_layout.dart`) | At or above: the side panel can dock beside the page (and the player bar shows the lyrics button). Below: the queue button opens the overlay sheet. |
 | 480 × 720 | window minimum (`linux/runner/my_application.cc`, `desktop_window.dart`) | Smallest window. Default is 1280 × 720. |
@@ -80,13 +80,13 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 |---|---|
 | Enter | Slides up in 500 ms. The cover animates on open (`now_playing_open_cover.dart`). No shared-element hero from the player bar yet (NP-03). |
 | Exit | Esc (mapped to `DismissIntent`). Focus returns to the control that opened it. |
-| Auto-hide | Header and footer fade out after 3 s of inactivity; pointer movement brings them back. |
-| Wide (>= 720 px) | Header (title bar), body (cover, track info), 80 px footer split into three groups. |
+| Auto-hide | The header fades out after 3 s of inactivity; pointer movement or a key brings it back. It stays while the pointer is on it, on the track column or on the volume popup, and while the volume popup or the sleep menu is open. The track column and the tab pane are never hidden. |
+| Wide (>= 720 px) | A 64 px header over the Split body; there is no footer. Header, left: close, a gap, favorite, add to playlist. Right: shuffle, repeat, sleep timer, volume, then a divider when the app draws its own window buttons. The volume popup and the sleep menu open downward. Split: the track column (42% of the body, 300 to 600 px) has the cover, title, artist and album lines with icons, the seek track, and elapsed time \| previous, play, next \| total time; the second column has "Lyrics \| Now playing" tabs. The cover is at most 500 px and its size comes from a fixed reserve for the text and controls under it, so it does not move when a title wraps or the album arrives. There is no queue button: the queue is the second tab. |
 | Narrow (< 720 px) | One column with tabs in a `PageView`: queue, track, and lyrics on the right when the track has them. |
-| Add to playlist | The footer button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
-| Sleep timer | The moon button sits in the right group before volume, with the same menu and label rules (label from a 200 px right group). |
-| Lyrics | Only when the playing track has lyrics: the right half of a wide window (the header's "Lyrics only" button gives them the whole body) or the right page of a narrow one; without lyrics the layout is unchanged. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
-| Queue tab | The queue tab (narrow window) is the same queue panel, so it also has the filter button in its header. |
+| Add to playlist | The header button opens the playlist picker for the current song. Only a song that is a library row can go in a playlist; any other says so in a snackbar. |
+| Sleep timer | The moon button sits in the right group between repeat and volume, with the same menu; its label shows only when the right group has room for four buttons and the label (248 px). |
+| Lyrics | Only when the playing track has lyrics: the Lyrics tab of the second column in a wide window or the right page of a narrow one; without lyrics the wide window has the queue tab only. Lines are centered, headline small; the current synced line is bold in `onSurface`, the others `onSurfaceVariant` at 55%. The current line sits 40% down and auto-scroll follows it (200 ms, the same as the line's own style change; a jump under reduced motion), pausing 3 s after a manual scroll; pressing a line seeks there. Plain lyrics are static. |
+| Queue tab | The queue tab (the second tab in a wide window, a page in a narrow one) is the same queue panel: the tab bar takes the place of its title, and the filter, show current, save and clear actions stay at the end of the row. |
 | Favorite | The favorite button (heart) likes and unlikes the current song. |
 
 ## Queue sheet
