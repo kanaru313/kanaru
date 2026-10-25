@@ -23,7 +23,16 @@ void main() {
     tester,
   ) async {
     final h = LibraryHarness();
-    await openWithTracks(tester, h, _tracks, location: _location);
+    await openWithTracks(tester, h, const [
+      TestTrack(
+        'a',
+        genre: 'Rock',
+        album: 'Al',
+        albumArtist: 'X',
+        coverKey: 'c1',
+      ),
+      TestTrack('b', genre: 'Rock', coverKey: 'c2'),
+    ], location: _location);
 
     final pane = find.byType(GenreSidePane);
     expect(pane, findsOneWidget);
@@ -53,7 +62,12 @@ void main() {
           .dx,
       moreOrLessEquals(tester.getTopRight(pane).dx - 16),
     );
-    expect(find.byType(CoverTintPageBackground), findsOneWidget);
+    expect(
+      tester
+          .widget<CoverTintPageBackground>(find.byType(CoverTintPageBackground))
+          .coverKeys,
+      unorderedEquals(['c1', 'c2']),
+    );
   });
 
   testWidgets('a narrow window keeps the header above the songs', (
@@ -69,6 +83,24 @@ void main() {
     expect(
       tester.getTopLeft(find.text('a')).dy,
       greaterThan(tester.getBottomLeft(find.byType(GenreHeader)).dy),
+    );
+    final actions = find.byType(PlayShuffleActions);
+    expect(
+      tester.getTopLeft(actions).dx,
+      moreOrLessEquals(
+        tester
+            .getTopLeft(
+              find.descendant(
+                of: find.byType(GenreHeader),
+                matching: find.text('Rock'),
+              ),
+            )
+            .dx,
+      ),
+    );
+    expect(
+      find.descendant(of: actions, matching: find.text('Shuffle')),
+      findsOneWidget,
     );
   });
 

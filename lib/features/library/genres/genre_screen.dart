@@ -29,9 +29,9 @@ import 'genre_header.dart';
 import 'genre_page_data.dart';
 
 /// One genre: header, then its albums on one line scrolling sideways, then its
-/// songs. A wide window puts the header in a side pane beside the rest. Tapping a song plays the songs from
-/// it. [routeKey] comes from the URL; a broken key or a genre without tracks
-/// shows "not found".
+/// songs. A wide window puts the header in a side pane beside the rest.
+/// Tapping a song plays the songs from it. [routeKey] comes from the URL; a
+/// broken key or a genre without tracks shows "not found".
 class GenreScreen extends ConsumerWidget {
   const GenreScreen({super.key, required this.routeKey});
 

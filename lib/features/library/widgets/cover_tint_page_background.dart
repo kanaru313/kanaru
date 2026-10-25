@@ -38,12 +38,15 @@ class CoverTintPageBackground extends ConsumerWidget {
   /// when no cover has colors. One cover with colors gives all of them; several
   /// give the most common color of each.
   List<Color>? _tintColors(WidgetRef ref) {
-    // Per cover: `null` while loading, empty once settled without colors.
+    // Per cover: `null` until its palette first settles (a refresh that still
+    // holds a value keeps it), empty once settled without colors.
     final settled = [
       for (final key in coverKeys.take(maxGradientStops))
         ref.watch(
           coverPaletteOfProvider(key).select(
-            (p) => p.isLoading ? null : (p.value?.colors ?? const <Color>[]),
+            (p) => !p.hasValue && !p.hasError
+                ? null
+                : (p.value?.colors ?? const <Color>[]),
           ),
         ),
     ];

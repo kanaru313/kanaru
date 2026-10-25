@@ -188,4 +188,42 @@ void main() {
     expect(container.exists(coverPaletteOfProvider('k4')), isTrue);
     expect(container.exists(coverPaletteOfProvider('k5')), isFalse);
   });
+
+  testWidgets('a palette refreshing with a value keeps its tint', (
+    tester,
+  ) async {
+    var calls = 0;
+    final wait = Completer<CoverPalette?>();
+    final container = ProviderContainer(
+      overrides: [
+        initialSettingsProvider.overrideWithValue(
+          AppSettings(display: DisplayPrefs(colorFromCover: true)),
+        ),
+        coverPaletteOfProvider('k1').overrideWith((ref) {
+          calls++;
+          return calls == 1 ? Future.value(_c1) : wait.future;
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: ThemeData(colorScheme: scheme),
+          home: CoverTintPageBackground(
+            coverKey: 'k1',
+            child: const SizedBox.expand(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(gradient(tester), stops(_c1.colors));
+
+    container.invalidate(coverPaletteOfProvider('k1'));
+    await tester.pump();
+    expect(container.read(coverPaletteOfProvider('k1')).isLoading, isTrue);
+    expect(gradient(tester), stops(_c1.colors));
+  });
 }
