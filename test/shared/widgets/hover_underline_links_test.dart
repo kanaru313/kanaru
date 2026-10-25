@@ -188,6 +188,33 @@ void main() {
     expect(positions.single, box.bottomLeft);
   });
 
+  testWidgets('Enter runs onActivate instead of a link when given', (
+    tester,
+  ) async {
+    final log = <String>[];
+    final activated = <Offset>[];
+    await tester.pumpWidget(
+      _host(
+        HoverUnderlineLinks(
+          onActivate: activated.add,
+          segments: [
+            LinkSegment('Ann', onTap: (_) => log.add('Ann')),
+            const LinkSegment(' & '),
+            LinkSegment('Bob', onTap: (_) => log.add('Bob')),
+          ],
+        ),
+      ),
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(log, isEmpty);
+    final box = tester.getRect(find.byType(HoverUnderlineLinks));
+    expect(activated, [box.bottomLeft]);
+  });
+
   testWidgets('plain-only segments have no focus stop', (tester) async {
     await tester.pumpWidget(
       _host(const HoverUnderlineLinks(segments: [LinkSegment('Just text')])),
@@ -355,20 +382,21 @@ void main() {
     expect(spans[2].style!.decorationColor, original);
   });
 
-  testWidgets('the text is translated (paint only) by the gap to cancel the shadow', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_three([]));
-    final transform = tester.widget<Transform>(
-      find.descendant(
-        of: find.byType(HoverUnderlineLinks),
-        matching: find.byType(Transform),
-      ),
-    );
-    expect(transform.transform.getTranslation().y, 3);
-    expect(transform.transform.getTranslation().x, 0);
-    expect(transform.transformHitTests, isFalse);
-  });
+  testWidgets(
+    'the text is translated (paint only) by the gap to cancel the shadow',
+    (tester) async {
+      await tester.pumpWidget(_three([]));
+      final transform = tester.widget<Transform>(
+        find.descendant(
+          of: find.byType(HoverUnderlineLinks),
+          matching: find.byType(Transform),
+        ),
+      );
+      expect(transform.transform.getTranslation().y, 3);
+      expect(transform.transform.getTranslation().x, 0);
+      expect(transform.transformHitTests, isFalse);
+    },
+  );
 
   testWidgets('top and bottom rows of the glyph box hit the link', (
     tester,

@@ -1,6 +1,7 @@
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/rendering.dart' show RenderParagraph;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -102,7 +103,7 @@ void main() {
     expect(location(h), artistLocation('ann'));
   });
 
-  testWidgets('a song with two artists asks which on tap', (tester) async {
+  testWidgets('each of two artists opens its own page on tap', (tester) async {
     await openWithTracks(tester, h, [
       const TestTrack('a', artist: 'Ann; Bob'),
     ], location: '/home');
@@ -112,19 +113,44 @@ void main() {
       Track(uri: paths['a']!, title: 'a', artist: 'Ann; Bob'),
     );
 
-    await tester.tapOnText(_nameIn('Ann'));
+    await tester.tapOnText(_nameIn('Bob'));
     await tester.pumpAndSettle();
-    expect(find.text('Bob'), findsOneWidget);
+
     expect(
-      h.container.read(nowPlayingOpenProvider),
-      isTrue,
-      reason: 'nothing chosen yet',
+      find.byType(PopupMenuItem<String>),
+      findsNothing,
+      reason: 'no picker',
+    );
+    expect(h.container.read(nowPlayingOpenProvider), isFalse);
+    expect(location(h), artistLocation('bob'));
+  });
+
+  testWidgets('Enter on a line of two artists asks which', (tester) async {
+    await openWithTracks(tester, h, [
+      const TestTrack('a', artist: 'Ann; Bob'),
+    ], location: '/home');
+    final paths = await trackPaths(tester, h);
+    await openNowPlaying(
+      tester,
+      Track(uri: paths['a']!, title: 'a', artist: 'Ann; Bob'),
     );
 
-    await tester.tap(find.text('Bob'));
+    final line = find.descendant(
+      of: find.byType(NowPlayingArtistLine),
+      matching: find.byType(Focus),
+    );
+    Focus.of(
+      tester.element(
+        find.descendant(of: line.first, matching: find.byType(RichText)),
+      ),
+    ).requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
+    expect(find.byType(PopupMenuItem<String>), findsNWidgets(2));
 
-    expect(h.container.read(nowPlayingOpenProvider), isFalse);
+    await tester.tap(find.widgetWithText(PopupMenuItem<String>, 'Bob'));
+    await tester.pumpAndSettle();
     expect(location(h), artistLocation('bob'));
   });
 

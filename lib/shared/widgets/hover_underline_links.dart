@@ -31,10 +31,19 @@ const double _underlineGap = 3.0;
 /// The hit area is the layout box of the line (where the glyphs are painted), and the line keeps `maxLines: 1` with an
 /// ellipsis.
 class HoverUnderlineLinks extends StatefulWidget {
-  const HoverUnderlineLinks({super.key, required this.segments, this.style});
+  const HoverUnderlineLinks({
+    super.key,
+    required this.segments,
+    this.style,
+    this.onActivate,
+  });
 
   final List<LinkSegment> segments;
   final TextStyle? style;
+
+  /// What Enter on the focused line does, given the line's bottom left
+  /// (global); without it, the first link's tap.
+  final ValueChanged<Offset>? onActivate;
 
   @override
   State<HoverUnderlineLinks> createState() => _HoverUnderlineLinksState();
@@ -168,6 +177,11 @@ class _HoverUnderlineLinksState extends State<HoverUnderlineLinks> {
   }
 
   void _activate() {
+    final onActivate = widget.onActivate;
+    if (onActivate != null) {
+      onActivate(_lineBottomLeft());
+      return;
+    }
     for (final segment in widget.segments) {
       final onTap = segment.onTap;
       if (onTap != null) {

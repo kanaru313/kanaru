@@ -37,10 +37,11 @@ final nowPlayingArtistsProvider =
       }
     });
 
-/// The artist line under the playing song's title. Taps close Now Playing
-/// and open the artist page; a song credited to several artists asks which
-/// one first, as the song menu does. Without a router or a library match it
-/// is plain text. Shows [artist] (the tag, as the title's style already did)
+/// The artist line under the playing song's title. Each credited name is a
+/// link: a tap closes Now Playing and opens that artist's page. When the
+/// names cannot be found in the tag, the whole tag is one link and a song
+/// credited to several artists asks which one first, as the song menu does.
+/// Without a router or a library match it is plain text. Shows [artist] (the tag, as the title's style already did)
 /// whether or not a link was found, so a song outside the library still
 /// names its artist.
 class NowPlayingArtistLine extends ConsumerStatefulWidget {
@@ -54,21 +55,19 @@ class NowPlayingArtistLine extends ConsumerStatefulWidget {
 }
 
 class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
-  Future<void> _open(
+  void _go(GoRouter router, String key) {
+    ref.read(nowPlayingOpenProvider.notifier).close();
+    router.go(artistLocation(key));
+  }
+
+  Future<void> _pick(
     GoRouter router,
     List<({String key, String name})> artists,
     Offset position,
   ) async {
-    if (artists.isEmpty) return;
-    if (artists.length == 1) {
-      ref.read(nowPlayingOpenProvider.notifier).close();
-      router.go(artistLocation(artists.single.key));
-      return;
-    }
     final key = await showArtistPicker(context, position, artists);
     if (key == null || !context.mounted) return;
-    ref.read(nowPlayingOpenProvider.notifier).close();
-    router.go(artistLocation(key));
+    _go(router, key);
   }
 
   @override
@@ -90,17 +89,30 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
     final segments = artistLineSegments(widget.artist, [
       for (final a in artists) a.name,
     ]);
+    // Names found in the tag link one artist each; the whole tag as the only
+    // link stands for all of them.
+    final wholeTag = artists.length > 1 && segments.length == 1;
     return Opacity(
       opacity: 0.7,
       child: HoverUnderlineLinks(
         style: style,
+        // One Tab stop for the line: the keyboard asks which artist.
+        onActivate: artists.length > 1
+            ? (position) => _pick(router, artists, position)
+            : null,
         segments: [
           for (final s in segments)
             LinkSegment(
               s.text,
-              onTap: s.artist == null
-                  ? null
-                  : (position) => _open(router, artists, position),
+              onTap: switch (s.artist) {
+                null => null,
+                _ when wholeTag => (position) => _pick(
+                  router,
+                  artists,
+                  position,
+                ),
+                final i => (_) => _go(router, artists[i].key),
+              },
             ),
         ],
       ),
