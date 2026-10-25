@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/genres/genre_header.dart';
+import 'package:kanaru/features/library/genres/genre_hero_cover.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/features/library/play_shuffle_actions.dart';
 import 'package:kanaru/features/library/widgets/cover_tint_page_background.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
@@ -42,14 +46,51 @@ void main() {
       greaterThanOrEqualTo(tester.getTopRight(pane).dx),
     );
 
-    final cover = find.descendant(
-      of: pane,
+    final backdrop = find.byType(GenreHeroBackdrop);
+    final card = find.byType(GenreHeroCard);
+    expect(find.descendant(of: pane, matching: backdrop), findsOneWidget);
+    expect(find.descendant(of: pane, matching: card), findsOneWidget);
+    expect(tester.getSize(backdrop), const Size(320, 320));
+    expect(tester.getSize(card), const Size(240, 240));
+    expect(tester.getCenter(card), tester.getCenter(backdrop));
+
+    // The backdrop sits under the fade masks, the card does not.
+    final masks = find.descendant(of: pane, matching: find.byType(ShaderMask));
+    expect(
+      find.descendant(of: masks.first, matching: backdrop),
+      findsOneWidget,
+    );
+    expect(find.descendant(of: masks.first, matching: card), findsNothing);
+    expect(find.descendant(of: masks.last, matching: card), findsNothing);
+
+    final washout = find.descendant(
+      of: backdrop,
+      matching: find.byType(Opacity),
+    );
+    expect(tester.widget<Opacity>(washout).opacity, 0.35);
+    expect(
+      find.descendant(of: pane, matching: find.byType(BackdropFilter)),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: pane, matching: find.byType(ImageFiltered)),
+      findsNothing,
+    );
+
+    // The backdrop collage is built at the card's size and stretched.
+    final backdropCover = find.descendant(
+      of: backdrop,
       matching: find.byType(PlaylistCover),
     );
-    expect(tester.getSize(cover), const Size(320, 320));
+    expect(tester.widget<PlaylistCover>(backdropCover).size, 232);
+    expect(tester.getSize(backdropCover), const Size(232, 232));
     expect(
-      find.descendant(of: pane, matching: find.byType(ShaderMask)),
-      findsWidgets,
+      tester
+          .getRect(
+            find.descendant(of: backdrop, matching: find.byType(FittedBox)),
+          )
+          .size,
+      const Size(320, 320),
     );
     expect(
       tester
@@ -68,6 +109,51 @@ void main() {
           .coverKeys,
       unorderedEquals(['c1', 'c2']),
     );
+  });
+
+  testWidgets('without covers only the card shows the placeholder icon', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: _location);
+
+    final icons = find.descendant(
+      of: find.byType(GenreSidePane),
+      matching: find.byIcon(AppIcons.genre),
+    );
+    expect(icons, findsNWidgets(2));
+    expect(icons.hitTestable(), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(GenreHeroCard),
+        matching: find.byIcon(AppIcons.genre),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the card and the backdrop share each cover image', (
+    tester,
+  ) async {
+    final dir = Directory.systemTemp.createTempSync('genre_hero');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    String key(String shard) => '$shard/$shard${'0' * 62}.jpg';
+    final h = LibraryHarness(coverCacheDirectory: dir.path);
+    await openWithTracks(tester, h, [
+      for (final (i, shard) in ['aa', 'bb', 'cc', 'dd'].indexed)
+        TestTrack('t$i', genre: 'Rock', album: 'Al$i', coverKey: key(shard)),
+    ], location: _location);
+
+    final images = tester
+        .widgetList<Image>(
+          find.descendant(
+            of: find.byType(GenreSidePane),
+            matching: find.byType(Image),
+          ),
+        )
+        .toList();
+    expect(images, hasLength(8));
+    expect(images.map((i) => i.image).toSet(), hasLength(4));
   });
 
   testWidgets('a narrow window keeps the header above the songs', (

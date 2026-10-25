@@ -11,7 +11,8 @@ const detailSidePaneMinPageWidth = 840.0;
 /// Left column of a detail page in a wide window: [cover] (built
 /// [detailSidePaneWidth] wide), fading into the page at its foot and, over
 /// a narrow band, to half see-through at its right edge unless [fade] is
-/// off, then [details]. It
+/// off, then [details]. [coverOverlay], when given, is drawn centred over
+/// [cover] outside its fades. It
 /// stays put while the content beside it scrolls, and scrolls on its own
 /// when the window is too short for it.
 class DetailSidePane extends StatelessWidget {
@@ -20,33 +21,44 @@ class DetailSidePane extends StatelessWidget {
     required this.cover,
     required this.details,
     this.fade = true,
+    this.coverOverlay,
   });
 
   final Widget cover;
+
+  /// Drawn centred over [cover], outside its fades.
+  final Widget? coverOverlay;
   final Widget details;
   final bool fade;
 
   @override
   Widget build(BuildContext context) {
+    final faded = fade
+        ? _FadeOut(
+            end: Alignment.bottomCenter,
+            from: 0.7,
+            child: _FadeOut(
+              end: Alignment.centerRight,
+              from: 0.95,
+              edgeOpacity: 0.5,
+              child: cover,
+            ),
+          )
+        : cover;
     return SizedBox(
       width: detailSidePaneWidth,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (fade)
-              _FadeOut(
-                end: Alignment.bottomCenter,
-                from: 0.7,
-                child: _FadeOut(
-                  end: Alignment.centerRight,
-                  from: 0.95,
-                  edgeOpacity: 0.5,
-                  child: cover,
-                ),
-              )
+            if (coverOverlay == null)
+              faded
             else
-              cover,
+              Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [faded, coverOverlay!],
+              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               child: details,

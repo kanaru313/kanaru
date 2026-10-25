@@ -7,6 +7,7 @@ import '../../../shared/widgets/playlist_cover.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../play_shuffle_actions.dart';
 import '../widgets/detail_side_pane.dart';
+import 'genre_hero_cover.dart';
 
 /// Header of a genre page in a narrow window: cover collage beside the name,
 /// "N albums · N songs" and the Play, Shuffle and queue buttons. A wide
@@ -63,9 +64,10 @@ class GenreHeader extends StatelessWidget {
   }
 }
 
-/// Left column of a genre page in a wide window: the cover collage edge to
-/// edge, fading into the page at its foot, then the name, counts and the
-/// Play buttons at its right end (see [DetailSidePane]).
+/// Left column of a genre page in a wide window: a hero card (the cover
+/// collage washed out across the pane, fading into the page at its foot, with
+/// a smaller card of the same collage centred over it), then the name, counts
+/// and the Play buttons at its right end (see [DetailSidePane]).
 class GenreSidePane extends StatelessWidget {
   const GenreSidePane({
     super.key,
@@ -91,10 +93,13 @@ class GenreSidePane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DetailSidePane(
-      cover: PlaylistCover(
+      cover: GenreHeroBackdrop(
         coverKeys: coverKeys,
-        size: detailSidePaneWidth,
-        radius: 0,
+        seed: 'genre:$genreKey',
+        icon: _genreIcon(genreKey),
+      ),
+      coverOverlay: GenreHeroCard(
+        coverKeys: coverKeys,
         seed: 'genre:$genreKey',
         icon: _genreIcon(genreKey),
       ),
