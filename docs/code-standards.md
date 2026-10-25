@@ -148,7 +148,7 @@ Commands: [development.md](./development.md#tests--lints). Layout: [codebase-sum
 ## Rust
 
 - Edition 2021, rust 1.89 minimum (`rust/Cargo.toml`).
-- Pinned crates: `lofty =0.25.4`, `image =0.25.10` (jpeg, png, webp), `blake3 =1.8.7` (pure Rust), `flutter_rust_bridge =2.13.0`. Use `--locked` for builds and tests.
+- Pinned crates: `lofty =0.25.4`, `image =0.25.10` (jpeg, png, webp), `blake3 =1.8.7` (pure Rust), `symphonia =0.6.1` (MPL-2.0; features `mp3 flac ogg vorbis aac alac isomp4 pcm wav id3v2`, no default features), `flutter_rust_bridge =2.13.0`. Use `--locked` for builds and tests.
 - Profile: `opt-level = 3` in dev too (thumbnails are about 90 times slower otherwise). Keep `panic` at its default (`unwind`).
 - File opens use `O_NONBLOCK` (through `libc`, see `rust/src/cover_art.rs`), so a FIFO cannot block a batch.
 - Rayon pool is named `kanaru-tags-N`, sized `max(cpus/2, 2)`, with 8 MiB stacks.

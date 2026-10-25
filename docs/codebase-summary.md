@@ -14,7 +14,7 @@ Regenerate the compaction with `repomix --style xml -o repomix-output.xml` (see 
 | App widget | [lib/app/app.dart](../lib/app/app.dart) | `KanaruApp`: `MaterialApp.router`, theme, l10n |
 | Router | [lib/app/router.dart](../lib/app/router.dart) | `routerProvider`, all route paths |
 | Linux runner | [linux/runner/my_application.cc](../linux/runner/my_application.cc) | GTK application, single-instance flags, window size |
-| Rust API | [rust/src/api/tags.rs](../rust/src/api/tags.rs) | `read_tags_batch`, `read_covers_batch`, `read_original_cover` (bridged to Dart) |
+| Rust API | [rust/src/api/tags.rs](../rust/src/api/tags.rs) | `read_tags_batch`, `read_covers_batch`, `read_original_cover` (bridged to Dart); `rust/src/api/waveform.rs`: `begin_waveform_job`, `load_waveform`, `cancel_waveform` |
 | Makefile | [Makefile](../Makefile) | `make` lists targets: run, build, check, gen, reset-* |
 
 ## Directory map
@@ -75,16 +75,18 @@ Key files by area:
 
 | Path | Files / lines | Purpose |
 |---|---|---|
-| `rust/src/api/` | 3 | Public bridged API (`tags.rs`; `cover_colors.rs`: `extract_cover_colors`) |
+| `rust/src/api/` | 4 | Public bridged API (`tags.rs`; `cover_colors.rs`: `extract_cover_colors`; `lyrics.rs`; `waveform.rs`: waveform job API) |
 | `rust/src/tag_reader.rs` | | Per-file read via lofty; `PERMANENT_ERROR_PREFIX` |
 | `rust/src/tag_mapping.rs` | | lofty tags to `TrackTags` |
 | `rust/src/tag_batch.rs` | | Batch read on a rayon pool |
 | `rust/src/cover_art.rs`, `cover_thumbnail.rs`, `cover_cache.rs` | | Embedded and sidecar art, 512 px JPEG thumbnails, blake3 cache keys |
 | `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Wu clusters, one nearest-cluster count, Score), `COLOR_ALGO_REVISION` |
-| `rust/src/frb_generated.rs` | 763 | **Generated** by flutter_rust_bridge |
+| `rust/src/waveform_levels.rs`, `waveform_decode.rs`, `waveform_decode_limits.rs`, `waveform_cache.rs` | | Waveform: fixed-size level accumulator, symphonia decode, its limits and error budget, `.kwf` cache file, key and lookup |
+| `rust/src/waveform_job.rs`, `waveform_control.rs`, `thread_priority.rs` | | Waveform job ids, niced worker thread, cancel/stall wait, test gates; shared nice helper (also used by the cover pool) |
+| `rust/src/frb_generated.rs` | 1,607 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |
 
-Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
+Total Rust (`rust/src`): 27 files, 6,238 lines, including the generated bridge. Integration tests are in `rust/tests/` (`waveform_test.rs`, `waveform_job_test.rs` for waveforms; fixtures described in `rust/tests/fixtures/README.md`).
 
 ### Other top-level paths
 

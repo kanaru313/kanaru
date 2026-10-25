@@ -3,7 +3,7 @@
 
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, Once};
 
 use rayon::prelude::*;
 
@@ -11,12 +11,12 @@ use crate::api::tags::{CoverStatus, TrackCover};
 use crate::cover_cache::CoverSink;
 use crate::tag_batch::{thread_count, WORKER_STACK_BYTES};
 use crate::tag_reader::{embedded_pictures_result, CoverReadError};
+use crate::thread_priority::lower_thread_priority;
 
 /// Nice value the cover threads run at, at least: making thumbnails is
 /// background work and should give way to playback and the UI, without
 /// starving under normal desktop load.
-#[cfg(target_os = "linux")]
-const COVER_NICE: libc::c_int = 10;
+const COVER_NICE: i32 = 10;
 
 /// Same size and stack as the tag pool, but separate: its threads are
 /// niced, and a niced thread can never be made normal again without
@@ -27,7 +27,10 @@ static COVER_POOL: LazyLock<Result<rayon::ThreadPool, String>> = LazyLock::new(|
         .num_threads(threads)
         .stack_size(WORKER_STACK_BYTES)
         .thread_name(|i| format!("kanaru-covers-{i}"))
-        .start_handler(|_| lower_priority())
+        .start_handler(|_| {
+            static REPORTED: Once = Once::new();
+            lower_thread_priority(COVER_NICE, &REPORTED, "cover");
+        })
         .build()
         .map_err(|e| format!("cannot start cover threads: {e}"))
 });
@@ -104,38 +107,6 @@ fn cover_for(path: &str, sink: &CoverSink) -> (Option<String>, CoverStatus) {
     }))
     .unwrap_or((None, CoverStatus::Failed))
 }
-
-/// Raises the calling thread's nice value to at least [`COVER_NICE`]. On
-/// Linux nice is per thread and `PRIO_PROCESS` takes a thread id. A failure
-/// is reported once and otherwise ignored: the covers still get made.
-#[cfg(target_os = "linux")]
-fn lower_priority() {
-    use std::sync::Once;
-    static REPORTED: Once = Once::new();
-    // SAFETY: plain syscalls on the calling thread, no pointers involved.
-    // getpriority can return -1 as a valid value, so errno is checked.
-    let failed = unsafe {
-        let tid = libc::gettid() as libc::id_t;
-        *libc::__errno_location() = 0;
-        let current = libc::getpriority(libc::PRIO_PROCESS, tid);
-        if current == -1 && *libc::__errno_location() != 0 {
-            true
-        } else {
-            libc::setpriority(libc::PRIO_PROCESS, tid, current.max(COVER_NICE)) != 0
-        }
-    };
-    if failed {
-        REPORTED.call_once(|| {
-            eprintln!(
-                "kanaru: cannot lower the cover threads' priority: {}",
-                std::io::Error::last_os_error()
-            );
-        });
-    }
-}
-
-#[cfg(not(target_os = "linux"))]
-fn lower_priority() {}
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {

@@ -37,6 +37,14 @@ blake3 = { version = "=1.8.7", default-features = false, features = ["std", "pur
 material-colors = { version = "=0.4.2", default-features = false, features = ["libm"] }
 # O_NONBLOCK when opening sidecar images, so a FIFO named cover.jpg cannot hang a scan.
 libc = "0.2"
+# Waveform levels: pure Rust audio decoding (MPL-2.0; no symphonia file is
+# modified). Only the containers and codecs the library scans are enabled,
+# except AIFF (`aiff`, about 130 KB of release binary): those files show a flat
+# seek bar to keep the growth under 2 MiB.
+# `id3v2` stays on: without it the probe scans a leading ID3 tag as junk for
+# at most 1 MiB, so an MP3 with a large embedded cover would be unsupported.
+# 0.6 API (`next_packet() -> Result<Option<Packet>>`), not the 0.5 one.
+symphonia = { version = "=0.6.1", default-features = false, features = ["mp3", "flac", "ogg", "vorbis", "aac", "alac", "isomp4", "pcm", "wav", "id3v2"] }
 # Atomic writes into the cover cache (temp file in the same directory, then rename).
 tempfile = "3"
 
