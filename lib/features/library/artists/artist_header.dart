@@ -56,10 +56,10 @@ class ArtistHeader extends StatelessWidget {
   }
 }
 
-/// Left column of an artist page in a wide window: the cover of the
-/// artist's first album with one ([coverKey]; else the first letter of the
-/// name on a color picked from [artistKey]), then the name, "N albums" and
-/// the Play buttons (see [DetailSidePane]).
+/// Left column of an artist page in a wide window: a round, unfaded
+/// picture, the cover of the artist's first album with one ([coverKey];
+/// else the first letter of the name on a color picked from [artistKey]),
+/// then the name, "N albums" and the Play buttons (see [DetailSidePane]).
 class ArtistSidePane extends ConsumerWidget {
   const ArtistSidePane({
     super.key,
@@ -80,6 +80,11 @@ class ArtistSidePane extends ConsumerWidget {
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
 
+  /// Gap between the round picture and the pane's top and sides, so the
+  /// circle sits clear of the window edge.
+  static const _avatarInset = 24.0;
+  static const _avatarSize = detailSidePaneWidth - 2 * _avatarInset;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -88,19 +93,25 @@ class ArtistSidePane extends ConsumerWidget {
       artistKey,
     );
     return DetailSidePane(
-      cover: CoverArt(
-        path: coverPath(ref.watch(coverCacheDirectoryProvider), coverKey),
-        size: detailSidePaneWidth,
-        radius: 0,
-        placeholder: ColoredBox(
-          color: background,
-          child: Center(
+      fade: false,
+      cover: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          _avatarInset,
+          _avatarInset,
+          _avatarInset,
+          0,
+        ),
+        child: CoverArt(
+          path: coverPath(ref.watch(coverCacheDirectoryProvider), coverKey),
+          size: _avatarSize,
+          radius: _avatarSize / 2,
+          placeholder: CircleAvatar(
+            radius: _avatarSize / 2,
+            backgroundColor: background,
+            foregroundColor: foreground,
             child: Text(
               name.characters.firstOrNull?.toUpperCase() ?? '',
-              style: TextStyle(
-                fontSize: detailSidePaneWidth * 0.4,
-                color: foreground,
-              ),
+              style: const TextStyle(fontSize: _avatarSize * 0.4),
               textScaler: TextScaler.noScaling,
             ),
           ),
@@ -110,6 +121,7 @@ class ArtistSidePane extends ConsumerWidget {
         name: name,
         albumCount: albumCount,
         titleStyle: theme.textTheme.headlineSmall,
+        actionsAtEnd: true,
         onPlay: onPlay,
         onShuffle: onShuffle,
         onQueueAction: onQueueAction,
@@ -118,12 +130,14 @@ class ArtistSidePane extends ConsumerWidget {
   }
 }
 
-/// Name (bold, two lines at most), "N albums" and the Play buttons.
+/// Name (bold, two lines at most), "N albums" and the Play buttons, at the
+/// right end of the column when [actionsAtEnd] is on.
 class _ArtistDetails extends StatelessWidget {
   const _ArtistDetails({
     required this.name,
     required this.albumCount,
     required this.titleStyle,
+    this.actionsAtEnd = false,
     required this.onPlay,
     required this.onShuffle,
     required this.onQueueAction,
@@ -132,6 +146,7 @@ class _ArtistDetails extends StatelessWidget {
   final String name;
   final int albumCount;
   final TextStyle? titleStyle;
+  final bool actionsAtEnd;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
@@ -157,11 +172,16 @@ class _ArtistDetails extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        PlayShuffleActions(
-          playLabel: l10n.artistsPlay,
-          onPlay: onPlay,
-          onShuffle: onShuffle,
-          onQueueAction: onQueueAction,
+        Align(
+          alignment: actionsAtEnd
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
+          child: PlayShuffleActions(
+            playLabel: l10n.artistsPlay,
+            onPlay: onPlay,
+            onShuffle: onShuffle,
+            onQueueAction: onQueueAction,
+          ),
         ),
       ],
     );
