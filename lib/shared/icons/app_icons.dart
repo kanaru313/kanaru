@@ -131,6 +131,6 @@ abstract final class AppIcons {
   static const IconData hideHidden = Icons.visibility_off_outlined;
 
   // Sleep timer.
-  static const IconData sleepTimer = Icons.bedtime_outlined;
-  static const IconData sleepTimerActive = Icons.bedtime;
+  static const IconData sleepTimer = Icons.timer_outlined;
+  static const IconData sleepTimerActive = Icons.timer;
 }
