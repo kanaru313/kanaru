@@ -4,8 +4,8 @@ import 'library_row.dart';
 import 'song_tile.dart' show songCoverSize;
 
 /// A song row whose data is still being read: the same three-line layout as
-/// `SongTile` (a few pixels shorter), with bars where the texts go. [compact] matches the two-line rows of
-/// [songCoverSize] instead (history).
+/// `SongTile` (a few pixels shorter), with bars where the texts go. [compact]
+/// matches the two-line rows of [songCoverSize] instead (history).
 ///
 /// [leadingInset] reserves an empty box of that width before the cover, so
 /// the placeholder lines up with rows that start with a leading accessory (a

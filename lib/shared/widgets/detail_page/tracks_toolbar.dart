@@ -6,8 +6,8 @@ import '../../icons/app_icons.dart';
 import '../../in_page_filter.dart';
 import '../expanding_search_bar.dart';
 
-/// The bar over the songs of a detail page (album, artist, genre): "N songs ·
-/// length" and the filter button, whose box grows over the bar when opened.
+/// The bar over the songs of a detail page (album, artist, genre, playlist):
+/// "N songs · length" and the filter button, whose box grows over the bar when opened.
 /// `Ctrl+F` opens it through the page's filter host.
 class SliverTracksToolbar extends StatelessWidget {
   const SliverTracksToolbar({

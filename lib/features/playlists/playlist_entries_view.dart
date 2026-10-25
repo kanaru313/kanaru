@@ -273,10 +273,11 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
   Future<void> _shuffle() async {
     if (_playing) return;
     _playing = true;
+    final onShuffle = widget.onShuffle!;
     try {
       await _writes.afterWrites();
       if (!mounted) return;
-      await widget.onShuffle!();
+      await onShuffle();
     } catch (error, stack) {
       _log.severe('Shuffling a playlist failed', error, stack);
     } finally {
