@@ -118,32 +118,4 @@ void main() {
     expect(find.byType(InPageSearchBox), findsOneWidget);
     expect(find.byType(InPageSearchBox).hitTestable(), findsOneWidget);
   });
-
-  testWidgets('the Songs title, the count and the filter button share a row; '
-      'the open box covers the count but not the title', (tester) async {
-    final h = LibraryHarness();
-    await openWithTracks(tester, h, _tracks, location: _ann);
-    final title = find.descendant(
-      of: find.byType(CustomScrollView),
-      matching: find.text('Songs'),
-    );
-    final count = find.textContaining(RegExp(r'^4 songs'));
-    final button = find.byTooltip('Filter in this page');
-    double midY(Finder f) => tester.getCenter(f).dy;
-    expect(midY(count), moreOrLessEquals(midY(title), epsilon: 4));
-    expect(midY(button), moreOrLessEquals(midY(title), epsilon: 4));
-    expect(
-      tester.getTopLeft(count).dx,
-      greaterThan(tester.getTopRight(title).dx),
-    );
-
-    await tester.tap(button);
-    await tester.pumpAndSettle();
-    final box = find.byType(InPageSearchBox);
-    expect(
-      tester.getTopLeft(box).dx,
-      greaterThan(tester.getTopRight(title).dx),
-    );
-    expect(title.hitTestable(), findsOneWidget);
-  });
 }

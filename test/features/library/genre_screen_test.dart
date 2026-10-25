@@ -47,7 +47,6 @@ void main() {
     expect(find.byType(AlbumGridTile), findsNWidgets(2));
     expect(_albumTile('Mixed'), findsOneWidget);
     expect(_albumTile('Only'), findsOneWidget);
-    expect(onPage('Songs'), findsOneWidget);
     expect(find.text('Rock'), findsOneWidget, reason: 'header name');
     expect(find.text('j'), findsNothing, reason: 'a Jazz song');
     expect(find.byType(PlaylistCover), findsOneWidget);

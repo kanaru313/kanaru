@@ -127,7 +127,6 @@ class _GenrePageState extends ConsumerState<_GenrePage>
               ),
             ],
             SliverTracksToolbar(
-              title: l10n.genresSongs,
               songCount: songs.length,
               durationMs: data.durationMs,
               filter: _filter,

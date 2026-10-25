@@ -81,16 +81,6 @@ void main() {
     expect(tester.getSize(box).width, greaterThan(inPageSearchWidth));
     expect(tester.getTopLeft(box).dx, moreOrLessEquals(note.dx));
     expect(tester.getTopLeft(shown).dx, lessThan(half));
-    // The Songs title before the count stays in view.
-    final title = find.descendant(
-      of: find.byType(CustomScrollView),
-      matching: find.text('Songs'),
-    );
-    expect(tester.getTopRight(title).dx, lessThan(tester.getTopLeft(box).dx));
-    expect(
-      tester.getCenter(title).dy,
-      moreOrLessEquals(tester.getCenter(box).dy, epsilon: 4),
-    );
     final close = find.byTooltip('Close');
     expect(
       tester.getTopRight(box).dx,

@@ -40,7 +40,6 @@ void main() {
     expect(find.text('3 songs · 0:03'), findsOneWidget);
     expect(onPage('Albums'), findsOneWidget);
     expect(find.text('Mine'), findsOneWidget);
-    expect(onPage('Songs'), findsOneWidget);
     expect(find.text('Appears on'), findsOneWidget);
     // The song row of 'guest' shows its album name too: look in the grid.
     final theirsTile = find.descendant(
@@ -115,7 +114,7 @@ void main() {
     // Anna has a song without album: neither album section.
     expect(onPage('Albums'), findsNothing);
     expect(onPage('Appears on'), findsNothing);
-    expect(onPage('Songs'), findsOneWidget);
+    expect(onPage('anna'), findsOneWidget);
   });
 
   testWidgets('an album opens inside the Artists branch', (tester) async {

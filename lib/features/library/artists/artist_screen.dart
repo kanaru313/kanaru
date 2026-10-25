@@ -149,7 +149,6 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
                     ),
                   ],
                   SliverTracksToolbar(
-                    title: l10n.artistsSongs,
                     songCount: songs.length,
                     durationMs: sections.durationMs,
                     filter: _filter,

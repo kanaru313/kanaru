@@ -552,9 +552,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get albumsUnknownArtist => 'Nghệ sĩ không rõ';
 
   @override
-  String get albumsSongs => 'Bài hát';
-
-  @override
   String albumsSongCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -630,9 +627,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get artistsAlbums => 'Album';
 
   @override
-  String get artistsSongs => 'Bài hát';
-
-  @override
   String get artistsAppearsOn => 'Xuất hiện trong';
 
   @override
@@ -660,9 +654,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get genresAlbums => 'Album';
-
-  @override
-  String get genresSongs => 'Bài hát';
 
   @override
   String get genresNotFound => 'Không tìm thấy thể loại';

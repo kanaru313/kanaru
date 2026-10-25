@@ -364,7 +364,6 @@
   "albumsEmptyTitle": "No albums yet",
   "albumsEmptyMessage": "Songs with an album tag show up here as albums.",
   "albumsUnknownArtist": "Unknown artist",
-  "albumsSongs": "Songs",
   "albumsSongCount": "{count, plural, =1{1 song} other{{count} songs}}",
   "@albumsSongCount": {
     "placeholders": {
@@ -428,7 +427,6 @@
     }
   },
   "artistsAlbums": "Albums",
-  "artistsSongs": "Songs",
   "artistsAppearsOn": "Appears on",
   "artistsPlay": "Play",
   "artistsNotFound": "Artist not found",
@@ -438,7 +436,6 @@
   "genresEmptyTitle": "No genres yet",
   "genresEmptyMessage": "Songs with a genre tag show up here by genre.",
   "genresAlbums": "Albums",
-  "genresSongs": "Songs",
   "genresNotFound": "Genre not found",
   "genresNotFoundMessage": "Its songs may have been removed or retagged.",
   "foldersEmptyTitle": "No folders yet",
