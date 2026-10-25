@@ -7,8 +7,8 @@ import '../../../core/database/library_browse_now_playing.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
+import '../../../shared/widgets/hover_underline_links.dart';
 import 'now_playing_open_provider.dart';
 
 final _log = Logger('now_playing');
@@ -51,39 +51,35 @@ class NowPlayingAlbumLine extends ConsumerWidget {
 
     final router = GoRouter.maybeOf(context);
     final key = album.key;
+    final style = Theme.of(context).textTheme.bodyLarge;
     final line = Opacity(
       opacity: 0.7,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 4,
-        children: [
-          const Icon(AppIcons.album, size: 20),
-          Flexible(
-            child: Text(
+      child: router == null || key == null
+          ? Text(
               album.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: style,
+            )
+          : HoverUnderlineLinks(
+              segments: [
+                LinkSegment(
+                  album.title,
+                  onTap: (_) {
+                    ref.read(nowPlayingOpenProvider.notifier).close();
+                    router.go(albumLocation(key));
+                  },
+                ),
+              ],
+              style: style,
             ),
-          ),
-        ],
-      ),
     );
     return Padding(
       // The gap lives here so a song without album adds no space.
       padding: const EdgeInsets.only(top: 8),
       child: Align(
         alignment: centered ? Alignment.center : Alignment.centerLeft,
-        child: router == null || key == null
-            ? line
-            : InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  ref.read(nowPlayingOpenProvider.notifier).close();
-                  router.go(albumLocation(key));
-                },
-                child: line,
-              ),
+        child: line,
       ),
     );
   }

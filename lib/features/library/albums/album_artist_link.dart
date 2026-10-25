@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/widgets/hover_underline_links.dart';
+
 /// The album artist's name, opening their page (in the Artists branch).
 class AlbumArtistLink extends StatelessWidget {
   const AlbumArtistLink({super.key, required this.name, required this.onTap});
@@ -10,16 +12,10 @@ class AlbumArtistLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Text(
-        name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: theme.colorScheme.primary,
-        ),
+    return HoverUnderlineLinks(
+      segments: [LinkSegment(name, onTap: (_) => onTap())],
+      style: theme.textTheme.titleMedium?.copyWith(
+        color: theme.colorScheme.primary,
       ),
     );
   }

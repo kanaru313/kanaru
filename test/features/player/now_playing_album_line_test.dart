@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/hover_underline_links.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_album_line.dart';
@@ -148,7 +150,20 @@ void main() {
     await realWait(tester);
 
     expect(find.text('Blue Album'), findsOneWidget);
-    expect(find.byType(InkWell), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(NowPlayingAlbumLine),
+        matching: find.byType(HoverUnderlineLinks),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(NowPlayingAlbumLine),
+        matching: find.byIcon(AppIcons.album),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('an album tag without an album key is plain text, not a link', (
@@ -165,7 +180,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(NowPlayingAlbumLine),
-        matching: find.byType(InkWell),
+        matching: find.byType(HoverUnderlineLinks),
       ),
       findsNothing,
     );
