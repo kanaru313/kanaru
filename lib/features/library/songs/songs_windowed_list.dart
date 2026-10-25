@@ -10,6 +10,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import 'song_grid_tile.dart';
 import 'song_row_cache.dart';
 import '../../../shared/widgets/song_tile.dart';
+import '../../../shared/widgets/song_tile_placeholder.dart';
 import 'songs_list_provider.dart';
 
 /// Row used to measure the list: every line and a duration, the tallest a

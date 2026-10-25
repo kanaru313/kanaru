@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/widgets/song_tile.dart' show SongTilePlaceholder;
+import '../../shared/widgets/song_tile_placeholder.dart';
 import 'history_day_header.dart';
 import 'history_play_tile.dart';
 import 'history_timeline_index.dart';

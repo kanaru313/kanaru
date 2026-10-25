@@ -34,7 +34,12 @@ class SongTile extends ConsumerWidget {
     this.onQueueAction,
     this.number,
     this.showAlbum = true,
-  });
+    this.leadingAccessory,
+    this.trailingAccessory,
+  }) : assert(
+         number == null || leadingAccessory == null,
+         'number and leadingAccessory both fill the slot before the cover',
+       );
 
   final TrackListItem song;
   final VoidCallback onTap;
@@ -48,6 +53,14 @@ class SongTile extends ConsumerWidget {
 
   /// False leaves Show album out of the menu (rows on the album's own page).
   final bool showAlbum;
+
+  /// Drawn before the cover, e.g. a drag handle; replaces [number], so not
+  /// both. Nothing is added when null.
+  final Widget? leadingAccessory;
+
+  /// Drawn after the duration and heart column, e.g. a row action such as
+  /// remove. Nothing is added when null.
+  final Widget? trailingAccessory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,9 +80,29 @@ class SongTile extends ConsumerWidget {
     final durationMs = song.durationMs;
 
     final number = this.number;
+    final leadingAccessory = this.leadingAccessory;
+    final trailingAccessory = this.trailingAccessory;
     final cover = SongTileCover(
       path: coverPath(ref.watch(coverCacheDirectoryProvider), song.coverKey),
       playing: playing,
+    );
+
+    final trailingColumn = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (durationMs != null)
+          Text(
+            formatDuration(Duration(milliseconds: durationMs)),
+            style: styles.detail,
+          ),
+        FavoriteButton(
+          path: song.path,
+          iconSize: 20,
+          compact: true,
+          color: playing ? colors.onPrimaryContainer : null,
+        ),
+      ],
     );
 
     final tile = Material(
@@ -77,7 +110,13 @@ class SongTile extends ConsumerWidget {
       child: InkWell(
         onTap: onTap,
         child: LibraryRowLayout(
-          leading: number == null
+          leading: leadingAccessory != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 16,
+                  children: [leadingAccessory, cover],
+                )
+              : number == null
               ? cover
               : Row(
                   mainAxisSize: MainAxisSize.min,
@@ -103,23 +142,12 @@ class SongTile extends ConsumerWidget {
               libraryRowLine(albumLine, styles.detail),
             ],
           ),
-          trailing: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (durationMs != null)
-                Text(
-                  formatDuration(Duration(milliseconds: durationMs)),
-                  style: styles.detail,
+          trailing: trailingAccessory == null
+              ? trailingColumn
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [trailingColumn, trailingAccessory],
                 ),
-              FavoriteButton(
-                path: song.path,
-                iconSize: 20,
-                compact: true,
-                color: playing ? colors.onPrimaryContainer : null,
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -131,54 +159,6 @@ class SongTile extends ConsumerWidget {
       hasAlbum: song.album?.isNotEmpty ?? false,
       onQueueAction: onQueueAction,
       child: tile,
-    );
-  }
-}
-
-/// A song row whose data is still being read: same height as [SongTile],
-/// with bars where the texts go. [compact] matches the two-line rows of
-/// [songCoverSize] instead (history).
-class SongTilePlaceholder extends StatelessWidget {
-  const SongTilePlaceholder({super.key, this.compact = false});
-
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
-    Widget bar(double width) => Container(
-      width: width,
-      height: 12,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-      ),
-    );
-    Widget cover(double size) => SizedBox.square(
-      dimension: size,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-    );
-    if (compact) {
-      return ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 32),
-        leading: cover(songCoverSize),
-        title: Align(alignment: Alignment.centerLeft, child: bar(180)),
-        subtitle: Align(alignment: Alignment.centerLeft, child: bar(120)),
-      );
-    }
-    return LibraryRowLayout(
-      leading: cover(libraryRowCoverSize),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [bar(180), bar(120), bar(150)],
-      ),
     );
   }
 }
