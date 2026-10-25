@@ -13,6 +13,7 @@ import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
@@ -20,14 +21,17 @@ import '../albums/album_grid_tile.dart';
 import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
+import '../widgets/cover_tint_page_background.dart';
+import '../widgets/detail_side_pane.dart';
 import '../widgets/tracks_toolbar.dart';
 import 'genre_display_name.dart';
 import 'genre_header.dart';
 import 'genre_page_data.dart';
 
-/// One genre: header, then its albums and its songs. Tapping a song plays the
-/// songs from it. [routeKey] comes from the URL; a broken key or a genre
-/// without tracks shows "not found".
+/// One genre: header, then its albums and its songs. A wide window puts the
+/// header in a side pane beside the rest. Tapping a song plays the songs from
+/// it. [routeKey] comes from the URL; a broken key or a genre without tracks
+/// shows "not found".
 class GenreScreen extends ConsumerWidget {
   const GenreScreen({super.key, required this.routeKey});
 
@@ -87,68 +91,105 @@ class _GenrePageState extends ConsumerState<_GenrePage>
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
 
-    return ListenableBuilder(
-      listenable: _filter,
-      builder: (context, _) {
-        // Play and Shuffle in the header always take every song.
-        final filtering = _filter.isFiltering;
-        final shown = _view.apply(songs, _filter.terms);
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: GenreHeader(
+    // Play and Shuffle in the header always take every song.
+    void onPlay() => playTracks(ref, queueOf(songs), 0);
+    void onShuffle() => shuffleTracks(ref, queueOf(songs));
+    void onQueueAction(QueueAction action) =>
+        enqueueLoaded(ref, context, action, queueOf(songs), name);
+
+    return CoverTintPageBackground.blend(
+      coverKeys: data.coverKeys,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= detailSidePaneMinPageWidth;
+          final content = ListenableBuilder(
+            listenable: _filter,
+            builder: (context, _) {
+              final filtering = _filter.isFiltering;
+              final shown = _view.apply(songs, _filter.terms);
+              return CustomScrollView(
+                slivers: [
+                  if (!wide)
+                    SliverToBoxAdapter(
+                      child: GenreHeader(
+                        genreKey: widget.genreKey,
+                        name: name,
+                        albumCount: data.albums.length,
+                        songCount: songs.length,
+                        coverKeys: data.coverKeys,
+                        onPlay: onPlay,
+                        onShuffle: onShuffle,
+                        onQueueAction: onQueueAction,
+                      ),
+                    ),
+                  if (!filtering && data.albums.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
+                        child: Text(
+                          l10n.genresAlbums,
+                          style: theme.textTheme.titleLarge,
+                        ),
+                      ),
+                    ),
+                    SliverAlbumGrid(
+                      albums: data.albums,
+                      onTap: (AlbumTileData album) =>
+                          context.go(albumLocation(album.key)),
+                      onQueueAction: (album, action) => enqueueAlbum(
+                        ref,
+                        context,
+                        action,
+                        album.key,
+                        album.title,
+                      ),
+                    ),
+                  ],
+                  SliverTracksToolbar(
+                    songCount: songs.length,
+                    durationMs: data.durationMs,
+                    filter: _filter,
+                  ),
+                  if (filtering && shown.isEmpty)
+                    SliverToBoxAdapter(
+                      child: InPageNoMatch(query: _filter.query),
+                    )
+                  else
+                    SliverBrowseSongs(
+                      songs: shown,
+                      onTap: (i) => playTracks(ref, queueOf(shown), i),
+                      onQueueAction: (song, action) => enqueueLoaded(
+                        ref,
+                        context,
+                        action,
+                        queueOf([song]),
+                        song.title,
+                      ),
+                    ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              );
+            },
+          );
+          if (!wide) return content;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GenreSidePane(
                 genreKey: widget.genreKey,
                 name: name,
                 albumCount: data.albums.length,
                 songCount: songs.length,
                 coverKeys: data.coverKeys,
-                onPlay: () => playTracks(ref, queueOf(songs), 0),
-                onShuffle: () => shuffleTracks(ref, queueOf(songs)),
-                onQueueAction: (action) =>
-                    enqueueLoaded(ref, context, action, queueOf(songs), name),
+                onPlay: onPlay,
+                onShuffle: onShuffle,
+                onQueueAction: onQueueAction,
               ),
-            ),
-            if (!filtering && data.albums.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
-                  child: Text(
-                    l10n.genresAlbums,
-                    style: theme.textTheme.titleLarge,
-                  ),
-                ),
-              ),
-              SliverAlbumGrid(
-                albums: data.albums,
-                onTap: (AlbumTileData album) =>
-                    context.go(albumLocation(album.key)),
-                onQueueAction: (album, action) =>
-                    enqueueAlbum(ref, context, action, album.key, album.title),
-              ),
+              Expanded(child: content),
             ],
-            SliverTracksToolbar(
-              songCount: songs.length,
-              durationMs: data.durationMs,
-              filter: _filter,
-            ),
-            if (filtering && shown.isEmpty)
-              SliverToBoxAdapter(child: InPageNoMatch(query: _filter.query))
-            else
-              SliverBrowseSongs(
-                songs: shown,
-                onTap: (i) => playTracks(ref, queueOf(shown), i),
-                onQueueAction: (song, action) => enqueueLoaded(
-                  ref,
-                  context,
-                  action,
-                  queueOf([song]),
-                  song.title,
-                ),
-              ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

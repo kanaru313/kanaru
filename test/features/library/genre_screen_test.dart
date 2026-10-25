@@ -82,7 +82,8 @@ void main() {
     );
     await openWithTracks(tester, h, _tracks, location: _rock);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Shuffle'));
+    // The side pane is too narrow for the label, so Shuffle is icon-only.
+    await tester.tap(find.byTooltip('Shuffle'));
     await tester.pump();
 
     expect(queued(h), ['a', 'b', 'c']);

@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Width of the side pane of a detail page (album, artist) in a wide window.
+/// Width of the side pane of a detail page (album, artist, genre) in a wide
+/// window.
 const detailSidePaneWidth = 320.0;
 
 /// Narrowest page that gets the side pane: the pane plus room for a song
