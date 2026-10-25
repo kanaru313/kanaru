@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/genres/genre_header.dart';
 import 'package:kanaru/features/library/play_shuffle_actions.dart';
 import 'package:kanaru/features/library/widgets/cover_tint_page_background.dart';
+import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/card_shelf.dart';
 import 'package:kanaru/shared/widgets/playlist_cover.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -67,6 +69,28 @@ void main() {
     expect(
       tester.getTopLeft(find.text('a')).dy,
       greaterThan(tester.getBottomLeft(find.byType(GenreHeader)).dy),
+    );
+  });
+
+  testWidgets('the albums sit on one sideways line', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack('a', genre: 'Rock', album: 'Al', albumArtist: 'X'),
+      TestTrack('b', genre: 'Rock', album: 'Bo', albumArtist: 'X'),
+    ], location: _location);
+
+    expect(
+      find.descendant(
+        of: find.byType(CustomScrollView),
+        matching: find.byType(CardShelf),
+      ),
+      findsOneWidget,
+    );
+    final tiles = find.byType(AlbumGridTile);
+    expect(tiles, findsNWidgets(2));
+    expect(
+      tester.getTopLeft(tiles.at(0)).dy,
+      tester.getTopLeft(tiles.at(1)).dy,
     );
   });
 }

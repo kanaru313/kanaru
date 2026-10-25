@@ -17,7 +17,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
-import '../albums/album_grid_tile.dart';
+import '../albums/album_row.dart';
 import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
@@ -28,8 +28,8 @@ import 'genre_display_name.dart';
 import 'genre_header.dart';
 import 'genre_page_data.dart';
 
-/// One genre: header, then its albums and its songs. A wide window puts the
-/// header in a side pane beside the rest. Tapping a song plays the songs from
+/// One genre: header, then its albums on one line scrolling sideways, then its
+/// songs. A wide window puts the header in a side pane beside the rest. Tapping a song plays the songs from
 /// it. [routeKey] comes from the URL; a broken key or a genre without tracks
 /// shows "not found".
 class GenreScreen extends ConsumerWidget {
@@ -132,7 +132,7 @@ class _GenrePageState extends ConsumerState<_GenrePage>
                         ),
                       ),
                     ),
-                    SliverAlbumGrid(
+                    SliverAlbumRow(
                       albums: data.albums,
                       onTap: (AlbumTileData album) =>
                           context.go(albumLocation(album.key)),
