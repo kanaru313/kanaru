@@ -398,4 +398,50 @@ void main() {
     expect(find.byIcon(AppIcons.artist), findsOneWidget);
     expect(find.byIcon(AppIcons.album), findsOneWidget);
   });
+
+  testWidgets('padded: false drops the top gap and hugs the line', (
+    tester,
+  ) async {
+    await seededTrack(tester);
+    tester.view.physicalSize = const Size(800, 600);
+    final line = find.byType(NowPlayingAlbumLine);
+
+    await pumpLinked(
+      tester,
+      const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [NowPlayingAlbumLine(centered: true)],
+      ),
+      <String>[],
+    );
+    final padded = tester.getSize(line);
+    expect(padded.width, 800, reason: 'fills the width by default');
+
+    await pumpLinked(
+      tester,
+      const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [NowPlayingAlbumLine(centered: true, padded: false)],
+      ),
+      <String>[],
+    );
+    final bare = tester.getSize(line);
+    expect(bare.height, padded.height - 8);
+    expect(bare.width, lessThan(300));
+    expect(find.text('Blue Album'), findsOneWidget);
+  });
+
+  testWidgets('padded: false stays a link', (tester) async {
+    await seededTrack(tester);
+    final at = <String>[];
+    await pumpLinked(
+      tester,
+      const NowPlayingAlbumLine(centered: true, padded: false),
+      at,
+    );
+
+    await tester.tap(find.text('Blue Album'));
+    await tester.pumpAndSettle();
+    expect(at, hasLength(1));
+  });
 }

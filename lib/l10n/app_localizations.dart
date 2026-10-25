@@ -1430,6 +1430,12 @@ abstract class AppLocalizations {
   /// **'Lyrics only'**
   String get nowPlayingLyricsOnly;
 
+  /// No description provided for @nowPlayingViewSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split view'**
+  String get nowPlayingViewSplit;
+
   /// No description provided for @queueOpen.
   ///
   /// In en, this message translates to:

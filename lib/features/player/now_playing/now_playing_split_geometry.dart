@@ -36,7 +36,7 @@ double splitColumnWidth(double bodyWidth) =>
     (bodyWidth * _columnShare).clamp(_columnMinWidth, _columnMaxWidth);
 
 /// Height of [lines] lines of [style] under the ambient text scale.
-double _textHeight(
+double nowPlayingTextHeight(
   BuildContext context,
   TextStyle? style,
   int lines, {
@@ -62,9 +62,9 @@ double splitTextReserve(
   final textTheme = Theme.of(context).textTheme;
   final lineHeight = math.max(
     _lineIconSize,
-    _textHeight(context, textTheme.bodyLarge, 1, fallbackSize: 16),
+    nowPlayingTextHeight(context, textTheme.bodyLarge, 1, fallbackSize: 16),
   );
-  return _textHeight(context, titleStyle, 2, fallbackSize: 26) +
+  return nowPlayingTextHeight(context, titleStyle, 2, fallbackSize: 26) +
       _lineGap +
       lineHeight +
       _lineGap +

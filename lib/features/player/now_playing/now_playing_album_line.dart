@@ -44,6 +44,8 @@ class NowPlayingAlbumLine extends ConsumerWidget {
     super.key,
     required this.centered,
     this.leadingIcon,
+    this.padded = true,
+    this.showIcon = true,
   });
 
   /// Centers the line; otherwise it starts at the left.
@@ -52,6 +54,14 @@ class NowPlayingAlbumLine extends ConsumerWidget {
   /// An icon in front of the line, outside the tap target. Without it the
   /// line carries its own small icon inside the tap target.
   final IconData? leadingIcon;
+
+  /// Keeps a gap of 8 px above the line (none for a song without album) and
+  /// fills the width. Without it the line is only as large as its content,
+  /// for a caller that places it beside other text.
+  final bool padded;
+
+  /// Whether the line carries its own small icon; off for plain text.
+  final bool showIcon;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,7 +76,8 @@ class NowPlayingAlbumLine extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 4,
         children: [
-          if (leadingIcon == null) const Icon(AppIcons.album, size: 20),
+          if (leadingIcon == null && showIcon)
+            const Icon(AppIcons.album, size: 20),
           Flexible(
             child: Text(
               album.title,
@@ -88,15 +99,17 @@ class NowPlayingAlbumLine extends ConsumerWidget {
             },
             child: line,
           );
-    return Padding(
-      // The gap lives here so a song without album adds no space.
-      padding: const EdgeInsets.only(top: 8),
-      child: Align(
-        alignment: centered ? Alignment.center : Alignment.centerLeft,
-        child: leadingIcon == null
-            ? linked
-            : NowPlayingLineWithIcon(icon: leadingIcon!, line: linked),
-      ),
+    final aligned = Align(
+      alignment: centered ? Alignment.center : Alignment.centerLeft,
+      widthFactor: padded ? null : 1,
+      heightFactor: padded ? null : 1,
+      child: leadingIcon == null
+          ? linked
+          : NowPlayingLineWithIcon(icon: leadingIcon!, line: linked),
     );
+    // The gap lives here so a song without album adds no space.
+    return padded
+        ? Padding(padding: const EdgeInsets.only(top: 8), child: aligned)
+        : aligned;
   }
 }

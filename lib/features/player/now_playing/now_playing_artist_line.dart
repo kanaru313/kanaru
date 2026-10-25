@@ -48,6 +48,7 @@ class NowPlayingArtistLine extends ConsumerStatefulWidget {
     super.key,
     required this.artist,
     this.leadingIcon,
+    this.showIcon = true,
   });
 
   final String artist;
@@ -55,6 +56,9 @@ class NowPlayingArtistLine extends ConsumerStatefulWidget {
   /// An icon in front of the line, outside the tap target. Without it the
   /// line carries its own small icon inside the tap target.
   final IconData? leadingIcon;
+
+  /// Whether the line carries its own small icon; off for plain text.
+  final bool showIcon;
 
   @override
   ConsumerState<NowPlayingArtistLine> createState() =>
@@ -88,7 +92,7 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
       mainAxisSize: MainAxisSize.min,
       spacing: 4,
       children: [
-        if (widget.leadingIcon == null)
+        if (widget.leadingIcon == null && widget.showIcon)
           const Icon(AppIcons.artistRounded, size: 20),
         Flexible(
           child: Text(
