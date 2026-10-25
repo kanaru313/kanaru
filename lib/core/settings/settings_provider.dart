@@ -76,6 +76,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setAlbumsView(AlbumsView view) =>
       _update(state.copyWith(albumsView: view));
 
+  void setPlaylistsView(AlbumsView view) =>
+      _update(state.copyWith(playlistsView: view));
+
   void setRescanOnStartup(bool enabled) =>
       _update(state.copyWith(rescanOnStartup: enabled));
 

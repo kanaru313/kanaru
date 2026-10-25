@@ -166,16 +166,19 @@ void main() {
       const SortChoice(ArtistSortField.songCount, descending: true),
     );
     notifier.setAlbumsView(AlbumsView.list);
+    notifier.setPlaylistsView(AlbumsView.list);
     await notifier.flush();
-    expect(notified, 4);
+    expect(notified, 5);
     expect(SettingsFile(path).load(), container.read(settingsProvider));
     expect(stored()['albumsView'], 'list');
+    expect(stored()['playlistsView'], 'list');
 
     File(path).deleteSync();
     notifier.setSongSort(const SortChoice(SongSortField.year));
     notifier.setAlbumsView(AlbumsView.list);
+    notifier.setPlaylistsView(AlbumsView.list);
     await notifier.flush();
-    expect(notified, 4);
+    expect(notified, 5);
     expect(File(path).existsSync(), isFalse);
   });
 

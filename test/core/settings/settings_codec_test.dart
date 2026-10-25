@@ -26,6 +26,7 @@ void main() {
       albumSort: SortChoice(AlbumSortField.year),
       artistSort: SortChoice(ArtistSortField.albumCount, descending: true),
       albumsView: AlbumsView.list,
+      playlistsView: AlbumsView.list,
     );
 
     final json = encodeSettings(settings);
@@ -110,6 +111,7 @@ void main() {
       );
       expect(decoded.settings.songSort, const SortChoice(SongSortField.title));
       expect(decoded.settings.albumsView, AlbumsView.grid);
+      expect(decoded.settings.playlistsView, AlbumsView.grid);
       expect(decoded.librarySortExtra, isEmpty);
     });
 
@@ -126,6 +128,7 @@ void main() {
         'artists': {'by': 'name', 'descending': false},
       });
       expect(json['albumsView'], 'grid');
+      expect(json['playlistsView'], 'grid');
       expect(json['version'], 1);
     });
 
@@ -137,6 +140,7 @@ void main() {
           'artists': 'name',
         },
         'albumsView': 'carousel',
+        'playlistsView': 'carousel',
       }).settings;
 
       expect(settings.songSort, const SortChoice(SongSortField.title));
@@ -146,6 +150,7 @@ void main() {
       );
       expect(settings.artistSort, const SortChoice(ArtistSortField.name));
       expect(settings.albumsView, AlbumsView.grid);
+      expect(settings.playlistsView, AlbumsView.grid);
     });
 
     test('librarySort that is not an object gives the defaults', () {
@@ -198,6 +203,7 @@ void main() {
         albumSort: SortChoice(AlbumSortField.dateAdded),
         artistSort: SortChoice(ArtistSortField.songCount),
         albumsView: AlbumsView.list,
+        playlistsView: AlbumsView.list,
       );
 
       final changed = settings.withLanguage('vi');
@@ -206,6 +212,7 @@ void main() {
       expect(changed.albumSort, settings.albumSort);
       expect(changed.artistSort, settings.artistSort);
       expect(changed.albumsView, settings.albumsView);
+      expect(changed.playlistsView, settings.playlistsView);
       expect(changed.withLanguage(null), settings);
     });
 

@@ -9,19 +9,14 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
-import '../../shared/widgets/menu_keyboard_region.dart';
 import '../../shared/widgets/page_scaffold.dart';
-import '../../shared/widgets/playlist_cover.dart';
-import '../../shared/widgets/queue_actions_menu.dart' show menuPositionAt;
+import 'collage_list_row.dart';
 import 'playlist_screen_states.dart';
 import 'queue_history_actions.dart';
 import 'queue_history_providers.dart';
 import 'queue_history_routes.dart';
 
 final _log = Logger('queue_history');
-
-/// Height of one saved queue row.
-const queueSnapshotRowExtent = 80.0;
 
 /// `/queue-history`: the queues the user replaced, newest first. A row opens
 /// the saved queue; its menu plays, shuffles, queues, saves or deletes it.
@@ -65,7 +60,7 @@ class QueueHistoryScreen extends ConsumerWidget {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 24),
-                    itemExtent: queueSnapshotRowExtent,
+                    itemExtent: collageListRowExtent,
                     itemCount: snapshots.length,
                     itemBuilder: (context, index) => QueueSnapshotRow(
                       key: ValueKey(snapshots[index].id),
@@ -85,100 +80,27 @@ class QueueSnapshotRow extends ConsumerWidget {
 
   final QueueSnapshotCard snapshot;
 
-  void _run(WidgetRef ref, BuildContext context, QueueSnapshotAction action) =>
-      runQueueSnapshotAction(
-        ref,
-        context,
-        action,
-        id: snapshot.id,
-        savedAt: snapshot.savedAt,
-      );
-
-  Future<void> _openMenu(
-    WidgetRef ref,
-    BuildContext context,
-    Offset position,
-  ) async {
-    final action = await showMenu<QueueSnapshotAction>(
-      context: context,
-      position: menuPositionAt(context, position),
-      items: queueSnapshotMenuItems(context),
-    );
-    if (action != null && context.mounted) _run(ref, context, action);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
-    final row = Row(
-      children: [
-        PlaylistCover(
-          coverKeys: snapshot.coverKeys,
-          size: 56,
-          seed: 'queue:${snapshot.id}',
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                queueSnapshotName(l10n, snapshot.savedAt),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium,
-              ),
-              Text(
-                l10n.playlistTrackCount(snapshot.trackCount),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        IconButton(
-          icon: const Icon(AppIcons.play),
-          tooltip: l10n.queueHistoryPlay,
-          onPressed: () => _run(ref, context, QueueSnapshotAction.play),
-        ),
-        PopupMenuButton<QueueSnapshotAction>(
-          tooltip: l10n.queueActionsTooltip,
-          icon: const Icon(AppIcons.more),
-          onSelected: (action) => _run(ref, context, action),
-          itemBuilder: queueSnapshotMenuItems,
-        ),
-      ],
+    void run(QueueSnapshotAction action) => runQueueSnapshotAction(
+      ref,
+      context,
+      action,
+      id: snapshot.id,
+      savedAt: snapshot.savedAt,
     );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: MenuKeyboardRegion(
-        onOpen: (position) => _openMenu(ref, context, position),
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onSecondaryTapUp: (d) => _openMenu(ref, context, d.globalPosition),
-          onLongPressStart: (d) => _openMenu(ref, context, d.globalPosition),
-          child: Material(
-            color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(8),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => context.go(queueHistoryLocation(snapshot.id)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: row,
-              ),
-            ),
-          ),
-        ),
-      ),
+    return CollageListRow<QueueSnapshotAction>(
+      coverKeys: snapshot.coverKeys,
+      seed: 'queue:${snapshot.id}',
+      title: queueSnapshotName(l10n, snapshot.savedAt),
+      subtitle: l10n.playlistTrackCount(snapshot.trackCount),
+      onTap: () => context.go(queueHistoryLocation(snapshot.id)),
+      onPlay: () => run(QueueSnapshotAction.play),
+      playTooltip: l10n.queueHistoryPlay,
+      menuItems: queueSnapshotMenuItems,
+      onMenuSelected: run,
     );
   }
 }

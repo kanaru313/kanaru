@@ -52,16 +52,6 @@ void main() {
     expect(opened?.id, 1);
   });
 
-  testWidgets('no playlists shows the empty state', (tester) async {
-    await pump(tester, const []);
-
-    expect(find.text('No playlists yet'), findsOneWidget);
-    expect(
-      find.text('Create a playlist to keep songs in your own order.'),
-      findsOneWidget,
-    );
-  });
-
   for (final width in [480.0, 720.0, 1280.0]) {
     testWidgets('a two-line name at large text fits at $width px', (
       tester,

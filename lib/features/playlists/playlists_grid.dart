@@ -2,8 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/fixed_line_strut.dart';
 
@@ -35,31 +33,15 @@ double _cardHeight(BuildContext context, double width) {
 }
 
 /// Every playlist as a card: collage, name (two lines at most) and count.
+/// The page shows its empty state instead when there are none.
 class PlaylistsGrid extends StatelessWidget {
-  const PlaylistsGrid({
-    super.key,
-    required this.cards,
-    required this.onOpen,
-    this.emptyAction,
-  });
+  const PlaylistsGrid({super.key, required this.cards, required this.onOpen});
 
   final List<PlaylistCard> cards;
   final ValueChanged<PlaylistSummary> onOpen;
 
-  /// Shown under the message when there are no playlists.
-  final Widget? emptyAction;
-
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    if (cards.isEmpty) {
-      return EmptyState(
-        icon: AppIcons.playlist,
-        title: l10n.sidebarNoPlaylists,
-        message: l10n.playlistsEmptyMessage,
-        action: emptyAction,
-      );
-    }
     return LayoutBuilder(
       builder: (context, constraints) {
         // Columns of cards at most 200 px wide, rows tall enough for the
