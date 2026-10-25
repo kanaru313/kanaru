@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/track.dart';
+import '../../../shared/icons/app_icons.dart';
 import 'now_playing_album_line.dart';
 import 'now_playing_artist_line.dart';
 import 'now_playing_artwork.dart';
@@ -37,9 +38,14 @@ class NowPlayingTitle extends StatelessWidget {
     required this.track,
     this.centered = true,
     this.trailing,
+    this.lineIcons = false,
   });
 
   final Track track;
+
+  /// Puts a person icon before the artist and a disc icon before the album,
+  /// outside their links.
+  final bool lineIcons;
 
   /// Centers the text; otherwise it starts at the left.
   final bool centered;
@@ -77,9 +83,15 @@ class NowPlayingTitle extends StatelessWidget {
               ),
         if (artist != null) ...[
           const SizedBox(height: 8),
-          NowPlayingArtistLine(artist: artist),
+          NowPlayingArtistLine(
+            artist: artist,
+            leadingIcon: lineIcons ? AppIcons.artist : null,
+          ),
         ],
-        NowPlayingAlbumLine(centered: centered),
+        NowPlayingAlbumLine(
+          centered: centered,
+          leadingIcon: lineIcons ? AppIcons.album : null,
+        ),
       ],
     );
   }

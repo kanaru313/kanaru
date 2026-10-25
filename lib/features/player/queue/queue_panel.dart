@@ -26,6 +26,7 @@ class QueuePanel extends ConsumerStatefulWidget {
     this.onClose,
     this.docked = false,
     this.isActive,
+    this.title,
   }) : assert(!docked || isActive != null, 'a docked panel needs isActive');
 
   /// Shows a close button in the header; `null` on the narrow page.
@@ -41,6 +42,10 @@ class QueuePanel extends ConsumerStatefulWidget {
   /// left since. It supersedes the panel's own keyboard focus (which would
   /// stay true after a click on the page). Required when [docked].
   final bool Function()? isActive;
+
+  /// Takes the place of the header's title and count, e.g. a tab bar; the
+  /// header's buttons stay on its right.
+  final Widget? title;
 
   @override
   ConsumerState<QueuePanel> createState() => _QueuePanelState();
@@ -150,6 +155,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
             onShowCurrent: _showCurrent,
             onClose: widget.onClose,
             showTitle: !widget.docked,
+            title: widget.title,
           ),
           if (_filter.isOpen)
             Padding(

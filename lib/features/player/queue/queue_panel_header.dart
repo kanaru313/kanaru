@@ -20,6 +20,7 @@ class QueuePanelHeader extends StatelessWidget {
     required this.onShowCurrent,
     this.onClose,
     this.showTitle = true,
+    this.title,
   });
 
   /// Track count and time left; the parent supplies a widget that follows
@@ -50,10 +51,49 @@ class QueuePanelHeader extends StatelessWidget {
   /// sits under a title of its own hides it.
   final bool showTitle;
 
+  /// Replaces the title row and the [summary] line: one row with this widget
+  /// (e.g. a tab bar) on the left and the buttons on the right. A close
+  /// button still shows when [onClose] is set. A supplied title replaces the
+  /// title row regardless of [showTitle].
+  final Widget? title;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final actions = [
+      _NamedIconButton(
+        focusNode: filterFocus,
+        icon: AppIcons.search,
+        label: l10n.inPageSearchOpen,
+        selected: filterOpen,
+        onPressed: onFilter,
+      ),
+      _NamedIconButton(
+        icon: AppIcons.locateCurrent,
+        label: l10n.queueShowCurrent,
+        onPressed: onShowCurrent,
+      ),
+      _OverflowMenu(onSave: onSave, onClear: onClear),
+    ];
+    final title = this.title;
+    if (title != null) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 12, 8),
+        child: Row(
+          children: [
+            Expanded(child: title),
+            ...actions,
+            if (onClose != null)
+              _NamedIconButton(
+                icon: AppIcons.closeRounded,
+                label: l10n.queueClose,
+                onPressed: onClose,
+              ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: EdgeInsets.fromLTRB(24, showTitle ? 16 : 8, 12, 8),
       child: Column(
@@ -89,19 +129,7 @@ class QueuePanelHeader extends StatelessWidget {
                   child: summary,
                 ),
               ),
-              _NamedIconButton(
-                focusNode: filterFocus,
-                icon: AppIcons.search,
-                label: l10n.inPageSearchOpen,
-                selected: filterOpen,
-                onPressed: onFilter,
-              ),
-              _NamedIconButton(
-                icon: AppIcons.locateCurrent,
-                label: l10n.queueShowCurrent,
-                onPressed: onShowCurrent,
-              ),
-              _OverflowMenu(onSave: onSave, onClear: onClear),
+              ...actions,
             ],
           ),
         ],

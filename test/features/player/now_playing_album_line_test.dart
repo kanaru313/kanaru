@@ -8,7 +8,10 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_album_line.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_track_info.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -258,4 +261,124 @@ void main() {
       expect(album.top, greaterThanOrEqualTo(view.top));
     });
   }
+
+  /// [line] alone under a router, playing the seeded track `a`, with the
+  /// router's location recorded in [at].
+  Future<void> pumpLinked(
+    WidgetTester tester,
+    Widget line,
+    List<String> at,
+  ) async {
+    final paths = await trackPaths(tester, h);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => Scaffold(body: Center(child: line)),
+        ),
+        GoRoute(
+          path: '/:rest(.*)',
+          builder: (_, state) {
+            at.add(state.uri.toString());
+            return const Scaffold();
+          },
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          libraryDatabaseProvider.overrideWithValue(h.db),
+          audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(Scaffold)),
+    );
+    await container.read(playerServiceProvider.notifier).openTracks([
+      Track(uri: paths['a']!, title: 'a', artist: 'Ann'),
+    ]);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  void expectIconBesideText(WidgetTester tester, String text) {
+    final icon = tester.getRect(find.byType(Icon));
+    final label = tester.getRect(find.text(text));
+    expect(icon.right + 8, closeTo(label.left, 0.5));
+    expect(icon.center.dy, closeTo(label.center.dy, 1));
+    expect(
+      find.descendant(of: find.byType(InkWell), matching: find.byType(Icon)),
+      findsNothing,
+    );
+  }
+
+  testWidgets('the leading icon sits next to the album, outside the link', (
+    tester,
+  ) async {
+    await seededTrack(tester);
+    final at = <String>[];
+    await pumpLinked(
+      tester,
+      const NowPlayingAlbumLine(centered: true, leadingIcon: AppIcons.album),
+      at,
+    );
+
+    expect(find.byType(Icon), findsOneWidget);
+    expect(find.byType(InkWell), findsOneWidget);
+    expectIconBesideText(tester, 'Blue Album');
+
+    await tester.tap(find.byType(Icon));
+    await tester.pumpAndSettle();
+    expect(at, isEmpty);
+  });
+
+  testWidgets('a song without an album shows no icon', (tester) async {
+    await seededTrack(tester, album: null);
+    await pumpLinked(
+      tester,
+      const NowPlayingAlbumLine(centered: true, leadingIcon: AppIcons.album),
+      <String>[],
+    );
+
+    expect(find.byType(Icon), findsNothing);
+  });
+
+  testWidgets('tapping the icon does not navigate', (tester) async {
+    await seededTrack(tester);
+    final at = <String>[];
+    await pumpLinked(
+      tester,
+      const NowPlayingAlbumLine(centered: true, leadingIcon: AppIcons.album),
+      at,
+    );
+
+    await tester.tap(find.byType(Icon));
+    await tester.pumpAndSettle();
+    expect(at, isEmpty);
+  });
+
+  testWidgets('the title block shows artist and album icons with lineIcons', (
+    tester,
+  ) async {
+    await seededTrack(tester);
+    final paths = await trackPaths(tester, h);
+    final track = Track(uri: paths['a']!, title: 'a', artist: 'Ann');
+    await pumpLinked(
+      tester,
+      NowPlayingTitle(track: track, lineIcons: true),
+      <String>[],
+    );
+    expect(find.byIcon(AppIcons.artist), findsOneWidget);
+    expect(find.byIcon(AppIcons.album), findsOneWidget);
+  });
 }

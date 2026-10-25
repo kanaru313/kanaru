@@ -10,6 +10,9 @@ import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dar
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
+import 'package:kanaru/features/player/queue/queue_time_left.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/features/player/queue/queue_now_playing_tile.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:material_ui/material_ui.dart';
@@ -628,6 +631,59 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(row('t0'), findsOneWidget);
+    });
+  });
+
+  group('title slot', () {
+    Future<void> pumpPanel(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(900, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      backend = FakeAudioBackend();
+      container = ProviderContainer(
+        overrides: [audioBackendProvider.overrideWithValue(backend)],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(body: QueuePanel(title: Text('custom tabs'))),
+          ),
+        ),
+      );
+      await player().openTracks(named(3));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('replaces the title and the count, keeps the buttons', (
+      tester,
+    ) async {
+      await pumpPanel(tester);
+
+      expect(find.text('custom tabs'), findsOneWidget);
+      expect(find.text('Now playing'), findsNothing);
+      expect(find.byType(QueueSummaryText), findsNothing);
+      expect(find.byTooltip('Jump to current song'), findsOneWidget);
+    });
+
+    testWidgets('the filter button opens the box and Esc returns focus', (
+      tester,
+    ) async {
+      await pumpPanel(tester);
+
+      await tester.tap(find.byTooltip('Filter in this page'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      final button = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, AppIcons.search),
+      );
+      expect(button.focusNode?.hasFocus, isTrue);
     });
   });
 }
