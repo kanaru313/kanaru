@@ -79,7 +79,7 @@ void main() {
       expect(art.height, 400);
       expect(inScreen(find.text('First Song')), findsOneWidget);
       expect(inScreen(find.text('Some Artist')), findsOneWidget);
-      expect(inScreen(find.byIcon(Icons.person_rounded)), findsOneWidget);
+      expect(inScreen(find.byIcon(Icons.person_rounded)), findsNothing);
       final title = tester.getRect(inScreen(find.text('First Song')));
       expect(title.center.dx, closeTo(640, 1));
       expect(title.top, greaterThan(art.bottom));

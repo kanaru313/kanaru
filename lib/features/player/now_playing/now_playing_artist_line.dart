@@ -7,9 +7,10 @@ import '../../../core/database/library_browse_now_playing.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
+import '../../../shared/widgets/hover_underline_links.dart';
 import '../../../shared/track_menu_actions.dart' show showArtistPicker;
+import 'now_playing_artist_segments.dart';
 import 'now_playing_open_provider.dart';
 
 final _log = Logger('now_playing');
@@ -53,11 +54,10 @@ class NowPlayingArtistLine extends ConsumerStatefulWidget {
 }
 
 class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
-  Offset _tapPosition = Offset.zero;
-
   Future<void> _open(
     GoRouter router,
     List<({String key, String name})> artists,
+    Offset position,
   ) async {
     if (artists.isEmpty) return;
     if (artists.length == 1) {
@@ -65,7 +65,7 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
       router.go(artistLocation(artists.single.key));
       return;
     }
-    final key = await showArtistPicker(context, _tapPosition, artists);
+    final key = await showArtistPicker(context, position, artists);
     if (key == null || !context.mounted) return;
     ref.read(nowPlayingOpenProvider.notifier).close();
     router.go(artistLocation(key));
@@ -75,29 +75,35 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
   Widget build(BuildContext context) {
     final artists = ref.watch(nowPlayingArtistsProvider).value ?? const [];
     final router = GoRouter.maybeOf(context);
-    final line = Row(
-      mainAxisSize: MainAxisSize.min,
-      spacing: 4,
-      children: [
-        const Icon(AppIcons.artistRounded, size: 20),
-        Flexible(
-          child: Text(
-            widget.artist,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ),
-      ],
-    );
+    final style = Theme.of(context).textTheme.bodyLarge;
     if (router == null || artists.isEmpty) {
-      return Opacity(opacity: 0.7, child: line);
+      return Opacity(
+        opacity: 0.7,
+        child: Text(
+          widget.artist,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+        ),
+      );
     }
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTapDown: (details) => _tapPosition = details.globalPosition,
-      onTap: () => _open(router, artists),
-      child: Opacity(opacity: 0.7, child: line),
+    final segments = artistLineSegments(widget.artist, [
+      for (final a in artists) a.name,
+    ]);
+    return Opacity(
+      opacity: 0.7,
+      child: HoverUnderlineLinks(
+        style: style,
+        segments: [
+          for (final s in segments)
+            LinkSegment(
+              s.text,
+              onTap: s.artist == null
+                  ? null
+                  : (position) => _open(router, artists, position),
+            ),
+        ],
+      ),
     );
   }
 }
