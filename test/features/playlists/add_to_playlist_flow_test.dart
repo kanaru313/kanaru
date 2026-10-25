@@ -116,7 +116,6 @@ void main() {
       );
       expect(rows!.single.name, 'Road trip');
       expect(await titlesIn(tester, rows.single.id), ['a']);
-      expect(find.text('Road trip'), findsOneWidget, reason: 'in the sidebar');
     });
 
     testWidgets('a repeated path in the batch is stored once', (tester) async {

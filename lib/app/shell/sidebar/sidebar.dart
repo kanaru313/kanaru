@@ -8,7 +8,6 @@ import '../app_destination.dart';
 import '../top_bar.dart';
 import '../window/window_drag_area.dart';
 import 'sidebar_item.dart';
-import 'sidebar_playlists_section.dart';
 
 const sidebarWidth = 240.0;
 
@@ -19,7 +18,7 @@ const sidebarCompactWidth = 72.0;
 /// the two widths only happens while the collapse animation runs.
 const _compactBelow = 180.0;
 
-/// Left navigation column: app logo, grouped destinations and playlists.
+/// Left navigation column: app logo, grouped destinations.
 /// Fills the width its parent gives it and switches to an icon-only rail
 /// when that width is small.
 class Sidebar extends ConsumerWidget {
@@ -27,15 +26,11 @@ class Sidebar extends ConsumerWidget {
     super.key,
     required this.selected,
     required this.onSelected,
-    required this.onOpenLocation,
   });
 
   /// Highlighted destination. Pages not in the sidebar highlight nothing.
   final AppDestination selected;
   final ValueChanged<AppDestination> onSelected;
-
-  /// Opens a location that is not a destination root, such as a playlist.
-  final ValueChanged<String> onOpenLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,14 +71,6 @@ class Sidebar extends ConsumerWidget {
                           onTap: () => onSelected(destination),
                         ),
                     ],
-                    divider,
-                    SidebarPlaylistsSection(
-                      compact: compact,
-                      playlistsSelected: selected == AppDestination.playlists,
-                      onOpenPlaylists: () =>
-                          onSelected(AppDestination.playlists),
-                      onOpenLocation: onOpenLocation,
-                    ),
                   ],
                 ),
               ),

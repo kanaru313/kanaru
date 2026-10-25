@@ -103,8 +103,6 @@ class AppShell extends ConsumerWidget {
                     child: Sidebar(
                       selected: selected,
                       onSelected: _select,
-                      onOpenLocation: (location) =>
-                          GoRouter.of(context).go(location),
                     ),
                   ),
                   Expanded(
@@ -137,10 +135,6 @@ class AppShell extends ConsumerWidget {
                     onSelected: (destination) {
                       Navigator.of(context).pop();
                       _select(destination);
-                    },
-                    onOpenLocation: (location) {
-                      Navigator.of(context).pop();
-                      GoRouter.of(context).go(location);
                     },
                   ),
                 ),

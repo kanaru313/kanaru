@@ -38,8 +38,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Rename'));
       await settleDb(tester);
 
-      // The page header and the sidebar row.
-      expect(find.text('Road trip'), findsNWidgets(2));
+      expect(find.text('Road trip'), findsOneWidget, reason: 'page header');
       final summary = await tester.runAsync(() => h.db.playlistSummary(id));
       expect(summary!.name, 'Road trip');
     });

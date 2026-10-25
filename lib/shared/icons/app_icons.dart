@@ -72,7 +72,6 @@ abstract final class AppIcons {
   static const IconData chevronRight = Icons.chevron_right;
   static const IconData expandMore = Icons.expand_more;
   static const IconData expandMoreRounded = Icons.expand_more_rounded;
-  static const IconData expandLess = Icons.expand_less;
   static const IconData back = Icons.arrow_back_rounded;
   static const IconData openExternal = Icons.open_in_new;
   static const IconData openFull = Icons.open_in_full;
