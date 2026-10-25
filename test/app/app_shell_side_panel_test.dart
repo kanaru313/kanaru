@@ -10,6 +10,7 @@ import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/synced_lyrics_view.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
@@ -276,16 +277,26 @@ void main() {
   });
 
   group('Now Playing open', () {
-    testWidgets('the footer queue button keeps the sheet', (tester) async {
+    testWidgets('the queue is a Now Playing tab, not the side panel', (
+      tester,
+    ) async {
       await pumpApp(tester);
       container.read(nowPlayingOpenProvider.notifier).open();
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Show now playing list').last);
-      await tester.pumpAndSettle();
-
+      final screen = find.byType(NowPlayingScreen);
+      expect(
+        find.descendant(
+          of: screen,
+          matching: find.byTooltip('Show now playing list'),
+        ),
+        findsNothing,
+      );
       expect(display().sidePanelOpen, isFalse);
-      expect(find.byType(QueuePanel), findsOneWidget);
+      expect(
+        find.descendant(of: screen, matching: find.byType(QueuePanel)),
+        findsOneWidget,
+      );
     });
 
     testWidgets('the shell lyrics tab shows no lyrics view behind it', (

@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 
-/// How long the pointer must rest before the header and footer fade out.
+/// How long the pointer must rest before the header fades out.
 const nowPlayingHideAfter = Duration(seconds: 3);
 
 /// Pointer moves closer together than this count as one.
 const _moveThrottle = Duration(milliseconds: 300);
 
-/// Whether the header and footer of Now Playing show: they appear on any
+/// Whether the header of Now Playing shows: they appear on any
 /// pointer move or key press and fade out after [nowPlayingHideAfter] of
 /// stillness, never while pinned (pointer on them, drawer or popup open).
 class AutoHideController {
-  /// `true` while the header and footer show.
+  /// `true` while the header shows.
   final visible = ValueNotifier<bool>(true);
 
   int _pins = 0;
@@ -61,8 +61,8 @@ class AutoHideController {
 }
 
 /// Shows [child] while [controller] says so, fading it in and out. Hidden
-/// means unclickable but still laid out, so the content between the header and
-/// footer does not jump, and its animations stand still once the fade-out is
+/// means unclickable but still laid out, so the content below the header does
+/// not jump, and its animations stand still once the fade-out is
 /// over. The pointer resting on [child] keeps it shown.
 class AutoHide extends StatefulWidget {
   const AutoHide({super.key, required this.controller, required this.child});
@@ -75,9 +75,6 @@ class AutoHide extends StatefulWidget {
 }
 
 class _AutoHideState extends State<AutoHide> {
-  /// Whether this widget holds a pin, i.e. the pointer is on it.
-  bool _pinned = false;
-
   /// Whether the fade-out has finished, so [child] is invisible for good
   /// until the chrome shows again.
   late bool _fadedOut = !widget.controller.visible.value;
@@ -102,12 +99,6 @@ class _AutoHideState extends State<AutoHide> {
     }
   }
 
-  void _setPinned(bool pinned) {
-    if (_pinned == pinned) return;
-    _pinned = pinned;
-    pinned ? widget.controller.pin() : widget.controller.unpin();
-  }
-
   @override
   void didUpdateWidget(AutoHide oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -115,18 +106,11 @@ class _AutoHideState extends State<AutoHide> {
     oldWidget.controller.visible.removeListener(_onVisible);
     widget.controller.visible.addListener(_onVisible);
     _fadedOut = !widget.controller.visible.value;
-    if (_pinned) {
-      oldWidget.controller.unpin();
-      widget.controller.pin();
-    }
   }
 
   @override
   void dispose() {
     widget.controller.visible.removeListener(_onVisible);
-    // A MouseRegion that leaves the tree under the pointer (e.g. the window
-    // turning narrow) gets no exit, so give the pin back here.
-    if (_pinned) widget.controller.unpin();
     super.dispose();
   }
 
@@ -161,13 +145,55 @@ class _AutoHideState extends State<AutoHide> {
           ),
         );
       },
-      child: MouseRegion(
-        onEnter: (_) => _setPinned(true),
-        onExit: (_) => _setPinned(false),
-        child: widget.child,
-      ),
+      child: AutoHidePin(controller: widget.controller, child: widget.child),
     );
   }
+}
+
+/// Keeps the chrome of [controller] shown while the pointer is on [child],
+/// without hiding [child] itself.
+class AutoHidePin extends StatefulWidget {
+  const AutoHidePin({super.key, required this.controller, required this.child});
+
+  final AutoHideController controller;
+  final Widget child;
+
+  @override
+  State<AutoHidePin> createState() => _AutoHidePinState();
+}
+
+class _AutoHidePinState extends State<AutoHidePin> {
+  /// Whether this widget holds a pin, i.e. the pointer is on it.
+  bool _pinned = false;
+
+  void _setPinned(bool pinned) {
+    if (_pinned == pinned) return;
+    _pinned = pinned;
+    pinned ? widget.controller.pin() : widget.controller.unpin();
+  }
+
+  @override
+  void didUpdateWidget(AutoHidePin oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller || !_pinned) return;
+    oldWidget.controller.unpin();
+    widget.controller.pin();
+  }
+
+  @override
+  void dispose() {
+    // A MouseRegion that leaves the tree under the pointer (e.g. the window
+    // turning narrow) gets no exit, so give the pin back here.
+    if (_pinned) widget.controller.unpin();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    onEnter: (_) => _setPinned(true),
+    onExit: (_) => _setPinned(false),
+    child: widget.child,
+  );
 }
 
 /// Wraps the whole screen: pointer moves and key presses show the chrome,

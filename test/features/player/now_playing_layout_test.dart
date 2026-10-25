@@ -5,9 +5,13 @@ import 'package:kanaru/app/shell/window/desktop_window.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/player/now_playing/now_playing_footer.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_seek_slot.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
+import 'package:kanaru/features/player/queue/queue_button.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
@@ -68,65 +72,83 @@ void main() {
   Finder inScreen(Finder finder) =>
       find.descendant(of: screen, matching: finder);
 
+  Finder inColumn(Finder finder) =>
+      find.descendant(of: find.byType(NowPlayingTrackColumn), matching: finder);
+
+  /// The cover of the playing track; the queue's rows have covers too.
+  final cover = find.descendant(
+    of: find.byType(NowPlayingTrackColumn),
+    matching: find.byType(TrackArtwork),
+  );
+
   group('wide', () {
-    testWidgets('centers the cover, title and artist', (tester) async {
+    testWidgets('lays out the cover, title and artist in the first column', (
+      tester,
+    ) async {
       await pumpOpen(tester, const Size(1280, 800));
 
-      final art = tester.getRect(inScreen(find.byType(TrackArtwork)));
-      expect(art.center.dx, closeTo(640, 1));
-      // At most half the window height.
-      expect(art.width, 400);
-      expect(art.height, 400);
-      expect(inScreen(find.text('First Song')), findsOneWidget);
-      expect(inScreen(find.text('Some Artist')), findsOneWidget);
-      expect(inScreen(find.byIcon(Icons.person_rounded)), findsOneWidget);
-      final title = tester.getRect(inScreen(find.text('First Song')));
-      expect(title.center.dx, closeTo(640, 1));
+      final column = tester.getRect(find.byType(NowPlayingTrackColumn));
+      final art = tester.getRect(cover);
+      expect(art.center.dx, closeTo(column.center.dx, 1));
+      expect(art.width, lessThanOrEqualTo(500));
+      expect(art.width, art.height);
+      expect(inColumn(find.text('First Song')), findsOneWidget);
+      expect(inColumn(find.text('Some Artist')), findsOneWidget);
+      expect(inColumn(find.byIcon(AppIcons.artist)), findsOneWidget);
+      final title = tester.getRect(inColumn(find.text('First Song')));
+      expect(title.center.dx, closeTo(column.center.dx, 1));
       expect(title.top, greaterThan(art.bottom));
     });
 
-    testWidgets('keeps a big window cover to half the height', (tester) async {
-      await pumpOpen(tester, const Size(1920, 1080));
+    testWidgets('keeps a big window cover to 500 px', (tester) async {
+      await pumpOpen(tester, const Size(2560, 1440));
 
-      expect(
-        tester.getSize(inScreen(find.byType(TrackArtwork))),
-        const Size(540, 540),
-      );
+      expect(tester.getSize(cover), const Size(500, 500));
     });
 
-    testWidgets('has the three footer groups', (tester) async {
+    testWidgets('has no footer: the header holds the actions', (tester) async {
       await pumpOpen(tester, const Size(1280, 800));
-      final footer = tester.getRect(find.byType(NowPlayingFooter));
-      expect(footer.height, 96);
-      expect(footer.bottom, 800);
+      final header = tester.getRect(find.byType(NowPlayingHeader));
+      expect(header.height, 64);
+      expect(header.top, 0);
 
       Rect at(String tooltip) =>
           tester.getRect(inScreen(find.byTooltip(tooltip)));
-      expect(at('Close Now Playing').center.dx, lessThan(footer.center.dx));
-      expect(at('Add to favorites').center.dx, lessThan(footer.center.dx));
-      expect(at('Add to playlist').center.dx, lessThan(footer.center.dx));
-      expect(at('Pause').center.dx, closeTo(640, 1));
-      expect(at('Shuffle').center.dx, lessThan(640));
-      expect(at('Next').center.dx, greaterThan(640));
-      expect(at('Mute').center.dx, greaterThan(footer.center.dx));
+      for (final tooltip in [
+        'Close Now Playing',
+        'Add to favorites',
+        'Add to playlist',
+        'Shuffle',
+        'Repeat off',
+        'Sleep timer',
+        'Mute',
+      ]) {
+        expect(at(tooltip).bottom, lessThanOrEqualTo(header.bottom));
+      }
+      expect(at('Close Now Playing').center.dx, lessThan(header.center.dx));
+      expect(at('Shuffle').center.dx, greaterThan(header.center.dx));
+      // The controls moved to the track column, under the cover.
+      final column = tester.getRect(find.byType(NowPlayingTrackColumn));
+      expect(at('Pause').center.dx, closeTo(column.center.dx, 1));
+      expect(at('Pause').top, greaterThan(header.bottom));
+      expect(at('Previous').center.dx, lessThan(at('Pause').center.dx));
+      expect(at('Next').center.dx, greaterThan(at('Pause').center.dx));
+      // Shuffle and repeat are not among them.
+      expect(at('Shuffle').top, lessThan(header.bottom));
+      // The seek track is over the buttons, the times beside them.
+      final times = tester.getRect(inScreen(find.text('0:00')).first);
+      expect(times.center.dy, closeTo(at('Pause').center.dy, 2));
       expect(
-        at('Show now playing list').center.dx,
-        greaterThan(at('Mute').center.dx),
-      );
-      // The seek bar is under the buttons.
-      expect(
-        tester.getRect(inScreen(find.text('0:00')).first).center.dy,
-        greaterThan(at('Pause').bottom - 8),
+        tester.getRect(inScreen(find.byType(NowPlayingSeekSlot))).bottom,
+        lessThan(at('Pause').top + 4),
       );
     });
 
-    testWidgets('the queue button counts the tracks', (tester) async {
+    testWidgets('has no queue button', (tester) async {
       await pumpOpen(tester, const Size(1280, 800));
-      expect(inScreen(find.text('2')), findsOneWidget);
 
-      await player().removeTrack(1);
-      await tester.pumpAndSettle();
-      expect(inScreen(find.text('1')), findsOneWidget);
+      expect(inScreen(find.byTooltip('Show now playing list')), findsNothing);
+      expect(inScreen(find.byType(QueueButton)), findsNothing);
     });
 
     testWidgets('shuffle and repeat buttons change the player', (tester) async {
@@ -161,7 +183,7 @@ void main() {
       );
     });
 
-    testWidgets('closes from the footer', (tester) async {
+    testWidgets('closes from the header', (tester) async {
       await pumpOpen(tester, const Size(1280, 800));
 
       await tester.tap(inScreen(find.byTooltip('Close Now Playing')));

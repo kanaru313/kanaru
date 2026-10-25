@@ -9,6 +9,7 @@ import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
+import 'now_playing_line_icon.dart';
 import 'now_playing_open_provider.dart';
 
 final _log = Logger('now_playing');
@@ -39,10 +40,28 @@ final nowPlayingAlbumProvider = FutureProvider.autoDispose<NowPlayingAlbum?>((
 /// key it is plain text. Shows nothing for a file outside the library or
 /// without an album, and until the first lookup is done.
 class NowPlayingAlbumLine extends ConsumerWidget {
-  const NowPlayingAlbumLine({super.key, required this.centered});
+  const NowPlayingAlbumLine({
+    super.key,
+    required this.centered,
+    this.leadingIcon,
+    this.padded = true,
+    this.showIcon = true,
+  });
 
   /// Centers the line; otherwise it starts at the left.
   final bool centered;
+
+  /// An icon in front of the line, outside the tap target. Without it the
+  /// line carries its own small icon inside the tap target.
+  final IconData? leadingIcon;
+
+  /// Keeps a gap of 8 px above the line (none for a song without album) and
+  /// fills the width. Without it the line is only as large as its content,
+  /// for a caller that places it beside other text.
+  final bool padded;
+
+  /// Whether the line carries its own small icon; off for plain text.
+  final bool showIcon;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,7 +76,8 @@ class NowPlayingAlbumLine extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 4,
         children: [
-          const Icon(AppIcons.album, size: 20),
+          if (leadingIcon == null && showIcon)
+            const Icon(AppIcons.album, size: 20),
           Flexible(
             child: Text(
               album.title,
@@ -69,22 +89,27 @@ class NowPlayingAlbumLine extends ConsumerWidget {
         ],
       ),
     );
-    return Padding(
-      // The gap lives here so a song without album adds no space.
-      padding: const EdgeInsets.only(top: 8),
-      child: Align(
-        alignment: centered ? Alignment.center : Alignment.centerLeft,
-        child: router == null || key == null
-            ? line
-            : InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  ref.read(nowPlayingOpenProvider.notifier).close();
-                  router.go(albumLocation(key));
-                },
-                child: line,
-              ),
-      ),
+    final Widget linked = router == null || key == null
+        ? line
+        : InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              ref.read(nowPlayingOpenProvider.notifier).close();
+              router.go(albumLocation(key));
+            },
+            child: line,
+          );
+    final aligned = Align(
+      alignment: centered ? Alignment.center : Alignment.centerLeft,
+      widthFactor: padded ? null : 1,
+      heightFactor: padded ? null : 1,
+      child: leadingIcon == null
+          ? linked
+          : NowPlayingLineWithIcon(icon: leadingIcon!, line: linked),
     );
+    // The gap lives here so a song without album adds no space.
+    return padded
+        ? Padding(padding: const EdgeInsets.only(top: 8), child: aligned)
+        : aligned;
   }
 }

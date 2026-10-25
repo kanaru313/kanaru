@@ -4,6 +4,13 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 
+/// Edges of the header row when [QueuePanelHeader.title] is given.
+const queueHeaderTitlePadding = EdgeInsets.fromLTRB(24, 8, 12, 8);
+
+/// Space reserved for the three buttons (filter, show-current, overflow) that
+/// end that row, one 48 px touch target each.
+const queueHeaderActionsWidth = 3 * 48.0;
+
 /// Top of the queue panel, in two rows. The first has the title and, in the
 /// side sheet, the close button. The second has the [summary] line on the
 /// left and, on the right, the filter and "jump to current" buttons plus an
@@ -20,6 +27,8 @@ class QueuePanelHeader extends StatelessWidget {
     required this.onShowCurrent,
     this.onClose,
     this.showTitle = true,
+    this.title,
+    this.onMenuOpenChanged,
   });
 
   /// Track count and time left; the parent supplies a widget that follows
@@ -50,10 +59,57 @@ class QueuePanelHeader extends StatelessWidget {
   /// sits under a title of its own hides it.
   final bool showTitle;
 
+  /// Replaces the title row and the [summary] line: one row with this widget
+  /// (e.g. a tab bar) on the left and the buttons on the right. A close
+  /// button still shows when [onClose] is set. A supplied title replaces the
+  /// title row regardless of [showTitle].
+  final Widget? title;
+
+  /// Called with whether the `⋮` menu is open, so a host can keep its own
+  /// chrome and shortcuts out of the way while it floats over the page.
+  final ValueChanged<bool>? onMenuOpenChanged;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final actions = [
+      _NamedIconButton(
+        focusNode: filterFocus,
+        icon: AppIcons.search,
+        label: l10n.inPageSearchOpen,
+        selected: filterOpen,
+        onPressed: onFilter,
+      ),
+      _NamedIconButton(
+        icon: AppIcons.locateCurrent,
+        label: l10n.queueShowCurrent,
+        onPressed: onShowCurrent,
+      ),
+      _OverflowMenu(
+        onSave: onSave,
+        onClear: onClear,
+        onOpenChanged: onMenuOpenChanged,
+      ),
+    ];
+    final title = this.title;
+    if (title != null) {
+      return Padding(
+        padding: queueHeaderTitlePadding,
+        child: Row(
+          children: [
+            Expanded(child: title),
+            ...actions,
+            if (onClose != null)
+              _NamedIconButton(
+                icon: AppIcons.closeRounded,
+                label: l10n.queueClose,
+                onPressed: onClose,
+              ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: EdgeInsets.fromLTRB(24, showTitle ? 16 : 8, 12, 8),
       child: Column(
@@ -89,19 +145,7 @@ class QueuePanelHeader extends StatelessWidget {
                   child: summary,
                 ),
               ),
-              _NamedIconButton(
-                focusNode: filterFocus,
-                icon: AppIcons.search,
-                label: l10n.inPageSearchOpen,
-                selected: filterOpen,
-                onPressed: onFilter,
-              ),
-              _NamedIconButton(
-                icon: AppIcons.locateCurrent,
-                label: l10n.queueShowCurrent,
-                onPressed: onShowCurrent,
-              ),
-              _OverflowMenu(onSave: onSave, onClear: onClear),
+              ...actions,
             ],
           ),
         ],
@@ -112,16 +156,47 @@ class QueuePanelHeader extends StatelessWidget {
 
 /// The `⋮` button and its menu. The playing track stays when the queue is
 /// cleared, so clearing needs no confirmation.
-class _OverflowMenu extends StatelessWidget {
-  const _OverflowMenu({required this.onSave, required this.onClear});
+class _OverflowMenu extends StatefulWidget {
+  const _OverflowMenu({
+    required this.onSave,
+    required this.onClear,
+    required this.onOpenChanged,
+  });
 
   final VoidCallback? onSave;
   final VoidCallback? onClear;
+  final ValueChanged<bool>? onOpenChanged;
+
+  @override
+  State<_OverflowMenu> createState() => _OverflowMenuState();
+}
+
+class _OverflowMenuState extends State<_OverflowMenu> {
+  bool _open = false;
+
+  /// Reports a change only once, so the host's open and close calls stay
+  /// paired.
+  void _setOpen(bool open) {
+    if (_open == open) return;
+    _open = open;
+    widget.onOpenChanged?.call(open);
+  }
+
+  @override
+  void dispose() {
+    // The menu leaves with the panel: give back what the host holds for it.
+    _setOpen(false);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final onSave = widget.onSave;
+    final onClear = widget.onClear;
     return MenuAnchor(
+      onOpen: () => _setOpen(true),
+      onClose: () => _setOpen(false),
       menuChildren: [
         MenuItemButton(
           leadingIcon: const Icon(AppIcons.saveQueue),

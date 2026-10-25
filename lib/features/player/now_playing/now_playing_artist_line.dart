@@ -10,6 +10,7 @@ import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/track_menu_actions.dart' show showArtistPicker;
+import 'now_playing_line_icon.dart';
 import 'now_playing_open_provider.dart';
 
 final _log = Logger('now_playing');
@@ -43,9 +44,21 @@ final nowPlayingArtistsProvider =
 /// whether or not a link was found, so a song outside the library still
 /// names its artist.
 class NowPlayingArtistLine extends ConsumerStatefulWidget {
-  const NowPlayingArtistLine({super.key, required this.artist});
+  const NowPlayingArtistLine({
+    super.key,
+    required this.artist,
+    this.leadingIcon,
+    this.showIcon = true,
+  });
 
   final String artist;
+
+  /// An icon in front of the line, outside the tap target. Without it the
+  /// line carries its own small icon inside the tap target.
+  final IconData? leadingIcon;
+
+  /// Whether the line carries its own small icon; off for plain text.
+  final bool showIcon;
 
   @override
   ConsumerState<NowPlayingArtistLine> createState() =>
@@ -79,7 +92,8 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
       mainAxisSize: MainAxisSize.min,
       spacing: 4,
       children: [
-        const Icon(AppIcons.artistRounded, size: 20),
+        if (widget.leadingIcon == null && widget.showIcon)
+          const Icon(AppIcons.artistRounded, size: 20),
         Flexible(
           child: Text(
             widget.artist,
@@ -90,14 +104,18 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
         ),
       ],
     );
-    if (router == null || artists.isEmpty) {
-      return Opacity(opacity: 0.7, child: line);
-    }
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTapDown: (details) => _tapPosition = details.globalPosition,
-      onTap: () => _open(router, artists),
-      child: Opacity(opacity: 0.7, child: line),
-    );
+    final dimmed = Opacity(opacity: 0.7, child: line);
+    final Widget result = router == null || artists.isEmpty
+        ? dimmed
+        : InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTapDown: (details) => _tapPosition = details.globalPosition,
+            onTap: () => _open(router, artists),
+            child: dimmed,
+          );
+    final icon = widget.leadingIcon;
+    return icon == null
+        ? result
+        : NowPlayingLineWithIcon(icon: icon, line: result);
   }
 }

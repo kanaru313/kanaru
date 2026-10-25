@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
 import 'package:kanaru/features/player/now_playing_summary.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
 import 'package:material_ui/material_ui.dart';
@@ -73,6 +74,12 @@ void main() {
   final footer = find.byType(NowPlayingSummary);
   final screen = find.byType(NowPlayingScreen);
 
+  /// The cover of the playing track: in a wide window the queue beside it
+  /// has covers of its own.
+  Finder coverScope() => find.byType(NowPlayingTrackColumn).evaluate().isEmpty
+      ? screen
+      : find.byType(NowPlayingTrackColumn);
+
   for (final (name, size) in [
     ('wide', const Size(1280, 800)),
     ('narrow', const Size(600, 700)),
@@ -88,8 +95,8 @@ void main() {
         expect(artIn(tester, footer).layered, isFalse);
         await openNowPlaying(tester);
 
-        expect(artIn(tester, screen).layered, isTrue);
-        expect(artIn(tester, screen).original?.uri, paths[0]);
+        expect(artIn(tester, coverScope()).layered, isTrue);
+        expect(artIn(tester, coverScope()).original?.uri, paths[0]);
         expect(reader.reads, [paths[0]]);
       },
     );
@@ -109,7 +116,7 @@ void main() {
     slow.complete(Uint8List.fromList(_png));
     await settle(tester);
 
-    expect(artIn(tester, screen).original?.uri, paths[1]);
+    expect(artIn(tester, coverScope()).original?.uri, paths[1]);
   });
 
   testWidgets('a track without an original shows only its thumbnail', (
@@ -120,6 +127,6 @@ void main() {
     await play(tester, 0);
     await openNowPlaying(tester);
 
-    expect(artIn(tester, screen).original, isNull);
+    expect(artIn(tester, coverScope()).original, isNull);
   });
 }

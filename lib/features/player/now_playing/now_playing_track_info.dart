@@ -1,34 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/track.dart';
+import '../../../shared/icons/app_icons.dart';
 import 'now_playing_album_line.dart';
 import 'now_playing_artist_line.dart';
-import 'now_playing_artwork.dart';
 
-/// Large cover of the playing track, then [track]'s title, artist and album,
-/// centered.
-class NowPlayingTrackInfo extends StatelessWidget {
-  const NowPlayingTrackInfo({
-    super.key,
-    required this.track,
-    required this.artworkSize,
-  });
-
-  final Track track;
-  final double artworkSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      spacing: 24,
-      children: [
-        Center(child: NowPlayingArtwork(size: artworkSize, radius: 32)),
-        NowPlayingTitle(track: track),
-      ],
-    );
-  }
-}
+/// Style of the song title in [NowPlayingTitle].
+TextStyle? nowPlayingTitleStyle(BuildContext context) =>
+    Theme.of(context).textTheme.headlineSmall
+        ?.copyWith(fontSize: 26, fontWeight: FontWeight.bold);
 
 /// Title (bold, up to two lines), artist and album, as under the large cover.
 class NowPlayingTitle extends StatelessWidget {
@@ -37,9 +17,14 @@ class NowPlayingTitle extends StatelessWidget {
     required this.track,
     this.centered = true,
     this.trailing,
+    this.lineIcons = false,
   });
 
   final Track track;
+
+  /// Puts a person icon before the artist and a disc icon before the album,
+  /// outside their links.
+  final bool lineIcons;
 
   /// Centers the text; otherwise it starts at the left.
   final bool centered;
@@ -49,17 +34,13 @@ class NowPlayingTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final artist = track.artist;
     final title = Text(
       track.title,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       textAlign: centered ? TextAlign.center : TextAlign.start,
-      style: theme.textTheme.headlineSmall?.copyWith(
-        fontSize: 26,
-        fontWeight: FontWeight.bold,
-      ),
+      style: nowPlayingTitleStyle(context),
     );
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -77,47 +58,15 @@ class NowPlayingTitle extends StatelessWidget {
               ),
         if (artist != null) ...[
           const SizedBox(height: 8),
-          NowPlayingArtistLine(artist: artist),
+          NowPlayingArtistLine(
+            artist: artist,
+            leadingIcon: lineIcons ? AppIcons.artist : null,
+          ),
         ],
-        NowPlayingAlbumLine(centered: centered),
-      ],
-    );
-  }
-}
-
-/// Title (bold) and artist, small and centered: what stays on top of the
-/// lyrics in the lyrics-only view.
-class NowPlayingCompactInfo extends StatelessWidget {
-  const NowPlayingCompactInfo({super.key, required this.track});
-
-  final Track track;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final artist = track.artist;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          track.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+        NowPlayingAlbumLine(
+          centered: centered,
+          leadingIcon: lineIcons ? AppIcons.album : null,
         ),
-        if (artist != null)
-          Text(
-            artist,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
       ],
     );
   }

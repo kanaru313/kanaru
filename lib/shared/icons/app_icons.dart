@@ -23,6 +23,8 @@ abstract final class AppIcons {
   static const IconData equalizer = Icons.graphic_eq;
   static const IconData equalizerRounded = Icons.graphic_eq_rounded;
   static const IconData lyrics = Icons.lyrics_rounded;
+  static const IconData viewSplit = Icons.vertical_split_rounded;
+  static const IconData viewCover = Icons.photo_rounded;
   static const IconData dragHandle = Icons.drag_handle_rounded;
   static const IconData locateCurrent = Icons.my_location_rounded;
 
