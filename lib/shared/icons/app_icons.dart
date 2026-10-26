@@ -54,6 +54,8 @@ abstract final class AppIcons {
   static const IconData favoriteOutline = Icons.favorite_outline;
   static const IconData favoriteBorderRounded = Icons.favorite_border_rounded;
   static const IconData history = Icons.history;
+  static const IconData mostPlayed = Icons.leaderboard_rounded;
+  static const IconData mostPlayedOutlined = Icons.leaderboard_outlined;
 
   // Queue and playlists.
   static const IconData playlist = Icons.queue_music;

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/history/history_routes.dart';
 import 'package:kanaru/features/history/history_top_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -39,13 +40,8 @@ Future<void> _openTop(
     tracks: _tracks,
     plays: plays ?? _plays,
     gate: gate,
+    page: mostPlayedPath,
   );
-  await _showTab(tester, 'Most played');
-}
-
-Future<void> _showTab(WidgetTester tester, String label) async {
-  await tester.tap(find.widgetWithText(Tab, label));
-  await settleHistory(tester);
 }
 
 Future<void> _chip(WidgetTester tester, String label) async {
@@ -95,8 +91,8 @@ void main() {
         tester,
         h,
         plays: [for (var i = 0; i < songs; i++) ('g$i', _at(10, 22, i % 24))],
+        page: mostPlayedPath,
       );
-      await _showTab(tester, 'Most played');
     }
 
     testWidgets('exactly the limit shows no note', (tester) async {
@@ -403,35 +399,18 @@ void main() {
     });
   });
 
-  group('tabs and reloading', () {
-    testWidgets('the calendar button is only on the journal tab', (
+  group('page and reloading', () {
+    testWidgets('keeps the range when another page is shown and back', (
       tester,
     ) async {
       await _openTop(tester, h);
-      expect(find.byTooltip('Jump to a day'), findsNothing);
-
-      await _showTab(tester, 'Journal');
-      expect(find.byTooltip('Jump to a day'), findsOneWidget);
-    });
-
-    testWidgets('switching tabs keeps the scroll and the range', (
-      tester,
-    ) async {
-      final many = <SeedPlay>[
-        for (var d = 1; d <= 28; d++) ('A', _at(9, d)),
-        ..._plays,
-      ];
-      await openHistory(tester, h, tracks: _tracks, plays: many);
-      await scrollTimelineTo(tester, 400);
-      final offset = timelineOffset(tester);
-      expect(offset, greaterThan(0));
-
-      await _showTab(tester, 'Most played');
       await _chip(tester, '7 days');
-      await _showTab(tester, 'Journal');
-      expect(timelineOffset(tester), offset);
 
-      await _showTab(tester, 'Most played');
+      goTo(tester, h, historyPath);
+      await settleHistory(tester);
+      goTo(tester, h, mostPlayedPath);
+      await settleHistory(tester);
+
       expect(
         tester
             .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '7 days'))
@@ -441,14 +420,14 @@ void main() {
       expect(_names(tester), ['A', 'C']);
     });
 
-    testWidgets('a hidden Most played tab does not read new plays', (
+    testWidgets('Most played in a hidden branch does not read new plays', (
       tester,
     ) async {
       final gate = GatedQueryInterceptor();
       h = historyHarness(interceptor: gate);
-      await openHistory(tester, h, tracks: _tracks, plays: _plays, gate: gate);
-      await _showTab(tester, 'Most played');
-      await _showTab(tester, 'Journal');
+      await _openTop(tester, h, gate: gate);
+      goTo(tester, h, historyPath);
+      await settleHistory(tester);
       final before = gate.count(_topSql);
       expect(before, greaterThan(0));
 
@@ -457,7 +436,8 @@ void main() {
       expect(gate.count(_topSql), before);
 
       // Shown again, it catches up.
-      await _showTab(tester, 'Most played');
+      goTo(tester, h, mostPlayedPath);
+      await settleHistory(tester);
       expect(gate.count(_topSql), greaterThan(before));
       expect(find.text('2 listens'), findsNWidgets(2));
     });

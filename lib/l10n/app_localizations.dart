@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'History'**
   String get navHistory;
 
+  /// Name of the page ranking songs by plays in a date range, in the sidebar and as its title
+  ///
+  /// In en, this message translates to:
+  /// **'Most played'**
+  String get navMostPlayed;
+
   /// No description provided for @navSearch.
   ///
   /// In en, this message translates to:
@@ -2504,18 +2510,6 @@ abstract class AppLocalizations {
   /// **'Show {year}'**
   String historyOlderYear(int year);
 
-  /// Tab of the History page that lists every play by day
-  ///
-  /// In en, this message translates to:
-  /// **'Journal'**
-  String get historyTabTimeline;
-
-  /// Tab of the History page that ranks songs by plays in a date range
-  ///
-  /// In en, this message translates to:
-  /// **'Most played'**
-  String get historyTabTop;
-
   /// Most played range chip and label for the current day
   ///
   /// In en, this message translates to:
@@ -2612,7 +2606,7 @@ abstract class AppLocalizations {
   /// **'Created playlist {name}'**
   String historyPlaylistCreated(String name);
 
-  /// Message of the Most played tab when the range has no plays
+  /// Message of the Most played page when the range has no plays
   ///
   /// In en, this message translates to:
   /// **'No listens in this range'**
@@ -2861,7 +2855,7 @@ abstract class AppLocalizations {
   /// Name of the page listing the queues the user replaced, in the sidebar and as its title
   ///
   /// In en, this message translates to:
-  /// **'Queue history'**
+  /// **'Queues'**
   String get queueHistoryTitle;
 
   /// Title on the queue history page before any queue was replaced

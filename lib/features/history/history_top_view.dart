@@ -24,8 +24,9 @@ import 'history_top_actions.dart';
 import 'history_top_queue.dart';
 import 'history_top_tile.dart';
 
-/// The Most played tab: the songs played most in a range of days, ranked.
-/// Its range lives in this widget's state, so it survives a switch of tab.
+/// The Most played page: the songs played most in a range of days, ranked.
+/// Its range lives in this widget's state, so it survives a switch to
+/// another page.
 ///
 /// While a new range or a change to the plays is read, the list on show
 /// stays and a thin bar runs over it, so the list never flashes empty.
@@ -78,7 +79,7 @@ class _HistoryTopViewState extends ConsumerState<HistoryTopView> {
     );
     if (choice == null || !mounted) return;
     if (choice == HistoryPlayChoice.trackHistory) {
-      context.go(historyTrackLocation(row.path));
+      context.go(mostPlayedTrackLocation(row.path));
       return;
     }
     final action = historyQueueActionOf(choice);

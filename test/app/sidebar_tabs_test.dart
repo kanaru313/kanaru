@@ -56,7 +56,13 @@ void _expectTwoHidden() {
   for (final hidden in ['Songs', 'Genres']) {
     expect(_inSidebar(hidden), findsNothing, reason: hidden);
   }
-  for (final always in ['Playlists', 'Queue history', 'Favorites', 'History']) {
+  for (final always in [
+    'Playlists',
+    'Favorites',
+    'Queues',
+    'History',
+    'Most played',
+  ]) {
     expect(_inSidebar(always), findsOneWidget, reason: always);
   }
   expect(find.text('Current queue'), findsNothing);
@@ -81,9 +87,10 @@ void main() {
       ]);
       expect(groups[2], [
         AppDestination.playlists,
-        AppDestination.queueHistory,
         AppDestination.favorites,
+        AppDestination.queueHistory,
         AppDestination.history,
+        AppDestination.mostPlayed,
       ]);
     });
 
@@ -102,7 +109,7 @@ void main() {
       for (final tab in SidebarTab.values) {
         final groups = visibleSidebarGroups({tab});
         expect(groups.first, [AppDestination.home]);
-        expect(groups.last, hasLength(4));
+        expect(groups.last, hasLength(5));
       }
     });
 

@@ -10,6 +10,48 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   test('the route literal matches the destination', () {
     expect(historyPath, AppDestination.history.path);
+    expect(mostPlayedPath, AppDestination.mostPlayed.path);
+  });
+
+  group('Most played song history address', () {
+    test('the location is below the Most played page', () {
+      expect(
+        Uri.parse(mostPlayedTrackLocation('/m/a.flac')).path,
+        '$mostPlayedPath/track',
+      );
+    });
+
+    testWidgets('reaches the page unchanged', (tester) async {
+      const path = 'a b+c%20#?&=/日本語.flac';
+      final router = GoRouter(
+        initialLocation: mostPlayedPath,
+        routes: [
+          GoRoute(
+            path: mostPlayedPath,
+            builder: (context, state) => const SizedBox(),
+            routes: mostPlayedRoutes,
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+
+      router.go(mostPlayedTrackLocation(path));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<HistoryTrackScreen>(find.byType(HistoryTrackScreen)).path,
+        path,
+      );
+    });
   });
 
   group('song history address', () {

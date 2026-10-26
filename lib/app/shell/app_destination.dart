@@ -16,6 +16,7 @@ enum AppDestination {
   folders('/folders', AppIcons.folderOutlined, AppIcons.folder),
   favorites('/favorites', AppIcons.favoriteOutline, AppIcons.favorite),
   history('/history', AppIcons.history, AppIcons.history),
+  mostPlayed('/most-played', AppIcons.mostPlayedOutlined, AppIcons.mostPlayed),
   queueHistory(
     '/queue-history',
     AppIcons.queueHistoryOutlined,
@@ -41,6 +42,7 @@ enum AppDestination {
     folders => l10n.navFolders,
     favorites => l10n.navFavorites,
     history => l10n.navHistory,
+    mostPlayed => l10n.navMostPlayed,
     queueHistory => l10n.queueHistoryTitle,
     playlists => l10n.sidebarPlaylists,
     search => l10n.navSearch,
@@ -71,6 +73,7 @@ SidebarTab? sidebarTabOf(AppDestination destination) => switch (destination) {
   AppDestination.home ||
   AppDestination.favorites ||
   AppDestination.history ||
+  AppDestination.mostPlayed ||
   AppDestination.queueHistory ||
   AppDestination.playlists ||
   AppDestination.search ||
@@ -78,8 +81,8 @@ SidebarTab? sidebarTabOf(AppDestination destination) => switch (destination) {
 };
 
 /// Rows listed in the sidebar, grouped by dividers: Home; the library pages
-/// whose tab is in [tabs]; playlists, queue history, favorites and history
-/// (always). Search and settings are reached from the top bar instead. A
+/// whose tab is in [tabs]; playlists, favorites, queues, history and most
+/// played (always). Search and settings are reached from the top bar instead. A
 /// group left empty is dropped, so no two dividers sit side by side.
 List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
   final library = [
@@ -91,9 +94,10 @@ List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
     if (library.isNotEmpty) library,
     [
       AppDestination.playlists,
-      AppDestination.queueHistory,
       AppDestination.favorites,
+      AppDestination.queueHistory,
       AppDestination.history,
+      AppDestination.mostPlayed,
     ],
   ];
 }

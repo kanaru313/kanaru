@@ -26,7 +26,7 @@ String historyRangeText(
   );
 }
 
-/// The range controls of the Most played tab: a chip per preset and one for a
+/// The range controls of the Most played page: a chip per preset and one for a
 /// custom range, then (except for all time) buttons that step to the period
 /// before or after with the range between them.
 class HistoryRangeBar extends StatelessWidget {

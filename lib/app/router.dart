@@ -6,6 +6,7 @@ import '../core/database/library_startup.dart';
 import '../core/settings/settings_provider.dart';
 import '../features/history/history_routes.dart';
 import '../features/history/history_screen.dart';
+import '../features/history/most_played_screen.dart';
 import '../features/home/home_routes.dart';
 import '../features/home/home_screen.dart';
 import '../features/library/albums/album_screen.dart';
@@ -124,6 +125,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     ],
                     AppDestination.favorites => favoritesRoutes,
                     AppDestination.history => historyRoutes,
+                    AppDestination.mostPlayed => mostPlayedRoutes,
                     AppDestination.queueHistory => queueHistoryRoutes,
                     AppDestination.playlists => [
                       GoRoute(
@@ -157,6 +159,7 @@ Widget _buildPage(GoRouterState state, AppDestination destination) {
     AppDestination.folders => const FoldersScreen(),
     AppDestination.favorites => const FavoritesScreen(),
     AppDestination.history => const HistoryScreen(),
+    AppDestination.mostPlayed => const MostPlayedScreen(),
     AppDestination.queueHistory => const QueueHistoryScreen(),
     AppDestination.playlists => const PlaylistsScreen(),
     AppDestination.search => SearchScreen(

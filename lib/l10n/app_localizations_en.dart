@@ -34,6 +34,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHistory => 'History';
 
   @override
+  String get navMostPlayed => 'Most played';
+
+  @override
   String get navSearch => 'Search';
 
   @override
@@ -1614,12 +1617,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get historyTabTimeline => 'Journal';
-
-  @override
-  String get historyTabTop => 'Most played';
-
-  @override
   String get historyRangeToday => 'Today';
 
   @override
@@ -1925,7 +1922,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueSaveNothing => 'Nothing in the queue is in your library';
 
   @override
-  String get queueHistoryTitle => 'Queue history';
+  String get queueHistoryTitle => 'Queues';
 
   @override
   String get queueHistoryEmptyTitle => 'No queue history yet';

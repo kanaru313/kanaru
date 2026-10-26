@@ -8,6 +8,7 @@
   "navFolders": "Thư mục",
   "navFavorites": "Yêu thích",
   "navHistory": "Lịch sử",
+  "navMostPlayed": "Phát nhiều nhất",
   "navSearch": "Tìm kiếm",
   "navSettings": "Cài đặt",
   "sidebarPlaylists": "Playlist",
@@ -542,14 +543,6 @@
       }
     }
   },
-  "historyTabTimeline": "Nhật ký",
-  "@historyTabTimeline": {
-    "description": "Tab of the History page that lists every play by day"
-  },
-  "historyTabTop": "Phát nhiều nhất",
-  "@historyTabTop": {
-    "description": "Tab of the History page that ranks songs by plays in a date range"
-  },
   "historyRangeToday": "Hôm nay",
   "@historyRangeToday": {
     "description": "Most played range chip and label for the current day"
@@ -644,7 +637,7 @@
   },
   "historyTopEmpty": "Không có lượt nghe trong khoảng này",
   "@historyTopEmpty": {
-    "description": "Message of the Most played tab when the range has no plays"
+    "description": "Message of the Most played page when the range has no plays"
   },
   "historyShowTrackHistory": "Lịch sử bài này",
   "@historyShowTrackHistory": {
@@ -923,7 +916,7 @@
   "@queueSaveNothing": {
     "description": "Snackbar when no queue song can be saved in a playlist"
   },
-  "queueHistoryTitle": "Lịch sử hàng đợi",
+  "queueHistoryTitle": "Các hàng đợi",
   "queueHistoryEmptyTitle": "Chưa có lịch sử hàng đợi",
   "queueHistoryEmptyMessage": "Khi bạn phát thứ khác, hàng đợi bị thay sẽ được giữ ở đây.",
   "queueHistorySavedAt": "{date} · {time}",

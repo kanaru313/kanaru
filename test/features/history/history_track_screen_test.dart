@@ -85,7 +85,7 @@ void main() {
       expect(find.text('Thu, Oct 22 · 9:00 AM'), findsOneWidget);
     });
 
-    testWidgets('from Most played; back keeps the tab and the range', (
+    testWidgets('from Most played; back keeps the page and the range', (
       tester,
     ) async {
       await openHistory(
@@ -93,14 +93,13 @@ void main() {
         h,
         tracks: [song('A')],
         plays: [('A', _at(22))],
+        page: mostPlayedPath,
       );
-      await tester.tap(find.widgetWithText(Tab, 'Most played'));
-      await settleHistory(tester);
       await tester.tap(find.widgetWithText(ChoiceChip, '7 days'));
       await settleHistory(tester);
 
       await _menuOfRow(tester, 0, 'Song history');
-      expect(location(h), historyTrackLocation('/m/A.flac'));
+      expect(location(h), mostPlayedTrackLocation('/m/A.flac'));
       expect(
         find.text('1 listen · First Thu, Oct 22 · Last Thu, Oct 22 9:00 AM'),
         findsOneWidget,
@@ -109,7 +108,7 @@ void main() {
       await tester.tap(find.byTooltip('Back'));
       await settleHistory(tester);
 
-      expect(location(h), historyPath);
+      expect(location(h), mostPlayedPath);
       expect(
         tester
             .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '7 days'))

@@ -8,6 +8,10 @@
   "navFolders": "Folders",
   "navFavorites": "Favorites",
   "navHistory": "History",
+  "navMostPlayed": "Most played",
+  "@navMostPlayed": {
+    "description": "Name of the page ranking songs by plays in a date range, in the sidebar and as its title"
+  },
   "navSearch": "Search",
   "navSettings": "Settings",
   "sidebarPlaylists": "Playlists",
@@ -1015,14 +1019,6 @@
       }
     }
   },
-  "historyTabTimeline": "Journal",
-  "@historyTabTimeline": {
-    "description": "Tab of the History page that lists every play by day"
-  },
-  "historyTabTop": "Most played",
-  "@historyTabTop": {
-    "description": "Tab of the History page that ranks songs by plays in a date range"
-  },
   "historyRangeToday": "Today",
   "@historyRangeToday": {
     "description": "Most played range chip and label for the current day"
@@ -1117,7 +1113,7 @@
   },
   "historyTopEmpty": "No listens in this range",
   "@historyTopEmpty": {
-    "description": "Message of the Most played tab when the range has no plays"
+    "description": "Message of the Most played page when the range has no plays"
   },
   "historyShowTrackHistory": "Song history",
   "@historyShowTrackHistory": {
@@ -1396,7 +1392,7 @@
   "@queueSaveNothing": {
     "description": "Snackbar when no queue song can be saved in a playlist"
   },
-  "queueHistoryTitle": "Queue history",
+  "queueHistoryTitle": "Queues",
   "@queueHistoryTitle": {
     "description": "Name of the page listing the queues the user replaced, in the sidebar and as its title"
   },

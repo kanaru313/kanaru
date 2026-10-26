@@ -82,13 +82,14 @@ Future<void> openHistory(
   List<TestTrack> tracks = const [],
   List<SeedPlay> plays = const [],
   GatedQueryInterceptor? gate,
+  String page = '/history',
 }) async {
   await insertTracks(tester, h, tracks);
   await seedPlays(tester, h, plays);
   await h.pump(tester, hasRoots: true);
   // Home (the start page) has read by now; [gate] should see only History.
   gate?.statements.clear();
-  goTo(tester, h, '/history');
+  goTo(tester, h, page);
   await settleHistory(tester);
 }
 

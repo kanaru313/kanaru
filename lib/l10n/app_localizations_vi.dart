@@ -34,6 +34,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get navHistory => 'Lịch sử';
 
   @override
+  String get navMostPlayed => 'Phát nhiều nhất';
+
+  @override
   String get navSearch => 'Tìm kiếm';
 
   @override
@@ -1560,12 +1563,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get historyTabTimeline => 'Nhật ký';
-
-  @override
-  String get historyTabTop => 'Phát nhiều nhất';
-
-  @override
   String get historyRangeToday => 'Hôm nay';
 
   @override
@@ -1802,7 +1799,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không bài nào trong hàng đợi có trong thư viện';
 
   @override
-  String get queueHistoryTitle => 'Lịch sử hàng đợi';
+  String get queueHistoryTitle => 'Các hàng đợi';
 
   @override
   String get queueHistoryEmptyTitle => 'Chưa có lịch sử hàng đợi';

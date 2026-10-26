@@ -558,7 +558,7 @@ The History page (`features/history/`) reads them as follows.
 | Inserts while scrolled | A new play arriving while the list is more than one line from the top is held back and shown when the reader scrolls back near the top or changes year, so nothing moves under them; a day read again meanwhile keeps only as many rows as its header counts (the held plays are the newest rows and are cut). Deletes, restores and a cleared history show at once. There is no scroll anchoring (`jumpTo`). |
 | Tap and menu | A tap queues the day's songs, each once at its first place, skipping songs gone from the library. The player gets only the `tracks` row path, never `plays.path`. Removal is only in the row menu, which keeps the play id it was opened on. |
 
-The Most played tab (`HistoryTopView`) reads the top query as follows.
+The Most played page (`HistoryTopView`, mounted by `MostPlayedScreen` at `/most-played`) reads the top query as follows.
 
 | Rule | Detail |
 |---|---|
