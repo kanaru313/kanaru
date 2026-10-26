@@ -4,9 +4,9 @@ import '../../core/database/library_rows.dart';
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/widgets/hover_reveal_action.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile.dart';
-import 'hover_reveal_action.dart';
 import 'playlist_entry_handle.dart';
 import 'playlist_missing_entry_tile.dart';
 

@@ -14,6 +14,22 @@ const libraryRowCoverSize = 64.0;
 /// below. The three text lines fill exactly the cover's height.
 const libraryRowMinHeight = libraryRowCoverSize + 16;
 
+/// Height of a [LibraryRowLayout] with three lines (a title and two
+/// details) at [scaler]: the lines under their struts plus 8 px above and
+/// below, at least [libraryRowMinHeight]. For lists that need a row's height
+/// before one is laid out. The engine rounds each line's height to whole
+/// pixels (measured at scales from 1 to 2), so the function does too. Pass
+/// the theme of a context ([Theme.of]), whose text theme has its sizes.
+double libraryRowExtent(ThemeData theme, TextScaler scaler) {
+  final styles = libraryRowStyles(theme);
+  double line(TextStyle style) =>
+      (scaler.scale(style.fontSize!) * (style.height ?? 1)).roundToDouble();
+  return math.max(
+    libraryRowMinHeight,
+    16 + line(styles.title) + 2 * line(styles.detail),
+  );
+}
+
 /// Joins the parts of a details line, skipping empty ones; the same dot in
 /// every row.
 String joinRowDetails(Iterable<String?> parts) =>
@@ -64,17 +80,21 @@ class LibraryRowLayout extends StatelessWidget {
     required this.leading,
     required this.body,
     this.trailing,
+    this.horizontalPadding = 32,
   });
 
   final Widget leading;
   final Widget body;
   final Widget? trailing;
 
+  /// Space left and right of the row.
+  final double horizontalPadding;
+
   @override
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(minHeight: libraryRowMinHeight),
     child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
       child: Row(
         spacing: 16,
         children: [

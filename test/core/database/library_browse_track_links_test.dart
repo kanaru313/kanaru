@@ -73,4 +73,32 @@ void main() {
     final onPage = await db.albumTracks(key);
     expect([for (final t in onPage) t.id], [id]);
   });
+
+  group('trackMenuStateOfPath', () {
+    test('reads the id and what the song links to', () async {
+      final id = await store(artist: 'Ann', album: 'Al');
+
+      expect(await db.trackMenuStateOfPath('/m/${next - 1}.flac'), (
+        id: id,
+        hasArtist: true,
+        hasAlbum: true,
+      ));
+    });
+
+    test('an empty artist and no album grey both links', () async {
+      final id = await store(artist: '');
+
+      expect(await db.trackMenuStateOfPath('/m/${next - 1}.flac'), (
+        id: id,
+        hasArtist: false,
+        hasAlbum: false,
+      ));
+    });
+
+    test('is null for a path outside the library', () async {
+      await store(artist: 'Ann');
+
+      expect(await db.trackMenuStateOfPath('/elsewhere/x.flac'), isNull);
+    });
+  });
 }

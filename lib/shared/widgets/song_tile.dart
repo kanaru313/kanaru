@@ -5,11 +5,10 @@ import '../../core/database/library_database.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../core/player/playing_track_path.dart';
-import '../format_duration.dart';
 import 'favorite_button.dart';
 import 'library_row.dart';
 import 'queue_actions_menu.dart';
-import 'song_tile_cover.dart';
+import 'song_row_view.dart';
 import 'track_actions_menu.dart';
 
 /// Side of the cover at the start of a compact song row (history,
@@ -25,7 +24,8 @@ const songCoverSize = 40.0;
 /// background, its texts in `onPrimaryContainer` and an equalizer on the
 /// cover. The row always has its own canvas [Material] (transparent when not
 /// playing): ink paints under it, so the fill cannot hide hover and splash,
-/// and its constant type keeps the row's elements when the flag flips.
+/// and its constant type keeps the row's elements when the flag flips (see
+/// [SongRowView], which draws the row).
 class SongTile extends ConsumerWidget {
   const SongTile({
     super.key,
@@ -67,90 +67,7 @@ class SongTile extends ConsumerWidget {
     final playing = ref.watch(
       playingTrackPathProvider.select((p) => p == song.path),
     );
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final base = libraryRowStyles(theme);
-    final styles = playing
-        ? (
-            title: base.title.copyWith(color: colors.onPrimaryContainer),
-            detail: base.detail.copyWith(color: colors.onPrimaryContainer),
-          )
-        : base;
-    final albumLine = joinRowDetails([song.album, rowYear(song.year)]);
     final durationMs = song.durationMs;
-
-    final number = this.number;
-    final leadingAccessory = this.leadingAccessory;
-    final trailingAccessory = this.trailingAccessory;
-    final cover = SongTileCover(
-      path: coverPath(ref.watch(coverCacheDirectoryProvider), song.coverKey),
-      playing: playing,
-    );
-
-    final trailingColumn = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        if (durationMs != null)
-          Text(
-            formatDuration(Duration(milliseconds: durationMs)),
-            style: styles.detail,
-          ),
-        FavoriteButton(
-          path: song.path,
-          iconSize: 20,
-          compact: true,
-          color: playing ? colors.onPrimaryContainer : null,
-        ),
-      ],
-    );
-
-    final tile = Material(
-      color: playing ? colors.primaryContainer : Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: LibraryRowLayout(
-          leading: leadingAccessory != null
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 16,
-                  children: [leadingAccessory, cover],
-                )
-              : number == null
-              ? cover
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 16,
-                  children: [
-                    SizedBox(
-                      width: 32,
-                      child: Text(
-                        number,
-                        textAlign: TextAlign.end,
-                        style: styles.detail,
-                      ),
-                    ),
-                    cover,
-                  ],
-                ),
-          body: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              libraryRowLine(song.title, styles.title),
-              libraryRowLine(song.artist ?? '', styles.detail),
-              libraryRowLine(albumLine, styles.detail),
-            ],
-          ),
-          trailing: trailingAccessory == null
-              ? trailingColumn
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [trailingColumn, trailingAccessory],
-                ),
-        ),
-      ),
-    );
     return TrackActionsRegion(
       trackId: song.id,
       path: song.path,
@@ -158,7 +75,31 @@ class SongTile extends ConsumerWidget {
       hasArtist: song.artist?.isNotEmpty ?? false,
       hasAlbum: song.album?.isNotEmpty ?? false,
       onQueueAction: onQueueAction,
-      child: tile,
+      child: SongRowView(
+        title: song.title,
+        artist: song.artist,
+        detail: joinRowDetails([song.album, rowYear(song.year)]),
+        coverPath: coverPath(
+          ref.watch(coverCacheDirectoryProvider),
+          song.coverKey,
+        ),
+        duration: durationMs == null
+            ? null
+            : Duration(milliseconds: durationMs),
+        playing: playing,
+        onTap: onTap,
+        number: number,
+        leading: leadingAccessory,
+        trailing: trailingAccessory,
+        heart: FavoriteButton(
+          path: song.path,
+          iconSize: 20,
+          compact: true,
+          color: playing
+              ? Theme.of(context).colorScheme.onPrimaryContainer
+              : null,
+        ),
+      ),
     );
   }
 }
