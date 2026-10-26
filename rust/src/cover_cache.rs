@@ -16,8 +16,9 @@ use crate::cover_art::{
 };
 use crate::cover_thumbnail::make_jpeg;
 
-/// Prefix of in-flight temp files. The Dart cache cleanup removes leftovers
-/// with this prefix, so the two must stay in sync.
+/// Prefix of in-flight temp files. The Dart cover cache cleanup and the Rust
+/// waveform cache sweep both remove leftovers with this prefix, so all three
+/// must stay in sync.
 pub const TEMP_PREFIX: &str = ".kanaru-tmp";
 
 /// Cover cache of one batch: the target folder plus memos so a folder is

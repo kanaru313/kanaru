@@ -76,18 +76,22 @@ Key files by area:
 
 | Path | Files / lines | Purpose |
 |---|---|---|
-| `rust/src/api/` | 4 | Public bridged API (`tags.rs`; `cover_colors.rs`: `extract_cover_colors`; `lyrics.rs`; `waveform.rs`: waveform job API) |
+| `rust/src/api/` | 5 | Public bridged API (`mod.rs`: bridge module list; `tags.rs`; `cover_colors.rs`: `extract_cover_colors`; `lyrics.rs`; `waveform.rs`: waveform job API) |
 | `rust/src/tag_reader.rs` | | Per-file read via lofty; `PERMANENT_ERROR_PREFIX` |
 | `rust/src/tag_mapping.rs` | | lofty tags to `TrackTags` |
 | `rust/src/tag_batch.rs` | | Batch read on a rayon pool |
 | `rust/src/cover_art.rs`, `cover_thumbnail.rs`, `cover_cache.rs` | | Embedded and sidecar art, 512 px JPEG thumbnails, blake3 cache keys |
 | `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Wu clusters, one nearest-cluster count, Score), `COLOR_ALGO_REVISION` |
-| `rust/src/waveform_levels.rs`, `waveform_decode.rs`, `waveform_decode_limits.rs`, `waveform_cache.rs` | | Waveform: fixed-size level accumulator, symphonia decode, its limits and error budget, `.kwf` cache file, key and lookup |
+| `rust/src/waveform_levels.rs`, `waveform_decode.rs`, `waveform_decode_limits.rs`, `waveform_cache.rs`, `waveform_cache_sweep.rs` | | Waveform: fixed-size level accumulator, symphonia decode, its limits and error budget, `.kwf` cache file, key and lookup, cache cleanup (temp files, 90-day expiry, 20 000-entry cap) |
 | `rust/src/waveform_job.rs`, `waveform_control.rs`, `thread_priority.rs` | | Waveform job ids, niced worker thread, cancel/stall wait, test gates; shared nice helper (also used by the cover pool) |
+| `rust/src/cover_batch.rs` | | Covers of a batch of files, thumbnails cached, on a low-priority pool of its own (no tag reading) |
+| `rust/src/cover_decode_limits.rs`, `jpeg_header.rs`, `webp_exif.rs` | | Limits for decoding a cover image (shared by the thumbnail maker and the original-cover reader); JPEG header facts and metadata stripping; WebP EXIF orientation without a decoder |
+| `rust/src/lyrics_reader.rs`, `lyrics_sylt.rs` | | Embedded lyrics read with lofty, with a size cap; ID3v2 `SYLT` frames turned into timed lines |
+| `rust/src/lib.rs` | | Crate root: module tree, reads audio tags and covers for the indexer, exposes them to Dart through flutter_rust_bridge |
 | `rust/src/frb_generated.rs` | 1,607 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |
 
-Total Rust (`rust/src`): 27 files, 6,238 lines, including the generated bridge. Integration tests are in `rust/tests/` (`waveform_test.rs`, `waveform_job_test.rs` for waveforms; fixtures described in `rust/tests/fixtures/README.md`).
+Total Rust (`rust/src`): 28 files, 7,104 lines, including the generated bridge. Integration tests are in `rust/tests/` (`waveform_test.rs`, `waveform_job_test.rs` for waveforms; fixtures described in `rust/tests/fixtures/README.md`).
 
 ### Other top-level paths
 
@@ -109,7 +113,7 @@ Total Rust (`rust/src`): 27 files, 6,238 lines, including the generated bridge. 
 | Module | Files | Lines |
 |---|---|---|
 | `lib/` (excludes `*.g.dart`, `lib/src/rust/`, `lib/l10n/`; includes the two generated files `library_database.steps.dart` and `text_key_tables.dart`) | 333 | 34,578 |
-| `rust/src/` | 10 | 1,751 |
+| `rust/src/` (includes the generated `frb_generated.rs`) | 28 | 7,104 |
 | `linux/` | 10 | 570 |
 | `test/` (all `.dart`, helpers included) | 255 | 58,604 |
 

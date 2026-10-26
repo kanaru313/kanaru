@@ -20,6 +20,7 @@ use crate::api::waveform::{TrackWaveform, WaveformStatus};
 use crate::tag_batch::WORKER_STACK_BYTES;
 use crate::thread_priority::lower_thread_priority;
 use crate::waveform_cache::{lookup_or_store, CacheEntry, CacheSlot};
+use crate::waveform_cache_sweep::{claim, SweepTicket};
 use crate::waveform_control::{note_decode, JobControl};
 use crate::waveform_decode::{decode_open_file, open_audio, DecodeOutcome, Failure};
 
@@ -127,15 +128,19 @@ fn run_on_thread(
         .name("kanaru-waveform".to_owned())
         .stack_size(WORKER_STACK_BYTES)
         .spawn(move || {
-            let result = catch_unwind(AssertUnwindSafe(|| {
+            let (result, ticket) = catch_unwind(AssertUnwindSafe(|| {
                 job_thread(&path, &cache_dir, &thread_control)
             }))
-            .unwrap_or_else(|_| with_status(WaveformStatus::Busy));
+            .unwrap_or_else(|_| (with_status(WaveformStatus::Busy), None));
             // Free the thread slot before the caller can see the result, so a
             // job started right after this one is not refused for it.
             drop(guard);
             // The caller may have stopped waiting; nothing to do then.
             let _ = sender.send(result);
+            // The cache sweep comes last, so the result never waits for it.
+            if let Some(ticket) = ticket {
+                let _ = catch_unwind(AssertUnwindSafe(|| ticket.run()));
+            }
         });
     if spawned.is_err() {
         return with_status(WaveformStatus::Busy);
@@ -169,8 +174,14 @@ fn wait_for(
     }
 }
 
-/// The work of a job: cache lookup, decode, cache write.
-fn job_thread(path: &str, cache_dir: &str, control: &JobControl) -> TrackWaveform {
+/// The work of a job: cache lookup, decode, cache write. The ticket, when
+/// there is one, is a cache sweep for the caller to run after the result is
+/// sent.
+fn job_thread(
+    path: &str,
+    cache_dir: &str,
+    control: &JobControl,
+) -> (TrackWaveform, Option<SweepTicket>) {
     static PRIORITY_REPORTED: Once = Once::new();
     lower_thread_priority(WAVEFORM_NICE, &PRIORITY_REPORTED, "waveform");
 
@@ -178,11 +189,11 @@ fn job_thread(path: &str, cache_dir: &str, control: &JobControl) -> TrackWavefor
     // One open handle serves the type check, the cache key and the decode, so
     // the file cannot change between them and a FIFO is never waited on.
     let Ok((file, meta)) = open_audio(path) else {
-        return with_status(WaveformStatus::Busy);
+        return (with_status(WaveformStatus::Busy), None);
     };
     control.attach_gate_for(path);
     let slot = CacheSlot::new(cache_dir, path, &meta);
-    lookup_or_store(
+    let result = lookup_or_store(
         slot.as_ref(),
         |entry| match entry {
             CacheEntry::Levels {
@@ -199,7 +210,11 @@ fn job_thread(path: &str, cache_dir: &str, control: &JobControl) -> TrackWavefor
             note_decode(cache_dir);
             decode_for_cache(path, file, control)
         },
-    )
+    );
+    let ticket = (!cache_dir.is_empty())
+        .then(|| claim(Path::new(cache_dir)))
+        .flatten();
+    (result, ticket)
 }
 
 /// Decodes `file` and pairs the result with the cache entry it earns: levels
