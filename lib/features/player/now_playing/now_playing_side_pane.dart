@@ -4,7 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/motion_tab_controller.dart';
 import '../queue/queue_panel.dart';
 import '../queue/queue_panel_header.dart'
-    show queueHeaderActionsWidth, queueHeaderPadding;
+    show queueHeaderTitleRowHeight, queueHeaderTitleRowPadding;
 
 enum _SideTab { lyrics, queue }
 
@@ -111,16 +111,11 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
       _SideTab.queue => QueuePanel(title: bar),
       _SideTab.lyrics => Column(
         children: [
-          // The queue header's edges and room for its actions, so the tab
-          // bar has the same rect on both tabs.
+          // The queue header's first row, so the tab bar has the same rect
+          // on both tabs.
           Padding(
-            padding: queueHeaderPadding,
-            child: Row(
-              children: [
-                Expanded(child: SizedBox(height: 48, child: bar)),
-                const SizedBox(width: queueHeaderActionsWidth),
-              ],
-            ),
+            padding: queueHeaderTitleRowPadding,
+            child: SizedBox(height: queueHeaderTitleRowHeight, child: bar),
           ),
           Expanded(child: widget.lyrics!),
         ],

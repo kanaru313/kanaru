@@ -250,7 +250,12 @@ void main() {
     await openSheet(tester);
     await filterBy(tester, 'one');
 
-    await tester.tap(find.byTooltip('Close now playing list'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(QueuePanel),
+        matching: find.byTooltip('Close now playing list'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(QueuePanel), findsNothing);
     expect(InPageFilterRegistry.instance.openTop(), isFalse);
