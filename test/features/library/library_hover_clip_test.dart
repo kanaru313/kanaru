@@ -39,7 +39,9 @@ void main() {
     final scrollable = find
         .ancestor(of: tile.first, matching: find.byType(Scrollable))
         .first;
-    await tester.drag(scrollable, const Offset(0, -100));
+    // Scroll about 40px (60px drag minus touch slop): every tile type (artist rows are 80px) ends up cut by the
+    // viewport edge, while a longer drag would scroll a whole row away.
+    await tester.drag(scrollable, const Offset(0, -60));
     await tester.pumpAndSettle();
     final viewport = tester.getRect(scrollable);
     final first = tester.getRect(tile.first);
