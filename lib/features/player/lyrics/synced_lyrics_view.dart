@@ -39,6 +39,7 @@ class SyncedLyricsView extends ConsumerStatefulWidget {
 
 class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
   final _scroll = ScrollController();
+  final _viewKey = GlobalKey();
   late final List<GlobalKey> _keys;
   late final List<ValueNotifier<bool>> _current;
   int _index = -1;
@@ -103,6 +104,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
     if (!animate || MediaQuery.disableAnimationsOf(context)) {
       _scroll.jumpTo(target);
       _scrollingItself = false;
+      _syncScrollbar();
       return;
     }
     _scroll
@@ -112,8 +114,28 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
           curve: Curves.easeOutCubic,
         )
         .whenComplete(() {
-          if (generation == _scrollGeneration) _scrollingItself = false;
+          if (generation != _scrollGeneration) return;
+          _scrollingItself = false;
+          _syncScrollbar();
         });
+  }
+
+  /// Hands the scrollbar the current metrics without showing it.
+  ///
+  /// The scrollbar's predicate ignores the view's own scrolling, and the
+  /// scrollbar only moves its thumb from scroll notifications, so after an
+  /// auto-scroll the thumb would stay where the last manual scroll left it and
+  /// show there on hover. A metrics notification updates the thumb but does not
+  /// fade the scrollbar in (it does only for an always-visible thumb), so one
+  /// at the end of a self-scroll fixes the thumb without the fade frames that
+  /// the predicate avoids.
+  void _syncScrollbar() {
+    final context = _viewKey.currentContext;
+    if (!mounted || context == null || !_scroll.hasClients) return;
+    ScrollMetricsNotification(
+      metrics: _scroll.position.copyWith(),
+      context: context,
+    ).dispatch(context);
   }
 
   bool _onScroll(ScrollUpdateNotification notification) {
@@ -174,6 +196,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
               notificationPredicate: (notification) =>
                   notification.depth == 0 && !_scrollingItself,
               child: SingleChildScrollView(
+                key: _viewKey,
                 controller: _scroll,
                 // Room above and below so the first and last lines can reach
                 // the anchor.
