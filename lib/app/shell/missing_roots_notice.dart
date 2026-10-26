@@ -58,28 +58,15 @@ class _MissingRootsNoticeState extends ConsumerState<MissingRootsNotice> {
     if (!mounted || missing.isEmpty) return;
 
     final l10n = context.l10n;
-    final colors = Theme.of(context).colorScheme;
     // Taken now: the notice may be gone by the time the action is tapped.
     final router = GoRouter.maybeOf(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        behavior: SnackBarBehavior.floating,
-        width: 440,
         // Long enough to read a path.
         duration: const Duration(seconds: 8),
-        backgroundColor: colors.surfaceContainerHigh,
-        elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        showCloseIcon: true,
-        closeIconColor: colors.onSurfaceVariant,
-        content: Text(
-          l10n.libraryMissingRoots(missing.length, missing.first),
-          style: TextStyle(color: colors.onSurface),
-        ),
+        content: Text(l10n.libraryMissingRoots(missing.length, missing.first)),
         action: SnackBarAction(
           label: l10n.libraryMissingRootsAction,
-          // The default inversePrimary is too faint on this surface.
-          textColor: colors.primary,
           onPressed: () => router?.go(AppDestination.settings.path),
         ),
       ),

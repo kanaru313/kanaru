@@ -23,6 +23,7 @@ Related: [code-standards.md](./code-standards.md) (widget conventions), [feature
 | Modes | Light, dark, system. Changes apply immediately; the applied appearance is debounced by 600 ms (`appliedAppearanceProvider`) | `core/settings/applied_appearance_provider.dart` |
 | AMOLED black | Not built (UI-08) | features.md |
 | Artwork color | With "Colors from the cover" on, the playing cover's seed replaces the system accent (`ColorScheme.fromSeed`, tonal spot) in both themes; a gray cover, no cover or nothing playing keeps the system accent. Now Playing gets a gradient of the cover's colors over the surface (text keeps 4.5:1 contrast; a gray cover still tints it). The app's colors change at once (no theme animation, also between light and dark); only the Now Playing gradient fades, over 300 ms (`coverThemeTransition`), at once when the system asks for reduced motion (UI-03) | `lib/app/theme.dart`, `lib/app/app.dart`, `core/cover_colors/playing_cover_palette_provider.dart` |
+| Snackbars | Every snackbar is a floating card, 440 px wide and centered, on `surfaceContainerHigh` (elevation 3, radius 16) with a close button, `onSurface` text and `primary` action. Set once in `ThemeData.snackBarTheme`; call sites pass only content, action and duration, never `behavior`, `width`, `margin` or colors | `lib/app/theme.dart` |
 
 ## Breakpoints
 

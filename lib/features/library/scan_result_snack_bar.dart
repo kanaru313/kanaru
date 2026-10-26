@@ -23,11 +23,10 @@ bool isFreshScanResult(IndexerState state, {DateTime? now}) {
       (now ?? DateTime.now()).difference(at) < scanResultMaxAge;
 }
 
-/// Floating snack bar that reports a finished or failed scan: a status icon,
-/// a short title and one line of details. Uses a surface container color
-/// rather than the default inverse surface, so it sits quietly on the page in
-/// both themes. Returns `null` for states that need no report, and for a
-/// result that is no longer fresh ([isFreshScanResult]).
+/// Snack bar that reports a finished or failed scan: a status icon, a short
+/// title and one line of details. Its frame comes from the app theme. Returns
+/// `null` for states that need no report, and for a result that is no longer
+/// fresh ([isFreshScanResult]).
 SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
   if (!isFreshScanResult(state)) return null;
   // The scan at app start only speaks up when it changed the library, and
@@ -53,16 +52,8 @@ SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
   };
   if (outcome == null || details == null) return null;
 
-  final colors = Theme.of(context).colorScheme;
   return SnackBar(
-    behavior: SnackBarBehavior.floating,
-    width: 440,
     duration: const Duration(seconds: 5),
-    backgroundColor: colors.surfaceContainerHigh,
-    elevation: 3,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    showCloseIcon: true,
-    closeIconColor: colors.onSurfaceVariant,
     content: _ScanResultContent(
       outcome: outcome,
       title: switch (outcome) {
