@@ -17,12 +17,12 @@ void main() {
     expect(container.read(libraryViewModesProvider).artists, AlbumsView.grid);
   });
 
-  test('every library page defaults to the grid', () {
+  test('songs default to the list, every other library page to the grid', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
     final modes = container.read(libraryViewModesProvider);
-    expect(modes.songs, AlbumsView.grid);
+    expect(modes.songs, AlbumsView.list);
     expect(modes.artists, AlbumsView.grid);
     expect(modes.genres, AlbumsView.grid);
     expect(modes.folders, AlbumsView.grid);
@@ -51,7 +51,7 @@ void main() {
 
     final modes = container.read(libraryViewModesProvider);
     expect(modes.languages, AlbumsView.list);
-    expect(modes.songs, AlbumsView.grid);
+    expect(modes.songs, AlbumsView.list);
     expect(modes.artists, AlbumsView.grid);
   });
 
