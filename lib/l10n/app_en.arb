@@ -576,6 +576,10 @@
   },
   "queueClear": "Clear queue",
   "queueRemove": "Remove from queue",
+  "queueMenuStale": "The queue changed, so nothing was done",
+  "@queueMenuStale": {
+    "description": "Snackbar when a queue row menu item is picked after the queue was replaced or cleared"
+  },
   "queueReorder": "Drag to reorder",
   "queueShowCurrent": "Jump to current song",
   "queueClose": "Close now playing list",

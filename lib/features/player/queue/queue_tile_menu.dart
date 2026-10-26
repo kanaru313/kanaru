@@ -2,26 +2,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_browse_track_links.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/playlist_favorites.dart';
-import '../../../core/database/playlist_library_paths.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
-import '../../../shared/widgets/app_snack_bar.dart';
+import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/menu_keyboard_region.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/track_actions_menu.dart'
+    show trackLinkMenuItems;
+import 'queue_tile.dart' show isUpNextRow;
+import 'queue_tile_menu_actions.dart';
 
 final _log = Logger('queue');
 
-enum _QueueTileAction { like, unlike, remove }
-
 /// The menu of a queue row, on a right click, a long press or the menu key:
-/// add the song to Favorites or take it out (the heart), and remove it from
-/// the queue. Only a song of the library can be added, as everywhere else;
-/// any song in Favorites can be taken out.
+/// Play next (a move, never a copy), Add to playlist, the Favorites row, the
+/// artist and album links, Show in file manager and Remove from queue. Songs
+/// outside the library get no playlist, no Add to favorites and no links;
+/// any song in Favorites can be taken out. Every action is checked against
+/// the queue when picked, so a queue replaced meanwhile is left alone.
 class QueueTileMenuRegion extends ConsumerWidget {
   const QueueTileMenuRegion({
     super.key,
@@ -32,26 +36,27 @@ class QueueTileMenuRegion extends ConsumerWidget {
 
   final Track track;
 
-  /// Play position of the row, for "remove".
+  /// Play position of the row.
   final int position;
   final Widget child;
 
-  /// Whether the song is in Favorites and in the library, read when the menu
-  /// opens; null without a library, for a file that is not local or when
-  /// the read fails (the menu then has no heart).
-  Future<({bool favorite, bool inLibrary})?> _favoriteState(
-    WidgetRef ref,
-    String? path,
-  ) async {
-    final db = ref.read(libraryDatabaseProvider);
-    if (db == null || path == null) return null;
+  /// What the database says of the song at [path] when the menu opens: whether
+  /// it is a favorite and its library row. Both null without a library, for a
+  /// file that is not local or when a read fails (the menu is then cut down
+  /// to the queue rows and the file manager).
+  Future<({bool? favorite, ({int id, bool hasArtist, bool hasAlbum})? state})>
+  _read(ProviderContainer container, String? path) async {
+    final db = container.read(libraryDatabaseProvider);
+    if (db == null || path == null) return (favorite: null, state: null);
     try {
-      final favorite = await db.isFavorite(path);
-      final inLibrary = (await db.libraryPathsAmong([path])).contains(path);
-      return (favorite: favorite, inLibrary: inLibrary);
+      final (favorite, state) = await (
+        db.isFavorite(path),
+        db.trackMenuStateOfPath(path),
+      ).wait;
+      return (favorite: favorite, state: state);
     } catch (error, stack) {
-      _log.warning('Reading whether a song is a favorite failed', error, stack);
-      return null;
+      _log.warning('Reading a queue row for its menu failed', error, stack);
+      return (favorite: null, state: null);
     }
   }
 
@@ -60,76 +65,68 @@ class QueueTileMenuRegion extends ConsumerWidget {
     WidgetRef ref,
     Offset position,
   ) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    final player = ref.read(playerServiceProvider.notifier);
-    final db = ref.read(libraryDatabaseProvider);
-    final path = localPathOf(track.uri);
-    // The entry, not the track: the same Track object may be queued twice.
+    // Everything the actions need is captured here: after the menu or the
+    // reads the row may be gone (the sheet closes when the queue empties).
     final container = ProviderScope.containerOf(context, listen: false);
-    final queueAtOpen = container.read(playerServiceProvider).queue;
-    final entry = this.position < queueAtOpen.order.length
-        ? queueAtOpen.order[this.position]
-        : null;
-    final state = await _favoriteState(ref, path);
+    final queue = container.read(playerServiceProvider).queue;
+    if (this.position >= queue.order.length) return;
+    final entry = queue.order[this.position];
+    final trackAtOpen = queue.original[entry];
+    final current = this.position == queue.index;
+    final inRun = isUpNextRow(
+      queue,
+      this.position,
+      container.read(playerServiceProvider.notifier).upNextRun,
+    );
+    final l10n = context.l10n;
+    final path = localPathOf(trackAtOpen.uri);
+    final runner = TrackMenuRunner(ref, context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+
+    final (:favorite, :state) = await _read(container, path);
     if (!context.mounted) return;
-    final action = await showMenu<_QueueTileAction>(
+    final links = trackLinkMenuItems(
+      context,
+      hasArtist: state?.hasArtist ?? false,
+      hasAlbum: state?.hasAlbum ?? false,
+      showLinks: state != null,
+      showFileManager: path != null,
+    );
+    final choice = await showMenu<Object>(
       context: context,
       position: menuPositionAt(context, position),
-      items: [
-        if (state != null && state.favorite)
-          menuRow(
-            _QueueTileAction.unlike,
-            AppIcons.favorite,
-            l10n.favoritesRemove,
-          )
-        else if (state != null && state.inLibrary)
-          menuRow(
-            _QueueTileAction.like,
-            AppIcons.favoriteOutline,
-            l10n.nowPlayingFavorite,
-          ),
-        menuRow(
-          _QueueTileAction.remove,
+      items: tidyDividers<Object>([
+        ...queueRowLeadingItems(
+          l10n,
+          playNext: !current && !inRun,
+          addToPlaylist: state != null,
+          favorite: favorite,
+          inLibrary: state != null,
+        ),
+        const PopupMenuDivider(),
+        ...links,
+        const PopupMenuDivider(),
+        menuRow<Object>(
+          QueueRowChoice.remove,
           AppIcons.deleteRounded,
           l10n.queueRemove,
         ),
-      ],
+      ]),
     );
-    void say(AppSnackBarKind kind, String text) => messenger
-      ?..clearSnackBars()
-      ..showSnackBar(appSnackBar(kind: kind, title: text));
-    switch (action) {
-      case null:
-        return;
-      case _QueueTileAction.remove:
-        // The queue may have changed while the menu was open: remove the
-        // entry only if it is still at that position. Read through the
-        // container taken before the menu opened, as the row may be gone.
-        final queue = container.read(playerServiceProvider).queue;
-        if (entry != null &&
-            this.position < queue.order.length &&
-            queue.order[this.position] == entry) {
-          await player.removeTrack(this.position);
-        }
-      case _QueueTileAction.like || _QueueTileAction.unlike:
-        if (db == null || path == null) return;
-        final like = action == _QueueTileAction.like;
-        try {
-          await db.setFavorite(
-            path,
-            favorite: like,
-            now: DateTime.now().millisecondsSinceEpoch,
-          );
-          say(
-            AppSnackBarKind.success,
-            like ? l10n.favoritesAdded : l10n.favoritesRemoved,
-          );
-        } catch (error, stack) {
-          _log.severe('Changing the favorite of a song failed', error, stack);
-          say(AppSnackBarKind.error, l10n.playlistSaveFailed);
-        }
-    }
+    if (choice == null) return;
+    await QueueRowMenuTarget(
+      container: container,
+      entry: entry,
+      track: trackAtOpen,
+      path: path,
+      trackId: state?.id,
+      runner: runner,
+      messenger: messenger,
+      l10n: l10n,
+      navigator: navigator,
+      position: position,
+    ).run(choice);
   }
 
   @override

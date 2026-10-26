@@ -920,6 +920,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueRemove => 'Remove from queue';
 
   @override
+  String get queueMenuStale => 'The queue changed, so nothing was done';
+
+  @override
   String get queueReorder => 'Drag to reorder';
 
   @override

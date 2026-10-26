@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/playlist_writes.dart';
 import '../../../l10n/l10n.dart';
@@ -28,11 +29,30 @@ Future<void> addTracksToPlaylist(
   if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;
-  final messenger = ScaffoldMessenger.of(context);
-  final l10n = context.l10n;
-  // The root navigator outlives the page, and sits above Now Playing.
-  final dialogContext = Navigator.of(context, rootNavigator: true).context;
+  await addTracksToPlaylistWith(
+    db: db,
+    messenger: ScaffoldMessenger.of(context),
+    l10n: context.l10n,
+    // The root navigator outlives the page, and sits above Now Playing.
+    dialogContext: Navigator.of(context, rootNavigator: true).context,
+    readPaths: readPaths,
+    label: label,
+  );
+}
 
+/// [addTracksToPlaylist] with everything it needs from the widget tree
+/// already captured, for a caller whose row may be gone by the time the
+/// picker answers (the queue menu). [dialogContext] is the root navigator's
+/// context.
+Future<void> addTracksToPlaylistWith({
+  required LibraryDatabase db,
+  required ScaffoldMessengerState? messenger,
+  required AppLocalizations l10n,
+  required BuildContext dialogContext,
+  required Future<List<String>> Function() readPaths,
+  required String label,
+}) async {
+  if (!dialogContext.mounted) return;
   final pick = await showAddToPlaylistDialog(dialogContext);
   if (pick == null) return;
 
@@ -77,7 +97,7 @@ Future<void> addTracksToPlaylist(
   // one back.
   try {
     messenger
-      ..clearSnackBars()
+      ?..clearSnackBars()
       ..showSnackBar(appSnackBar(kind: kind, title: text));
   } catch (error, stack) {
     _log.warning('Showing the playlist message failed', error, stack);

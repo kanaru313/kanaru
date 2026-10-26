@@ -236,6 +236,7 @@
   "queueTrackCount": "{count, plural, other{{count} bài}}",
   "queueClear": "Xoá hàng đợi",
   "queueRemove": "Xoá khỏi hàng đợi",
+  "queueMenuStale": "Hàng đợi đã thay đổi nên chưa thực hiện gì",
   "queueReorder": "Kéo để sắp xếp lại",
   "queueShowCurrent": "Tới bài đang phát",
   "queueClose": "Đóng danh sách đang phát",

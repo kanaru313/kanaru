@@ -896,6 +896,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueRemove => 'Xoá khỏi hàng đợi';
 
   @override
+  String get queueMenuStale => 'Hàng đợi đã thay đổi nên chưa thực hiện gì';
+
+  @override
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override

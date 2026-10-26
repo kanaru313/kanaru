@@ -48,7 +48,8 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
 /// The rows after the queue rows of the song menu: the Favorites row (left
 /// out when [isFavorite] is null), a divider, Show artist, Show album and
 /// Show in file manager. [showLinks] false also leaves out Show artist and
-/// Show album, for songs that are not rows of the library.
+/// Show album, for songs that are not rows of the library; [showFileManager]
+/// false leaves out Show in file manager, for songs that are not local files.
 List<PopupMenuEntry<TrackMenuChoice>> trackLinkMenuItems(
   BuildContext context, {
   bool? isFavorite,
@@ -56,6 +57,7 @@ List<PopupMenuEntry<TrackMenuChoice>> trackLinkMenuItems(
   bool hasArtist = true,
   bool hasAlbum = true,
   bool showLinks = true,
+  bool showFileManager = true,
 }) {
   final l10n = context.l10n;
   return [
@@ -81,11 +83,12 @@ List<PopupMenuEntry<TrackMenuChoice>> trackLinkMenuItems(
           enabled: hasAlbum,
         ),
     ],
-    menuRow(
-      const ShowInFileManagerChoice(),
-      AppIcons.folderOpen,
-      l10n.libraryShowInFileManager,
-    ),
+    if (showFileManager)
+      menuRow(
+        const ShowInFileManagerChoice(),
+        AppIcons.folderOpen,
+        l10n.libraryShowInFileManager,
+      ),
   ];
 }
 

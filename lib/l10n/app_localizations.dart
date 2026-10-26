@@ -1472,6 +1472,12 @@ abstract class AppLocalizations {
   /// **'Remove from queue'**
   String get queueRemove;
 
+  /// Snackbar when a queue row menu item is picked after the queue was replaced or cleared
+  ///
+  /// In en, this message translates to:
+  /// **'The queue changed, so nothing was done'**
+  String get queueMenuStale;
+
   /// No description provided for @queueReorder.
   ///
   /// In en, this message translates to:
