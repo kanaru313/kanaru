@@ -30,6 +30,7 @@ void main() {
     WidgetTester tester, {
     bool reduceMotion = false,
     bool lyricsOnly = false,
+    TargetPlatform platform = TargetPlatform.android,
   }) async {
     tester.view.physicalSize = const Size(600, 400);
     tester.view.devicePixelRatio = 1;
@@ -56,6 +57,7 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          theme: ThemeData(platform: platform),
           home: Scaffold(
             body: lyricsOnly
                 ? NowPlayingLyricsOnlyBody(
@@ -147,6 +149,51 @@ void main() {
     expect(midway, isNot(arrived), reason: 'not instant');
     expect(isCurrent(tester, 'line 4'), isTrue);
     expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('a line change draws about 13 frames, no scrollbar flash', (
+    tester,
+  ) async {
+    // Desktop platforms put a scrollbar on every scrollable: it must not
+    // fade in and out on the view's own scrolling.
+    await pump(tester, platform: TargetPlatform.linux);
+    await playAt(tester, const Duration(milliseconds: 4500));
+
+    backend.emitPosition.add(const Duration(milliseconds: 5500));
+    var frames = 0;
+    for (var t = 0; t < 2000; t += 16) {
+      if (tester.binding.hasScheduledFrame) frames++;
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+
+    expect(frames, inInclusiveRange(10, 14));
+  });
+
+  testWidgets('scrolling by hand still shows the scrollbar', (tester) async {
+    await pump(tester, platform: TargetPlatform.linux);
+    await playAt(tester, const Duration(seconds: 3));
+    double thumbOpacity() {
+      final paint = tester.widget<CustomPaint>(
+        find.byWidgetPredicate(
+          (w) => w is CustomPaint && w.foregroundPainter is ScrollbarPainter,
+        ),
+      );
+      return (paint.foregroundPainter! as ScrollbarPainter)
+          .fadeoutOpacityAnimation
+          .value;
+    }
+
+    // Long enough for a thumb shown by the auto-scroll to have faded again.
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(thumbOpacity(), 0);
+
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -80));
+    // The fade-in starts on the first frame, then runs for 300 ms.
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(thumbOpacity(), 1);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('a line change draws only the lines that change', (tester) async {

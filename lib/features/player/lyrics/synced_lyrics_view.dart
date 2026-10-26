@@ -162,27 +162,40 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
         _onViewportHeight(height);
         return NotificationListener<ScrollUpdateNotification>(
           onNotification: _onScroll,
-          child: SingleChildScrollView(
-            controller: _scroll,
-            // Room above and below so the first and last lines can reach
-            // the anchor.
-            padding: EdgeInsets.fromLTRB(
-              lyricsSidePadding - 12,
-              height * lyricsAnchor,
-              lyricsSidePadding - 12,
-              height * (1 - lyricsAnchor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var i = 0; i < lyrics.lines.length; i++)
-                  LyricsLine(
-                    key: _keys[i],
-                    line: lyrics.lines[i],
-                    current: _current[i],
-                    onTap: () => _seek(i),
-                  ),
-              ],
+          // Desktop platforms give every scrollable a scrollbar that fades in
+          // and out on each scroll. Auto-scroll would flash it at every line
+          // change: about 20 more frames each, more than the glide itself. So
+          // the view has its own, which ignores the view's own scrolling.
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context)
+                .copyWith(scrollbars: false),
+            child: Scrollbar(
+              controller: _scroll,
+              notificationPredicate: (notification) =>
+                  notification.depth == 0 && !_scrollingItself,
+              child: SingleChildScrollView(
+                controller: _scroll,
+                // Room above and below so the first and last lines can reach
+                // the anchor.
+                padding: EdgeInsets.fromLTRB(
+                  lyricsSidePadding - 12,
+                  height * lyricsAnchor,
+                  lyricsSidePadding - 12,
+                  height * (1 - lyricsAnchor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < lyrics.lines.length; i++)
+                      LyricsLine(
+                        key: _keys[i],
+                        line: lyrics.lines[i],
+                        current: _current[i],
+                        onTap: () => _seek(i),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         );
