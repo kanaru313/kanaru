@@ -293,3 +293,59 @@ fn the_decode_thread_runs_at_a_lower_priority() {
     assert_eq!(worker.join().unwrap().status, WaveformStatus::Ready);
     assert!(nice >= 10, "nice {nice}");
 }
+
+/// Creates a regular file last modified `age` ago.
+fn put_aged(dir: &Path, name: &str, age: Duration) {
+    let path = dir.join(name);
+    fs::write(&path, b"x").unwrap();
+    fs::File::options()
+        .write(true)
+        .open(&path)
+        .unwrap()
+        .set_modified(std::time::SystemTime::now() - age)
+        .unwrap();
+}
+
+const HOUR: Duration = Duration::from_secs(3600);
+const DAY: Duration = Duration::from_secs(24 * 3600);
+
+#[test]
+fn the_first_job_sweeps_old_temp_files_and_idle_entries() {
+    let (files, cache) = (TempDir::new().unwrap(), TempDir::new().unwrap());
+    let wav = sine_wav(&files, "a.wav");
+    let idle = format!("{}.kwf", "a".repeat(64));
+    put_aged(cache.path(), ".kanaru-tmpOLD", HOUR);
+    put_aged(cache.path(), ".kanaru-tmpNEW", Duration::ZERO);
+    put_aged(cache.path(), &idle, DAY * 100);
+    put_aged(cache.path(), "notes.txt", DAY * 100);
+    let waveform = load_cached(&env(), &wav, cache.path());
+    assert_eq!(waveform.status, WaveformStatus::Ready);
+    wait_until("old files swept", || {
+        !cache.path().join(".kanaru-tmpOLD").exists() && !cache.path().join(&idle).exists()
+    });
+    assert!(cache.path().join(".kanaru-tmpNEW").exists());
+    assert!(cache.path().join("notes.txt").exists());
+    assert_eq!(cache_files(cache.path()).len(), 1, "the new entry");
+}
+
+#[test]
+fn a_first_job_that_hits_the_cache_also_sweeps() {
+    let (files, first, second) = (
+        TempDir::new().unwrap(),
+        TempDir::new().unwrap(),
+        TempDir::new().unwrap(),
+    );
+    let wav = sine_wav(&files, "a.wav");
+    load_cached(&env(), &wav, first.path());
+    // The key hashes the audio file, not the cache folder.
+    let entry = cache_files(first.path()).remove(0);
+    fs::copy(&entry, second.path().join(entry.file_name().unwrap())).unwrap();
+    put_aged(second.path(), ".kanaru-tmpOLD", HOUR);
+    let waveform = load_cached(&env(), &wav, second.path());
+    assert_eq!(waveform.status, WaveformStatus::Ready);
+    assert_eq!(decodes(second.path()), 0, "served from the cache");
+    wait_until("old temp swept", || {
+        !second.path().join(".kanaru-tmpOLD").exists()
+    });
+    assert_eq!(cache_files(second.path()).len(), 1);
+}

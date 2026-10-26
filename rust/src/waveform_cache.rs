@@ -8,12 +8,15 @@
 //! 1 negative), two zero bytes, sample rate `u32`, frames `u64`, level count
 //! `u32`, then the levels. A negative entry records that decoding this exact
 //! file version failed for good, so it is not tried again on every play.
+//!
+//! The folder is kept bounded by `waveform_cache_sweep`.
 
 use std::fs::{File, Metadata};
 use std::io::{self, Read};
 use std::path::Path;
 
 use crate::cover_cache::write_atomic;
+use crate::waveform_cache_sweep::note_write;
 use crate::waveform_levels::MAX_LEVELS;
 
 const MAGIC: &[u8; 4] = b"KNWF";
@@ -154,11 +157,14 @@ pub fn lookup_or_store<R>(
     }
     let (result, entry) = compute();
     if let (Some(slot), Some(entry)) = (slot, entry) {
-        if let Err(error) = write(slot.dir, &slot.key, &entry) {
-            static WRITE_REPORTED: std::sync::Once = std::sync::Once::new();
-            WRITE_REPORTED.call_once(|| {
-                eprintln!("kanaru: cannot write the waveform cache: {}", error.kind());
-            });
+        match write(slot.dir, &slot.key, &entry) {
+            Ok(()) => note_write(slot.dir),
+            Err(error) => {
+                static WRITE_REPORTED: std::sync::Once = std::sync::Once::new();
+                WRITE_REPORTED.call_once(|| {
+                    eprintln!("kanaru: cannot write the waveform cache: {}", error.kind());
+                });
+            }
         }
     }
     result

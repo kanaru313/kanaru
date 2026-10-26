@@ -17,6 +17,7 @@ pub mod tag_mapping;
 pub mod tag_reader;
 mod thread_priority;
 pub mod waveform_cache;
+mod waveform_cache_sweep;
 pub mod waveform_control;
 pub mod waveform_decode;
 mod waveform_decode_limits;

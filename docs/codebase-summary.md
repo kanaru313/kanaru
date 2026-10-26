@@ -82,7 +82,7 @@ Key files by area:
 | `rust/src/tag_batch.rs` | | Batch read on a rayon pool |
 | `rust/src/cover_art.rs`, `cover_thumbnail.rs`, `cover_cache.rs` | | Embedded and sidecar art, 512 px JPEG thumbnails, blake3 cache keys |
 | `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Wu clusters, one nearest-cluster count, Score), `COLOR_ALGO_REVISION` |
-| `rust/src/waveform_levels.rs`, `waveform_decode.rs`, `waveform_decode_limits.rs`, `waveform_cache.rs` | | Waveform: fixed-size level accumulator, symphonia decode, its limits and error budget, `.kwf` cache file, key and lookup |
+| `rust/src/waveform_levels.rs`, `waveform_decode.rs`, `waveform_decode_limits.rs`, `waveform_cache.rs`, `waveform_cache_sweep.rs` | | Waveform: fixed-size level accumulator, symphonia decode, its limits and error budget, `.kwf` cache file, key and lookup, cache cleanup (temp files, 90-day expiry, 20 000-entry cap) |
 | `rust/src/waveform_job.rs`, `waveform_control.rs`, `thread_priority.rs` | | Waveform job ids, niced worker thread, cancel/stall wait, test gates; shared nice helper (also used by the cover pool) |
 | `rust/src/frb_generated.rs` | 1,607 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |
