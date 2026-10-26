@@ -14,6 +14,7 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/play_tracks.dart';
 import 'songs_list_provider.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
@@ -78,7 +79,10 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
       _log.severe('Reading the play queue failed', error, stackTrace);
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.libraryUnexpectedError)),
+          appSnackBar(
+            kind: AppSnackBarKind.error,
+            title: l10n.libraryUnexpectedError,
+          ),
         );
       }
     } finally {

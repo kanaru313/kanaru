@@ -5,6 +5,7 @@ import '../../../core/database/library_database.dart';
 import '../../../core/database/playlist_writes.dart';
 import '../../../l10n/app_localizations.dart';
 import 'playlist_name_dialog.dart';
+import '../app_snack_bar.dart';
 
 final _log = Logger('playlists');
 
@@ -39,7 +40,9 @@ Future<({int id, String name})?> promptAndCreatePlaylist(
     return (id: id, name: name);
   } catch (error, stack) {
     _log.severe('Creating a playlist failed', error, stack);
-    messenger.showSnackBar(SnackBar(content: Text(l10n.playlistSaveFailed)));
+    messenger.showSnackBar(
+      appSnackBar(kind: AppSnackBarKind.error, title: l10n.playlistSaveFailed),
+    );
     return null;
   }
 }

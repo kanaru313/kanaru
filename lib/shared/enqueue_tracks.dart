@@ -15,6 +15,7 @@ import '../l10n/l10n.dart';
 import 'play_tracks.dart';
 import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
+import 'widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
@@ -77,7 +78,8 @@ void _showQueueMessage(
       onVisible: () => message.visible = true,
       content: ValueListenableBuilder<String>(
         valueListenable: message.text,
-        builder: (_, value, _) => Text(value),
+        builder: (_, value, _) =>
+            AppSnackBarContent(kind: AppSnackBarKind.success, title: value),
       ),
     ),
   );
@@ -130,7 +132,10 @@ Future<void> enqueueTracks(
     } catch (error, stackTrace) {
       _log.severe('Queuing tracks failed', error, stackTrace);
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.libraryUnexpectedError)),
+        appSnackBar(
+          kind: AppSnackBarKind.error,
+          title: l10n.libraryUnexpectedError,
+        ),
       );
       return;
     }

@@ -10,6 +10,7 @@ import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/menu_keyboard_region.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 
@@ -95,9 +96,9 @@ class QueueTileMenuRegion extends ConsumerWidget {
         ),
       ],
     );
-    void say(String text) => messenger
+    void say(AppSnackBarKind kind, String text) => messenger
       ?..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text));
     switch (action) {
       case null:
         return;
@@ -120,10 +121,13 @@ class QueueTileMenuRegion extends ConsumerWidget {
             favorite: like,
             now: DateTime.now().millisecondsSinceEpoch,
           );
-          say(like ? l10n.favoritesAdded : l10n.favoritesRemoved);
+          say(
+            AppSnackBarKind.success,
+            like ? l10n.favoritesAdded : l10n.favoritesRemoved,
+          );
         } catch (error, stack) {
           _log.severe('Changing the favorite of a song failed', error, stack);
-          say(l10n.playlistSaveFailed);
+          say(AppSnackBarKind.error, l10n.playlistSaveFailed);
         }
     }
   }

@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/player/playback_error.dart';
 import '../../core/player/player_service.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import 'cover_tint_background.dart';
 import 'now_playing/now_playing_actions.dart';
 import 'now_playing_summary.dart';
@@ -82,8 +83,9 @@ class _PlayerBarState extends ConsumerState<PlayerBar> {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.playerPlaybackError(error.track.title)),
+        appSnackBar(
+          kind: AppSnackBarKind.error,
+          title: context.l10n.playerPlaybackError(error.track.title),
         ),
       );
   }

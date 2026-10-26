@@ -13,6 +13,7 @@ import 'library_route_keys.dart';
 import 'show_in_file_manager.dart';
 import 'track_menu_choice.dart';
 import 'widgets/queue_actions_menu.dart';
+import 'widgets/app_snack_bar.dart';
 
 final _log = Logger('track_menu');
 
@@ -40,9 +41,9 @@ class TrackMenuRunner {
   final LibraryDatabase? _db;
   final Future<bool> Function(String path) _showInFileManager;
 
-  void _say(String text) => _messenger
+  void _say(AppSnackBarKind kind, String text) => _messenger
     ?..clearSnackBars()
-    ..showSnackBar(SnackBar(content: Text(text)));
+    ..showSnackBar(appSnackBar(kind: kind, title: text));
 
   /// Follows [choice] for the song [trackId] stored at [path]. A song
   /// credited to several artists asks which one at [position] (global).
@@ -60,7 +61,7 @@ class TrackMenuRunner {
         case FavoriteChoice(:final favorite):
           final db = _db;
           if (db == null) {
-            _say(_l10n.libraryUnexpectedError);
+            _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
             return;
           }
           // [path] is the song's `tracks.path`: a library row, so it may be
@@ -70,28 +71,31 @@ class TrackMenuRunner {
             favorite: favorite,
             now: DateTime.now().millisecondsSinceEpoch,
           );
-          _say(favorite ? _l10n.favoritesAdded : _l10n.favoritesRemoved);
+          _say(
+            AppSnackBarKind.success,
+            favorite ? _l10n.favoritesAdded : _l10n.favoritesRemoved,
+          );
         case ShowInFileManagerChoice():
           if (!await _showInFileManager(path)) {
-            _say(_l10n.libraryFileManagerFailed);
+            _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
           }
         case ShowArtistChoice() || ShowAlbumChoice():
           final router = _router;
           if (router == null) return;
           final db = _db;
           if (db == null) {
-            _say(_l10n.libraryUnexpectedError);
+            _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
             return;
           }
           final links = await db.trackLinks(trackId);
           if (links == null) {
-            _say(_l10n.libraryTrackGone);
+            _say(AppSnackBarKind.warning, _l10n.libraryTrackGone);
             return;
           }
           if (choice is ShowAlbumChoice) {
             final album = links.album;
             if (album == null) {
-              _say(_l10n.libraryNoAlbumToShow);
+              _say(AppSnackBarKind.info, _l10n.libraryNoAlbumToShow);
             } else {
               router.go(albumLocation(album));
             }
@@ -101,7 +105,7 @@ class TrackMenuRunner {
       }
     } catch (error, stack) {
       _log.severe('A song menu action failed', error, stack);
-      _say(_l10n.libraryUnexpectedError);
+      _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
     }
   }
 
@@ -111,7 +115,7 @@ class TrackMenuRunner {
     Offset position,
   ) async {
     if (artists.isEmpty) {
-      _say(_l10n.libraryNoArtistToShow);
+      _say(AppSnackBarKind.info, _l10n.libraryNoArtistToShow);
       return;
     }
     if (artists.length == 1) {

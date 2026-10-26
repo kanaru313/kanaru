@@ -11,6 +11,7 @@ import '../../shared/play_tracks.dart';
 import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import 'history_range.dart';
 import 'history_top_queue.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 /// "Play all" and "Create playlist" for the Most played list, and a note when
 /// the list was cut at [historyTopLimit]. Both buttons work on the songs that
@@ -46,7 +47,10 @@ class HistoryTopActions extends ConsumerWidget {
     );
     if (created == null) return;
     messenger.showSnackBar(
-      SnackBar(content: Text(l10n.historyPlaylistCreated(created.name))),
+      appSnackBar(
+        kind: AppSnackBarKind.success,
+        title: l10n.historyPlaylistCreated(created.name),
+      ),
     );
   }
 

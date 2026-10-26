@@ -16,6 +16,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import 'folder_menu.dart';
 import 'folder_songs.dart';
 import 'folder_tree.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
@@ -101,7 +102,10 @@ Future<void> _open(
   } catch (error, stackTrace) {
     _log.severe('Reading the folder songs failed', error, stackTrace);
     messenger.showSnackBar(
-      SnackBar(content: Text(l10n.libraryUnexpectedError)),
+      appSnackBar(
+        kind: AppSnackBarKind.error,
+        title: l10n.libraryUnexpectedError,
+      ),
     );
   }
 }
@@ -127,7 +131,9 @@ Future<void> _createPlaylist(
         t.path,
     ];
     if (paths.isEmpty) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.foldersEmptyFolder)));
+      messenger.showSnackBar(
+        appSnackBar(kind: AppSnackBarKind.info, title: l10n.foldersEmptyFolder),
+      );
       return;
     }
     if (!dialogContext.mounted) return;
@@ -143,12 +149,18 @@ Future<void> _createPlaylist(
     messenger
       ..clearSnackBars()
       ..showSnackBar(
-        SnackBar(content: Text(l10n.playlistAdded(folder.name, created.name))),
+        appSnackBar(
+          kind: AppSnackBarKind.success,
+          title: l10n.playlistAdded(folder.name, created.name),
+        ),
       );
   } catch (error, stackTrace) {
     _log.severe('Creating a playlist from a folder failed', error, stackTrace);
     messenger.showSnackBar(
-      SnackBar(content: Text(l10n.libraryUnexpectedError)),
+      appSnackBar(
+        kind: AppSnackBarKind.error,
+        title: l10n.libraryUnexpectedError,
+      ),
     );
   }
 }

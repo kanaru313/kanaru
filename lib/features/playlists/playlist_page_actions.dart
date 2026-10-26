@@ -12,6 +12,7 @@ import '../../core/player/track.dart' as player;
 import '../../l10n/l10n.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/add_to_playlist/playlist_name_dialog.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import 'playlist_delete_dialog.dart';
 import 'playlist_routes.dart';
 
@@ -146,7 +147,9 @@ void _reportFailure(
 ) {
   _log.severe('$what failed', error, stack);
   try {
-    messenger.showSnackBar(SnackBar(content: Text(l10n.playlistSaveFailed)));
+    messenger.showSnackBar(
+      appSnackBar(kind: AppSnackBarKind.error, title: l10n.playlistSaveFailed),
+    );
   } catch (snackError, snackStack) {
     _log.severe('Reporting the failure failed', snackError, snackStack);
   }

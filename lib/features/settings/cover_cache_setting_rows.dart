@@ -9,6 +9,7 @@ import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
 import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
 
@@ -61,7 +62,10 @@ class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
     if (mounted) setState(() => _clearing = false);
     if (deleted == null) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.coverCacheClearFailed)),
+        appSnackBar(
+          kind: AppSnackBarKind.error,
+          title: l10n.coverCacheClearFailed,
+        ),
       );
       return;
     }
@@ -70,7 +74,10 @@ class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
       ..clear()
       ..clearLiveImages();
     messenger.showSnackBar(
-      SnackBar(content: Text(l10n.coverCacheCleared(deleted))),
+      appSnackBar(
+        kind: AppSnackBarKind.success,
+        title: l10n.coverCacheCleared(deleted),
+      ),
     );
     // The scan's repair finds every thumbnail gone and its cover pass makes
     // them again; a scan already running is followed by another.

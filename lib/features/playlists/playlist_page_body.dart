@@ -11,6 +11,7 @@ import '../../core/database/search_playlist_queries.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'm3u_export_flow.dart';
 import 'playlist_display_name.dart';
@@ -79,7 +80,10 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
       _log.severe('Reading the play queue failed', error, stack);
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.libraryUnexpectedError)),
+          appSnackBar(
+            kind: AppSnackBarKind.error,
+            title: l10n.libraryUnexpectedError,
+          ),
         );
       }
     }
@@ -103,7 +107,10 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
       _log.severe('Reading the shuffle queue failed', error, stack);
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.libraryUnexpectedError)),
+          appSnackBar(
+            kind: AppSnackBarKind.error,
+            title: l10n.libraryUnexpectedError,
+          ),
         );
       }
     }

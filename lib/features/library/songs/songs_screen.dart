@@ -21,6 +21,7 @@ import '../widgets/library_sort_controls.dart';
 import 'shuffle_all_button.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_view.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
@@ -41,10 +42,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   /// A folder is being picked or added; ignores a second click meanwhile.
   bool _choosing = false;
 
-  void _showMessage(String text) {
+  void _showMessage(AppSnackBarKind kind, String text) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text));
   }
 
   /// Adds a folder picked right here (no detour through the welcome screen)
@@ -63,14 +64,19 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
       ]);
       if (!mounted) return;
       if (result.added.isEmpty) {
-        _showMessage(rootRejectionsMessage(l10n, result.rejected));
+        _showMessage(
+          AppSnackBarKind.warning,
+          rootRejectionsMessage(l10n, result.rejected),
+        );
         return;
       }
       // Failures land in the indexer state.
       unawaited(ref.read(libraryIndexerProvider.notifier).scan());
     } catch (error, stackTrace) {
       _log.severe('Adding a folder failed', error, stackTrace);
-      if (mounted) _showMessage(l10n.libraryUnexpectedError);
+      if (mounted) {
+        _showMessage(AppSnackBarKind.error, l10n.libraryUnexpectedError);
+      }
     } finally {
       if (mounted) setState(() => _choosing = false);
     }

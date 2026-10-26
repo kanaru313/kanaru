@@ -14,6 +14,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/root_rejection_message.dart';
 import 'onboarding_folder_list.dart';
 import 'suggested_music_folder_provider.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
@@ -52,10 +53,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ..._folders,
   ];
 
-  void _message(String text) {
+  void _message(AppSnackBarKind kind, String text) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text));
   }
 
   Future<void> _addFolder() async {
@@ -83,7 +84,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           _selection(ref.read(suggestedMusicFolderProvider).value),
         );
     if (rejection != null) {
-      _message(rootRejectionMessage(context.l10n, path ?? picked, rejection));
+      _message(
+        AppSnackBarKind.warning,
+        rootRejectionMessage(context.l10n, path ?? picked, rejection),
+      );
       return;
     }
     setState(() => _folders.add(path!));
@@ -106,7 +110,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (!mounted) return;
       final refusals = rootRejectionsMessage(l10n, result.rejected);
       if (result.added.isEmpty) {
-        _message(refusals);
+        _message(AppSnackBarKind.warning, refusals);
         return;
       }
       // Errors end up in the indexer state, never in the zone.
@@ -116,11 +120,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // The root messenger outlives this screen.
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(refusals)));
+          ..showSnackBar(
+            appSnackBar(kind: AppSnackBarKind.warning, title: refusals),
+          );
       }
     } catch (error, stackTrace) {
       _log.severe('Starting the first scan failed', error, stackTrace);
-      if (mounted) _message(l10n.libraryUnexpectedError);
+      if (mounted) _message(AppSnackBarKind.error, l10n.libraryUnexpectedError);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

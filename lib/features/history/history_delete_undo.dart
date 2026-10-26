@@ -8,6 +8,7 @@ import '../../core/database/library_database.dart';
 import '../../l10n/l10n.dart';
 import 'history_error_log.dart';
 import 'history_plays_version.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 /// How long the Undo snackbar stays.
 const historyUndoDuration = Duration(seconds: 4);
@@ -92,11 +93,12 @@ class HistoryDeleteUndo {
     }
     final message = _UndoMessage(play, messenger);
     message.controller = messenger.showSnackBar(
-      SnackBar(
+      appSnackBar(
+        kind: AppSnackBarKind.success,
         persist: false,
         duration: historyUndoDuration,
         onVisible: () => message.visible = true,
-        content: Text(l10n.historyPlayDeleted),
+        title: l10n.historyPlayDeleted,
         action: SnackBarAction(
           label: l10n.historyUndo,
           onPressed: () =>
@@ -132,7 +134,9 @@ class HistoryDeleteUndo {
 
   void _say(ScaffoldMessengerState messenger, String text) {
     if (messenger.mounted) {
-      messenger.showSnackBar(SnackBar(content: Text(text)));
+      messenger.showSnackBar(
+        appSnackBar(kind: AppSnackBarKind.error, title: text),
+      );
     }
   }
 }

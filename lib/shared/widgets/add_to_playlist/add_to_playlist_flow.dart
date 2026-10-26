@@ -7,6 +7,7 @@ import '../../../core/database/playlist_writes.dart';
 import '../../../l10n/l10n.dart';
 import 'add_to_playlist_dialog.dart';
 import 'create_playlist_prompt.dart';
+import '../app_snack_bar.dart';
 
 final _log = Logger('playlists');
 
@@ -36,6 +37,7 @@ Future<void> addTracksToPlaylist(
   if (pick == null) return;
 
   String text;
+  AppSnackBarKind kind = AppSnackBarKind.success;
   try {
     final paths = await readPaths();
     // The album or artist vanished in a rescan: nothing to add.
@@ -58,6 +60,7 @@ Future<void> addTracksToPlaylist(
           playlist.id,
           paths,
         );
+        if (added == 0) kind = AppSnackBarKind.info;
         text = added == 0
             ? l10n.playlistAlreadyIn(label, playlist.name)
             : skipped == 0
@@ -66,6 +69,7 @@ Future<void> addTracksToPlaylist(
     }
   } catch (error, stack) {
     _log.severe('Adding to a playlist failed', error, stack);
+    kind = AppSnackBarKind.error;
     text = l10n.playlistSaveFailed;
   }
   // The songs are saved: failing to say so is no saving failure. An older
@@ -74,7 +78,7 @@ Future<void> addTracksToPlaylist(
   try {
     messenger
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text));
   } catch (error, stack) {
     _log.warning('Showing the playlist message failed', error, stack);
   }

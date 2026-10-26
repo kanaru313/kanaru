@@ -9,14 +9,19 @@ import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/add_to_playlist/add_to_playlist_flow.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/favorite_button.dart';
 import '../playback_controls.dart';
 
 final _log = Logger('playlists');
 
-void _say(ScaffoldMessengerState messenger, String text) => messenger
+void _say(
+  ScaffoldMessengerState messenger,
+  AppSnackBarKind kind,
+  String text,
+) => messenger
   ..clearSnackBars()
-  ..showSnackBar(SnackBar(content: Text(text)));
+  ..showSnackBar(appSnackBar(kind: kind, title: text));
 
 /// The local path of the current song, or null (nothing playing, or a song
 /// that is not a local file).
@@ -61,14 +66,18 @@ class _NowPlayingPlaylistButtonState
     try {
       final inLibrary = await db.coverKeyOf(path) != null;
       if (!inLibrary) {
-        _say(messenger, l10n.playlistTrackNotInLibrary);
+        _say(
+          messenger,
+          AppSnackBarKind.warning,
+          l10n.playlistTrackNotInLibrary,
+        );
         return;
       }
       if (!mounted) return;
       await addTracksToPlaylist(ref, context, () async => [path], title);
     } catch (error, stack) {
       _log.severe('Adding the current song to a playlist failed', error, stack);
-      _say(messenger, l10n.playlistSaveFailed);
+      _say(messenger, AppSnackBarKind.error, l10n.playlistSaveFailed);
     } finally {
       _busy = false;
     }
