@@ -178,6 +178,16 @@ void main() {
     await insertTracks(tester, h, const [TestTrack('z', genre: 'Rock')]);
     await settleIo(tester, h);
 
+    await tester.scrollUntilVisible(
+      find.text('z'),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     expect(find.text('z'), findsOneWidget);
     expect(gate.count('GROUP BY genre') - groupings, 1);
   });
@@ -192,6 +202,16 @@ void main() {
     await insertTracks(tester, h, const [TestTrack('z', genre: 'ROCK')]);
     await settleIo(tester, h);
 
+    await tester.scrollUntilVisible(
+      find.text('z'),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     expect(find.text('z'), findsOneWidget);
     expect(find.text('2 albums · 4 songs'), findsOneWidget);
   });
