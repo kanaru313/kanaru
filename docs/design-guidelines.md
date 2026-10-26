@@ -93,7 +93,7 @@ Opened from the player bar. It is an overlay, not a route: `nowPlayingOpenProvid
 
 - A panel on the right, at most 400 px wide. Not a route; Esc or the mouse back button closes it while it is open. Focus returns on close.
 - Rows are 64 px. Drag handle reorders; a remove control per row; clear-all in the header.
-- The current row uses the primary color (`queue_tile.dart`).
+- The current row has the playing-song colors: `primaryContainer` fill, `onPrimaryContainer` text and icons, an equalizer instead of its number, also while paused (`queue_tile.dart`).
 - A search button in the header opens a filter box under it (`Ctrl+F` reaches it while the sheet is open, Esc closes the box first). Matches are the real rows, best match first, without drag handle or remove button; tapping one jumps to it and leaves the queue as it is. Closing the sheet drops the filter.
 - Opens and closes in 400 ms.
 
