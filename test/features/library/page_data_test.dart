@@ -32,7 +32,8 @@ void main() {
     }
     expect(find.text('second'), findsOneWidget);
     expect(find.text('Mix'), findsOneWidget);
-    expect(find.text('2001 · 2 songs · 0:02'), findsOneWidget);
+    expect(find.text('2001'), findsOneWidget);
+    expect(find.text('2 songs · 0:02'), findsOneWidget);
     expect(find.text('Play'), findsOneWidget);
   });
 
