@@ -8,7 +8,7 @@ import '../playback_controls.dart';
 import 'sleep_timer_labels.dart';
 import 'sleep_timer_menu.dart';
 
-/// Moon button that opens the sleep timer menu. Outlined while the timer is
+/// Timer button that opens the sleep timer menu. Outlined while the timer is
 /// off; filled in the primary colour, with a short label beside it, while it
 /// runs. Only this widget watches the timer, so the countdown rebuilds the
 /// button and nothing around it.

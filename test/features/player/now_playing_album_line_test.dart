@@ -353,7 +353,10 @@ void main() {
 
   void expectIconBesideText(WidgetTester tester, String text) {
     final icon = tester.getRect(find.byType(Icon));
-    final label = tester.getRect(find.text(text));
+    // The link line is the layout box; its text is nudged by a paint-only
+    // Transform, so the text's own rect would be off by the underline gap.
+    expect(find.text(text), findsOneWidget);
+    final label = tester.getRect(find.byType(HoverUnderlineLinks));
     expect(icon.right + 8, closeTo(label.left, 0.5));
     expect(icon.center.dy, closeTo(label.center.dy, 1));
     expect(

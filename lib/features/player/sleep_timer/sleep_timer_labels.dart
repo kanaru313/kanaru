@@ -2,7 +2,7 @@ import '../../../core/player/sleep_timer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/format_duration.dart';
 
-/// Short text beside the moon button: the time left, or the mode.
+/// Short text beside the timer button: the time left, or the mode.
 String sleepTimerShortLabel(AppLocalizations l10n, SleepTimerState state) =>
     switch (state.mode) {
       null => '',

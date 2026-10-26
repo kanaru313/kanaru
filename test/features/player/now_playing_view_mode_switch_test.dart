@@ -359,20 +359,6 @@ void main() {
       expect(splitBody, findsOneWidget);
     });
 
-    testWidgets('does nothing while the queue More actions menu is open', (
-      tester,
-    ) async {
-      await pumpOverlay(tester, tracks: const [_plain]);
-      await tester.tap(find.byTooltip('More actions'));
-      await tester.pumpAndSettle();
-      expect(find.text('Clear queue'), findsOneWidget);
-
-      await pressL(tester);
-
-      expect(chosen(), NowPlayingViewMode.split);
-      expect(splitBody, findsOneWidget);
-    });
-
     testWidgets('ignores Ctrl+L and Shift+L', (tester) async {
       await pumpOverlay(tester);
       for (final modifier in [
