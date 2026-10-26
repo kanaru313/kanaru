@@ -36,6 +36,14 @@ Finder _resultSong(String title) => find.descendant(
   matching: find.text(title, skipOffstage: false),
 );
 
+/// Song rows are tall, so the preview rows and the section button need a
+/// taller window than the harness default. Resize after the harness pump,
+/// which sets its own size.
+Future<void> _tallView(WidgetTester t) async {
+  t.view.physicalSize = const Size(1280, 1000);
+  await t.pumpAndSettle();
+}
+
 void main() {
   testWidgets('groups matching songs, albums and artists', (tester) async {
     final h = LibraryHarness();
@@ -74,6 +82,7 @@ void main() {
       for (var i = 0; i < 12; i++) TestTrack('Song ${i + 10}', album: 'Mix'),
     ];
     await openSearch(tester, h, 'song', tracks: tracks);
+    await _tallView(tester);
 
     expect(find.text('Song 17'), findsOneWidget);
     expect(_resultSong('Song 18'), findsNothing);
@@ -116,6 +125,7 @@ void main() {
     final h = LibraryHarness();
     final tracks = [for (var i = 0; i < 1201; i++) TestTrack('Song $i')];
     await openSearch(tester, h, 'song', tracks: tracks);
+    await _tallView(tester);
 
     expect(find.text('Songs  1,201', findRichText: true), findsOneWidget);
     expect(find.text('Show all (200)'), findsNothing);
@@ -294,6 +304,7 @@ void main() {
         child: const KanaruApp(locale: Locale('vi')),
       ),
     );
+    await _tallView(tester);
     goTo(tester, h, '/search?q=song');
     await tester.pumpAndSettle();
 
