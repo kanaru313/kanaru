@@ -172,6 +172,7 @@ void main() {
     final loaded = file.load();
     expect(loaded.songSort, const SortChoice(SongSortField.title));
     expect(loaded.albumsView, AlbumsView.grid);
+    expect(loaded.playlistsView, AlbumsView.grid);
 
     await file.save(
       loaded.copyWith(

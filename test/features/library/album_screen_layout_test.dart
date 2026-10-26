@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/features/library/albums/album_header.dart';
 import 'package:kanaru/features/library/albums/album_side_pane.dart';
+import 'package:kanaru/shared/widgets/detail_page/play_shuffle_actions.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/expanding_search_bar.dart';
@@ -32,6 +33,19 @@ void main() {
       tester.getTopLeft(find.text('One')).dx,
       greaterThanOrEqualTo(tester.getTopRight(find.byType(AlbumSidePane)).dx),
     );
+
+    final actions = find.descendant(
+      of: find.byType(AlbumSidePane),
+      matching: find.byType(PlayShuffleActions),
+    );
+    expect(
+      tester.getTopRight(actions).dx,
+      moreOrLessEquals(tester.getTopRight(find.byType(AlbumSidePane)).dx - 16),
+    );
+    expect(
+      tester.getTopLeft(actions).dx,
+      greaterThan(tester.getTopLeft(find.text('Al')).dx),
+    );
   });
 
   testWidgets('a narrow window keeps the header above the tracks', (
@@ -47,6 +61,10 @@ void main() {
     expect(
       tester.getTopLeft(find.text('One')).dy,
       greaterThan(tester.getBottomLeft(find.byType(AlbumHeader)).dy),
+    );
+    expect(
+      tester.getTopLeft(find.byType(PlayShuffleActions)).dx,
+      moreOrLessEquals(tester.getTopLeft(find.text('Al')).dx),
     );
   });
 

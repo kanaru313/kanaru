@@ -44,7 +44,7 @@ void main() {
 
     // Title starts with it, then title has it, then artist has it.
     expect(shownTitles(tester), ['Sky High', 'Blue Sky', 'Night']);
-    expect(find.byTooltip('Remove from favorites'), findsNothing);
+    expect(find.byTooltip('Remove from playlist'), findsNothing);
 
     await tester.tap(find.text('Blue Sky'));
     await tester.pump();

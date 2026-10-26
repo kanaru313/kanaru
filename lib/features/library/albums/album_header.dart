@@ -5,7 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/album_artist_label.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../play_shuffle_actions.dart';
+import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
 
 /// Header of an album page in a narrow window: artwork beside the title,
 /// artist, year and the Play buttons. The song count and length sit in the
@@ -66,6 +66,7 @@ class AlbumHeaderDetails extends StatelessWidget {
     required this.onShuffle,
     required this.onQueueAction,
     this.artist,
+    this.actionsAtEnd = false,
   });
 
   final AlbumSummary album;
@@ -73,6 +74,9 @@ class AlbumHeaderDetails extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
+
+  /// Puts the Play buttons at the right end of the column, as in the side pane.
+  final bool actionsAtEnd;
 
   /// Replaces the plain artist name, for example with a link.
   final Widget? artist;
@@ -113,11 +117,16 @@ class AlbumHeaderDetails extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        PlayShuffleActions(
-          playLabel: l10n.albumsPlay,
-          onPlay: onPlay,
-          onShuffle: onShuffle,
-          onQueueAction: onQueueAction,
+        Align(
+          alignment: actionsAtEnd
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
+          child: PlayShuffleActions(
+            playLabel: l10n.albumsPlay,
+            onPlay: onPlay,
+            onShuffle: onShuffle,
+            onQueueAction: onQueueAction,
+          ),
         ),
       ],
     );

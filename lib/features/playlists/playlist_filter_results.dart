@@ -9,27 +9,10 @@ import '../../core/database/search_playlist_queries.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/in_page_filter.dart';
 import '../../shared/widgets/in_page_no_match.dart';
-import '../../shared/widgets/in_page_search_field.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_entry_tile.dart';
 
 final _log = Logger('playlists');
-
-/// The filter button of a playlist page, between its header and its entries.
-class PlaylistFilterBar extends StatelessWidget {
-  const PlaylistFilterBar({super.key, required this.controller});
-
-  final InPageFilterController controller;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
-    child: Align(
-      alignment: Alignment.centerRight,
-      child: InPageSearchField(controller: controller),
-    ),
-  );
-}
 
 /// The entries of a playlist whose song matches the filter, best match first,
 /// as a sliver. They are read from the database (the page only holds a window
@@ -45,7 +28,11 @@ class PlaylistFilterResults extends StatefulWidget {
     required this.load,
     required this.onPlay,
     this.onEntryQueueAction,
+    this.favorites = false,
   });
+
+  /// The playlist is Favorites: missing entries show a heart.
+  final bool favorites;
 
   final List<String> terms;
 
@@ -82,10 +69,10 @@ class _PlaylistFilterResultsState extends State<PlaylistFilterResults> {
   var _truncated = false;
   var _loading = true;
 
-  /// The terms [_rows] answers; rows of other terms are not shown.
+  /// The terms [_rows] answers.
   List<String>? _rowsTerms;
 
-  /// Order of the reads; an answer that is not the latest is dropped.
+  /// Order of the reads; a stale answer is dropped.
   var _request = 0;
 
   @override
@@ -129,8 +116,7 @@ class _PlaylistFilterResultsState extends State<PlaylistFilterResults> {
   }
 
   /// The rows that match the current terms, best first. Once the answer is
-  /// for these terms, the rows the database matched on a name the row does
-  /// not show follow; until then only the rows that still match are kept.
+  /// for these terms, rows the database matched on a hidden name follow.
   List<PlaylistEntryRow> _rank() {
     final ranked = _view.rank(_rows, widget.terms);
     if (!listEquals(_rowsTerms, widget.terms)) {
@@ -157,8 +143,12 @@ class _PlaylistFilterResultsState extends State<PlaylistFilterResults> {
     final onEntryAction = widget.onEntryQueueAction;
     return SliverMainAxisGroup(
       slivers: [
-        SliverFixedExtentList.builder(
-          itemExtent: playlistEntryExtent,
+        SliverPrototypeExtentList.builder(
+          prototypeItem: PlaylistEntryTile(
+            entry: prototypePlaylistEntry,
+            index: 0,
+            reorderable: false,
+          ),
           itemCount: shown.length,
           itemBuilder: (context, i) {
             final entry = shown[i];
@@ -167,6 +157,7 @@ class _PlaylistFilterResultsState extends State<PlaylistFilterResults> {
               entry: entry,
               index: i,
               reorderable: false,
+              favorites: widget.favorites,
               onTap: () => widget.onPlay(shown, i),
               onQueueAction: onEntryAction == null
                   ? null

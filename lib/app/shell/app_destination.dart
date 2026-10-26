@@ -78,10 +78,9 @@ SidebarTab? sidebarTabOf(AppDestination destination) => switch (destination) {
 };
 
 /// Rows listed in the sidebar, grouped by dividers: Home; the library pages
-/// whose tab is in [tabs]; queue history, favorites and history (always).
-/// Search and settings are reached from the top bar instead; playlists have
-/// their own section below the groups. A group left empty is dropped, so no
-/// two dividers sit side by side.
+/// whose tab is in [tabs]; playlists, queue history, favorites and history
+/// (always). Search and settings are reached from the top bar instead. A
+/// group left empty is dropped, so no two dividers sit side by side.
 List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
   final library = [
     for (final d in sidebarLibraryOrder)
@@ -91,6 +90,7 @@ List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
     [AppDestination.home],
     if (library.isNotEmpty) library,
     [
+      AppDestination.playlists,
       AppDestination.queueHistory,
       AppDestination.favorites,
       AppDestination.history,
@@ -101,17 +101,15 @@ List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
 /// Every page in the order it sits on screen, top to bottom: search and
 /// settings (top bar, above the page area, search before settings left to
 /// right), then the sidebar rows with every tab shown
-/// ([visibleSidebarGroups] with all of [SidebarTab.values]), then playlists
-/// last (its own section below the sidebar groups). This is only used to
-/// rank destinations for [branchDirection]; the actual sidebar render order
-/// (which hides tabs) stays [visibleSidebarGroups]. Hiding a tab only drops
+/// ([visibleSidebarGroups] with all of [SidebarTab.values]). This is only
+/// used to rank destinations for [branchDirection]; the actual sidebar render
+/// order (which hides tabs) stays [visibleSidebarGroups]. Hiding a tab only drops
 /// it from the sidebar, it never reorders the rest, so this fixed order
 /// matches the visible order for every subset of tabs.
 final destinationScreenOrder = <AppDestination>[
   AppDestination.search,
   AppDestination.settings,
   ...visibleSidebarGroups(SidebarTab.values.toSet()).expand((g) => g),
-  AppDestination.playlists,
 ];
 
 /// Where [AppDestination.to] sits relative to [AppDestination.from] in

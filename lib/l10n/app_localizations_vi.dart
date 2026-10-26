@@ -49,12 +49,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sidebarNewPlaylist => 'Playlist mới';
 
   @override
-  String get sidebarExpand => 'Mở rộng';
-
-  @override
-  String get sidebarCollapse => 'Thu gọn';
-
-  @override
   String get sidebarShrink => 'Thu gọn thanh bên';
 
   @override

@@ -19,8 +19,8 @@ void main() {
       expect(destinationScreenOrder.length, AppDestination.values.length);
     });
 
-    test('ends with playlists', () {
-      expect(destinationScreenOrder.last, AppDestination.playlists);
+    test('ends with history', () {
+      expect(destinationScreenOrder.last, AppDestination.history);
     });
 
     test('starts with search then settings', () {
@@ -31,9 +31,7 @@ void main() {
     group('relative order matches visibleSidebarGroups for any tab subset', () {
       void checkSubset(Set<SidebarTab> tabs, String label) {
         test(label, () {
-          final visible = visibleSidebarGroups(
-            tabs,
-          ).expand((g) => g).toList();
+          final visible = visibleSidebarGroups(tabs).expand((g) => g).toList();
           // The relative order of destinations present in both lists must
           // match: hiding a tab only drops it, never reorders the rest.
           final visibleRanks = [
@@ -81,9 +79,16 @@ void main() {
       );
     });
 
-    test('history -> playlists is towardsBelow', () {
+    test('history -> playlists is towardsAbove', () {
       expect(
         branchDirection(AppDestination.history, AppDestination.playlists),
+        BranchDirection.towardsAbove,
+      );
+    });
+
+    test('playlists -> queueHistory is towardsBelow', () {
+      expect(
+        branchDirection(AppDestination.playlists, AppDestination.queueHistory),
         BranchDirection.towardsBelow,
       );
     });

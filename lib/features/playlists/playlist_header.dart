@@ -2,24 +2,20 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
-import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/page_scaffold.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import 'playlist_display_name.dart';
+import 'playlist_details.dart';
 
-enum _PlaylistAction { rename, delete, exportAbsolute, exportRelative }
-
-/// Collage, name, song count, a Play button, the queue menu and a
-/// rename / delete / export menu. The menu holds only the actions given;
-/// with none it is left out.
+/// Header of a playlist page in a narrow window: collage beside the name,
+/// song count and the buttons. A wide window shows `PlaylistSidePane`
+/// instead.
 class PlaylistHeader extends StatelessWidget {
   const PlaylistHeader({
     super.key,
     required this.head,
     required this.count,
     this.onPlay,
+    this.onShuffle,
     this.onQueueAction,
     this.onRename,
     this.onDelete,
@@ -35,6 +31,9 @@ class PlaylistHeader extends StatelessWidget {
   /// Null while nothing in the playlist can play: Play is disabled.
   final VoidCallback? onPlay;
 
+  /// Null disables Shuffle.
+  final VoidCallback? onShuffle;
+
   /// Null hides the queue menu (nothing to enqueue).
   final ValueChanged<QueueAction>? onQueueAction;
 
@@ -42,111 +41,36 @@ class PlaylistHeader extends StatelessWidget {
   final VoidCallback? onRename;
   final VoidCallback? onDelete;
 
-  /// Saves the playlist as an M3U file with paths of the given style; null
-  /// leaves the two export items out.
+  /// Null leaves the two export items out.
   final ValueChanged<M3uPathStyle>? onExport;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = context.l10n;
-    final queueAction = onQueueAction;
-    final rename = onRename;
-    final delete = onDelete;
-    final export = onExport;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < pageHeaderCompactWidth;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              PlaylistCover(
-                coverKeys: head.coverKeys,
-                size: compact ? 112 : 160,
-                seed: 'playlist:${head.playlist.id}',
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      playlistDisplayName(head.playlist, l10n),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.playlistTrackCount(count),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 4,
-                      children: [
-                        FilledButton.icon(
-                          onPressed: onPlay,
-                          icon: const Icon(AppIcons.play),
-                          label: Text(l10n.albumsPlay),
-                        ),
-                        if (queueAction != null)
-                          QueueActionsButton(onSelected: queueAction),
-                        if (rename != null || delete != null || export != null)
-                          PopupMenuButton<_PlaylistAction>(
-                            tooltip: l10n.playlistActions,
-                            // Not the kebab of the queue menu beside it.
-                            icon: const Icon(AppIcons.edit),
-                            onSelected: (action) => switch (action) {
-                              _PlaylistAction.rename => rename?.call(),
-                              _PlaylistAction.delete => delete?.call(),
-                              _PlaylistAction.exportAbsolute => export?.call(
-                                M3uPathStyle.absolute,
-                              ),
-                              _PlaylistAction.exportRelative => export?.call(
-                                M3uPathStyle.relative,
-                              ),
-                            },
-                            itemBuilder: (context) => [
-                              if (rename != null)
-                                PopupMenuItem(
-                                  value: _PlaylistAction.rename,
-                                  child: Text(l10n.playlistRename),
-                                ),
-                              if (delete != null)
-                                PopupMenuItem(
-                                  value: _PlaylistAction.delete,
-                                  child: Text(l10n.playlistDelete),
-                                ),
-                              if (export != null) ...[
-                                PopupMenuItem(
-                                  value: _PlaylistAction.exportAbsolute,
-                                  child: Text(l10n.playlistM3uExportAbsolute),
-                                ),
-                                PopupMenuItem(
-                                  value: _PlaylistAction.exportRelative,
-                                  child: Text(l10n.playlistM3uExportRelative),
-                                ),
-                              ],
-                            ],
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
+      child: Row(
+        children: [
+          PlaylistCover(
+            coverKeys: head.coverKeys,
+            size: 120,
+            seed: 'playlist:${head.playlist.id}',
           ),
-        );
-      },
+          const SizedBox(width: 24),
+          Expanded(
+            child: PlaylistDetails(
+              head: head,
+              count: count,
+              titleStyle: Theme.of(context).textTheme.headlineMedium,
+              onPlay: onPlay,
+              onShuffle: onShuffle,
+              onQueueAction: onQueueAction,
+              onRename: onRename,
+              onDelete: onDelete,
+              onExport: onExport,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

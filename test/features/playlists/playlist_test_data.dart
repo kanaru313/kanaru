@@ -1,6 +1,9 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/features/playlists/playlist_details.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 
 import '../library/browse_test_data.dart';
@@ -140,3 +143,35 @@ Future<void> dragFirstRowDown(WidgetTester tester) async {
   }
   await gesture.up();
 }
+
+/// Height of a playlist row (all rows share the list's prototype height).
+double rowExtent(WidgetTester tester) =>
+    tester.getSize(find.byType(PlaylistEntryTile).first).height;
+
+/// Moves a mouse pointer over row [index] so its hover-only actions show.
+Future<TestGesture> hoverRow(WidgetTester tester, int index) =>
+    hoverOn(tester, find.byType(PlaylistEntryTile).at(index));
+
+final _mice = Expando<TestGesture>('hovering mouse');
+
+/// Moves the test's mouse pointer over the middle of [target].
+Future<TestGesture> hoverOn(WidgetTester tester, Finder target) async {
+  var gesture = _mice[tester];
+  if (gesture == null) {
+    gesture = _mice[tester] = await tester.createGesture(
+      kind: PointerDeviceKind.mouse,
+    );
+    await gesture.addPointer(location: Offset.zero);
+    addTearDown(gesture.removePointer);
+  }
+  await gesture.moveTo(tester.getCenter(target));
+  await tester.pump();
+  return gesture;
+}
+
+/// The song count in the details of a playlist page (header or side pane).
+/// The songs toolbar shows the same count, so a bare `find.text` finds two.
+Finder playlistSongCount(String text) => find.descendant(
+  of: find.byType(PlaylistDetails),
+  matching: find.text(text),
+);

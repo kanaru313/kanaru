@@ -13,14 +13,17 @@ import 'playlist_test_data.dart';
 /// Titles `S000` .. `S249`: a playlist of three pages.
 final bigTitles = [for (var i = 0; i < 250; i++) 'S${'$i'.padLeft(3, '0')}'];
 
+/// The scroll position of the song list. A wide page has a second scroll
+/// view in its side pane, so the lookup starts at the list's own.
 ScrollPosition pagePosition(WidgetTester tester) => tester
     .state<ScrollableState>(
-      find
-          .descendant(
-            of: find.byType(PlaylistEntriesView),
-            matching: find.byType(Scrollable),
-          )
-          .first,
+      find.descendant(
+        of: find.descendant(
+          of: find.byType(PlaylistEntriesView),
+          matching: find.byType(CustomScrollView),
+        ),
+        matching: find.byType(Scrollable),
+      ),
     )
     .position;
 
@@ -36,8 +39,8 @@ Future<void> scrollToRow(
       .widgetList<PlaylistEntryTile>(find.byType(PlaylistEntryTile))
       .first;
   final top = tester.getTopLeft(find.byWidget(first)).dy;
-  final listTop = top - first.index * playlistEntryExtent + position.pixels;
-  position.jumpTo(listTop + row * playlistEntryExtent - at);
+  final listTop = top - first.index * rowExtent(tester) + position.pixels;
+  position.jumpTo(listTop + row * rowExtent(tester) - at);
   await tester.pump();
   await settleDb(tester);
 }
@@ -68,7 +71,7 @@ void main() {
     tester,
   ) async {
     await openBig(tester, h);
-    expect(find.text('250 songs'), findsOneWidget);
+    expect(playlistSongCount('250 songs'), findsOneWidget);
     expect(shownTitles(tester).first, 'S000');
 
     final position = pagePosition(tester);
@@ -88,7 +91,7 @@ void main() {
     await openBig(tester, h);
     final position = pagePosition(tester);
 
-    position.jumpTo(150 * playlistEntryExtent);
+    position.jumpTo(150 * rowExtent(tester));
     await tester.pump();
     expect(find.byType(PlaylistEntryPlaceholder), findsWidgets);
     expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
@@ -112,7 +115,8 @@ void main() {
     );
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 50));
-    for (var i = 0; i < 34; i++) {
+    final steps = (4 * rowExtent(tester) / 8).ceil();
+    for (var i = 0; i < steps; i++) {
       await gesture.moveBy(const Offset(0, -8));
       await tester.pump(const Duration(milliseconds: 16));
     }
@@ -138,6 +142,7 @@ void main() {
     await scrollToRow(tester, 150);
 
     final row = find.widgetWithText(PlaylistEntryTile, 'S150');
+    await hoverOn(tester, row);
     await tester.tap(
       find.descendant(
         of: row,
@@ -153,7 +158,7 @@ void main() {
     expect(await storedPaths(tester, h, id), hasLength(249));
     pagePosition(tester).jumpTo(0);
     await tester.pump();
-    expect(find.text('249 songs'), findsOneWidget);
+    expect(playlistSongCount('249 songs'), findsOneWidget);
   });
 
   testWidgets('playing from the third page queues the whole playlist', (
@@ -251,7 +256,7 @@ void main() {
     await settleDb(tester);
 
     expect(tester.takeException(), isNull);
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     expect(shownTitles(tester), ['Alpha', 'Bravo', 'Charlie']);
     expect(find.byType(PlaylistEntryPlaceholder), findsOneWidget);
   });
@@ -269,7 +274,7 @@ void main() {
     await settleDb(tester);
 
     expect(tester.takeException(), isNull);
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     // Index 1 holds the later of the two, index 2 is a gap.
     expect(shownTitles(tester), ['Alpha', 'Charlie', 'Delta']);
     expect(find.byType(PlaylistEntryPlaceholder), findsOneWidget);

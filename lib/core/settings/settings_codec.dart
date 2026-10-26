@@ -15,6 +15,7 @@ const _languageKey = 'language';
 const _titleBarKey = 'titleBar';
 const _librarySortKey = 'librarySort';
 const _albumsViewKey = 'albumsView';
+const _playlistsViewKey = 'playlistsView';
 const _rescanOnStartupKey = 'rescanOnStartup';
 const _libraryOnboardedKey = 'libraryOnboarded';
 const _recordListenHistoryKey = 'recordListenHistory';
@@ -29,6 +30,7 @@ const _knownKeys = {
   _titleBarKey,
   _librarySortKey,
   _albumsViewKey,
+  _playlistsViewKey,
   _rescanOnStartupKey,
   _libraryOnboardedKey,
   _recordListenHistoryKey,
@@ -116,6 +118,11 @@ DecodedSettings decodeSettings(Object? json) {
         json[_albumsViewKey],
         defaults.albumsView,
       ),
+      playlistsView: enumOr(
+        AlbumsView.values,
+        json[_playlistsViewKey],
+        defaults.playlistsView,
+      ),
       rescanOnStartup: boolOr(
         json[_rescanOnStartupKey],
         defaults.rescanOnStartup,
@@ -170,6 +177,7 @@ Map<String, Object?> encodeSettings(
     artistsScreen: encodeSort(settings.artistSort),
   },
   _albumsViewKey: settings.albumsView.name,
+  _playlistsViewKey: settings.playlistsView.name,
   _rescanOnStartupKey: settings.rescanOnStartup,
   _libraryOnboardedKey: settings.libraryOnboarded,
   _recordListenHistoryKey: settings.recordListenHistory,

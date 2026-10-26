@@ -38,8 +38,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Rename'));
       await settleDb(tester);
 
-      // The page header and the sidebar row.
-      expect(find.text('Road trip'), findsNWidgets(2));
+      expect(find.text('Road trip'), findsOneWidget, reason: 'page header');
       final summary = await tester.runAsync(() => h.db.playlistSummary(id));
       expect(summary!.name, 'Road trip');
     });
@@ -160,12 +159,13 @@ void main() {
       final id = await openMix(tester, h);
       await breakWrites(tester, h, 'playlist_entries', 'DELETE');
 
+      await hoverRow(tester, 1);
       await tester.tap(find.byTooltip('Remove from playlist').at(1));
       await settleDb(tester);
 
       expect(find.text(_saveFailed), findsOneWidget);
       expect(shownTitles(tester), mixTitles);
-      expect(find.text('4 songs'), findsOneWidget);
+      expect(playlistSongCount('4 songs'), findsOneWidget);
       expect(await storedPaths(tester, h, id), hasLength(4));
     });
   });

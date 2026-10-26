@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
+import 'package:kanaru/shared/widgets/song_tile_placeholder.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 import 'package:material_ui/material_ui.dart';
 

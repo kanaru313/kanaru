@@ -13,8 +13,6 @@
   "sidebarPlaylists": "Playlists",
   "sidebarNoPlaylists": "No playlists yet",
   "sidebarNewPlaylist": "New playlist",
-  "sidebarExpand": "Expand",
-  "sidebarCollapse": "Collapse",
   "sidebarShrink": "Collapse sidebar",
   "sidebarGrow": "Expand sidebar",
   "playlistDefaultName": "New playlist",

@@ -87,6 +87,7 @@ void main() {
   ) async {
     final id = await openMix(tester, h);
 
+    await hoverRow(tester, 1);
     await tester.tap(find.byTooltip('Remove from playlist').at(1));
     await tester.pump();
     final frames = await framesUntil(tester, id, 3, '4 songs');
@@ -96,7 +97,7 @@ void main() {
       expect(frame.titles, expected, reason: 'frames: $frames');
       expect(frame.stale, isFalse);
     }
-    expect(find.text('3 songs'), findsOneWidget);
+    expect(playlistSongCount('3 songs'), findsOneWidget);
   });
 
   const moveStatement = 'UPDATE playlist_entries SET position = position';
@@ -122,6 +123,7 @@ void main() {
     expect(gate.count(moveStatement), 1);
     expect(shownTitles(tester), ['Bravo', 'Charlie', 'Alpha', 'Delta']);
 
+    await hoverRow(tester, 1);
     await tester.tap(find.byTooltip('Remove from playlist').at(1)); // Charlie
     await tester.pump();
     await letDbRun(tester);
@@ -137,7 +139,7 @@ void main() {
     expect(await storedPaths(tester, h, id), [
       for (final t in ['Bravo', 'Alpha', 'Delta']) paths[t],
     ]);
-    expect(find.text('3 songs'), findsOneWidget);
+    expect(playlistSongCount('3 songs'), findsOneWidget);
   });
 
   testWidgets(
@@ -153,6 +155,7 @@ void main() {
       await letDbRun(tester);
       expect(failing.held, isTrue, reason: 'the move is held in the database');
 
+      await hoverRow(tester, 1);
       await tester.tap(find.byTooltip('Remove from playlist').at(1)); // Charlie
       await tester.pump();
       expect(shownTitles(tester), ['Bravo', 'Alpha', 'Delta']);
@@ -167,7 +170,7 @@ void main() {
       expect(await storedPaths(tester, h, id), [
         for (final t in expected) paths[t],
       ]);
-      expect(find.text('3 songs'), findsOneWidget);
+      expect(playlistSongCount('3 songs'), findsOneWidget);
       expect(
         find.text("Couldn't save the playlist. See the log for details."),
         findsOneWidget,
@@ -181,12 +184,13 @@ void main() {
     final id = await openMix(tester, h);
     await breakWrites(tester, h, 'playlist_entries', 'DELETE');
 
+    await hoverRow(tester, 1);
     await tester.tap(find.byTooltip('Remove from playlist').at(1));
     await tester.pump();
     await settleDb(tester);
 
     expect(shownTitles(tester), mixTitles);
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     expect(await storedPaths(tester, h, id), hasLength(4));
   });
 
@@ -280,12 +284,12 @@ void main() {
       await like(tester, 'c');
       await settleDb(tester);
       expect(shownTitles(tester), ['a', 'b', 'c']);
-      expect(find.text('3 songs'), findsOneWidget);
+      expect(playlistSongCount('3 songs'), findsOneWidget);
 
       await unlike(tester, 'a');
       await settleDb(tester);
       expect(shownTitles(tester), ['b', 'c']);
-      expect(find.text('2 songs'), findsOneWidget);
+      expect(playlistSongCount('2 songs'), findsOneWidget);
     });
 
     testWidgets('a heart toggled elsewhere during a removal is not lost', (
@@ -302,7 +306,7 @@ void main() {
 
       final paths = await trackPaths(tester, h);
       expect(shownTitles(tester), ['b', 'c']);
-      expect(find.text('2 songs'), findsOneWidget);
+      expect(playlistSongCount('2 songs'), findsOneWidget);
       expect(
         await tester.runAsync(() => h.db.isFavorite(paths['a']!)),
         isFalse,

@@ -1,14 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
+import '../../../l10n/l10n.dart';
+import '../../icons/app_icons.dart';
+import '../queue_actions_menu.dart';
 
 /// Room the labelled buttons need; with less, Shuffle shrinks to an icon.
 const _labelledButtonsWidth = 320.0;
 
-/// The buttons under an album or artist title: Play, Shuffle and the queue
-/// menu. Shuffle is icon-only when the header text column is narrow.
+/// The buttons under a detail page title (album, artist, genre, language,
+/// playlist): Play, Shuffle and the queue menu. Shuffle is icon-only when the
+/// header text column is narrow.
 class PlayShuffleActions extends StatelessWidget {
   const PlayShuffleActions({
     super.key,
@@ -19,9 +20,15 @@ class PlayShuffleActions extends StatelessWidget {
   });
 
   final String playLabel;
-  final VoidCallback onPlay;
-  final VoidCallback onShuffle;
-  final ValueChanged<QueueAction> onQueueAction;
+
+  /// Null disables the Play button.
+  final VoidCallback? onPlay;
+
+  /// Null disables the Shuffle button.
+  final VoidCallback? onShuffle;
+
+  /// Null leaves the queue menu out.
+  final ValueChanged<QueueAction>? onQueueAction;
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +57,10 @@ class PlayShuffleActions extends StatelessWidget {
                 icon: const Icon(AppIcons.shuffle),
                 label: Text(l10n.libraryShuffle),
               ),
-            const SizedBox(width: 4),
-            QueueActionsButton(onSelected: onQueueAction),
+            if (onQueueAction case final onQueueAction?) ...[
+              const SizedBox(width: 4),
+              QueueActionsButton(onSelected: onQueueAction),
+            ],
           ],
         );
       },

@@ -5,6 +5,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/features/playlists/favorites_screen.dart';
+import 'package:kanaru/features/playlists/playlist_details.dart';
 import 'package:kanaru/features/playlists/playlist_routes.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -28,8 +29,10 @@ void main() {
     await settleDb(tester);
   }
 
+  // The name sits in the side pane or the header, whichever width the page
+  // has.
   Finder rowTitle(String text) => find.descendant(
-    of: find.byType(CustomScrollView),
+    of: find.byType(PlaylistDetails),
     matching: find.text(text),
   );
 
@@ -77,7 +80,7 @@ void main() {
 
     expect(shownTitles(tester), ['b', 'a']);
     expect(rowTitle('Favorites'), findsOneWidget);
-    expect(find.text('2 songs'), findsOneWidget);
+    expect(playlistSongCount('2 songs'), findsOneWidget);
     expect(find.byTooltip('Remove from favorites'), findsNWidgets(2));
     if (find.byTooltip('Playlist actions').evaluate().isNotEmpty) {
       await openHeaderMenu(tester);

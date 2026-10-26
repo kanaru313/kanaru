@@ -37,6 +37,7 @@ class AppSettings {
     this.albumSort = const SortChoice(AlbumSortField.title),
     this.artistSort = const SortChoice(ArtistSortField.name),
     this.albumsView = AlbumsView.grid,
+    this.playlistsView = AlbumsView.grid,
     this.rescanOnStartup = true,
     this.libraryOnboarded = false,
     this.recordListenHistory = true,
@@ -60,6 +61,8 @@ class AppSettings {
   final SortChoice<ArtistSortField> artistSort;
 
   final AlbumsView albumsView;
+
+  final AlbumsView playlistsView;
 
   /// Scan the library folders in the background when the app opens.
   final bool rescanOnStartup;
@@ -95,6 +98,7 @@ class AppSettings {
     SortChoice<AlbumSortField>? albumSort,
     SortChoice<ArtistSortField>? artistSort,
     AlbumsView? albumsView,
+    AlbumsView? playlistsView,
     bool? rescanOnStartup,
     bool? libraryOnboarded,
     bool? recordListenHistory,
@@ -110,6 +114,7 @@ class AppSettings {
     albumSort: albumSort ?? this.albumSort,
     artistSort: artistSort ?? this.artistSort,
     albumsView: albumsView ?? this.albumsView,
+    playlistsView: playlistsView ?? this.playlistsView,
     rescanOnStartup: rescanOnStartup ?? this.rescanOnStartup,
     libraryOnboarded: libraryOnboarded ?? this.libraryOnboarded,
     recordListenHistory: recordListenHistory ?? this.recordListenHistory,
@@ -128,6 +133,7 @@ class AppSettings {
     albumSort: albumSort,
     artistSort: artistSort,
     albumsView: albumsView,
+    playlistsView: playlistsView,
     rescanOnStartup: rescanOnStartup,
     libraryOnboarded: libraryOnboarded,
     recordListenHistory: recordListenHistory,
@@ -147,6 +153,7 @@ class AppSettings {
       other.albumSort == albumSort &&
       other.artistSort == artistSort &&
       other.albumsView == albumsView &&
+      other.playlistsView == playlistsView &&
       other.rescanOnStartup == rescanOnStartup &&
       other.libraryOnboarded == libraryOnboarded &&
       other.recordListenHistory == recordListenHistory &&
@@ -164,6 +171,7 @@ class AppSettings {
     albumSort,
     artistSort,
     albumsView,
+    playlistsView,
     rescanOnStartup,
     libraryOnboarded,
     recordListenHistory,
@@ -178,7 +186,9 @@ class AppSettings {
       'AppSettings(theme: ${theme.name}, language: $languageCode, '
       'titleBar: ${titleBar.name}, songSort: $songSort, '
       'albumSort: $albumSort, artistSort: $artistSort, '
-      'albumsView: ${albumsView.name}, rescanOnStartup: $rescanOnStartup, '
+      'albumsView: ${albumsView.name}, '
+      'playlistsView: ${playlistsView.name}, '
+      'rescanOnStartup: $rescanOnStartup, '
       'libraryOnboarded: $libraryOnboarded, '
       'recordListenHistory: $recordListenHistory, animations: $animations, '
       'libraryScan: $libraryScan, playback: $playback, display: $display)';

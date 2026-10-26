@@ -1,26 +1,35 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_startup.dart';
+import '../../core/database/library_rows.dart';
 import '../../core/database/playlist_rows.dart';
-import '../../core/indexer/cover_paths.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/format_duration.dart';
 import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/cover_art.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import '../../shared/widgets/song_tile.dart' show songCoverSize;
+import '../../shared/widgets/song_tile.dart';
+import 'hover_reveal_action.dart';
+import 'playlist_entry_handle.dart';
+import 'playlist_missing_entry_tile.dart';
 
-/// Fixed row height, which lets the list place rows without measuring them.
-const playlistEntryExtent = 64.0;
+/// An entry used only to size the list's prototype row.
+const prototypePlaylistEntry = PlaylistEntryRow(
+  entryId: 0,
+  path: '/prototype.flac',
+  track: TrackListItem(
+    id: 0,
+    path: '/prototype.flac',
+    title: 'Title',
+    artist: 'Artist',
+    album: 'Album',
+    year: 2000,
+    durationMs: 60000,
+  ),
+);
 
-/// Space between a row's slot and its visible card.
-const playlistEntryInset = EdgeInsets.symmetric(horizontal: 24, vertical: 4);
-
-/// One playlist entry: drag handle, cover, title with "artist · album",
-/// length and a remove button. An entry whose file is not in the library
-/// shows its file name, is dimmed and does not play.
-class PlaylistEntryTile extends ConsumerWidget {
+/// One playlist entry: the library song row with a drag handle before the
+/// cover and a remove button at the end that shows on hover or focus. An
+/// entry whose file is not in the library shows its file name, is dimmed and
+/// does not play ([PlaylistMissingEntryTile]).
+class PlaylistEntryTile extends StatelessWidget {
   const PlaylistEntryTile({
     super.key,
     required this.entry,
@@ -29,7 +38,7 @@ class PlaylistEntryTile extends ConsumerWidget {
     this.onRemove,
     this.reorderable = true,
     this.onQueueAction,
-    this.removeTooltip,
+    this.favorites = false,
   });
 
   final PlaylistEntryRow entry;
@@ -40,122 +49,50 @@ class PlaylistEntryTile extends ConsumerWidget {
   /// Plays from this row; null on an entry that cannot play.
   final VoidCallback? onTap;
 
-  /// Null leaves the remove button out (a read-only list).
+  /// Null leaves the remove button out (a read-only list, or Favorites).
   final VoidCallback? onRemove;
 
   /// Whether the drag handle shows; the list reorders only by it.
   final bool reorderable;
 
-  /// Tooltip of the remove button; null is "Remove from playlist".
-  final String? removeTooltip;
-
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
+  /// The list is Favorites: a missing entry without a remove button shows a
+  /// heart so the liked file can still be taken out.
+  final bool favorites;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+  Widget build(BuildContext context) {
     final track = entry.track;
-    final durationMs = track?.durationMs;
-    final details = [
-      track?.artist,
-      track?.album,
-    ].whereType<String>().where((s) => s.isNotEmpty).join(' · ');
-
-    final row = Row(
-      children: [
-        if (reorderable)
-          ReorderableDragStartListener(
-            index: index,
-            child: MouseRegion(
-              cursor: SystemMouseCursors.grab,
-              child: Tooltip(
-                message: l10n.playlistReorder,
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(AppIcons.dragHandle, size: 20),
-                ),
+    if (track == null) {
+      return PlaylistMissingEntryTile(
+        entry: entry,
+        index: index,
+        reorderable: reorderable,
+        onRemove: onRemove,
+        showFavorite: favorites,
+      );
+    }
+    Widget song(bool revealed) => SongTile(
+      song: track,
+      onTap: onTap ?? () {},
+      onQueueAction: onQueueAction,
+      leadingAccessory: reorderable ? PlaylistEntryHandle(index: index) : null,
+      trailingAccessory: onRemove == null
+          ? null
+          : RevealableAction(
+              revealed: revealed,
+              child: IconButton(
+                icon: const Icon(AppIcons.closeRounded),
+                iconSize: 20,
+                tooltip: context.l10n.playlistRemoveEntry,
+                onPressed: onRemove,
               ),
             ),
-          )
-        else
-          const SizedBox(width: 12),
-        CoverArt(
-          path: coverPath(
-            ref.watch(coverCacheDirectoryProvider),
-            track?.coverKey,
-          ),
-          size: songCoverSize,
-          placeholder: Center(
-            child: Icon(
-              track == null ? AppIcons.musicOff : AppIcons.musicNoteOutlined,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                track?.title ?? entry.path.split('/').last,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyLarge,
-              ),
-              if (track == null || details.isNotEmpty)
-                Text(
-                  track == null ? l10n.playlistNotInLibrary : details,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-            ],
-          ),
-        ),
-        if (durationMs != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              formatDuration(Duration(milliseconds: durationMs)),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-        if (onRemove != null)
-          IconButton(
-            icon: const Icon(AppIcons.closeRounded),
-            iconSize: 20,
-            tooltip: removeTooltip ?? l10n.playlistRemoveEntry,
-            onPressed: onRemove,
-          ),
-      ],
     );
-
-    return SizedBox(
-      height: playlistEntryExtent,
-      child: Padding(
-        padding: playlistEntryInset,
-        child: Opacity(
-          opacity: track == null ? 0.6 : 1,
-          child: QueueActionsRegion(
-            onAction: onQueueAction,
-            child: Material(
-              color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(onTap: onTap, child: row),
-            ),
-          ),
-        ),
-      ),
-    );
+    return onRemove == null
+        ? song(false)
+        : HoverRevealAction(builder: (_, revealed) => song(revealed));
   }
 }

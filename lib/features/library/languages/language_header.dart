@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../play_shuffle_actions.dart';
+import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import 'language_avatar.dart';
 
 /// Avatar, name, "N albums · N songs" and the Play, Shuffle and queue

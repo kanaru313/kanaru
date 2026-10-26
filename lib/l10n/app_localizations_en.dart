@@ -49,12 +49,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sidebarNewPlaylist => 'New playlist';
 
   @override
-  String get sidebarExpand => 'Expand';
-
-  @override
-  String get sidebarCollapse => 'Collapse';
-
-  @override
   String get sidebarShrink => 'Collapse sidebar';
 
   @override

@@ -9,7 +9,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/genres/genre_page_data.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
-import 'package:kanaru/shared/widgets/playlist_cover.dart';
+import 'package:kanaru/shared/widgets/detail_page/collage_hero_cover.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
@@ -49,7 +49,7 @@ void main() {
     expect(_albumTile('Only'), findsOneWidget);
     expect(find.text('Rock'), findsOneWidget, reason: 'header name');
     expect(find.text('j'), findsNothing, reason: 'a Jazz song');
-    expect(find.byType(PlaylistCover), findsOneWidget);
+    expect(find.byType(CollageHeroCard), findsOneWidget);
   });
 
   testWidgets('a song plays the songs from it; Play from the top', (
@@ -82,7 +82,8 @@ void main() {
     );
     await openWithTracks(tester, h, _tracks, location: _rock);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Shuffle'));
+    // The side pane is too narrow for the label, so Shuffle is icon-only.
+    await tester.tap(find.byTooltip('Shuffle'));
     await tester.pump();
 
     expect(queued(h), ['a', 'b', 'c']);

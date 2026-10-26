@@ -15,6 +15,7 @@ import 'package:kanaru/shared/in_page_filter_registry.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/player/fake_audio_backend.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 import 'playlist_test_data.dart';
@@ -199,6 +200,9 @@ void main() {
       };
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+          ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -293,6 +297,9 @@ void main() {
       final rows = [entry(1), entry(2)];
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+          ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -327,6 +334,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await hoverRow(tester, 0);
       await tester.tap(find.byTooltip('Remove from playlist').first);
       await tester.pump();
       await filterBy(tester, 'abc');

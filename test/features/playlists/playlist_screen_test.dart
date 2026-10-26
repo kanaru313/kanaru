@@ -16,7 +16,7 @@ void main() {
   testWidgets('shows the name, count and entries in order', (tester) async {
     await openMix(tester, h);
 
-    expect(find.text('4 songs'), findsOneWidget);
+    expect(playlistSongCount('4 songs'), findsOneWidget);
     expect(shownTitles(tester), mixTitles);
   });
 
@@ -65,6 +65,7 @@ void main() {
   testWidgets('removing a row keeps the positions dense', (tester) async {
     final id = await openMix(tester, h);
 
+    await hoverRow(tester, 1);
     await tester.tap(find.byTooltip('Remove from playlist').at(1));
     await settleDb(tester);
 
@@ -74,7 +75,7 @@ void main() {
     );
     expect(stored!.map((e) => e.position).toList()..sort(), [0, 1, 2]);
     expect(stored.every((e) => e.playlistId == id), isTrue);
-    expect(find.text('3 songs'), findsOneWidget);
+    expect(playlistSongCount('3 songs'), findsOneWidget);
   });
 
   testWidgets('an entry without a track says so and is skipped on play', (

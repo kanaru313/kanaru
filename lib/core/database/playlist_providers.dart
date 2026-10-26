@@ -6,9 +6,9 @@ import 'playlist_queries.dart';
 import 'playlist_rows.dart';
 
 /// Every listed playlist (not Favorites, not saved queues), newest first;
-/// empty without a library. Shared by the
-/// sidebar, the add-to-playlist picker and the playlists page. Not
-/// auto-disposed: the sidebar keeps it alive for the life of the app.
+/// empty without a library. Used only by the add-to-playlist picker (the
+/// playlists page reads `playlistCardsProvider`). Not auto-disposed, so the
+/// list is already loaded when the picker opens.
 final playlistSummariesProvider = StreamProvider<List<PlaylistSummary>>((ref) {
   final db = ref.watch(libraryDatabaseProvider);
   return db == null ? Stream.value(const []) : db.watchPlaylistSummaries();

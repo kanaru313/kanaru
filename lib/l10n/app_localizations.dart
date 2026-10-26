@@ -176,18 +176,6 @@ abstract class AppLocalizations {
   /// **'New playlist'**
   String get sidebarNewPlaylist;
 
-  /// No description provided for @sidebarExpand.
-  ///
-  /// In en, this message translates to:
-  /// **'Expand'**
-  String get sidebarExpand;
-
-  /// No description provided for @sidebarCollapse.
-  ///
-  /// In en, this message translates to:
-  /// **'Collapse'**
-  String get sidebarCollapse;
-
   /// No description provided for @sidebarShrink.
   ///
   /// In en, this message translates to:

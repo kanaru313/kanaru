@@ -1,17 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
-
+import 'package:kanaru/features/playlists/playlist_side_pane.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart'
     show
         BoxDecoration,
+        CustomScrollView,
         DecoratedBox,
+        IconButton,
         Icons,
         Scrollable,
         ScrollableState,
         SizedBox;
 
 import 'playlist_entries_view_harness.dart';
+import 'playlist_test_data.dart' show hoverRow, rowExtent;
 
 void main() {
   final view = EntriesViewHarness();
@@ -25,7 +29,7 @@ void main() {
     ) async {
       await view.pump(tester, rows);
 
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
 
       expect(view.moves, [(0, 2)]);
       expect(view.shownIds(tester), [1, 2, 0], reason: 'before the write ends');
@@ -44,23 +48,28 @@ void main() {
       await gesture.moveBy(const Offset(0, 24));
       await tester.pump(const Duration(milliseconds: 16));
 
-      final plate = find.byWidgetPredicate(
-        (w) =>
-            w is DecoratedBox &&
-            w.decoration is BoxDecoration &&
-            (w.decoration as BoxDecoration).boxShadow != null,
+      // The cover card of the side pane has a shadow too; the lifted row is
+      // the one in the overlay.
+      final plate = find.byElementPredicate(
+        (e) =>
+            e.widget is DecoratedBox &&
+            (e.widget as DecoratedBox).decoration is BoxDecoration &&
+            ((e.widget as DecoratedBox).decoration as BoxDecoration)
+                    .boxShadow !=
+                null &&
+            e.findAncestorWidgetOfExactType<PlaylistSidePane>() == null,
       );
       expect(plate, findsOneWidget);
       final card = tester.getSize(plate);
-      expect(card.width, slot.width - playlistEntryInset.horizontal);
-      expect(card.height, slot.height - playlistEntryInset.vertical);
+      expect(card.width, slot.width);
+      expect(card.height, slot.height);
       await gesture.up();
       await tester.pumpAndSettle();
     });
 
     testWidgets('a failed write puts the rows back', (tester) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
 
       await view.finishMove(tester, ok: false);
       expect(view.settled, 1, reason: 'the owner reloads the head');
@@ -74,7 +83,7 @@ void main() {
     ) async {
       final old = headOf(rows);
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
 
       await view.finishMove(tester, ok: true);
       expect(view.shownIds(tester), [1, 2, 0]);
@@ -92,7 +101,7 @@ void main() {
       tester,
     ) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
       await view.finishMove(tester, ok: true);
 
       // A new object, read before the settle: it would reset the rows to
@@ -109,7 +118,7 @@ void main() {
 
     testWidgets('a head that arrives mid-write is ignored', (tester) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
 
       await view.showHead(tester, headOf(rows));
 
@@ -119,10 +128,10 @@ void main() {
 
     testWidgets('a drop while a move is saving is ignored', (tester) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
       expect(view.shownIds(tester), [1, 2, 0]);
 
-      await view.dragHandle(tester, view.handle(2), -playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(2), -rowExtent(tester));
 
       expect(view.moves, [(0, 2)], reason: 'no second write');
       expect(view.shownIds(tester), [1, 2, 0]);
@@ -135,7 +144,7 @@ void main() {
     testWidgets('a move that throws puts the rows back', (tester) async {
       view.moveError = StateError('gone');
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -148,7 +157,7 @@ void main() {
       tester,
     ) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
 
       await tester.tap(find.text('T1'));
       await tester.pump();
@@ -161,7 +170,7 @@ void main() {
 
     testWidgets('a second tap while a play waits is ignored', (tester) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
 
       await tester.tap(find.text('T1'));
       await tester.tap(find.text('T2'));
@@ -175,7 +184,7 @@ void main() {
       tester,
     ) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
       await tester.tap(find.text('T1'));
       await tester.pump();
 
@@ -202,7 +211,7 @@ void main() {
       tester,
     ) async {
       await view.pump(tester, rows);
-      final gesture = await dragBy(tester, 2 * playlistEntryExtent);
+      final gesture = await dragBy(tester, 2 * rowExtent(tester));
       final reads = view.loads.length;
 
       // Meanwhile the database order changed under the row in hand.
@@ -248,6 +257,7 @@ void main() {
       expect(view.shownIds(tester), [2, 1, 0], reason: 'the head is taken');
 
       // Later heads are taken again: a failed removal rolls back on screen.
+      await hoverRow(tester, 0);
       await tester.tap(find.byTooltip('Remove from playlist').at(0));
       await tester.pump();
       await view.finishRemove(tester, ok: false);
@@ -261,7 +271,7 @@ void main() {
       await view.pump(tester, rows);
       // Down two slots and up again: the list reports the slot below the
       // row it started in.
-      final gesture = await dragBy(tester, 2 * playlistEntryExtent);
+      final gesture = await dragBy(tester, 2 * rowExtent(tester));
       for (var i = 0; i < 16; i++) {
         await gesture.moveBy(const Offset(0, -8));
         await tester.pump(const Duration(milliseconds: 16));
@@ -286,6 +296,7 @@ void main() {
     ) async {
       await view.pump(tester, rows);
 
+      await hoverRow(tester, 1);
       await tester.tap(find.byTooltip('Remove from playlist').at(1));
       await tester.pump();
 
@@ -309,6 +320,7 @@ void main() {
       tester,
     ) async {
       await view.pump(tester, rows);
+      await hoverRow(tester, 1);
       await tester.tap(find.byTooltip('Remove from playlist').at(1));
       await tester.pump();
 
@@ -321,9 +333,10 @@ void main() {
 
     testWidgets('a removal while a move is saving is allowed', (tester) async {
       await view.pump(tester, rows);
-      await view.dragHandle(tester, view.handle(0), 2 * playlistEntryExtent);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
       expect(view.shownIds(tester), [1, 2, 0]);
 
+      await hoverRow(tester, 1);
       await tester.tap(find.byTooltip('Remove from playlist').at(1));
       await tester.pump();
       expect(view.removed, [2], reason: 'by entry id, not by index');
@@ -341,9 +354,17 @@ void main() {
     ) async {
       await view.pump(tester, [for (var i = 0; i < 4; i++) available(i)]);
 
-      await tester.tap(find.byTooltip('Remove from playlist').at(0));
-      // No frame between: the second row is still where it was drawn.
-      await tester.tap(find.byTooltip('Remove from playlist').at(2));
+      // Pressed straight through the buttons: no frame, and so no hover
+      // change, between the two presses.
+      // The hit-test path is covered by 'a hidden button does not take the tap'
+      // in playlist_row_view_test.dart.
+      void press(int row) => tester
+          .widget<IconButton>(
+            find.widgetWithIcon(IconButton, AppIcons.closeRounded).at(row),
+          )
+          .onPressed!();
+      press(0);
+      press(2);
       await tester.pump();
 
       expect(view.removed, [0, 2]);
@@ -354,6 +375,7 @@ void main() {
     testWidgets('removing the last row shows the empty state', (tester) async {
       await view.pump(tester, [available(0)]);
 
+      await hoverRow(tester, 0);
       await tester.tap(find.byTooltip('Remove from playlist'));
       await tester.pump();
 
@@ -367,8 +389,13 @@ void main() {
     ) async {
       await view.pump(tester, [for (var i = 0; i < 250; i++) available(i)]);
       // Page 0 is on screen; jump to a place whose page is not read.
-      final scroll = tester.state<ScrollableState>(find.byType(Scrollable));
-      scroll.position.jumpTo(150 * playlistEntryExtent);
+      final scroll = tester.state<ScrollableState>(
+        find.descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      scroll.position.jumpTo(150 * rowExtent(tester));
       await tester.pump();
 
       expect(find.byType(PlaylistEntryPlaceholder), findsWidgets);
