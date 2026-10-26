@@ -59,6 +59,34 @@ void main() {
     expect(container.read(settingsProvider).display.colorFromCover, isFalse);
   });
 
+  testWidgets('the waveform seek bar switch follows the colors row', (
+    tester,
+  ) async {
+    await pump(tester);
+    final titles = tester
+        .widgetList<SettingRow>(find.byType(SettingRow))
+        .map((r) => r.title)
+        .toList();
+    expect(
+      titles.indexOf('Waveform seek bar'),
+      titles.indexOf('Colors from the cover') + 1,
+    );
+    final toggle = find.descendant(
+      of: row('Waveform seek bar'),
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(container.read(settingsProvider).display.waveformSeekBar, isFalse);
+    expect(tester.widget<Switch>(toggle).value, isFalse);
+
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(container.read(settingsProvider).display.waveformSeekBar, isTrue);
+  });
+
   testWidgets('the animations switch is live', (tester) async {
     await pump(tester);
     expect(tester.widget<SettingRow>(row('Animations')).comingSoon, isFalse);

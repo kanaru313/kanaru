@@ -16,7 +16,8 @@ import 'core/logging/app_logging.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
 import 'core/open_files/open_files_provider.dart';
-import 'core/paths/app_directories.dart' show resolveCoverCacheDirectory;
+import 'core/paths/app_directories.dart'
+    show resolveCoverCacheDirectory, resolveWaveformCacheDirectory;
 import 'core/player/app_exit_flush.dart';
 import 'core/player/media_kit_backend.dart';
 import 'core/player/original_cover_reader.dart';
@@ -27,6 +28,8 @@ import 'core/player/unavailable_audio_backend.dart';
 import 'core/search/search_prefs_provider.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/stats/listen_recorder_provider.dart';
+import 'core/waveform/rust_waveform_reader.dart';
+import 'core/waveform/waveform.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,6 +90,9 @@ Future<void> main() async {
       ),
       originalCoverReaderProvider.overrideWithValue(
         const RustOriginalCoverReader(),
+      ),
+      waveformReaderProvider.overrideWithValue(
+        RustWaveformReader(resolveWaveformCacheDirectory(Platform.environment)),
       ),
       if (Platform.isLinux)
         mediaControlsProvider.overrideWith((ref) {

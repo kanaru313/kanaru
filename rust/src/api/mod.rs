@@ -4,3 +4,4 @@
 pub mod cover_colors;
 pub mod lyrics;
 pub mod tags;
+pub mod waveform;

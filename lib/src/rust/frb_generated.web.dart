@@ -9,6 +9,7 @@
 import 'api/cover_colors.dart';
 import 'api/lyrics.dart';
 import 'api/tags.dart';
+import 'api/waveform.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -110,6 +111,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   TrackTags dco_decode_track_tags(dynamic raw);
 
   @protected
+  TrackWaveform dco_decode_track_waveform(dynamic raw);
+
+  @protected
   int dco_decode_u_32(dynamic raw);
 
   @protected
@@ -117,6 +121,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void dco_decode_unit(dynamic raw);
+
+  @protected
+  WaveformStatus dco_decode_waveform_status(dynamic raw);
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
@@ -211,6 +218,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   TrackTags sse_decode_track_tags(SseDeserializer deserializer);
 
   @protected
+  TrackWaveform sse_decode_track_waveform(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
@@ -218,6 +228,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  WaveformStatus sse_decode_waveform_status(SseDeserializer deserializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
@@ -349,6 +362,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_track_tags(TrackTags self, SseSerializer serializer);
 
   @protected
+  void sse_encode_track_waveform(TrackWaveform self, SseSerializer serializer);
+
+  @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
@@ -356,6 +372,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_waveform_status(
+    WaveformStatus self,
+    SseSerializer serializer,
+  );
 }
 
 // Section: wire_class

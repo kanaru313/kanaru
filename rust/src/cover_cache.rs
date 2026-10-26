@@ -146,8 +146,8 @@ pub fn cache_key(original: &[u8]) -> String {
 
 /// Writes through a temp file in the target's own folder, then renames, so a
 /// reader never sees a half-written thumbnail.
-fn write_atomic(target: &Path, data: &[u8]) -> io::Result<()> {
-    let shard = target.parent().expect("cache keys live in a shard folder");
+pub(crate) fn write_atomic(target: &Path, data: &[u8]) -> io::Result<()> {
+    let shard = target.parent().expect("cache keys live in a folder");
     std::fs::create_dir_all(shard)?;
     let mut temp = tempfile::Builder::new()
         .prefix(TEMP_PREFIX)

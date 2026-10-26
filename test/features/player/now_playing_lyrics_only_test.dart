@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/plain_lyrics_view.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_lyrics_only_body.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_lyrics_strip.dart';
@@ -266,6 +267,25 @@ void main() {
       final pause = tester.getRect(find.byTooltip('Pause'));
       expect(pause.bottom, lessThanOrEqualTo(720));
       expect(pause.right, lessThanOrEqualTo(720));
+    });
+  });
+
+  group('seek bar style', () {
+    testWidgets('turning the waveform off keeps the strip, slot 24 px', (
+      tester,
+    ) async {
+      await pump(tester);
+      final before = tester.getSize(strip).height;
+      expect(tester.getSize(find.byType(NowPlayingSeekSlot)).height, 48);
+
+      h.container
+          .read(settingsProvider.notifier)
+          .setDisplay(const DisplayPrefs(waveformSeekBar: false));
+      await tester.pumpAndSettle();
+
+      expect(tester.getSize(find.byType(NowPlayingSeekSlot)).height, 24);
+      expect(tester.getSize(strip).height, before);
+      expect(tester.takeException(), isNull);
     });
   });
 }

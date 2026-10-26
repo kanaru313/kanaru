@@ -38,6 +38,13 @@ String? resolveCoverCacheDirectory(Map<String, String> environment) {
   return cache == null ? null : '$cache/covers/$coverThumbnailSize';
 }
 
+/// Folder of the waveform cache: `<cache>/waveforms`. Waveforms can be
+/// rebuilt from the music files, so they belong in the cache directory.
+String? resolveWaveformCacheDirectory(Map<String, String> environment) {
+  final cache = resolveCacheDirectory(environment);
+  return cache == null ? null : '$cache/waveforms';
+}
+
 String? _resolve(
   Map<String, String> environment,
   String variable,

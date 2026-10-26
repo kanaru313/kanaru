@@ -14,7 +14,7 @@ Regenerate the compaction with `repomix --style xml -o repomix-output.xml` (see 
 | App widget | [lib/app/app.dart](../lib/app/app.dart) | `KanaruApp`: `MaterialApp.router`, theme, l10n |
 | Router | [lib/app/router.dart](../lib/app/router.dart) | `routerProvider`, all route paths |
 | Linux runner | [linux/runner/my_application.cc](../linux/runner/my_application.cc) | GTK application, single-instance flags, window size |
-| Rust API | [rust/src/api/tags.rs](../rust/src/api/tags.rs) | `read_tags_batch`, `read_covers_batch`, `read_original_cover` (bridged to Dart) |
+| Rust API | [rust/src/api/tags.rs](../rust/src/api/tags.rs) | `read_tags_batch`, `read_covers_batch`, `read_original_cover` (bridged to Dart); `rust/src/api/waveform.rs`: `begin_waveform_job`, `load_waveform`, `cancel_waveform` |
 | Makefile | [Makefile](../Makefile) | `make` lists targets: run, build, check, gen, reset-* |
 
 ## Directory map
@@ -32,6 +32,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/cover_colors/` | | Colors from the cover (UI-03): `CoverColorExtractor` and its Rust version, palette codec and `coverColorAlgoVersion`, the scan's color round, the playing cover's palette (`playingCoverPaletteProvider`, `appCoverPaletteProvider`) |
 | `lib/core/indexer/` | 27 / 3,046 | Folder walk, tag reading via Rust, scan rules (`.nomedia`, size, duration, excluded folders: `scan_rules.dart`, `root_short_track_rules.dart`, `excluded_folders_controller.dart`), diff, scan orchestration, folder watcher (`folder_watcher.dart`, `change_debouncer.dart`, `scanned_folders.dart`), covers |
 | `lib/core/logging/` | 9 / 1,106 | Rotating file logger, redaction, session header, error folding |
+| `lib/core/waveform/` | 4 / ~370 | Waveform loading for the Now Playing seek bar: reader interface and results (`waveform.dart`), Rust reader (`rust_waveform_reader.dart`), keep-alive `WaveformController` (`waveform_controller.dart`: follows the player, attach/detach, prefetch of the next track), 8-entry memory cache (`waveform_memory_cache.dart`) |
 | `lib/core/m3u/` | 6 / ~420 | M3U playlist files: capped read (`m3u_read.dart`), decode and line split (`m3u_parse.dart`, run in an isolate), import through `localAudioPath` (`m3u_import.dart`), text writer and relative paths (`m3u_write.dart`, `m3u_relative_path.dart`), safe file write (`m3u_export.dart`) |
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
 | `lib/core/open_files/` | 3 / ~230 | Files from the command line and "Open with": method channel to the Linux runner (`open_files_channel.dart`), `OpenFilesService` (validate with `localAudioPath`, read tags, `openTracks`), startup hook |
@@ -41,7 +42,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/features/history/` | 29 / 2,873 | History page (`history_screen.dart`): Journal tab (day-grouped timeline, year chips, calendar jump, Undo delete) and Most played tab (date ranges, play all, playlist from result); per-song page (`history_track_screen.dart`, `/history/track?path=`); route seam (`history_routes.dart`: `historyPath`, `historyRoutes`, `historyTrackLocation`) |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
 | `lib/features/library/` | 58 / 5,135 | Songs, Albums, Artists, Genres and Folders (grid or list, `library_view_modes.dart` keeps the view in memory; `genres/` has the round `GenreAvatar`, list and grid tiles, page and header; `widgets/round_grid_tile.dart` is the round grid cell shared with Artists; `folders/` has the pure `folder_tree.dart`, `folder_songs.dart` (subtree reads in tree order), `folders_provider.dart`, list and grid tiles, counts line, folder page and header, and the six folder actions in `folder_actions.dart` and `folder_menu.dart`), onboarding, library state machine, sort controls (field menu + direction arrow); `play_shuffle_actions.dart` (Play, Shuffle and queue buttons of album and artist headers), `artists/artist_header.dart`, `artists/artist_grid_tile.dart` |
-| `lib/features/player/` | 32 / 3,862 | `PlayerBar`, Now Playing overlay, queue sheet, seek bar, shortcuts |
+| `lib/features/player/` | 36 / 4,500 | `PlayerBar`, Now Playing overlay, queue sheet, waveform seek track (`waveform/`: pure bar layout `waveform_bar_layout.dart`, cached `Picture` pair `waveform_pictures.dart`, `waveform_track_painter.dart`, `waveform_seek_track.dart`), seek bar, shortcuts |
 | `lib/features/playlists/` | 20 / 1,822 | Playlists grid, playlist page and Favorites page: `playlists_screen.dart`, `playlist_screen.dart` (page, delete and rename), `playlist_entries_view.dart` (drag to reorder), `playlist_row_cache.dart` and `playlist_write_gate.dart` (rows read a window at a time, writes in flight), `playlist_page_data.dart` (reactive providers), `playlist_page_actions.dart`, `playlist_routes.dart`; `playlist_page_body.dart` (body shared with Favorites), `favorites_screen.dart` (the Favorites playlist) and `favorites_routes.dart` (`favoritesPath`, `favoritesRoutes` mounted under `/favorites`); M3U import and export flows (`m3u_*.dart`) |
 | `lib/core/search/` | 8 / 919 | Pure Dart search rules, no database: query syntax (`search_query_parser.dart`, `search_query.dart`), field presets (`search_fields.dart`), history and chosen fields (`search_prefs.dart`, `search_prefs_file.dart` for `search_history.json`, `search_prefs_provider.dart`), typo correction (`typo_correction.dart`), in-page ranking (`in_page_match.dart`) |
 | `lib/features/search/` | 8 / 946 | Search page: `search_screen.dart` (states), `search_results_view.dart` and `search_section.dart` (groups), `search_providers.dart` (name indexes), `search_request_provider.dart` (request, song and group providers), `search_typo_providers.dart` (corrected retry and vocabulary), `search_field_picker.dart` (field presets and checkboxes), `search_corrected_banner.dart` (the corrected-query line) |
@@ -65,7 +66,7 @@ Key files by area:
 | Library folders | `core/database/library_root_queries.dart` (watch, count, remove, replace; the settings UI no longer calls replace), `core/indexer/library_roots_controller.dart` (add, remove, replace), `core/indexer/library_startup_tasks.dart` (post-frame rescan), `features/settings/library_folders_list.dart` |
 | MPRIS | `core/media_controls/mpris/mpris_media_controls.dart`, `mpris_method_handler.dart`, `mpris_properties.dart` |
 | Browse UI | `features/library/library_browse_body.dart` (state machine), `songs/song_row_cache.dart`, `albums/album_screen.dart`, `artists/artist_screen.dart`, `genres/genre_screen.dart`, `folders/folder_screen.dart`; `features/player/now_playing/now_playing_album_line.dart` (album line in Now Playing) |
-| Now Playing | `features/player/now_playing/now_playing_overlay.dart`, `now_playing_auto_hide.dart`, `now_playing_tabs.dart` |
+| Now Playing | `features/player/now_playing/now_playing_overlay.dart`, `now_playing_auto_hide.dart`, `now_playing_tabs.dart`, `now_playing_seek_slot.dart` (waveform slot and its height provider); `features/player/waveform/` |
 | Settings | `core/settings/settings_provider.dart`, `settings_codec.dart`, `settings_file.dart`; library counts: `core/database/library_stats_queries.dart` + `features/settings/library_stats_provider.dart` |
 | Logging | `core/logging/app_logging.dart`, `rotating_log_file.dart`, `log_redaction.dart` |
 | Schema 7 `tracks.language` | `core/database/library_tables.dart`, `library_migration_v7.dart`, `language_tags.dart` |
@@ -75,16 +76,18 @@ Key files by area:
 
 | Path | Files / lines | Purpose |
 |---|---|---|
-| `rust/src/api/` | 3 | Public bridged API (`tags.rs`; `cover_colors.rs`: `extract_cover_colors`) |
+| `rust/src/api/` | 4 | Public bridged API (`tags.rs`; `cover_colors.rs`: `extract_cover_colors`; `lyrics.rs`; `waveform.rs`: waveform job API) |
 | `rust/src/tag_reader.rs` | | Per-file read via lofty; `PERMANENT_ERROR_PREFIX` |
 | `rust/src/tag_mapping.rs` | | lofty tags to `TrackTags` |
 | `rust/src/tag_batch.rs` | | Batch read on a rayon pool |
 | `rust/src/cover_art.rs`, `cover_thumbnail.rs`, `cover_cache.rs` | | Embedded and sidecar art, 512 px JPEG thumbnails, blake3 cache keys |
 | `rust/src/cover_colors.rs` | | Seed and palette of a cover thumbnail (`material-colors`: Wu clusters, one nearest-cluster count, Score), `COLOR_ALGO_REVISION` |
-| `rust/src/frb_generated.rs` | 763 | **Generated** by flutter_rust_bridge |
+| `rust/src/waveform_levels.rs`, `waveform_decode.rs`, `waveform_decode_limits.rs`, `waveform_cache.rs` | | Waveform: fixed-size level accumulator, symphonia decode, its limits and error budget, `.kwf` cache file, key and lookup |
+| `rust/src/waveform_job.rs`, `waveform_control.rs`, `thread_priority.rs` | | Waveform job ids, niced worker thread, cancel/stall wait, test gates; shared nice helper (also used by the cover pool) |
+| `rust/src/frb_generated.rs` | 1,607 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |
 
-Total Rust (`rust/src`): 10 files, 1,751 lines, including the generated bridge.
+Total Rust (`rust/src`): 27 files, 6,238 lines, including the generated bridge. Integration tests are in `rust/tests/` (`waveform_test.rs`, `waveform_job_test.rs` for waveforms; fixtures described in `rust/tests/fixtures/README.md`).
 
 ### Other top-level paths
 
@@ -145,7 +148,7 @@ The step file is rewritten by `make-migrations`; the `fromXToY` wiring lives in 
 | `test/features/playlists/` | Playlists: queries (`test/core/database/playlist_*`), grid, page, drag reorder, sidebar section, add-to-playlist flow and menus, Now Playing button; `playlist_test_data.dart` seeds playlists |
 | `test/features/search/` | Search page: states, sections, show all, song tap and queue menu, query syntax, field picker, typo correction, language filter |
 | `test/core/search/` | Pure Dart: query parser, field presets, `search_history.json` file, search prefs provider, typo correction, in-page ranking |
-| `test/features/player/` | Player bar, Now Playing layout and auto-hide, volume popup |
+| `test/features/player/` | Player bar, Now Playing layout and auto-hide, volume popup; `waveform/` (bar layout, painter pixels, seek track) |
 | `test/features/settings/` | Settings widgets |
 | `test/app/`, `test/shared/` | Router, shell (incl. top bar search history and shortcuts), shared widgets, in-page filter registry |
 | `rust/tests/`, `#[cfg(test)]` | 43 integration and 10 unit tests (format fixtures) |

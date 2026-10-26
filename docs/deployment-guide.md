@@ -171,7 +171,7 @@ The AppImage ships these builds. Versions and build flags are in `usr/share/lice
 | libplacebo | 6.338.2 (linked statically into libmpv) | LGPL-2.1+ | git tag `v6.338.2`, commit in `SOURCES.txt` |
 | libass | Debian 12 `libass9` package | ISC | Debian sources, recorded in `SOURCES.txt` |
 
-License texts are in `usr/share/licenses/` inside the AppImage, with the Kanaru `LICENSE` (GPL-3.0-or-later). Not in the AppImage yet: license notices for the Rust crates linked into the app library and for mimalloc.
+License texts are in `usr/share/licenses/` inside the AppImage, with the Kanaru `LICENSE` (GPL-3.0-or-later). Not in the AppImage yet: license notices for the Rust crates linked into the app library (including symphonia, which is MPL-2.0) and for mimalloc.
 
 ## Runtime requirements
 

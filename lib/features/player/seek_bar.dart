@@ -15,10 +15,17 @@ const seekHitHeight = 24.0;
 /// is straight and follows playback in pixel-sized steps; nothing in the bar
 /// animates on its own. [track] can be swapped for another seek visual.
 class SeekBar extends StatelessWidget {
-  const SeekBar({super.key, this.track = const SeekTrack()});
+  const SeekBar({
+    super.key,
+    this.track = const SeekTrack(),
+    this.trackHeight = seekHitHeight,
+  });
 
   /// What sits between the two time labels; it should handle seeking itself.
   final Widget track;
+
+  /// Height of [track], which sets the row's height unless a label is taller.
+  final double trackHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +39,7 @@ class SeekBar extends StatelessWidget {
     // what surrounds it either.
     return SizedBox(
       width: double.infinity,
-      height: math.max(seekHitHeight, labelHeight),
+      height: math.max(trackHeight, labelHeight),
       // The outer boundary keeps the gesture area's own repaints (hover
       // bubble, semantics) inside the row too.
       child: RepaintBoundary(

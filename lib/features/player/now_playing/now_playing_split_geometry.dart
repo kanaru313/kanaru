@@ -2,8 +2,6 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
-import '../seek_bar.dart' show seekHitHeight;
-
 /// Share of the body that the track column takes.
 const _columnShare = 0.42;
 const _columnMinWidth = 300.0;
@@ -71,12 +69,17 @@ double splitTextReserve(
       lineHeight;
 }
 
-/// Everything under the cover that has a fixed height.
-double splitReserve(BuildContext context, {required TextStyle? titleStyle}) {
+/// Everything under the cover that has a fixed height; [seekHeight] is the
+/// seek slot's.
+double splitReserve(
+  BuildContext context, {
+  required TextStyle? titleStyle,
+  required double seekHeight,
+}) {
   return splitCoverGap +
       splitTextReserve(context, titleStyle: titleStyle) +
       splitSeekGap +
-      seekHitHeight +
+      seekHeight +
       splitTransportGap +
       splitTransportHeight;
 }
@@ -89,10 +92,11 @@ double splitCoverSide(
   required double innerWidth,
   required double bodyHeight,
   required TextStyle? titleStyle,
+  required double seekHeight,
 }) {
   final byHeight =
       bodyHeight -
-      splitReserve(context, titleStyle: titleStyle) -
+      splitReserve(context, titleStyle: titleStyle, seekHeight: seekHeight) -
       splitColumnPadding.vertical;
   return math
       .min(math.min(innerWidth, _coverMaxSide), byHeight)

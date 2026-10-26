@@ -292,6 +292,8 @@
   "settingsAnimationsHint": "Tắt: trang, bảng, tab và thanh bên đổi ngay, không chuyển động.",
   "settingsColorFromCover": "Màu theo ảnh bìa",
   "settingsColorFromCoverHint": "Phủ màu của ảnh bìa đang phát lên giao diện.",
+  "settingsWaveformSeekBar": "Thanh tua dạng sóng",
+  "settingsWaveformSeekBarHint": "Hiện hình dạng bài hát trên thanh tua của màn hình đang phát.",
   "settingsFontScale": "Cỡ chữ",
   "settingsFontScaleHint": "Làm mọi chữ trong Kanaru nhỏ hơn hoặc lớn hơn.",
   "settingsRespectNomedia": "Bỏ qua thư mục có .nomedia",

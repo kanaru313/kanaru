@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_seek_slot.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
+import 'package:kanaru/features/player/waveform/waveform_seek_track.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -67,10 +68,30 @@ void main() {
     );
   });
 
-  testWidgets('the slot is the track', (tester) async {
+  testWidgets('the slot is the waveform track, flat without data', (
+    tester,
+  ) async {
     await pump(tester, const SeekBar(track: NowPlayingSeekSlot()));
 
-    expect(find.byType(SeekTrack), findsOneWidget);
+    expect(find.byType(WaveformSeekTrack), findsOneWidget);
+    expect(find.byType(SeekTrack), findsNothing);
+  });
+
+  testWidgets('the row is 24 px high by default', (tester) async {
+    await pump(tester, const SeekBar());
+
+    expect(tester.getSize(find.byType(SeekBar)).height, 24);
+  });
+
+  testWidgets('the row is as high as the track height it is given', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      const SeekBar(track: NowPlayingSeekSlot(), trackHeight: 48),
+    );
+
+    expect(tester.getSize(find.byType(SeekBar)).height, 48);
   });
 
   testWidgets('a tap at the middle seeks to half the duration', (tester) async {
