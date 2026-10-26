@@ -23,7 +23,7 @@ Related: [code-standards.md](./code-standards.md) (widget conventions), [feature
 | Modes | Light, dark, system. Changes apply immediately; the applied appearance is debounced by 600 ms (`appliedAppearanceProvider`) | `core/settings/applied_appearance_provider.dart` |
 | AMOLED black | Not built (UI-08) | features.md |
 | Artwork color | With "Colors from the cover" on, the playing cover's seed replaces the system accent (`ColorScheme.fromSeed`, tonal spot) in both themes; a gray cover, no cover or nothing playing keeps the system accent. Now Playing gets a gradient of the cover's colors over the surface (text keeps 4.5:1 contrast; a gray cover still tints it). The app's colors change at once (no theme animation, also between light and dark); only the Now Playing gradient fades, over 300 ms (`coverThemeTransition`), at once when the system asks for reduced motion (UI-03) | `lib/app/theme.dart`, `lib/app/app.dart`, `core/cover_colors/playing_cover_palette_provider.dart` |
-| Snackbars | Every snackbar is a floating card, 440 px wide and centered, on `surfaceContainerHigh` (elevation 3, radius 16) with a close button, `onSurface` text and `primary` action. Set once in `ThemeData.snackBarTheme`; call sites pass only content, action and duration, never `behavior`, `width`, `margin` or colors | `lib/app/theme.dart` |
+| Snackbars | Every snackbar is a floating card, 440 px wide and centered, on `surfaceContainerHigh` (elevation 3, radius 16) with a close button, a status icon, and `primary` action. Frame set once in `ThemeData.snackBarTheme`; content built by `appSnackBar` / `AppSnackBarContent`. Call sites never pass `behavior`, `width`, `margin` or colors. Kinds: success `check_circle` in `primary`, info `info` in `onSurfaceVariant`, warning `warning_amber` in `tertiary`, error `error` in `error`. One-line message: bold title (`titleSmall` w600), icon centered. With details: icon at the top, title, then a `bodyMedium` `onSurfaceVariant` details line | `lib/app/theme.dart`, `lib/shared/widgets/app_snack_bar.dart` |
 
 ## Breakpoints
 
@@ -197,7 +197,7 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 | Keys updating | `library_keys_updating.dart` | "Updating library" with progress after a sort-rule change. Playback is not affected. |
 | Loading | `library_loading.dart`, `MinBusyBuilder` | `MinBusyBuilder` keeps the busy state on for a minimum time, so a short task does not flash its indicator. |
 | Empty | `EmptyState` (`shared/widgets/empty_state.dart`) | Icon, one sentence, optional action. |
-| Scan finished | Snack bar | Result summary with counts; not a dialog. |
+| Scan finished | Snack bar | Result summary with counts; not a dialog. Every notice is a snackbar card with a status icon (see Snackbars). |
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |
 

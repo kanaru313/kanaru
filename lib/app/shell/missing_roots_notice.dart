@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_browse_missing_roots.dart';
 import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import 'app_destination.dart';
 
 final _log = Logger('app.missingRoots');
@@ -61,10 +62,11 @@ class _MissingRootsNoticeState extends ConsumerState<MissingRootsNotice> {
     // Taken now: the notice may be gone by the time the action is tapped.
     final router = GoRouter.maybeOf(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      appSnackBar(
+        kind: AppSnackBarKind.warning,
+        title: l10n.libraryMissingRoots(missing.length, missing.first),
         // Long enough to read a path.
         duration: const Duration(seconds: 8),
-        content: Text(l10n.libraryMissingRoots(missing.length, missing.first)),
         action: SnackBarAction(
           label: l10n.libraryMissingRootsAction,
           onPressed: () => router?.go(AppDestination.settings.path),

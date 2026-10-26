@@ -103,6 +103,7 @@ abstract final class AppIcons {
   static const IconData warningOutlined = Icons.warning_amber_outlined;
   static const IconData warningRounded = Icons.warning_amber_rounded;
   static const IconData success = Icons.check_circle_rounded;
+  static const IconData info = Icons.info_rounded;
 
   // Settings and window chrome.
   static const IconData themeSystem = Icons.brightness_auto_outlined;
