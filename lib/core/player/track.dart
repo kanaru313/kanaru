@@ -7,6 +7,8 @@ class Track {
     this.artist,
     this.artUri,
     this.duration,
+    this.album,
+    this.year,
   });
 
   /// Builds a track from a local path, titled after the file name without
@@ -23,6 +25,10 @@ class Track {
   final String? artist;
   final String? artUri;
   final Duration? duration;
+
+  /// Album and release year, shown on the queue row; null when unknown.
+  final String? album;
+  final int? year;
 
   @override
   bool operator ==(Object other) => other is Track && other.uri == uri;

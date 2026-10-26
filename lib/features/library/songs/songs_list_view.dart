@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
@@ -84,14 +83,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
         return;
       }
       playTracks(ref, [
-        for (final s in items)
-          trackFromItem(
-            path: s.path,
-            title: s.title,
-            artist: s.artist,
-            durationMs: s.durationMs,
-            artPath: coverPath(covers, s.coverKey),
-          ),
+        for (final s in items) trackFromListItem(s, covers),
       ], start);
     } catch (error, stackTrace) {
       _log.severe('Reading the play queue failed', error, stackTrace);
@@ -110,12 +102,9 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
   void _enqueue(TrackListItem song, QueueAction action) {
     // The menu closes later than it opened: the list may be gone by then.
     if (!mounted) return;
-    final track = trackFromItem(
-      path: song.path,
-      title: song.title,
-      artist: song.artist,
-      durationMs: song.durationMs,
-      artPath: coverPath(ref.read(coverCacheDirectoryProvider), song.coverKey),
+    final track = trackFromListItem(
+      song,
+      ref.read(coverCacheDirectoryProvider),
     );
     enqueueLoaded(ref, context, action, [track], song.title);
   }

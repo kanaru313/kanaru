@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart' show TrackListItem;
-import '../../core/indexer/cover_paths.dart';
 import '../../core/database/library_startup.dart'
     show coverCacheDirectoryProvider;
 import '../../core/player/track.dart';
@@ -52,13 +51,8 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
   bool _artists = false;
 
   /// The queue entry for [song], with its cover.
-  Track _track(TrackListItem song) => trackFromItem(
-    path: song.path,
-    title: song.title,
-    artist: song.artist,
-    durationMs: song.durationMs,
-    artPath: coverPath(ref.read(coverCacheDirectoryProvider), song.coverKey),
-  );
+  Track _track(TrackListItem song) =>
+      trackFromListItem(song, ref.read(coverCacheDirectoryProvider));
 
   @override
   Widget build(BuildContext context) {

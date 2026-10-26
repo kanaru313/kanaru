@@ -5,7 +5,6 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
@@ -52,13 +51,7 @@ void _enqueue(
 ) => enqueueFromDatabase(ref, context, action, folder.name, (db, covers) async {
   return [
     for (final t in await readFolderSongs(db, folder.path, recursive: true))
-      trackFromItem(
-        path: t.path,
-        title: t.title,
-        artist: t.artist,
-        durationMs: t.durationMs,
-        artPath: coverPath(covers, t.coverKey),
-      ),
+      trackFromListItem(t, covers),
   ];
 });
 
@@ -85,16 +78,7 @@ Future<void> _open(
     // A queue opened or filled meanwhile came from a newer action: that one
     // wins over a read started before it.
     if (songs.isEmpty || player.userQueueChanges != changesBefore) return;
-    final tracks = <Track>[
-      for (final s in songs)
-        trackFromItem(
-          path: s.path,
-          title: s.title,
-          artist: s.artist,
-          durationMs: s.durationMs,
-          artPath: coverPath(covers, s.coverKey),
-        ),
-    ];
+    final tracks = <Track>[for (final s in songs) trackFromListItem(s, covers)];
     // Not guarded by `mounted`: leaving the page does not cancel the tap.
     unawaited(
       shuffle ? player.openShuffled(tracks) : player.openTracks(tracks),

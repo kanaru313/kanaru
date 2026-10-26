@@ -25,6 +25,23 @@ class _HangingReader extends FakeTagReader {
   }
 }
 
+/// Reader that also reports an album and a year.
+class _AlbumReader extends FakeTagReader {
+  @override
+  Future<List<TrackTags>> readBatch(List<String> paths) async => [
+    for (final t in await super.readBatch(paths))
+      TrackTags(
+        path: t.path,
+        error: t.error,
+        title: t.title,
+        artist: t.artist,
+        album: ' Blue ',
+        year: 1999,
+        durationMs: t.durationMs,
+      ),
+  ];
+}
+
 void main() {
   late Directory dir;
   late FakeAudioBackend backend;
@@ -89,6 +106,23 @@ void main() {
     expect(track.artist, 'Artist');
     expect(track.duration, const Duration(seconds: 1));
     expect(track.artUri, isNull);
+  });
+
+  test('carries the album and year from the tags', () async {
+    build(tags: _AlbumReader());
+    await container.read(openFilesServiceProvider).open([file('a.flac')]);
+
+    final track = container.read(playerServiceProvider).queue.tracks.single;
+    expect(track.album, 'Blue');
+    expect(track.year, 1999);
+  });
+
+  test('has no album without tags', () async {
+    await container.read(openFilesServiceProvider).open([file('a.flac')]);
+
+    final track = container.read(playerServiceProvider).queue.tracks.single;
+    expect(track.album, isNull);
+    expect(track.year, isNull);
   });
 
   test('drops anything that is not a local audio file', () async {

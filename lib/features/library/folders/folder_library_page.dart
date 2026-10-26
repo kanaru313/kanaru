@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
 import '../../../core/folders/folder_disk_listing.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
@@ -66,14 +65,7 @@ class LibraryFolderPage extends ConsumerWidget {
       onDisk.files.where((p) => !known.contains(p)),
     );
     final tracks = <player.Track>[
-      for (final s in songs)
-        trackFromItem(
-          path: s.path,
-          title: s.title,
-          artist: s.artist,
-          durationMs: s.durationMs,
-          artPath: coverPath(coverDirectory, s.coverKey),
-        ),
+      for (final s in songs) trackFromListItem(s, coverDirectory),
       for (final p in diskFiles) diskTrack(p),
     ];
     final children = modes.foldersHierarchy
