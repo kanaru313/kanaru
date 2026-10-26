@@ -60,6 +60,9 @@ void main() {
   });
 
   test('uncaught errors are written even when the level is OFF', () {
+    final originalPresent = FlutterError.presentError;
+    FlutterError.presentError = (_) {};
+    addTearDown(() => FlutterError.presentError = originalPresent);
     session = start(level: 'off')..installErrorHandlers();
     log.severe('filtered out');
     PlatformDispatcher.instance.onError!(
