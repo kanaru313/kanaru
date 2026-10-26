@@ -1,13 +1,21 @@
+import 'dart:ui' show Size;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 
 /// [names] as the screen lists them, top to bottom then left to right.
-List<String> _onScreen(WidgetTester tester, List<String> names) {
-  Offset at(String name) => tester.getTopLeft(find.text(name));
+/// [finder] locates one name on screen (its text by default).
+List<String> _onScreen(
+  WidgetTester tester,
+  List<String> names, {
+  Finder Function(String name)? finder,
+}) {
+  Offset at(String name) => tester.getTopLeft((finder ?? find.text).call(name));
   return [...names]..sort((a, b) {
     final dy = at(a).dy.compareTo(at(b).dy);
     return dy != 0 ? dy : at(a).dx.compareTo(at(b).dx);
@@ -82,7 +90,23 @@ void main() {
 
     // The dated album first, then the others by title.
     const expected = ['Anh', 'Ánh', 'The Beta', 'Cam', 'Đồng', 'Zulu'];
-    expect(_onScreen(tester, [...expected]..shuffle()), expected);
+    // The albums are one line scrolling sideways: widen the window so every
+    // tile is built.
+    tester.view.physicalSize = const Size(2400, 800);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpAndSettle();
+    expect(
+      _onScreen(
+        tester,
+        [...expected]..shuffle(),
+        // Song rows repeat the album names; only the shelf tiles count.
+        finder: (name) => find.descendant(
+          of: find.byType(AlbumGridTile),
+          matching: find.text(name),
+        ),
+      ),
+      expected,
+    );
   });
 
   testWidgets('an album page orders tracks without numbers by title', (

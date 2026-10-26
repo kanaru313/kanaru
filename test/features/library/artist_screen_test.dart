@@ -49,10 +49,12 @@ void main() {
     await tester.scrollUntilVisible(
       theirsTile,
       200,
-      scrollable: find.descendant(
-        of: find.byType(CustomScrollView),
-        matching: find.byType(Scrollable),
-      ),
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     expect(theirsTile, findsOneWidget);
     expect(find.text('anna'), findsNothing, reason: 'Anna is someone else');
@@ -217,7 +219,13 @@ void main() {
     goTo(tester, h, artistLocation('chau khai phong'));
     await tester.pumpAndSettle();
     expect(find.text('1 album'), findsOneWidget);
-    expect(find.text('Châu Khải Phong Best Collection'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AlbumGridTile),
+        matching: find.text('Châu Khải Phong Best Collection'),
+      ),
+      findsOneWidget,
+    );
   });
 }
 
