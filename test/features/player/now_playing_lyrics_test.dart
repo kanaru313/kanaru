@@ -108,6 +108,8 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.widgetWithText(Tab, 'Lyrics'), findsOneWidget);
-    expect(find.text('LYRICS'), findsOneWidget);
+    // The Queue tab the user picked is still the one shown.
+    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(find.text('LYRICS'), findsNothing);
   });
 }

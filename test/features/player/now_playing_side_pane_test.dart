@@ -113,7 +113,7 @@ void main() {
     });
 
     for (final startOnQueue in [false, true]) {
-      testWidgets('lyrics going away and coming back never asserts '
+      testWidgets('lyrics going away and coming back restore the chosen tab '
           '(${startOnQueue ? 'queue' : 'lyrics'} chosen)', (tester) async {
         await pump(tester);
         if (startOnQueue) {
@@ -121,24 +121,43 @@ void main() {
           await tester.pumpAndSettle();
         }
 
-        h.hasLyrics.value = false;
-        await tester.pumpAndSettle();
-        expect(lyricsTab, findsNothing);
-        expect(find.byType(QueuePanel), findsOneWidget);
+        for (var cycle = 0; cycle < 2; cycle++) {
+          h.hasLyrics.value = false;
+          await tester.pumpAndSettle();
+          expect(lyricsTab, findsNothing);
+          expect(find.byType(QueuePanel), findsOneWidget);
 
-        h.hasLyrics.value = true;
-        await tester.pumpAndSettle();
-        // Lyrics coming back start on their tab again.
-        expect(lyricsTab, findsOneWidget);
-        expect(find.text('LYRICS'), findsOneWidget);
-
-        h.hasLyrics.value = false;
-        await tester.pumpAndSettle();
-        h.hasLyrics.value = true;
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
+          h.hasLyrics.value = true;
+          await tester.pumpAndSettle();
+          expect(lyricsTab, findsOneWidget);
+          expect(queueTab, findsOneWidget);
+          expect(
+            tester.widget<TabBar>(tabBar).controller!.index,
+            startOnQueue ? 1 : 0,
+          );
+          expect(
+            find.byType(QueuePanel),
+            startOnQueue ? findsOneWidget : findsNothing,
+          );
+          expect(
+            find.text('LYRICS'),
+            startOnQueue ? findsNothing : findsOneWidget,
+          );
+          expect(tester.takeException(), isNull);
+        }
       });
     }
+
+    testWidgets('mounted without lyrics, lyrics arriving show the Lyrics tab', (
+      tester,
+    ) async {
+      await pump(tester, lyrics: false);
+      h.hasLyrics.value = true;
+      await tester.pumpAndSettle();
+
+      expect(find.text('LYRICS'), findsOneWidget);
+      expect(find.byType(QueuePanel), findsNothing);
+    });
 
     testWidgets('losing the lyrics while on their tab lands on the queue', (
       tester,
