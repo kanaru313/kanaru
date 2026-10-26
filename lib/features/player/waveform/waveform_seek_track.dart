@@ -12,6 +12,14 @@ import 'waveform_track_painter.dart';
 /// How long the bars take to fade in over the straight track.
 const waveformFadeDuration = Duration(milliseconds: 200);
 
+/// Opacity of the unplayed bars. The cover tint gradient under Now Playing
+/// washes out `secondaryContainer`, so the rest is `primary`, faded.
+const waveformRestAlpha = 0.35;
+
+/// Colour of the unplayed bars; `primary` is the played colour.
+Color waveformRestColor(ColorScheme colors) =>
+    colors.primary.withValues(alpha: waveformRestAlpha);
+
 /// Seek track that draws the waveform of the playing track as mirrored bars,
 /// or the straight track while there is none (loading, unsupported file,
 /// unknown duration). Seeking is [SeekGestureArea]'s, unchanged.
@@ -118,7 +126,7 @@ class _WaveformSeekTrackState extends ConsumerState<WaveformSeekTrack>
                   painter: SeekTrackPainter(
                     progress: state.progress,
                     playedColor: colors.primary,
-                    restColor: colors.secondaryContainer,
+                    restColor: waveformRestColor(colors),
                   ),
                 ),
               if (ready)
@@ -134,7 +142,7 @@ class _WaveformSeekTrackState extends ConsumerState<WaveformSeekTrack>
                         devicePixelRatio: dpr,
                         durationMs: duration.inMilliseconds,
                         played: colors.primary,
-                        rest: colors.secondaryContainer,
+                        rest: waveformRestColor(colors),
                       )),
                     ),
                   ),
