@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/features/playlists/m3u_file_pickers.dart';
 import 'package:kanaru/features/playlists/m3u_import_flow.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart';
@@ -142,6 +143,22 @@ void main() {
 
       expect(find.text('Playlist imported'), findsNothing);
       expect(find.text('Imported 1 song into Mix'), findsOneWidget);
+    });
+
+    testWidgets('songs not in the library give a warning with details', (
+      tester,
+    ) async {
+      final a = await file(tester, 'music/a.flac');
+      final c = await file(tester, 'music/c.flac');
+      picked = await file(tester, 'lists/Mix.m3u', '$a\n$c\n');
+      await open(tester, [a]);
+
+      await tapImport(tester);
+
+      expect(find.text('Imported 2 songs into Mix'), findsOneWidget);
+      expect(find.text('1 is not in your library yet'), findsOneWidget);
+      expect(find.byIcon(AppIcons.warningRounded), findsOneWidget);
+      expect(find.byIcon(AppIcons.success), findsNothing);
     });
 
     testWidgets('no usable line creates no playlist', (tester) async {

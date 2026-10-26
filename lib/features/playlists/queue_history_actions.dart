@@ -12,6 +12,7 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_page_actions.dart' show playlistTrack;
 
@@ -52,16 +53,16 @@ Future<void> runQueueSnapshotAction(
   final l10n = context.l10n;
   final covers = ref.read(coverCacheDirectoryProvider);
   final name = queueSnapshotName(l10n, savedAt);
-  void say(String text) => messenger
+  void say(AppSnackBarKind kind, String text) => messenger
     ..clearSnackBars()
-    ..showSnackBar(SnackBar(content: Text(text)));
+    ..showSnackBar(appSnackBar(kind: kind, title: text));
 
   try {
     switch (action) {
       case QueueSnapshotAction.delete:
         if (!await _confirmDelete(navigator.context, l10n)) return;
         await db.deleteQueueSnapshot(id);
-        say(l10n.queueHistoryDeleted);
+        say(AppSnackBarKind.success, l10n.queueHistoryDeleted);
       case QueueSnapshotAction.saveAsPlaylist:
         final paths = await db.queueSnapshotPaths(id);
         if (paths.isEmpty || !navigator.mounted) return;
@@ -74,7 +75,10 @@ Future<void> runQueueSnapshotAction(
           initialName: name,
         );
         if (created != null) {
-          say(l10n.queueHistorySavedAsPlaylist(created.name));
+          say(
+            AppSnackBarKind.success,
+            l10n.queueHistorySavedAsPlaylist(created.name),
+          );
         }
       case QueueSnapshotAction.play ||
           QueueSnapshotAction.shuffle ||
@@ -87,7 +91,7 @@ Future<void> runQueueSnapshotAction(
           for (final p in playable) playlistTrack(p.track, covers),
         ];
         if (tracks.isEmpty) {
-          say(l10n.queueHistoryNothingToPlay);
+          say(AppSnackBarKind.info, l10n.queueHistoryNothingToPlay);
           return;
         }
         switch (action) {
@@ -110,7 +114,7 @@ Future<void> runQueueSnapshotAction(
     }
   } catch (error, stack) {
     _log.severe('A saved queue action failed', error, stack);
-    say(l10n.libraryUnexpectedError);
+    say(AppSnackBarKind.error, l10n.libraryUnexpectedError);
   }
 }
 

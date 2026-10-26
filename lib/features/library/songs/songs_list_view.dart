@@ -22,6 +22,7 @@ import 'song_grid_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
 import 'songs_windowed_list.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
@@ -74,7 +75,12 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
       if (start == null) {
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l10n.songsTrackGone)));
+          ..showSnackBar(
+            appSnackBar(
+              kind: AppSnackBarKind.warning,
+              title: l10n.songsTrackGone,
+            ),
+          );
         return;
       }
       playTracks(ref, [
@@ -91,7 +97,10 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
       _log.severe('Reading the play queue failed', error, stackTrace);
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.libraryUnexpectedError)),
+          appSnackBar(
+            kind: AppSnackBarKind.error,
+            title: l10n.libraryUnexpectedError,
+          ),
         );
       }
     }

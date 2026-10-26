@@ -10,6 +10,7 @@ import '../../core/database/playlist_rows.dart';
 import '../../core/m3u/m3u_export.dart';
 import '../../core/m3u/m3u_write.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import 'm3u_file_pickers.dart';
 import 'm3u_import_flow.dart' show playlistNameFromM3uFile;
 import 'playlist_display_name.dart';
@@ -42,9 +43,9 @@ Future<void> exportPlaylistInteractively(
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
     final navigator = Navigator.of(context, rootNavigator: true);
-    void say(String text) => messenger
+    void say(AppSnackBarKind kind, String text, {String? details}) => messenger
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text, details: details));
 
     final name = playlistNameFromM3uFile(
       playlistDisplayName(playlist, l10n),
@@ -66,7 +67,7 @@ Future<void> exportPlaylistInteractively(
       if (page == null) {
         // Deleted since the page opened, or no library: nothing to write.
         _log.warning('Exporting playlist ${playlist.id}: it is not readable');
-        say(l10n.playlistM3uExportFailed);
+        say(AppSnackBarKind.error, l10n.playlistM3uExportFailed);
         return;
       }
       final result = await exportM3uFile(target, [
@@ -81,13 +82,15 @@ Future<void> exportPlaylistInteractively(
       final file = target.substring(target.lastIndexOf('/') + 1);
       final exported = l10n.playlistM3uExported(result.written, file);
       say(
-        result.skipped == 0
-            ? exported
-            : '$exported · ${l10n.playlistM3uExportSkipped(result.skipped)}',
+        result.skipped == 0 ? AppSnackBarKind.success : AppSnackBarKind.warning,
+        exported,
+        details: result.skipped == 0
+            ? null
+            : l10n.playlistM3uExportSkipped(result.skipped),
       );
     } catch (error, stack) {
       _log.severe('Exporting a playlist failed', error, stack);
-      say(l10n.playlistM3uExportFailed);
+      say(AppSnackBarKind.error, l10n.playlistM3uExportFailed);
     }
   } finally {
     _exporting = false;

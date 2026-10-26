@@ -16,6 +16,7 @@ import 'library_folder_dialogs.dart';
 import 'library_folder_row.dart';
 import 'library_folders_provider.dart';
 import 'setting_row.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
 
@@ -32,10 +33,10 @@ class LibraryFoldersList extends ConsumerStatefulWidget {
 class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
   bool _busy = false;
 
-  void _showMessage(String text) {
+  void _showMessage(AppSnackBarKind kind, String text) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text));
   }
 
   /// Runs [action] unless another one runs; a failure becomes a message.
@@ -47,7 +48,7 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
       await action();
     } catch (error, stackTrace) {
       _log.severe('Changing a library folder failed', error, stackTrace);
-      if (mounted) _showMessage(unexpected);
+      if (mounted) _showMessage(AppSnackBarKind.error, unexpected);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -65,7 +66,10 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
     ]);
     if (!mounted) return;
     if (result.added.isEmpty) {
-      _showMessage(rootRejectionsMessage(l10n, result.rejected));
+      _showMessage(
+        AppSnackBarKind.warning,
+        rootRejectionsMessage(l10n, result.rejected),
+      );
       return;
     }
     _scan();
@@ -87,7 +91,10 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
         .read(libraryRootsControllerProvider)
         .removeRoot(root.id);
     if (!result.ok && mounted) {
-      _showMessage(l10n.settingsRemoveFolderFailed(root.path));
+      _showMessage(
+        AppSnackBarKind.error,
+        l10n.settingsRemoveFolderFailed(root.path),
+      );
     }
   });
 

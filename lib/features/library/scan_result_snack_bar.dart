@@ -2,10 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-
-/// How a finished scan went, which picks the icon and title.
-enum _Outcome { done, warning, failed }
+import '../../shared/widgets/app_snack_bar.dart';
 
 /// How long a finished or failed scan is still news.
 const scanResultMaxAge = Duration(seconds: 10);
@@ -23,11 +20,10 @@ bool isFreshScanResult(IndexerState state, {DateTime? now}) {
       (now ?? DateTime.now()).difference(at) < scanResultMaxAge;
 }
 
-/// Floating snack bar that reports a finished or failed scan: a status icon,
-/// a short title and one line of details. Uses a surface container color
-/// rather than the default inverse surface, so it sits quietly on the page in
-/// both themes. Returns `null` for states that need no report, and for a
-/// result that is no longer fresh ([isFreshScanResult]).
+/// Snack bar that reports a finished or failed scan: a status icon, a short
+/// title and one line of details. Its frame comes from the app theme. Returns
+/// `null` for states that need no report, and for a result that is no longer
+/// fresh ([isFreshScanResult]).
 SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
   if (!isFreshScanResult(state)) return null;
   // The scan at app start only speaks up when it changed the library, and
@@ -43,35 +39,25 @@ SnackBar? scanResultSnackBar(BuildContext context, IndexerState state) {
       summary.failedTags > 0 ||
               summary.undecodableNames > 0 ||
               (!quiet && summary.skippedRoots.isNotEmpty)
-          ? _Outcome.warning
-          : _Outcome.done,
+          ? AppSnackBarKind.warning
+          : AppSnackBarKind.success,
       _summaryDetails(l10n, summary, quiet: quiet),
     ),
     // The technical message goes to the log, not to the user.
-    IndexerFailed() => (_Outcome.failed, l10n.libraryScanFailedDetails),
+    IndexerFailed() => (AppSnackBarKind.error, l10n.libraryScanFailedDetails),
     _ => (null, null),
   };
   if (outcome == null || details == null) return null;
 
-  final colors = Theme.of(context).colorScheme;
-  return SnackBar(
-    behavior: SnackBarBehavior.floating,
-    width: 440,
+  return appSnackBar(
+    kind: outcome,
+    title: switch (outcome) {
+      AppSnackBarKind.success => l10n.libraryScanDoneTitle,
+      AppSnackBarKind.warning => l10n.libraryScanWarningTitle,
+      _ => l10n.libraryScanFailedTitle,
+    },
+    details: details,
     duration: const Duration(seconds: 5),
-    backgroundColor: colors.surfaceContainerHigh,
-    elevation: 3,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    showCloseIcon: true,
-    closeIconColor: colors.onSurfaceVariant,
-    content: _ScanResultContent(
-      outcome: outcome,
-      title: switch (outcome) {
-        _Outcome.done => l10n.libraryScanDoneTitle,
-        _Outcome.warning => l10n.libraryScanWarningTitle,
-        _Outcome.failed => l10n.libraryScanFailedTitle,
-      },
-      details: details,
-    ),
   );
 }
 
@@ -101,57 +87,4 @@ String _summaryDetails(
           SkipReason.readerStuck => l10n.libraryScanRootReaderStuck(entry.key),
         },
   ].join('\n');
-}
-
-class _ScanResultContent extends StatelessWidget {
-  const _ScanResultContent({
-    required this.outcome,
-    required this.title,
-    required this.details,
-  });
-
-  final _Outcome outcome;
-  final String title;
-  final String details;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final (icon, iconColor) = switch (outcome) {
-      _Outcome.done => (AppIcons.success, colors.primary),
-      _Outcome.warning => (AppIcons.warningRounded, colors.tertiary),
-      _Outcome.failed => (AppIcons.errorRounded, colors.error),
-    };
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: iconColor, size: 24),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                details,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }

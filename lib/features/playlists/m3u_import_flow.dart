@@ -11,6 +11,7 @@ import '../../core/database/playlist_writes.dart';
 import '../../core/m3u/m3u_import.dart';
 import '../../core/m3u/m3u_read.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 import 'm3u_file_pickers.dart';
 import 'm3u_import_report_dialog.dart';
 import 'playlist_routes.dart';
@@ -35,16 +36,16 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   final router = GoRouter.of(context);
   final l10n = context.l10n;
   final navigator = Navigator.of(context, rootNavigator: true);
-  void say(String text) => messenger
+  void say(AppSnackBarKind kind, String text, {String? details}) => messenger
     ..clearSnackBars()
-    ..showSnackBar(SnackBar(content: Text(text)));
+    ..showSnackBar(appSnackBar(kind: kind, title: text, details: details));
 
   final String? path;
   try {
     path = await pick(l10n.playlistM3uAllFiles);
   } catch (error, stack) {
     _log.severe('Opening the M3U file picker failed', error, stack);
-    say(l10n.playlistM3uImportFailed);
+    say(AppSnackBarKind.error, l10n.playlistM3uImportFailed);
     return;
   }
   if (path == null || !navigator.mounted) return;
@@ -78,6 +79,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
     if (cancelled) return;
     _log.warning('Reading the M3U file failed: ${error.error.name}');
     say(
+      AppSnackBarKind.error,
       error.error == M3uReadError.tooLarge
           ? l10n.playlistM3uImportTooLarge
           : l10n.playlistM3uImportFailed,
@@ -87,7 +89,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
     closeProgress();
     if (cancelled) return;
     _log.severe('Importing an M3U file failed', error, stack);
-    say(l10n.playlistM3uImportFailed);
+    say(AppSnackBarKind.error, l10n.playlistM3uImportFailed);
     return;
   }
   if (cancelled) return;
@@ -121,7 +123,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   } catch (error, stack) {
     _log.severe('Saving an imported playlist failed', error, stack);
     // No report: its counts would describe a playlist that was not saved.
-    say(l10n.playlistSaveFailed);
+    say(AppSnackBarKind.error, l10n.playlistSaveFailed);
     return;
   }
   router.go(playlistLocation(id));
@@ -133,9 +135,11 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   }
   final imported = l10n.playlistM3uImported(result.paths.length, name);
   say(
-    notInLibrary == 0
-        ? imported
-        : '$imported · ${l10n.playlistM3uImportedNotInLibrary(notInLibrary)}',
+    notInLibrary == 0 ? AppSnackBarKind.success : AppSnackBarKind.warning,
+    imported,
+    details: notInLibrary == 0
+        ? null
+        : l10n.playlistM3uImportedNotInLibrary(notInLibrary),
   );
 }
 

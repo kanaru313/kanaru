@@ -6,6 +6,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'open_external.dart';
 import 'settings_section.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 const _repositoryUrl = 'https://github.com/kanaru313/kanaru';
 const _licenseName = 'GPL-3.0-or-later';
@@ -36,7 +37,10 @@ class AboutSettingsSection extends ConsumerWidget {
             final messenger = ScaffoldMessenger.of(context);
             if (await ref.read(openExternalProvider)(_repositoryUrl)) return;
             messenger.showSnackBar(
-              SnackBar(content: Text(l10n.settingsOpenFailed(_repositoryUrl))),
+              appSnackBar(
+                kind: AppSnackBarKind.error,
+                title: l10n.settingsOpenFailed(_repositoryUrl),
+              ),
             );
           },
         ),

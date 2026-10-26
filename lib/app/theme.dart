@@ -50,7 +50,7 @@ ThemeData _buildTheme(
               brightness: brightness,
             );
 
-  return ThemeData(
+  final base = ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
     pageTransitionsTheme: PageTransitionsTheme(
@@ -59,5 +59,27 @@ ThemeData _buildTheme(
           platform: const SlideFromLeftPageTransitionsBuilder(),
       },
     ),
+  );
+  return base.copyWith(
+    snackBarTheme: _snackBarTheme(colorScheme, base.textTheme),
+  );
+}
+
+/// Every snackbar is a floating card on a surface container color, with a
+/// close button. The default inverse surface is a dark full-width bar that
+/// clashes with the page in both themes, so call sites never style their own.
+SnackBarThemeData _snackBarTheme(ColorScheme colors, TextTheme textTheme) {
+  return SnackBarThemeData(
+    behavior: SnackBarBehavior.floating,
+    width: 440,
+    backgroundColor: colors.surfaceContainerHigh,
+    elevation: 3,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    // Replaces the default style, so it is the full body style plus color.
+    contentTextStyle: textTheme.bodyMedium?.copyWith(color: colors.onSurface),
+    // The default inversePrimary is too faint on this surface.
+    actionTextColor: colors.primary,
+    closeIconColor: colors.onSurfaceVariant,
+    showCloseIcon: true,
   );
 }

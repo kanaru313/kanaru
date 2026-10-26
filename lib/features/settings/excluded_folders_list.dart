@@ -15,6 +15,7 @@ import '../../shared/root_rejection_message.dart';
 import 'excluded_folders_row.dart';
 import 'library_folders_provider.dart';
 import 'setting_row.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
 
@@ -31,10 +32,10 @@ class ExcludedFoldersList extends ConsumerStatefulWidget {
 class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
   bool _busy = false;
 
-  void _showMessage(String text) {
+  void _showMessage(AppSnackBarKind kind, String text) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(appSnackBar(kind: kind, title: text));
   }
 
   /// Runs [action] unless another one runs; a failure becomes a message.
@@ -46,7 +47,7 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
       await action();
     } catch (error, stackTrace) {
       _log.severe('Changing an excluded folder failed', error, stackTrace);
-      if (mounted) _showMessage(unexpected);
+      if (mounted) _showMessage(AppSnackBarKind.error, unexpected);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -60,9 +61,12 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
     if (!mounted) return;
     final rejection = result.rejection;
     if (rejection != null) {
-      _showMessage(rootRejectionMessage(l10n, path, rejection));
+      _showMessage(
+        AppSnackBarKind.warning,
+        rootRejectionMessage(l10n, path, rejection),
+      );
     } else if (result.conflict != null) {
-      _showMessage(switch (result.conflict!) {
+      _showMessage(AppSnackBarKind.warning, switch (result.conflict!) {
         ExclusionConflict.sameAsRoot => l10n.excludedFoldersSameAsRoot,
         ExclusionConflict.outsideLibrary => l10n.excludedFoldersOutsideLibrary,
         ExclusionConflict.alreadyExcluded =>
@@ -74,7 +78,12 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
   Future<void> _remove(int id, String path) => _guarded(() async {
     final l10n = context.l10n;
     final ok = await ref.read(excludedFoldersControllerProvider).remove(id);
-    if (!ok && mounted) _showMessage(l10n.settingsRemoveFolderFailed(path));
+    if (!ok && mounted) {
+      _showMessage(
+        AppSnackBarKind.error,
+        l10n.settingsRemoveFolderFailed(path),
+      );
+    }
   });
 
   @override

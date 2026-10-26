@@ -9,6 +9,7 @@ import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('playlists');
 
@@ -45,9 +46,9 @@ Future<void> saveQueueAsPlaylist(WidgetRef ref, BuildContext context) async {
   final l10n = context.l10n;
   // The root navigator sits above the side sheet and Now Playing.
   final navigator = Navigator.of(context, rootNavigator: true);
-  void say(String text) => messenger
+  void say(AppSnackBarKind kind, String text) => messenger
     ..clearSnackBars()
-    ..showSnackBar(SnackBar(content: Text(text)));
+    ..showSnackBar(appSnackBar(kind: kind, title: text));
 
   final ({List<String> paths, int skipped}) picked;
   try {
@@ -59,11 +60,11 @@ Future<void> saveQueueAsPlaylist(WidgetRef ref, BuildContext context) async {
       error,
       stack,
     );
-    say(l10n.playlistSaveFailed);
+    say(AppSnackBarKind.error, l10n.playlistSaveFailed);
     return;
   }
   if (picked.paths.isEmpty) {
-    say(l10n.queueSaveNothing);
+    say(AppSnackBarKind.info, l10n.queueSaveNothing);
     return;
   }
   if (!navigator.mounted) return;
@@ -77,6 +78,7 @@ Future<void> saveQueueAsPlaylist(WidgetRef ref, BuildContext context) async {
   );
   if (created == null) return;
   say(
+    AppSnackBarKind.success,
     picked.skipped == 0
         ? l10n.queueSaved(picked.paths.length, created.name)
         : l10n.queueSavedSkipped(

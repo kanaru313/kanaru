@@ -6,6 +6,7 @@ import '../../core/stats/listen_recorder_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
 import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 /// Listen history rows (STAT-10): whether listens are recorded, and a
 /// button that removes every recorded listen after a confirmation. The
@@ -41,12 +42,11 @@ class _ListenHistorySettingRowsState
     final removed = await recorder.clearHistory();
     if (mounted) setState(() => _clearing = false);
     messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          removed == null
-              ? l10n.listenHistoryClearFailed
-              : l10n.listenHistoryCleared(removed),
-        ),
+      appSnackBar(
+        kind: removed == null ? AppSnackBarKind.error : AppSnackBarKind.success,
+        title: removed == null
+            ? l10n.listenHistoryClearFailed
+            : l10n.listenHistoryCleared(removed),
       ),
     );
   }

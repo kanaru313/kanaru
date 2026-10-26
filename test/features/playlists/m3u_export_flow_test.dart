@@ -10,6 +10,7 @@ import 'package:kanaru/features/playlists/playlist_routes.dart';
 import 'package:kanaru/features/playlists/playlist_page_actions.dart';
 import 'package:kanaru/core/database/playlist_page_queries.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart';
@@ -117,6 +118,33 @@ void main() {
         '#EXTM3U\n#EXTINF:1,Ann - a\nmusic/a.flac\n#EXTINF:1,b\nmusic/b.flac\n',
       );
       expect(find.text('Saved 2 songs to lists.m3u8'), findsOneWidget);
+    });
+
+    testWidgets('left-out paths give a warning with details', (tester) async {
+      await insertTracks(tester, h, [
+        TestTrack('a', path: '$root/music/a.flac'),
+      ]);
+      await openApp(tester, h, const []);
+      final id = await tester.runAsync(
+        () => h.db.createPlaylist(
+          'Mix',
+          now: 1,
+          paths: ['$root/music/a.flac', '$root/music/bad\nname.flac'],
+        ),
+      );
+      goTo(tester, h, playlistLocation(id!));
+      await settleDb(tester);
+      picked = '$root/lists';
+
+      await export(tester, 'Export M3U (relative paths)…');
+
+      expect(find.text('Saved 1 song to lists.m3u8'), findsOneWidget);
+      expect(
+        find.text('1 path with a line break was left out'),
+        findsOneWidget,
+      );
+      expect(find.byIcon(AppIcons.warningRounded), findsOneWidget);
+      expect(find.byIcon(AppIcons.success), findsNothing);
     });
 
     testWidgets('absolute export round-trips through import', (tester) async {

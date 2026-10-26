@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'open_external.dart';
 import 'setting_row.dart';
+import '../../shared/widgets/app_snack_bar.dart';
 
 /// The folder the log files are written to, or null when this system gives
 /// none. Swapped out in tests.
@@ -25,7 +26,9 @@ class LogFolderSettingRow extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final failed = context.l10n.settingsOpenFailed(path);
     if (await ref.read(openExternalProvider)(path)) return;
-    messenger.showSnackBar(SnackBar(content: Text(failed)));
+    messenger.showSnackBar(
+      appSnackBar(kind: AppSnackBarKind.error, title: failed),
+    );
   }
 
   @override
