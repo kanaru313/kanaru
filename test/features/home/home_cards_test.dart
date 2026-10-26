@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/database/album_grouping_keys.dart';
+import 'package:kanaru/core/database/album_grouping_provider.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/library_scan_prefs.dart';
@@ -83,13 +83,21 @@ void main() {
       tester,
     ) async {
       final h = HomeHarness();
-      useAlbumGrouping(h.db, const AlbumGrouping(byAlbumArtist: false));
       await h.addTrack('/a', artist: 'Ann', album: 'Alpha');
       await h.addTrack('/m1', artist: 'Ann', album: 'Mix');
       await h.addTrack('/m2', artist: 'Bob', album: 'Mix');
       await play(h, '/a', daysAgo(1));
       await play(h, '/m1', daysAgo(0));
-      await open(tester, h);
+      await h.pump(
+        tester,
+        const HomeScreen(),
+        height: 2400,
+        overrides: [
+          albumGroupingProvider.overrideWithValue(
+            const AlbumGrouping(byAlbumArtist: false),
+          ),
+        ],
+      );
 
       expect(find.text('Various artists'), findsOneWidget);
       expect(find.text('Ann'), findsWidgets);
