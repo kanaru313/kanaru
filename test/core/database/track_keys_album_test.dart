@@ -4,7 +4,7 @@ import 'package:kanaru/core/database/track_keys.dart';
 void main() {
   test('album artist key: album artists, else the first track artist', () {
     expect(albumArtistKey(null, 'X feat. Y'), 'x');
-    expect(albumArtistKey('A / B', 'X'), 'a; b');
+    expect(albumArtistKey('A; B', 'X'), 'a; b');
     expect(albumArtistKey(null, null), '');
     expect(albumArtistKey('Various Artists', 'Q'), 'various artists');
   });

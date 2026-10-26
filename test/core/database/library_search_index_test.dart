@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_keys_backfill.dart';
+import 'package:kanaru/core/database/text_keys.dart' show textKeysVersion;
 
 import 'search_index_test_helpers.dart';
 
@@ -190,7 +191,7 @@ void main() {
       ),
       _track(rootId, '/m/b.flac', title: 'Đen', artist: 'Anh', genre: 'Rap'),
     ]);
-    expect(await backfillLibraryKeys(db, version: 3), 2);
+    expect(await backfillLibraryKeys(db, version: textKeysVersion + 1), 2);
     expect(await idsMatching(db, 'the'), [await idOf('/m/a.flac')]);
     expect(await idsMatching(db, 'den'), [await idOf('/m/b.flac')]);
     expect(await idsMatching(db, 'rap'), [await idOf('/m/b.flac')]);
