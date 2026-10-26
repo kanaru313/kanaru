@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
@@ -65,14 +64,7 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
       // Not guarded by `mounted`: leaving the page does not cancel the tap.
       unawaited(
         player.openShuffled([
-          for (final s in items)
-            trackFromItem(
-              path: s.path,
-              title: s.title,
-              artist: s.artist,
-              durationMs: s.durationMs,
-              artPath: coverPath(covers, s.coverKey),
-            ),
+          for (final s in items) trackFromListItem(s, covers),
         ]),
       );
     } catch (error, stackTrace) {

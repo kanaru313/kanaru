@@ -1,5 +1,4 @@
 import '../../core/database/library_rows.dart' show TrackListItem;
-import '../../core/indexer/cover_paths.dart';
 import '../../core/player/track.dart';
 import '../../shared/play_tracks.dart';
 
@@ -7,10 +6,5 @@ import '../../shared/play_tracks.dart';
 /// `tracks` row's path, never the path a play remembers: a play outlives its
 /// file, and the library row is the one the indexer vetted. [covers] is the
 /// cover thumbnail folder, null when covers are off.
-Track historyQueueTrack(TrackListItem track, String? covers) => trackFromItem(
-  path: track.path,
-  title: track.title,
-  artist: track.artist,
-  durationMs: track.durationMs,
-  artPath: coverPath(covers, track.coverKey),
-);
+Track historyQueueTrack(TrackListItem track, String? covers) =>
+    trackFromListItem(track, covers);

@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/features/playlists/hover_reveal_action.dart';
+import 'package:kanaru/shared/widgets/hover_reveal_action.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget _app() => MaterialApp(

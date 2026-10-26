@@ -27,6 +27,13 @@ void main() {
     expect(picked.skipped, 3);
   });
 
+  /// Opens the header's overflow menu and picks "Save queue as playlist".
+  Future<void> tapSaveInMenu(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('More actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save queue as playlist'));
+  }
+
   group('the queue panel button', () {
     late LibraryHarness h;
 
@@ -63,7 +70,7 @@ void main() {
         Track(uri: p['c']!, title: 'c'),
       ]);
 
-      await tester.tap(find.byTooltip('Save queue as playlist'));
+      await tapSaveInMenu(tester);
       await settleDb(tester);
       final field = tester.widget<TextField>(
         find.descendant(
@@ -86,7 +93,7 @@ void main() {
         Track(uri: '/elsewhere/x.mp3', title: 'x'),
       ]);
 
-      await tester.tap(find.byTooltip('Save queue as playlist'));
+      await tapSaveInMenu(tester);
       await settleDb(tester);
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -101,7 +108,7 @@ void main() {
       final p = await trackPaths(tester, h);
       await playAndOpenQueue(tester, [Track(uri: p['a']!, title: 'a')]);
 
-      await tester.tap(find.byTooltip('Save queue as playlist'));
+      await tapSaveInMenu(tester);
       await settleDb(tester);
       await tester.tap(find.text('Cancel'));
       await settleDb(tester);
@@ -136,7 +143,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Save queue as playlist'), findsOneWidget);
+      // Both header rows fit in 360 px.
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      expect(find.text('Save queue as playlist'), findsOneWidget);
+      expect(find.byTooltip('Jump to current song'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

@@ -97,11 +97,14 @@ class OpenFilesService {
     final fallback = Track.fromPath(path);
     final title = tags.title?.trim();
     final artist = tags.artist?.trim();
+    final album = tags.album?.trim();
     final ms = tags.durationMs;
     return Track(
       uri: path,
       title: title == null || title.isEmpty ? fallback.title : title,
       artist: artist == null || artist.isEmpty ? null : artist,
+      album: album == null || album.isEmpty ? null : album,
+      year: tags.year,
       duration: ms == null ? null : Duration(milliseconds: ms.toInt()),
     );
   }

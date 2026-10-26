@@ -112,8 +112,15 @@ void main() {
       expect(header.height, 64);
       expect(header.top, 0);
 
-      Rect at(String tooltip) =>
-          tester.getRect(inScreen(find.byTooltip(tooltip)));
+      // The queue rows have hearts too: look in the header for that one.
+      Rect at(String tooltip) => tester.getRect(
+        tooltip == 'Add to favorites'
+            ? find.descendant(
+                of: find.byType(NowPlayingHeader),
+                matching: find.byTooltip(tooltip),
+              )
+            : inScreen(find.byTooltip(tooltip)),
+      );
       for (final tooltip in [
         'Close Now Playing',
         'Add to favorites',
@@ -171,7 +178,11 @@ void main() {
     ) async {
       await pumpOpen(tester, const Size(1280, 800));
 
-      final heart = inScreen(find.byTooltip('Add to favorites'));
+      // The header's heart; the queue rows have their own.
+      final heart = find.descendant(
+        of: find.byType(NowPlayingHeader),
+        matching: find.byTooltip('Add to favorites'),
+      );
       expect(heart, findsOneWidget);
       expect(
         tester

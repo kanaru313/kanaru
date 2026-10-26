@@ -31,14 +31,7 @@ class HomeTrackCard extends ConsumerWidget {
     final covers = ref.watch(coverCacheDirectoryProvider);
     final tile = InkWell(
       onTap: () => playTracks(ref, [
-        for (final t in row)
-          trackFromItem(
-            path: t.path,
-            title: t.title,
-            artist: t.artist,
-            durationMs: t.durationMs,
-            artPath: coverPath(covers, t.coverKey),
-          ),
+        for (final t in row) trackFromListItem(t, covers),
       ], index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -83,13 +76,7 @@ class HomeTrackCard extends ConsumerWidget {
       hasArtist: artist?.isNotEmpty ?? false,
       hasAlbum: song.album?.isNotEmpty ?? false,
       onQueueAction: (action) => enqueueLoaded(ref, context, action, [
-        trackFromItem(
-          path: song.path,
-          title: song.title,
-          artist: artist,
-          durationMs: song.durationMs,
-          artPath: coverPath(covers, song.coverKey),
-        ),
+        trackFromListItem(song, covers),
       ], song.title),
       child: tile,
     );

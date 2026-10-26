@@ -209,6 +209,26 @@ void main() {
     expect(file.saves, hasLength(1));
   });
 
+  test('a changed album or year is written', () {
+    emit(state.copyWith(volume: 50));
+    fireAll(PlaybackSessionSaver.coalesceDelay);
+    emit(
+      state.copyWith(
+        queue: PlayQueue(
+          original: const [
+            _a,
+            Track(uri: '/music/b.flac', title: 'B', album: 'Album'),
+            _c,
+          ],
+          index: 1,
+        ),
+      ),
+    );
+    fireAll(PlaybackSessionSaver.coalesceDelay);
+
+    expect(file.saves, hasLength(2));
+  });
+
   test('a failed write is written again by the next save', () async {
     file.succeeds = false;
     emit(state.copyWith(playing: true));

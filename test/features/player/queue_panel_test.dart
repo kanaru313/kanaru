@@ -8,10 +8,13 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/widgets/song_row_view.dart';
+import 'package:kanaru/shared/widgets/song_tile_cover.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -75,6 +78,27 @@ void main() {
     matching: find.byTooltip('Remove from queue'),
   );
 
+  /// Height of a queue row.
+  double rowExtent(WidgetTester tester) =>
+      tester.getSize(find.byType(QueueTile).first).height;
+
+  /// Puts the mouse over a row, which reveals its remove button.
+  Future<TestGesture> hoverRow(WidgetTester tester, int row) async {
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.byType(QueueTile).at(row)));
+    await tester.pump();
+    return mouse;
+  }
+
+  /// Hovers a row and presses its remove button.
+  Future<void> removeRow(WidgetTester tester, int row) async {
+    await hoverRow(tester, row);
+    await tester.tap(remove(row));
+    await tester.pumpAndSettle();
+  }
+
   /// Drags a row's handle by [dy] in small steps, as a hand would, so the
   /// list sees every row it passes.
   Future<void> dragHandle(WidgetTester tester, Finder handle, double dy) async {
@@ -102,12 +126,25 @@ void main() {
       expect(find.text('Now playing'), findsOneWidget);
       expect(find.text('4 tracks'), findsOneWidget);
       expect(find.byType(QueueTile), findsNWidgets(4));
-      expect(tester.getSize(find.byType(QueuePanel)).width, 400);
-      // Rows are cards with the remove icon filled.
+      expect(tester.getSize(find.byType(QueuePanel)).width, 440);
+      // The remove icon is filled and hidden until a row is hovered or
+      // focused.
       expect(find.byIcon(Icons.delete_rounded), findsNWidgets(4));
       expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
-      // Clear and show-current live in the header, as icons.
-      expect(find.byTooltip('Clear queue'), findsOneWidget);
+      expect(
+        tester
+            .widget<IgnorePointer>(
+              find
+                  .ancestor(of: remove(0), matching: find.byType(IgnorePointer))
+                  .first,
+            )
+            .ignoring,
+        isTrue,
+      );
+      // Show-current is an icon in the header; clear and save sit in its
+      // overflow menu.
+      expect(find.byTooltip('Clear queue'), findsNothing);
+      expect(find.byTooltip('More actions'), findsOneWidget);
       expect(find.byTooltip('Jump to current song'), findsOneWidget);
       expect(find.byType(TextButton), findsNothing);
     });
@@ -133,7 +170,12 @@ void main() {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await tester.tap(find.byTooltip('Close now playing list'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(QueuePanel),
+          matching: find.byTooltip('Close now playing list'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(QueuePanel), findsNothing);
@@ -262,8 +304,7 @@ void main() {
       await pumpApp(tester, count: 1);
       await openSheet(tester);
 
-      await tester.tap(remove(0));
-      await tester.pumpAndSettle();
+      await removeRow(tester, 0);
 
       expect(find.byType(QueuePanel), findsNothing);
     });
@@ -294,26 +335,32 @@ void main() {
         ),
         findsOneWidget,
       );
-      Finder number(String text) => find.descendant(
-        of: find.byType(ReorderableListView),
-        matching: find.text(text),
-      );
-      expect(number('1'), findsOneWidget);
-      expect(number('4'), findsOneWidget);
-
+      // No position numbers; the playing row has the equalizer on its cover
+      // and the playing colors, the others stay transparent.
+      Color? fill(int row) => tester
+          .widget<Material>(
+            find
+                .descendant(
+                  of: find.descendant(
+                    of: find.byType(QueueTile).at(row),
+                    matching: find.byType(SongRowView),
+                  ),
+                  matching: find.byType(Material),
+                )
+                .first,
+          )
+          .color;
       final scheme = Theme.of(tester.element(find.byType(QueueTile).at(2)))
           .colorScheme;
-      Material card(int row) => tester.widget<Material>(
-        find
-            .descendant(
-              of: find.byType(QueueTile).at(row),
-              matching: find.byType(Material),
-            )
-            .first,
+      expect(fill(2), scheme.primaryContainer);
+      expect(fill(3), isNot(scheme.primaryContainer));
+      expect(
+        find.descendant(
+          of: find.byType(QueueTile).at(3),
+          matching: find.byIcon(Icons.graphic_eq_rounded),
+        ),
+        findsNothing,
       );
-      expect(card(2).color, scheme.primaryContainer);
-      expect((card(2).shape! as RoundedRectangleBorder).side, BorderSide.none);
-      expect(card(3).color, isNot(scheme.primaryContainer));
     });
 
     testWidgets('the playing row keeps its look while paused', (tester) async {
@@ -332,16 +379,22 @@ void main() {
         ),
         findsOneWidget,
       );
+      // The cover shows the equalizer instead of its music note.
       expect(
         find.descendant(
-          of: row,
+          of: find.descendant(of: row, matching: find.byType(SongTileCover)),
           matching: find.byIcon(Icons.music_note_rounded),
         ),
         findsNothing,
       );
       final scheme = Theme.of(tester.element(row)).colorScheme;
       final card = tester.widget<Material>(
-        find.descendant(of: row, matching: find.byType(Material)).first,
+        find
+            .descendant(
+              of: find.descendant(of: row, matching: find.byType(SongRowView)),
+              matching: find.byType(Material),
+            )
+            .first,
       );
       expect(card.color, scheme.primaryContainer);
     });
@@ -399,7 +452,7 @@ void main() {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await dragHandle(tester, handle(0), 128);
+      await dragHandle(tester, handle(0), 2 * rowExtent(tester));
 
       expect(titles(), ['t1', 't2', 't0', 't3']);
       expect(current()!.title, 't0');
@@ -413,7 +466,7 @@ void main() {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await dragHandle(tester, handle(3), -128);
+      await dragHandle(tester, handle(3), -2 * rowExtent(tester));
 
       expect(titles(), ['t0', 't3', 't1', 't2']);
       expect(current()!.title, 't0');
@@ -425,8 +478,7 @@ void main() {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await tester.tap(remove(1));
-      await tester.pumpAndSettle();
+      await removeRow(tester, 1);
 
       expect(titles(), ['t0', 't2', 't3']);
       expect(find.text('3 tracks'), findsOneWidget);
@@ -437,8 +489,7 @@ void main() {
       await pumpApp(tester);
       await openSheet(tester);
 
-      await tester.tap(remove(0));
-      await tester.pumpAndSettle();
+      await removeRow(tester, 0);
 
       expect(titles(), ['t1', 't2', 't3']);
       expect(current()!.title, 't1');
@@ -449,7 +500,9 @@ void main() {
       await pumpApp(tester, start: 1);
       await openSheet(tester);
 
-      await tester.tap(find.byTooltip('Clear queue'));
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear queue'));
       await tester.pumpAndSettle();
 
       expect(titles(), ['t1']);
@@ -457,13 +510,12 @@ void main() {
       expect(container.read(playerServiceProvider).playing, isTrue);
       expect(backend.calls, ['setNext(null)']);
       // Nothing else to clear.
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
       expect(
         tester
-            .widget<IconButton>(
-              find.ancestor(
-                of: find.byIcon(Icons.delete_sweep_rounded),
-                matching: find.byType(IconButton),
-              ),
+            .widget<MenuItemButton>(
+              find.widgetWithText(MenuItemButton, 'Clear queue'),
             )
             .onPressed,
         isNull,
@@ -478,6 +530,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('3'), findsOneWidget);
+    });
+
+    testWidgets('the badge is not in the error colour', (tester) async {
+      await pumpApp(tester);
+
+      final badge = tester.widget<Badge>(find.byType(Badge));
+      final scheme = Theme.of(tester.element(find.byType(Badge))).colorScheme;
+      expect(badge.backgroundColor, scheme.secondaryContainer);
+      expect(badge.textColor, scheme.onSecondaryContainer);
+    });
+
+    testWidgets('the queue button closes the open sheet', (tester) async {
+      await pumpApp(tester);
+      await openSheet(tester);
+      expect(find.byTooltip('Show now playing list'), findsNothing);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(PlayerBar),
+          matching: find.byTooltip('Close now playing list'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsNothing);
+      expect(find.byTooltip('Show now playing list'), findsOneWidget);
     });
   });
 
@@ -512,7 +590,8 @@ void main() {
       );
       expect(row('t0'), findsNothing);
 
-      await tester.tap(find.byTooltip('Jump to current song'));
+      // The header button; the floating one shares its tooltip.
+      await tester.tap(find.byTooltip('Jump to current song').first);
       await tester.pumpAndSettle();
 
       expect(row('t0'), findsOneWidget);
@@ -543,14 +622,14 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('replaces the title and the count, keeps the buttons', (
+    testWidgets('replaces the title only, keeps the summary and buttons', (
       tester,
     ) async {
       await pumpPanel(tester);
 
       expect(find.text('custom tabs'), findsOneWidget);
       expect(find.text('Now playing'), findsNothing);
-      expect(find.text('3 tracks'), findsNothing);
+      expect(find.text('3 tracks'), findsOneWidget);
       expect(find.byTooltip('Jump to current song'), findsOneWidget);
     });
 

@@ -576,9 +576,35 @@
   },
   "queueClear": "Clear queue",
   "queueRemove": "Remove from queue",
+  "queueMenuStale": "The queue changed, so nothing was done",
+  "@queueMenuStale": {
+    "description": "Snackbar when a queue row menu item is picked after the queue was replaced or cleared"
+  },
   "queueReorder": "Drag to reorder",
   "queueShowCurrent": "Jump to current song",
   "queueClose": "Close now playing list",
+  "queueSummary": "{tracks} · {timeLeft}",
+  "@queueSummary": {
+    "description": "Second line of the queue header: track count and time left",
+    "placeholders": {
+      "tracks": {"type": "String"},
+      "timeLeft": {"type": "String"}
+    }
+  },
+  "queueTimeLeftHours": "{hours} h {minutes} min left",
+  "@queueTimeLeftHours": {
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"}
+    }
+  },
+  "queueTimeLeftMinutes": "{minutes} min left",
+  "@queueTimeLeftMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "queueMoreActions": "More actions",
   "settingsLibrary": "Library",
   "settingsRescanLibrary": "Rescan library",
   "settingsFolders": "Music folders",

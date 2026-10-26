@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart' show TrackListItem;
 import '../../core/database/library_startup.dart';
-import '../../core/indexer/cover_paths.dart';
 import '../../core/player/track.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/icons/app_icons.dart';
@@ -33,13 +32,7 @@ class HomeTrackListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final covers = ref.watch(coverCacheDirectoryProvider);
-    Track trackOf(TrackListItem t) => trackFromItem(
-      path: t.path,
-      title: t.title,
-      artist: t.artist,
-      durationMs: t.durationMs,
-      artPath: coverPath(covers, t.coverKey),
-    );
+    Track trackOf(TrackListItem t) => trackFromListItem(t, covers);
     final list = HomePagedView<TrackListItem>(
       state: ref.watch(pages),
       onLoadMore: () => ref.read(pages.notifier).loadMore(),

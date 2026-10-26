@@ -82,6 +82,8 @@ abstract final class AppIcons {
   static const IconData more = Icons.more_vert;
   static const IconData sortAscending = Icons.arrow_upward;
   static const IconData sortDescending = Icons.arrow_downward;
+  static const IconData locateUp = Icons.arrow_upward_rounded;
+  static const IconData locateDown = Icons.arrow_downward_rounded;
 
   // Actions.
   static const IconData search = Icons.search;

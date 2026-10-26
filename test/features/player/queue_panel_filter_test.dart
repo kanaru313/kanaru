@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_filter_results.dart';
 import 'package:kanaru/shared/in_page_filter.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
+import 'package:kanaru/features/player/queue/queue_play_next_marker.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/shared/in_page_filter_registry.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
@@ -19,7 +20,7 @@ const _tracks = [
   Track(uri: '/m/a.mp3', title: 'alpha one', artist: 'Zed'),
   Track(uri: '/m/b.mp3', title: 'beta two', artist: 'One Direction'),
   Track(uri: '/m/c.mp3', title: 'one gamma', artist: 'Zed'),
-  Track(uri: '/m/d.mp3', title: 'delta', artist: 'Zed'),
+  Track(uri: '/m/d.mp3', title: 'delta', artist: 'Zed', album: 'Quartz'),
 ];
 
 void main() {
@@ -91,6 +92,28 @@ void main() {
     // has it only in the artist.
     expect(rows(tester), ['one gamma', 'alpha one', 'beta two']);
     expect(queueTitles(), [for (final t in _tracks) t.title]);
+  });
+
+  testWidgets('matches the album too', (tester) async {
+    await openSheet(tester);
+
+    await filterBy(tester, 'quartz');
+
+    expect(rows(tester), ['delta']);
+  });
+
+  testWidgets('filtered rows keep the play next marker', (tester) async {
+    await openSheet(tester);
+    await player().playNext(const [
+      Track(uri: '/m/e.mp3', title: 'epsilon one', artist: 'Zed'),
+    ]);
+    await tester.pumpAndSettle();
+
+    await filterBy(tester, 'epsilon');
+
+    expect(rows(tester), ['epsilon one']);
+    expect(tester.widget<QueueTile>(find.byType(QueueTile)).upNext, isTrue);
+    expect(find.byType(QueuePlayNextMarker), findsOneWidget);
   });
 
   testWidgets('filtered rows cannot be dragged or removed', (tester) async {
@@ -250,7 +273,12 @@ void main() {
     await openSheet(tester);
     await filterBy(tester, 'one');
 
-    await tester.tap(find.byTooltip('Close now playing list'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(QueuePanel),
+        matching: find.byTooltip('Close now playing list'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(QueuePanel), findsNothing);
     expect(InPageFilterRegistry.instance.openTop(), isFalse);

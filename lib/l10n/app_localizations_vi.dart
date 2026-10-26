@@ -896,6 +896,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueRemove => 'Xoá khỏi hàng đợi';
 
   @override
+  String get queueMenuStale => 'Hàng đợi đã thay đổi nên chưa thực hiện gì';
+
+  @override
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override
@@ -903,6 +906,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueClose => 'Đóng danh sách đang phát';
+
+  @override
+  String queueSummary(String tracks, String timeLeft) {
+    return '$tracks · $timeLeft';
+  }
+
+  @override
+  String queueTimeLeftHours(int hours, int minutes) {
+    return 'Còn $hours giờ $minutes phút';
+  }
+
+  @override
+  String queueTimeLeftMinutes(int minutes) {
+    return 'Còn $minutes phút';
+  }
+
+  @override
+  String get queueMoreActions => 'Thêm thao tác';
 
   @override
   String get settingsLibrary => 'Thư viện';

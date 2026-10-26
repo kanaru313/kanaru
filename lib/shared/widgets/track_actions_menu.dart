@@ -29,19 +29,46 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
   bool hasAlbum = true,
   bool? isFavorite,
 }) {
-  final l10n = context.l10n;
   return showMenu<TrackMenuChoice>(
     context: context,
     position: menuPositionAt(context, position),
     items: [
       ...queueActionItems<TrackMenuChoice>(context, QueueChoice.new),
-      if (isFavorite != null)
-        menuRow(
-          FavoriteChoice(favorite: !isFavorite),
-          isFavorite ? AppIcons.favorite : AppIcons.favoriteOutline,
-          isFavorite ? l10n.favoritesRemove : l10n.nowPlayingFavorite,
-        ),
-      const PopupMenuDivider(),
+      ...trackLinkMenuItems(
+        context,
+        isFavorite: isFavorite,
+        showAlbum: showAlbum,
+        hasArtist: hasArtist,
+        hasAlbum: hasAlbum,
+      ),
+    ],
+  );
+}
+
+/// The rows after the queue rows of the song menu: the Favorites row (left
+/// out when [isFavorite] is null), a divider, Show artist, Show album and
+/// Show in file manager. [showLinks] false also leaves out Show artist and
+/// Show album, for songs that are not rows of the library; [showFileManager]
+/// false leaves out Show in file manager, for songs that are not local files.
+List<PopupMenuEntry<TrackMenuChoice>> trackLinkMenuItems(
+  BuildContext context, {
+  bool? isFavorite,
+  bool showAlbum = true,
+  bool hasArtist = true,
+  bool hasAlbum = true,
+  bool showLinks = true,
+  bool showFileManager = true,
+}) {
+  final l10n = context.l10n;
+  return [
+    if (isFavorite != null)
+      menuRow(
+        FavoriteChoice(favorite: !isFavorite),
+        isFavorite ? AppIcons.favorite : AppIcons.favoriteOutline,
+        isFavorite ? l10n.favoritesRemove : l10n.nowPlayingFavorite,
+      ),
+    const PopupMenuDivider(),
+    if (showLinks) ...[
       menuRow(
         const ShowArtistChoice(),
         AppIcons.artistOutline,
@@ -55,13 +82,14 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
           l10n.libraryShowAlbum,
           enabled: hasAlbum,
         ),
+    ],
+    if (showFileManager)
       menuRow(
         const ShowInFileManagerChoice(),
         AppIcons.folderOpen,
         l10n.libraryShowInFileManager,
       ),
-    ],
-  );
+  ];
 }
 
 /// Opens the song menu at the pointer on a right click or a long press of

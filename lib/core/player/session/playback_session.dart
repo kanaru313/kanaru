@@ -195,7 +195,9 @@ bool _sameTracks(List<Track> a, List<Track> b) {
         x.title != y.title ||
         x.artist != y.artist ||
         x.artUri != y.artUri ||
-        x.duration != y.duration) {
+        x.duration != y.duration ||
+        x.album != y.album ||
+        x.year != y.year) {
       return false;
     }
   }

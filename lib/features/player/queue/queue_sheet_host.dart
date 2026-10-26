@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'queue_panel.dart';
 
 /// Widest the queue sheet gets.
-const queueSheetWidth = 400.0;
+const queueSheetWidth = 440.0;
 
 /// Same timing as the sidebar collapsing, so the two feel alike.
 const queueSheetDuration = Duration(milliseconds: 400);
@@ -23,16 +23,21 @@ abstract interface class QueueSheetController {
 }
 
 /// Lays a queue side sheet over [child]: a dark scrim that fades in over the
-/// whole host, and the queue panel sliding in from the right edge. It is not
-/// a route, so each host (the app shell, Now Playing) has its own sheet and
-/// nothing global tracks it.
+/// host, and the queue panel sliding in from the right edge. The sheet and
+/// scrim stop [bottomInset] above the bottom edge, so a player bar there
+/// stays visible and clickable. It is not a route, so each host (the app
+/// shell, Now Playing) has its own sheet and nothing global tracks it.
 ///
-/// While open, focus moves into the sheet (Esc closes it, Tab stays inside)
-/// and returns to where it was once the sheet has slid away.
+/// While open, focus moves into the sheet and Tab stays inside; Esc closes
+/// it from anywhere in the host, also after a click moved focus to a control
+/// outside the sheet. Focus returns to where it was once the sheet has slid
+/// away.
 class QueueSheetHost extends StatefulWidget {
   const QueueSheetHost({
     super.key,
     required this.child,
+    this.bottomInset = 0,
+    this.closed = false,
     this.onOpenChanged,
     this.onMouseBack,
     this.onMouseForward,
@@ -40,16 +45,31 @@ class QueueSheetHost extends StatefulWidget {
 
   final Widget child;
 
+  /// Height at the bottom that the scrim and sheet leave uncovered.
+  final double bottomInset;
+
+  /// Closes an open sheet when it turns true; the shell sets it while a
+  /// screen covers the host (Now Playing).
+  final bool closed;
+
   /// The mouse back and forward side buttons when the sheet is closed. While
   /// it is open, back closes it (like Esc) and forward does nothing.
   final VoidCallback? onMouseBack;
   final VoidCallback? onMouseForward;
 
-  /// Called when the sheet starts opening (`true`) or closing (`false`).
+  /// Called when the sheet starts opening (`true`) or closing (`false`). It
+  /// may run during the parent's build, when [closed] flips to true, so it
+  /// must not call `setState` synchronously.
   final ValueChanged<bool>? onOpenChanged;
 
   static QueueSheetController? maybeOf(BuildContext context) =>
       context.getInheritedWidgetOfExactType<_QueueSheetScope>()?.controller;
+
+  /// Whether the nearest sheet is open (not yet closing), rebuilding the
+  /// caller when that changes; `false` without a host.
+  static bool isOpenOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_QueueSheetScope>()?.open ??
+      false;
 
   static QueueSheetController of(BuildContext context) {
     final controller = maybeOf(context);
@@ -64,13 +84,19 @@ class QueueSheetHost extends StatefulWidget {
 }
 
 class _QueueSheetScope extends InheritedWidget {
-  const _QueueSheetScope({required this.controller, required super.child});
+  const _QueueSheetScope({
+    required this.controller,
+    required this.open,
+    required super.child,
+  });
 
   final QueueSheetController controller;
+  final bool open;
 
-  // The controller never changes, so nothing depends on it for rebuilds.
+  // Only [QueueSheetHost.isOpenOf] depends on the scope; the controller
+  // itself never changes, so `maybeOf` and `of` do not.
   @override
-  bool updateShouldNotify(_QueueSheetScope oldWidget) => false;
+  bool updateShouldNotify(_QueueSheetScope oldWidget) => open != oldWidget.open;
 }
 
 class _QueueSheetHostState extends State<QueueSheetHost>
@@ -95,6 +121,12 @@ class _QueueSheetHostState extends State<QueueSheetHost>
     _animation = AnimationController(vsync: this, duration: queueSheetDuration)
       ..addStatusListener(_onStatus);
     _curved = CurvedAnimation(parent: _animation, curve: queueSheetCurve);
+  }
+
+  @override
+  void didUpdateWidget(QueueSheetHost oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.closed && !oldWidget.closed) close();
   }
 
   @override
@@ -155,14 +187,38 @@ class _QueueSheetHostState extends State<QueueSheetHost>
     final showing = _open || !_animation.isDismissed;
     return _QueueSheetScope(
       controller: this,
+      open: _open,
       child: Listener(
         onPointerDown: _onPointerDown,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            widget.child,
-            if (showing) Positioned.fill(child: _buildSheet(context)),
-          ],
+        // Esc closes the sheet from anywhere in the host and stops there, so
+        // it never reaches the DismissIntent of a Now Playing behind it. The
+        // map is empty while closed, so Esc keeps its other meanings. The
+        // Actions widget is always built, or the child would remount.
+        child: Actions(
+          actions: _open
+              ? {
+                  DismissIntent: CallbackAction<DismissIntent>(
+                    onInvoke: (_) {
+                      close();
+                      return null;
+                    },
+                  ),
+                }
+              : const {},
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              widget.child,
+              if (showing)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  right: 0,
+                  bottom: widget.bottomInset,
+                  child: _buildSheet(context),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -179,56 +235,40 @@ class _QueueSheetHostState extends State<QueueSheetHost>
   Widget _buildSheet(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final width = min(queueSheetWidth, MediaQuery.sizeOf(context).width * 0.9);
-    // Esc closes the sheet and stops there, so it never reaches the
-    // DismissIntent of Now Playing behind it.
-    return Actions(
-      actions: {
-        DismissIntent: CallbackAction<DismissIntent>(
-          onInvoke: (_) {
-            close();
-            return null;
-          },
-        ),
-      },
-      child: FocusScope(
-        node: _focus,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: close,
-                child: FadeTransition(
-                  opacity: _curved,
-                  child: ColoredBox(
-                    color: Colors.black.withValues(alpha: _scrimAlpha),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 0,
-              bottom: 0,
-              right: 0,
-              width: width,
-              // Only the position animates: the panel never fades or scales.
-              child: SlideTransition(
-                position: Tween(
-                  begin: const Offset(1, 0),
-                  end: Offset.zero,
-                ).animate(_curved),
+    return FocusScope(
+      node: _focus,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: close,
+              child: FadeTransition(
+                opacity: _curved,
                 child: ColoredBox(
-                  // Translucent, so the dimmed screen still shows through.
-                  color: colors.surface.withValues(alpha: 0.6),
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: SafeArea(child: QueuePanel(onClose: close)),
-                  ),
+                  color: Colors.black.withValues(alpha: _scrimAlpha),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: width,
+            // Only the position animates: the panel never fades or scales.
+            child: SlideTransition(
+              position: Tween(
+                begin: const Offset(1, 0),
+                end: Offset.zero,
+              ).animate(_curved),
+              child: Material(
+                color: colors.surfaceContainerLow,
+                child: SafeArea(child: QueuePanel(onClose: close)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

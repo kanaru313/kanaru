@@ -920,6 +920,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueRemove => 'Remove from queue';
 
   @override
+  String get queueMenuStale => 'The queue changed, so nothing was done';
+
+  @override
   String get queueReorder => 'Drag to reorder';
 
   @override
@@ -927,6 +930,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueClose => 'Close now playing list';
+
+  @override
+  String queueSummary(String tracks, String timeLeft) {
+    return '$tracks · $timeLeft';
+  }
+
+  @override
+  String queueTimeLeftHours(int hours, int minutes) {
+    return '$hours h $minutes min left';
+  }
+
+  @override
+  String queueTimeLeftMinutes(int minutes) {
+    return '$minutes min left';
+  }
+
+  @override
+  String get queueMoreActions => 'More actions';
 
   @override
   String get settingsLibrary => 'Library';

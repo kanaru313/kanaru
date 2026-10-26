@@ -19,7 +19,7 @@ final _log = Logger('playlists');
 Future<({int id, String name})?> promptAndCreatePlaylist(
   BuildContext dialogContext,
   LibraryDatabase db,
-  ScaffoldMessengerState messenger,
+  ScaffoldMessengerState? messenger,
   AppLocalizations l10n, {
   List<String> paths = const [],
   String? initialName,
@@ -40,7 +40,7 @@ Future<({int id, String name})?> promptAndCreatePlaylist(
     return (id: id, name: name);
   } catch (error, stack) {
     _log.severe('Creating a playlist failed', error, stack);
-    messenger.showSnackBar(
+    messenger?.showSnackBar(
       appSnackBar(kind: AppSnackBarKind.error, title: l10n.playlistSaveFailed),
     );
     return null;

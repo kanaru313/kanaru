@@ -5,8 +5,8 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_art.dart';
 import '../../shared/widgets/favorite_button.dart';
+import '../../shared/widgets/hover_reveal_action.dart';
 import '../../shared/widgets/library_row.dart';
-import 'hover_reveal_action.dart';
 import 'playlist_entry_handle.dart';
 
 /// The row of an entry whose file is not in the library: handle, an empty

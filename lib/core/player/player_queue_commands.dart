@@ -39,7 +39,16 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     return false;
   }
 
-  /// How many "play next" tracks sit right after the current track.
+  /// How many "play next" tracks sit right after the current track. The queue
+  /// panel marks exactly these rows. The raw set can hold more marks (after
+  /// Previous, a jump past the block or unshuffling); those are not
+  /// contiguous with the current track, are invisible and harmless.
+  ///
+  /// Every command updates `_upNext` before its last `state` write, with no
+  /// await between, so a build that watches `state.queue` and reads this
+  /// never sees a stale count. Costs O(run) set lookups.
+  int get upNextRun => _upNextRun(state.queue);
+
   int _upNextRun(PlayQueue queue) {
     var count = 0;
     final start = queue.index + 1;
@@ -82,15 +91,53 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   }
 
   /// Moves the track at play position [from] to [to]. The playing track is
-  /// never interrupted, even when it is the one dragged.
+  /// never interrupted, even when it is the one dragged. A "play next" track
+  /// keeps its mark when dropped between the playing track and the end of the
+  /// other play next tracks (inclusive), so reordering the block does not
+  /// break it; anywhere else it loses the mark. A track outside the block never gains one.
   Future<void> moveTrack(int from, int to) async {
-    final moved = state.queue.move(from, to);
-    if (identical(moved, state.queue)) return;
-    _upNext.remove(state.queue.order[from]);
+    final queue = state.queue;
+    final moved = queue.move(from, to);
+    if (identical(moved, queue)) return;
+    final entry = queue.order[from];
+    if (_upNext.contains(entry)) {
+      final run = _upNextRun(queue);
+      final inRun = from > queue.index && from <= queue.index + run;
+      final others = inRun ? run - 1 : 0;
+      final keeps = inRun && to > moved.index && to <= moved.index + 1 + others;
+      if (!keeps) _upNext.remove(entry);
+    }
     _userActed();
     _failuresInRow = 0;
     state = state.copyWith(queue: moved);
     await _queueNext();
+  }
+
+  /// Moves the track at play position [position] (also a played one) behind
+  /// the "play next" block and marks it, so it plays after the tracks already
+  /// waiting. Does nothing for the playing track, a track already in the
+  /// block or a position out of range; the queue may have changed while a
+  /// menu was open. Never interrupts the playing track.
+  Future<void> moveToPlayNext(int position) async {
+    final queue = state.queue;
+    final current = queue.index;
+    if (position < 0 || position >= queue.order.length) return;
+    if (position == current) return;
+    final run = _upNextRun(queue);
+    if (position > current && position <= current + run) return;
+    // A played track leaving shifts the current one back by one.
+    final target = position < current ? current + run : current + 1 + run;
+    _userActed();
+    _failuresInRow = 0;
+    _upNext.add(queue.order[position]);
+    // Already in place: only the mark changed. A new queue object still makes
+    // listeners rebuild and the session save the mark.
+    final moved = position == target
+        ? queue.copyWith()
+        : queue.move(position, target);
+    state = state.copyWith(queue: moved);
+    if (_ended) return _play(target, play: false);
+    if (position != target) await _queueNext();
   }
 
   /// Removes the track at play position [at]. Removing the playing track

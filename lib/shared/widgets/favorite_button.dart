@@ -35,6 +35,7 @@ class FavoriteButton extends ConsumerStatefulWidget {
     this.iconSize,
     this.compact = false,
     this.color,
+    this.canAdd = true,
   });
 
   final String? path;
@@ -47,6 +48,11 @@ class FavoriteButton extends ConsumerStatefulWidget {
   /// Color of the heart while the song is not a favorite; null keeps the
   /// theme's. A favorite keeps its selected (primary) color.
   final Color? color;
+
+  /// False for a song that is not a row of the library: the heart is then
+  /// disabled unless the song is already a favorite, which can still be
+  /// taken out. (The press re-checks the library either way.)
+  final bool canAdd;
 
   @override
   ConsumerState<FavoriteButton> createState() => _FavoriteButtonState();
@@ -183,6 +189,7 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
     }
     final favorite = _wanted != null && _wantedPath == path ? _wanted! : stored;
     final l10n = context.l10n;
+    final canPress = enabled && (widget.canAdd || favorite);
     return IconButton(
       isSelected: favorite,
       icon: ScaleTransition(
@@ -199,7 +206,7 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
           ? const BoxConstraints.tightFor(width: 28, height: 28)
           : null,
       tooltip: favorite ? l10n.favoritesRemove : l10n.nowPlayingFavorite,
-      onPressed: enabled ? () => _press(path, favorite) : null,
+      onPressed: canPress ? () => _press(path, favorite) : null,
     );
   }
 }

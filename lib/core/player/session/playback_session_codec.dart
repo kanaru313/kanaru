@@ -26,7 +26,8 @@ const playbackSessionVersion = 1;
 /// below that folder), so the file survives a moved cache and stays small;
 /// any other art keeps its `artUri`. `coverKey` is an optional per-track key
 /// that older readers ignore, so the version stays the same; so is
-/// `upNext`, left out when empty.
+/// `upNext`, left out when empty. A track's `album` and `year` are written
+/// only when set.
 Map<String, Object?> encodePlaybackSession(
   PlaybackSession session, {
   String? coverDirectory,
@@ -248,6 +249,8 @@ Map<String, Object?> _encodeTrack(Track track, String? coverDirectory) {
     else
       'artUri': art,
     'durationMs': track.duration?.inMilliseconds,
+    if (track.album != null) 'album': track.album,
+    if (track.year != null) 'year': track.year,
   };
 }
 
@@ -259,6 +262,9 @@ Track _decodeTrack(Object? raw, String? coverDirectory) {
   final artUri = raw['artUri'];
   final coverKey = raw['coverKey'];
   final duration = raw['durationMs'];
+  // Labels only: a wrong type loses the label, never the whole session.
+  final album = raw['album'];
+  final year = raw['year'];
   if (uri is! String || uri.isEmpty || title is! String) {
     throw const FormatException('track');
   }
@@ -276,6 +282,8 @@ Track _decodeTrack(Object? raw, String? coverDirectory) {
         ? coverPath(coverDirectory, coverKey)
         : artUri as String?,
     duration: duration == null ? null : Duration(milliseconds: duration as int),
+    album: album is String ? album : null,
+    year: year is int ? year : null,
   );
 }
 

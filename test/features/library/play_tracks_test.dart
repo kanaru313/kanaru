@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart'
     show AlbumKey, BrowseTrack;
+import 'package:kanaru/core/database/library_rows.dart' show TrackListItem;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/play_tracks.dart';
@@ -38,6 +39,51 @@ void main() {
     test('has no art without a thumbnail', () {
       expect(trackFromItem(path: '/m/a.flac', title: 'a').artUri, isNull);
     });
+  });
+
+  test('trackFromItem carries album and year', () {
+    final track = trackFromItem(
+      path: '/m/a.flac',
+      title: 'a',
+      album: 'Blue',
+      year: 1999,
+    );
+    expect(track.album, 'Blue');
+    expect(track.year, 1999);
+  });
+
+  test('trackFromListItem copies the row, album and year included', () {
+    final item = TrackListItem(
+      id: 1,
+      path: '/m/a.flac',
+      title: 'a',
+      artist: 'Amy',
+      album: 'Blue',
+      year: 1999,
+      durationMs: 1500,
+      coverKey: _red,
+    );
+    final track = trackFromListItem(item, _covers);
+    expect(track.uri, '/m/a.flac');
+    expect(track.artist, 'Amy');
+    expect(track.album, 'Blue');
+    expect(track.year, 1999);
+    expect(track.duration, const Duration(milliseconds: 1500));
+    expect(track.artUri, '$_covers/$_red');
+    expect(trackFromListItem(item, null).artUri, isNull);
+  });
+
+  test('trackFromBrowse copies album and year', () {
+    const row = BrowseTrack(
+      id: 1,
+      path: '/m/a.flac',
+      title: 'a',
+      album: 'Blue',
+      year: 1999,
+    );
+    final track = trackFromBrowse(row);
+    expect(track.album, 'Blue');
+    expect(track.year, 1999);
   });
 
   test('trackFromBrowse passes the art through', () {

@@ -1472,6 +1472,12 @@ abstract class AppLocalizations {
   /// **'Remove from queue'**
   String get queueRemove;
 
+  /// Snackbar when a queue row menu item is picked after the queue was replaced or cleared
+  ///
+  /// In en, this message translates to:
+  /// **'The queue changed, so nothing was done'**
+  String get queueMenuStale;
+
   /// No description provided for @queueReorder.
   ///
   /// In en, this message translates to:
@@ -1489,6 +1495,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close now playing list'**
   String get queueClose;
+
+  /// Second line of the queue header: track count and time left
+  ///
+  /// In en, this message translates to:
+  /// **'{tracks} · {timeLeft}'**
+  String queueSummary(String tracks, String timeLeft);
+
+  /// No description provided for @queueTimeLeftHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min left'**
+  String queueTimeLeftHours(int hours, int minutes);
+
+  /// No description provided for @queueTimeLeftMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min left'**
+  String queueTimeLeftMinutes(int minutes);
+
+  /// No description provided for @queueMoreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get queueMoreActions;
 
   /// No description provided for @settingsLibrary.
   ///

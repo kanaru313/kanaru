@@ -45,15 +45,14 @@ void main() {
       expect(find.text('LYRICS'), findsOneWidget);
     });
 
-    testWidgets('the Queue tab has the four queue actions, Lyrics none', (
+    testWidgets('the Queue tab has the queue actions, Lyrics none', (
       tester,
     ) async {
       await pump(tester);
       for (final tooltip in [
         'Filter in this page',
         'Jump to current song',
-        'Save queue as playlist',
-        'Clear queue',
+        'More actions',
       ]) {
         expect(find.byTooltip(tooltip), findsNothing, reason: tooltip);
       }
@@ -62,8 +61,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byTooltip('Filter in this page'), findsOneWidget);
       expect(find.byTooltip('Jump to current song'), findsOneWidget);
-      expect(find.byTooltip('Save queue as playlist'), findsOneWidget);
-      expect(find.byTooltip('Clear queue'), findsOneWidget);
+      expect(find.byTooltip('More actions'), findsOneWidget);
     });
 
     testWidgets('the tab bar keeps its place on both tabs', (tester) async {

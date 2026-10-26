@@ -50,4 +50,27 @@ extension LibraryBrowseTrackLinks on LibraryDatabase {
           : AlbumKey(row.read<String>('ak'), titleKey),
     );
   }
+
+  /// What the song menu needs of the track at [path]: its id and whether it
+  /// has an artist and an album to link to. Null when [path] is not a row of
+  /// the library (a file opened from outside it). Read from the row, never
+  /// from a snapshot of the track, which an old saved queue lacks fields of.
+  /// An empty artist counts as no artist, as `SongTile` treats it.
+  Future<({int id, bool hasArtist, bool hasAlbum})?> trackMenuStateOfPath(
+    String path,
+  ) async {
+    final row = await customSelect(
+      "SELECT id, artist IS NOT NULL AND artist <> '' AS has_artist, "
+      'album_title_key IS NOT NULL AS has_album '
+      'FROM tracks WHERE path = ?1',
+      variables: [Variable(path)],
+      readsFrom: {tracks},
+    ).getSingleOrNull();
+    if (row == null) return null;
+    return (
+      id: row.read<int>('id'),
+      hasArtist: row.read<bool>('has_artist'),
+      hasAlbum: row.read<bool>('has_album'),
+    );
+  }
 }

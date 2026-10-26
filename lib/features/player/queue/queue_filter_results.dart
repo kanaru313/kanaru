@@ -42,6 +42,8 @@ class QueueFilterResults extends StatelessWidget {
     required this.queue,
     required this.positions,
     required this.query,
+    required this.extent,
+    this.upNextRun = 0,
   });
 
   final PlayQueue queue;
@@ -49,6 +51,12 @@ class QueueFilterResults extends StatelessWidget {
 
   /// What was typed, for the message when nothing matches.
   final String query;
+
+  /// Height of a row, the same as in the full queue.
+  final double extent;
+
+  /// How many rows after the playing one are "play next" rows.
+  final int upNextRun;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +67,7 @@ class QueueFilterResults extends StatelessWidget {
       );
     }
     return ListView.builder(
-      itemExtent: queueTileExtent,
+      itemExtent: extent,
       itemCount: positions.length,
       itemBuilder: (context, i) {
         final position = positions[i];
@@ -69,6 +77,7 @@ class QueueFilterResults extends StatelessWidget {
           position: position,
           current: position == queue.index,
           played: position < queue.index,
+          upNext: isUpNextRow(queue, position, upNextRun),
           editable: false,
         );
       },

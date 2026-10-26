@@ -113,6 +113,75 @@ void main() {
     expect(session.tracks.first.duration, isNull);
   });
 
+  group('album and year', () {
+    const tagged = Track(
+      uri: '/music/t.flac',
+      title: 'T',
+      album: 'Blue',
+      year: 1999,
+    );
+
+    List<Object?> encodedTracks(List<Track> tracks) =>
+        encodePlaybackSession(
+              PlaybackSession(
+                tracks: tracks,
+                order: [for (var i = 0; i < tracks.length; i++) i],
+                unshuffledOrder: [for (var i = 0; i < tracks.length; i++) i],
+                index: 0,
+                shuffled: false,
+                repeat: RepeatMode.off,
+                position: Duration.zero,
+                volume: 100,
+              ),
+            )['tracks']!
+            as List<Object?>;
+
+    test('round trip', () {
+      final session = roundTrip(
+        const PlaybackSession(
+          tracks: [tagged],
+          order: [0],
+          unshuffledOrder: [0],
+          index: 0,
+          shuffled: false,
+          repeat: RepeatMode.off,
+          position: Duration.zero,
+          volume: 100,
+        ),
+      );
+      expect(session.tracks.single.album, 'Blue');
+      expect(session.tracks.single.year, 1999);
+    });
+
+    test('are left out of the file when unknown', () {
+      final json = encodedTracks([b]).single! as Map;
+      expect(json.containsKey('album'), isFalse);
+      expect(json.containsKey('year'), isFalse);
+      final tagJson = encodedTracks([tagged]).single! as Map;
+      expect(tagJson['album'], 'Blue');
+      expect(tagJson['year'], 1999);
+    });
+
+    test('a wrong type loses the label, not the session', () {
+      final json = valid()
+        ..['tracks'] = [
+          {'uri': '/music/a.flac', 'title': 'A', 'album': 5, 'year': 'x'},
+          {'uri': '/music/b.flac', 'title': 'B'},
+          {'uri': '/music/c.flac', 'title': 'C'},
+        ];
+      final session = decodePlaybackSession(json);
+      expect(session.tracks, hasLength(3));
+      expect(session.tracks.first.album, isNull);
+      expect(session.tracks.first.year, isNull);
+    });
+
+    test('an old file without the keys loads', () {
+      final session = decodePlaybackSession(valid());
+      expect(session.tracks.every((t) => t.album == null), isTrue);
+      expect(session.tracks.every((t) => t.year == null), isTrue);
+    });
+  });
+
   test('clamps the volume into 0–100', () {
     final json = valid()
       ..['volume'] = 150
