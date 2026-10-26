@@ -192,6 +192,8 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-09):
 | PL-08 | Thư mục playlist     | Gom playlist vào thư mục; hoặc gắn tag lồng nhau, lọc và nhóm theo tag, chọn nhiều để gắn tag, xuất, xoá (Namida 7.8, chưa làm)                                                                            | P3      | 4     |     |
 | PL-09 | Import/export khác   | XSPF, PLS                                                                                           | P3      | 4     |     |
 | PL-10 | Mô tả, ghim và gộp playlist | Mô tả cho playlist; ghim lên trang chủ; gộp nhiều playlist (Namida 7.8, 8.2). Chưa làm | P3      | 4     |     |
+| PL-11 | Xoá bài khỏi playlist trên màn cảm ứng | Nút xoá trên dòng playlist chỉ hiện khi hover hoặc focus, nên màn cảm ứng không xoá được bài; thêm mục "Xoá khỏi playlist" vào menu nhấn giữ. Làm cùng Android. Chưa làm | P1      | 2     |     |
+| PL-12 | Dọn tên sau khi đổi sidebar playlist | Các key l10n `sidebar*` còn tên cũ; trang `/playlists` dùng lại enum `AlbumsView` cho kiểu grid/danh sách, nên đổi thành tên chung. Chưa làm | P3      | 1     |     |
 
 ## 8. Now Playing & mini player
 
@@ -248,6 +250,7 @@ Giới hạn đã chấp nhận của tìm kiếm (SEARCH-01 đến SEARCH-09):
 | UI-13 | Ẩn và sắp xếp mục thư viện và sidebar | Ẩn, bật và đổi thứ tự tab thư viện và mục sidebar (yêu thích, lịch sử, playlist) (Namida, con-ton-dong §7 và §11). ✅ ẩn tab thư viện (Songs, Albums, Artists, Genres, Languages, Folders) ở Settings → Giao diện: chip bật/tắt ngay, luôn còn ít nhất một tab, áp cho cột, rail và drawer; đang ở trang của tab vừa ẩn thì ở lại, không mục nào sáng. Chưa làm: đổi thứ tự và ẩn mục nhóm 3 (Playlist, Lịch sử hàng đợi, Yêu thích, Lịch sử). "Hàng đợi hiện tại" đã bỏ khỏi sidebar (user đổi 2026-10-23): mở hàng đợi bằng nút ở player bar | P2      | 1     |     |
 | UI-14 | Lưu bảng màu lúc quét | Trích bảng màu từ ảnh bìa khi quét và lưu vào DB, không trích lại lúc phát nhạc (con-ton-dong §7). Chưa làm | P2      | 1     |     |
 | UI-15 | Chế độ hiệu năng | Preset tiết kiệm, cân bằng, đẹp (chỉnh animation, blur, glow), và tuỳ chỉnh riêng (Namida "performance mode"). Chưa làm | P3      | 4     |     |
+| UI-16 | Giữ vị trí cuộn khi đổi bố cục | Trang playlist và trang genre mất vị trí cuộn (và lượt kéo thả đang làm dở) khi cửa sổ thay đổi qua mốc 840 px, lúc side pane hiện hoặc ẩn; giữ scroll view bằng `GlobalKey`. Chưa làm | P2      | 1     |     |
 
 ## 11. Tích hợp hệ thống (desktop & mobile)
 
