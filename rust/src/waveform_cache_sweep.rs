@@ -3,9 +3,11 @@
 //! A sweep deletes, in `<cache>/waveforms`:
 //! - temp files (`cover_cache::TEMP_PREFIX`) older than 5 minutes, left by a
 //!   crash between the temp write and the rename;
-//! - entries (`<64 lowercase hex>.kwf`) not written for 90 days, which
-//!   covers orphans of edited or moved files and files of an older format;
-//! - the oldest entries once more than 20 000 remain, down to 18 000.
+//! - entries (`<64 lowercase hex>.kwf`) not used for 90 days (a cache hit
+//!   refreshes the modification time), which covers orphans of edited or moved
+//!   files and files of an older format;
+//! - the least recently used entries once more than 20 000 remain, down to
+//!   18 000.
 //!
 //! Only regular files with those exact names are touched; sub-folders, links,
 //! FIFOs and any other name stay. The folder must be absolute and owned by

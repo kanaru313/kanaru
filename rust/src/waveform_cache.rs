@@ -9,11 +9,14 @@
 //! `u32`, then the levels. A negative entry records that decoding this exact
 //! file version failed for good, so it is not tried again on every play.
 //!
-//! The folder is kept bounded by `waveform_cache_sweep`.
+//! The folder is kept bounded by `waveform_cache_sweep`; a hit refreshes the
+//! entry's modification time, so that cleanup goes by last use.
 
 use std::fs::{File, Metadata};
 use std::io::{self, Read};
 use std::path::Path;
+use std::sync::Once;
+use std::time::SystemTime;
 
 use crate::cover_cache::write_atomic;
 use crate::waveform_cache_sweep::note_write;
@@ -107,7 +110,10 @@ fn open_cache_file(path: &Path) -> io::Result<File> {
 
 /// The entry stored under `key` in `dir`, or `None` when there is none or it
 /// is not valid. The handle must be a regular file of plausible size (checked
-/// on the open handle), and no more than that size is read.
+/// on the open handle), and no more than that size is read. A valid entry's
+/// modification time is set to now, so the cache sweep evicts by last use; a
+/// failure to set it is reported once and otherwise ignored. An entry with
+/// other hard links is left alone, so one hit cannot keep linked copies alive.
 pub fn read(dir: &Path, key: &str) -> Option<CacheEntry> {
     let file = open_cache_file(&dir.join(key)).ok()?;
     let meta = file.metadata().ok()?;
@@ -115,10 +121,35 @@ pub fn read(dir: &Path, key: &str) -> Option<CacheEntry> {
         return None;
     }
     let mut bytes = Vec::with_capacity(meta.len() as usize);
-    file.take((HEADER_LEN + MAX_COUNT + 1) as u64)
+    (&file)
+        .take((HEADER_LEN + MAX_COUNT + 1) as u64)
         .read_to_end(&mut bytes)
         .ok()?;
-    decode(&bytes)
+    let entry = decode(&bytes)?;
+    if is_sole_link(&meta) {
+        // On the open handle: never a symlink target or a FIFO.
+        if let Err(error) = file.set_modified(SystemTime::now()) {
+            static TOUCH_REPORTED: Once = Once::new();
+            TOUCH_REPORTED.call_once(|| {
+                eprintln!(
+                    "kanaru: cannot refresh a waveform cache entry: {}",
+                    error.kind()
+                );
+            });
+        }
+    }
+    Some(entry)
+}
+
+#[cfg(unix)]
+fn is_sole_link(meta: &Metadata) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    meta.nlink() == 1
+}
+
+#[cfg(not(unix))]
+fn is_sole_link(_meta: &Metadata) -> bool {
+    true
 }
 
 /// Writes `entry` under `key` in `dir` (created if missing) through a temp
@@ -268,8 +299,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let outside = dir.path().join("real");
         write(dir.path(), "real", &levels()).unwrap();
+        let old = back_date(&outside);
         std::os::unix::fs::symlink(&outside, dir.path().join("link.kwf")).unwrap();
         assert_eq!(read(dir.path(), "link.kwf"), None);
+        assert_eq!(mtime(&outside), old, "the link target is not touched");
 
         let fifo = std::ffi::CString::new(dir.path().join("pipe.kwf").to_str().unwrap()).unwrap();
         // SAFETY: valid NUL-terminated path that outlives the call.
@@ -281,7 +314,76 @@ mod tests {
             vec![0u8; HEADER_LEN + MAX_COUNT + 1],
         )
         .unwrap();
+        let big_old = back_date(&dir.path().join("big.kwf"));
         assert_eq!(read(dir.path(), "big.kwf"), None);
+        assert_eq!(mtime(&dir.path().join("big.kwf")), big_old);
+    }
+
+    /// Sets the modification time of `path` to 30 days ago and returns it.
+    fn back_date(path: &Path) -> SystemTime {
+        let old = SystemTime::now() - std::time::Duration::from_secs(30 * 24 * 3600);
+        File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        mtime(path)
+    }
+
+    fn mtime(path: &Path) -> SystemTime {
+        std::fs::metadata(path).unwrap().modified().unwrap()
+    }
+
+    fn is_fresh(path: &Path) -> bool {
+        SystemTime::now()
+            .duration_since(mtime(path))
+            .is_ok_and(|age| age < std::time::Duration::from_secs(60))
+    }
+
+    #[test]
+    fn a_hit_refreshes_the_entry_mtime() {
+        let dir = TempDir::new().unwrap();
+        write(dir.path(), "a.kwf", &levels()).unwrap();
+        let path = dir.path().join("a.kwf");
+        back_date(&path);
+        assert!(!is_fresh(&path));
+        assert_eq!(read(dir.path(), "a.kwf"), Some(levels()));
+        assert!(is_fresh(&path));
+    }
+
+    #[test]
+    fn a_miss_leaves_the_mtime_alone() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("bad.kwf");
+        std::fs::write(&path, b"not a waveform entry at all").unwrap();
+        let old = back_date(&path);
+        assert_eq!(read(dir.path(), "bad.kwf"), None);
+        assert_eq!(mtime(&path), old);
+    }
+
+    #[test]
+    fn a_read_only_entry_is_still_refreshed() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = TempDir::new().unwrap();
+        write(dir.path(), "a.kwf", &levels()).unwrap();
+        let path = dir.path().join("a.kwf");
+        back_date(&path);
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o444)).unwrap();
+        assert_eq!(read(dir.path(), "a.kwf"), Some(levels()));
+        assert!(is_fresh(&path));
+    }
+
+    #[test]
+    fn a_hard_linked_entry_is_not_refreshed() {
+        let dir = TempDir::new().unwrap();
+        write(dir.path(), "a.kwf", &CacheEntry::Negative).unwrap();
+        let path = dir.path().join("a.kwf");
+        std::fs::hard_link(&path, dir.path().join("b.kwf")).unwrap();
+        let old = back_date(&path);
+        assert_eq!(read(dir.path(), "a.kwf"), Some(CacheEntry::Negative));
+        assert_eq!(mtime(&path), old);
+        assert_eq!(mtime(&dir.path().join("b.kwf")), old);
     }
 
     #[test]
