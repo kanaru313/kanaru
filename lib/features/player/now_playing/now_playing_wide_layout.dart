@@ -79,8 +79,9 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
           Expanded(child: NowPlayingSidePane(lyrics: widget.lyrics)),
         ],
       ),
-      // Before the first answer the lyrics body shows empty rather than
-      // Split, so reopening in Lyrics only does not flash the other body.
+      // Before the first answer the lyrics body shows empty rather than the
+      // Cover only fallback, so reopening in Lyrics only does not flash the
+      // other body.
       NowPlayingViewMode.lyricsOnly => NowPlayingLyricsOnlyBody(
         key: const ValueKey(NowPlayingViewMode.lyricsOnly),
         lyrics: widget.lyrics ?? const SizedBox.expand(),

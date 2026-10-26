@@ -9,18 +9,18 @@ enum NowPlayingViewMode { split, lyricsOnly, coverOnly }
 /// before the first answer, e.g. right after Now Playing opens.
 enum NowPlayingLyricsState { unknown, available, none }
 
-/// The mode to show for the [chosen] one: Lyrics only falls back to Split
+/// The mode to show for the [chosen] one: Lyrics only falls back to Cover only
 /// when the track is known to have no lyrics. While the answer is unknown the
-/// chosen mode shows, so reopening in Lyrics only never flashes Split. The
-/// fallback is never written back to the choice, so Lyrics only returns with
-/// lyrics.
+/// chosen mode shows, so reopening in Lyrics only never flashes another body.
+/// The fallback is never written back to the choice, so Lyrics only returns
+/// with lyrics.
 NowPlayingViewMode effectiveViewMode(
   NowPlayingViewMode chosen,
   NowPlayingLyricsState lyrics,
 ) =>
     chosen == NowPlayingViewMode.lyricsOnly &&
         lyrics == NowPlayingLyricsState.none
-    ? NowPlayingViewMode.split
+    ? NowPlayingViewMode.coverOnly
     : chosen;
 
 /// The mode after [effective] in the cycle Split, Lyrics only, Cover only.

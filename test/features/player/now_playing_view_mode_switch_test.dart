@@ -236,7 +236,7 @@ void main() {
   });
 
   group('lyrics coming and going', () {
-    testWidgets('Lyrics only falls back to Split and the choice stays', (
+    testWidgets('Lyrics only falls back to Cover only and the choice stays', (
       tester,
     ) async {
       await pumpOverlay(tester, mode: NowPlayingViewMode.lyricsOnly);
@@ -244,19 +244,22 @@ void main() {
 
       await player().next();
       await tester.pumpAndSettle();
-      expect(splitBody, findsOneWidget);
+      expect(coverBody, findsOneWidget);
       expect(lyricsBody, findsNothing);
+      expect(splitBody, findsNothing);
       expect(chosen(), NowPlayingViewMode.lyricsOnly);
+      expect(toSplit, findsOneWidget);
       expect(toLyrics, findsNothing);
-      expect(toCover, findsOneWidget);
 
       await player().previous();
       await tester.pumpAndSettle();
       expect(lyricsBody, findsOneWidget);
-      expect(splitBody, findsNothing);
+      expect(coverBody, findsNothing);
     });
 
-    testWidgets('reopening in Lyrics only never shows Split', (tester) async {
+    testWidgets('reopening in Lyrics only never shows another body', (
+      tester,
+    ) async {
       await pumpOverlay(tester, mode: NowPlayingViewMode.lyricsOnly);
       container.read(nowPlayingOpenProvider.notifier).close();
       await tester.pumpAndSettle();
@@ -267,6 +270,7 @@ void main() {
       await tester.pump();
       for (var i = 0; i < 3; i++) {
         expect(splitBody, findsNothing);
+        expect(coverBody, findsNothing);
         expect(lyricsBody, findsOneWidget);
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -277,11 +281,43 @@ void main() {
       // The answer arrives without a second body fading out.
       expect(lyricsBody, findsOneWidget);
       expect(splitBody, findsNothing);
+      expect(coverBody, findsNothing);
       await tester.pumpAndSettle();
       expect(find.text('First words'), findsOneWidget);
     });
 
-    testWidgets('lyrics vanishing switch to Split at once, not faded', (
+    testWidgets(
+      'reopening in Lyrics only on a track without lyrics never shows Split',
+      (tester) async {
+        await pumpOverlay(
+          tester,
+          tracks: const [_plain],
+          mode: NowPlayingViewMode.lyricsOnly,
+        );
+        expect(coverBody, findsOneWidget);
+        container.read(nowPlayingOpenProvider.notifier).close();
+        await tester.pumpAndSettle();
+
+        final gate = Completer<void>();
+        sidecar.gates['/m/instrumental.flac'] = gate;
+        container.read(nowPlayingOpenProvider.notifier).open();
+        await tester.pump();
+        for (var i = 0; i < 3; i++) {
+          expect(splitBody, findsNothing);
+          expect(lyricsBody, findsOneWidget);
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+
+        gate.complete();
+        await tester.pump();
+        await tester.pump();
+        expect(coverBody, findsOneWidget);
+        expect(lyricsBody, findsNothing);
+        expect(splitBody, findsNothing);
+      },
+    );
+
+    testWidgets('lyrics vanishing switch to Cover only at once, not faded', (
       tester,
     ) async {
       await pumpOverlay(
@@ -296,7 +332,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 16));
 
-      expect(splitBody, findsOneWidget);
+      expect(coverBody, findsOneWidget);
       expect(lyricsBody, findsNothing);
     });
 
@@ -310,7 +346,7 @@ void main() {
       );
       await player().next();
       await tester.pumpAndSettle();
-      expect(splitBody, findsOneWidget);
+      expect(coverBody, findsOneWidget);
 
       await player().previous();
       await tester.pump();
@@ -318,7 +354,26 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
 
       expect(lyricsBody, findsOneWidget);
-      expect(splitBody, findsNothing);
+      expect(coverBody, findsNothing);
+    });
+
+    testWidgets('from the Cover only fallback the button goes to Split', (
+      tester,
+    ) async {
+      await pumpOverlay(tester, mode: NowPlayingViewMode.lyricsOnly);
+      await player().next();
+      await tester.pumpAndSettle();
+      expect(coverBody, findsOneWidget);
+
+      await tester.tap(toSplit);
+      await tester.pumpAndSettle();
+      expect(splitBody, findsOneWidget);
+      expect(chosen(), NowPlayingViewMode.split);
+
+      await player().previous();
+      await tester.pumpAndSettle();
+      expect(splitBody, findsOneWidget);
+      expect(lyricsBody, findsNothing);
     });
   });
 

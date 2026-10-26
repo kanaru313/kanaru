@@ -16,7 +16,7 @@ void main() {
       (split, none): split,
       (lyricsOnly, unknown): lyricsOnly,
       (lyricsOnly, available): lyricsOnly,
-      (lyricsOnly, none): split,
+      (lyricsOnly, none): coverOnly,
       (coverOnly, unknown): coverOnly,
       (coverOnly, available): coverOnly,
       (coverOnly, none): coverOnly,
