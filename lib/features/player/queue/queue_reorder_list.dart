@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
+import 'queue_locate_button.dart';
 import 'queue_tile.dart';
 
 /// The whole queue as a list the rows of which can be dragged by their
@@ -16,6 +17,7 @@ class QueueReorderList extends ConsumerStatefulWidget {
     required this.upNextRun,
     required this.extent,
     required this.scrollController,
+    required this.onShowCurrent,
   });
 
   final PlayQueue queue;
@@ -24,6 +26,9 @@ class QueueReorderList extends ConsumerStatefulWidget {
   final int upNextRun;
   final double extent;
   final ScrollController scrollController;
+
+  /// Scrolls back to the playing row; the floating button calls it.
+  final VoidCallback onShowCurrent;
 
   @override
   ConsumerState<QueueReorderList> createState() => _QueueReorderListState();
@@ -35,9 +40,24 @@ class _QueueReorderListState extends ConsumerState<QueueReorderList> {
   int? _dragEntry;
   Track? _dragTrack;
 
+  /// True while a row is held; hides the floating button.
+  final _dragging = ValueNotifier<bool>(false);
+
+  /// Bumped when the scroll metrics change (viewport resized, list attached
+  /// again after the filter closes), so the floating button rechecks.
+  final _metrics = _MetricsNotifier();
+
+  @override
+  void dispose() {
+    _dragging.dispose();
+    _metrics.dispose();
+    super.dispose();
+  }
+
   void _onReorderStart(int index) {
     final queue = ref.read(playerServiceProvider).queue;
     if (index < 0 || index >= queue.order.length) return;
+    _dragging.value = true;
     _dragEntry = queue.order[index];
     _dragTrack = queue.original[_dragEntry!];
   }
@@ -66,12 +86,44 @@ class _QueueReorderListState extends ConsumerState<QueueReorderList> {
   @override
   Widget build(BuildContext context) {
     final queue = widget.queue;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        NotificationListener<ScrollMetricsNotification>(
+          onNotification: (_) {
+            _metrics.notify();
+            return false;
+          },
+          child: _list(queue),
+        ),
+        PositionedDirectional(
+          end: 16,
+          bottom: 16,
+          child: QueueLocateButton(
+            controller: widget.scrollController,
+            extent: widget.extent,
+            currentIndex: queue.index,
+            itemCount: queue.order.length,
+            relayout: _metrics,
+            dragging: _dragging,
+            onPressed: widget.onShowCurrent,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _list(PlayQueue queue) {
     return ReorderableListView.builder(
       scrollController: widget.scrollController,
       itemExtent: widget.extent,
+      // Room under the last row for the floating button. Constant, so the
+      // offsets never jump when the button comes and goes.
+      padding: const EdgeInsets.only(bottom: queueLocateClearance),
       buildDefaultDragHandles: false,
       itemCount: queue.order.length,
       onReorderStart: _onReorderStart,
+      onReorderEnd: (_) => _dragging.value = false,
       // `to` is already the final index of the dropped row.
       onReorderItem: _onReorder,
       itemBuilder: (context, position) => QueueTile(
@@ -86,4 +138,9 @@ class _QueueReorderListState extends ConsumerState<QueueReorderList> {
       ),
     );
   }
+}
+
+/// A [ChangeNotifier] that anyone in the file may fire.
+class _MetricsNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
 }

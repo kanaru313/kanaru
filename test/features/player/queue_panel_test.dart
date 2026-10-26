@@ -590,7 +590,8 @@ void main() {
       );
       expect(row('t0'), findsNothing);
 
-      await tester.tap(find.byTooltip('Jump to current song'));
+      // The header button; the floating one shares its tooltip.
+      await tester.tap(find.byTooltip('Jump to current song').first);
       await tester.pumpAndSettle();
 
       expect(row('t0'), findsOneWidget);

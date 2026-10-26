@@ -167,6 +167,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
                     upNextRun: upNextRun,
                     extent: extent,
                     scrollController: scroll,
+                    onShowCurrent: _showCurrent,
                   ),
           ),
         ],
