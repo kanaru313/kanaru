@@ -95,6 +95,60 @@ void main() {
     expect(find.byType(QueuePanel), findsOneWidget);
   });
 
+  final queueTab = find.widgetWithText(Tab, 'Now playing');
+
+  testWidgets('wide: the Queue tab stays chosen on a track change', (
+    tester,
+  ) async {
+    await pump(tester, tracks: const [_withLyrics, _alsoSung]);
+    sidecar.byPath['/m/also.flac'] = '[00:00.00]Other words';
+    await tester.tap(queueTab);
+    await tester.pumpAndSettle();
+
+    await player().next();
+    await tester.pumpAndSettle();
+    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(find.text('Other words'), findsNothing);
+    expect(splitLyricsTab, findsOneWidget);
+    expect(queueTab, findsOneWidget);
+  });
+
+  testWidgets('wide: the Queue tab stays chosen through a track without '
+      'lyrics', (tester) async {
+    await pump(tester, tracks: const [_withLyrics, _without, _alsoSung]);
+    sidecar.byPath['/m/also.flac'] = '[00:00.00]Other words';
+    await tester.tap(queueTab);
+    await tester.pumpAndSettle();
+
+    await player().next();
+    await tester.pumpAndSettle();
+    expect(splitLyricsTab, findsNothing);
+    expect(find.byType(QueuePanel), findsOneWidget);
+
+    await player().next();
+    await tester.pumpAndSettle();
+    expect(splitLyricsTab, findsOneWidget);
+    expect(queueTab, findsOneWidget);
+    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(find.text('Other words'), findsNothing);
+  });
+
+  testWidgets('wide: the Lyrics tab comes back after a track without lyrics', (
+    tester,
+  ) async {
+    await pump(tester);
+
+    await player().next();
+    await tester.pumpAndSettle();
+    expect(splitLyricsTab, findsNothing);
+    expect(find.byType(QueuePanel), findsOneWidget);
+
+    await player().previous();
+    await tester.pumpAndSettle();
+    expect(find.text('First words'), findsOneWidget);
+    expect(find.byType(QueuePanel), findsNothing);
+  });
+
   testWidgets('moving to a track without lyrics removes the slot', (
     tester,
   ) async {

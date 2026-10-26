@@ -13,7 +13,8 @@ enum _SideTab { lyrics, queue }
 ///
 /// On the Queue tab the tab bar takes the place of the queue header's title,
 /// so the queue's actions stay at the end of its row; on the Lyrics tab the
-/// bar sits at the same spot over the lyrics.
+/// bar sits at the same spot over the lyrics. The tab the user picked stays
+/// while Split is shown, across track changes.
 class NowPlayingSidePane extends StatefulWidget {
   const NowPlayingSidePane({super.key, this.lyrics});
 
@@ -31,9 +32,9 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
   TabController? _built;
   TabController get _tabs => _built!;
 
-  /// The tab the user chose, or the one lyrics coming back select. Without
-  /// lyrics the Queue tab shows and this resets to Queue.
-  late _SideTab _tab = widget.lyrics != null ? _SideTab.lyrics : _SideTab.queue;
+  /// The tab the user chose; Lyrics until they pick one. Without lyrics only
+  /// Queue shows, and the choice is kept for when lyrics return.
+  _SideTab _tab = _SideTab.lyrics;
 
   bool get _hasLyrics => widget.lyrics != null;
 
@@ -72,10 +73,6 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
   @override
   void didUpdateWidget(NowPlayingSidePane oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Lyrics coming back start on the Lyrics tab again.
-    if (oldWidget.lyrics == null && widget.lyrics != null) {
-      _tab = _SideTab.lyrics;
-    }
     _syncController();
   }
 
