@@ -4,6 +4,13 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
 
+/// Edges of the header row.
+const queueHeaderPadding = EdgeInsets.fromLTRB(24, 16, 12, 8);
+
+/// Space reserved for the four buttons (filter, save, clear, show-current)
+/// that end the row, one 48 px touch target each.
+const queueHeaderActionsWidth = 4 * 48.0;
+
 /// Top of the queue panel: title and track count on the left; on the right
 /// icon buttons to filter the queue, save the queue as a playlist, clear it,
 /// scroll to the playing track and, in the side sheet, close it.
@@ -18,6 +25,7 @@ class QueuePanelHeader extends StatelessWidget {
     required this.onClear,
     required this.onShowCurrent,
     this.onClose,
+    this.title,
   });
 
   final int trackCount;
@@ -42,38 +50,44 @@ class QueuePanelHeader extends StatelessWidget {
   /// `null` hides the close button (the narrow page has nothing to close).
   final VoidCallback? onClose;
 
+  /// Takes the place of the title and the track count, e.g. a tab bar; the
+  /// buttons stay on its right.
+  final Widget? title;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 12, 8),
+      padding: queueHeaderPadding,
       child: Row(
         children: [
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              spacing: 12,
-              children: [
-                Flexible(
-                  child: Text(
-                    l10n.queueTitle,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleLarge,
-                  ),
-                ),
-                Flexible(
-                  child: Text(
-                    l10n.queueTrackCount(trackCount),
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+            child:
+                title ??
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  spacing: 12,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        l10n.queueTitle,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleLarge,
+                      ),
                     ),
-                  ),
+                    Flexible(
+                      child: Text(
+                        l10n.queueTrackCount(trackCount),
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
           ),
           IconButton(
             focusNode: filterFocus,

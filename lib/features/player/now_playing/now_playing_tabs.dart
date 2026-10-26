@@ -5,7 +5,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../queue/queue_button.dart';
 import 'now_playing_actions.dart';
 import 'now_playing_compact_page.dart';
-import 'now_playing_footer.dart' show nowPlayingHeaderHeight;
+import 'now_playing_header.dart' show nowPlayingHeaderHeight;
 import 'now_playing_title_bar.dart';
 
 /// Pages of the narrow layout, left to right. Lyrics only when the track has

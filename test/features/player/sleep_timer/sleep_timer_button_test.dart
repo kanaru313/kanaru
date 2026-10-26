@@ -5,8 +5,9 @@ import 'package:kanaru/core/player/playback_fade.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/player/now_playing/now_playing_footer.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
 import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/features/player/sleep_timer/sleep_timer_button.dart';
@@ -272,7 +273,7 @@ void main() {
     );
   }
 
-  testWidgets('the Now Playing footer has the button and fits at 720 px', (
+  testWidgets('the Now Playing header has the button and fits at 720 px', (
     tester,
   ) async {
     await pumpApp(tester, size: const Size(720, 700));
@@ -280,11 +281,11 @@ void main() {
     container.read(sleepTimerProvider.notifier).startMinutes(719);
     await tester.pumpAndSettle();
 
-    final inFooter = find.descendant(
-      of: find.byType(NowPlayingFooter),
+    final inHeader = find.descendant(
+      of: find.byType(NowPlayingHeader),
       matching: find.byType(SleepTimerButton),
     );
-    expect(inFooter, findsOneWidget);
+    expect(inHeader, findsOneWidget);
     expect(find.byTooltip('Sleep timer: 11:59:00 left'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
@@ -302,14 +303,12 @@ void main() {
     expect(find.text('9:57 left'), findsOneWidget);
   });
 
-  testWidgets('the footer at its smallest side hides the label', (
-    tester,
-  ) async {
+  testWidgets('the header at 720 px has room for the label', (tester) async {
     await pumpApp(tester, size: const Size(720, 700));
     container.read(nowPlayingOpenProvider.notifier).open();
     container.read(sleepTimerProvider.notifier).startMinutes(30);
     await tester.pumpAndSettle();
-    expect(find.text('30:00'), findsNothing);
+    expect(find.text('30:00'), findsOneWidget);
     expect(find.byTooltip('Sleep timer: 30:00 left'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
@@ -329,10 +328,13 @@ void main() {
     });
   }
 
-  testWidgets('the footer reports its sleep menu open, then closed', (
+  testWidgets('the header reports its sleep menu open, then closed', (
     tester,
   ) async {
     final events = <bool>[];
+    final floating = ValueNotifier<bool>(false);
+    floating.addListener(() => events.add(floating.value));
+    addTearDown(floating.dispose);
     await pumpApp(tester, size: const Size(1280, 800));
     tester.view.physicalSize = const Size(1280, 800);
     await tester.pumpWidget(
@@ -343,10 +345,11 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Align(
-              alignment: Alignment.bottomCenter,
-              child: NowPlayingFooter(
+              alignment: Alignment.topCenter,
+              child: NowPlayingHeader(
                 onClose: () {},
-                onVolumePopupChanged: events.add,
+                excludeFromDrag: noDragExclusion,
+                floatingOpen: floating,
               ),
             ),
           ),

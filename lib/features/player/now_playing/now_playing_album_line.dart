@@ -9,6 +9,7 @@ import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/widgets/hover_underline_links.dart';
+import 'now_playing_line_icon.dart';
 import 'now_playing_open_provider.dart';
 
 final _log = Logger('now_playing');
@@ -34,15 +35,28 @@ final nowPlayingAlbumProvider = FutureProvider.autoDispose<NowPlayingAlbum?>((
   }
 });
 
-/// Album of the playing song, in the style of the artist line above it. Taps
-/// close Now Playing and open the album page; without a router or an album
-/// key it is plain text. Shows nothing for a file outside the library or
+/// Album of the playing song, in the style of the artist line above it. The
+/// title is a text link: a tap closes Now Playing and opens the album page;
+/// without a router or an album key it is plain text. Shows nothing for a file outside the library or
 /// without an album, and until the first lookup is done.
 class NowPlayingAlbumLine extends ConsumerWidget {
-  const NowPlayingAlbumLine({super.key, required this.centered});
+  const NowPlayingAlbumLine({
+    super.key,
+    required this.centered,
+    this.leadingIcon,
+    this.padded = true,
+  });
 
   /// Centers the line; otherwise it starts at the left.
   final bool centered;
+
+  /// An icon in front of the line, outside the link; none by default.
+  final IconData? leadingIcon;
+
+  /// Keeps a gap of 8 px above the line (none for a song without album) and
+  /// fills the width. Without it the line is only as large as its content,
+  /// for a caller that places it beside other text.
+  final bool padded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,13 +88,17 @@ class NowPlayingAlbumLine extends ConsumerWidget {
               style: style,
             ),
     );
-    return Padding(
-      // The gap lives here so a song without album adds no space.
-      padding: const EdgeInsets.only(top: 8),
-      child: Align(
-        alignment: centered ? Alignment.center : Alignment.centerLeft,
-        child: line,
-      ),
+    final Widget aligned = Align(
+      alignment: centered ? Alignment.center : Alignment.centerLeft,
+      widthFactor: padded ? null : 1,
+      heightFactor: padded ? null : 1,
+      child: leadingIcon == null
+          ? line
+          : NowPlayingLineWithIcon(icon: leadingIcon!, line: line),
     );
+    // The gap lives here so a song without album adds no space.
+    return padded
+        ? Padding(padding: const EdgeInsets.only(top: 8), child: aligned)
+        : aligned;
   }
 }

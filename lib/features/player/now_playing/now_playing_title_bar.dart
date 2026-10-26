@@ -12,6 +12,7 @@ class NowPlayingTitleBar {
   const NowPlayingTitleBar({
     required this.wrapHeader,
     required this.excludeFromDrag,
+    this.hasWindowButtons = false,
   });
 
   /// Adds the drag area and window buttons around the header.
@@ -19,6 +20,11 @@ class NowPlayingTitleBar {
 
   /// Wraps each header button, see [NowPlayingDragExclusion].
   final NowPlayingDragExclusion excludeFromDrag;
+
+  /// Whether [wrapHeader] adds the app's own window buttons (close, maximize,
+  /// minimize) after the header, so the header can mark where its buttons end
+  /// and those begin.
+  final bool hasWindowButtons;
 }
 
 /// Stand-in without a title bar: [button] unchanged.

@@ -17,13 +17,20 @@ class PlaybackControls extends ConsumerWidget {
   const PlaybackControls({
     super.key,
     this.compact = false,
+    this.transportOnly = false,
     this.spread = false,
     this.spacing = 4,
-  });
+  }) : assert(
+         !(compact && transportOnly),
+         'compact and transportOnly are exclusive',
+       );
 
   /// Only play/pause and next, for narrow windows; the rest stays on the
   /// keyboard.
   final bool compact;
+
+  /// Only previous, play/pause and next: no shuffle and repeat.
+  final bool transportOnly;
 
   /// Fills the width with the buttons spaced out, and bigger: shuffle and
   /// repeat 24, previous and next 36, play/pause 40 in a 60 circle. For the
@@ -31,16 +38,14 @@ class PlaybackControls extends ConsumerWidget {
   final bool spread;
 
   /// Gap between buttons when not [spread]: tight in the player bar, roomier
-  /// in the Now Playing footer.
+  /// in Now Playing.
   final double spacing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final (empty, playing, shuffled, repeat) = ref.watch(
-      playerServiceProvider.select(
-        (s) => (s.queue.isEmpty, s.playing, s.queue.shuffled, s.queue.repeat),
-      ),
+    final (empty, playing) = ref.watch(
+      playerServiceProvider.select((s) => (s.queue.isEmpty, s.playing)),
     );
     final wrap = ref.watch(
       settingsProvider.select((s) => s.playback.infiniteQueue),
@@ -65,21 +70,14 @@ class PlaybackControls extends ConsumerWidget {
           : MainAxisAlignment.start,
       spacing: spread ? 0 : spacing,
       children: [
-        if (!compact) ...[
-          IconButton(
-            icon: const Icon(AppIcons.shuffle),
-            iconSize: modeSize,
-            tooltip: l10n.playerShuffle,
-            isSelected: shuffled,
-            onPressed: when(player.toggleShuffle),
-          ),
+        if (!compact && !transportOnly) ShuffleButton(iconSize: modeSize),
+        if (!compact)
           IconButton(
             icon: const Icon(AppIcons.skipPrevious),
             iconSize: skipSize,
             tooltip: l10n.playerPrevious,
             onPressed: hasPrevious ? player.previous : null,
           ),
-        ],
         IconButton.filledTonal(
           icon: Icon(playing ? AppIcons.pause : AppIcons.playRounded),
           iconSize: spread ? 40 : 36,
@@ -95,21 +93,61 @@ class PlaybackControls extends ConsumerWidget {
           tooltip: l10n.playerNext,
           onPressed: hasNext ? player.next : null,
         ),
-        if (!compact)
-          IconButton(
-            icon: Icon(
-              repeat == RepeatMode.one ? AppIcons.repeatOne : AppIcons.repeat,
-            ),
-            iconSize: modeSize,
-            tooltip: switch (repeat) {
-              RepeatMode.off => l10n.playerRepeatOff,
-              RepeatMode.all => l10n.playerRepeatAll,
-              RepeatMode.one => l10n.playerRepeatOne,
-            },
-            isSelected: repeat != RepeatMode.off,
-            onPressed: when(player.cycleRepeat),
-          ),
+        if (!compact && !transportOnly) RepeatButton(iconSize: modeSize),
       ],
+    );
+  }
+}
+
+/// The shuffle toggle; disabled while the queue is empty.
+class ShuffleButton extends ConsumerWidget {
+  const ShuffleButton({super.key, this.iconSize = playerIconSize});
+
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final (empty, shuffled) = ref.watch(
+      playerServiceProvider.select((s) => (s.queue.isEmpty, s.queue.shuffled)),
+    );
+    return IconButton(
+      icon: const Icon(AppIcons.shuffle),
+      iconSize: iconSize,
+      tooltip: context.l10n.playerShuffle,
+      isSelected: shuffled,
+      onPressed: empty
+          ? null
+          : ref.read(playerServiceProvider.notifier).toggleShuffle,
+    );
+  }
+}
+
+/// The repeat cycle (off, all, one); disabled while the queue is empty.
+class RepeatButton extends ConsumerWidget {
+  const RepeatButton({super.key, this.iconSize = playerIconSize});
+
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final (empty, repeat) = ref.watch(
+      playerServiceProvider.select((s) => (s.queue.isEmpty, s.queue.repeat)),
+    );
+    return IconButton(
+      icon: Icon(
+        repeat == RepeatMode.one ? AppIcons.repeatOne : AppIcons.repeat,
+      ),
+      iconSize: iconSize,
+      tooltip: switch (repeat) {
+        RepeatMode.off => l10n.playerRepeatOff,
+        RepeatMode.all => l10n.playerRepeatAll,
+        RepeatMode.one => l10n.playerRepeatOne,
+      },
+      isSelected: repeat != RepeatMode.off,
+      onPressed: empty
+          ? null
+          : ref.read(playerServiceProvider.notifier).cycleRepeat,
     );
   }
 }

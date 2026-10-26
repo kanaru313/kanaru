@@ -21,10 +21,14 @@ import 'queue_tile.dart';
 /// queue of tens of thousands of tracks stays light. Used in the side sheet
 /// and, on narrow windows, as a page of its own.
 class QueuePanel extends ConsumerStatefulWidget {
-  const QueuePanel({super.key, this.onClose});
+  const QueuePanel({super.key, this.onClose, this.title});
 
   /// Shows a close button in the header; `null` on the narrow page.
   final VoidCallback? onClose;
+
+  /// Takes the place of the header's title and count, e.g. a tab bar; the
+  /// header's buttons stay on its right.
+  final Widget? title;
 
   @override
   ConsumerState<QueuePanel> createState() => _QueuePanelState();
@@ -137,6 +141,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
             onClear: queue.order.length > 1 ? player.clearQueue : null,
             onShowCurrent: _showCurrent,
             onClose: widget.onClose,
+            title: widget.title,
           ),
           if (_filter.isOpen)
             Padding(

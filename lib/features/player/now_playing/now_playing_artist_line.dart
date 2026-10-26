@@ -11,6 +11,7 @@ import '../../../shared/library_route_keys.dart';
 import '../../../shared/widgets/hover_underline_links.dart';
 import '../../../shared/track_menu_actions.dart' show showArtistPicker;
 import 'now_playing_artist_segments.dart';
+import 'now_playing_line_icon.dart';
 import 'now_playing_open_provider.dart';
 
 final _log = Logger('now_playing');
@@ -45,9 +46,16 @@ final nowPlayingArtistsProvider =
 /// whether or not a link was found, so a song outside the library still
 /// names its artist.
 class NowPlayingArtistLine extends ConsumerStatefulWidget {
-  const NowPlayingArtistLine({super.key, required this.artist});
+  const NowPlayingArtistLine({
+    super.key,
+    required this.artist,
+    this.leadingIcon,
+  });
 
   final String artist;
+
+  /// An icon in front of the line, outside the links; none by default.
+  final IconData? leadingIcon;
 
   @override
   ConsumerState<NowPlayingArtistLine> createState() =>
@@ -75,8 +83,9 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
     final artists = ref.watch(nowPlayingArtistsProvider).value ?? const [];
     final router = GoRouter.maybeOf(context);
     final style = Theme.of(context).textTheme.bodyLarge;
+    final Widget line;
     if (router == null || artists.isEmpty) {
-      return Opacity(
+      line = Opacity(
         opacity: 0.7,
         child: Text(
           widget.artist,
@@ -85,7 +94,18 @@ class _NowPlayingArtistLineState extends ConsumerState<NowPlayingArtistLine> {
           style: style,
         ),
       );
+    } else {
+      line = _links(router, artists, style);
     }
+    final icon = widget.leadingIcon;
+    return icon == null ? line : NowPlayingLineWithIcon(icon: icon, line: line);
+  }
+
+  Widget _links(
+    GoRouter router,
+    List<({String key, String name})> artists,
+    TextStyle? style,
+  ) {
     final segments = artistLineSegments(widget.artist, [
       for (final a in artists) a.name,
     ]);

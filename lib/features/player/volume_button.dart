@@ -16,7 +16,11 @@ const _scrollStep = 5.0;
 /// vertical slider above the button, with no card behind it; scrolling on
 /// either changes the volume.
 class VolumeButton extends ConsumerStatefulWidget {
-  const VolumeButton({super.key, this.onPopupChanged});
+  const VolumeButton({super.key, this.onPopupChanged, this.popupBelow = false});
+
+  /// Opens the slider under the button instead of above it, for a button in
+  /// a top bar.
+  final bool popupBelow;
 
   /// Called with `true` when the slider popup opens and `false` when it
   /// closes (also when the button leaves the tree with the popup open). The
@@ -101,8 +105,12 @@ class _VolumeButtonState extends ConsumerState<VolumeButton> {
           top: 0,
           child: CompositedTransformFollower(
             link: _link,
-            targetAnchor: Alignment.topCenter,
-            followerAnchor: Alignment.bottomCenter,
+            targetAnchor: widget.popupBelow
+                ? Alignment.bottomCenter
+                : Alignment.topCenter,
+            followerAnchor: widget.popupBelow
+                ? Alignment.topCenter
+                : Alignment.bottomCenter,
             child: _hoverable(_VolumeSlider(volume: volume)),
           ),
         ),

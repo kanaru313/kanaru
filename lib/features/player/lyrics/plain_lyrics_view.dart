@@ -17,9 +17,13 @@ class PlainLyricsView extends StatelessWidget {
       current: true,
     ).copyWith(fontWeight: FontWeight.w400);
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(
-        horizontal: lyricsSidePadding,
-        vertical: 48,
+      // Room an overlay at the bottom claims through the ambient padding
+      // (see the lyrics-only body) comes on top of the usual margin.
+      padding: EdgeInsets.fromLTRB(
+        lyricsSidePadding,
+        48,
+        lyricsSidePadding,
+        48 + MediaQuery.paddingOf(context).bottom,
       ),
       itemCount: lyrics.lines.length,
       itemBuilder: (context, i) => Padding(

@@ -6,6 +6,9 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/lyrics_line.dart';
 import 'package:kanaru/features/player/lyrics/synced_lyrics_view.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_auto_hide.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_lyrics_only_body.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/fake_audio_backend.dart';
@@ -23,7 +26,11 @@ void main() {
   late FakeAudioBackend backend;
   late ProviderContainer container;
 
-  Future<void> pump(WidgetTester tester, {bool reduceMotion = false}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    bool reduceMotion = false,
+    bool lyricsOnly = false,
+  }) async {
     tester.view.physicalSize = const Size(600, 400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -47,7 +54,17 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
-          home: Scaffold(body: SyncedLyricsView(lyrics: _lyrics)),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: lyricsOnly
+                ? NowPlayingLyricsOnlyBody(
+                    lyrics: SyncedLyricsView(lyrics: _lyrics),
+                    chrome: AutoHideController(),
+                    onShowSplit: () {},
+                  )
+                : SyncedLyricsView(lyrics: _lyrics),
+          ),
         ),
       ),
     );
@@ -207,5 +224,59 @@ void main() {
     await tester.pump();
     // Already in place on the very next frame.
     expect(centerY(tester, 'line 29'), closeTo(160, 30));
+  });
+
+  group('in the lyrics-only body', () {
+    double fontSize(WidgetTester tester, String text) =>
+        styleOf(tester, text).fontSize!;
+
+    testWidgets('every line has the headlineMedium size', (tester) async {
+      await pump(tester, lyricsOnly: true);
+      final medium = Theme.of(tester.element(find.byType(SyncedLyricsView)))
+          .textTheme
+          .headlineMedium!
+          .fontSize;
+      await playAt(tester, const Duration(milliseconds: 5500));
+
+      expect(isCurrent(tester, 'line 4'), isTrue);
+      expect(fontSize(tester, 'line 4'), medium);
+      expect(fontSize(tester, 'line 3'), medium);
+      expect(fontSize(tester, 'line 5'), medium);
+    });
+
+    testWidgets('the current line stays at the 40% anchor on every change', (
+      tester,
+    ) async {
+      await pump(tester, lyricsOnly: true);
+      for (final (seconds, line) in [(5, 4), (20, 19), (33, 32)]) {
+        await playAt(tester, Duration(seconds: seconds, milliseconds: 100));
+        expect(isCurrent(tester, 'line $line'), isTrue);
+        // The anchor places the line's leading edge at 40% of the free space,
+        // so its center is 40% down plus a tenth of its own height.
+        final extent = tester
+            .getSize(
+              find.ancestor(
+                of: find.text('line $line'),
+                matching: find.byType(LyricsLine),
+              ),
+            )
+            .height;
+        expect(
+          centerY(tester, 'line $line'),
+          closeTo(400 * lyricsAnchor + extent * (0.5 - lyricsAnchor), 1),
+        );
+      }
+    });
+  });
+
+  testWidgets('without the lyrics-only override lines keep headlineSmall', (
+    tester,
+  ) async {
+    await pump(tester);
+    final small = Theme.of(tester.element(find.byType(SyncedLyricsView)))
+        .textTheme
+        .headlineSmall!
+        .fontSize;
+    expect(styleOf(tester, 'line 3').fontSize, small);
   });
 }

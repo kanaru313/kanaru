@@ -174,6 +174,7 @@ class AppShell extends ConsumerWidget {
       titleBar: NowPlayingTitleBar(
         wrapHeader: (header) => _nowPlayingTitleBar(header, customTitleBar),
         excludeFromDrag: (button) => WindowDragExclusion(child: button),
+        hasWindowButtons: customTitleBar,
       ),
     );
   }

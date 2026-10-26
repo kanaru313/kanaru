@@ -897,6 +897,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nowPlayingLyricsOnly => 'Lyrics only';
 
   @override
+  String get nowPlayingViewSplit => 'Split view';
+
+  @override
+  String get nowPlayingViewCoverOnly => 'Cover only';
+
+  @override
   String get queueOpen => 'Show now playing list';
 
   @override

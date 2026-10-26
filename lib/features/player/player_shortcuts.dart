@@ -7,6 +7,14 @@ import '../../core/player/player_service.dart';
 /// Seek step for the arrow keys.
 const _seekStep = Duration(seconds: 5);
 
+/// Whether a text input has focus, so plain letters and arrows belong to it.
+bool isTextInputFocused() {
+  final context = FocusManager.instance.primaryFocus?.context;
+  if (context == null) return false;
+  return context.widget is EditableText ||
+      context.findAncestorWidgetOfExactType<EditableText>() != null;
+}
+
 /// App-wide playback keys: Space plays/pauses, ←/→ seek by 5 s, Ctrl+S
 /// toggles shuffle, Ctrl+R cycles repeat.
 ///
@@ -20,13 +28,6 @@ class PlayerShortcuts extends ConsumerWidget {
   const PlayerShortcuts({super.key, required this.child});
 
   final Widget child;
-
-  static bool _inTextField() {
-    final context = FocusManager.instance.primaryFocus?.context;
-    if (context == null) return false;
-    return context.widget is EditableText ||
-        context.findAncestorWidgetOfExactType<EditableText>() != null;
-  }
 
   KeyEventResult _onKey(WidgetRef ref, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
@@ -44,7 +45,7 @@ class PlayerShortcuts extends ConsumerWidget {
         key != LogicalKeyboardKey.arrowRight) {
       return KeyEventResult.ignored;
     }
-    if (_inTextField()) return KeyEventResult.ignored;
+    if (isTextInputFocused()) return KeyEventResult.ignored;
     // Nothing to control: let Space press buttons and arrows move focus.
     if (ref.read(playerServiceProvider).queue.isEmpty) {
       return KeyEventResult.ignored;
@@ -78,7 +79,7 @@ class PlayerShortcuts extends ConsumerWidget {
     if (key != LogicalKeyboardKey.keyS && key != LogicalKeyboardKey.keyR) {
       return null;
     }
-    if (_inTextField() || ref.read(playerServiceProvider).queue.isEmpty) {
+    if (isTextInputFocused() || ref.read(playerServiceProvider).queue.isEmpty) {
       return KeyEventResult.ignored;
     }
     // One toggle per press, not one per auto-repeat.
