@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show DatabaseConnection, Value;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -23,7 +23,14 @@ class HomeHarness {
   final DateTime now;
   final bool hasDatabase;
   final backend = FakeAudioBackend();
-  late final LibraryDatabase db = LibraryDatabase(NativeDatabase.memory());
+  late final LibraryDatabase db = LibraryDatabase(
+    DatabaseConnection(
+      NativeDatabase.memory(),
+      // Cancelling a query stream on provider disposal otherwise schedules a
+      // zero-duration timer that is still pending when the test ends.
+      closeStreamsSynchronously: true,
+    ),
+  );
   late ProviderContainer container;
   late GoRouter router;
   int _rootId = 0;
@@ -71,8 +78,6 @@ class HomeHarness {
     tester.view.physicalSize = Size(width, height);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    // The scope owns its container, so unmounting the page disposes it and
-    // cancels the provider timers before the test checks for pending ones.
     final overridesAll = [
       libraryDatabaseProvider.overrideWithValue(hasDatabase ? db : null),
       audioBackendProvider.overrideWithValue(backend),
