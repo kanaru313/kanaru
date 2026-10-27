@@ -4,17 +4,19 @@ import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/album_artist_label.dart';
 import '../library_browse_body.dart';
+import '../widgets/library_grid_card.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import 'album_tile_data.dart';
 import '../../../shared/fixed_line_strut.dart';
 
-/// Padding around the content of a grid tile and the gap between the picture
-/// and the text; shared by the round tiles, whose height is derived from here.
+/// Padding around the content of a round or folder tile and the gap between
+/// the picture and the text (also the gap in card tiles).
 const gridTilePadding = 8.0;
 const gridTileGap = 8.0;
 
-/// One album in a grid: square artwork, title, "artist · year".
+/// One album in a grid: a rounded card with the square artwork, the title and
+/// "artist · year", like [SongGridTile] without the heart.
 class AlbumGridTile extends StatelessWidget {
   const AlbumGridTile({
     super.key,
@@ -29,8 +31,9 @@ class AlbumGridTile extends StatelessWidget {
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
-  /// Height of a tile [width] wide: the square artwork plus two text lines
-  /// at the current text scale, so large text never overflows.
+  /// Height of a tile whose artwork is [width] wide: the artwork, the gap, two
+  /// text lines at the current text scale and the card's extra bottom padding,
+  /// so large text never overflows.
   static double heightFor(BuildContext context, double width) {
     final theme = Theme.of(context).textTheme;
     final scaler = MediaQuery.textScalerOf(context);
@@ -43,6 +46,7 @@ class AlbumGridTile extends StatelessWidget {
         gridTileGap +
         line(theme.titleSmall) +
         line(theme.bodySmall) +
+        (libraryGridCardBottomPadding - libraryGridCardPadding) +
         // Rounding slack so a fractional line height never clips.
         2;
   }
@@ -60,39 +64,48 @@ class AlbumGridTile extends StatelessWidget {
       if (data.year != null) '${data.year}',
     ].join(' · ');
 
-    final tile = InkWell(
+    final tile = LibraryGridCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(gridTilePadding),
-        child: LayoutBuilder(
-          builder: (context, constraints) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AlbumArtwork(
-                albumKey: data.key,
-                coverKey: data.coverKey,
-                size: constraints.maxWidth,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AlbumArtwork(
+              albumKey: data.key,
+              coverKey: data.coverKey,
+              size: constraints.maxWidth,
+              radius: libraryGridCoverRadius,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: libraryGridTextInset,
               ),
-              const SizedBox(height: gridTileGap),
-              Text(
-                data.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall,
-                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: gridTileGap),
+                  Text(
+                    data.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
+                  ),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+                  ),
+                ],
               ),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

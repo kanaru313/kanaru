@@ -5,10 +5,23 @@ import '../albums/album_grid_tile.dart';
 import '../../../shared/fixed_line_strut.dart';
 
 /// Height of a [RoundGridTile] whose avatar is [width] wide, for
-/// [libraryGridDelegate]. The avatar is as wide as a square cover, so the
-/// tile is as tall as an album tile.
-double roundGridTileHeight(BuildContext context, double width) =>
-    AlbumGridTile.heightFor(context, width);
+/// [libraryGridDelegate]: the avatar (as wide as a square cover), the gap and
+/// two text lines at the current text scale.
+double roundGridTileHeight(BuildContext context, double width) {
+  final theme = Theme.of(context).textTheme;
+  final scaler = MediaQuery.textScalerOf(context);
+  double line(TextStyle? style) {
+    final size = style?.fontSize ?? 14;
+    return scaler.scale(size) * (style?.height ?? 1.2);
+  }
+
+  return width +
+      gridTileGap +
+      line(theme.titleSmall) +
+      line(theme.bodySmall) +
+      // Rounding slack so a fractional line height never clips.
+      2;
+}
 
 /// One grid cell of a round picture, a name and a line below it (artists,
 /// genres). [avatarBuilder] gets the diameter to fill the cell width.

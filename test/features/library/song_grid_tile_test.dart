@@ -104,6 +104,26 @@ void main() {
     }
   });
 
+  testWidgets('the text lines sit 12 px from the card edge, the cover 4 px', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        SizedBox(
+          width: 200,
+          height: 400,
+          child: SongGridTile(song: _song(), onTap: () {}),
+        ),
+      ),
+    );
+    final cardRect = tester.getRect(card());
+    final cover = tester.getTopLeft(find.byType(CoverArt));
+    expect(cover.dx - cardRect.left, 4);
+    for (final text in ['Song A', 'Artist A', 'Album • 4:22']) {
+      expect(tester.getTopLeft(find.text(text)).dx - cardRect.left, 12);
+    }
+  });
+
   group('no overflow', () {
     for (final scale in [1.0, 1.15, 1.3, 1.5, 2.0]) {
       for (final columns in [1, 3, 6]) {

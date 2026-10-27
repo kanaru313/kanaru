@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 /// Padding around the content of a shelf card and the gap between the picture
-/// and the text; copied from album_grid_tile.dart.
+/// and the text; separate from the album grid tile's card.
 const homeCardPadding = 8.0;
 const homeCardGap = 8.0;
 
@@ -12,8 +12,8 @@ const homeShelfTileWidth = 168.0;
 const homeCardPictureSize = homeShelfTileWidth - homeCardPadding * 2;
 
 /// Height of a card: the square picture plus two text lines at the current
-/// text scale, so large text never overflows. Copied from
-/// `AlbumGridTile.heightFor` in album_grid_tile.dart.
+/// text scale, so large text never overflows. Home cards are plain
+/// tiles, not the cards of `AlbumGridTile`.
 double homeShelfTileHeight(BuildContext context) {
   final theme = Theme.of(context).textTheme;
   final scaler = MediaQuery.textScalerOf(context);

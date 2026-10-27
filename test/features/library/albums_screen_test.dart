@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
+import 'package:kanaru/shared/widgets/album_artwork.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -44,6 +45,26 @@ void main() {
     expect(find.byTooltip('Order: Descending'), findsOneWidget);
     expect(left('Alpha'), lessThan(left('Beta')));
     expect(h.container.read(settingsProvider).albumSort.descending, isTrue);
+  });
+
+  testWidgets('a grid tile is a card with its title 12 px from the edge', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/albums');
+
+    final tile = find.byType(AlbumGridTile).first;
+    final card = tester.getRect(
+      find.descendant(of: tile, matching: find.byType(Material)).first,
+    );
+    final cover = tester.getTopLeft(
+      find.descendant(of: tile, matching: find.byType(AlbumArtwork)).first,
+    );
+    final title = tester.getTopLeft(
+      find.descendant(of: tile, matching: find.text('Alpha')).first,
+    );
+    expect(cover.dx - card.left, 4);
+    expect(title.dx - card.left, 12);
   });
 
   testWidgets('grid tiles fit large text', (tester) async {

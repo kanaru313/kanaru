@@ -13,6 +13,7 @@ import '../../../shared/widgets/library_row.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/track_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
+import '../widgets/library_grid_card.dart';
 import 'song_grid_tile_parts.dart';
 
 export 'song_grid_tile_parts.dart' show SongGridTilePlaceholder;
@@ -49,7 +50,7 @@ class SongGridTile extends ConsumerWidget {
         gridTileGap +
         line(theme.titleSmall) +
         2 * line(theme.bodySmall) +
-        (songGridCardBottomPadding - songGridCardPadding) +
+        (libraryGridCardBottomPadding - libraryGridCardPadding) +
         // Rounding slack so a fractional line height never clips.
         2;
   }
@@ -72,7 +73,7 @@ class SongGridTile extends ConsumerWidget {
     final detailColor = playing
         ? colors.onPrimaryContainer
         : colors.onSurfaceVariant;
-    final card = SongGridCard(
+    final card = LibraryGridCard(
       playing: playing,
       onTap: onTap,
       child: LayoutBuilder(
@@ -87,7 +88,7 @@ class SongGridTile extends ConsumerWidget {
                     song.coverKey,
                   ),
                   size: constraints.maxWidth,
-                  radius: songGridCoverRadius,
+                  radius: libraryGridCoverRadius,
                   placeholder: ColoredBox(
                     color: colors.surfaceContainerHighest,
                     child: const Center(
@@ -102,30 +103,44 @@ class SongGridTile extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: gridTileGap),
-            Text(
-              song.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: titleColor,
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: libraryGridTextInset,
               ),
-              strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
-            ),
-            Text(
-              artist ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(color: detailColor),
-              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
-            ),
-            Text(
-              detail,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(color: detailColor),
-              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: gridTileGap),
+                  Text(
+                    song.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                    ),
+                    strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
+                  ),
+                  Text(
+                    artist ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: detailColor,
+                    ),
+                    strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+                  ),
+                  Text(
+                    detail,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: detailColor,
+                    ),
+                    strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
