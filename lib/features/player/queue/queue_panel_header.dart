@@ -92,7 +92,9 @@ class QueuePanelHeader extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 12, 8),
+          // Top matches the bottom so the open filter box does not touch the
+          // title row (or the Now Playing tab bar).
+          padding: const EdgeInsets.fromLTRB(24, 8, 12, 8),
           child: Row(
             children: [
               Expanded(
