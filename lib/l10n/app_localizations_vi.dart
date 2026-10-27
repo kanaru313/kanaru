@@ -2613,6 +2613,24 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không dùng được kho khóa nên không đọc được khóa DeepL.';
 
   @override
+  String lyricsTranslationAttribution(String service, String language) {
+    return 'Dịch bởi $service · $language';
+  }
+
+  @override
+  String lyricsTranslationUseService(String service) {
+    return 'Dùng $service';
+  }
+
+  @override
+  String get lyricsTranslationBannerNoKey =>
+      'Hãy thêm khóa DeepL trong Cài đặt › Nâng cao.';
+
+  @override
+  String get lyricsTranslationBannerBadKey =>
+      'DeepL từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Nâng cao.';
+
+  @override
   String translationNoticeTitle(String service) {
     return 'Lời bài hát sẽ được gửi tới $service';
   }

@@ -2807,6 +2807,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'The key store is not available, so the DeepL key cannot be read.';
 
   @override
+  String lyricsTranslationAttribution(String service, String language) {
+    return 'Translated by $service · $language';
+  }
+
+  @override
+  String lyricsTranslationUseService(String service) {
+    return 'Use $service';
+  }
+
+  @override
+  String get lyricsTranslationBannerNoKey =>
+      'Add your DeepL key in Settings › Advanced.';
+
+  @override
+  String get lyricsTranslationBannerBadKey =>
+      'DeepL rejected the key. Check the key in Settings › Advanced.';
+
+  @override
   String translationNoticeTitle(String service) {
     return 'Lyrics will be sent to $service';
   }

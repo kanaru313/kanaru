@@ -7,6 +7,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/lyrics_line.dart';
 import 'package:kanaru/features/player/lyrics/synced_lyrics_view.dart';
+import 'package:kanaru/features/player/lyrics/translation/translated_line_text.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_auto_hide.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_lyrics_only_body.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -429,5 +430,122 @@ void main() {
         .headlineSmall!
         .fontSize;
     expect(styleOf(tester, 'line 3').fontSize, small);
+  });
+
+  group('translations', () {
+    late ValueNotifier<List<String?>?> translations;
+
+    Future<void> pumpTranslated(WidgetTester tester) async {
+      await pump(tester);
+      translations = ValueNotifier(null);
+      addTearDown(translations.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ValueListenableBuilder<List<String?>?>(
+                valueListenable: translations,
+                builder: (_, value, _) =>
+                    SyncedLyricsView(lyrics: _lyrics, translations: value),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    List<String?> all([String prefix = 'tr']) => [
+      for (var i = 0; i < 40; i++) '$prefix $i ' * 4,
+    ];
+
+    double pixels(WidgetTester tester) =>
+        tester.state<ScrollableState>(find.byType(Scrollable)).position.pixels;
+
+    testWidgets('translations arriving keep the current line at the anchor', (
+      tester,
+    ) async {
+      await pumpTranslated(tester);
+      await playAt(tester, const Duration(seconds: 6, milliseconds: 100));
+      expect(isCurrent(tester, 'line 5'), isTrue);
+
+      translations.value = all();
+      await tester.pumpAndSettle();
+      expect(
+        // The anchor puts the point 40% down the line at 40% of the view.
+        tester.getRect(find.byType(LyricsLine).at(5)).top +
+            0.4 * tester.getSize(find.byType(LyricsLine).at(5)).height,
+        closeTo(400 * lyricsAnchor, 1),
+      );
+    });
+
+    testWidgets('a manual scroll pause is respected', (tester) async {
+      await pumpTranslated(tester);
+      await playAt(tester, const Duration(seconds: 6, milliseconds: 100));
+      await tester.drag(find.byType(Scrollable), const Offset(0, -120));
+      await tester.pump();
+      final before = pixels(tester);
+
+      translations.value = all();
+      await tester.pump();
+      await tester.pump();
+      expect(pixels(tester), before);
+      // Let the pause run out so no timer is left.
+      await tester.pump(lyricsManualScrollPause);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('an equal rebuild during a glide does not jump', (
+      tester,
+    ) async {
+      await pumpTranslated(tester);
+      translations.value = all();
+      await tester.pumpAndSettle();
+
+      backend.emitPosition.add(const Duration(seconds: 10, milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      final midGlide = pixels(tester);
+
+      // Same content in a new list, the clock not advanced: the glide is not
+      // cut or restarted.
+      translations.value = all();
+      await tester.pump(Duration.zero);
+      await tester.pump(Duration.zero);
+      expect(pixels(tester), midGlide);
+
+      // It still ends where the unperturbed glide ends: line 9 at the anchor.
+      await tester.pumpAndSettle();
+      final line = find.byType(LyricsLine).at(9);
+      expect(
+        tester.getRect(line).top + 0.4 * tester.getSize(line).height,
+        closeTo(400 * lyricsAnchor, 1),
+      );
+    });
+
+    testWidgets('position ticks rebuild only the two lines that flip', (
+      tester,
+    ) async {
+      await pumpTranslated(tester);
+      translations.value = all();
+      await playAt(tester, const Duration(seconds: 6, milliseconds: 100));
+
+      var lineBuilds = 0;
+      debugOnRebuildDirtyWidget = (element, _) {
+        if (element.widget is TranslatedLineText) lineBuilds++;
+      };
+      addTearDown(() => debugOnRebuildDirtyWidget = null);
+
+      // Inside the same line: nothing rebuilds.
+      await playAt(tester, const Duration(seconds: 6, milliseconds: 600));
+      expect(lineBuilds, 0);
+
+      // Into the next line: the old and the new current line.
+      await playAt(tester, const Duration(seconds: 7, milliseconds: 100));
+      expect(lineBuilds, 2);
+    });
   });
 }

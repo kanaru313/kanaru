@@ -2412,6 +2412,35 @@
   "@lyricsTranslationFailKeyStoreUnavailable": {
     "description": "Why a translation failed: no system key store"
   },
+  "lyricsTranslationAttribution": "Translated by {service} · {language}",
+  "@lyricsTranslationAttribution": {
+    "description": "Credit under the translated lyrics; pressing it opens the translation menu. service is Google or DeepL, language the language name",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      },
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationUseService": "Use {service}",
+  "@lyricsTranslationUseService": {
+    "description": "Button of the lyrics translation error banner that switches to the other service; service is Google or DeepL",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationBannerNoKey": "Add your DeepL key in Settings › Advanced.",
+  "@lyricsTranslationBannerNoKey": {
+    "description": "Lyrics translation error banner: DeepL is selected but no key is saved"
+  },
+  "lyricsTranslationBannerBadKey": "DeepL rejected the key. Check the key in Settings › Advanced.",
+  "@lyricsTranslationBannerBadKey": {
+    "description": "Lyrics translation error banner: DeepL did not accept the saved key"
+  },
   "translationNoticeTitle": "Lyrics will be sent to {service}",
   "@translationNoticeTitle": {
     "description": "Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL",

@@ -1,23 +1,15 @@
-import 'dart:async';
-
-import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/lyrics/lyrics.dart';
 import '../../../core/player/player_service.dart';
+import '../../../core/settings/translation_prefs.dart';
 import 'lyrics_line.dart';
 import 'lyrics_text_style.dart';
+import 'synced_lyrics_scroll.dart';
 
-/// Where the current line sits in the view: 40% down from the top.
-const lyricsAnchor = 0.4;
-
-/// How long auto-scroll waits after the user last scrolled by hand.
-const lyricsManualScrollPause = Duration(seconds: 3);
-
-/// How long the glide to a new current line takes. It matches the line's own
-/// style change, so the view stops drawing frames when both are done.
-const _scrollDuration = Duration(milliseconds: 200);
+export 'synced_lyrics_scroll.dart' show lyricsAnchor, lyricsManualScrollPause;
 
 /// Synced lyrics that follow playback, centered: the current line is
 /// highlighted and kept at [lyricsAnchor]; scrolling by hand pauses that
@@ -28,47 +20,59 @@ const _scrollDuration = Duration(milliseconds: 200);
 /// Every line is built (a column, lyrics are short and capped), so any line
 /// can be scrolled to. Only this view's own scroll position moves, never an
 /// enclosing one such as the narrow layout's page view.
+///
+/// Translations (one entry per line, `null` for none) show with each line;
+/// when they, [display] or [translationPending] really change, the current
+/// line is put back at the anchor without a glide, because lines may have
+/// grown. An identical rebuild changes nothing.
 class SyncedLyricsView extends ConsumerStatefulWidget {
-  const SyncedLyricsView({super.key, required this.lyrics});
+  const SyncedLyricsView({
+    super.key,
+    required this.lyrics,
+    this.translations,
+    this.translationPending = false,
+    this.display = LyricsTranslationDisplay.underLine,
+    this.pulse,
+    this.translationDirection,
+  });
 
   final Lyrics lyrics;
+  final List<String?>? translations;
+  final bool translationPending;
+  final LyricsTranslationDisplay display;
+  final Animation<double>? pulse;
+  final TextDirection? translationDirection;
 
   @override
   ConsumerState<SyncedLyricsView> createState() => _SyncedLyricsViewState();
 }
 
-class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
-  final _scroll = ScrollController();
-  final _viewKey = GlobalKey();
-  late final List<GlobalKey> _keys;
+class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
+    with SyncedLyricsScroll<SyncedLyricsView> {
   late final List<ValueNotifier<bool>> _current;
-  int _index = -1;
-
-  /// Set while this view moves its own scroll position, so that move is not
-  /// taken for the user's.
-  bool _scrollingItself = false;
-
-  /// Counts this view's own scrolls: an animation replaced by a newer one
-  /// completes early and must not clear [_scrollingItself] for the newer.
-  int _scrollGeneration = 0;
-
-  /// Running while auto-scroll is paused after a manual scroll.
-  Timer? _resume;
-  double? _viewportHeight;
 
   @override
   void initState() {
     super.initState();
     final count = widget.lyrics.lines.length;
-    _keys = List.generate(count, (_) => GlobalKey());
+    lineKeys = List.generate(count, (_) => GlobalKey());
     _current = List.generate(count, (_) => ValueNotifier(false));
     _setIndex(widget.lyrics.lineAt(ref.read(playerServiceProvider).position));
   }
 
   @override
+  void didUpdateWidget(SyncedLyricsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!listEquals(oldWidget.translations, widget.translations) ||
+        oldWidget.display != widget.display ||
+        oldWidget.translationPending != widget.translationPending) {
+      revealAfterLayout();
+    }
+  }
+
+  @override
   void dispose() {
-    _resume?.cancel();
-    _scroll.dispose();
+    disposeScroll();
     for (final notifier in _current) {
       notifier.dispose();
     }
@@ -76,104 +80,33 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
   }
 
   void _setIndex(int index) {
-    if (_index >= 0) _current[_index].value = false;
-    _index = index;
+    if (lineIndex >= 0) _current[lineIndex].value = false;
+    lineIndex = index;
     if (index >= 0) _current[index].value = true;
   }
 
   void _onLineChanged(int index) {
-    if (index == _index) return;
+    if (index == lineIndex) return;
     _setIndex(index);
-    if (_resume == null) _reveal(animate: true);
-  }
-
-  /// Scrolls so the current line (the first before any) sits at the anchor.
-  void _reveal({required bool animate}) {
-    if (!_scroll.hasClients || _keys.isEmpty) return;
-    final object = _keys[_index < 0 ? 0 : _index].currentContext
-        ?.findRenderObject();
-    if (object == null || !object.attached) return;
-    final position = _scroll.position;
-    final target = RenderAbstractViewport.of(object)
-        .getOffsetToReveal(object, lyricsAnchor)
-        .offset
-        .clamp(position.minScrollExtent, position.maxScrollExtent);
-    if ((target - position.pixels).abs() < 0.5) return;
-    _scrollingItself = true;
-    final generation = ++_scrollGeneration;
-    if (!animate || MediaQuery.disableAnimationsOf(context)) {
-      _scroll.jumpTo(target);
-      _scrollingItself = false;
-      _syncScrollbar();
-      return;
-    }
-    _scroll
-        .animateTo(
-          target,
-          duration: _scrollDuration,
-          curve: Curves.easeOutCubic,
-        )
-        .whenComplete(() {
-          if (generation != _scrollGeneration) return;
-          _scrollingItself = false;
-          _syncScrollbar();
-        });
-  }
-
-  /// Hands the scrollbar the current metrics without showing it.
-  ///
-  /// The scrollbar's predicate ignores the view's own scrolling, and the
-  /// scrollbar only moves its thumb from scroll notifications, so after an
-  /// auto-scroll the thumb would stay where the last manual scroll left it and
-  /// show there on hover. A metrics notification updates the thumb but does not
-  /// fade the scrollbar in (it does only for an always-visible thumb), so one
-  /// at the end of a self-scroll fixes the thumb without the fade frames that
-  /// the predicate avoids.
-  void _syncScrollbar() {
-    final context = _viewKey.currentContext;
-    if (!mounted || context == null || !_scroll.hasClients) return;
-    ScrollMetricsNotification(
-      metrics: _scroll.position.copyWith(),
-      context: context,
-    ).dispatch(context);
-  }
-
-  bool _onScroll(ScrollUpdateNotification notification) {
-    final byUser = notification.dragDetails != null || !_scrollingItself;
-    if (notification.depth == 0 && byUser) {
-      _resume?.cancel();
-      _resume = Timer(lyricsManualScrollPause, () {
-        _resume = null;
-        if (mounted) _reveal(animate: true);
-      });
-    }
-    return false;
+    if (resume == null) reveal(animate: true);
   }
 
   void _seek(int index) {
-    _resume?.cancel();
-    _resume = null;
-    final before = _index;
+    resume?.cancel();
+    resume = null;
+    final before = lineIndex;
     ref
         .read(playerServiceProvider.notifier)
         .seek(widget.lyrics.lines[index].time);
     // Seeking moves the position at once, which moves the current line and
     // scrolls; a press on the current line only brings it back.
-    if (_index == before) _reveal(animate: true);
-  }
-
-  void _onViewportHeight(double height) {
-    if (height == _viewportHeight) return;
-    _viewportHeight = height;
-    // First layout and window resizes: put the line back without animation.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _resume == null) _reveal(animate: false);
-    });
+    if (lineIndex == before) reveal(animate: true);
   }
 
   @override
   Widget build(BuildContext context) {
     final lyrics = widget.lyrics;
+    final translations = widget.translations;
     ref.listen(
       playerServiceProvider.select((s) => lyrics.lineAt(s.position)),
       (_, index) => _onLineChanged(index),
@@ -181,9 +114,9 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final height = constraints.maxHeight;
-        _onViewportHeight(height);
+        onViewportHeight(height);
         return NotificationListener<ScrollUpdateNotification>(
-          onNotification: _onScroll,
+          onNotification: onScrollUpdate,
           // Desktop platforms give every scrollable a scrollbar that fades in
           // and out on each scroll. Auto-scroll would flash it at every line
           // change: about 20 more frames each, more than the glide itself. So
@@ -192,12 +125,12 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
             behavior: ScrollConfiguration.of(context)
                 .copyWith(scrollbars: false),
             child: Scrollbar(
-              controller: _scroll,
+              controller: scroll,
               notificationPredicate: (notification) =>
-                  notification.depth == 0 && !_scrollingItself,
+                  notification.depth == 0 && !scrollingItself,
               child: SingleChildScrollView(
-                key: _viewKey,
-                controller: _scroll,
+                key: viewKey,
+                controller: scroll,
                 // Room above and below so the first and last lines can reach
                 // the anchor.
                 padding: EdgeInsets.fromLTRB(
@@ -211,10 +144,18 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView> {
                   children: [
                     for (var i = 0; i < lyrics.lines.length; i++)
                       LyricsLine(
-                        key: _keys[i],
+                        key: lineKeys[i],
                         line: lyrics.lines[i],
                         current: _current[i],
                         onTap: () => _seek(i),
+                        translation:
+                            translations != null && i < translations.length
+                            ? translations[i]
+                            : null,
+                        translationPending: widget.translationPending,
+                        display: widget.display,
+                        pulse: widget.pulse,
+                        translationDirection: widget.translationDirection,
                       ),
                   ],
                 ),

@@ -4100,6 +4100,30 @@ abstract class AppLocalizations {
   /// **'The key store is not available, so the DeepL key cannot be read.'**
   String get lyricsTranslationFailKeyStoreUnavailable;
 
+  /// Credit under the translated lyrics; pressing it opens the translation menu. service is Google or DeepL, language the language name
+  ///
+  /// In en, this message translates to:
+  /// **'Translated by {service} · {language}'**
+  String lyricsTranslationAttribution(String service, String language);
+
+  /// Button of the lyrics translation error banner that switches to the other service; service is Google or DeepL
+  ///
+  /// In en, this message translates to:
+  /// **'Use {service}'**
+  String lyricsTranslationUseService(String service);
+
+  /// Lyrics translation error banner: DeepL is selected but no key is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Add your DeepL key in Settings › Advanced.'**
+  String get lyricsTranslationBannerNoKey;
+
+  /// Lyrics translation error banner: DeepL did not accept the saved key
+  ///
+  /// In en, this message translates to:
+  /// **'DeepL rejected the key. Check the key in Settings › Advanced.'**
+  String get lyricsTranslationBannerBadKey;
+
   /// Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL
   ///
   /// In en, this message translates to:
