@@ -110,6 +110,10 @@ String _redactPlain(String text) {
       return '${m[1]}${m[2]}${scheme == null ? '' : '$scheme '}***';
     });
   }
+  // Trigger 'deepl-auth-key': DeepL's scheme word, which is not Bearer.
+  if (lower.contains('deepl-auth-key')) {
+    out = out.replaceAllMapped(_deeplAuthKey, (m) => '${m[1]}***');
+  }
   // Trigger 'cookie': `cookie`, `cookies` and `set-cookie` all hold it.
   if (lower.contains('cookie')) {
     out = out.replaceAllMapped(_cookie, (m) => '${m[1]}${m[2]}***');
@@ -163,6 +167,14 @@ final _authorization = RegExp(
 /// `Cookie:`, `Cookies:` and `Set-Cookie:` headers, to the end of the line.
 final _cookie = RegExp(
   r'\b(cookies?)(\s{0,3}[:=]\s{0,3})[^\r\n]+',
+  caseSensitive: false,
+);
+
+/// `DeepL-Auth-Key x`, the scheme of DeepL's `Authorization` header. Also
+/// catches it where the header name was lost (a header printed as a map).
+/// Masked to the end of the line, like [_authorization].
+final _deeplAuthKey = RegExp(
+  r'\b(deepl-auth-key[ \t]{1,3})[^\r\n]+',
   caseSensitive: false,
 );
 
