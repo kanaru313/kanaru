@@ -63,6 +63,7 @@ SELECT p.id, p.path, p.played_at, p.listened_ms,
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at > p.played_at)
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at = p.played_at AND q.id > p.id)
     AS nth,
+  s.play_count,
   t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.year, t.duration_ms, t.cover_key
 FROM plays p
 LEFT JOIN play_stats s ON s.path = p.path
@@ -80,6 +81,7 @@ SELECT p.id, p.path, p.played_at, p.listened_ms,
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at > p.played_at)
     - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at = p.played_at AND q.id > p.id)
     AS nth,
+  s.play_count,
   t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.year, t.duration_ms, t.cover_key
 FROM plays p
 LEFT JOIN play_stats s ON s.path = p.path
@@ -336,6 +338,7 @@ LEFT JOIN tracks t ON t.path = k.path''',
           playedAt: rows[i].read<int>('played_at'),
           listenedMs: rows[i].readNullable<int>('listened_ms'),
           nth: rows.length - i,
+          latest: i == 0,
         ),
     ];
   }
@@ -347,8 +350,15 @@ HistoryPlayRow _playRow(QueryRow r) => HistoryPlayRow(
   playedAt: r.read<int>('played_at'),
   listenedMs: r.readNullable<int>('listened_ms'),
   nth: r.readNullable<int>('nth'),
+  latest: _isLatest(r),
   track: _track(r),
 );
+
+/// No later play of the same path: the Nth listen is the last one counted.
+bool _isLatest(QueryRow r) {
+  final nth = r.readNullable<int>('nth');
+  return nth != null && nth == r.readNullable<int>('play_count');
+}
 
 // Same shape as the playlist reader's row mapper; that one is private to a
 // file this lane does not own.

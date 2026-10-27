@@ -49,6 +49,7 @@ class HistoryPlayRow {
     required this.playedAt,
     this.listenedMs,
     this.nth,
+    this.latest = false,
     this.track,
   });
 
@@ -67,6 +68,10 @@ class HistoryPlayRow {
   /// "Nth listen of this track" in `(played_at, id)` order; null when the
   /// track has no `play_stats` row (the UI hides the badge).
   final int? nth;
+
+  /// The newest play of [path] (no later play of it anywhere); false when
+  /// the track has no `play_stats` row.
+  final bool latest;
 
   /// Null when no library track has [path] any more.
   final TrackListItem? track;

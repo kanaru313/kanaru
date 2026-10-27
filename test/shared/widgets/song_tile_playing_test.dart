@@ -112,6 +112,19 @@ void main() {
     expect(_rowMaterial(tester, b).color, Colors.transparent);
   });
 
+  testWidgets('highlightPlaying false keeps the playing track plain', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _bare(_a.path, [
+        SongTile(song: _a, onTap: () {}, highlightPlaying: false),
+      ]),
+    );
+    final a = _tile(_a);
+    expect(_equalizer(a), findsNothing);
+    expect(_rowMaterial(tester, a).color, Colors.transparent);
+  });
+
   testWidgets('a real cover gets a scrim and a white equalizer', (
     tester,
   ) async {

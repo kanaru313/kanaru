@@ -38,6 +38,7 @@ class SongTile extends ConsumerWidget {
     this.trailingAccessory,
     this.detail,
     this.badge,
+    this.highlightPlaying = true,
   }) : assert(
          number == null || leadingAccessory == null,
          'number and leadingAccessory both fill the slot before the cover',
@@ -73,11 +74,15 @@ class SongTile extends ConsumerWidget {
   /// and supplies its own semantics or tooltip.
   final Widget? badge;
 
+  /// False never marks this row as playing, e.g. an older play of the
+  /// playing track in a list where the same song repeats.
+  final bool highlightPlaying;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playing = ref.watch(
-      playingTrackPathProvider.select((p) => p == song.path),
-    );
+    final playing =
+        highlightPlaying &&
+        ref.watch(playingTrackPathProvider.select((p) => p == song.path));
     final durationMs = song.durationMs;
     return TrackActionsRegion(
       trackId: song.id,

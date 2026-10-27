@@ -130,10 +130,12 @@ void main() {
         final day2 = await db.historyDayPlays(4000, 10000);
         expect(day2.map((r) => r.id), [a4, a3, a2]);
         expect(day2.map((r) => r.nth), [4, 3, 2]);
+        expect(day2.map((r) => r.latest), [true, false, false]);
         expect(day2.first.track?.title, 'T /a');
 
         final day1 = await db.historyDayPlays(0, 4000);
         expect(day1.map((r) => (r.path, r.nth)), [('/gone', 1), ('/a', 1)]);
+        expect(day1.map((r) => r.latest), [true, false]);
         expect(day1.last.id, a1);
         expect(day1.first.track, isNull);
       },

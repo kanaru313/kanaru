@@ -9,6 +9,7 @@ import '../../shared/widgets/song_tile.dart';
 /// One play of the timeline: the library song row with "date - time" as its
 /// third line and the "#N" listen badge above the duration. A play whose file
 /// is not in the library shows its file name, is dimmed and does not play.
+/// Only the newest play of the playing track gets the playing fill.
 ///
 /// The menu opens on a right click, a long press and the Menu key, through
 /// [onMenu] with the pointer position (the row's start for the key). Removing
@@ -74,7 +75,15 @@ class HistoryPlayRowTile extends StatelessWidget {
               ),
             ),
           )
-        : SongTile(song: track, onTap: onTap, detail: playedAt, badge: badge);
+        : SongTile(
+            song: track,
+            onTap: onTap,
+            detail: playedAt,
+            badge: badge,
+            // Only the newest play of the playing track is marked, not every
+            // listen of it in the journal.
+            highlightPlaying: row.latest,
+          );
     return MenuKeyboardRegion(
       onOpen: onMenu,
       child: GestureDetector(
