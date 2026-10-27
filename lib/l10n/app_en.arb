@@ -1858,17 +1858,9 @@
   "@scanStatsCoversHint": {
     "description": "Note under the cover art numbers"
   },
-  "foldersHiddenShow": "Show hidden items",
-  "@foldersHiddenShow": {
-    "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are not shown"
-  },
-  "foldersHiddenHide": "Hide hidden items",
-  "@foldersHiddenHide": {
-    "description": "Tooltip of the eye button on the Folders pages while hidden folders and files are shown"
-  },
   "foldersHiddenLabel": "Hidden",
   "@foldersHiddenLabel": {
-    "description": "Small label on a folder or song whose name starts with a dot, shown when hidden items are on"
+    "description": "Small label on a folder with a part of its path below the music folder starting with a dot"
   },
   "sleepTimer": "Sleep timer",
   "@sleepTimer": {

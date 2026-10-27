@@ -43,9 +43,7 @@ class FolderListTile extends StatelessWidget {
         folder.hidden,
         Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
-      subtitle: folder.hidden
-          ? const Align(alignment: Alignment.centerLeft, child: HiddenLabel())
-          : showPath
+      subtitle: showPath
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

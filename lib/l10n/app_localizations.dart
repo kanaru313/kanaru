@@ -3326,19 +3326,7 @@ abstract class AppLocalizations {
   /// **'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).'**
   String get scanStatsCoversHint;
 
-  /// Tooltip of the eye button on the Folders pages while hidden folders and files are not shown
-  ///
-  /// In en, this message translates to:
-  /// **'Show hidden items'**
-  String get foldersHiddenShow;
-
-  /// Tooltip of the eye button on the Folders pages while hidden folders and files are shown
-  ///
-  /// In en, this message translates to:
-  /// **'Hide hidden items'**
-  String get foldersHiddenHide;
-
-  /// Small label on a folder or song whose name starts with a dot, shown when hidden items are on
+  /// Small label on a folder with a part of its path below the music folder starting with a dot
   ///
   /// In en, this message translates to:
   /// **'Hidden'**

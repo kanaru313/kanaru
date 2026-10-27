@@ -370,4 +370,27 @@ void main() {
     expect(find.text('Folder not found'), findsNothing);
     expect(find.text('/empty'), findsOneWidget);
   });
+
+  testWidgets('a dot folder of the library opens as a normal page', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack('s', path: '/m/.secret/s.flac'),
+    ], location: folderLocation('/m/.secret'));
+
+    expect(find.text('Hidden'), findsOneWidget, reason: 'the header tag');
+    expect(onPage('s'), findsOneWidget);
+    expect(find.byTooltip('Show hidden items'), findsNothing);
+    expect(find.byTooltip('Queue actions'), findsOneWidget);
+  });
+
+  testWidgets('a dot folder that is not in the library shows not found', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: folderLocation('/m/.x'));
+
+    expect(find.text('Folder not found'), findsOneWidget);
+  });
 }

@@ -134,9 +134,6 @@ abstract final class AppIcons {
   // Queue history.
   static const IconData queueHistory = Icons.manage_history_rounded;
   static const IconData queueHistoryOutlined = Icons.manage_history_outlined;
-  // Show or hide hidden folders and files.
-  static const IconData showHidden = Icons.visibility_outlined;
-  static const IconData hideHidden = Icons.visibility_off_outlined;
 
   // Sleep timer.
   static const IconData sleepTimer = Icons.timer_outlined;

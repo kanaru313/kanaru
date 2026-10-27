@@ -66,10 +66,12 @@ class FolderGridTile extends StatelessWidget {
                   strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
                 ),
               ),
-              if (folder.hidden)
-                const HiddenLabel()
-              else
-                FolderCountsLine(folder: folder),
+              // One line, as the cell height budgets: shrinks rather than wraps.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: FolderCountsLine(folder: folder),
+              ),
             ],
           ),
         ),
@@ -97,7 +99,7 @@ Widget _tile(
   title: entry.title,
   onTap: () => onTap(entry.folder),
   showPath: entry.folder.ambiguousRoot && showPaths,
-  onAction: onAction == null || entry.folder.hidden
+  onAction: onAction == null
       ? null
       : (action) => onAction(entry.folder, action),
 );

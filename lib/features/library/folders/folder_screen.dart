@@ -8,14 +8,12 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_detail_body.dart';
 import 'folder_library_page.dart';
-import 'hidden_folder_page.dart';
-import 'hidden_folder_page_provider.dart';
+import 'folders_provider.dart';
 
 /// One folder: header, then its subfolders (with the tree on) and the songs
 /// directly in it. Tapping a song plays those songs from it. [routeKey]
 /// comes from the URL; a broken key or a folder without songs shows "not
-/// found", except a folder on the disk that the library does not know, which
-/// opens while hidden items are on.
+/// found".
 class FolderScreen extends ConsumerWidget {
   const FolderScreen({super.key, required this.routeKey});
 
@@ -24,14 +22,11 @@ class FolderScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final path = decodeFolderRouteKey(routeKey);
-    return LibraryDetailBody<FolderPageContent>(
-      page: path == null ? null : folderPageContentProvider(path),
+    return LibraryDetailBody<FolderPageData>(
+      page: path == null ? null : folderPageProvider(path),
       what: 'the folder',
       notFound: const _FolderNotFound(),
-      builder: (content) => switch (content) {
-        LibraryFolderContent(:final data) => LibraryFolderPage(data: data),
-        DiskFolderContent(:final data) => DiskFolderPage(data: data),
-      },
+      builder: (data) => LibraryFolderPage(data: data),
     );
   }
 }

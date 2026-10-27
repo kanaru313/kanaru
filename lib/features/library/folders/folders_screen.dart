@@ -18,7 +18,6 @@ import 'folder_list_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 import 'folders_provider.dart';
-import 'hidden_toggle_button.dart';
 
 final _log = Logger('library');
 
@@ -54,8 +53,6 @@ class FoldersScreen extends ConsumerWidget {
         title: l10n.navFolders,
         actions: [
           if (showActions) ...[
-            // Hidden items are listed per folder, which only the tree has.
-            if (hierarchy) const HiddenToggleButton(),
             // Both show the current setting; a tap switches it.
             IconButton(
               tooltip: hierarchy ? l10n.foldersTreeView : l10n.foldersFlatView,

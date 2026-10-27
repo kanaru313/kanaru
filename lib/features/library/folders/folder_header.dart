@@ -2,11 +2,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
-import 'hidden_toggle_button.dart';
 
 /// Icon, name, full path, optional counts and the Play and Shuffle buttons
-/// of a folder page, then [trailing] buttons and the eye button for hidden
-/// items.
+/// of a folder page, then [trailing] buttons.
 class FolderHeader extends StatelessWidget {
   const FolderHeader({
     super.key,
@@ -23,11 +21,10 @@ class FolderHeader extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
 
-  /// The counts line under the path, given the muted text style; none for a
-  /// folder read from the disk.
+  /// The counts line under the path, given the muted text style.
   final Widget Function(TextStyle? style)? counts;
 
-  /// Buttons after Shuffle, before the eye.
+  /// Buttons after Shuffle.
   final List<Widget> trailing;
 
   @override
@@ -87,7 +84,6 @@ class FolderHeader extends StatelessWidget {
                       label: Text(l10n.libraryShuffle),
                     ),
                     ...trailing,
-                    const HiddenToggleButton(),
                   ],
                 ),
               ],

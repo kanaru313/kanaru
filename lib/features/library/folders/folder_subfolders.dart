@@ -6,8 +6,7 @@ import 'folder_list_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 
-/// The subfolders of a folder page as a grid or a list. Folders found on the
-/// disk only ([FolderNode.hidden]) get no folder menu.
+/// The subfolders of a folder page as a grid or a list.
 class SliverSubfolders extends StatelessWidget {
   const SliverSubfolders({
     super.key,
@@ -35,9 +34,7 @@ class SliverSubfolders extends StatelessWidget {
         folder: children[i],
         title: children[i].name,
         onTap: () => onOpen(children[i]),
-        onAction: children[i].hidden
-            ? null
-            : (action) => onAction(children[i], action),
+        onAction: (action) => onAction(children[i], action),
       ),
     ),
   };
