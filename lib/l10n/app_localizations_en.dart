@@ -1549,10 +1549,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmptyMessage => 'Songs you play will show up here.';
 
   @override
-  String get historyToday => 'Today';
+  String historyDayDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
 
   @override
-  String get historyYesterday => 'Yesterday';
+  String historyPlayedAt(DateTime date, String time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString - $time';
+  }
+
+  @override
+  String get historyDayMenu => 'Day options';
+
+  @override
+  String get historyDayCreatePlaylist => 'Create playlist from this day';
+
+  @override
+  String get historyDayDelete => 'Remove this day\'s listens';
+
+  @override
+  String historyDayPlaylistName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'History · $dateString';
+  }
 
   @override
   String historyListenCount(int count) {

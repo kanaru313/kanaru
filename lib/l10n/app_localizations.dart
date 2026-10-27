@@ -2408,17 +2408,41 @@ abstract class AppLocalizations {
   /// **'Songs you play will show up here.'**
   String get historyEmptyMessage;
 
-  /// Header of the History day that is today
+  /// Date on the bar that starts a History day
   ///
   /// In en, this message translates to:
-  /// **'Today'**
-  String get historyToday;
+  /// **'{date}'**
+  String historyDayDate(DateTime date);
 
-  /// Header of the History day that is yesterday
+  /// Third line of a History row: the day and time the song was played
   ///
   /// In en, this message translates to:
-  /// **'Yesterday'**
-  String get historyYesterday;
+  /// **'{date} - {time}'**
+  String historyPlayedAt(DateTime date, String time);
+
+  /// Tooltip of the menu button on a History day bar
+  ///
+  /// In en, this message translates to:
+  /// **'Day options'**
+  String get historyDayMenu;
+
+  /// Menu item that saves the songs of a History day as a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Create playlist from this day'**
+  String get historyDayCreatePlaylist;
+
+  /// Menu item that removes every listen shown for a History day
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this day\'s listens'**
+  String get historyDayDelete;
+
+  /// Suggested name of a playlist made from a History day
+  ///
+  /// In en, this message translates to:
+  /// **'History · {date}'**
+  String historyDayPlaylistName(DateTime date);
 
   /// How many plays a History day holds
   ///

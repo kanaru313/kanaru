@@ -1496,10 +1496,37 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyEmptyMessage => 'Bài hát bạn đã phát sẽ hiện ở đây.';
 
   @override
-  String get historyToday => 'Hôm nay';
+  String historyDayDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
 
   @override
-  String get historyYesterday => 'Hôm qua';
+  String historyPlayedAt(DateTime date, String time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString - $time';
+  }
+
+  @override
+  String get historyDayMenu => 'Tuỳ chọn ngày';
+
+  @override
+  String get historyDayCreatePlaylist => 'Tạo playlist từ ngày này';
+
+  @override
+  String get historyDayDelete => 'Xoá lượt nghe của ngày';
+
+  @override
+  String historyDayPlaylistName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Lịch sử · $dateString';
+  }
 
   @override
   String historyListenCount(int count) {

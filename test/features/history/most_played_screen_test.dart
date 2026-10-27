@@ -12,7 +12,9 @@ void main() {
 
   setUp(() => h = historyHarness());
 
-  testWidgets('shows the ranking under the Most played title', (tester) async {
+  historyTestWidgets('shows the ranking under the Most played title', (
+    tester,
+  ) async {
     await openHistory(
       tester,
       h,
@@ -28,7 +30,7 @@ void main() {
     expect(location(h), mostPlayedPath);
   });
 
-  testWidgets('the History page has no tabs', (tester) async {
+  historyTestWidgets('the History page has no tabs', (tester) async {
     await openHistory(
       tester,
       h,
@@ -41,7 +43,9 @@ void main() {
     expect(find.byTooltip('Jump to a day'), findsOneWidget);
   });
 
-  testWidgets('without a library shows the unavailable state', (tester) async {
+  historyTestWidgets('without a library shows the unavailable state', (
+    tester,
+  ) async {
     h = LibraryHarness(
       hasDatabase: false,
       overrides: [historyNowProvider.overrideWithValue(() => historyTestNow)],

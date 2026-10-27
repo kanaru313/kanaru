@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart' show QueryInterceptor, Value;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, debugDefaultTargetPlatformOverride;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/features/history/history_clock.dart';
-import 'package:kanaru/features/history/history_play_tile.dart';
+import 'package:kanaru/features/history/history_line_metrics.dart';
 import 'package:kanaru/features/history/history_timeline_view.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -14,6 +16,20 @@ import '../library/library_test_harness.dart';
 export '../library/browse_test_data.dart'
     show TestTrack, goTo, insertTracks, location;
 export '../library/library_test_harness.dart' show LibraryHarness;
+
+/// A widget test on the desktop platform: the test default (Android) pads
+/// icon buttons to 48 px, which is not the look the song rows are sized for.
+void historyTestWidgets(
+  String description,
+  Future<void> Function(WidgetTester tester) body,
+) => testWidgets(description, (tester) async {
+  debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+  try {
+    await body(tester);
+  } finally {
+    debugDefaultTargetPlatformOverride = null;
+  }
+});
 
 /// "Now" in the History widget tests: noon on 2026-10-23.
 final historyTestNow = DateTime(2026, 10, 23, 12);
@@ -113,8 +129,21 @@ Future<void> scrollTimelineTo(WidgetTester tester, double offset) async {
   await settleHistory(tester);
 }
 
-/// Pixels of one line of the timeline.
-const rowExtent = historyRowExtent;
+/// Pixels of one line of the timeline (a song row), at the open page's theme
+/// and text scale.
+double lineExtentOf(WidgetTester tester) {
+  final context = tester.element(find.byType(HistoryTimelineView));
+  return historyLineExtent(Theme.of(context), MediaQuery.textScalerOf(context));
+}
+
+/// Pixels of a day bar, the bottom of its header line.
+double barHeightOf(WidgetTester tester) {
+  final context = tester.element(find.byType(HistoryTimelineView));
+  return historyDayBarHeight(
+    Theme.of(context),
+    MediaQuery.textScalerOf(context),
+  );
+}
 
 /// [finder] among the lines of the list, not the sticky header drawn over it.
 Finder inList(Finder finder) =>

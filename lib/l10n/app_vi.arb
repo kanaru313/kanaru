@@ -455,13 +455,50 @@
   "@historyEmptyMessage": {
     "description": "Message of the History page when nothing was played yet"
   },
-  "historyToday": "Hôm nay",
-  "@historyToday": {
-    "description": "Header of the History day that is today"
+  "historyDayDate": "{date}",
+  "@historyDayDate": {
+    "description": "Date on the bar that starts a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
-  "historyYesterday": "Hôm qua",
-  "@historyYesterday": {
-    "description": "Header of the History day that is yesterday"
+  "historyPlayedAt": "{date} - {time}",
+  "@historyPlayedAt": {
+    "description": "Third line of a History row: the day and time the song was played",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyDayMenu": "Tuỳ chọn ngày",
+  "@historyDayMenu": {
+    "description": "Tooltip of the menu button on a History day bar"
+  },
+  "historyDayCreatePlaylist": "Tạo playlist từ ngày này",
+  "@historyDayCreatePlaylist": {
+    "description": "Menu item that saves the songs of a History day as a playlist"
+  },
+  "historyDayDelete": "Xoá lượt nghe của ngày",
+  "@historyDayDelete": {
+    "description": "Menu item that removes every listen shown for a History day"
+  },
+  "historyDayPlaylistName": "Lịch sử · {date}",
+  "@historyDayPlaylistName": {
+    "description": "Suggested name of a playlist made from a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
   "historyListenCount": "{count, plural, other{{count} lượt nghe}}",
   "@historyListenCount": {

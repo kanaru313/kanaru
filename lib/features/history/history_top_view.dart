@@ -14,7 +14,6 @@ import '../../shared/widgets/library_loading.dart';
 import '../../shared/enqueue_tracks.dart';
 import 'history_clock.dart';
 import 'history_play_menu.dart';
-import 'history_play_tile.dart' show historyRowExtent;
 import 'history_providers.dart';
 import 'history_range.dart';
 import 'history_range_bar.dart';
@@ -130,7 +129,7 @@ class _HistoryTopViewState extends ConsumerState<HistoryTopView> {
             );
     } else {
       body = ListView.builder(
-        itemExtent: historyRowExtent,
+        itemExtent: historyTopRowExtent,
         itemCount: rows.length,
         itemBuilder: (context, i) => HistoryTopTile(
           rank: i + 1,

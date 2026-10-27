@@ -1,27 +1,18 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_queries.dart';
 import '../../core/database/library_startup.dart';
-import '../../shared/enqueue_tracks.dart';
-import '../../shared/play_tracks.dart';
 import '../../shared/widgets/library_loading.dart';
-import '../../l10n/l10n.dart';
-import 'history_clock.dart';
-import 'history_day_queue.dart';
 import 'history_day_row_cache.dart';
 import 'history_days.dart';
-import 'history_delete_undo.dart';
-import 'history_play_menu.dart';
-import 'history_play_tile.dart';
+import 'history_line_metrics.dart';
 import 'history_plays_version.dart';
 import 'history_providers.dart';
-import 'history_routes.dart';
 import 'history_screen_states.dart';
+import 'history_timeline_actions.dart';
 import 'history_timeline_index.dart';
 import 'history_timeline_view.dart';
 import 'history_tracks_version.dart';
@@ -62,7 +53,8 @@ class HistoryTimelineBody extends ConsumerStatefulWidget {
       _HistoryTimelineBodyState();
 }
 
-class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
+class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
+    with HistoryTimelineActions<HistoryTimelineBody> {
   final _controller = ScrollController();
   late final HistoryDayRowCache _cache;
 
@@ -73,11 +65,16 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
   List<HistoryDayCount>? _held;
   Object? _lastCounts;
 
+  /// Height of a line and of a day bar, read from the theme and text scale on
+  /// every build; the jump and the scrolled-away test use them between builds.
+  double _extent = 80;
+  double _bar = 48;
+
   @override
   void initState() {
     super.initState();
     _cache = HistoryDayRowCache(
-      load: _loadDay,
+      load: loadDay,
       onChanged: () {
         if (mounted) setState(() {});
       },
@@ -95,7 +92,11 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
     super.dispose();
   }
 
-  Future<List<HistoryPlayRow>> _loadDay(int dayStart) async {
+  @override
+  List<HistoryPlayRow>? rowsOfDay(int dayStart) => _cache.rowsOf(dayStart);
+
+  @override
+  Future<List<HistoryPlayRow>> loadDay(int dayStart) async {
     final end = addDays(
       localDay(DateTime.fromMillisecondsSinceEpoch(dayStart)),
       1,
@@ -106,22 +107,23 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
     return _heldRows(dayStart, rows);
   }
 
-  /// While a read is held back the header of a day says how many plays it had
-  /// then, so its rows must be that many too: a read that finds more has the
-  /// held plays, which are the newest (a play is stamped with the time
-  /// playback started and its row is written a little later, but still
-  /// after every play shown, and rows run newest first), so they are the
-  /// leading rows and are cut. Taking the last rows is the same cut
-  /// without needing the time or id of the newest play shown. Removals and
-  /// changes are never held, so a day cannot have fewer rows than its count.
+  /// The header of a day says how many plays the page shows for it, so its
+  /// rows (and what a menu acts on) must be that many too. A read that finds
+  /// more has plays the page holds back or has not applied yet. Those are the
+  /// newest (a play is stamped with the time playback started and its row is
+  /// written a little later, but still after every play shown, and rows run
+  /// newest first), so they are the leading rows and are cut. Taking the last
+  /// rows is the same cut without needing the time or id of the newest play
+  /// shown. Removals and changes are never held, so a day cannot have fewer
+  /// rows than its count.
   List<HistoryPlayRow> _heldRows(int dayStart, List<HistoryPlayRow> rows) {
     final shown = _index?.countOfDay(dayStart) ?? -1;
-    if (_held == null || shown < 0 || rows.length <= shown) return rows;
+    if (shown < 0 || rows.length <= shown) return rows;
     return rows.sublist(rows.length - shown);
   }
 
   bool get _scrolledAway =>
-      _controller.hasClients && _controller.offset > historyRowExtent;
+      _controller.hasClients && _controller.offset > _extent;
 
   /// Takes a read of the days: now, or held back when it only adds plays and
   /// the reader is scrolled away from the top.
@@ -158,54 +160,14 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
   void _jumpTo(DateTime day) {
     final index = _index;
     if (index == null || !_controller.hasClients) return;
-    final line = index.firstIndexOfDay(localDay(day).millisecondsSinceEpoch);
-    if (line < 0) return;
+    final d = index.dayIndexOfStart(localDay(day).millisecondsSinceEpoch);
+    if (d < 0) return;
+    // A day near the end cannot reach the top: the list stops at its end.
     _controller.jumpTo(
-      math.min(line * historyRowExtent, _controller.position.maxScrollExtent),
-    );
-  }
-
-  void _play(HistoryPlayRow row, int dayStart) {
-    final queue = historyDayQueue(
-      _cache.rowsOf(dayStart) ?? [row],
-      row,
-      ref.read(coverCacheDirectoryProvider),
-    );
-    if (queue != null) playTracks(ref, queue.tracks, queue.start);
-  }
-
-  /// Opens the menu of [row]. The play is the one the menu was opened on:
-  /// the list may move before a choice is made.
-  Future<void> _openMenu(HistoryPlayRow row, Offset position) async {
-    final choice = await showHistoryPlayMenu(
-      context,
-      position,
-      canQueue: row.track != null,
-    );
-    if (choice == null || !mounted) return;
-    final action = historyQueueActionOf(choice);
-    if (action != null) {
-      enqueueLoaded(ref, context, action, [
-        historyTrackOf(row, ref.read(coverCacheDirectoryProvider)),
-      ], row.track!.title);
-      return;
-    }
-    if (choice == HistoryPlayChoice.trackHistory) {
-      context.go(historyTrackLocation(row.path));
-      return;
-    }
-    final db = ref.read(libraryDatabaseProvider);
-    if (db == null) return;
-    unawaited(
-      ref
-          .read(historyDeleteUndoProvider)
-          .delete(
-            db: db,
-            messenger: ScaffoldMessenger.of(context),
-            l10n: context.l10n,
-            version: ref.read(historyPlaysVersionProvider.notifier),
-            playId: row.id,
-          ),
+      math.min(
+        index.barOffsetOfDay(d, _extent, _bar),
+        _controller.position.maxScrollExtent,
+      ),
     );
   }
 
@@ -229,13 +191,17 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody> {
         hasOlderYear: widget.olderYear != null,
       );
     }
+    final theme = Theme.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    _extent = historyLineExtent(theme, scaler);
+    _bar = historyDayBarHeight(theme, scaler);
     return HistoryTimelineView(
       controller: _controller,
       index: index,
       rowsOf: _cache.rowsOf,
-      now: ref.watch(historyNowProvider)(),
-      onTap: _play,
-      onMenu: _openMenu,
+      onTap: playFromRow,
+      onMenu: openPlayMenu,
+      onDayMenu: openDayMenu,
       olderYear: widget.olderYear,
       onOlderYear: widget.onOlderYear,
     );

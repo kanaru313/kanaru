@@ -8,7 +8,10 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_art.dart';
 import '../../shared/widgets/song_tile.dart' show songCoverSize;
-import 'history_play_tile.dart' show historyRowExtent;
+
+/// Fixed height of a Most played row, which lets the list place rows
+/// without measuring them.
+const historyTopRowExtent = 64.0;
 
 /// One entry of the Most played list: rank, cover, title with
 /// "artist · album", and the number of listens. A song no longer in the
@@ -112,7 +115,7 @@ class HistoryTopTile extends ConsumerWidget {
     );
 
     return SizedBox(
-      height: historyRowExtent,
+      height: historyTopRowExtent,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
         child: Opacity(

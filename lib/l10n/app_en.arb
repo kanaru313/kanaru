@@ -931,13 +931,50 @@
   "@historyEmptyMessage": {
     "description": "Message of the History page when nothing was played yet"
   },
-  "historyToday": "Today",
-  "@historyToday": {
-    "description": "Header of the History day that is today"
+  "historyDayDate": "{date}",
+  "@historyDayDate": {
+    "description": "Date on the bar that starts a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
-  "historyYesterday": "Yesterday",
-  "@historyYesterday": {
-    "description": "Header of the History day that is yesterday"
+  "historyPlayedAt": "{date} - {time}",
+  "@historyPlayedAt": {
+    "description": "Third line of a History row: the day and time the song was played",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyDayMenu": "Day options",
+  "@historyDayMenu": {
+    "description": "Tooltip of the menu button on a History day bar"
+  },
+  "historyDayCreatePlaylist": "Create playlist from this day",
+  "@historyDayCreatePlaylist": {
+    "description": "Menu item that saves the songs of a History day as a playlist"
+  },
+  "historyDayDelete": "Remove this day's listens",
+  "@historyDayDelete": {
+    "description": "Menu item that removes every listen shown for a History day"
+  },
+  "historyDayPlaylistName": "History · {date}",
+  "@historyDayPlaylistName": {
+    "description": "Suggested name of a playlist made from a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
   "historyListenCount": "{count, plural, =1{1 listen} other{{count} listens}}",
   "@historyListenCount": {

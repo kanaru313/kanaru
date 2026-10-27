@@ -91,4 +91,53 @@ void main() {
     }
     expect(index.itemCount, line);
   });
+
+  group('bar offsets', () {
+    // Lines are 100 tall, bars 40: a bar sits 60 below the top of its line.
+    const extent = 100.0;
+    const bar = 40.0;
+    final index = HistoryTimelineIndex([
+      _day(300, 3), // lines 0-3
+      _day(200, 1), // lines 4-5
+      _day(100, 2), // lines 6-8
+    ]);
+
+    test('the bar of a day starts below the gap of its header line', () {
+      expect(index.barOffsetOfDay(0, extent, bar), 60);
+      expect(index.barOffsetOfDay(1, extent, bar), 460);
+      expect(index.barOffsetOfDay(2, extent, bar), 660);
+    });
+
+    test('dayIndexOfStart finds a day and misses others', () {
+      expect(index.dayIndexOfStart(200), 1);
+      expect(index.dayIndexOfStart(250), -1);
+    });
+
+    test('nothing is pinned while the first bar is still in the list', () {
+      expect(index.stickyAt(0, extent, bar), isNull);
+      expect(index.stickyAt(59.9, extent, bar), isNull);
+    });
+
+    test('inside a day its bar is pinned in place', () {
+      expect(index.stickyAt(60, extent, bar), (day: 0, dy: 0.0));
+      expect(index.stickyAt(300, extent, bar), (day: 0, dy: 0.0));
+      expect(index.stickyAt(420, extent, bar), (day: 0, dy: 0.0));
+    });
+
+    test('the next bar pushes the pinned one up as it arrives', () {
+      // Next bar at 460 reaches the pinned bar's bottom (offset + 40) at 421.
+      expect(index.stickyAt(430, extent, bar), (day: 0, dy: -10.0));
+      expect(index.stickyAt(459, extent, bar), (day: 0, dy: -39.0));
+      expect(index.stickyAt(460, extent, bar), (day: 1, dy: 0.0));
+    });
+
+    test('the last day is never pushed', () {
+      expect(index.stickyAt(660, extent, bar), (day: 2, dy: 0.0));
+      expect(index.stickyAt(5000, extent, bar), (day: 2, dy: 0.0));
+    });
+
+    test('an empty list pins nothing', () {
+      expect(HistoryTimelineIndex(const []).stickyAt(10, extent, bar), isNull);
+    });
+  });
 }
