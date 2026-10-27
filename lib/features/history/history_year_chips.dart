@@ -15,21 +15,29 @@ class HistoryYearChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
-      child: Row(
-        children: [
-          for (final year in years)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text('$year'),
-                selected: year == selected,
-                onSelected: (_) => onSelected(year),
+    // Start-aligned under the toolbar; a parent Column would center it.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        // The toolbar above already pads its bottom edge.
+        padding: const EdgeInsets.fromLTRB(32, 0, 32, 8),
+        child: Row(
+          children: [
+            for (final year in years)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text('$year'),
+                  // No 48px tap target padding: it reads as a gap under the
+                  // toolbar.
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  selected: year == selected,
+                  onSelected: (_) => onSelected(year),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
