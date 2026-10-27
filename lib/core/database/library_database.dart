@@ -7,8 +7,10 @@ import 'library_migration_v4.dart';
 import 'library_migration_v5.dart';
 import 'library_migration_v6.dart';
 import 'library_migration_v7.dart';
+import 'library_migration_v8.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
+import 'lyric_translation_tables.dart';
 import 'separator_rules.dart';
 import 'track_keys.dart';
 import 'user_data_tables.dart';
@@ -34,6 +36,8 @@ const deleteChunkSize = 500;
     PlaylistEntries,
     CoverColors,
     ExcludedFolders,
+    LyricTranslations,
+    LyricTranslationPrefs,
   ],
   include: {'library_search.drift', 'listen_history.drift'},
 )
@@ -41,7 +45,7 @@ class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -58,6 +62,7 @@ class LibraryDatabase extends _$LibraryDatabase {
       from4To5: (m, schema) => migrateLibraryToSchema5(this, m, schema),
       from5To6: (m, schema) => migrateLibraryToSchema6(this, m, schema),
       from6To7: (m, schema) => migrateLibraryToSchema7(this, m, schema),
+      from7To8: (m, schema) => migrateLibraryToSchema8(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).

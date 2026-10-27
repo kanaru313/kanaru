@@ -10,7 +10,7 @@ Kanaru currently targets **GNU/Linux** first. Windows, macOS, Android and iOS in
 | Clang, CMake, Ninja, pkg-config | any recent | Flutter Linux desktop toolchain |
 | GTK 3 (dev headers) | ≥ 3.24 | Flutter Linux embedder |
 | libmpv (dev headers) | ≥ 0.36 | Audio playback (`media_kit`) |
-| libsecret, jsoncpp (dev headers) | any recent | Planned credential storage (`flutter_secure_storage`, not in `pubspec.yaml` yet); installing them now keeps the setup stable |
+| libsecret, libgcrypt, libgpg-error (dev headers) | any recent | Credential storage (`flutter_secure_storage`); libgcrypt and libgpg-error are build dependencies of libsecret's pkg-config file |
 | SQLite (dev headers) | ≥ 3.35 | Library database (`drift`) |
 | Rust (stable) + Cargo | ≥ 1.89 | Tag reading (`lofty` via `flutter_rust_bridge`) |
 | libclang | any recent | Needed by `flutter_rust_bridge_codegen` / `ffigen` |
@@ -45,7 +45,7 @@ sudo apt install -y \
   clang cmake ninja-build pkg-config \
   libgtk-3-dev liblzma-dev libstdc++-12-dev \
   libmpv-dev mpv \
-  libsecret-1-dev libjsoncpp-dev \
+  libsecret-1-dev libgcrypt20-dev libgpg-error-dev \
   libsqlite3-dev libclang-dev
 ```
 
@@ -59,7 +59,7 @@ sudo dnf install -y \
   clang clang-devel cmake ninja-build pkgconf-pkg-config \
   gtk3-devel xz-devel \
   mpv mpv-devel \
-  libsecret-devel jsoncpp-devel \
+  libsecret-devel libgcrypt-devel libgpg-error-devel \
   sqlite-devel
 ```
 
@@ -71,7 +71,7 @@ If `mpv-devel` is not found on your release, enable [RPM Fusion](https://rpmfusi
 sudo pacman -S --needed \
   base-devel git curl unzip zip \
   clang cmake ninja pkgconf \
-  gtk3 mpv libsecret jsoncpp sqlite
+  gtk3 mpv libsecret libgcrypt libgpg-error sqlite
 ```
 
 Flutter is available from the AUR (`flutter-bin`), or install it manually as below.
@@ -112,7 +112,7 @@ export LIBCLANG_PATH=/usr/lib/llvm-18/lib   # adjust to your system
 
 ```bash
 flutter doctor            # "Linux toolchain" must be ✓ (Android/Chrome can be ignored for now)
-pkg-config --modversion gtk+-3.0 mpv libsecret-1 jsoncpp sqlite3
+pkg-config --modversion gtk+-3.0 mpv libsecret-1 libgcrypt sqlite3
 rustc --version
 flutter_rust_bridge_codegen --version
 ```
@@ -254,7 +254,7 @@ Timings are printed to the console. They depend on the machine and the repo keep
 | `libmpv.so: cannot open shared object file` at runtime | Install the mpv runtime package (`mpv` / `libmpv2`). On Nix, run inside the dev shell. |
 | App aborts with `No GSettings schemas are installed on the system` when opening files | GTK's file chooser needs compiled schemas. Distros ship them with GTK 3; on Nix, run inside the dev shell, which adds them to `XDG_DATA_DIRS`. |
 | No sound, or mpv errors about locale | Make sure your locale is valid (`locale` shows no errors). `media_kit` sets `LC_NUMERIC` itself. |
-| `flutter_secure_storage` fails to read or write | A Secret Service provider must be running (GNOME Keyring, KWallet ≥ 5.97, or KeePassXC with Secret Service enabled). |
+| `flutter_secure_storage` fails to read or write | A Secret Service provider must be running (GNOME Keyring, KWallet ≥ 5.97, or KeePassXC with Secret Service enabled). Without one, Kanaru keeps the DeepL key in a `0600` `secrets.json` in the data directory. |
 | `Unable to find libclang` during Rust codegen | Install `libclang-dev` / `clang-devel` and set `LIBCLANG_PATH`. |
 
 ## End-user runtime dependencies

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../lyrics_translation/translation_service.dart';
 import 'app_settings.dart';
 import 'settings_file.dart';
 
@@ -99,6 +100,53 @@ class SettingsNotifier extends Notifier<AppSettings> {
 
   void setDisplay(DisplayPrefs prefs) =>
       _update(state.copyWith(display: prefs));
+
+  /// Saves [prefs], except `noticeAcknowledged`, which only
+  /// [acknowledgeTranslationNotice] and [enableTranslation] change. Translation
+  /// never shows for a service whose network notice was not accepted.
+  void setTranslation(TranslationPrefs prefs) => _update(
+    state.copyWith(
+      translation: _acknowledgedOnly(
+        prefs.copyWith(
+          noticeAcknowledged: state.translation.noticeAcknowledged,
+        ),
+      ),
+    ),
+  );
+
+  /// Flips whether translated lyrics show (never on without the notice).
+  void toggleLyricsTranslation() =>
+      setTranslation(state.translation.copyWith(show: !state.translation.show));
+
+  /// Records that the user accepted sending lyrics to [service].
+  void acknowledgeTranslationNotice(LyricsTranslationService service) =>
+      _update(
+        state.copyWith(
+          translation: state.translation.copyWith(
+            noticeAcknowledged: _withAcknowledged(service),
+          ),
+        ),
+      );
+
+  /// Selects [service], records that its notice was accepted and turns
+  /// translation on, in one write. Call it only after the user accepted the
+  /// notice for [service].
+  void enableTranslation(LyricsTranslationService service) => _update(
+    state.copyWith(
+      translation: state.translation.copyWith(
+        show: true,
+        service: service,
+        noticeAcknowledged: _withAcknowledged(service),
+      ),
+    ),
+  );
+
+  Set<LyricsTranslationService> _withAcknowledged(
+    LyricsTranslationService service,
+  ) => Set.unmodifiable({...state.translation.noticeAcknowledged, service});
+
+  static TranslationPrefs _acknowledgedOnly(TranslationPrefs prefs) =>
+      prefs.show && prefs.needsNotice ? prefs.copyWith(show: false) : prefs;
 
   /// Records that the first-run source picker is done for good.
   void markLibraryOnboarded() =>

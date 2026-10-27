@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/app_settings.dart';
 import 'package:kanaru/core/settings/settings_codec.dart';
 
@@ -313,6 +314,49 @@ void main() {
 
       expect(decoded.settings.animations, isTrue);
       expect(decoded.unknownKeys, isEmpty);
+    });
+  });
+
+  group('lyricsTranslation group', () {
+    const translated = AppSettings(
+      translation: TranslationPrefs(
+        show: true,
+        service: LyricsTranslationService.deepl,
+        targetLanguage: 'vi',
+        noticeAcknowledged: {LyricsTranslationService.deepl},
+      ),
+    );
+
+    test('is a known key and round-trips as a nested object', () {
+      final json = encodeSettings(translated);
+      final decoded = decodeSettings(json);
+
+      expect((json['lyricsTranslation']! as Map)['service'], 'deepl');
+      expect(decoded.settings, translated);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+
+    test('a file without it gives the defaults', () {
+      expect(
+        decodeSettings(<String, Object?>{}).settings.translation,
+        const TranslationPrefs(),
+      );
+    });
+
+    test('keys inside it are kept', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'lyricsTranslation': <String, Object?>{'future': 2},
+      });
+      final json = encodeSettings(
+        decoded.settings,
+        groupExtras: decoded.groupExtras,
+      );
+
+      expect((json['lyricsTranslation']! as Map)['future'], 2);
+    });
+
+    test('never stores a credential', () {
+      expect(encodeSettings(translated).toString(), isNot(contains('key')));
     });
   });
 

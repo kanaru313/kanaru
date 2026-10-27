@@ -9,6 +9,7 @@ import 'now_playing_split_geometry.dart';
 import 'now_playing_title_bar.dart';
 import 'now_playing_track_column.dart';
 import 'now_playing_view_mode.dart';
+import 'now_playing_view_mode_button.dart';
 
 /// How long a switch the user asked for takes to cross-fade.
 const nowPlayingModeFadeDuration = Duration(milliseconds: 300);
@@ -122,6 +123,8 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
       excludeFromDrag: titleBar?.excludeFromDrag ?? noDragExclusion,
       floatingOpen: widget.floatingOpen,
       hasWindowButtons: titleBar?.hasWindowButtons ?? false,
+      showTranslate: widget.mode != NowPlayingViewMode.coverOnly,
+      translateEnabled: widget.lyricsState != NowPlayingLyricsState.none,
       modeButton: NowPlayingViewModeButton(
         mode: widget.mode,
         lyricsState: widget.lyricsState,

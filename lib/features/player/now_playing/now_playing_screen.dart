@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/settings/settings_provider.dart';
+import '../../../shared/translation_notice_dialog.dart';
 import '../player_shortcuts.dart' show isTextInputFocused;
 import '../queue/queue_panel.dart';
 import '../queue/queue_sheet_host.dart';
@@ -84,14 +88,17 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   void _choose(NowPlayingViewMode mode) =>
       ref.read(nowPlayingViewModeProvider.notifier).choose(mode);
 
-  /// `L` cycles the view mode, but only where it is not meant for something
-  /// else: with the wide layout, no modifier, no text field and no open
-  /// popup or menu (a menu is no route, so its keys bubble up to here).
+  /// `L` cycles the view mode (wide layout only) and `T` turns the lyrics
+  /// translation on or off (both layouts, not in Cover only). Each works only
+  /// where the key is not meant for something else: with no modifier, no text
+  /// field and no open popup or menu (a menu is no route, so its keys bubble
+  /// up to here).
   KeyEventResult _onKey(KeyEvent event, bool wide) {
     _chrome.poke();
-    if (!wide ||
-        event is! KeyDownEvent ||
-        event.logicalKey != LogicalKeyboardKey.keyL) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    final isL = key == LogicalKeyboardKey.keyL;
+    if (!(isL && wide) && key != LogicalKeyboardKey.keyT) {
       return KeyEventResult.ignored;
     }
     final keyboard = HardwareKeyboard.instance;
@@ -103,6 +110,18 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         isTextInputFocused()) {
       return KeyEventResult.ignored;
     }
+    if (!isL) {
+      // Cover only shows no lyrics, so there is nothing to translate.
+      final shown = effectiveViewMode(
+        ref.read(nowPlayingViewModeProvider),
+        _lyricsState,
+      );
+      if (wide && shown == NowPlayingViewMode.coverOnly) {
+        return KeyEventResult.ignored;
+      }
+      _toggleTranslation();
+      return KeyEventResult.handled;
+    }
     final lyrics = _lyricsState;
     final shown = effectiveViewMode(
       ref.read(nowPlayingViewModeProvider),
@@ -110,6 +129,17 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     );
     _choose(nextViewMode(shown, lyrics));
     return KeyEventResult.handled;
+  }
+
+  /// Turning translation off always works; turning it on needs lyrics and,
+  /// the first time for a service, the network notice.
+  void _toggleTranslation() {
+    final prefs = ref.read(settingsProvider).translation;
+    if (prefs.show && !prefs.needsNotice) {
+      ref.read(settingsProvider.notifier).toggleLyricsTranslation();
+    } else if (_lyricsState != NowPlayingLyricsState.none) {
+      unawaited(enableTranslationWithNotice(context, ref, prefs.service));
+    }
   }
 
   void _close() => ref.read(nowPlayingOpenProvider.notifier).close();

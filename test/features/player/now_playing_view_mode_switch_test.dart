@@ -2,10 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_cover_only_body.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_lyrics_only_body.dart';
@@ -20,6 +25,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/fake_lyrics_readers.dart';
 import '../../core/player/fake_audio_backend.dart';
+import 'fake_translation_controller.dart';
 
 const _sung = Track(uri: '/m/sung.flac', title: 'Sung', artist: 'A');
 const _plain = Track(uri: '/m/instrumental.flac', title: 'Plain', artist: 'B');
@@ -54,6 +60,10 @@ class _ProbeState extends State<_Probe> {
 void main() {
   late FakeLrcSidecarReader sidecar;
   late ProviderContainer container;
+
+  /// Settings and extra overrides the next container starts with.
+  var startSettings = const AppSettings();
+  var extraOverrides = <Override>[];
 
   PlayerService player() => container.read(playerServiceProvider.notifier);
   NowPlayingViewMode chosen() => container.read(nowPlayingViewModeProvider);
@@ -97,6 +107,8 @@ void main() {
           FakeEmbeddedLyricsReader(),
         ),
         lrcSidecarReaderProvider.overrideWithValue(sidecar),
+        initialSettingsProvider.overrideWithValue(startSettings),
+        ...extraOverrides,
       ],
     );
     addTearDown(container.dispose);
@@ -138,6 +150,14 @@ void main() {
     }
     await player().openTracks([_sung]);
     await tester.pumpWidget(app(NowPlayingScreen(lyrics: lyrics)));
+    await tester.pumpAndSettle();
+  }
+
+  TranslationPrefs translation() =>
+      container.read(settingsProvider).translation;
+
+  Future<void> pressT(WidgetTester tester) async {
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
     await tester.pumpAndSettle();
   }
 
@@ -433,6 +453,151 @@ void main() {
       await pumpScreen(tester, size: const Size(600, 900));
       await pressL(tester);
       expect(chosen(), NowPlayingViewMode.split);
+    });
+  });
+
+  group('the T key', () {
+    const accepted = AppSettings(
+      translation: TranslationPrefs(
+        noticeAcknowledged: {LyricsTranslationService.google},
+      ),
+    );
+
+    setUp(() {
+      startSettings = accepted;
+      extraOverrides = [];
+    });
+
+    testWidgets('toggles translation in the wide layout', (tester) async {
+      await pumpOverlay(tester);
+      await pressT(tester);
+      expect(translation().show, isTrue);
+      await pressT(tester);
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('toggles translation in the narrow layout', (tester) async {
+      await pumpScreen(tester, size: const Size(600, 900));
+      await pressT(tester);
+      expect(translation().show, isTrue);
+      await pressT(tester);
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('the first time asks; Cancel keeps it off', (tester) async {
+      startSettings = const AppSettings();
+      await pumpOverlay(tester);
+
+      await pressT(tester);
+      expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(translation().show, isFalse);
+      expect(translation().noticeAcknowledged, isEmpty);
+    });
+
+    testWidgets('Continue accepts and turns it on; later presses are silent', (
+      tester,
+    ) async {
+      startSettings = const AppSettings();
+      await pumpOverlay(tester);
+
+      await pressT(tester);
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(translation().show, isTrue);
+      expect(translation().noticeAcknowledged, {
+        LyricsTranslationService.google,
+      });
+
+      await pressT(tester);
+      await pressT(tester);
+      expect(find.textContaining('will be sent'), findsNothing);
+      expect(translation().show, isTrue);
+    });
+
+    testWidgets('turning on needs lyrics; turning off does not', (
+      tester,
+    ) async {
+      await pumpOverlay(tester, tracks: const [_plain]);
+      await pressT(tester);
+      expect(translation().show, isFalse);
+      expect(find.textContaining('will be sent'), findsNothing);
+
+      container
+          .read(settingsProvider.notifier)
+          .setTranslation(translation().copyWith(show: true));
+      await tester.pumpAndSettle();
+      await pressT(tester);
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('does nothing in Cover only', (tester) async {
+      await pumpOverlay(tester, mode: NowPlayingViewMode.coverOnly);
+
+      await pressT(tester);
+
+      expect(translation().show, isFalse);
+      expect(find.textContaining('will be sent'), findsNothing);
+    });
+
+    testWidgets('typed in the queue filter goes to the field', (tester) async {
+      await pumpOverlay(tester, tracks: const [_plain]);
+      await tester.tap(find.byTooltip('Filter in this page'));
+      await tester.pumpAndSettle();
+      await tester.showKeyboard(find.byType(EditableText));
+
+      await pressT(tester);
+
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('ignores Ctrl+T and Shift+T', (tester) async {
+      await pumpOverlay(tester);
+      for (final modifier in [
+        LogicalKeyboardKey.controlLeft,
+        LogicalKeyboardKey.shiftLeft,
+      ]) {
+        await tester.sendKeyDownEvent(modifier);
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
+        await tester.sendKeyUpEvent(modifier);
+        await tester.pumpAndSettle();
+      }
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('does nothing while the sleep timer menu is open', (
+      tester,
+    ) async {
+      await pumpOverlay(tester);
+      await tester.tap(find.byTooltip('Sleep timer'));
+      await tester.pumpAndSettle();
+
+      await pressT(tester);
+
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('does nothing while the translation menu is open', (
+      tester,
+    ) async {
+      // A fresh notifier each time: the button's provider is recreated when
+      // the header is rebuilt.
+      extraOverrides = [
+        lyricsTranslationProvider.overrideWith2(
+          (_) =>
+              FakeTranslationController(TranslationOff(fakeTranslationInfo())),
+        ),
+      ];
+      await pumpOverlay(tester);
+      await tester.tap(find.byTooltip('Lyrics translation'));
+      await tester.pumpAndSettle();
+      expect(find.text('Show translation'), findsOneWidget);
+
+      await pressT(tester);
+
+      expect(translation().show, isFalse);
     });
   });
 

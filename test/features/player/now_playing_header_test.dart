@@ -1,12 +1,17 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/player/playback_fade.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
+import 'package:kanaru/features/player/playback_controls.dart'
+    show ShuffleButton;
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
 import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/features/player/volume_button.dart';
@@ -15,6 +20,7 @@ import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
 import '../../core/player/fake_audio_backend.dart';
 import '../../core/player/manual_fade_clock.dart';
+import 'fake_translation_controller.dart';
 
 /// Marks what the header wrapped in its drag exclusion.
 class _Excluded extends StatelessWidget {
@@ -43,6 +49,10 @@ void main() {
     double textScale = 1,
     Widget? modeButton,
     bool exclude = false,
+    bool showTranslate = false,
+    bool translateEnabled = true,
+    Locale locale = const Locale('en'),
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = Size(width, 800);
     tester.view.devicePixelRatio = 1;
@@ -54,6 +64,7 @@ void main() {
         audioBackendProvider.overrideWithValue(FakeAudioBackend()),
         // A clock moved by hand, so a running timer leaves no real one.
         playbackFadeClockProvider.overrideWithValue(ManualFadeClock().clock),
+        ...overrides,
       ],
     );
     addTearDown(container.dispose);
@@ -67,8 +78,11 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          locale: locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Align(
@@ -84,6 +98,8 @@ void main() {
                       floatingOpen: floating,
                       hasWindowButtons: windowButtons,
                       modeButton: modeButton,
+                      showTranslate: showTranslate,
+                      translateEnabled: translateEnabled,
                     ),
                   ),
                   if (windowButtons)
@@ -285,6 +301,105 @@ void main() {
     expect(find.text('30:00'), findsNothing);
     expect(find.byTooltip('Sleep timer: 30:00 left'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('the translation button', () {
+    List<Override> scripted() => [
+      fakeTranslationOverride(
+        FakeTranslationController(TranslationOff(fakeTranslationInfo())),
+      ),
+    ];
+
+    testWidgets('is absent unless the layout asks for it', (tester) async {
+      await pump(tester);
+      expect(find.byType(LyricsTranslationButton), findsNothing);
+    });
+
+    testWidgets('shows when the layout asks for it', (tester) async {
+      await pump(tester, showTranslate: true, overrides: scripted());
+      expect(find.byTooltip('Lyrics translation'), findsOneWidget);
+    });
+
+    testWidgets('sits right after the playlist button', (tester) async {
+      await pump(tester, showTranslate: true, overrides: scripted());
+
+      final playlist = centerX(tester, 'Add to playlist');
+      final translate = centerX(tester, 'Lyrics translation');
+      expect(translate - playlist, 48);
+      expect(translate, lessThan(centerX(tester, 'Shuffle')));
+    });
+
+    testWidgets('is disabled when told so', (tester) async {
+      await pump(
+        tester,
+        showTranslate: true,
+        translateEnabled: false,
+        overrides: scripted(),
+      );
+
+      await tester.tap(
+        find.byTooltip('Lyrics translation'),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Show translation'), findsNothing);
+      expect(floating.value, isFalse);
+    });
+
+    testWidgets('its menu sets floatingOpen while open', (tester) async {
+      await pump(tester, showTranslate: true, overrides: scripted());
+
+      await tester.tap(find.byTooltip('Lyrics translation'));
+      await tester.pumpAndSettle();
+      expect(floating.value, isTrue);
+
+      await tester.tapAt(const Offset(600, 600));
+      await tester.pumpAndSettle();
+      expect(floating.value, isFalse);
+    });
+
+    testWidgets('floatingOpen is cleared when the header leaves', (
+      tester,
+    ) async {
+      await pump(tester, showTranslate: true, overrides: scripted());
+      await tester.tap(find.byTooltip('Lyrics translation'));
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(floating.value, isFalse);
+    });
+
+    for (final locale in const [Locale('en'), Locale('vi')]) {
+      testWidgets('fits 720 px with every button, ${locale.languageCode}', (
+        tester,
+      ) async {
+        await pump(
+          tester,
+          width: 720,
+          windowButtons: true,
+          showTranslate: true,
+          locale: locale,
+          overrides: scripted(),
+          modeButton: const SizedBox(width: 48, height: 48),
+        );
+        container.read(sleepTimerProvider.notifier).startMinutes(719);
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        final header = tester.getRect(find.byType(NowPlayingHeader));
+        final translate = tester.getRect(find.byType(LyricsTranslationButton));
+        expect(
+          translate.right,
+          lessThan(tester.getRect(find.byType(ShuffleButton)).left),
+        );
+        expect(
+          tester.getRect(find.byType(VolumeButton)).right,
+          lessThanOrEqualTo(header.right),
+        );
+      });
+    }
   });
 
   for (final scale in [1.0, 1.5]) {

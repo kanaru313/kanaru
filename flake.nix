@@ -34,6 +34,9 @@
           # flutter_secure_storage
           libsecret
           jsoncpp
+          # libsecret's pkg-config file requires these (Requires.private)
+          libgcrypt
+          libgpg-error
           # drift
           sqlite
         ];

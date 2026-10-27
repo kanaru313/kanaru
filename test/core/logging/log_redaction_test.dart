@@ -13,6 +13,24 @@ void main() {
     );
   });
 
+  test('masks a DeepL auth key, with or without the header name', () {
+    const key = '00000000-0000-0000-0000-000000000000:fx';
+    expect(
+      redactSecrets('Authorization: DeepL-Auth-Key $key'),
+      'Authorization: ***',
+    );
+    final bare = redactSecrets('headers {a: DeepL-Auth-Key $key, b: 1}\nnext');
+    expect(bare, 'headers {a: DeepL-Auth-Key ***\nnext');
+    expect(redactSecrets('deepl-auth-key $key'), 'deepl-auth-key ***');
+  });
+
+  test('a DeepL key word in prose masks the rest of the line', () {
+    expect(
+      redactSecrets('bad deepl-auth-key format, see settings\nnext'),
+      'bad deepl-auth-key ***\nnext',
+    );
+  });
+
   test('masks S3 presigned parameters', () {
     final out = redactSecrets(
       'https://b.s3.example/k.flac?X-Amz-Credential=AKIA%2F1&'

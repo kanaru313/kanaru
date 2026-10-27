@@ -30,6 +30,12 @@ String formatFileSizeKb(AppLocalizations l10n, int kb) {
   return kb < 1024 ? l10n.settingsUnitKb(kb) : l10n.settingsUnitMb(kb / 1024);
 }
 
+/// [bytes] as a short size: bytes below 1 KB, then the same KB and MB text as
+/// [formatFileSizeKb].
+String formatBytes(AppLocalizations l10n, int bytes) => bytes < 1024
+    ? l10n.settingsUnitBytes(bytes)
+    : formatFileSizeKb(l10n, (bytes / 1024).round());
+
 String formatSeconds(AppLocalizations l10n, int seconds) =>
     seconds == 0 ? l10n.settingsOff : l10n.settingsUnitSeconds(seconds);
 
