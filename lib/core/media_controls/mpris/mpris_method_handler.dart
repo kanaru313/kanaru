@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../player/player_service.dart';
 import '../../player/player_state.dart';
+import '../../player/repeat_mode.dart';
 import 'mpris_properties.dart';
 
 final _log = Logger('mpris');
@@ -114,7 +115,19 @@ class MprisMethodHandler {
         if (value is! DBusString) return DBusMethodErrorResponse.invalidArgs();
         final mode = repeatModeFromLoopStatus(value.value);
         if (mode == null) return DBusMethodErrorResponse.invalidArgs();
-        _run('LoopStatus', () => _player.setRepeat(mode));
+        // The status already shown: keep the mode behind it (a client that
+        // sets `Playlist` must not turn repeat all shuffled into repeat all).
+        if (value.value == mprisLoopStatusOf(_state)) break;
+        // `Playlist` while counting on top of a repeat-all mode only ends the
+        // count: the mode behind it stays (it may be the shuffled one).
+        final endCount =
+            mode == RepeatMode.all &&
+            _state.repeatTimes > 0 &&
+            _state.queue.repeat.wrapsQueue;
+        _run(
+          'LoopStatus',
+          () => endCount ? _player.setRepeatTimes(0) : _player.setRepeat(mode),
+        );
       case 'Shuffle':
         if (value is! DBusBoolean) {
           return DBusMethodErrorResponse.invalidArgs();

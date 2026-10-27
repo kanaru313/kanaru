@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
+import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/features/player/volume_button.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
@@ -111,7 +112,7 @@ void main() {
       'Add to favorites',
       'Add to playlist',
       'Shuffle',
-      'Repeat off',
+      'Stop after the last song',
       'Sleep timer',
       'Mute',
     ].map((tooltip) => centerX(tester, tooltip)).toList();
@@ -171,8 +172,10 @@ void main() {
     await tester.pump();
     expect(container.read(playerServiceProvider).queue.shuffled, isTrue);
 
-    await tester.tap(find.byTooltip('Repeat off'));
-    await tester.pump();
+    await tester.tap(find.byType(RepeatButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Repeat the whole queue'));
+    await tester.pumpAndSettle();
     expect(container.read(playerServiceProvider).queue.repeat, RepeatMode.all);
   });
 
@@ -236,6 +239,20 @@ void main() {
     expect(menu.top, greaterThanOrEqualTo(button.bottom));
 
     await tester.tap(find.text('15 minutes'));
+    await tester.pumpAndSettle();
+    expect(floating.value, isFalse);
+  });
+
+  testWidgets('the repeat menu sets floatingOpen while it is open', (
+    tester,
+  ) async {
+    await pump(tester);
+
+    await tester.tap(find.byType(RepeatButton));
+    await tester.pumpAndSettle();
+    expect(floating.value, isTrue);
+
+    await tester.tap(find.text('Repeat the current song'));
     await tester.pumpAndSettle();
     expect(floating.value, isFalse);
   });

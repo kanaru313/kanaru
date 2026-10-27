@@ -128,6 +128,33 @@ void main() {
     );
   });
 
+  test(
+    'restoring repeat all shuffled on the last track keeps the order',
+    () async {
+      await store(
+        PlaybackSession(
+          tracks: [a, b, c],
+          order: const [2, 0, 1],
+          unshuffledOrder: const [0, 1, 2],
+          index: 2,
+          shuffled: true,
+          repeat: RepeatMode.allShuffled,
+        ),
+      );
+      live = launch();
+      await settle();
+
+      expect(state().queue.repeat, RepeatMode.allShuffled);
+      expect(state().queue.tracks, [c, a, b]);
+      expect(state().queue.index, 2);
+      expect(backend.calls, [
+        'setVolume(100.0)',
+        'setRepeat(allShuffled)',
+        'open(b, next: null, paused)',
+      ]);
+    },
+  );
+
   test('quit and relaunch comes back where it was paused', () async {
     live = launch();
     await service().openTracks([a, b, c], start: 1);

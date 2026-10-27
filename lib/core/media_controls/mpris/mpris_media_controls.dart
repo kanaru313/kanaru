@@ -154,7 +154,8 @@ class MprisMediaControls implements MediaControls {
       a.playing == b.playing &&
       a.stopped == b.stopped &&
       a.duration == b.duration &&
-      a.volume == b.volume;
+      a.volume == b.volume &&
+      (a.repeatTimes > 0) == (b.repeatTimes > 0);
 
   /// Follows `PlayerService.seeked`. The service makes a new stream when its
   /// provider rebuilds and closes the old one, so a finished stream means:

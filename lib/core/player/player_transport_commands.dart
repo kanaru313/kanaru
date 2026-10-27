@@ -152,7 +152,20 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   /// queue repeats or the endless queue setting is on (then to the first).
   Future<void> next() async {
     final index = state.queue.manualNextIndex(wrap: _endlessQueue);
-    if (index != null) await jump(index);
+    if (index == null) return;
+    // Next on the last track of a shuffled pass starts the next pass.
+    if (state.queue.endsShuffledPass) _startShuffledPass();
+    await jump(index);
+  }
+
+  /// Replaces the order with a fresh random one for the next pass (see
+  /// [PlayQueuePasses.nextShuffledPass]). Everything in the old queue has
+  /// played, so no "play next" mark is left to keep.
+  void _startShuffledPass() {
+    _upNext.clear();
+    state = state.copyWith(
+      queue: state.queue.nextShuffledPass(_random ?? Random()),
+    );
   }
 
   /// Goes to the previous track; on the first one does nothing unless the

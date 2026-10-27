@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/album_run_lookup.dart';
 import 'package:kanaru/core/player/playback_fade.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/replay_gain_options.dart';
 import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
@@ -319,6 +320,21 @@ void main() {
       expect(await flagAt(1), isTrue, reason: 'c has no album');
       expect(await flagAt(2), isTrue, reason: 'c is an album of its own');
       expect(await flagAt(3), isTrue, reason: 'nothing follows d');
+      expect(await flagAt(0), isFalse);
+    });
+
+    test('the last track of a shuffled pass ends its album', () async {
+      lookup = (paths) async => {for (final path in paths) path: _x};
+      await open();
+      await player().setRepeat(RepeatMode.all);
+      timer().startEndOfAlbum();
+      await pumpMicrotasks();
+      expect(await flagAt(3), isFalse, reason: 'repeat all wraps to a, same');
+
+      await player().setRepeat(RepeatMode.allShuffled);
+      await pumpMicrotasks();
+
+      expect(stopFlag(), isTrue, reason: 'a new random order follows');
       expect(await flagAt(0), isFalse);
     });
 

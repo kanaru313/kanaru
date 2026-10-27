@@ -551,9 +551,21 @@
   "playerPrevious": "Previous",
   "playerNext": "Next",
   "playerShuffle": "Shuffle",
-  "playerRepeatOff": "Repeat off",
-  "playerRepeatAll": "Repeat all",
-  "playerRepeatOne": "Repeat one",
+  "playerRepeatOff": "Stop after the last song",
+  "playerRepeatAll": "Repeat the whole queue",
+  "playerRepeatOne": "Repeat the current song",
+  "playerRepeatAllShuffled": "Repeat the whole queue (shuffled)",
+  "playerRepeatTimes": "{count, plural, =1{Repeat 1 more time} other{Repeat {count} more times}}",
+  "@playerRepeatTimes": {
+    "description": "Repeat menu item and button tooltip: play the current song this many extra times",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playerRepeatFewer": "One time fewer",
+  "playerRepeatMore": "One more time",
   "playerMute": "Mute",
   "playerUnmute": "Unmute",
   "playerVolume": "Volume",

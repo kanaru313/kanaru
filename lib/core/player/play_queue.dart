@@ -91,11 +91,12 @@ class PlayQueue {
   int? get nextIndex {
     if (isEmpty) return null;
     if (index < order.length - 1) return index + 1;
-    return repeat == RepeatMode.all ? 0 : null;
+    return repeat.wrapsQueue ? 0 : null;
   }
 
   /// Index a manual "previous" goes to, or `null` on the first track unless
-  /// the whole queue repeats.
+  /// the whole queue repeats. Repeat all shuffled does not go back: the end of
+  /// the previous pass is no meaningful place in a new random order.
   int? get previousIndex {
     if (isEmpty) return null;
     if (index > 0) return index - 1;
@@ -190,7 +191,8 @@ class PlayQueue {
 
   /// Drops the track at play position [at]. When it is the current track the
   /// next one slides into its position; past the end, repeat all wraps to
-  /// the first and otherwise the new last track becomes current.
+  /// the first (both repeat all modes) and otherwise the new last track
+  /// becomes current.
   PlayQueue removeAt(int at) {
     if (at < 0 || at >= order.length) return this;
     final entry = order[at];
@@ -200,9 +202,7 @@ class PlayQueue {
       newIndex = index - 1;
     } else if (at == index) {
       if (index >= rest.length) {
-        newIndex = repeat == RepeatMode.all || rest.isEmpty
-            ? 0
-            : rest.length - 1;
+        newIndex = repeat.wrapsQueue || rest.isEmpty ? 0 : rest.length - 1;
       }
     }
     final unshuffled = unshuffledOrder;

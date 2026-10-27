@@ -114,8 +114,7 @@ void main() {
 
   test('next with repeat one moves on', () async {
     await service().openTracks(songs);
-    await service().cycleRepeat();
-    await service().cycleRepeat();
+    await service().setRepeat(RepeatMode.one);
     backend.calls.clear();
 
     await service().next();

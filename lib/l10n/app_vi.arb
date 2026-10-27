@@ -215,9 +215,21 @@
   "playerPrevious": "Bài trước",
   "playerNext": "Bài tiếp",
   "playerShuffle": "Phát ngẫu nhiên",
-  "playerRepeatOff": "Không lặp",
-  "playerRepeatAll": "Lặp tất cả",
-  "playerRepeatOne": "Lặp một bài",
+  "playerRepeatOff": "Dừng lại ở bài hát cuối cùng",
+  "playerRepeatAll": "Lặp lại tất cả trong hàng đợi",
+  "playerRepeatOne": "Lặp lại bài hát hiện tại",
+  "playerRepeatAllShuffled": "Lặp lại tất cả trong hàng đợi (xáo trộn)",
+  "playerRepeatTimes": "Lặp lại thêm {count} lần nữa",
+  "@playerRepeatTimes": {
+    "description": "Mục menu lặp và tooltip nút lặp: phát bài hiện tại thêm số lần này",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playerRepeatFewer": "Bớt một lần",
+  "playerRepeatMore": "Thêm một lần",
   "playerMute": "Tắt tiếng",
   "playerUnmute": "Bật tiếng",
   "playerVolume": "Âm lượng",

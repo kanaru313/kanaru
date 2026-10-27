@@ -11,6 +11,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_seek_slot.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
 import 'package:kanaru/features/player/queue/queue_button.dart';
+import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
@@ -126,7 +127,7 @@ void main() {
         'Add to favorites',
         'Add to playlist',
         'Shuffle',
-        'Repeat off',
+        'Stop after the last song',
         'Sleep timer',
         'Mute',
       ]) {
@@ -165,8 +166,10 @@ void main() {
       await tester.pump();
       expect(container.read(playerServiceProvider).queue.shuffled, isTrue);
 
-      await tester.tap(inScreen(find.byTooltip('Repeat off')));
-      await tester.pump();
+      await tester.tap(inScreen(find.byType(RepeatButton)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Repeat the whole queue'));
+      await tester.pumpAndSettle();
       expect(
         container.read(playerServiceProvider).queue.repeat,
         RepeatMode.all,
@@ -320,7 +323,9 @@ void main() {
       expect(play.size, const Size.square(60));
       expect(play.center.dx, closeTo(240, 1));
       final shuffle = tester.getRect(inScreen(find.byTooltip('Shuffle')));
-      final repeat = tester.getRect(inScreen(find.byTooltip('Repeat off')));
+      final repeat = tester.getRect(
+        inScreen(find.byTooltip('Stop after the last song')),
+      );
       expect(repeat.right - shuffle.left, greaterThan(360));
     });
 

@@ -18,6 +18,9 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   List<int> get _handedNext;
   Set<int> get _upNext;
   bool get _ended;
+  Random? get _random;
+  void _startShuffledPass();
+  void _dropRepeatTimes();
   Future<void> _queueNext();
   Future<void> jump(int index);
   Future<void> _play(int index, {bool play = true});
@@ -156,7 +159,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
       return _queueNext();
     }
     final pastEnd = at == queue.order.length - 1;
-    if (pastEnd && queue.repeat != RepeatMode.all) {
+    if (pastEnd && !queue.repeat.wrapsQueue) {
       _markStopped(ended: true, queue: rest);
       return _backend.stop();
     }
@@ -194,7 +197,8 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// Playback stopped for good: nothing is wanted playing and the engine's
   /// next-track bookkeeping is void. [ended] means the queue ran out (play
   /// restarts it); [resetPosition] false keeps the finished track to seek back
-  /// into. [queue] swaps the queue in the same update. Leaves the engine alone.
+  /// into. [queue] swaps the queue in the same update. Leaves the engine alone,
+  /// except for ending a counted repeat, which is the engine's loop.
   void _markStopped({
     required bool ended,
     bool resetPosition = true,
@@ -203,6 +207,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     _ended = ended;
     _wantsPlaying = false;
     _handedNext.clear();
+    _dropRepeatTimes();
     state = state.copyWith(
       queue: queue ?? state.queue,
       playing: false,
@@ -241,10 +246,19 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     // where the current track was, as that one shifts back by one.
     final target = index > queue.index ? queue.index + 1 : queue.index;
     _turn++;
+    _dropRepeatTimes();
+    var landed = (skipsOnlyUpNext ? queue.move(index, target) : queue).copyWith(
+      index: skipsOnlyUpNext ? target : index,
+    );
+    // A next track handed before repeat all shuffled was chosen carried the
+    // engine past the end of the pass: the new pass is a fresh order that
+    // keeps the track now playing first.
+    if (queue.endsShuffledPass) {
+      _upNext.clear();
+      landed = landed.shuffle(_random);
+    }
     state = state.copyWith(
-      queue: (skipsOnlyUpNext ? queue.move(index, target) : queue).copyWith(
-        index: skipsOnlyUpNext ? target : index,
-      ),
+      queue: landed,
       position: Duration.zero,
       duration: Duration.zero,
       playthrough: state.playthrough + 1,
@@ -261,13 +275,14 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
 
   /// Whether the engine, going on from the current track to the one at
   /// [index], passed over at least one track and only "play next" ones. Only
-  /// repeat all wraps past the end of the queue; otherwise a track before the
-  /// current one is where the user dragged it, not a skip.
+  /// the repeat all modes (shuffled too) wrap past the end of the queue;
+  /// otherwise a track before the current one is where the user dragged it,
+  /// not a skip.
   bool _skipsOnlyUpNext(PlayQueue queue, int index) {
     if (index == queue.index) return false;
     final order = queue.order;
     final from = queue.index + 1;
-    if (index < queue.index && queue.repeat != RepeatMode.all) return false;
+    if (index < queue.index && !queue.repeat.wrapsQueue) return false;
     final skipped = index > queue.index
         ? order.getRange(from, index)
         : order.skip(from).followedBy(order.take(index));
@@ -297,7 +312,11 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// last, or stop when it ran out.
   Future<void> _advancedToRemoved() {
     final next = state.queue.nextIndex;
-    if (next != null) return _play(next, play: _wantsPlaying);
+    if (next != null) {
+      // Past the last track of a shuffled pass: a new pass, not a replay.
+      if (state.queue.endsShuffledPass) _startShuffledPass();
+      return _play(next, play: _wantsPlaying);
+    }
     _markStopped(ended: true);
     return _backend.stop();
   }
