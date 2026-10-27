@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/waveform/waveform.dart';
 import 'waveform_bar_layout.dart';
+import 'waveform_level_contrast.dart';
 
 /// What the bars depend on: change any of it and they are drawn again.
 /// [waveform] is compared by identity, so a new load re-records.
@@ -51,7 +52,7 @@ class WaveformPictures {
 
   static WaveformPicturePair _record(WaveformPicturesKey key) {
     final extents = waveformBarExtents(
-      levels: key.waveform.levels,
+      levels: waveformContrastLevels(key.waveform.levels),
       length: key.waveform.length,
       duration: Duration(milliseconds: key.durationMs),
       width: key.size.width,
