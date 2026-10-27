@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_routes.dart';
+import 'package:kanaru/features/history/most_played_row_tile.dart';
 import 'package:kanaru/features/history/history_track_play_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -105,7 +106,11 @@ void main() {
       await tester.tap(find.widgetWithText(ChoiceChip, '7 days'));
       await settleHistory(tester);
 
-      await _menuOfRow(tester, 0, 'Song history');
+      // The ranking rows have no more button: a long press opens the menu.
+      await tester.longPress(find.byType(MostPlayedRowTile).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Song history'));
+      await settleHistory(tester);
       expect(location(h), mostPlayedTrackLocation('/m/A.flac'));
       expect(
         find.text('1 listen · First Thu, Oct 22 · Last Thu, Oct 22 9:00 AM'),
@@ -122,7 +127,7 @@ void main() {
             .selected,
         isTrue,
       );
-      expect(find.text('Play all'), findsOneWidget);
+      expect(find.byType(MostPlayedRowTile), findsOneWidget);
     });
 
     historyTestWidgets('the song history page has no Song history item', (

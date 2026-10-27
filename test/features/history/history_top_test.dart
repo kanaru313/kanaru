@@ -3,7 +3,10 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_routes.dart';
-import 'package:kanaru/features/history/history_top_tile.dart';
+import 'package:kanaru/features/history/history_range_bar.dart';
+import 'package:kanaru/features/history/most_played_actions.dart';
+import 'package:kanaru/features/history/most_played_list.dart';
+import 'package:kanaru/features/history/most_played_row_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
@@ -44,15 +47,24 @@ Future<void> _openTop(
   );
 }
 
+/// Taps a range chip; the bar scrolls sideways in the narrower right column,
+/// so the chip may first have to be brought into view.
+Future<void> _tapChip(WidgetTester tester, String label) async {
+  final chip = find.widgetWithText(ChoiceChip, label);
+  await tester.ensureVisible(chip);
+  await tester.pump();
+  await tester.tap(chip);
+}
+
 Future<void> _chip(WidgetTester tester, String label) async {
-  await tester.tap(find.widgetWithText(ChoiceChip, label));
+  await _tapChip(tester, label);
   await settleHistory(tester);
 }
 
 /// File names of the rows on show, in order, without the extension.
 List<String> _names(WidgetTester tester) => [
-  for (final t in tester.widgetList<HistoryTopTile>(
-    find.byType(HistoryTopTile),
+  for (final t in tester.widgetList<MostPlayedRowTile>(
+    find.byType(MostPlayedRowTile),
   ))
     t.row.path.split('/').last.replaceAll('.flac', ''),
 ];
@@ -66,8 +78,26 @@ bool _enabled(WidgetTester tester, Finder button) {
   return w.onPressed != null;
 }
 
-Finder get _playAll => find.widgetWithText(FilledButton, 'Play all');
-Finder get _create => find.widgetWithText(OutlinedButton, 'Create playlist');
+Finder get _playAll => find.widgetWithText(FilledButton, 'Play');
+
+/// The page's more menu (next to Play and Shuffle), opened.
+Future<void> _openMenu(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('More'));
+  await tester.pumpAndSettle();
+}
+
+Finder get _create =>
+    find.widgetWithText(PopupMenuItem<MostPlayedChoice>, 'Create playlist');
+
+/// Whether the menu item behind [item] can be picked.
+bool _itemEnabled(WidgetTester tester, Finder item) =>
+    tester.widget<PopupMenuItem<MostPlayedChoice>>(item).enabled;
+
+/// Opens the menu of a row the way a pointer does: a long press on it.
+Future<void> _rowMenu(WidgetTester tester, int index) async {
+  await tester.longPress(find.byType(MostPlayedRowTile).at(index));
+  await tester.pumpAndSettle();
+}
 
 /// Picks the days [from] to [to] of October 2026 in the range picker.
 Future<void> _pickDays(WidgetTester tester, int from, int to) async {
@@ -97,7 +127,10 @@ void main() {
 
     historyTestWidgets('exactly the limit shows no note', (tester) async {
       await openWith(tester, 500);
+      await tester.drag(find.byType(MostPlayedList), const Offset(0, -100000));
+      await tester.pumpAndSettle();
 
+      expect(find.byType(MostPlayedRowTile).last, findsOneWidget);
       expect(find.text('Showing first 500'), findsNothing);
     });
 
@@ -106,6 +139,9 @@ void main() {
     ) async {
       await openWith(tester, 501);
 
+      // The line is the last of the list.
+      await tester.drag(find.byType(MostPlayedList), const Offset(0, -100000));
+      await tester.pumpAndSettle();
       expect(find.text('Showing first 500'), findsOneWidget);
     });
   });
@@ -141,7 +177,10 @@ void main() {
       expect(_names(tester), isEmpty);
       expect(find.text('No listens in this range'), findsOneWidget);
       expect(_enabled(tester, _playAll), isFalse);
-      expect(_enabled(tester, _create), isFalse);
+      await _openMenu(tester);
+      expect(_itemEnabled(tester, _create), isFalse);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
     });
 
     historyTestWidgets(
@@ -207,7 +246,7 @@ void main() {
     ) async {
       await _openTop(tester, h);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Custom'));
+      await _tapChip(tester, 'Custom');
       await settleHistory(tester);
       await _pickDays(tester, 10, 12);
 
@@ -217,7 +256,13 @@ void main() {
             .selected,
         isTrue,
       );
-      expect(find.textContaining(' – '), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(HistoryRangeBar),
+          matching: find.textContaining(' – '),
+        ),
+        findsOneWidget,
+      );
       expect(_names(tester), ['B']);
 
       // Oct 7 to Oct 9 has no plays, Oct 13 to Oct 15 has the Ghost's two.
@@ -241,7 +286,7 @@ void main() {
         );
         await _chip(tester, '1 year');
 
-        await tester.tap(find.widgetWithText(ChoiceChip, 'Custom'));
+        await _tapChip(tester, 'Custom');
         await settleHistory(tester);
         expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -254,10 +299,10 @@ void main() {
           isTrue,
         );
 
-        await tester.tap(find.widgetWithText(ChoiceChip, 'Custom'));
+        await _tapChip(tester, 'Custom');
         await settleHistory(tester);
         await _pickDays(tester, 1, 5);
-        await tester.tap(find.widgetWithText(ChoiceChip, 'Custom'));
+        await _tapChip(tester, 'Custom');
         await settleHistory(tester);
         expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -286,7 +331,7 @@ void main() {
         await _openTop(tester, h);
 
         // Rows B, A, Ghost, C: the Ghost is left out, C is third in the queue.
-        await tester.tap(find.byType(HistoryTopTile).at(3));
+        await tester.tap(find.byType(MostPlayedRowTile).at(3));
         await tester.pump();
 
         expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
@@ -303,7 +348,7 @@ void main() {
         await _openTop(tester, h);
 
         expect(find.text('Not in library'), findsOneWidget);
-        await tester.tap(find.byType(HistoryTopTile).at(2));
+        await tester.tap(find.byType(MostPlayedRowTile).at(2));
         await tester.pump();
         expect(_queue(h), isEmpty);
       },
@@ -331,19 +376,16 @@ void main() {
 
       expect(_names(tester), ['Ghost']);
       expect(_enabled(tester, _playAll), isFalse);
-      expect(_enabled(tester, _create), isFalse);
+      await _openMenu(tester);
+      expect(_itemEnabled(tester, _create), isFalse);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
     });
 
     historyTestWidgets('the row menu has no remove item', (tester) async {
       await _openTop(tester, h);
 
-      await tester.tap(
-        find.descendant(
-          of: find.byType(HistoryTopTile).first,
-          matching: find.byTooltip('More'),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await _rowMenu(tester, 0);
 
       expect(find.text('Play next'), findsOneWidget);
       expect(find.text('Add to queue'), findsOneWidget);
@@ -369,6 +411,7 @@ void main() {
       await tester.tap(find.byTooltip('Previous period'));
       await settleHistory(tester);
 
+      await _openMenu(tester);
       await tester.tap(_create);
       await tester.pumpAndSettle();
       final field = tester.widget<TextField>(
@@ -393,6 +436,7 @@ void main() {
     ) async {
       await _openTop(tester, h);
 
+      await _openMenu(tester);
       await tester.tap(_create);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Create'));
@@ -404,6 +448,7 @@ void main() {
     historyTestWidgets('cancelling writes nothing', (tester) async {
       await _openTop(tester, h);
 
+      await _openMenu(tester);
       await tester.tap(_create);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancel'));
@@ -485,7 +530,7 @@ void main() {
         expect(find.byType(LinearProgressIndicator), findsNothing);
 
         final release = gate.holdNext(_topSql);
-        await tester.tap(find.widgetWithText(ChoiceChip, '7 days'));
+        await _tapChip(tester, '7 days');
         await tester.pump();
         await tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 40)),

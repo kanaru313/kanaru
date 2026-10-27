@@ -563,16 +563,16 @@ The History page (`features/history/`) reads them as follows.
 | Tap and menu | A tap queues the day's songs, each once at its first place, skipping songs gone from the library (`historyDayTracks`). The player gets only the `tracks` row path, never `plays.path`. Removal is only in the row menu, which keeps the play id it was opened on. |
 | Day menu | `runHistoryDayMenu` reads the day's plays when the menu opens, cut to the shown count like a day read while plays are held back, and every action uses that snapshot. Remove calls `deleteMany` with the snapshot's play ids, never a time range, so a play recorded meanwhile survives; the Undo rule above applies. |
 
-The Most played page (`HistoryTopView`, mounted by `MostPlayedScreen` at `/most-played`) reads the top query as follows.
+The Most played page (`MostPlayedView`, mounted by `MostPlayedScreen` at `/most-played`, in the `HistoryTwoColumnLayout` that History also uses) reads the top query as follows. The pane's totals come from `historyRangeSummary` for the window (the overview for a range that takes in every play), never from the capped list; the filter is `InPageFilterView` over the shown rows.
 
 | Rule | Detail |
 |---|---|
 | Ranges | `history_range.dart` is pure. Today, 7 days, 30 days (default), 6 months, 1 year, All and Custom, all whole local days ending at midnight after today. 6 months and 1 year are rolling windows of calendar days (`addMonthsClamped`), not calendar years; a calendar year is a Custom range. Period `k` back ends where period `k - 1` starts, so periods tile with no gap or overlap; a Custom range shifts by its own length in days, and Next is off once the range reaches today. |
 | Full-history range | A range that takes in the first and the last play (preset or custom) reads the all-time `play_stats` branch: the same answer, cheaper. All reads `play_stats` too. |
 | Order and cap | Plays descending, then the earlier last play inside the range, then `path` (done in SQL). At most 500 rows (`historyTopLimit`); the query asks for 501 and the page says "Showing first 500" only when the extra row came back. |
-| Playing | A tap queues the songs still in the library in rank order, starting at the tapped one (the index is recomputed after skipping missing ones). Play all and Create playlist use the same songs, so a missing song is never queued or added; the playlist is named after the range and the page does not open it. |
+| Playing | A tap queues the songs still in the library in rank order, starting at the tapped one (the index is recomputed after skipping missing ones). Play, Shuffle and the pane menu (Create playlist, Play next, Add to queue) use the same songs, so a missing song is never queued or added; the playlist is named after the range and the page does not open it. |
 | Reloading | The provider is a family keyed by the window in epoch ms and watches the one plays version, so a new play or a new range reads again. The page keeps the list it showed and draws a thin progress bar until the read returns. |
-| Hidden tab | Both tabs sit in an `IndexedStack`, which does not stop tickers; the hidden one is wrapped in `TickerMode(enabled: false)`, which pauses its providers. A play recorded while it is hidden costs no top query, and it reads once when shown again. |
+| Hidden page | A page in a hidden router branch keeps its state but its providers are paused (`TickerMode(enabled: false)`). A play recorded while Most played is hidden costs no top query, and it reads once when shown again. |
 | Picker | `showDateRangePicker` gets `firstDate = min(first play day, today)`, `lastDate = max(last play day, today)` and the current Custom range cut to them (dropped when nothing is left), as the picker asserts on dates outside its bounds. The Custom chip is off while there is no play. |
 
 The song page (`HistoryTrackScreen`, `/history/track?path=`) reads one song's totals and plays as follows.
