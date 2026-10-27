@@ -941,6 +941,16 @@
       }
     }
   },
+  "historySince": "since {date}",
+  "@historySince": {
+    "description": "After the listen count on the History page: the date of the first play",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
   "historyPlayedAt": "{date} - {time}",
   "@historyPlayedAt": {
     "description": "Third line of a History row: the day and time the song was played",

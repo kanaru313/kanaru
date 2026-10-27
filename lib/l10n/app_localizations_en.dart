@@ -1557,6 +1557,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String historySince(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'since $dateString';
+  }
+
+  @override
   String historyPlayedAt(DateTime date, String time) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
     final String dateString = dateDateFormat.format(date);

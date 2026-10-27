@@ -2414,6 +2414,12 @@ abstract class AppLocalizations {
   /// **'{date}'**
   String historyDayDate(DateTime date);
 
+  /// After the listen count on the History page: the date of the first play
+  ///
+  /// In en, this message translates to:
+  /// **'since {date}'**
+  String historySince(DateTime date);
+
   /// Third line of a History row: the day and time the song was played
   ///
   /// In en, this message translates to:

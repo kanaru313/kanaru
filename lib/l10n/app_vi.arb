@@ -465,6 +465,7 @@
       }
     }
   },
+  "historySince": "từ {date}",
   "historyPlayedAt": "{date} - {time}",
   "@historyPlayedAt": {
     "description": "Third line of a History row: the day and time the song was played",
