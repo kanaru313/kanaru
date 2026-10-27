@@ -273,6 +273,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get libraryShowAlbum => 'Xem album';
 
   @override
+  String get libraryShowInFolder => 'Xem trong thư mục';
+
+  @override
   String get libraryShowInFileManager => 'Mở trong trình quản lý tệp';
 
   @override

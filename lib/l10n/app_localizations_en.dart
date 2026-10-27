@@ -278,6 +278,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryShowAlbum => 'Show album';
 
   @override
+  String get libraryShowInFolder => 'Show in folder';
+
+  @override
   String get libraryShowInFileManager => 'Show in file manager';
 
   @override

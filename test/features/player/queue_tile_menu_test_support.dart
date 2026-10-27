@@ -62,6 +62,7 @@ const allMenuLabels = [
   'Remove from favorites',
   'Show artist',
   'Show album',
+  'Show in folder',
   'Show in file manager',
   'Remove from queue',
 ];

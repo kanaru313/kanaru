@@ -74,6 +74,7 @@
   "libraryShuffle": "Phát ngẫu nhiên",
   "libraryShowArtist": "Xem nghệ sĩ",
   "libraryShowAlbum": "Xem album",
+  "libraryShowInFolder": "Xem trong thư mục",
   "libraryShowInFileManager": "Mở trong trình quản lý tệp",
   "libraryFileManagerFailed": "Không mở được trình quản lý tệp",
   "libraryTrackGone": "Bài này không còn trong thư viện",

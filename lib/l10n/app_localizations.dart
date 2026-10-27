@@ -542,6 +542,12 @@ abstract class AppLocalizations {
   /// **'Show album'**
   String get libraryShowAlbum;
 
+  /// Song menu row that opens the in-app folder page of the song's folder
+  ///
+  /// In en, this message translates to:
+  /// **'Show in folder'**
+  String get libraryShowInFolder;
+
   /// No description provided for @libraryShowInFileManager.
   ///
   /// In en, this message translates to:

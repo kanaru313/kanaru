@@ -38,6 +38,7 @@ void main() {
       'Add to favorites',
       'Show artist',
       'Show album',
+      'Show in folder',
       'Show in file manager',
       'Remove from queue',
     ]);

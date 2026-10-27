@@ -20,6 +20,11 @@ class ShowAlbumChoice extends TrackMenuChoice {
   const ShowAlbumChoice();
 }
 
+/// Opens the in-app folder page of the song's parent folder.
+class ShowFolderChoice extends TrackMenuChoice {
+  const ShowFolderChoice();
+}
+
 class ShowInFileManagerChoice extends TrackMenuChoice {
   const ShowInFileManagerChoice();
 }

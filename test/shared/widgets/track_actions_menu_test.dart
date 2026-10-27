@@ -37,6 +37,7 @@ void main() {
       'Add to playlist…',
       'Show artist',
       'Show album',
+      'Show in folder',
       'Show in file manager',
     ]) {
       expect(find.text(label), findsOneWidget, reason: label);
@@ -111,6 +112,7 @@ void main() {
 
     expect(find.text('Show artist'), findsOneWidget);
     expect(find.text('Show album'), findsNothing);
+    expect(find.text('Show in folder'), findsOneWidget);
     expect(find.text('Show in file manager'), findsOneWidget);
   });
 

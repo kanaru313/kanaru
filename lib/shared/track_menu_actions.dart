@@ -7,6 +7,7 @@ import '../core/database/library_browse_track_links.dart';
 import '../core/database/library_database.dart';
 import '../core/database/library_startup.dart';
 import '../core/database/playlist_favorites.dart';
+import '../core/database/playlist_library_paths.dart';
 import '../l10n/l10n.dart';
 import 'icons/app_icons.dart';
 import 'library_route_keys.dart';
@@ -17,14 +18,15 @@ import 'widgets/app_snack_bar.dart';
 
 final _log = Logger('track_menu');
 
-/// Carries out the song menu: opens a song's artist or album page, shows its
-/// file in the file manager, or puts it in or out of Favorites.
+/// Carries out the song menu: opens a song's artist, album or folder page,
+/// shows its file in the file manager, or puts it in or out of Favorites.
 ///
 /// Built before the menu opens, because what it needs from the widget tree
 /// (router, messenger, texts) must outlive the row: a rescan can rebuild the
 /// row away while the menu is open. Without a router or messenger above the
-/// row (a menu in an isolated widget), the artist and album links do nothing.
-/// Their keys are read when an item is picked, not when the row is built.
+/// row (a menu in an isolated widget), the artist, album and folder links do
+/// nothing. Their keys are read when an item is picked, not when the row is
+/// built.
 /// Failures are logged and reported in a snackbar, never thrown.
 class TrackMenuRunner {
   TrackMenuRunner(WidgetRef ref, this._context)
@@ -79,6 +81,21 @@ class TrackMenuRunner {
           if (!await _showInFileManager(path)) {
             _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
           }
+        case ShowFolderChoice():
+          final router = _router;
+          if (router == null) return;
+          final db = _db;
+          if (db == null) {
+            _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+            return;
+          }
+          // A stale row (rescan) may no longer be in the library.
+          if (!(await db.libraryPathsAmong([path])).contains(path)) {
+            _say(AppSnackBarKind.warning, _l10n.libraryTrackGone);
+            return;
+          }
+          // The tree's folder key for a path below a root.
+          router.go(folderLocation(path.substring(0, path.lastIndexOf('/'))));
         case ShowArtistChoice() || ShowAlbumChoice():
           final router = _router;
           if (router == null) return;

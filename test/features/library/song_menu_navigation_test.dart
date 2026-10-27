@@ -29,6 +29,35 @@ void main() {
     expect(location(h), albumLocation(const AlbumKey('ann', 'al')));
   });
 
+  testWidgets('Show in folder goes to the folder page', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, [
+      const TestTrack('solo', artist: 'Ann', path: '/m/A/x.flac'),
+    ], location: '/songs');
+
+    await openMenu(tester, 'solo');
+    await tester.tap(find.text('Show in folder'));
+    await tester.pumpAndSettle();
+
+    expect(location(h), folderLocation('/m/A'));
+    expect(find.text('A'), findsWidgets);
+  });
+
+  testWidgets('Show in folder of a song removed while the menu was open says '
+      'so', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/songs');
+
+    await openMenu(tester, 'solo');
+    await tester.runAsync(() => h.db.delete(h.db.tracks).go());
+    await tester.pump();
+    await tester.tap(find.text('Show in folder'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('This song is no longer in the library'), findsOneWidget);
+    expect(location(h), '/songs');
+  });
+
   testWidgets('Show artist of a song with one artist goes to the artist', (
     tester,
   ) async {

@@ -131,6 +131,10 @@
   "libraryShuffle": "Shuffle",
   "libraryShowArtist": "Show artist",
   "libraryShowAlbum": "Show album",
+  "libraryShowInFolder": "Show in folder",
+  "@libraryShowInFolder": {
+    "description": "Song menu row that opens the in-app folder page of the song's folder"
+  },
   "libraryShowInFileManager": "Show in file manager",
   "libraryFileManagerFailed": "Couldn't open the file manager",
   "libraryTrackGone": "This song is no longer in the library",
