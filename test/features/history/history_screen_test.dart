@@ -141,7 +141,7 @@ void main() {
   group('years', () {
     final tracks = [song('A'), song('B'), song('C')];
 
-    historyTestWidgets('one year shows no chips', (tester) async {
+    historyTestWidgets('one year shows its single chip', (tester) async {
       final h = historyHarness();
       await openHistory(
         tester,
@@ -150,7 +150,8 @@ void main() {
         plays: [('A', _at(2026, 10, 23))],
       );
 
-      expect(find.byType(ChoiceChip), findsNothing);
+      expect(find.byType(ChoiceChip), findsOneWidget);
+      expect(tester.widget<ChoiceChip>(_chip(2026)).selected, isTrue);
       expect(find.text('A'), findsOneWidget);
     });
 
@@ -228,7 +229,8 @@ void main() {
       );
       await settleHistory(tester);
 
-      expect(find.byType(ChoiceChip), findsNothing);
+      expect(find.byType(ChoiceChip), findsOneWidget);
+      expect(tester.widget<ChoiceChip>(_chip(2026)).selected, isTrue);
       expect(find.text('A'), findsOneWidget);
       expect(find.text('B'), findsNothing);
     });

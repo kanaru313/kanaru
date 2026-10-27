@@ -77,7 +77,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
   void _openYear(int year) => setState(() => _picked = year);
 
   /// The right column: toolbar (totals of the year, filter, calendar), year
-  /// chips when there are several, then the timeline of the year.
+  /// chips (one per year with plays, none without plays), then the timeline of
+  /// the year.
   Widget _column(List<int> years, int year) {
     final l10n = context.l10n;
     final older = years.where((y) => y < year).firstOrNull;
@@ -113,7 +114,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                 ),
               ],
             ),
-            if (years.length > 1)
+            if (years.isNotEmpty)
               HistoryYearChips(
                 years: years,
                 selected: year,
