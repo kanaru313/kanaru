@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart' as kanaru show RepeatMode;
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/player_bar.dart';
+import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
 import 'package:kanaru/features/player/seek_follow_step.dart';
 import 'package:kanaru/features/player/seek_gesture_area.dart';
@@ -100,12 +101,16 @@ void main() {
     expect(tester.getCenter(find.text('0:42')).dx, lessThan(bar.left));
     expect(tester.getCenter(find.text('3:05')).dx, greaterThan(bar.right));
 
-    await tester.tap(find.byTooltip('Repeat off'));
-    await tester.pump();
-    await tester.tap(find.byTooltip('Repeat all'));
-    await tester.pump();
-    await tester.tap(find.byTooltip('Repeat the whole queue (shuffled)'));
-    await tester.pump();
+    Future<void> pick(String label) async {
+      await tester.tap(find.byType(RepeatButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+
+    await pick('Repeat the whole queue');
+    await pick('Repeat the whole queue (shuffled)');
+    await pick('Repeat the current song');
     expect(find.byIcon(Icons.repeat_one_rounded), findsOneWidget);
     expect(backend.calls.where((c) => c.startsWith('setRepeat')), [
       'setRepeat(all)',
@@ -239,9 +244,10 @@ void main() {
 
     expect(find.byTooltip('Pause'), findsOneWidget);
     expect(find.byTooltip('Next'), findsOneWidget);
-    for (final tooltip in ['Shuffle', 'Previous', 'Repeat off', 'Mute']) {
+    for (final tooltip in ['Shuffle', 'Previous', 'Mute']) {
       expect(find.byTooltip(tooltip), findsNothing);
     }
+    expect(find.byType(RepeatButton), findsNothing);
     expect(find.byType(VolumeButton), findsNothing);
     expect(
       tester.getCenter(find.byTooltip('Pause')).dy,

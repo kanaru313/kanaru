@@ -2,17 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
 import '../../core/player/player_service.dart';
-import '../../core/player/repeat_mode.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import 'repeat/repeat_button.dart';
 
 /// Icon size of the player bar's buttons; play/pause is larger.
 const playerIconSize = 28.0;
 
-/// Shuffle · previous · play/pause · next · repeat. Disabled while the
-/// queue is empty; previous and next also on the first and last track
-/// unless the queue repeats or the endless queue setting is on.
+/// Shuffle · previous · play/pause · next · repeat (a menu of modes).
+/// Disabled while the queue is empty; previous and next also on the first
+/// and last track unless the queue repeats or the endless queue setting is
+/// on.
 class PlaybackControls extends ConsumerWidget {
   const PlaybackControls({
     super.key,
@@ -118,37 +119,6 @@ class ShuffleButton extends ConsumerWidget {
       onPressed: empty
           ? null
           : ref.read(playerServiceProvider.notifier).toggleShuffle,
-    );
-  }
-}
-
-/// The repeat cycle (off, all, all shuffled, one); disabled while the queue is empty.
-class RepeatButton extends ConsumerWidget {
-  const RepeatButton({super.key, this.iconSize = playerIconSize});
-
-  final double iconSize;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final (empty, repeat) = ref.watch(
-      playerServiceProvider.select((s) => (s.queue.isEmpty, s.queue.repeat)),
-    );
-    return IconButton(
-      icon: Icon(
-        repeat == RepeatMode.one ? AppIcons.repeatOne : AppIcons.repeat,
-      ),
-      iconSize: iconSize,
-      tooltip: switch (repeat) {
-        RepeatMode.off => l10n.playerRepeatOff,
-        RepeatMode.all => l10n.playerRepeatAll,
-        RepeatMode.one => l10n.playerRepeatOne,
-        RepeatMode.allShuffled => l10n.playerRepeatAllShuffled,
-      },
-      isSelected: repeat != RepeatMode.off,
-      onPressed: empty
-          ? null
-          : ref.read(playerServiceProvider.notifier).cycleRepeat,
     );
   }
 }

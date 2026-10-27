@@ -1343,19 +1343,19 @@ abstract class AppLocalizations {
   /// No description provided for @playerRepeatOff.
   ///
   /// In en, this message translates to:
-  /// **'Repeat off'**
+  /// **'Stop after the last song'**
   String get playerRepeatOff;
 
   /// No description provided for @playerRepeatAll.
   ///
   /// In en, this message translates to:
-  /// **'Repeat all'**
+  /// **'Repeat the whole queue'**
   String get playerRepeatAll;
 
   /// No description provided for @playerRepeatOne.
   ///
   /// In en, this message translates to:
-  /// **'Repeat one'**
+  /// **'Repeat the current song'**
   String get playerRepeatOne;
 
   /// No description provided for @playerRepeatAllShuffled.
@@ -1363,6 +1363,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Repeat the whole queue (shuffled)'**
   String get playerRepeatAllShuffled;
+
+  /// Repeat menu item and button tooltip: play the current song this many extra times
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Repeat 1 more time} other{Repeat {count} more times}}'**
+  String playerRepeatTimes(int count);
+
+  /// No description provided for @playerRepeatFewer.
+  ///
+  /// In en, this message translates to:
+  /// **'One time fewer'**
+  String get playerRepeatFewer;
+
+  /// No description provided for @playerRepeatMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One more time'**
+  String get playerRepeatMore;
 
   /// No description provided for @playerMute.
   ///

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../playback_controls.dart';
+import '../repeat/repeat_button.dart';
 import '../sleep_timer/sleep_timer_button.dart';
 import '../volume_button.dart';
 import 'now_playing_actions.dart';
@@ -68,14 +69,17 @@ class NowPlayingHeader extends StatefulWidget {
 class _NowPlayingHeaderState extends State<NowPlayingHeader> {
   bool _volumeOpen = false;
   bool _sleepOpen = false;
+  bool _repeatOpen = false;
 
-  void _report() => widget.floatingOpen.value = _volumeOpen || _sleepOpen;
+  void _report() =>
+      widget.floatingOpen.value = _volumeOpen || _sleepOpen || _repeatOpen;
 
   @override
   void dispose() {
     // The popup and the menu leave with the header: give the pin back.
     _volumeOpen = false;
     _sleepOpen = false;
+    _repeatOpen = false;
     _report();
     super.dispose();
   }
@@ -116,7 +120,12 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const ShuffleButton(),
-                        const RepeatButton(),
+                        RepeatButton(
+                          onMenuChanged: (open) {
+                            _repeatOpen = open;
+                            _report();
+                          },
+                        ),
                         Flexible(
                           child: SleepTimerButton(
                             showLabel:

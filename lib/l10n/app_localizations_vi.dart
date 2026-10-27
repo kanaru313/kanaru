@@ -823,17 +823,28 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerShuffle => 'Phát ngẫu nhiên';
 
   @override
-  String get playerRepeatOff => 'Không lặp';
+  String get playerRepeatOff => 'Dừng lại ở bài hát cuối cùng';
 
   @override
-  String get playerRepeatAll => 'Lặp tất cả';
+  String get playerRepeatAll => 'Lặp lại tất cả trong hàng đợi';
 
   @override
-  String get playerRepeatOne => 'Lặp một bài';
+  String get playerRepeatOne => 'Lặp lại bài hát hiện tại';
 
   @override
   String get playerRepeatAllShuffled =>
       'Lặp lại tất cả trong hàng đợi (xáo trộn)';
+
+  @override
+  String playerRepeatTimes(int count) {
+    return 'Lặp lại thêm $count lần nữa';
+  }
+
+  @override
+  String get playerRepeatFewer => 'Bớt một lần';
+
+  @override
+  String get playerRepeatMore => 'Thêm một lần';
 
   @override
   String get playerMute => 'Tắt tiếng';

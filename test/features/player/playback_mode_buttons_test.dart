@@ -4,6 +4,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/playback_controls.dart';
+import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
@@ -41,11 +42,15 @@ void main() {
     expect(c.read(playerServiceProvider).queue.shuffled, isTrue);
   });
 
-  testWidgets('the repeat button cycles repeat', (tester) async {
+  testWidgets('the repeat button opens a menu that sets repeat', (
+    tester,
+  ) async {
     final c = await pump(tester, const RepeatButton());
     await queue(c, tester);
 
     await tester.tap(find.byType(IconButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Repeat the whole queue'));
     await tester.pumpAndSettle();
     expect(c.read(playerServiceProvider).queue.repeat, RepeatMode.all);
   });

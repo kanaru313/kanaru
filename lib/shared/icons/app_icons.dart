@@ -16,6 +16,7 @@ abstract final class AppIcons {
   static const IconData shuffle = Icons.shuffle_rounded;
   static const IconData repeat = Icons.repeat_rounded;
   static const IconData repeatOne = Icons.repeat_one_rounded;
+  static const IconData repeatStopAtEnd = Icons.playlist_play_rounded;
   static const IconData volumeUp = Icons.volume_up_rounded;
   static const IconData volumeDown = Icons.volume_down_rounded;
   static const IconData volumeOffRounded = Icons.volume_off_rounded;
