@@ -2688,4 +2688,144 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeRetry => 'Retry';
+
+  @override
+  String get lyricsTranslationButton => 'Lyrics translation';
+
+  @override
+  String get lyricsTranslationButtonOn => 'Lyrics translation: on';
+
+  @override
+  String get lyricsTranslationButtonLoading =>
+      'Lyrics translation: translating';
+
+  @override
+  String get lyricsTranslationButtonFailed => 'Lyrics translation: failed';
+
+  @override
+  String get lyricsTranslationShow => 'Show translation';
+
+  @override
+  String lyricsTranslationTarget(String language) {
+    return 'Translate to: $language';
+  }
+
+  @override
+  String lyricsTranslationTargetDefault(String language) {
+    return 'Default ($language)';
+  }
+
+  @override
+  String get lyricsTranslationDisplayHeader => 'Display style';
+
+  @override
+  String get lyricsTranslationDisplayUnder => 'Under each line';
+
+  @override
+  String get lyricsTranslationDisplayReplace => 'Replace';
+
+  @override
+  String get lyricsTranslationServiceHeader => 'Service';
+
+  @override
+  String get lyricsTranslationSaved => 'Translation saved';
+
+  @override
+  String lyricsTranslationSavedFrom(String service) {
+    return 'Saved from $service';
+  }
+
+  @override
+  String get lyricsTranslationRetranslate => 'Retranslate';
+
+  @override
+  String lyricsTranslationRetranslateWith(String service) {
+    return 'Retranslate with $service';
+  }
+
+  @override
+  String lyricsTranslationSameLanguage(String language) {
+    return 'Lyrics are already in $language';
+  }
+
+  @override
+  String get lyricsTranslationLoading => 'Translating…';
+
+  @override
+  String get lyricsTranslationRetry => 'Retry';
+
+  @override
+  String get lyricsTranslationFailNetwork =>
+      'Could not reach the service. Check your connection.';
+
+  @override
+  String get lyricsTranslationFailNoKey =>
+      'Add your DeepL API key in Settings.';
+
+  @override
+  String get lyricsTranslationFailBadKey =>
+      'DeepL rejected the API key. Check it in Settings.';
+
+  @override
+  String get lyricsTranslationFailQuota =>
+      'The monthly character quota is used up.';
+
+  @override
+  String get lyricsTranslationFailRateLimited =>
+      'Too many requests. Try again in a moment.';
+
+  @override
+  String get lyricsTranslationFailBlocked =>
+      'The service blocked the request. Try again later or use the other service.';
+
+  @override
+  String get lyricsTranslationFailUnsupportedLanguage =>
+      'This service cannot translate into this language.';
+
+  @override
+  String get lyricsTranslationFailTooLong =>
+      'These lyrics are too long to translate.';
+
+  @override
+  String get lyricsTranslationFailServer =>
+      'The service had an error. Try again later.';
+
+  @override
+  String get lyricsTranslationFailInvalidResponse =>
+      'The service sent an answer that could not be read.';
+
+  @override
+  String get lyricsTranslationFailEmptyResult =>
+      'The service returned no translation.';
+
+  @override
+  String get lyricsTranslationFailKeyStoreLocked =>
+      'The key store is locked. Unlock it to use your DeepL key.';
+
+  @override
+  String get lyricsTranslationFailKeyStoreUnavailable =>
+      'The key store is not available, so the DeepL key cannot be read.';
+
+  @override
+  String translationNoticeTitle(String service) {
+    return 'Lyrics will be sent to $service';
+  }
+
+  @override
+  String translationNoticeBody(String service) {
+    return 'The text of this song\'s lyrics is sent to $service to be translated. Nothing else is sent.';
+  }
+
+  @override
+  String get translationNoticeGoogleUnofficial =>
+      'Google is used through an unofficial web address, so it may stop working at any time.';
+
+  @override
+  String get translationNoticeContinue => 'Continue';
+
+  @override
+  String get languageNameZhHans => 'Chinese (Simplified)';
+
+  @override
+  String get languageNameZhHant => 'Chinese (Traditional)';
 }

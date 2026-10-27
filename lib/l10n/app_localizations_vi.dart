@@ -2497,4 +2497,141 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get homeRetry => 'Thử lại';
+
+  @override
+  String get lyricsTranslationButton => 'Dịch lời bài hát';
+
+  @override
+  String get lyricsTranslationButtonOn => 'Dịch lời bài hát: đang bật';
+
+  @override
+  String get lyricsTranslationButtonLoading => 'Dịch lời bài hát: đang dịch';
+
+  @override
+  String get lyricsTranslationButtonFailed => 'Dịch lời bài hát: lỗi';
+
+  @override
+  String get lyricsTranslationShow => 'Hiện bản dịch';
+
+  @override
+  String lyricsTranslationTarget(String language) {
+    return 'Dịch sang: $language';
+  }
+
+  @override
+  String lyricsTranslationTargetDefault(String language) {
+    return 'Mặc định ($language)';
+  }
+
+  @override
+  String get lyricsTranslationDisplayHeader => 'Kiểu hiển thị';
+
+  @override
+  String get lyricsTranslationDisplayUnder => 'Dưới mỗi dòng';
+
+  @override
+  String get lyricsTranslationDisplayReplace => 'Thay dòng gốc';
+
+  @override
+  String get lyricsTranslationServiceHeader => 'Dịch vụ';
+
+  @override
+  String get lyricsTranslationSaved => 'Đã lưu bản dịch';
+
+  @override
+  String lyricsTranslationSavedFrom(String service) {
+    return 'Đã lưu từ $service';
+  }
+
+  @override
+  String get lyricsTranslationRetranslate => 'Dịch lại';
+
+  @override
+  String lyricsTranslationRetranslateWith(String service) {
+    return 'Dịch lại bằng $service';
+  }
+
+  @override
+  String lyricsTranslationSameLanguage(String language) {
+    return 'Lời bài hát đã là $language';
+  }
+
+  @override
+  String get lyricsTranslationLoading => 'Đang dịch…';
+
+  @override
+  String get lyricsTranslationRetry => 'Thử lại';
+
+  @override
+  String get lyricsTranslationFailNetwork =>
+      'Không kết nối được tới dịch vụ. Kiểm tra mạng của bạn.';
+
+  @override
+  String get lyricsTranslationFailNoKey =>
+      'Hãy thêm khóa API DeepL trong Cài đặt.';
+
+  @override
+  String get lyricsTranslationFailBadKey =>
+      'DeepL từ chối khóa API. Hãy kiểm tra lại trong Cài đặt.';
+
+  @override
+  String get lyricsTranslationFailQuota =>
+      'Đã hết hạn mức ký tự của tháng này.';
+
+  @override
+  String get lyricsTranslationFailRateLimited =>
+      'Quá nhiều yêu cầu. Hãy thử lại sau ít phút.';
+
+  @override
+  String get lyricsTranslationFailBlocked =>
+      'Dịch vụ đã chặn yêu cầu. Hãy thử lại sau hoặc dùng dịch vụ còn lại.';
+
+  @override
+  String get lyricsTranslationFailUnsupportedLanguage =>
+      'Dịch vụ này không dịch được sang ngôn ngữ này.';
+
+  @override
+  String get lyricsTranslationFailTooLong => 'Lời bài hát này quá dài để dịch.';
+
+  @override
+  String get lyricsTranslationFailServer => 'Dịch vụ gặp lỗi. Hãy thử lại sau.';
+
+  @override
+  String get lyricsTranslationFailInvalidResponse =>
+      'Dịch vụ trả về dữ liệu không đọc được.';
+
+  @override
+  String get lyricsTranslationFailEmptyResult =>
+      'Dịch vụ không trả về bản dịch nào.';
+
+  @override
+  String get lyricsTranslationFailKeyStoreLocked =>
+      'Kho khóa đang bị khóa. Hãy mở khóa để dùng khóa DeepL.';
+
+  @override
+  String get lyricsTranslationFailKeyStoreUnavailable =>
+      'Không dùng được kho khóa nên không đọc được khóa DeepL.';
+
+  @override
+  String translationNoticeTitle(String service) {
+    return 'Lời bài hát sẽ được gửi tới $service';
+  }
+
+  @override
+  String translationNoticeBody(String service) {
+    return 'Nội dung lời của bài hát này sẽ được gửi tới $service để dịch. Không gửi thông tin nào khác.';
+  }
+
+  @override
+  String get translationNoticeGoogleUnofficial =>
+      'Google được dùng qua một địa chỉ web không chính thức nên có thể ngừng hoạt động bất cứ lúc nào.';
+
+  @override
+  String get translationNoticeContinue => 'Tiếp tục';
+
+  @override
+  String get languageNameZhHans => 'Tiếng Trung (giản thể)';
+
+  @override
+  String get languageNameZhHant => 'Tiếng Trung (phồn thể)';
 }

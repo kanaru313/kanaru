@@ -1,14 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../l10n/l10n.dart';
-import '../../../shared/icons/app_icons.dart';
+import '../lyrics/translation/lyrics_translation_button.dart';
 import '../playback_controls.dart';
 import '../repeat/repeat_button.dart';
 import '../sleep_timer/sleep_timer_button.dart';
 import '../volume_button.dart';
 import 'now_playing_actions.dart';
 import 'now_playing_title_bar.dart';
-import 'now_playing_view_mode.dart';
 
 /// Height of the header strip across the top of Now Playing.
 const nowPlayingHeaderHeight = 64.0;
@@ -34,9 +32,10 @@ const _rightSeparatorWidth = 25.0;
 /// repeat, sleep timer and volume on the right. The window buttons, when the
 /// app draws them, come after it (see [NowPlayingTitleBar.wrapHeader]).
 ///
-/// [floatingOpen] is set to whether the volume popup or the sleep timer menu
-/// is open. Both float outside the header, so whoever hides the header on
-/// inactivity listens to it to keep the header shown meanwhile.
+/// [floatingOpen] is set to whether one of the four things that float outside
+/// the header is open: the volume popup, or the repeat, sleep timer or
+/// translation menu. Whoever hides the header on inactivity listens to it to
+/// keep the header shown meanwhile.
 class NowPlayingHeader extends StatefulWidget {
   const NowPlayingHeader({
     super.key,
@@ -45,6 +44,8 @@ class NowPlayingHeader extends StatefulWidget {
     required this.floatingOpen,
     this.hasWindowButtons = false,
     this.modeButton,
+    this.showTranslate = false,
+    this.translateEnabled = true,
   });
 
   final VoidCallback onClose;
@@ -62,6 +63,12 @@ class NowPlayingHeader extends StatefulWidget {
   /// Sits right of the close button; `null` leaves the spot empty.
   final Widget? modeButton;
 
+  /// Whether the lyrics translation button follows the playlist button.
+  final bool showTranslate;
+
+  /// False greys the translation button out, for a song without lyrics.
+  final bool translateEnabled;
+
   @override
   State<NowPlayingHeader> createState() => _NowPlayingHeaderState();
 }
@@ -70,9 +77,10 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
   bool _volumeOpen = false;
   bool _sleepOpen = false;
   bool _repeatOpen = false;
+  bool _translateOpen = false;
 
-  void _report() =>
-      widget.floatingOpen.value = _volumeOpen || _sleepOpen || _repeatOpen;
+  void _report() => widget.floatingOpen.value =
+      _volumeOpen || _sleepOpen || _repeatOpen || _translateOpen;
 
   @override
   void dispose() {
@@ -80,6 +88,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
     _volumeOpen = false;
     _sleepOpen = false;
     _repeatOpen = false;
+    _translateOpen = false;
     _report();
     super.dispose();
   }
@@ -103,6 +112,14 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                   const SizedBox(width: _leftGap),
                   const NowPlayingFavoriteButton(),
                   const NowPlayingPlaylistButton(),
+                  if (widget.showTranslate)
+                    LyricsTranslationButton(
+                      enabled: widget.translateEnabled,
+                      onMenuChanged: (open) {
+                        _translateOpen = open;
+                        _report();
+                      },
+                    ),
                 ],
               ),
             ),
@@ -165,42 +182,6 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Cycles the view mode: its icon shows the mode on screen, its tooltip names
-/// the one a press switches to.
-class NowPlayingViewModeButton extends StatelessWidget {
-  const NowPlayingViewModeButton({
-    super.key,
-    required this.mode,
-    required this.lyricsState,
-    required this.onChoose,
-  });
-
-  /// The mode on screen (the effective one, see [effectiveViewMode]).
-  final NowPlayingViewMode mode;
-  final NowPlayingLyricsState lyricsState;
-  final ValueChanged<NowPlayingViewMode> onChoose;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final next = nextViewMode(mode, lyricsState);
-    return IconButton(
-      icon: Icon(switch (mode) {
-        NowPlayingViewMode.split => AppIcons.viewSplit,
-        NowPlayingViewMode.lyricsOnly => AppIcons.lyrics,
-        NowPlayingViewMode.coverOnly => AppIcons.viewCover,
-      }),
-      iconSize: playerIconSize,
-      tooltip: switch (next) {
-        NowPlayingViewMode.split => l10n.nowPlayingViewSplit,
-        NowPlayingViewMode.lyricsOnly => l10n.nowPlayingLyricsOnly,
-        NowPlayingViewMode.coverOnly => l10n.nowPlayingViewCoverOnly,
-      },
-      onPressed: () => onChoose(next),
     );
   }
 }

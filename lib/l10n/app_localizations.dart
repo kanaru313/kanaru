@@ -3913,6 +3913,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get homeRetry;
+
+  /// Tooltip of the Now Playing header button that opens the lyrics translation menu
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation'**
+  String get lyricsTranslationButton;
+
+  /// Tooltip of the translation button while translated lyrics show
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation: on'**
+  String get lyricsTranslationButtonOn;
+
+  /// Tooltip of the translation button while a translation is being fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation: translating'**
+  String get lyricsTranslationButtonLoading;
+
+  /// Tooltip of the translation button after a translation failed
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation: failed'**
+  String get lyricsTranslationButtonFailed;
+
+  /// Switch in the lyrics translation menu; a key hint follows it
+  ///
+  /// In en, this message translates to:
+  /// **'Show translation'**
+  String get lyricsTranslationShow;
+
+  /// Submenu title in the lyrics translation menu; language is the language name
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to: {language}'**
+  String lyricsTranslationTarget(String language);
+
+  /// First item of the target language submenu: clears the choice made for this song; language is the default language name
+  ///
+  /// In en, this message translates to:
+  /// **'Default ({language})'**
+  String lyricsTranslationTargetDefault(String language);
+
+  /// Heading of the display style choices in the lyrics translation menu
+  ///
+  /// In en, this message translates to:
+  /// **'Display style'**
+  String get lyricsTranslationDisplayHeader;
+
+  /// Display style that puts the translation under each original line
+  ///
+  /// In en, this message translates to:
+  /// **'Under each line'**
+  String get lyricsTranslationDisplayUnder;
+
+  /// Display style that shows the translation instead of the original line
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get lyricsTranslationDisplayReplace;
+
+  /// Heading of the translation service choices in the lyrics translation menu
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get lyricsTranslationServiceHeader;
+
+  /// Footer of the lyrics translation menu when a saved translation shows
+  ///
+  /// In en, this message translates to:
+  /// **'Translation saved'**
+  String get lyricsTranslationSaved;
+
+  /// Footer of the lyrics translation menu when the shown translation came from the other service; service is Google or DeepL
+  ///
+  /// In en, this message translates to:
+  /// **'Saved from {service}'**
+  String lyricsTranslationSavedFrom(String service);
+
+  /// Button in the lyrics translation menu that translates again with the selected service
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslate'**
+  String get lyricsTranslationRetranslate;
+
+  /// Button in the lyrics translation menu that translates again with the selected service; service is Google or DeepL
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslate with {service}'**
+  String lyricsTranslationRetranslateWith(String service);
+
+  /// Footer of the lyrics translation menu when nothing needs translating; language is the language name
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are already in {language}'**
+  String lyricsTranslationSameLanguage(String language);
+
+  /// Footer of the lyrics translation menu while a translation is being fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Translating…'**
+  String get lyricsTranslationLoading;
+
+  /// Button in the lyrics translation menu after a failure
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get lyricsTranslationRetry;
+
+  /// Why a translation failed: no network
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the service. Check your connection.'**
+  String get lyricsTranslationFailNetwork;
+
+  /// Why a translation failed: DeepL selected without a key
+  ///
+  /// In en, this message translates to:
+  /// **'Add your DeepL API key in Settings.'**
+  String get lyricsTranslationFailNoKey;
+
+  /// Why a translation failed: wrong DeepL key
+  ///
+  /// In en, this message translates to:
+  /// **'DeepL rejected the API key. Check it in Settings.'**
+  String get lyricsTranslationFailBadKey;
+
+  /// Why a translation failed: DeepL quota used up
+  ///
+  /// In en, this message translates to:
+  /// **'The monthly character quota is used up.'**
+  String get lyricsTranslationFailQuota;
+
+  /// Why a translation failed: rate limited
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Try again in a moment.'**
+  String get lyricsTranslationFailRateLimited;
+
+  /// Why a translation failed: blocked
+  ///
+  /// In en, this message translates to:
+  /// **'The service blocked the request. Try again later or use the other service.'**
+  String get lyricsTranslationFailBlocked;
+
+  /// Why a translation failed: target language not supported
+  ///
+  /// In en, this message translates to:
+  /// **'This service cannot translate into this language.'**
+  String get lyricsTranslationFailUnsupportedLanguage;
+
+  /// Why a translation failed: lyrics too long
+  ///
+  /// In en, this message translates to:
+  /// **'These lyrics are too long to translate.'**
+  String get lyricsTranslationFailTooLong;
+
+  /// Why a translation failed: server error
+  ///
+  /// In en, this message translates to:
+  /// **'The service had an error. Try again later.'**
+  String get lyricsTranslationFailServer;
+
+  /// Why a translation failed: unreadable answer
+  ///
+  /// In en, this message translates to:
+  /// **'The service sent an answer that could not be read.'**
+  String get lyricsTranslationFailInvalidResponse;
+
+  /// Why a translation failed: empty answer
+  ///
+  /// In en, this message translates to:
+  /// **'The service returned no translation.'**
+  String get lyricsTranslationFailEmptyResult;
+
+  /// Why a translation failed: the system key store is locked
+  ///
+  /// In en, this message translates to:
+  /// **'The key store is locked. Unlock it to use your DeepL key.'**
+  String get lyricsTranslationFailKeyStoreLocked;
+
+  /// Why a translation failed: no system key store
+  ///
+  /// In en, this message translates to:
+  /// **'The key store is not available, so the DeepL key cannot be read.'**
+  String get lyricsTranslationFailKeyStoreUnavailable;
+
+  /// Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics will be sent to {service}'**
+  String translationNoticeTitle(String service);
+
+  /// Body of the translation notice dialog; service is Google or DeepL
+  ///
+  /// In en, this message translates to:
+  /// **'The text of this song\'s lyrics is sent to {service} to be translated. Nothing else is sent.'**
+  String translationNoticeBody(String service);
+
+  /// Extra line of the translation notice dialog when the service is Google
+  ///
+  /// In en, this message translates to:
+  /// **'Google is used through an unofficial web address, so it may stop working at any time.'**
+  String get translationNoticeGoogleUnofficial;
+
+  /// Button of the translation notice dialog that accepts sending the lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get translationNoticeContinue;
+
+  /// Name of Simplified Chinese as a translation language
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese (Simplified)'**
+  String get languageNameZhHans;
+
+  /// Name of Traditional Chinese as a translation language
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese (Traditional)'**
+  String get languageNameZhHant;
 }
 
 class _AppLocalizationsDelegate

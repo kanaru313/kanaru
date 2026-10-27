@@ -131,6 +131,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 **Phase 4 — Juicy**
 
 - [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view
+- [ ] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade, sleep timer
 - [ ] Listening stats, Last.fm / ListenBrainz scrobbling

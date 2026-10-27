@@ -2262,5 +2262,188 @@
   "homeLoadFailed": "Could not load the list",
   "@homeLoadFailed": { "description": "Shown on a full Home list when a page could not be read" },
   "homeRetry": "Retry",
-  "@homeRetry": { "description": "Text button under the failure sentence of a full Home list that reads the list again" }
+  "@homeRetry": { "description": "Text button under the failure sentence of a full Home list that reads the list again" },
+  "lyricsTranslationButton": "Lyrics translation",
+  "@lyricsTranslationButton": {
+    "description": "Tooltip of the Now Playing header button that opens the lyrics translation menu"
+  },
+  "lyricsTranslationButtonOn": "Lyrics translation: on",
+  "@lyricsTranslationButtonOn": {
+    "description": "Tooltip of the translation button while translated lyrics show"
+  },
+  "lyricsTranslationButtonLoading": "Lyrics translation: translating",
+  "@lyricsTranslationButtonLoading": {
+    "description": "Tooltip of the translation button while a translation is being fetched"
+  },
+  "lyricsTranslationButtonFailed": "Lyrics translation: failed",
+  "@lyricsTranslationButtonFailed": {
+    "description": "Tooltip of the translation button after a translation failed"
+  },
+  "lyricsTranslationShow": "Show translation",
+  "@lyricsTranslationShow": {
+    "description": "Switch in the lyrics translation menu; a key hint follows it"
+  },
+  "lyricsTranslationTarget": "Translate to: {language}",
+  "@lyricsTranslationTarget": {
+    "description": "Submenu title in the lyrics translation menu; language is the language name",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationTargetDefault": "Default ({language})",
+  "@lyricsTranslationTargetDefault": {
+    "description": "First item of the target language submenu: clears the choice made for this song; language is the default language name",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationDisplayHeader": "Display style",
+  "@lyricsTranslationDisplayHeader": {
+    "description": "Heading of the display style choices in the lyrics translation menu"
+  },
+  "lyricsTranslationDisplayUnder": "Under each line",
+  "@lyricsTranslationDisplayUnder": {
+    "description": "Display style that puts the translation under each original line"
+  },
+  "lyricsTranslationDisplayReplace": "Replace",
+  "@lyricsTranslationDisplayReplace": {
+    "description": "Display style that shows the translation instead of the original line"
+  },
+  "lyricsTranslationServiceHeader": "Service",
+  "@lyricsTranslationServiceHeader": {
+    "description": "Heading of the translation service choices in the lyrics translation menu"
+  },
+  "lyricsTranslationSaved": "Translation saved",
+  "@lyricsTranslationSaved": {
+    "description": "Footer of the lyrics translation menu when a saved translation shows"
+  },
+  "lyricsTranslationSavedFrom": "Saved from {service}",
+  "@lyricsTranslationSavedFrom": {
+    "description": "Footer of the lyrics translation menu when the shown translation came from the other service; service is Google or DeepL",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationRetranslate": "Retranslate",
+  "@lyricsTranslationRetranslate": {
+    "description": "Button in the lyrics translation menu that translates again with the selected service"
+  },
+  "lyricsTranslationRetranslateWith": "Retranslate with {service}",
+  "@lyricsTranslationRetranslateWith": {
+    "description": "Button in the lyrics translation menu that translates again with the selected service; service is Google or DeepL",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationSameLanguage": "Lyrics are already in {language}",
+  "@lyricsTranslationSameLanguage": {
+    "description": "Footer of the lyrics translation menu when nothing needs translating; language is the language name",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationLoading": "Translating…",
+  "@lyricsTranslationLoading": {
+    "description": "Footer of the lyrics translation menu while a translation is being fetched"
+  },
+  "lyricsTranslationRetry": "Retry",
+  "@lyricsTranslationRetry": {
+    "description": "Button in the lyrics translation menu after a failure"
+  },
+  "lyricsTranslationFailNetwork": "Could not reach the service. Check your connection.",
+  "@lyricsTranslationFailNetwork": {
+    "description": "Why a translation failed: no network"
+  },
+  "lyricsTranslationFailNoKey": "Add your DeepL API key in Settings.",
+  "@lyricsTranslationFailNoKey": {
+    "description": "Why a translation failed: DeepL selected without a key"
+  },
+  "lyricsTranslationFailBadKey": "DeepL rejected the API key. Check it in Settings.",
+  "@lyricsTranslationFailBadKey": {
+    "description": "Why a translation failed: wrong DeepL key"
+  },
+  "lyricsTranslationFailQuota": "The monthly character quota is used up.",
+  "@lyricsTranslationFailQuota": {
+    "description": "Why a translation failed: DeepL quota used up"
+  },
+  "lyricsTranslationFailRateLimited": "Too many requests. Try again in a moment.",
+  "@lyricsTranslationFailRateLimited": {
+    "description": "Why a translation failed: rate limited"
+  },
+  "lyricsTranslationFailBlocked": "The service blocked the request. Try again later or use the other service.",
+  "@lyricsTranslationFailBlocked": {
+    "description": "Why a translation failed: blocked"
+  },
+  "lyricsTranslationFailUnsupportedLanguage": "This service cannot translate into this language.",
+  "@lyricsTranslationFailUnsupportedLanguage": {
+    "description": "Why a translation failed: target language not supported"
+  },
+  "lyricsTranslationFailTooLong": "These lyrics are too long to translate.",
+  "@lyricsTranslationFailTooLong": {
+    "description": "Why a translation failed: lyrics too long"
+  },
+  "lyricsTranslationFailServer": "The service had an error. Try again later.",
+  "@lyricsTranslationFailServer": {
+    "description": "Why a translation failed: server error"
+  },
+  "lyricsTranslationFailInvalidResponse": "The service sent an answer that could not be read.",
+  "@lyricsTranslationFailInvalidResponse": {
+    "description": "Why a translation failed: unreadable answer"
+  },
+  "lyricsTranslationFailEmptyResult": "The service returned no translation.",
+  "@lyricsTranslationFailEmptyResult": {
+    "description": "Why a translation failed: empty answer"
+  },
+  "lyricsTranslationFailKeyStoreLocked": "The key store is locked. Unlock it to use your DeepL key.",
+  "@lyricsTranslationFailKeyStoreLocked": {
+    "description": "Why a translation failed: the system key store is locked"
+  },
+  "lyricsTranslationFailKeyStoreUnavailable": "The key store is not available, so the DeepL key cannot be read.",
+  "@lyricsTranslationFailKeyStoreUnavailable": {
+    "description": "Why a translation failed: no system key store"
+  },
+  "translationNoticeTitle": "Lyrics will be sent to {service}",
+  "@translationNoticeTitle": {
+    "description": "Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "translationNoticeBody": "The text of this song's lyrics is sent to {service} to be translated. Nothing else is sent.",
+  "@translationNoticeBody": {
+    "description": "Body of the translation notice dialog; service is Google or DeepL",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "translationNoticeGoogleUnofficial": "Google is used through an unofficial web address, so it may stop working at any time.",
+  "@translationNoticeGoogleUnofficial": {
+    "description": "Extra line of the translation notice dialog when the service is Google"
+  },
+  "translationNoticeContinue": "Continue",
+  "@translationNoticeContinue": {
+    "description": "Button of the translation notice dialog that accepts sending the lyrics"
+  },
+  "languageNameZhHans": "Chinese (Simplified)",
+  "@languageNameZhHans": {
+    "description": "Name of Simplified Chinese as a translation language"
+  },
+  "languageNameZhHant": "Chinese (Traditional)",
+  "@languageNameZhHant": {
+    "description": "Name of Traditional Chinese as a translation language"
+  }
 }

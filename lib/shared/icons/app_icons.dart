@@ -117,6 +117,10 @@ abstract final class AppIcons {
   static const IconData themeDark = Icons.dark_mode_outlined;
   static const IconData language = Icons.translate;
   static const IconData languageOutlined = Icons.translate_outlined;
+
+  // Lyrics translation button: outlined while off, filled while on.
+  static const IconData lyricsTranslateOutlined = Icons.translate_outlined;
+  static const IconData lyricsTranslate = Icons.translate;
   static const IconData windowCustom = Icons.web_asset;
   static const IconData windowSystem = Icons.desktop_windows_outlined;
   static const IconData windowFrameless = Icons.crop_free;
