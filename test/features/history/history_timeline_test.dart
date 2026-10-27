@@ -59,9 +59,8 @@ void main() {
           top(listText('Oct 22, 2026 • 1 song')),
           lessThan(top(listText('Oct 20, 2026 • 1 song'))),
         );
-        // Every line is one song row tall; the bar sits at the bottom of its
-        // header line.
-        final line = lineExtentOf(tester);
+        // The bar sits at the bottom of its header line, and the first
+        // line's gap is above the view: the first bar is at the top.
         final bar = barHeightOf(tester);
         final listTop = tester.getTopLeft(find.byType(HistoryTimelineView)).dy;
         final barBox = find.ancestor(
@@ -69,7 +68,7 @@ void main() {
           matching: find.byType(HistoryDayBar),
         );
         expect(tester.getSize(barBox).height, bar);
-        expect(tester.getBottomLeft(barBox).dy - listTop, line);
+        expect(tester.getTopLeft(barBox).dy, listTop);
       },
     );
 
@@ -341,11 +340,8 @@ void main() {
     const yesterday = 'Oct 22, 2026 • 14 songs';
 
     /// Offset at which the bar of the day whose header is line [line] is at
-    /// the top.
-    double barAt(WidgetTester tester, int line) =>
-        line * lineExtentOf(tester) +
-        lineExtentOf(tester) -
-        barHeightOf(tester);
+    /// the top: the list starts a header gap above the view.
+    double barAt(WidgetTester tester, int line) => line * lineExtentOf(tester);
 
     historyTestWidgets('shows the day at the top while its rows scroll', (
       tester,

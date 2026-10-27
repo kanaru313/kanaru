@@ -168,7 +168,7 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
     // A day near the end cannot reach the top: the list stops at its end.
     _controller.jumpTo(
       math.min(
-        index.barOffsetOfDay(d, _extent, _bar),
+        index.barOffsetOfDay(d, _extent, _bar) - historyTopGap(_extent, _bar),
         _controller.position.maxScrollExtent,
       ),
     );

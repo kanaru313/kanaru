@@ -19,3 +19,7 @@ double historyDayBarHeight(ThemeData theme, TextScaler scaler) {
   final bar = math.max(48.0, text + 24);
   return math.min(bar, historyLineExtent(theme, scaler) - 8);
 }
+
+/// How far the timeline list starts above its view: the empty part of a
+/// header line above its bar, hidden on the first day.
+double historyTopGap(double extent, double bar) => extent - bar;

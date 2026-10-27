@@ -291,9 +291,9 @@ void main() {
       await settleHistory(tester);
 
       expect(find.byType(Dialog), findsNothing);
-      // The bar is the bottom of its header line, with the gap above it.
-      final bar =
-          6 * lineExtentOf(tester) + lineExtentOf(tester) - barHeightOf(tester);
+      // The list starts a header gap above the view, so the view's top is
+      // the bar at the bottom of line 6 when the list is at line 6.
+      final bar = 6 * lineExtentOf(tester);
       expect(
         timelineScrollable(tester).position.maxScrollExtent,
         greaterThan(bar),

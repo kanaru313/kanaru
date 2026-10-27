@@ -16,7 +16,9 @@ const historyStickyHeaderKey = ValueKey('history-sticky-header');
 /// the bar of the day at the top drawn over it as the pinned bar.
 ///
 /// Every line is one song row tall ([historyLineExtent]). A header line is a
-/// gap with the day's bar at its bottom. The pinned bar is not part of the
+/// gap with the day's bar at its bottom; the list starts above the view by
+/// that gap ([historyTopGap]), so it is not seen over the first bar. The
+/// pinned bar is not part of the
 /// scrolling: it reads the scroll offset, finds the last bar that has reached
 /// the top (`stickyAt`) and draws that day, pushed up by the next bar as it
 /// arrives. What it covers is not hit (it is opaque, so a tap does not reach
@@ -113,13 +115,23 @@ class HistoryTimelineView extends StatelessWidget {
     final scaler = MediaQuery.textScalerOf(context);
     final extent = historyLineExtent(theme, scaler);
     final bar = historyDayBarHeight(theme, scaler);
+    final gap = historyTopGap(extent, bar);
     return Stack(
       children: [
-        ListView.builder(
-          controller: controller,
-          itemExtent: extent,
-          itemCount: count,
-          itemBuilder: (context, i) => _item(context, i, bar),
+        // Starts [gap] above the view, clipped by the stack: the first header
+        // line's gap is hidden, so the first bar sits at the top as a pinned
+        // one does.
+        Positioned(
+          top: -gap,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: ListView.builder(
+            controller: controller,
+            itemExtent: extent,
+            itemCount: count,
+            itemBuilder: (context, i) => _item(context, i, bar),
+          ),
         ),
         Positioned(
           top: 0,
@@ -145,7 +157,11 @@ class HistoryTimelineView extends StatelessWidget {
                       final offset = controller.hasClients
                           ? controller.offset
                           : 0.0;
-                      final sticky = index.stickyAt(offset, extent, bar);
+                      // The top of the view is [gap] into the list; at the
+                      // start the first bar is in place, nothing to pin.
+                      final sticky = offset <= 0
+                          ? null
+                          : index.stickyAt(offset + gap, extent, bar);
                       if (sticky == null) return const SizedBox.shrink();
                       return Transform.translate(
                         offset: Offset(0, sticky.dy),
