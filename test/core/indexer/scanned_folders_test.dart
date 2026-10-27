@@ -43,10 +43,16 @@ void main() {
             tagBatch: Duration(milliseconds: 100),
           ),
         ),
-        rootWalkerProvider.overrideWithValue((path) {
+        rootWalkerProvider.overrideWithValue((
+          path, {
+          required skipHiddenFolders,
+        }) {
           if (missing) return Future.value(const WalkResult(rootMissing: true));
           if (hang) return Completer<WalkResult>().future;
-          return walkAudioFilesInIsolate(path);
+          return walkAudioFilesInIsolate(
+            path,
+            skipHiddenFolders: skipHiddenFolders,
+          );
         }),
       ],
     );

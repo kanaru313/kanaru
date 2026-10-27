@@ -216,16 +216,77 @@ void main() {
       });
     });
 
-    test('a dot-file is still a file, and a dot-named root is walked', () {
-      touch('.hidden-track.mp3');
-      touch('lost+found.mp3');
-      expect(names(walkAudioFiles(tmp.path)), {
-        '.hidden-track.mp3',
-        'lost+found.mp3',
-      });
+    test('with hidden folders allowed, only the junk folders stay out', () {
+      touch('keep.mp3');
+      touch('.hidden/a.mp3');
+      touch('.a/.b/c.mp3');
+      for (final junk in [
+        '.Trash/x.mp3',
+        '.Trash-1000/files/x.mp3',
+        '.Trashes/x.mp3',
+        '.local/share/Trash/files/x.mp3',
+        '.snapshot/x.mp3',
+        '.snapshots/1/snapshot/x.mp3',
+        '.zfs/x.mp3',
+        '.stversions/x.mp3',
+        '.recycle/x.mp3',
+        '#recycle/x.mp3',
+        '@Recycle/x.mp3',
+        '#snapshot/x.mp3',
+        '.@__thumb/x.mp3',
+        '.AppleDouble/x.mp3',
+        'lost+found/x.mp3',
+        'album/@eaDir/x.mp3',
+        r'$recycle.bin/x.mp3',
+      ]) {
+        touch(junk);
+      }
 
+      final result = walkAudioFiles(tmp.path, skipHiddenFolders: false);
+
+      expect(names(result), {'keep.mp3', '.hidden/a.mp3', '.a/.b/c.mp3'});
+      expect(
+        result.dirs,
+        containsAll(['${tmp.path}/.hidden', '${tmp.path}/.a/.b']),
+      );
+      expect(result.skippedFolderNames, isNot(contains('.hidden')));
+      expect(result.skippedFolderNames, contains('.Trash-1000'));
+    });
+
+    test('hidden files are never listed, in either mode', () {
+      touch('._a.mp3');
+      touch('.b.mp3');
+      touch('sub/.c.flac');
+      touch('plain.mp3');
+      touch('.hidden/d.mp3');
+
+      expect(names(walkAudioFiles(tmp.path)), {'plain.mp3'});
+      expect(names(walkAudioFiles(tmp.path, skipHiddenFolders: false)), {
+        'plain.mp3',
+        '.hidden/d.mp3',
+      });
+    });
+
+    test(
+      'a .nomedia is still recorded, and a name like a junk file is a file',
+      () {
+        touch('album/.nomedia');
+        touch('album/a.mp3');
+        touch('lost+found.mp3');
+
+        final result = walkAudioFiles(tmp.path);
+
+        expect(result.nomediaDirs, ['${tmp.path}/album']);
+        expect(names(result), {'album/a.mp3', 'lost+found.mp3'});
+      },
+    );
+
+    test('a dot-named root is walked', () {
       touch('.music/a.mp3');
+      touch('.music/.inner/b.mp3');
+
       final inner = walkAudioFiles('${tmp.path}/.music');
+
       expect(inner.files, hasLength(1));
     });
   });

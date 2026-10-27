@@ -1196,6 +1196,13 @@ class AppLocalizationsVi extends AppLocalizations {
       'Thư mục có file .nomedia không vào thư viện. Có hiệu lực ở lần quét sau.';
 
   @override
+  String get settingsSkipHiddenFolders => 'Bỏ qua thư mục ẩn';
+
+  @override
+  String get settingsSkipHiddenFoldersHint =>
+      'Thư mục có tên bắt đầu bằng dấu chấm không vào thư viện. Có hiệu lực ở lần quét sau.';
+
+  @override
   String get settingsDuplicatesByFilename => 'Tìm bài trùng theo tên file';
 
   @override

@@ -151,4 +151,45 @@ void main() {
       const AlbumGrouping(),
     );
   });
+
+  testWidgets('the hidden folders row follows the nomedia row, is on and '
+      'saved', (tester) async {
+    final h = await _open(tester, hasDatabase: true);
+    LibraryScanPrefs scan() => h.container.read(settingsProvider).libraryScan;
+
+    final titles = [
+      for (final row in tester.widgetList<SettingRow>(find.byType(SettingRow)))
+        row.title,
+    ];
+    final nomedia = titles.indexOf('Skip folders with .nomedia');
+    expect(nomedia, greaterThanOrEqualTo(0));
+    expect(titles[nomedia + 1], 'Skip hidden folders');
+    expect(
+      tester
+          .widget<Switch>(_inRow('Skip hidden folders', find.byType(Switch)))
+          .value,
+      isTrue,
+    );
+
+    await tester.tap(_inRow('Skip folders with .nomedia', find.byType(Switch)));
+    await tester.pumpAndSettle();
+    await tester.tap(_inRow('Skip hidden folders', find.byType(Switch)));
+    await tester.pumpAndSettle();
+
+    expect(scan().skipHiddenFolders, isFalse);
+    expect(scan().respectNomedia, isTrue, reason: 'other options are kept');
+  });
+
+  testWidgets('without a library database the hidden folders row is disabled', (
+    tester,
+  ) async {
+    await _open(tester, hasDatabase: false);
+
+    expect(
+      tester
+          .widget<Switch>(_inRow('Skip hidden folders', find.byType(Switch)))
+          .onChanged,
+      isNull,
+    );
+  });
 }

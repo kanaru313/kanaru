@@ -36,9 +36,17 @@ class ScanDiff {
 /// an unreadable or empty folder (an unmounted mount point lists as empty),
 /// not unstattable, the root is present, and the walk found at least one
 /// file. A missing root deletes nothing and reads nothing. An unchanged file
-/// whose tags failed to read last time is read again. Covers play no part:
+/// whose tags failed to read last time is read again. [barredRows] is how
+/// many stored rows the hidden-file and hidden-folder rules now bar. An empty
+/// walk deletes rows only when every stored row is barred (a deliberate
+/// filter); with any other row left, the empty walk may be an unmounted
+/// drive, so nothing is deleted until a scan finds files. Covers play no part:
 /// the cover pass finds them from the database.
-ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
+ScanDiff diffScan(
+  WalkResult walk,
+  List<TrackSnapshot> existing, {
+  int barredRows = 0,
+}) {
   if (walk.rootMissing) return const ScanDiff();
 
   final known = {for (final track in existing) track.path: track};
@@ -65,7 +73,8 @@ ScanDiff diffScan(WalkResult walk, List<TrackSnapshot> existing) {
   if (walk.files.isEmpty &&
       existing.isNotEmpty &&
       walk.filteredOut == 0 &&
-      walk.deferred == 0) {
+      walk.deferred == 0 &&
+      barredRows < existing.length) {
     return ScanDiff(rootEmpty: true);
   }
 

@@ -8,7 +8,13 @@ class WalkRules {
     this.respectNomedia = false,
     this.minFileSizeBytes = 0,
     this.excludedPaths = const [],
+    this.skipHiddenFolders = true,
   });
+
+  /// Do not enter folders whose name starts with a dot. Read by the walk
+  /// itself (entering them only to filter afterwards would walk `.cache` and
+  /// `.git` on every scan), not by [applyWalkRules].
+  final bool skipHiddenFolders;
 
   /// Drop folders below the root that hold a `.nomedia` entry.
   final bool respectNomedia;
@@ -35,6 +41,7 @@ class ScanRules {
       respectNomedia: prefs.respectNomedia,
       minFileSizeBytes: prefs.minFileSizeKb * 1024,
       excludedPaths: excluded,
+      skipHiddenFolders: prefs.skipHiddenFolders,
     ),
     minDurationMs: prefs.minDurationSeconds * 1000,
   );
@@ -147,4 +154,34 @@ WalkResult applyWalkRules(
     tooSmallOut: walk.tooSmallOut + bySize,
     deferred: walk.deferred + deferred,
   );
+}
+
+/// Whether [path] has a dot-named folder between [root] and its file name
+/// (or, for a folder path, as its own last part).
+bool hasHiddenSegmentBelow(String root, String path) {
+  if (path.length <= root.length) return false;
+  final rel = path.substring(root.length + 1);
+  return rel.startsWith('.') || rel.contains('/.');
+}
+
+/// How many of the [storedPaths] below [root] the hidden rules now bar: the
+/// ones with a dot base name always, and with [skipHiddenFolders] the ones
+/// inside a dot folder below the root. Rows under the non-dot junk names
+/// (`#recycle`, `@Recycle`, `#snapshot`) are not counted, so a root holding
+/// only such rows stays empty-looking. Used when a walk lists no file: those
+/// rows are deleted on purpose, so the empty result is not an empty mount.
+int hiddenRowsBarred(
+  Iterable<String> storedPaths,
+  String root, {
+  required bool skipHiddenFolders,
+}) {
+  var count = 0;
+  for (final path in storedPaths) {
+    if (path.length <= root.length) continue;
+    if (isHiddenName(path) ||
+        (skipHiddenFolders && hasHiddenSegmentBelow(root, path))) {
+      count++;
+    }
+  }
+  return count;
 }

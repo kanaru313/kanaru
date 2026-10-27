@@ -26,7 +26,7 @@ final scanTimeoutsProvider = Provider<ScanTimeouts>(
 );
 
 /// Lists the audio files under a root; tests override it with a fake.
-final rootWalkerProvider = Provider<Future<WalkResult> Function(String root)>(
+final rootWalkerProvider = Provider<RootWalker>(
   (ref) => walkAudioFilesInIsolate,
 );
 

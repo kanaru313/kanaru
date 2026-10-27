@@ -189,4 +189,51 @@ void main() {
     expect(rules.minDurationMs, 30000);
     expect(const ScanRules().minDurationMs, 0);
   });
+
+  group('hidden rules', () {
+    test('ScanRules.from maps skipHiddenFolders, on by default', () {
+      expect(
+        ScanRules.from(const LibraryScanPrefs()).walk.skipHiddenFolders,
+        isTrue,
+      );
+      expect(
+        ScanRules.from(const LibraryScanPrefs(skipHiddenFolders: false))
+            .walk
+            .skipHiddenFolders,
+        isFalse,
+      );
+    });
+
+    test('a dot base name is barred in both modes', () {
+      const stored = ['/r/._a.mp3', '/r/x/.b.mp3', '/r/c.mp3'];
+      for (final skip in [true, false]) {
+        expect(hiddenRowsBarred(stored, '/r', skipHiddenFolders: skip), 2);
+      }
+    });
+
+    test('rows inside a dot folder are barred only while skipping', () {
+      const stored = ['/r/.h/a.mp3', '/r/a/.h/b.mp3', '/r/a/c.mp3'];
+      expect(hiddenRowsBarred(stored, '/r', skipHiddenFolders: true), 2);
+      expect(hiddenRowsBarred(stored, '/r', skipHiddenFolders: false), 0);
+    });
+
+    test('a dot-named root is not a hidden folder below the root', () {
+      expect(
+        hiddenRowsBarred(
+          ['/x/.music/a.mp3'],
+          '/x/.music',
+          skipHiddenFolders: true,
+        ),
+        0,
+      );
+    });
+
+    test('hasHiddenSegmentBelow looks only below the root', () {
+      expect(hasHiddenSegmentBelow('/r', '/r/.h'), isTrue);
+      expect(hasHiddenSegmentBelow('/r', '/r/a/.h/b'), isTrue);
+      expect(hasHiddenSegmentBelow('/r', '/r/a/b'), isFalse);
+      expect(hasHiddenSegmentBelow('/r', '/r'), isFalse);
+      expect(hasHiddenSegmentBelow('/x/.m', '/x/.m/a'), isFalse);
+    });
+  });
 }

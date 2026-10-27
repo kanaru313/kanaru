@@ -19,18 +19,52 @@ class WalkedFile {
 /// How many folders with undecodable names a walk remembers for the log.
 const maxUndecodableSamples = 3;
 
-/// Folders that hold deleted or system files, never music: trash bins,
-/// `lost+found`, Synology `@eaDir`, the Windows recycle bin, and any
-/// dot-folder (caches, hidden data). Only folders below the root are tested,
-/// so a root that is itself a dot-folder is still walked; dot-files are not
-/// affected.
-bool isSkippedFolder(String path) {
+/// Folders that hold deleted, system or duplicate files, never music, and
+/// that the walk skips whatever the hidden-folder setting says: trash bins
+/// (`.Trash`, `.Trash-1000`, `.Trashes`, the freedesktop home trash
+/// `.local/share/Trash`), `lost+found`, Synology `@eaDir` and recycle
+/// folders, the Windows recycle bin, snapshot and old-version folders
+/// (`.snapshot`, `.snapshots`, `.zfs`, `.stversions`, `#snapshot`), NAS thumbnail
+/// folders and macOS `.AppleDouble`. Without them, listing dot-folders would
+/// bring back deleted songs and one copy of every album per snapshot.
+///
+/// Only the last part of [path] is tested, except for the home trash, which
+/// is recognised by the path suffix `/.local/share/Trash`.
+bool isJunkFolder(String path) {
   final name = path.substring(path.lastIndexOf('/') + 1);
-  return name.startsWith('.') ||
-      name == 'lost+found' ||
-      name == '@eaDir' ||
-      name.toUpperCase() == r'$RECYCLE.BIN';
+  return _junkNames.contains(name) ||
+      name.startsWith('.Trash-') ||
+      name.toUpperCase() == r'$RECYCLE.BIN' ||
+      path.endsWith(_homeTrashSuffix);
 }
+
+const _junkNames = {
+  'lost+found',
+  '@eaDir',
+  '.Trash',
+  '.Trashes',
+  '.snapshot',
+  '.snapshots',
+  '.zfs',
+  '.stversions',
+  '.recycle',
+  '#recycle',
+  '@Recycle',
+  '#snapshot',
+  '.@__thumb',
+  '.AppleDouble',
+};
+const _homeTrashSuffix = '/.local/share/Trash';
+
+/// Whether the last part of [path] starts with a dot (a hidden entry).
+bool isHiddenName(String path) =>
+    path.substring(path.lastIndexOf('/') + 1).startsWith('.');
+
+/// Whether the walk never enters the folder at [path]: a [isJunkFolder], or
+/// a hidden folder when [skipHidden] is set. Only folders below the root are
+/// tested, so a root that is itself a dot-folder is still walked.
+bool isSkippedFolder(String path, {required bool skipHidden}) =>
+    isJunkFolder(path) || (skipHidden && isHiddenName(path));
 
 /// Name of the entry that marks a folder as "no media here".
 const nomediaName = '.nomedia';
@@ -143,6 +177,12 @@ class WalkResult {
 
 /// Every regular audio file under [root], recursively, with mtime and size.
 ///
+/// Hidden folders (name starting with a dot) are entered only when
+/// [skipHiddenFolders] is false; [isJunkFolder] ones never. Hidden files
+/// (`._x.mp3`, `.x.mp3`: AppleDouble forks, editor leftovers) are never
+/// listed. The walk counts nothing it leaves out, so an empty result still
+/// looks like an empty mount to `diffScan`.
+///
 /// Symlinks to files count (`stat` follows them); FIFOs, sockets and devices
 /// do not, since opening some of them blocks forever. Broken links are not
 /// files but are reported as unstattable, so their stored rows survive. Symlinked
@@ -151,7 +191,7 @@ class WalkResult {
 ///
 /// Synchronous I/O on purpose: it runs off the UI isolate, see
 /// [walkAudioFilesInIsolate].
-WalkResult walkAudioFiles(String root) {
+WalkResult walkAudioFiles(String root, {bool skipHiddenFolders = true}) {
   final files = <WalkedFile>[];
   final unreadable = <String>[];
   final unstattable = <String>[];
@@ -189,7 +229,7 @@ WalkResult walkAudioFiles(String root) {
     var hasNomedia = false;
     for (final entry in entries) {
       if (entry is Directory) {
-        if (isSkippedFolder(entry.path)) {
+        if (isSkippedFolder(entry.path, skipHidden: skipHiddenFolders)) {
           skippedNames.add(
             entry.path.substring(entry.path.lastIndexOf('/') + 1),
           );
@@ -202,7 +242,7 @@ WalkResult walkAudioFiles(String root) {
         hasNomedia = true;
         if (dir != root) nomedia.add(dir);
       }
-      if (!isAudioFile(entry.path)) continue;
+      if (isHiddenName(entry.path) || !isAudioFile(entry.path)) continue;
       final lossy = entry.path.contains('\uFFFD');
       final stat = FileStat.statSync(entry.path);
       if (lossy && stat.type != FileSystemEntityType.file) {
@@ -242,8 +282,18 @@ WalkResult walkAudioFiles(String root) {
   );
 }
 
+/// Walks one root; [walkAudioFilesInIsolate] in production, a fake in tests.
+typedef RootWalker = Future<WalkResult> Function(
+  String root, {
+  required bool skipHiddenFolders,
+});
+
 /// [walkAudioFiles] on a worker isolate. Top-level and capturing only
-/// [root], so the closure can be sent to the isolate (a closure inside a
-/// notifier would capture `ref` and `this`).
-Future<WalkResult> walkAudioFilesInIsolate(String root) =>
-    Isolate.run(() => walkAudioFiles(root));
+/// [root] and the flag, so the closure can be sent to the isolate (a closure
+/// inside a notifier would capture `ref` and `this`).
+Future<WalkResult> walkAudioFilesInIsolate(
+  String root, {
+  bool skipHiddenFolders = true,
+}) => Isolate.run(
+  () => walkAudioFiles(root, skipHiddenFolders: skipHiddenFolders),
+);

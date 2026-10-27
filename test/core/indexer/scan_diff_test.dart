@@ -148,4 +148,29 @@ void main() {
       expect(diff.toDelete, [2]);
     });
   });
+
+  group('rows barred by the hidden rules', () {
+    test('an empty walk with barred rows deletes them', () {
+      final diff = diffScan(const WalkResult(), [
+        row(1, '/m/.h/a.mp3'),
+      ], barredRows: 1);
+      expect(diff.rootEmpty, isFalse);
+      expect(diff.toDelete, [1]);
+    });
+
+    test('an empty walk with a barred row among others is an empty root', () {
+      final diff = diffScan(const WalkResult(), [
+        row(1, '/m/a.mp3'),
+        row(2, '/m/._b.mp3'),
+      ], barredRows: 1);
+      expect(diff.rootEmpty, isTrue);
+      expect(diff.toDelete, isEmpty);
+    });
+
+    test('an empty walk with nothing barred is an empty root', () {
+      final diff = diffScan(const WalkResult(), [row(1, '/m/a.mp3')]);
+      expect(diff.rootEmpty, isTrue);
+      expect(diff.toDelete, isEmpty);
+    });
+  });
 }

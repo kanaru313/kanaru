@@ -314,6 +314,8 @@
   "settingsFontScaleHint": "Làm mọi chữ trong Kanaru nhỏ hơn hoặc lớn hơn.",
   "settingsRespectNomedia": "Bỏ qua thư mục có .nomedia",
   "settingsRespectNomediaHint": "Thư mục có file .nomedia không vào thư viện. Có hiệu lực ở lần quét sau.",
+  "settingsSkipHiddenFolders": "Bỏ qua thư mục ẩn",
+  "settingsSkipHiddenFoldersHint": "Thư mục có tên bắt đầu bằng dấu chấm không vào thư viện. Có hiệu lực ở lần quét sau.",
   "settingsDuplicatesByFilename": "Tìm bài trùng theo tên file",
   "settingsDuplicatesByFilenameHint": "File trùng tên được tính là một bài. Có hiệu lực ở lần quét sau.",
   "settingsM3uPlaylists": "Đọc playlist m3u",

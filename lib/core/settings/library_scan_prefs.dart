@@ -129,6 +129,7 @@ const maxMinDurationSeconds = 600;
 class LibraryScanPrefs {
   const LibraryScanPrefs({
     this.respectNomedia = false,
+    this.skipHiddenFolders = true,
     this.duplicatesByFilename = false,
     this.m3uPlaylists = false,
     this.albumGrouping = const AlbumGrouping(),
@@ -141,6 +142,11 @@ class LibraryScanPrefs {
 
   /// Skip folders that hold a `.nomedia` file.
   final bool respectNomedia;
+
+  /// Do not enter folders whose name starts with a dot. Hidden files are
+  /// never indexed, whatever this says. On by default, as before the option
+  /// existed. Read by the walk at the next scan.
+  final bool skipHiddenFolders;
 
   /// Treat files with the same name as duplicates.
   final bool duplicatesByFilename;
@@ -170,6 +176,7 @@ class LibraryScanPrefs {
 
   LibraryScanPrefs copyWith({
     bool? respectNomedia,
+    bool? skipHiddenFolders,
     bool? duplicatesByFilename,
     bool? m3uPlaylists,
     AlbumGrouping? albumGrouping,
@@ -180,6 +187,7 @@ class LibraryScanPrefs {
     SplitPrefs? genreSplit,
   }) => LibraryScanPrefs(
     respectNomedia: respectNomedia ?? this.respectNomedia,
+    skipHiddenFolders: skipHiddenFolders ?? this.skipHiddenFolders,
     duplicatesByFilename: duplicatesByFilename ?? this.duplicatesByFilename,
     m3uPlaylists: m3uPlaylists ?? this.m3uPlaylists,
     albumGrouping: albumGrouping ?? this.albumGrouping,
@@ -194,6 +202,7 @@ class LibraryScanPrefs {
   bool operator ==(Object other) =>
       other is LibraryScanPrefs &&
       other.respectNomedia == respectNomedia &&
+      other.skipHiddenFolders == skipHiddenFolders &&
       other.duplicatesByFilename == duplicatesByFilename &&
       other.m3uPlaylists == m3uPlaylists &&
       other.albumGrouping == albumGrouping &&
@@ -206,6 +215,7 @@ class LibraryScanPrefs {
   @override
   int get hashCode => Object.hash(
     respectNomedia,
+    skipHiddenFolders,
     duplicatesByFilename,
     m3uPlaylists,
     albumGrouping,
@@ -219,6 +229,7 @@ class LibraryScanPrefs {
   @override
   String toString() =>
       'LibraryScanPrefs(respectNomedia: $respectNomedia, '
+      'skipHiddenFolders: $skipHiddenFolders, '
       'duplicatesByFilename: $duplicatesByFilename, '
       'm3uPlaylists: $m3uPlaylists, albumGrouping: $albumGrouping, '
       'minFileSizeKb: $minFileSizeKb, '

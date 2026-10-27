@@ -786,6 +786,8 @@
   "settingsFontScaleHint": "Makes all text in Kanaru smaller or larger.",
   "settingsRespectNomedia": "Skip folders with .nomedia",
   "settingsRespectNomediaHint": "Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.",
+  "settingsSkipHiddenFolders": "Skip hidden folders",
+  "settingsSkipHiddenFoldersHint": "Folders whose name starts with a dot stay out of the library. Applies at the next rescan.",
   "settingsDuplicatesByFilename": "Find duplicates by file name",
   "settingsDuplicatesByFilenameHint": "Files with the same name count as one song. Applies at the next rescan.",
   "settingsM3uPlaylists": "Read m3u playlists",

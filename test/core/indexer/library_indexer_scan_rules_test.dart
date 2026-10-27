@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -234,5 +235,139 @@ void main() {
         expect(summary().added, 1);
       },
     );
+  });
+
+  group('hidden folders and files', () {
+    const showHidden = LibraryScanPrefs(skipHiddenFolders: false);
+
+    test('by default a dot-file and a dot-folder stay out', () async {
+      touch('.hidden/a.mp3');
+      touch('._b.mp3');
+      touch('c.mp3');
+
+      await scan();
+
+      expect(await stored(), {'c.mp3'});
+    });
+
+    test('with the option off a dot-folder is stored, trash is not', () async {
+      touch('.hidden/a.mp3');
+      touch('.Trash-1000/files/x.mp3');
+      touch('.local/share/Trash/files/y.mp3');
+      touch('.snapshots/1/z.mp3');
+      touch('._b.mp3');
+      configure(showHidden);
+
+      await scan();
+
+      expect(await stored(), {'.hidden/a.mp3'});
+    });
+
+    test('switching back on deletes the hidden folder rows', () async {
+      touch('.hidden/a.mp3');
+      touch('c.mp3');
+      configure(showHidden);
+      await scan();
+      expect(await stored(), {'.hidden/a.mp3', 'c.mp3'});
+
+      configure(const LibraryScanPrefs());
+      await scan();
+
+      expect(await stored(), {'c.mp3'});
+      expect(summary().removed, 1);
+    });
+
+    test('a stored dot-file row is deleted by the next scan', () async {
+      touch('x.mp3');
+      await scan();
+      await db.customStatement('UPDATE tracks SET path = ? WHERE path = ?', [
+        '$root/._x.mp3',
+        '$root/x.mp3',
+      ]);
+      expect(await stored(), {'._x.mp3'});
+
+      await scan();
+
+      expect(await stored(), {'x.mp3'});
+      expect(summary().removed, 1);
+    });
+
+    test(
+      'a root holding only hidden-folder rows is emptied, not kept',
+      () async {
+        touch('.hidden/a.mp3');
+        configure(showHidden);
+        await scan();
+        expect(await stored(), {'.hidden/a.mp3'});
+
+        configure(const LibraryScanPrefs());
+        await scan();
+
+        expect(await stored(), isEmpty);
+        expect(summary().removed, 1);
+        expect(summary().skippedRoots, isEmpty);
+      },
+    );
+
+    test('a barred row does not let an empty walk delete the others', () async {
+      touch('x.mp3');
+      touch('y.mp3');
+      await scan();
+      await db.customStatement('UPDATE tracks SET path = ? WHERE path = ?', [
+        '$root/._y.mp3',
+        '$root/y.mp3',
+      ]);
+      File('$root/x.mp3').deleteSync();
+      File('$root/y.mp3').deleteSync();
+
+      await scan();
+
+      expect(await stored(), {'x.mp3', '._y.mp3'});
+    });
+
+    test('a root with only a skipped dot-folder keeps its rows', () async {
+      touch('a.mp3');
+      await scan();
+      File('$root/a.mp3').deleteSync();
+      Directory('$root/.stfolder').createSync();
+
+      await scan();
+
+      expect(await stored(), {'a.mp3'}, reason: 'looks like a lost mount');
+    });
+
+    test('plays and favorites survive the deletion of the row', () async {
+      final hidden = '$root/.hidden/a.mp3';
+      touch('.hidden/a.mp3');
+      configure(showHidden);
+      await scan();
+      await db.customStatement(
+        'INSERT INTO plays (path, played_at) VALUES (?, 1)',
+        [hidden],
+      );
+      await db.customStatement(
+        "INSERT INTO playlists (name, created_at, kind) "
+        "VALUES ('Favorites', 1, 'favorites')",
+      );
+      await db.customStatement(
+        'INSERT INTO playlist_entries (playlist_id, path, position) '
+        'SELECT id, ?, 0 FROM playlists',
+        [hidden],
+      );
+
+      configure(const LibraryScanPrefs());
+      await scan();
+
+      expect(await stored(), isEmpty);
+      for (final table in ['plays', 'play_stats', 'playlist_entries']) {
+        final rows = await db
+            .customSelect(
+              'SELECT path FROM $table WHERE path = ?',
+              variables: [Variable(hidden)],
+            )
+            .get();
+        expect(rows, hasLength(1), reason: table);
+      }
+    });
   });
 }

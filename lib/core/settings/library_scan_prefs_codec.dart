@@ -2,6 +2,7 @@ import 'library_scan_prefs.dart';
 import 'settings_codec_values.dart';
 
 const _respectNomediaKey = 'respectNomedia';
+const _skipHiddenFoldersKey = 'skipHiddenFolders';
 const _duplicatesByFilenameKey = 'duplicatesByFilename';
 const _m3uPlaylistsKey = 'm3uPlaylists';
 const _albumGroupingKey = 'albumGrouping';
@@ -18,6 +19,7 @@ const _knownSplitKeys = {_separatorsKey, _keepWholeKey};
 const _knownGroupingKeys = {_byAlbumArtistKey, _byYearKey};
 const _knownKeys = {
   _respectNomediaKey,
+  _skipHiddenFoldersKey,
   _duplicatesByFilenameKey,
   _m3uPlaylistsKey,
   _albumGroupingKey,
@@ -39,6 +41,10 @@ const _knownKeys = {
   return (
     LibraryScanPrefs(
       respectNomedia: boolOr(map[_respectNomediaKey], d.respectNomedia),
+      skipHiddenFolders: boolOr(
+        map[_skipHiddenFoldersKey],
+        d.skipHiddenFolders,
+      ),
       duplicatesByFilename: boolOr(
         map[_duplicatesByFilenameKey],
         d.duplicatesByFilename,
@@ -105,6 +111,7 @@ Map<String, Object?> encodeLibraryScanPrefs(
 }) => {
   ...extra,
   _respectNomediaKey: prefs.respectNomedia,
+  _skipHiddenFoldersKey: prefs.skipHiddenFolders,
   _duplicatesByFilenameKey: prefs.duplicatesByFilename,
   _m3uPlaylistsKey: prefs.m3uPlaylists,
   _albumGroupingKey: {

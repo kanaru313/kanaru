@@ -1892,6 +1892,18 @@ abstract class AppLocalizations {
   /// **'Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.'**
   String get settingsRespectNomediaHint;
 
+  /// No description provided for @settingsSkipHiddenFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip hidden folders'**
+  String get settingsSkipHiddenFolders;
+
+  /// No description provided for @settingsSkipHiddenFoldersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders whose name starts with a dot stay out of the library. Applies at the next rescan.'**
+  String get settingsSkipHiddenFoldersHint;
+
   /// No description provided for @settingsDuplicatesByFilename.
   ///
   /// In en, this message translates to:

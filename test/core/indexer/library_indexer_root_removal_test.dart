@@ -59,14 +59,20 @@ void main() {
       overrides: [
         ...LibraryStartup(db: db).overrides,
         tagReaderProvider.overrideWithValue(reader),
-        rootWalkerProvider.overrideWithValue((root) async {
+        rootWalkerProvider.overrideWithValue((
+          root, {
+          required skipHiddenFolders,
+        }) async {
           final gate = walkGate;
           if (gate != null && root == rootA) {
             walkGate = null;
             if (!walkEntered.isCompleted) walkEntered.complete();
             await gate.future;
           }
-          return walkAudioFilesInIsolate(root);
+          return walkAudioFilesInIsolate(
+            root,
+            skipHiddenFolders: skipHiddenFolders,
+          );
         }),
       ],
     );

@@ -9,6 +9,7 @@ import '../settings/settings_provider.dart';
 import 'folder_watcher.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
+import 'scan_rules.dart' show hasHiddenSegmentBelow;
 import 'scanned_folders.dart';
 
 export 'folder_watcher.dart' show WatchStatus;
@@ -79,7 +80,12 @@ class FolderWatcherController extends Notifier<WatchStatus> {
       unawaited(watcher.dispose());
     });
     ref.listen(scannedFoldersProvider, (_, next) {
-      watcher.sync(next.byRoot.values.expand((dirs) => dirs));
+      // Dot-folders are never watched, whatever the scan setting: a tree like
+      // `.cache` could exhaust the watch budget for the whole library.
+      watcher.sync([
+        for (final MapEntry(key: root, value: dirs) in next.byRoot.entries)
+          ...dirs.where((dir) => !hasHiddenSegmentBelow(root, dir)),
+      ]);
       if (next.byRoot.isEmpty) unawaited(_listWithoutScan());
     }, fireImmediately: true);
     return watcher.status;

@@ -12,9 +12,9 @@ import 'settings_chips_row.dart';
 import 'separator_setting_rows.dart';
 import 'settings_number_presets.dart';
 
-/// Scan options: what a scan skips (folders with `.nomedia`, small files,
-/// short tracks), which work from the next scan on; the album grouping, which
-/// applies at once (the library re-keys in the background); and those not
+/// Scan options: what a scan skips (folders with `.nomedia`, hidden folders,
+/// small files, short tracks), which work from the next scan on; the album
+/// grouping, which applies at once (the library re-keys in the background); and those not
 /// wired yet (shown from the saved values, off): duplicates and playlists.
 /// The artist and genre separator rows follow the album grouping; the cover
 /// cache rows come last. Skip and grouping options are off without a library
@@ -40,6 +40,18 @@ class LibraryScanSettingRows extends ConsumerWidget {
             onChanged: live
                 ? (value) => settings.setLibraryScan(
                     scan.copyWith(respectNomedia: value),
+                  )
+                : null,
+          ),
+        ),
+        SettingRow.single(
+          title: l10n.settingsSkipHiddenFolders,
+          subtitle: l10n.settingsSkipHiddenFoldersHint,
+          control: Switch(
+            value: scan.skipHiddenFolders,
+            onChanged: live
+                ? (value) => settings.setLibraryScan(
+                    scan.copyWith(skipHiddenFolders: value),
                   )
                 : null,
           ),

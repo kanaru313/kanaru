@@ -36,9 +36,15 @@ void main() {
       overrides: [
         ...LibraryStartup(db: db, coverCacheDirectory: covers).overrides,
         tagReaderProvider.overrideWithValue(reader),
-        rootWalkerProvider.overrideWithValue((root) {
+        rootWalkerProvider.overrideWithValue((
+          root, {
+          required skipHiddenFolders,
+        }) {
           walks++;
-          return walkAudioFilesInIsolate(root);
+          return walkAudioFilesInIsolate(
+            root,
+            skipHiddenFolders: skipHiddenFolders,
+          );
         }),
       ],
     );

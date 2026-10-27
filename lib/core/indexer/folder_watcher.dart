@@ -195,7 +195,7 @@ class FolderWatcher {
   /// Watches [dir] and its subfolders now, before the next scan publishes
   /// them: files copied into a new folder must not be missed.
   void _watchNewTree(String dir) {
-    if (isSkippedFolder(dir)) return;
+    if (isSkippedFolder(dir, skipHidden: true)) return;
     _attach(dir);
     final prefix = dir.length;
     late final StreamSubscription<FileSystemEntity> listing;
@@ -205,7 +205,10 @@ class FolderWatcher {
           (entity) {
             if (entity is! Directory || _status != WatchStatus.watching) return;
             final below = entity.path.substring(prefix + 1).split('/');
-            if (below.any((name) => isSkippedFolder('/$name'))) return;
+            final skipped = below.any(
+              (name) => isSkippedFolder('/$name', skipHidden: true),
+            );
+            if (skipped) return;
             _attach(entity.path);
           },
           // A folder that cannot be listed is found by the next scan.
@@ -233,7 +236,7 @@ class FolderWatcher {
 
   bool _onCreated(String path, bool isDirectory) {
     if (isDirectory) {
-      if (isSkippedFolder(path)) return false;
+      if (isSkippedFolder(path, skipHidden: true)) return false;
       _watchNewTree(path);
       return true;
     }

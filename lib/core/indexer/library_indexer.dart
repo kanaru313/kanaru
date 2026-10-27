@@ -44,6 +44,21 @@ const _progressSteps = 20;
 int tagBatchSizeFor(int total) =>
     (total / _progressSteps).ceil().clamp(minTagBatchSize, maxTagBatchSize);
 
+/// A walk that outlasted its timeout, with the hidden-folder setting it
+/// started with (a walk answers only that question) and whether it ended.
+class _AbandonedWalk {
+  _AbandonedWalk(this.walk, this.skipHidden) {
+    walk.whenComplete(() => finished = true).ignore();
+  }
+
+  final Future<WalkResult> walk;
+  final bool skipHidden;
+  bool finished = false;
+
+  /// The follow-up scan for the end of [walk] is registered (once).
+  bool rescanArmed = false;
+}
+
 /// Scans every library root: walk, diff against the database, read tags of
 /// new or changed files, write them, then delete what is gone. The result is
 /// published as soon as the tags are in; covers follow in a second pass.
@@ -104,7 +119,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// Walks that timed out and are still running (or finished unseen), by
   /// root path. The next scan awaits the same walk instead of starting
   /// another isolate; the entry goes once a scan has consumed it.
-  final Map<String, Future<WalkResult>> _abandonedWalks = {};
+  final Map<String, _AbandonedWalk> _abandonedWalks = {};
 
   /// Files found shorter than the minimum length, not read again unchanged.
   final _shortTracks = ShortTrackMemo();
@@ -441,8 +456,26 @@ class LibraryIndexer extends Notifier<IndexerState> {
       IndexerScanning(phase: ScanPhase.discovering, rootPath: root.path),
     );
     WalkResult walk;
-    final abandoned = _abandonedWalks[root.path];
-    final running = abandoned ?? walkFiles(root.path);
+    final skipHidden = rules.walk.skipHiddenFolders;
+    var abandoned = _abandonedWalks[root.path];
+    if (abandoned != null && abandoned.skipHidden != skipHidden) {
+      // That walk answers another question. While it runs the isolate cannot
+      // be stopped and a second one would pile on a slow root: wait for it to
+      // end (which scans again), then walk once with the current setting.
+      if (!abandoned.finished) {
+        _log.warning(
+          'Walk with other hidden setting still running: ${root.path}',
+        );
+        // An automatic scan that abandoned it armed no follow-up; this one
+        // is the first to need it.
+        if (!_autoStarted) _armRescan(root.path, abandoned);
+        return stopped(SkipReason.timedOut);
+      }
+      _abandonedWalks.remove(root.path);
+      abandoned = null;
+    }
+    final running =
+        abandoned?.walk ?? walkFiles(root.path, skipHiddenFolders: skipHidden);
     var keepWalk = false;
     walkTime.start();
     _awaitingWalkOf = root.path;
@@ -452,9 +485,10 @@ class LibraryIndexer extends Notifier<IndexerState> {
       keepWalk = true;
       // Keep it: the isolate cannot be stopped, and a large cold root may
       // finish before the next scan asks.
-      if (_abandonedWalks[root.path] != running) {
-        _abandonedWalks[root.path] = running;
-        if (!_autoStarted) _scanWhenAbandonedWalkEnds(root.path, running);
+      if (_abandonedWalks[root.path]?.walk != running) {
+        final entry = _AbandonedWalk(running, skipHidden);
+        _abandonedWalks[root.path] = entry;
+        if (!_autoStarted) _armRescan(root.path, entry);
       }
       _log.warning('Walk took over ${timeouts.walk}, gave up: ${root.path}');
       return stopped(SkipReason.timedOut);
@@ -480,7 +514,17 @@ class LibraryIndexer extends Notifier<IndexerState> {
     }
     dbTime.start();
     final snapshot = await db.trackSnapshot(root.id);
-    final diff = diffScan(walk, snapshot);
+    final diff = diffScan(
+      walk,
+      snapshot,
+      barredRows: walk.files.isEmpty
+          ? hiddenRowsBarred(
+              snapshot.map((t) => t.path),
+              root.path,
+              skipHiddenFolders: skipHidden,
+            )
+          : 0,
+    );
     dbTime.stop();
     if (diff.rootEmpty) {
       _log.warning('Root has no audio files, left unchanged: ${root.path}');
@@ -500,7 +544,9 @@ class LibraryIndexer extends Notifier<IndexerState> {
       // A walk that already outlasted its timeout is too costly to repeat:
       // keep it for the scan that can read. Scan again as soon as the reader
       // frees up.
-      if (abandoned != null) _abandonedWalks[root.path] = running;
+      if (abandoned != null) {
+        _abandonedWalks[root.path] = abandoned;
+      }
       _retryWhenReaderFrees = true;
       return stopped(SkipReason.readerStuck, dirs: walk.dirs);
     }
@@ -612,9 +658,16 @@ class LibraryIndexer extends Notifier<IndexerState> {
   /// the abandoned [walk] of [rootPath] finally succeeds, scan again to
   /// consume it, unless the running scan is waiting for that very walk. A
   /// failed walk starts nothing; the next scan reports it.
+  void _armRescan(String rootPath, _AbandonedWalk entry) {
+    if (entry.rescanArmed) return;
+    entry.rescanArmed = true;
+    _scanWhenAbandonedWalkEnds(rootPath, entry.walk);
+  }
+
   void _scanWhenAbandonedWalkEnds(String rootPath, Future<WalkResult> walk) {
     walk.then((_) {
-      if (!ref.mounted || !identical(_abandonedWalks[rootPath], walk)) return;
+      final current = _abandonedWalks[rootPath]?.walk;
+      if (!ref.mounted || !identical(current, walk)) return;
       if (_awaitingWalkOf == rootPath) return;
       _log.info('Walk finished after its timeout, scanning: $rootPath');
       _scanAutomatically();

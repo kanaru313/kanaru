@@ -51,9 +51,15 @@ void main() {
         tagReaderProvider.overrideWithValue(reader),
         dirWatchProvider.overrideWithValue(dirs.call),
         watchBudgetProvider.overrideWithValue(budget),
-        rootWalkerProvider.overrideWithValue((path) {
+        rootWalkerProvider.overrideWithValue((
+          path, {
+          required skipHiddenFolders,
+        }) {
           walked.add(path);
-          return walkAudioFilesInIsolate(path);
+          return walkAudioFilesInIsolate(
+            path,
+            skipHiddenFolders: skipHiddenFolders,
+          );
         }),
         initialSettingsProvider.overrideWithValue(
           AppSettings(
@@ -196,4 +202,36 @@ void main() {
       expect(dirs.opened, unorderedEquals([root, '$root/a']));
     },
   );
+
+  test('a hidden folder the scan published is never watched, and flipping '
+      'the setting leaves the watcher alone', () async {
+    Directory('$root/.h').createSync();
+    File('$root/.h/two.mp3').writeAsStringSync('x');
+    final container = containerFor();
+    container
+        .read(settingsProvider.notifier)
+        .setLibraryScan(
+          const LibraryScanPrefs(watchFolders: true, skipHiddenFolders: false),
+        );
+    final statuses = <WatchStatus>[];
+    container.listen(folderWatcherProvider, (_, next) => statuses.add(next));
+    await container.read(libraryIndexerProvider.notifier).scan();
+    await settle();
+
+    expect(
+      container.read(scannedFoldersProvider).byRoot[root],
+      contains('$root/.h'),
+    );
+    expect(dirs.opened, unorderedEquals([root, '$root/a']));
+
+    container
+        .read(settingsProvider.notifier)
+        .setLibraryScan(
+          const LibraryScanPrefs(watchFolders: true, skipHiddenFolders: true),
+        );
+    await settle();
+
+    expect(statuses, isNot(contains(WatchStatus.off)));
+    expect(dirs.hasListener(root), isTrue);
+  });
 }

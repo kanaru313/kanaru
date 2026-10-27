@@ -149,4 +149,35 @@ void main() {
     expect(json['watchFolders'], true);
     expect(decodeLibraryScanPrefs(json).$1, prefs);
   });
+
+  group('skipHiddenFolders', () {
+    test('is on by default and when the key is missing', () {
+      expect(const LibraryScanPrefs().skipHiddenFolders, isTrue);
+      expect(
+        decodeLibraryScanPrefs(<String, Object?>{}).$1.skipHiddenFolders,
+        isTrue,
+      );
+    });
+
+    test('a damaged value gives on', () {
+      for (final bad in <Object?>['yes', 1, null]) {
+        expect(
+          decodeLibraryScanPrefs({'skipHiddenFolders': bad})
+              .$1
+              .skipHiddenFolders,
+          isTrue,
+          reason: '$bad',
+        );
+      }
+    });
+
+    test('off round-trips and is written under its key', () {
+      const prefs = LibraryScanPrefs(skipHiddenFolders: false);
+      final json = encodeLibraryScanPrefs(prefs);
+
+      expect(json['skipHiddenFolders'], false);
+      expect(decodeLibraryScanPrefs(json).$1, prefs);
+      expect(decodeLibraryScanPrefs(json).$2, isEmpty);
+    });
+  });
 }

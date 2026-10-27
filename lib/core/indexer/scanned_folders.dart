@@ -64,7 +64,7 @@ class ScannedFoldersTally {
 /// missing has no folders.
 Future<Map<String, List<String>>> listLibraryFolders({
   required LibraryDatabase db,
-  required Future<WalkResult> Function(String root) walk,
+  required RootWalker walk,
   required LibraryScanPrefs prefs,
   required Duration timeout,
 }) async {
@@ -73,7 +73,10 @@ Future<Map<String, List<String>>> listLibraryFolders({
   for (final root in await db.roots()) {
     try {
       final result = applyWalkRules(
-        await walk(root.path).timeout(timeout),
+        await walk(
+          root.path,
+          skipHiddenFolders: rules.walk.skipHiddenFolders,
+        ).timeout(timeout),
         root.path,
         rules.walk,
       );

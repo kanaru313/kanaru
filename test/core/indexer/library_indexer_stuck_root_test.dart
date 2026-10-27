@@ -13,6 +13,7 @@ import 'package:kanaru/core/indexer/library_indexer.dart' show tagBatchSizeFor;
 import 'package:kanaru/core/indexer/root_scan_result.dart';
 import 'package:kanaru/core/indexer/tag_reader.dart';
 import 'package:kanaru/core/indexer/walk_audio_files.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 
 import 'fake_tag_reader.dart';
 
@@ -45,6 +46,7 @@ void main() {
   late _StuckTagReader reader;
   late ProviderContainer container;
   final walked = <String>[];
+  final walkedHidden = <bool>[];
   var hangingWalks = <String>{};
   final hungWalks = <String, List<Completer<WalkResult>>>{};
 
@@ -58,6 +60,7 @@ void main() {
     db = LibraryDatabase(NativeDatabase.memory());
     reader = _StuckTagReader();
     walked.clear();
+    walkedHidden.clear();
     hangingWalks = {};
     hungWalks.clear();
     container = ProviderContainer(
@@ -70,14 +73,21 @@ void main() {
             tagBatch: Duration(milliseconds: 100),
           ),
         ),
-        rootWalkerProvider.overrideWithValue((root) {
+        rootWalkerProvider.overrideWithValue((
+          root, {
+          required skipHiddenFolders,
+        }) {
           walked.add(root);
+          if (root == rootA) walkedHidden.add(skipHiddenFolders);
           if (hangingWalks.contains(root)) {
             final completer = Completer<WalkResult>();
             (hungWalks[root] ??= []).add(completer);
             return completer.future;
           }
-          return walkAudioFilesInIsolate(root);
+          return walkAudioFilesInIsolate(
+            root,
+            skipHiddenFolders: skipHiddenFolders,
+          );
         }),
       ],
     );
@@ -206,6 +216,47 @@ void main() {
 
     await scan();
     expect(walksOf(rootA), 2, reason: 'a consumed walk is not reused');
+  });
+
+  test('a walk started with the other hidden setting is not duplicated while '
+      'it hangs, and the next walk uses the new setting', () async {
+    touch(rootA, 'one.mp3');
+    hangingWalks = {rootA};
+    await scan();
+    expect(walkedHidden, [true]);
+
+    container
+        .read(settingsProvider.notifier)
+        .setLibraryScan(const LibraryScanPrefs(skipHiddenFolders: false));
+    await scan();
+    expect(walksOf(rootA), 1, reason: 'no second isolate on a hung root');
+    expect(summary().skippedRoots, {rootA: SkipReason.timedOut});
+
+    hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+    await untilIdle();
+    expect(walksOf(rootA), 2, reason: 'the old answer is discarded');
+    expect(walkedHidden, [true, false]);
+  });
+
+  test('an automatic scan abandons a walk, a user scan with the other '
+      'setting arms one follow-up', () async {
+    touch(rootA, 'one.mp3');
+    hangingWalks = {rootA};
+    await container.read(libraryIndexerProvider.notifier).scanForChanges();
+    expect(walkedHidden, [true]);
+
+    container
+        .read(settingsProvider.notifier)
+        .setLibraryScan(const LibraryScanPrefs(skipHiddenFolders: false));
+    await scan();
+    await scan();
+    expect(walksOf(rootA), 1);
+
+    hungWalks[rootA]!.single.complete(await walkAudioFilesInIsolate(rootA));
+    await untilIdle();
+    expect(walkedHidden, [true, false], reason: 'one follow-up, new setting');
+    await untilIdle();
+    expect(walkedHidden, hasLength(2));
   });
 
   test('a walk that finishes after its timeout starts a scan by itself, '

@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 
 import '../indexer/audio_file_types.dart';
 import '../indexer/root_path.dart';
-import '../indexer/walk_audio_files.dart' show isSkippedFolder, nomediaName;
+import '../indexer/walk_audio_files.dart' show isJunkFolder, nomediaName;
 
 final _log = Logger('library');
 
@@ -27,7 +27,7 @@ String diskEntryName(String path) => path.substring(path.lastIndexOf('/') + 1);
 /// Whether the library walk would never enter the folder at [path], apart
 /// from the dot rule: trash, `lost+found`, `@eaDir`, the Windows recycle bin.
 bool _isSystemFolder(String name) =>
-    !name.startsWith('.') && isSkippedFolder(name);
+    !name.startsWith('.') && isJunkFolder(name);
 
 /// Whether [path] is a folder the user left out, or inside one.
 bool _isExcluded(String path, List<String> excludedPaths) =>

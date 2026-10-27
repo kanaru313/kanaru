@@ -1250,6 +1250,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Folders that hold a .nomedia file stay out of the library. Applies at the next rescan.';
 
   @override
+  String get settingsSkipHiddenFolders => 'Skip hidden folders';
+
+  @override
+  String get settingsSkipHiddenFoldersHint =>
+      'Folders whose name starts with a dot stay out of the library. Applies at the next rescan.';
+
+  @override
   String get settingsDuplicatesByFilename => 'Find duplicates by file name';
 
   @override
