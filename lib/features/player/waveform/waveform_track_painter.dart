@@ -48,7 +48,7 @@ class WaveformTrackPainter extends CustomPainter {
         Rect.fromCenter(
           center: Offset(thumbX, size.height / 2),
           width: waveformThumbWidth,
-          height: size.height,
+          height: waveformThumbHeight,
         ),
         const Radius.circular(waveformThumbWidth / 2),
       ),

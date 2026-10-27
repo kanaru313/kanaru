@@ -16,7 +16,14 @@ const waveformFadeDuration = Duration(milliseconds: 200);
 /// washes out `secondaryContainer`, so the rest is `primary`, faded.
 const waveformRestAlpha = 0.35;
 
-/// Colour of the unplayed bars; `primary` is the played colour.
+/// Opacity of the played bars: a little darker than the rest, not a solid block.
+const waveformPlayedAlpha = 0.85;
+
+/// Colour of the played bars.
+Color waveformPlayedColor(ColorScheme colors) =>
+    colors.primary.withValues(alpha: waveformPlayedAlpha);
+
+/// Colour of the unplayed bars.
 Color waveformRestColor(ColorScheme colors) =>
     colors.primary.withValues(alpha: waveformRestAlpha);
 
@@ -141,7 +148,7 @@ class _WaveformSeekTrackState extends ConsumerState<WaveformSeekTrack>
                         size: size,
                         devicePixelRatio: dpr,
                         durationMs: duration.inMilliseconds,
-                        played: colors.primary,
+                        played: waveformPlayedColor(colors),
                         rest: waveformRestColor(colors),
                       )),
                     ),

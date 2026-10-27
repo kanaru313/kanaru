@@ -12,8 +12,9 @@ const waveformBarRadius = 1.5;
 const waveformMinExtent = 2.0;
 const waveformMaxExtent = 32.0;
 
-/// The thumb is an upright pill as high as the track.
+/// The thumb is an upright pill a little taller than the tallest bar.
 const waveformThumbWidth = 4.0;
+const waveformThumbHeight = waveformMaxExtent + 4;
 
 /// Room kept free on each side of the thumb's centre: half the thumb plus the
 /// same gap the straight track leaves around it.

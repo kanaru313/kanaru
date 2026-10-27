@@ -1,11 +1,13 @@
 import 'dart:typed_data';
 
 import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart' show ColorScheme;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/waveform/waveform.dart';
 import 'package:kanaru/features/player/waveform/waveform_bar_layout.dart';
 import 'package:kanaru/features/player/waveform/waveform_pictures.dart';
+import 'package:kanaru/features/player/waveform/waveform_seek_track.dart';
 import 'package:kanaru/features/player/waveform/waveform_track_painter.dart';
 
 const _played = Color(0xFFFF0000);
@@ -129,9 +131,10 @@ void main() {
       return data;
     }
 
-    // Colour of the pixel at [x] on the track's middle row.
-    Color at(ByteData data, int x) {
-      final offset = ((waveformTrackHeight ~/ 2) * _width.toInt() + x) * 4;
+    // Colour of the pixel at [x] on row [y] (the track's middle by default).
+    Color at(ByteData data, int x, [int? y]) {
+      final row = y ?? waveformTrackHeight ~/ 2;
+      final offset = (row * _width.toInt() + x) * 4;
       return Color.fromARGB(
         data.getUint8(offset + 3),
         data.getUint8(offset),
@@ -160,6 +163,18 @@ void main() {
       },
     );
 
+    testWidgets('the thumb is shorter than the track', (tester) async {
+      final data = await render(tester, 0.5);
+      final top = (waveformTrackHeight - waveformThumbHeight) ~/ 2;
+
+      expect(waveformThumbHeight, waveformMaxExtent + 4);
+      expect(at(data, 250), _thumb);
+      // Two rows in, clear of the pill's rounded end.
+      expect(at(data, 250, top + 2), _thumb);
+      expect(at(data, 250, top - 2).a, 0);
+      expect(at(data, 250, waveformTrackHeight.toInt() - top + 1).a, 0);
+    });
+
     testWidgets('rest bars are drawn after the played ones are clipped', (
       tester,
     ) async {
@@ -181,6 +196,12 @@ void main() {
       expect(at(end, _width.toInt() - 2), _thumb);
       expect(at(end, barMiddle(10)), _played);
     });
+  });
+
+  test('played bars are primary at 85 % opacity, the rest at 35 %', () {
+    const colors = ColorScheme.light();
+    expect(waveformPlayedColor(colors), colors.primary.withValues(alpha: 0.85));
+    expect(waveformRestColor(colors), colors.primary.withValues(alpha: 0.35));
   });
 
   test('shouldRepaint reacts to progress, pictures and thumb colour only', () {
