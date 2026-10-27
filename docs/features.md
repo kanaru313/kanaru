@@ -369,7 +369,7 @@ Log tự che mật khẩu, token, cookie và user:pass trong URL (cả dạng pe
 | PRIV-01 | Không telemetry        | Không gửi số liệu sử dụng hay crash report tự động                                                                                      |
 | PRIV-02 | Không cần tài khoản    | Mọi tính năng offline dùng được mà không cần đăng nhập                                                                                  |
 | PRIV-03 | Kết nối mạng minh bạch | Mọi tính năng gọi mạng (lời bài hát, ảnh nghệ sĩ, scrobble, cập nhật) đều có công tắc riêng; có một công tắc "Chế độ offline hoàn toàn" |
-| PRIV-04 | Credential an toàn     | Mật khẩu và token chỉ nằm trong keyring hệ thống (libsecret/Keychain/Keystore), không ghi vào DB hay log                                |
+| PRIV-04 | Credential an toàn     | Mật khẩu và token chỉ nằm trong keyring hệ thống (libsecret/Keychain/Keystore), không ghi vào DB hay log. Không có keyring: file `0600` trong thư mục data, cảnh báo hiện rõ sẽ có cùng các dòng settings (store cho key DeepL đã làm, cờ `usingFallback`/`modeWasFixed` đã có, UI cảnh báo chưa)                                |
 
 ## 18. Đóng gói & phân phối
 

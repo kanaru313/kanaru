@@ -2,11 +2,13 @@ import 'display_prefs.dart';
 import 'library_scan_prefs.dart';
 import 'library_sort.dart';
 import 'playback_prefs.dart';
+import 'translation_prefs.dart';
 
 export 'display_prefs.dart';
 export 'library_scan_prefs.dart';
 export 'library_sort.dart';
 export 'playback_prefs.dart';
+export 'translation_prefs.dart';
 
 /// Light or dark theme, or whatever the desktop uses.
 enum ThemePreference { system, light, dark }
@@ -45,6 +47,7 @@ class AppSettings {
     this.libraryScan = const LibraryScanPrefs(),
     this.playback = const PlaybackPrefs(),
     this.display = const DisplayPrefs(),
+    this.translation = const TranslationPrefs(),
   });
 
   final ThemePreference theme;
@@ -91,6 +94,9 @@ class AppSettings {
   final PlaybackPrefs playback;
   final DisplayPrefs display;
 
+  /// Lyrics translation options (no credentials).
+  final TranslationPrefs translation;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -106,6 +112,7 @@ class AppSettings {
     LibraryScanPrefs? libraryScan,
     PlaybackPrefs? playback,
     DisplayPrefs? display,
+    TranslationPrefs? translation,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -122,6 +129,7 @@ class AppSettings {
     libraryScan: libraryScan ?? this.libraryScan,
     playback: playback ?? this.playback,
     display: display ?? this.display,
+    translation: translation ?? this.translation,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -141,6 +149,7 @@ class AppSettings {
     libraryScan: libraryScan,
     playback: playback,
     display: display,
+    translation: translation,
   );
 
   @override
@@ -160,7 +169,8 @@ class AppSettings {
       other.animations == animations &&
       other.libraryScan == libraryScan &&
       other.playback == playback &&
-      other.display == display;
+      other.display == display &&
+      other.translation == translation;
 
   @override
   int get hashCode => Object.hash(
@@ -179,6 +189,7 @@ class AppSettings {
     libraryScan,
     playback,
     display,
+    translation,
   );
 
   @override
@@ -191,5 +202,6 @@ class AppSettings {
       'rescanOnStartup: $rescanOnStartup, '
       'libraryOnboarded: $libraryOnboarded, '
       'recordListenHistory: $recordListenHistory, animations: $animations, '
-      'libraryScan: $libraryScan, playback: $playback, display: $display)';
+      'libraryScan: $libraryScan, playback: $playback, display: $display, '
+      'translation: $translation)';
 }

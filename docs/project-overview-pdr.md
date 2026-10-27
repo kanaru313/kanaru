@@ -69,7 +69,7 @@ From [features.md section 19](./features.md). Targets, not guarantees: measured 
 | NFR-06 | Data integrity | Migrations tested; playlists and ratings survive upgrades | Migration tests exist; playlists (with Favorites) are built and covered by them; ratings are not planned |
 | NFR-07 | Testing | Unit tests for core, widget tests for main flows | About 2,600 Dart tests and 116 Rust tests (`test`/`testWidgets` and `#[test]` declarations counted at `ff93a6c`) |
 
-Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no telemetry, no account, network features behind explicit switches, credentials only in the system keyring (planned).
+Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no telemetry, no account, network features behind explicit switches, credentials only in the system keyring, or in a `0600` file in the data directory with a visible warning when there is no keyring.
 
 ## Technical constraints
 

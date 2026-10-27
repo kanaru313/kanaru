@@ -17,7 +17,10 @@ import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
 import 'core/open_files/open_files_provider.dart';
 import 'core/paths/app_directories.dart'
-    show resolveCoverCacheDirectory, resolveWaveformCacheDirectory;
+    show
+        resolveCoverCacheDirectory,
+        resolveDataDirectory,
+        resolveWaveformCacheDirectory;
 import 'core/player/app_exit_flush.dart';
 import 'core/player/media_kit_backend.dart';
 import 'core/player/original_cover_reader.dart';
@@ -26,6 +29,7 @@ import 'core/player/rust_original_cover_reader.dart';
 import 'core/player/session/playback_session_provider.dart';
 import 'core/player/unavailable_audio_backend.dart';
 import 'core/search/search_prefs_provider.dart';
+import 'core/secrets/secret_store_provider.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/stats/listen_recorder_provider.dart';
 import 'core/waveform/rust_waveform_reader.dart';
@@ -80,6 +84,11 @@ Future<void> main() async {
         searchPrefsFileFor(Platform.environment),
       ),
       customTitleBarProvider.overrideWithValue(customTitleBar),
+      secretStoreSetupProvider.overrideWithValue(
+        SecretStoreSetup.system(
+          dataDir: resolveDataDirectory(Platform.environment),
+        ),
+      ),
       audioBackendOverride(
         engineReady: engineReady,
         create: MediaKitBackend.new,

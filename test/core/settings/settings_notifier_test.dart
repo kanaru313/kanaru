@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
 void main() {
@@ -52,6 +53,89 @@ void main() {
     expect(settings.libraryOnboarded, isTrue);
     expect(stored()['rescanOnStartup'], false);
     expect(stored()['libraryOnboarded'], true);
+  });
+
+  test('enabling selects the service, acknowledges it and shows', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+    var changes = 0;
+    container.listen(settingsProvider, (_, _) => changes++);
+
+    notifier.enableTranslation(LyricsTranslationService.deepl);
+    await notifier.flush();
+
+    expect(changes, 1);
+    final translation = container.read(settingsProvider).translation;
+    expect(translation.show, isTrue);
+    expect(translation.service, LyricsTranslationService.deepl);
+    expect(translation.noticeAcknowledged, {LyricsTranslationService.deepl});
+    final json = stored()['lyricsTranslation']! as Map;
+    expect(json['show'], true);
+    expect(json['service'], 'deepl');
+    expect(json['noticeAcknowledged'], ['deepl']);
+  });
+
+  test('acknowledging only records the notice', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.acknowledgeTranslationNotice(LyricsTranslationService.google);
+
+    final translation = container.read(settingsProvider).translation;
+    expect(translation.show, isFalse);
+    expect(translation.needsNotice, isFalse);
+  });
+
+  test('translation never turns on for an unacknowledged service', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.setTranslation(const TranslationPrefs(show: true));
+    expect(container.read(settingsProvider).translation.show, isFalse);
+
+    notifier.toggleLyricsTranslation();
+    expect(container.read(settingsProvider).translation.show, isFalse);
+
+    notifier.acknowledgeTranslationNotice(LyricsTranslationService.deepl);
+    notifier.setTranslation(
+      container
+          .read(settingsProvider)
+          .translation
+          .copyWith(show: true, service: LyricsTranslationService.google),
+    );
+    expect(container.read(settingsProvider).translation.show, isFalse);
+  });
+
+  test('setTranslation cannot add an acknowledgment', () {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.setTranslation(
+      const TranslationPrefs(
+        show: true,
+        noticeAcknowledged: {LyricsTranslationService.google},
+      ),
+    );
+
+    final translation = container.read(settingsProvider).translation;
+    expect(translation.noticeAcknowledged, isEmpty);
+    expect(translation.show, isFalse);
+  });
+
+  test('translation prefs and the toggle are saved', () async {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.acknowledgeTranslationNotice(LyricsTranslationService.google);
+    notifier.setTranslation(
+      container.read(settingsProvider).translation.withTargetLanguage('vi'),
+    );
+    notifier.toggleLyricsTranslation();
+    await notifier.flush();
+
+    expect(container.read(settingsProvider).translation.show, isTrue);
+    expect((stored()['lyricsTranslation']! as Map)['targetLanguage'], 'vi');
+    expect((stored()['lyricsTranslation']! as Map)['show'], true);
   });
 
   test('the listen history switch is saved', () async {

@@ -4,6 +4,7 @@ import 'library_scan_prefs_codec.dart';
 import 'playback_prefs_codec.dart';
 import 'library_sort_codec.dart';
 import 'settings_codec_values.dart';
+import 'translation_prefs_codec.dart';
 
 /// Version written to `settings.json`. Bump it when a key changes meaning,
 /// and add a migration for the old shape.
@@ -23,6 +24,7 @@ const _animationsKey = 'animations';
 const _libraryScanKey = 'libraryScan';
 const _playbackKey = 'playback';
 const _displayKey = 'display';
+const _translationKey = 'lyricsTranslation';
 const _knownKeys = {
   _versionKey,
   _themeKey,
@@ -38,6 +40,7 @@ const _knownKeys = {
   _libraryScanKey,
   _playbackKey,
   _displayKey,
+  _translationKey,
 };
 
 final _languagePattern = RegExp(r'^[a-z]{2,3}$');
@@ -65,8 +68,9 @@ class DecodedSettings {
   /// one added by a newer build), kept for the same reason.
   final Map<String, Object?> librarySortExtra;
 
-  /// For each of `libraryScan`, `playback` and `display`: the keys inside it
-  /// this version does not know, kept for the same reason.
+  /// For each of `libraryScan`, `playback`, `display` and
+  /// `lyricsTranslation`: the keys inside it this version does not know,
+  /// kept for the same reason.
   final Map<String, Map<String, Object?>> groupExtras;
 }
 
@@ -87,6 +91,9 @@ DecodedSettings decodeSettings(Object? json) {
   );
   final (playback, playbackExtra) = decodePlaybackPrefs(json[_playbackKey]);
   final (display, displayExtra) = decodeDisplayPrefs(json[_displayKey]);
+  final (translation, translationExtra) = decodeTranslationPrefs(
+    json[_translationKey],
+  );
   return DecodedSettings(
     AppSettings(
       theme: enumOr(ThemePreference.values, json[_themeKey], defaults.theme),
@@ -139,6 +146,7 @@ DecodedSettings decodeSettings(Object? json) {
       libraryScan: libraryScan,
       playback: playback,
       display: display,
+      translation: translation,
     ),
     version is int && version > 0 ? version : settingsSchemaVersion,
     {
@@ -153,6 +161,7 @@ DecodedSettings decodeSettings(Object? json) {
       _libraryScanKey: libraryScanExtra,
       _playbackKey: playbackExtra,
       _displayKey: displayExtra,
+      _translationKey: translationExtra,
     },
   );
 }
@@ -193,5 +202,9 @@ Map<String, Object?> encodeSettings(
   _displayKey: encodeDisplayPrefs(
     settings.display,
     extra: groupExtras[_displayKey] ?? const {},
+  ),
+  _translationKey: encodeTranslationPrefs(
+    settings.translation,
+    extra: groupExtras[_translationKey] ?? const {},
   ),
 };

@@ -187,9 +187,9 @@ License texts are in `usr/share/licenses/` inside the AppImage, with the Kanaru 
 | GSettings schemas (GTK) | System | System | Needed by GTK file pickers (folder picker). Distros ship them with GTK 3 |
 | glibc | Build host | 2.35 or newer | |
 | D-Bus session bus | Optional | Optional | Needed for MPRIS. The app runs without it, with no media controls |
-| Secret Service (libsecret) | Not needed yet | Not needed yet | No credential storage in the code yet. Needed once remote sources land (PRIV-04) |
+| Secret Service (libsecret) | Runtime library | Runtime library | `flutter_secure_storage` links libsecret into the binary, so the library is needed to start. A running Secret Service (GNOME Keyring, KWallet, KeePassXC) stores the DeepL key; without one (or without a session bus) the key goes to a `0600` `secrets.json` in the data directory, with a warning in settings (PRIV-04) |
 
-Not linked today: `libsecret`, `jsoncpp`. `development.md` lists them as build dependencies for `flutter_secure_storage`, which is not in `pubspec.yaml` yet.
+`libsecret` is linked (build needs `libsecret-1`, `libgcrypt` and `libgpg-error` headers). `jsoncpp` is not linked. The AppImage and package dependency lists must include libsecret (`assemble-appdir.sh` check is a follow-up).
 
 Desktop environments: the bundle is GTK 3 and talks to the compositor through the normal X11 or Wayland path. Known limit on compositors that need xdg-activation (verified on niri): a second launch or MPRIS `Raise` does not bring the window forward (SYS-15).
 
@@ -215,7 +215,7 @@ Desktop environments: the bundle is GTK 3 and talks to the compositor through th
 
 Backups: copy the config and data directories while Kanaru is closed. The cache can be deleted at any time; covers are rebuilt on the next scan.
 
-Secrets are never written to these files (planned keyring storage for remote sources, PRIV-04). Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
+Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, the DeepL key is kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
 
 ## Reset targets
 

@@ -168,4 +168,4 @@ Commands: [development.md](./development.md#tests--lints). Layout: [codebase-sum
 
 - Add a package only when it removes real complexity. Pin Rust crates exactly.
 - Before adding a dependency, check [features.md](./features.md) for the feature it serves and [system-architecture.md](./system-architecture.md) for where it belongs.
-- Planned dependencies (`shelf`, `flutter_secure_storage`, `audio_service`, `smtc_windows`, `material_color_utilities`) are **not** in `pubspec.yaml` yet.
+- `flutter_secure_storage` is in `pubspec.yaml` (used only through `lib/core/secrets/`). Planned dependencies (`shelf`, `audio_service`, `smtc_windows`, `material_color_utilities`) are **not** in `pubspec.yaml` yet.
