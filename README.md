@@ -25,7 +25,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 
 - 🎵 Plays almost anything — MP3, FLAC, ALAC, AAC/M4A, OGG Vorbis, Opus, WAV, APE, WavPack… (powered by libmpv)
 - 📚 Library browsing by albums, artists, album artists, genres, years, folders *(albums, artists, genres, folders and songs so far)*
-- 🔍 Full-text search of songs, albums and artists, ignoring accents: typo correction, search history, field syntax (`artist:`, `year:2010-2015`, `format:flac`, `language:vi`), a field picker, and filter boxes on album, artist, genre, playlist and queue pages
+- 🔍 Full-text search of songs, albums and artists, ignoring accents: typo correction, search history, field syntax (`artist:`, `year:2010-2015`, `format:flac`, `language:vi`), a field picker, and filter boxes on album, artist, genre, playlist, queue and History pages
 - 📝 Playlists *(Phase 1)*, queue management, shuffle / repeat
 - 🎧 Gapless playback, ReplayGain *(Phase 1)*
 - 🎨 Material You — light/dark themes and system accent; dynamic colors from album art *(Phase 1)*

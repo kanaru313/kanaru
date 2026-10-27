@@ -8,11 +8,13 @@ import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/in_page_filter.dart';
+import '../../shared/in_page_filter_host.dart';
 import '../../shared/widgets/detail_page/tracks_toolbar.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'history_calendar_dialog.dart';
 import 'history_days.dart';
+import 'history_filter_results.dart';
 import 'history_page_actions.dart';
 import 'history_page_layout.dart';
 import 'history_providers.dart';
@@ -32,12 +34,22 @@ class HistoryScreen extends ConsumerStatefulWidget {
   ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+class _HistoryScreenState extends ConsumerState<HistoryScreen>
+    with InPageFilterHost<HistoryScreen> {
   /// The year the user picked; null (or one with no plays left) shows the
   /// newest year.
   int? _picked;
   final _jump = HistoryJumpHandle();
   final _filter = InPageFilterController();
+
+  /// The page lists plays; set on every build.
+  var _hasPlays = false;
+
+  @override
+  InPageFilterController get filterController => _filter;
+
+  @override
+  bool get filterAvailable => _hasPlays;
 
   /// Totals of the last year read, shown while the picked year's are read, so
   /// the toolbar text does not pop out and in on a year change.
@@ -77,36 +89,68 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         .value;
     if (read != null) _totals = read;
     final totals = read ?? _totals;
-    return Column(
-      children: [
-        TracksToolbar(
-          summary: totals == null
-              ? ''
-              : [
-                  l10n.historyListenCount(totals.plays),
-                  l10n.albumsSongCount(totals.tracks),
-                ].join(' · '),
-          filter: _filter,
-          trailing: [
-            IconButton(
-              icon: const Icon(AppIcons.calendar),
-              tooltip: l10n.historyCalendar,
-              onPressed: () => _openCalendar(year),
+    return ListenableBuilder(
+      listenable: _filter,
+      builder: (context, _) {
+        final filtering = _filter.isFiltering;
+        return Column(
+          children: [
+            TracksToolbar(
+              summary: totals == null
+                  ? ''
+                  : [
+                      l10n.historyListenCount(totals.plays),
+                      l10n.albumsSongCount(totals.tracks),
+                    ].join(' · '),
+              filter: _filter,
+              trailing: [
+                IconButton(
+                  icon: const Icon(AppIcons.calendar),
+                  tooltip: l10n.historyCalendar,
+                  // The calendar jumps in the timeline, which is hidden while
+                  // the filter lists plays.
+                  onPressed: filtering ? null : () => _openCalendar(year),
+                ),
+              ],
+            ),
+            if (years.length > 1)
+              HistoryYearChips(
+                years: years,
+                selected: year,
+                onSelected: _openYear,
+              ),
+            Expanded(
+              child: Stack(
+                children: [
+                  // Kept mounted while filtering: closing the filter comes
+                  // back to the same scroll position.
+                  Offstage(
+                    offstage: filtering,
+                    child: TickerMode(
+                      enabled: !filtering,
+                      child: HistoryTimelineBody(
+                        key: ValueKey(year),
+                        year: year,
+                        jump: _jump,
+                        olderYear: older,
+                        onOlderYear: older == null
+                            ? null
+                            : () => _openYear(older),
+                      ),
+                    ),
+                  ),
+                  if (filtering)
+                    HistoryFilterResults(
+                      year: year,
+                      terms: _filter.terms,
+                      query: _filter.query,
+                    ),
+                ],
+              ),
             ),
           ],
-        ),
-        if (years.length > 1)
-          HistoryYearChips(years: years, selected: year, onSelected: _openYear),
-        Expanded(
-          child: HistoryTimelineBody(
-            key: ValueKey(year),
-            year: year,
-            jump: _jump,
-            olderYear: older,
-            onOlderYear: older == null ? null : () => _openYear(older),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -131,6 +175,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       );
     }
     final list = years.value!;
+    _hasPlays = list.isNotEmpty;
     if (list.isEmpty) return _states(const HistoryEmpty());
     final year = list.contains(_picked) ? _picked! : list.first;
     final overview = ref.watch(historyOverviewProvider).value;

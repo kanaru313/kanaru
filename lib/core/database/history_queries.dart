@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'history_rows.dart';
 import 'playlist_cover_keys.dart';
 import 'library_database.dart';
+import 'search_terms.dart';
 
 export 'history_rows.dart';
 
@@ -68,6 +69,25 @@ LEFT JOIN play_stats s ON s.path = p.path
 LEFT JOIN tracks t ON t.path = p.path
 WHERE p.played_at >= ?1 AND p.played_at < ?2
 ORDER BY p.played_at DESC, p.id DESC''';
+
+/// Plays in `[?1, ?2)` of library songs the FTS query `?3` matches, newest
+/// first, at most `?4`. Same row shape as [historyDayPlaysSql]; a play whose
+/// file is not in the library has no song to match and never comes back.
+@visibleForTesting
+const historyPlaysMatchingSql = '''
+SELECT p.id, p.path, p.played_at, p.listened_ms,
+  s.play_count
+    - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at > p.played_at)
+    - (SELECT count(*) FROM plays q WHERE q.path = p.path AND q.played_at = p.played_at AND q.id > p.id)
+    AS nth,
+  t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, t.year, t.duration_ms, t.cover_key
+FROM plays p
+LEFT JOIN play_stats s ON s.path = p.path
+JOIN tracks t ON t.path = p.path
+WHERE p.played_at >= ?1 AND p.played_at < ?2
+  AND t.id IN (SELECT rowid FROM track_search WHERE track_search MATCH ?3)
+ORDER BY p.played_at DESC, p.id DESC
+LIMIT ?4''';
 
 const _topColumns =
     'a.path, a.n, a.last, t.id AS track_id, t.path AS track_path, t.title, t.artist, t.album, '
@@ -199,17 +219,40 @@ ORDER BY s.last_played_at DESC, s.path''',
       variables: [Variable.withInt(start), Variable.withInt(end)],
       readsFrom: {plays, playStats, tracks},
     ).get();
-    return [
-      for (final r in rows)
-        HistoryPlayRow(
-          id: r.read<int>('id'),
-          path: r.read<String>('path'),
-          playedAt: r.read<int>('played_at'),
-          listenedMs: r.readNullable<int>('listened_ms'),
-          nth: r.readNullable<int>('nth'),
-          track: _track(r),
+    return [for (final r in rows) _playRow(r)];
+  }
+
+  /// Plays started in `[start, end)` of library songs that have every term as
+  /// a word prefix of title, artist or album (the playlist filter rule),
+  /// newest first, at most [limit]; `truncated` tells there were more. No
+  /// terms, no plays.
+  Future<({List<HistoryPlayRow> rows, bool truncated})> historyPlaysMatching(
+    int start,
+    int end,
+    List<String> terms, {
+    int limit = 1000,
+  }) async {
+    assert(limit > 0, 'limit must be positive');
+    if (terms.isEmpty) {
+      return (rows: const <HistoryPlayRow>[], truncated: false);
+    }
+    final read = await customSelect(
+      historyPlaysMatchingSql,
+      variables: [
+        Variable.withInt(start),
+        Variable.withInt(end),
+        Variable.withString(
+          '{title_sort artist_search album_search} : (${ftsPrefixQuery(terms)})',
         ),
-    ];
+        // One more than asked for tells whether the list was cut.
+        Variable.withInt(limit + 1),
+      ],
+      readsFrom: {plays, playStats, tracks, trackSearch},
+    ).get();
+    return (
+      rows: [for (final r in read.take(limit)) _playRow(r)],
+      truncated: read.length > limit,
+    );
   }
 
   /// Most played tracks, at most [limit]. Ties: the earlier last play inside
@@ -285,6 +328,15 @@ LEFT JOIN tracks t ON t.path = k.path''',
     ];
   }
 }
+
+HistoryPlayRow _playRow(QueryRow r) => HistoryPlayRow(
+  id: r.read<int>('id'),
+  path: r.read<String>('path'),
+  playedAt: r.read<int>('played_at'),
+  listenedMs: r.readNullable<int>('listened_ms'),
+  nth: r.readNullable<int>('nth'),
+  track: _track(r),
+);
 
 // Same shape as the playlist reader's row mapper; that one is private to a
 // file this lane does not own.

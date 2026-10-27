@@ -9,6 +9,7 @@ import '../../shared/widgets/library_loading.dart';
 import 'history_day_row_cache.dart';
 import 'history_days.dart';
 import 'history_line_metrics.dart';
+import 'history_play_menu_actions.dart';
 import 'history_plays_version.dart';
 import 'history_providers.dart';
 import 'history_screen_states.dart';
@@ -54,7 +55,9 @@ class HistoryTimelineBody extends ConsumerStatefulWidget {
 }
 
 class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
-    with HistoryTimelineActions<HistoryTimelineBody> {
+    with
+        HistoryPlayMenuActions<HistoryTimelineBody>,
+        HistoryTimelineActions<HistoryTimelineBody> {
   final _controller = ScrollController();
   late final HistoryDayRowCache _cache;
 

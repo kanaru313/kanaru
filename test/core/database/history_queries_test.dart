@@ -316,6 +316,80 @@ void main() {
     });
   });
 
+  group('historyPlaysMatching', () {
+    Future<void> titled(
+      String path,
+      String title, {
+      String? artist,
+      String? album,
+    }) async {
+      final root =
+          (await db.select(db.libraryRoots).getSingleOrNull())?.id ??
+          (await db.addRoots(['/m'], now: 1)).single;
+      await db.upsertTracks([
+        TracksCompanion.insert(
+          rootId: root,
+          path: path,
+          mtimeMs: 1,
+          sizeBytes: 10,
+          title: title,
+          artist: Value(artist),
+          album: Value(album),
+          addedAt: 100,
+          updatedAt: 100,
+        ),
+      ]);
+    }
+
+    test('word prefixes of title, artist or album, accents ignored', () async {
+      await titled('/a', 'Lạ Lùng', artist: 'Vũ');
+      await titled('/b', 'Other', artist: 'Lalala Band');
+      await titled('/c', 'Third', album: 'The Lal Album');
+      await titled('/d', 'Nope', artist: 'Someone');
+      for (final path in ['/a', '/b', '/c', '/d']) {
+        await play(path, 100);
+      }
+      final lal = await db.historyPlaysMatching(0, 1000, ['lal']);
+      expect(lal.rows.map((r) => r.path), ['/c', '/b']);
+      final la = await db.historyPlaysMatching(0, 1000, ['la', 'lung']);
+      expect(la.rows.map((r) => r.path), ['/a']);
+      expect(la.rows.single.track!.title, 'Lạ Lùng');
+      expect(la.rows.single.nth, 1);
+      final mid = await db.historyPlaysMatching(0, 1000, ['al']);
+      expect(mid.rows.map((r) => r.path), ['/c']);
+    });
+
+    test(
+      'newest first, year bounds half-open, missing files never match',
+      () async {
+        await titled('/a', 'Lal');
+        final early = await play('/a', 99);
+        final first = await play('/a', 100);
+        final second = await play('/a', 100);
+        await play('/a', 200); // end bound excluded
+        await play('/gone', 150); // not in the library
+        final r = await db.historyPlaysMatching(100, 200, ['lal']);
+        expect(r.rows.map((p) => p.id), [second, first]);
+        expect(r.rows.map((p) => p.id), isNot(contains(early)));
+        expect(r.truncated, isFalse);
+      },
+    );
+
+    test('no terms give nothing; the limit sets the truncated flag', () async {
+      await titled('/a', 'Lal');
+      for (var i = 0; i < 4; i++) {
+        await play('/a', 100 + i);
+      }
+      expect((await db.historyPlaysMatching(0, 1000, const [])).rows, isEmpty);
+      final cut = await db.historyPlaysMatching(0, 1000, ['lal'], limit: 3);
+      expect(cut.rows.map((p) => p.playedAt), [103, 102, 101]);
+      expect(cut.truncated, isTrue);
+      final fit = await db.historyPlaysMatching(0, 1000, ['lal'], limit: 4);
+      expect(fit.rows, hasLength(4));
+      expect(fit.truncated, isFalse);
+    });
+  });
+
   group('query plans', () {
     // SQLite prints aliases, not table names, so each query lists the names
     // it gives `plays`. No full scan of those; every search uses a plays_*
@@ -354,6 +428,11 @@ void main() {
         await expectIndexed(historyDayPlaysSql, [0, 100], {'p', 'q'});
         await expectIndexed(historyTopRangeSql, [0, 100, 5], {'plays'});
         await expectIndexed(
+          historyPlaysMatchingSql,
+          [0, 100, '{title_sort} : (lal*)', 5],
+          {'p', 'q'},
+        );
+        await expectIndexed(
           'SELECT id, played_at, listened_ms FROM plays WHERE path = ?1 '
           'ORDER BY played_at DESC, id DESC',
           ['/a'],
@@ -361,6 +440,46 @@ void main() {
         );
       },
     );
+
+    test('matching plays look songs up in the FTS index, then plays by path and range', () async {
+      final plan = await db
+          .customSelect(
+            'EXPLAIN QUERY PLAN $historyPlaysMatchingSql',
+            variables: [
+              Variable.withInt(0),
+              Variable.withInt(100),
+              Variable.withString('{title_sort} : (lal*)'),
+              Variable.withInt(5),
+            ],
+          )
+          .get();
+      final details = [for (final r in plan) r.read<String>('detail')];
+      final text = details.join('\n');
+      // The MATCH is answered by the FTS virtual table, not a table scan.
+      expect(
+        details,
+        contains(
+          matches(RegExp(r'^SCAN track_search VIRTUAL TABLE INDEX 0:M')),
+        ),
+        reason: text,
+      );
+      // Each matched song's plays come from the path + time-range index.
+      expect(
+        details,
+        contains(
+          'SEARCH p USING INDEX plays_path_played '
+          '(path=? AND played_at>? AND played_at<?)',
+        ),
+        reason: text,
+      );
+      // The per-row latest-play lookup uses the played_at index.
+      expect(
+        details,
+        contains(matches(RegExp(r'USING COVERING INDEX plays_played_at'))),
+        reason: text,
+      );
+      expect(details.where((d) => d.startsWith('SCAN p')), isEmpty);
+    });
 
     test('cover keys walk the played_at index, bounded, no sort', () async {
       final plan = await db
