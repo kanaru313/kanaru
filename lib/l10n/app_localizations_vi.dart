@@ -2652,4 +2652,185 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get languageNameZhHant => 'Tiếng Trung (phồn thể)';
+
+  @override
+  String get settingsTranslationService => 'Dịch vụ dịch lời';
+
+  @override
+  String get settingsTranslationServiceGoogleHint =>
+      'Dịch vụ miễn phí, không chính thức; có thể ngừng hoạt động. Lời bài hát được gửi tới dịch vụ này khi bật dịch.';
+
+  @override
+  String get settingsTranslationServiceDeeplHint =>
+      'Cần khóa API DeepL của bạn. Lời bài hát được gửi tới DeepL khi bật dịch.';
+
+  @override
+  String get settingsTranslationTarget => 'Ngôn ngữ dịch mặc định';
+
+  @override
+  String get settingsTranslationTargetHint =>
+      'Dùng cho những bài chưa chọn ngôn ngữ riêng.';
+
+  @override
+  String settingsTranslationTargetFollow(String language) {
+    return 'Theo ngôn ngữ ứng dụng ($language)';
+  }
+
+  @override
+  String get deeplKeyTitle => 'Khóa API DeepL';
+
+  @override
+  String get deeplKeyNone => 'Chưa lưu khóa';
+
+  @override
+  String get deeplKeyAdd => 'Thêm khóa';
+
+  @override
+  String get deeplKeyEdit => 'Sửa';
+
+  @override
+  String get deeplKeyClear => 'Xóa';
+
+  @override
+  String get deeplKeyPlanFree => 'Miễn phí';
+
+  @override
+  String get deeplKeyPlanPro => 'Pro';
+
+  @override
+  String deeplKeyUsage(int used, int limit) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat limitNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String limitString = limitNumberFormat.format(limit);
+
+    return 'Đã dùng $usedString / $limitString ký tự';
+  }
+
+  @override
+  String deeplKeyUsageNoLimit(int used) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String usedString = usedNumberFormat.format(used);
+
+    return 'Đã dùng $usedString ký tự';
+  }
+
+  @override
+  String get deeplKeyUsageHint =>
+      'Mức dùng được lấy từ DeepL khi bạn bấm làm mới.';
+
+  @override
+  String get deeplKeyRefresh => 'Làm mới mức dùng';
+
+  @override
+  String get deeplKeyClearTitle => 'Xóa khóa DeepL?';
+
+  @override
+  String get deeplKeyClearBody =>
+      'Khóa sẽ bị xóa khỏi máy này. Bạn không dịch được lời bằng DeepL cho tới khi thêm khóa mới.';
+
+  @override
+  String get deeplKeyClearFailed => 'Không xóa được khóa';
+
+  @override
+  String get deeplKeyDialogTitleAdd => 'Thêm khóa API DeepL';
+
+  @override
+  String get deeplKeyDialogTitleEdit => 'Đổi khóa API DeepL';
+
+  @override
+  String get deeplKeyDialogHint =>
+      'Dán khóa từ tài khoản DeepL của bạn. DeepL sẽ kiểm tra khóa trước khi lưu.';
+
+  @override
+  String get deeplKeyFieldLabel => 'Khóa API';
+
+  @override
+  String get deeplKeySave => 'Lưu';
+
+  @override
+  String get deeplKeyBadKey =>
+      'DeepL không chấp nhận khóa này. Hãy kiểm tra rồi thử lại.';
+
+  @override
+  String get deeplKeySaveFailed => 'Không lưu được khóa.';
+
+  @override
+  String get deeplKeyReadFailed => 'Không đọc được khóa.';
+
+  @override
+  String get deeplKeyKeyringLocked =>
+      'Kho khóa đang bị khóa; hãy mở khóa rồi thử lại';
+
+  @override
+  String get deeplKeyKeyringNoDefault =>
+      'Chưa có kho khóa mặc định; hãy tạo một kho (ví dụ trong Seahorse hoặc KWallet) rồi thử lại';
+
+  @override
+  String get deeplKeyKeyringTimeout => 'Kho khóa không phản hồi';
+
+  @override
+  String get deeplKeyKeyringUnavailable => 'Hiện không dùng được kho khóa';
+
+  @override
+  String get deeplKeyFileFailed => 'Không đọc hoặc ghi được tệp khóa';
+
+  @override
+  String deeplKeyFallbackFile(String path) {
+    return 'Không tìm thấy kho khóa của hệ thống; khóa được lưu trong một tệp chỉ bạn đọc được ($path). Đừng chia sẻ hay đồng bộ tệp này.';
+  }
+
+  @override
+  String get deeplKeyFallbackMemory =>
+      'Không tìm thấy kho khóa của hệ thống; khóa chỉ được giữ tới khi đóng Kanaru.';
+
+  @override
+  String get deeplKeyFallbackFixed =>
+      'Tệp khóa từng cho người khác đọc; quyền truy cập đã được sửa. Nên cân nhắc đổi khóa.';
+
+  @override
+  String get settingsTranslationCache => 'Bản dịch đã lưu';
+
+  @override
+  String translationCacheSummary(int count, String size) {
+    return '$count bài · $size';
+  }
+
+  @override
+  String get translationCacheEmpty => 'Chưa có bản dịch nào được lưu';
+
+  @override
+  String get translationCacheClearTitle => 'Xóa các bản dịch đã lưu?';
+
+  @override
+  String get translationCacheClearBody =>
+      'Các bản dịch đã lưu trên máy này sẽ bị xóa. Cài đặt dịch được giữ nguyên; lời sẽ được dịch lại khi cần.';
+
+  @override
+  String translationCacheCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xóa $count bản dịch',
+      zero: 'Không có bản dịch nào để xóa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get translationCacheClearFailed =>
+      'Không xóa được các bản dịch đã lưu';
+
+  @override
+  String settingsUnitBytes(int count) {
+    return '$count B';
+  }
+
+  @override
+  String get settingsClear => 'Xóa';
 }

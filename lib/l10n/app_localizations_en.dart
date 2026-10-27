@@ -2846,4 +2846,193 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageNameZhHant => 'Chinese (Traditional)';
+
+  @override
+  String get settingsTranslationService => 'Translation service';
+
+  @override
+  String get settingsTranslationServiceGoogleHint =>
+      'Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.';
+
+  @override
+  String get settingsTranslationServiceDeeplHint =>
+      'Needs your own DeepL API key. Lyrics text is sent to DeepL when translation is on.';
+
+  @override
+  String get settingsTranslationTarget => 'Default translation language';
+
+  @override
+  String get settingsTranslationTargetHint =>
+      'Used for songs that have no language of their own.';
+
+  @override
+  String settingsTranslationTargetFollow(String language) {
+    return 'Follow app language ($language)';
+  }
+
+  @override
+  String get deeplKeyTitle => 'DeepL API key';
+
+  @override
+  String get deeplKeyNone => 'No key saved';
+
+  @override
+  String get deeplKeyAdd => 'Add key';
+
+  @override
+  String get deeplKeyEdit => 'Edit';
+
+  @override
+  String get deeplKeyClear => 'Clear';
+
+  @override
+  String get deeplKeyPlanFree => 'Free';
+
+  @override
+  String get deeplKeyPlanPro => 'Pro';
+
+  @override
+  String deeplKeyUsage(int used, int limit) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat limitNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String limitString = limitNumberFormat.format(limit);
+
+    return 'Used $usedString of $limitString characters';
+  }
+
+  @override
+  String deeplKeyUsageNoLimit(int used) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String usedString = usedNumberFormat.format(used);
+
+    return 'Used $usedString characters';
+  }
+
+  @override
+  String get deeplKeyUsageHint =>
+      'Usage is read from DeepL when you press refresh.';
+
+  @override
+  String get deeplKeyRefresh => 'Refresh usage';
+
+  @override
+  String get deeplKeyClearTitle => 'Remove the DeepL key?';
+
+  @override
+  String get deeplKeyClearBody =>
+      'The key is deleted from this computer. Lyrics cannot be translated with DeepL until you add a key again.';
+
+  @override
+  String get deeplKeyClearFailed => 'Could not remove the key';
+
+  @override
+  String get deeplKeyDialogTitleAdd => 'Add DeepL API key';
+
+  @override
+  String get deeplKeyDialogTitleEdit => 'Replace DeepL API key';
+
+  @override
+  String get deeplKeyDialogHint =>
+      'Paste the key from your DeepL account. DeepL checks it before it is saved.';
+
+  @override
+  String get deeplKeyFieldLabel => 'API key';
+
+  @override
+  String get deeplKeySave => 'Save';
+
+  @override
+  String get deeplKeyBadKey =>
+      'DeepL did not accept this key. Check it and try again.';
+
+  @override
+  String get deeplKeySaveFailed => 'Could not save the key.';
+
+  @override
+  String get deeplKeyReadFailed => 'Could not read the key.';
+
+  @override
+  String get deeplKeyKeyringLocked =>
+      'Keyring is locked; unlock it, then retry';
+
+  @override
+  String get deeplKeyKeyringNoDefault =>
+      'No default keyring found; create one (for example in Seahorse or KWallet), then retry';
+
+  @override
+  String get deeplKeyKeyringTimeout => 'The keyring is not responding';
+
+  @override
+  String get deeplKeyKeyringUnavailable =>
+      'The keyring cannot be used right now';
+
+  @override
+  String get deeplKeyFileFailed => 'The key file could not be read or written';
+
+  @override
+  String deeplKeyFallbackFile(String path) {
+    return 'No system keyring found; the key is stored in a file only you can read ($path). Do not share or sync this file.';
+  }
+
+  @override
+  String get deeplKeyFallbackMemory =>
+      'No system keyring found; the key is kept until Kanaru closes.';
+
+  @override
+  String get deeplKeyFallbackFixed =>
+      'The key file was readable by others; its permissions were fixed. Consider replacing the key.';
+
+  @override
+  String get settingsTranslationCache => 'Saved translations';
+
+  @override
+  String translationCacheSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$_temp0 · $size';
+  }
+
+  @override
+  String get translationCacheEmpty => 'No saved translations';
+
+  @override
+  String get translationCacheClearTitle => 'Clear saved translations?';
+
+  @override
+  String get translationCacheClearBody =>
+      'The translations saved on this computer are deleted. Your translation settings stay; lyrics are translated again when needed.';
+
+  @override
+  String translationCacheCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cleared $count saved translations',
+      one: 'Cleared 1 saved translation',
+      zero: 'No saved translations to clear',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get translationCacheClearFailed =>
+      'Could not clear saved translations';
+
+  @override
+  String settingsUnitBytes(int count) {
+    return '$count B';
+  }
+
+  @override
+  String get settingsClear => 'Clear';
 }

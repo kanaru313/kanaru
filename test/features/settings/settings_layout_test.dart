@@ -2,6 +2,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/setting_choice.dart';
@@ -173,6 +174,24 @@ Future<void> _checkLayout(
       inRow(l10n.settingsClearCoverCache, find.byType(FilledButton)),
       l10n.settingsClearCoverCacheHint,
     ),
+    (
+      l10n.settingsTranslationService,
+      find.byType(SettingChoice<LyricsTranslationService>),
+      l10n.settingsTranslationServiceGoogleHint,
+    ),
+    (
+      l10n.settingsTranslationTarget,
+      inRow(
+        l10n.settingsTranslationTarget,
+        find.byWidgetPredicate((w) => w is DropdownMenu),
+      ),
+      l10n.settingsTranslationTargetHint,
+    ),
+    (
+      l10n.settingsTranslationCache,
+      inRow(l10n.settingsTranslationCache, find.byType(FilledButton)),
+      l10n.translationCacheEmpty,
+    ),
   ]) {
     // `.last`: the sidebar can list the same word (Languages) before the page.
     final title = tester.getRect(find.text(label).last);
@@ -196,10 +215,10 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(23),
+    hasLength(26),
     reason:
-        'ten buttons (two open the separator dialogs), four choices and nine dropdowns: the output device, '
-        'ReplayGain mode, preamp and two scan filters are wired, six options '
+        'eleven buttons (two open the separator dialogs), five choices and ten dropdowns: the output device, '
+        'ReplayGain mode, preamp, two scan filters and the translation language are wired, six options '
         'are not yet',
   );
   for (final control in controls) {
@@ -278,7 +297,7 @@ Future<void> _checkLayout(
         .evaluate()
         .map((e) => tester.getRect(find.byWidget(e.widget)))
         .toList();
-    expect(dropdowns, hasLength(13));
+    expect(dropdowns, hasLength(15));
     // The listen threshold row splits the compact width between its time
     // and share dropdowns; every other row has one.
     bool shared(Rect r) => dropdowns.where((o) => o.top == r.top).length > 1;

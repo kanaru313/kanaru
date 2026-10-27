@@ -112,6 +112,7 @@ All **Open**, except placeholders.
 | Item | Features | Current state |
 |---|---|---|
 | Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 | Lyrics button is a placeholder in Now Playing |
+| Lyrics translation (Google or DeepL) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Advanced rows (service, DeepL key, default language, saved translations) |
 | Waveform seekbar, visualizer, transitions | NP-05, NP-06 | Waveform seek bar built in the wide Now Playing modes (NP-05); visualizer and transitions not started |
 | Equalizer, crossfade, sleep timer, volume boost, speed and pitch | PLAY-05, PLAY-08, PLAY-09, PLAY-14, PLAY-15 | Not started |
 | Listening stats, scrobbling (Last.fm, ListenBrainz, Discord) | STAT-03, EXT-01 to EXT-03 | Listen recording (STAT-01, STAT-10) and the history UI (STAT-06 to STAT-08) are built; STAT-02 and STAT-11 are Phase 1 and not built |

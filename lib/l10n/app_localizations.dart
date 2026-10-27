@@ -4159,6 +4159,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chinese (Traditional)'**
   String get languageNameZhHant;
+
+  /// No description provided for @settingsTranslationService.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation service'**
+  String get settingsTranslationService;
+
+  /// No description provided for @settingsTranslationServiceGoogleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.'**
+  String get settingsTranslationServiceGoogleHint;
+
+  /// No description provided for @settingsTranslationServiceDeeplHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your own DeepL API key. Lyrics text is sent to DeepL when translation is on.'**
+  String get settingsTranslationServiceDeeplHint;
+
+  /// No description provided for @settingsTranslationTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Default translation language'**
+  String get settingsTranslationTarget;
+
+  /// No description provided for @settingsTranslationTargetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for songs that have no language of their own.'**
+  String get settingsTranslationTargetHint;
+
+  /// First choice of the default translation language; language is the app language's name
+  ///
+  /// In en, this message translates to:
+  /// **'Follow app language ({language})'**
+  String settingsTranslationTargetFollow(String language);
+
+  /// No description provided for @deeplKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'DeepL API key'**
+  String get deeplKeyTitle;
+
+  /// No description provided for @deeplKeyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No key saved'**
+  String get deeplKeyNone;
+
+  /// No description provided for @deeplKeyAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add key'**
+  String get deeplKeyAdd;
+
+  /// No description provided for @deeplKeyEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get deeplKeyEdit;
+
+  /// No description provided for @deeplKeyClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get deeplKeyClear;
+
+  /// No description provided for @deeplKeyPlanFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get deeplKeyPlanFree;
+
+  /// No description provided for @deeplKeyPlanPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro'**
+  String get deeplKeyPlanPro;
+
+  /// DeepL quota this month; used and limit are formatted numbers
+  ///
+  /// In en, this message translates to:
+  /// **'Used {used} of {limit} characters'**
+  String deeplKeyUsage(int used, int limit);
+
+  /// DeepL usage of a plan without a character limit
+  ///
+  /// In en, this message translates to:
+  /// **'Used {used} characters'**
+  String deeplKeyUsageNoLimit(int used);
+
+  /// No description provided for @deeplKeyUsageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage is read from DeepL when you press refresh.'**
+  String get deeplKeyUsageHint;
+
+  /// No description provided for @deeplKeyRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh usage'**
+  String get deeplKeyRefresh;
+
+  /// No description provided for @deeplKeyClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the DeepL key?'**
+  String get deeplKeyClearTitle;
+
+  /// No description provided for @deeplKeyClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The key is deleted from this computer. Lyrics cannot be translated with DeepL until you add a key again.'**
+  String get deeplKeyClearBody;
+
+  /// No description provided for @deeplKeyClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove the key'**
+  String get deeplKeyClearFailed;
+
+  /// No description provided for @deeplKeyDialogTitleAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add DeepL API key'**
+  String get deeplKeyDialogTitleAdd;
+
+  /// No description provided for @deeplKeyDialogTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace DeepL API key'**
+  String get deeplKeyDialogTitleEdit;
+
+  /// No description provided for @deeplKeyDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the key from your DeepL account. DeepL checks it before it is saved.'**
+  String get deeplKeyDialogHint;
+
+  /// No description provided for @deeplKeyFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get deeplKeyFieldLabel;
+
+  /// No description provided for @deeplKeySave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get deeplKeySave;
+
+  /// No description provided for @deeplKeyBadKey.
+  ///
+  /// In en, this message translates to:
+  /// **'DeepL did not accept this key. Check it and try again.'**
+  String get deeplKeyBadKey;
+
+  /// No description provided for @deeplKeySaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the key.'**
+  String get deeplKeySaveFailed;
+
+  /// No description provided for @deeplKeyReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the key.'**
+  String get deeplKeyReadFailed;
+
+  /// No description provided for @deeplKeyKeyringLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyring is locked; unlock it, then retry'**
+  String get deeplKeyKeyringLocked;
+
+  /// No description provided for @deeplKeyKeyringNoDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'No default keyring found; create one (for example in Seahorse or KWallet), then retry'**
+  String get deeplKeyKeyringNoDefault;
+
+  /// No description provided for @deeplKeyKeyringTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The keyring is not responding'**
+  String get deeplKeyKeyringTimeout;
+
+  /// No description provided for @deeplKeyKeyringUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The keyring cannot be used right now'**
+  String get deeplKeyKeyringUnavailable;
+
+  /// No description provided for @deeplKeyFileFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The key file could not be read or written'**
+  String get deeplKeyFileFailed;
+
+  /// Warning under the DeepL key row when no system keyring exists; path is the secrets file
+  ///
+  /// In en, this message translates to:
+  /// **'No system keyring found; the key is stored in a file only you can read ({path}). Do not share or sync this file.'**
+  String deeplKeyFallbackFile(String path);
+
+  /// No description provided for @deeplKeyFallbackMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'No system keyring found; the key is kept until Kanaru closes.'**
+  String get deeplKeyFallbackMemory;
+
+  /// No description provided for @deeplKeyFallbackFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'The key file was readable by others; its permissions were fixed. Consider replacing the key.'**
+  String get deeplKeyFallbackFixed;
+
+  /// No description provided for @settingsTranslationCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved translations'**
+  String get settingsTranslationCache;
+
+  /// Saved lyrics translations: number of songs and their size
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}} · {size}'**
+  String translationCacheSummary(int count, String size);
+
+  /// No description provided for @translationCacheEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved translations'**
+  String get translationCacheEmpty;
+
+  /// No description provided for @translationCacheClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear saved translations?'**
+  String get translationCacheClearTitle;
+
+  /// No description provided for @translationCacheClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The translations saved on this computer are deleted. Your translation settings stay; lyrics are translated again when needed.'**
+  String get translationCacheClearBody;
+
+  /// No description provided for @translationCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No saved translations to clear} =1{Cleared 1 saved translation} other{Cleared {count} saved translations}}'**
+  String translationCacheCleared(int count);
+
+  /// No description provided for @translationCacheClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear saved translations'**
+  String get translationCacheClearFailed;
+
+  /// No description provided for @settingsUnitBytes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} B'**
+  String settingsUnitBytes(int count);
+
+  /// No description provided for @settingsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsClear;
 }
 
 class _AppLocalizationsDelegate
