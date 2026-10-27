@@ -27,7 +27,6 @@ abstract final class AppIcons {
   static const IconData viewSplit = Icons.vertical_split_rounded;
   static const IconData viewCover = Icons.photo_rounded;
   static const IconData dragHandle = Icons.drag_handle_rounded;
-  static const IconData locateCurrent = Icons.my_location_rounded;
 
   // Library entities and placeholders.
   static const IconData musicNote = Icons.music_note;

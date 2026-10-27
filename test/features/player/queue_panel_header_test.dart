@@ -66,7 +66,6 @@ void main() {
                         filter: filter,
                         onSave: onSave,
                         onClear: onClear,
-                        onShowCurrent: () {},
                         onClose: onClose,
                       );
                     },
@@ -85,6 +84,8 @@ void main() {
     await pumpHeader(tester, width: 432, onClose: () {});
 
     expect(find.text('Now playing'), findsOneWidget);
+    // The floating button does the jump; the header has none.
+    expect(find.byTooltip('Jump to current song'), findsNothing);
     // 876 x 3 min = 43 h 48 min.
     final summary = find.text('876 tracks · 43 h 48 min left');
     expect(summary, findsOneWidget);
@@ -228,11 +229,7 @@ void main() {
     final handle = tester.ensureSemantics();
     await pumpHeader(tester, width: 432, onClose: () {});
 
-    for (final label in [
-      'Close now playing list',
-      'Jump to current song',
-      'More actions',
-    ]) {
+    for (final label in ['Close now playing list', 'More actions']) {
       final node = tester.getSemantics(find.byTooltip(label));
       expect(node.label, label);
     }
@@ -286,7 +283,6 @@ void main() {
 
     expect(find.byType(InPageSearchBox), findsOneWidget);
     expect(tester.getSize(header), before);
-    expect(find.byTooltip('Jump to current song'), findsOneWidget);
     expect(find.byTooltip('More actions'), findsOneWidget);
   });
 

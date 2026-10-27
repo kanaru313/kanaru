@@ -147,7 +147,6 @@ void main() {
       await tester.tap(find.byTooltip('More actions'));
       await tester.pumpAndSettle();
       expect(find.text('Save queue as playlist'), findsOneWidget);
-      expect(find.byTooltip('Jump to current song'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

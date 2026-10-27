@@ -18,8 +18,8 @@ const queueHeaderTitleRowHeight = 48.0;
 /// side sheet, the close button; a [title] replaces the text (e.g. a tab
 /// bar). The second has the [summary] line on the
 /// left, with the filter button at its end (the filter box grows out of the
-/// button over the summary), then the "jump to current" button and an
-/// overflow menu with "save as playlist" and "clear queue".
+/// button over the summary), then an overflow menu with "save as playlist"
+/// and "clear queue".
 class QueuePanelHeader extends StatelessWidget {
   const QueuePanelHeader({
     super.key,
@@ -27,7 +27,6 @@ class QueuePanelHeader extends StatelessWidget {
     required this.filter,
     this.onSave,
     required this.onClear,
-    required this.onShowCurrent,
     this.onClose,
     this.title,
   });
@@ -45,7 +44,6 @@ class QueuePanelHeader extends StatelessWidget {
 
   /// `null` greys the menu item out: nothing left to clear.
   final VoidCallback? onClear;
-  final VoidCallback onShowCurrent;
 
   /// `null` hides the close button (the narrow page has nothing to close).
   final VoidCallback? onClose;
@@ -110,11 +108,6 @@ class QueuePanelHeader extends StatelessWidget {
                     child: summary,
                   ),
                 ),
-              ),
-              _NamedIconButton(
-                icon: AppIcons.locateCurrent,
-                label: l10n.queueShowCurrent,
-                onPressed: onShowCurrent,
               ),
               _OverflowMenu(onSave: onSave, onClear: onClear),
             ],

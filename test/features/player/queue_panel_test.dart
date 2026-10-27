@@ -142,11 +142,11 @@ void main() {
             .ignoring,
         isTrue,
       );
-      // Show-current is an icon in the header; clear and save sit in its
-      // overflow menu.
+      // Clear and save sit in the header's overflow menu; the header has no
+      // jump-to-current button (the floating one appears only when needed).
       expect(find.byTooltip('Clear queue'), findsNothing);
       expect(find.byTooltip('More actions'), findsOneWidget);
-      expect(find.byTooltip('Jump to current song'), findsOneWidget);
+      expect(find.byTooltip('Jump to current song'), findsNothing);
       expect(find.byType(TextButton), findsNothing);
     });
 
@@ -592,8 +592,7 @@ void main() {
       );
       expect(row('t0'), findsNothing);
 
-      // The header button; the floating one shares its tooltip.
-      await tester.tap(find.byTooltip('Jump to current song').first);
+      await tester.tap(find.byTooltip('Jump to current song'));
       await tester.pumpAndSettle();
 
       expect(row('t0'), findsOneWidget);
@@ -632,7 +631,6 @@ void main() {
       expect(find.text('custom tabs'), findsOneWidget);
       expect(find.text('Now playing'), findsNothing);
       expect(find.text('3 tracks'), findsOneWidget);
-      expect(find.byTooltip('Jump to current song'), findsOneWidget);
     });
 
     testWidgets('the filter button opens the box and Esc returns focus', (

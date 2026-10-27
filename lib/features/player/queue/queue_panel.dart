@@ -121,7 +121,6 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
             filter: _filter,
             onSave: hasLibrary ? () => saveQueueAsPlaylist(ref, context) : null,
             onClear: queue.order.length > 1 ? player.clearQueue : null,
-            onShowCurrent: _showCurrent,
             onClose: widget.onClose,
             title: widget.title,
           ),

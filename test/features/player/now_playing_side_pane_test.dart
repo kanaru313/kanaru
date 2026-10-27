@@ -49,18 +49,13 @@ void main() {
       tester,
     ) async {
       await pump(tester);
-      for (final tooltip in [
-        'Filter in this page',
-        'Jump to current song',
-        'More actions',
-      ]) {
+      for (final tooltip in ['Filter in this page', 'More actions']) {
         expect(find.byTooltip(tooltip), findsNothing, reason: tooltip);
       }
 
       await tester.tap(queueTab);
       await tester.pumpAndSettle();
       expect(find.byTooltip('Filter in this page'), findsOneWidget);
-      expect(find.byTooltip('Jump to current song'), findsOneWidget);
       expect(find.byTooltip('More actions'), findsOneWidget);
     });
 

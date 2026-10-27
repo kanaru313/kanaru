@@ -36,7 +36,10 @@ void main() {
       tile.track.title,
   ];
 
-  Future<void> openSheet(WidgetTester tester) async {
+  Future<void> openSheet(
+    WidgetTester tester, {
+    List<Track> tracks = _tracks,
+  }) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -54,7 +57,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await player().openTracks(_tracks);
+    await player().openTracks(tracks);
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Show now playing list'));
     await tester.pumpAndSettle();
@@ -255,16 +258,35 @@ void main() {
     expect(queueFilterPositions(queue, view, ['zed']), [0, 1, 3]);
   });
 
-  testWidgets('the jump button closes the filter first', (tester) async {
-    await openSheet(tester);
-    await filterBy(tester, 'one');
+  testWidgets('the floating locate button closes an open filter first', (
+    tester,
+  ) async {
+    await openSheet(
+      tester,
+      tracks: [
+        for (var i = 0; i < 200; i++) Track(uri: '/m/$i.mp3', title: 't$i'),
+      ],
+    );
+    await tester.drag(find.byType(ReorderableListView), const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    expect(rows(tester), isNot(contains('t0')));
+
+    // Open the box but type nothing: the full list stays, so the floating
+    // button is still there.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(QueuePanel),
+        matching: find.byTooltip('Filter in this page'),
+      ),
+    );
+    await tester.pumpAndSettle();
     expect(find.byType(InPageSearchBox), findsOneWidget);
 
     await tester.tap(find.byTooltip('Jump to current song'));
     await tester.pumpAndSettle();
 
     expect(find.byType(InPageSearchBox), findsNothing);
-    expect(rows(tester), isNotEmpty);
+    expect(rows(tester), contains('t0'));
   });
 
   testWidgets('Ctrl+F with the sheet open reaches the queue, not the page', (
