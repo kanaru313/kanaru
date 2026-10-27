@@ -62,13 +62,28 @@ void main() {
       }
     });
 
-    test('a bar takes the loudest level in its time range', () {
-      // 1000 levels over 500 px: each bar spans 10 levels. One spike at 505.
-      final levels = _levels(1000, (i) => i == 505 ? 255 : 0);
+    test('a bar takes the mean level of its time range', () {
+      // 1000 levels over 500 px: each bar spans 10 levels. Levels 500-509
+      // alternate 255 and 0, so bar 50 averages 127.5.
+      final levels = _levels(
+        1000,
+        (i) => i >= 500 && i < 510 && i.isEven ? 255 : 0,
+      );
       final extents = _extents(levels, lengthSec: 1000, durationSec: 1000);
-      expect(extents[50], waveformMaxExtent);
+      expect(
+        extents[50],
+        waveformMinExtent + (waveformMaxExtent - waveformMinExtent) * 0.5,
+      );
       expect(extents[49], waveformMinExtent);
       expect(extents[51], waveformMinExtent);
+    });
+
+    test('a lone spike is diluted, not lost', () {
+      final levels = _levels(1000, (i) => i == 505 ? 255 : 0);
+      final extents = _extents(levels, lengthSec: 1000, durationSec: 1000);
+      expect(extents[50], greaterThan(waveformMinExtent));
+      expect(extents[50], lessThan(waveformMaxExtent));
+      expect(extents[49], waveformMinExtent);
     });
 
     test('a waveform shorter than the duration leaves the last bars flat', () {

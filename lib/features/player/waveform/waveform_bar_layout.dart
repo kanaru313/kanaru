@@ -10,7 +10,7 @@ const waveformBarRadius = 1.5;
 
 /// A bar is never shorter or taller than these, centred in the track.
 const waveformMinExtent = 2.0;
-const waveformMaxExtent = 40.0;
+const waveformMaxExtent = 32.0;
 
 /// The thumb is an upright pill as high as the track.
 const waveformThumbWidth = 4.0;
@@ -31,7 +31,7 @@ int waveformBarCount(double width) {
 /// spaced over [length]).
 ///
 /// Bars map time, not index: bar `j` covers a share of the player's
-/// [duration] equal to its share of [width], and takes the loudest level
+/// [duration] equal to its share of [width], and takes the mean of the levels
 /// whose time falls in it (the level under its start when none does, as when
 /// there are fewer levels than bars). A waveform shorter than the duration
 /// leaves the bars after it at the minimum; a longer one is cut at the
@@ -50,7 +50,7 @@ List<double> waveformBarExtents({
   }
   final pitch = waveformBarWidth + waveformBarGap;
   final n = levels.length;
-  double extentOf(int level) =>
+  double extentOf(double level) =>
       waveformMinExtent +
       (waveformMaxExtent - waveformMinExtent) * (level / 255);
 
@@ -63,12 +63,12 @@ List<double> waveformBarExtents({
     final end = (endUs / lengthUs * n).ceil().clamp(0, n);
     if (first >= end) {
       final under = (startUs / lengthUs * n).floor().clamp(0, n - 1);
-      return extentOf(levels[under]);
+      return extentOf(levels[under].toDouble());
     }
-    var loudest = 0;
+    var sum = 0;
     for (var i = first; i < end; i++) {
-      if (levels[i] > loudest) loudest = levels[i];
+      sum += levels[i];
     }
-    return extentOf(loudest);
+    return extentOf(sum / (end - first));
   }, growable: false);
 }
