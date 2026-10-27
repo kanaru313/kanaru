@@ -4910,6 +4910,681 @@ class ExcludedFoldersCompanion extends UpdateCompanion<ExcludedFolder> {
   }
 }
 
+class $LyricTranslationsTable extends LyricTranslations
+    with TableInfo<$LyricTranslationsTable, LyricTranslationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricTranslationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _contentHashMeta = const VerificationMeta(
+    'contentHash',
+  );
+  @override
+  late final GeneratedColumn<String> contentHash = GeneratedColumn<String>(
+    'content_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _providerMeta = const VerificationMeta(
+    'provider',
+  );
+  @override
+  late final GeneratedColumn<String> provider = GeneratedColumn<String>(
+    'provider',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLangMeta = const VerificationMeta(
+    'targetLang',
+  );
+  @override
+  late final GeneratedColumn<String> targetLang = GeneratedColumn<String>(
+    'target_lang',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceLangMeta = const VerificationMeta(
+    'sourceLang',
+  );
+  @override
+  late final GeneratedColumn<String> sourceLang = GeneratedColumn<String>(
+    'source_lang',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _linesJsonMeta = const VerificationMeta(
+    'linesJson',
+  );
+  @override
+  late final GeneratedColumn<String> linesJson = GeneratedColumn<String>(
+    'lines_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    contentHash,
+    provider,
+    targetLang,
+    sourceLang,
+    linesJson,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyric_translations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricTranslationRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('content_hash')) {
+      context.handle(
+        _contentHashMeta,
+        contentHash.isAcceptableOrUnknown(
+          data['content_hash']!,
+          _contentHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentHashMeta);
+    }
+    if (data.containsKey('provider')) {
+      context.handle(
+        _providerMeta,
+        provider.isAcceptableOrUnknown(data['provider']!, _providerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_providerMeta);
+    }
+    if (data.containsKey('target_lang')) {
+      context.handle(
+        _targetLangMeta,
+        targetLang.isAcceptableOrUnknown(data['target_lang']!, _targetLangMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetLangMeta);
+    }
+    if (data.containsKey('source_lang')) {
+      context.handle(
+        _sourceLangMeta,
+        sourceLang.isAcceptableOrUnknown(data['source_lang']!, _sourceLangMeta),
+      );
+    }
+    if (data.containsKey('lines_json')) {
+      context.handle(
+        _linesJsonMeta,
+        linesJson.isAcceptableOrUnknown(data['lines_json']!, _linesJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_linesJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {contentHash, provider, targetLang};
+  @override
+  LyricTranslationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricTranslationRow(
+      contentHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_hash'],
+      )!,
+      provider: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider'],
+      )!,
+      targetLang: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_lang'],
+      )!,
+      sourceLang: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_lang'],
+      ),
+      linesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lines_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LyricTranslationsTable createAlias(String alias) {
+    return $LyricTranslationsTable(attachedDatabase, alias);
+  }
+}
+
+class LyricTranslationRow extends DataClass
+    implements Insertable<LyricTranslationRow> {
+  final String contentHash;
+
+  /// 'google' or 'deepl'.
+  final String provider;
+
+  /// Internal language code, for example 'vi' or 'zh-Hans'.
+  final String targetLang;
+
+  /// Dominant detected base language code, when known.
+  final String? sourceLang;
+
+  /// `{"source line": "translation"}`.
+  final String linesJson;
+  final int createdAt;
+  const LyricTranslationRow({
+    required this.contentHash,
+    required this.provider,
+    required this.targetLang,
+    this.sourceLang,
+    required this.linesJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['content_hash'] = Variable<String>(contentHash);
+    map['provider'] = Variable<String>(provider);
+    map['target_lang'] = Variable<String>(targetLang);
+    if (!nullToAbsent || sourceLang != null) {
+      map['source_lang'] = Variable<String>(sourceLang);
+    }
+    map['lines_json'] = Variable<String>(linesJson);
+    map['created_at'] = Variable<int>(createdAt);
+    return map;
+  }
+
+  LyricTranslationsCompanion toCompanion(bool nullToAbsent) {
+    return LyricTranslationsCompanion(
+      contentHash: Value(contentHash),
+      provider: Value(provider),
+      targetLang: Value(targetLang),
+      sourceLang: sourceLang == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceLang),
+      linesJson: Value(linesJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LyricTranslationRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricTranslationRow(
+      contentHash: serializer.fromJson<String>(json['contentHash']),
+      provider: serializer.fromJson<String>(json['provider']),
+      targetLang: serializer.fromJson<String>(json['targetLang']),
+      sourceLang: serializer.fromJson<String?>(json['sourceLang']),
+      linesJson: serializer.fromJson<String>(json['linesJson']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'contentHash': serializer.toJson<String>(contentHash),
+      'provider': serializer.toJson<String>(provider),
+      'targetLang': serializer.toJson<String>(targetLang),
+      'sourceLang': serializer.toJson<String?>(sourceLang),
+      'linesJson': serializer.toJson<String>(linesJson),
+      'createdAt': serializer.toJson<int>(createdAt),
+    };
+  }
+
+  LyricTranslationRow copyWith({
+    String? contentHash,
+    String? provider,
+    String? targetLang,
+    Value<String?> sourceLang = const Value.absent(),
+    String? linesJson,
+    int? createdAt,
+  }) => LyricTranslationRow(
+    contentHash: contentHash ?? this.contentHash,
+    provider: provider ?? this.provider,
+    targetLang: targetLang ?? this.targetLang,
+    sourceLang: sourceLang.present ? sourceLang.value : this.sourceLang,
+    linesJson: linesJson ?? this.linesJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  LyricTranslationRow copyWithCompanion(LyricTranslationsCompanion data) {
+    return LyricTranslationRow(
+      contentHash: data.contentHash.present
+          ? data.contentHash.value
+          : this.contentHash,
+      provider: data.provider.present ? data.provider.value : this.provider,
+      targetLang: data.targetLang.present
+          ? data.targetLang.value
+          : this.targetLang,
+      sourceLang: data.sourceLang.present
+          ? data.sourceLang.value
+          : this.sourceLang,
+      linesJson: data.linesJson.present ? data.linesJson.value : this.linesJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricTranslationRow(')
+          ..write('contentHash: $contentHash, ')
+          ..write('provider: $provider, ')
+          ..write('targetLang: $targetLang, ')
+          ..write('sourceLang: $sourceLang, ')
+          ..write('linesJson: $linesJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    contentHash,
+    provider,
+    targetLang,
+    sourceLang,
+    linesJson,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricTranslationRow &&
+          other.contentHash == this.contentHash &&
+          other.provider == this.provider &&
+          other.targetLang == this.targetLang &&
+          other.sourceLang == this.sourceLang &&
+          other.linesJson == this.linesJson &&
+          other.createdAt == this.createdAt);
+}
+
+class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
+  final Value<String> contentHash;
+  final Value<String> provider;
+  final Value<String> targetLang;
+  final Value<String?> sourceLang;
+  final Value<String> linesJson;
+  final Value<int> createdAt;
+  final Value<int> rowid;
+  const LyricTranslationsCompanion({
+    this.contentHash = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.targetLang = const Value.absent(),
+    this.sourceLang = const Value.absent(),
+    this.linesJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricTranslationsCompanion.insert({
+    required String contentHash,
+    required String provider,
+    required String targetLang,
+    this.sourceLang = const Value.absent(),
+    required String linesJson,
+    required int createdAt,
+    this.rowid = const Value.absent(),
+  }) : contentHash = Value(contentHash),
+       provider = Value(provider),
+       targetLang = Value(targetLang),
+       linesJson = Value(linesJson),
+       createdAt = Value(createdAt);
+  static Insertable<LyricTranslationRow> custom({
+    Expression<String>? contentHash,
+    Expression<String>? provider,
+    Expression<String>? targetLang,
+    Expression<String>? sourceLang,
+    Expression<String>? linesJson,
+    Expression<int>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (contentHash != null) 'content_hash': contentHash,
+      if (provider != null) 'provider': provider,
+      if (targetLang != null) 'target_lang': targetLang,
+      if (sourceLang != null) 'source_lang': sourceLang,
+      if (linesJson != null) 'lines_json': linesJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricTranslationsCompanion copyWith({
+    Value<String>? contentHash,
+    Value<String>? provider,
+    Value<String>? targetLang,
+    Value<String?>? sourceLang,
+    Value<String>? linesJson,
+    Value<int>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return LyricTranslationsCompanion(
+      contentHash: contentHash ?? this.contentHash,
+      provider: provider ?? this.provider,
+      targetLang: targetLang ?? this.targetLang,
+      sourceLang: sourceLang ?? this.sourceLang,
+      linesJson: linesJson ?? this.linesJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (contentHash.present) {
+      map['content_hash'] = Variable<String>(contentHash.value);
+    }
+    if (provider.present) {
+      map['provider'] = Variable<String>(provider.value);
+    }
+    if (targetLang.present) {
+      map['target_lang'] = Variable<String>(targetLang.value);
+    }
+    if (sourceLang.present) {
+      map['source_lang'] = Variable<String>(sourceLang.value);
+    }
+    if (linesJson.present) {
+      map['lines_json'] = Variable<String>(linesJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricTranslationsCompanion(')
+          ..write('contentHash: $contentHash, ')
+          ..write('provider: $provider, ')
+          ..write('targetLang: $targetLang, ')
+          ..write('sourceLang: $sourceLang, ')
+          ..write('linesJson: $linesJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LyricTranslationPrefsTable extends LyricTranslationPrefs
+    with TableInfo<$LyricTranslationPrefsTable, LyricTranslationPrefRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricTranslationPrefsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _contentHashMeta = const VerificationMeta(
+    'contentHash',
+  );
+  @override
+  late final GeneratedColumn<String> contentHash = GeneratedColumn<String>(
+    'content_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLangMeta = const VerificationMeta(
+    'targetLang',
+  );
+  @override
+  late final GeneratedColumn<String> targetLang = GeneratedColumn<String>(
+    'target_lang',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [contentHash, targetLang];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyric_translation_prefs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricTranslationPrefRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('content_hash')) {
+      context.handle(
+        _contentHashMeta,
+        contentHash.isAcceptableOrUnknown(
+          data['content_hash']!,
+          _contentHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentHashMeta);
+    }
+    if (data.containsKey('target_lang')) {
+      context.handle(
+        _targetLangMeta,
+        targetLang.isAcceptableOrUnknown(data['target_lang']!, _targetLangMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetLangMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {contentHash};
+  @override
+  LyricTranslationPrefRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricTranslationPrefRow(
+      contentHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_hash'],
+      )!,
+      targetLang: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_lang'],
+      )!,
+    );
+  }
+
+  @override
+  $LyricTranslationPrefsTable createAlias(String alias) {
+    return $LyricTranslationPrefsTable(attachedDatabase, alias);
+  }
+}
+
+class LyricTranslationPrefRow extends DataClass
+    implements Insertable<LyricTranslationPrefRow> {
+  final String contentHash;
+  final String targetLang;
+  const LyricTranslationPrefRow({
+    required this.contentHash,
+    required this.targetLang,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['content_hash'] = Variable<String>(contentHash);
+    map['target_lang'] = Variable<String>(targetLang);
+    return map;
+  }
+
+  LyricTranslationPrefsCompanion toCompanion(bool nullToAbsent) {
+    return LyricTranslationPrefsCompanion(
+      contentHash: Value(contentHash),
+      targetLang: Value(targetLang),
+    );
+  }
+
+  factory LyricTranslationPrefRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricTranslationPrefRow(
+      contentHash: serializer.fromJson<String>(json['contentHash']),
+      targetLang: serializer.fromJson<String>(json['targetLang']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'contentHash': serializer.toJson<String>(contentHash),
+      'targetLang': serializer.toJson<String>(targetLang),
+    };
+  }
+
+  LyricTranslationPrefRow copyWith({String? contentHash, String? targetLang}) =>
+      LyricTranslationPrefRow(
+        contentHash: contentHash ?? this.contentHash,
+        targetLang: targetLang ?? this.targetLang,
+      );
+  LyricTranslationPrefRow copyWithCompanion(
+    LyricTranslationPrefsCompanion data,
+  ) {
+    return LyricTranslationPrefRow(
+      contentHash: data.contentHash.present
+          ? data.contentHash.value
+          : this.contentHash,
+      targetLang: data.targetLang.present
+          ? data.targetLang.value
+          : this.targetLang,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricTranslationPrefRow(')
+          ..write('contentHash: $contentHash, ')
+          ..write('targetLang: $targetLang')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(contentHash, targetLang);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricTranslationPrefRow &&
+          other.contentHash == this.contentHash &&
+          other.targetLang == this.targetLang);
+}
+
+class LyricTranslationPrefsCompanion
+    extends UpdateCompanion<LyricTranslationPrefRow> {
+  final Value<String> contentHash;
+  final Value<String> targetLang;
+  final Value<int> rowid;
+  const LyricTranslationPrefsCompanion({
+    this.contentHash = const Value.absent(),
+    this.targetLang = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricTranslationPrefsCompanion.insert({
+    required String contentHash,
+    required String targetLang,
+    this.rowid = const Value.absent(),
+  }) : contentHash = Value(contentHash),
+       targetLang = Value(targetLang);
+  static Insertable<LyricTranslationPrefRow> custom({
+    Expression<String>? contentHash,
+    Expression<String>? targetLang,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (contentHash != null) 'content_hash': contentHash,
+      if (targetLang != null) 'target_lang': targetLang,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricTranslationPrefsCompanion copyWith({
+    Value<String>? contentHash,
+    Value<String>? targetLang,
+    Value<int>? rowid,
+  }) {
+    return LyricTranslationPrefsCompanion(
+      contentHash: contentHash ?? this.contentHash,
+      targetLang: targetLang ?? this.targetLang,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (contentHash.present) {
+      map['content_hash'] = Variable<String>(contentHash.value);
+    }
+    if (targetLang.present) {
+      map['target_lang'] = Variable<String>(targetLang.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricTranslationPrefsCompanion(')
+          ..write('contentHash: $contentHash, ')
+          ..write('targetLang: $targetLang, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LibraryDatabase extends GeneratedDatabase {
   _$LibraryDatabase(QueryExecutor e) : super(e);
   $LibraryDatabaseManager get managers => $LibraryDatabaseManager(this);
@@ -4995,6 +5670,10 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     'track_artists_track',
     'CREATE INDEX track_artists_track ON track_artists (track_id)',
   );
+  late final $LyricTranslationsTable lyricTranslations =
+      $LyricTranslationsTable(this);
+  late final $LyricTranslationPrefsTable lyricTranslationPrefs =
+      $LyricTranslationPrefsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5027,6 +5706,8 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     tracksLanguage,
     tracksAddedAt,
     trackArtistsTrack,
+    lyricTranslations,
+    lyricTranslationPrefs,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -8254,6 +8935,433 @@ typedef $$ExcludedFoldersTableProcessedTableManager =
       ExcludedFolder,
       PrefetchHooks Function()
     >;
+typedef $$LyricTranslationsTableCreateCompanionBuilder =
+    LyricTranslationsCompanion Function({
+      required String contentHash,
+      required String provider,
+      required String targetLang,
+      Value<String?> sourceLang,
+      required String linesJson,
+      required int createdAt,
+      Value<int> rowid,
+    });
+typedef $$LyricTranslationsTableUpdateCompanionBuilder =
+    LyricTranslationsCompanion Function({
+      Value<String> contentHash,
+      Value<String> provider,
+      Value<String> targetLang,
+      Value<String?> sourceLang,
+      Value<String> linesJson,
+      Value<int> createdAt,
+      Value<int> rowid,
+    });
+
+class $$LyricTranslationsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricTranslationsTable> {
+  $$LyricTranslationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetLang => $composableBuilder(
+    column: $table.targetLang,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceLang => $composableBuilder(
+    column: $table.sourceLang,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linesJson => $composableBuilder(
+    column: $table.linesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricTranslationsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricTranslationsTable> {
+  $$LyricTranslationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetLang => $composableBuilder(
+    column: $table.targetLang,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceLang => $composableBuilder(
+    column: $table.sourceLang,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linesJson => $composableBuilder(
+    column: $table.linesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricTranslationsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricTranslationsTable> {
+  $$LyricTranslationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get provider =>
+      $composableBuilder(column: $table.provider, builder: (column) => column);
+
+  GeneratedColumn<String> get targetLang => $composableBuilder(
+    column: $table.targetLang,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceLang => $composableBuilder(
+    column: $table.sourceLang,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linesJson =>
+      $composableBuilder(column: $table.linesJson, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LyricTranslationsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricTranslationsTable,
+          LyricTranslationRow,
+          $$LyricTranslationsTableFilterComposer,
+          $$LyricTranslationsTableOrderingComposer,
+          $$LyricTranslationsTableAnnotationComposer,
+          $$LyricTranslationsTableCreateCompanionBuilder,
+          $$LyricTranslationsTableUpdateCompanionBuilder,
+          (
+            LyricTranslationRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $LyricTranslationsTable,
+              LyricTranslationRow
+            >,
+          ),
+          LyricTranslationRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricTranslationsTableTableManager(
+    _$LibraryDatabase db,
+    $LyricTranslationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricTranslationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LyricTranslationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LyricTranslationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> contentHash = const Value.absent(),
+                Value<String> provider = const Value.absent(),
+                Value<String> targetLang = const Value.absent(),
+                Value<String?> sourceLang = const Value.absent(),
+                Value<String> linesJson = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricTranslationsCompanion(
+                contentHash: contentHash,
+                provider: provider,
+                targetLang: targetLang,
+                sourceLang: sourceLang,
+                linesJson: linesJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String contentHash,
+                required String provider,
+                required String targetLang,
+                Value<String?> sourceLang = const Value.absent(),
+                required String linesJson,
+                required int createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LyricTranslationsCompanion.insert(
+                contentHash: contentHash,
+                provider: provider,
+                targetLang: targetLang,
+                sourceLang: sourceLang,
+                linesJson: linesJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LyricTranslationsTable, LyricTranslationRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricTranslationsTable,
+                    LyricTranslationRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricTranslationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricTranslationsTable,
+      LyricTranslationRow,
+      $$LyricTranslationsTableFilterComposer,
+      $$LyricTranslationsTableOrderingComposer,
+      $$LyricTranslationsTableAnnotationComposer,
+      $$LyricTranslationsTableCreateCompanionBuilder,
+      $$LyricTranslationsTableUpdateCompanionBuilder,
+      (
+        LyricTranslationRow,
+        BaseReferences<
+          _$LibraryDatabase,
+          $LyricTranslationsTable,
+          LyricTranslationRow
+        >,
+      ),
+      LyricTranslationRow,
+      PrefetchHooks Function()
+    >;
+typedef $$LyricTranslationPrefsTableCreateCompanionBuilder =
+    LyricTranslationPrefsCompanion Function({
+      required String contentHash,
+      required String targetLang,
+      Value<int> rowid,
+    });
+typedef $$LyricTranslationPrefsTableUpdateCompanionBuilder =
+    LyricTranslationPrefsCompanion Function({
+      Value<String> contentHash,
+      Value<String> targetLang,
+      Value<int> rowid,
+    });
+
+class $$LyricTranslationPrefsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricTranslationPrefsTable> {
+  $$LyricTranslationPrefsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetLang => $composableBuilder(
+    column: $table.targetLang,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricTranslationPrefsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricTranslationPrefsTable> {
+  $$LyricTranslationPrefsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetLang => $composableBuilder(
+    column: $table.targetLang,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricTranslationPrefsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricTranslationPrefsTable> {
+  $$LyricTranslationPrefsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetLang => $composableBuilder(
+    column: $table.targetLang,
+    builder: (column) => column,
+  );
+}
+
+class $$LyricTranslationPrefsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricTranslationPrefsTable,
+          LyricTranslationPrefRow,
+          $$LyricTranslationPrefsTableFilterComposer,
+          $$LyricTranslationPrefsTableOrderingComposer,
+          $$LyricTranslationPrefsTableAnnotationComposer,
+          $$LyricTranslationPrefsTableCreateCompanionBuilder,
+          $$LyricTranslationPrefsTableUpdateCompanionBuilder,
+          (
+            LyricTranslationPrefRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $LyricTranslationPrefsTable,
+              LyricTranslationPrefRow
+            >,
+          ),
+          LyricTranslationPrefRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricTranslationPrefsTableTableManager(
+    _$LibraryDatabase db,
+    $LyricTranslationPrefsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricTranslationPrefsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LyricTranslationPrefsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LyricTranslationPrefsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> contentHash = const Value.absent(),
+                Value<String> targetLang = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricTranslationPrefsCompanion(
+                contentHash: contentHash,
+                targetLang: targetLang,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String contentHash,
+                required String targetLang,
+                Value<int> rowid = const Value.absent(),
+              }) => LyricTranslationPrefsCompanion.insert(
+                contentHash: contentHash,
+                targetLang: targetLang,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $LyricTranslationPrefsTable,
+                    LyricTranslationPrefRow
+                  >(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricTranslationPrefsTable,
+                    LyricTranslationPrefRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricTranslationPrefsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricTranslationPrefsTable,
+      LyricTranslationPrefRow,
+      $$LyricTranslationPrefsTableFilterComposer,
+      $$LyricTranslationPrefsTableOrderingComposer,
+      $$LyricTranslationPrefsTableAnnotationComposer,
+      $$LyricTranslationPrefsTableCreateCompanionBuilder,
+      $$LyricTranslationPrefsTableUpdateCompanionBuilder,
+      (
+        LyricTranslationPrefRow,
+        BaseReferences<
+          _$LibraryDatabase,
+          $LyricTranslationPrefsTable,
+          LyricTranslationPrefRow
+        >,
+      ),
+      LyricTranslationPrefRow,
+      PrefetchHooks Function()
+    >;
 
 class $LibraryDatabaseManager {
   final _$LibraryDatabase _db;
@@ -8278,4 +9386,8 @@ class $LibraryDatabaseManager {
       $$CoverColorsTableTableManager(_db, _db.coverColors);
   $$ExcludedFoldersTableTableManager get excludedFolders =>
       $$ExcludedFoldersTableTableManager(_db, _db.excludedFolders);
+  $$LyricTranslationsTableTableManager get lyricTranslations =>
+      $$LyricTranslationsTableTableManager(_db, _db.lyricTranslations);
+  $$LyricTranslationPrefsTableTableManager get lyricTranslationPrefs =>
+      $$LyricTranslationPrefsTableTableManager(_db, _db.lyricTranslationPrefs);
 }

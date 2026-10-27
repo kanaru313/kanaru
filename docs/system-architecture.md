@@ -292,7 +292,7 @@ The native side decodes a whole track into at most 1000 loudness levels for the 
 
 ### Lyrics
 
-Lyrics are read when a track plays, for the playing track only, and never stored (no column, no cache): no schema change, no slower scan, and a `.lrc` edited outside the app shows at the next play. Offline only: online lyrics (LYR-03) are not built.
+Lyrics are read when a track plays, for the playing track only, and not stored: no column, no slower scan, and a `.lrc` edited outside the app shows at the next play. Only translations are stored (schema 8): each translated source line with its translation, in `lyric_translations` (see [section 7](#7-library-database-schema)). Offline only: online lyrics (LYR-03) are not built.
 
 | Part | Behavior | Files |
 |---|---|---|
@@ -371,7 +371,7 @@ Reset targets: `make reset-library`, `make reset-covers`, `make reset-all` (see 
 
 ## 7. Library database schema
 
-drift, `schemaVersion = 7`, file `library.db`. Times are epoch milliseconds. Browse queries are raw SQL (`customSelect`) that read `tracks`; there are no `albums` or `artists` tables. Albums and artists are `GROUP BY` over the text keys. Schema 5 adds the user-data tables `plays`, `play_stats`, `playlists` and `playlist_entries`: data a scan cannot rebuild (see [User data](#user-data)). Schema 6 adds `cover_colors` (colors extracted from cover thumbnails, rebuildable), `excluded_folders` (folders the scan skips, user configuration) and `playlists.kind` (see [Playlist kinds](#playlist-kinds)). Schema 7 adds `tracks.language`, the language tag as written (ID3 `TLAN`, Vorbis/FLAC/Opus `LANGUAGE`, MP4 freeform `LANGUAGE`, APE `Language`, RIFF `ILNG`), trimmed, empty as NULL, at most 128 bytes; `language_tags.dart` splits and normalizes it when read. Language reads live in `language_queries.dart`: `languageCounts` groups the stored strings, `buildLanguageSummaries` splits and normalizes them (`language_tags.dart`) into one entry per language key, and the page queries take the stored strings of that key as one JSON array read with `json_each` (no variable limit).
+drift, `schemaVersion = 8`, file `library.db`. Times are epoch milliseconds. Browse queries are raw SQL (`customSelect`) that read `tracks`; there are no `albums` or `artists` tables. Albums and artists are `GROUP BY` over the text keys. Schema 5 adds the user-data tables `plays`, `play_stats`, `playlists` and `playlist_entries`: data a scan cannot rebuild (see [User data](#user-data)). Schema 6 adds `cover_colors` (colors extracted from cover thumbnails, rebuildable), `excluded_folders` (folders the scan skips, user configuration) and `playlists.kind` (see [Playlist kinds](#playlist-kinds)). Schema 7 adds `tracks.language`, the language tag as written (ID3 `TLAN`, Vorbis/FLAC/Opus `LANGUAGE`, MP4 freeform `LANGUAGE`, APE `Language`, RIFF `ILNG`), trimmed, empty as NULL, at most 128 bytes; `language_tags.dart` splits and normalizes it when read. Language reads live in `language_queries.dart`: `languageCounts` groups the stored strings, `buildLanguageSummaries` splits and normalizes them (`language_tags.dart`) into one entry per language key, and the page queries take the stored strings of that key as one JSON array read with `json_each` (no variable limit). Schema 8 adds `lyric_translations` (one row per lyrics hash, provider and target language; `lines_json` maps source line to translation) and `lyric_translation_prefs` (target language chosen per song). Both are keyed by `lyricsContentHash` with no foreign key to `tracks`, survive rescans and `make reset-library`, and `lyric_translations` is emptied only by "Clear saved translations"; `lyric_translation_prefs` is kept. The invariants are in `lyric_translation_tables.dart`; queries in `lyric_translation_queries.dart`; `core/lyrics_translation/translation_cache.dart` decodes rows (a corrupt row reads as missing). Rollback: a dev database at v8 cannot be opened by a v7 build; recover with `sqlite3 library.db "DROP TABLE lyric_translations; DROP TABLE lyric_translation_prefs; PRAGMA user_version=7;"`.
 
 ```mermaid
 erDiagram
@@ -462,6 +462,18 @@ erDiagram
         text path UK "canonical, no FK to roots"
         int added_at
     }
+    LYRIC_TRANSLATIONS {
+        text content_hash PK
+        text provider PK "google or deepl"
+        text target_lang PK
+        text source_lang
+        text lines_json "source line to translation"
+        int created_at
+    }
+    LYRIC_TRANSLATION_PREFS {
+        text content_hash PK
+        text target_lang
+    }
     LIBRARY_ROOTS ||--o{ TRACKS : "root_id"
     TRACKS ||--o{ TRACK_ARTISTS : "track_id"
     TRACKS ||--|| TRACK_SEARCH : "indexed, kept by triggers"
@@ -528,7 +540,7 @@ Listen history and playlists live in `library.db` beside the scan data, so they 
 | Writing `plays` | Use drift APIs or `customUpdate(updates: {plays})`, so `.watch()` on `play_stats` refreshes. A bare `customStatement` does not notify watchers. |
 | Playlist order | `position` is `0..n-1` per playlist, not unique. Writers renumber inside one transaction; readers order by `position, id`. The same path may appear more than once; each entry's `id` is its identity. |
 | Playlist cover | Computed, nothing is stored: the first up to 4 distinct non-null cover keys among the first 64 covered entries by position, looking only at the first 1000 entries (`playlistCollageEntryScanLimit`), so a large playlist without covers does not scan every entry (tracks of one album share a cover, so repeats count once). The playlists page (grid or list) and the playlist page (side pane or header) use the same function (`playlistCollageKeys`). |
-| Reset | A library reset deletes roots and tracks, never the file. `make reset-library` runs `packaging/dev/reset-library.sql`: it removes `library_roots`, `tracks`, `track_artists` and `cover_colors` (scan output) and keeps the user-data tables and `excluded_folders` (user configuration). The target refuses a database below schema 6. |
+| Reset | A library reset deletes roots and tracks, never the file. `make reset-library` runs `packaging/dev/reset-library.sql`: it removes `library_roots`, `tracks`, `track_artists` and `cover_colors` (scan output) and keeps the user-data tables, `excluded_folders` (user configuration) and the translation cache tables `lyric_translations` and `lyric_translation_prefs`. The target refuses a database below schema 6. |
 
 ### Listen recording
 

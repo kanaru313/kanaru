@@ -6,7 +6,9 @@
 -- per deleted track).
 -- Kept: plays, play_stats, playlists, playlist_entries. They reference tracks
 -- by path, not by foreign key, so nothing below can reach them. Also kept:
--- excluded_folders, which is user configuration, not scan output.
+-- excluded_folders, which is user configuration, not scan output, and
+-- lyric_translations, lyric_translation_prefs (cached translations keyed by
+-- lyrics hash).
 -- Needs schema 6 or later (`make reset-library` checks user_version first).
 -- Update this list when a table derived from the scan is added.
 
