@@ -69,6 +69,7 @@ Key files by area:
 | Now Playing | `features/player/now_playing/now_playing_overlay.dart`, `now_playing_auto_hide.dart`, `now_playing_tabs.dart`, `now_playing_seek_slot.dart` (waveform slot and its height provider); `features/player/waveform/` |
 | Settings | `core/settings/settings_provider.dart`, `settings_codec.dart`, `settings_file.dart`; library counts: `core/database/library_stats_queries.dart` + `features/settings/library_stats_provider.dart` |
 | Logging | `core/logging/app_logging.dart`, `rotating_log_file.dart`, `log_redaction.dart` |
+| Lyrics translation | `core/lyrics_translation/lyrics_translation_controller.dart` (state notifier, menu actions), `lyrics_translation_state.dart`, `lyrics_translation_derive.dart` (pure state derivation), `translation_jobs.dart` + `translation_job_work.dart` (jobs, chunking, saving), `translation_providers.dart` (HTTP client, Google translator, cache and per-song target streams), `deepl_key_provider.dart` (key, DeepL translator, usage) |
 | Schema 8 translation cache | `core/database/lyric_translation_tables.dart`, `lyric_translation_queries.dart`, `library_migration_v8.dart`, `core/lyrics_translation/translation_cache.dart` |
 | Schema 7 `tracks.language` | `core/database/library_tables.dart`, `library_migration_v7.dart`, `language_tags.dart` |
 | Schema 6 tables | `core/database/library_tables.dart` (`CoverColors`, `ExcludedFolders`), `user_data_tables.dart` (`playlists.kind`, invariant 8), `library_migration_v6.dart`; reset rules in `packaging/dev/reset-library.sql` |
