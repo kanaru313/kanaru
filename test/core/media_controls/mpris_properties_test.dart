@@ -17,7 +17,9 @@ PlayerState stateOf(
   Duration duration = Duration.zero,
   Duration position = Duration.zero,
   double volume = 100,
+  int repeatTimes = 0,
 }) => PlayerState(
+  repeatTimes: repeatTimes,
   queue: queue,
   playing: playing,
   stopped: stopped,
@@ -144,6 +146,16 @@ void main() {
         const DBusString('Playlist'),
       );
       expect(repeatModeFromLoopStatus('Bogus'), isNull);
+    });
+
+    test('a counted repeat shows as Track over any base mode', () {
+      for (final mode in RepeatMode.values) {
+        final queue = PlayQueue(original: tracks, repeat: mode);
+        expect(
+          props(stateOf(queue, repeatTimes: 2))['LoopStatus'],
+          const DBusString('Track'),
+        );
+      }
     });
 
     test('shuffle and volume', () {

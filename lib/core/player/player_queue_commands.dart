@@ -20,6 +20,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   bool get _ended;
   Random? get _random;
   void _startShuffledPass();
+  void _dropRepeatTimes();
   Future<void> _queueNext();
   Future<void> jump(int index);
   Future<void> _play(int index, {bool play = true});
@@ -196,7 +197,8 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// Playback stopped for good: nothing is wanted playing and the engine's
   /// next-track bookkeeping is void. [ended] means the queue ran out (play
   /// restarts it); [resetPosition] false keeps the finished track to seek back
-  /// into. [queue] swaps the queue in the same update. Leaves the engine alone.
+  /// into. [queue] swaps the queue in the same update. Leaves the engine alone,
+  /// except for ending a counted repeat, which is the engine's loop.
   void _markStopped({
     required bool ended,
     bool resetPosition = true,
@@ -205,6 +207,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     _ended = ended;
     _wantsPlaying = false;
     _handedNext.clear();
+    _dropRepeatTimes();
     state = state.copyWith(
       queue: queue ?? state.queue,
       playing: false,
@@ -243,6 +246,7 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     // where the current track was, as that one shifts back by one.
     final target = index > queue.index ? queue.index + 1 : queue.index;
     _turn++;
+    _dropRepeatTimes();
     var landed = (skipsOnlyUpNext ? queue.move(index, target) : queue).copyWith(
       index: skipsOnlyUpNext ? target : index,
     );

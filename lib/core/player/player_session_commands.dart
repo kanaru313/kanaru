@@ -84,7 +84,12 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
     if (!ref.mounted || !identical(_sessionBuild, token)) return;
     _sessionBuild = null;
     unawaited(_backend.setVolume(state.volume));
-    unawaited(_backend.setRepeat(state.queue.repeat));
+    // A counted repeat armed before this ran keeps the engine looping.
+    unawaited(
+      _backend.setRepeat(
+        state.repeatTimes > 0 ? RepeatMode.one : state.queue.repeat,
+      ),
+    );
     if (_openedSinceBuild || state.queue.isEmpty) return;
     if (state.stopped) {
       // A stop made before this ran stays: the track is loaded paused at the

@@ -86,9 +86,9 @@ String mprisLoopStatus(RepeatMode mode) => switch (mode) {
   RepeatMode.all || RepeatMode.allShuffled => 'Playlist',
 };
 
-/// `LoopStatus` as shown for [state].
+/// `LoopStatus` as shown for [state]: `Track` while a counted repeat runs.
 String mprisLoopStatusOf(PlayerState state) =>
-    mprisLoopStatus(state.queue.repeat);
+    state.repeatTimes > 0 ? 'Track' : mprisLoopStatus(state.queue.repeat);
 
 RepeatMode? repeatModeFromLoopStatus(String status) => switch (status) {
   'None' => RepeatMode.off,

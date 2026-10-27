@@ -187,23 +187,39 @@ class PlayerService extends Notifier<PlayerState>
     state = state.copyWith(position: position);
   }
 
-  /// The engine started [track] over under repeat one. A loop that was
-  /// already on its way when the user changed track or repeat mode is
-  /// dropped: it is not a play of what is current now.
+  /// The engine started [track] over under repeat one or a counted repeat.
+  /// A loop that was already on its way when the user changed track or
+  /// repeat mode is dropped: it is not a play of what is current now. A
+  /// counted repeat uses up one play per loop; at the start of the last one
+  /// the engine gets the base mode back, so the track ends and playback goes
+  /// on as before. A loop already in flight when a count is armed over repeat
+  /// one still counts toward it (a window of a few ms).
   void _onLooped(Track track) {
-    if (state.queue.repeat != RepeatMode.one ||
+    final counting = state.repeatTimes > 0;
+    if ((!counting && state.queue.repeat != RepeatMode.one) ||
         state.queue.current?.uri != track.uri) {
       return;
     }
+    final sleep = _takeSleepStop();
+    // A sleep stop at a loop ends the count: the track rests at 0 and a
+    // later play must not loop on.
+    final left = counting && !sleep ? state.repeatTimes - 1 : 0;
     state = state.copyWith(
       position: Duration.zero,
       playthrough: state.playthrough + 1,
+      repeatTimes: left,
     );
     _seeked.add(Duration.zero);
+    if (counting && left == 0) {
+      _followEngine(
+        'end the counted repeat',
+        () => _backend.setRepeat(state.queue.repeat),
+      );
+    }
     // Stop after the current track under repeat one: the engine already
     // started it over, so it rests paused at 0, with the next track that
     // the stop held back handed again.
-    if (_takeSleepStop()) {
+    if (sleep) {
       _restAtStart();
       _followEngine('queue the next track', _queueNext);
     }
@@ -269,6 +285,7 @@ class PlayerService extends Notifier<PlayerState>
     _wantsPlaying = play;
     _openedSinceBuild = true;
     _handedNext.clear();
+    _dropRepeatTimes();
     // A track loaded without playing is paused, not stopped.
     state = state.copyWith(
       queue: queue,

@@ -10,3 +10,6 @@ enum RepeatMode {
   /// Playing on past the last track goes back to the first.
   bool get wrapsQueue => this == all || this == allShuffled;
 }
+
+/// Most extra plays of the current track a counted repeat can ask for.
+const maxRepeatTimes = 99;

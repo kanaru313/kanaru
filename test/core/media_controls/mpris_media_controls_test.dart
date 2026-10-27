@@ -181,6 +181,67 @@ void main() {
       },
     );
 
+    test('arming a counted repeat and ending it send LoopStatus', () async {
+      await h.service.openTracks(songs);
+      await h.start(coalesceWindow: _wideWindow);
+      final changes = await h.watchChanges();
+
+      changes.clear();
+      await h.changeAfter(() => h.service.setRepeatTimes(2));
+      expect(changes.single['LoopStatus'], const DBusString('Track'));
+
+      changes.clear();
+      await h.changeAfter(() => h.service.setRepeatTimes(0));
+      expect(changes.single['LoopStatus'], const DBusString('None'));
+    });
+
+    test('Track while counting keeps the count', () async {
+      await h.service.openTracks(songs);
+      await h.service.setRepeatTimes(2);
+      await h.start();
+
+      await h.remote.setProperty(
+        mprisPlayerInterface,
+        'LoopStatus',
+        const DBusString('Track'),
+      );
+      await pumpEventQueue();
+      expect(h.container.read(playerServiceProvider).repeatTimes, 2);
+    });
+
+    test('Playlist while counting on repeat all shuffled keeps it', () async {
+      await h.service.openTracks(songs);
+      await h.service.setRepeat(RepeatMode.allShuffled);
+      await h.service.setRepeatTimes(2);
+      await h.start();
+
+      await h.remote.setProperty(
+        mprisPlayerInterface,
+        'LoopStatus',
+        const DBusString('Playlist'),
+      );
+      await pumpEventQueue();
+      final state = h.container.read(playerServiceProvider);
+      expect(state.repeatTimes, 0);
+      expect(state.queue.repeat, RepeatMode.allShuffled);
+    });
+
+    test('Playlist while counting on repeat off sets repeat all', () async {
+      await h.service.openTracks(songs);
+      await h.service.setRepeatTimes(2);
+      await h.start();
+
+      await h.remote.setProperty(
+        mprisPlayerInterface,
+        'LoopStatus',
+        const DBusString('Playlist'),
+      );
+      await pumpEventQueue();
+      final state = h.container.read(playerServiceProvider);
+      expect(state.repeatTimes, 0);
+      expect(state.queue.repeat, RepeatMode.all);
+    });
+
     test('a new track and its length arrive as one signal', () async {
       await h.start(coalesceWindow: _wideWindow);
       final changes = await h.watchChanges();
