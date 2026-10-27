@@ -36,6 +36,8 @@ class SongTile extends ConsumerWidget {
     this.showAlbum = true,
     this.leadingAccessory,
     this.trailingAccessory,
+    this.detail,
+    this.badge,
   }) : assert(
          number == null || leadingAccessory == null,
          'number and leadingAccessory both fill the slot before the cover',
@@ -62,6 +64,15 @@ class SongTile extends ConsumerWidget {
   /// remove. Nothing is added when null.
   final Widget? trailingAccessory;
 
+  /// Shown as the third line instead of "album • year"; null keeps it.
+  final String? detail;
+
+  /// Drawn at the top of the trailing column, above the duration (see
+  /// [SongRowView.badge]). The caller styles it with `labelSmall` (the row
+  /// height fit depends on it), picks a contrast-safe colour on a playing row
+  /// and supplies its own semantics or tooltip.
+  final Widget? badge;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playing = ref.watch(
@@ -78,7 +89,8 @@ class SongTile extends ConsumerWidget {
       child: SongRowView(
         title: song.title,
         artist: song.artist,
-        detail: joinRowDetails([song.album, rowYear(song.year)]),
+        detail: detail ?? joinRowDetails([song.album, rowYear(song.year)]),
+        badge: badge,
         coverPath: coverPath(
           ref.watch(coverCacheDirectoryProvider),
           song.coverKey,

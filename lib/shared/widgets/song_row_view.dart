@@ -28,6 +28,7 @@ class SongRowView extends StatelessWidget {
     this.leading,
     this.trailing,
     this.heart,
+    this.badge,
     this.overlay,
     this.semanticsHint,
     this.horizontalPadding = 32,
@@ -60,6 +61,13 @@ class SongRowView extends StatelessWidget {
   /// Put under the duration, e.g. a `FavoriteButton`.
   final Widget? heart;
 
+  /// Drawn at the top of the trailing column, above the duration, e.g. a
+  /// listen count. The caller styles it with `labelSmall`: the column fits the
+  /// row height only with that size. On a playing row the caller must pick a
+  /// colour that contrasts with the `primaryContainer` fill (e.g.
+  /// `onPrimaryContainer`), and it supplies its own semantics or tooltip.
+  final Widget? badge;
+
   /// Painted over the row without taking room (a marker on its edge).
   final Widget? overlay;
 
@@ -90,6 +98,7 @@ class SongRowView extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        ?badge,
         if (duration != null)
           Text(formatDuration(duration), style: styles.detail),
         ?heart,
