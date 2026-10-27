@@ -1555,7 +1555,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyYesterday => 'Yesterday';
 
   @override
-  String historyDayPlayCount(int count) {
+  String historyListenCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1582,7 +1582,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyDeletePlay => 'Remove from history';
 
   @override
-  String get historyPlayDeleted => 'Removed one listen from history';
+  String historyPlaysDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Removed $count listens from history',
+      one: 'Removed one listen from history',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get historyUndo => 'Undo';

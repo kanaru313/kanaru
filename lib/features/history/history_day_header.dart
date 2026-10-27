@@ -46,7 +46,7 @@ class HistoryDayHeader extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              l10n.historyDayPlayCount(count),
+              l10n.historyListenCount(count),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

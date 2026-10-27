@@ -463,8 +463,8 @@
   "@historyYesterday": {
     "description": "Header of the History day that is yesterday"
   },
-  "historyDayPlayCount": "{count, plural, other{{count} lượt nghe}}",
-  "@historyDayPlayCount": {
+  "historyListenCount": "{count, plural, other{{count} lượt nghe}}",
+  "@historyListenCount": {
     "description": "How many plays a History day holds",
     "placeholders": {
       "count": {
@@ -498,9 +498,14 @@
   "@historyDeletePlay": {
     "description": "Menu item that removes one play from the History"
   },
-  "historyPlayDeleted": "Đã xoá một lượt nghe",
-  "@historyPlayDeleted": {
-    "description": "Snackbar after one play was removed from the History"
+  "historyPlaysDeleted": "{count, plural, =1{Đã xoá một lượt nghe} other{Đã xoá {count} lượt nghe}}",
+  "@historyPlaysDeleted": {
+    "description": "Snackbar after plays were removed from the History",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyUndo": "Hoàn tác",
   "@historyUndo": {

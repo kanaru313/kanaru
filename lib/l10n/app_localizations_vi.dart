@@ -1502,7 +1502,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyYesterday => 'Hôm qua';
 
   @override
-  String historyDayPlayCount(int count) {
+  String historyListenCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1528,7 +1528,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyDeletePlay => 'Xoá khỏi lịch sử';
 
   @override
-  String get historyPlayDeleted => 'Đã xoá một lượt nghe';
+  String historyPlaysDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count lượt nghe',
+      one: 'Đã xoá một lượt nghe',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get historyUndo => 'Hoàn tác';

@@ -225,6 +225,97 @@ void main() {
     });
   });
 
+  group('distinct songs and totals', () {
+    Future<void> trackWithCover(String path, String? cover) async {
+      if ((await db.select(db.libraryRoots).get()).isEmpty) {
+        await db.addRoots(['/m'], now: 1);
+      }
+      await db
+          .into(db.tracks)
+          .insert(
+            TracksCompanion.insert(
+              rootId: (await db.select(db.libraryRoots).getSingle()).id,
+              path: path,
+              mtimeMs: 1,
+              sizeBytes: 1,
+              title: 'T $path',
+              artist: const Value('A'),
+              coverKey: Value(cover),
+              addedAt: 1,
+              updatedAt: 1,
+            ),
+          );
+    }
+
+    test('a day with A, B, A has 3 plays and 2 songs', () async {
+      await play('/a', 10);
+      await play('/b', 20);
+      await play('/a', 30);
+      await play('/a', 1000 + 5);
+      final counts = await db.historyDayCounts([0, 1000, 2000]);
+      expect(counts.map((c) => (c.dayStart, c.count, c.tracks)), [
+        (1000, 1, 1),
+        (0, 3, 2),
+      ]);
+    });
+
+    test('uneven days keep distinct right', () async {
+      await play('/a', 23 * _hour - 1);
+      await play('/b', 23 * _hour);
+      await play('/b', 24 * _hour);
+      final counts = await db.historyDayCounts([0, 23 * _hour, 48 * _hour]);
+      expect(counts.map((c) => (c.count, c.tracks)), [(2, 1), (1, 1)]);
+    });
+
+    test('range summary counts plays and songs in a half-open range', () async {
+      await play('/a', 10);
+      await play('/a', 20);
+      await play('/b', 30);
+      await play('/c', 40);
+      expect(await db.historyRangeSummary(10, 40), (plays: 3, tracks: 2));
+      expect(await db.historyRangeSummary(100, 200), (plays: 0, tracks: 0));
+    });
+
+    test(
+      'overview: totals, first play, distinct covers newest first',
+      () async {
+        await trackWithCover('/a', 'k1');
+        await trackWithCover('/b', 'k2');
+        await trackWithCover('/c', null);
+        await trackWithCover('/d', 'k1');
+        await play('/a', 10);
+        await play('/b', 20);
+        await play('/c', 30);
+        await play('/d', 40);
+        await play('/b', 50);
+        await play('/gone', 60); // not in the library: no cover
+        final o = await db.historyOverview();
+        expect(o.plays, 6);
+        expect(o.tracks, 5);
+        expect(o.firstPlayedAt, 10);
+        expect(o.coverKeys, ['k2', 'k1']);
+      },
+    );
+
+    test('overview of an empty history', () async {
+      final o = await db.historyOverview();
+      expect((o.plays, o.tracks, o.firstPlayedAt), (0, 0, null));
+      expect(o.coverKeys, isEmpty);
+    });
+
+    test('played tracks: library songs only, last played first', () async {
+      await trackWithCover('/a', null);
+      await trackWithCover('/b', null);
+      await trackWithCover('/never', null);
+      await play('/a', 10);
+      await play('/b', 20);
+      await play('/a', 30);
+      await play('/gone', 40);
+      final list = await db.historyPlayedTracks();
+      expect(list.map((t) => t.path), ['/a', '/b']);
+    });
+  });
+
   group('query plans', () {
     // SQLite prints aliases, not table names, so each query lists the names
     // it gives `plays`. No full scan of those; every search uses a plays_*
@@ -258,6 +349,8 @@ void main() {
       'day counts, day plays, top range and track plays use indexes',
       () async {
         await expectIndexed(historyBucketSql, ['[0,1000,2000]'], {'plays'});
+        await expectIndexed(historyDayBucketSql, ['[0,1000,2000]'], {'plays'});
+        await expectIndexed(historyRangeSummarySql, [0, 100], {'plays'});
         await expectIndexed(historyDayPlaysSql, [0, 100], {'p', 'q'});
         await expectIndexed(historyTopRangeSql, [0, 100, 5], {'plays'});
         await expectIndexed(
@@ -268,6 +361,20 @@ void main() {
         );
       },
     );
+
+    test('cover keys walk the played_at index, bounded, no sort', () async {
+      final plan = await db
+          .customSelect(
+            'EXPLAIN QUERY PLAN $historyCoverKeysSql',
+            variables: [Variable.withInt(1000)],
+          )
+          .get();
+      final details = [for (final r in plan) r.read<String>('detail')];
+      final text = details.join('\n');
+      expect(text, contains('INDEX plays_played_at'), reason: text);
+      expect(text, isNot(contains('TEMP B-TREE')), reason: text);
+      expect(text, contains('SEARCH t'), reason: text);
+    });
 
     test('all-time top scans only play_stats', () async {
       final plan = await db

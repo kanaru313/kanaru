@@ -939,8 +939,8 @@
   "@historyYesterday": {
     "description": "Header of the History day that is yesterday"
   },
-  "historyDayPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
-  "@historyDayPlayCount": {
+  "historyListenCount": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyListenCount": {
     "description": "How many plays a History day holds",
     "placeholders": {
       "count": {
@@ -974,9 +974,14 @@
   "@historyDeletePlay": {
     "description": "Menu item that removes one play from the History"
   },
-  "historyPlayDeleted": "Removed one listen from history",
-  "@historyPlayDeleted": {
-    "description": "Snackbar after one play was removed from the History"
+  "historyPlaysDeleted": "{count, plural, =1{Removed one listen from history} other{Removed {count} listens from history}}",
+  "@historyPlaysDeleted": {
+    "description": "Snackbar after plays were removed from the History",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyUndo": "Undo",
   "@historyUndo": {

@@ -8,6 +8,7 @@ HistoryDayCount _day(int year, int month, int day, [int count = 1]) =>
     HistoryDayCount(
       dayStart: DateTime(year, month, day).millisecondsSinceEpoch,
       count: count,
+      tracks: 1,
     );
 
 Finder _cell(int day) => find.byKey(ValueKey('history-calendar-day-$day'));

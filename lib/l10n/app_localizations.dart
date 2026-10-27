@@ -2424,7 +2424,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
-  String historyDayPlayCount(int count);
+  String historyListenCount(int count);
 
   /// Badge on a History row: this is the Nth time the song was played
   ///
@@ -2450,11 +2450,11 @@ abstract class AppLocalizations {
   /// **'Remove from history'**
   String get historyDeletePlay;
 
-  /// Snackbar after one play was removed from the History
+  /// Snackbar after plays were removed from the History
   ///
   /// In en, this message translates to:
-  /// **'Removed one listen from history'**
-  String get historyPlayDeleted;
+  /// **'{count, plural, =1{Removed one listen from history} other{Removed {count} listens from history}}'**
+  String historyPlaysDeleted(int count);
 
   /// Snackbar action that puts a removed play back
   ///

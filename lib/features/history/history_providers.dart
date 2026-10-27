@@ -8,6 +8,7 @@ import 'history_days.dart';
 import 'history_error_log.dart';
 import 'history_plays_version.dart';
 import 'history_range.dart' show historyTopLimit;
+import 'history_tracks_version.dart';
 
 /// Reads are not retried by Riverpod's default back-off: a failed read shows
 /// the error, and the next change to the plays reads again.
@@ -44,6 +45,45 @@ final historyDayCountsProvider = FutureProvider.autoDispose
         rethrow;
       }
     }, retry: _noRetry);
+
+/// Plays and distinct songs in `[start, end)` (a year of the History toolbar,
+/// the window of Most played).
+final historyRangeSummaryProvider = FutureProvider.autoDispose
+    .family<HistoryRangeSummary, ({int start, int end})>((ref, range) async {
+      final db = ref.watch(libraryDatabaseProvider);
+      ref.watch(historyPlaysVersionProvider);
+      if (db == null) return (plays: 0, tracks: 0);
+      try {
+        return await db.historyRangeSummary(range.start, range.end);
+      } on Object catch (error) {
+        logHistoryError('Reading the history range totals failed', error);
+        rethrow;
+      }
+    }, retry: _noRetry);
+
+/// Totals, first play and collage covers of the whole history. Cover keys come
+/// from `tracks`, so a scan reads it again too.
+final historyOverviewProvider = FutureProvider.autoDispose<HistoryOverview>((
+  ref,
+) async {
+  final db = ref.watch(libraryDatabaseProvider);
+  ref.watch(historyPlaysVersionProvider);
+  ref.watch(historyTracksVersionProvider);
+  if (db == null) {
+    return const HistoryOverview(
+      plays: 0,
+      tracks: 0,
+      firstPlayedAt: null,
+      coverKeys: [],
+    );
+  }
+  try {
+    return await db.historyOverview();
+  } on Object catch (error) {
+    logHistoryError('Reading the history overview failed', error);
+    rethrow;
+  }
+}, retry: _noRetry);
 
 /// First and last play, or null when there are none: the bounds of the range
 /// picker, and what tells a range that takes in every play.

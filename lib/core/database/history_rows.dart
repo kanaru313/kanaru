@@ -1,12 +1,44 @@
 import 'library_rows.dart';
 
-/// Plays counted in one time bucket (a local day or year); [dayStart] is the
-/// bucket's inclusive start, epoch ms, as the caller passed it.
+/// Plays counted in one local day; [dayStart] is the bucket's inclusive
+/// start, epoch ms, as the caller passed it.
 class HistoryDayCount {
-  const HistoryDayCount({required this.dayStart, required this.count});
+  const HistoryDayCount({
+    required this.dayStart,
+    required this.count,
+    required this.tracks,
+  });
 
   final int dayStart;
   final int count;
+
+  /// Distinct songs played that day (a song played twice counts once).
+  final int tracks;
+}
+
+/// Plays and distinct songs inside one time range.
+typedef HistoryRangeSummary = ({int plays, int tracks});
+
+/// What the History page shows about the whole history.
+class HistoryOverview {
+  const HistoryOverview({
+    required this.plays,
+    required this.tracks,
+    required this.firstPlayedAt,
+    required this.coverKeys,
+  });
+
+  /// Every play kept.
+  final int plays;
+
+  /// Distinct songs with at least one play.
+  final int tracks;
+
+  /// Earliest play, epoch ms; null when there is no play.
+  final int? firstPlayedAt;
+
+  /// Distinct cover keys of the latest plays, newest first, at most 4.
+  final List<String> coverKeys;
 }
 
 /// One play in the journal or on a track's history page.

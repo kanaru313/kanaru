@@ -128,4 +128,65 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(kinds, containsAll([UpdateKind.delete, UpdateKind.insert]));
   });
+
+  group('several plays', () {
+    test('delete by ids returns the rows newest first; stats follow', () async {
+      final a1 = await play('/a', 10);
+      final b = await play('/b', 20);
+      final a2 = await play('/a', 30, listened: 7);
+      await play('/c', 40);
+      final old = await db.deletePlaysByIds([a1, b, a2, 9999]);
+      expect(old.map((p) => p.id), [a2, b, a1]);
+      expect(old.first.listenedMs, 7);
+      expect(await playCount(), 1);
+      await expectStatsMatchPlays();
+    });
+
+    test(
+      'restore puts every row back with its id; stats equal before',
+      () async {
+        final ids = [
+          await play('/a', 10),
+          await play('/b', 20, listened: 3),
+          await play('/a', 30),
+        ];
+        final old = await db.deletePlaysByIds(ids);
+        expect(await playCount(), 0);
+        expect(await db.restorePlays(old), 3);
+        expect(
+          (await db.select(db.plays).get()).map((p) => p.id).toSet(),
+          ids.toSet(),
+        );
+        await expectStatsMatchPlays();
+      },
+    );
+
+    test('restore skips ids that exist (a second Undo)', () async {
+      final ids = [await play('/a', 10), await play('/a', 20)];
+      final old = await db.deletePlaysByIds(ids);
+      expect(await db.restorePlays(old), 2);
+      expect(await db.restorePlays(old), 0);
+      expect(await playCount(), 2);
+      await expectStatsMatchPlays();
+    });
+
+    test('more ids than SQLite variables allow', () async {
+      final ids = <int>[];
+      await db.batch((b) {
+        for (var i = 0; i < 1200; i++) {
+          b.insert(
+            db.plays,
+            PlaysCompanion.insert(path: '/p${i % 7}', playedAt: i),
+          );
+        }
+      });
+      ids.addAll((await db.select(db.plays).get()).map((p) => p.id));
+      final old = await db.deletePlaysByIds(ids);
+      expect(old, hasLength(1200));
+      expect(old.first.playedAt, 1199);
+      expect(await playCount(), 0);
+      expect(await db.restorePlays(old), 1200);
+      await expectStatsMatchPlays();
+    });
+  });
 }

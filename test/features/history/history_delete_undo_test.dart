@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/features/history/history_delete_undo.dart';
+import 'package:kanaru/features/history/history_plays_version.dart';
+import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/features/history/history_play_tile.dart';
 import 'package:kanaru/features/history/history_screen.dart';
 import 'package:logging/logging.dart';
@@ -9,6 +13,7 @@ import '../playlists/playlist_test_data.dart' show breakWrites;
 import 'history_test_harness.dart';
 
 const _removed = 'Removed one listen from history';
+const _removedTwo = 'Removed 2 listens from history';
 
 DateTime _at(int hour) => DateTime(2026, 10, 23, hour);
 
@@ -118,7 +123,7 @@ void main() {
     expect(find.text(_removed), findsNothing);
   });
 
-  testWidgets('a second removal replaces the snackbar; Undo is for it', (
+  testWidgets('a second removal replaces the snackbar; Undo restores both', (
     tester,
   ) async {
     await open(tester);
@@ -128,11 +133,40 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Undo'), findsOneWidget);
+    expect(find.text(_removedTwo), findsOneWidget);
     await _pressUndo(tester);
 
     expect(find.text('C'), findsOneWidget);
-    expect(find.text('B'), findsNothing);
-    expect(await _ids(tester, h), ids.toSet()..remove(ids[1]));
+    expect(find.text('B'), findsOneWidget);
+    expect(await _ids(tester, h), ids.toSet());
+    await _expectStatsMatch(tester, h);
+  });
+
+  testWidgets('removing several plays at once shows the count; Undo restores '
+      'them all', (tester) async {
+    await open(tester);
+    final element = tester.element(find.byType(HistoryScreen));
+    final container = ProviderScope.containerOf(element);
+    await tester.runAsync(
+      () => container
+          .read(historyDeleteUndoProvider)
+          .deleteMany(
+            db: h.db,
+            messenger: ScaffoldMessenger.of(element),
+            l10n: element.l10n,
+            version: container.read(historyPlaysVersionProvider.notifier),
+            playIds: [ids[0], ids[1], ids[3]],
+          ),
+    );
+    await tester.pumpAndSettle();
+    await settleHistory(tester);
+
+    expect(find.text('Removed 3 listens from history'), findsOneWidget);
+    expect(await _ids(tester, h), {ids[2]});
+
+    await _pressUndo(tester);
+
+    expect(await _ids(tester, h), ids.toSet());
     await _expectStatsMatch(tester, h);
   });
 
@@ -154,11 +188,45 @@ void main() {
     await _remove(tester, 'B');
     await tester.pumpAndSettle();
 
-    // One Undo, and it is for the latest removal.
+    // One Undo, and it restores both removals.
     expect(find.text('Undo'), findsOneWidget);
+    expect(find.text(_removedTwo), findsOneWidget);
     await _pressUndo(tester);
-    expect(find.text('B'), findsOneWidget);
-    expect(await _ids(tester, h), {ids[1], ids[2]});
+    expect(await _ids(tester, h), ids.toSet());
+    await _expectStatsMatch(tester, h);
+  });
+
+  testWidgets('a removal while the snackbar leaves after Undo starts afresh', (
+    tester,
+  ) async {
+    await open(tester);
+    await _remove(tester, 'B');
+
+    // Undo restores B; the snackbar is still animating out when C goes.
+    await tester.tap(find.text('Undo'));
+    await tester.pump(const Duration(milliseconds: 50));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HistoryScreen)),
+    );
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(HistoryScreen)),
+    );
+    final cPlay = ids.last;
+    await tester.runAsync(
+      () => container
+          .read(historyDeleteUndoProvider)
+          .deleteMany(
+            db: h.db,
+            messenger: _messenger(tester),
+            l10n: l10n,
+            version: container.read(historyPlaysVersionProvider.notifier),
+            playIds: [cPlay],
+          ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(_removed), findsOneWidget);
+    expect(find.text(_removedTwo), findsNothing);
   });
 
   testWidgets('another message on screen is never closed', (tester) async {
@@ -183,11 +251,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Scan finished'), findsNothing);
-    // One Undo, for the latest removal only.
+    // One Undo for both removals, and the title counts both.
     expect(find.text('Undo'), findsOneWidget);
+    expect(find.text(_removedTwo), findsOneWidget);
     await _pressUndo(tester);
     expect(find.text('C'), findsOneWidget);
-    expect(find.text('B'), findsNothing);
+    expect(find.text('B'), findsOneWidget);
   });
 
   testWidgets('Undo still works after the page is left', (tester) async {

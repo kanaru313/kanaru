@@ -3,7 +3,7 @@ import 'package:kanaru/core/database/history_rows.dart';
 import 'package:kanaru/features/history/history_timeline_index.dart';
 
 HistoryDayCount _day(int start, int count) =>
-    HistoryDayCount(dayStart: start, count: count);
+    HistoryDayCount(dayStart: start, count: count, tracks: 1);
 
 void main() {
   test('no days is an empty list', () {
