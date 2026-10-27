@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/history_rows.dart';
+import 'package:kanaru/features/history/history_line_metrics.dart';
 import 'package:kanaru/features/history/history_timeline_index.dart';
 
 HistoryDayCount _day(int start, int count) =>
@@ -93,19 +94,36 @@ void main() {
   });
 
   group('bar offsets', () {
-    // Lines are 100 tall, bars 40: a bar sits 60 below the top of its line.
-    const extent = 100.0;
-    const bar = 40.0;
+    // Rows are 100 tall, header lines 70: a 40 bar with 20 above and 10
+    // below it.
+    const m = HistoryLineMetrics(line: 100, bar: 40, topGap: 20, bottomGap: 10);
     final index = HistoryTimelineIndex([
       _day(300, 3), // lines 0-3
       _day(200, 1), // lines 4-5
       _day(100, 2), // lines 6-8
     ]);
 
+    test('header lines are told from song lines', () {
+      expect(
+        [for (var i = 0; i < 9; i++) index.isHeader(i)],
+        [
+          true, false, false, false, //
+          true, false, //
+          true, false, false,
+        ],
+      );
+    });
+
+    test('a header line starts after the shorter lines before it', () {
+      expect(index.headerOffsetOfDay(0, m), 0);
+      expect(index.headerOffsetOfDay(1, m), 70 + 300);
+      expect(index.headerOffsetOfDay(2, m), 70 + 300 + 70 + 100);
+    });
+
     test('the bar of a day starts below the gap of its header line', () {
-      expect(index.barOffsetOfDay(0, extent, bar), 60);
-      expect(index.barOffsetOfDay(1, extent, bar), 460);
-      expect(index.barOffsetOfDay(2, extent, bar), 660);
+      expect(index.barOffsetOfDay(0, m), 20);
+      expect(index.barOffsetOfDay(1, m), 390);
+      expect(index.barOffsetOfDay(2, m), 560);
     });
 
     test('dayIndexOfStart finds a day and misses others', () {
@@ -114,30 +132,30 @@ void main() {
     });
 
     test('nothing is pinned while the first bar is still in the list', () {
-      expect(index.stickyAt(0, extent, bar), isNull);
-      expect(index.stickyAt(59.9, extent, bar), isNull);
+      expect(index.stickyAt(0, m), isNull);
+      expect(index.stickyAt(19.9, m), isNull);
     });
 
     test('inside a day its bar is pinned in place', () {
-      expect(index.stickyAt(60, extent, bar), (day: 0, dy: 0.0));
-      expect(index.stickyAt(300, extent, bar), (day: 0, dy: 0.0));
-      expect(index.stickyAt(420, extent, bar), (day: 0, dy: 0.0));
+      expect(index.stickyAt(20, m), (day: 0, dy: 0.0));
+      expect(index.stickyAt(300, m), (day: 0, dy: 0.0));
+      expect(index.stickyAt(350, m), (day: 0, dy: 0.0));
     });
 
     test('the next bar pushes the pinned one up as it arrives', () {
-      // Next bar at 460 reaches the pinned bar's bottom (offset + 40) at 421.
-      expect(index.stickyAt(430, extent, bar), (day: 0, dy: -10.0));
-      expect(index.stickyAt(459, extent, bar), (day: 0, dy: -39.0));
-      expect(index.stickyAt(460, extent, bar), (day: 1, dy: 0.0));
+      // Next bar at 390 reaches the pinned bar's bottom (offset + 40) at 350.
+      expect(index.stickyAt(360, m), (day: 0, dy: -10.0));
+      expect(index.stickyAt(389, m), (day: 0, dy: -39.0));
+      expect(index.stickyAt(390, m), (day: 1, dy: 0.0));
     });
 
     test('the last day is never pushed', () {
-      expect(index.stickyAt(660, extent, bar), (day: 2, dy: 0.0));
-      expect(index.stickyAt(5000, extent, bar), (day: 2, dy: 0.0));
+      expect(index.stickyAt(560, m), (day: 2, dy: 0.0));
+      expect(index.stickyAt(5000, m), (day: 2, dy: 0.0));
     });
 
     test('an empty list pins nothing', () {
-      expect(HistoryTimelineIndex(const []).stickyAt(10, extent, bar), isNull);
+      expect(HistoryTimelineIndex(const []).stickyAt(10, m), isNull);
     });
   });
 }

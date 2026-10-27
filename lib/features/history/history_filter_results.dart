@@ -8,8 +8,8 @@ import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/in_page_no_match.dart';
+import '../../shared/widgets/song_card.dart';
 import 'history_day_queue.dart';
-import 'history_line_metrics.dart';
 import 'history_play_menu_actions.dart';
 import 'history_play_row_tile.dart';
 import 'history_providers.dart';
@@ -82,7 +82,7 @@ class _HistoryFilterResultsState extends ConsumerState<HistoryFilterResults>
     if (shown == null) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final extent = historyLineExtent(theme, MediaQuery.textScalerOf(context));
+    final extent = songCardExtent(theme, MediaQuery.textScalerOf(context));
     final rows = shown.rows;
     final Widget body;
     if (rows.isEmpty) {

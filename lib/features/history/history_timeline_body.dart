@@ -68,10 +68,9 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
   List<HistoryDayCount>? _held;
   Object? _lastCounts;
 
-  /// Height of a line and of a day bar, read from the theme and text scale on
-  /// every build; the jump and the scrolled-away test use them between builds.
-  double _extent = 88;
-  double _bar = 48;
+  /// Line sizes, read from the theme and text scale on every build; the jump
+  /// and the scrolled-away test use them between builds.
+  HistoryLineMetrics? _metrics;
 
   @override
   void initState() {
@@ -126,7 +125,7 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
   }
 
   bool get _scrolledAway =>
-      _controller.hasClients && _controller.offset > _extent;
+      _controller.hasClients && _controller.offset > (_metrics?.line ?? 88);
 
   /// Takes a read of the days: now, or held back when it only adds plays and
   /// the reader is scrolled away from the top.
@@ -162,13 +161,14 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
 
   void _jumpTo(DateTime day) {
     final index = _index;
-    if (index == null || !_controller.hasClients) return;
+    final m = _metrics;
+    if (index == null || m == null || !_controller.hasClients) return;
     final d = index.dayIndexOfStart(localDay(day).millisecondsSinceEpoch);
     if (d < 0) return;
     // A day near the end cannot reach the top: the list stops at its end.
     _controller.jumpTo(
       math.min(
-        index.barOffsetOfDay(d, _extent, _bar) - historyTopGap(_extent, _bar),
+        index.headerOffsetOfDay(d, m),
         _controller.position.maxScrollExtent,
       ),
     );
@@ -196,8 +196,7 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
     }
     final theme = Theme.of(context);
     final scaler = MediaQuery.textScalerOf(context);
-    _extent = historyLineExtent(theme, scaler);
-    _bar = historyDayBarHeight(theme, scaler);
+    _metrics = HistoryLineMetrics.of(theme, scaler);
     return HistoryTimelineView(
       controller: _controller,
       index: index,

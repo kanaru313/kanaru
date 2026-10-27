@@ -12,13 +12,13 @@ import 'history_timeline_index.dart';
 /// Key of the pinned day bar, for tests.
 const historyStickyHeaderKey = ValueKey('history-sticky-header');
 
-/// The timeline: one fixed-extent list of day header lines and plays, with
+/// The timeline: one list of day header lines and plays, with
 /// the bar of the day at the top drawn over it as the pinned bar.
 ///
-/// Every line is one song row tall ([historyLineExtent]). A header line is a
-/// gap with the day's bar at its bottom; the list starts above the view by
-/// that gap ([historyTopGap]), so it is not seen over the first bar. The
-/// pinned bar is not part of the
+/// Every line is one song row tall ([HistoryLineMetrics.line]) except the
+/// header lines, which are the bar plus a gap above and below it. The list
+/// starts above the view by the top gap, so it is not seen over the first
+/// bar. The pinned bar is not part of the
 /// scrolling: it reads the scroll offset, finds the last bar that has reached
 /// the top (`stickyAt`) and draws that day, pushed up by the next bar as it
 /// arrives. What it covers is not hit (it is opaque, so a tap does not reach
@@ -65,7 +65,7 @@ class HistoryTimelineView extends StatelessWidget {
     );
   }
 
-  Widget _item(BuildContext context, int i, double bar) {
+  Widget _item(BuildContext context, int i, HistoryLineMetrics m) {
     if (index.isFooter(i)) {
       return Align(
         alignment: Alignment.centerLeft,
@@ -80,7 +80,10 @@ class HistoryTimelineView extends StatelessWidget {
     }
     final (:day, :row) = index.itemAt(i);
     if (row < 0) {
-      return Align(alignment: Alignment.bottomCenter, child: _bar(day, bar));
+      return Padding(
+        padding: EdgeInsets.only(top: m.topGap, bottom: m.bottomGap),
+        child: _bar(day, m.bar),
+      );
     }
     final dayStart = index.days[day].dayStart;
     final rows = rowsOf(dayStart);
@@ -113,9 +116,8 @@ class HistoryTimelineView extends StatelessWidget {
     if (count == 0) return const SizedBox.shrink();
     final theme = Theme.of(context);
     final scaler = MediaQuery.textScalerOf(context);
-    final extent = historyLineExtent(theme, scaler);
-    final bar = historyDayBarHeight(theme, scaler);
-    final gap = historyTopGap(extent, bar);
+    final m = HistoryLineMetrics.of(theme, scaler);
+    final gap = m.topGap;
     return Stack(
       children: [
         // Starts [gap] above the view, clipped by the stack: the first header
@@ -128,16 +130,16 @@ class HistoryTimelineView extends StatelessWidget {
           bottom: 0,
           child: ListView.builder(
             controller: controller,
-            itemExtent: extent,
+            itemExtentBuilder: (i, _) => index.isHeader(i) ? m.header : m.line,
             itemCount: count,
-            itemBuilder: (context, i) => _item(context, i, bar),
+            itemBuilder: (context, i) => _item(context, i, m),
           ),
         ),
         Positioned(
           top: 0,
           left: 0,
           right: 0,
-          height: bar,
+          height: m.bar,
           child: ClipRect(
             key: historyStickyHeaderKey,
             child: Listener(
@@ -161,11 +163,11 @@ class HistoryTimelineView extends StatelessWidget {
                       // start the first bar is in place, nothing to pin.
                       final sticky = offset <= 0
                           ? null
-                          : index.stickyAt(offset + gap, extent, bar);
+                          : index.stickyAt(offset + gap, m);
                       if (sticky == null) return const SizedBox.shrink();
                       return Transform.translate(
                         offset: Offset(0, sticky.dy),
-                        child: _bar(sticky.day, bar),
+                        child: _bar(sticky.day, m.bar),
                       );
                     },
                   ),

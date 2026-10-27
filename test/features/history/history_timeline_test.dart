@@ -6,6 +6,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_day_header.dart';
 import 'package:kanaru/features/history/history_play_row_tile.dart';
 import 'package:kanaru/features/history/history_timeline_view.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:kanaru/shared/widgets/song_row_view.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -71,6 +72,30 @@ void main() {
         expect(tester.getTopLeft(barBox).dy, listTop);
       },
     );
+
+    historyTestWidgets('a day bar sits 16 px under the card above and 8 px '
+        'over the card below', (tester) async {
+      await openHistory(
+        tester,
+        h,
+        tracks: [song('A'), song('B')],
+        plays: [('A', _at(23, 9)), ('B', _at(22, 10))],
+      );
+
+      // A tile is a card plus half of the card gap above and below it.
+      const half = songCardGap / 2;
+      final tiles = find.byType(HistoryPlayRowTile);
+      final aTile = tiles.at(0);
+      final bTile = tiles.at(1);
+      final bar = find.ancestor(
+        of: listText('Oct 22, 2026 • 1 song'),
+        matching: find.byType(HistoryDayBar),
+      );
+      final cardAboveBottom = tester.getBottomLeft(aTile).dy - half;
+      final cardBelowTop = tester.getTopLeft(bTile).dy + half;
+      expect(tester.getTopLeft(bar).dy - cardAboveBottom, closeTo(16, 0.01));
+      expect(cardBelowTop - tester.getBottomLeft(bar).dy, closeTo(8, 0.01));
+    });
 
     historyTestWidgets('the menu button is flush right on every day bar', (
       tester,
@@ -341,7 +366,8 @@ void main() {
 
     /// Offset at which the bar of the day whose header is line [line] is at
     /// the top: the list starts a header gap above the view.
-    double barAt(WidgetTester tester, int line) => line * lineExtentOf(tester);
+    double barAt(WidgetTester tester, int line, int headers) =>
+        offsetOfLine(tester, line, headers: headers);
 
     historyTestWidgets('shows the day at the top while its rows scroll', (
       tester,
@@ -366,7 +392,7 @@ void main() {
     historyTestWidgets('the next bar pushes the pinned one up', (tester) async {
       await openHistory(tester, h, tracks: tracks, plays: plays);
       final bar = barHeightOf(tester);
-      final next = barAt(tester, 13);
+      final next = barAt(tester, 13, 1);
 
       // Half a bar before the next one arrives.
       await scrollTimelineTo(tester, next - bar / 2);
@@ -394,6 +420,26 @@ void main() {
       expect(
         tester.getTopLeft(stickyText(yesterday)).dy - listTop,
         lessThan(bar),
+      );
+    });
+
+    historyTestWidgets('the pinned bar changes day when the next bar reaches '
+        'the top', (tester) async {
+      await openHistory(tester, h, tracks: tracks, plays: plays);
+      final next = barAt(tester, 13, 1);
+
+      await scrollTimelineTo(tester, next - 1);
+      expect(stickyText(today), findsOneWidget);
+      expect(stickyText(yesterday), findsNothing);
+
+      await scrollTimelineTo(tester, next);
+      expect(stickyText(yesterday), findsOneWidget);
+      expect(stickyText(today), findsNothing);
+      // The pinned bar is at the top of the timeline, flush.
+      final listTop = tester.getTopLeft(find.byType(HistoryTimelineView)).dy;
+      expect(
+        tester.getTopLeft(stickyText(yesterday)).dy - listTop,
+        lessThan(barHeightOf(tester)),
       );
     });
 

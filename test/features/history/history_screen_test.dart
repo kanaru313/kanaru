@@ -292,8 +292,9 @@ void main() {
 
       expect(find.byType(Dialog), findsNothing);
       // The list starts a header gap above the view, so the view's top is
-      // the bar at the bottom of line 6 when the list is at line 6.
-      final bar = 6 * lineExtentOf(tester);
+      // the bar when the list is at the top of line 6 (three headers
+      // before it).
+      final bar = offsetOfLine(tester, 6, headers: 3);
       expect(
         timelineScrollable(tester).position.maxScrollExtent,
         greaterThan(bar),
@@ -315,7 +316,7 @@ void main() {
 
       final position = timelineScrollable(tester).position;
       expect(
-        20 * lineExtentOf(tester) + lineExtentOf(tester) - barHeightOf(tester),
+        offsetOfLine(tester, 20, headers: 10),
         greaterThan(position.maxScrollExtent),
       );
       expect(position.pixels, position.maxScrollExtent);

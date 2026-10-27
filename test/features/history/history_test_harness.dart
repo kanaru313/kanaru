@@ -129,20 +129,26 @@ Future<void> scrollTimelineTo(WidgetTester tester, double offset) async {
   await settleHistory(tester);
 }
 
-/// Pixels of one line of the timeline (a song row), at the open page's theme
-/// and text scale.
-double lineExtentOf(WidgetTester tester) {
+/// Sizes of the timeline's lines at the open page's theme and text scale.
+HistoryLineMetrics lineMetricsOf(WidgetTester tester) {
   final context = tester.element(find.byType(HistoryTimelineView));
-  return historyLineExtent(Theme.of(context), MediaQuery.textScalerOf(context));
-}
-
-/// Pixels of a day bar, the bottom of its header line.
-double barHeightOf(WidgetTester tester) {
-  final context = tester.element(find.byType(HistoryTimelineView));
-  return historyDayBarHeight(
+  return HistoryLineMetrics.of(
     Theme.of(context),
     MediaQuery.textScalerOf(context),
   );
+}
+
+/// Pixels of one song row line of the timeline.
+double lineExtentOf(WidgetTester tester) => lineMetricsOf(tester).line;
+
+/// Pixels of a day bar.
+double barHeightOf(WidgetTester tester) => lineMetricsOf(tester).bar;
+
+/// Scroll offset of the top of line [line] when [headers] header lines (a
+/// header is shorter than a row) are among the lines before it.
+double offsetOfLine(WidgetTester tester, int line, {required int headers}) {
+  final m = lineMetricsOf(tester);
+  return (line - headers) * m.line + headers * m.header;
 }
 
 /// [finder] among the lines of the list, not the sticky header drawn over it.
