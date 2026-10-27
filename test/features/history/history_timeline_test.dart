@@ -73,6 +73,32 @@ void main() {
       },
     );
 
+    historyTestWidgets('the menu button is flush right on every day bar', (
+      tester,
+    ) async {
+      await openHistory(
+        tester,
+        h,
+        tracks: [song('A'), song('B'), song('C')],
+        plays: [('A', _at(23, 8)), ('B', _at(23, 10)), ('C', _at(5, 8, 15, 9))],
+      );
+
+      // Two bars whose labels differ in length.
+      final bars = find.byType(HistoryDayBar);
+      expect(bars, findsNWidgets(2));
+      final buttons = [
+        for (var i = 0; i < 2; i++)
+          find.descendant(of: bars.at(i), matching: find.byType(IconButton)),
+      ];
+      expect(listText('Oct 23, 2026 • 2 songs'), findsOneWidget);
+      expect(listText('Sep 5, 2026 • 1 song'), findsOneWidget);
+      final right0 = tester.getTopRight(buttons[0]).dx;
+      final right1 = tester.getTopRight(buttons[1]).dx;
+      expect(right0, right1);
+      // The bar's right padding is 16.
+      expect(tester.getTopRight(bars.at(0)).dx - right0, 16);
+    });
+
     historyTestWidgets('a row has the Nth listen badge and the time', (
       tester,
     ) async {

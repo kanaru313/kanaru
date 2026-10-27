@@ -42,7 +42,7 @@ class HistoryDayBar extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(32, 0, 16, 0),
           child: Row(
             children: [
-              Flexible(
+              Expanded(
                 child: Text.rich(
                   TextSpan(
                     children: [
@@ -64,7 +64,6 @@ class HistoryDayBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
               Builder(
                 // The tooltip stays short; the label says which day it is for.
                 builder: (context) => Semantics(
