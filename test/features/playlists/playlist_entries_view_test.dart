@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -136,21 +137,26 @@ void main() {
       expect(play.onPressed, isNull);
     });
 
-    testWidgets('the playlist menu has its own icon beside the queue menu', (
+    testWidgets('one more button holds the playlist and queue actions', (
       tester,
     ) async {
       await view.pump(tester, [available(1)], onQueueAction: (_) {});
 
       expect(find.byIcon(Icons.more_vert), findsOneWidget);
       expect(find.byTooltip('Playlist actions'), findsOneWidget);
+      expect(find.byIcon(AppIcons.edit), findsNothing);
     });
 
-    testWidgets('the queue button is hidden when nothing can play', (
+    testWidgets('the menu keeps Rename and Delete when nothing can play', (
       tester,
     ) async {
       await view.pump(tester, [missing(1)], onQueueAction: (_) {});
 
-      expect(find.byIcon(Icons.more_vert), findsNothing);
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+      expect(find.text('Rename'), findsOneWidget);
+      expect(find.text('Add to queue'), findsNothing);
     });
 
     testWidgets('the queue menu reports the action picked', (tester) async {

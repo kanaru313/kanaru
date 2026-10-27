@@ -3,17 +3,16 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/playlist_rows.dart';
 import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
+import 'playlist_actions_menu.dart';
 import 'playlist_display_name.dart';
 
-enum _PlaylistAction { rename, delete, exportAbsolute, exportRelative }
-
-/// Name (bold, two lines at most), song count, then Play / Shuffle / queue
-/// menu and the rename / delete / export menu. Shared by the narrow header
-/// and the side pane of a playlist page. The edit menu holds only the actions
-/// given; with none it is left out.
+/// Name (bold, two lines at most), song count, then Play / Shuffle and one
+/// "more" menu with rename, export, the queue actions and delete
+/// ([PlaylistActionsMenu]). Shared by the narrow header and the side pane of
+/// a playlist page. The menu holds only the actions given; with none it is
+/// left out.
 class PlaylistDetails extends StatelessWidget {
   const PlaylistDetails({
     super.key,
@@ -60,9 +59,12 @@ class PlaylistDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final rename = onRename;
-    final delete = onDelete;
-    final export = onExport;
+    final menu = PlaylistActionsMenu(
+      onQueueAction: onQueueAction,
+      onRename: onRename,
+      onDelete: onDelete,
+      onExport: onExport,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,46 +94,9 @@ class PlaylistDetails extends StatelessWidget {
                 playLabel: l10n.albumsPlay,
                 onPlay: onPlay,
                 onShuffle: onShuffle,
-                onQueueAction: onQueueAction,
+                onQueueAction: null,
+                menu: menu.hasItems ? menu : null,
               ),
-              if (rename != null || delete != null || export != null)
-                PopupMenuButton<_PlaylistAction>(
-                  tooltip: l10n.playlistActions,
-                  // Not the kebab of the queue menu beside it.
-                  icon: const Icon(AppIcons.edit),
-                  onSelected: (action) => switch (action) {
-                    _PlaylistAction.rename => rename?.call(),
-                    _PlaylistAction.delete => delete?.call(),
-                    _PlaylistAction.exportAbsolute => export?.call(
-                      M3uPathStyle.absolute,
-                    ),
-                    _PlaylistAction.exportRelative => export?.call(
-                      M3uPathStyle.relative,
-                    ),
-                  },
-                  itemBuilder: (context) => [
-                    if (rename != null)
-                      PopupMenuItem(
-                        value: _PlaylistAction.rename,
-                        child: Text(l10n.playlistRename),
-                      ),
-                    if (delete != null)
-                      PopupMenuItem(
-                        value: _PlaylistAction.delete,
-                        child: Text(l10n.playlistDelete),
-                      ),
-                    if (export != null) ...[
-                      PopupMenuItem(
-                        value: _PlaylistAction.exportAbsolute,
-                        child: Text(l10n.playlistM3uExportAbsolute),
-                      ),
-                      PopupMenuItem(
-                        value: _PlaylistAction.exportRelative,
-                        child: Text(l10n.playlistM3uExportRelative),
-                      ),
-                    ],
-                  ],
-                ),
             ],
           ),
         ),

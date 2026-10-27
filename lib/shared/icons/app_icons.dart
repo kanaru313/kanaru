@@ -132,6 +132,7 @@ abstract final class AppIcons {
   // Favorites and playlist files.
   static const IconData favoriteRounded = Icons.favorite_rounded;
   static const IconData importPlaylist = Icons.file_open_outlined;
+  static const IconData exportPlaylist = Icons.save_alt_outlined;
   static const IconData saveQueue = Icons.playlist_add_check_rounded;
 
   // Queue history.

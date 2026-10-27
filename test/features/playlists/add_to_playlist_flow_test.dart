@@ -124,7 +124,7 @@ void main() {
       goTo(tester, h, '/playlists/$twice');
       await settleDb(tester);
 
-      await tester.tap(find.byTooltip('Queue actions'));
+      await tester.tap(find.byTooltip('Playlist actions'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Add to playlist…'));
       await tester.pumpAndSettle();

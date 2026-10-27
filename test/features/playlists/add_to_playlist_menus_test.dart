@@ -38,8 +38,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> headerMenu(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Queue actions'));
+  Future<void> headerMenu(
+    WidgetTester tester, {
+    String tooltip = 'Queue actions',
+  }) async {
+    await tester.tap(find.byTooltip(tooltip));
     await tester.pumpAndSettle();
   }
 
@@ -94,7 +97,7 @@ void main() {
       goTo(tester, h, '/playlists/$id');
       await settleDb(tester);
 
-      await headerMenu(tester);
+      await headerMenu(tester, tooltip: 'Playlist actions');
       await expectItem(tester);
       await openMenuOf(tester, find.text('a'));
       await expectItem(tester);

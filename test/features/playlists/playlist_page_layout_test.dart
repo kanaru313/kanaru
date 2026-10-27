@@ -12,7 +12,6 @@ import 'package:kanaru/shared/widgets/detail_page/cover_tint_page_background.dar
 import 'package:kanaru/shared/widgets/detail_page/detail_side_pane.dart';
 import 'package:kanaru/shared/widgets/detail_page/play_shuffle_actions.dart';
 import 'package:kanaru/shared/widgets/detail_page/tracks_toolbar.dart';
-import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart' show TestTrack, goTo, openWithTracks;
@@ -228,7 +227,12 @@ void main() {
 
       expect(_playButton(tester).onPressed, isNull);
       expect(_shuffleButton(tester).onPressed, isNull);
-      expect(find.byType(QueueActionsButton), findsNothing);
+      // Nothing to enqueue: the menu is left with Rename and Delete only.
+      await tester.tap(find.byTooltip('Playlist actions'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rename'), findsOneWidget);
+      expect(find.text('Delete playlist'), findsOneWidget);
+      expect(find.text('Add to queue'), findsNothing);
       expect(find.byIcon(AppIcons.edit), findsOneWidget);
     });
 
@@ -240,7 +244,9 @@ void main() {
       ], onQueueAction: (_) {});
 
       expect(_shuffleButton(tester).onPressed, isNotNull);
-      expect(find.byType(QueueActionsButton), findsOneWidget);
+      await tester.tap(find.byTooltip('Playlist actions'));
+      await tester.pumpAndSettle();
+      expect(find.text('Add to queue'), findsOneWidget);
     });
   });
 
