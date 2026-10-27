@@ -13,7 +13,7 @@ import 'home_tile_metrics.dart';
 import '../../shared/fixed_line_strut.dart';
 
 /// One song on a shelf: square cover, title and artist. Tapping plays the
-/// whole [row] from this song. Copied from SongGridTile in song_grid_tile.dart.
+/// whole [row] from this song.
 class HomeTrackCard extends ConsumerWidget {
   const HomeTrackCard({super.key, required this.row, required this.index});
 

@@ -32,8 +32,7 @@ double homeShelfTileHeight(BuildContext context) {
 }
 
 /// A card whose data is still being read: the picture's square in the
-/// placeholder color, nothing else. Copied from `SongGridTilePlaceholder` in
-/// song_grid_tile.dart.
+/// placeholder color, nothing else.
 class HomeCardPlaceholder extends StatelessWidget {
   const HomeCardPlaceholder({super.key});
 

@@ -4,15 +4,22 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
+import '../../../core/player/playing_track_path.dart';
+import '../../../shared/fixed_line_strut.dart';
+import '../../../shared/format_duration.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/cover_art.dart';
+import '../../../shared/widgets/library_row.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/track_actions_menu.dart';
 import '../albums/album_grid_tile.dart';
-import '../../../shared/fixed_line_strut.dart';
+import 'song_grid_tile_parts.dart';
 
-/// One song in the Songs grid: square cover, title and artist, with the same
-/// tap and menu as a song row.
+export 'song_grid_tile_parts.dart' show SongGridTilePlaceholder;
+
+/// One song in the Songs grid: a rounded card with the square cover (a heart
+/// on its corner), the title, the artist and "Album • length". Tap plays;
+/// the menu is the one of a song row.
 class SongGridTile extends ConsumerWidget {
   const SongGridTile({
     super.key,
@@ -27,56 +34,100 @@ class SongGridTile extends ConsumerWidget {
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
-  /// Same shape as an album tile: the square cover and two text lines at the
-  /// current text scale.
-  static double heightFor(BuildContext context, double width) =>
-      AlbumGridTile.heightFor(context, width);
+  /// Height of a tile whose cover is [width] wide: the cover, the gap, three
+  /// text lines at the current text scale, the card's extra bottom padding
+  /// and a little slack. Lines are rounded to whole pixels like the struts
+  /// the tile draws.
+  static double heightFor(BuildContext context, double width) {
+    final theme = Theme.of(context).textTheme;
+    final scaler = MediaQuery.textScalerOf(context);
+    double line(TextStyle? style) =>
+        (scaler.scale(style?.fontSize ?? 14) * (style?.height ?? 1))
+            .roundToDouble();
+
+    return width +
+        gridTileGap +
+        line(theme.titleSmall) +
+        2 * line(theme.bodySmall) +
+        (songGridCardBottomPadding - songGridCardPadding) +
+        // Rounding slack so a fractional line height never clips.
+        2;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final playing = ref.watch(
+      playingTrackPathProvider.select((p) => p == song.path),
+    );
     final artist = song.artist;
-    final tile = InkWell(
+    final durationMs = song.durationMs;
+    final detail = joinRowDetails([
+      song.album,
+      if (durationMs != null)
+        formatDuration(Duration(milliseconds: durationMs)),
+    ]);
+    final titleColor = playing ? colors.onPrimaryContainer : null;
+    final detailColor = playing
+        ? colors.onPrimaryContainer
+        : colors.onSurfaceVariant;
+    final card = SongGridCard(
+      playing: playing,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(gridTilePadding),
-        child: LayoutBuilder(
-          builder: (context, constraints) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CoverArt(
-                path: coverPath(
-                  ref.watch(coverCacheDirectoryProvider),
-                  song.coverKey,
-                ),
-                size: constraints.maxWidth,
-                placeholder: ColoredBox(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: const Center(
-                    child: Icon(AppIcons.musicNoteOutlined, size: 40),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                CoverArt(
+                  path: coverPath(
+                    ref.watch(coverCacheDirectoryProvider),
+                    song.coverKey,
+                  ),
+                  size: constraints.maxWidth,
+                  radius: songGridCoverRadius,
+                  placeholder: ColoredBox(
+                    color: colors.surfaceContainerHighest,
+                    child: const Center(
+                      child: Icon(AppIcons.musicNoteOutlined, size: 40),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: gridTileGap),
-              Text(
-                song.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall,
-                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
-              ),
-              Text(
-                artist ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                PositionedDirectional(
+                  end: 6,
+                  bottom: 6,
+                  child: SongGridHeartChip(path: song.path),
                 ),
-                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+              ],
+            ),
+            const SizedBox(height: gridTileGap),
+            Text(
+              song.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: titleColor,
               ),
-            ],
-          ),
+              strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
+            ),
+            Text(
+              artist ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(color: detailColor),
+              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+            ),
+            Text(
+              detail,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(color: detailColor),
+              strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+            ),
+          ],
         ),
       ),
     );
@@ -86,35 +137,7 @@ class SongGridTile extends ConsumerWidget {
       hasArtist: artist?.isNotEmpty ?? false,
       hasAlbum: song.album?.isNotEmpty ?? false,
       onQueueAction: onQueueAction,
-      child: tile,
-    );
-  }
-}
-
-/// A grid tile whose song is still being read: the cover's square in the
-/// placeholder color, nothing else, so the grid does not jump when it loads.
-class SongGridTilePlaceholder extends StatelessWidget {
-  const SongGridTilePlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
-    return Padding(
-      padding: const EdgeInsets.all(gridTilePadding),
-      child: LayoutBuilder(
-        builder: (context, constraints) => Align(
-          alignment: Alignment.topLeft,
-          child: SizedBox.square(
-            dimension: constraints.maxWidth,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: card,
     );
   }
 }
