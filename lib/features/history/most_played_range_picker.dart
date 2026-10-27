@@ -3,9 +3,10 @@ import 'package:material_ui/material_ui.dart';
 
 import 'history_providers.dart';
 import 'history_range.dart';
+import 'history_range_dialog.dart';
 
-/// Asks for a custom range in the date picker, bounded by the days with
-/// plays. Returns [current] with the picked days, or null when the picker was
+/// Asks for a custom range in the calendar dialog, bounded by the days with
+/// plays. Returns [current] with the picked days, or null when the dialog was
 /// dismissed or nothing was played yet.
 Future<HistoryRangeState?> pickMostPlayedCustom(
   BuildContext context,
@@ -17,14 +18,11 @@ Future<HistoryRangeState?> pickMostPlayedCustom(
   if (played == null) return null;
   final bounds = pickerBounds(played, now);
   final initial = clampedCustom(current, bounds);
-  final picked = await showDateRangePicker(
-    context: context,
-    currentDate: now,
-    firstDate: bounds.first,
-    lastDate: bounds.last,
-    initialDateRange: initial == null
-        ? null
-        : DateTimeRange(start: initial.start, end: initial.end),
+  final picked = await showHistoryRangeDialog(
+    context,
+    bounds: bounds,
+    today: now,
+    initial: initial,
   );
   return picked == null ? null : current.withCustom(picked.start, picked.end);
 }

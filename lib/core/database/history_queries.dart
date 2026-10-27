@@ -165,6 +165,18 @@ extension HistoryQueries on LibraryDatabase {
     ];
   }
 
+  /// The start of every bucket of [dayBounds] (see [historyDayCounts]) that
+  /// has at least one play: the days to put a dot on.
+  Future<Set<int>> historyPlayDayStarts(List<int> dayBounds) async {
+    if (dayBounds.length < 2) return const {};
+    final rows = await customSelect(
+      historyBucketSql,
+      variables: [Variable.withString(jsonEncode(dayBounds))],
+      readsFrom: {plays},
+    ).get();
+    return {for (final r in rows) r.read<int>('day_start')};
+  }
+
   /// Plays and distinct songs started in `[start, end)`.
   Future<HistoryRangeSummary> historyRangeSummary(int start, int end) async {
     final row = await customSelect(

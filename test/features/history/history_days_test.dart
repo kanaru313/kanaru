@@ -82,6 +82,55 @@ void main() {
     ]);
   });
 
+  group('dayBoundsBetween', () {
+    test('lists each local day start, then the end day', () {
+      final bounds = dayBoundsBetween(
+        DateTime(2026, 10, 30, 15),
+        DateTime(2026, 11, 2, 9),
+      );
+      expect(bounds.map((ms) => _at(ms)), [
+        DateTime(2026, 10, 30),
+        DateTime(2026, 10, 31),
+        DateTime(2026, 11, 1),
+        DateTime(2026, 11, 2),
+      ]);
+    });
+
+    test('is empty when the end is not after the start', () {
+      expect(dayBoundsBetween(DateTime(2026, 5, 3), DateTime(2026, 5, 3)), []);
+      expect(dayBoundsBetween(DateTime(2026, 5, 4), DateTime(2026, 5, 3)), []);
+    });
+
+    test('cells follow the clock changes of the zone', () {
+      for (final (from, to) in [
+        (DateTime(2026, 3, 27), DateTime(2026, 4, 2)),
+        (DateTime(2026, 10, 23), DateTime(2026, 10, 29)),
+        (DateTime(2018, 11, 1), DateTime(2018, 11, 8)),
+        (DateTime(2019, 2, 14), DateTime(2019, 2, 20)),
+      ]) {
+        final bounds = dayBoundsBetween(from, to);
+        expect(bounds, hasLength(daysBetween(from, to) + 1));
+        var day = from;
+        for (var i = 0; i < bounds.length; i++) {
+          expect(_at(bounds[i]).day, day.day, reason: 'cell $i of $from');
+          expect(
+            i == 0 || bounds[i] > bounds[i - 1],
+            isTrue,
+            reason: 'cell $i of $from',
+          );
+          day = addDays(day, 1);
+        }
+      }
+      if (_tz == 'Europe/Berlin') {
+        final bounds = dayBoundsBetween(
+          DateTime(2026, 10, 24),
+          DateTime(2026, 10, 27),
+        );
+        expect(_cellHours(bounds, DateTime(2026, 10, 25)), 25);
+      }
+    });
+  });
+
   group('clock changes', () {
     test('Berlin: 2026-03-29 is 23 h and 2026-10-25 is 25 h', () {
       final bounds = dayBoundsOfYear(2026);

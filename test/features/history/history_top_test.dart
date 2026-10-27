@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/history/history_calendar_style.dart';
 import 'package:kanaru/features/history/history_routes.dart';
 import 'package:kanaru/features/history/history_range_bar.dart';
 import 'package:kanaru/features/history/most_played_actions.dart';
@@ -99,13 +100,12 @@ Future<void> _rowMenu(WidgetTester tester, int index) async {
   await tester.pumpAndSettle();
 }
 
-/// Picks the days [from] to [to] of October 2026 in the range picker.
+/// Picks the days [from] to [to] of October 2026 in the range dialog.
 Future<void> _pickDays(WidgetTester tester, int from, int to) async {
-  final dialog = find.byType(Dialog);
-  await tester.tap(find.descendant(of: dialog, matching: find.text('$from')));
-  await tester.pump();
-  await tester.tap(find.descendant(of: dialog, matching: find.text('$to')));
-  await tester.pump();
+  for (final day in [from, to]) {
+    await tester.tap(find.byKey(historyDayCellKey(DateTime(2026, 10, day))));
+    await tester.pump();
+  }
   await tester.tap(find.text('Save'));
   await settleHistory(tester);
 }

@@ -2594,6 +2594,48 @@ abstract class AppLocalizations {
   /// **'Next period'**
   String get historyRangeNext;
 
+  /// Caption above the days picked in the Most played custom range dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range'**
+  String get historyRangeDialogTitle;
+
+  /// Hint in the custom range dialog before the first day is picked
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the start date'**
+  String get historyRangePickStart;
+
+  /// Hint in the custom range dialog after the first day is picked
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the end date'**
+  String get historyRangePickEnd;
+
+  /// Days picked, shown as the hint of the custom range dialog
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String historyRangeDays(int count);
+
+  /// Screen reader cue on a day of the custom range calendar that holds plays
+  ///
+  /// In en, this message translates to:
+  /// **'Has listens'**
+  String get historyRangeDayHasListens;
+
+  /// Shown in the custom range dialog title until the first day is picked
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get historyRangeStartPlaceholder;
+
+  /// Shown in the custom range dialog title until the last day is picked
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get historyRangeEndPlaceholder;
+
   /// First and last day of the Most played range
   ///
   /// In en, this message translates to:

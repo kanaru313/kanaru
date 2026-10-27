@@ -1633,6 +1633,34 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyRangeNext => 'Kỳ sau';
 
   @override
+  String get historyRangeDialogTitle => 'Khoảng tuỳ chọn';
+
+  @override
+  String get historyRangePickStart => 'Chọn ngày bắt đầu';
+
+  @override
+  String get historyRangePickEnd => 'Chọn ngày kết thúc';
+
+  @override
+  String historyRangeDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ngày',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyRangeDayHasListens => 'Có lượt nghe';
+
+  @override
+  String get historyRangeStartPlaceholder => 'Ngày bắt đầu';
+
+  @override
+  String get historyRangeEndPlaceholder => 'Ngày kết thúc';
+
+  @override
   String historyRangeLabel(String start, String end) {
     return '$start – $end';
   }

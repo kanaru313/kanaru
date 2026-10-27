@@ -76,6 +76,23 @@ void main() {
       ]);
     });
 
+    test('play day starts hold each bucket with a play, once', () async {
+      await play('/a', 999);
+      await play('/a', 1000);
+      await play('/b', 1000 + 5);
+      await play('/a', 1000 + 3 * _day);
+      final starts = await db.historyPlayDayStarts([
+        0,
+        1000,
+        1000 + _day,
+        1000 + 2 * _day,
+        1000 + 3 * _day,
+        1000 + 4 * _day,
+      ]);
+      expect(starts, {0, 1000, 1000 + 3 * _day});
+      expect(await db.historyPlayDayStarts([0]), isEmpty);
+    });
+
     test('fewer than two bounds give nothing', () async {
       await play('/a', 5);
       expect(await db.historyDayCounts(const []), isEmpty);

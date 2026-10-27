@@ -49,6 +49,23 @@ List<int> dayBoundsOfYear(int year) {
   return bounds;
 }
 
+/// Start of every local day from [first] up to (not including) [endExclusive]
+/// in epoch ms, then the start of [endExclusive] itself: day `i` is
+/// `[bounds[i], bounds[i + 1])`. Both arguments are taken as the local day
+/// they fall on; empty when [endExclusive] is not after [first].
+List<int> dayBoundsBetween(DateTime first, DateTime endExclusive) {
+  final end = localDay(endExclusive);
+  var day = localDay(first);
+  if (!day.isBefore(end)) return const [];
+  final bounds = <int>[];
+  while (day.isBefore(end)) {
+    bounds.add(day.millisecondsSinceEpoch);
+    day = addDays(day, 1);
+  }
+  bounds.add(end.millisecondsSinceEpoch);
+  return bounds;
+}
+
 /// Start of each year from [from] to [to] in epoch ms, then the start of the
 /// year after [to]; year `from + i` is `[bounds[i], bounds[i + 1])`.
 List<int> yearBounds(int from, int to) => [

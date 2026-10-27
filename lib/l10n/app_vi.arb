@@ -622,6 +622,36 @@
   "@historyRangeNext": {
     "description": "Tooltip of the button that moves the Most played range forward"
   },
+  "historyRangeDialogTitle": "Khoảng tuỳ chọn",
+  "@historyRangeDialogTitle": {
+    "description": "Caption above the days picked in the Most played custom range dialog"
+  },
+  "historyRangePickStart": "Chọn ngày bắt đầu",
+  "@historyRangePickStart": {
+    "description": "Hint in the custom range dialog before the first day is picked"
+  },
+  "historyRangePickEnd": "Chọn ngày kết thúc",
+  "@historyRangePickEnd": {
+    "description": "Hint in the custom range dialog after the first day is picked"
+  },
+  "historyRangeDays": "{count, plural, other{{count} ngày}}",
+  "@historyRangeDays": {
+    "description": "Days picked, shown as the hint of the custom range dialog",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyRangeDayHasListens": "Có lượt nghe",
+  "historyRangeStartPlaceholder": "Ngày bắt đầu",
+  "@historyRangeStartPlaceholder": {
+    "description": "Shown in the custom range dialog title until the first day is picked"
+  },
+  "historyRangeEndPlaceholder": "Ngày kết thúc",
+  "@historyRangeEndPlaceholder": {
+    "description": "Shown in the custom range dialog title until the last day is picked"
+  },
   "historyRangeLabel": "{start} – {end}",
   "@historyRangeLabel": {
     "description": "First and last day of the Most played range",
