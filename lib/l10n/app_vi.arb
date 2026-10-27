@@ -217,6 +217,7 @@
   "playerRepeatOff": "Không lặp",
   "playerRepeatAll": "Lặp tất cả",
   "playerRepeatOne": "Lặp một bài",
+  "playerRepeatAllShuffled": "Lặp lại tất cả trong hàng đợi (xáo trộn)",
   "playerMute": "Tắt tiếng",
   "playerUnmute": "Bật tiếng",
   "playerVolume": "Âm lượng",

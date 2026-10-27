@@ -12,6 +12,7 @@ import 'audio_output_devices_provider.dart';
 import 'media_kit_backend.dart';
 import 'output_device_sync.dart';
 import 'play_queue.dart';
+import 'play_queue_pass.dart';
 import 'playback_error.dart';
 import 'player_state.dart';
 import 'repeat_mode.dart';
@@ -212,11 +213,15 @@ class PlayerService extends Notifier<PlayerState>
   /// or the engine ran out of tracks before it got the next one: go on.
   /// Otherwise playback is over and nothing is wanted playing any more, so
   /// a later queue edit loads its track paused. After a stop after the
-  /// current track, the next one is loaded paused.
+  /// current track, the next one is loaded paused. Under repeat all shuffled
+  /// the last track of a pass is followed by the first of a new random order.
   void _onCompleted() {
     final next = state.queue.nextIndex;
     final sleep = _takeSleepStop();
     if (next != null && !_allFailed) {
+      // The engine was handed no next track on the last one: the pass is
+      // over, the next one is a new random order.
+      if (state.queue.endsShuffledPass) _startShuffledPass();
       _followEngine(
         'continue after the engine stopped',
         () => _play(next, play: _wantsPlaying && !sleep),
@@ -240,7 +245,7 @@ class PlayerService extends Notifier<PlayerState>
   @override
   Future<void> _queueNext() {
     final queue = state.queue;
-    final next = _stopAfterCurrent ? null : queue.nextIndex;
+    final next = _stopAfterCurrent ? null : queue.engineNextIndex;
     if (next != null) {
       final entry = queue.order[next];
       // Edits that keep the same next track would otherwise pile it up.
@@ -275,7 +280,7 @@ class PlayerService extends Notifier<PlayerState>
     );
     // Read after the update: a listener may have turned the stop after the
     // current track on or off (and handed the next track for it already).
-    final next = _stopAfterCurrent ? null : queue.nextIndex;
+    final next = _stopAfterCurrent ? null : queue.engineNextIndex;
     if (next != null && _handedNext.lastOrNull != queue.order[next]) {
       _handedNext.add(queue.order[next]);
     }

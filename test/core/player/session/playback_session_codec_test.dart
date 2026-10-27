@@ -79,6 +79,58 @@ void main() {
       expect(roundTrip(session), session);
     });
 
+    test('repeat all shuffled round-trips', () {
+      const session = PlaybackSession(
+        tracks: [a, b],
+        order: [1, 0],
+        unshuffledOrder: [0, 1],
+        shuffled: true,
+        repeat: RepeatMode.allShuffled,
+      );
+
+      expect(roundTrip(session), session);
+    });
+
+    test(
+      'repeat all shuffled is written so an older build reads repeat all',
+      () {
+        const session = PlaybackSession(
+          tracks: [a],
+          order: [0],
+          repeat: RepeatMode.allShuffled,
+        );
+        final json = encodePlaybackSession(session);
+
+        expect(json['repeat'], 'all');
+        expect(json['reshuffle'], true);
+        expect(
+          encodePlaybackSession(
+            const PlaybackSession(
+              tracks: [a],
+              order: [0],
+              repeat: RepeatMode.all,
+            ),
+          ).containsKey('reshuffle'),
+          isFalse,
+        );
+      },
+    );
+
+    test('a file without the flag keeps repeat all, a flag of another type '
+        'is ignored', () {
+      final json = valid();
+      expect(decodePlaybackSession(json).repeat, RepeatMode.all);
+
+      json['reshuffle'] = 'yes';
+      expect(decodePlaybackSession(json).repeat, RepeatMode.all);
+
+      json['reshuffle'] = true;
+      expect(decodePlaybackSession(json).repeat, RepeatMode.allShuffled);
+
+      json['repeat'] = 'one';
+      expect(decodePlaybackSession(json).repeat, RepeatMode.one);
+    });
+
     test('an empty queue keeps volume, shuffle and repeat', () {
       const session = PlaybackSession(
         shuffled: true,

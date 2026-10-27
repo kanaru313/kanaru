@@ -550,6 +550,7 @@
   "playerRepeatOff": "Repeat off",
   "playerRepeatAll": "Repeat all",
   "playerRepeatOne": "Repeat one",
+  "playerRepeatAllShuffled": "Repeat the whole queue (shuffled)",
   "playerMute": "Mute",
   "playerUnmute": "Unmute",
   "playerVolume": "Volume",

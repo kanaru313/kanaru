@@ -114,6 +114,9 @@ class MprisMethodHandler {
         if (value is! DBusString) return DBusMethodErrorResponse.invalidArgs();
         final mode = repeatModeFromLoopStatus(value.value);
         if (mode == null) return DBusMethodErrorResponse.invalidArgs();
+        // The status already shown: keep the mode behind it (a client that
+        // sets `Playlist` must not turn repeat all shuffled into repeat all).
+        if (value.value == mprisLoopStatusOf(_state)) break;
         _run('LoopStatus', () => _player.setRepeat(mode));
       case 'Shuffle':
         if (value is! DBusBoolean) {

@@ -37,7 +37,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/media_controls/` | 8 / 790 | Own MPRIS 2.2 server on D-Bus (`mpris/`) |
 | `lib/core/open_files/` | 3 / ~230 | Files from the command line and "Open with": method channel to the Linux runner (`open_files_channel.dart`), `OpenFilesService` (validate with `localAudioPath`, read tags, `openTracks`), startup hook |
 | `lib/core/paths/` | 2 / 160 | XDG directory resolution; `local_audio_path.dart` (`localAudioPath`: the one check that a path or `file:` URI from outside the library is a local audio file, returned in canonical spelling) |
-| `lib/core/player/` | 48 / 5,366 (`session/`: 6 / 1,009) | `PlayerService`, `PlayQueue`, `playingTrackPathProvider` (local path of the playing track, for the playing-row highlight), `MediaKitBackend`, ReplayGain and output device (`ReplayGainSync`, `AlbumRunKeyCache`, `OutputDeviceSync`, `AudioOutputControl`, `MpvAudioOutput`), session persistence (`session/`) |
+| `lib/core/player/` | 49 / 5,458 (`session/`: 6 / 1,021) | `PlayerService`, `PlayQueue`, `playingTrackPathProvider` (local path of the playing track, for the playing-row highlight), `MediaKitBackend`, ReplayGain and output device (`ReplayGainSync`, `AlbumRunKeyCache`, `OutputDeviceSync`, `AudioOutputControl`, `MpvAudioOutput`), session persistence (`session/`) |
 | `lib/core/settings/` | 14 / 1,516 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance, preference groups (`library_scan_prefs.dart` incl. `watchFolders`, read by the indexer and folder watcher; `playback_prefs.dart` incl. ReplayGain and output device with `withAudioDevice`, read by the player; `display_prefs.dart`; and their codecs) |
 | `lib/features/history/` | 29 / 2,873 | History page (`history_screen.dart`): Journal tab (day-grouped timeline, year chips, calendar jump, Undo delete) and Most played tab (date ranges, play all, playlist from result); per-song page (`history_track_screen.dart`, `/history/track?path=`); route seam (`history_routes.dart`: `historyPath`, `historyRoutes`, `historyTrackLocation`) |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
@@ -54,7 +54,7 @@ Key files by area:
 
 | Area | Files |
 |---|---|
-| Playback | `core/player/player_service.dart`, `play_queue.dart`, `media_kit_backend.dart`, `mpv_playlist_tracker.dart`, `unavailable_audio_backend.dart` |
+| Playback | `core/player/player_service.dart`, `play_queue.dart`, `play_queue_pass.dart` (passes under repeat all shuffled), `media_kit_backend.dart`, `mpv_playlist_tracker.dart`, `unavailable_audio_backend.dart` |
 | Audio output | `core/player/replay_gain_sync.dart` with `album_run_key_cache.dart`, `output_device_sync.dart` (settings to engine), `send_audio_call.dart`, `player_audio_output.dart` (part of `PlayerService`), `replay_gain_options.dart`, `audio_device_choice.dart`, `audio_output_control.dart`, `mpv_audio_output.dart`, `mpv_startup_options.dart`, `album_run_lookup.dart`, `audio_output_devices_provider.dart` |
 | Original cover | `core/player/original_cover_reader.dart`, `rust_original_cover_reader.dart`, `playing_track_original_cover.dart`; native init shared in `core/native/rust_library.dart`; shown by `features/player/now_playing/now_playing_artwork.dart` |
 | Session restore | `core/player/session/playback_session_file.dart`, `playback_session_saver.dart`, `playback_session_codec.dart` |

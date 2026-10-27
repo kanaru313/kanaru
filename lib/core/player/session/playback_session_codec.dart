@@ -26,8 +26,10 @@ const playbackSessionVersion = 1;
 /// below that folder), so the file survives a moved cache and stays small;
 /// any other art keeps its `artUri`. `coverKey` is an optional per-track key
 /// that older readers ignore, so the version stays the same; so is
-/// `upNext`, left out when empty. A track's `album` and `year` are written
-/// only when set.
+/// `upNext`, left out when empty. Repeat all shuffled is written as
+/// `"repeat": "all"` plus `"reshuffle": true`, so an older build reads it as
+/// repeat all instead of rejecting the file. A track's `album` and `year` are
+/// written only when set.
 Map<String, Object?> encodePlaybackSession(
   PlaybackSession session, {
   String? coverDirectory,
@@ -44,11 +46,17 @@ Map<String, Object?> encodePlaybackSessionLight(PlaybackSession session) => {
   'version': playbackSessionVersion,
   'index': session.index,
   'shuffled': session.shuffled,
-  'repeat': session.repeat.name,
+  ..._encodeRepeat(session.repeat),
   'positionMs': session.position.inMilliseconds,
   'volume': session.volume,
   'volumeBeforeMute': session.volumeBeforeMute,
   if (session.upNext.isNotEmpty) 'upNext': session.upNext,
+};
+
+/// `repeat` as older readers know it, plus the `reshuffle` flag they ignore.
+Map<String, Object?> _encodeRepeat(RepeatMode mode) => {
+  'repeat': mode == RepeatMode.allShuffled ? RepeatMode.all.name : mode.name,
+  if (mode == RepeatMode.allShuffled) 'reshuffle': true,
 };
 
 /// The `tracks` list of [encodePlaybackSession].
@@ -126,10 +134,14 @@ PlaybackSession decodePlaybackSession(
   final shuffled = json['shuffled'];
   if (shuffled is! bool) throw const FormatException('shuffled');
 
-  final repeat = RepeatMode.values
+  var repeat = RepeatMode.values
       .where((mode) => mode.name == json['repeat'])
       .firstOrNull;
   if (repeat == null) throw const FormatException('repeat');
+  // Only `all` carries the flag; a flag of another type is ignored.
+  if (repeat == RepeatMode.all && json['reshuffle'] == true) {
+    repeat = RepeatMode.allShuffled;
+  }
 
   final position = json['positionMs'];
   if (position is! int || position < 0) {

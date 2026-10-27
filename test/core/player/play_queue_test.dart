@@ -295,6 +295,41 @@ void main() {
     });
   });
 
+  group('repeat all shuffled', () {
+    final three = [
+      for (final name in ['a', 'b', 'c']) Track.fromPath('/music/$name.mp3'),
+    ];
+
+    test('wrapsQueue is true for both repeat all modes only', () {
+      expect(RepeatMode.values.where((m) => m.wrapsQueue), [
+        RepeatMode.all,
+        RepeatMode.allShuffled,
+      ]);
+    });
+
+    test('next wraps like repeat all, previous does not wrap back', () {
+      final last = PlayQueue(
+        original: three,
+        index: 2,
+        repeat: RepeatMode.allShuffled,
+      );
+      expect(last.nextIndex, 0);
+      final first = PlayQueue(original: three, repeat: RepeatMode.allShuffled);
+      expect(first.previousIndex, isNull);
+      expect(first.copyWith(repeat: RepeatMode.all).previousIndex, 2);
+      expect(first.manualPreviousIndex(wrap: true), 2);
+    });
+
+    test('removing the last playing track continues at the first', () {
+      final queue = PlayQueue(
+        original: three,
+        index: 2,
+        repeat: RepeatMode.allShuffled,
+      );
+      expect(queue.removeAt(2).index, 0);
+    });
+  });
+
   group('manual next and previous', () {
     final three = [
       for (final name in ['a', 'b', 'c']) Track.fromPath('/music/$name.mp3'),

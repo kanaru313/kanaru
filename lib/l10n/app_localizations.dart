@@ -1358,6 +1358,12 @@ abstract class AppLocalizations {
   /// **'Repeat one'**
   String get playerRepeatOne;
 
+  /// No description provided for @playerRepeatAllShuffled.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat the whole queue (shuffled)'**
+  String get playerRepeatAllShuffled;
+
   /// No description provided for @playerMute.
   ///
   /// In en, this message translates to:

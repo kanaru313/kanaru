@@ -855,6 +855,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playerRepeatOne => 'Repeat one';
 
   @override
+  String get playerRepeatAllShuffled => 'Repeat the whole queue (shuffled)';
+
+  @override
   String get playerMute => 'Mute';
 
   @override

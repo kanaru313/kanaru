@@ -134,6 +134,15 @@ void main() {
         expect(props(stateOf(queue))['LoopStatus'], DBusString(status));
         expect(repeatModeFromLoopStatus(status), mode);
       }
+      // MPRIS has no name of its own for repeat all shuffled.
+      final shuffledAll = PlayQueue(
+        original: tracks,
+        repeat: RepeatMode.allShuffled,
+      );
+      expect(
+        props(stateOf(shuffledAll))['LoopStatus'],
+        const DBusString('Playlist'),
+      );
       expect(repeatModeFromLoopStatus('Bogus'), isNull);
     });
 

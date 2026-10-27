@@ -83,8 +83,12 @@ String mprisPlaybackStatus(PlayerState state) {
 String mprisLoopStatus(RepeatMode mode) => switch (mode) {
   RepeatMode.off => 'None',
   RepeatMode.one => 'Track',
-  RepeatMode.all => 'Playlist',
+  RepeatMode.all || RepeatMode.allShuffled => 'Playlist',
 };
+
+/// `LoopStatus` as shown for [state].
+String mprisLoopStatusOf(PlayerState state) =>
+    mprisLoopStatus(state.queue.repeat);
 
 RepeatMode? repeatModeFromLoopStatus(String status) => switch (status) {
   'None' => RepeatMode.off,
@@ -138,7 +142,7 @@ Map<String, DBusValue> playerProperties(
   final queue = state.queue;
   return {
     'PlaybackStatus': DBusString(mprisPlaybackStatus(state)),
-    'LoopStatus': DBusString(mprisLoopStatus(queue.repeat)),
+    'LoopStatus': DBusString(mprisLoopStatusOf(state)),
     'Rate': const DBusDouble(1),
     'Shuffle': DBusBoolean(queue.shuffled),
     'Metadata': mprisMetadata(state, ids, artUri: artUri),

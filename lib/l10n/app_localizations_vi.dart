@@ -832,6 +832,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerRepeatOne => 'Lặp một bài';
 
   @override
+  String get playerRepeatAllShuffled =>
+      'Lặp lại tất cả trong hàng đợi (xáo trộn)';
+
+  @override
   String get playerMute => 'Tắt tiếng';
 
   @override

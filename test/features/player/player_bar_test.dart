@@ -104,9 +104,12 @@ void main() {
     await tester.pump();
     await tester.tap(find.byTooltip('Repeat all'));
     await tester.pump();
+    await tester.tap(find.byTooltip('Repeat the whole queue (shuffled)'));
+    await tester.pump();
     expect(find.byIcon(Icons.repeat_one_rounded), findsOneWidget);
     expect(backend.calls.where((c) => c.startsWith('setRepeat')), [
       'setRepeat(all)',
+      'setRepeat(allShuffled)',
       'setRepeat(one)',
     ]);
   });

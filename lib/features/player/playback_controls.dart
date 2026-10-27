@@ -122,7 +122,7 @@ class ShuffleButton extends ConsumerWidget {
   }
 }
 
-/// The repeat cycle (off, all, one); disabled while the queue is empty.
+/// The repeat cycle (off, all, all shuffled, one); disabled while the queue is empty.
 class RepeatButton extends ConsumerWidget {
   const RepeatButton({super.key, this.iconSize = playerIconSize});
 
@@ -143,6 +143,7 @@ class RepeatButton extends ConsumerWidget {
         RepeatMode.off => l10n.playerRepeatOff,
         RepeatMode.all => l10n.playerRepeatAll,
         RepeatMode.one => l10n.playerRepeatOne,
+        RepeatMode.allShuffled => l10n.playerRepeatAllShuffled,
       },
       isSelected: repeat != RepeatMode.off,
       onPressed: empty

@@ -241,7 +241,7 @@ Reduced motion comes from the platform setting, or from Settings → Appearance 
 | Space | Play or pause | App-wide, even when a button has focus; not in text fields or when there is nothing to control |
 | Left, Right | Seek minus or plus 5 s | App-wide, same exceptions |
 | Ctrl+S | Toggle shuffle | App-wide |
-| Ctrl+R | Cycle repeat | App-wide |
+| Ctrl+R | Cycle repeat (off, all, all shuffled, one) | App-wide |
 | L | Cycle the Now Playing view mode | Wide Now Playing only; no modifier; not in a text field or while the volume popup or sleep menu is open |
 | Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer |
 | Ctrl+F | Focus the top bar search field and select its text | App-wide; a page filter box takes it first, and pressing it again inside that box goes to the top bar; nothing while a dialog, menu or Now Playing is open |

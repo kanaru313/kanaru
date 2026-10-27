@@ -55,10 +55,11 @@ mixin _PlayerSettingsCommands on Notifier<PlayerState> {
     if (!state.queue.isEmpty) await _queueNext();
   }
 
-  /// Off → all → one → off.
+  /// Off → all → all shuffled → one → off.
   Future<void> cycleRepeat() => setRepeat(switch (state.queue.repeat) {
     RepeatMode.off => RepeatMode.all,
-    RepeatMode.all => RepeatMode.one,
+    RepeatMode.all => RepeatMode.allShuffled,
+    RepeatMode.allShuffled => RepeatMode.one,
     RepeatMode.one => RepeatMode.off,
   });
 }

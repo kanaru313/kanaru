@@ -6,7 +6,6 @@ import 'album_run_lookup.dart';
 import 'audio_backend.dart';
 import 'local_path_of.dart';
 import 'play_queue.dart';
-import 'repeat_mode.dart';
 import 'replay_gain_options.dart';
 import 'send_audio_call.dart';
 import 'track.dart';
@@ -164,7 +163,7 @@ class ReplayGainSync {
         ? null
         : after < queue.order.length - 1
         ? after + 1
-        : (queue.repeat == RepeatMode.all ? 0 : null);
+        : (queue.repeat.wrapsQueue ? 0 : null);
     final positions = {
       queue.previousIndex,
       queue.index,
