@@ -21,7 +21,7 @@ Finder _chip(int year) => find.widgetWithText(ChoiceChip, '$year');
 
 void main() {
   group('states', () {
-    testWidgets('without a library it says history is not available', (
+    historyTestWidgets('without a library it says history is not available', (
       tester,
     ) async {
       final h = LibraryHarness(hasDatabase: false);
@@ -33,7 +33,7 @@ void main() {
       expect(find.byTooltip('Jump to a day'), findsNothing);
     });
 
-    testWidgets('with no plays it says songs will show up here', (
+    historyTestWidgets('with no plays it says songs will show up here', (
       tester,
     ) async {
       final h = historyHarness();
@@ -44,7 +44,9 @@ void main() {
       expect(find.byTooltip('Jump to a day'), findsNothing);
     });
 
-    testWidgets('and recording turned off, it says that too', (tester) async {
+    historyTestWidgets('and recording turned off, it says that too', (
+      tester,
+    ) async {
       final h = historyHarness(
         overrides: [
           initialSettingsProvider.overrideWithValue(
@@ -61,7 +63,9 @@ void main() {
       );
     });
 
-    testWidgets('a failed read says so, the log has no path', (tester) async {
+    historyTestWidgets('a failed read says so, the log has no path', (
+      tester,
+    ) async {
       final gate = GatedQueryInterceptor();
       final h = historyHarness(interceptor: gate);
       final logs = <LogRecord>[];
@@ -89,11 +93,11 @@ void main() {
       }
     });
 
-    for (final (code, title, today, one, tip) in [
-      ('en', 'History', 'Today', '1 listen', 'Listen number 1'),
-      ('vi', 'Lịch sử', 'Hôm nay', '1 lượt nghe', 'Lượt nghe thứ 1'),
+    for (final (code, title, bar, tip) in [
+      ('en', 'History', 'Oct 23, 2026 • 1 song', 'Listen number 1'),
+      ('vi', 'Lịch sử', '23 thg 10, 2026 • 1 bài', 'Lượt nghe thứ 1'),
     ]) {
-      testWidgets('speaks $code', (tester) async {
+      historyTestWidgets('speaks $code', (tester) async {
         final db = LibraryDatabase(NativeDatabase.memory());
         addTearDown(() => tester.runAsync(db.close));
         await tester.runAsync(() async {
@@ -126,8 +130,7 @@ void main() {
         await settleHistory(tester);
 
         expect(find.text(title), findsOneWidget);
-        expect(listText(today), findsOneWidget);
-        expect(listText(one), findsOneWidget);
+        expect(listText(bar), findsOneWidget);
         expect(find.byTooltip(tip), findsOneWidget);
         // The song is not in the library: the file name stands in.
         expect(find.text('a.flac'), findsOneWidget);
@@ -138,7 +141,7 @@ void main() {
   group('years', () {
     final tracks = [song('A'), song('B'), song('C')];
 
-    testWidgets('one year shows no chips', (tester) async {
+    historyTestWidgets('one year shows its single chip', (tester) async {
       final h = historyHarness();
       await openHistory(
         tester,
@@ -147,41 +150,43 @@ void main() {
         plays: [('A', _at(2026, 10, 23))],
       );
 
-      expect(find.byType(ChoiceChip), findsNothing);
-      expect(find.text('A'), findsOneWidget);
-    });
-
-    testWidgets('the newest year shows first; a chip picks another year', (
-      tester,
-    ) async {
-      final h = historyHarness();
-      await openHistory(
-        tester,
-        h,
-        tracks: tracks,
-        plays: [
-          ('A', _at(2026, 10, 23)),
-          ('B', _at(2025, 12, 31)),
-          ('C', _at(2025, 6, 1)),
-        ],
-      );
-
-      expect(_chip(2026), findsOneWidget);
+      expect(find.byType(ChoiceChip), findsOneWidget);
       expect(tester.widget<ChoiceChip>(_chip(2026)).selected, isTrue);
       expect(find.text('A'), findsOneWidget);
-      expect(find.text('B'), findsNothing);
-
-      await tester.tap(_chip(2025));
-      await settleHistory(tester);
-
-      expect(tester.widget<ChoiceChip>(_chip(2025)).selected, isTrue);
-      expect(find.text('B'), findsOneWidget);
-      expect(find.text('C'), findsOneWidget);
-      expect(find.text('A'), findsNothing);
-      expect(find.text('Show 2025'), findsNothing);
     });
 
-    testWidgets('the list ends with a row that shows the older year', (
+    historyTestWidgets(
+      'the newest year shows first; a chip picks another year',
+      (tester) async {
+        final h = historyHarness();
+        await openHistory(
+          tester,
+          h,
+          tracks: tracks,
+          plays: [
+            ('A', _at(2026, 10, 23)),
+            ('B', _at(2025, 12, 31)),
+            ('C', _at(2025, 6, 1)),
+          ],
+        );
+
+        expect(_chip(2026), findsOneWidget);
+        expect(tester.widget<ChoiceChip>(_chip(2026)).selected, isTrue);
+        expect(find.text('A'), findsOneWidget);
+        expect(find.text('B'), findsNothing);
+
+        await tester.tap(_chip(2025));
+        await settleHistory(tester);
+
+        expect(tester.widget<ChoiceChip>(_chip(2025)).selected, isTrue);
+        expect(find.text('B'), findsOneWidget);
+        expect(find.text('C'), findsOneWidget);
+        expect(find.text('A'), findsNothing);
+        expect(find.text('Show 2025'), findsNothing);
+      },
+    );
+
+    historyTestWidgets('the list ends with a row that shows the older year', (
       tester,
     ) async {
       final h = historyHarness();
@@ -199,7 +204,7 @@ void main() {
       expect(tester.widget<ChoiceChip>(_chip(2025)).selected, isTrue);
     });
 
-    testWidgets('a year with no plays left falls back to the newest', (
+    historyTestWidgets('a year with no plays left falls back to the newest', (
       tester,
     ) async {
       final h = historyHarness();
@@ -224,7 +229,8 @@ void main() {
       );
       await settleHistory(tester);
 
-      expect(find.byType(ChoiceChip), findsNothing);
+      expect(find.byType(ChoiceChip), findsOneWidget);
+      expect(tester.widget<ChoiceChip>(_chip(2026)).selected, isTrue);
       expect(find.text('A'), findsOneWidget);
       expect(find.text('B'), findsNothing);
     });
@@ -272,7 +278,7 @@ void main() {
       }
     }
 
-    testWidgets('a day in the middle of the year goes to the top', (
+    historyTestWidgets('a day in the middle of the year goes to the top', (
       tester,
     ) async {
       await openYear(tester);
@@ -285,15 +291,18 @@ void main() {
       await settleHistory(tester);
 
       expect(find.byType(Dialog), findsNothing);
+      // The bar is the bottom of its header line, with the gap above it.
+      final bar =
+          6 * lineExtentOf(tester) + lineExtentOf(tester) - barHeightOf(tester);
       expect(
         timelineScrollable(tester).position.maxScrollExtent,
-        greaterThan(6 * rowExtent),
+        greaterThan(bar),
       );
-      expect(timelineOffset(tester), 6 * rowExtent);
-      expect(stickyText('Saturday, August 1, 2026'), findsOneWidget);
+      expect(timelineOffset(tester), bar);
+      expect(stickyText('Aug 1, 2026 • 1 song'), findsOneWidget);
     });
 
-    testWidgets('a day near the end stops at the end of the list', (
+    historyTestWidgets('a day near the end stops at the end of the list', (
       tester,
     ) async {
       await openYear(tester);
@@ -305,11 +314,16 @@ void main() {
       await settleHistory(tester);
 
       final position = timelineScrollable(tester).position;
-      expect(20 * rowExtent, greaterThan(position.maxScrollExtent));
+      expect(
+        20 * lineExtentOf(tester) + lineExtentOf(tester) - barHeightOf(tester),
+        greaterThan(position.maxScrollExtent),
+      );
       expect(position.pixels, position.maxScrollExtent);
+      // The day's bar is in the list, below the pinned one.
+      expect(listText('Jan 15, 2026 • 1 song'), findsOneWidget);
     });
 
-    testWidgets('a day with no plays cannot be picked', (tester) async {
+    historyTestWidgets('a day with no plays cannot be picked', (tester) async {
       await openYear(tester);
       await openCalendar(tester);
 

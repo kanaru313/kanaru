@@ -14,6 +14,19 @@ HistoryPlayRow _play(int id, String path, {bool inLibrary = true}) =>
     );
 
 void main() {
+  test('a day lists each song once at its first place, gone ones left out', () {
+    final rows = [
+      _play(5, '/m/gone', inLibrary: false),
+      _play(4, '/m/c'),
+      _play(3, '/m/a'),
+      _play(2, '/m/c'),
+      _play(1, '/m/a'),
+    ];
+
+    expect(historyDayTracks(rows, null).map((t) => t.uri), ['/m/c', '/m/a']);
+    expect(historyDayTracks(const [], null), isEmpty);
+  });
+
   test('plays each song of the day once, starting at the tapped one', () {
     final rows = [
       _play(4, '/m/c'),

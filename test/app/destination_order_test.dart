@@ -19,8 +19,8 @@ void main() {
       expect(destinationScreenOrder.length, AppDestination.values.length);
     });
 
-    test('ends with history', () {
-      expect(destinationScreenOrder.last, AppDestination.history);
+    test('ends with most played', () {
+      expect(destinationScreenOrder.last, AppDestination.mostPlayed);
     });
 
     test('starts with search then settings', () {
@@ -89,6 +89,13 @@ void main() {
     test('playlists -> queueHistory is towardsBelow', () {
       expect(
         branchDirection(AppDestination.playlists, AppDestination.queueHistory),
+        BranchDirection.towardsBelow,
+      );
+    });
+
+    test('history -> mostPlayed is towardsBelow', () {
+      expect(
+        branchDirection(AppDestination.history, AppDestination.mostPlayed),
         BranchDirection.towardsBelow,
       );
     });

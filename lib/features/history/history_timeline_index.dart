@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../core/database/history_rows.dart';
 
 /// Position of every line of the timeline, from the plays per day alone.
@@ -54,6 +56,38 @@ class HistoryTimelineIndex {
   ({int day, int row}) itemAt(int i) {
     final day = dayIndexAtItem(i);
     return (day: day, row: day == days.length ? -1 : i - _starts[day] - 1);
+  }
+
+  /// Scroll offset at which the date bar of day [day] (index into [days]) is
+  /// at the top of the list. A header line is [extent] tall with its bar of
+  /// height [bar] at the bottom, so the bar starts `extent - bar` below the
+  /// line's top.
+  double barOffsetOfDay(int day, double extent, double bar) =>
+      _starts[day] * extent + (extent - bar);
+
+  /// Index into [days] of the day starting at [dayStart] (epoch ms), or -1.
+  int dayIndexOfStart(int dayStart) => _dayIndexOfStart(dayStart);
+
+  /// The day whose bar the sticky bar shows at scroll [offset], and how far
+  /// that bar is pushed up by the next day's bar (`dy` in `(-bar, 0]`). Null
+  /// while the first bar is still in place in the list.
+  ({int day, double dy})? stickyAt(double offset, double extent, double bar) {
+    if (days.isEmpty || offset < barOffsetOfDay(0, extent, bar)) return null;
+    // Last day whose bar is at or above the top (offsets grow with the day).
+    var lo = 0;
+    var hi = days.length - 1;
+    while (lo < hi) {
+      final mid = (lo + hi + 1) >> 1;
+      if (barOffsetOfDay(mid, extent, bar) <= offset) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    final next = lo + 1 < days.length
+        ? barOffsetOfDay(lo + 1, extent, bar)
+        : double.infinity;
+    return (day: lo, dy: math.min(0.0, next - offset - bar));
   }
 
   /// The line of the header of the day starting at [dayStart] (epoch ms), or

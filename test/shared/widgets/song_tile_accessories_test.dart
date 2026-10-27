@@ -156,4 +156,106 @@ void main() {
       placeholderHeight,
     );
   });
+
+  testWidgets('detail replaces the album line and the badge sits above the '
+      'duration', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        SongTile(
+          song: _song,
+          onTap: () {},
+          detail: 'Oct 26, 2026 - 21:04',
+          badge: const Text('#12', key: Key('badge')),
+        ),
+      ),
+    );
+    expect(find.text('Oct 26, 2026 - 21:04'), findsOneWidget);
+    expect(find.text('Album A'), findsNothing);
+    expect(
+      tester.getBottomLeft(find.byKey(const Key('badge'))).dy,
+      lessThanOrEqualTo(tester.getTopLeft(find.text('1:01')).dy),
+    );
+
+    await tester.pumpWidget(_host(SongTile(song: _song, onTap: () {})));
+    expect(find.text('Album A'), findsOneWidget);
+  });
+
+  for (final scale in [1.0, 1.5, 2.0]) {
+    for (final badge in ['#12', '12 listens']) {
+      for (final playing in [false, true]) {
+        testWidgets('detail, badge "$badge" and a rank fit the row extent at '
+            'scale $scale${playing ? ' (playing)' : ''}', (tester) async {
+          late double extent;
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                playingTrackPathProvider.overrideWithValue(
+                  playing ? _song.path : null,
+                ),
+              ],
+              child: MaterialApp(
+                // Desktop shrink-wraps tap targets, so the compact heart is
+                // 28 px as in the app.
+                theme: ThemeData(platform: TargetPlatform.linux),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                builder: (context, app) => MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(textScaler: TextScaler.linear(scale)),
+                  child: app!,
+                ),
+                home: Scaffold(
+                  body: Builder(
+                    builder: (context) {
+                      final theme = Theme.of(context);
+                      extent = libraryRowExtent(
+                        theme,
+                        TextScaler.linear(scale),
+                      );
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: SizedBox(
+                          height: extent,
+                          child: SongTile(
+                            song: _song,
+                            onTap: () {},
+                            detail: 'Oct 26, 2026 - 21:04',
+                            leadingAccessory: const SizedBox(
+                              width: 32,
+                              child: Text('1'),
+                            ),
+                            badge: Text(
+                              badge,
+                              maxLines: 1,
+                              style: theme.textTheme.labelSmall,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+          expect(tester.takeException(), isNull);
+
+          final badgeFinder = find.text(badge);
+          expect(badgeFinder, findsOneWidget);
+          final row = tester.getRect(find.byType(SongTile));
+          final badgeRect = tester.getRect(badgeFinder);
+          expect(row.height, extent);
+          expect(badgeRect.top, greaterThanOrEqualTo(row.top));
+          expect(badgeRect.bottom, lessThanOrEqualTo(row.bottom));
+          expect(badgeRect.left, greaterThanOrEqualTo(row.left));
+          expect(badgeRect.right, lessThanOrEqualTo(row.right));
+          // The badge is a direct child of the trailing column.
+          final column = find
+              .ancestor(of: badgeFinder, matching: find.byType(Column))
+              .first;
+          expect(tester.getSize(column).height, lessThanOrEqualTo(extent));
+        });
+      }
+    }
+  }
 }

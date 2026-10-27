@@ -1,8 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
 
-/// Delete and restore of single plays, for the history page's Undo. Both go
+/// Delete and restore of plays (single or in lists), for the history page's Undo. Both go
 /// through drift's API so the `play_stats` triggers and table watchers run;
 /// `play_stats` is never written here.
 extension HistoryPlayWrites on LibraryDatabase {
@@ -47,4 +49,36 @@ extension HistoryPlayWrites on LibraryDatabase {
     );
     return true;
   });
+
+  /// Deletes the plays with these [ids] in one transaction and returns the
+  /// rows that existed, newest first (`played_at DESC, id DESC`). Ids already
+  /// gone are skipped. The caller passes the ids it showed, so a play recorded
+  /// meanwhile is never taken.
+  Future<List<Play>> deletePlaysByIds(List<int> ids) => transaction(() async {
+    final old = <Play>[];
+    // SQLite caps the number of variables of one statement.
+    for (var i = 0; i < ids.length; i += _idChunk) {
+      final chunk = ids.sublist(i, math.min(i + _idChunk, ids.length));
+      old.addAll(await (select(plays)..where((p) => p.id.isIn(chunk))).get());
+      await (delete(plays)..where((p) => p.id.isIn(chunk))).go();
+    }
+    old.sort((a, b) {
+      final byTime = b.playedAt.compareTo(a.playedAt);
+      return byTime != 0 ? byTime : b.id.compareTo(a.id);
+    });
+    return old;
+  });
+
+  /// Puts back rows returned by [deletePlaysByIds], one transaction, with the
+  /// rule of [restorePlay] for each: an id that exists is skipped. Returns the
+  /// rows written.
+  Future<int> restorePlays(List<Play> toRestore) => transaction(() async {
+    var written = 0;
+    for (final play in toRestore) {
+      if (await restorePlay(play)) written++;
+    }
+    return written;
+  });
 }
+
+const _idChunk = 500;

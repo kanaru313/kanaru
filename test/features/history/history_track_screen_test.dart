@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_routes.dart';
+import 'package:kanaru/features/history/most_played_row_tile.dart';
 import 'package:kanaru/features/history/history_track_play_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -57,35 +59,41 @@ void main() {
   setUp(() => h = historyHarness());
 
   group('opening', () {
-    testWidgets('from the journal menu, with the totals and every play', (
-      tester,
-    ) async {
-      await openHistory(
-        tester,
-        h,
-        tracks: [song('A')],
-        plays: [('A', _at(20)), ('A', _at(21)), ('A', _at(22))],
-      );
+    historyTestWidgets(
+      'from the journal menu, with the totals and every play',
+      (tester) async {
+        await openHistory(
+          tester,
+          h,
+          tracks: [song('A')],
+          plays: [('A', _at(20)), ('A', _at(21)), ('A', _at(22))],
+        );
 
-      await _menuOfRow(tester, 0, 'Song history');
+        // The journal's rows have no more button: right click opens the menu.
+        await tester.tap(find.text('A').first, buttons: kSecondaryButton);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Song history'));
+        await tester.pumpAndSettle();
+        await settleHistory(tester);
 
-      expect(location(h), historyTrackLocation('/m/A.flac'));
-      expect(
-        find.text('3 listens · First Tue, Oct 20 · Last Thu, Oct 22 9:00 AM'),
-        findsOneWidget,
-      );
-      expect(find.text('A'), findsOneWidget);
-      // Newest first, counting down.
-      final tiles = tester.widgetList<HistoryTrackPlayTile>(
-        find.byType(HistoryTrackPlayTile),
-      );
-      expect([for (final t in tiles) t.row.nth], [3, 2, 1]);
-      expect(find.text('#3'), findsOneWidget);
-      expect(find.text('listened 1:00'), findsNWidgets(3));
-      expect(find.text('Thu, Oct 22 · 9:00 AM'), findsOneWidget);
-    });
+        expect(location(h), historyTrackLocation('/m/A.flac'));
+        expect(
+          find.text('3 listens · First Tue, Oct 20 · Last Thu, Oct 22 9:00 AM'),
+          findsOneWidget,
+        );
+        expect(find.text('A'), findsOneWidget);
+        // Newest first, counting down.
+        final tiles = tester.widgetList<HistoryTrackPlayTile>(
+          find.byType(HistoryTrackPlayTile),
+        );
+        expect([for (final t in tiles) t.row.nth], [3, 2, 1]);
+        expect(find.text('#3'), findsOneWidget);
+        expect(find.text('listened 1:00'), findsNWidgets(3));
+        expect(find.text('Thu, Oct 22 · 9:00 AM'), findsOneWidget);
+      },
+    );
 
-    testWidgets('from Most played; back keeps the tab and the range', (
+    historyTestWidgets('from Most played; back keeps the page and the range', (
       tester,
     ) async {
       await openHistory(
@@ -93,14 +101,17 @@ void main() {
         h,
         tracks: [song('A')],
         plays: [('A', _at(22))],
+        page: mostPlayedPath,
       );
-      await tester.tap(find.widgetWithText(Tab, 'Most played'));
-      await settleHistory(tester);
       await tester.tap(find.widgetWithText(ChoiceChip, '7 days'));
       await settleHistory(tester);
 
-      await _menuOfRow(tester, 0, 'Song history');
-      expect(location(h), historyTrackLocation('/m/A.flac'));
+      // The ranking rows have no more button: a long press opens the menu.
+      await tester.longPress(find.byType(MostPlayedRowTile).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Song history'));
+      await settleHistory(tester);
+      expect(location(h), mostPlayedTrackLocation('/m/A.flac'));
       expect(
         find.text('1 listen · First Thu, Oct 22 · Last Thu, Oct 22 9:00 AM'),
         findsOneWidget,
@@ -109,17 +120,17 @@ void main() {
       await tester.tap(find.byTooltip('Back'));
       await settleHistory(tester);
 
-      expect(location(h), historyPath);
+      expect(location(h), mostPlayedPath);
       expect(
         tester
             .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '7 days'))
             .selected,
         isTrue,
       );
-      expect(find.text('Play all'), findsOneWidget);
+      expect(find.byType(MostPlayedRowTile), findsOneWidget);
     });
 
-    testWidgets('the song history page has no Song history item', (
+    historyTestWidgets('the song history page has no Song history item', (
       tester,
     ) async {
       await insertTracks(tester, h, [song('A')]);
@@ -135,7 +146,7 @@ void main() {
       expect(find.text('Remove from history'), findsOneWidget);
     });
 
-    testWidgets('no path says the song was not found', (tester) async {
+    historyTestWidgets('no path says the song was not found', (tester) async {
       await insertTracks(tester, h, const []);
       await h.pump(tester, hasRoots: true);
 
@@ -151,7 +162,9 @@ void main() {
   });
 
   group('playing', () {
-    testWidgets('Play queues the song by its library path', (tester) async {
+    historyTestWidgets('Play queues the song by its library path', (
+      tester,
+    ) async {
       await insertTracks(tester, h, [song('A')]);
       await _insert(tester, h, '/m/A.flac', _at(22));
       await h.pump(tester, hasRoots: true);
@@ -164,7 +177,7 @@ void main() {
       expect(_queue(h), ['/m/A.flac']);
     });
 
-    testWidgets('the row menu queues the song', (tester) async {
+    historyTestWidgets('the row menu queues the song', (tester) async {
       await insertTracks(tester, h, [song('A')]);
       await _insert(tester, h, '/m/A.flac', _at(22));
       await h.pump(tester, hasRoots: true);
@@ -178,7 +191,7 @@ void main() {
       expect(_queue(h), ['/m/A.flac', '/m/A.flac']);
     });
 
-    testWidgets('an address that is not a library song cannot play', (
+    historyTestWidgets('an address that is not a library song cannot play', (
       tester,
     ) async {
       await insertTracks(tester, h, [song('A')]);
@@ -195,7 +208,7 @@ void main() {
       expect(_queue(h), isEmpty);
     });
 
-    testWidgets('a play with no time listened hides it', (tester) async {
+    historyTestWidgets('a play with no time listened hides it', (tester) async {
       await insertTracks(tester, h, [song('A')]);
       await _insert(tester, h, '/m/A.flac', _at(22));
       await _insert(tester, h, '/m/A.flac', _at(21), listenedMs: 125000);
@@ -209,7 +222,7 @@ void main() {
   });
 
   group('removing', () {
-    testWidgets('removes one play from the menu and Undo restores it', (
+    historyTestWidgets('removes one play from the menu and Undo restores it', (
       tester,
     ) async {
       await insertTracks(tester, h, [song('A')]);
@@ -237,7 +250,9 @@ void main() {
       expect(find.byType(HistoryTrackPlayTile), findsNWidgets(3));
     });
 
-    testWidgets('removing the last play stays on the page', (tester) async {
+    historyTestWidgets('removing the last play stays on the page', (
+      tester,
+    ) async {
       await insertTracks(tester, h, [song('A')]);
       await _insert(tester, h, '/m/A.flac', _at(22));
       await h.pump(tester, hasRoots: true);
@@ -253,7 +268,7 @@ void main() {
       expect(_play, findsOneWidget);
     });
 
-    testWidgets('a new play of the song shows up', (tester) async {
+    historyTestWidgets('a new play of the song shows up', (tester) async {
       await insertTracks(tester, h, [song('A')]);
       await _insert(tester, h, '/m/A.flac', _at(22));
       await h.pump(tester, hasRoots: true);

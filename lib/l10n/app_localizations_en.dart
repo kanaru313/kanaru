@@ -34,6 +34,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHistory => 'History';
 
   @override
+  String get navMostPlayed => 'Most played';
+
+  @override
   String get navSearch => 'Search';
 
   @override
@@ -1546,13 +1549,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmptyMessage => 'Songs you play will show up here.';
 
   @override
-  String get historyToday => 'Today';
+  String historyDayDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
 
   @override
-  String get historyYesterday => 'Yesterday';
+  String historySince(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'since $dateString';
+  }
 
   @override
-  String historyDayPlayCount(int count) {
+  String historyPlayedAt(DateTime date, String time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString - $time';
+  }
+
+  @override
+  String get historyDayMenu => 'Day options';
+
+  @override
+  String get historyDayCreatePlaylist => 'Create playlist from this day';
+
+  @override
+  String get historyDayDelete => 'Remove this day\'s listens';
+
+  @override
+  String historyDayPlaylistName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'History · $dateString';
+  }
+
+  @override
+  String historyListenCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1579,7 +1617,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyDeletePlay => 'Remove from history';
 
   @override
-  String get historyPlayDeleted => 'Removed one listen from history';
+  String historyPlaysDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Removed $count listens from history',
+      one: 'Removed one listen from history',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get historyUndo => 'Undo';
@@ -1614,12 +1660,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get historyTabTimeline => 'Journal';
-
-  @override
-  String get historyTabTop => 'Most played';
-
-  @override
   String get historyRangeToday => 'Today';
 
   @override
@@ -1645,6 +1685,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyRangeNext => 'Next period';
+
+  @override
+  String get historyRangeDialogTitle => 'Custom range';
+
+  @override
+  String get historyRangePickStart => 'Pick the start date';
+
+  @override
+  String get historyRangePickEnd => 'Pick the end date';
+
+  @override
+  String historyRangeDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyRangeDayHasListens => 'Has listens';
+
+  @override
+  String get historyRangeStartPlaceholder => 'Start date';
+
+  @override
+  String get historyRangeEndPlaceholder => 'End date';
 
   @override
   String historyRangeLabel(String start, String end) {
@@ -1925,7 +1994,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueSaveNothing => 'Nothing in the queue is in your library';
 
   @override
-  String get queueHistoryTitle => 'Queue history';
+  String get queueHistoryTitle => 'Queues';
 
   @override
   String get queueHistoryEmptyTitle => 'No queue history yet';

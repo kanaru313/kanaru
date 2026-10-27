@@ -20,14 +20,12 @@ void main() {
 
   setUp(() => h = LibraryHarness(refreshInterval: Duration.zero));
 
-  testWidgets('sits first in its group, right above Queue history', (
-    tester,
-  ) async {
+  testWidgets('sits first in its group, right above Favorites', (tester) async {
     await openApp(tester, h, ['a']);
 
     final playlists = tester.getTopLeft(item('Playlists')).dy;
-    final queueHistory = tester.getTopLeft(item('Queue history')).dy;
-    expect(playlists, lessThan(queueHistory));
+    final favorites = tester.getTopLeft(item('Favorites')).dy;
+    expect(playlists, lessThan(favorites));
     expect(
       tester.getTopLeft(item('Folders')).dy,
       lessThan(playlists),
@@ -35,7 +33,7 @@ void main() {
     );
     final group = visibleSidebarGroups({...SidebarTab.values}).last;
     expect(group.first, AppDestination.playlists);
-    expect(group[1], AppDestination.queueHistory);
+    expect(group[1], AppDestination.favorites);
   });
 
   testWidgets('is highlighted on the grid and on a playlist page', (

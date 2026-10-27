@@ -34,6 +34,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get navHistory => 'Lịch sử';
 
   @override
+  String get navMostPlayed => 'Phát nhiều nhất';
+
+  @override
   String get navSearch => 'Tìm kiếm';
 
   @override
@@ -1493,13 +1496,48 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyEmptyMessage => 'Bài hát bạn đã phát sẽ hiện ở đây.';
 
   @override
-  String get historyToday => 'Hôm nay';
+  String historyDayDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
 
   @override
-  String get historyYesterday => 'Hôm qua';
+  String historySince(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'từ $dateString';
+  }
 
   @override
-  String historyDayPlayCount(int count) {
+  String historyPlayedAt(DateTime date, String time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString - $time';
+  }
+
+  @override
+  String get historyDayMenu => 'Tuỳ chọn ngày';
+
+  @override
+  String get historyDayCreatePlaylist => 'Tạo playlist từ ngày này';
+
+  @override
+  String get historyDayDelete => 'Xoá lượt nghe của ngày';
+
+  @override
+  String historyDayPlaylistName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Lịch sử · $dateString';
+  }
+
+  @override
+  String historyListenCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1525,7 +1563,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyDeletePlay => 'Xoá khỏi lịch sử';
 
   @override
-  String get historyPlayDeleted => 'Đã xoá một lượt nghe';
+  String historyPlaysDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count lượt nghe',
+      one: 'Đã xoá một lượt nghe',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get historyUndo => 'Hoàn tác';
@@ -1560,12 +1606,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get historyTabTimeline => 'Nhật ký';
-
-  @override
-  String get historyTabTop => 'Phát nhiều nhất';
-
-  @override
   String get historyRangeToday => 'Hôm nay';
 
   @override
@@ -1591,6 +1631,34 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get historyRangeNext => 'Kỳ sau';
+
+  @override
+  String get historyRangeDialogTitle => 'Khoảng tuỳ chọn';
+
+  @override
+  String get historyRangePickStart => 'Chọn ngày bắt đầu';
+
+  @override
+  String get historyRangePickEnd => 'Chọn ngày kết thúc';
+
+  @override
+  String historyRangeDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ngày',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyRangeDayHasListens => 'Có lượt nghe';
+
+  @override
+  String get historyRangeStartPlaceholder => 'Ngày bắt đầu';
+
+  @override
+  String get historyRangeEndPlaceholder => 'Ngày kết thúc';
 
   @override
   String historyRangeLabel(String start, String end) {
@@ -1802,7 +1870,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không bài nào trong hàng đợi có trong thư viện';
 
   @override
-  String get queueHistoryTitle => 'Lịch sử hàng đợi';
+  String get queueHistoryTitle => 'Các hàng đợi';
 
   @override
   String get queueHistoryEmptyTitle => 'Chưa có lịch sử hàng đợi';

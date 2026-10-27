@@ -1,32 +1,35 @@
-import 'dart:math' as math;
-
+import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/song_tile_placeholder.dart';
 import 'history_day_header.dart';
-import 'history_play_tile.dart';
+import 'history_line_metrics.dart';
+import 'history_play_row_tile.dart';
 import 'history_timeline_index.dart';
 
-/// Key of the sticky header, for tests.
+/// Key of the pinned day bar, for tests.
 const historyStickyHeaderKey = ValueKey('history-sticky-header');
 
-/// The timeline: one fixed-extent list of day headers and plays, with the
-/// header of the day at the top drawn over it as the sticky header.
+/// The timeline: one fixed-extent list of day header lines and plays, with
+/// the bar of the day at the top drawn over it as the pinned bar.
 ///
-/// The sticky header is not part of the scrolling: it reads the scroll
-/// offset, finds the line at the top (`offset ~/ extent`) and draws that
-/// line's day. It swallows pointer events, so what it covers is not hit.
+/// Every line is one song row tall ([historyLineExtent]). A header line is a
+/// gap with the day's bar at its bottom. The pinned bar is not part of the
+/// scrolling: it reads the scroll offset, finds the last bar that has reached
+/// the top (`stickyAt`) and draws that day, pushed up by the next bar as it
+/// arrives. What it covers is not hit (it is opaque, so a tap does not reach
+/// a row under it), and the mouse wheel and touchpad scroll the list over it.
 class HistoryTimelineView extends StatelessWidget {
   const HistoryTimelineView({
     super.key,
     required this.controller,
     required this.index,
     required this.rowsOf,
-    required this.now,
     required this.onTap,
     required this.onMenu,
+    required this.onDayMenu,
     this.olderYear,
     this.onOlderYear,
   });
@@ -36,7 +39,6 @@ class HistoryTimelineView extends StatelessWidget {
 
   /// The plays of the day starting at the given epoch ms, null while unread.
   final List<HistoryPlayRow>? Function(int dayStart) rowsOf;
-  final DateTime now;
 
   /// A play was tapped: the play and the start of its day.
   final void Function(HistoryPlayRow row, int dayStart) onTap;
@@ -44,20 +46,24 @@ class HistoryTimelineView extends StatelessWidget {
   /// A play's menu was asked for at the given global position.
   final void Function(HistoryPlayRow row, Offset position) onMenu;
 
+  /// The menu button of a day's bar was pressed at the given global position.
+  final void Function(HistoryDayCount day, Offset position) onDayMenu;
+
   /// The next older year with plays, offered at the end of the list.
   final int? olderYear;
   final VoidCallback? onOlderYear;
 
-  Widget _header(int day) {
+  Widget _bar(int day, double height) {
     final d = index.days[day];
-    return HistoryDayHeader(
+    return HistoryDayBar(
       day: DateTime.fromMillisecondsSinceEpoch(d.dayStart),
-      count: d.count,
-      now: now,
+      tracks: d.tracks,
+      height: height,
+      onMenu: (position) => onDayMenu(d, position),
     );
   }
 
-  Widget _item(BuildContext context, int i) {
+  Widget _item(BuildContext context, int i, double bar) {
     if (index.isFooter(i)) {
       return Align(
         alignment: Alignment.centerLeft,
@@ -71,55 +77,84 @@ class HistoryTimelineView extends StatelessWidget {
       );
     }
     final (:day, :row) = index.itemAt(i);
-    if (row < 0) return _header(day);
+    if (row < 0) {
+      return Align(alignment: Alignment.bottomCenter, child: _bar(day, bar));
+    }
     final dayStart = index.days[day].dayStart;
     final rows = rowsOf(dayStart);
-    if (rows == null || row >= rows.length) {
-      return const SizedBox(
-        height: historyRowExtent,
-        child: ClipRect(child: SongTilePlaceholder(compact: true)),
-      );
-    }
+    if (rows == null || row >= rows.length) return const SongTilePlaceholder();
     final play = rows[row];
-    return HistoryPlayTile(
+    return HistoryPlayRowTile(
       key: ValueKey(play.id),
       row: play,
-      onTap: play.track == null ? null : () => onTap(play, dayStart),
+      onTap: () => onTap(play, dayStart),
       onMenu: (position) => onMenu(play, position),
     );
+  }
+
+  /// The wheel and the touchpad over the pinned bar scroll the list, which is
+  /// not under the pointer there. Linux touchpads send pan-zoom events, not
+  /// scroll signals.
+  void _scrollBy(double delta) {
+    if (!controller.hasClients) return;
+    final position = controller.position;
+    final target = (position.pixels + delta).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    if (target != position.pixels) position.jumpTo(target);
   }
 
   @override
   Widget build(BuildContext context) {
     final count = index.itemCount;
     if (count == 0) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final extent = historyLineExtent(theme, scaler);
+    final bar = historyDayBarHeight(theme, scaler);
     return Stack(
       children: [
         ListView.builder(
           controller: controller,
-          itemExtent: historyRowExtent,
+          itemExtent: extent,
           itemCount: count,
-          itemBuilder: _item,
+          itemBuilder: (context, i) => _item(context, i, bar),
         ),
         Positioned(
           top: 0,
           left: 0,
           right: 0,
-          height: historyRowExtent,
-          child: AbsorbPointer(
+          height: bar,
+          child: ClipRect(
             key: historyStickyHeaderKey,
-            child: ListenableBuilder(
-              listenable: controller,
-              builder: (context, _) {
-                final offset = controller.hasClients ? controller.offset : 0.0;
-                final top = (math.max(0.0, offset) ~/ historyRowExtent).clamp(
-                  0,
-                  count - 1,
-                );
-                final day = index.dayIndexAtItem(top);
-                if (day >= index.days.length) return const SizedBox.shrink();
-                return _header(day);
+            child: Listener(
+              onPointerSignal: (event) {
+                if (event is PointerScrollEvent) {
+                  _scrollBy(event.scrollDelta.dy);
+                }
               },
+              onPointerPanZoomUpdate: (event) => _scrollBy(-event.panDelta.dy),
+              // The bar in the list is the one the screen reader and the
+              // keyboard reach; this one is a copy over it.
+              child: ExcludeSemantics(
+                child: ExcludeFocus(
+                  child: ListenableBuilder(
+                    listenable: controller,
+                    builder: (context, _) {
+                      final offset = controller.hasClients
+                          ? controller.offset
+                          : 0.0;
+                      final sticky = index.stickyAt(offset, extent, bar);
+                      if (sticky == null) return const SizedBox.shrink();
+                      return Transform.translate(
+                        offset: Offset(0, sticky.dy),
+                        child: _bar(sticky.day, bar),
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
         ),

@@ -25,35 +25,64 @@ class SliverTracksToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final durationMs = this.durationMs;
-    final muted = theme.colorScheme.onSurfaceVariant;
     final summary = [
       context.l10n.albumsSongCount(songCount),
       if (durationMs != null && durationMs > 0)
         formatDuration(Duration(milliseconds: durationMs)),
     ].join(' · ');
-
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 8, 24, 8),
-        child: ExpandingSearchBar(
-          controller: filter,
-          child: Row(
-            children: [
-              Icon(AppIcons.musicNoteOutlined, size: 20, color: muted),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  summary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(color: muted),
-                ),
+      child: TracksToolbar(summary: summary, filter: filter),
+    );
+  }
+}
+
+/// [SliverTracksToolbar] as a box: a given [summary], the filter button and
+/// optional [trailing] widgets right of it. The opened filter box covers the
+/// summary but not the trailing widgets.
+class TracksToolbar extends StatelessWidget {
+  const TracksToolbar({
+    super.key,
+    required this.summary,
+    required this.filter,
+    this.trailing = const [],
+  });
+
+  final String summary;
+  final InPageFilterController filter;
+
+  /// Buttons to the right of the filter button.
+  final List<Widget> trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 8, 24, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: ExpandingSearchBar(
+              controller: filter,
+              child: Row(
+                children: [
+                  Icon(AppIcons.musicNoteOutlined, size: 20, color: muted),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      summary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(color: muted),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          ...trailing,
+        ],
       ),
     );
   }

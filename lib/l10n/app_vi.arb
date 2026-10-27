@@ -8,6 +8,7 @@
   "navFolders": "Thư mục",
   "navFavorites": "Yêu thích",
   "navHistory": "Lịch sử",
+  "navMostPlayed": "Phát nhiều nhất",
   "navSearch": "Tìm kiếm",
   "navSettings": "Cài đặt",
   "sidebarPlaylists": "Playlist",
@@ -454,16 +455,54 @@
   "@historyEmptyMessage": {
     "description": "Message of the History page when nothing was played yet"
   },
-  "historyToday": "Hôm nay",
-  "@historyToday": {
-    "description": "Header of the History day that is today"
+  "historyDayDate": "{date}",
+  "@historyDayDate": {
+    "description": "Date on the bar that starts a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
-  "historyYesterday": "Hôm qua",
-  "@historyYesterday": {
-    "description": "Header of the History day that is yesterday"
+  "historySince": "từ {date}",
+  "historyPlayedAt": "{date} - {time}",
+  "@historyPlayedAt": {
+    "description": "Third line of a History row: the day and time the song was played",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
   },
-  "historyDayPlayCount": "{count, plural, other{{count} lượt nghe}}",
-  "@historyDayPlayCount": {
+  "historyDayMenu": "Tuỳ chọn ngày",
+  "@historyDayMenu": {
+    "description": "Tooltip of the menu button on a History day bar"
+  },
+  "historyDayCreatePlaylist": "Tạo playlist từ ngày này",
+  "@historyDayCreatePlaylist": {
+    "description": "Menu item that saves the songs of a History day as a playlist"
+  },
+  "historyDayDelete": "Xoá lượt nghe của ngày",
+  "@historyDayDelete": {
+    "description": "Menu item that removes every listen shown for a History day"
+  },
+  "historyDayPlaylistName": "Lịch sử · {date}",
+  "@historyDayPlaylistName": {
+    "description": "Suggested name of a playlist made from a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "historyListenCount": "{count, plural, other{{count} lượt nghe}}",
+  "@historyListenCount": {
     "description": "How many plays a History day holds",
     "placeholders": {
       "count": {
@@ -497,9 +536,14 @@
   "@historyDeletePlay": {
     "description": "Menu item that removes one play from the History"
   },
-  "historyPlayDeleted": "Đã xoá một lượt nghe",
-  "@historyPlayDeleted": {
-    "description": "Snackbar after one play was removed from the History"
+  "historyPlaysDeleted": "{count, plural, =1{Đã xoá một lượt nghe} other{Đã xoá {count} lượt nghe}}",
+  "@historyPlaysDeleted": {
+    "description": "Snackbar after plays were removed from the History",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyUndo": "Hoàn tác",
   "@historyUndo": {
@@ -542,14 +586,6 @@
       }
     }
   },
-  "historyTabTimeline": "Nhật ký",
-  "@historyTabTimeline": {
-    "description": "Tab of the History page that lists every play by day"
-  },
-  "historyTabTop": "Phát nhiều nhất",
-  "@historyTabTop": {
-    "description": "Tab of the History page that ranks songs by plays in a date range"
-  },
   "historyRangeToday": "Hôm nay",
   "@historyRangeToday": {
     "description": "Most played range chip and label for the current day"
@@ -585,6 +621,36 @@
   "historyRangeNext": "Kỳ sau",
   "@historyRangeNext": {
     "description": "Tooltip of the button that moves the Most played range forward"
+  },
+  "historyRangeDialogTitle": "Khoảng tuỳ chọn",
+  "@historyRangeDialogTitle": {
+    "description": "Caption above the days picked in the Most played custom range dialog"
+  },
+  "historyRangePickStart": "Chọn ngày bắt đầu",
+  "@historyRangePickStart": {
+    "description": "Hint in the custom range dialog before the first day is picked"
+  },
+  "historyRangePickEnd": "Chọn ngày kết thúc",
+  "@historyRangePickEnd": {
+    "description": "Hint in the custom range dialog after the first day is picked"
+  },
+  "historyRangeDays": "{count, plural, other{{count} ngày}}",
+  "@historyRangeDays": {
+    "description": "Days picked, shown as the hint of the custom range dialog",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyRangeDayHasListens": "Có lượt nghe",
+  "historyRangeStartPlaceholder": "Ngày bắt đầu",
+  "@historyRangeStartPlaceholder": {
+    "description": "Shown in the custom range dialog title until the first day is picked"
+  },
+  "historyRangeEndPlaceholder": "Ngày kết thúc",
+  "@historyRangeEndPlaceholder": {
+    "description": "Shown in the custom range dialog title until the last day is picked"
   },
   "historyRangeLabel": "{start} – {end}",
   "@historyRangeLabel": {
@@ -644,7 +710,7 @@
   },
   "historyTopEmpty": "Không có lượt nghe trong khoảng này",
   "@historyTopEmpty": {
-    "description": "Message of the Most played tab when the range has no plays"
+    "description": "Message of the Most played page when the range has no plays"
   },
   "historyShowTrackHistory": "Lịch sử bài này",
   "@historyShowTrackHistory": {
@@ -923,7 +989,7 @@
   "@queueSaveNothing": {
     "description": "Snackbar when no queue song can be saved in a playlist"
   },
-  "queueHistoryTitle": "Lịch sử hàng đợi",
+  "queueHistoryTitle": "Các hàng đợi",
   "queueHistoryEmptyTitle": "Chưa có lịch sử hàng đợi",
   "queueHistoryEmptyMessage": "Khi bạn phát thứ khác, hàng đợi bị thay sẽ được giữ ở đây.",
   "queueHistorySavedAt": "{date} · {time}",

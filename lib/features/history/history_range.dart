@@ -1,12 +1,12 @@
 import 'history_days.dart';
 
-/// The ranges the Most played tab offers.
+/// The ranges the Most played page offers.
 enum HistoryRangePreset { today, days7, days30, months6, year, all, custom }
 
-/// Most plays shown on the Most played tab.
+/// Most plays shown on the Most played page.
 const historyTopLimit = 500;
 
-/// The range of the Most played tab: a [preset], and how many periods back
+/// The range of the Most played page: a [preset], and how many periods back
 /// from it (`back`, 0 is the current one) the user stepped.
 ///
 /// Every range is whole local calendar days ending at midnight after today

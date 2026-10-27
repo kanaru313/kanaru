@@ -11,6 +11,7 @@ Future<void> _pump(
   VoidCallback? onShuffle,
   ValueChanged<QueueAction>? onQueueAction,
   double width = 600,
+  Widget? menu,
 }) => tester.pumpWidget(
   MaterialApp(
     localizationsDelegates: const [
@@ -27,6 +28,7 @@ Future<void> _pump(
             onPlay: onPlay,
             onShuffle: onShuffle,
             onQueueAction: onQueueAction,
+            menu: menu,
           ),
         ),
       ),
@@ -91,12 +93,7 @@ void main() {
     tester,
   ) async {
     var shuffled = 0;
-    await _pump(
-      tester,
-      width: 300,
-      onPlay: () {},
-      onShuffle: () => shuffled++,
-    );
+    await _pump(tester, width: 300, onPlay: () {}, onShuffle: () => shuffled++);
 
     expect(find.text('Shuffle'), findsNothing);
     expect(find.text('Play all'), findsOneWidget);
@@ -124,5 +121,30 @@ void main() {
       find.byWidgetPredicate((w) => w is ButtonStyleButton),
     );
     expect(buttons.every((b) => b.enabled), isTrue);
+  });
+
+  testWidgets('menu replaces the queue button', (tester) async {
+    await _pump(
+      tester,
+      onPlay: () {},
+      onShuffle: () {},
+      menu: const Icon(AppIcons.search, key: Key('custom-menu')),
+    );
+
+    expect(find.byKey(const Key('custom-menu')), findsOneWidget);
+    expect(find.byType(QueueActionsButton), findsNothing);
+  });
+
+  test('menu and onQueueAction together are rejected', () {
+    expect(
+      () => PlayShuffleActions(
+        playLabel: 'Play all',
+        onPlay: null,
+        onShuffle: null,
+        onQueueAction: (_) {},
+        menu: const SizedBox(),
+      ),
+      throwsAssertionError,
+    );
   });
 }

@@ -162,4 +162,28 @@ void main() {
 
     expect(libraryRowExtent(theme, TextScaler.noScaling), closeTo(80, 0.01));
   });
+
+  testWidgets('the badge sits above the duration; no badge keeps the column', (
+    tester,
+  ) async {
+    const duration = Duration(minutes: 1, seconds: 1);
+    await _pump(
+      tester,
+      const SongRowView(
+        title: 'Title',
+        duration: duration,
+        badge: Text('12 listens', key: Key('badge')),
+      ),
+    );
+    expect(
+      tester.getBottomLeft(find.byKey(const Key('badge'))).dy,
+      lessThanOrEqualTo(tester.getTopLeft(find.text('1:01')).dy),
+    );
+
+    await _pump(tester, const SongRowView(title: 'Title', duration: duration));
+    final column = tester.widget<Column>(
+      find.ancestor(of: find.text('1:01'), matching: find.byType(Column)).first,
+    );
+    expect(column.children, hasLength(1));
+  });
 }

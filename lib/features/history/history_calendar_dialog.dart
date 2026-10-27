@@ -140,7 +140,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
       enabled: enabled,
       label: enabled
           ? '${MaterialLocalizations.of(context).formatFullDate(date)}, '
-                '${context.l10n.historyDayPlayCount(plays)}'
+                '${context.l10n.historyListenCount(plays)}'
           : MaterialLocalizations.of(context).formatFullDate(date),
       child: InkResponse(
         key: ValueKey('history-calendar-day-$day'),

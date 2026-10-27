@@ -17,7 +17,11 @@ class PlayShuffleActions extends StatelessWidget {
     required this.onPlay,
     required this.onShuffle,
     required this.onQueueAction,
-  });
+    this.menu,
+  }) : assert(
+         menu == null || onQueueAction == null,
+         'menu replaces the queue menu button; pass onQueueAction: null',
+       );
 
   final String playLabel;
 
@@ -29,6 +33,10 @@ class PlayShuffleActions extends StatelessWidget {
 
   /// Null leaves the queue menu out.
   final ValueChanged<QueueAction>? onQueueAction;
+
+  /// Drawn instead of the queue menu button when given (the caller passes
+  /// `onQueueAction: null`), e.g. a vertical more button with its own items.
+  final Widget? menu;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +65,10 @@ class PlayShuffleActions extends StatelessWidget {
                 icon: const Icon(AppIcons.shuffle),
                 label: Text(l10n.libraryShuffle),
               ),
-            if (onQueueAction case final onQueueAction?) ...[
+            if (menu case final menu?) ...[
+              const SizedBox(width: 4),
+              menu,
+            ] else if (onQueueAction case final onQueueAction?) ...[
               const SizedBox(width: 4),
               QueueActionsButton(onSelected: onQueueAction),
             ],

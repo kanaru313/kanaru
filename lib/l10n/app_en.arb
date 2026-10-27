@@ -8,6 +8,10 @@
   "navFolders": "Folders",
   "navFavorites": "Favorites",
   "navHistory": "History",
+  "navMostPlayed": "Most played",
+  "@navMostPlayed": {
+    "description": "Name of the page ranking songs by plays in a date range, in the sidebar and as its title"
+  },
   "navSearch": "Search",
   "navSettings": "Settings",
   "sidebarPlaylists": "Playlists",
@@ -927,16 +931,63 @@
   "@historyEmptyMessage": {
     "description": "Message of the History page when nothing was played yet"
   },
-  "historyToday": "Today",
-  "@historyToday": {
-    "description": "Header of the History day that is today"
+  "historyDayDate": "{date}",
+  "@historyDayDate": {
+    "description": "Date on the bar that starts a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
-  "historyYesterday": "Yesterday",
-  "@historyYesterday": {
-    "description": "Header of the History day that is yesterday"
+  "historySince": "since {date}",
+  "@historySince": {
+    "description": "After the listen count on the History page: the date of the first play",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
-  "historyDayPlayCount": "{count, plural, =1{1 listen} other{{count} listens}}",
-  "@historyDayPlayCount": {
+  "historyPlayedAt": "{date} - {time}",
+  "@historyPlayedAt": {
+    "description": "Third line of a History row: the day and time the song was played",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyDayMenu": "Day options",
+  "@historyDayMenu": {
+    "description": "Tooltip of the menu button on a History day bar"
+  },
+  "historyDayCreatePlaylist": "Create playlist from this day",
+  "@historyDayCreatePlaylist": {
+    "description": "Menu item that saves the songs of a History day as a playlist"
+  },
+  "historyDayDelete": "Remove this day's listens",
+  "@historyDayDelete": {
+    "description": "Menu item that removes every listen shown for a History day"
+  },
+  "historyDayPlaylistName": "History · {date}",
+  "@historyDayPlaylistName": {
+    "description": "Suggested name of a playlist made from a History day",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "historyListenCount": "{count, plural, =1{1 listen} other{{count} listens}}",
+  "@historyListenCount": {
     "description": "How many plays a History day holds",
     "placeholders": {
       "count": {
@@ -970,9 +1021,14 @@
   "@historyDeletePlay": {
     "description": "Menu item that removes one play from the History"
   },
-  "historyPlayDeleted": "Removed one listen from history",
-  "@historyPlayDeleted": {
-    "description": "Snackbar after one play was removed from the History"
+  "historyPlaysDeleted": "{count, plural, =1{Removed one listen from history} other{Removed {count} listens from history}}",
+  "@historyPlaysDeleted": {
+    "description": "Snackbar after plays were removed from the History",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "historyUndo": "Undo",
   "@historyUndo": {
@@ -1015,14 +1071,6 @@
       }
     }
   },
-  "historyTabTimeline": "Journal",
-  "@historyTabTimeline": {
-    "description": "Tab of the History page that lists every play by day"
-  },
-  "historyTabTop": "Most played",
-  "@historyTabTop": {
-    "description": "Tab of the History page that ranks songs by plays in a date range"
-  },
   "historyRangeToday": "Today",
   "@historyRangeToday": {
     "description": "Most played range chip and label for the current day"
@@ -1058,6 +1106,39 @@
   "historyRangeNext": "Next period",
   "@historyRangeNext": {
     "description": "Tooltip of the button that moves the Most played range forward"
+  },
+  "historyRangeDialogTitle": "Custom range",
+  "@historyRangeDialogTitle": {
+    "description": "Caption above the days picked in the Most played custom range dialog"
+  },
+  "historyRangePickStart": "Pick the start date",
+  "@historyRangePickStart": {
+    "description": "Hint in the custom range dialog before the first day is picked"
+  },
+  "historyRangePickEnd": "Pick the end date",
+  "@historyRangePickEnd": {
+    "description": "Hint in the custom range dialog after the first day is picked"
+  },
+  "historyRangeDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@historyRangeDays": {
+    "description": "Days picked, shown as the hint of the custom range dialog",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyRangeDayHasListens": "Has listens",
+  "@historyRangeDayHasListens": {
+    "description": "Screen reader cue on a day of the custom range calendar that holds plays"
+  },
+  "historyRangeStartPlaceholder": "Start date",
+  "@historyRangeStartPlaceholder": {
+    "description": "Shown in the custom range dialog title until the first day is picked"
+  },
+  "historyRangeEndPlaceholder": "End date",
+  "@historyRangeEndPlaceholder": {
+    "description": "Shown in the custom range dialog title until the last day is picked"
   },
   "historyRangeLabel": "{start} – {end}",
   "@historyRangeLabel": {
@@ -1117,7 +1198,7 @@
   },
   "historyTopEmpty": "No listens in this range",
   "@historyTopEmpty": {
-    "description": "Message of the Most played tab when the range has no plays"
+    "description": "Message of the Most played page when the range has no plays"
   },
   "historyShowTrackHistory": "Song history",
   "@historyShowTrackHistory": {
@@ -1396,7 +1477,7 @@
   "@queueSaveNothing": {
     "description": "Snackbar when no queue song can be saved in a playlist"
   },
-  "queueHistoryTitle": "Queue history",
+  "queueHistoryTitle": "Queues",
   "@queueHistoryTitle": {
     "description": "Name of the page listing the queues the user replaced, in the sidebar and as its title"
   },
