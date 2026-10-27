@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'library_row.dart';
+import 'song_card.dart';
 import 'song_tile.dart' show songCoverSize;
 
 /// A song row whose data is still being read: the same three-line layout as
@@ -49,22 +50,25 @@ class SongTilePlaceholder extends StatelessWidget {
       );
     }
     final coverBox = cover(libraryRowCoverSize);
-    return LibraryRowLayout(
-      leading: leadingInset > 0
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 16,
-              children: [
-                SizedBox(width: leadingInset),
-                coverBox,
-              ],
-            )
-          : coverBox,
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [bar(180), bar(120), bar(150)],
+    return SongCardFrame(
+      child: LibraryRowLayout(
+        horizontalPadding: 32 - songCardInset,
+        leading: leadingInset > 0
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 16,
+                children: [
+                  SizedBox(width: leadingInset),
+                  coverBox,
+                ],
+              )
+            : coverBox,
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 10,
+          children: [bar(180), bar(120), bar(150)],
+        ),
       ),
     );
   }

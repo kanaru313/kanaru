@@ -13,7 +13,7 @@ import 'package:kanaru/features/player/queue/queue_play_next_marker.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/hover_reveal_action.dart';
-import 'package:kanaru/shared/widgets/library_row.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -53,8 +53,9 @@ void main() {
     double textScale = 1,
     Locale locale = const Locale('en'),
     bool openSheet = true,
+    Size size = const Size(1280, 800),
   }) async {
-    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     tester.platformDispatcher.textScaleFactorTestValue = textScale;
     addTearDown(tester.view.reset);
@@ -99,7 +100,7 @@ void main() {
   QueueTile tileWidget(WidgetTester tester, int row) =>
       tester.widget<QueueTile>(tile(row));
 
-  double extentOf(WidgetTester tester, double clampTo) => libraryRowExtent(
+  double extentOf(WidgetTester tester, double clampTo) => songCardExtent(
     Theme.of(tester.element(tile(0))),
     TextScaler.linear(clampTo),
   );
@@ -264,7 +265,8 @@ void main() {
   group('play next marker', () {
     rowTest('marks only the run rows and hints "Play next"', (tester) async {
       final handle = tester.ensureSemantics();
-      await pumpApp(tester, named(6), start: 1);
+      // Tall enough to build all eight rows.
+      await pumpApp(tester, named(6), start: 1, size: const Size(1280, 1000));
       await player().playNext(named(2, prefix: 'n'));
       await tester.pumpAndSettle();
 
@@ -413,6 +415,36 @@ void main() {
       expect(titles(), ['t1', 't2', 't0', 't3']);
       expect(backend.calls.where((c) => c.startsWith('open')), isEmpty);
       expect(container.read(playerServiceProvider).queue.index, 2);
+    });
+
+    rowTest('the dragged row lifts as the card, not its slot', (tester) async {
+      await pumpApp(tester, named(4));
+      final slot = tester.getRect(tile(0));
+
+      final gesture = await tester.startGesture(tester.getCenter(handle(0)));
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture.moveBy(const Offset(0, 24));
+      await tester.pump(const Duration(milliseconds: 16));
+
+      final plate = find.byElementPredicate(
+        (e) =>
+            e.widget is DecoratedBox &&
+            (e.widget as DecoratedBox).decoration is BoxDecoration &&
+            ((e.widget as DecoratedBox).decoration as BoxDecoration)
+                    .boxShadow !=
+                null,
+      );
+      expect(plate, findsOneWidget);
+      final size = tester.getSize(plate);
+      expect(size.width, slot.width - 2 * songCardInset);
+      expect(size.height, slot.height - songCardGap);
+      expect(
+        ((tester.widget<DecoratedBox>(plate)).decoration as BoxDecoration)
+            .borderRadius,
+        BorderRadius.circular(songCardRadius),
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
     });
 
     rowTest('a tap on the handle does not jump', (tester) async {

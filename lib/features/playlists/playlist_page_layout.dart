@@ -8,7 +8,7 @@ import '../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../shared/widgets/detail_page/tracks_toolbar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import 'playlist_entry_lift.dart';
+import '../../shared/widgets/song_card_lift.dart';
 import 'playlist_entry_tile.dart';
 import 'playlist_filter_results.dart';
 import 'playlist_header.dart';
@@ -162,7 +162,7 @@ class PlaylistPageLayout extends StatelessWidget {
               onReorderStart: onReorderStart,
               onReorderEnd: onReorderEnd,
               onReorderItem: onReorder,
-              proxyDecorator: playlistEntryLift(context),
+              proxyDecorator: songCardLift(context),
               itemBuilder: rowBuilder,
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),

@@ -7,6 +7,7 @@ import '../../shared/widgets/cover_art.dart';
 import '../../shared/widgets/favorite_button.dart';
 import '../../shared/widgets/hover_reveal_action.dart';
 import '../../shared/widgets/library_row.dart';
+import '../../shared/widgets/song_card.dart';
 import 'playlist_entry_handle.dart';
 
 /// The row of an entry whose file is not in the library: handle, an empty
@@ -50,39 +51,42 @@ class PlaylistMissingEntryTile extends StatelessWidget {
       placeholder: const Center(child: Icon(AppIcons.musicOff)),
     );
 
-    Widget row(bool revealed) => LibraryRowLayout(
-      leading: reorderable
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 16,
-              children: [
-                PlaylistEntryHandle(index: index),
-                cover,
-              ],
-            )
-          : cover,
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          libraryRowLine(entry.path.split('/').last, styles.title),
-          libraryRowLine(l10n.playlistNotInLibrary, styles.detail),
-          libraryRowLine('', styles.detail),
-        ],
+    Widget row(bool revealed) => SongCardFrame(
+      child: LibraryRowLayout(
+        horizontalPadding: 32 - songCardInset,
+        leading: reorderable
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 16,
+                children: [
+                  PlaylistEntryHandle(index: index),
+                  cover,
+                ],
+              )
+            : cover,
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            libraryRowLine(entry.path.split('/').last, styles.title),
+            libraryRowLine(l10n.playlistNotInLibrary, styles.detail),
+            libraryRowLine('', styles.detail),
+          ],
+        ),
+        trailing: onRemove != null
+            ? RevealableAction(
+                revealed: revealed,
+                child: IconButton(
+                  icon: const Icon(AppIcons.closeRounded),
+                  iconSize: 20,
+                  tooltip: l10n.playlistRemoveEntry,
+                  onPressed: onRemove,
+                ),
+              )
+            : showFavorite
+            ? FavoriteButton(path: entry.path, iconSize: 20, compact: true)
+            : null,
       ),
-      trailing: onRemove != null
-          ? RevealableAction(
-              revealed: revealed,
-              child: IconButton(
-                icon: const Icon(AppIcons.closeRounded),
-                iconSize: 20,
-                tooltip: l10n.playlistRemoveEntry,
-                onPressed: onRemove,
-              ),
-            )
-          : showFavorite
-          ? FavoriteButton(path: entry.path, iconSize: 20, compact: true)
-          : null,
     );
 
     return Opacity(

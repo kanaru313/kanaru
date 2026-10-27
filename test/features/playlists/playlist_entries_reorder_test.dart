@@ -3,8 +3,10 @@ import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/playlist_side_pane.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart'
     show
+        BorderRadius,
         BoxDecoration,
         CustomScrollView,
         DecoratedBox,
@@ -61,8 +63,11 @@ void main() {
       );
       expect(plate, findsOneWidget);
       final card = tester.getSize(plate);
-      expect(card.width, slot.width);
-      expect(card.height, slot.height);
+      expect(card.width, slot.width - 2 * songCardInset);
+      expect(card.height, slot.height - songCardGap);
+      final decoration =
+          (tester.widget<DecoratedBox>(plate).decoration as BoxDecoration);
+      expect(decoration.borderRadius, BorderRadius.circular(songCardRadius));
       await gesture.up();
       await tester.pumpAndSettle();
     });
@@ -271,8 +276,10 @@ void main() {
       await view.pump(tester, rows);
       // Down two slots and up again: the list reports the slot below the
       // row it started in.
-      final gesture = await dragBy(tester, 2 * rowExtent(tester));
-      for (var i = 0; i < 16; i++) {
+      final down = 2 * rowExtent(tester);
+      final gesture = await dragBy(tester, down);
+      // Back up to within a few pixels of where the row started.
+      for (var i = 0; i < (down - 32) ~/ 8; i++) {
         await gesture.moveBy(const Offset(0, -8));
         await tester.pump(const Duration(milliseconds: 16));
       }

@@ -21,11 +21,9 @@ const songCoverSize = 40.0;
 /// or not, so all rows have the height of the list's prototype row.
 ///
 /// The row of the playing track (same while paused) has a `primaryContainer`
-/// background, its texts in `onPrimaryContainer` and an equalizer on the
-/// cover. The row always has its own canvas [Material] (transparent when not
-/// playing): ink paints under it, so the fill cannot hide hover and splash,
-/// and its constant type keeps the row's elements when the flag flips (see
-/// [SongRowView], which draws the row).
+/// card, its texts in `onPrimaryContainer` and an equalizer on the cover.
+/// Every row is a rounded card of `songCardExtent` (see [SongRowView], which
+/// draws the row, and `SongCardFrame`).
 class SongTile extends ConsumerWidget {
   const SongTile({
     super.key,

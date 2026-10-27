@@ -70,7 +70,7 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
 
   /// Height of a line and of a day bar, read from the theme and text scale on
   /// every build; the jump and the scrolled-away test use them between builds.
-  double _extent = 80;
+  double _extent = 88;
   double _bar = 48;
 
   @override

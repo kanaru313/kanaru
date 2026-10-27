@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/player/player_service.dart';
-import '../../../shared/widgets/library_row.dart';
+import '../../../shared/widgets/song_card.dart';
 import 'queue_tile.dart';
 
 /// Row height and scroll controller of the queue list, for the state of the
@@ -31,7 +31,7 @@ mixin QueueListMetrics<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   void updateListMetrics() {
-    final next = libraryRowExtent(
+    final next = songCardExtent(
       Theme.of(context),
       MediaQuery.textScalerOf(context)
           .clamp(maxScaleFactor: queueTileMaxTextScale),

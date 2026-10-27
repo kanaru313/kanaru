@@ -13,6 +13,7 @@ import 'package:kanaru/features/player/queue/queue_panel.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:kanaru/shared/widgets/song_row_view.dart';
 import 'package:kanaru/shared/widgets/song_tile_cover.dart';
 import 'package:material_ui/material_ui.dart';
@@ -336,7 +337,7 @@ void main() {
         findsOneWidget,
       );
       // No position numbers; the playing row has the equalizer on its cover
-      // and the playing colors, the others stay transparent.
+      // and the playing colors, the others have the plain card colour.
       Color? fill(int row) => tester
           .widget<Material>(
             find
@@ -353,7 +354,7 @@ void main() {
       final scheme = Theme.of(tester.element(find.byType(QueueTile).at(2)))
           .colorScheme;
       expect(fill(2), scheme.primaryContainer);
-      expect(fill(3), isNot(scheme.primaryContainer));
+      expect(fill(3), songCardColor(scheme));
       expect(
         find.descendant(
           of: find.byType(QueueTile).at(3),
@@ -432,7 +433,8 @@ void main() {
     });
 
     testWidgets('follow the shuffled order', (tester) async {
-      await pumpApp(tester, count: 8, start: 3);
+      // Tall enough to build all eight rows.
+      await pumpApp(tester, count: 8, start: 3, size: const Size(1280, 1000));
       await player().setShuffle(true);
       await openSheet(tester);
 

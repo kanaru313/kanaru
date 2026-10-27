@@ -207,11 +207,14 @@ void main() {
     await scrollBy(tester, 2000);
     expect(button(), findsOneWidget);
 
+    // The first row that is on screen: rows built beyond the viewport edge
+    // cannot be dragged.
     final handle = find
         .descendant(
-          of: find.byType(QueueTile).first,
+          of: find.byType(QueueTile),
           matching: find.byIcon(Icons.drag_handle_rounded),
         )
+        .hitTestable()
         .first;
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 50));
@@ -235,7 +238,7 @@ void main() {
     expect(fade.opacity, 1);
 
     // Back to the playing row at once, so the fade starts at a known frame.
-    scroll(tester).jumpTo(149 * 80.0);
+    scroll(tester).jumpTo(149 * 88.0);
     await tester.pump();
     await tester.pump();
     expect(tester.widget<AnimatedOpacity>(opacity()).opacity, 0);
@@ -286,13 +289,13 @@ void main() {
     };
     final top = scroll(tester).offset;
     final before = rows();
-    scroll(tester).jumpTo(top + 80.0);
+    scroll(tester).jumpTo(top + 88.0);
     await tester.pump();
     final mid = rows();
     expect(button(), findsNothing);
 
     // The playing row leaves the view here, and the button comes in.
-    scroll(tester).jumpTo(top + 4 * 80.0);
+    scroll(tester).jumpTo(top + 4 * 88.0);
     await tester.pump();
     await tester.pump();
     expect(button(), findsOneWidget);

@@ -2,13 +2,13 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
-import '../../shared/widgets/library_row.dart';
+import '../../shared/widgets/song_card.dart';
 
 /// Height of every line of the timeline (day header lines, song rows,
-/// placeholders and the older-year line): one library song row. A fixed
+/// placeholders and the older-year line): one song card slot. A fixed
 /// height lets the list place lines, and jump to a day, without measuring.
 double historyLineExtent(ThemeData theme, TextScaler scaler) =>
-    libraryRowExtent(theme, scaler);
+    songCardExtent(theme, scaler);
 
 /// Height of the date bar that sits at the bottom of a day's header line. The
 /// rest of the line (above the bar) is a gap that separates the days.

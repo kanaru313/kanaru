@@ -9,6 +9,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -80,7 +81,7 @@ void main() {
     for (final song in [_a, _b]) {
       final tile = _tile(song);
       expect(_equalizer(tile), findsNothing);
-      expect(_rowMaterial(tester, tile).color, Colors.transparent);
+      expect(_rowMaterial(tester, tile).color, songCardColor(scheme));
       expect(_textColor(tester, tile, song.title), scheme.onSurface);
     }
   });
@@ -109,7 +110,7 @@ void main() {
 
     final b = _tile(_b);
     expect(_equalizer(b), findsNothing);
-    expect(_rowMaterial(tester, b).color, Colors.transparent);
+    expect(_rowMaterial(tester, b).color, songCardColor(scheme));
   });
 
   testWidgets('highlightPlaying false keeps the playing track plain', (
@@ -120,9 +121,10 @@ void main() {
         SongTile(song: _a, onTap: () {}, highlightPlaying: false),
       ]),
     );
+    final scheme = Theme.of(tester.element(find.byType(Scaffold))).colorScheme;
     final a = _tile(_a);
     expect(_equalizer(a), findsNothing);
-    expect(_rowMaterial(tester, a).color, Colors.transparent);
+    expect(_rowMaterial(tester, a).color, songCardColor(scheme));
   });
 
   testWidgets('a real cover gets a scrim and a white equalizer', (
@@ -236,7 +238,12 @@ void main() {
 
     testWidgets('a flip keeps the row elements and states', (tester) async {
       await pumpRow(tester);
-      expect(fill(tester), Colors.transparent);
+      expect(
+        fill(tester),
+        songCardColor(
+          Theme.of(tester.element(find.byType(Scaffold))).colorScheme,
+        ),
+      );
       final inkWell = tester.element(
         _in(_tile(_a), find.byType(InkWell)).first,
       );

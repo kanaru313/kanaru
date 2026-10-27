@@ -9,7 +9,7 @@ import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
-import '../../shared/widgets/library_row.dart';
+import '../../shared/widgets/song_card.dart';
 import 'history_play_menu.dart';
 import 'history_range.dart';
 import 'history_routes.dart';
@@ -71,7 +71,7 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final extent = libraryRowExtent(theme, MediaQuery.textScalerOf(context));
+    final extent = songCardExtent(theme, MediaQuery.textScalerOf(context));
     final rows = widget.rows;
     return ListView.builder(
       itemExtent: extent,

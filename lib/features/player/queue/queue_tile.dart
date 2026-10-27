@@ -17,7 +17,7 @@ import 'queue_play_next_marker.dart';
 import 'queue_tile_menu.dart';
 
 /// Largest text scale the fixed-height row's text grows to. The list sizes
-/// its rows with the same cap (`libraryRowExtent`), so the three lines always
+/// its rows with the same cap (`songCardExtent`), so the three lines always
 /// fit.
 const queueTileMaxTextScale = 1.25;
 

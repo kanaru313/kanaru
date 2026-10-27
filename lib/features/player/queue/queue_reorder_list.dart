@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
+import '../../../shared/widgets/song_card_lift.dart';
 import 'queue_locate_button.dart';
 import 'queue_tile.dart';
 
@@ -126,6 +127,7 @@ class _QueueReorderListState extends ConsumerState<QueueReorderList> {
       onReorderEnd: (_) => _dragging.value = false,
       // `to` is already the final index of the dropped row.
       onReorderItem: _onReorder,
+      proxyDecorator: songCardLift(context),
       itemBuilder: (context, position) => QueueTile(
         // The index in the opened queue: stable while rows move, and never
         // shared by two copies of the same file.

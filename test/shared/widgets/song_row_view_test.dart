@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/widgets/library_row.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:kanaru/shared/widgets/song_row_view.dart';
 import 'package:kanaru/shared/widgets/song_tile_cover.dart';
 import 'package:material_ui/material_ui.dart';
@@ -65,11 +66,14 @@ void main() {
         .colorScheme;
 
     final material = tester.widget<Material>(
-      find.descendant(
-        of: find.byType(SongRowView),
-        matching: find.byType(Material),
-      ),
+      find
+          .descendant(
+            of: find.byType(SongRowView),
+            matching: find.byType(Material),
+          )
+          .first,
     );
+    expect(material.color, songCardColor(colors, playing: true));
     expect(material.color, colors.primaryContainer);
     expect(
       tester.widget<Text>(find.text('Title')).style!.color,
@@ -100,7 +104,11 @@ void main() {
 
     expect(tester.getSize(find.byType(SongRowView)), plain);
     expect(find.byKey(const Key('mark')), findsOneWidget);
-    expect(tester.getTopLeft(find.byKey(const Key('mark'))).dx, 0);
+    expect(
+      tester.getTopLeft(find.byKey(const Key('mark'))).dx -
+          tester.getTopLeft(find.byType(SongRowView)).dx,
+      songCardInset,
+    );
   });
 
   testWidgets('the semantics hint is read with the row', (tester) async {
@@ -138,7 +146,7 @@ void main() {
     ('CJK title at 1.25', '漢字テスト', 1.25, const Locale('en')),
     ('vi locale', 'Tiêu đề', 1.0, const Locale('vi')),
   ]) {
-    testWidgets('height equals libraryRowExtent: $name', (tester) async {
+    testWidgets('height equals songCardExtent: $name', (tester) async {
       await _pump(
         tester,
         SongRowView(title: title, artist: 'Artist', detail: 'Album • 2000'),
@@ -149,18 +157,23 @@ void main() {
 
       expect(
         tester.getSize(find.byType(SongRowView)).height,
+        closeTo(songCardExtent(theme, TextScaler.linear(scale)), 0.01),
+      );
+      expect(
+        tester.getSize(find.byType(LibraryRowLayout)).height,
         closeTo(libraryRowExtent(theme, TextScaler.linear(scale)), 0.01),
       );
     });
   }
 
-  testWidgets('the extent is the 80 px row at the default scale', (
+  testWidgets('the extent is the 88 px card slot at the default scale', (
     tester,
   ) async {
     await _pump(tester, const SongRowView(title: 'Title'));
     final theme = Theme.of(tester.element(find.byType(SongRowView)));
 
     expect(libraryRowExtent(theme, TextScaler.noScaling), closeTo(80, 0.01));
+    expect(songCardExtent(theme, TextScaler.noScaling), closeTo(88, 0.01));
   });
 
   testWidgets('the badge sits above the duration; no badge keeps the column', (

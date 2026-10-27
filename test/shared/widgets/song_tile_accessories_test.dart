@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/playing_track_path.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/library_row.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:kanaru/shared/widgets/song_tile_cover.dart';
 import 'package:kanaru/shared/widgets/song_tile_placeholder.dart';
@@ -208,10 +209,7 @@ void main() {
                   body: Builder(
                     builder: (context) {
                       final theme = Theme.of(context);
-                      extent = libraryRowExtent(
-                        theme,
-                        TextScaler.linear(scale),
-                      );
+                      extent = songCardExtent(theme, TextScaler.linear(scale));
                       return Align(
                         alignment: Alignment.topLeft,
                         child: SizedBox(

@@ -77,6 +77,9 @@ void main() {
           )
           .first,
     );
+    // Scrolling stops once the row is built, which may be below the fold.
+    await tester.ensureVisible(find.text('guest').last);
+    await tester.pump();
     await tester.tap(find.text('guest').last);
     await tester.pump();
     final queue = h.container.read(playerServiceProvider).queue;

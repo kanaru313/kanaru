@@ -7,6 +7,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/natural_compare.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/song_card.dart';
 import 'folder_tree.dart';
 
 /// Opacity of a hidden entry: visibly apart from the rest, still readable.
@@ -89,7 +90,11 @@ class HiddenSongMark extends StatelessWidget {
     child: Stack(
       children: [
         Opacity(opacity: hiddenEntryOpacity, child: child),
-        const Positioned(bottom: 2, right: 32, child: HiddenLabel()),
+        const Positioned(
+          bottom: songCardGap / 2 + 2,
+          right: 32,
+          child: HiddenLabel(),
+        ),
       ],
     ),
   );

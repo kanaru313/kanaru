@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../format_duration.dart';
 import 'library_row.dart';
+import 'song_card.dart';
 import 'song_tile_cover.dart';
 
 /// The library song row as a plain view: an optional [number] or [leading]
@@ -10,10 +11,10 @@ import 'song_tile_cover.dart';
 /// library (the play queue) draw the same row. [SongTile] adds the library
 /// parts around it.
 ///
-/// A [playing] row has a `primaryContainer` background, its texts in
-/// `onPrimaryContainer` and an equalizer on the cover. Every line is always
-/// laid out, empty or not, so all rows have the height of
-/// [libraryRowExtent].
+/// The row is a rounded card ([SongCardFrame]). A [playing] row has a
+/// `primaryContainer` card, its texts in `onPrimaryContainer` and an equalizer
+/// on the cover. Every line is always laid out, empty or not, so all rows have
+/// the height of [songCardExtent].
 class SongRowView extends StatelessWidget {
   const SongRowView({
     super.key,
@@ -35,6 +36,10 @@ class SongRowView extends StatelessWidget {
   }) : assert(
          number == null || leading == null,
          'number and leading both fill the slot before the cover',
+       ),
+       assert(
+         horizontalPadding >= songCardInset,
+         'the card itself takes songCardInset of the row padding',
        );
 
   final String title;
@@ -74,7 +79,8 @@ class SongRowView extends StatelessWidget {
   /// Read out with the row's own text, e.g. "Play next".
   final String? semanticsHint;
 
-  /// Space left and right of the row.
+  /// Space between the list edge and the row's content (the card sits
+  /// [songCardInset] from the edge, the content inside it).
   final double horizontalPadding;
 
   @override
@@ -105,14 +111,13 @@ class SongRowView extends StatelessWidget {
       ],
     );
 
-    // The row always has its own canvas Material (transparent when not
-    // playing): ink paints under it, so the fill cannot hide hover and
-    // splash, and its constant type keeps the row's elements when the
-    // playing flag flips.
+    // The card's Material paints the fill; ink of this InkWell paints over
+    // it, so the fill cannot hide hover and splash.
     Widget row = InkWell(
       onTap: onTap,
+      customBorder: songCardShape,
       child: LibraryRowLayout(
-        horizontalPadding: horizontalPadding,
+        horizontalPadding: horizontalPadding - songCardInset,
         leading: leading != null
             ? Row(
                 mainAxisSize: MainAxisSize.min,
@@ -156,8 +161,8 @@ class SongRowView extends StatelessWidget {
     final hint = semanticsHint;
     if (hint != null) row = Semantics(hint: hint, child: row);
     final overlay = this.overlay;
-    return Material(
-      color: playing ? colors.primaryContainer : Colors.transparent,
+    return SongCardFrame(
+      playing: playing,
       child: overlay == null
           ? row
           : Stack(
