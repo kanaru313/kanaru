@@ -4,7 +4,6 @@ import '../../../shared/icons/app_icons.dart';
 import 'folder_counts_line.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
-import 'hidden_entries.dart';
 
 /// One folder row: folder icon, [title] (the folder name, or its label in
 /// the flat list) and the counts line.
@@ -32,17 +31,11 @@ class FolderListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
-      leading: dimmedIf(
-        folder.hidden,
-        const SizedBox.square(
-          dimension: 40,
-          child: Center(child: Icon(AppIcons.folderOutlined, size: 28)),
-        ),
+      leading: const SizedBox.square(
+        dimension: 40,
+        child: Center(child: Icon(AppIcons.folderOutlined, size: 28)),
       ),
-      title: dimmedIf(
-        folder.hidden,
-        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: showPath
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,

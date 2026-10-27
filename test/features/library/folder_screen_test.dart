@@ -379,7 +379,7 @@ void main() {
       TestTrack('s', path: '/m/.secret/s.flac'),
     ], location: folderLocation('/m/.secret'));
 
-    expect(find.text('Hidden'), findsOneWidget, reason: 'the header tag');
+    expect(find.text('Hidden'), findsNothing);
     expect(onPage('s'), findsOneWidget);
     expect(find.byTooltip('Show hidden items'), findsNothing);
     expect(find.byTooltip('Queue actions'), findsOneWidget);

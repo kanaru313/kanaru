@@ -98,36 +98,21 @@ void main() {
     expect([for (final n in tree.flat) n.label], ['Music/x', 'Rock']);
   });
 
-  test(
-    'a folder with a dot part below its root is hidden, with its counts',
-    () {
-      final tree = buildFolderTree(
-        ['/m'],
-        [c('/m/.a', 2), c('/m/.a/b', 1), c('/m/b', 3), c('/m/x/.y/z', 1)],
-      );
+  test('a folder with a dot part below its root keeps its counts', () {
+    final tree = buildFolderTree(
+      ['/m'],
+      [c('/m/.a', 2), c('/m/.a/b', 1), c('/m/b', 3), c('/m/x/.y/z', 1)],
+    );
 
-      expect(tree.byPath['/m/.a']!.hidden, isTrue);
-      expect(tree.byPath['/m/.a']!.songs, 3);
-      expect(tree.byPath['/m/.a/b']!.hidden, isTrue);
-      expect(tree.byPath['/m/x/.y']!.hidden, isTrue);
-      expect(tree.byPath['/m/x/.y/z']!.hidden, isTrue);
-      expect(tree.byPath['/m/b']!.hidden, isFalse);
-      expect(tree.byPath['/m/x']!.hidden, isFalse);
-      expect(tree.byPath['/m']!.hidden, isFalse);
-    },
-  );
-
-  test('a music folder named with a dot is not hidden, nor its children', () {
-    final tree = buildFolderTree(['/x/.music'], [c('/x/.music/c', 1)]);
-
-    expect(tree.byPath['/x/.music']!.hidden, isFalse);
-    expect(tree.byPath['/x/.music/c']!.hidden, isFalse);
+    expect(tree.byPath['/m/.a']!.songs, 3);
+    expect(tree.byPath['/m/.a']!.subfolders, 1);
+    expect(tree.byPath['/m/x/.y']!.songs, 1);
+    expect(tree.byPath['/m']!.songs, 7);
   });
 
-  test('the flat list tags a folder inside a dot folder', () {
+  test('the flat list holds a folder inside a dot folder by its path', () {
     final tree = buildFolderTree(['/m'], [c('/m/.a/b', 1), c('/m/c', 1)]);
 
-    expect(tree.flat.singleWhere((n) => n.label == '.a/b').hidden, isTrue);
-    expect(tree.flat.singleWhere((n) => n.label == 'c').hidden, isFalse);
+    expect([for (final n in tree.flat) n.label], ['.a/b', 'c']);
   });
 }

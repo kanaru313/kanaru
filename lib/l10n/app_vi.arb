@@ -1210,7 +1210,6 @@
   "scanStatsSongs": "{count} bài",
   "scanStatsUnfinishedRoots": "{count} thư mục chưa quét xong",
   "scanStatsCoversHint": "Kanaru tự tạo ảnh thu nhỏ từ ảnh trong file hoặc thư mục. Ảnh trùng chỉ lưu một lần (theo hash).",
-  "foldersHiddenLabel": "Ẩn",
   "sleepTimer": "Hẹn giờ ngủ",
   "sleepTimerActive": "Hẹn giờ ngủ: {state}",
   "sleepTimerMinutes": "{count} phút",

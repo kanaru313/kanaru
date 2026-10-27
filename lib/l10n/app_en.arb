@@ -1862,10 +1862,6 @@
   "@scanStatsCoversHint": {
     "description": "Note under the cover art numbers"
   },
-  "foldersHiddenLabel": "Hidden",
-  "@foldersHiddenLabel": {
-    "description": "Small label on a folder with a part of its path below the music folder starting with a dot"
-  },
   "sleepTimer": "Sleep timer",
   "@sleepTimer": {
     "description": "Tooltip and menu title of the moon button that pauses playback later"

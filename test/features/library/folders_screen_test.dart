@@ -1,11 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/library/folders/folder_counts_line.dart';
 import 'package:kanaru/features/library/folders/folder_grid_tile.dart';
 import 'package:kanaru/features/library/folders/folder_list_tile.dart';
-import 'package:kanaru/features/library/folders/hidden_entries.dart';
 import 'package:kanaru/features/library/folders/folders_provider.dart';
-import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -333,23 +332,24 @@ void main() {
     expect(find.byTooltip('/b/Music'), findsOneWidget);
   });
 
-  testWidgets('a dot folder holding library songs is tagged and has a menu', (
-    tester,
-  ) async {
-    final h = LibraryHarness(overrides: [listViewModesOverride]);
-    await openWithTracks(tester, h, const [
-      TestTrack('s', path: '/m/.secret/s.flac'),
-      TestTrack('p', path: '/m/Pop/p.flac'),
-    ], location: folderLocation('/m'));
+  testWidgets(
+    'a dot folder holding library songs shows like any folder and has a menu',
+    (tester) async {
+      final h = LibraryHarness(overrides: [listViewModesOverride]);
+      await openWithTracks(tester, h, const [
+        TestTrack('s', path: '/m/.secret/s.flac'),
+        TestTrack('p', path: '/m/Pop/p.flac'),
+      ], location: folderLocation('/m'));
 
-    expect(find.text('.secret'), findsOneWidget);
-    expect(find.text('Hidden'), findsOneWidget, reason: 'only .secret');
-    expect(find.byTooltip('Show hidden items'), findsNothing);
+      expect(find.text('.secret'), findsOneWidget);
+      expect(find.text('Hidden'), findsNothing);
+      expect(find.byTooltip('Show hidden items'), findsNothing);
 
-    await tester.tap(find.text('.secret'), buttons: kSecondaryButton);
-    await tester.pumpAndSettle();
-    expect(find.text('Add to queue'), findsOneWidget);
-  });
+      await tester.tap(find.text('.secret'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Add to queue'), findsOneWidget);
+    },
+  );
 
   testWidgets('the folders page has no hidden items button', (tester) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
@@ -359,7 +359,7 @@ void main() {
     expect(find.byTooltip('Hide hidden items'), findsNothing);
   });
 
-  testWidgets('the Hidden tag stays on one line in a narrow, large-text grid', (
+  testWidgets('a narrow, large-text grid shows counts without overflow', (
     tester,
   ) async {
     tester.platformDispatcher.textScaleFactorTestValue = 1.5;
@@ -371,52 +371,39 @@ void main() {
         TestTrack('t$i', path: '/m/.secret/d$i/t$i.flac'),
     ], location: '/folders');
     tester.view.physicalSize = const Size(360, 720);
+    addTearDown(tester.view.resetPhysicalSize);
     await tester.tap(find.byTooltip('Folder tree'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('List'));
     await tester.pumpAndSettle();
 
     expect(find.byType(FolderGridTile), findsWidgets);
-    expect(find.text('Hidden'), findsWidgets);
+    expect(find.byType(FolderCountsLine), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a hidden folder is dimmed, a normal one is not', (tester) async {
+  testWidgets('a dot folder is not dimmed and shows its counts', (
+    tester,
+  ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, const [
       TestTrack('s', path: '/m/.secret/s.flac'),
       TestTrack('p', path: '/m/Pop/p.flac'),
     ], location: folderLocation('/m'));
 
-    Finder dimmed(String name) => find.ancestor(
-      of: find.text(name),
-      matching: find.byWidgetPredicate(
-        (w) => w is Opacity && w.opacity == hiddenEntryOpacity,
-      ),
-    );
-    Finder dimmedIcon(String name) => find.ancestor(
-      of: find.descendant(
-        of: folderTile(name),
-        matching: find.byIcon(AppIcons.folderOutlined),
-      ),
-      matching: find.byWidgetPredicate(
-        (w) => w is Opacity && w.opacity == hiddenEntryOpacity,
-      ),
-    );
-
-    expect(dimmed('.secret'), findsOneWidget);
-    expect(dimmedIcon('.secret'), findsOneWidget);
-    expect(dimmed('Pop'), findsNothing);
-    expect(dimmedIcon('Pop'), findsNothing);
     expect(
       find.ancestor(
-        of: find.text('Hidden'),
-        matching: find.byWidgetPredicate(
-          (w) => w is Opacity && w.opacity == hiddenEntryOpacity,
-        ),
+        of: find.text('.secret'),
+        matching: find.byWidgetPredicate((w) => w is Opacity && w.opacity < 1),
       ),
       findsNothing,
-      reason: 'the tag itself stays readable',
+    );
+    expect(
+      find.descendant(
+        of: folderTile('.secret'),
+        matching: find.byType(FolderCountsLine),
+      ),
+      findsOneWidget,
     );
   });
 }

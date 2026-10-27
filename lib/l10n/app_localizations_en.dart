@@ -2364,9 +2364,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).';
 
   @override
-  String get foldersHiddenLabel => 'Hidden';
-
-  @override
   String get sleepTimer => 'Sleep timer';
 
   @override

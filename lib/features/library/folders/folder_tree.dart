@@ -15,7 +15,6 @@ class FolderNode {
     required this.songs,
     required this.subfolders,
     required this.children,
-    this.hidden = false,
   });
 
   /// Absolute path without a trailing `/`.
@@ -46,10 +45,6 @@ class FolderNode {
 
   /// Its direct subfolders, in natural order of their names.
   final List<FolderNode> children;
-
-  /// Some part of its path below its music folder starts with a dot: the dot
-  /// folder itself and every folder inside it. A music folder is never hidden.
-  final bool hidden;
 
   bool get isRoot => path == rootPath;
 }
@@ -166,7 +161,6 @@ FolderTree buildFolderTree(
       songs: dir.direct + children.fold(0, (sum, c) => sum + c.songs),
       subfolders: children.fold(0, (sum, c) => sum + 1 + c.subfolders),
       children: children,
-      hidden: dir.rel.startsWith('.') || dir.rel.contains('/.'),
     );
     nodes[dir.path] = node;
     return node;

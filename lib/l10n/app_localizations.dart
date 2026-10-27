@@ -3332,12 +3332,6 @@ abstract class AppLocalizations {
   /// **'Kanaru makes these thumbnails itself from the art in the files or the folder. An image repeated in many songs is stored once (by hash).'**
   String get scanStatsCoversHint;
 
-  /// Small label on a folder with a part of its path below the music folder starting with a dot
-  ///
-  /// In en, this message translates to:
-  /// **'Hidden'**
-  String get foldersHiddenLabel;
-
   /// Tooltip and menu title of the moon button that pauses playback later
   ///
   /// In en, this message translates to:
