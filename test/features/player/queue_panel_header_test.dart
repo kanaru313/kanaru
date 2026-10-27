@@ -8,6 +8,8 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_panel_header.dart';
 import 'package:kanaru/features/player/queue/queue_time_left.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/in_page_filter.dart';
+import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -15,6 +17,7 @@ import '../../core/player/fake_audio_backend.dart';
 void main() {
   late FakeAudioBackend backend;
   late ProviderContainer container;
+  late InPageFilterController filter;
 
   /// Pumps the header with the real summary text inside a [width] box.
   Future<void> pumpHeader(
@@ -29,6 +32,8 @@ void main() {
     VoidCallback? onClose,
   }) async {
     backend = FakeAudioBackend();
+    filter = InPageFilterController();
+    addTearDown(filter.dispose);
     container = ProviderContainer(
       overrides: [audioBackendProvider.overrideWithValue(backend)],
     );
@@ -58,8 +63,7 @@ void main() {
                     builder: (context) {
                       return QueuePanelHeader(
                         summary: const QueueSummaryText(),
-                        filterOpen: false,
-                        onFilter: () {},
+                        filter: filter,
                         onSave: onSave,
                         onClear: onClear,
                         onShowCurrent: () {},
@@ -249,5 +253,60 @@ void main() {
       Tristate.isTrue,
     );
     handle.dispose();
+  });
+
+  testWidgets('the filter button is named once and reports its state', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await pumpHeader(tester, width: 432, onClose: () {});
+
+    var node = tester.getSemantics(find.byTooltip('Filter in this page'));
+    expect(node.label, 'Filter in this page');
+    expect(node.flagsCollection.isButton, isTrue);
+    expect(node.flagsCollection.isSelected, Tristate.isFalse);
+
+    await tester.tap(find.byTooltip('Filter in this page'));
+    await tester.pumpAndSettle();
+    expect(filter.isOpen, isTrue);
+    node = tester.getSemantics(find.byTooltip('Close'));
+    expect(node.label, 'Close');
+    expect(node.flagsCollection.isSelected, Tristate.isTrue);
+    handle.dispose();
+  });
+
+  testWidgets('the filter box grows over the summary and keeps the row '
+      'height', (tester) async {
+    await pumpHeader(tester, width: 432, onClose: () {});
+    final header = find.byType(QueuePanelHeader);
+    final before = tester.getSize(header);
+
+    await tester.tap(find.byTooltip('Filter in this page'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InPageSearchBox), findsOneWidget);
+    expect(tester.getSize(header), before);
+    expect(find.byTooltip('Jump to current song'), findsOneWidget);
+    expect(find.byTooltip('More actions'), findsOneWidget);
+  });
+
+  testWidgets('opening the filter at 360 px, vi, text scale 1.5 does not '
+      'overflow or change the header height', (tester) async {
+    await pumpHeader(
+      tester,
+      width: 360,
+      locale: const Locale('vi'),
+      textScale: 1.5,
+      onClose: () {},
+    );
+    final header = find.byType(QueuePanelHeader);
+    final before = tester.getSize(header);
+
+    await tester.tap(find.byTooltip('Lọc trong trang'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(InPageSearchBox), findsOneWidget);
+    expect(tester.getSize(header), before);
   });
 }

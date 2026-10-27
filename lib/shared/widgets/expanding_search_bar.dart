@@ -19,12 +19,18 @@ class ExpandingSearchBar extends StatefulWidget {
     super.key,
     required this.controller,
     required this.child,
+    this.boxHeight,
   });
 
   final InPageFilterController controller;
 
   /// What the bar shows while the filter is closed, such as a song count.
   final Widget child;
+
+  /// Fixed height of the open box, for a bar that sits in a row of known
+  /// height and must not grow when the box opens at a large text size.
+  /// `null` lets the box take the height of its text.
+  final double? boxHeight;
 
   @override
   State<ExpandingSearchBar> createState() => _ExpandingSearchBarState();
@@ -95,6 +101,45 @@ class _ExpandingSearchBarState extends State<ExpandingSearchBar>
     _focusButton();
   }
 
+  /// The filter / close button. A tooltip alone gives assistive technology no
+  /// name, so the wrapper names the button itself, replacing the button's own
+  /// semantics so the name is announced once.
+  Widget _buildButton(BuildContext context, bool open) {
+    final label = open
+        ? MaterialLocalizations.of(context).closeButtonTooltip
+        : context.l10n.inPageSearchOpen;
+    final onPressed = open ? _close : widget.controller.open;
+    return Semantics(
+      label: label,
+      button: true,
+      enabled: true,
+      selected: open,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: IconButton(
+        focusNode: _buttonFocus,
+        icon: AnimatedSwitcher(
+          duration: expandingSearchDuration,
+          transitionBuilder: (child, animation) => RotationTransition(
+            turns: Tween(begin: 0.75, end: 1.0).animate(animation),
+            child: FadeTransition(opacity: animation, child: child),
+          ),
+          child: Icon(
+            open ? AppIcons.close : AppIcons.search,
+            key: ValueKey(open),
+          ),
+        ),
+        tooltip: label,
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _sized(Widget box) {
+    final height = widget.boxHeight;
+    return height == null ? box : SizedBox(height: height, child: box);
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -125,10 +170,12 @@ class _ExpandingSearchBarState extends State<ExpandingSearchBar>
                   sizeFactor: _curve,
                   child: ExcludeFocus(
                     excluding: !open,
-                    child: InPageSearchBox(
-                      controller: controller,
-                      width: double.infinity,
-                      onEscape: _focusButton,
+                    child: _sized(
+                      InPageSearchBox(
+                        controller: controller,
+                        width: double.infinity,
+                        onEscape: _focusButton,
+                      ),
                     ),
                   ),
                 ),
@@ -139,26 +186,7 @@ class _ExpandingSearchBarState extends State<ExpandingSearchBar>
         // Part of the box's tap region: a click here would otherwise unfocus
         // an empty box, which closes it before the press lands and the button
         // then opens it again.
-        TextFieldTapRegion(
-          child: IconButton(
-            focusNode: _buttonFocus,
-            icon: AnimatedSwitcher(
-              duration: expandingSearchDuration,
-              transitionBuilder: (child, animation) => RotationTransition(
-                turns: Tween(begin: 0.75, end: 1.0).animate(animation),
-                child: FadeTransition(opacity: animation, child: child),
-              ),
-              child: Icon(
-                open ? AppIcons.close : AppIcons.search,
-                key: ValueKey(open),
-              ),
-            ),
-            tooltip: open
-                ? MaterialLocalizations.of(context).closeButtonTooltip
-                : context.l10n.inPageSearchOpen,
-            onPressed: open ? _close : controller.open,
-          ),
-        ),
+        TextFieldTapRegion(child: _buildButton(context, open)),
       ],
     );
   }

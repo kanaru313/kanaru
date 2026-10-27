@@ -189,7 +189,7 @@ void main() {
     expect(locate(), findsNothing);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(inList(find.byTooltip('Filter in this page')));
+    await tester.tap(inList(find.byTooltip('Close')));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

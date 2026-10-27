@@ -9,7 +9,6 @@ import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
-import '../../../shared/widgets/in_page_search_field.dart';
 import 'queue_filter_results.dart';
 import 'queue_list_metrics.dart';
 import 'queue_panel_header.dart';
@@ -42,8 +41,6 @@ const _queueFilterLayer = 10;
 
 class _QueuePanelState extends ConsumerState<QueuePanel>
     with InPageFilterHost<QueuePanel>, QueueListMetrics<QueuePanel> {
-  final _filterButtonFocus = FocusNode(debugLabel: 'queue filter button');
-
   /// The filter lives as long as the panel: closing the sheet drops it.
   final _filter = InPageFilterController();
   final _view = InPageFilterView<Track>(
@@ -70,15 +67,7 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
   void dispose() {
     _filter.dispose();
     disposeListMetrics();
-    _filterButtonFocus.dispose();
     super.dispose();
-  }
-
-  /// Esc in the box: the focus goes back to the header button.
-  void _focusFilterButton() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _filterButtonFocus.requestFocus();
-    });
   }
 
   /// Closes the filter first (the full queue comes back), then scrolls once
@@ -129,26 +118,13 @@ class _QueuePanelState extends ConsumerState<QueuePanel>
         children: [
           QueuePanelHeader(
             summary: const QueueSummaryText(),
-            filterOpen: _filter.isOpen,
-            onFilter: _filter.isOpen ? _filter.close : _filter.open,
-            filterFocus: _filterButtonFocus,
+            filter: _filter,
             onSave: hasLibrary ? () => saveQueueAsPlaylist(ref, context) : null,
             onClear: queue.order.length > 1 ? player.clearQueue : null,
             onShowCurrent: _showCurrent,
             onClose: widget.onClose,
             title: widget.title,
           ),
-          if (_filter.isOpen)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: InPageSearchBox(
-                  controller: _filter,
-                  onEscape: _focusFilterButton,
-                ),
-              ),
-            ),
           Expanded(
             child: _filter.isFiltering
                 ? QueueFilterResults(

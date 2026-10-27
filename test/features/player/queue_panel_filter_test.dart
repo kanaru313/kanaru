@@ -156,6 +156,17 @@ void main() {
     expect(find.byType(InPageSearchBox), findsNothing);
     expect(find.byType(QueuePanel), findsOneWidget);
     expect(rows(tester), hasLength(4));
+    // The focus goes back to the bar's search button.
+    final button = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.descendant(
+          of: find.byType(QueuePanel),
+          matching: find.byTooltip('Filter in this page'),
+        ),
+        matching: find.byType(IconButton),
+      ),
+    );
+    expect(button.focusNode!.hasFocus, isTrue);
   });
 
   testWidgets('the header button toggles the box', (tester) async {
@@ -169,9 +180,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(InPageSearchBox), findsOneWidget);
 
-    await tester.tap(button);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(QueuePanel),
+        matching: find.byTooltip('Close'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(InPageSearchBox), findsNothing);
+    expect(button, findsOneWidget);
   });
 
   testWidgets('the header button closes an empty, focused box with one tap', (
@@ -187,7 +204,11 @@ void main() {
     expect(InPageFilterRegistry.instance.hasFocus, isTrue);
 
     // A real press and release on the button, with the box focused and empty.
-    final gesture = await tester.startGesture(tester.getCenter(button));
+    final close = find.descendant(
+      of: find.byType(QueuePanel),
+      matching: find.byTooltip('Close'),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(close));
     await tester.pump();
     await gesture.up();
     await tester.pumpAndSettle();

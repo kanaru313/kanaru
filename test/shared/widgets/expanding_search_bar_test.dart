@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -105,5 +107,29 @@ void main() {
       find.ancestor(of: openButton, matching: find.byType(IconButton)),
     );
     expect(button.focusNode!.hasFocus, isTrue);
+  });
+
+  testWidgets('the button is named once, reports its state and taps through '
+      'semantics', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(tester);
+
+    var node = tester.getSemantics(openButton);
+    expect(node.label, 'Filter in this page');
+    expect(node.flagsCollection.isButton, isTrue);
+    expect(node.flagsCollection.isSelected, Tristate.isFalse);
+
+    tester.semantics.tap(find.semantics.byLabel('Filter in this page'));
+    await tester.pumpAndSettle();
+    expect(filter.isOpen, isTrue);
+    node = tester.getSemantics(closeButton);
+    expect(node.label, 'Close');
+    expect(node.flagsCollection.isButton, isTrue);
+    expect(node.flagsCollection.isSelected, Tristate.isTrue);
+
+    tester.semantics.tap(find.semantics.byLabel('Close'));
+    await tester.pumpAndSettle();
+    expect(filter.isOpen, isFalse);
+    handle.dispose();
   });
 }

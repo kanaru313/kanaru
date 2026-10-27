@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/in_page_filter.dart';
+import '../../../shared/widgets/expanding_search_bar.dart';
 import '../playback_controls.dart';
 
 /// Edges of the first header row (title and close button).
@@ -15,15 +17,14 @@ const queueHeaderTitleRowHeight = 48.0;
 /// Top of the queue panel, in two rows. The first has the title and, in the
 /// side sheet, the close button; a [title] replaces the text (e.g. a tab
 /// bar). The second has the [summary] line on the
-/// left and, on the right, the filter and "jump to current" buttons plus an
+/// left, with the filter button at its end (the filter box grows out of the
+/// button over the summary), then the "jump to current" button and an
 /// overflow menu with "save as playlist" and "clear queue".
 class QueuePanelHeader extends StatelessWidget {
   const QueuePanelHeader({
     super.key,
     required this.summary,
-    required this.filterOpen,
-    required this.onFilter,
-    this.filterFocus,
+    required this.filter,
     this.onSave,
     required this.onClear,
     required this.onShowCurrent,
@@ -35,14 +36,8 @@ class QueuePanelHeader extends StatelessWidget {
   /// the playback by itself, so the header does not rebuild on every tick.
   final Widget summary;
 
-  /// Whether the filter box is shown below the header.
-  final bool filterOpen;
-
-  /// Opens the filter box, or closes it when it is open.
-  final VoidCallback onFilter;
-
-  /// Focus of the filter button, so Esc in the box can return to it.
-  final FocusNode? filterFocus;
+  /// The queue's filter; the bar after the [summary] opens and closes it.
+  final InPageFilterController filter;
 
   /// Saves the queue as a playlist; `null` greys the menu item out (no
   /// library).
@@ -101,19 +96,18 @@ class QueuePanelHeader extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: DefaultTextStyle.merge(
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                child: ExpandingSearchBar(
+                  controller: filter,
+                  // The row is as high as its 48 px buttons; the open box
+                  // must not make it taller at a large text size.
+                  boxHeight: kMinInteractiveDimension,
+                  child: DefaultTextStyle.merge(
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    child: summary,
                   ),
-                  child: summary,
                 ),
-              ),
-              _NamedIconButton(
-                focusNode: filterFocus,
-                icon: AppIcons.search,
-                label: l10n.inPageSearchOpen,
-                selected: filterOpen,
-                onPressed: onFilter,
               ),
               _NamedIconButton(
                 icon: AppIcons.locateCurrent,
@@ -176,7 +170,6 @@ class _NamedIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onPressed,
-    this.focusNode,
     this.selected = false,
     this.expanded,
   });
@@ -184,9 +177,8 @@ class _NamedIconButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
-  final FocusNode? focusNode;
 
-  /// Drawn and announced as on (the filter is open, the menu is open).
+  /// Drawn and announced as on (the menu is open).
   final bool selected;
 
   /// For a button that opens a menu: whether the menu is open.
@@ -203,7 +195,6 @@ class _NamedIconButton extends StatelessWidget {
       onTap: onPressed,
       excludeSemantics: true,
       child: IconButton(
-        focusNode: focusNode,
         icon: Icon(icon),
         iconSize: playerIconSize,
         tooltip: label,
