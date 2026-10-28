@@ -49,14 +49,16 @@ void main() {
       of: row('Colors from the cover'),
       matching: find.byType(Switch),
     );
-    await tester.tap(toggle);
-    await tester.pump();
-    expect(container.read(settingsProvider).display.colorFromCover, isTrue);
     expect(tester.widget<Switch>(toggle).value, isTrue);
 
     await tester.tap(toggle);
     await tester.pump();
     expect(container.read(settingsProvider).display.colorFromCover, isFalse);
+    expect(tester.widget<Switch>(toggle).value, isFalse);
+
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(container.read(settingsProvider).display.colorFromCover, isTrue);
   });
 
   testWidgets('the waveform seek bar switch follows the colors row', (

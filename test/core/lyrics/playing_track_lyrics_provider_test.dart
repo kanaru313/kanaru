@@ -91,12 +91,12 @@ void main() {
     sidecar.byPath['/m/a.mp3'] = 'From file';
     await service().openTracks([_song('/m/a.mp3')]);
     await settle();
-    expect(current()!.lyrics.source, LyricsSource.embedded);
+    expect(current()!.lyrics.source, LyricsSource.sidecar);
 
     container
         .read(settingsProvider.notifier)
-        .setPlayback(const PlaybackPrefs(preferEmbeddedLyrics: false));
+        .setPlayback(const PlaybackPrefs(preferEmbeddedLyrics: true));
     await settle();
-    expect(current()!.lyrics.source, LyricsSource.sidecar);
+    expect(current()!.lyrics.source, LyricsSource.embedded);
   });
 }

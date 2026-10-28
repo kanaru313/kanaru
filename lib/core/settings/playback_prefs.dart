@@ -21,7 +21,7 @@ enum ReplayGainMode {
 /// read.
 class PlaybackPrefs {
   const PlaybackPrefs({
-    this.preferEmbeddedLyrics = true,
+    this.preferEmbeddedLyrics = false,
     this.gapless = true,
     this.infiniteQueue = false,
     this.crossfadeSeconds = 0,

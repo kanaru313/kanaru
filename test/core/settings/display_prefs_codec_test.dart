@@ -11,7 +11,7 @@ void main() {
 
   test('defaults are what the app shows today', () {
     const d = DisplayPrefs();
-    expect(d.colorFromCover, isFalse);
+    expect(d.colorFromCover, isTrue);
     expect(d.fontScale, 1.0);
     expect(d.sidebarTabs, SidebarTab.values.toSet());
     expect(d.trackNumbersInAlbum, isTrue);
@@ -19,7 +19,7 @@ void main() {
 
   test('values round-trip, tabs in enum order', () {
     final prefs = DisplayPrefs(
-      colorFromCover: true,
+      colorFromCover: false,
       fontScale: 1.25,
       sidebarTabs: {SidebarTab.genres, SidebarTab.songs},
       trackNumbersInAlbum: false,

@@ -13,6 +13,7 @@ void main() {
 
   test('defaults are what the player does today', () {
     const d = PlaybackPrefs();
+    expect(d.preferEmbeddedLyrics, isFalse);
     expect(d.gapless, isTrue);
     expect(d.infiniteQueue, isFalse);
     expect(d.crossfadeSeconds, 0);
@@ -24,7 +25,7 @@ void main() {
 
   test('values round-trip', () {
     const prefs = PlaybackPrefs(
-      preferEmbeddedLyrics: false,
+      preferEmbeddedLyrics: true,
       gapless: false,
       infiniteQueue: true,
       crossfadeSeconds: 6,

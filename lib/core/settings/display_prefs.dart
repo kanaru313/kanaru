@@ -24,7 +24,7 @@ const maxFontScale = 1.5;
 /// [trackNumbersInAlbum] (album pages) and [sidebarTabs] (the sidebar).
 class DisplayPrefs {
   const DisplayPrefs({
-    this.colorFromCover = false,
+    this.colorFromCover = true,
     this.waveformSeekBar = true,
     this.fontScale = 1.0,
     this.sidebarTabs = _allTabs,

@@ -216,7 +216,7 @@ State is a sealed class: `Idle`, `Scanning`, `Finished`, `Failed` (`indexer/inde
 
 ### Cover colors
 
-"Colors from the cover" (UI-03, `DisplayPrefs.colorFromCover`, off by default) tints the app with the playing cover. The colors of a cover are worked out once, from its thumbnail, and stored per cover key in `cover_colors`.
+"Colors from the cover" (UI-03, `DisplayPrefs.colorFromCover`, on by default) tints the app with the playing cover. The colors of a cover are worked out once, from its thumbnail, and stored per cover key in `cover_colors`.
 
 | Piece | What it does | Where |
 |---|---|---|

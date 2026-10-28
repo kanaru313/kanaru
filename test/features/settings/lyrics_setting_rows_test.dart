@@ -38,14 +38,6 @@ void main() {
       find.descendant(of: row, matching: find.text('Coming soon')),
       findsNothing,
     );
-    expect(tester.widget<Switch>(toggle).value, isTrue);
-
-    await tester.tap(toggle);
-    await tester.pump();
-    expect(
-      container.read(settingsProvider).playback.preferEmbeddedLyrics,
-      isFalse,
-    );
     expect(tester.widget<Switch>(toggle).value, isFalse);
 
     await tester.tap(toggle);
@@ -53,6 +45,14 @@ void main() {
     expect(
       container.read(settingsProvider).playback.preferEmbeddedLyrics,
       isTrue,
+    );
+    expect(tester.widget<Switch>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(
+      container.read(settingsProvider).playback.preferEmbeddedLyrics,
+      isFalse,
     );
   });
 
@@ -76,7 +76,7 @@ void main() {
     await tester.tap(toggle);
     await tester.pump();
     final playback = container.read(settingsProvider).playback;
-    expect(playback.preferEmbeddedLyrics, isFalse);
+    expect(playback.preferEmbeddedLyrics, isTrue);
     expect(playback.gapless, isFalse);
     expect(playback.crossfadeSeconds, 6);
   });
