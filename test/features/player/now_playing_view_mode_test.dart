@@ -2,13 +2,17 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
+import 'package:kanaru/core/lyrics/playing_track_lyrics_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_view_mode.dart';
 
 import '../../core/lyrics/fake_lyrics_readers.dart';
+import '../../core/lyrics/online/fake_lyrics_provider.dart';
+import '../../core/lyrics/online/status_test_rig.dart';
 import '../../core/player/fake_audio_backend.dart';
 
 void main() {
@@ -84,6 +88,48 @@ void main() {
       await settle();
       await settle();
       expect(sub.read(), isFalse);
+    });
+  });
+
+  group('nowPlayingLyricsAvailableProvider with online lookups', () {
+    test(
+      'is false while a search runs and true once it finds lyrics',
+      () async {
+        final rig = await createStatusRig();
+        rig.sidecar.byPath['/m/a.flac'] = '[00:00.00]Own';
+        final gate = rig.fake.gate = Completer<void>();
+        rig.fake.lookupResult = fakeCandidate();
+        final sub = rig.container.listen(
+          nowPlayingLyricsAvailableProvider,
+          (_, _) {},
+        );
+        addTearDown(sub.close);
+        await rig.play([fakeSong('/m/a.flac'), fakeSong('/m/b.flac')]);
+        await rig.until(() => sub.read());
+
+        await rig.player.next();
+        await rig.until(() => rig.status is LyricsSearching);
+        expect(sub.read(), isFalse);
+
+        gate.complete();
+        await rig.until(() => rig.status is LyricsFound);
+        expect(sub.read(), isTrue);
+      },
+    );
+
+    test('the derived lyrics are loading while searching', () async {
+      final rig = await createStatusRig();
+      final gate = rig.fake.gate = Completer<void>();
+      rig.fake.lookupResult = fakeCandidate();
+      final sub = rig.container.listen(playingTrackLyricsProvider, (_, _) {});
+      addTearDown(sub.close);
+      await rig.play([fakeSong('/m/a.flac')]);
+      await rig.until(() => rig.fake.lookupCalls == 1);
+      expect(sub.read().isLoading, isTrue);
+
+      gate.complete();
+      await rig.until(() => sub.read().value != null);
+      expect(sub.read().value!.uri, '/m/a.flac');
     });
   });
 }

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/lyric_translation_queries.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/deepl_key_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_content_hash.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_derive.dart';
@@ -41,6 +42,17 @@ String _hashOfText(String text) => lyricsContentHash(
     source: LyricsSource.embedded,
   ),
 );
+
+/// A status that always finds [lyrics] for [uri], as an online match does.
+class _OnlineStatus extends PlayingLyricsStatusNotifier {
+  _OnlineStatus(this.uri, this.lyrics);
+
+  final String uri;
+  final Lyrics lyrics;
+
+  @override
+  PlayingLyricsStatus? build() => LyricsFound(uri, lyrics);
+}
 
 /// One container playing fake lyrics with fake translators.
 class Rig {
@@ -165,6 +177,36 @@ void main() {
       await none.play('/m/none.mp3', null);
       expect(none.state, isA<TranslationUnavailable>());
       none.dispose();
+    });
+
+    test('lyrics found online are translated like local ones', () async {
+      const uri = '/m/online.mp3';
+      final rig = Rig(
+        db,
+        overrides: [
+          playingLyricsStatusProvider.overrideWith(
+            () => _OnlineStatus(
+              uri,
+              Lyrics(
+                lines: [
+                  for (final t in _text.split('\n'))
+                    LyricLine(Duration.zero, t),
+                ],
+                synced: false,
+                source: LyricsSource.sidecar,
+              ),
+            ),
+          ),
+        ],
+      );
+      await rig.play(uri, null);
+      await rig.untilReady();
+
+      expect(rig.google.calls, [
+        ['alpha', 'beta', 'gamma'],
+      ]);
+      expect(_lines(rig.state), ['tr:alpha', 'tr:beta', 'tr:gamma']);
+      rig.dispose();
     });
 
     test(

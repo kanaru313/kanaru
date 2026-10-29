@@ -30,14 +30,14 @@ void main() {
     );
     container.listen(playerServiceProvider, (_, _) {});
     // The lyrics view keeps the provider alive while it is shown.
-    container.listen(playingTrackLyricsProvider, (_, _) {});
+    container.listen(playingLocalLyricsProvider, (_, _) {});
   });
 
   tearDown(() => container.dispose());
 
   PlayerService service() => container.read(playerServiceProvider.notifier);
 
-  PlayingLyrics? current() => container.read(playingTrackLyricsProvider).value;
+  PlayingLyrics? current() => container.read(playingLocalLyricsProvider).value;
 
   Future<void> settle() => pumpEventQueue();
 
@@ -98,5 +98,24 @@ void main() {
         .setPlayback(const PlaybackPrefs(preferEmbeddedLyrics: true));
     await settle();
     expect(current()!.lyrics.source, LyricsSource.embedded);
+  });
+
+  group('playingTrackLyricsProvider (derived from the status)', () {
+    test('local lyrics are data, tagged with the uri', () async {
+      embedded.byPath['/m/a.mp3'] = (text: 'Words', synced: const []);
+      container.listen(playingTrackLyricsProvider, (_, _) {});
+      await service().openTracks([_song('/m/a.mp3'), _song('/m/b.mp3')]);
+      await settle();
+
+      final first = container.read(playingTrackLyricsProvider);
+      expect(first.value!.uri, '/m/a.mp3');
+      expect(first.value!.lyrics.lines.single.text, 'Words');
+
+      await service().next();
+      await settle();
+      final second = container.read(playingTrackLyricsProvider);
+      expect(second.hasValue, isTrue);
+      expect(second.value, isNull);
+    });
   });
 }

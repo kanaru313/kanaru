@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/lyrics/playing_track_lyrics_provider.dart';
+import '../../../core/lyrics/online/playing_lyrics_status_provider.dart';
 
 /// The body wide Now Playing shows under its header.
 enum NowPlayingViewMode { split, lyricsOnly, coverOnly }
@@ -26,9 +26,26 @@ final nowPlayingViewModeProvider =
       NowPlayingViewModeNotifier.new,
     );
 
-/// Whether the playing track has lyrics (they gate the translation button and
-/// key). While the next track's lyrics load the previous answer stays, so
+/// Whether the playing track has lyrics to translate (they gate the
+/// translation button and key). Found lyrics: true; a search or no lyrics:
+/// false. While the status is still being read the previous answer stays, so
 /// track changes do not flip it; before the first answer it is false.
-final nowPlayingLyricsAvailableProvider = Provider.autoDispose<bool>(
-  (ref) => ref.watch(playingTrackLyricsProvider).value != null,
-);
+class NowPlayingLyricsAvailable extends Notifier<bool> {
+  bool _last = false;
+
+  @override
+  bool build() {
+    final available = switch (ref.watch(playingLyricsStatusProvider)) {
+      null => false,
+      LyricsFound() => true,
+      LyricsSearching() || LyricsNone() => false,
+      LyricsReading() => _last,
+    };
+    return _last = available;
+  }
+}
+
+final nowPlayingLyricsAvailableProvider =
+    NotifierProvider.autoDispose<NowPlayingLyricsAvailable, bool>(
+      NowPlayingLyricsAvailable.new,
+    );
