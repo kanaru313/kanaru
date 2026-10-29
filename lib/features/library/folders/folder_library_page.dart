@@ -50,7 +50,7 @@ class LibraryFolderPage extends ConsumerWidget {
       slivers: [
         SliverToBoxAdapter(
           child: FolderHeader(
-            name: folder.name,
+            folder: folder,
             path: folder.path,
             counts: (style) => FolderCountsLine(folder: folder, style: style),
             onPlay: () =>

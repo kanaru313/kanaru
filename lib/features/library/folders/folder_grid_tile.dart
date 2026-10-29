@@ -1,14 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/icons/app_icons.dart';
 import '../albums/album_grid_tile.dart';
 import '../widgets/round_grid_tile.dart';
+import 'folder_art.dart';
 import 'folder_counts_line.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 import '../../../shared/fixed_line_strut.dart';
 
-/// One folder in a grid: a large folder icon, [title] and the counts line.
+/// One folder in a grid: a folder frame holding one cover, [title] and the counts line.
 class FolderGridTile extends StatelessWidget {
   const FolderGridTile({
     super.key,
@@ -40,16 +40,7 @@ class FolderGridTile extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
             children: [
-              SizedBox.square(
-                dimension: constraints.maxWidth,
-                child: Center(
-                  child: Icon(
-                    AppIcons.folderOutlined,
-                    size: constraints.maxWidth * 0.6,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
+              FolderArt(folder: folder, size: constraints.maxWidth),
               const SizedBox(height: gridTileGap),
               Text(
                 title,

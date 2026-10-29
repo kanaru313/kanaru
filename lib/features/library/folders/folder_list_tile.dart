@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/icons/app_icons.dart';
+import 'folder_art.dart';
 import 'folder_counts_line.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 
-/// One folder row: folder icon, [title] (the folder name, or its label in
+/// One folder row: folder art, [title] (the folder name, or its label in
 /// the flat list) and the counts line.
 class FolderListTile extends StatelessWidget {
   const FolderListTile({
@@ -31,10 +32,7 @@ class FolderListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tile = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
-      leading: const SizedBox.square(
-        dimension: 40,
-        child: Center(child: Icon(AppIcons.folderOutlined, size: 28)),
-      ),
+      leading: FolderArt(folder: folder, size: 48),
       title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: showPath
           ? Column(
@@ -45,6 +43,7 @@ class FolderListTile extends StatelessWidget {
               ],
             )
           : FolderCountsLine(folder: folder),
+      trailing: const Icon(AppIcons.chevronRight),
       onTap: onTap,
     );
     final onAction = this.onAction;

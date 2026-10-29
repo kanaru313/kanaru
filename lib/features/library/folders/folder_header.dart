@@ -2,21 +2,27 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import 'folder_art.dart';
+import 'folder_tree.dart';
 
-/// Icon, name, full path, optional counts and the Play and Shuffle buttons
+/// Art, name, full path, optional counts and the Play and Shuffle buttons
 /// of a folder page, then [trailing] buttons.
 class FolderHeader extends StatelessWidget {
   const FolderHeader({
     super.key,
-    required this.name,
+    required this.folder,
     required this.path,
+    this.directArt = false,
     required this.onPlay,
     required this.onShuffle,
     this.counts,
     this.trailing = const [],
   });
 
-  final String name;
+  final FolderNode folder;
+
+  /// Whether the art shows the cover of the folder's own songs.
+  final bool directArt;
   final String path;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
@@ -38,18 +44,14 @@ class FolderHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
       child: Row(
         children: [
-          Icon(
-            AppIcons.folderOutlined,
-            size: 96,
-            color: theme.colorScheme.primary,
-          ),
+          FolderArt(folder: folder, size: 132, direct: directArt),
           const SizedBox(width: 24),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  folder.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.headlineMedium?.copyWith(
