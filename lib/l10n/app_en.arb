@@ -2643,5 +2643,39 @@
       }
     }
   },
-  "settingsClear": "Clear"
+  "settingsClear": "Clear",
+  "onlineLyricsNoticeAutoTitle": "Find lyrics online automatically?",
+  "@onlineLyricsNoticeAutoTitle": {
+    "description": "Title of the dialog asking to look lyrics up online without asking each time"
+  },
+  "onlineLyricsNoticeManualTitle": "Search lyrics on {provider}?",
+  "@onlineLyricsNoticeManualTitle": {
+    "description": "Title of the dialog asking to search one online lyrics service; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.",
+  "@onlineLyricsNoticeBody": {
+    "description": "Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses",
+    "placeholders": {
+      "hosts": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Advanced › Lyrics.",
+  "@onlineLyricsNoticeAutoHint": {
+    "description": "Hint under the automatic online lyrics notice saying where to turn it off"
+  },
+  "onlineLyricsNoticeTurnOn": "Turn on",
+  "@onlineLyricsNoticeTurnOn": {
+    "description": "Button of the automatic online lyrics notice that accepts"
+  },
+  "onlineLyricsNoticeSearch": "Search",
+  "@onlineLyricsNoticeSearch": {
+    "description": "Button of the manual online lyrics notice that accepts and searches"
+  }
 }

@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
@@ -319,6 +321,91 @@ void main() {
         ? 'root ignores directory modes'
         : false,
   );
+
+  group('online lyrics consent', () {
+    final lrclib = LyricsProviderRegistration(LrclibProvider());
+
+    OnlineLyricsPrefs prefsOf(ProviderContainer c) =>
+        c.read(settingsProvider).onlineLyrics;
+
+    test('autoFetch stays off without the auto key', () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setOnlineLyrics(const OnlineLyricsPrefs(autoFetch: true));
+      expect(prefsOf(container).autoFetch, isFalse);
+
+      notifier.acknowledgeOnlineLyricsNotice(lrclib.consentKey);
+      notifier.setOnlineLyrics(const OnlineLyricsPrefs(autoFetch: true));
+      expect(prefsOf(container).autoFetch, isFalse);
+    });
+
+    test('setOnlineLyrics keeps the acknowledged keys and saves the rest', () {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+      notifier.acknowledgeOnlineLyricsNotice(lrclib.consentKey);
+
+      notifier.setOnlineLyrics(
+        const OnlineLyricsPrefs(writeLrc: true, noticeAcknowledged: {'x@y.z'}),
+      );
+
+      expect(prefsOf(container).writeLrc, isTrue);
+      expect(prefsOf(container).noticeAcknowledged, {lrclib.consentKey});
+    });
+
+    test('enabling auto writes both keys and the flag in one save', () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.enableAutoOnlineLyrics(lrclib);
+      await notifier.flush();
+
+      expect(prefsOf(container).autoFetch, isTrue);
+      expect(prefsOf(container).noticeAcknowledged, {
+        lrclib.consentKey,
+        lrclib.autoConsentKey,
+      });
+      final json = stored()['onlineLyrics']! as Map;
+      expect(json['autoFetch'], true);
+      expect(json['noticeAcknowledged'], [
+        lrclib.consentKey,
+        lrclib.autoConsentKey,
+      ]);
+
+      // The auto flag can now be switched with the setter.
+      notifier.setOnlineLyrics(prefsOf(container).copyWith(autoFetch: false));
+      expect(prefsOf(container).autoFetch, isFalse);
+      notifier.setOnlineLyrics(prefsOf(container).copyWith(autoFetch: true));
+      expect(prefsOf(container).autoFetch, isTrue);
+    });
+
+    test('autoAllowedFor needs the switch and the provider own auto key', () {
+      const stale = OnlineLyricsPrefs(
+        autoFetch: true,
+        noticeAcknowledged: {'x@y.example:auto'},
+      );
+      expect(stale.autoAllowedFor(lrclib), isFalse);
+
+      final ok = OnlineLyricsPrefs(
+        autoFetch: true,
+        noticeAcknowledged: {lrclib.autoConsentKey},
+      );
+      expect(ok.autoAllowedFor(lrclib), isTrue);
+      expect(ok.copyWith(autoFetch: false).autoAllowedFor(lrclib), isFalse);
+    });
+
+    test('a manual acknowledgement does not enable auto', () {
+      final container = containerFor();
+
+      container
+          .read(settingsProvider.notifier)
+          .acknowledgeOnlineLyricsNotice(lrclib.consentKey);
+
+      expect(prefsOf(container).autoFetch, isFalse);
+      expect(prefsOf(container).hasAutoConsent, isFalse);
+      expect(prefsOf(container).noticeAcknowledged, {lrclib.consentKey});
+    });
+  });
 
   group('under a slow file', () {
     late _GatedFile gated;

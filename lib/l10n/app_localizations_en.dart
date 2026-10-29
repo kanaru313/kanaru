@@ -3068,4 +3068,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClear => 'Clear';
+
+  @override
+  String get onlineLyricsNoticeAutoTitle => 'Find lyrics online automatically?';
+
+  @override
+  String onlineLyricsNoticeManualTitle(String provider) {
+    return 'Search lyrics on $provider?';
+  }
+
+  @override
+  String onlineLyricsNoticeBody(String hosts) {
+    return 'Kanaru sends the song title, artist, album and length to $hosts. No file paths or device details.';
+  }
+
+  @override
+  String get onlineLyricsNoticeAutoHint =>
+      'You can turn it off in Settings › Advanced › Lyrics.';
+
+  @override
+  String get onlineLyricsNoticeTurnOn => 'Turn on';
+
+  @override
+  String get onlineLyricsNoticeSearch => 'Search';
 }

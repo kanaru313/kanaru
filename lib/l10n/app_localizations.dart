@@ -4471,6 +4471,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get settingsClear;
+
+  /// Title of the dialog asking to look lyrics up online without asking each time
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics online automatically?'**
+  String get onlineLyricsNoticeAutoTitle;
+
+  /// Title of the dialog asking to search one online lyrics service; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Search lyrics on {provider}?'**
+  String onlineLyricsNoticeManualTitle(String provider);
+
+  /// Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.'**
+  String onlineLyricsNoticeBody(String hosts);
+
+  /// Hint under the automatic online lyrics notice saying where to turn it off
+  ///
+  /// In en, this message translates to:
+  /// **'You can turn it off in Settings › Advanced › Lyrics.'**
+  String get onlineLyricsNoticeAutoHint;
+
+  /// Button of the automatic online lyrics notice that accepts
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get onlineLyricsNoticeTurnOn;
+
+  /// Button of the manual online lyrics notice that accepts and searches
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get onlineLyricsNoticeSearch;
 }
 
 class _AppLocalizationsDelegate

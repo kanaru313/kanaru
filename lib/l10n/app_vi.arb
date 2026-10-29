@@ -1412,5 +1412,11 @@
   "translationCacheCleared": "{count, plural, =0{Không có bản dịch nào để xóa} other{Đã xóa {count} bản dịch}}",
   "translationCacheClearFailed": "Không xóa được các bản dịch đã lưu",
   "settingsUnitBytes": "{count} B",
-  "settingsClear": "Xóa"
+  "settingsClear": "Xóa",
+  "onlineLyricsNoticeAutoTitle": "Tự động tìm lời online?",
+  "onlineLyricsNoticeManualTitle": "Tìm lời bài hát trên {provider}?",
+  "onlineLyricsNoticeBody": "Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới {hosts}. Không gửi đường dẫn file hay thông tin máy.",
+  "onlineLyricsNoticeAutoHint": "Tắt lại được trong Cài đặt › Nâng cao › Lời bài hát.",
+  "onlineLyricsNoticeTurnOn": "Bật",
+  "onlineLyricsNoticeSearch": "Tìm"
 }

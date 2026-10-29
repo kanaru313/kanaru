@@ -2866,4 +2866,27 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsClear => 'Xóa';
+
+  @override
+  String get onlineLyricsNoticeAutoTitle => 'Tự động tìm lời online?';
+
+  @override
+  String onlineLyricsNoticeManualTitle(String provider) {
+    return 'Tìm lời bài hát trên $provider?';
+  }
+
+  @override
+  String onlineLyricsNoticeBody(String hosts) {
+    return 'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới $hosts. Không gửi đường dẫn file hay thông tin máy.';
+  }
+
+  @override
+  String get onlineLyricsNoticeAutoHint =>
+      'Tắt lại được trong Cài đặt › Nâng cao › Lời bài hát.';
+
+  @override
+  String get onlineLyricsNoticeTurnOn => 'Bật';
+
+  @override
+  String get onlineLyricsNoticeSearch => 'Tìm';
 }
