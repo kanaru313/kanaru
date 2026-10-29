@@ -33,6 +33,7 @@ RankedCandidate _ranked(Duration length) {
 }
 
 void main() {
+  _rejectedAndClipTests();
   group('length difference', () {
     testWidgets('3.4 s over shows a rounded-up warning', (tester) async {
       await _pump(
@@ -120,5 +121,86 @@ void main() {
     );
 
     expect(find.text('only plain'), findsOneWidget);
+  });
+}
+
+RankedCandidate _rejected() {
+  final candidate = fakeCandidate();
+  const query = LyricsQuery(
+    title: 'Song',
+    artist: 'Artist',
+    duration: Duration(seconds: 200),
+  );
+  return RankedCandidate(
+    candidate,
+    matchCandidate(query, candidate, rejected: {candidate.ref}),
+  );
+}
+
+void _rejectedAndClipTests() {
+  group('rejected result', () {
+    testWidgets('shows the Rejected label and no Good match', (tester) async {
+      await _pump(
+        tester,
+        LyricsPickerResultTile(
+          result: _rejected(),
+          selected: false,
+          onTap: () {},
+        ),
+      );
+
+      expect(find.text('Rejected'), findsOneWidget);
+      expect(find.text('Good match'), findsNothing);
+    });
+
+    testWidgets('a normal result has no label', (tester) async {
+      await _pump(
+        tester,
+        LyricsPickerResultTile(
+          result: _ranked(const Duration(seconds: 200)),
+          selected: false,
+          onTap: () {},
+        ),
+      );
+
+      expect(find.text('Rejected'), findsNothing);
+    });
+  });
+
+  group('results list clipping', () {
+    testWidgets('ink and hover stay inside a clipped Material', (tester) async {
+      await _pump(
+        tester,
+        SizedBox(
+          height: 200,
+          child: LyricsPickerResultsPane(
+            state: LyricsSearchState(
+              query: 'x',
+              results: [
+                for (var i = 0; i < 10; i++)
+                  _ranked(const Duration(seconds: 200)),
+              ],
+              selected: 0,
+            ),
+            providerNames: const {},
+            onSelect: (_) {},
+            onRetry: () {},
+          ),
+        ),
+      );
+
+      final list = find.byType(ListView);
+      final material = find.ancestor(of: list, matching: find.byType(Material));
+      final clip = find.ancestor(of: list, matching: find.byType(ClipRect));
+      expect(material, findsWidgets);
+      expect(clip, findsOneWidget);
+      // The nearest Material above the list sits inside the clip.
+      final nearest = tester.element(material.first).widget as Material;
+      expect(nearest.type, MaterialType.transparency);
+      expect(
+        find.descendant(of: clip, matching: material.first),
+        findsOneWidget,
+      );
+    });
   });
 }

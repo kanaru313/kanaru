@@ -7,7 +7,7 @@ import '../format_duration.dart';
 
 /// One search result: title, "artist · album", a body badge, the length
 /// (with the difference to the song's when it is over the match limit) and
-/// "Good match". A result without lyrics shows dimmed and cannot be selected.
+/// "Good match" and, for a record the user rejected before, "Rejected". A result without lyrics shows dimmed and cannot be selected.
 class LyricsPickerResultTile extends StatelessWidget {
   const LyricsPickerResultTile({
     super.key,
@@ -46,7 +46,11 @@ class LyricsPickerResultTile extends StatelessWidget {
       color: colors.onSurfaceVariant,
     );
     return Opacity(
-      opacity: result.selectable ? 1 : 0.5,
+      opacity: !result.selectable
+          ? 0.5
+          : result.rejected
+          ? 0.65
+          : 1,
       child: ListTile(
         selected: selected,
         enabled: result.selectable,
@@ -69,6 +73,12 @@ class LyricsPickerResultTile extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 if (badge != null) _Badge(badge),
+                if (result.rejected)
+                  _Badge(
+                    l10n.lyricsPickerRejected,
+                    background: colors.errorContainer,
+                    foreground: colors.onErrorContainer,
+                  ),
                 if (duration != null)
                   Text(formatDuration(duration), style: small),
                 if (delta != null && delta > maxDurationDelta)
@@ -93,16 +103,18 @@ class LyricsPickerResultTile extends StatelessWidget {
 }
 
 class _Badge extends StatelessWidget {
-  const _Badge(this.label);
+  const _Badge(this.label, {this.background, this.foreground});
 
   final String label;
+  final Color? background;
+  final Color? foreground;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.tertiaryContainer,
+        color: background ?? colors.tertiaryContainer,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Padding(
@@ -110,7 +122,7 @@ class _Badge extends StatelessWidget {
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall
-              ?.copyWith(color: colors.onTertiaryContainer),
+              ?.copyWith(color: foreground ?? colors.onTertiaryContainer),
         ),
       ),
     );

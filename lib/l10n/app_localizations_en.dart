@@ -3122,6 +3122,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsPickerGoodMatch => 'Good match';
 
   @override
+  String get lyricsPickerRejected => 'Rejected';
+
+  @override
   String lyricsPickerDelta(int seconds) {
     return '±${seconds}s';
   }

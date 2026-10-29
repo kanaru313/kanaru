@@ -27,6 +27,9 @@ class RankedCandidate {
   final LyricsCandidate candidate;
   final LyricsMatch match;
 
+  /// Marked "Not these lyrics" earlier; listed last and never auto-selected.
+  bool get rejected => match.rejected;
+
   /// Has something to pick: words or the instrumental flag.
   bool get selectable {
     final body = candidate.body;

@@ -2920,6 +2920,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerGoodMatch => 'Khớp tốt';
 
   @override
+  String get lyricsPickerRejected => 'Đã từ chối';
+
+  @override
   String lyricsPickerDelta(int seconds) {
     return '±$seconds giây';
   }

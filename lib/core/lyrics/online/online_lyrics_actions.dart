@@ -62,7 +62,7 @@ class OnlineLyricsActions {
 
   /// Pins [candidate] (it must carry its body) as the song's lyrics, then
   /// writes the `.lrc` file when the setting is on and the song is a local
-  /// file. Returns the writer's answer, `null` when no write was tried. The
+  /// file. A rejected match picked again is no longer rejected. Returns the writer's answer, `null` when no write was tried. The
   /// pin stands whatever the write does.
   Future<LrcWriteResult?> pick(
     LyricsTarget target,
@@ -74,7 +74,7 @@ class OnlineLyricsActions {
     }
     final db = _db;
     if (db == null) return null;
-    await db.pinLyrics(
+    await db.pickOnlineLyrics(
       LyricsPinsCompanion.insert(
         trackKey: target.trackKey,
         pinnedAt: _now,
@@ -85,6 +85,9 @@ class OnlineLyricsActions {
         instrumental: Value(body.instrumental),
         remoteDurationMs: Value(candidate.duration?.inMilliseconds),
       ),
+      cacheKey: target.cacheKey,
+      providerId: candidate.providerId,
+      remoteId: candidate.remoteId,
     );
     final path = target.path;
     if (!_ref.mounted ||

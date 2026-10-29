@@ -116,21 +116,43 @@ void main() {
       expect(state().selection, isNull);
     });
 
-    test('rejected records are left out', () async {
+    Future<void> reject(String remoteId) => h.db.rejectOnlineLyrics(
+      cacheKey: fakeTarget.cacheKey,
+      providerId: 'fake',
+      remoteId: remoteId,
+      trackKey: fakeTarget.trackKey,
+      now: 1,
+    );
+
+    test('rejected records come last, flagged and never selected', () async {
       keepAlive();
-      await h.db.rejectOnlineLyrics(
-        cacheKey: fakeTarget.cacheKey,
-        providerId: 'fake',
-        remoteId: 'bad',
-        trackKey: fakeTarget.trackKey,
-        now: 1,
-      );
+      await reject('bad');
       await searchWith([
         fakeCandidate(remoteId: 'bad'),
+        fakeCandidate(
+          remoteId: 'far',
+          duration: const Duration(seconds: 230),
+          body: const LyricsBody(plain: 'words'),
+        ),
         fakeCandidate(remoteId: 'ok'),
       ]);
 
-      expect(state().results.map((r) => r.candidate.remoteId), ['ok']);
+      final results = state().results;
+      expect(results.map((r) => r.candidate.remoteId), ['ok', 'far', 'bad']);
+      expect(results.map((r) => r.rejected), [false, false, true]);
+      expect(state().selection!.candidate.remoteId, 'ok');
+      controller().select(2);
+      expect(state().selection!.rejected, isTrue);
+    });
+
+    test('only rejected records: listed, nothing selected', () async {
+      keepAlive();
+      await reject('bad');
+      await searchWith([fakeCandidate(remoteId: 'bad')]);
+
+      expect(state().results.single.rejected, isTrue);
+      expect(state().selected, isNull);
+      expect(state().searching, isFalse);
     });
 
     test('keeps at most 20 results', () async {

@@ -33,6 +33,7 @@ class LyricsMatch {
     required this.score,
     required this.delta,
     required this.goodMatch,
+    this.rejected = false,
   });
 
   final LyricsCandidate candidate;
@@ -45,6 +46,10 @@ class LyricsMatch {
 
   /// Title, artist, duration and body all pass: safe to use without asking.
   final bool goodMatch;
+
+  /// The user marked this record "Not these lyrics" for the song. Only a
+  /// search that keeps rejected records ever shows such a match.
+  final bool rejected;
 }
 
 /// Whether [query] has what an automatic search needs: a title, a real
@@ -109,14 +114,16 @@ LyricsMatch matchCandidate(
         (_atLeast(score, titleSimilarityMin) ||
             joinedTitle(mine) == joinedTitle(theirs));
   }
+  final isRejected = rejected.contains(candidate.ref);
   final body = candidate.body;
   final bodyOk = body != null && (body.hasLyrics || body.instrumental);
   return LyricsMatch(
     candidate: candidate,
     score: score,
     delta: delta,
+    rejected: isRejected,
     goodMatch:
-        !rejected.contains(candidate.ref) &&
+        !isRejected &&
         durationOk &&
         titleOk &&
         bodyOk &&
@@ -132,20 +139,24 @@ int _bodyRank(LyricsBody? body) {
 
 /// Judges every candidate not in [rejected] and orders them: good matches
 /// first, then synced before plain before instrumental, smaller duration
-/// difference, higher title similarity, and the given order for ties.
+/// difference, higher title similarity, and the given order for ties. With
+/// [keepRejected] (the manual search) records in [rejected] stay in the list,
+/// flagged and after every other one; automatic lookups leave it off.
 List<LyricsMatch> rankCandidates(
   LyricsQuery query,
   Iterable<LyricsCandidate> candidates, {
   Set<({String providerId, String remoteId})> rejected = const {},
+  bool keepRejected = false,
 }) {
   final indexed = <(int, LyricsMatch)>[
     for (final (i, c) in candidates.indexed)
-      if (!rejected.contains(c.ref))
+      if (keepRejected || !rejected.contains(c.ref))
         (i, matchCandidate(query, c, rejected: rejected)),
   ];
   indexed.sort((a, b) {
     final x = a.$2;
     final y = b.$2;
+    if (x.rejected != y.rejected) return x.rejected ? 1 : -1;
     if (x.goodMatch != y.goodMatch) return x.goodMatch ? -1 : 1;
     final body = _bodyRank(x.candidate.body)
         .compareTo(_bodyRank(y.candidate.body));

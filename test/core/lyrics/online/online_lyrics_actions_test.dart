@@ -51,6 +51,31 @@ void main() {
       expect(rig.requests, 0);
     });
 
+    test('picking a rejected record pins it and clears the reject', () async {
+      await show();
+      rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
+      await rig.until(() => rig.status is LyricsFound);
+      await actions().skip(target, found().origin!);
+      await rig.until(() => rig.status is LyricsNone);
+      expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), {
+        ('fake', 'x'),
+      });
+
+      await actions().pick(target, fakeCandidate(remoteId: 'x'));
+      await rig.until(() => rig.status is LyricsFound);
+
+      expect(found().origin!.remoteId, 'x');
+      expect(found().origin!.pinned, isTrue);
+      expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), isEmpty);
+
+      // After unpin, an automatic lookup may find the record again.
+      final calls = rig.fake.lookupCalls;
+      await actions().unpin(target);
+      await rig.until(() => rig.fake.lookupCalls > calls);
+      await rig.until(() => rig.status is LyricsFound);
+      expect(found().origin!.remoteId, 'x');
+    });
+
     test('a pick without a body is refused', () async {
       await show();
       await expectLater(

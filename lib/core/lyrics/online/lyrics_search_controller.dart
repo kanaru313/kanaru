@@ -107,7 +107,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
         ? null
         : results.indexWhere((r) => r.candidate.ref == previous);
     if (selected == null || selected < 0) {
-      selected = results.indexWhere((r) => r.selectable);
+      selected = results.indexWhere((r) => r.selectable && !r.rejected);
     }
     state = state.copyWith(
       byProvider: {...state.byProvider, registration.id: outcome},
@@ -117,9 +117,12 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
   }
 
   List<RankedCandidate> _rank() {
-    final ranked = rankCandidates(target.query, [
-      for (final list in _raw.values) ...list,
-    ], rejected: _rejected);
+    final ranked = rankCandidates(
+      target.query,
+      [for (final list in _raw.values) ...list],
+      rejected: _rejected,
+      keepRejected: true,
+    );
     return [
       for (final m in ranked.take(maxSearchResults))
         RankedCandidate(m.candidate, m),

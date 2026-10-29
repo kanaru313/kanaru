@@ -72,6 +72,27 @@ extension OnlineLyricsQueries on LibraryDatabase {
   Future<void> pinLyrics(LyricsPinsCompanion row) =>
       into(lyricsPins).insert(row, mode: InsertMode.insertOrReplace);
 
+  /// A pick, in one transaction: pins [row] and forgets that the user once
+  /// rejected the same match for [cacheKey], so picking a rejected record
+  /// undoes the reject.
+  Future<void> pickOnlineLyrics(
+    LyricsPinsCompanion row, {
+    required String cacheKey,
+    required String providerId,
+    required String remoteId,
+  }) {
+    return transaction(() async {
+      await pinLyrics(row);
+      await (delete(onlineLyricsRejects)..where(
+            (t) =>
+                t.cacheKey.equals(cacheKey) &
+                t.providerId.equals(providerId) &
+                t.remoteId.equals(remoteId),
+          ))
+          .go();
+    });
+  }
+
   Future<void> removeLyricsPin(String trackKey) =>
       (delete(lyricsPins)..where((t) => t.trackKey.equals(trackKey))).go();
 

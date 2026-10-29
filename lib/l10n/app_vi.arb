@@ -1428,6 +1428,7 @@
   "lyricsPickerPlain": "Thuần văn bản",
   "lyricsPickerInstrumental": "Nhạc không lời",
   "lyricsPickerGoodMatch": "Khớp tốt",
+  "lyricsPickerRejected": "Đã từ chối",
   "lyricsPickerDelta": "±{seconds} giây",
   "lyricsPickerEmpty": "Không tìm thấy lời. Thử từ khóa khác.",
   "lyricsPickerError": "Không kết nối được {provider}",

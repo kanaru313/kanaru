@@ -76,13 +76,20 @@ class LyricsPickerResultsPane extends StatelessWidget {
                   )
                 : null,
           ),
+        // Ink and hover paint on the nearest Material, which would be the
+        // dialog; this one inside the clip keeps them within the list.
         Expanded(
-          child: ListView.builder(
-            itemCount: results.length,
-            itemBuilder: (context, i) => LyricsPickerResultTile(
-              result: results[i],
-              selected: state.selected == i,
-              onTap: () => onSelect(i),
+          child: ClipRect(
+            child: Material(
+              type: MaterialType.transparency,
+              child: ListView.builder(
+                itemCount: results.length,
+                itemBuilder: (context, i) => LyricsPickerResultTile(
+                  result: results[i],
+                  selected: state.selected == i,
+                  onTap: () => onSelect(i),
+                ),
+              ),
             ),
           ),
         ),

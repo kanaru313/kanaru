@@ -2725,6 +2725,10 @@
   "@lyricsPickerGoodMatch": {
     "description": "Label of a result whose title, artist and length fit the song"
   },
+  "lyricsPickerRejected": "Rejected",
+  "@lyricsPickerRejected": {
+    "description": "Label of a result the user earlier marked as not the lyrics of this song"
+  },
   "lyricsPickerDelta": "±{seconds}s",
   "@lyricsPickerDelta": {
     "description": "How many seconds a result's length differs from the song's",

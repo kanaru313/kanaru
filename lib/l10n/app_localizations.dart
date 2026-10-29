@@ -4562,6 +4562,12 @@ abstract class AppLocalizations {
   /// **'Good match'**
   String get lyricsPickerGoodMatch;
 
+  /// Label of a result the user earlier marked as not the lyrics of this song
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get lyricsPickerRejected;
+
   /// How many seconds a result's length differs from the song's
   ///
   /// In en, this message translates to:

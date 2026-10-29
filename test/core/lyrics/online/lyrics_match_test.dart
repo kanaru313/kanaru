@@ -360,6 +360,18 @@ void main() {
       expect(ranked.map((m) => m.candidate.remoteId), ['2']);
     });
 
+    test('keepRejected lists a rejected record last and flagged', () {
+      final ranked = rankCandidates(
+        query,
+        [_candidate('Song', 'X', id: 1), _candidate('Other', 'X', id: 2)],
+        rejected: {(providerId: 'lrclib', remoteId: '1')},
+        keepRejected: true,
+      );
+      expect(ranked.map((m) => m.candidate.remoteId), ['2', '1']);
+      expect(ranked.map((m) => m.rejected), [false, true]);
+      expect(ranked.last.goodMatch, isFalse);
+    });
+
     test('a rejected record never matches, also judged alone', () {
       final c = _candidate('Song', 'X', id: 9);
       expect(matchCandidate(query, c).goodMatch, isTrue);
