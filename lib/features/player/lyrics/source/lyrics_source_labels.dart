@@ -1,0 +1,66 @@
+import '../../../../core/lyrics/lyrics.dart';
+import '../../../../core/lyrics/online/lyrics_choice.dart';
+import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
+import '../../../../core/lyrics/online/playing_lyrics_status.dart';
+import '../../../../l10n/l10n.dart';
+import '../lyrics_credit_row.dart' show lyricsProviderName;
+
+/// The text of the lyrics source button for [source]: what the song shows
+/// now and, for lyrics picked without a choice, that Kanaru picked them
+/// ("Auto · …"). [providers] names the online service.
+String lyricsSourceLabel(
+  AppLocalizations l10n,
+  LyricsSourceResolution source,
+  List<LyricsProviderRegistration> providers,
+) {
+  final status = source.status;
+  switch (status) {
+    case LyricsNone(reason: LyricsNoneReason.off):
+      return l10n.lyricsSourceOff;
+    case LyricsNone(reason: LyricsNoneReason.paused):
+      return l10n.lyricsSourcePaused;
+    case LyricsSearching():
+      return l10n.lyricsSourceSearching;
+    case LyricsFound(:final origin?) when !origin.pinned:
+      return l10n.lyricsSourceAuto(
+        lyricsProviderName(providers, origin.providerId),
+      );
+    case LyricsFound():
+      final detail = lyricsSourceDetail(l10n, status, providers);
+      return source.effective == LyricsChoice.auto
+          ? l10n.lyricsSourceAuto(detail)
+          : detail;
+    case LyricsNone() || LyricsReading():
+      return l10n.lyricsSourceNone;
+  }
+}
+
+/// What [found] is, without the "Auto" mark: the file or the tag, or the
+/// online service and the kind of its lyrics.
+String lyricsSourceDetail(
+  AppLocalizations l10n,
+  LyricsFound found,
+  List<LyricsProviderRegistration> providers,
+) {
+  final origin = found.origin;
+  if (origin != null) {
+    return l10n.lyricsSourceOnline(
+      lyricsProviderName(providers, origin.providerId),
+      lyricsSourceKind(l10n, found.lyrics.synced),
+    );
+  }
+  return switch (found.lyrics.source) {
+    LyricsSource.sidecar => l10n.lyricsSourceFile,
+    LyricsSource.embedded => l10n.lyricsSourceTag,
+  };
+}
+
+/// "Synced" or "Plain".
+String lyricsSourceKind(AppLocalizations l10n, bool synced) =>
+    synced ? l10n.lyricsSourceSynced : l10n.lyricsSourcePlain;
+
+/// Whether the button is quiet (no primary colour): nothing is shown, or the
+/// lyrics are off, paused or still being looked for.
+bool lyricsSourceMuted(LyricsSourceResolution source) =>
+    source.status is! LyricsFound;

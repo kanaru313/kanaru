@@ -1,0 +1,200 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../../../core/lyrics/lyrics.dart' show LyricsSource;
+import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
+import '../../../../core/lyrics/playing_local_lyrics_provider.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../shared/icons/app_icons.dart';
+import '../../now_playing/now_playing_header_pill.dart';
+import '../../playback_controls.dart';
+import '../lyrics_action_runner.dart';
+import '../translation/lyrics_translation_pill.dart'
+    show lyricsTranslationMinLabelWidth;
+import 'lyrics_source_labels.dart';
+import 'lyrics_source_menu.dart';
+
+/// Header button that names where the playing song's lyrics come from and
+/// opens the menu to change it. With room for a label it is a pill, like the
+/// translate button's; with less (or in the narrow layout) it is the round
+/// icon with the label as its tooltip. Only this widget watches the lyrics
+/// source, so a change rebuilds the button and nothing around it.
+///
+/// The menu works on a snapshot of the song and its source taken when it
+/// opens (see [lyricsSourceMenuItems]) and closes when the playing song
+/// changes. The button hands the screen a callback that opens the menu
+/// ([menuOpener], for the `L` key) while it is in the tree.
+class LyricsSourceButton extends ConsumerStatefulWidget {
+  const LyricsSourceButton({
+    super.key,
+    this.onMenuChanged,
+    this.menuOpener,
+    this.maxLabelWidth,
+  });
+
+  /// Called with `true` when the menu opens and `false` when it closes, also
+  /// when the button leaves the tree with the menu open (as the translate
+  /// button's).
+  final ValueChanged<bool>? onMenuChanged;
+
+  /// Receives the "open the menu" callback while the button is mounted.
+  final ValueNotifier<bool Function()?>? menuOpener;
+
+  /// Room for the pill's label; `null` or less than
+  /// [lyricsTranslationMinLabelWidth] keeps the round icon.
+  final double? maxLabelWidth;
+
+  @override
+  ConsumerState<LyricsSourceButton> createState() => _LyricsSourceButtonState();
+}
+
+class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
+  final _menu = MenuController();
+  final _firstItem = FocusNode(debugLabel: 'Lyrics source: first item');
+
+  /// What the open menu acts on; taken when it opens.
+  LyricsActionRunner? _runner;
+
+  /// Where the song's own lyrics come from, as of the moment the menu opened.
+  LyricsSource? _ownSource;
+  bool _open = false;
+
+  /// Whether the build below put the menu anchor in the tree; opening a
+  /// menu without one throws.
+  bool _anchored = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.menuOpener?.value = _openFromKey;
+  }
+
+  @override
+  void didUpdateWidget(LyricsSourceButton old) {
+    super.didUpdateWidget(old);
+    if (old.menuOpener == widget.menuOpener) return;
+    if (old.menuOpener?.value == _openFromKey) old.menuOpener?.value = null;
+    widget.menuOpener?.value = _openFromKey;
+  }
+
+  @override
+  void dispose() {
+    final opener = widget.menuOpener;
+    if (opener != null && opener.value == _openFromKey) opener.value = null;
+    _setOpen(false);
+    _firstItem.dispose();
+    super.dispose();
+  }
+
+  void _setOpen(bool open) {
+    if (_open == open) return;
+    _open = open;
+    widget.onMenuChanged?.call(open);
+  }
+
+  /// Opens or closes the menu; `false` when it could not open (no anchor,
+  /// or no song to act on).
+  bool _toggle() {
+    if (_menu.isOpen) {
+      _menu.close();
+      return true;
+    }
+    final source = ref.read(playingLyricsSourceProvider);
+    if (!_anchored || source == null) return false;
+    final runner = LyricsActionRunner.snapshot(context, source: source);
+    if (runner.target == null) return false;
+    // The song's own lyrics are kept only when they were read for this song:
+    // the provider holds the previous song's value while the next one loads.
+    final own = ref.read(playingLocalLyricsProvider).value;
+    setState(() {
+      _runner = runner;
+      _ownSource = own != null && own.uri == source.status.uri
+          ? own.lyrics.source
+          : null;
+    });
+    _menu.open();
+    return true;
+  }
+
+  /// The `L` key: opens the menu and puts the focus on its first item, so
+  /// the arrow keys work at once. `false` when nothing opened.
+  bool _openFromKey() {
+    if (_menu.isOpen || !_toggle()) return false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _menu.isOpen) _firstItem.requestFocus();
+    });
+    return true;
+  }
+
+  void _closeLater() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted && _menu.isOpen) _menu.close();
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final source = ref.watch(playingLyricsSourceProvider);
+    final providers = ref.watch(lyricsProvidersProvider);
+    _anchored = source != null;
+    // Without a source there is nothing to open: `L` must see no callback.
+    final opener = widget.menuOpener;
+    if (opener != null) {
+      if (source == null && opener.value == _openFromKey) {
+        opener.value = null;
+      } else if (source != null && opener.value != _openFromKey) {
+        opener.value = _openFromKey;
+      }
+    }
+    if (source == null) {
+      // Nothing plays: the menu has nothing to act on.
+      if (_open) _closeLater();
+      return const SizedBox.shrink();
+    }
+    final runner = _runner;
+    if (_open && runner?.source?.status.uri != source.status.uri) {
+      // The menu would act on the previous song.
+      _closeLater();
+    }
+    final label = lyricsSourceLabel(l10n, source, providers);
+    final muted = lyricsSourceMuted(source);
+    final room = widget.maxLabelWidth ?? 0;
+
+    return MenuAnchor(
+      controller: _menu,
+      onOpen: () => _setOpen(true),
+      onClose: () => _setOpen(false),
+      menuChildren: runner == null
+          ? const []
+          : lyricsSourceMenuItems(
+              context,
+              runner,
+              providers,
+              ownSource: _ownSource,
+              firstItemFocus: _firstItem,
+            ),
+      builder: (context, controller, _) {
+        if (room >= lyricsTranslationMinLabelWidth) {
+          return NowPlayingHeaderPill(
+            icon: AppIcons.lyrics,
+            label: label,
+            tooltip: l10n.lyricsSourceMenuHeader,
+            maxLabelWidth: room,
+            muted: muted,
+            onPressed: () => _toggle(),
+          );
+        }
+        return IconButton(
+          icon: const Icon(AppIcons.lyrics),
+          iconSize: playerIconSize,
+          style: muted
+              ? null
+              : IconButton.styleFrom(foregroundColor: scheme.primary),
+          tooltip: label,
+          onPressed: () => _toggle(),
+        );
+      },
+    );
+  }
+}

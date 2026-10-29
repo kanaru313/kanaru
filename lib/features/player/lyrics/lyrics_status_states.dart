@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
-import '../../../core/lyrics/online/lyrics_fetch_exception.dart';
+import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/local_path_of.dart';
@@ -96,7 +96,7 @@ class LyricsNoneView extends ConsumerWidget {
       LyricsNoneReason.noLyrics || LyricsNoneReason.error => (
         null,
         [
-          if (online) find(l10n.lyricsFindOnline, () => run().choose()),
+          if (online) find(l10n.lyricsFindOnline, () => run().findOnline()),
           if (online && !autoOn && reason == LyricsNoneReason.noLyrics)
             more(
               l10n.lyricsFindAutomatically,
@@ -106,10 +106,19 @@ class LyricsNoneView extends ConsumerWidget {
       ),
       LyricsNoneReason.notFound => (
         l10n.lyricsNotFound(name),
-        [if (online) find(l10n.lyricsSearchManually, () => run().choose())],
+        [if (online) find(l10n.lyricsSearchManually, () => run().findOnline())],
       ),
-      // Their own texts come with the lyrics source button.
-      LyricsNoneReason.off || LyricsNoneReason.paused => (null, <Widget>[]),
+      LyricsNoneReason.off => (
+        l10n.lyricsOffTitle,
+        [find(l10n.lyricsOffTurnOn, () => run().choose(LyricsChoice.auto))],
+      ),
+      LyricsNoneReason.paused => (
+        switch (none.resumeAt) {
+          final at? => l10n.lyricsPausedTitle(name, at),
+          null => l10n.lyricsOnlineBusy(name),
+        },
+        [if (online) find(l10n.lyricsRetry, () => run().retry())],
+      ),
       LyricsNoneReason.instrumental => (l10n.lyricsInstrumental, <Widget>[]),
     };
     final origin = none.origin;
@@ -119,7 +128,7 @@ class LyricsNoneView extends ConsumerWidget {
             ? LyricsErrorBanner(
                 providerName: name,
                 canRetry: online,
-                busy: none.failure == LyricsFetchKind.rateLimited,
+                failure: none.failure,
               )
             : const SizedBox.shrink(),
         Expanded(

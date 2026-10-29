@@ -2989,5 +2989,172 @@
         "type": "String"
       }
     }
+  },
+  "lyricsSourceOff": "Lyrics off",
+  "@lyricsSourceOff": {
+    "description": "Lyrics source button label when the user turned lyrics off for the song"
+  },
+  "lyricsSourceSearching": "Searching…",
+  "@lyricsSourceSearching": {
+    "description": "Lyrics source button label while a lookup runs"
+  },
+  "lyricsSourcePaused": "Lookups paused",
+  "@lyricsSourcePaused": {
+    "description": "Lyrics source button label while automatic lookups wait after a failure"
+  },
+  "lyricsSourceNone": "No lyrics",
+  "@lyricsSourceNone": {
+    "description": "Lyrics source button label when the song has no lyrics"
+  },
+  "lyricsSourceFile": ".lrc file",
+  "@lyricsSourceFile": {
+    "description": "Lyrics source button label and menu subtitle: lyrics from the .lrc file next to the song"
+  },
+  "lyricsSourceTag": "Tag lyrics",
+  "@lyricsSourceTag": {
+    "description": "Lyrics source button label: lyrics stored in the song's tags"
+  },
+  "lyricsSourceSynced": "Synced",
+  "@lyricsSourceSynced": {
+    "description": "Kind of online lyrics with timing, in the source button and menu"
+  },
+  "lyricsSourcePlain": "Plain",
+  "@lyricsSourcePlain": {
+    "description": "Kind of online lyrics without timing, in the source button and menu"
+  },
+  "lyricsSourceOnline": "{provider} · {kind}",
+  "@lyricsSourceOnline": {
+    "description": "Lyrics source button label for chosen online lyrics; provider is the service name, kind is Synced or Plain",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceAuto": "Auto · {label}",
+  "@lyricsSourceAuto": {
+    "description": "Lyrics source button label when the lyrics were picked automatically; label says which",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceMenuHeader": "Lyrics for this song",
+  "@lyricsSourceMenuHeader": {
+    "description": "Heading of the lyrics source menu"
+  },
+  "lyricsSourceAutoItem": "Automatic",
+  "@lyricsSourceAutoItem": {
+    "description": "Lyrics source menu item that lets Kanaru pick the lyrics"
+  },
+  "lyricsSourceAutoNow": "In use: {label}",
+  "@lyricsSourceAutoNow": {
+    "description": "Subtitle of the Automatic item naming the lyrics now shown",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceAutoHint": "The file or tag first, then {provider}",
+  "@lyricsSourceAutoHint": {
+    "description": "Subtitle of the Automatic item; provider is the service name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceForgetPick": "{text} · drops the chosen version",
+  "@lyricsSourceForgetPick": {
+    "description": "Subtitle of the Automatic item when a chosen online version is stored and would be forgotten",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceLocalItem": "Lyrics in the file",
+  "@lyricsSourceLocalItem": {
+    "description": "Lyrics source menu item for the song's own lyrics"
+  },
+  "lyricsSourceLocalTag": "In the tag",
+  "@lyricsSourceLocalTag": {
+    "description": "Subtitle of the file item when the lyrics are in the song's tags"
+  },
+  "lyricsSourceLocalMissing": "No lyrics found in the file",
+  "@lyricsSourceLocalMissing": {
+    "description": "Subtitle of the file item when the song has no own lyrics"
+  },
+  "lyricsSourceOnlineItem": "{provider} · chosen version",
+  "@lyricsSourceOnlineItem": {
+    "description": "Lyrics source menu item for the online lyrics picked for the song",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceOnlineSubtitle": "{kind} · {length}",
+  "@lyricsSourceOnlineSubtitle": {
+    "description": "Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "length": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceKeep": "Keep this one",
+  "@lyricsSourceKeep": {
+    "description": "Lyrics source menu item that picks the automatic match for good"
+  },
+  "lyricsSourceSave": "Save lyrics…",
+  "@lyricsSourceSave": {
+    "description": "Lyrics source menu item that opens the save dialog"
+  },
+  "lyricsSourceTurnOff": "Turn lyrics off for this song",
+  "@lyricsSourceTurnOff": {
+    "description": "Lyrics source menu item that hides lyrics for the song"
+  },
+  "lyricsOffTitle": "Lyrics are off for this song",
+  "@lyricsOffTitle": {
+    "description": "Lyrics slot text when the user turned lyrics off for the song"
+  },
+  "lyricsOffTurnOn": "Turn back on",
+  "@lyricsOffTurnOn": {
+    "description": "Button in the lyrics slot that returns the song to automatic lyrics"
+  },
+  "lyricsPausedTitle": "{provider} is busy. Kanaru searches again at {time}",
+  "@lyricsPausedTitle": {
+    "description": "Lyrics slot text while automatic lookups are paused; provider is the service name, time when they resume",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jm"
+      }
+    }
+  },
+  "lyricsOnlineUnreadable": "{provider} answered but Kanaru could not read it",
+  "@lyricsOnlineUnreadable": {
+    "description": "Banner above the empty lyrics slot when the service sent an error or an answer that could not be read; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsAutoNeedsTags": "This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…",
+  "@lyricsAutoNeedsTags": {
+    "description": "Snackbar after turning on automatic lookup for a song that cannot be looked up automatically"
   }
 }

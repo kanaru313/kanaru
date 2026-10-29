@@ -8,8 +8,10 @@ import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
+import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
@@ -39,8 +41,24 @@ const _origin = OnlineLyricsOrigin(
   durationDelta: Duration(seconds: 2),
 );
 
+/// Records the actions the empty states ask for instead of doing them.
+class _RecordingActions extends OnlineLyricsActions {
+  _RecordingActions(super.ref, this.log);
+
+  final List<String> log;
+
+  @override
+  Future<void> choose(LyricsTarget target, LyricsChoice choice) async =>
+      log.add('choose ${choice.name} ${target.trackKey}');
+
+  @override
+  Future<void> retry(LyricsTarget target) async =>
+      log.add('retry ${target.trackKey}');
+}
+
 void main() {
   late ProviderContainer container;
+  final calls = <String>[];
   late FakePlayingLyricsStatus status;
 
   Widget app({Locale locale = const Locale('en')}) => UncontrolledProviderScope(
@@ -82,10 +100,14 @@ void main() {
     final db = LibraryDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     status = FakePlayingLyricsStatus(initial);
+    calls.clear();
     container = ProviderContainer(
       overrides: [
         audioBackendProvider.overrideWithValue(FakeAudioBackend()),
         playingLyricsStatusProvider.overrideWith(() => status),
+        onlineLyricsActionsProvider.overrideWith(
+          (ref) => _RecordingActions(ref, calls),
+        ),
         lyricsProvidersProvider.overrideWithValue([registration]),
         libraryDatabaseProvider.overrideWithValue(library ? db : null),
         initialSettingsProvider.overrideWithValue(
@@ -237,21 +259,32 @@ void main() {
       expect(find.text('Search manually…'), findsOneWidget);
     });
 
-    statusTest('error: banner with Retry above the plain empty state', (
-      tester,
-    ) async {
-      await pumpStatus(tester, const LyricsNone(_uri, LyricsNoneReason.error));
-      expect(find.text("Couldn't reach Fake"), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
-      expect(find.text('No lyrics for this song'), findsOneWidget);
-      expect(findOnline, findsOneWidget);
-      expect(findAuto, findsNothing);
-      expect(find.byType(SnackBar), findsNothing);
-      expect(
-        tester.getTopLeft(find.text("Couldn't reach Fake")).dy,
-        lessThan(tester.getTopLeft(find.text('No lyrics for this song')).dy),
-      );
-    });
+    statusTest(
+      'error without a request failure: the generic banner with Retry above the plain empty state',
+      (tester) async {
+        await pumpStatus(
+          tester,
+          const LyricsNone(_uri, LyricsNoneReason.error),
+        );
+        expect(
+          find.text('Something went wrong. See the log for details.'),
+          findsOneWidget,
+        );
+        expect(find.text('Retry'), findsOneWidget);
+        expect(find.text('No lyrics for this song'), findsOneWidget);
+        expect(findOnline, findsOneWidget);
+        expect(findAuto, findsNothing);
+        expect(find.byType(SnackBar), findsNothing);
+        expect(
+          tester
+              .getTopLeft(
+                find.text('Something went wrong. See the log for details.'),
+              )
+              .dy,
+          lessThan(tester.getTopLeft(find.text('No lyrics for this song')).dy),
+        );
+      },
+    );
 
     statusTest('error after a busy answer says the service is busy', (
       tester,
@@ -284,18 +317,137 @@ void main() {
       expect(find.textContaining('busy'), findsNothing);
     });
 
-    statusTest('off and paused show no buttons', (tester) async {
+    statusTest('off: the title, and Turn back on returns to automatic', (
+      tester,
+    ) async {
       await pumpStatus(tester, const LyricsNone(_uri, LyricsNoneReason.off));
+      expect(find.text('Lyrics are off for this song'), findsOneWidget);
       expect(findOnline, findsNothing);
-      status.emit(
+      expect(findAuto, findsNothing);
+
+      await tester.tap(find.text('Turn back on'));
+      await tester.pump();
+      expect(calls, ['choose auto $_uri']);
+    });
+
+    statusTest('paused: the resume time follows an extended pause', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
         LyricsNone(
           _uri,
           LyricsNoneReason.paused,
           resumeAt: DateTime(2026, 10, 29, 14, 5),
         ),
       );
-      await tester.pump();
+      expect(
+        find.textContaining('Fake is busy. Kanaru searches again at 2:05'),
+        findsOneWidget,
+      );
       expect(findOnline, findsNothing);
+
+      status.emit(
+        LyricsNone(
+          _uri,
+          LyricsNoneReason.paused,
+          resumeAt: DateTime(2026, 10, 29, 14, 20),
+        ),
+      );
+      await tester.pump();
+      expect(
+        find.textContaining('Fake is busy. Kanaru searches again at 2:20'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Retry'));
+      await tester.pump();
+      expect(calls, ['retry $_uri']);
+    });
+
+    statusTest('paused in Vietnamese uses the 24-hour clock', (tester) async {
+      await pumpStatus(
+        tester,
+        LyricsNone(
+          _uri,
+          LyricsNoneReason.paused,
+          resumeAt: DateTime(2026, 10, 29, 14, 5),
+        ),
+        locale: const Locale('vi'),
+      );
+      expect(
+        find.text('Fake đang bận, Kanaru tự tìm lại lúc 14:05'),
+        findsOneWidget,
+      );
+      expect(find.text('Thử lại'), findsOneWidget);
+    });
+
+    for (final (kind, text) in const [
+      (LyricsFetchKind.network, "Couldn't reach Fake"),
+      (LyricsFetchKind.rateLimited, 'Fake is busy. Try again in a moment.'),
+      (LyricsFetchKind.server, 'Fake answered but Kanaru could not read it'),
+      (
+        LyricsFetchKind.invalidResponse,
+        'Fake answered but Kanaru could not read it',
+      ),
+      (
+        LyricsFetchKind.blockedHost,
+        'Fake answered but Kanaru could not read it',
+      ),
+    ]) {
+      statusTest('the banner after a ${kind.name} failure says why', (
+        tester,
+      ) async {
+        await pumpStatus(
+          tester,
+          LyricsNone(_uri, LyricsNoneReason.error, failure: kind),
+        );
+        expect(find.text(text), findsOneWidget);
+        expect(find.text('Retry'), findsOneWidget);
+        await tester.tap(find.text('Retry'));
+        await tester.pump();
+        expect(calls, ['retry $_uri']);
+      });
+    }
+
+    statusTest('turning on automatic lookup for a song it cannot look up '
+        'says why', (tester) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.noLyrics),
+      );
+      await tester.tap(findAuto);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Turn on'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(settingsProvider).onlineLyrics.autoFetch, isTrue);
+      expect(
+        find.textContaining('lacks a title, artist or length'),
+        findsOneWidget,
+      );
+    });
+
+    statusTest('turning on automatic lookup for a complete song says nothing', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.noLyrics),
+        track: const Track(
+          uri: _uri,
+          title: 'Song',
+          artist: 'Artist',
+          duration: Duration(seconds: 200),
+        ),
+      );
+      await tester.tap(findAuto);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Turn on'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(settingsProvider).onlineLyrics.autoFetch, isTrue);
+      expect(find.byType(SnackBar), findsNothing);
     });
 
     statusTest('instrumental: the title and the credit', (tester) async {
@@ -314,7 +466,13 @@ void main() {
         locale: const Locale('vi'),
       );
       expect(find.text('Đang tìm trên Fake…'), findsOneWidget);
-      status.emit(const LyricsNone(_uri, LyricsNoneReason.error));
+      status.emit(
+        const LyricsNone(
+          _uri,
+          LyricsNoneReason.error,
+          failure: LyricsFetchKind.network,
+        ),
+      );
       await tester.pump();
       expect(find.text('Không kết nối được Fake'), findsOneWidget);
       expect(find.text('Thử lại'), findsOneWidget);
@@ -327,6 +485,8 @@ void main() {
           const LyricsNone(_uri, LyricsNoneReason.noLyrics),
           const LyricsNone(_uri, LyricsNoneReason.notFound),
           const LyricsNone(_uri, LyricsNoneReason.error),
+          for (final kind in LyricsFetchKind.values)
+            LyricsNone(_uri, LyricsNoneReason.error, failure: kind),
           const LyricsNone(_uri, LyricsNoneReason.off),
           LyricsNone(
             _uri,
@@ -530,7 +690,8 @@ void main() {
           LyricsFetchKind.server,
         ),
       );
-      expect(find.text("Couldn't reach Fake"), findsOneWidget);
+      const unreadable = 'Fake answered but Kanaru could not read it';
+      expect(find.text(unreadable), findsOneWidget);
       expect(rig.fake.lookupCalls, 1);
 
       rig.fake.lookupResult = fakeCandidate();
@@ -538,7 +699,7 @@ void main() {
       await settle(tester);
 
       expect(rig.fake.lookupCalls, 2);
-      expect(find.text("Couldn't reach Fake"), findsNothing);
+      expect(find.text(unreadable), findsNothing);
       expect(find.text('Lyrics from Fake'), findsOneWidget);
     });
 

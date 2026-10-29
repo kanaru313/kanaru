@@ -35,7 +35,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 ### Lyrics
 
 - 📝 Lyrics from `.lrc` files next to the song and from the file's tags (embedded lyrics read with lofty), with a synced view that follows the line being sung and seeks on click
-- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick is kept in your library and never written to a file next to the song
+- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick is kept in your library. A source button in Now Playing (press `L`) shows where the lyrics come from and lets you choose per song: automatic, the file's own lyrics, your pick, or none. *Save lyrics…* writes a `.lrc` next to the song only when you ask; a file it replaces goes to the trash
 
 ### Remote sources (planned)
 
@@ -150,7 +150,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 
 **Phase 4 — Juicy**
 
-- [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, pins, saved lyrics and the synced view are done; open: several lyrics sources and a source picker, a narrow-window *Choose lyrics* dialog, the provider plugin runtime, manual lyrics entry, time offset
+- [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, picks, the per-song source button, *Save lyrics…* and the synced view are done; open: several online providers, a narrow-window *Choose lyrics* dialog, the provider plugin runtime, manual lyrics entry, time offset
 - [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Advanced: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade, sleep timer

@@ -1,22 +1,26 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/lyrics/online/lyrics_fetch_exception.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/lyrics_picker/lyrics_failure_message.dart';
 import 'lyrics_action_runner.dart';
 
-/// "Couldn't reach {provider}" ("is busy" when it kept asking to wait) with
-/// Retry, at the top of the lyrics slot.
+/// Why the lookup failed (see [lyricsFailureMessage]) with Retry, at the top
+/// of the lyrics slot.
 class LyricsErrorBanner extends StatelessWidget {
   const LyricsErrorBanner({
     super.key,
     required this.providerName,
     required this.canRetry,
-    required this.busy,
+    required this.failure,
   });
 
   final String providerName;
   final bool canRetry;
-  final bool busy;
+
+  /// Why the lookup failed; `null` when it was not a request error.
+  final LyricsFetchKind? failure;
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +47,7 @@ class LyricsErrorBanner extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      (busy ? l10n.lyricsOnlineBusy : l10n.lyricsOnlineError)(
-                        providerName,
-                      ),
+                      lyricsFailureMessage(l10n, failure, providerName),
                       style: Theme.of(context).textTheme.bodyMedium
                           ?.copyWith(color: scheme.onErrorContainer),
                     ),

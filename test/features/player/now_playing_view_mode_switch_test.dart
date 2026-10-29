@@ -12,12 +12,14 @@ import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_cover_only_body.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_lyrics_only_body.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_overlay.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_view_mode_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_view_mode.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -138,6 +140,7 @@ void main() {
   /// The screen with a fixed lyrics widget.
   Future<void> pumpScreen(
     WidgetTester tester, {
+    List<Track> tracks = const [_sung],
     Widget? lyrics = const SizedBox.expand(),
     Size size = const Size(1280, 800),
     bool reduceMotion = true,
@@ -148,7 +151,7 @@ void main() {
     if (mode != null) {
       container.read(nowPlayingViewModeProvider.notifier).choose(mode);
     }
-    await player().openTracks([_sung]);
+    if (tracks.isNotEmpty) await player().openTracks(tracks);
     await tester.pumpWidget(app(NowPlayingScreen(lyrics: lyrics)));
     await tester.pumpAndSettle();
   }
@@ -158,6 +161,11 @@ void main() {
 
   Future<void> pressT(WidgetTester tester) async {
     await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> pressV(WidgetTester tester) async {
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
     await tester.pumpAndSettle();
   }
 
@@ -176,7 +184,13 @@ void main() {
 
       await tester.tap(toLyrics);
       await tester.pumpAndSettle();
-      expect(find.byIcon(AppIcons.lyrics), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(NowPlayingViewModeButton),
+          matching: find.byIcon(AppIcons.lyrics),
+        ),
+        findsOneWidget,
+      );
       expect(toCover, findsOneWidget);
 
       await tester.tap(toCover);
@@ -359,14 +373,14 @@ void main() {
     });
   });
 
-  group('the L key', () {
+  group('the V key', () {
     testWidgets('cycles the mode', (tester) async {
       await pumpOverlay(tester);
-      await pressL(tester);
+      await pressV(tester);
       expect(lyricsBody, findsOneWidget);
-      await pressL(tester);
+      await pressV(tester);
       expect(coverBody, findsOneWidget);
-      await pressL(tester);
+      await pressV(tester);
       expect(splitBody, findsOneWidget);
     });
 
@@ -378,7 +392,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.showKeyboard(find.byType(EditableText));
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
       await tester.pumpAndSettle();
 
       expect(splitBody, findsOneWidget);
@@ -392,10 +406,102 @@ void main() {
       await tester.tap(find.byTooltip('Sleep timer'));
       await tester.pumpAndSettle();
 
-      await pressL(tester);
+      await pressV(tester);
 
       expect(chosen(), NowPlayingViewMode.split);
       expect(splitBody, findsOneWidget);
+    });
+
+    testWidgets('ignores Ctrl+V and Shift+V', (tester) async {
+      await pumpOverlay(tester);
+      for (final modifier in [
+        LogicalKeyboardKey.controlLeft,
+        LogicalKeyboardKey.shiftLeft,
+      ]) {
+        await tester.sendKeyDownEvent(modifier);
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
+        await tester.sendKeyUpEvent(modifier);
+        await tester.pumpAndSettle();
+      }
+      expect(chosen(), NowPlayingViewMode.split);
+      expect(splitBody, findsOneWidget);
+    });
+
+    testWidgets('is ignored in the narrow layout', (tester) async {
+      await pumpScreen(tester, size: const Size(600, 900));
+      await pressV(tester);
+      expect(chosen(), NowPlayingViewMode.split);
+    });
+  });
+
+  group('the L key', () {
+    final sourceMenu = find.text('Lyrics for this song');
+
+    setUp(() {
+      startSettings = const AppSettings();
+      extraOverrides = [];
+    });
+
+    testWidgets('opens the lyrics source menu and leaves the mode alone', (
+      tester,
+    ) async {
+      await pumpOverlay(tester);
+      await pressL(tester);
+      expect(sourceMenu, findsOneWidget);
+      expect(chosen(), NowPlayingViewMode.split);
+      expect(splitBody, findsOneWidget);
+    });
+
+    testWidgets('opens it in Lyrics only too', (tester) async {
+      await pumpOverlay(tester, mode: NowPlayingViewMode.lyricsOnly);
+      await pressL(tester);
+      expect(sourceMenu, findsOneWidget);
+    });
+
+    testWidgets('opens it in the narrow layout', (tester) async {
+      await pumpScreen(tester, size: const Size(600, 900));
+      await pressL(tester);
+      expect(sourceMenu, findsOneWidget);
+    });
+
+    testWidgets('while the menu is open, L, V and T are for the menu', (
+      tester,
+    ) async {
+      await pumpOverlay(tester);
+      await pressL(tester);
+      await pressV(tester);
+      await pressT(tester);
+      expect(chosen(), NowPlayingViewMode.split);
+      expect(translation().show, isFalse);
+      expect(sourceMenu, findsOneWidget);
+    });
+
+    testWidgets('does nothing in Cover only', (tester) async {
+      await pumpOverlay(tester, mode: NowPlayingViewMode.coverOnly);
+      await pressL(tester);
+      expect(sourceMenu, findsNothing);
+      expect(chosen(), NowPlayingViewMode.coverOnly);
+    });
+
+    testWidgets('does nothing when no pill is there', (tester) async {
+      await pumpScreen(tester, tracks: const []);
+      expect(find.byType(LyricsSourceButton), findsOneWidget);
+      await pressL(tester);
+      expect(sourceMenu, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('typed in the queue filter goes to the field', (tester) async {
+      await pumpOverlay(tester, tracks: const [_plain]);
+      await tester.tap(find.widgetWithText(Tab, 'Now playing'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Filter in this page'));
+      await tester.pumpAndSettle();
+      await tester.showKeyboard(find.byType(EditableText));
+
+      await pressL(tester);
+
+      expect(sourceMenu, findsNothing);
     });
 
     testWidgets('ignores Ctrl+L and Shift+L', (tester) async {
@@ -409,14 +515,60 @@ void main() {
         await tester.sendKeyUpEvent(modifier);
         await tester.pumpAndSettle();
       }
-      expect(chosen(), NowPlayingViewMode.split);
-      expect(splitBody, findsOneWidget);
+      expect(sourceMenu, findsNothing);
     });
 
-    testWidgets('is ignored in the narrow layout', (tester) async {
+    testWidgets('does nothing while the sleep timer menu is open', (
+      tester,
+    ) async {
+      await pumpOverlay(tester);
+      await tester.tap(find.byTooltip('Sleep timer'));
+      await tester.pumpAndSettle();
+
+      await pressL(tester);
+
+      expect(sourceMenu, findsNothing);
+    });
+
+    testWidgets('narrow: an open translation menu keeps L and T out', (
+      tester,
+    ) async {
+      startSettings = const AppSettings(
+        translation: TranslationPrefs(
+          noticeAcknowledged: {LyricsTranslationService.google},
+        ),
+      );
+      extraOverrides = [
+        lyricsTranslationProvider.overrideWith2(
+          (_) =>
+              FakeTranslationController(TranslationOff(fakeTranslationInfo())),
+        ),
+      ];
+      await pumpScreen(tester, size: const Size(600, 900));
+      await tester.tap(find.byTooltip('Lyrics translation'));
+      await tester.pumpAndSettle();
+      expect(find.text('Show translation'), findsOneWidget);
+
+      await pressL(tester);
+      await pressT(tester);
+
+      expect(sourceMenu, findsNothing);
+      expect(translation().show, isFalse);
+    });
+
+    testWidgets('narrow: an open source menu keeps T out', (tester) async {
+      startSettings = const AppSettings(
+        translation: TranslationPrefs(
+          noticeAcknowledged: {LyricsTranslationService.google},
+        ),
+      );
       await pumpScreen(tester, size: const Size(600, 900));
       await pressL(tester);
-      expect(chosen(), NowPlayingViewMode.split);
+      expect(sourceMenu, findsOneWidget);
+
+      await pressT(tester);
+
+      expect(translation().show, isFalse);
     });
   });
 

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
@@ -332,7 +333,11 @@ void main() {
         const LyricsNone(uri, LyricsNoneReason.noLyrics),
         const LyricsSearching(uri, 'lrclib'),
         LyricsFound(uri, fakePlainLyrics('Online words'), origin: origin),
-        const LyricsNone(uri, LyricsNoneReason.error),
+        const LyricsNone(
+          uri,
+          LyricsNoneReason.error,
+          failure: LyricsFetchKind.network,
+        ),
         LyricsFound(uri, fakeSyncedLyrics()),
       ];
       for (final step in steps) {

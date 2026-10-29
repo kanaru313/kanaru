@@ -3122,4 +3122,110 @@ class AppLocalizationsVi extends AppLocalizations {
   String lyricsReplaceFilesJoin(String first, String second) {
     return '$first và $second';
   }
+
+  @override
+  String get lyricsSourceOff => 'Đã tắt lời';
+
+  @override
+  String get lyricsSourceSearching => 'Đang tìm…';
+
+  @override
+  String get lyricsSourcePaused => 'Tạm dừng tìm';
+
+  @override
+  String get lyricsSourceNone => 'Không có lời';
+
+  @override
+  String get lyricsSourceFile => 'File .lrc';
+
+  @override
+  String get lyricsSourceTag => 'Lời trong tag';
+
+  @override
+  String get lyricsSourceSynced => 'Đồng bộ';
+
+  @override
+  String get lyricsSourcePlain => 'Lời thường';
+
+  @override
+  String lyricsSourceOnline(String provider, String kind) {
+    return '$provider · $kind';
+  }
+
+  @override
+  String lyricsSourceAuto(String label) {
+    return 'Tự động · $label';
+  }
+
+  @override
+  String get lyricsSourceMenuHeader => 'Nguồn lời cho bài này';
+
+  @override
+  String get lyricsSourceAutoItem => 'Tự động';
+
+  @override
+  String lyricsSourceAutoNow(String label) {
+    return 'Đang dùng: $label';
+  }
+
+  @override
+  String lyricsSourceAutoHint(String provider) {
+    return 'File hoặc tag trước, sau đó $provider';
+  }
+
+  @override
+  String lyricsSourceForgetPick(String text) {
+    return '$text · bỏ bản đã chọn';
+  }
+
+  @override
+  String get lyricsSourceLocalItem => 'Lời trong file';
+
+  @override
+  String get lyricsSourceLocalTag => 'Trong tag';
+
+  @override
+  String get lyricsSourceLocalMissing => 'Không tìm thấy lời trong file';
+
+  @override
+  String lyricsSourceOnlineItem(String provider) {
+    return '$provider · bản đã chọn';
+  }
+
+  @override
+  String lyricsSourceOnlineSubtitle(String kind, String length) {
+    return '$kind · $length';
+  }
+
+  @override
+  String get lyricsSourceKeep => 'Giữ bản này';
+
+  @override
+  String get lyricsSourceSave => 'Lưu lời…';
+
+  @override
+  String get lyricsSourceTurnOff => 'Tắt lời cho bài này';
+
+  @override
+  String get lyricsOffTitle => 'Đã tắt lời cho bài này';
+
+  @override
+  String get lyricsOffTurnOn => 'Bật lại';
+
+  @override
+  String lyricsPausedTitle(String provider, DateTime time) {
+    final intl.DateFormat timeDateFormat = intl.DateFormat.jm(localeName);
+    final String timeString = timeDateFormat.format(time);
+
+    return '$provider đang bận, Kanaru tự tìm lại lúc $timeString';
+  }
+
+  @override
+  String lyricsOnlineUnreadable(String provider) {
+    return '$provider trả lời mà Kanaru không đọc được';
+  }
+
+  @override
+  String get lyricsAutoNeedsTags =>
+      'Bài này thiếu tên bài, ca sĩ hoặc thời lượng nên không tự tìm được; dùng Tìm lời online…';
 }

@@ -3326,4 +3326,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String lyricsReplaceFilesJoin(String first, String second) {
     return '$first and $second';
   }
+
+  @override
+  String get lyricsSourceOff => 'Lyrics off';
+
+  @override
+  String get lyricsSourceSearching => 'Searching…';
+
+  @override
+  String get lyricsSourcePaused => 'Lookups paused';
+
+  @override
+  String get lyricsSourceNone => 'No lyrics';
+
+  @override
+  String get lyricsSourceFile => '.lrc file';
+
+  @override
+  String get lyricsSourceTag => 'Tag lyrics';
+
+  @override
+  String get lyricsSourceSynced => 'Synced';
+
+  @override
+  String get lyricsSourcePlain => 'Plain';
+
+  @override
+  String lyricsSourceOnline(String provider, String kind) {
+    return '$provider · $kind';
+  }
+
+  @override
+  String lyricsSourceAuto(String label) {
+    return 'Auto · $label';
+  }
+
+  @override
+  String get lyricsSourceMenuHeader => 'Lyrics for this song';
+
+  @override
+  String get lyricsSourceAutoItem => 'Automatic';
+
+  @override
+  String lyricsSourceAutoNow(String label) {
+    return 'In use: $label';
+  }
+
+  @override
+  String lyricsSourceAutoHint(String provider) {
+    return 'The file or tag first, then $provider';
+  }
+
+  @override
+  String lyricsSourceForgetPick(String text) {
+    return '$text · drops the chosen version';
+  }
+
+  @override
+  String get lyricsSourceLocalItem => 'Lyrics in the file';
+
+  @override
+  String get lyricsSourceLocalTag => 'In the tag';
+
+  @override
+  String get lyricsSourceLocalMissing => 'No lyrics found in the file';
+
+  @override
+  String lyricsSourceOnlineItem(String provider) {
+    return '$provider · chosen version';
+  }
+
+  @override
+  String lyricsSourceOnlineSubtitle(String kind, String length) {
+    return '$kind · $length';
+  }
+
+  @override
+  String get lyricsSourceKeep => 'Keep this one';
+
+  @override
+  String get lyricsSourceSave => 'Save lyrics…';
+
+  @override
+  String get lyricsSourceTurnOff => 'Turn lyrics off for this song';
+
+  @override
+  String get lyricsOffTitle => 'Lyrics are off for this song';
+
+  @override
+  String get lyricsOffTurnOn => 'Turn back on';
+
+  @override
+  String lyricsPausedTitle(String provider, DateTime time) {
+    final intl.DateFormat timeDateFormat = intl.DateFormat.jm(localeName);
+    final String timeString = timeDateFormat.format(time);
+
+    return '$provider is busy. Kanaru searches again at $timeString';
+  }
+
+  @override
+  String lyricsOnlineUnreadable(String provider) {
+    return '$provider answered but Kanaru could not read it';
+  }
+
+  @override
+  String get lyricsAutoNeedsTags =>
+      'This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…';
 }

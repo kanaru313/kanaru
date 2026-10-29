@@ -4891,6 +4891,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{first} and {second}'**
   String lyricsReplaceFilesJoin(String first, String second);
+
+  /// Lyrics source button label when the user turned lyrics off for the song
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics off'**
+  String get lyricsSourceOff;
+
+  /// Lyrics source button label while a lookup runs
+  ///
+  /// In en, this message translates to:
+  /// **'Searching…'**
+  String get lyricsSourceSearching;
+
+  /// Lyrics source button label while automatic lookups wait after a failure
+  ///
+  /// In en, this message translates to:
+  /// **'Lookups paused'**
+  String get lyricsSourcePaused;
+
+  /// Lyrics source button label when the song has no lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics'**
+  String get lyricsSourceNone;
+
+  /// Lyrics source button label and menu subtitle: lyrics from the .lrc file next to the song
+  ///
+  /// In en, this message translates to:
+  /// **'.lrc file'**
+  String get lyricsSourceFile;
+
+  /// Lyrics source button label: lyrics stored in the song's tags
+  ///
+  /// In en, this message translates to:
+  /// **'Tag lyrics'**
+  String get lyricsSourceTag;
+
+  /// Kind of online lyrics with timing, in the source button and menu
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get lyricsSourceSynced;
+
+  /// Kind of online lyrics without timing, in the source button and menu
+  ///
+  /// In en, this message translates to:
+  /// **'Plain'**
+  String get lyricsSourcePlain;
+
+  /// Lyrics source button label for chosen online lyrics; provider is the service name, kind is Synced or Plain
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} · {kind}'**
+  String lyricsSourceOnline(String provider, String kind);
+
+  /// Lyrics source button label when the lyrics were picked automatically; label says which
+  ///
+  /// In en, this message translates to:
+  /// **'Auto · {label}'**
+  String lyricsSourceAuto(String label);
+
+  /// Heading of the lyrics source menu
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics for this song'**
+  String get lyricsSourceMenuHeader;
+
+  /// Lyrics source menu item that lets Kanaru pick the lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get lyricsSourceAutoItem;
+
+  /// Subtitle of the Automatic item naming the lyrics now shown
+  ///
+  /// In en, this message translates to:
+  /// **'In use: {label}'**
+  String lyricsSourceAutoNow(String label);
+
+  /// Subtitle of the Automatic item; provider is the service name
+  ///
+  /// In en, this message translates to:
+  /// **'The file or tag first, then {provider}'**
+  String lyricsSourceAutoHint(String provider);
+
+  /// Subtitle of the Automatic item when a chosen online version is stored and would be forgotten
+  ///
+  /// In en, this message translates to:
+  /// **'{text} · drops the chosen version'**
+  String lyricsSourceForgetPick(String text);
+
+  /// Lyrics source menu item for the song's own lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics in the file'**
+  String get lyricsSourceLocalItem;
+
+  /// Subtitle of the file item when the lyrics are in the song's tags
+  ///
+  /// In en, this message translates to:
+  /// **'In the tag'**
+  String get lyricsSourceLocalTag;
+
+  /// Subtitle of the file item when the song has no own lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics found in the file'**
+  String get lyricsSourceLocalMissing;
+
+  /// Lyrics source menu item for the online lyrics picked for the song
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} · chosen version'**
+  String lyricsSourceOnlineItem(String provider);
+
+  /// Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss
+  ///
+  /// In en, this message translates to:
+  /// **'{kind} · {length}'**
+  String lyricsSourceOnlineSubtitle(String kind, String length);
+
+  /// Lyrics source menu item that picks the automatic match for good
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this one'**
+  String get lyricsSourceKeep;
+
+  /// Lyrics source menu item that opens the save dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Save lyrics…'**
+  String get lyricsSourceSave;
+
+  /// Lyrics source menu item that hides lyrics for the song
+  ///
+  /// In en, this message translates to:
+  /// **'Turn lyrics off for this song'**
+  String get lyricsSourceTurnOff;
+
+  /// Lyrics slot text when the user turned lyrics off for the song
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are off for this song'**
+  String get lyricsOffTitle;
+
+  /// Button in the lyrics slot that returns the song to automatic lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Turn back on'**
+  String get lyricsOffTurnOn;
+
+  /// Lyrics slot text while automatic lookups are paused; provider is the service name, time when they resume
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} is busy. Kanaru searches again at {time}'**
+  String lyricsPausedTitle(String provider, DateTime time);
+
+  /// Banner above the empty lyrics slot when the service sent an error or an answer that could not be read; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} answered but Kanaru could not read it'**
+  String lyricsOnlineUnreadable(String provider);
+
+  /// Snackbar after turning on automatic lookup for a song that cannot be looked up automatically
+  ///
+  /// In en, this message translates to:
+  /// **'This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…'**
+  String get lyricsAutoNeedsTags;
 }
 
 class _AppLocalizationsDelegate

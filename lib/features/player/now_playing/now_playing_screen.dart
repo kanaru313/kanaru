@@ -1,11 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/settings/settings_provider.dart';
-import '../../../shared/translation_notice_dialog.dart';
 import '../player_shortcuts.dart' show isTextInputFocused;
 import '../queue/queue_panel.dart';
 import '../queue/queue_sheet_host.dart';
@@ -13,6 +9,7 @@ import '../cover_tint_background.dart';
 import 'now_playing_auto_hide.dart';
 import 'now_playing_open_provider.dart';
 import 'now_playing_title_bar.dart';
+import 'now_playing_translation_toggle.dart';
 import 'now_playing_tabs.dart';
 import 'now_playing_view_mode.dart';
 import 'now_playing_wide_layout.dart';
@@ -56,6 +53,10 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   /// outside the header, so the chrome stays shown meanwhile.
   final _floatingOpen = ValueNotifier<bool>(false);
 
+  /// Opens the lyrics source menu; set by its button while it is in the
+  /// tree, so `null` means there is no menu to open.
+  final _sourceMenuOpener = ValueNotifier<bool Function()?>(null);
+
   void _pinForFloating() =>
       _floatingOpen.value ? _chrome.pin() : _chrome.unpin();
 
@@ -76,6 +77,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     _floatingOpen
       ..removeListener(_pinForFloating)
       ..dispose();
+    _sourceMenuOpener.dispose();
     _focus.dispose();
     _chrome.dispose();
     super.dispose();
@@ -84,17 +86,18 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   void _choose(NowPlayingViewMode mode) =>
       ref.read(nowPlayingViewModeProvider.notifier).choose(mode);
 
-  /// `L` cycles the view mode (wide layout only) and `T` turns the lyrics
-  /// translation on or off (both layouts, not in Cover only). Each works only
-  /// where the key is not meant for something else: with no modifier, no text
-  /// field and no open popup or menu (a menu is no route, so its keys bubble
-  /// up to here).
+  /// `V` cycles the view mode (wide layout only), `L` opens the lyrics source
+  /// menu and `T` turns the lyrics translation on or off (both layouts; not in
+  /// Cover only, which shows no lyrics). Each works only where the key is not
+  /// meant for something else: with no modifier, no text field and no open
+  /// popup or menu (a menu is no route, so its keys bubble up to here).
   KeyEventResult _onKey(KeyEvent event, bool wide) {
     _chrome.poke();
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
     final key = event.logicalKey;
-    final isL = key == LogicalKeyboardKey.keyL;
-    if (!(isL && wide) && key != LogicalKeyboardKey.keyT) {
+    final isView = key == LogicalKeyboardKey.keyV;
+    final isSource = key == LogicalKeyboardKey.keyL;
+    if (!(isView && wide) && !isSource && key != LogicalKeyboardKey.keyT) {
       return KeyEventResult.ignored;
     }
     final keyboard = HardwareKeyboard.instance;
@@ -106,29 +109,21 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         isTextInputFocused()) {
       return KeyEventResult.ignored;
     }
-    if (!isL) {
-      // Cover only shows no lyrics, so there is nothing to translate.
-      if (wide &&
-          ref.read(nowPlayingViewModeProvider) ==
-              NowPlayingViewMode.coverOnly) {
-        return KeyEventResult.ignored;
-      }
-      _toggleTranslation();
+    if (isView) {
+      _choose(nextViewMode(ref.read(nowPlayingViewModeProvider)));
       return KeyEventResult.handled;
     }
-    _choose(nextViewMode(ref.read(nowPlayingViewModeProvider)));
-    return KeyEventResult.handled;
-  }
-
-  /// Turning translation off always works; turning it on needs lyrics and,
-  /// the first time for a service, the network notice.
-  void _toggleTranslation() {
-    final prefs = ref.read(settingsProvider).translation;
-    if (prefs.show && !prefs.needsNotice) {
-      ref.read(settingsProvider.notifier).toggleLyricsTranslation();
-    } else if (widget._hasLyrics) {
-      unawaited(enableTranslationWithNotice(context, ref, prefs.service));
+    if (wide &&
+        ref.read(nowPlayingViewModeProvider) == NowPlayingViewMode.coverOnly) {
+      return KeyEventResult.ignored;
     }
+    if (isSource) {
+      final open = _sourceMenuOpener.value;
+      if (open == null || !open()) return KeyEventResult.ignored;
+      return KeyEventResult.handled;
+    }
+    toggleLyricsTranslationByKey(context, ref, hasLyrics: widget._hasLyrics);
+    return KeyEventResult.handled;
   }
 
   void _close() => ref.read(nowPlayingOpenProvider.notifier).close();
@@ -176,6 +171,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         floatingOpen: _floatingOpen,
                         onClose: _close,
                         titleBar: widget.titleBar,
+                        sourceMenuOpener: _sourceMenuOpener,
                         lyrics: lyrics,
                         mode: mode,
                         hasLyrics: widget._hasLyrics,
@@ -187,6 +183,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         queuePage: const QueuePanel(),
                         lyricsPage: lyrics,
                         hasLyrics: widget._hasLyrics,
+                        floatingOpen: _floatingOpen,
+                        sourceMenuOpener: _sourceMenuOpener,
                         onClose: _close,
                       ),
               ),

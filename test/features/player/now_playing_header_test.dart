@@ -2,6 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/playback_fade.dart';
@@ -9,8 +12,11 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_header_pills.dart'
+    show nowPlayingPillLabelRooms;
 import 'package:kanaru/features/player/playback_controls.dart'
     show ShuffleButton;
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
@@ -22,6 +28,8 @@ import 'package:material_ui/material_ui.dart' hide RepeatMode;
 import '../../core/player/fake_audio_backend.dart';
 import '../../core/player/manual_fade_clock.dart';
 import 'fake_translation_controller.dart';
+import 'lyrics/fake_playing_lyrics_resolution.dart';
+import 'lyrics/fake_playing_lyrics_status.dart' show fakeSyncedLyrics;
 
 /// Marks what the header wrapped in its drag exclusion.
 class _Excluded extends StatelessWidget {
@@ -465,10 +473,11 @@ void main() {
       testWidgets('at the tightest edge the pill and sleep label both fit', (
         tester,
       ) async {
-        // Header 636 px wide: label room is just above the 64 px minimum.
+        // Header 760 px wide: each of the two pills gets a label room just
+        // above the 64 px minimum.
         await pump(
           tester,
-          width: 636 + windowButtons,
+          width: 760 + windowButtons,
           windowButtons: true,
           textScale: 1.5,
           showTranslate: true,
@@ -539,19 +548,37 @@ void main() {
     });
 
     test('the label room budget', () {
-      // 30 inset + 4 buttons + 16 gap on the left; 4 buttons + 56 sleep
-      // label on the right; the pill replaces one 48 px button and spends 60
-      // px on padding and icon.
-      double room(double width, {bool mode = false, bool window = false}) =>
-          nowPlayingTranslateLabelRoom(
-            width: width,
-            hasModeButton: mode,
-            hasWindowButtons: window,
-          );
-      expect(room(598), 100);
-      expect(room(552, mode: true, window: true), lessThan(0));
-      expect(room(720, mode: true), greaterThan(64));
-      expect(room(720, mode: true) - room(720, mode: true, window: true), 25);
+      // Left: 30 inset, 5 buttons (close, favorite, playlist, translate,
+      // source) and a 16 gap. Right: 4 buttons and the 56 sleep label. A pill
+      // replaces its 48 px button and spends 60 px on padding and icon.
+      ({double source, double translate}) rooms(
+        double width, {
+        bool mode = false,
+        bool window = false,
+        bool pill = false,
+      }) => nowPlayingPillLabelRooms(
+        width: width,
+        hasModeButton: mode,
+        hasWindowButtons: window,
+        translatePill: pill,
+      );
+
+      // The translation is an icon: the source label gets all of the room.
+      expect(rooms(598).source, 52);
+      expect(rooms(598).translate, 0);
+      expect(rooms(552, mode: true, window: true).source, lessThan(0));
+      expect(rooms(720, mode: true).source, greaterThan(64));
+      expect(
+        rooms(720, mode: true).source -
+            rooms(720, mode: true, window: true).source,
+        25,
+      );
+
+      // Both are pills: the room is split in two, from what is left after
+      // both pills replaced a button each.
+      final both = rooms(1000, pill: true);
+      expect(both.source, both.translate);
+      expect(both.source, (1000 - 286 - 248 - 24) / 2);
     });
 
     for (final locale in const [Locale('en'), Locale('vi')]) {
@@ -606,4 +633,133 @@ void main() {
       );
     });
   }
+
+  group('the lyrics source button', () {
+    const uri = '/music/a.mp3';
+
+    /// Online lyrics with a long service name, so the label needs room.
+    List<Override> longLabel() => [
+      playingLyricsResolutionProvider.overrideWith(
+        () => FakePlayingLyricsResolution(
+          fakeResolution(
+            LyricsFound(
+              uri,
+              fakeSyncedLyrics(),
+              origin: const OnlineLyricsOrigin(
+                providerId: 'a-long-service-name',
+                remoteId: '1',
+                pinned: true,
+              ),
+            ),
+            effective: LyricsChoice.online,
+          ),
+        ),
+      ),
+    ];
+
+    List<Override> translated() => [
+      fakeTranslationOverride(
+        FakeTranslationController(
+          TranslationReady(
+            fakeTranslationInfo(),
+            LyricsTranslationService.google,
+            'ja',
+            const [],
+            false,
+          ),
+        ),
+      ),
+    ];
+
+    testWidgets('follows the translate button and shows the source', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        showTranslate: true,
+        overrides: [...longLabel(), ...translated()],
+      );
+      final translate = tester.getRect(find.byType(LyricsTranslationButton));
+      final source = tester.getRect(find.byType(LyricsSourceButton));
+      expect(source.left, greaterThanOrEqualTo(translate.right));
+      expect(find.text('a-long-service-name · Synced'), findsOneWidget);
+    });
+
+    testWidgets('is absent when the layout hides the lyrics buttons', (
+      tester,
+    ) async {
+      await pump(tester, overrides: longLabel());
+      expect(find.byType(LyricsSourceButton), findsNothing);
+    });
+
+    testWidgets('its menu sets floatingOpen while it is open', (tester) async {
+      await pump(tester, showTranslate: true, overrides: longLabel());
+      await tester.tap(find.byType(LyricsSourceButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Lyrics for this song'), findsOneWidget);
+      expect(floating.value, isTrue);
+
+      await tester.tapAt(const Offset(600, 600));
+      await tester.pumpAndSettle();
+      expect(floating.value, isFalse);
+    });
+
+    testWidgets('floatingOpen is cleared when the header leaves', (
+      tester,
+    ) async {
+      await pump(tester, showTranslate: true, overrides: longLabel());
+      await tester.tap(find.byType(LyricsSourceButton));
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(floating.value, isFalse);
+    });
+
+    for (final width in [600.0, 720.0, 800.0, 1000.0, 1600.0]) {
+      for (final window in [false, true]) {
+        if (window && width < 720) continue;
+        for (final translatePill in [false, true]) {
+          for (final scale in [1.0, 2.0]) {
+            testWidgets('fits $width px, window buttons $window, translation '
+                '${translatePill ? 'pill' : 'icon'}, text scale $scale', (
+              tester,
+            ) async {
+              await pump(
+                tester,
+                width: width,
+                windowButtons: window,
+                textScale: scale,
+                showTranslate: true,
+                modeButton: width >= 720
+                    ? const SizedBox(width: 48, height: 48)
+                    : null,
+                overrides: [...longLabel(), if (translatePill) ...translated()],
+              );
+              container.read(sleepTimerProvider.notifier).startMinutes(719);
+              await tester.pump();
+
+              expect(tester.takeException(), isNull);
+              final header = tester.getRect(find.byType(NowPlayingHeader));
+              final translate = tester.getRect(
+                find.byType(LyricsTranslationButton),
+              );
+              final source = tester.getRect(find.byType(LyricsSourceButton));
+              expect(source.left, greaterThanOrEqualTo(translate.right));
+              expect(
+                source.right,
+                lessThanOrEqualTo(
+                  tester.getRect(find.byType(ShuffleButton)).left,
+                ),
+              );
+              expect(
+                tester.getRect(find.byType(VolumeButton)).right,
+                lessThanOrEqualTo(header.right),
+              );
+            });
+          }
+        }
+      }
+    }
+  });
 }
