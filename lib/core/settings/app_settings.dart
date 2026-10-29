@@ -1,12 +1,14 @@
 import 'display_prefs.dart';
 import 'library_scan_prefs.dart';
 import 'library_sort.dart';
+import 'online_lyrics_prefs.dart';
 import 'playback_prefs.dart';
 import 'translation_prefs.dart';
 
 export 'display_prefs.dart';
 export 'library_scan_prefs.dart';
 export 'library_sort.dart';
+export 'online_lyrics_prefs.dart';
 export 'playback_prefs.dart';
 export 'translation_prefs.dart';
 
@@ -48,6 +50,7 @@ class AppSettings {
     this.playback = const PlaybackPrefs(),
     this.display = const DisplayPrefs(),
     this.translation = const TranslationPrefs(),
+    this.onlineLyrics = const OnlineLyricsPrefs(),
   });
 
   final ThemePreference theme;
@@ -97,6 +100,9 @@ class AppSettings {
   /// Lyrics translation options (no credentials).
   final TranslationPrefs translation;
 
+  /// Online lyrics options (consent keys, `.lrc` writing).
+  final OnlineLyricsPrefs onlineLyrics;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -113,6 +119,7 @@ class AppSettings {
     PlaybackPrefs? playback,
     DisplayPrefs? display,
     TranslationPrefs? translation,
+    OnlineLyricsPrefs? onlineLyrics,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -130,6 +137,7 @@ class AppSettings {
     playback: playback ?? this.playback,
     display: display ?? this.display,
     translation: translation ?? this.translation,
+    onlineLyrics: onlineLyrics ?? this.onlineLyrics,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -150,6 +158,7 @@ class AppSettings {
     playback: playback,
     display: display,
     translation: translation,
+    onlineLyrics: onlineLyrics,
   );
 
   @override
@@ -170,7 +179,8 @@ class AppSettings {
       other.libraryScan == libraryScan &&
       other.playback == playback &&
       other.display == display &&
-      other.translation == translation;
+      other.translation == translation &&
+      other.onlineLyrics == onlineLyrics;
 
   @override
   int get hashCode => Object.hash(
@@ -190,6 +200,7 @@ class AppSettings {
     playback,
     display,
     translation,
+    onlineLyrics,
   );
 
   @override
@@ -203,5 +214,5 @@ class AppSettings {
       'libraryOnboarded: $libraryOnboarded, '
       'recordListenHistory: $recordListenHistory, animations: $animations, '
       'libraryScan: $libraryScan, playback: $playback, display: $display, '
-      'translation: $translation)';
+      'translation: $translation, onlineLyrics: $onlineLyrics)';
 }

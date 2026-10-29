@@ -27,20 +27,22 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
     super.key,
     this.titleBar,
     this.lyrics,
-    this.lyricsState,
+    this.hasLyrics,
   });
 
   /// See `NowPlayingOverlay.titleBar`.
   final NowPlayingTitleBar? titleBar;
 
-  /// Lyrics view, `null` when the track has none. The wide layout shows it
-  /// in a tab next to the queue; the narrow layout as a page right of the
-  /// track.
+  /// Lyrics view, always shown: a track without lyrics shows the empty state
+  /// in it. The wide layout shows it in a tab next to the queue; the narrow
+  /// layout as a page right of the track. Empty when `null`.
   final Widget? lyrics;
 
-  /// What is known about the lyrics. Defaults to [NowPlayingLyricsState.available]
-  /// when [lyrics] is set and [NowPlayingLyricsState.none] otherwise.
-  final NowPlayingLyricsState? lyricsState;
+  /// Whether the playing track has lyrics; translation needs them. Defaults
+  /// to whether [lyrics] is set.
+  final bool? hasLyrics;
+
+  bool get _hasLyrics => hasLyrics ?? lyrics != null;
 
   @override
   ConsumerState<NowPlayingScreen> createState() => _NowPlayingScreenState();
@@ -79,12 +81,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     super.dispose();
   }
 
-  NowPlayingLyricsState get _lyricsState =>
-      widget.lyricsState ??
-      (widget.lyrics != null
-          ? NowPlayingLyricsState.available
-          : NowPlayingLyricsState.none);
-
   void _choose(NowPlayingViewMode mode) =>
       ref.read(nowPlayingViewModeProvider.notifier).choose(mode);
 
@@ -112,22 +108,15 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     }
     if (!isL) {
       // Cover only shows no lyrics, so there is nothing to translate.
-      final shown = effectiveViewMode(
-        ref.read(nowPlayingViewModeProvider),
-        _lyricsState,
-      );
-      if (wide && shown == NowPlayingViewMode.coverOnly) {
+      if (wide &&
+          ref.read(nowPlayingViewModeProvider) ==
+              NowPlayingViewMode.coverOnly) {
         return KeyEventResult.ignored;
       }
       _toggleTranslation();
       return KeyEventResult.handled;
     }
-    final lyrics = _lyricsState;
-    final shown = effectiveViewMode(
-      ref.read(nowPlayingViewModeProvider),
-      lyrics,
-    );
-    _choose(nextViewMode(shown, lyrics));
+    _choose(nextViewMode(ref.read(nowPlayingViewModeProvider)));
     return KeyEventResult.handled;
   }
 
@@ -137,7 +126,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     final prefs = ref.read(settingsProvider).translation;
     if (prefs.show && !prefs.needsNotice) {
       ref.read(settingsProvider.notifier).toggleLyricsTranslation();
-    } else if (_lyricsState != NowPlayingLyricsState.none) {
+    } else if (widget._hasLyrics) {
       unawaited(enableTranslationWithNotice(context, ref, prefs.service));
     }
   }
@@ -153,8 +142,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= _wideBreakpoint;
-    final chosen = ref.watch(nowPlayingViewModeProvider);
-    final lyricsState = _lyricsState;
+    final mode = ref.watch(nowPlayingViewModeProvider);
+    final lyrics = widget.lyrics ?? const SizedBox.expand();
     // Esc is mapped to DismissIntent by the app; nothing handles it unless a
     // route does, so this is what closes the screen.
     return FocusScope(
@@ -187,17 +176,17 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         floatingOpen: _floatingOpen,
                         onClose: _close,
                         titleBar: widget.titleBar,
-                        lyrics: widget.lyrics,
-                        chosenMode: chosen,
-                        mode: effectiveViewMode(chosen, lyricsState),
-                        lyricsState: lyricsState,
+                        lyrics: lyrics,
+                        mode: mode,
+                        hasLyrics: widget._hasLyrics,
                         onChoose: _choose,
                       )
                     : NowPlayingTabs(
                         wrapHeader: _wrapHeader,
                         excludeFromDrag: _exclude,
                         queuePage: const QueuePanel(),
-                        lyricsPage: widget.lyrics,
+                        lyricsPage: lyrics,
+                        hasLyrics: widget._hasLyrics,
                         onClose: _close,
                       ),
               ),

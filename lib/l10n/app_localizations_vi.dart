@@ -1977,6 +1977,9 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không bài nào trong đây có trong thư viện';
 
   @override
+  String get lyricsNone => 'Bài này chưa có lời';
+
+  @override
   String get lyricsTab => 'Lời bài hát';
 
   @override
@@ -2863,4 +2866,225 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsClear => 'Xóa';
+
+  @override
+  String get onlineLyricsNoticeAutoTitle => 'Tự động tìm lời online?';
+
+  @override
+  String onlineLyricsNoticeManualTitle(String provider) {
+    return 'Tìm lời bài hát trên $provider?';
+  }
+
+  @override
+  String onlineLyricsNoticeBody(String hosts) {
+    return 'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới $hosts. Không gửi đường dẫn file hay thông tin máy.';
+  }
+
+  @override
+  String get onlineLyricsNoticeAutoHint =>
+      'Tắt lại được trong Cài đặt › Nâng cao › Lời bài hát.';
+
+  @override
+  String get onlineLyricsNoticeTurnOn => 'Bật';
+
+  @override
+  String get onlineLyricsNoticeSearch => 'Tìm';
+
+  @override
+  String get lyricsFindOnline => 'Tìm lời online…';
+
+  @override
+  String get lyricsPickerTitle => 'Chọn lời bài hát';
+
+  @override
+  String lyricsPickerSong(String title, String artist, String duration) {
+    return 'Bài: $title · $artist · $duration';
+  }
+
+  @override
+  String get lyricsPickerSearch => 'Tìm';
+
+  @override
+  String get lyricsPickerQueryHint => 'Nghệ sĩ và tên bài';
+
+  @override
+  String get lyricsPickerSynced => 'Có thời gian';
+
+  @override
+  String get lyricsPickerPlain => 'Thuần văn bản';
+
+  @override
+  String get lyricsPickerInstrumental => 'Nhạc không lời';
+
+  @override
+  String get lyricsPickerGoodMatch => 'Khớp tốt';
+
+  @override
+  String get lyricsPickerRejected => 'Đã từ chối';
+
+  @override
+  String lyricsPickerDelta(int seconds) {
+    return '±$seconds giây';
+  }
+
+  @override
+  String get lyricsPickerEmpty => 'Không tìm thấy lời. Thử từ khóa khác.';
+
+  @override
+  String lyricsPickerError(String provider) {
+    return 'Không kết nối được $provider';
+  }
+
+  @override
+  String get lyricsPickerRetry => 'Thử lại';
+
+  @override
+  String lyricsPickerFooter(String hosts) {
+    return 'Kết quả từ $hosts · lời bạn chọn được ghim vào bài này';
+  }
+
+  @override
+  String get lyricsPickerUse => 'Dùng lời này';
+
+  @override
+  String get lyricsPickerNoPreview => 'Chọn một kết quả để xem trước lời';
+
+  @override
+  String get lyricsPickerNoBody => 'Không xem trước hoặc dùng được lời này';
+
+  @override
+  String get lyricsPickerInstrumentalPreview => 'Bài này không có lời';
+
+  @override
+  String get lyricsPinned => 'Đã ghim lời vào bài này';
+
+  @override
+  String get lyricsSavedAsLrc => 'Đã lưu thành file .lrc';
+
+  @override
+  String get lyricsNotSavedOutsideLibrary =>
+      'Chưa lưu thành .lrc: bài nằm ngoài các thư mục thư viện của bạn';
+
+  @override
+  String get lyricsPickFailed => 'Không ghim được lời này';
+
+  @override
+  String lyricsPickerNotConsented(String provider) {
+    return 'Lời online đang tắt cho $provider. Hãy bật lại trong Cài đặt.';
+  }
+
+  @override
+  String lyricsSearching(String provider) {
+    return 'Đang tìm trên $provider…';
+  }
+
+  @override
+  String get lyricsFindAutomatically => 'Tự động tìm lời';
+
+  @override
+  String lyricsNotFound(String provider) {
+    return 'Không có lời trên $provider';
+  }
+
+  @override
+  String get lyricsSearchManually => 'Tìm thủ công…';
+
+  @override
+  String lyricsOnlineError(String provider) {
+    return 'Không kết nối được $provider';
+  }
+
+  @override
+  String lyricsOnlineBusy(String provider) {
+    return '$provider đang bận, thử lại sau giây lát.';
+  }
+
+  @override
+  String get lyricsRetry => 'Thử lại';
+
+  @override
+  String get lyricsSkipped => 'Đã tắt lời online cho bài này';
+
+  @override
+  String get lyricsChoose => 'Chọn lời…';
+
+  @override
+  String get lyricsSearchAutomaticallyAgain => 'Tự động tìm lại';
+
+  @override
+  String get lyricsInstrumental => 'Nhạc không lời';
+
+  @override
+  String lyricsCreditFrom(String provider) {
+    return 'Lời từ $provider';
+  }
+
+  @override
+  String get lyricsCreditNotSynced => 'không đồng bộ';
+
+  @override
+  String lyricsCreditMatched(int seconds) {
+    return 'tự động khớp (lệch $seconds giây)';
+  }
+
+  @override
+  String get lyricsCreditMatchedExact => 'tự động khớp';
+
+  @override
+  String get lyricsCreditPicked => 'do bạn chọn';
+
+  @override
+  String get lyricsMenuSearchAgain => 'Tìm lại';
+
+  @override
+  String get lyricsMenuChooseOther => 'Chọn lời khác…';
+
+  @override
+  String get lyricsMenuNotThese => 'Không phải lời này';
+
+  @override
+  String get settingsAutoOnlineLyrics => 'Tự động tìm lời online (LRCLIB)';
+
+  @override
+  String get settingsAutoOnlineLyricsHint =>
+      'Khi Đang phát đang mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
+
+  @override
+  String get settingsWriteLrc => 'Lưu lời đã chọn thành file .lrc';
+
+  @override
+  String get settingsWriteLrcHint =>
+      'Khi bạn chọn lời trong hộp Chọn lời, ghi thêm file .lrc cạnh bài nếu chưa có, trong các thư mục thư viện. Không bao giờ ghi đè.';
+
+  @override
+  String get settingsSavedLyrics => 'Lời đã lưu';
+
+  @override
+  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài',
+    );
+    return '$_temp0 · $size · $notFound bài không tìm thấy (thử lại sau 14 ngày)';
+  }
+
+  @override
+  String get settingsSavedLyricsNone => 'Chưa có lời đã lưu';
+
+  @override
+  String get settingsSavedLyricsClear => 'Xóa';
+
+  @override
+  String get settingsSavedLyricsClearTitle => 'Xóa lời đã lưu?';
+
+  @override
+  String get settingsSavedLyricsClearBody =>
+      'Lời online đã lưu trên máy này, các lời bạn đã chọn và lựa chọn \"không phải lời này\" sẽ bị xóa. File .lrc vẫn còn.';
+
+  @override
+  String get settingsSavedLyricsCleared => 'Đã xóa lời đã lưu';
+
+  @override
+  String get settingsSavedLyricsClearFailed => 'Không xóa được lời đã lưu';
 }

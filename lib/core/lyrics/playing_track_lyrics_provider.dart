@@ -1,41 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../player/local_path_of.dart';
-import '../player/player_service.dart';
-import '../settings/settings_provider.dart';
-import 'embedded_lyrics_reader.dart';
-import 'lrc_sidecar_reader.dart';
-import 'lyrics.dart';
-import 'lyrics_loader.dart';
+import 'online/playing_lyrics_status_provider.dart';
+import 'playing_local_lyrics_provider.dart';
 
-/// The lyrics of the track at [uri].
-typedef PlayingLyrics = ({String uri, Lyrics lyrics});
+export 'playing_local_lyrics_provider.dart';
 
-/// Lyrics of the playing local track, read when it plays and kept only
-/// while a view watches it (nothing is stored). `null` while nothing plays,
-/// for a track that is not a local file, or when it has no lyrics. Read
-/// again when the track or the "prefer embedded lyrics" setting changes;
-/// never retried otherwise.
-///
-/// The value carries the uri it was read for: while the next track's
-/// lyrics load, the previous value is still there, and a view must not show
-/// it as the new track's.
-final playingTrackLyricsProvider = FutureProvider.autoDispose<PlayingLyrics?>((
-  ref,
-) async {
-  final uri = ref.watch(
-    playerServiceProvider.select((s) => s.queue.current?.uri),
-  );
-  final path = uri == null ? null : localPathOf(uri);
-  if (uri == null || path == null) return null;
-  final preferEmbedded = ref.watch(
-    settingsProvider.select((s) => s.playback.preferEmbeddedLyrics),
-  );
-  final lyrics = await loadLyrics(
-    path,
-    preferEmbedded: preferEmbedded,
-    embedded: ref.watch(embeddedLyricsReaderProvider),
-    sidecar: ref.watch(lrcSidecarReaderProvider),
-  );
-  return lyrics == null ? null : (uri: uri, lyrics: lyrics);
-}, retry: (_, _) => null);
+/// The lyrics of the playing track from any source (pin, tags, `.lrc`, the
+/// online cache), as the views that only need the text see them: loading
+/// while the status is being worked out or a search runs, data when lyrics
+/// are found, data(null) when there are none. Derived from
+/// [playingLyricsStatusProvider]; the value carries the uri it is for.
+final playingTrackLyricsProvider =
+    Provider.autoDispose<AsyncValue<PlayingLyrics?>>((ref) {
+      final status = ref.watch(playingLyricsStatusProvider);
+      return switch (status) {
+        null => const AsyncData<PlayingLyrics?>(null),
+        LyricsReading() ||
+        LyricsSearching() => const AsyncLoading<PlayingLyrics?>(),
+        LyricsFound(:final uri, :final lyrics) => AsyncData<PlayingLyrics?>((
+          uri: uri,
+          lyrics: lyrics,
+        )),
+        LyricsNone() => const AsyncData<PlayingLyrics?>(null),
+      };
+    });

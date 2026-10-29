@@ -36,6 +36,7 @@ void main() {
       'Play next',
       'Add to playlist…',
       'Add to favorites',
+      'Find lyrics online…',
       'Show artist',
       'Show album',
       'Show in folder',
@@ -54,6 +55,25 @@ void main() {
     await openQueueMenu(tester, 'x');
     expect(menuLabels(tester, allMenuLabels), [
       'Play next',
+      'Show in file manager',
+      'Remove from queue',
+    ]);
+  });
+
+  testWidgets('a titled local file outside the library can find lyrics', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      (p) => [
+        lib(p, 'a'),
+        const Track(uri: '/elsewhere/x.mp3', title: 'Real title'),
+      ],
+    );
+    await openQueueMenu(tester, 'Real title');
+    expect(menuLabels(tester, allMenuLabels), [
+      'Play next',
+      'Find lyrics online…',
       'Show in file manager',
       'Remove from queue',
     ]);

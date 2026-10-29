@@ -3,6 +3,7 @@ import 'display_prefs_codec.dart';
 import 'library_scan_prefs_codec.dart';
 import 'playback_prefs_codec.dart';
 import 'library_sort_codec.dart';
+import 'online_lyrics_prefs_codec.dart';
 import 'settings_codec_values.dart';
 import 'translation_prefs_codec.dart';
 
@@ -25,6 +26,7 @@ const _libraryScanKey = 'libraryScan';
 const _playbackKey = 'playback';
 const _displayKey = 'display';
 const _translationKey = 'lyricsTranslation';
+const _onlineLyricsKey = 'onlineLyrics';
 const _knownKeys = {
   _versionKey,
   _themeKey,
@@ -41,6 +43,7 @@ const _knownKeys = {
   _playbackKey,
   _displayKey,
   _translationKey,
+  _onlineLyricsKey,
 };
 
 final _languagePattern = RegExp(r'^[a-z]{2,3}$');
@@ -68,9 +71,9 @@ class DecodedSettings {
   /// one added by a newer build), kept for the same reason.
   final Map<String, Object?> librarySortExtra;
 
-  /// For each of `libraryScan`, `playback`, `display` and
-  /// `lyricsTranslation`: the keys inside it this version does not know,
-  /// kept for the same reason.
+  /// For each of `libraryScan`, `playback`, `display`,
+  /// `lyricsTranslation` and `onlineLyrics`: the keys inside it this
+  /// version does not know, kept for the same reason.
   final Map<String, Map<String, Object?>> groupExtras;
 }
 
@@ -93,6 +96,9 @@ DecodedSettings decodeSettings(Object? json) {
   final (display, displayExtra) = decodeDisplayPrefs(json[_displayKey]);
   final (translation, translationExtra) = decodeTranslationPrefs(
     json[_translationKey],
+  );
+  final (onlineLyrics, onlineLyricsExtra) = decodeOnlineLyricsPrefs(
+    json[_onlineLyricsKey],
   );
   return DecodedSettings(
     AppSettings(
@@ -147,6 +153,7 @@ DecodedSettings decodeSettings(Object? json) {
       playback: playback,
       display: display,
       translation: translation,
+      onlineLyrics: onlineLyrics,
     ),
     version is int && version > 0 ? version : settingsSchemaVersion,
     {
@@ -162,6 +169,7 @@ DecodedSettings decodeSettings(Object? json) {
       _playbackKey: playbackExtra,
       _displayKey: displayExtra,
       _translationKey: translationExtra,
+      _onlineLyricsKey: onlineLyricsExtra,
     },
   );
 }
@@ -206,5 +214,9 @@ Map<String, Object?> encodeSettings(
   _translationKey: encodeTranslationPrefs(
     settings.translation,
     extra: groupExtras[_translationKey] ?? const {},
+  ),
+  _onlineLyricsKey: encodeOnlineLyricsPrefs(
+    settings.onlineLyrics,
+    extra: groupExtras[_onlineLyricsKey] ?? const {},
   ),
 };

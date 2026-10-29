@@ -9,15 +9,14 @@ import 'now_playing_compact_page.dart';
 import 'now_playing_header.dart' show nowPlayingHeaderHeight;
 import 'now_playing_title_bar.dart';
 
-/// Pages of the narrow layout, left to right. Lyrics only when the track has
-/// them.
+/// Pages of the narrow layout, left to right.
 enum _Tab { queue, track, lyrics }
 
 const _pageDuration = Duration(milliseconds: 300);
 
 /// Narrow layout: dot tabs on top over horizontally swiped pages, the queue
-/// on the left, the playing track (the start page) in the middle and, when
-/// the track has lyrics, the lyrics on the right. Close and queue buttons
+/// on the left, the playing track (the start page) in the middle and the
+/// lyrics on the right. Close and queue buttons
 /// sit at the top left of the header.
 class NowPlayingTabs extends StatefulWidget {
   const NowPlayingTabs({
@@ -26,7 +25,8 @@ class NowPlayingTabs extends StatefulWidget {
     required this.excludeFromDrag,
     required this.queuePage,
     required this.onClose,
-    this.lyricsPage,
+    required this.lyricsPage,
+    required this.hasLyrics,
   });
 
   /// Adds the window drag area and buttons around the tab header.
@@ -39,8 +39,12 @@ class NowPlayingTabs extends StatefulWidget {
   final Widget queuePage;
   final VoidCallback onClose;
 
-  /// The lyrics page; `null` when the track has none, and then no tab.
-  final Widget? lyricsPage;
+  /// The lyrics page, always there: a track without lyrics shows the empty
+  /// state in it.
+  final Widget lyricsPage;
+
+  /// Whether the song has lyrics to translate; gates the translate button.
+  final bool hasLyrics;
 
   @override
   State<NowPlayingTabs> createState() => _NowPlayingTabsState();
@@ -49,17 +53,6 @@ class NowPlayingTabs extends StatefulWidget {
 class _NowPlayingTabsState extends State<NowPlayingTabs> {
   final _controller = PageController(initialPage: _Tab.track.index);
   int _page = _Tab.track.index;
-
-  @override
-  void didUpdateWidget(NowPlayingTabs oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // The lyrics page went away while shown: land on the track, not on a
-    // page that no longer exists.
-    if (widget.lyricsPage == null && _page == _Tab.lyrics.index) {
-      _page = _Tab.track.index;
-      if (_controller.hasClients) _controller.jumpToPage(_page);
-    }
-  }
 
   @override
   void dispose() {
@@ -83,8 +76,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final lyricsPage = widget.lyricsPage;
-    final tabs = [_Tab.queue, _Tab.track, if (lyricsPage != null) _Tab.lyrics];
+    const tabs = _Tab.values;
     final labels = {
       _Tab.queue: l10n.nowPlayingTabQueue,
       _Tab.track: l10n.nowPlayingTabTrack,
@@ -119,8 +111,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                             )
                           else
                             QueueButton(onPressed: () => _select(_Tab.queue)),
-                          if (lyricsPage != null)
-                            const LyricsTranslationButton(),
+                          LyricsTranslationButton(enabled: widget.hasLyrics),
                         ],
                       ),
                     ),
@@ -152,7 +143,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
             children: [
               widget.queuePage,
               const NowPlayingCompactPage(),
-              ?lyricsPage,
+              widget.lyricsPage,
             ],
           ),
         ),

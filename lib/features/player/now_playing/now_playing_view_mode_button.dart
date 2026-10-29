@@ -11,19 +11,17 @@ class NowPlayingViewModeButton extends StatelessWidget {
   const NowPlayingViewModeButton({
     super.key,
     required this.mode,
-    required this.lyricsState,
     required this.onChoose,
   });
 
-  /// The mode on screen (the effective one, see [effectiveViewMode]).
+  /// The mode on screen.
   final NowPlayingViewMode mode;
-  final NowPlayingLyricsState lyricsState;
   final ValueChanged<NowPlayingViewMode> onChoose;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final next = nextViewMode(mode, lyricsState);
+    final next = nextViewMode(mode);
     return IconButton(
       icon: Icon(switch (mode) {
         NowPlayingViewMode.split => AppIcons.viewSplit,

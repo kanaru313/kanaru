@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/lyrics_picker/lyrics_picker_dialog.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
 import '../library/browse_test_data.dart';
@@ -62,6 +64,32 @@ void main() {
     await pick(tester, 'Show album');
 
     expect(location(h), albumLocation(const AlbumKey('ann', 'al')));
+  });
+
+  testWidgets('Find lyrics online works for a track outside the library', (
+    tester,
+  ) async {
+    await openWithTracks(tester, h, _library, location: '/home');
+    final p = await trackPaths(tester, h);
+    await playAndOpenQueue(tester, h, [
+      Track(uri: p['a']!, title: 'a'),
+      const Track(uri: '/elsewhere/x.mp3', title: 'Real title'),
+    ]);
+    await openQueueMenu(tester, 'Real title');
+    await pick(tester, 'Find lyrics online…');
+
+    // Nothing is sent before the notice is answered.
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Search'),
+      ),
+    );
+    await settleDb(tester);
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(LyricsPickerDialog), findsOneWidget);
   });
 
   testWidgets('Add to playlist adds the song', (tester) async {
@@ -128,8 +156,10 @@ void main() {
     gate.failNext('has_album');
     await openQueueMenu(tester, 'b');
 
+    // Finding lyrics does not need the library row, so it stays.
     expect(menuLabels(tester, allMenuLabels), [
       'Play next',
+      'Find lyrics online…',
       'Show in file manager',
       'Remove from queue',
     ]);

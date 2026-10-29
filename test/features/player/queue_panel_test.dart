@@ -256,6 +256,9 @@ void main() {
       await pumpApp(tester);
       container.read(nowPlayingOpenProvider.notifier).open();
       await tester.pumpAndSettle();
+      // The side pane opens on Lyrics; the queue is the other tab.
+      await tester.tap(find.widgetWithText(Tab, 'Now playing'));
+      await tester.pumpAndSettle();
 
       final inScreen = find.descendant(
         of: find.byType(NowPlayingScreen),

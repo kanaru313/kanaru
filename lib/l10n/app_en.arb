@@ -1615,6 +1615,10 @@
   "@queueHistoryNothingToPlay": {
     "description": "Snackbar when a saved queue has no song that can play"
   },
+  "lyricsNone": "No lyrics for this song",
+  "@lyricsNone": {
+    "description": "Shown in the lyrics slot of Now Playing when the song has no lyrics"
+  },
   "lyricsTab": "Lyrics",
   "@lyricsTab": {
     "description": "Name of the lyrics page of the narrow Now Playing layout"
@@ -2639,5 +2643,298 @@
       }
     }
   },
-  "settingsClear": "Clear"
+  "settingsClear": "Clear",
+  "onlineLyricsNoticeAutoTitle": "Find lyrics online automatically?",
+  "@onlineLyricsNoticeAutoTitle": {
+    "description": "Title of the dialog asking to look lyrics up online without asking each time"
+  },
+  "onlineLyricsNoticeManualTitle": "Search lyrics on {provider}?",
+  "@onlineLyricsNoticeManualTitle": {
+    "description": "Title of the dialog asking to search one online lyrics service; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.",
+  "@onlineLyricsNoticeBody": {
+    "description": "Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses",
+    "placeholders": {
+      "hosts": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Advanced › Lyrics.",
+  "@onlineLyricsNoticeAutoHint": {
+    "description": "Hint under the automatic online lyrics notice saying where to turn it off"
+  },
+  "onlineLyricsNoticeTurnOn": "Turn on",
+  "@onlineLyricsNoticeTurnOn": {
+    "description": "Button of the automatic online lyrics notice that accepts"
+  },
+  "onlineLyricsNoticeSearch": "Search",
+  "@onlineLyricsNoticeSearch": {
+    "description": "Button of the manual online lyrics notice that accepts and searches"
+  },
+  "lyricsFindOnline": "Find lyrics online…",
+  "@lyricsFindOnline": {
+    "description": "Track menu row that opens the Choose lyrics dialog"
+  },
+  "lyricsPickerTitle": "Choose lyrics",
+  "@lyricsPickerTitle": {
+    "description": "Title of the dialog to pick online lyrics for a song"
+  },
+  "lyricsPickerSong": "Song: {title} · {artist} · {duration}",
+  "@lyricsPickerSong": {
+    "description": "Subtitle of the Choose lyrics dialog; duration is m:ss",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "artist": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsPickerSearch": "Search",
+  "@lyricsPickerSearch": {
+    "description": "Button next to the query field of the Choose lyrics dialog"
+  },
+  "lyricsPickerQueryHint": "Artist and title",
+  "@lyricsPickerQueryHint": {
+    "description": "Hint of the query field of the Choose lyrics dialog"
+  },
+  "lyricsPickerSynced": "Synced",
+  "@lyricsPickerSynced": {
+    "description": "Badge of a result with time-synced lyrics"
+  },
+  "lyricsPickerPlain": "Plain",
+  "@lyricsPickerPlain": {
+    "description": "Badge of a result with plain lyrics"
+  },
+  "lyricsPickerInstrumental": "Instrumental",
+  "@lyricsPickerInstrumental": {
+    "description": "Badge of a result the service marks as instrumental"
+  },
+  "lyricsPickerGoodMatch": "Good match",
+  "@lyricsPickerGoodMatch": {
+    "description": "Label of a result whose title, artist and length fit the song"
+  },
+  "lyricsPickerRejected": "Rejected",
+  "@lyricsPickerRejected": {
+    "description": "Label of a result the user earlier marked as not the lyrics of this song"
+  },
+  "lyricsPickerDelta": "±{seconds}s",
+  "@lyricsPickerDelta": {
+    "description": "How many seconds a result's length differs from the song's",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsPickerEmpty": "No lyrics found. Try other words.",
+  "@lyricsPickerEmpty": {
+    "description": "Shown when the search finds nothing"
+  },
+  "lyricsPickerError": "Couldn't reach {provider}",
+  "@lyricsPickerError": {
+    "description": "Shown when a lyrics service fails; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsPickerRetry": "Retry",
+  "@lyricsPickerRetry": {
+    "description": "Button that repeats a failed lyrics search"
+  },
+  "lyricsPickerFooter": "Results from {hosts} · the lyrics you pick are pinned to this song",
+  "@lyricsPickerFooter": {
+    "description": "Footer of the Choose lyrics dialog; hosts are the web addresses of the service",
+    "placeholders": {
+      "hosts": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsPickerUse": "Use these lyrics",
+  "@lyricsPickerUse": {
+    "description": "Button that pins the selected lyrics to the song"
+  },
+  "lyricsPickerNoPreview": "Select a result to preview its lyrics",
+  "@lyricsPickerNoPreview": {
+    "description": "Preview pane text when nothing is selected"
+  },
+  "lyricsPickerNoBody": "These lyrics can't be previewed or used",
+  "@lyricsPickerNoBody": {
+    "description": "Preview pane text for a result without lyrics"
+  },
+  "lyricsPickerInstrumentalPreview": "This song is instrumental",
+  "@lyricsPickerInstrumentalPreview": {
+    "description": "Preview pane text for an instrumental result"
+  },
+  "lyricsPinned": "Lyrics pinned to this song",
+  "@lyricsPinned": {
+    "description": "Snackbar after the user picked online lyrics"
+  },
+  "lyricsSavedAsLrc": "Saved as .lrc",
+  "@lyricsSavedAsLrc": {
+    "description": "Detail of the snackbar when the picked lyrics were also saved as a .lrc file"
+  },
+  "lyricsNotSavedOutsideLibrary": "Not saved as .lrc: the song is outside your library folders",
+  "@lyricsNotSavedOutsideLibrary": {
+    "description": "Detail of the snackbar when the .lrc file was not written because of the song's location"
+  },
+  "lyricsPickFailed": "Couldn't pin these lyrics",
+  "@lyricsPickFailed": {
+    "description": "Snackbar when pinning the lyrics the user picked failed"
+  },
+  "lyricsPickerNotConsented": "Online lyrics are turned off for {provider}. Allow it in Settings.",
+  "@lyricsPickerNotConsented": {
+    "description": "Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSearching": "Searching {provider}…",
+  "@lyricsSearching": {
+    "description": "Lyrics slot of Now Playing while a lookup runs; provider is the service name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsFindAutomatically": "Find lyrics automatically",
+  "@lyricsFindAutomatically": {
+    "description": "Button in the empty lyrics slot that turns on automatic online lookup"
+  },
+  "lyricsNotFound": "No lyrics found on {provider}",
+  "@lyricsNotFound": {
+    "description": "Lyrics slot of Now Playing when the service has no match; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSearchManually": "Search manually…",
+  "@lyricsSearchManually": {
+    "description": "Button in the empty lyrics slot that opens the Choose lyrics dialog"
+  },
+  "lyricsOnlineError": "Couldn't reach {provider}",
+  "@lyricsOnlineError": {
+    "description": "Banner above the empty lyrics slot after a failed lookup; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsOnlineBusy": "{provider} is busy. Try again in a moment.",
+  "@lyricsOnlineBusy": {
+    "description": "Banner above the empty lyrics slot when the service kept answering that it is busy; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsRetry": "Retry",
+  "@lyricsRetry": {
+    "description": "Button on the failed lookup banner"
+  },
+  "lyricsSkipped": "Online lyrics turned off for this song",
+  "@lyricsSkipped": {
+    "description": "Lyrics slot of Now Playing after the user rejected the matched lyrics"
+  },
+  "lyricsChoose": "Choose lyrics…",
+  "@lyricsChoose": {
+    "description": "Button in the lyrics slot that opens the Choose lyrics dialog"
+  },
+  "lyricsSearchAutomaticallyAgain": "Search automatically again",
+  "@lyricsSearchAutomaticallyAgain": {
+    "description": "Button that forgets the user's choice for the song and looks it up again"
+  },
+  "lyricsInstrumental": "Instrumental",
+  "@lyricsInstrumental": {
+    "description": "Lyrics slot of Now Playing for a song the service marks as instrumental"
+  },
+  "lyricsCreditFrom": "Lyrics from {provider}",
+  "@lyricsCreditFrom": {
+    "description": "Credit under online lyrics; provider is the service name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsCreditNotSynced": "not synced",
+  "@lyricsCreditNotSynced": {
+    "description": "Added to the lyrics credit when the lyrics have no timing"
+  },
+  "lyricsCreditMatched": "matched automatically (off by {seconds} s)",
+  "@lyricsCreditMatched": {
+    "description": "Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsCreditMatchedExact": "matched automatically",
+  "@lyricsCreditMatchedExact": {
+    "description": "Header of the lyrics credit menu when the lengths agree or one is unknown"
+  },
+  "lyricsCreditPicked": "picked by you",
+  "@lyricsCreditPicked": {
+    "description": "Header of the lyrics credit menu for lyrics the user chose"
+  },
+  "lyricsMenuSearchAgain": "Search again",
+  "@lyricsMenuSearchAgain": {
+    "description": "Lyrics credit menu item that forgets the match and looks the song up again"
+  },
+  "lyricsMenuChooseOther": "Choose other lyrics…",
+  "@lyricsMenuChooseOther": {
+    "description": "Lyrics credit menu item that opens the Choose lyrics dialog"
+  },
+  "lyricsMenuNotThese": "Not these lyrics",
+  "@lyricsMenuNotThese": {
+    "description": "Lyrics credit menu item that rejects the matched lyrics for the song"
+  },
+  "settingsAutoOnlineLyrics": "Find lyrics online automatically (LRCLIB)",
+  "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
+  "settingsWriteLrc": "Save picked lyrics as .lrc files",
+  "settingsWriteLrcHint": "When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.",
+  "settingsSavedLyrics": "Saved lyrics",
+  "settingsSavedLyricsSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)",
+  "@settingsSavedLyricsSummary": {
+    "description": "Saved online lyrics: songs with lyrics, their size and songs the service had none for",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      },
+      "notFound": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsSavedLyricsNone": "No saved lyrics",
+  "settingsSavedLyricsClear": "Clear",
+  "settingsSavedLyricsClearTitle": "Clear saved lyrics?",
+  "settingsSavedLyricsClearBody": "The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.",
+  "settingsSavedLyricsCleared": "Saved lyrics cleared",
+  "settingsSavedLyricsClearFailed": "Could not clear saved lyrics"
 }

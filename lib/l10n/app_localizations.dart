@@ -3086,6 +3086,12 @@ abstract class AppLocalizations {
   /// **'None of these songs are in your library'**
   String get queueHistoryNothingToPlay;
 
+  /// Shown in the lyrics slot of Now Playing when the song has no lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics for this song'**
+  String get lyricsNone;
+
   /// Name of the lyrics page of the narrow Now Playing layout
   ///
   /// In en, this message translates to:
@@ -4465,6 +4471,372 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get settingsClear;
+
+  /// Title of the dialog asking to look lyrics up online without asking each time
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics online automatically?'**
+  String get onlineLyricsNoticeAutoTitle;
+
+  /// Title of the dialog asking to search one online lyrics service; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Search lyrics on {provider}?'**
+  String onlineLyricsNoticeManualTitle(String provider);
+
+  /// Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.'**
+  String onlineLyricsNoticeBody(String hosts);
+
+  /// Hint under the automatic online lyrics notice saying where to turn it off
+  ///
+  /// In en, this message translates to:
+  /// **'You can turn it off in Settings › Advanced › Lyrics.'**
+  String get onlineLyricsNoticeAutoHint;
+
+  /// Button of the automatic online lyrics notice that accepts
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get onlineLyricsNoticeTurnOn;
+
+  /// Button of the manual online lyrics notice that accepts and searches
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get onlineLyricsNoticeSearch;
+
+  /// Track menu row that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics online…'**
+  String get lyricsFindOnline;
+
+  /// Title of the dialog to pick online lyrics for a song
+  ///
+  /// In en, this message translates to:
+  /// **'Choose lyrics'**
+  String get lyricsPickerTitle;
+
+  /// Subtitle of the Choose lyrics dialog; duration is m:ss
+  ///
+  /// In en, this message translates to:
+  /// **'Song: {title} · {artist} · {duration}'**
+  String lyricsPickerSong(String title, String artist, String duration);
+
+  /// Button next to the query field of the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get lyricsPickerSearch;
+
+  /// Hint of the query field of the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Artist and title'**
+  String get lyricsPickerQueryHint;
+
+  /// Badge of a result with time-synced lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get lyricsPickerSynced;
+
+  /// Badge of a result with plain lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Plain'**
+  String get lyricsPickerPlain;
+
+  /// Badge of a result the service marks as instrumental
+  ///
+  /// In en, this message translates to:
+  /// **'Instrumental'**
+  String get lyricsPickerInstrumental;
+
+  /// Label of a result whose title, artist and length fit the song
+  ///
+  /// In en, this message translates to:
+  /// **'Good match'**
+  String get lyricsPickerGoodMatch;
+
+  /// Label of a result the user earlier marked as not the lyrics of this song
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get lyricsPickerRejected;
+
+  /// How many seconds a result's length differs from the song's
+  ///
+  /// In en, this message translates to:
+  /// **'±{seconds}s'**
+  String lyricsPickerDelta(int seconds);
+
+  /// Shown when the search finds nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics found. Try other words.'**
+  String get lyricsPickerEmpty;
+
+  /// Shown when a lyrics service fails; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach {provider}'**
+  String lyricsPickerError(String provider);
+
+  /// Button that repeats a failed lyrics search
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get lyricsPickerRetry;
+
+  /// Footer of the Choose lyrics dialog; hosts are the web addresses of the service
+  ///
+  /// In en, this message translates to:
+  /// **'Results from {hosts} · the lyrics you pick are pinned to this song'**
+  String lyricsPickerFooter(String hosts);
+
+  /// Button that pins the selected lyrics to the song
+  ///
+  /// In en, this message translates to:
+  /// **'Use these lyrics'**
+  String get lyricsPickerUse;
+
+  /// Preview pane text when nothing is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Select a result to preview its lyrics'**
+  String get lyricsPickerNoPreview;
+
+  /// Preview pane text for a result without lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'These lyrics can\'t be previewed or used'**
+  String get lyricsPickerNoBody;
+
+  /// Preview pane text for an instrumental result
+  ///
+  /// In en, this message translates to:
+  /// **'This song is instrumental'**
+  String get lyricsPickerInstrumentalPreview;
+
+  /// Snackbar after the user picked online lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics pinned to this song'**
+  String get lyricsPinned;
+
+  /// Detail of the snackbar when the picked lyrics were also saved as a .lrc file
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as .lrc'**
+  String get lyricsSavedAsLrc;
+
+  /// Detail of the snackbar when the .lrc file was not written because of the song's location
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved as .lrc: the song is outside your library folders'**
+  String get lyricsNotSavedOutsideLibrary;
+
+  /// Snackbar when pinning the lyrics the user picked failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t pin these lyrics'**
+  String get lyricsPickFailed;
+
+  /// Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Online lyrics are turned off for {provider}. Allow it in Settings.'**
+  String lyricsPickerNotConsented(String provider);
+
+  /// Lyrics slot of Now Playing while a lookup runs; provider is the service name
+  ///
+  /// In en, this message translates to:
+  /// **'Searching {provider}…'**
+  String lyricsSearching(String provider);
+
+  /// Button in the empty lyrics slot that turns on automatic online lookup
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics automatically'**
+  String get lyricsFindAutomatically;
+
+  /// Lyrics slot of Now Playing when the service has no match; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics found on {provider}'**
+  String lyricsNotFound(String provider);
+
+  /// Button in the empty lyrics slot that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Search manually…'**
+  String get lyricsSearchManually;
+
+  /// Banner above the empty lyrics slot after a failed lookup; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach {provider}'**
+  String lyricsOnlineError(String provider);
+
+  /// Banner above the empty lyrics slot when the service kept answering that it is busy; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} is busy. Try again in a moment.'**
+  String lyricsOnlineBusy(String provider);
+
+  /// Button on the failed lookup banner
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get lyricsRetry;
+
+  /// Lyrics slot of Now Playing after the user rejected the matched lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Online lyrics turned off for this song'**
+  String get lyricsSkipped;
+
+  /// Button in the lyrics slot that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Choose lyrics…'**
+  String get lyricsChoose;
+
+  /// Button that forgets the user's choice for the song and looks it up again
+  ///
+  /// In en, this message translates to:
+  /// **'Search automatically again'**
+  String get lyricsSearchAutomaticallyAgain;
+
+  /// Lyrics slot of Now Playing for a song the service marks as instrumental
+  ///
+  /// In en, this message translates to:
+  /// **'Instrumental'**
+  String get lyricsInstrumental;
+
+  /// Credit under online lyrics; provider is the service name
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics from {provider}'**
+  String lyricsCreditFrom(String provider);
+
+  /// Added to the lyrics credit when the lyrics have no timing
+  ///
+  /// In en, this message translates to:
+  /// **'not synced'**
+  String get lyricsCreditNotSynced;
+
+  /// Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's
+  ///
+  /// In en, this message translates to:
+  /// **'matched automatically (off by {seconds} s)'**
+  String lyricsCreditMatched(int seconds);
+
+  /// Header of the lyrics credit menu when the lengths agree or one is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'matched automatically'**
+  String get lyricsCreditMatchedExact;
+
+  /// Header of the lyrics credit menu for lyrics the user chose
+  ///
+  /// In en, this message translates to:
+  /// **'picked by you'**
+  String get lyricsCreditPicked;
+
+  /// Lyrics credit menu item that forgets the match and looks the song up again
+  ///
+  /// In en, this message translates to:
+  /// **'Search again'**
+  String get lyricsMenuSearchAgain;
+
+  /// Lyrics credit menu item that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Choose other lyrics…'**
+  String get lyricsMenuChooseOther;
+
+  /// Lyrics credit menu item that rejects the matched lyrics for the song
+  ///
+  /// In en, this message translates to:
+  /// **'Not these lyrics'**
+  String get lyricsMenuNotThese;
+
+  /// No description provided for @settingsAutoOnlineLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics online automatically (LRCLIB)'**
+  String get settingsAutoOnlineLyrics;
+
+  /// No description provided for @settingsAutoOnlineLyricsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.'**
+  String get settingsAutoOnlineLyricsHint;
+
+  /// No description provided for @settingsWriteLrc.
+  ///
+  /// In en, this message translates to:
+  /// **'Save picked lyrics as .lrc files'**
+  String get settingsWriteLrc;
+
+  /// No description provided for @settingsWriteLrcHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.'**
+  String get settingsWriteLrcHint;
+
+  /// No description provided for @settingsSavedLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved lyrics'**
+  String get settingsSavedLyrics;
+
+  /// Saved online lyrics: songs with lyrics, their size and songs the service had none for
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)'**
+  String settingsSavedLyricsSummary(int count, String size, int notFound);
+
+  /// No description provided for @settingsSavedLyricsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved lyrics'**
+  String get settingsSavedLyricsNone;
+
+  /// No description provided for @settingsSavedLyricsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsSavedLyricsClear;
+
+  /// No description provided for @settingsSavedLyricsClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear saved lyrics?'**
+  String get settingsSavedLyricsClearTitle;
+
+  /// No description provided for @settingsSavedLyricsClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.'**
+  String get settingsSavedLyricsClearBody;
+
+  /// No description provided for @settingsSavedLyricsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved lyrics cleared'**
+  String get settingsSavedLyricsCleared;
+
+  /// No description provided for @settingsSavedLyricsClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear saved lyrics'**
+  String get settingsSavedLyricsClearFailed;
 }
 
 class _AppLocalizationsDelegate

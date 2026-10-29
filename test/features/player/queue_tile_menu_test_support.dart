@@ -60,6 +60,7 @@ const allMenuLabels = [
   'Add to playlist…',
   'Add to favorites',
   'Remove from favorites',
+  'Find lyrics online…',
   'Show artist',
   'Show album',
   'Show in folder',

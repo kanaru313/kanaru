@@ -198,7 +198,12 @@ bool _needsNfc(String text) {
 
 /// [text] in NFC for the scripts of `text_key_tables.dart` and Hangul;
 /// anything else passes through unchanged. Not a full NFC: singletons such as
-/// U+212B (Angstrom sign) and marks outside the table are left alone.
+/// U+212B (Angstrom sign) and marks outside the table are left alone. Case
+/// and characters are otherwise kept, so it suits text sent to a service that
+/// matches composed spellings only.
+String nfcText(String text) => _nfc(text);
+
+/// The implementation of [nfcText] and of [groupKey]'s composing step.
 String _nfc(String text) {
   if (!_needsNfc(text)) return text;
   final expanded = <int>[];

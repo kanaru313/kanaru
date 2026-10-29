@@ -58,13 +58,14 @@ void main() {
   );
   const lyrics = SizedBox.expand(child: Center(child: Text('LYRICS')));
 
-  testWidgets('without lyrics the side pane is the queue alone', (
+  testWidgets('without lyrics the side pane still has the Lyrics tab', (
     tester,
   ) async {
     await pump(tester);
 
-    expect(find.widgetWithText(Tab, 'Lyrics'), findsNothing);
-    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Lyrics'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Now playing'), findsOneWidget);
+    expect(find.byType(QueuePanel), findsNothing);
     expect(cover, findsOneWidget);
   });
 
@@ -143,10 +144,19 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('is absent without lyrics', (tester) async {
+    testWidgets('is disabled without lyrics', (tester) async {
       await pump(tester, size: narrow, overrides: scripted());
 
-      expect(find.byTooltip('Lyrics translation'), findsNothing);
+      final button = find.byTooltip('Lyrics translation');
+      expect(button, findsOneWidget);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.ancestor(of: button, matching: find.byType(IconButton)),
+            )
+            .onPressed,
+        isNull,
+      );
     });
 
     testWidgets('opens the translation menu', (tester) async {

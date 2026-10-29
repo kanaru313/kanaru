@@ -15,21 +15,19 @@ import 'now_playing_view_mode_button.dart';
 const nowPlayingModeFadeDuration = Duration(milliseconds: 300);
 
 /// Wide Now Playing: the auto-hiding header over the body of the current
-/// view mode. A switch the user asks for cross-fades; one that lyrics
-/// appearing or vanishing cause happens at once, as does any under reduced
-/// motion.
+/// view mode. A switch cross-fades, or happens at once under reduced motion.
+/// The body never changes because of the playing track's lyrics.
 class NowPlayingWideLayout extends StatefulWidget {
   const NowPlayingWideLayout({
     super.key,
     required this.chrome,
     required this.floatingOpen,
     required this.onClose,
-    required this.chosenMode,
     required this.mode,
-    required this.lyricsState,
+    required this.hasLyrics,
+    required this.lyrics,
     required this.onChoose,
     this.titleBar,
-    this.lyrics,
   });
 
   final AutoHideController chrome;
@@ -39,34 +37,21 @@ class NowPlayingWideLayout extends StatefulWidget {
   final VoidCallback onClose;
   final NowPlayingTitleBar? titleBar;
 
-  /// The mode the user chose, and the one shown ([effectiveViewMode]).
-  final NowPlayingViewMode chosenMode;
+  /// The mode the user chose.
   final NowPlayingViewMode mode;
-  final NowPlayingLyricsState lyricsState;
+
+  /// Whether the playing track has lyrics; the translate button needs them.
+  final bool hasLyrics;
   final ValueChanged<NowPlayingViewMode> onChoose;
 
-  /// The lyrics view; `null` when the track has none.
-  final Widget? lyrics;
+  /// The lyrics view; a track without lyrics shows the empty state in it.
+  final Widget lyrics;
 
   @override
   State<NowPlayingWideLayout> createState() => _NowPlayingWideLayoutState();
 }
 
 class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
-  /// Changes when lyrics, not the user, switch the body. A switcher's fade
-  /// time is fixed when a body enters, so such a switch gets a new switcher
-  /// instead, which shows the new body at once.
-  int _instantSwitches = 0;
-
-  @override
-  void didUpdateWidget(NowPlayingWideLayout oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.mode != oldWidget.mode &&
-        widget.chosenMode == oldWidget.chosenMode) {
-      _instantSwitches++;
-    }
-  }
-
   Widget _body(BuildContext context, BoxConstraints constraints) {
     final chrome = widget.chrome;
     return switch (widget.mode) {
@@ -80,12 +65,9 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
           Expanded(child: NowPlayingSidePane(lyrics: widget.lyrics)),
         ],
       ),
-      // Before the first answer the lyrics body shows empty rather than the
-      // Cover only fallback, so reopening in Lyrics only does not flash the
-      // other body.
       NowPlayingViewMode.lyricsOnly => NowPlayingLyricsOnlyBody(
         key: const ValueKey(NowPlayingViewMode.lyricsOnly),
-        lyrics: widget.lyrics ?? const SizedBox.expand(),
+        lyrics: widget.lyrics,
         chrome: chrome,
         onShowSplit: () => widget.onChoose(NowPlayingViewMode.split),
       ),
@@ -124,10 +106,9 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
       floatingOpen: widget.floatingOpen,
       hasWindowButtons: titleBar?.hasWindowButtons ?? false,
       showTranslate: widget.mode != NowPlayingViewMode.coverOnly,
-      translateEnabled: widget.lyricsState != NowPlayingLyricsState.none,
+      translateEnabled: widget.hasLyrics,
       modeButton: NowPlayingViewModeButton(
         mode: widget.mode,
-        lyricsState: widget.lyricsState,
         onChoose: widget.onChoose,
       ),
     );
@@ -145,7 +126,7 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) => AnimatedSwitcher(
-                key: ValueKey((_instantSwitches, duration)),
+                key: ValueKey(duration),
                 duration: duration,
                 transitionBuilder: _transition,
                 layoutBuilder: (current, previous) => Stack(

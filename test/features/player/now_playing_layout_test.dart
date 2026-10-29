@@ -248,8 +248,8 @@ void main() {
       for (final width in [600.0, 480.0]) {
         await pumpOpen(tester, Size(width, 700));
         final queue = tester.getRect(inScreen(find.byTooltip('Now playing')));
-        final track = tester.getRect(inScreen(find.byTooltip('Song')));
-        final dots = queue.expandToInclude(track);
+        final lyrics = tester.getRect(inScreen(find.byTooltip('Lyrics')));
+        final dots = queue.expandToInclude(lyrics);
         expect(dots.center.dx, closeTo(width / 2, 1));
         expect(dots.top, lessThan(64));
         // Unmounting schedules the disposal of providers Now Playing
@@ -265,8 +265,8 @@ void main() {
       await pumpOpen(tester, const Size(480, 360), customTitleBar: true);
 
       final queue = tester.getRect(inScreen(find.byTooltip('Now playing')));
-      final track = tester.getRect(inScreen(find.byTooltip('Song')));
-      expect(queue.expandToInclude(track).center.dx, closeTo(240, 1));
+      final lyrics = tester.getRect(inScreen(find.byTooltip('Lyrics')));
+      expect(queue.expandToInclude(lyrics).center.dx, closeTo(240, 1));
       expect(tester.takeException(), isNull);
     });
 

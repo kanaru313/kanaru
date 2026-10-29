@@ -423,4 +423,98 @@ void main() {
       );
     });
   });
+
+  group('onlineLyrics group', () {
+    const manual = 'lrclib@lrclib.net';
+    const auto = 'lrclib@lrclib.net:auto';
+
+    OnlineLyricsPrefs decode(Object? group) =>
+        decodeSettings(<String, Object?>{'onlineLyrics': group})
+            .settings
+            .onlineLyrics;
+
+    test('a file without it gives the defaults, everything off', () {
+      final prefs = decodeSettings(<String, Object?>{}).settings.onlineLyrics;
+
+      expect(prefs, const OnlineLyricsPrefs());
+      expect(prefs.autoFetch, isFalse);
+      expect(prefs.writeLrc, isFalse);
+      expect(prefs.noticeAcknowledged, isEmpty);
+    });
+
+    test('round-trips as a nested known key', () {
+      const settings = AppSettings(
+        onlineLyrics: OnlineLyricsPrefs(
+          autoFetch: true,
+          writeLrc: true,
+          noticeAcknowledged: {manual, auto},
+        ),
+      );
+      final json = encodeSettings(settings);
+      final decoded = decodeSettings(json);
+
+      expect((json['onlineLyrics']! as Map)['writeLrc'], true);
+      expect(decoded.settings, settings);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+
+    test('autoFetch with only the manual key reads as off', () {
+      final prefs = decode(<String, Object?>{
+        'autoFetch': true,
+        'noticeAcknowledged': [manual],
+      });
+
+      expect(prefs.autoFetch, isFalse);
+      expect(prefs.noticeAcknowledged, {manual});
+    });
+
+    test('autoFetch with the auto key stays on', () {
+      expect(
+        decode(<String, Object?>{
+          'autoFetch': true,
+          'noticeAcknowledged': [manual, auto],
+        }).autoFetch,
+        isTrue,
+      );
+    });
+
+    test('unknown keys and unknown provider ids are kept', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'onlineLyrics': <String, Object?>{
+          'future': 2,
+          'noticeAcknowledged': [manual, 'other@example.org', 7],
+        },
+      });
+      final json = encodeSettings(
+        decoded.settings,
+        groupExtras: decoded.groupExtras,
+      );
+      final group = json['onlineLyrics']! as Map;
+
+      expect(group['future'], 2);
+      expect(
+        group['noticeAcknowledged'],
+        containsAll([manual, 'other@example.org', 7]),
+      );
+      expect(decoded.settings.onlineLyrics.noticeAcknowledged, {
+        manual,
+        'other@example.org',
+      });
+    });
+
+    test('a value of the wrong type gives that key its default', () {
+      final prefs = decode(<String, Object?>{
+        'autoFetch': 'yes',
+        'writeLrc': 1,
+        'noticeAcknowledged': 'lrclib@lrclib.net',
+      });
+
+      expect(prefs, const OnlineLyricsPrefs());
+      expect(decode('nope'), const OnlineLyricsPrefs());
+    });
+
+    test('writeLrc is independent of consent', () {
+      expect(decode(<String, Object?>{'writeLrc': true}).writeLrc, isTrue);
+    });
+  });
 }

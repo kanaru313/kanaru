@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../lyrics/online/lyrics_provider_registry.dart';
 import '../lyrics_translation/translation_service.dart';
 import 'app_settings.dart';
 import 'settings_file.dart';
@@ -147,6 +148,50 @@ class SettingsNotifier extends Notifier<AppSettings> {
 
   static TranslationPrefs _acknowledgedOnly(TranslationPrefs prefs) =>
       prefs.show && prefs.needsNotice ? prefs.copyWith(show: false) : prefs;
+
+  /// Saves [prefs], except `noticeAcknowledged`, which only
+  /// [acknowledgeOnlineLyricsNotice] and [enableAutoOnlineLyrics] change.
+  /// `autoFetch` can only be on with an automatic-lookup consent.
+  void setOnlineLyrics(OnlineLyricsPrefs prefs) {
+    final acknowledged = state.onlineLyrics.noticeAcknowledged;
+    _update(
+      state.copyWith(
+        onlineLyrics: prefs.copyWith(
+          autoFetch: prefs.autoFetch && acknowledged.any(isAutoConsentKey),
+          noticeAcknowledged: acknowledged,
+        ),
+      ),
+    );
+  }
+
+  /// Records that the user accepted [key] (a consent key). Accepting a
+  /// manual key never turns automatic lookup on.
+  void acknowledgeOnlineLyricsNotice(String key) => _update(
+    state.copyWith(
+      onlineLyrics: state.onlineLyrics.copyWith(
+        noticeAcknowledged: _withKeys([key]),
+      ),
+    ),
+  );
+
+  /// Accepts [registration] for manual and automatic lookup and turns
+  /// automatic lookup on, in one write. Call it only after the user accepted
+  /// the automatic notice.
+  void enableAutoOnlineLyrics(LyricsProviderRegistration registration) =>
+      _update(
+        state.copyWith(
+          onlineLyrics: state.onlineLyrics.copyWith(
+            autoFetch: true,
+            noticeAcknowledged: _withKeys([
+              registration.consentKey,
+              registration.autoConsentKey,
+            ]),
+          ),
+        ),
+      );
+
+  Set<String> _withKeys(Iterable<String> keys) =>
+      Set.unmodifiable({...state.onlineLyrics.noticeAcknowledged, ...keys});
 
   /// Records that the first-run source picker is done for good.
   void markLibraryOnboarded() =>

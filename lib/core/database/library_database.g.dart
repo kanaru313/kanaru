@@ -5585,6 +5585,1463 @@ class LyricTranslationPrefsCompanion
   }
 }
 
+class $OnlineLyricsTable extends OnlineLyrics
+    with TableInfo<$OnlineLyricsTable, OnlineLyricsRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OnlineLyricsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _cacheKeyMeta = const VerificationMeta(
+    'cacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> cacheKey = GeneratedColumn<String>(
+    'cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _providerIdMeta = const VerificationMeta(
+    'providerId',
+  );
+  @override
+  late final GeneratedColumn<String> providerId = GeneratedColumn<String>(
+    'provider_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncedTextMeta = const VerificationMeta(
+    'syncedText',
+  );
+  @override
+  late final GeneratedColumn<String> syncedText = GeneratedColumn<String>(
+    'synced_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _plainTextMeta = const VerificationMeta(
+    'plainText',
+  );
+  @override
+  late final GeneratedColumn<String> plainText = GeneratedColumn<String>(
+    'plain_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _instrumentalMeta = const VerificationMeta(
+    'instrumental',
+  );
+  @override
+  late final GeneratedColumn<bool> instrumental = GeneratedColumn<bool>(
+    'instrumental',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("instrumental" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _remoteDurationMsMeta = const VerificationMeta(
+    'remoteDurationMs',
+  );
+  @override
+  late final GeneratedColumn<int> remoteDurationMs = GeneratedColumn<int>(
+    'remote_duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<int> fetchedAt = GeneratedColumn<int>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    cacheKey,
+    providerId,
+    status,
+    remoteId,
+    syncedText,
+    plainText,
+    instrumental,
+    remoteDurationMs,
+    fetchedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'online_lyrics';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OnlineLyricsRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('cache_key')) {
+      context.handle(
+        _cacheKeyMeta,
+        cacheKey.isAcceptableOrUnknown(data['cache_key']!, _cacheKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cacheKeyMeta);
+    }
+    if (data.containsKey('provider_id')) {
+      context.handle(
+        _providerIdMeta,
+        providerId.isAcceptableOrUnknown(data['provider_id']!, _providerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_providerIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('synced_text')) {
+      context.handle(
+        _syncedTextMeta,
+        syncedText.isAcceptableOrUnknown(data['synced_text']!, _syncedTextMeta),
+      );
+    }
+    if (data.containsKey('plain_text')) {
+      context.handle(
+        _plainTextMeta,
+        plainText.isAcceptableOrUnknown(data['plain_text']!, _plainTextMeta),
+      );
+    }
+    if (data.containsKey('instrumental')) {
+      context.handle(
+        _instrumentalMeta,
+        instrumental.isAcceptableOrUnknown(
+          data['instrumental']!,
+          _instrumentalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remote_duration_ms')) {
+      context.handle(
+        _remoteDurationMsMeta,
+        remoteDurationMs.isAcceptableOrUnknown(
+          data['remote_duration_ms']!,
+          _remoteDurationMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {cacheKey, providerId};
+  @override
+  OnlineLyricsRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OnlineLyricsRow(
+      cacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cache_key'],
+      )!,
+      providerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider_id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncedText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}synced_text'],
+      ),
+      plainText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plain_text'],
+      ),
+      instrumental: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}instrumental'],
+      )!,
+      remoteDurationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}remote_duration_ms'],
+      ),
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+    );
+  }
+
+  @override
+  $OnlineLyricsTable createAlias(String alias) {
+    return $OnlineLyricsTable(attachedDatabase, alias);
+  }
+}
+
+class OnlineLyricsRow extends DataClass implements Insertable<OnlineLyricsRow> {
+  final String cacheKey;
+  final String providerId;
+
+  /// 'found' or 'not_found'.
+  final String status;
+
+  /// The provider's id for the match; null when not found.
+  final String? remoteId;
+  final String? syncedText;
+  final String? plainText;
+  final bool instrumental;
+
+  /// The duration the provider reports for the match.
+  final int? remoteDurationMs;
+  final int fetchedAt;
+  const OnlineLyricsRow({
+    required this.cacheKey,
+    required this.providerId,
+    required this.status,
+    this.remoteId,
+    this.syncedText,
+    this.plainText,
+    required this.instrumental,
+    this.remoteDurationMs,
+    required this.fetchedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['cache_key'] = Variable<String>(cacheKey);
+    map['provider_id'] = Variable<String>(providerId);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    if (!nullToAbsent || syncedText != null) {
+      map['synced_text'] = Variable<String>(syncedText);
+    }
+    if (!nullToAbsent || plainText != null) {
+      map['plain_text'] = Variable<String>(plainText);
+    }
+    map['instrumental'] = Variable<bool>(instrumental);
+    if (!nullToAbsent || remoteDurationMs != null) {
+      map['remote_duration_ms'] = Variable<int>(remoteDurationMs);
+    }
+    map['fetched_at'] = Variable<int>(fetchedAt);
+    return map;
+  }
+
+  OnlineLyricsCompanion toCompanion(bool nullToAbsent) {
+    return OnlineLyricsCompanion(
+      cacheKey: Value(cacheKey),
+      providerId: Value(providerId),
+      status: Value(status),
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncedText: syncedText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedText),
+      plainText: plainText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plainText),
+      instrumental: Value(instrumental),
+      remoteDurationMs: remoteDurationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteDurationMs),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory OnlineLyricsRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OnlineLyricsRow(
+      cacheKey: serializer.fromJson<String>(json['cacheKey']),
+      providerId: serializer.fromJson<String>(json['providerId']),
+      status: serializer.fromJson<String>(json['status']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncedText: serializer.fromJson<String?>(json['syncedText']),
+      plainText: serializer.fromJson<String?>(json['plainText']),
+      instrumental: serializer.fromJson<bool>(json['instrumental']),
+      remoteDurationMs: serializer.fromJson<int?>(json['remoteDurationMs']),
+      fetchedAt: serializer.fromJson<int>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'cacheKey': serializer.toJson<String>(cacheKey),
+      'providerId': serializer.toJson<String>(providerId),
+      'status': serializer.toJson<String>(status),
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncedText': serializer.toJson<String?>(syncedText),
+      'plainText': serializer.toJson<String?>(plainText),
+      'instrumental': serializer.toJson<bool>(instrumental),
+      'remoteDurationMs': serializer.toJson<int?>(remoteDurationMs),
+      'fetchedAt': serializer.toJson<int>(fetchedAt),
+    };
+  }
+
+  OnlineLyricsRow copyWith({
+    String? cacheKey,
+    String? providerId,
+    String? status,
+    Value<String?> remoteId = const Value.absent(),
+    Value<String?> syncedText = const Value.absent(),
+    Value<String?> plainText = const Value.absent(),
+    bool? instrumental,
+    Value<int?> remoteDurationMs = const Value.absent(),
+    int? fetchedAt,
+  }) => OnlineLyricsRow(
+    cacheKey: cacheKey ?? this.cacheKey,
+    providerId: providerId ?? this.providerId,
+    status: status ?? this.status,
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncedText: syncedText.present ? syncedText.value : this.syncedText,
+    plainText: plainText.present ? plainText.value : this.plainText,
+    instrumental: instrumental ?? this.instrumental,
+    remoteDurationMs: remoteDurationMs.present
+        ? remoteDurationMs.value
+        : this.remoteDurationMs,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+  );
+  OnlineLyricsRow copyWithCompanion(OnlineLyricsCompanion data) {
+    return OnlineLyricsRow(
+      cacheKey: data.cacheKey.present ? data.cacheKey.value : this.cacheKey,
+      providerId: data.providerId.present
+          ? data.providerId.value
+          : this.providerId,
+      status: data.status.present ? data.status.value : this.status,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncedText: data.syncedText.present
+          ? data.syncedText.value
+          : this.syncedText,
+      plainText: data.plainText.present ? data.plainText.value : this.plainText,
+      instrumental: data.instrumental.present
+          ? data.instrumental.value
+          : this.instrumental,
+      remoteDurationMs: data.remoteDurationMs.present
+          ? data.remoteDurationMs.value
+          : this.remoteDurationMs,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OnlineLyricsRow(')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('providerId: $providerId, ')
+          ..write('status: $status, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncedText: $syncedText, ')
+          ..write('plainText: $plainText, ')
+          ..write('instrumental: $instrumental, ')
+          ..write('remoteDurationMs: $remoteDurationMs, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    cacheKey,
+    providerId,
+    status,
+    remoteId,
+    syncedText,
+    plainText,
+    instrumental,
+    remoteDurationMs,
+    fetchedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OnlineLyricsRow &&
+          other.cacheKey == this.cacheKey &&
+          other.providerId == this.providerId &&
+          other.status == this.status &&
+          other.remoteId == this.remoteId &&
+          other.syncedText == this.syncedText &&
+          other.plainText == this.plainText &&
+          other.instrumental == this.instrumental &&
+          other.remoteDurationMs == this.remoteDurationMs &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class OnlineLyricsCompanion extends UpdateCompanion<OnlineLyricsRow> {
+  final Value<String> cacheKey;
+  final Value<String> providerId;
+  final Value<String> status;
+  final Value<String?> remoteId;
+  final Value<String?> syncedText;
+  final Value<String?> plainText;
+  final Value<bool> instrumental;
+  final Value<int?> remoteDurationMs;
+  final Value<int> fetchedAt;
+  final Value<int> rowid;
+  const OnlineLyricsCompanion({
+    this.cacheKey = const Value.absent(),
+    this.providerId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.syncedText = const Value.absent(),
+    this.plainText = const Value.absent(),
+    this.instrumental = const Value.absent(),
+    this.remoteDurationMs = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OnlineLyricsCompanion.insert({
+    required String cacheKey,
+    required String providerId,
+    required String status,
+    this.remoteId = const Value.absent(),
+    this.syncedText = const Value.absent(),
+    this.plainText = const Value.absent(),
+    this.instrumental = const Value.absent(),
+    this.remoteDurationMs = const Value.absent(),
+    required int fetchedAt,
+    this.rowid = const Value.absent(),
+  }) : cacheKey = Value(cacheKey),
+       providerId = Value(providerId),
+       status = Value(status),
+       fetchedAt = Value(fetchedAt);
+  static Insertable<OnlineLyricsRow> custom({
+    Expression<String>? cacheKey,
+    Expression<String>? providerId,
+    Expression<String>? status,
+    Expression<String>? remoteId,
+    Expression<String>? syncedText,
+    Expression<String>? plainText,
+    Expression<bool>? instrumental,
+    Expression<int>? remoteDurationMs,
+    Expression<int>? fetchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (cacheKey != null) 'cache_key': cacheKey,
+      if (providerId != null) 'provider_id': providerId,
+      if (status != null) 'status': status,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncedText != null) 'synced_text': syncedText,
+      if (plainText != null) 'plain_text': plainText,
+      if (instrumental != null) 'instrumental': instrumental,
+      if (remoteDurationMs != null) 'remote_duration_ms': remoteDurationMs,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OnlineLyricsCompanion copyWith({
+    Value<String>? cacheKey,
+    Value<String>? providerId,
+    Value<String>? status,
+    Value<String?>? remoteId,
+    Value<String?>? syncedText,
+    Value<String?>? plainText,
+    Value<bool>? instrumental,
+    Value<int?>? remoteDurationMs,
+    Value<int>? fetchedAt,
+    Value<int>? rowid,
+  }) {
+    return OnlineLyricsCompanion(
+      cacheKey: cacheKey ?? this.cacheKey,
+      providerId: providerId ?? this.providerId,
+      status: status ?? this.status,
+      remoteId: remoteId ?? this.remoteId,
+      syncedText: syncedText ?? this.syncedText,
+      plainText: plainText ?? this.plainText,
+      instrumental: instrumental ?? this.instrumental,
+      remoteDurationMs: remoteDurationMs ?? this.remoteDurationMs,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (cacheKey.present) {
+      map['cache_key'] = Variable<String>(cacheKey.value);
+    }
+    if (providerId.present) {
+      map['provider_id'] = Variable<String>(providerId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncedText.present) {
+      map['synced_text'] = Variable<String>(syncedText.value);
+    }
+    if (plainText.present) {
+      map['plain_text'] = Variable<String>(plainText.value);
+    }
+    if (instrumental.present) {
+      map['instrumental'] = Variable<bool>(instrumental.value);
+    }
+    if (remoteDurationMs.present) {
+      map['remote_duration_ms'] = Variable<int>(remoteDurationMs.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<int>(fetchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OnlineLyricsCompanion(')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('providerId: $providerId, ')
+          ..write('status: $status, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncedText: $syncedText, ')
+          ..write('plainText: $plainText, ')
+          ..write('instrumental: $instrumental, ')
+          ..write('remoteDurationMs: $remoteDurationMs, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LyricsPinsTable extends LyricsPins
+    with TableInfo<$LyricsPinsTable, LyricsPinRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricsPinsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _trackKeyMeta = const VerificationMeta(
+    'trackKey',
+  );
+  @override
+  late final GeneratedColumn<String> trackKey = GeneratedColumn<String>(
+    'track_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _providerIdMeta = const VerificationMeta(
+    'providerId',
+  );
+  @override
+  late final GeneratedColumn<String> providerId = GeneratedColumn<String>(
+    'provider_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncedTextMeta = const VerificationMeta(
+    'syncedText',
+  );
+  @override
+  late final GeneratedColumn<String> syncedText = GeneratedColumn<String>(
+    'synced_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _plainTextMeta = const VerificationMeta(
+    'plainText',
+  );
+  @override
+  late final GeneratedColumn<String> plainText = GeneratedColumn<String>(
+    'plain_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _instrumentalMeta = const VerificationMeta(
+    'instrumental',
+  );
+  @override
+  late final GeneratedColumn<bool> instrumental = GeneratedColumn<bool>(
+    'instrumental',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("instrumental" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _remoteDurationMsMeta = const VerificationMeta(
+    'remoteDurationMs',
+  );
+  @override
+  late final GeneratedColumn<int> remoteDurationMs = GeneratedColumn<int>(
+    'remote_duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pinnedAtMeta = const VerificationMeta(
+    'pinnedAt',
+  );
+  @override
+  late final GeneratedColumn<int> pinnedAt = GeneratedColumn<int>(
+    'pinned_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    trackKey,
+    providerId,
+    remoteId,
+    syncedText,
+    plainText,
+    instrumental,
+    remoteDurationMs,
+    pinnedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyrics_pins';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricsPinRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('track_key')) {
+      context.handle(
+        _trackKeyMeta,
+        trackKey.isAcceptableOrUnknown(data['track_key']!, _trackKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_trackKeyMeta);
+    }
+    if (data.containsKey('provider_id')) {
+      context.handle(
+        _providerIdMeta,
+        providerId.isAcceptableOrUnknown(data['provider_id']!, _providerIdMeta),
+      );
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('synced_text')) {
+      context.handle(
+        _syncedTextMeta,
+        syncedText.isAcceptableOrUnknown(data['synced_text']!, _syncedTextMeta),
+      );
+    }
+    if (data.containsKey('plain_text')) {
+      context.handle(
+        _plainTextMeta,
+        plainText.isAcceptableOrUnknown(data['plain_text']!, _plainTextMeta),
+      );
+    }
+    if (data.containsKey('instrumental')) {
+      context.handle(
+        _instrumentalMeta,
+        instrumental.isAcceptableOrUnknown(
+          data['instrumental']!,
+          _instrumentalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remote_duration_ms')) {
+      context.handle(
+        _remoteDurationMsMeta,
+        remoteDurationMs.isAcceptableOrUnknown(
+          data['remote_duration_ms']!,
+          _remoteDurationMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pinned_at')) {
+      context.handle(
+        _pinnedAtMeta,
+        pinnedAt.isAcceptableOrUnknown(data['pinned_at']!, _pinnedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pinnedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {trackKey};
+  @override
+  LyricsPinRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricsPinRow(
+      trackKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}track_key'],
+      )!,
+      providerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider_id'],
+      ),
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      syncedText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}synced_text'],
+      ),
+      plainText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plain_text'],
+      ),
+      instrumental: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}instrumental'],
+      )!,
+      remoteDurationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}remote_duration_ms'],
+      ),
+      pinnedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pinned_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LyricsPinsTable createAlias(String alias) {
+    return $LyricsPinsTable(attachedDatabase, alias);
+  }
+}
+
+class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
+  final String trackKey;
+  final String? providerId;
+
+  /// Null = skip: show no online lyrics for this song.
+  final String? remoteId;
+  final String? syncedText;
+  final String? plainText;
+  final bool instrumental;
+  final int? remoteDurationMs;
+  final int pinnedAt;
+  const LyricsPinRow({
+    required this.trackKey,
+    this.providerId,
+    this.remoteId,
+    this.syncedText,
+    this.plainText,
+    required this.instrumental,
+    this.remoteDurationMs,
+    required this.pinnedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['track_key'] = Variable<String>(trackKey);
+    if (!nullToAbsent || providerId != null) {
+      map['provider_id'] = Variable<String>(providerId);
+    }
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    if (!nullToAbsent || syncedText != null) {
+      map['synced_text'] = Variable<String>(syncedText);
+    }
+    if (!nullToAbsent || plainText != null) {
+      map['plain_text'] = Variable<String>(plainText);
+    }
+    map['instrumental'] = Variable<bool>(instrumental);
+    if (!nullToAbsent || remoteDurationMs != null) {
+      map['remote_duration_ms'] = Variable<int>(remoteDurationMs);
+    }
+    map['pinned_at'] = Variable<int>(pinnedAt);
+    return map;
+  }
+
+  LyricsPinsCompanion toCompanion(bool nullToAbsent) {
+    return LyricsPinsCompanion(
+      trackKey: Value(trackKey),
+      providerId: providerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(providerId),
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      syncedText: syncedText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedText),
+      plainText: plainText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plainText),
+      instrumental: Value(instrumental),
+      remoteDurationMs: remoteDurationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteDurationMs),
+      pinnedAt: Value(pinnedAt),
+    );
+  }
+
+  factory LyricsPinRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricsPinRow(
+      trackKey: serializer.fromJson<String>(json['trackKey']),
+      providerId: serializer.fromJson<String?>(json['providerId']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      syncedText: serializer.fromJson<String?>(json['syncedText']),
+      plainText: serializer.fromJson<String?>(json['plainText']),
+      instrumental: serializer.fromJson<bool>(json['instrumental']),
+      remoteDurationMs: serializer.fromJson<int?>(json['remoteDurationMs']),
+      pinnedAt: serializer.fromJson<int>(json['pinnedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'trackKey': serializer.toJson<String>(trackKey),
+      'providerId': serializer.toJson<String?>(providerId),
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'syncedText': serializer.toJson<String?>(syncedText),
+      'plainText': serializer.toJson<String?>(plainText),
+      'instrumental': serializer.toJson<bool>(instrumental),
+      'remoteDurationMs': serializer.toJson<int?>(remoteDurationMs),
+      'pinnedAt': serializer.toJson<int>(pinnedAt),
+    };
+  }
+
+  LyricsPinRow copyWith({
+    String? trackKey,
+    Value<String?> providerId = const Value.absent(),
+    Value<String?> remoteId = const Value.absent(),
+    Value<String?> syncedText = const Value.absent(),
+    Value<String?> plainText = const Value.absent(),
+    bool? instrumental,
+    Value<int?> remoteDurationMs = const Value.absent(),
+    int? pinnedAt,
+  }) => LyricsPinRow(
+    trackKey: trackKey ?? this.trackKey,
+    providerId: providerId.present ? providerId.value : this.providerId,
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    syncedText: syncedText.present ? syncedText.value : this.syncedText,
+    plainText: plainText.present ? plainText.value : this.plainText,
+    instrumental: instrumental ?? this.instrumental,
+    remoteDurationMs: remoteDurationMs.present
+        ? remoteDurationMs.value
+        : this.remoteDurationMs,
+    pinnedAt: pinnedAt ?? this.pinnedAt,
+  );
+  LyricsPinRow copyWithCompanion(LyricsPinsCompanion data) {
+    return LyricsPinRow(
+      trackKey: data.trackKey.present ? data.trackKey.value : this.trackKey,
+      providerId: data.providerId.present
+          ? data.providerId.value
+          : this.providerId,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      syncedText: data.syncedText.present
+          ? data.syncedText.value
+          : this.syncedText,
+      plainText: data.plainText.present ? data.plainText.value : this.plainText,
+      instrumental: data.instrumental.present
+          ? data.instrumental.value
+          : this.instrumental,
+      remoteDurationMs: data.remoteDurationMs.present
+          ? data.remoteDurationMs.value
+          : this.remoteDurationMs,
+      pinnedAt: data.pinnedAt.present ? data.pinnedAt.value : this.pinnedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPinRow(')
+          ..write('trackKey: $trackKey, ')
+          ..write('providerId: $providerId, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncedText: $syncedText, ')
+          ..write('plainText: $plainText, ')
+          ..write('instrumental: $instrumental, ')
+          ..write('remoteDurationMs: $remoteDurationMs, ')
+          ..write('pinnedAt: $pinnedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    trackKey,
+    providerId,
+    remoteId,
+    syncedText,
+    plainText,
+    instrumental,
+    remoteDurationMs,
+    pinnedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricsPinRow &&
+          other.trackKey == this.trackKey &&
+          other.providerId == this.providerId &&
+          other.remoteId == this.remoteId &&
+          other.syncedText == this.syncedText &&
+          other.plainText == this.plainText &&
+          other.instrumental == this.instrumental &&
+          other.remoteDurationMs == this.remoteDurationMs &&
+          other.pinnedAt == this.pinnedAt);
+}
+
+class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
+  final Value<String> trackKey;
+  final Value<String?> providerId;
+  final Value<String?> remoteId;
+  final Value<String?> syncedText;
+  final Value<String?> plainText;
+  final Value<bool> instrumental;
+  final Value<int?> remoteDurationMs;
+  final Value<int> pinnedAt;
+  final Value<int> rowid;
+  const LyricsPinsCompanion({
+    this.trackKey = const Value.absent(),
+    this.providerId = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.syncedText = const Value.absent(),
+    this.plainText = const Value.absent(),
+    this.instrumental = const Value.absent(),
+    this.remoteDurationMs = const Value.absent(),
+    this.pinnedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricsPinsCompanion.insert({
+    required String trackKey,
+    this.providerId = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.syncedText = const Value.absent(),
+    this.plainText = const Value.absent(),
+    this.instrumental = const Value.absent(),
+    this.remoteDurationMs = const Value.absent(),
+    required int pinnedAt,
+    this.rowid = const Value.absent(),
+  }) : trackKey = Value(trackKey),
+       pinnedAt = Value(pinnedAt);
+  static Insertable<LyricsPinRow> custom({
+    Expression<String>? trackKey,
+    Expression<String>? providerId,
+    Expression<String>? remoteId,
+    Expression<String>? syncedText,
+    Expression<String>? plainText,
+    Expression<bool>? instrumental,
+    Expression<int>? remoteDurationMs,
+    Expression<int>? pinnedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (trackKey != null) 'track_key': trackKey,
+      if (providerId != null) 'provider_id': providerId,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (syncedText != null) 'synced_text': syncedText,
+      if (plainText != null) 'plain_text': plainText,
+      if (instrumental != null) 'instrumental': instrumental,
+      if (remoteDurationMs != null) 'remote_duration_ms': remoteDurationMs,
+      if (pinnedAt != null) 'pinned_at': pinnedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricsPinsCompanion copyWith({
+    Value<String>? trackKey,
+    Value<String?>? providerId,
+    Value<String?>? remoteId,
+    Value<String?>? syncedText,
+    Value<String?>? plainText,
+    Value<bool>? instrumental,
+    Value<int?>? remoteDurationMs,
+    Value<int>? pinnedAt,
+    Value<int>? rowid,
+  }) {
+    return LyricsPinsCompanion(
+      trackKey: trackKey ?? this.trackKey,
+      providerId: providerId ?? this.providerId,
+      remoteId: remoteId ?? this.remoteId,
+      syncedText: syncedText ?? this.syncedText,
+      plainText: plainText ?? this.plainText,
+      instrumental: instrumental ?? this.instrumental,
+      remoteDurationMs: remoteDurationMs ?? this.remoteDurationMs,
+      pinnedAt: pinnedAt ?? this.pinnedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (trackKey.present) {
+      map['track_key'] = Variable<String>(trackKey.value);
+    }
+    if (providerId.present) {
+      map['provider_id'] = Variable<String>(providerId.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (syncedText.present) {
+      map['synced_text'] = Variable<String>(syncedText.value);
+    }
+    if (plainText.present) {
+      map['plain_text'] = Variable<String>(plainText.value);
+    }
+    if (instrumental.present) {
+      map['instrumental'] = Variable<bool>(instrumental.value);
+    }
+    if (remoteDurationMs.present) {
+      map['remote_duration_ms'] = Variable<int>(remoteDurationMs.value);
+    }
+    if (pinnedAt.present) {
+      map['pinned_at'] = Variable<int>(pinnedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPinsCompanion(')
+          ..write('trackKey: $trackKey, ')
+          ..write('providerId: $providerId, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('syncedText: $syncedText, ')
+          ..write('plainText: $plainText, ')
+          ..write('instrumental: $instrumental, ')
+          ..write('remoteDurationMs: $remoteDurationMs, ')
+          ..write('pinnedAt: $pinnedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $OnlineLyricsRejectsTable extends OnlineLyricsRejects
+    with TableInfo<$OnlineLyricsRejectsTable, OnlineLyricsRejectRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OnlineLyricsRejectsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _cacheKeyMeta = const VerificationMeta(
+    'cacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> cacheKey = GeneratedColumn<String>(
+    'cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _providerIdMeta = const VerificationMeta(
+    'providerId',
+  );
+  @override
+  late final GeneratedColumn<String> providerId = GeneratedColumn<String>(
+    'provider_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rejectedAtMeta = const VerificationMeta(
+    'rejectedAt',
+  );
+  @override
+  late final GeneratedColumn<int> rejectedAt = GeneratedColumn<int>(
+    'rejected_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    cacheKey,
+    providerId,
+    remoteId,
+    rejectedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'online_lyrics_rejects';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OnlineLyricsRejectRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('cache_key')) {
+      context.handle(
+        _cacheKeyMeta,
+        cacheKey.isAcceptableOrUnknown(data['cache_key']!, _cacheKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cacheKeyMeta);
+    }
+    if (data.containsKey('provider_id')) {
+      context.handle(
+        _providerIdMeta,
+        providerId.isAcceptableOrUnknown(data['provider_id']!, _providerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_providerIdMeta);
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteIdMeta);
+    }
+    if (data.containsKey('rejected_at')) {
+      context.handle(
+        _rejectedAtMeta,
+        rejectedAt.isAcceptableOrUnknown(data['rejected_at']!, _rejectedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rejectedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {cacheKey, providerId, remoteId};
+  @override
+  OnlineLyricsRejectRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OnlineLyricsRejectRow(
+      cacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cache_key'],
+      )!,
+      providerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider_id'],
+      )!,
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      )!,
+      rejectedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rejected_at'],
+      )!,
+    );
+  }
+
+  @override
+  $OnlineLyricsRejectsTable createAlias(String alias) {
+    return $OnlineLyricsRejectsTable(attachedDatabase, alias);
+  }
+}
+
+class OnlineLyricsRejectRow extends DataClass
+    implements Insertable<OnlineLyricsRejectRow> {
+  final String cacheKey;
+  final String providerId;
+  final String remoteId;
+  final int rejectedAt;
+  const OnlineLyricsRejectRow({
+    required this.cacheKey,
+    required this.providerId,
+    required this.remoteId,
+    required this.rejectedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['cache_key'] = Variable<String>(cacheKey);
+    map['provider_id'] = Variable<String>(providerId);
+    map['remote_id'] = Variable<String>(remoteId);
+    map['rejected_at'] = Variable<int>(rejectedAt);
+    return map;
+  }
+
+  OnlineLyricsRejectsCompanion toCompanion(bool nullToAbsent) {
+    return OnlineLyricsRejectsCompanion(
+      cacheKey: Value(cacheKey),
+      providerId: Value(providerId),
+      remoteId: Value(remoteId),
+      rejectedAt: Value(rejectedAt),
+    );
+  }
+
+  factory OnlineLyricsRejectRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OnlineLyricsRejectRow(
+      cacheKey: serializer.fromJson<String>(json['cacheKey']),
+      providerId: serializer.fromJson<String>(json['providerId']),
+      remoteId: serializer.fromJson<String>(json['remoteId']),
+      rejectedAt: serializer.fromJson<int>(json['rejectedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'cacheKey': serializer.toJson<String>(cacheKey),
+      'providerId': serializer.toJson<String>(providerId),
+      'remoteId': serializer.toJson<String>(remoteId),
+      'rejectedAt': serializer.toJson<int>(rejectedAt),
+    };
+  }
+
+  OnlineLyricsRejectRow copyWith({
+    String? cacheKey,
+    String? providerId,
+    String? remoteId,
+    int? rejectedAt,
+  }) => OnlineLyricsRejectRow(
+    cacheKey: cacheKey ?? this.cacheKey,
+    providerId: providerId ?? this.providerId,
+    remoteId: remoteId ?? this.remoteId,
+    rejectedAt: rejectedAt ?? this.rejectedAt,
+  );
+  OnlineLyricsRejectRow copyWithCompanion(OnlineLyricsRejectsCompanion data) {
+    return OnlineLyricsRejectRow(
+      cacheKey: data.cacheKey.present ? data.cacheKey.value : this.cacheKey,
+      providerId: data.providerId.present
+          ? data.providerId.value
+          : this.providerId,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      rejectedAt: data.rejectedAt.present
+          ? data.rejectedAt.value
+          : this.rejectedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OnlineLyricsRejectRow(')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('providerId: $providerId, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('rejectedAt: $rejectedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(cacheKey, providerId, remoteId, rejectedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OnlineLyricsRejectRow &&
+          other.cacheKey == this.cacheKey &&
+          other.providerId == this.providerId &&
+          other.remoteId == this.remoteId &&
+          other.rejectedAt == this.rejectedAt);
+}
+
+class OnlineLyricsRejectsCompanion
+    extends UpdateCompanion<OnlineLyricsRejectRow> {
+  final Value<String> cacheKey;
+  final Value<String> providerId;
+  final Value<String> remoteId;
+  final Value<int> rejectedAt;
+  final Value<int> rowid;
+  const OnlineLyricsRejectsCompanion({
+    this.cacheKey = const Value.absent(),
+    this.providerId = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.rejectedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OnlineLyricsRejectsCompanion.insert({
+    required String cacheKey,
+    required String providerId,
+    required String remoteId,
+    required int rejectedAt,
+    this.rowid = const Value.absent(),
+  }) : cacheKey = Value(cacheKey),
+       providerId = Value(providerId),
+       remoteId = Value(remoteId),
+       rejectedAt = Value(rejectedAt);
+  static Insertable<OnlineLyricsRejectRow> custom({
+    Expression<String>? cacheKey,
+    Expression<String>? providerId,
+    Expression<String>? remoteId,
+    Expression<int>? rejectedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (cacheKey != null) 'cache_key': cacheKey,
+      if (providerId != null) 'provider_id': providerId,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (rejectedAt != null) 'rejected_at': rejectedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OnlineLyricsRejectsCompanion copyWith({
+    Value<String>? cacheKey,
+    Value<String>? providerId,
+    Value<String>? remoteId,
+    Value<int>? rejectedAt,
+    Value<int>? rowid,
+  }) {
+    return OnlineLyricsRejectsCompanion(
+      cacheKey: cacheKey ?? this.cacheKey,
+      providerId: providerId ?? this.providerId,
+      remoteId: remoteId ?? this.remoteId,
+      rejectedAt: rejectedAt ?? this.rejectedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (cacheKey.present) {
+      map['cache_key'] = Variable<String>(cacheKey.value);
+    }
+    if (providerId.present) {
+      map['provider_id'] = Variable<String>(providerId.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (rejectedAt.present) {
+      map['rejected_at'] = Variable<int>(rejectedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OnlineLyricsRejectsCompanion(')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('providerId: $providerId, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('rejectedAt: $rejectedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LibraryDatabase extends GeneratedDatabase {
   _$LibraryDatabase(QueryExecutor e) : super(e);
   $LibraryDatabaseManager get managers => $LibraryDatabaseManager(this);
@@ -5674,6 +7131,10 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
       $LyricTranslationsTable(this);
   late final $LyricTranslationPrefsTable lyricTranslationPrefs =
       $LyricTranslationPrefsTable(this);
+  late final $OnlineLyricsTable onlineLyrics = $OnlineLyricsTable(this);
+  late final $LyricsPinsTable lyricsPins = $LyricsPinsTable(this);
+  late final $OnlineLyricsRejectsTable onlineLyricsRejects =
+      $OnlineLyricsRejectsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5708,6 +7169,9 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     trackArtistsTrack,
     lyricTranslations,
     lyricTranslationPrefs,
+    onlineLyrics,
+    lyricsPins,
+    onlineLyricsRejects,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -9362,6 +10826,789 @@ typedef $$LyricTranslationPrefsTableProcessedTableManager =
       LyricTranslationPrefRow,
       PrefetchHooks Function()
     >;
+typedef $$OnlineLyricsTableCreateCompanionBuilder =
+    OnlineLyricsCompanion Function({
+      required String cacheKey,
+      required String providerId,
+      required String status,
+      Value<String?> remoteId,
+      Value<String?> syncedText,
+      Value<String?> plainText,
+      Value<bool> instrumental,
+      Value<int?> remoteDurationMs,
+      required int fetchedAt,
+      Value<int> rowid,
+    });
+typedef $$OnlineLyricsTableUpdateCompanionBuilder =
+    OnlineLyricsCompanion Function({
+      Value<String> cacheKey,
+      Value<String> providerId,
+      Value<String> status,
+      Value<String?> remoteId,
+      Value<String?> syncedText,
+      Value<String?> plainText,
+      Value<bool> instrumental,
+      Value<int?> remoteDurationMs,
+      Value<int> fetchedAt,
+      Value<int> rowid,
+    });
+
+class $$OnlineLyricsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $OnlineLyricsTable> {
+  $$OnlineLyricsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncedText => $composableBuilder(
+    column: $table.syncedText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plainText => $composableBuilder(
+    column: $table.plainText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get instrumental => $composableBuilder(
+    column: $table.instrumental,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get remoteDurationMs => $composableBuilder(
+    column: $table.remoteDurationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$OnlineLyricsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $OnlineLyricsTable> {
+  $$OnlineLyricsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncedText => $composableBuilder(
+    column: $table.syncedText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plainText => $composableBuilder(
+    column: $table.plainText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get instrumental => $composableBuilder(
+    column: $table.instrumental,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get remoteDurationMs => $composableBuilder(
+    column: $table.remoteDurationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OnlineLyricsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $OnlineLyricsTable> {
+  $$OnlineLyricsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get cacheKey =>
+      $composableBuilder(column: $table.cacheKey, builder: (column) => column);
+
+  GeneratedColumn<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncedText => $composableBuilder(
+    column: $table.syncedText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get plainText =>
+      $composableBuilder(column: $table.plainText, builder: (column) => column);
+
+  GeneratedColumn<bool> get instrumental => $composableBuilder(
+    column: $table.instrumental,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get remoteDurationMs => $composableBuilder(
+    column: $table.remoteDurationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$OnlineLyricsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $OnlineLyricsTable,
+          OnlineLyricsRow,
+          $$OnlineLyricsTableFilterComposer,
+          $$OnlineLyricsTableOrderingComposer,
+          $$OnlineLyricsTableAnnotationComposer,
+          $$OnlineLyricsTableCreateCompanionBuilder,
+          $$OnlineLyricsTableUpdateCompanionBuilder,
+          (
+            OnlineLyricsRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $OnlineLyricsTable,
+              OnlineLyricsRow
+            >,
+          ),
+          OnlineLyricsRow,
+          PrefetchHooks Function()
+        > {
+  $$OnlineLyricsTableTableManager(
+    _$LibraryDatabase db,
+    $OnlineLyricsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OnlineLyricsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OnlineLyricsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OnlineLyricsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> cacheKey = const Value.absent(),
+                Value<String> providerId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<String?> syncedText = const Value.absent(),
+                Value<String?> plainText = const Value.absent(),
+                Value<bool> instrumental = const Value.absent(),
+                Value<int?> remoteDurationMs = const Value.absent(),
+                Value<int> fetchedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OnlineLyricsCompanion(
+                cacheKey: cacheKey,
+                providerId: providerId,
+                status: status,
+                remoteId: remoteId,
+                syncedText: syncedText,
+                plainText: plainText,
+                instrumental: instrumental,
+                remoteDurationMs: remoteDurationMs,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String cacheKey,
+                required String providerId,
+                required String status,
+                Value<String?> remoteId = const Value.absent(),
+                Value<String?> syncedText = const Value.absent(),
+                Value<String?> plainText = const Value.absent(),
+                Value<bool> instrumental = const Value.absent(),
+                Value<int?> remoteDurationMs = const Value.absent(),
+                required int fetchedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => OnlineLyricsCompanion.insert(
+                cacheKey: cacheKey,
+                providerId: providerId,
+                status: status,
+                remoteId: remoteId,
+                syncedText: syncedText,
+                plainText: plainText,
+                instrumental: instrumental,
+                remoteDurationMs: remoteDurationMs,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$OnlineLyricsTable, OnlineLyricsRow>(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $OnlineLyricsTable,
+                    OnlineLyricsRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$OnlineLyricsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $OnlineLyricsTable,
+      OnlineLyricsRow,
+      $$OnlineLyricsTableFilterComposer,
+      $$OnlineLyricsTableOrderingComposer,
+      $$OnlineLyricsTableAnnotationComposer,
+      $$OnlineLyricsTableCreateCompanionBuilder,
+      $$OnlineLyricsTableUpdateCompanionBuilder,
+      (
+        OnlineLyricsRow,
+        BaseReferences<_$LibraryDatabase, $OnlineLyricsTable, OnlineLyricsRow>,
+      ),
+      OnlineLyricsRow,
+      PrefetchHooks Function()
+    >;
+typedef $$LyricsPinsTableCreateCompanionBuilder = LyricsPinsCompanion Function({
+  required String trackKey,
+  Value<String?> providerId,
+  Value<String?> remoteId,
+  Value<String?> syncedText,
+  Value<String?> plainText,
+  Value<bool> instrumental,
+  Value<int?> remoteDurationMs,
+  required int pinnedAt,
+  Value<int> rowid,
+});
+typedef $$LyricsPinsTableUpdateCompanionBuilder = LyricsPinsCompanion Function({
+  Value<String> trackKey,
+  Value<String?> providerId,
+  Value<String?> remoteId,
+  Value<String?> syncedText,
+  Value<String?> plainText,
+  Value<bool> instrumental,
+  Value<int?> remoteDurationMs,
+  Value<int> pinnedAt,
+  Value<int> rowid,
+});
+
+class $$LyricsPinsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricsPinsTable> {
+  $$LyricsPinsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get trackKey => $composableBuilder(
+    column: $table.trackKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncedText => $composableBuilder(
+    column: $table.syncedText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plainText => $composableBuilder(
+    column: $table.plainText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get instrumental => $composableBuilder(
+    column: $table.instrumental,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get remoteDurationMs => $composableBuilder(
+    column: $table.remoteDurationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pinnedAt => $composableBuilder(
+    column: $table.pinnedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricsPinsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricsPinsTable> {
+  $$LyricsPinsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get trackKey => $composableBuilder(
+    column: $table.trackKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncedText => $composableBuilder(
+    column: $table.syncedText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plainText => $composableBuilder(
+    column: $table.plainText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get instrumental => $composableBuilder(
+    column: $table.instrumental,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get remoteDurationMs => $composableBuilder(
+    column: $table.remoteDurationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pinnedAt => $composableBuilder(
+    column: $table.pinnedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricsPinsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricsPinsTable> {
+  $$LyricsPinsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get trackKey =>
+      $composableBuilder(column: $table.trackKey, builder: (column) => column);
+
+  GeneratedColumn<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncedText => $composableBuilder(
+    column: $table.syncedText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get plainText =>
+      $composableBuilder(column: $table.plainText, builder: (column) => column);
+
+  GeneratedColumn<bool> get instrumental => $composableBuilder(
+    column: $table.instrumental,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get remoteDurationMs => $composableBuilder(
+    column: $table.remoteDurationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pinnedAt =>
+      $composableBuilder(column: $table.pinnedAt, builder: (column) => column);
+}
+
+class $$LyricsPinsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricsPinsTable,
+          LyricsPinRow,
+          $$LyricsPinsTableFilterComposer,
+          $$LyricsPinsTableOrderingComposer,
+          $$LyricsPinsTableAnnotationComposer,
+          $$LyricsPinsTableCreateCompanionBuilder,
+          $$LyricsPinsTableUpdateCompanionBuilder,
+          (
+            LyricsPinRow,
+            BaseReferences<_$LibraryDatabase, $LyricsPinsTable, LyricsPinRow>,
+          ),
+          LyricsPinRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricsPinsTableTableManager(_$LibraryDatabase db, $LyricsPinsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricsPinsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LyricsPinsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LyricsPinsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> trackKey = const Value.absent(),
+                Value<String?> providerId = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<String?> syncedText = const Value.absent(),
+                Value<String?> plainText = const Value.absent(),
+                Value<bool> instrumental = const Value.absent(),
+                Value<int?> remoteDurationMs = const Value.absent(),
+                Value<int> pinnedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPinsCompanion(
+                trackKey: trackKey,
+                providerId: providerId,
+                remoteId: remoteId,
+                syncedText: syncedText,
+                plainText: plainText,
+                instrumental: instrumental,
+                remoteDurationMs: remoteDurationMs,
+                pinnedAt: pinnedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String trackKey,
+                Value<String?> providerId = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<String?> syncedText = const Value.absent(),
+                Value<String?> plainText = const Value.absent(),
+                Value<bool> instrumental = const Value.absent(),
+                Value<int?> remoteDurationMs = const Value.absent(),
+                required int pinnedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPinsCompanion.insert(
+                trackKey: trackKey,
+                providerId: providerId,
+                remoteId: remoteId,
+                syncedText: syncedText,
+                plainText: plainText,
+                instrumental: instrumental,
+                remoteDurationMs: remoteDurationMs,
+                pinnedAt: pinnedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LyricsPinsTable, LyricsPinRow>(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricsPinsTable,
+                    LyricsPinRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricsPinsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricsPinsTable,
+      LyricsPinRow,
+      $$LyricsPinsTableFilterComposer,
+      $$LyricsPinsTableOrderingComposer,
+      $$LyricsPinsTableAnnotationComposer,
+      $$LyricsPinsTableCreateCompanionBuilder,
+      $$LyricsPinsTableUpdateCompanionBuilder,
+      (
+        LyricsPinRow,
+        BaseReferences<_$LibraryDatabase, $LyricsPinsTable, LyricsPinRow>,
+      ),
+      LyricsPinRow,
+      PrefetchHooks Function()
+    >;
+typedef $$OnlineLyricsRejectsTableCreateCompanionBuilder =
+    OnlineLyricsRejectsCompanion Function({
+      required String cacheKey,
+      required String providerId,
+      required String remoteId,
+      required int rejectedAt,
+      Value<int> rowid,
+    });
+typedef $$OnlineLyricsRejectsTableUpdateCompanionBuilder =
+    OnlineLyricsRejectsCompanion Function({
+      Value<String> cacheKey,
+      Value<String> providerId,
+      Value<String> remoteId,
+      Value<int> rejectedAt,
+      Value<int> rowid,
+    });
+
+class $$OnlineLyricsRejectsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $OnlineLyricsRejectsTable> {
+  $$OnlineLyricsRejectsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rejectedAt => $composableBuilder(
+    column: $table.rejectedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$OnlineLyricsRejectsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $OnlineLyricsRejectsTable> {
+  $$OnlineLyricsRejectsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rejectedAt => $composableBuilder(
+    column: $table.rejectedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OnlineLyricsRejectsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $OnlineLyricsRejectsTable> {
+  $$OnlineLyricsRejectsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get cacheKey =>
+      $composableBuilder(column: $table.cacheKey, builder: (column) => column);
+
+  GeneratedColumn<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<int> get rejectedAt => $composableBuilder(
+    column: $table.rejectedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$OnlineLyricsRejectsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $OnlineLyricsRejectsTable,
+          OnlineLyricsRejectRow,
+          $$OnlineLyricsRejectsTableFilterComposer,
+          $$OnlineLyricsRejectsTableOrderingComposer,
+          $$OnlineLyricsRejectsTableAnnotationComposer,
+          $$OnlineLyricsRejectsTableCreateCompanionBuilder,
+          $$OnlineLyricsRejectsTableUpdateCompanionBuilder,
+          (
+            OnlineLyricsRejectRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $OnlineLyricsRejectsTable,
+              OnlineLyricsRejectRow
+            >,
+          ),
+          OnlineLyricsRejectRow,
+          PrefetchHooks Function()
+        > {
+  $$OnlineLyricsRejectsTableTableManager(
+    _$LibraryDatabase db,
+    $OnlineLyricsRejectsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OnlineLyricsRejectsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OnlineLyricsRejectsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$OnlineLyricsRejectsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> cacheKey = const Value.absent(),
+                Value<String> providerId = const Value.absent(),
+                Value<String> remoteId = const Value.absent(),
+                Value<int> rejectedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OnlineLyricsRejectsCompanion(
+                cacheKey: cacheKey,
+                providerId: providerId,
+                remoteId: remoteId,
+                rejectedAt: rejectedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String cacheKey,
+                required String providerId,
+                required String remoteId,
+                required int rejectedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => OnlineLyricsRejectsCompanion.insert(
+                cacheKey: cacheKey,
+                providerId: providerId,
+                remoteId: remoteId,
+                rejectedAt: rejectedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$OnlineLyricsRejectsTable, OnlineLyricsRejectRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $OnlineLyricsRejectsTable,
+                    OnlineLyricsRejectRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$OnlineLyricsRejectsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $OnlineLyricsRejectsTable,
+      OnlineLyricsRejectRow,
+      $$OnlineLyricsRejectsTableFilterComposer,
+      $$OnlineLyricsRejectsTableOrderingComposer,
+      $$OnlineLyricsRejectsTableAnnotationComposer,
+      $$OnlineLyricsRejectsTableCreateCompanionBuilder,
+      $$OnlineLyricsRejectsTableUpdateCompanionBuilder,
+      (
+        OnlineLyricsRejectRow,
+        BaseReferences<
+          _$LibraryDatabase,
+          $OnlineLyricsRejectsTable,
+          OnlineLyricsRejectRow
+        >,
+      ),
+      OnlineLyricsRejectRow,
+      PrefetchHooks Function()
+    >;
 
 class $LibraryDatabaseManager {
   final _$LibraryDatabase _db;
@@ -9390,4 +11637,10 @@ class $LibraryDatabaseManager {
       $$LyricTranslationsTableTableManager(_db, _db.lyricTranslations);
   $$LyricTranslationPrefsTableTableManager get lyricTranslationPrefs =>
       $$LyricTranslationPrefsTableTableManager(_db, _db.lyricTranslationPrefs);
+  $$OnlineLyricsTableTableManager get onlineLyrics =>
+      $$OnlineLyricsTableTableManager(_db, _db.onlineLyrics);
+  $$LyricsPinsTableTableManager get lyricsPins =>
+      $$LyricsPinsTableTableManager(_db, _db.lyricsPins);
+  $$OnlineLyricsRejectsTableTableManager get onlineLyricsRejects =>
+      $$OnlineLyricsRejectsTableTableManager(_db, _db.onlineLyricsRejects);
 }

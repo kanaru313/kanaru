@@ -1,38 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/lyrics/playing_track_lyrics_provider.dart';
+import '../../../core/lyrics/online/playing_lyrics_status_provider.dart';
 
 /// The body wide Now Playing shows under its header.
 enum NowPlayingViewMode { split, lyricsOnly, coverOnly }
 
-/// What is known about the playing track's lyrics. `unknown` is the state
-/// before the first answer, e.g. right after Now Playing opens.
-enum NowPlayingLyricsState { unknown, available, none }
-
-/// The mode to show for the [chosen] one: Lyrics only falls back to Cover only
-/// when the track is known to have no lyrics. While the answer is unknown the
-/// chosen mode shows, so reopening in Lyrics only never flashes another body.
-/// The fallback is never written back to the choice, so Lyrics only returns
-/// with lyrics.
-NowPlayingViewMode effectiveViewMode(
-  NowPlayingViewMode chosen,
-  NowPlayingLyricsState lyrics,
-) =>
-    chosen == NowPlayingViewMode.lyricsOnly &&
-        lyrics == NowPlayingLyricsState.none
-    ? NowPlayingViewMode.coverOnly
-    : chosen;
-
-/// The mode after [effective] in the cycle Split, Lyrics only, Cover only.
-/// Lyrics only is skipped when the track is known to have no lyrics.
-NowPlayingViewMode nextViewMode(
-  NowPlayingViewMode effective,
-  NowPlayingLyricsState lyrics,
-) => switch (effective) {
-  NowPlayingViewMode.split =>
-    lyrics == NowPlayingLyricsState.none
-        ? NowPlayingViewMode.coverOnly
-        : NowPlayingViewMode.lyricsOnly,
+/// The mode after [mode] in the cycle Split, Lyrics only, Cover only.
+NowPlayingViewMode nextViewMode(NowPlayingViewMode mode) => switch (mode) {
+  NowPlayingViewMode.split => NowPlayingViewMode.lyricsOnly,
   NowPlayingViewMode.lyricsOnly => NowPlayingViewMode.coverOnly,
   NowPlayingViewMode.coverOnly => NowPlayingViewMode.split,
 };
@@ -51,17 +26,26 @@ final nowPlayingViewModeProvider =
       NowPlayingViewModeNotifier.new,
     );
 
-/// What Now Playing knows about the lyrics: `unknown` until the first read
-/// answers (every opening starts there, since the read lives only while the
-/// screen is shown), then whether the track has any. While the next track's
-/// lyrics load the previous answer stays, so track changes do not flip it.
-final nowPlayingLyricsStateProvider =
-    Provider.autoDispose<NowPlayingLyricsState>((ref) {
-      final lyrics = ref.watch(playingTrackLyricsProvider);
-      if (lyrics.isLoading && !lyrics.hasValue) {
-        return NowPlayingLyricsState.unknown;
-      }
-      return lyrics.value != null
-          ? NowPlayingLyricsState.available
-          : NowPlayingLyricsState.none;
-    });
+/// Whether the playing track has lyrics to translate (they gate the
+/// translation button and key). Found lyrics: true; a search or no lyrics:
+/// false. While the status is still being read the previous answer stays, so
+/// track changes do not flip it; before the first answer it is false.
+class NowPlayingLyricsAvailable extends Notifier<bool> {
+  bool _last = false;
+
+  @override
+  bool build() {
+    final available = switch (ref.watch(playingLyricsStatusProvider)) {
+      null => false,
+      LyricsFound() => true,
+      LyricsSearching() || LyricsNone() => false,
+      LyricsReading() => _last,
+    };
+    return _last = available;
+  }
+}
+
+final nowPlayingLyricsAvailableProvider =
+    NotifierProvider.autoDispose<NowPlayingLyricsAvailable, bool>(
+      NowPlayingLyricsAvailable.new,
+    );

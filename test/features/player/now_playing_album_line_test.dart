@@ -21,6 +21,11 @@ import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 import '../playlists/playlist_test_data.dart';
 
+/// Closing Now Playing lets go of the lyrics streams; the database's own
+/// close timer then needs one more tick.
+Future<void> _letStreamsClose(WidgetTester tester) =>
+    tester.pump(Duration.zero);
+
 void main() {
   late LibraryHarness h;
 
@@ -77,6 +82,7 @@ void main() {
     expect(h.container.read(nowPlayingOpenProvider), isFalse);
     expect(location(h), albumLocation(const AlbumKey('ann', 'blue album')));
     expect(find.text('Blue Album'), findsWidgets);
+    await _letStreamsClose(tester);
   });
 
   testWidgets('the narrow layout shows it too', (tester) async {
@@ -88,6 +94,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(h.container.read(nowPlayingOpenProvider), isFalse);
     expect(location(h), albumLocation(const AlbumKey('ann', 'blue album')));
+    await _letStreamsClose(tester);
   });
 
   testWidgets('a song without an album shows no album line', (tester) async {
@@ -102,6 +109,7 @@ void main() {
       ),
       findsNothing,
     );
+    await _letStreamsClose(tester);
   });
 
   testWidgets('a file outside the library shows no album line', (tester) async {

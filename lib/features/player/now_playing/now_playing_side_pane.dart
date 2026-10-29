@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
@@ -5,53 +6,43 @@ import '../../../shared/motion_tab_controller.dart';
 import '../queue/queue_panel.dart';
 import '../queue/queue_panel_header.dart'
     show queueHeaderTitleRowHeight, queueHeaderTitleRowPadding;
+import 'now_playing_side_tab.dart';
 
-enum _SideTab { lyrics, queue }
-
-/// Second column of Split: "Lyrics | Queue" tabs, Lyrics only when the track
-/// has [lyrics]. Only the chosen tab's body is built.
+/// Second column of Split: "Lyrics | Queue" tabs, both always there. Only the
+/// chosen tab's body is built.
 ///
 /// On the Queue tab the tab bar takes the place of the queue header's title,
 /// so the queue's actions stay at the end of its row; on the Lyrics tab the
-/// bar sits at the same spot over the lyrics. The tab the user picked stays
-/// while Split is shown, across track changes.
-class NowPlayingSidePane extends StatefulWidget {
-  const NowPlayingSidePane({super.key, this.lyrics});
+/// bar sits at the same spot over the lyrics. The tab the user picked is kept
+/// for the app session ([nowPlayingSideTabProvider]), across track changes.
+class NowPlayingSidePane extends ConsumerStatefulWidget {
+  const NowPlayingSidePane({super.key, required this.lyrics});
 
-  /// The lyrics view; `null` when the track has none, and then no tab.
-  final Widget? lyrics;
+  /// The lyrics view, shown on the Lyrics tab.
+  final Widget lyrics;
 
   @override
-  State<NowPlayingSidePane> createState() => _NowPlayingSidePaneState();
+  ConsumerState<NowPlayingSidePane> createState() => _NowPlayingSidePaneState();
 }
 
-class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
+class _NowPlayingSidePaneState extends ConsumerState<NowPlayingSidePane>
     with TickerProviderStateMixin {
   /// Moves the tab bar between the two bodies without rebuilding its state.
   final _barKey = GlobalKey(debugLabel: 'Now Playing side tab bar');
   TabController? _built;
   TabController get _tabs => _built!;
 
-  /// The tab the user chose; Lyrics until they pick one. Without lyrics only
-  /// Queue shows, and the choice is kept for when lyrics return.
-  _SideTab _tab = _SideTab.lyrics;
-
-  bool get _hasLyrics => widget.lyrics != null;
-
-  List<_SideTab> get _tabList => [
-    if (_hasLyrics) _SideTab.lyrics,
-    _SideTab.queue,
-  ];
-
-  _SideTab get _shown => _hasLyrics ? _tab : _SideTab.queue;
+  static const _tabList = NowPlayingSideTab.values;
 
   /// The tab bar moved the controller: follow it.
   void _onTab() {
     final tab = _tabList[_tabs.index];
-    if (tab != _tab) setState(() => _tab = tab);
+    if (tab != ref.read(nowPlayingSideTabProvider)) {
+      ref.read(nowPlayingSideTabProvider.notifier).choose(tab);
+    }
   }
 
-  /// Keeps the controller's length and index in line with the tabs shown.
+  /// Keeps the controller's length and index in line with the chosen tab.
   void _syncController() {
     _built = motionTabController(
       context,
@@ -60,7 +51,7 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
       vsync: this,
       onChanged: _onTab,
     );
-    final index = _tabList.indexOf(_shown);
+    final index = _tabList.indexOf(ref.read(nowPlayingSideTabProvider));
     if (_tabs.index != index) _tabs.index = index;
   }
 
@@ -85,6 +76,7 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final shown = ref.watch(nowPlayingSideTabProvider);
     final bar = Align(
       alignment: Alignment.centerLeft,
       child: TabBar(
@@ -97,16 +89,16 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
           for (final tab in _tabList)
             Tab(
               text: switch (tab) {
-                _SideTab.lyrics => l10n.lyricsTab,
-                _SideTab.queue => l10n.nowPlayingTabQueue,
+                NowPlayingSideTab.lyrics => l10n.lyricsTab,
+                NowPlayingSideTab.queue => l10n.nowPlayingTabQueue,
               },
             ),
         ],
       ),
     );
-    return switch (_shown) {
-      _SideTab.queue => QueuePanel(title: bar),
-      _SideTab.lyrics => Column(
+    return switch (shown) {
+      NowPlayingSideTab.queue => QueuePanel(title: bar),
+      NowPlayingSideTab.lyrics => Column(
         children: [
           // The queue header's first row, so the tab bar has the same rect
           // on both tabs.
@@ -114,7 +106,7 @@ class _NowPlayingSidePaneState extends State<NowPlayingSidePane>
             padding: queueHeaderTitleRowPadding,
             child: SizedBox(height: queueHeaderTitleRowHeight, child: bar),
           ),
-          Expanded(child: widget.lyrics!),
+          Expanded(child: widget.lyrics),
         ],
       ),
     };

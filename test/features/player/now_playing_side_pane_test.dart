@@ -1,5 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_side_tab.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_view_mode.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -24,11 +27,14 @@ void main() {
       expect(find.byType(QueuePanel), findsNothing);
     });
 
-    testWidgets('without lyrics there is the Queue tab only', (tester) async {
+    testWidgets('without lyrics there are still both tabs, Lyrics shows the '
+        'empty slot', (tester) async {
       await pump(tester, lyrics: false);
-      expect(lyricsTab, findsNothing);
+      expect(lyricsTab, findsOneWidget);
       expect(queueTab, findsOneWidget);
-      expect(find.byType(QueuePanel), findsOneWidget);
+      expect(tester.widget<TabBar>(tabBar).controller!.index, 0);
+      expect(find.text('LYRICS'), findsNothing);
+      expect(find.byType(QueuePanel), findsNothing);
     });
 
     testWidgets('switching tabs unmounts the other body', (tester) async {
@@ -106,7 +112,7 @@ void main() {
     });
 
     for (final startOnQueue in [false, true]) {
-      testWidgets('lyrics going away and coming back restore the chosen tab '
+      testWidgets('the chosen tab stays across lyrics changes '
           '(${startOnQueue ? 'queue' : 'lyrics'} chosen)', (tester) async {
         await pump(tester);
         if (startOnQueue) {
@@ -117,13 +123,15 @@ void main() {
         for (var cycle = 0; cycle < 2; cycle++) {
           h.hasLyrics.value = false;
           await tester.pumpAndSettle();
-          expect(lyricsTab, findsNothing);
-          expect(find.byType(QueuePanel), findsOneWidget);
+          expect(lyricsTab, findsOneWidget);
+          expect(queueTab, findsOneWidget);
+          expect(
+            find.byType(QueuePanel),
+            startOnQueue ? findsOneWidget : findsNothing,
+          );
 
           h.hasLyrics.value = true;
           await tester.pumpAndSettle();
-          expect(lyricsTab, findsOneWidget);
-          expect(queueTab, findsOneWidget);
           expect(
             tester.widget<TabBar>(tabBar).controller!.index,
             startOnQueue ? 1 : 0,
@@ -141,9 +149,8 @@ void main() {
       });
     }
 
-    testWidgets('mounted without lyrics, lyrics arriving show the Lyrics tab', (
-      tester,
-    ) async {
+    testWidgets('mounted without lyrics, lyrics arriving show them in the '
+        'Lyrics tab', (tester) async {
       await pump(tester, lyrics: false);
       h.hasLyrics.value = true;
       await tester.pumpAndSettle();
@@ -152,7 +159,7 @@ void main() {
       expect(find.byType(QueuePanel), findsNothing);
     });
 
-    testWidgets('losing the lyrics while on their tab lands on the queue', (
+    testWidgets('losing the lyrics while on their tab stays on Lyrics', (
       tester,
     ) async {
       await pump(tester);
@@ -160,9 +167,81 @@ void main() {
       await tester.pumpAndSettle();
 
       final bar = tester.widget<TabBar>(tabBar);
-      expect(bar.controller!.length, 1);
+      expect(bar.controller!.length, 2);
       expect(bar.controller!.index, 0);
+      expect(find.byType(QueuePanel), findsNothing);
+    });
+  });
+
+  group('the tab kept for the app session', () {
+    testWidgets('the first opening shows Lyrics', (tester) async {
+      await pump(tester);
+      expect(
+        h.container.read(nowPlayingSideTabProvider),
+        NowPlayingSideTab.lyrics,
+      );
+      expect(find.text('LYRICS'), findsOneWidget);
+    });
+
+    testWidgets('a new app session starts on Lyrics again', (tester) async {
+      await pump(tester);
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+      expect(
+        h.container.read(nowPlayingSideTabProvider),
+        NowPlayingSideTab.queue,
+      );
+
+      final fresh = ProviderContainer();
+      addTearDown(fresh.dispose);
+      expect(fresh.read(nowPlayingSideTabProvider), NowPlayingSideTab.lyrics);
+    });
+
+    testWidgets('closing and reopening Now Playing keeps the Queue tab', (
+      tester,
+    ) async {
+      await pump(tester);
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(const SizedBox());
+      await h.repump(tester);
+
       expect(find.byType(QueuePanel), findsOneWidget);
+      expect(tester.widget<TabBar>(tabBar).controller!.index, 1);
+    });
+
+    testWidgets('leaving Split and coming back keeps the Queue tab', (
+      tester,
+    ) async {
+      await pump(tester);
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+
+      final modes = h.container.read(nowPlayingViewModeProvider.notifier);
+      modes.choose(NowPlayingViewMode.coverOnly);
+      await tester.pumpAndSettle();
+      expect(find.byType(QueuePanel), findsNothing);
+      modes.choose(NowPlayingViewMode.split);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsOneWidget);
+      expect(tester.widget<TabBar>(tabBar).controller!.index, 1);
+    });
+
+    testWidgets('a narrow resize and back keeps the Queue tab', (tester) async {
+      await pump(tester);
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+
+      tester.view.physicalSize = const Size(400, 800);
+      await tester.pumpAndSettle();
+      expect(queueTab, findsNothing);
+      tester.view.physicalSize = const Size(1280, 800);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsOneWidget);
+      expect(tester.widget<TabBar>(tabBar).controller!.index, 1);
     });
   });
 }

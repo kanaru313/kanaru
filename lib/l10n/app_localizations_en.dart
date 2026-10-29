@@ -2106,6 +2106,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'None of these songs are in your library';
 
   @override
+  String get lyricsNone => 'No lyrics for this song';
+
+  @override
   String get lyricsTab => 'Lyrics';
 
   @override
@@ -3065,4 +3068,227 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClear => 'Clear';
+
+  @override
+  String get onlineLyricsNoticeAutoTitle => 'Find lyrics online automatically?';
+
+  @override
+  String onlineLyricsNoticeManualTitle(String provider) {
+    return 'Search lyrics on $provider?';
+  }
+
+  @override
+  String onlineLyricsNoticeBody(String hosts) {
+    return 'Kanaru sends the song title, artist, album and length to $hosts. No file paths or device details.';
+  }
+
+  @override
+  String get onlineLyricsNoticeAutoHint =>
+      'You can turn it off in Settings › Advanced › Lyrics.';
+
+  @override
+  String get onlineLyricsNoticeTurnOn => 'Turn on';
+
+  @override
+  String get onlineLyricsNoticeSearch => 'Search';
+
+  @override
+  String get lyricsFindOnline => 'Find lyrics online…';
+
+  @override
+  String get lyricsPickerTitle => 'Choose lyrics';
+
+  @override
+  String lyricsPickerSong(String title, String artist, String duration) {
+    return 'Song: $title · $artist · $duration';
+  }
+
+  @override
+  String get lyricsPickerSearch => 'Search';
+
+  @override
+  String get lyricsPickerQueryHint => 'Artist and title';
+
+  @override
+  String get lyricsPickerSynced => 'Synced';
+
+  @override
+  String get lyricsPickerPlain => 'Plain';
+
+  @override
+  String get lyricsPickerInstrumental => 'Instrumental';
+
+  @override
+  String get lyricsPickerGoodMatch => 'Good match';
+
+  @override
+  String get lyricsPickerRejected => 'Rejected';
+
+  @override
+  String lyricsPickerDelta(int seconds) {
+    return '±${seconds}s';
+  }
+
+  @override
+  String get lyricsPickerEmpty => 'No lyrics found. Try other words.';
+
+  @override
+  String lyricsPickerError(String provider) {
+    return 'Couldn\'t reach $provider';
+  }
+
+  @override
+  String get lyricsPickerRetry => 'Retry';
+
+  @override
+  String lyricsPickerFooter(String hosts) {
+    return 'Results from $hosts · the lyrics you pick are pinned to this song';
+  }
+
+  @override
+  String get lyricsPickerUse => 'Use these lyrics';
+
+  @override
+  String get lyricsPickerNoPreview => 'Select a result to preview its lyrics';
+
+  @override
+  String get lyricsPickerNoBody => 'These lyrics can\'t be previewed or used';
+
+  @override
+  String get lyricsPickerInstrumentalPreview => 'This song is instrumental';
+
+  @override
+  String get lyricsPinned => 'Lyrics pinned to this song';
+
+  @override
+  String get lyricsSavedAsLrc => 'Saved as .lrc';
+
+  @override
+  String get lyricsNotSavedOutsideLibrary =>
+      'Not saved as .lrc: the song is outside your library folders';
+
+  @override
+  String get lyricsPickFailed => 'Couldn\'t pin these lyrics';
+
+  @override
+  String lyricsPickerNotConsented(String provider) {
+    return 'Online lyrics are turned off for $provider. Allow it in Settings.';
+  }
+
+  @override
+  String lyricsSearching(String provider) {
+    return 'Searching $provider…';
+  }
+
+  @override
+  String get lyricsFindAutomatically => 'Find lyrics automatically';
+
+  @override
+  String lyricsNotFound(String provider) {
+    return 'No lyrics found on $provider';
+  }
+
+  @override
+  String get lyricsSearchManually => 'Search manually…';
+
+  @override
+  String lyricsOnlineError(String provider) {
+    return 'Couldn\'t reach $provider';
+  }
+
+  @override
+  String lyricsOnlineBusy(String provider) {
+    return '$provider is busy. Try again in a moment.';
+  }
+
+  @override
+  String get lyricsRetry => 'Retry';
+
+  @override
+  String get lyricsSkipped => 'Online lyrics turned off for this song';
+
+  @override
+  String get lyricsChoose => 'Choose lyrics…';
+
+  @override
+  String get lyricsSearchAutomaticallyAgain => 'Search automatically again';
+
+  @override
+  String get lyricsInstrumental => 'Instrumental';
+
+  @override
+  String lyricsCreditFrom(String provider) {
+    return 'Lyrics from $provider';
+  }
+
+  @override
+  String get lyricsCreditNotSynced => 'not synced';
+
+  @override
+  String lyricsCreditMatched(int seconds) {
+    return 'matched automatically (off by $seconds s)';
+  }
+
+  @override
+  String get lyricsCreditMatchedExact => 'matched automatically';
+
+  @override
+  String get lyricsCreditPicked => 'picked by you';
+
+  @override
+  String get lyricsMenuSearchAgain => 'Search again';
+
+  @override
+  String get lyricsMenuChooseOther => 'Choose other lyrics…';
+
+  @override
+  String get lyricsMenuNotThese => 'Not these lyrics';
+
+  @override
+  String get settingsAutoOnlineLyrics =>
+      'Find lyrics online automatically (LRCLIB)';
+
+  @override
+  String get settingsAutoOnlineLyricsHint =>
+      'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.';
+
+  @override
+  String get settingsWriteLrc => 'Save picked lyrics as .lrc files';
+
+  @override
+  String get settingsWriteLrcHint =>
+      'When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.';
+
+  @override
+  String get settingsSavedLyrics => 'Saved lyrics';
+
+  @override
+  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$_temp0 · $size · $notFound not found (retried after 14 days)';
+  }
+
+  @override
+  String get settingsSavedLyricsNone => 'No saved lyrics';
+
+  @override
+  String get settingsSavedLyricsClear => 'Clear';
+
+  @override
+  String get settingsSavedLyricsClearTitle => 'Clear saved lyrics?';
+
+  @override
+  String get settingsSavedLyricsClearBody =>
+      'The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.';
+
+  @override
+  String get settingsSavedLyricsCleared => 'Saved lyrics cleared';
+
+  @override
+  String get settingsSavedLyricsClearFailed => 'Could not clear saved lyrics';
 }

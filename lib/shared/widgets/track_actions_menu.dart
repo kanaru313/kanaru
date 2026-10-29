@@ -1,19 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_startup.dart';
-import '../../core/database/playlist_favorites.dart';
+import '../../core/database/library_rows.dart';
 import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
 import '../track_menu_actions.dart';
 import '../track_menu_choice.dart';
 import 'menu_keyboard_region.dart';
 import 'queue_actions_menu.dart';
-
-final _log = Logger('track_menu');
+import 'track_menu_lookups.dart';
 
 /// Opens the song menu with its corner at [position] (global): the queue
 /// rows, the Favorites row, then the links. [hasArtist] and [hasAlbum] grey
@@ -28,6 +25,7 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
   bool hasArtist = true,
   bool hasAlbum = true,
   bool? isFavorite,
+  bool showFindLyrics = false,
 }) {
   return showMenu<TrackMenuChoice>(
     context: context,
@@ -37,6 +35,7 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
       ...trackLinkMenuItems(
         context,
         isFavorite: isFavorite,
+        showFindLyrics: showFindLyrics,
         showAlbum: showAlbum,
         hasArtist: hasArtist,
         hasAlbum: hasAlbum,
@@ -47,13 +46,15 @@ Future<TrackMenuChoice?> showTrackActionsMenu(
 
 /// The rows after the queue rows of the song menu: the Favorites row (left
 /// out when [isFavorite] is null), a divider, Show artist, Show album, Show in
-/// folder and Show in file manager. [showLinks] false also leaves out Show
+/// folder and Show in file manager. [showFindLyrics] adds Find lyrics online
+/// after the divider. [showLinks] false also leaves out Show
 /// artist, Show album and Show in folder, for songs that are not rows of the
 /// library; [showFileManager] false leaves out Show in file manager, for songs
 /// that are not local files.
 List<PopupMenuEntry<TrackMenuChoice>> trackLinkMenuItems(
   BuildContext context, {
   bool? isFavorite,
+  bool showFindLyrics = false,
   bool showAlbum = true,
   bool hasArtist = true,
   bool hasAlbum = true,
@@ -69,6 +70,8 @@ List<PopupMenuEntry<TrackMenuChoice>> trackLinkMenuItems(
         isFavorite ? l10n.favoritesRemove : l10n.nowPlayingFavorite,
       ),
     const PopupMenuDivider(),
+    if (showFindLyrics)
+      menuRow(const FindLyricsChoice(), AppIcons.lyrics, l10n.lyricsFindOnline),
     if (showLinks) ...[
       menuRow(
         const ShowArtistChoice(),
@@ -113,6 +116,7 @@ class TrackActionsRegion extends ConsumerWidget {
     this.showAlbum = true,
     this.hasArtist = true,
     this.hasAlbum = true,
+    this.song,
   });
 
   final int trackId;
@@ -125,15 +129,20 @@ class TrackActionsRegion extends ConsumerWidget {
   final bool hasArtist;
   final bool hasAlbum;
 
+  /// The library row of the song, when the caller holds it: it is what
+  /// "Find lyrics online" searches for. Without it the row is left out.
+  final TrackListItem? song;
+
   Future<void> _open(
     BuildContext context,
     WidgetRef ref,
     Offset position,
   ) async {
     final runner = TrackMenuRunner(ref, context);
+    final lyricsTarget = menuLyricsTarget(ref, song);
     // Read when the menu opens, not from the favorites stream: with no heart
     // on screen that stream is paused and its last value may be stale.
-    final isFavorite = await _isFavorite(ref);
+    final isFavorite = await menuIsFavorite(ref, path);
     if (!context.mounted) return;
     final choice = await showTrackActionsMenu(
       context,
@@ -142,6 +151,7 @@ class TrackActionsRegion extends ConsumerWidget {
       hasArtist: hasArtist,
       hasAlbum: hasAlbum,
       isFavorite: isFavorite,
+      showFindLyrics: lyricsTarget != null,
     );
     switch (choice) {
       case null:
@@ -150,21 +160,14 @@ class TrackActionsRegion extends ConsumerWidget {
         onQueueAction?.call(action);
       case _:
         unawaited(
-          runner.run(choice, trackId: trackId, path: path, position: position),
+          runner.run(
+            choice,
+            trackId: trackId,
+            path: path,
+            position: position,
+            lyricsTarget: lyricsTarget,
+          ),
         );
-    }
-  }
-
-  /// Whether [path] is in Favorites; null without a library or when the read
-  /// fails (the menu then leaves the row out).
-  Future<bool?> _isFavorite(WidgetRef ref) async {
-    final db = ref.read(libraryDatabaseProvider);
-    if (db == null) return null;
-    try {
-      return await db.isFavorite(path);
-    } catch (error, stack) {
-      _log.warning('Reading whether a song is a favorite failed', error, stack);
-      return null;
     }
   }
 
