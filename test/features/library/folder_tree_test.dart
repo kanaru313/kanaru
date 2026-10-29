@@ -1,7 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/folders/folder_tree.dart';
 
-({String dir, int count}) c(String dir, int count) => (dir: dir, count: count);
+({String dir, int count, String? cover}) c(
+  String dir,
+  int count, [
+  String? cover,
+]) => (dir: dir, count: count, cover: cover);
 
 void main() {
   test('makes the folders between a root and a counted folder', () {
@@ -114,5 +118,79 @@ void main() {
     final tree = buildFolderTree(['/m'], [c('/m/.a/b', 1), c('/m/c', 1)]);
 
     expect([for (final n in tree.flat) n.label], ['.a/b', 'c']);
+  });
+
+  group('cover', () {
+    test('a leaf keeps its own cover as both keys', () {
+      final tree = buildFolderTree(['/m'], [c('/m/a', 2, 'k1')]);
+
+      final a = tree.byPath['/m/a']!;
+      expect((a.directCoverKey, a.coverKey), ('k1', 'k1'));
+    });
+
+    test('a folder without songs takes the subfolder with more songs', () {
+      final tree = buildFolderTree(
+        ['/m'],
+        [c('/m/p/a', 2, 'ka'), c('/m/p/b', 5, 'kb')],
+      );
+
+      final p = tree.byPath['/m/p']!;
+      expect((p.directCoverKey, p.coverKey), (null, 'kb'));
+      expect(tree.roots.single.coverKey, 'kb');
+    });
+
+    test('its own cover beats the subfolders', () {
+      final tree = buildFolderTree(
+        ['/m'],
+        [c('/m/p', 1, 'own'), c('/m/p/a', 9, 'ka')],
+      );
+
+      expect(tree.byPath['/m/p']!.coverKey, 'own');
+    });
+
+    test('a subfolder without a cover is passed over', () {
+      final tree = buildFolderTree(
+        ['/m'],
+        [c('/m/p/a', 9), c('/m/p/b', 1, 'kb')],
+      );
+
+      expect(tree.byPath['/m/p']!.coverKey, 'kb');
+    });
+
+    test('equal song counts take the first subfolder in natural order', () {
+      final tree = buildFolderTree(
+        ['/m'],
+        [c('/m/CD 10', 2, 'k10'), c('/m/CD 2', 2, 'k2')],
+      );
+
+      expect(tree.roots.single.coverKey, 'k2');
+    });
+
+    test('no covers leave both keys null', () {
+      final tree = buildFolderTree(['/m'], [c('/m/a', 2), c('/m/a/b', 1)]);
+
+      for (final node in tree.byPath.values) {
+        expect((node.directCoverKey, node.coverKey), (null, null));
+      }
+    });
+
+    test('directCoverKey stays null where only a subfolder has a cover', () {
+      final tree = buildFolderTree(
+        ['/m'],
+        [c('/m/p', 3), c('/m/p/a', 1, 'ka')],
+      );
+
+      final p = tree.byPath['/m/p']!;
+      expect((p.directCoverKey, p.coverKey), (null, 'ka'));
+    });
+
+    test('the subfolder is chosen by the songs in its whole subtree', () {
+      final tree = buildFolderTree(
+        ['/m'],
+        [c('/m/p/a', 3, 'ka'), c('/m/p/b', 1, 'kb'), c('/m/p/b/x', 5)],
+      );
+
+      expect(tree.byPath['/m/p']!.coverKey, 'kb');
+    });
   });
 }

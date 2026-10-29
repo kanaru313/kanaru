@@ -12,6 +12,8 @@ class FolderNode {
     required this.label,
     required this.ambiguousRoot,
     required this.directSongs,
+    required this.directCoverKey,
+    required this.coverKey,
     required this.songs,
     required this.subfolders,
     required this.children,
@@ -36,6 +38,16 @@ class FolderNode {
 
   /// Songs directly in the folder.
   final int directSongs;
+
+  /// The cover key held by the most of the songs directly in the folder; `null`
+  /// when none of them has a cover. For views that show only a folder's own
+  /// songs.
+  final String? directCoverKey;
+
+  /// Cover key shown for the folder in the tree: [directCoverKey], else that of
+  /// the subfolder with the most songs that has one (the first in natural order
+  /// on a tie). `null` when no song below has a cover.
+  final String? coverKey;
 
   /// Songs in the folder and all folders below it.
   final int songs;
@@ -78,6 +90,7 @@ class _Dir {
   /// Path below the music folder; empty for the music folder itself.
   final String rel;
   int direct = 0;
+  String? cover;
   final children = <_Dir>[];
 }
 
@@ -94,7 +107,7 @@ String _baseName(String path) {
 /// songs of their own. Roots never nest.
 FolderTree buildFolderTree(
   List<String> roots,
-  List<({String dir, int count})> counts,
+  List<({String dir, int count, String? cover})> counts,
 ) {
   final dirs = <String, _Dir>{};
   final rootDirs = <_Dir>[];
@@ -105,7 +118,7 @@ FolderTree buildFolderTree(
     rootDirs.add(dir);
   }
 
-  for (final (:dir, :count) in counts) {
+  for (final (:dir, :count, :cover) in counts) {
     final root = rootDirs
         .where((r) => dir == r.path || dir.startsWith('${r.path}/'))
         .firstOrNull;
@@ -132,6 +145,8 @@ FolderTree buildFolderTree(
       start = end + 1;
     }
     parent.direct += count;
+    // Each folder is counted once, so the cover is set, the songs are added.
+    parent.cover = cover;
   }
 
   final multiple = rootDirs.length > 1;
@@ -146,6 +161,14 @@ FolderTree buildFolderTree(
       for (final child in dir.children) (naturalKey(child.name), child),
     ]..sort((a, b) => compareNaturalKeys(a.$1, b.$1));
     final children = [for (final (_, child) in keyed) freeze(child)];
+    // The first of the children with the most songs wins a tie.
+    FolderNode? richest;
+    for (final child in children) {
+      if (child.coverKey != null &&
+          (richest == null || child.songs > richest.songs)) {
+        richest = child;
+      }
+    }
     final rootName = _baseName(dir.rootPath);
     final node = FolderNode(
       path: dir.path,
@@ -158,6 +181,8 @@ FolderTree buildFolderTree(
           : dir.rel,
       ambiguousRoot: sharedNames.contains(rootName),
       directSongs: dir.direct,
+      directCoverKey: dir.cover,
+      coverKey: dir.cover ?? richest?.coverKey,
       songs: dir.direct + children.fold(0, (sum, c) => sum + c.songs),
       subfolders: children.fold(0, (sum, c) => sum + 1 + c.subfolders),
       children: children,
@@ -183,5 +208,5 @@ FolderTree buildFolderTree(
 /// (a database handle in the enclosing scope could not be sent).
 Future<FolderTree> buildFolderTreeInIsolate(
   List<String> roots,
-  List<({String dir, int count})> counts,
+  List<({String dir, int count, String? cover})> counts,
 ) => Isolate.run(() => buildFolderTree(roots, counts));
