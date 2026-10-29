@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../database/artist_names.dart';
 import '../../database/text_keys.dart';
 import 'lrclib_record.dart';
+import 'lyrics_artist_match.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http.dart';
 import 'lyrics_provider.dart';
@@ -59,8 +60,13 @@ class LrclibProvider implements LyricsProvider {
     return _record(found.json);
   }
 
-  /// `GET /api/search` by free text (`q`), else by title and primary artist.
-  /// No title and no text gives an empty list without a request.
+  /// `GET /api/search` by free text (`q`), else by `track_name` and, when the
+  /// tag names exactly one real artist, `artist_name` (LRCLIB matches it
+  /// against any position of a record's artist string, and a bare common
+  /// title fills the 20 results with other songs). A tag with several artists
+  /// sends the title only: the song is often filed under another of them, so
+  /// the caller's matcher filters by artist. No title and no text gives an
+  /// empty list without a request.
   @override
   Future<List<LyricsCandidate>> search(
     LyricsQuery query,
@@ -69,13 +75,15 @@ class LrclibProvider implements LyricsProvider {
     final text = query.text?.trim() ?? '';
     final title = query.title?.trim() ?? '';
     if (text.isEmpty && title.isEmpty) return const [];
-    final artist = _primaryArtist(query.artist);
+    final names = [
+      for (final name in splitArtists(query.artist))
+        if (name.trim().isNotEmpty && !isUnknownArtist(name)) name.trim(),
+    ];
     final uri = _uri(
       const ['api', 'search'],
       {
-        if (text.isNotEmpty) 'q': text,
-        if (text.isEmpty) 'track_name': title,
-        if (text.isEmpty && artist.isNotEmpty) 'artist_name': artist,
+        if (text.isNotEmpty) 'q': text else 'track_name': title,
+        if (text.isEmpty && names.length == 1) 'artist_name': names.single,
       },
     );
     final json = (await _getJson(http, uri)).json;

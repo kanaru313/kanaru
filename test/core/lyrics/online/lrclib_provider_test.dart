@@ -236,10 +236,10 @@ void main() {
       expect(request.uri.queryParameters, {'q': 'Đừng & hỏi/em?'});
     });
 
-    test('structured search sends title and primary artist encoded', () async {
+    test('one artist sends the title and the artist, encoded', () async {
       server.handler = (_) => _ok(<Object?>[]);
       await provider.search(
-        const LyricsQuery(title: 'Nơi/này & có Anh', artist: 'Sơn Tùng; B'),
+        const LyricsQuery(title: 'Nơi/này & có Anh', artist: 'Sơn Tùng'),
         http,
       );
       final request = server.requests.single;
@@ -247,6 +247,40 @@ void main() {
       expect(request.uri.queryParameters, {
         'track_name': 'Nơi/này & có Anh',
         'artist_name': 'Sơn Tùng',
+      });
+    });
+
+    test('several artists send the title only', () async {
+      server.handler = (_) => _ok(<Object?>[]);
+      await provider.search(
+        const LyricsQuery(title: 'Song', artist: 'Sơn Tùng; B'),
+        http,
+      );
+      final request = server.requests.single;
+      expect(request.uri.queryParameters, {'track_name': 'Song'});
+      expect(request.uri.query, isNot(contains('artist_name')));
+    });
+
+    test(
+      'a placeholder beside one real artist still sends that artist',
+      () async {
+        server.handler = (_) => _ok(<Object?>[]);
+        await provider.search(
+          const LyricsQuery(title: 'Song', artist: 'Various Artists; Diplo'),
+          http,
+        );
+        expect(server.requests.single.uri.queryParameters, {
+          'track_name': 'Song',
+          'artist_name': 'Diplo',
+        });
+      },
+    );
+
+    test('no artist sends the title only', () async {
+      server.handler = (_) => _ok(<Object?>[]);
+      await provider.search(const LyricsQuery(title: 'Song'), http);
+      expect(server.requests.single.uri.queryParameters, {
+        'track_name': 'Song',
       });
     });
 

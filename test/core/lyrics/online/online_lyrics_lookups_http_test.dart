@@ -8,6 +8,7 @@ import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_backoff.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_http_factory.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_lookups.dart';
@@ -129,6 +130,39 @@ void main() {
     expect((row.status, row.remoteId), ('found', '9'));
   });
 
+  test('a search hit filed under the other artist is found', () async {
+    final target = LyricsTarget.fromFields(
+      uri: '/music/duo.flac',
+      title: 'Song',
+      artist: 'Ngân Ngân, Châu Khải Phong',
+      album: 'Alb',
+      duration: const Duration(seconds: 200),
+    );
+    await setUpWith(
+      (r) => r.uri.path == '/api/get'
+          ? _notFound
+          : Reply(
+              200,
+              jsonEncode([
+                {..._record(9), 'artistName': 'Chau Khai Phong'},
+              ]),
+              headers: _json,
+            ),
+    );
+
+    await h.lookups.start(target, auto: true);
+
+    final row = (await h.db.watchOnlineLyrics(target.cacheKey).first).single;
+    expect((row.status, row.remoteId), ('found', '9'));
+    final get = server.requests.first.uri;
+    expect(get.path, '/api/get');
+    expect(get.queryParameters['artist_name'], 'Ngân Ngân');
+    final search = server.requests.last.uri;
+    expect(search.path, '/api/search');
+    expect(search.queryParameters, {'track_name': 'Song'});
+    expect(server.requests, hasLength(2));
+  });
+
   final failures = <String, Reply>{
     '404 with an HTML body': const Reply(
       404,
@@ -199,6 +233,11 @@ void main() {
           (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
       expect((row.status, row.remoteId), ('found', '2'));
       expect(row.syncedText, isNotNull);
+      expect(server.requests.last.uri.path, '/api/search');
+      expect(server.requests.last.uri.queryParameters, {
+        'track_name': 'Song',
+        'artist_name': 'Artist',
+      });
       expect(server.requests, hasLength(2));
       expect(
         server.requests.first.uri.queryParameters.containsKey('album_name'),
@@ -219,6 +258,11 @@ void main() {
           (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
       expect((row.status, row.remoteId, row.syncedText), ('found', '1', null));
       expect(server.requests, hasLength(2));
+      expect(server.requests.last.uri.path, '/api/search');
+      expect(server.requests.last.uri.queryParameters, {
+        'track_name': 'Song',
+        'artist_name': 'Artist',
+      });
     });
 
     test('a synced exact hit needs no search', () async {

@@ -61,6 +61,24 @@ void main() {
       expect(unknown('a').cacheKey, isNot(unknown('b').cacheKey));
     });
 
+    test('a Various Artists song without a title is scoped too', () {
+      for (final artist in ['Various Artists', 'VA', 'V.A.', 'Nhiều ca sĩ']) {
+        LyricsTarget various(String file) => LyricsTarget.fromTrack(
+          Track(
+            uri: '/music/$file.flac',
+            title: file,
+            artist: artist,
+            duration: duration,
+          ),
+        );
+        expect(
+          various('a').cacheKey,
+          isNot(various('b').cacheKey),
+          reason: artist,
+        );
+      }
+    });
+
     test('a tagged song keeps the unscoped key', () {
       final target = LyricsTarget.fromTrack(
         const Track(

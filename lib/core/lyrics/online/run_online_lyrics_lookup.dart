@@ -15,8 +15,9 @@ enum OnlineLyricsLookupResult { found, notFound }
 /// Looks [target] up at one provider and stores a whitelisted answer:
 ///
 /// * `lookup` returns a record that passes the match gate: a found row;
-/// * otherwise the provider's `search` runs; its best record that passes the
-///   gate: a found row;
+/// * otherwise the provider's `search` runs (by title, and by artist when the
+///   tag has one; the gate checks the artists); its best record that passes
+///   the gate: a found row;
 /// * the `lookup` said "not found" (or its record failed the gate) and the
 ///   `search` returned a valid list with no record passing: a not-found row.
 ///
