@@ -6,6 +6,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../shared/library_browse_refresh.dart';
 import 'folder_songs.dart';
+import 'folder_trail.dart';
 import 'folder_tree.dart';
 
 /// How many times longer than the other browse lists the folder tree waits
@@ -57,10 +58,21 @@ final folderSongsProvider = StreamProvider.autoDispose
 
 /// What a folder page shows: the folder with its counts and its direct songs.
 class FolderPageData {
-  const FolderPageData({required this.folder, required this.songs});
+  const FolderPageData({
+    required this.folder,
+    required this.songs,
+    required this.trail,
+    required this.singleRoot,
+  });
 
   final FolderNode folder;
   final List<TrackListItem> songs;
+
+  /// The folders from its music folder down to [folder], for the breadcrumb.
+  final List<FolderNode> trail;
+
+  /// Whether the library has exactly one music folder.
+  final bool singleRoot;
 }
 
 /// The page of the folder at a path: null when it holds no songs any more
@@ -77,9 +89,23 @@ final folderPageProvider = Provider.autoDispose
       if (folder == null || (folder.songs == 0 && !folder.isRoot)) {
         return const AsyncData(null);
       }
-      final songs = ref.watch(folderSongsProvider(path));
-      if (songs.hasError) return AsyncError(songs.error!, songs.stackTrace!);
-      final list = songs.value;
-      if (list == null) return const AsyncLoading();
-      return AsyncData(FolderPageData(folder: folder, songs: list));
+      // A folder without loose files has nothing to read (or poll); one that
+      // gains its first loose songs shows them at the next tree reload, the
+      // slower interval, which is the price of not polling.
+      var list = const <TrackListItem>[];
+      if (folder.directSongs > 0) {
+        final songs = ref.watch(folderSongsProvider(path));
+        if (songs.hasError) return AsyncError(songs.error!, songs.stackTrace!);
+        final value = songs.value;
+        if (value == null) return const AsyncLoading();
+        list = value;
+      }
+      return AsyncData(
+        FolderPageData(
+          folder: folder,
+          songs: list,
+          trail: folderTrail(loaded, folder),
+          singleRoot: loaded.roots.length == 1,
+        ),
+      );
     });

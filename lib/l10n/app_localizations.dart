@@ -1154,6 +1154,12 @@ abstract class AppLocalizations {
   /// **'No songs in this folder'**
   String get foldersEmptyFolder;
 
+  /// No description provided for @foldersPlayAllBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Play all below'**
+  String get foldersPlayAllBelow;
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:

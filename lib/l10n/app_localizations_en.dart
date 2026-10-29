@@ -724,6 +724,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foldersEmptyFolder => 'No songs in this folder';
 
   @override
+  String get foldersPlayAllBelow => 'Play all below';
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override

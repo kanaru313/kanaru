@@ -701,6 +701,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get foldersEmptyFolder => 'Thư mục này không có bài hát';
 
   @override
+  String get foldersPlayAllBelow => 'Phát cả thư mục con';
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override

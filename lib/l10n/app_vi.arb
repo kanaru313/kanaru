@@ -186,6 +186,7 @@
   },
   "foldersCreatePlaylist": "Tạo playlist",
   "foldersEmptyFolder": "Thư mục này không có bài hát",
+  "foldersPlayAllBelow": "Phát cả thư mục con",
   "favoritesEmptyMessage": "Bài hát bạn thích sẽ hiện ở đây.",
   "searchEmptyTitle": "Tìm trong thư viện",
   "searchEmptyMessage": "Tìm bài hát, album và nghệ sĩ.",

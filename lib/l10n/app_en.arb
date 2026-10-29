@@ -466,6 +466,7 @@
   },
   "foldersCreatePlaylist": "Create playlist",
   "foldersEmptyFolder": "No songs in this folder",
+  "foldersPlayAllBelow": "Play all below",
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "searchEmptyTitle": "Search your library",
   "searchEmptyMessage": "Find songs, albums and artists.",
