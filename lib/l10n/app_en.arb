@@ -1615,6 +1615,10 @@
   "@queueHistoryNothingToPlay": {
     "description": "Snackbar when a saved queue has no song that can play"
   },
+  "lyricsNone": "No lyrics for this song",
+  "@lyricsNone": {
+    "description": "Shown in the lyrics slot of Now Playing when the song has no lyrics"
+  },
   "lyricsTab": "Lyrics",
   "@lyricsTab": {
     "description": "Name of the lyrics page of the narrow Now Playing layout"

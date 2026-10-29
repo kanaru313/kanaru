@@ -3086,6 +3086,12 @@ abstract class AppLocalizations {
   /// **'None of these songs are in your library'**
   String get queueHistoryNothingToPlay;
 
+  /// Shown in the lyrics slot of Now Playing when the song has no lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics for this song'**
+  String get lyricsNone;
+
   /// Name of the lyrics page of the narrow Now Playing layout
   ///
   /// In en, this message translates to:

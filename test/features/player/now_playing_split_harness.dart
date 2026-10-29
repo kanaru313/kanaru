@@ -60,6 +60,12 @@ class SplitHarness {
     hasLyrics = ValueNotifier(lyrics);
     addTearDown(hasLyrics.dispose);
     await player.openTracks([splitShortTrack, splitLongTrack]);
+    await repump(tester);
+  }
+
+  /// Mounts the screen again on the same container, like closing and
+  /// reopening Now Playing.
+  Future<void> repump(WidgetTester tester) async {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,

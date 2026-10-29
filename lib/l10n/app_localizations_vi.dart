@@ -1977,6 +1977,9 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không bài nào trong đây có trong thư viện';
 
   @override
+  String get lyricsNone => 'Bài này chưa có lời';
+
+  @override
   String get lyricsTab => 'Lời bài hát';
 
   @override

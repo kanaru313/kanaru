@@ -104,10 +104,8 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
     // flips this in the same frame the screen's state changes.
     final covered = open && _controller.isCompleted;
     // Lyrics are looked for only while the screen is there.
-    final hasLyrics = screenShown && ref.watch(nowPlayingHasLyricsProvider);
-    final lyricsState = screenShown
-        ? ref.watch(nowPlayingLyricsStateProvider)
-        : NowPlayingLyricsState.unknown;
+    final hasLyrics =
+        screenShown && ref.watch(nowPlayingLyricsAvailableProvider);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -120,8 +118,8 @@ class _NowPlayingOverlayState extends ConsumerState<NowPlayingOverlay>
               behavior: HitTestBehavior.opaque,
               child: NowPlayingScreen(
                 titleBar: widget.titleBar,
-                lyrics: hasLyrics ? const LyricsView() : null,
-                lyricsState: lyricsState,
+                lyrics: const LyricsView(),
+                hasLyrics: hasLyrics,
               ),
             ),
           ),

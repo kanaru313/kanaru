@@ -1034,6 +1034,10 @@
   "queueHistoryDeleteMessage": "Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.",
   "queueHistoryDeleted": "Đã xoá hàng đợi",
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
+  "lyricsNone": "Bài này chưa có lời",
+  "@lyricsNone": {
+    "description": "Shown in the lyrics slot of Now Playing when the song has no lyrics"
+  },
   "lyricsTab": "Lời bài hát",
   "@lyricsTab": {
     "description": "Name of the lyrics page of the narrow Now Playing layout"

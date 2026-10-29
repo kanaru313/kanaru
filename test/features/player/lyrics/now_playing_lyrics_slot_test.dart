@@ -7,8 +7,11 @@ import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/lyrics_view.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_lyrics_only_body.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_overlay.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_side_tab.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_view_mode.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -85,14 +88,14 @@ void main() {
     expect(find.byType(QueuePanel), findsNothing);
   });
 
-  testWidgets('wide: a track without lyrics has the Queue tab only', (
-    tester,
-  ) async {
+  testWidgets('wide: a track without lyrics has both tabs and the empty '
+      'state', (tester) async {
     await pump(tester, tracks: const [_without]);
-    expect(find.byType(LyricsView), findsNothing);
-    expect(splitLyricsTab, findsNothing);
+    expect(find.byType(LyricsView), findsOneWidget);
+    expect(splitLyricsTab, findsOneWidget);
     expect(find.widgetWithText(Tab, 'Now playing'), findsOneWidget);
-    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(find.text('No lyrics for this song'), findsOneWidget);
+    expect(find.byType(QueuePanel), findsNothing);
   });
 
   final queueTab = find.widgetWithText(Tab, 'Now playing');
@@ -122,7 +125,7 @@ void main() {
 
     await player().next();
     await tester.pumpAndSettle();
-    expect(splitLyricsTab, findsNothing);
+    expect(splitLyricsTab, findsOneWidget);
     expect(find.byType(QueuePanel), findsOneWidget);
 
     await player().next();
@@ -133,15 +136,16 @@ void main() {
     expect(find.text('Other words'), findsNothing);
   });
 
-  testWidgets('wide: the Lyrics tab comes back after a track without lyrics', (
+  testWidgets('wide: the Lyrics tab stays through a track without lyrics', (
     tester,
   ) async {
     await pump(tester);
 
     await player().next();
     await tester.pumpAndSettle();
-    expect(splitLyricsTab, findsNothing);
-    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(splitLyricsTab, findsOneWidget);
+    expect(find.byType(QueuePanel), findsNothing);
+    expect(find.text('No lyrics for this song'), findsOneWidget);
 
     await player().previous();
     await tester.pumpAndSettle();
@@ -149,16 +153,15 @@ void main() {
     expect(find.byType(QueuePanel), findsNothing);
   });
 
-  testWidgets('moving to a track without lyrics removes the slot', (
-    tester,
-  ) async {
+  testWidgets('moving to a track without lyrics keeps the slot and shows the '
+      'empty state', (tester) async {
     await pump(tester);
     await player().next();
     await tester.pumpAndSettle();
-    expect(find.byType(LyricsView), findsNothing);
+    expect(find.byType(LyricsView), findsOneWidget);
     expect(find.text('First words'), findsNothing);
-    expect(splitLyricsTab, findsNothing);
-    expect(find.byType(QueuePanel), findsOneWidget);
+    expect(find.text('No lyrics for this song'), findsOneWidget);
+    expect(splitLyricsTab, findsOneWidget);
   });
 
   testWidgets('while the next track loads, the slot stays but shows nothing '
@@ -190,12 +193,15 @@ void main() {
     expect(find.text('First words'), findsOneWidget);
   });
 
-  testWidgets('narrow: no lyrics tab without lyrics', (tester) async {
+  testWidgets('narrow: lyrics tab without lyrics', (tester) async {
     await pump(tester, size: const Size(400, 800), tracks: const [_without]);
-    expect(lyricsTab, findsNothing);
+    expect(lyricsTab, findsOneWidget);
+    await tester.tap(lyricsTab);
+    await tester.pumpAndSettle();
+    expect(find.text('No lyrics for this song'), findsOneWidget);
   });
 
-  testWidgets('narrow: losing the lyrics while on their page shows the track', (
+  testWidgets('narrow: losing the lyrics while on their page stays there', (
     tester,
   ) async {
     await pump(tester, size: const Size(400, 800));
@@ -204,7 +210,146 @@ void main() {
 
     await player().next();
     await tester.pumpAndSettle();
-    expect(lyricsTab, findsNothing);
-    expect(find.text('Instrumental'), findsWidgets);
+    expect(lyricsTab, findsOneWidget);
+    expect(find.text('No lyrics for this song'), findsOneWidget);
+  });
+
+  group('layout stays put across track changes', () {
+    // Lyrics, none, loading (gated), lyrics.
+    Future<void> walk(
+      WidgetTester tester,
+      void Function() check, {
+      required Future<void> Function() before,
+    }) async {
+      await before();
+      final gate = Completer<void>();
+      sidecar
+        ..byPath['/m/also.flac'] = '[00:00.00]Other words'
+        ..gates['/m/gated.flac'] = gate
+        ..byPath['/m/gated.flac'] = '[00:00.00]Gated words';
+      check();
+      await player().next(); // none
+      await tester.pumpAndSettle();
+      check();
+      await player().next(); // loading
+      await tester.pump();
+      check();
+      gate.complete();
+      await tester.pumpAndSettle();
+      check();
+      await player().next(); // lyrics
+      await tester.pumpAndSettle();
+      check();
+    }
+
+    const tracks = [
+      _withLyrics,
+      _without,
+      Track(uri: '/m/gated.flac', title: 'Gated'),
+      _alsoSung,
+    ];
+
+    testWidgets('Split keeps the Queue tab', (tester) async {
+      await pump(tester, tracks: tracks);
+      await walk(
+        tester,
+        () {
+          expect(find.byType(QueuePanel), findsOneWidget);
+          expect(
+            tester.widget<TabBar>(find.byType(TabBar)).controller!.index,
+            1,
+          );
+        },
+        before: () async {
+          await tester.tap(queueTab);
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+
+    testWidgets('Lyrics only keeps its body and mode', (tester) async {
+      await pump(tester, tracks: tracks);
+      await walk(
+        tester,
+        () {
+          expect(find.byType(NowPlayingLyricsOnlyBody), findsOneWidget);
+          expect(
+            container.read(nowPlayingViewModeProvider),
+            NowPlayingViewMode.lyricsOnly,
+          );
+        },
+        before: () async {
+          container
+              .read(nowPlayingViewModeProvider.notifier)
+              .choose(NowPlayingViewMode.lyricsOnly);
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+
+    testWidgets('narrow keeps the lyrics page', (tester) async {
+      await pump(tester, size: const Size(400, 800), tracks: tracks);
+      await walk(
+        tester,
+        () {
+          expect(lyricsTab, findsOneWidget);
+          final view = tester.widget<PageView>(find.byType(PageView));
+          expect(view.controller!.page, 2);
+        },
+        before: () async {
+          await tester.tap(lyricsTab);
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+  });
+
+  group('the side tab for the app session', () {
+    testWidgets('closing and reopening keeps the Queue tab', (tester) async {
+      await pump(tester);
+      expect(
+        container.read(nowPlayingSideTabProvider),
+        NowPlayingSideTab.lyrics,
+      );
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+
+      container.read(nowPlayingOpenProvider.notifier).close();
+      await tester.pumpAndSettle();
+      container.read(nowPlayingOpenProvider.notifier).open();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsOneWidget);
+    });
+
+    testWidgets('Split, Cover only, Split keeps the Queue tab', (tester) async {
+      await pump(tester);
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+      final modes = container.read(nowPlayingViewModeProvider.notifier);
+
+      modes.choose(NowPlayingViewMode.coverOnly);
+      await tester.pumpAndSettle();
+      modes.choose(NowPlayingViewMode.split);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QueuePanel), findsOneWidget);
+    });
+
+    testWidgets('wide, narrow, wide keeps the Queue tab and narrow opens on '
+        'the track page', (tester) async {
+      await pump(tester);
+      await tester.tap(queueTab);
+      await tester.pumpAndSettle();
+
+      tester.view.physicalSize = const Size(400, 800);
+      await tester.pumpAndSettle();
+      final view = tester.widget<PageView>(find.byType(PageView));
+      expect(view.controller!.page, 1);
+
+      tester.view.physicalSize = const Size(1280, 800);
+      await tester.pumpAndSettle();
+      expect(find.byType(QueuePanel), findsOneWidget);
+    });
   });
 }

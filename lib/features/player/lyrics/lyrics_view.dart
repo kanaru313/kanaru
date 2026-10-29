@@ -6,6 +6,7 @@ import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/settings/settings_provider.dart';
+import 'lyrics_empty_state.dart';
 import 'plain_lyrics_view.dart';
 import 'synced_lyrics_view.dart';
 import 'translation/lyrics_translation_banner.dart';
@@ -17,9 +18,10 @@ const _pulseDuration = Duration(milliseconds: 900);
 /// Lyrics of the playing track for Now Playing: synced lyrics follow
 /// playback, plain lyrics are shown as they are. Shows nothing while the
 /// current track's lyrics load (the value may still be the previous
-/// track's) or when it has none. With translation on, each line carries its
-/// translation (or a placeholder while it comes) and a banner reports a
-/// failure. The credit is on the header's translate button.
+/// track's). A track without lyrics shows the empty state. With translation
+/// on, each line carries its translation (or a placeholder while it comes)
+/// and a banner reports a failure. The credit is on the header's translate
+/// button.
 class LyricsView extends ConsumerWidget {
   const LyricsView({super.key});
 
@@ -28,8 +30,15 @@ class LyricsView extends ConsumerWidget {
     final uri = ref.watch(
       playerServiceProvider.select((s) => s.queue.current?.uri),
     );
-    final playing = ref.watch(playingTrackLyricsProvider).value;
-    if (playing == null || playing.uri != uri) return const SizedBox.expand();
+    final async = ref.watch(playingTrackLyricsProvider);
+    final playing = async.value;
+    if (playing == null || playing.uri != uri) {
+      // Blank while the answer is on its way, so the empty state never
+      // flashes between tracks.
+      return async.isLoading || uri == null
+          ? const SizedBox.expand()
+          : const LyricsEmptyState();
+    }
     final lyrics = playing.lyrics;
     final appLang = Localizations.localeOf(context).languageCode;
     final state = ref.watch(lyricsTranslationProvider(appLang));
@@ -142,11 +151,3 @@ class _PulseHostState extends State<_PulseHost>
   Widget build(BuildContext context) =>
       widget.builder(context, _pulsing ? _opacity : null);
 }
-
-/// Whether Now Playing should make room for lyrics: the playing track's
-/// lyrics, or while the next track's load, the previous ones (so the layout
-/// does not jump on every track change). Only watched while Now Playing is
-/// shown.
-final nowPlayingHasLyricsProvider = Provider.autoDispose<bool>(
-  (ref) => ref.watch(playingTrackLyricsProvider).value != null,
-);

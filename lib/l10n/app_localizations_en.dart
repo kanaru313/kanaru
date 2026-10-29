@@ -2106,6 +2106,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'None of these songs are in your library';
 
   @override
+  String get lyricsNone => 'No lyrics for this song';
+
+  @override
   String get lyricsTab => 'Lyrics';
 
   @override
