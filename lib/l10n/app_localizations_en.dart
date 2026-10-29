@@ -546,6 +546,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albumsListView => 'List';
 
   @override
+  String get albumsFilterHint => 'Filter albums';
+
+  @override
+  String albumsFilterNoMatch(String query) {
+    return 'No albums match “$query”';
+  }
+
+  @override
+  String albumsOwnerSummary(String owner, String albums) {
+    return '$owner · $albums';
+  }
+
+  @override
+  String albumsShownOfTotal(int shown, String albums) {
+    return '$shown / $albums';
+  }
+
+  @override
+  String get albumsSectionEmpty => 'No albums here any more';
+
+  @override
   String get albumsNoRootsMessage => 'Add a music folder in Songs.';
 
   @override

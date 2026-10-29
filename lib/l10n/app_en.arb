@@ -366,6 +366,47 @@
   "sortAlbumCount": "Albums",
   "albumsGridView": "Grid",
   "albumsListView": "List",
+  "albumsFilterHint": "Filter albums",
+  "@albumsFilterHint": {
+    "description": "Hint of the filter box on a full album list"
+  },
+  "albumsFilterNoMatch": "No albums match “{query}”",
+  "@albumsFilterNoMatch": {
+    "description": "Shown on a full album list when no album matches the filter text",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "albumsOwnerSummary": "{owner} · {albums}",
+  "@albumsOwnerSummary": {
+    "description": "Subtitle of a full album list: whose albums, and how many (or how many are shown)",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      },
+      "albums": {
+        "type": "String"
+      }
+    }
+  },
+  "albumsShownOfTotal": "{shown} / {albums}",
+  "@albumsShownOfTotal": {
+    "description": "Albums matching the filter out of all of them, e.g. 3 / 12 albums",
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "albums": {
+        "type": "String"
+      }
+    }
+  },
+  "albumsSectionEmpty": "No albums here any more",
+  "@albumsSectionEmpty": {
+    "description": "Shown on a full album list whose albums all vanished after a library update"
+  },
   "albumsNoRootsMessage": "Add a music folder in Songs.",
   "albumsEmptyTitle": "No albums yet",
   "albumsEmptyMessage": "Songs with an album tag show up here as albums.",
