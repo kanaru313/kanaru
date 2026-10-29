@@ -23,9 +23,6 @@ const _tracks = [
 void main() {
   Finder folderTile(String title) => find.widgetWithText(FolderListTile, title);
 
-  double top(WidgetTester tester, String text) =>
-      tester.getTopLeft(find.text(text)).dy;
-
   /// Adds a second music folder `/n` holding a song when [songs] is true.
   Future<void> addSecondRoot(
     WidgetTester tester,
@@ -40,30 +37,52 @@ void main() {
     }
   }
 
-  testWidgets('one music folder is listed as a folder, not skipped into', (
+  testWidgets('one music folder shows its content, not a tile for itself', (
     tester,
   ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
-    expect(find.byType(FolderListTile), findsOneWidget);
-    expect(folderTile('m'), findsOneWidget);
-    expect(find.text('Rock'), findsNothing);
-    expect(find.text('Jazz'), findsNothing);
+    expect(find.byType(FolderListTile), findsNWidgets(2));
+    expect(folderTile('Rock'), findsOneWidget);
+    expect(folderTile('Jazz'), findsOneWidget);
+    expect(find.text('m'), findsNothing);
   });
 
-  testWidgets('tapping the music folder opens its page with the children', (
+  testWidgets('loose songs of the only music folder are listed too', (
     tester,
   ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
-    await openWithTracks(tester, h, _tracks, location: '/folders');
+    await openWithTracks(tester, h, const [
+      TestTrack('loose', path: '/m/loose.flac'),
+      TestTrack('j', path: '/m/Jazz/j.flac'),
+    ], location: '/folders');
 
-    await tester.tap(folderTile('m'));
+    expect(find.text('loose'), findsOneWidget);
+    expect(folderTile('Jazz'), findsOneWidget);
+  });
+
+  testWidgets('an only music folder without songs shows the empty note', (
+    tester,
+  ) async {
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
+    await h.pump(tester, hasRoots: true);
+    await tester.runAsync(() => h.db.addRoots(['/m'], now: 1));
+    goTo(tester, h, '/folders');
     await tester.pumpAndSettle();
 
-    expect(location(h), folderLocation('/m'));
-    expect(find.text('Rock'), findsOneWidget);
-    expect(find.text('Jazz'), findsOneWidget);
+    expect(find.text('No songs in this folder'), findsOneWidget);
+    expect(find.byType(FolderListTile), findsNothing);
+  });
+
+  testWidgets('tapping a subfolder opens its page', (tester) async {
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
+    await openWithTracks(tester, h, _tracks, location: '/folders');
+
+    await tester.tap(folderTile('Rock'));
+    await tester.pumpAndSettle();
+
+    expect(location(h), folderLocation('/m/Rock'));
   });
 
   testWidgets('several music folders are all listed', (tester) async {
@@ -95,12 +114,12 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     final line = find.descendant(
-      of: folderTile('m'),
+      of: folderTile('Rock'),
       matching: find.byType(Text),
     );
     expect(
       [for (final t in tester.widgetList<Text>(line)) t.data],
-      ['m', '5', '4'],
+      ['Rock', '4', '2'],
     );
   });
 
@@ -110,7 +129,7 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
     expect(
-      find.bySemanticsLabel(RegExp('5 songs, 4 subfolders')),
+      find.bySemanticsLabel(RegExp('4 songs, 2 subfolders')),
       findsOneWidget,
     );
     semantics.dispose();
@@ -121,38 +140,44 @@ void main() {
   ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, const [
-      TestTrack('x', path: '/m/x.flac'),
+      TestTrack('x', path: '/m/A/x.flac'),
     ], location: '/folders');
 
     final line = find.descendant(
-      of: folderTile('m'),
+      of: folderTile('A'),
       matching: find.byType(Text),
     );
-    expect([for (final t in tester.widgetList<Text>(line)) t.data], ['m', '1']);
+    expect([for (final t in tester.widgetList<Text>(line)) t.data], ['A', '1']);
   });
 
-  testWidgets('the tree toggle lists every folder with songs, by label', (
-    tester,
-  ) async {
-    final h = LibraryHarness(overrides: [listViewModesOverride]);
-    await openWithTracks(tester, h, _tracks, location: '/folders');
+  testWidgets(
+    'the tree toggle lists every folder with songs, named by folder',
+    (tester) async {
+      final h = LibraryHarness(overrides: [listViewModesOverride]);
+      await openWithTracks(tester, h, _tracks, location: '/folders');
 
-    await tester.tap(find.byTooltip('Folder tree'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Folder tree'));
+      await tester.pumpAndSettle();
 
-    expect(find.byTooltip('All folders'), findsOneWidget);
-    expect(find.byType(FolderListTile), findsNWidgets(4));
-    expect(find.text('m'), findsNothing, reason: 'it holds no song itself');
-    expect(top(tester, 'Jazz'), lessThan(top(tester, 'Rock')));
-    expect(top(tester, 'Rock'), lessThan(top(tester, 'Rock/CD 2')));
-    expect(top(tester, 'Rock/CD 2'), lessThan(top(tester, 'Rock/CD 10')));
+      expect(find.byTooltip('All folders'), findsOneWidget);
+      expect(find.byType(FolderListTile), findsNWidgets(4));
+      expect(
+        [
+          for (final t in tester.widgetList<FolderListTile>(
+            find.byType(FolderListTile),
+          ))
+            t.title,
+        ],
+        ['Jazz', 'Rock', 'CD 2', 'CD 10'],
+      );
 
-    await tester.tap(find.byTooltip('All folders'));
-    await tester.pumpAndSettle();
-    expect(find.byType(FolderListTile), findsOneWidget);
-  });
+      await tester.tap(find.byTooltip('All folders'));
+      await tester.pumpAndSettle();
+      expect(find.byType(FolderListTile), findsNWidgets(2));
+    },
+  );
 
-  testWidgets('with several roots the flat labels lead with the root name', (
+  testWidgets('with several roots a flat folder reads its root above it', (
     tester,
   ) async {
     final h = LibraryHarness();
@@ -163,9 +188,10 @@ void main() {
     await tester.tap(find.byTooltip('Folder tree'));
     await tester.pumpAndSettle();
 
-    expect(find.text('m/Jazz'), findsOneWidget);
-    expect(find.text('m/Rock/CD 2'), findsOneWidget);
-    expect(find.text('n/Pop'), findsOneWidget);
+    expect(find.text('m'), findsNWidgets(2), reason: 'Jazz and Rock');
+    expect(find.text('m › Rock'), findsNWidgets(2));
+    expect(find.text('n'), findsOneWidget);
+    expect(find.text('Pop'), findsOneWidget);
   });
 
   testWidgets('the grid toggle shows folder tiles and back', (tester) async {
@@ -175,14 +201,14 @@ void main() {
     await tester.tap(find.byTooltip('List'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(FolderGridTile), findsOneWidget);
+    expect(find.byType(FolderGridTile), findsNWidgets(2));
     expect(find.byType(FolderListTile), findsNothing);
     expect(find.byTooltip('Grid'), findsOneWidget);
-    expect(find.text('m'), findsOneWidget);
+    expect(find.text('Rock'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Grid'));
     await tester.pumpAndSettle();
-    expect(find.byType(FolderListTile), findsOneWidget);
+    expect(find.byType(FolderListTile), findsNWidgets(2));
   });
 
   testWidgets('the view and the tree setting survive leaving the tab', (
@@ -208,17 +234,17 @@ void main() {
     await tester.tap(find.byTooltip('List'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('m'));
+    await tester.tap(find.text('Rock'));
     await tester.pumpAndSettle();
 
-    expect(location(h), folderLocation('/m'));
+    expect(location(h), folderLocation('/m/Rock'));
   });
 
   testWidgets('right click on a folder offers the six actions', (tester) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
-    await tester.tap(folderTile('m'), buttons: kSecondaryButton);
+    await tester.tap(folderTile('Rock'), buttons: kSecondaryButton);
     await tester.pumpAndSettle();
 
     for (final item in [
@@ -231,6 +257,7 @@ void main() {
     ]) {
       expect(find.text(item), findsOneWidget, reason: item);
     }
+    expect(find.text('Play all below'), findsNothing);
   });
 
   testWidgets('Play next on a folder queues its whole subtree in order', (
@@ -238,6 +265,28 @@ void main() {
   ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
+
+    await tester.tap(folderTile('Rock'), buttons: kSecondaryButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play next'));
+    await settleIo(tester, h);
+
+    expect(
+      [
+        for (final t in h.container.read(playerServiceProvider).queue.tracks)
+          t.title,
+      ],
+      ['b2', 'b10', 'c', 'd'],
+    );
+  });
+
+  testWidgets('Play next on a root of several queues its whole subtree', (
+    tester,
+  ) async {
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
+    await openWithTracks(tester, h, _tracks, location: '/folders');
+    await addSecondRoot(tester, h);
+    await settleIo(tester, h);
 
     await tester.tap(folderTile('m'), buttons: kSecondaryButton);
     await tester.pumpAndSettle();
@@ -261,7 +310,7 @@ void main() {
     await tester.tap(find.byTooltip('List'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(FolderGridTile), findsOneWidget);
+    expect(find.byType(FolderGridTile), findsNWidgets(2));
     expect(tester.takeException(), isNull);
 
     tester.view.physicalSize = const Size(480, 720);

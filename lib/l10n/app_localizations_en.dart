@@ -694,10 +694,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foldersFlatView => 'All folders';
 
   @override
-  String get foldersSubfolders => 'Folders';
+  String get foldersFilterAll => 'All';
 
   @override
-  String get foldersSongs => 'Songs';
+  String foldersSectionFolders(int count) {
+    return 'Folders · $count';
+  }
+
+  @override
+  String foldersSectionSongs(int count) {
+    return 'Songs · $count';
+  }
 
   @override
   String foldersCounts(int songs, int folders) {
@@ -722,6 +729,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foldersEmptyFolder => 'No songs in this folder';
+
+  @override
+  String get foldersPlayAllBelow => 'Play all below';
 
   @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';

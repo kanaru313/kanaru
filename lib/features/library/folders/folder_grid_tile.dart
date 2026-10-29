@@ -1,14 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/icons/app_icons.dart';
 import '../albums/album_grid_tile.dart';
-import '../widgets/round_grid_tile.dart';
+import 'folder_art.dart';
 import 'folder_counts_line.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 import '../../../shared/fixed_line_strut.dart';
 
-/// One folder in a grid: a large folder icon, [title] and the counts line.
+/// One folder in a grid: a folder frame holding one cover, [title] and the counts line.
 class FolderGridTile extends StatelessWidget {
   const FolderGridTile({
     super.key,
@@ -16,6 +15,8 @@ class FolderGridTile extends StatelessWidget {
     required this.title,
     required this.onTap,
     this.showPath = false,
+    this.parentLine,
+    this.direct = false,
     this.onAction,
   });
 
@@ -25,6 +26,12 @@ class FolderGridTile extends StatelessWidget {
 
   /// Shows the full path as a tooltip, for music folders that share a name.
   final bool showPath;
+
+  /// A dim line under the name (flat mode: the folders above it).
+  final String? parentLine;
+
+  /// Shows the folder's own songs only: art, count and menu (flat mode).
+  final bool direct;
 
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<FolderAction>? onAction;
@@ -40,15 +47,10 @@ class FolderGridTile extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
             children: [
-              SizedBox.square(
-                dimension: constraints.maxWidth,
-                child: Center(
-                  child: Icon(
-                    AppIcons.folderOutlined,
-                    size: constraints.maxWidth * 0.6,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
+              FolderArt(
+                folder: folder,
+                size: constraints.maxWidth,
+                direct: direct,
               ),
               const SizedBox(height: gridTileGap),
               Text(
@@ -59,108 +61,32 @@ class FolderGridTile extends StatelessWidget {
                 style: theme.textTheme.titleSmall,
                 strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
               ),
-              FolderCountsLine(folder: folder),
+              if (parentLine != null)
+                Text(
+                  parentLine!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+                ),
+              FolderCountsLine(
+                folder: folder,
+                directSongs: direct ? folder.directSongs : null,
+              ),
             ],
           ),
         ),
       ),
     );
     if (showPath) tile = Tooltip(message: folder.path, child: tile);
-    final onAction = this.onAction;
-    return onAction == null
-        ? tile
-        : FolderActionsRegion(onAction: onAction, child: tile);
+    return folderTileMenu(
+      folder: folder,
+      direct: direct,
+      onAction: onAction,
+      child: tile,
+    );
   }
-}
-
-/// A folder to show in [FolderGrid] or [SliverFolderGrid]: the node and the
-/// name to show for it.
-typedef FolderEntry = ({FolderNode folder, String title});
-
-Widget _tile(
-  FolderEntry entry,
-  void Function(FolderNode folder) onTap,
-  void Function(FolderNode folder, FolderAction action)? onAction, {
-  required bool showPaths,
-}) => FolderGridTile(
-  folder: entry.folder,
-  title: entry.title,
-  onTap: () => onTap(entry.folder),
-  showPath: entry.folder.ambiguousRoot && showPaths,
-  onAction: onAction == null
-      ? null
-      : (action) => onAction(entry.folder, action),
-);
-
-/// [folders] as a scrolling grid.
-class FolderGrid extends StatelessWidget {
-  const FolderGrid({
-    super.key,
-    required this.folders,
-    required this.onTap,
-    this.showPaths = false,
-    this.onAction,
-  });
-
-  final List<FolderEntry> folders;
-  final void Function(FolderNode folder) onTap;
-
-  /// Whether folders in music folders that share a name show their path.
-  final bool showPaths;
-  final void Function(FolderNode folder, FolderAction action)? onAction;
-
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) => GridView.builder(
-      padding: const EdgeInsets.fromLTRB(
-        albumGridPadding,
-        0,
-        albumGridPadding,
-        24,
-      ),
-      gridDelegate: libraryGridDelegate(
-        context,
-        constraints.maxWidth - albumGridPadding * 2,
-        tileHeight: roundGridTileHeight,
-      ),
-      itemCount: folders.length,
-      itemBuilder: (context, i) =>
-          _tile(folders[i], onTap, onAction, showPaths: showPaths),
-    ),
-  );
-}
-
-/// [folders] as a grid inside a [CustomScrollView].
-class SliverFolderGrid extends StatelessWidget {
-  const SliverFolderGrid({
-    super.key,
-    required this.folders,
-    required this.onTap,
-    this.showPaths = false,
-    this.onAction,
-  });
-
-  final List<FolderEntry> folders;
-  final void Function(FolderNode folder) onTap;
-
-  /// Whether folders in music folders that share a name show their path.
-  final bool showPaths;
-  final void Function(FolderNode folder, FolderAction action)? onAction;
-
-  @override
-  Widget build(BuildContext context) => SliverPadding(
-    padding: const EdgeInsets.symmetric(horizontal: albumGridPadding),
-    sliver: SliverLayoutBuilder(
-      builder: (context, constraints) => SliverGrid.builder(
-        gridDelegate: libraryGridDelegate(
-          context,
-          constraints.crossAxisExtent,
-          tileHeight: roundGridTileHeight,
-        ),
-        itemCount: folders.length,
-        itemBuilder: (context, i) =>
-            _tile(folders[i], onTap, onAction, showPaths: showPaths),
-      ),
-    ),
-  );
 }

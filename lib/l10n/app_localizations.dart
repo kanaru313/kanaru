@@ -1124,17 +1124,23 @@ abstract class AppLocalizations {
   /// **'All folders'**
   String get foldersFlatView;
 
-  /// No description provided for @foldersSubfolders.
+  /// No description provided for @foldersFilterAll.
   ///
   /// In en, this message translates to:
-  /// **'Folders'**
-  String get foldersSubfolders;
+  /// **'All'**
+  String get foldersFilterAll;
 
-  /// No description provided for @foldersSongs.
+  /// No description provided for @foldersSectionFolders.
   ///
   /// In en, this message translates to:
-  /// **'Songs'**
-  String get foldersSongs;
+  /// **'Folders · {count}'**
+  String foldersSectionFolders(int count);
+
+  /// No description provided for @foldersSectionSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs · {count}'**
+  String foldersSectionSongs(int count);
 
   /// No description provided for @foldersCounts.
   ///
@@ -1153,6 +1159,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No songs in this folder'**
   String get foldersEmptyFolder;
+
+  /// No description provided for @foldersPlayAllBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Play all below'**
+  String get foldersPlayAllBelow;
 
   /// No description provided for @favoritesEmptyMessage.
   ///

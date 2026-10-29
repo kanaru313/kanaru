@@ -4,10 +4,13 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/menu_keyboard_region.dart';
+import 'folder_tree.dart';
 
-/// What the menu of a folder can do, on all the songs below it.
+/// What the menu of a folder can do, on all the songs below it (or only the
+/// songs directly in it in the flat view).
 enum FolderAction {
   play,
+  playAllBelow,
   shuffle,
   playNext,
   addToQueue,
@@ -22,10 +25,15 @@ FolderAction _queue(QueueAction action) => switch (action) {
 };
 
 /// The menu rows: Play and Shuffle when [withPlay] (a page header has them
-/// as buttons already), the queue rows and Create playlist.
+/// as buttons already), "Play all below" when [withPlayAllBelow] (the flat
+/// view of a folder with subfolders), the queue rows and Create playlist
+/// unless [withSongActions] is off (a flat folder without songs of its own:
+/// they would read nothing).
 List<PopupMenuEntry<FolderAction>> folderMenuItems(
   BuildContext context, {
   required bool withPlay,
+  bool withPlayAllBelow = false,
+  bool withSongActions = true,
 }) {
   final l10n = context.l10n;
   return [
@@ -33,12 +41,20 @@ List<PopupMenuEntry<FolderAction>> folderMenuItems(
       menuRow(FolderAction.play, AppIcons.play, l10n.albumsPlay),
       menuRow(FolderAction.shuffle, AppIcons.shuffle, l10n.libraryShuffle),
     ],
-    ...queueActionItems(context, _queue),
-    menuRow(
-      FolderAction.createPlaylist,
-      AppIcons.newPlaylist,
-      l10n.foldersCreatePlaylist,
-    ),
+    if (withPlayAllBelow)
+      menuRow(
+        FolderAction.playAllBelow,
+        AppIcons.playlistPlay,
+        l10n.foldersPlayAllBelow,
+      ),
+    if (withSongActions) ...[
+      ...queueActionItems(context, _queue),
+      menuRow(
+        FolderAction.createPlaylist,
+        AppIcons.newPlaylist,
+        l10n.foldersCreatePlaylist,
+      ),
+    ],
   ];
 }
 
@@ -50,16 +66,24 @@ class FolderActionsRegion extends StatelessWidget {
     super.key,
     required this.onAction,
     required this.child,
+    this.withPlayAllBelow = false,
   });
 
   final ValueChanged<FolderAction> onAction;
+
+  /// Whether the menu has the "Play all below" row.
+  final bool withPlayAllBelow;
   final Widget child;
 
   Future<void> _open(BuildContext context, Offset position) async {
     final action = await showMenu<FolderAction>(
       context: context,
       position: menuPositionAt(context, position),
-      items: folderMenuItems(context, withPlay: true),
+      items: folderMenuItems(
+        context,
+        withPlay: true,
+        withPlayAllBelow: withPlayAllBelow,
+      ),
     );
     if (action != null) onAction(action);
   }
@@ -76,17 +100,51 @@ class FolderActionsRegion extends StatelessWidget {
   );
 }
 
+/// The menu of a folder tile: none without [onAction]; with [direct] (the
+/// flat view) a folder with subfolders also offers "Play all below".
+Widget folderTileMenu({
+  required FolderNode folder,
+  required bool direct,
+  required ValueChanged<FolderAction>? onAction,
+  required Widget child,
+}) => onAction == null
+    ? child
+    : FolderActionsRegion(
+        onAction: onAction,
+        withPlayAllBelow: direct && folder.children.isNotEmpty,
+        child: child,
+      );
+
 /// The "more" button of a folder page, next to its Play and Shuffle buttons.
 class FolderActionsButton extends StatelessWidget {
-  const FolderActionsButton({super.key, required this.onSelected});
+  const FolderActionsButton({
+    super.key,
+    required this.onSelected,
+    this.withPlayAllBelow = false,
+    this.withSongActions = true,
+  });
 
   final ValueChanged<FolderAction> onSelected;
 
+  /// Whether the menu has the "Play all below" row.
+  final bool withPlayAllBelow;
+
+  /// Whether the menu has the rows on the folder's own songs. With neither
+  /// kind of row the button is left out.
+  final bool withSongActions;
+
   @override
-  Widget build(BuildContext context) => PopupMenuButton<FolderAction>(
-    tooltip: context.l10n.queueActionsTooltip,
-    icon: const Icon(AppIcons.more),
-    onSelected: onSelected,
-    itemBuilder: (context) => folderMenuItems(context, withPlay: false),
-  );
+  Widget build(BuildContext context) => !withSongActions && !withPlayAllBelow
+      ? const SizedBox.shrink()
+      : PopupMenuButton<FolderAction>(
+          tooltip: context.l10n.queueActionsTooltip,
+          icon: const Icon(AppIcons.more),
+          onSelected: onSelected,
+          itemBuilder: (context) => folderMenuItems(
+            context,
+            withPlay: false,
+            withPlayAllBelow: withPlayAllBelow,
+            withSongActions: withSongActions,
+          ),
+        );
 }

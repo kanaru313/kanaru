@@ -8,22 +8,27 @@ import '../../../core/settings/library_sort.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
+import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../library_browse_body.dart';
+import '../library_detail_body.dart';
 import '../library_view_modes.dart';
 import '../widgets/page_material.dart';
 import 'folder_actions.dart';
-import 'folder_grid_tile.dart';
+import 'folder_content_view.dart';
+import 'folder_grid.dart';
 import 'folder_list_tile.dart';
 import 'folder_menu.dart';
+import 'folder_trail.dart';
 import 'folder_tree.dart';
 import 'folders_provider.dart';
 
 final _log = Logger('library');
 
 /// The music folders, or with the tree switched off every folder that holds
-/// songs, as a list or a grid. The music folders are always listed, also
-/// when there is only one. Tapping a folder opens its page.
+/// songs (named by the folder and the folders above it, standing for its own
+/// songs), as a list or a grid. With the tree on and only one music folder,
+/// that folder's content is shown directly. Tapping a folder opens its page.
 class FoldersScreen extends ConsumerWidget {
   const FoldersScreen({super.key});
 
@@ -44,9 +49,16 @@ class FoldersScreen extends ConsumerWidget {
         ref.watch(libraryHasRootsProvider);
     void open(FolderNode folder) => context.go(folderLocation(folder.path));
     void act(FolderNode folder, FolderAction action) =>
-        runFolderAction(ref, context, action, folder);
+        runFolderAction(ref, context, action, folder, recursive: hierarchy);
     final tree = ref.watch(folderTreeProvider).value;
-    String title(FolderNode folder) => hierarchy ? folder.name : folder.label;
+    // Flat tiles are named by the folder and the folders above it, and stand
+    // for their own songs only.
+    FolderEntry entry(FolderNode f) => (
+      folder: f,
+      title: f.name,
+      parentLine: hierarchy ? null : folderParentLine(f),
+      direct: !hierarchy,
+    );
 
     return PageMaterial(
       child: PageScaffold(
@@ -82,25 +94,41 @@ class FoldersScreen extends ConsumerWidget {
           noRootsMessage: l10n.foldersNoRootsMessage,
           emptyTitle: l10n.foldersEmptyTitle,
           emptyMessage: l10n.foldersEmptyMessage,
-          builder: (folders) => switch (view) {
-            AlbumsView.grid => FolderGrid(
-              folders: [for (final f in folders) (folder: f, title: title(f))],
-              onTap: open,
-              showPaths: true,
-              onAction: act,
-            ),
-            AlbumsView.list => ListView.builder(
-              padding: libraryListBottomPadding,
-              itemCount: folders.length,
-              itemBuilder: (context, i) => FolderListTile(
-                folder: folders[i],
-                title: title(folders[i]),
-                onTap: () => open(folders[i]),
-                showPath: folders[i].ambiguousRoot,
-                onAction: (action) => act(folders[i], action),
-              ),
-            ),
-          },
+          builder: (folders) => hierarchy && folders.length == 1
+              // The only music folder: its content stands for the screen.
+              ? LibraryDetailBody<FolderPageData>(
+                  page: folderPageProvider(folders.single.path),
+                  what: 'the folder',
+                  notFound: EmptyState(
+                    icon: AppIcons.folderOutlined,
+                    title: l10n.foldersEmptyTitle,
+                    message: l10n.foldersEmptyMessage,
+                  ),
+                  builder: (data) => FolderContentView(data: data),
+                )
+              : switch (view) {
+                  AlbumsView.grid => FolderGrid(
+                    folders: [for (final f in folders) entry(f)],
+                    onTap: open,
+                    showPaths: true,
+                    onAction: act,
+                  ),
+                  AlbumsView.list => ListView.builder(
+                    padding: libraryListBottomPadding,
+                    itemCount: folders.length,
+                    itemBuilder: (context, i) => FolderListTile(
+                      folder: folders[i],
+                      title: folders[i].name,
+                      parentLine: hierarchy
+                          ? null
+                          : folderParentLine(folders[i]),
+                      direct: !hierarchy,
+                      onTap: () => open(folders[i]),
+                      showPath: hierarchy && folders[i].ambiguousRoot,
+                      onAction: (action) => act(folders[i], action),
+                    ),
+                  ),
+                },
         ),
       ),
     );

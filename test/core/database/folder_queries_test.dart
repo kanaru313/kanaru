@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/folder_queries.dart';
@@ -13,9 +14,13 @@ void main() {
   });
   tearDown(() => db.close());
 
-  Future<void> store(List<String> paths) => db.upsertTracks([
+  Future<void> store(
+    List<String> paths, {
+    Map<String, String> covers = const {},
+  }) => db.upsertTracks([
     for (final path in paths)
       TracksCompanion.insert(
+        coverKey: Value(covers[path]),
         rootId: rootId,
         path: path,
         mtimeMs: 1,
@@ -95,7 +100,90 @@ void main() {
 
     final counts = await db.folderSongCounts();
 
-    expect(counts, [(dir: '/m/x', count: 3)]);
+    expect(counts, [(dir: '/m/x', count: 3, cover: null)]);
+  });
+
+  Map<String, String?> coverOf(
+    List<({String dir, int count, String? cover})> counts,
+  ) => {for (final c in counts) c.dir: c.cover};
+
+  test('the cover is the key most tracks of the folder share', () async {
+    await store(
+      ['/m/a/1.flac', '/m/a/2.flac', '/m/a/3.flac', '/m/a/4.flac'],
+      covers: {
+        '/m/a/1.flac': 'k2',
+        '/m/a/2.flac': 'k1',
+        '/m/a/3.flac': 'k1',
+        '/m/a/4.flac': 'k2',
+      },
+    );
+    await store(
+      ['/m/b/1.flac', '/m/b/2.flac', '/m/b/3.flac'],
+      covers: {'/m/b/1.flac': 'z', '/m/b/3.flac': 'z', '/m/b/2.flac': 'a'},
+    );
+
+    final cover = coverOf(await db.folderSongCounts());
+
+    // /m/a ties 2 to 2 and takes the smaller key, /m/b has a clear winner.
+    expect(cover, {'/m/a': 'k1', '/m/b': 'z'});
+  });
+
+  test('a folder whose tracks have no cover has none', () async {
+    await store(
+      ['/m/a/1.flac', '/m/a/2.flac', '/m/b/1.flac'],
+      covers: {'/m/b/1.flac': 'kb'},
+    );
+
+    expect(coverOf(await db.folderSongCounts()), {'/m/a': null, '/m/b': 'kb'});
+  });
+
+  test('the cover is the same for every page size', () async {
+    await store(
+      [
+        '/m/a/1.flac',
+        '/m/a/2.flac',
+        '/m/a/3.flac',
+        '/m/b/1.flac',
+        '/m/b/2.flac',
+        '/m/b/3.flac',
+        '/m/b/4.flac',
+      ],
+      covers: {
+        '/m/a/1.flac': 'k2',
+        '/m/a/2.flac': 'k1',
+        '/m/a/3.flac': 'k2',
+        '/m/b/1.flac': 'k3',
+        '/m/b/2.flac': 'k4',
+        '/m/b/3.flac': 'k4',
+        '/m/b/4.flac': 'k3',
+      },
+    );
+
+    for (final size in [1, 2, 3, 7, 8]) {
+      expect(coverOf(await db.folderSongCounts(pageSize: size)), {
+        '/m/a': 'k2',
+        '/m/b': 'k3',
+      }, reason: 'page size $size');
+    }
+  });
+
+  test('a folder split by a subfolder and a last losing key', () async {
+    await store(
+      ['/m/a/1.flac', '/m/a/2.flac', '/m/a/sub/1.flac', '/m/a/z.flac'],
+      covers: {
+        '/m/a/1.flac': 'k1',
+        '/m/a/2.flac': 'k1',
+        '/m/a/sub/1.flac': 'ks',
+        '/m/a/z.flac': 'k2',
+      },
+    );
+
+    for (final size in [1, 2, 3, 4, 5]) {
+      expect(coverOf(await db.folderSongCounts(pageSize: size)), {
+        '/m/a': 'k1',
+        '/m/a/sub': 'ks',
+      }, reason: 'page size $size');
+    }
   });
 
   test(

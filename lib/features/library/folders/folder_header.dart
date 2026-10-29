@@ -2,26 +2,37 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import 'folder_art.dart';
+import 'folder_tree.dart';
 
-/// Icon, name, full path, optional counts and the Play and Shuffle buttons
-/// of a folder page, then [trailing] buttons.
+/// Art, [breadcrumb], name, optional counts and the Play and Shuffle buttons
+/// of a folder page, then [trailing] buttons. The name carries the full path
+/// as a tooltip.
 class FolderHeader extends StatelessWidget {
   const FolderHeader({
     super.key,
-    required this.name,
-    required this.path,
+    required this.folder,
+    this.breadcrumb,
+    this.directArt = false,
     required this.onPlay,
     required this.onShuffle,
     this.counts,
     this.trailing = const [],
   });
 
-  final String name;
-  final String path;
-  final VoidCallback onPlay;
-  final VoidCallback onShuffle;
+  final FolderNode folder;
 
-  /// The counts line under the path, given the muted text style.
+  /// Whether the art shows the cover of the folder's own songs.
+  final bool directArt;
+
+  /// The line above the name that says where the folder is.
+  final Widget? breadcrumb;
+
+  /// Null disables the button.
+  final VoidCallback? onPlay;
+  final VoidCallback? onShuffle;
+
+  /// The counts line under the name, given the muted text style.
   final Widget Function(TextStyle? style)? counts;
 
   /// Buttons after Shuffle.
@@ -38,30 +49,26 @@ class FolderHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
       child: Row(
         children: [
-          Icon(
-            AppIcons.folderOutlined,
-            size: 96,
-            color: theme.colorScheme.primary,
-          ),
+          FolderArt(folder: folder, size: 132, direct: directArt),
           const SizedBox(width: 24),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                if (breadcrumb != null) ...[
+                  breadcrumb!,
+                  const SizedBox(height: 4),
+                ],
+                Tooltip(
+                  message: folder.path,
+                  child: Text(
+                    folder.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  path,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: muted,
                 ),
                 if (counts != null) ...[
                   const SizedBox(height: 4),

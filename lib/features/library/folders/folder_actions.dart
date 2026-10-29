@@ -19,27 +19,36 @@ import '../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('library');
 
-/// Runs [action] on the songs of [folder] and everything below it, read from
-/// the database when it runs, in natural order of their paths.
+/// Runs [action] on the songs of [folder], read from the database when it
+/// runs, in natural order of their paths: everything below it when
+/// [recursive], else only the songs directly in it. [FolderAction.playAllBelow]
+/// is always recursive.
 void runFolderAction(
   WidgetRef ref,
   BuildContext context,
   FolderAction action,
-  FolderNode folder,
-) {
+  FolderNode folder, {
+  bool recursive = true,
+}) {
   switch (action) {
     case FolderAction.play:
-      unawaited(_open(ref, context, folder, shuffle: false));
+      unawaited(
+        _open(ref, context, folder, shuffle: false, recursive: recursive),
+      );
+    case FolderAction.playAllBelow:
+      unawaited(_open(ref, context, folder, shuffle: false, recursive: true));
     case FolderAction.shuffle:
-      unawaited(_open(ref, context, folder, shuffle: true));
+      unawaited(
+        _open(ref, context, folder, shuffle: true, recursive: recursive),
+      );
     case FolderAction.playNext:
-      _enqueue(ref, context, QueueAction.playNext, folder);
+      _enqueue(ref, context, QueueAction.playNext, folder, recursive);
     case FolderAction.addToQueue:
-      _enqueue(ref, context, QueueAction.addToQueue, folder);
+      _enqueue(ref, context, QueueAction.addToQueue, folder, recursive);
     case FolderAction.addToPlaylist:
-      _enqueue(ref, context, QueueAction.addToPlaylist, folder);
+      _enqueue(ref, context, QueueAction.addToPlaylist, folder, recursive);
     case FolderAction.createPlaylist:
-      unawaited(_createPlaylist(ref, context, folder));
+      unawaited(_createPlaylist(ref, context, folder, recursive));
   }
 }
 
@@ -48,9 +57,14 @@ void _enqueue(
   BuildContext context,
   QueueAction action,
   FolderNode folder,
+  bool recursive,
 ) => enqueueFromDatabase(ref, context, action, folder.name, (db, covers) async {
   return [
-    for (final t in await readFolderSongs(db, folder.path, recursive: true))
+    for (final t in await readFolderSongs(
+      db,
+      folder.path,
+      recursive: recursive,
+    ))
       trackFromListItem(t, covers),
   ];
 });
@@ -61,6 +75,7 @@ Future<void> _open(
   BuildContext context,
   FolderNode folder, {
   required bool shuffle,
+  required bool recursive,
 }) async {
   if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
@@ -74,7 +89,7 @@ Future<void> _open(
     // newer action by the check below.
     await pendingQueuePicks(ref);
     final changesBefore = player.userQueueChanges;
-    final songs = await readFolderSongs(db, folder.path, recursive: true);
+    final songs = await readFolderSongs(db, folder.path, recursive: recursive);
     // A queue opened or filled meanwhile came from a newer action: that one
     // wins over a read started before it.
     if (songs.isEmpty || player.userQueueChanges != changesBefore) return;
@@ -101,6 +116,7 @@ Future<void> _createPlaylist(
   WidgetRef ref,
   BuildContext context,
   FolderNode folder,
+  bool recursive,
 ) async {
   if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
@@ -111,7 +127,11 @@ Future<void> _createPlaylist(
   final dialogContext = Navigator.of(context, rootNavigator: true).context;
   try {
     final paths = [
-      for (final t in await readFolderSongs(db, folder.path, recursive: true))
+      for (final t in await readFolderSongs(
+        db,
+        folder.path,
+        recursive: recursive,
+      ))
         t.path,
     ];
     if (paths.isEmpty) {

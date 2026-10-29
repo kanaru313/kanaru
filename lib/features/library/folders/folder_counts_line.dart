@@ -6,12 +6,19 @@ import 'folder_tree.dart';
 
 /// "♪ 12 · folder 3": the songs and the folders below a folder, as small
 /// icons and numbers. Folders are left out when there are none. Read out as
-/// a sentence.
+/// a sentence. With [directSongs] only that many songs are shown (a folder's
+/// own songs, in the flat view), without the folders.
 class FolderCountsLine extends StatelessWidget {
-  const FolderCountsLine({super.key, required this.folder, this.style});
+  const FolderCountsLine({
+    super.key,
+    required this.folder,
+    this.style,
+    this.directSongs,
+  });
 
   final FolderNode folder;
   final TextStyle? style;
+  final int? directSongs;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +37,14 @@ class FolderCountsLine extends StatelessWidget {
         Text('$value', style: textStyle),
       ],
     );
+    final direct = directSongs;
+    if (direct != null) {
+      return Semantics(
+        label: context.l10n.albumsSongCount(direct),
+        excludeSemantics: true,
+        child: count(AppIcons.musicNoteOutlined, direct),
+      );
+    }
     return Semantics(
       label: context.l10n.foldersCounts(folder.songs, folder.subfolders),
       excludeSemantics: true,

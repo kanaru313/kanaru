@@ -15,38 +15,45 @@ const _pathPageSize = 5000;
 /// `throttledTracksQuery`.
 extension FolderQueries on LibraryDatabase {
   /// Every folder holding at least one track directly, with how many it holds
-  /// (not counting its subfolders). `dir` is the absolute path without a
-  /// trailing `/`.
+  /// (not counting its subfolders) and its cover: the cover key held by the
+  /// most of those tracks (the smallest key on a tie), `null` when none has
+  /// one. `dir` is the absolute path without a trailing `/`.
   ///
   /// Reads the paths in pages ordered by path (the unique index, no sorting)
   /// and takes the directory of each in Dart: grouping by a directory
   /// expression in SQL (`rtrim(path, replace(path, '/', ''))`) holds the
-  /// database isolate for seconds on 100k tracks.
-  Future<List<({String dir, int count})>> folderSongCounts({
+  /// database isolate for seconds on 100k tracks. The cover is chosen after the
+  /// last page, so it does not depend on the page size.
+  Future<List<({String dir, int count, String? cover})>> folderSongCounts({
     int pageSize = _pathPageSize,
   }) async {
-    final counts = <String, int>{};
+    final dirs = <String, _DirCovers>{};
     var after = '';
     while (true) {
-      final paths = await customSelect(
-        'SELECT path FROM tracks WHERE path > ?1 ORDER BY path LIMIT ?2',
+      final rows = await customSelect(
+        'SELECT path, cover_key FROM tracks '
+        'WHERE path > ?1 ORDER BY path LIMIT ?2',
         variables: [Variable(after), Variable(pageSize)],
         readsFrom: {tracks},
-      ).map((row) => row.read<String>('path')).get();
-      for (final path in paths) {
+      ).get();
+      // `data` skips the typed read of every column: the columns are known.
+      for (final row in rows) {
+        final path = row.data['path']! as String;
         final slash = path.lastIndexOf('/');
-        counts.update(
+        final acc = dirs.putIfAbsent(
           slash < 0 ? '' : path.substring(0, slash),
-          (n) => n + 1,
-          ifAbsent: () => 1,
+          _DirCovers.new,
         );
+        acc.count++;
+        final cover = row.data['cover_key'] as String?;
+        if (cover != null) acc.add(cover);
       }
-      if (paths.length < pageSize) break;
-      after = paths.last;
+      if (rows.length < pageSize) break;
+      after = rows.last.data['path']! as String;
     }
     return [
-      for (final MapEntry(:key, :value) in counts.entries)
-        (dir: key, count: value),
+      for (final MapEntry(:key, :value) in dirs.entries)
+        (dir: key, count: value.count, cover: value.top()),
     ];
   }
 
@@ -67,4 +74,38 @@ extension FolderQueries on LibraryDatabase {
     variables: [Variable('$dir/'), Variable('${dir}0')],
     readsFrom: {tracks},
   ).map(trackListItemFromRow).get();
+}
+
+/// What [FolderQueries.folderSongCounts] holds for one folder: its track count
+/// and how many tracks carry each cover key. The first key sits in fields and
+/// the map is only made for a second distinct key, which saves an allocation
+/// for folders with a single cover.
+class _DirCovers {
+  int count = 0;
+  String? _first;
+  int _firstCount = 0;
+  Map<String, int>? _others;
+
+  void add(String key) {
+    if (_first == null || key == _first) {
+      _first = key;
+      _firstCount++;
+    } else {
+      (_others ??= {}).update(key, (n) => n + 1, ifAbsent: () => 1);
+    }
+  }
+
+  /// The key held by the most tracks; the smallest key on a tie.
+  String? top() {
+    var best = _first;
+    var bestCount = _firstCount;
+    for (final MapEntry(:key, :value) in _others?.entries ?? const []) {
+      if (value > bestCount ||
+          (value == bestCount && key.compareTo(best!) < 0)) {
+        best = key;
+        bestCount = value;
+      }
+    }
+    return best;
+  }
 }
