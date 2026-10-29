@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
+import 'package:kanaru/core/lyrics/online/online_lyrics_streams.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
@@ -128,6 +129,22 @@ void main() {
     await untilSlow(() => rig.status is LyricsFound);
     final before = rig.requests;
     expect(before, 1);
+    // The answer shows before the cache stream does; the one-shot lookup
+    // stays watched until then, and a Clear inside that window would reuse
+    // the finished lookup instead of starting a new one.
+    await untilSlow(
+      () =>
+          rig.container
+              .read(
+                onlineLyricsCacheProvider(
+                  LyricsTarget.fromTrack(fakeSong('/m/a.flac')).cacheKey,
+                ),
+              )
+              .value
+              ?.isNotEmpty ??
+          false,
+    );
+    await rig.settle();
 
     await rig.h.db.clearOnlineLyrics();
     await untilSlow(() => rig.requests == before + 1);
