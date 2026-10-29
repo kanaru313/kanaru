@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -7,21 +6,24 @@ import 'package:logging/logging.dart';
 
 import '../../database/excluded_folder_queries.dart';
 import '../../database/library_startup.dart';
-import '../../indexer/root_path.dart';
+import '../../native/file_trash.dart';
 import '../lrc_sidecar_reader.dart';
+import 'lrc_sidecar_write_steps.dart';
 import 'lyrics_provider.dart';
 
 final _log = Logger('lyrics');
-final _trailingNewlines = RegExp(r'\n+$');
 
 /// What [LrcSidecarWriter.write] did.
 enum LrcWriteResult {
-  /// The file was created.
+  /// The file was created (or replaced; the old one is in the trash).
   written,
 
-  /// A `.lrc` or `.LRC` (or anything of that name) is already there; it was
-  /// not touched.
+  /// A `.lrc` or `.LRC` (or anything of that name) is already there with
+  /// other content; it was not touched.
   exists,
+
+  /// The file already holds exactly this text; nothing was written.
+  identical,
 
   /// Instrumental, no text, or more text than a `.lrc` file may hold.
   nothingToWrite,
@@ -29,35 +31,62 @@ enum LrcWriteResult {
   /// The song is not a regular file inside an enabled library folder.
   outsideLibrary,
 
-  /// The file system refused (read-only, permissions, full disk).
+  /// The file system refused (read-only, permissions, full disk). Nothing
+  /// was moved to the trash.
   failed,
+
+  /// Replacing, and nothing could be moved to the trash (no trash on that
+  /// disk, an error, an entry that is neither a file nor a link). The old
+  /// files are as they were.
+  trashFailed,
+
+  /// The trash did not answer in time for the first old file. It may still
+  /// have moved it later; the new file was not written.
+  trashTimedOut,
+
+  /// At least one old file is in the trash and the new one was not written.
+  trashedNotWritten,
 }
 
-/// Writes the lyrics a user picked next to their song.
+/// Writes the lyrics a user chose to save next to their song.
 abstract interface class LrcSidecarWriter {
-  /// Never throws and never overwrites. See [FileLrcSidecarWriter].
-  Future<LrcWriteResult> write(String audioPath, LyricsBody body);
+  /// Never throws and never deletes. Without [replace] an existing file is
+  /// left alone (`exists` or `identical`); with it, old files go to the trash
+  /// first. See [FileLrcSidecarWriter].
+  Future<LrcWriteResult> write(
+    String audioPath,
+    LyricsBody body, {
+    bool replace = false,
+  });
 }
 
 /// [LrcSidecarWriter] on the local file system.
 ///
-/// The text is the synced lyrics, else the plain ones, with `\n` line ends,
-/// one final newline, UTF-8 and no BOM. The song and the folder the file goes
-/// into (symbolic links resolved) must lie inside a library root and outside
-/// every excluded folder. The file is written in a private temp folder next
-/// to the song, the two `.lrc` spellings are checked again right before the
-/// rename, and the temp folder is always removed, so no half-written or
-/// placeholder file is ever visible under the final name.
+/// The text is the first of the synced and plain lyrics that parses (the
+/// text the app shows), with `\n` line ends, one final newline, UTF-8 and no
+/// BOM. The song and the folder the file goes into (symbolic links resolved)
+/// must lie inside a library root and outside every excluded folder.
 ///
-/// There remains a gap of well under a millisecond between that last check
+/// Order: check the library; classify every existing `.lrc`/`.LRC` (an
+/// entry that is not a file or link stops a replace before anything moves);
+/// sweep stale temp folders; write the temp file in a private folder next to
+/// the song (a full disk fails here, before anything is trashed); trash the
+/// old files, each re-checked first; check both spellings are gone; rename.
+/// The temp folder is always removed, so no half-written file is ever
+/// visible under the final name. A failure after the first file reached the
+/// trash is `trashedNotWritten`, never "nothing changed".
+///
+/// There remains a gap of well under a millisecond between the last check
 /// and the rename: `rename` replaces a file created by another program in
 /// exactly that window.
 class FileLrcSidecarWriter implements LrcSidecarWriter {
   FileLrcSidecarWriter({
     required this.libraryRoots,
     required this.excludedFolders,
+    required this.trash,
     @visibleForTesting this.beforeRecheck,
-  });
+    @visibleForTesting DateTime Function()? now,
+  }) : _now = now ?? DateTime.now;
 
   /// Canonical paths of the enabled library folders.
   final Future<List<String>> Function() libraryRoots;
@@ -65,103 +94,107 @@ class FileLrcSidecarWriter implements LrcSidecarWriter {
   /// Canonical paths of the folders left out of the library.
   final Future<List<String>> Function() excludedFolders;
 
-  /// Runs between writing the temp file and the second check. Tests only.
+  /// Where replaced files go.
+  final FileTrash trash;
+
+  /// Runs between writing the temp file and the trash step. Tests only.
   final Future<void> Function()? beforeRecheck;
 
+  final DateTime Function() _now;
+
   @override
-  Future<LrcWriteResult> write(String audioPath, LyricsBody body) async {
-    final bytes = _encode(body);
-    if (bytes == null) return LrcWriteResult.nothingToWrite;
+  Future<LrcWriteResult> write(
+    String audioPath,
+    LyricsBody body, {
+    bool replace = false,
+  }) async {
+    final encoded = encodeLrc(body);
+    if (encoded == null) return LrcWriteResult.nothingToWrite;
     Directory? temp;
+    var trashedAny = false;
+    // What a failure means once the first old file is in the trash.
+    LrcWriteResult failure() =>
+        trashedAny ? LrcWriteResult.trashedNotWritten : LrcWriteResult.failed;
     try {
-      if (!await _insideLibrary(audioPath)) {
-        return LrcWriteResult.outsideLibrary;
-      }
+      final inside = await insideLibrary(
+        audioPath,
+        libraryRoots: libraryRoots,
+        excludedFolders: excludedFolders,
+      );
+      if (!inside) return LrcWriteResult.outsideLibrary;
       final candidates = lrcCandidates(audioPath);
-      if (await _anyExists(candidates)) return LrcWriteResult.exists;
+      final existing = await existingCandidates(candidates);
+      // An entry that can never be replaced is reported before the user is
+      // asked to confirm a replace.
+      if (existing.any((e) => !e.replaceable)) {
+        return LrcWriteResult.trashFailed;
+      }
+      if (!replace && existing.isNotEmpty) {
+        return await holdsLrcText(existing.first.path, encoded.text)
+            ? LrcWriteResult.identical
+            : LrcWriteResult.exists;
+      }
       final dir = audioPath.substring(0, audioPath.lastIndexOf('/'));
-      temp = await Directory(dir).createTemp('.kanaru-lrc-');
+      await sweepStaleTempFolders(dir, _now());
+      temp = await Directory(dir).createTemp(lrcTempFolderPrefix);
       final file = File('${temp.path}/lyrics.lrc');
-      await file.writeAsBytes(bytes, flush: true);
+      await file.writeAsBytes(encoded.bytes, flush: true);
       await beforeRecheck?.call();
-      if (await _anyExists(candidates)) return LrcWriteResult.exists;
+      // Only what was classified is moved, and only its type is checked
+      // again, not its identity. A file that shows up later is found by the
+      // check below instead.
+      for (final old in existing) {
+        final outcome = await _trashIfPresent(old.path);
+        if (outcome == _TrashStep.nothing) continue;
+        if (outcome == _TrashStep.trashed) {
+          trashedAny = true;
+          continue;
+        }
+        if (trashedAny) return LrcWriteResult.trashedNotWritten;
+        return outcome == _TrashStep.timedOut
+            ? LrcWriteResult.trashTimedOut
+            : LrcWriteResult.trashFailed;
+      }
+      if ((await existingCandidates(candidates)).isNotEmpty) {
+        return trashedAny
+            ? LrcWriteResult.trashedNotWritten
+            : LrcWriteResult.exists;
+      }
       await file.rename(candidates.first);
       return LrcWriteResult.written;
     } on FileSystemException catch (error) {
       // Paths are left out of the log: they name the user's files.
       _log.warning('Writing a .lrc file failed', error.osError?.errorCode);
-      return LrcWriteResult.failed;
+      return failure();
     } on Object catch (error) {
       // Anything else (a closed database, say) must not escape either; only
       // the type is logged.
       _log.warning('Writing a .lrc file failed (${error.runtimeType})');
-      return LrcWriteResult.failed;
+      return failure();
     } finally {
-      await _remove(temp);
+      await removeTempFolder(temp);
     }
   }
 
-  static List<int>? _encode(LyricsBody body) {
-    if (body.instrumental) return null;
-    // The first text with something in it: blank synced lyrics do not hide
-    // real plain ones.
-    final text = [
-      body.syncedLrc,
-      body.plain,
-    ].firstWhere((t) => t != null && t.trim().isNotEmpty, orElse: () => null);
-    if (text == null) return null;
-    final normalized = text
-        .replaceAll('\r\n', '\n')
-        .replaceFirst(_trailingNewlines, '');
-    if (normalized.isEmpty) return null;
-    final bytes = utf8.encode('$normalized\n');
-    return bytes.length > lrcMaxBytes ? null : bytes;
-  }
-
-  /// The song is a regular file, and both it and the folder the `.lrc` goes
-  /// into resolve to a place inside a root and outside every exclusion.
-  Future<bool> _insideLibrary(String audioPath) async {
-    if (!audioPath.startsWith('/') || audioPath.lastIndexOf('/') < 0) {
-      return false;
+  /// Moves [path] to the trash when it is still there as a file or link.
+  Future<_TrashStep> _trashIfPresent(String path) async {
+    final type = await FileSystemEntity.type(path, followLinks: false);
+    if (type == FileSystemEntityType.notFound) return _TrashStep.nothing;
+    if (type != FileSystemEntityType.file &&
+        type != FileSystemEntityType.link) {
+      return _TrashStep.refused;
     }
-    final String file;
-    final String dir;
-    try {
-      file = await File(audioPath).resolveSymbolicLinks();
-      dir = await Directory(audioPath.substring(0, audioPath.lastIndexOf('/')))
-          .resolveSymbolicLinks();
-      if ((await FileStat.stat(file)).type != FileSystemEntityType.file) {
-        return false;
-      }
-    } on FileSystemException {
-      return false;
-    }
-    final roots = await libraryRoots();
-    final excluded = await excludedFolders();
-    bool allowed(String path) =>
-        roots.any((root) => isSameOrInside(root, path)) &&
-        !excluded.any((folder) => isSameOrInside(folder, path));
-    return allowed(file) && allowed(dir);
-  }
-
-  /// Any entry of those names, of any type, a dangling link included.
-  static Future<bool> _anyExists(List<String> paths) async {
-    for (final path in paths) {
-      final type = await FileSystemEntity.type(path, followLinks: false);
-      if (type != FileSystemEntityType.notFound) return true;
-    }
-    return false;
-  }
-
-  static Future<void> _remove(Directory? temp) async {
-    if (temp == null) return;
-    try {
-      await temp.delete(recursive: true);
-    } on FileSystemException {
-      // Already gone, or not ours to remove any more.
-    }
+    return switch (await trash.trash(path)) {
+      TrashResult.trashed => _TrashStep.trashed,
+      // Gone since the check (or the same file as the other spelling).
+      TrashResult.notFound => _TrashStep.nothing,
+      TrashResult.timedOut => _TrashStep.timedOut,
+      _ => _TrashStep.refused,
+    };
   }
 }
+
+enum _TrashStep { nothing, trashed, timedOut, refused }
 
 /// The app's `.lrc` writer; tests replace it. Without a library database
 /// there are no library folders, so nothing is written.
@@ -173,5 +206,6 @@ final lrcSidecarWriterProvider = Provider<LrcSidecarWriter>((ref) {
         : [for (final root in await db.roots()) root.path],
     excludedFolders: () async =>
         db == null ? const [] : db.excludedFolderPaths(),
+    trash: ref.watch(fileTrashProvider),
   );
 });

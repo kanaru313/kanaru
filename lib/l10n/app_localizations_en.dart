@@ -3254,4 +3254,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSavedLyricsClearFailed => 'Could not clear saved lyrics';
+
+  @override
+  String get lyricsSaveTitle => 'Save lyrics';
+
+  @override
+  String get lyricsSaveOptionLrc => '.lrc file';
+
+  @override
+  String get lyricsSaveOptionTags => 'In the music tags';
+
+  @override
+  String get lyricsSaveOptionTagsSoon => 'Coming soon';
+
+  @override
+  String get lyricsSaveConfirm => 'Save';
+
+  @override
+  String lyricsReplaceTitle(String files, String title) {
+    return 'Replace $files of $title?';
+  }
+
+  @override
+  String get lyricsReplaceBody => 'The old file is moved to the trash.';
+
+  @override
+  String get lyricsReplaceAction => 'Replace';
+
+  @override
+  String get lyricsSaveWritten => 'Lyrics saved as a .lrc file';
+
+  @override
+  String get lyricsSaveIdentical => 'The .lrc file already has these lyrics';
+
+  @override
+  String get lyricsSaveKeptTag =>
+      'The song still uses the lyrics you chose because lyrics in tags are preferred';
+
+  @override
+  String get lyricsSaveKeptOtherFile =>
+      'The song still uses the lyrics you chose because Kanaru reads another lyrics file of the song';
+
+  @override
+  String get lyricsSaveOutsideLibrary =>
+      'Could not save: the song is outside the library folders';
+
+  @override
+  String get lyricsSaveFailed =>
+      'Could not save the .lrc file (read-only folder, no space or no permission)';
+
+  @override
+  String get lyricsSaveTrashFailed =>
+      'Could not move the old file to the trash, so nothing was replaced';
+
+  @override
+  String get lyricsSaveTrashedNotWritten =>
+      'The old file was moved to the trash but the new one could not be written; restore it from the trash if needed';
+
+  @override
+  String get lyricsSaveNothing => 'No lyrics to save';
+
+  @override
+  String get lyricsSaveTrashTimedOut =>
+      'The trash did not answer in time; the old file may be in the trash and no new file was written';
+
+  @override
+  String get lyricsSaveReplaceRaced =>
+      'Another lyrics file just appeared, so nothing was replaced';
+
+  @override
+  String lyricsReplaceFilesJoin(String first, String second) {
+    return '$first and $second';
+  }
 }

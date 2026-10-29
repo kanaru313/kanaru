@@ -8,6 +8,7 @@ import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/local_path_of.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
+import 'lyrics_action_runner.dart';
 import 'lyrics_credit_row.dart';
 import 'lyrics_error_banner.dart';
 import 'lyrics_empty_state.dart';
@@ -89,7 +90,7 @@ class LyricsNoneView extends ConsumerWidget {
         FilledButton.tonal(onPressed: onPressed, child: Text(label));
     Widget more(String label, VoidCallback onPressed) =>
         TextButton(onPressed: onPressed, child: Text(label));
-    LyricsActionRunner run() => LyricsActionRunner.of(context);
+    LyricsActionRunner run() => LyricsActionRunner.snapshot(context);
 
     final (title, actions) = switch (reason) {
       LyricsNoneReason.noLyrics || LyricsNoneReason.error => (

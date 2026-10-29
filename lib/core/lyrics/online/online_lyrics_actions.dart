@@ -12,14 +12,19 @@ import 'lyrics_choice.dart';
 import 'lyrics_provider.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_lookups.dart';
+import 'online_lyrics_reject_action.dart';
+import 'online_lyrics_save_action.dart';
 import 'online_lyrics_streams.dart';
 import 'playing_lyrics_status.dart';
+
+export 'online_lyrics_save_action.dart'
+    show LyricsChoiceKept, LyricsSaveOutcome;
 
 /// What the user can do about a song's lyrics source. Works from any
 /// `ProviderContainer` (a menu that outlives its widget has no live
 /// `WidgetRef`); every request goes through [OnlineLyricsLookups.start], so
 /// the consent check in core applies. Without a library each action does
-/// nothing. No action writes a file.
+/// nothing. Only [save] writes a file.
 class OnlineLyricsActions {
   OnlineLyricsActions(this._ref);
 
@@ -119,50 +124,12 @@ class OnlineLyricsActions {
     );
   }
 
-  /// "Not these lyrics": remembers [origin]'s match as rejected for the
-  /// song's metadata by id and by the text of [shown] (the lyrics on screen),
-  /// drops the cached rows with that text, and the song's pick when it is
-  /// that match. Sends nothing itself: automatic resolution runs again. The
-  /// hash comes from the same parse that produced [shown] and the stored
-  /// candidates, so the shown text and the rejected record match.
-  ///
-  /// The cached copies are read before the write transaction, not inside it.
-  /// A row a lookup stores in between can survive; that is a small race, as a
-  /// lookup only runs while no match is shown.
+  /// "Not these lyrics": see [rejectOnlineLyrics].
   Future<void> reject(
     LyricsTarget target,
     OnlineLyricsOrigin origin,
     Lyrics shown,
-  ) async {
-    final db = _db;
-    if (db == null) return;
-    final hash = lyricsContentHashOf(shown);
-    final cached = await db.watchOnlineLyrics(target.cacheKey).first;
-    final duplicates = <(String, String)>{
-      for (final row in cached)
-        if (row.lookupStatus == OnlineLyricsStatus.found &&
-            row.remoteId != null &&
-            _hashOfRow(row) == hash)
-          (row.providerId, row.remoteId!),
-    };
-    await db.rejectOnlineLyrics(
-      cacheKey: target.cacheKey,
-      providerId: origin.providerId,
-      remoteId: origin.remoteId,
-      contentHash: hash,
-      duplicates: duplicates,
-      trackKey: target.trackKey,
-      now: _now,
-    );
-  }
-
-  String? _hashOfRow(OnlineLyricsRow row) {
-    final lyrics = parseStoredLyrics(
-      synced: row.syncedText,
-      plain: row.plainText,
-    );
-    return lyrics == null ? null : lyricsContentHashOf(lyrics);
-  }
+  ) => rejectOnlineLyrics(_ref, target, origin, shown);
 
   /// Makes [candidate] (it must carry its body) the song's lyrics. A
   /// rejected match picked again is no longer rejected. Writes to the
@@ -190,6 +157,28 @@ class OnlineLyricsActions {
       remoteId: candidate.remoteId,
       contentHash: candidateContentHash(candidate),
     );
+  }
+
+  final _saving = <String>{};
+
+  /// A save of the song with [trackKey] is running.
+  bool isSaving(String trackKey) => _saving.contains(trackKey);
+
+  /// "Save lyrics": writes the stored text of [origin] as the song's `.lrc`
+  /// (see [saveOnlineLyrics]). With [replace] an existing file goes to the
+  /// trash first; without it an existing file is left alone. A second save
+  /// of the same song while one runs is ignored and answers `result: null`.
+  Future<LyricsSaveOutcome> save(
+    LyricsTarget target,
+    OnlineLyricsOrigin origin, {
+    bool replace = false,
+  }) async {
+    if (!_saving.add(target.trackKey)) return (result: null, kept: null);
+    try {
+      return await saveOnlineLyrics(_ref, target, origin, replace: replace);
+    } finally {
+      _saving.remove(target.trackKey);
+    }
   }
 }
 

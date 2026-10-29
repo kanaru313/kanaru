@@ -25,9 +25,13 @@ class FakeLrcSidecarReader implements LrcSidecarReader {
   final gates = <String, Completer<void>>{};
   final reads = <String>[];
 
+  /// Answers instead of [byPath] when set (the real reader, say).
+  LrcSidecarReader? delegate;
+
   @override
   Future<String?> read(String audioPath) async {
     reads.add(audioPath);
+    if (delegate != null) return delegate!.read(audioPath);
     await gates[audioPath]?.future;
     if (failing.contains(audioPath)) throw StateError('broken file');
     return byPath[audioPath];

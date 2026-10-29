@@ -106,7 +106,7 @@ Kanaru sends nothing unless you turn a network feature on. Each feature asks bef
 
 Never sent for lyrics: file paths, file names or device information.
 
-Writing files: Kanaru writes no lyrics file next to a song. Your picks and choices are kept in the library database. *Clear saved lyrics* in Settings removes the stored lyrics, your choices and your rejected matches; it never touches `.lrc` files.
+Writing files: Kanaru writes a lyrics file only when you choose *Save lyrics*, and only inside your library folders. It writes `<song name>.lrc` next to the song. If a lyrics file is already there, Kanaru asks first, and the old file is moved to the trash, never deleted. Your picks and choices are otherwise kept in the library database. *Clear saved lyrics* in Settings removes the stored lyrics, your choices and your rejected matches; it never touches `.lrc` files.
 
 No telemetry, no analytics, no account.
 

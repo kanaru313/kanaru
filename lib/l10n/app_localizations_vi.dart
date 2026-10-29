@@ -3050,4 +3050,76 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsSavedLyricsClearFailed => 'Không xóa được lời đã lưu';
+
+  @override
+  String get lyricsSaveTitle => 'Lưu lời';
+
+  @override
+  String get lyricsSaveOptionLrc => 'File .lrc';
+
+  @override
+  String get lyricsSaveOptionTags => 'Trong tag nhạc';
+
+  @override
+  String get lyricsSaveOptionTagsSoon => 'Sắp có';
+
+  @override
+  String get lyricsSaveConfirm => 'Lưu';
+
+  @override
+  String lyricsReplaceTitle(String files, String title) {
+    return 'Thay file $files của bài $title?';
+  }
+
+  @override
+  String get lyricsReplaceBody => 'File cũ được chuyển vào thùng rác.';
+
+  @override
+  String get lyricsReplaceAction => 'Thay';
+
+  @override
+  String get lyricsSaveWritten => 'Đã lưu lời thành file .lrc';
+
+  @override
+  String get lyricsSaveIdentical => 'File .lrc đã có đúng lời này';
+
+  @override
+  String get lyricsSaveKeptTag =>
+      'Bài vẫn dùng bản đã chọn vì đang ưu tiên lời trong tag';
+
+  @override
+  String get lyricsSaveKeptOtherFile =>
+      'Bài vẫn dùng bản đã chọn vì Kanaru đọc một file lời khác của bài';
+
+  @override
+  String get lyricsSaveOutsideLibrary =>
+      'Không lưu được: bài nằm ngoài thư mục thư viện';
+
+  @override
+  String get lyricsSaveFailed =>
+      'Không lưu được file .lrc (thư mục chỉ đọc, hết chỗ hoặc không có quyền)';
+
+  @override
+  String get lyricsSaveTrashFailed =>
+      'Không chuyển được file cũ vào thùng rác nên chưa thay gì';
+
+  @override
+  String get lyricsSaveTrashedNotWritten =>
+      'Đã chuyển file cũ vào thùng rác nhưng không ghi được file mới; khôi phục trong thùng rác nếu cần';
+
+  @override
+  String get lyricsSaveNothing => 'Không có lời để lưu';
+
+  @override
+  String get lyricsSaveTrashTimedOut =>
+      'Thùng rác không trả lời kịp; file cũ có thể đã nằm trong thùng rác, chưa ghi file mới';
+
+  @override
+  String get lyricsSaveReplaceRaced =>
+      'Vừa có một file lời khác xuất hiện nên chưa thay gì';
+
+  @override
+  String lyricsReplaceFilesJoin(String first, String second) {
+    return '$first và $second';
+  }
 }

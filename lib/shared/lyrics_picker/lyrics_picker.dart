@@ -21,7 +21,7 @@ final _log = Logger('lyrics_picker');
 /// [navigator] and the [container], never a `WidgetRef`. The consent notice
 /// comes first; on Cancel nothing opens and nothing is sent. The dialog is
 /// built on the navigator's context under [container]. After a pick the
-/// lyrics are pinned (and saved as `.lrc` when the setting asks for it) and
+/// lyrics are pinned (no file is written) and
 /// [messenger] (else the navigator's) tells the result.
 Future<void> showLyricsPicker({
   required NavigatorState navigator,

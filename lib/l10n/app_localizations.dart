@@ -4771,6 +4771,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not clear saved lyrics'**
   String get settingsSavedLyricsClearFailed;
+
+  /// Title of the Save lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Save lyrics'**
+  String get lyricsSaveTitle;
+
+  /// Save lyrics option: a .lrc file next to the song
+  ///
+  /// In en, this message translates to:
+  /// **'.lrc file'**
+  String get lyricsSaveOptionLrc;
+
+  /// Save lyrics option, not available yet
+  ///
+  /// In en, this message translates to:
+  /// **'In the music tags'**
+  String get lyricsSaveOptionTags;
+
+  /// Shown under the disabled tag option of Save lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get lyricsSaveOptionTagsSoon;
+
+  /// Confirm button of the Save lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get lyricsSaveConfirm;
+
+  /// Title of the confirm before an existing .lrc file is replaced; files are the names of the lyrics files, title the song
+  ///
+  /// In en, this message translates to:
+  /// **'Replace {files} of {title}?'**
+  String lyricsReplaceTitle(String files, String title);
+
+  /// Body of the replace confirm
+  ///
+  /// In en, this message translates to:
+  /// **'The old file is moved to the trash.'**
+  String get lyricsReplaceBody;
+
+  /// Confirm button of the replace confirm
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get lyricsReplaceAction;
+
+  /// Snackbar after the .lrc file was written
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics saved as a .lrc file'**
+  String get lyricsSaveWritten;
+
+  /// Snackbar when the .lrc file already holds the same text
+  ///
+  /// In en, this message translates to:
+  /// **'The .lrc file already has these lyrics'**
+  String get lyricsSaveIdentical;
+
+  /// Details under the save snackbar when tags win over the saved file
+  ///
+  /// In en, this message translates to:
+  /// **'The song still uses the lyrics you chose because lyrics in tags are preferred'**
+  String get lyricsSaveKeptTag;
+
+  /// Details under the save snackbar when another lyrics file is read
+  ///
+  /// In en, this message translates to:
+  /// **'The song still uses the lyrics you chose because Kanaru reads another lyrics file of the song'**
+  String get lyricsSaveKeptOtherFile;
+
+  /// Snackbar when the song is not in a library folder
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save: the song is outside the library folders'**
+  String get lyricsSaveOutsideLibrary;
+
+  /// Snackbar when writing the .lrc file failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the .lrc file (read-only folder, no space or no permission)'**
+  String get lyricsSaveFailed;
+
+  /// Snackbar when the old file could not be trashed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not move the old file to the trash, so nothing was replaced'**
+  String get lyricsSaveTrashFailed;
+
+  /// Snackbar when the old file is in the trash and the new one is missing
+  ///
+  /// In en, this message translates to:
+  /// **'The old file was moved to the trash but the new one could not be written; restore it from the trash if needed'**
+  String get lyricsSaveTrashedNotWritten;
+
+  /// Snackbar when the lyrics are instrumental, empty or gone
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics to save'**
+  String get lyricsSaveNothing;
+
+  /// Snackbar when the trash timed out on the first old file
+  ///
+  /// In en, this message translates to:
+  /// **'The trash did not answer in time; the old file may be in the trash and no new file was written'**
+  String get lyricsSaveTrashTimedOut;
+
+  /// Snackbar when a lyrics file appeared during a replace
+  ///
+  /// In en, this message translates to:
+  /// **'Another lyrics file just appeared, so nothing was replaced'**
+  String get lyricsSaveReplaceRaced;
+
+  /// Joins the names of two lyrics files in the replace confirm
+  ///
+  /// In en, this message translates to:
+  /// **'{first} and {second}'**
+  String lyricsReplaceFilesJoin(String first, String second);
 }
 
 class _AppLocalizationsDelegate

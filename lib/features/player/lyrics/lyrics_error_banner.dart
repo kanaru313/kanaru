@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
-import 'lyrics_credit_row.dart';
+import 'lyrics_action_runner.dart';
 
 /// "Couldn't reach {provider}" ("is busy" when it kept asking to wait) with
 /// Retry, at the top of the lyrics slot.
@@ -52,7 +52,8 @@ class LyricsErrorBanner extends StatelessWidget {
                   ),
                   if (canRetry)
                     TextButton(
-                      onPressed: () => LyricsActionRunner.of(context).retry(),
+                      onPressed: () =>
+                          LyricsActionRunner.snapshot(context).retry(),
                       child: Text(l10n.lyricsRetry),
                     ),
                 ],

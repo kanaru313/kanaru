@@ -2893,5 +2893,101 @@
   "settingsSavedLyricsClearTitle": "Clear saved lyrics?",
   "settingsSavedLyricsClearBody": "The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.",
   "settingsSavedLyricsCleared": "Saved lyrics cleared",
-  "settingsSavedLyricsClearFailed": "Could not clear saved lyrics"
+  "settingsSavedLyricsClearFailed": "Could not clear saved lyrics",
+  "lyricsSaveTitle": "Save lyrics",
+  "@lyricsSaveTitle": {
+    "description": "Title of the Save lyrics dialog"
+  },
+  "lyricsSaveOptionLrc": ".lrc file",
+  "@lyricsSaveOptionLrc": {
+    "description": "Save lyrics option: a .lrc file next to the song"
+  },
+  "lyricsSaveOptionTags": "In the music tags",
+  "@lyricsSaveOptionTags": {
+    "description": "Save lyrics option, not available yet"
+  },
+  "lyricsSaveOptionTagsSoon": "Coming soon",
+  "@lyricsSaveOptionTagsSoon": {
+    "description": "Shown under the disabled tag option of Save lyrics"
+  },
+  "lyricsSaveConfirm": "Save",
+  "@lyricsSaveConfirm": {
+    "description": "Confirm button of the Save lyrics dialog"
+  },
+  "lyricsReplaceTitle": "Replace {files} of {title}?",
+  "@lyricsReplaceTitle": {
+    "description": "Title of the confirm before an existing .lrc file is replaced; files are the names of the lyrics files, title the song",
+    "placeholders": {
+      "files": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsReplaceBody": "The old file is moved to the trash.",
+  "@lyricsReplaceBody": {
+    "description": "Body of the replace confirm"
+  },
+  "lyricsReplaceAction": "Replace",
+  "@lyricsReplaceAction": {
+    "description": "Confirm button of the replace confirm"
+  },
+  "lyricsSaveWritten": "Lyrics saved as a .lrc file",
+  "@lyricsSaveWritten": {
+    "description": "Snackbar after the .lrc file was written"
+  },
+  "lyricsSaveIdentical": "The .lrc file already has these lyrics",
+  "@lyricsSaveIdentical": {
+    "description": "Snackbar when the .lrc file already holds the same text"
+  },
+  "lyricsSaveKeptTag": "The song still uses the lyrics you chose because lyrics in tags are preferred",
+  "@lyricsSaveKeptTag": {
+    "description": "Details under the save snackbar when tags win over the saved file"
+  },
+  "lyricsSaveKeptOtherFile": "The song still uses the lyrics you chose because Kanaru reads another lyrics file of the song",
+  "@lyricsSaveKeptOtherFile": {
+    "description": "Details under the save snackbar when another lyrics file is read"
+  },
+  "lyricsSaveOutsideLibrary": "Could not save: the song is outside the library folders",
+  "@lyricsSaveOutsideLibrary": {
+    "description": "Snackbar when the song is not in a library folder"
+  },
+  "lyricsSaveFailed": "Could not save the .lrc file (read-only folder, no space or no permission)",
+  "@lyricsSaveFailed": {
+    "description": "Snackbar when writing the .lrc file failed"
+  },
+  "lyricsSaveTrashFailed": "Could not move the old file to the trash, so nothing was replaced",
+  "@lyricsSaveTrashFailed": {
+    "description": "Snackbar when the old file could not be trashed"
+  },
+  "lyricsSaveTrashedNotWritten": "The old file was moved to the trash but the new one could not be written; restore it from the trash if needed",
+  "@lyricsSaveTrashedNotWritten": {
+    "description": "Snackbar when the old file is in the trash and the new one is missing"
+  },
+  "lyricsSaveNothing": "No lyrics to save",
+  "@lyricsSaveNothing": {
+    "description": "Snackbar when the lyrics are instrumental, empty or gone"
+  },
+  "lyricsSaveTrashTimedOut": "The trash did not answer in time; the old file may be in the trash and no new file was written",
+  "@lyricsSaveTrashTimedOut": {
+    "description": "Snackbar when the trash timed out on the first old file"
+  },
+  "lyricsSaveReplaceRaced": "Another lyrics file just appeared, so nothing was replaced",
+  "@lyricsSaveReplaceRaced": {
+    "description": "Snackbar when a lyrics file appeared during a replace"
+  },
+  "lyricsReplaceFilesJoin": "{first} and {second}",
+  "@lyricsReplaceFilesJoin": {
+    "description": "Joins the names of two lyrics files in the replace confirm",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  }
 }
