@@ -30,7 +30,12 @@ all merge into **one library**, with offline caching so it keeps playing when th
 - 🎧 Gapless playback, ReplayGain *(Phase 1)*
 - 🎨 Material You — light/dark themes and system accent; dynamic colors from album art *(Phase 1)*
 - 🖥️ Native media controls — MPRIS (Linux), SMTC (Windows), Now Playing (macOS), notification/lock screen (Android/iOS)
-- 🔒 Works fully offline, no account required, no telemetry
+- 🔒 Works fully offline, no account required, no telemetry; the only network use is opt-in (see [Privacy and network](#privacy-and-network))
+
+### Lyrics
+
+- 📝 Lyrics from `.lrc` files next to the song and from the file's tags (embedded lyrics read with lofty), with a synced view that follows the line being sung and seeks on click
+- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick can also be saved as a `.lrc` file next to the song
 
 ### Remote sources (planned)
 
@@ -90,6 +95,21 @@ source means implementing one `StorageProvider` interface.
 | Credentials     | `flutter_secure_storage` (libsecret / Keychain / Keystore), planned     |
 | Local proxy     | `shelf`, planned                                                        |
 
+## Privacy and network
+
+Kanaru sends nothing unless you turn a network feature on. Each feature asks before its first request.
+
+| Feature | Sent to | What is sent | When |
+|---|---|---|---|
+| Online lyrics (LRCLIB) | `lrclib.net` | Title, primary artist, album when known, duration rounded to whole seconds; or, in a manual search, the text you typed. The request carries `User-Agent: Kanaru/<version>` (+ repository URL) | Automatic lookup: only while Now Playing is open, with *Find lyrics automatically* on and accepted. Manual search: only when you search |
+| Lyrics translation | Google Translate or DeepL (the service you chose) | The lyric lines of the playing song, and your DeepL key to DeepL | Only after you accept that service's notice, and only while a Now Playing widget shows the song |
+
+Never sent for lyrics: file paths, file names or device information.
+
+Writing files: a `.lrc` file is written next to a song only for lyrics you picked, only when *Save picked lyrics as .lrc files* is on, never over an existing `.lrc` or `.LRC` file, and only inside your library folders. Automatic matches are never written to disk. *Clear saved lyrics* in Settings removes the stored lyrics and your choices; it never touches `.lrc` files.
+
+No telemetry, no analytics, no account.
+
 ## Roadmap
 
 Detailed feature list with IDs, priorities and acceptance criteria: **[docs/features.md](docs/features.md)**. Checked items are on `main`; partially done items stay unchecked and say what is open. Status snapshot: [docs/project-roadmap.md](docs/project-roadmap.md).
@@ -130,7 +150,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 
 **Phase 4 — Juicy**
 
-- [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view
+- [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, pins, saved lyrics and the synced view are done; open: several lyrics sources and a source picker, a narrow-window *Choose lyrics* dialog, the provider plugin runtime, manual lyrics entry, time offset
 - [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Advanced: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade, sleep timer

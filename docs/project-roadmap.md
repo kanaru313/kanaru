@@ -14,7 +14,7 @@ Last updated: 2026-10-23.
 | 1 Offline local player | Scan, library, Now Playing, queue, search, playlists, packaging | In progress: core library, playback (with ReplayGain), search, playlists (create, rename, delete, add, remove, reorder, Favorites, M3U), History, colors from the cover and the AppImage shipped; Flatpak, `.deb` and the schema collapse open |
 | 2 More platforms | Windows, macOS, Android, iOS | Open |
 | 3 Remote sources | `StorageProvider`, proxy, cache, Subsonic, WebDAV, S3, SFTP, Drive | Open |
-| 4 Juicy | Lyrics, waveform, EQ, stats, scrobbling, cross-device sync | Open (a few UI placeholders exist) |
+| 4 Juicy | Lyrics, waveform, EQ, stats, scrobbling, cross-device sync | In progress: lyrics (`.lrc`, embedded, online lookup, synced view), translation and the waveform seek bar shipped; EQ, stats, scrobbling and sync open |
 
 ## Shipped history
 
@@ -49,7 +49,8 @@ PRs merged to `main`, 418 commits from 2026-10-18 to 2026-10-22 (PR merge dates 
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: done in PR #40 (off, track, album, auto; preamp; clipping protection; output device choice in Settings > Advanced). |
 | Dynamic color from album art | Done | UI-03 | "Colors from the cover" switch: the playing cover's seed tints the whole app and Now Playing gets a gradient of its colors. Colors come from one Rust function, are worked out by the scan's cover pass (or at once for the playing track) and stored per cover. |
 | Packaging: AppImage, Flatpak, `.deb` | Partial | PKG-01 to PKG-03 | AppImage done (PR #32, `make appimage`, x86_64). No Flatpak or `.deb` files exist. The AppImage ships a `.desktop` file with audio MIME types (SYS-07). |
-| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v6 with migration steps. Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v9 with migration steps. Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| Check LRCLIB lyrics data license / terms before first release | **Open**, not blocking | LYR-03 | Online lyrics come from lrclib.net. Confirm its data terms before the first release; does not block the online lyrics PR. |
 
 Also shipped in Phase 1 and not listed in the README: responsive shell (UI-05), reduced motion (UI-06), custom title bar choice (UI-07), i18n en and vi (UI-10), single instance on Release and Profile builds (SYS-06), desktop accent color (UI-04), scan progress (IDX-10).
 
@@ -107,11 +108,11 @@ Prerequisites from the architecture: credentials in the system keyring (PRIV-04)
 
 ## Phase 4: Juicy
 
-All **Open**, except placeholders.
+Partly shipped: the lyrics and translation rows are in progress; the other rows are **Open**.
 
 | Item | Features | Current state |
 |---|---|---|
-| Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 | Lyrics button is a placeholder in Now Playing |
+| Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 (LYR-03 done, with open items) | Shipped: `.lrc` and embedded lyrics, the synced view, online lookup (opt-in, manual search, Choose lyrics, pins, saved lyrics and the `.lrc` writer). Open: multiple sources and a source picker, a narrow-window Choose lyrics dialog, the provider plugin runtime, LYR-05 to LYR-06 |
 | Lyrics translation (Google or DeepL) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Advanced rows (service, DeepL key, default language, saved translations) |
 | Waveform seekbar, visualizer, transitions | NP-05, NP-06 | Waveform seek bar built in the wide Now Playing modes (NP-05); visualizer and transitions not started |
 | Equalizer, crossfade, sleep timer, volume boost, speed and pitch | PLAY-05, PLAY-08, PLAY-09, PLAY-14, PLAY-15 | Not started |
