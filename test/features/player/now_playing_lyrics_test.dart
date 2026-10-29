@@ -144,10 +144,19 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('is absent without lyrics', (tester) async {
+    testWidgets('is disabled without lyrics', (tester) async {
       await pump(tester, size: narrow, overrides: scripted());
 
-      expect(find.byTooltip('Lyrics translation'), findsNothing);
+      final button = find.byTooltip('Lyrics translation');
+      expect(button, findsOneWidget);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.ancestor(of: button, matching: find.byType(IconButton)),
+            )
+            .onPressed,
+        isNull,
+      );
     });
 
     testWidgets('opens the translation menu', (tester) async {

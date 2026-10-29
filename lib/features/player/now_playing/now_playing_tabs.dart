@@ -26,6 +26,7 @@ class NowPlayingTabs extends StatefulWidget {
     required this.queuePage,
     required this.onClose,
     required this.lyricsPage,
+    required this.hasLyrics,
   });
 
   /// Adds the window drag area and buttons around the tab header.
@@ -41,6 +42,9 @@ class NowPlayingTabs extends StatefulWidget {
   /// The lyrics page, always there: a track without lyrics shows the empty
   /// state in it.
   final Widget lyricsPage;
+
+  /// Whether the song has lyrics to translate; gates the translate button.
+  final bool hasLyrics;
 
   @override
   State<NowPlayingTabs> createState() => _NowPlayingTabsState();
@@ -107,8 +111,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                             )
                           else
                             QueueButton(onPressed: () => _select(_Tab.queue)),
-                          if (lyricsPage != null)
-                            const LyricsTranslationButton(),
+                          LyricsTranslationButton(enabled: widget.hasLyrics),
                         ],
                       ),
                     ),

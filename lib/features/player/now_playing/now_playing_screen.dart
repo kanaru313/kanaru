@@ -186,6 +186,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         excludeFromDrag: _exclude,
                         queuePage: const QueuePanel(),
                         lyricsPage: lyrics,
+                        hasLyrics: widget._hasLyrics,
                         onClose: _close,
                       ),
               ),
