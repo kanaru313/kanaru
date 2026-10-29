@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../database/artist_names.dart';
+import '../../database/text_keys.dart';
 import 'lrclib_record.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http.dart';
@@ -102,9 +103,13 @@ class LrclibProvider implements LyricsProvider {
     return found.notFound ? null : _record(found.json).body;
   }
 
+  /// LRCLIB finds composed (NFC) text only, while taggers such as macOS's
+  /// write decomposed text, so every value is sent in NFC.
   Uri _uri(List<String> path, Map<String, String> query) => _base.replace(
     pathSegments: path,
-    queryParameters: query.isEmpty ? null : query,
+    queryParameters: query.isEmpty
+        ? null
+        : {for (final e in query.entries) e.key: nfcText(e.value)},
   );
 
   String _primaryArtist(String? tag) {
