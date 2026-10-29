@@ -309,6 +309,37 @@ void main() {
       );
     });
 
+    statusTest('error after a busy answer says the service is busy', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(
+          _uri,
+          LyricsNoneReason.error,
+          failure: LyricsFetchKind.rateLimited,
+        ),
+      );
+      expect(find.text('Fake is busy. Try again in a moment.'), findsOneWidget);
+      expect(find.text("Couldn't reach Fake"), findsNothing);
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    statusTest('error after a network failure keeps "Couldn\'t reach"', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(
+          _uri,
+          LyricsNoneReason.error,
+          failure: LyricsFetchKind.network,
+        ),
+      );
+      expect(find.text("Couldn't reach Fake"), findsOneWidget);
+      expect(find.textContaining('busy'), findsNothing);
+    });
+
     statusTest('skipped: choose and search again', (tester) async {
       await pumpStatus(
         tester,

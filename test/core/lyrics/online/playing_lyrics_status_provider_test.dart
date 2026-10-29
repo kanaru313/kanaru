@@ -371,6 +371,7 @@ void main() {
       await rig.play([fakeSong('/m/a.flac')]);
       await rig.until(() => rig.status is LyricsNone);
 
+      expect((rig.status! as LyricsNone).failure, LyricsFetchKind.rateLimited);
       expect(
         rig.h.backoff.state!.difference(rig.h.now),
         greaterThanOrEqualTo(const Duration(seconds: 120)),

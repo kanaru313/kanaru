@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 import '../../database/library_startup.dart';
 import '../../settings/settings_provider.dart';
 import 'lyrics_fetch_exception.dart';
+import 'lyrics_http_retry.dart';
 import 'lyrics_provider_registry.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_backoff.dart';
@@ -40,23 +41,43 @@ final class LookupFailed extends LookupState {
 
 /// Runs online lookups, keyed by cache key. Lives as long as the app: a sent
 /// request cannot be aborted, so a lookup finishes and stores its answer
-/// even when the song has changed or nothing watches it any more.
+/// even when the song has changed or nothing watches it any more. The one
+/// exception is the wait before a busy answer is sent again: when every
+/// caller of the lookup has abandoned it by then, it ends there with no
+/// failure and no backoff.
 class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
-  final _inFlight = <String, Future<void>>{};
+  final _inFlight = <String, _Flight>{};
 
   @override
   Map<String, LookupState> build() => const {};
 
   /// Looks [target] up at every provider the user agreed to, until one
   /// finds it. A lookup already in flight for the same key is returned
-  /// instead of a second one. Nothing is sent, and nothing recorded, for a
-  /// target that is not auto-searchable, without a library, or without the
-  /// consent for [auto] (automatic lookups also need the setting on).
-  Future<void> start(LyricsTarget target, {required bool auto}) {
+  /// instead of a second one, and [abandoned] joins it: the lookup is
+  /// dropped only once every caller's check says so, and a caller without
+  /// one (a manual lookup) keeps it. Nothing is sent, and nothing recorded,
+  /// for a target that is not auto-searchable, without a library, or
+  /// without the consent for [auto] (automatic lookups also need the
+  /// setting on).
+  Future<void> start(
+    LyricsTarget target, {
+    required bool auto,
+    bool Function()? abandoned,
+  }) {
     final key = target.cacheKey;
-    return _inFlight[key] ??= _run(target, key, auto).whenComplete(() {
-      _inFlight.remove(key);
-    });
+    final running = _inFlight[key];
+    if (running != null) {
+      running.callers.add(abandoned);
+      return running.done;
+    }
+    final flight = _Flight(abandoned);
+    _inFlight[key] = flight;
+    return flight.done = _run(
+      target,
+      key,
+      auto,
+      flight.abandoned,
+    ).whenComplete(() => _inFlight.remove(key));
   }
 
   void _set(String key, LookupState? value) {
@@ -66,7 +87,12 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     state = next;
   }
 
-  Future<void> _run(LyricsTarget target, String key, bool auto) async {
+  Future<void> _run(
+    LyricsTarget target,
+    String key,
+    bool auto,
+    bool Function() abandoned,
+  ) async {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null || !target.isAutoSearchable) return;
     final prefs = ref.read(settingsProvider).onlineLyrics;
@@ -79,7 +105,7 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
       if (auto && !prefs.autoAllowedFor(registration)) continue;
       try {
         final http = auto
-            ? factory.forAuto(registration)
+            ? factory.forAuto(registration, abandoned: abandoned)
             : factory.forManual(registration);
         _set(key, LookupRunning(providerId: registration.id, auto: auto));
         final result = await runOnlineLyricsLookup(
@@ -93,6 +119,9 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
           found = true;
           break;
         }
+      } on LyricsRequestAbandoned {
+        _set(key, null);
+        return;
       } on LyricsFetchException catch (e) {
         if (e.kind != LyricsFetchKind.notConsented) failure = e;
       } on Object catch (e, st) {
@@ -110,6 +139,17 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     ref.read(onlineLyricsBackoffProvider.notifier).failed(failure?.retryAfter);
     _set(key, LookupFailed(failure?.kind));
   }
+}
+
+/// One lookup in flight and the abandon checks of everyone waiting on it.
+class _Flight {
+  _Flight(bool Function()? first) : callers = [first];
+
+  /// One entry per caller; `null` for a caller that never abandons.
+  final List<bool Function()?> callers;
+  late final Future<void> done;
+
+  bool abandoned() => callers.every((check) => check != null && check());
 }
 
 final onlineLyricsLookupsProvider =

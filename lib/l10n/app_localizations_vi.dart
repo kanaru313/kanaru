@@ -2992,6 +2992,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String lyricsOnlineBusy(String provider) {
+    return '$provider đang bận, thử lại sau giây lát.';
+  }
+
+  @override
   String get lyricsRetry => 'Thử lại';
 
   @override

@@ -53,7 +53,11 @@ void main() {
     client = HttpClient();
     server = await LoopbackServer.start((_) => _ok(_record()));
     provider = LrclibProvider(baseUri: server.baseUri);
-    http = LyricsHttp.forTesting(client: client, hosts: provider.hosts);
+    http = LyricsHttp.forTesting(
+      client: client,
+      hosts: provider.hosts,
+      maxRetries: 0,
+    );
   });
   tearDown(() async {
     client.close(force: true);

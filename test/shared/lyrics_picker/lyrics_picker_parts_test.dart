@@ -95,6 +95,16 @@ void main() {
       expect(find.text("Couldn't reach Fake"), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
     });
+
+    testWidgets('a rate limit says the service is busy and keeps Retry', (
+      tester,
+    ) async {
+      await pumpPane(tester, LyricsFetchKind.rateLimited);
+
+      expect(find.text('Fake is busy. Try again in a moment.'), findsOneWidget);
+      expect(find.text("Couldn't reach Fake"), findsNothing);
+      expect(find.text('Retry'), findsOneWidget);
+    });
   });
 
   testWidgets('synced text that does not parse previews the plain text', (

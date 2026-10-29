@@ -23,7 +23,9 @@ final _log = Logger('online_lyrics');
 /// Waits the debounce, then starts the automatic lookup of [target]. Watched
 /// by the status for as long as that lookup is wanted: a song skipped within
 /// the debounce disposes it first and nothing is sent. The request itself
-/// runs in the keepAlive lookups notifier, which also dedupes it.
+/// runs in the keepAlive lookups notifier, which also dedupes it; disposal
+/// during a wait before a busy answer is sent again stops that lookup,
+/// unless another caller has joined it.
 final autoLyricsLookupProvider = FutureProvider.autoDispose
     .family<void, LyricsTarget>((ref, target) async {
       final waited = Completer<void>();
@@ -31,7 +33,9 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
         ref.read(onlineLyricsDebounceProvider),
         waited.complete,
       );
+      var abandoned = false;
       ref.onDispose(() {
+        abandoned = true;
         timer.cancel();
         if (!waited.isCompleted) waited.complete();
       });
@@ -39,7 +43,7 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
       if (!ref.mounted) return;
       await ref
           .read(onlineLyricsLookupsProvider.notifier)
-          .start(target, auto: true);
+          .start(target, auto: true, abandoned: () => abandoned);
     }, retry: (_, _) => null);
 
 /// What the playing song's lyrics are, or `null` when nothing plays.
@@ -177,7 +181,11 @@ class PlayingLyricsStatusNotifier extends Notifier<PlayingLyricsStatus?> {
     return switch (lookup) {
       LookupRunning(:final providerId) => LyricsSearching(uri, providerId),
       _ when autoId != null => LyricsSearching(uri, autoId),
-      LookupFailed() => LyricsNone(uri, LyricsNoneReason.error),
+      LookupFailed(:final kind) => LyricsNone(
+        uri,
+        LyricsNoneReason.error,
+        failure: kind,
+      ),
       _ => LyricsNone(uri, LyricsNoneReason.noLyrics),
     };
   }

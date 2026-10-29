@@ -3194,6 +3194,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lyricsOnlineBusy(String provider) {
+    return '$provider is busy. Try again in a moment.';
+  }
+
+  @override
   String get lyricsRetry => 'Retry';
 
   @override

@@ -1447,6 +1447,7 @@
   "lyricsNotFound": "Không có lời trên {provider}",
   "lyricsSearchManually": "Tìm thủ công…",
   "lyricsOnlineError": "Không kết nối được {provider}",
+  "lyricsOnlineBusy": "{provider} đang bận, thử lại sau giây lát.",
   "lyricsRetry": "Thử lại",
   "lyricsSkipped": "Đã tắt lời online cho bài này",
   "lyricsChoose": "Chọn lời…",

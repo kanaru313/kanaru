@@ -37,7 +37,9 @@ class LyricsPickerResultsPane extends StatelessWidget {
     final failedText = failed == null
         ? ''
         : canRetry
-        ? l10n.lyricsPickerError(failed)
+        ? (failure?.value.kind == LyricsFetchKind.rateLimited
+              ? l10n.lyricsOnlineBusy(failed)
+              : l10n.lyricsPickerError(failed))
         : l10n.lyricsPickerNotConsented(failed);
     final results = state.results;
     if (results.isEmpty) {

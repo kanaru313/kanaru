@@ -1,4 +1,5 @@
 import '../lyrics.dart';
+import 'lyrics_fetch_exception.dart';
 
 /// Why a song shows no lyrics.
 enum LyricsNoneReason {
@@ -106,18 +107,23 @@ final class LyricsFound extends PlayingLyricsStatus {
 
 /// No lyrics to show. [origin] is set for an instrumental record.
 final class LyricsNone extends PlayingLyricsStatus {
-  const LyricsNone(super.uri, this.reason, {this.origin});
+  const LyricsNone(super.uri, this.reason, {this.origin, this.failure});
 
   final LyricsNoneReason reason;
   final OnlineLyricsOrigin? origin;
+
+  /// Why the lookup failed, for [LyricsNoneReason.error]; `null` when it was
+  /// not a request error.
+  final LyricsFetchKind? failure;
 
   @override
   bool operator ==(Object other) =>
       other is LyricsNone &&
       other.uri == uri &&
       other.reason == reason &&
-      other.origin == origin;
+      other.origin == origin &&
+      other.failure == failure;
 
   @override
-  int get hashCode => Object.hash(LyricsNone, uri, reason, origin);
+  int get hashCode => Object.hash(LyricsNone, uri, reason, origin, failure);
 }

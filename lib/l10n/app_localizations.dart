@@ -4676,6 +4676,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t reach {provider}'**
   String lyricsOnlineError(String provider);
 
+  /// Banner above the empty lyrics slot when the service kept answering that it is busy; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} is busy. Try again in a moment.'**
+  String lyricsOnlineBusy(String provider);
+
   /// Button on the failed lookup banner
   ///
   /// In en, this message translates to:

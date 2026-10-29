@@ -2836,6 +2836,15 @@
       }
     }
   },
+  "lyricsOnlineBusy": "{provider} is busy. Try again in a moment.",
+  "@lyricsOnlineBusy": {
+    "description": "Banner above the empty lyrics slot when the service kept answering that it is busy; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
   "lyricsRetry": "Retry",
   "@lyricsRetry": {
     "description": "Button on the failed lookup banner"
