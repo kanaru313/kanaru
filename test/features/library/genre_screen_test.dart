@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/core/database/library_database.dart'
     show AlbumKey, TracksCompanion;
 import 'package:kanaru/core/player/player_service.dart';
@@ -10,6 +12,7 @@ import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/genres/genre_page_data.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/detail_page/collage_hero_cover.dart';
+import 'package:kanaru/shared/widgets/section_heading.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
@@ -24,6 +27,10 @@ const _tracks = [
 ];
 
 final _rock = genreLocation('rock');
+
+int _shellIndex(WidgetTester tester) => tester
+    .widget<StatefulNavigationShell>(find.byType(StatefulNavigationShell))
+    .currentIndex;
 
 Finder _albumTile(String title) => find.widgetWithText(AlbumGridTile, title);
 
@@ -90,14 +97,35 @@ void main() {
     expect(h.container.read(playerServiceProvider).queue.shuffled, isTrue);
   });
 
-  testWidgets('an album opens in the Albums branch', (tester) async {
+  testWidgets('an album opens in the Genres branch', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: _rock);
 
     await tester.tap(_albumTile('Only'));
     await tester.pumpAndSettle();
 
-    expect(location(h), albumLocation(const AlbumKey('x', 'only')));
+    expect(location(h), albumUnderLocation(_rock, const AlbumKey('x', 'only')));
+    expect(_shellIndex(tester), AppDestination.genres.index);
+  });
+
+  testWidgets('the Albums heading counts the albums and opens the list', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: _rock);
+
+    expect(
+      find.descendant(
+        of: find.widgetWithText(SectionHeading, 'Albums'),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byTooltip('See all'));
+    await tester.pumpAndSettle();
+    expect(location(h), genreAlbumsLocation('rock'));
+    expect(_shellIndex(tester), AppDestination.genres.index);
   });
 
   testWidgets('an album shows all its tracks, not only the genre ones', (

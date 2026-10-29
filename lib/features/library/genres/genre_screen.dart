@@ -14,6 +14,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
+import '../../../shared/widgets/section_heading.dart';
 import '../albums/album_row.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
@@ -76,7 +77,6 @@ class _GenrePageState extends ConsumerState<_GenrePage>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = context.l10n;
     final data = widget.data;
     final songs = data.tracks;
@@ -121,18 +121,21 @@ class _GenrePageState extends ConsumerState<_GenrePage>
                     ),
                   if (!filtering && data.albums.isNotEmpty) ...[
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
-                        child: Text(
-                          l10n.genresAlbums,
-                          style: theme.textTheme.titleLarge,
-                        ),
+                      child: SectionHeading(
+                        title: l10n.genresAlbums,
+                        count: data.albums.length,
+                        onSeeAll: () =>
+                            context.go(genreAlbumsLocation(widget.genreKey)),
                       ),
                     ),
                     SliverAlbumRow(
                       albums: data.albums,
-                      onTap: (AlbumSummary album) =>
-                          context.go(albumLocation(album.key)),
+                      onTap: (AlbumSummary album) => context.go(
+                        albumUnderLocation(
+                          genreLocation(widget.genreKey),
+                          album.key,
+                        ),
+                      ),
                       onQueueAction: (album, action) => enqueueAlbum(
                         ref,
                         context,

@@ -14,6 +14,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
+import '../../../shared/widgets/section_heading.dart';
 import '../albums/album_row.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
@@ -28,9 +29,8 @@ import 'artist_page_sections.dart';
 /// One artist: header, then their albums and the albums they appear on,
 /// each as one line scrolling sideways, then their songs. A wide window
 /// puts the header in a side pane beside the rest. Tapping a song plays the
-/// Songs section from it. [routeKey]
-/// comes from the URL; a broken key or an artist without tracks shows
-/// "not found".
+/// Songs section from it. [routeKey] comes from the URL; a broken key or an
+/// artist without tracks shows "not found".
 class ArtistScreen extends ConsumerWidget {
   const ArtistScreen({super.key, required this.routeKey});
 
@@ -81,7 +81,6 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
   Widget build(BuildContext context) {
     final artistKey = widget.artistKey;
     final sections = widget.sections;
-    final theme = Theme.of(context);
     final l10n = context.l10n;
     final songs = sections.songs;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
@@ -94,11 +93,18 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
         enqueueAlbum(ref, context, action, album.key, album.title);
     void openAlbum(AlbumSummary album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
-    Widget heading(String text) => SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
-        child: Text(text, style: theme.textTheme.titleLarge),
-      ),
+    Widget heading(String title, int count, String location) =>
+        SliverToBoxAdapter(
+          child: SectionHeading(
+            title: title,
+            count: count,
+            onSeeAll: () => context.go(location),
+          ),
+        );
+    Widget albumRow(List<AlbumSummary> albums) => SliverAlbumRow(
+      albums: albums,
+      onTap: openAlbum,
+      onQueueAction: queueAlbum,
     );
     // Play and Shuffle in the header always take every song.
     void onPlay() => playTracks(ref, queueOf(songs), 0);
@@ -130,20 +136,20 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
                       ),
                     ),
                   if (!filtering && sections.albums.isNotEmpty) ...[
-                    heading(l10n.artistsAlbums),
-                    SliverAlbumRow(
-                      albums: sections.albums,
-                      onTap: openAlbum,
-                      onQueueAction: queueAlbum,
+                    heading(
+                      l10n.artistsAlbums,
+                      sections.albums.length,
+                      artistAlbumsLocation(artistKey),
                     ),
+                    albumRow(sections.albums),
                   ],
                   if (!filtering && sections.appearsOn.isNotEmpty) ...[
-                    heading(l10n.artistsAppearsOn),
-                    SliverAlbumRow(
-                      albums: sections.appearsOn,
-                      onTap: openAlbum,
-                      onQueueAction: queueAlbum,
+                    heading(
+                      l10n.artistsAppearsOn,
+                      sections.appearsOn.length,
+                      artistAppearsOnLocation(artistKey),
                     ),
+                    albumRow(sections.appearsOn),
                   ],
                   SliverTracksToolbar(
                     songCount: songs.length,
