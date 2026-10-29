@@ -2284,6 +2284,511 @@ class Shape15 extends i0.VersionedTable {
       columnsByName['target_lang']! as i1.GeneratedColumn<String>;
 }
 
+final class Schema9 extends i0.VersionedSchema {
+  Schema9({required super.database}) : super(version: 9);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    plays,
+    playStats,
+    playsStatsInsert,
+    playsStatsDelete,
+    playsStatsUpdate,
+    playlists,
+    playlistEntries,
+    playsPathPlayed,
+    playsPlayedAt,
+    playlistsFavoritesUnique,
+    playlistEntriesOrder,
+    libraryRoots,
+    tracks,
+    trackSearch,
+    tracksSearchInsert,
+    tracksSearchDelete,
+    tracksSearchUpdate,
+    trackArtists,
+    coverColors,
+    excludedFolders,
+    tracksRoot,
+    tracksTitleSort,
+    tracksAlbumKey,
+    tracksKeysVersion,
+    tracksLanguage,
+    tracksAddedAt,
+    trackArtistsTrack,
+    lyricTranslations,
+    lyricTranslationPrefs,
+    onlineLyrics,
+    lyricsPins,
+    onlineLyricsRejects,
+  ];
+  late final Shape6 plays = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'plays',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_0, _column_47, _column_48, _column_49],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 playStats = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'play_stats',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(path)'],
+      columns: [_column_47, _column_50, _column_51, _column_52],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger playsStatsInsert = i1.Trigger(
+    'CREATE TRIGGER plays_stats_insert AFTER INSERT ON plays BEGIN INSERT INTO play_stats (path, play_count, first_played_at, last_played_at) VALUES (new.path, 1, new.played_at, new.played_at) ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1, first_played_at = min(first_played_at, excluded.first_played_at), last_played_at = max(last_played_at, excluded.last_played_at);END',
+    'plays_stats_insert',
+  );
+  final i1.Trigger playsStatsDelete = i1.Trigger(
+    'CREATE TRIGGER plays_stats_delete AFTER DELETE ON plays BEGIN UPDATE play_stats SET play_count = play_count - 1, first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at), last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at) WHERE path = old.path;DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;END',
+    'plays_stats_delete',
+  );
+  final i1.Trigger playsStatsUpdate = i1.Trigger(
+    'CREATE TRIGGER plays_stats_update AFTER UPDATE OF path, played_at ON plays WHEN old.path IS NOT new.path OR old.played_at IS NOT new.played_at BEGIN UPDATE play_stats SET play_count = play_count - 1, first_played_at = coalesce((SELECT min(played_at) FROM plays WHERE path = old.path), first_played_at), last_played_at = coalesce((SELECT max(played_at) FROM plays WHERE path = old.path), last_played_at) WHERE path = old.path;DELETE FROM play_stats WHERE path = old.path AND play_count <= 0;INSERT INTO play_stats (path, play_count, first_played_at, last_played_at) VALUES (new.path, 1, new.played_at, new.played_at) ON CONFLICT (path) DO UPDATE SET play_count = play_count + 1, first_played_at = min(first_played_at, excluded.first_played_at), last_played_at = max(last_played_at, excluded.last_played_at);END',
+    'plays_stats_update',
+  );
+  late final Shape10 playlists = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'playlists',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_0, _column_53, _column_54, _column_57],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 playlistEntries = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'playlist_entries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_0, _column_55, _column_47, _column_56],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index playsPathPlayed = i1.Index(
+    'plays_path_played',
+    'CREATE INDEX plays_path_played ON plays (path, played_at)',
+  );
+  final i1.Index playsPlayedAt = i1.Index(
+    'plays_played_at',
+    'CREATE INDEX plays_played_at ON plays (played_at, path)',
+  );
+  final i1.Index playlistsFavoritesUnique = i1.Index(
+    'playlists_favorites_unique',
+    'CREATE UNIQUE INDEX playlists_favorites_unique ON playlists (kind) WHERE kind = \'favorites\'',
+  );
+  final i1.Index playlistEntriesOrder = i1.Index(
+    'playlist_entries_order',
+    'CREATE INDEX playlist_entries_order ON playlist_entries (playlist_id, position)',
+  );
+  late final Shape0 libraryRoots = Shape0(
+    source: i0.VersionedTable(
+      entityName: 'library_roots',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_0, _column_1, _column_2, _column_3],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape13 tracks = Shape13(
+    source: i0.VersionedTable(
+      entityName: 'tracks',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_0,
+        _column_4,
+        _column_1,
+        _column_5,
+        _column_6,
+        _column_7,
+        _column_8,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_13,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_62,
+        _column_19,
+        _column_20,
+        _column_21,
+        _column_22,
+        _column_23,
+        _column_2,
+        _column_24,
+        _column_25,
+        _column_26,
+        _column_27,
+        _column_28,
+        _column_29,
+        _column_30,
+        _column_31,
+        _column_32,
+        _column_33,
+        _column_38,
+        _column_39,
+        _column_40,
+        _column_41,
+        _column_34,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 trackSearch = Shape5(
+    source: i0.VersionedVirtualTable(
+      entityName: 'track_search',
+      moduleAndArgs: 'fts5(title_sort, artist_search, album_search, album_artist_search, genre_search, content=\'tracks\', content_rowid=\'id\', tokenize=\'unicode61 remove_diacritics 0\', prefix=\'1 2 3\')',
+      columns: [_column_42, _column_43, _column_44, _column_45, _column_46],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger tracksSearchInsert = i1.Trigger(
+    'CREATE TRIGGER tracks_search_insert AFTER INSERT ON tracks BEGIN INSERT INTO track_search ("rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);END',
+    'tracks_search_insert',
+  );
+  final i1.Trigger tracksSearchDelete = i1.Trigger(
+    'CREATE TRIGGER tracks_search_delete AFTER DELETE ON tracks BEGIN INSERT INTO track_search (track_search, "rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (\'delete\', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);END',
+    'tracks_search_delete',
+  );
+  final i1.Trigger tracksSearchUpdate = i1.Trigger(
+    'CREATE TRIGGER tracks_search_update AFTER UPDATE OF title_sort, artist_search, album_search, album_artist_search, genre_search ON tracks WHEN old.title_sort IS NOT new.title_sort OR old.artist_search IS NOT new.artist_search OR old.album_search IS NOT new.album_search OR old.album_artist_search IS NOT new.album_artist_search OR old.genre_search IS NOT new.genre_search BEGIN INSERT INTO track_search (track_search, "rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (\'delete\', old.id, old.title_sort, old.artist_search, old.album_search, old.album_artist_search, old.genre_search);INSERT INTO track_search ("rowid", title_sort, artist_search, album_search, album_artist_search, genre_search) VALUES (new.id, new.title_sort, new.artist_search, new.album_search, new.album_artist_search, new.genre_search);END',
+    'tracks_search_update',
+  );
+  late final Shape3 trackArtists = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'track_artists',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(artist_key, track_id)'],
+      columns: [_column_35, _column_36, _column_37],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape11 coverColors = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'cover_colors',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(cover_key)'],
+      columns: [_column_58, _column_59, _column_60, _column_61],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape12 excludedFolders = Shape12(
+    source: i0.VersionedTable(
+      entityName: 'excluded_folders',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_0, _column_1, _column_2],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index tracksRoot = i1.Index(
+    'tracks_root',
+    'CREATE INDEX tracks_root ON tracks (root_id)',
+  );
+  final i1.Index tracksTitleSort = i1.Index(
+    'tracks_title_sort',
+    'CREATE INDEX tracks_title_sort ON tracks (title_sort, id)',
+  );
+  final i1.Index tracksAlbumKey = i1.Index(
+    'tracks_album_key',
+    'CREATE INDEX tracks_album_key ON tracks (album_artist_key, album_title_key)',
+  );
+  final i1.Index tracksKeysVersion = i1.Index(
+    'tracks_keys_version',
+    'CREATE INDEX tracks_keys_version ON tracks (keys_version)',
+  );
+  final i1.Index tracksLanguage = i1.Index(
+    'tracks_language',
+    'CREATE INDEX tracks_language ON tracks (language)',
+  );
+  final i1.Index tracksAddedAt = i1.Index(
+    'tracks_added_at',
+    'CREATE INDEX tracks_added_at ON tracks (added_at)',
+  );
+  final i1.Index trackArtistsTrack = i1.Index(
+    'track_artists_track',
+    'CREATE INDEX track_artists_track ON track_artists (track_id)',
+  );
+  late final Shape14 lyricTranslations = Shape14(
+    source: i0.VersionedTable(
+      entityName: 'lyric_translations',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(content_hash, provider, target_lang)'],
+      columns: [
+        _column_63,
+        _column_64,
+        _column_65,
+        _column_66,
+        _column_67,
+        _column_54,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape15 lyricTranslationPrefs = Shape15(
+    source: i0.VersionedTable(
+      entityName: 'lyric_translation_prefs',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(content_hash)'],
+      columns: [_column_63, _column_65],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape16 onlineLyrics = Shape16(
+    source: i0.VersionedTable(
+      entityName: 'online_lyrics',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(cache_key, provider_id)'],
+      columns: [
+        _column_68,
+        _column_69,
+        _column_70,
+        _column_71,
+        _column_72,
+        _column_73,
+        _column_74,
+        _column_75,
+        _column_76,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape17 lyricsPins = Shape17(
+    source: i0.VersionedTable(
+      entityName: 'lyrics_pins',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(track_key)'],
+      columns: [
+        _column_77,
+        _column_78,
+        _column_71,
+        _column_72,
+        _column_73,
+        _column_74,
+        _column_75,
+        _column_79,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 onlineLyricsRejects = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'online_lyrics_rejects',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(cache_key, provider_id, remote_id)'],
+      columns: [_column_68, _column_69, _column_80, _column_81],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+}
+
+class Shape16 extends i0.VersionedTable {
+  Shape16({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get cacheKey =>
+      columnsByName['cache_key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get providerId =>
+      columnsByName['provider_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get status =>
+      columnsByName['status']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get remoteId =>
+      columnsByName['remote_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get syncedText =>
+      columnsByName['synced_text']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get plainText =>
+      columnsByName['plain_text']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get instrumental =>
+      columnsByName['instrumental']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get remoteDurationMs =>
+      columnsByName['remote_duration_ms']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get fetchedAt =>
+      columnsByName['fetched_at']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_68(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'cache_key',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_69(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'provider_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_70(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'status',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_71(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'remote_id',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_72(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'synced_text',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_73(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'plain_text',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_74(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'instrumental',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL DEFAULT 0 CHECK (instrumental IN (0, 1))',
+      defaultValue: const i1.CustomExpression('0'),
+    );
+i1.GeneratedColumn<int> _column_75(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'remote_duration_ms',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_76(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'fetched_at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+
+class Shape17 extends i0.VersionedTable {
+  Shape17({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get trackKey =>
+      columnsByName['track_key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get providerId =>
+      columnsByName['provider_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get remoteId =>
+      columnsByName['remote_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get syncedText =>
+      columnsByName['synced_text']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get plainText =>
+      columnsByName['plain_text']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get instrumental =>
+      columnsByName['instrumental']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get remoteDurationMs =>
+      columnsByName['remote_duration_ms']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get pinnedAt =>
+      columnsByName['pinned_at']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_77(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'track_key',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_78(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'provider_id',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_79(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'pinned_at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+
+class Shape18 extends i0.VersionedTable {
+  Shape18({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get cacheKey =>
+      columnsByName['cache_key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get providerId =>
+      columnsByName['provider_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get remoteId =>
+      columnsByName['remote_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get rejectedAt =>
+      columnsByName['rejected_at']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_80(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'remote_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_81(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'rejected_at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -2292,6 +2797,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
   required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, Schema8 schema) from7To8,
+  required Future<void> Function(i1.Migrator m, Schema9 schema) from8To9,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -2330,6 +2836,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from7To8(migrator, schema);
         return 8;
+      case 8:
+        final schema = Schema9(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from8To9(migrator, schema);
+        return 9;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -2344,6 +2855,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema6 schema) from5To6,
   required Future<void> Function(i1.Migrator m, Schema7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, Schema8 schema) from7To8,
+  required Future<void> Function(i1.Migrator m, Schema9 schema) from8To9,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -2353,5 +2865,6 @@ i1.OnUpgrade stepByStep({
     from5To6: from5To6,
     from6To7: from6To7,
     from7To8: from7To8,
+    from8To9: from8To9,
   ),
 );
