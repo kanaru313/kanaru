@@ -113,8 +113,9 @@ void main() {
   ) async {
     await pumpNowPlaying(tester);
 
-    // Right of the buttons, left of the window buttons.
-    await doubleClick(tester, const Offset(140, 32));
+    // Right of the close, queue and translate buttons (end at x 152), left
+    // of the tab dots and the window buttons.
+    await doubleClick(tester, const Offset(190, 32));
 
     expect(toggles, hasLength(1));
   });
@@ -123,7 +124,7 @@ void main() {
     await pumpNowPlaying(tester);
 
     final gesture = await tester.startGesture(
-      const Offset(140, 32),
+      const Offset(190, 32),
       kind: PointerDeviceKind.mouse,
     );
     await gesture.moveBy(const Offset(40, 0));
