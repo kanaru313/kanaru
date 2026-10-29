@@ -1,5 +1,8 @@
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/translation_language_name.dart';
+import '../../../../shared/translation_notice_dialog.dart'
+    show translationServiceName;
 
 export '../../../../shared/translation_failure_message.dart';
 
@@ -27,15 +30,23 @@ bool translationIsActive(LyricsTranslationState state) => switch (state) {
   TranslationNeedsNotice() => false,
 };
 
-/// The tooltip of the header button for [state].
+/// The tooltip of the header button for [state]: with translated lyrics the
+/// credit, when the lyrics are already in the target language a note saying
+/// so.
 String translationButtonTooltip(
   AppLocalizations l10n,
   LyricsTranslationState state,
 ) => switch (state) {
   TranslationLoading() => l10n.lyricsTranslationButtonLoading,
   TranslationFailed() => l10n.lyricsTranslationButtonFailed,
-  TranslationReady() ||
-  TranslationSameLanguage() => l10n.lyricsTranslationButtonOn,
+  TranslationReady(:final service, :final info) =>
+    l10n.lyricsTranslationAttribution(
+      translationServiceName(service),
+      translationLanguageName(l10n, info.effective),
+    ),
+  TranslationSameLanguage(:final info) => l10n.lyricsTranslationSameLanguage(
+    languageNameInSentence(l10n, translationLanguageName(l10n, info.effective)),
+  ),
   TranslationUnavailable() ||
   TranslationOff() ||
   TranslationNeedsNotice() => l10n.lyricsTranslationButton,

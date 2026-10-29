@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../lyrics/translation/lyrics_translation_button.dart';
+import '../lyrics/translation/lyrics_translation_pill.dart';
 import '../playback_controls.dart';
 import '../repeat/repeat_button.dart';
 import '../sleep_timer/sleep_timer_button.dart';
@@ -27,6 +28,27 @@ const _sleepLabelWidth = 56.0;
 /// Gap, divider line and gap between the right buttons and the window
 /// buttons.
 const _rightSeparatorWidth = 25.0;
+
+/// Width of one round header button.
+const _buttonWidth = 48.0;
+
+/// Room the translate button's label may take in a header [width] wide: what
+/// is left after every other button, the sleep timer label's reserve and the
+/// window buttons' divider, plus the round button the pill replaces, minus the
+/// pill's own padding and icon. Zero or less means no room for a label.
+@visibleForTesting
+double nowPlayingTranslateLabelRoom({
+  required double width,
+  required bool hasModeButton,
+  required bool hasWindowButtons,
+}) {
+  final left = _leftInset + (hasModeButton ? 5 : 4) * _buttonWidth + _leftGap;
+  final right =
+      _rightButtonsWidth +
+      _sleepLabelWidth +
+      (hasWindowButtons ? _rightSeparatorWidth : 0);
+  return width - left - right + _buttonWidth - lyricsTranslationPillChrome;
+}
 
 /// Wide Now Playing's header: close and the song actions on the left; shuffle,
 /// repeat, sleep timer and volume on the right. The window buttons, when the
@@ -99,88 +121,95 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
     final colors = Theme.of(context).colorScheme;
     return SizedBox(
       height: nowPlayingHeaderHeight,
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: _leftInset),
-            child: exclude(
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  NowPlayingCloseButton(onPressed: widget.onClose),
-                  ?widget.modeButton,
-                  const SizedBox(width: _leftGap),
-                  const NowPlayingFavoriteButton(),
-                  const NowPlayingPlaylistButton(),
-                  if (widget.showTranslate)
-                    LyricsTranslationButton(
-                      enabled: widget.translateEnabled,
-                      onMenuChanged: (open) {
-                        _translateOpen = open;
-                        _report();
-                      },
-                    ),
-                ],
+      child: LayoutBuilder(
+        builder: (context, bounds) => Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: _leftInset),
+              child: exclude(
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NowPlayingCloseButton(onPressed: widget.onClose),
+                    ?widget.modeButton,
+                    const SizedBox(width: _leftGap),
+                    const NowPlayingFavoriteButton(),
+                    const NowPlayingPlaylistButton(),
+                    if (widget.showTranslate)
+                      LyricsTranslationButton(
+                        enabled: widget.translateEnabled,
+                        maxLabelWidth: nowPlayingTranslateLabelRoom(
+                          width: bounds.maxWidth,
+                          hasModeButton: widget.modeButton != null,
+                          hasWindowButtons: widget.hasWindowButtons,
+                        ),
+                        onMenuChanged: (open) {
+                          _translateOpen = open;
+                          _report();
+                        },
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, side) {
-                final separator = widget.hasWindowButtons
-                    ? _rightSeparatorWidth
-                    : 0.0;
-                return Align(
-                  alignment: Alignment.centerRight,
-                  child: exclude(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const ShuffleButton(),
-                        RepeatButton(
-                          onMenuChanged: (open) {
-                            _repeatOpen = open;
-                            _report();
-                          },
-                        ),
-                        Flexible(
-                          child: SleepTimerButton(
-                            showLabel:
-                                side.maxWidth - separator >=
-                                _rightButtonsWidth + _sleepLabelWidth,
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, side) {
+                  final separator = widget.hasWindowButtons
+                      ? _rightSeparatorWidth
+                      : 0.0;
+                  return Align(
+                    alignment: Alignment.centerRight,
+                    child: exclude(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const ShuffleButton(),
+                          RepeatButton(
                             onMenuChanged: (open) {
-                              _sleepOpen = open;
+                              _repeatOpen = open;
                               _report();
                             },
                           ),
-                        ),
-                        VolumeButton(
-                          popupBelow: true,
-                          onPopupChanged: (open) {
-                            _volumeOpen = open;
-                            _report();
-                          },
-                        ),
-                        if (widget.hasWindowButtons)
-                          SizedBox(
-                            width: _rightSeparatorWidth,
-                            height: 24,
-                            child: Center(
-                              child: VerticalDivider(
-                                width: 1,
-                                thickness: 1,
-                                color: colors.outlineVariant,
-                              ),
+                          Flexible(
+                            child: SleepTimerButton(
+                              showLabel:
+                                  side.maxWidth - separator >=
+                                  _rightButtonsWidth + _sleepLabelWidth,
+                              onMenuChanged: (open) {
+                                _sleepOpen = open;
+                                _report();
+                              },
                             ),
                           ),
-                      ],
+                          VolumeButton(
+                            popupBelow: true,
+                            onPopupChanged: (open) {
+                              _volumeOpen = open;
+                              _report();
+                            },
+                          ),
+                          if (widget.hasWindowButtons)
+                            SizedBox(
+                              width: _rightSeparatorWidth,
+                              height: 24,
+                              child: Center(
+                                child: VerticalDivider(
+                                  width: 1,
+                                  thickness: 1,
+                                  color: colors.outlineVariant,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

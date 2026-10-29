@@ -2509,9 +2509,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationButton => 'Dịch lời bài hát';
 
   @override
-  String get lyricsTranslationButtonOn => 'Dịch lời bài hát: đang bật';
-
-  @override
   String get lyricsTranslationButtonLoading => 'Dịch lời bài hát: đang dịch';
 
   @override
@@ -2622,6 +2619,11 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String lyricsTranslationAttribution(String service, String language) {
     return 'Dịch bởi $service · $language';
+  }
+
+  @override
+  String lyricsTranslationButtonLabel(String service, String language) {
+    return '$service · $language';
   }
 
   @override

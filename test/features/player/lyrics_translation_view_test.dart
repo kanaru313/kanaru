@@ -83,28 +83,15 @@ void main() {
     }
   }
 
-  testWidgets('ready: translations under the lines and the credit', (
+  testWidgets('ready: translations under the lines and no credit', (
     tester,
   ) async {
     await pump(tester, _ready());
     expect(find.text('First words'), findsOneWidget);
     expect(find.text('Dòng một'), findsOneWidget);
     expect(find.text('Dòng hai'), findsOneWidget);
-    expect(find.text('Translated by Google · English'), findsOneWidget);
-  });
-
-  testWidgets('the credit names the service of the row on screen', (
-    tester,
-  ) async {
-    await pump(tester, _ready(service: _deepl));
-    expect(find.text('Translated by DeepL · English'), findsOneWidget);
-  });
-
-  testWidgets('pressing the credit opens the translation menu', (tester) async {
-    await pump(tester, _ready());
-    await tester.tap(find.text('Translated by Google · English'));
-    await tester.pumpAndSettle();
-    expect(find.text('Show translation'), findsOneWidget);
+    expect(find.textContaining('Translated by'), findsNothing);
+    expect(find.byType(MenuAnchor), findsNothing);
   });
 
   testWidgets('plain lyrics: replace shows the translation as the main line', (
@@ -230,11 +217,13 @@ void main() {
     expect(find.text('Use DeepL'), findsOneWidget);
   });
 
-  testWidgets('same language: a note and no translation lines', (tester) async {
+  testWidgets('same language: no translation lines and no note', (
+    tester,
+  ) async {
     await pump(tester, TranslationSameLanguage(fakeTranslationInfo(), _google));
-    expect(find.text('Lyrics are already in English'), findsOneWidget);
+    expect(find.text('Lyrics are already in English'), findsNothing);
     expect(find.byType(LyricsTranslationPlaceholder), findsNothing);
-    expect(find.text('Translated by Google · English'), findsNothing);
+    expect(find.textContaining('Translated by'), findsNothing);
   });
 
   testWidgets('off: no banner, no credit, no extra text', (tester) async {

@@ -8,7 +8,6 @@ import '../../../core/player/player_service.dart';
 import '../../../core/settings/settings_provider.dart';
 import 'plain_lyrics_view.dart';
 import 'synced_lyrics_view.dart';
-import 'translation/lyrics_translation_attribution.dart';
 import 'translation/lyrics_translation_banner.dart';
 import 'translation/translated_line_text.dart';
 
@@ -19,8 +18,8 @@ const _pulseDuration = Duration(milliseconds: 900);
 /// playback, plain lyrics are shown as they are. Shows nothing while the
 /// current track's lyrics load (the value may still be the previous
 /// track's) or when it has none. With translation on, each line carries its
-/// translation (or a placeholder while it comes), a banner reports a failure
-/// and the credit sits at the bottom end.
+/// translation (or a placeholder while it comes) and a banner reports a
+/// failure. The credit is on the header's translate button.
 class LyricsView extends ConsumerWidget {
   const LyricsView({super.key});
 
@@ -44,44 +43,37 @@ class LyricsView extends ConsumerWidget {
         : translationDirectionOf(ready.info.effective.code);
     return _PulseHost(
       active: loading,
-      builder: (context, pulse) => Stack(
-        fit: StackFit.expand,
+      builder: (context, pulse) => Column(
         children: [
           // The banner has its own room above the lyrics, so it never covers
           // the first lines. Its slot is always there, which keeps the view's
           // place in the tree.
-          Column(
-            children: [
-              state is TranslationFailed
-                  ? LyricsTranslationBanner(state: state, appLang: appLang)
-                  : const SizedBox.shrink(),
-              Expanded(
-                // A new key per lyrics resets the scroll position and line
-                // state.
-                child: lyrics.synced
-                    ? SyncedLyricsView(
-                        key: ObjectKey(lyrics),
-                        lyrics: lyrics,
-                        translations: ready?.lines,
-                        translationPending: loading,
-                        display: display,
-                        pulse: pulse,
-                        translationDirection: direction,
-                      )
-                    : PlainLyricsView(
-                        key: ObjectKey(lyrics),
-                        lyrics: lyrics,
-                        translations: ready?.lines,
-                        translationPending: loading,
-                        display: display,
-                        pulse: pulse,
-                        translationDirection: direction,
-                      ),
-              ),
-            ],
+          state is TranslationFailed
+              ? LyricsTranslationBanner(state: state, appLang: appLang)
+              : const SizedBox.shrink(),
+          Expanded(
+            // A new key per lyrics resets the scroll position and line
+            // state.
+            child: lyrics.synced
+                ? SyncedLyricsView(
+                    key: ObjectKey(lyrics),
+                    lyrics: lyrics,
+                    translations: ready?.lines,
+                    translationPending: loading,
+                    display: display,
+                    pulse: pulse,
+                    translationDirection: direction,
+                  )
+                : PlainLyricsView(
+                    key: ObjectKey(lyrics),
+                    lyrics: lyrics,
+                    translations: ready?.lines,
+                    translationPending: loading,
+                    display: display,
+                    pulse: pulse,
+                    translationDirection: direction,
+                  ),
           ),
-          if (state is TranslationReady || state is TranslationSameLanguage)
-            LyricsTranslationAttribution(state: state, appLang: appLang),
         ],
       ),
     );

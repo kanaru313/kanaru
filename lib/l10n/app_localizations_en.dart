@@ -2700,9 +2700,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationButton => 'Lyrics translation';
 
   @override
-  String get lyricsTranslationButtonOn => 'Lyrics translation: on';
-
-  @override
   String get lyricsTranslationButtonLoading =>
       'Lyrics translation: translating';
 
@@ -2816,6 +2813,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String lyricsTranslationAttribution(String service, String language) {
     return 'Translated by $service · $language';
+  }
+
+  @override
+  String lyricsTranslationButtonLabel(String service, String language) {
+    return '$service · $language';
   }
 
   @override

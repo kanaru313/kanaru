@@ -2275,10 +2275,6 @@
   "@lyricsTranslationButton": {
     "description": "Tooltip of the Now Playing header button that opens the lyrics translation menu"
   },
-  "lyricsTranslationButtonOn": "Lyrics translation: on",
-  "@lyricsTranslationButtonOn": {
-    "description": "Tooltip of the translation button while translated lyrics show"
-  },
   "lyricsTranslationButtonLoading": "Lyrics translation: translating",
   "@lyricsTranslationButtonLoading": {
     "description": "Tooltip of the translation button while a translation is being fetched"
@@ -2353,7 +2349,7 @@
   },
   "lyricsTranslationSameLanguage": "Lyrics are already in {language}",
   "@lyricsTranslationSameLanguage": {
-    "description": "Footer of the lyrics translation menu when nothing needs translating; language is the language name",
+    "description": "Footer of the lyrics translation menu and tooltip of the translate button when nothing needs translating; language is the language name",
     "placeholders": {
       "language": {
         "type": "String"
@@ -2422,7 +2418,19 @@
   },
   "lyricsTranslationAttribution": "Translated by {service} · {language}",
   "@lyricsTranslationAttribution": {
-    "description": "Credit under the translated lyrics; pressing it opens the translation menu. service is Google or DeepL, language the language name",
+    "description": "Tooltip of the translate button while translated lyrics show: who translated them. service is Google or DeepL, language the language name",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      },
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationButtonLabel": "{service} · {language}",
+  "@lyricsTranslationButtonLabel": {
+    "description": "Text of the translate button in the header while translated lyrics show. service is Google or DeepL, language the language name",
     "placeholders": {
       "service": {
         "type": "String"

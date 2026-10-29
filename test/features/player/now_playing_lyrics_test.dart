@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/app/shell/window/desktop_window.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
@@ -10,6 +14,7 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
+import 'fake_translation_controller.dart';
 
 void main() {
   Widget app(ProviderContainer container, Widget? lyrics) =>
@@ -23,12 +28,20 @@ void main() {
         ),
       );
 
-  Future<ProviderContainer> pump(WidgetTester tester, {Widget? lyrics}) async {
-    tester.view.physicalSize = const Size(1280, 800);
+  Future<ProviderContainer> pump(
+    WidgetTester tester, {
+    Widget? lyrics,
+    Size size = const Size(1280, 800),
+    List<Override> overrides = const [],
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final container = ProviderContainer(
-      overrides: [audioBackendProvider.overrideWithValue(FakeAudioBackend())],
+      overrides: [
+        audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+        ...overrides,
+      ],
     );
     addTearDown(container.dispose);
     await container.read(playerServiceProvider.notifier).openTracks([
@@ -111,5 +124,72 @@ void main() {
     // The Queue tab the user picked is still the one shown.
     expect(find.byType(QueuePanel), findsOneWidget);
     expect(find.text('LYRICS'), findsNothing);
+  });
+
+  group('narrow translate button', () {
+    List<Override> scripted() => [
+      fakeTranslationOverride(
+        FakeTranslationController(TranslationOff(fakeTranslationInfo())),
+      ),
+    ];
+    const narrow = Size(480, 700);
+
+    testWidgets('sits in the header when the track has lyrics', (tester) async {
+      await pump(tester, lyrics: lyrics, size: narrow, overrides: scripted());
+
+      final button = find.byTooltip('Lyrics translation');
+      expect(button, findsOneWidget);
+      expect(tester.getRect(button).top, lessThan(64));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('is absent without lyrics', (tester) async {
+      await pump(tester, size: narrow, overrides: scripted());
+
+      expect(find.byTooltip('Lyrics translation'), findsNothing);
+    });
+
+    testWidgets('opens the translation menu', (tester) async {
+      await pump(tester, lyrics: lyrics, size: narrow, overrides: scripted());
+
+      await tester.tap(find.byTooltip('Lyrics translation'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Show translation'), findsOneWidget);
+    });
+
+    testWidgets('with window buttons and a credit stays an icon', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        lyrics: lyrics,
+        size: narrow,
+        overrides: [
+          customTitleBarProvider.overrideWithValue(true),
+          fakeTranslationOverride(
+            FakeTranslationController(
+              TranslationReady(
+                fakeTranslationInfo(),
+                LyricsTranslationService.google,
+                'ja',
+                const [],
+                false,
+              ),
+            ),
+          ),
+        ],
+      );
+
+      expect(
+        find.ancestor(
+          of: find.byTooltip('Translated by Google · English'),
+          matching: find.byType(IconButton),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Google · English'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

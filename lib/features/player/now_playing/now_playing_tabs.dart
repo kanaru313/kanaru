@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../lyrics/translation/lyrics_translation_button.dart';
 import '../queue/queue_button.dart';
 import 'now_playing_actions.dart';
 import 'now_playing_compact_page.dart';
@@ -118,6 +119,8 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                             )
                           else
                             QueueButton(onPressed: () => _select(_Tab.queue)),
+                          if (lyricsPage != null)
+                            const LyricsTranslationButton(),
                         ],
                       ),
                     ),

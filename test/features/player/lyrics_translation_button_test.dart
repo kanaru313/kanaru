@@ -6,6 +6,7 @@ import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
+import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_pill.dart';
 
 import 'fake_translation_controller.dart';
 
@@ -21,6 +22,7 @@ void main() {
     WidgetTester tester,
     LyricsTranslationState state, {
     bool enabled = true,
+    double? maxLabelWidth,
   }) async {
     menuEvents = [];
     container = ProviderContainer(
@@ -39,6 +41,7 @@ void main() {
         container,
         LyricsTranslationButton(
           enabled: enabled,
+          maxLabelWidth: maxLabelWidth,
           onMenuChanged: menuEvents.add,
         ),
       ),
@@ -69,7 +72,7 @@ void main() {
     final style = button(tester).style!;
     final scheme = Theme.of(tester.element(find.byType(IconButton)))
         .colorScheme;
-    expect(find.byTooltip('Lyrics translation: on'), findsOneWidget);
+    expect(find.byTooltip('Translated by Google · English'), findsOneWidget);
     expect(button(tester).isSelected, isTrue);
     expect(style.backgroundColor!.resolve({}), scheme.surfaceContainerHighest);
     expect(style.foregroundColor!.resolve({}), scheme.primary);
@@ -177,5 +180,137 @@ void main() {
 
     expect(find.text('Show translation'), findsNothing);
     expect(menuEvents, [true, false]);
+  });
+
+  group('pill', () {
+    TranslationReady ready([LyricsTranslationService service = _google]) =>
+        TranslationReady(_info, service, 'ja', const [], false);
+
+    testWidgets('ready with room: service and language, credit tooltip', (
+      tester,
+    ) async {
+      await pump(tester, ready(), maxLabelWidth: 120);
+
+      expect(find.text('Google · English'), findsOneWidget);
+      expect(find.byType(IconButton), findsNothing);
+      expect(find.byTooltip('Translated by Google · English'), findsOneWidget);
+    });
+
+    testWidgets('disabled pill does not force the primary icon colour', (
+      tester,
+    ) async {
+      await pump(tester, ready(), maxLabelWidth: 120, enabled: false);
+
+      final scheme = Theme.of(tester.element(find.text('Google · English')))
+          .colorScheme;
+      final icon = tester.widget<Icon>(
+        find.descendant(
+          of: find.byType(LyricsTranslationPill),
+          matching: find.byType(Icon),
+        ),
+      );
+      expect(icon.color, isNull);
+      expect(icon.color, isNot(scheme.primary));
+    });
+
+    testWidgets('names the service of the row on screen', (tester) async {
+      await pump(
+        tester,
+        ready(LyricsTranslationService.deepl),
+        maxLabelWidth: 120,
+      );
+
+      expect(find.text('DeepL · English'), findsOneWidget);
+    });
+
+    testWidgets('pressing the pill opens the menu', (tester) async {
+      await pump(tester, ready(), maxLabelWidth: 120);
+
+      await tester.tap(find.text('Google · English'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Show translation'), findsOneWidget);
+      expect(menuEvents, [true]);
+    });
+
+    testWidgets('a long label shrinks with an ellipsis to its room', (
+      tester,
+    ) async {
+      await pump(tester, ready(), maxLabelWidth: 64);
+
+      expect(tester.takeException(), isNull);
+      expect(
+        tester.getSize(find.text('Google · English')).width,
+        lessThanOrEqualTo(64),
+      );
+    });
+
+    testWidgets('less room than the minimum keeps the icon', (tester) async {
+      await pump(tester, ready(), maxLabelWidth: 63);
+
+      expect(find.byType(IconButton), findsOneWidget);
+      expect(find.text('Google · English'), findsNothing);
+      expect(find.byTooltip('Translated by Google · English'), findsOneWidget);
+    });
+
+    testWidgets('no room given keeps the icon', (tester) async {
+      await pump(tester, ready());
+
+      expect(find.byType(IconButton), findsOneWidget);
+    });
+
+    testWidgets('off stays an icon even with room', (tester) async {
+      await pump(tester, TranslationOff(_info), maxLabelWidth: 200);
+
+      expect(find.byType(IconButton), findsOneWidget);
+      expect(find.textContaining('·'), findsNothing);
+    });
+
+    testWidgets('failed stays an icon with its dot even with room', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        TranslationFailed(_info, _google, TranslationFailureKind.network),
+        maxLabelWidth: 200,
+      );
+
+      expect(find.byType(IconButton), findsOneWidget);
+      expect(dot, findsOneWidget);
+    });
+
+    testWidgets('same language: active icon with the note as tooltip', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        TranslationSameLanguage(_info, _google),
+        maxLabelWidth: 200,
+      );
+
+      expect(find.byType(IconButton), findsOneWidget);
+      expect(button(tester).isSelected, isTrue);
+      expect(find.byTooltip('Lyrics are already in English'), findsOneWidget);
+    });
+
+    testWidgets('an open menu survives the loading to ready switch', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        TranslationLoading(_info, _google),
+        maxLabelWidth: 120,
+      );
+      await tester.tap(find.byType(IconButton));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Show translation'), findsOneWidget);
+
+      fake.emit(ready());
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Google · English'), findsOneWidget);
+      expect(find.text('Show translation'), findsOneWidget);
+      expect(menuEvents, [true]);
+    });
   });
 }

@@ -3926,12 +3926,6 @@ abstract class AppLocalizations {
   /// **'Lyrics translation'**
   String get lyricsTranslationButton;
 
-  /// Tooltip of the translation button while translated lyrics show
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics translation: on'**
-  String get lyricsTranslationButtonOn;
-
   /// Tooltip of the translation button while a translation is being fetched
   ///
   /// In en, this message translates to:
@@ -4010,7 +4004,7 @@ abstract class AppLocalizations {
   /// **'Retranslate with {service}'**
   String lyricsTranslationRetranslateWith(String service);
 
-  /// Footer of the lyrics translation menu when nothing needs translating; language is the language name
+  /// Footer of the lyrics translation menu and tooltip of the translate button when nothing needs translating; language is the language name
   ///
   /// In en, this message translates to:
   /// **'Lyrics are already in {language}'**
@@ -4106,11 +4100,17 @@ abstract class AppLocalizations {
   /// **'The key store is not available, so the DeepL key cannot be read.'**
   String get lyricsTranslationFailKeyStoreUnavailable;
 
-  /// Credit under the translated lyrics; pressing it opens the translation menu. service is Google or DeepL, language the language name
+  /// Tooltip of the translate button while translated lyrics show: who translated them. service is Google or DeepL, language the language name
   ///
   /// In en, this message translates to:
   /// **'Translated by {service} · {language}'**
   String lyricsTranslationAttribution(String service, String language);
+
+  /// Text of the translate button in the header while translated lyrics show. service is Google or DeepL, language the language name
+  ///
+  /// In en, this message translates to:
+  /// **'{service} · {language}'**
+  String lyricsTranslationButtonLabel(String service, String language);
 
   /// Button of the lyrics translation error banner that switches to the other service; service is Google or DeepL
   ///

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/playback_fade.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
@@ -369,6 +370,188 @@ void main() {
       await tester.pumpWidget(const SizedBox());
 
       expect(floating.value, isFalse);
+    });
+
+    group('as a pill', () {
+      List<Override> ready([String target = 'en']) => [
+        fakeTranslationOverride(
+          FakeTranslationController(
+            TranslationReady(
+              fakeTranslationInfo(defaultCode: target),
+              LyricsTranslationService.google,
+              'ja',
+              const [],
+              false,
+            ),
+          ),
+        ),
+      ];
+
+      testWidgets('shows the credit at 1280 px and opens the menu', (
+        tester,
+      ) async {
+        await pump(tester, showTranslate: true, overrides: ready());
+
+        expect(find.text('Google · English'), findsOneWidget);
+        await tester.tap(find.text('Google · English'));
+        await tester.pumpAndSettle();
+        expect(find.text('Show translation'), findsOneWidget);
+        expect(floating.value, isTrue);
+      });
+
+      testWidgets('the pill moves no other header button', (tester) async {
+        await pump(tester, showTranslate: true, overrides: scripted());
+        final shuffle = tester.getRect(find.byType(ShuffleButton));
+        // Unmounting schedules the disposal of providers the header watched;
+        // let it run before the next one replaces it.
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        await pump(tester, showTranslate: true, overrides: ready());
+
+        expect(tester.getRect(find.byType(ShuffleButton)), shuffle);
+      });
+
+      for (final locale in const [Locale('en'), Locale('vi')]) {
+        testWidgets('stays an icon at 720 px beside the window buttons, '
+            '${locale.languageCode}', (tester) async {
+          await pump(
+            tester,
+            width: 720,
+            windowButtons: true,
+            showTranslate: true,
+            locale: locale,
+            overrides: ready(),
+            modeButton: const SizedBox(width: 48, height: 48),
+          );
+          container.read(sleepTimerProvider.notifier).startMinutes(719);
+          await tester.pump();
+
+          expect(find.byType(IconButton), findsWidgets);
+          expect(find.textContaining('Google ·'), findsNothing);
+          expect(tester.takeException(), isNull);
+          expect(
+            tester.getRect(find.byType(LyricsTranslationButton)).right,
+            lessThan(tester.getRect(find.byType(ShuffleButton)).left),
+          );
+        });
+      }
+
+      testWidgets('a long Vietnamese language fits without overflow', (
+        tester,
+      ) async {
+        await pump(
+          tester,
+          width: 900,
+          showTranslate: true,
+          locale: const Locale('vi'),
+          overrides: ready('zh-Hant'),
+          modeButton: const SizedBox(width: 48, height: 48),
+        );
+        container.read(sleepTimerProvider.notifier).startMinutes(719);
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        final header = tester.getRect(find.byType(NowPlayingHeader));
+        expect(
+          tester.getRect(find.byType(VolumeButton)).right,
+          lessThanOrEqualTo(header.right),
+        );
+        expect(
+          tester.getRect(find.byType(LyricsTranslationButton)).right,
+          lessThanOrEqualTo(tester.getRect(find.byType(ShuffleButton)).left),
+        );
+      });
+
+      testWidgets('at the tightest edge the pill and sleep label both fit', (
+        tester,
+      ) async {
+        // Header 636 px wide: label room is just above the 64 px minimum.
+        await pump(
+          tester,
+          width: 636 + windowButtons,
+          windowButtons: true,
+          textScale: 1.5,
+          showTranslate: true,
+          locale: const Locale('vi'),
+          overrides: ready('zh-Hant'),
+          modeButton: const SizedBox(width: 48, height: 48),
+        );
+        container.read(sleepTimerProvider.notifier).startMinutes(30);
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('30:00'), findsOneWidget);
+        final label = find.textContaining('Google ·');
+        expect(label, findsOneWidget);
+        final text = tester.widget<Text>(label);
+        expect(text.overflow, TextOverflow.ellipsis);
+        expect(tester.getSize(label).width, lessThanOrEqualTo(64 + 16));
+        expect(
+          tester.getRect(find.byType(VolumeButton)).right,
+          lessThanOrEqualTo(
+            tester.getRect(find.byType(NowPlayingHeader)).right,
+          ),
+        );
+      });
+
+      testWidgets('an open menu and floatingOpen survive loading to ready', (
+        tester,
+      ) async {
+        final info = fakeTranslationInfo();
+        const google = LyricsTranslationService.google;
+        final controller = FakeTranslationController(TranslationOff(info));
+        await pump(
+          tester,
+          showTranslate: true,
+          overrides: [fakeTranslationOverride(controller)],
+        );
+        await tester.tap(find.byType(LyricsTranslationButton));
+        await tester.pumpAndSettle();
+        expect(floating.value, isTrue);
+
+        // A running ring never settles: step the frames by hand.
+        controller.emit(TranslationLoading(info, google));
+        await tester.pump(const Duration(milliseconds: 300));
+        controller.emit(TranslationReady(info, google, 'ja', const [], false));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.text('Google · English'), findsOneWidget);
+        expect(find.text('Show translation'), findsOneWidget);
+        expect(floating.value, isTrue);
+      });
+
+      testWidgets('keeps the sleep timer label while the pill shows', (
+        tester,
+      ) async {
+        await pump(
+          tester,
+          width: 1000,
+          showTranslate: true,
+          overrides: ready(),
+        );
+        container.read(sleepTimerProvider.notifier).startMinutes(30);
+        await tester.pump();
+
+        expect(find.text('Google · English'), findsOneWidget);
+        expect(find.text('30:00'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    });
+
+    test('the label room budget', () {
+      // 30 inset + 4 buttons + 16 gap on the left; 4 buttons + 56 sleep
+      // label on the right; the pill replaces one 48 px button and spends 60
+      // px on padding and icon.
+      double room(double width, {bool mode = false, bool window = false}) =>
+          nowPlayingTranslateLabelRoom(
+            width: width,
+            hasModeButton: mode,
+            hasWindowButtons: window,
+          );
+      expect(room(598), 100);
+      expect(room(552, mode: true, window: true), lessThan(0));
+      expect(room(720, mode: true), greaterThan(64));
+      expect(room(720, mode: true) - room(720, mode: true, window: true), 25);
     });
 
     for (final locale in const [Locale('en'), Locale('vi')]) {
