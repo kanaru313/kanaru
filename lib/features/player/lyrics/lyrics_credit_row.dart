@@ -8,7 +8,6 @@ import '../../../core/lyrics/online/online_lyrics_actions.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/lyrics_picker/lyrics_picker.dart';
 import '../../../shared/online_lyrics_notice_dialog.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
@@ -97,35 +96,15 @@ class LyricsActionRunner {
       );
 
   Future<void> retry() => _run(_actions.retry);
-
-  /// Forgets the pick and the cached answers, then looks the song up again.
-  Future<void> searchAgain() => _run(_actions.searchAgain);
-
-  /// "Not these lyrics" for [origin]'s match.
-  Future<void> reject(OnlineLyricsOrigin origin) =>
-      _run((target) => _actions.skip(target, origin));
 }
 
-/// "Lyrics from LRCLIB" (+ " · not synced") at the bottom end of the lyrics,
-/// with the menu to search again, choose other lyrics or reject the match.
+/// "Lyrics from LRCLIB" (+ " · not synced") at the bottom end of the lyrics.
 class LyricsCreditRow extends ConsumerWidget {
   const LyricsCreditRow({super.key, required this.origin, this.synced = true});
 
   final OnlineLyricsOrigin origin;
 
   final bool synced; // plain lyrics say so in the credit
-
-  String _header(BuildContext context, String name) {
-    final l10n = context.l10n;
-    final ms = origin.durationDelta?.inMilliseconds.abs() ?? 0;
-    final seconds = (ms / 1000).ceil(); // any difference shows as 1 s or more
-    final how = origin.pinned
-        ? l10n.lyricsCreditPicked
-        : seconds > 0
-        ? l10n.lyricsCreditMatched(seconds)
-        : l10n.lyricsCreditMatchedExact;
-    return '${l10n.lyricsCreditFrom(name)} · $how';
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -147,51 +126,11 @@ class LyricsCreditRow extends ConsumerWidget {
           end: 12,
           bottom: 8 + MediaQuery.paddingOf(context).bottom,
         ),
-        child: MenuAnchor(
-          menuChildren: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Text(
-                _header(context, name),
-                style: theme.textTheme.labelMedium?.copyWith(color: color),
-              ),
-            ),
-            MenuItemButton(
-              onPressed: () => LyricsActionRunner.of(context).searchAgain(),
-              child: Text(l10n.lyricsMenuSearchAgain),
-            ),
-            MenuItemButton(
-              onPressed: () => LyricsActionRunner.of(context).choose(),
-              child: Text(l10n.lyricsMenuChooseOther),
-            ),
-            MenuItemButton(
-              onPressed: () => LyricsActionRunner.of(context).reject(origin),
-              child: Text(l10n.lyricsMenuNotThese),
-            ),
-          ],
-          builder: (context, controller, _) => TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: color,
-              textStyle: theme.textTheme.labelMedium,
-              visualDensity: VisualDensity.compact,
-            ),
-            onPressed: () =>
-                controller.isOpen ? controller.close() : controller.open(),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(AppIcons.expandMore, size: 16),
-              ],
-            ),
-          ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.labelMedium?.copyWith(color: color),
         ),
       ),
     );

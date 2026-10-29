@@ -75,7 +75,6 @@ Future<LyricsHarness> createHarness(
   bool autoConsent = true,
   bool manualConsent = true,
   bool withDatabase = true,
-  bool writeLrc = false,
   List<Override> overrides = const [],
 }) async {
   final harness = LyricsHarness._()..registrations = registrations;
@@ -87,7 +86,6 @@ Future<LyricsHarness> createHarness(
         AppSettings(
           onlineLyrics: OnlineLyricsPrefs(
             autoFetch: autoFetch,
-            writeLrc: writeLrc,
             noticeAcknowledged: {
               for (final r in registrations) ...[
                 if (manualConsent) r.consentKey,

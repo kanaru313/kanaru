@@ -2956,14 +2956,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerInstrumentalPreview => 'Bài này không có lời';
 
   @override
-  String get lyricsPinned => 'Đã ghim lời vào bài này';
-
-  @override
-  String get lyricsSavedAsLrc => 'Đã lưu thành file .lrc';
-
-  @override
-  String get lyricsNotSavedOutsideLibrary =>
-      'Chưa lưu thành .lrc: bài nằm ngoài các thư mục thư viện của bạn';
+  String get lyricsPinned => 'Đã chọn lời cho bài này';
 
   @override
   String get lyricsPickFailed => 'Không ghim được lời này';
@@ -3003,13 +2996,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsRetry => 'Thử lại';
 
   @override
-  String get lyricsSkipped => 'Đã tắt lời online cho bài này';
-
-  @override
   String get lyricsChoose => 'Chọn lời…';
-
-  @override
-  String get lyricsSearchAutomaticallyAgain => 'Tự động tìm lại';
 
   @override
   String get lyricsInstrumental => 'Nhạc không lời';
@@ -3023,23 +3010,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsCreditNotSynced => 'không đồng bộ';
 
   @override
-  String lyricsCreditMatched(int seconds) {
-    return 'tự động khớp (lệch $seconds giây)';
-  }
-
-  @override
-  String get lyricsCreditMatchedExact => 'tự động khớp';
-
-  @override
-  String get lyricsCreditPicked => 'do bạn chọn';
-
-  @override
-  String get lyricsMenuSearchAgain => 'Tìm lại';
-
-  @override
-  String get lyricsMenuChooseOther => 'Chọn lời khác…';
-
-  @override
   String get lyricsMenuNotThese => 'Không phải lời này';
 
   @override
@@ -3048,13 +3018,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsAutoOnlineLyricsHint =>
       'Khi Đang phát đang mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
-
-  @override
-  String get settingsWriteLrc => 'Lưu lời đã chọn thành file .lrc';
-
-  @override
-  String get settingsWriteLrcHint =>
-      'Khi bạn chọn lời trong hộp Chọn lời, ghi thêm file .lrc cạnh bài nếu chưa có, trong các thư mục thư viện. Không bao giờ ghi đè.';
 
   @override
   String get settingsSavedLyrics => 'Lời đã lưu';

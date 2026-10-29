@@ -12,7 +12,6 @@ void main() {
     matching: find.byType(Switch),
   );
   final auto = switchOf('Find lyrics online automatically (LRCLIB)');
-  final lrc = switchOf('Save picked lyrics as .lrc files');
   final notice = find.text('Find lyrics online automatically?');
 
   Future<LyricsRowsHarness> pump(
@@ -99,22 +98,8 @@ void main() {
     expect(tester.widget<Switch>(auto).value, isFalse);
   });
 
-  testWidgets('the .lrc switch is never disabled and writes writeLrc', (
-    tester,
-  ) async {
-    final r = await pump(tester);
-    expect(tester.widget<Switch>(lrc).onChanged, isNotNull);
-    expect(tester.widget<Switch>(lrc).value, isFalse);
-
-    await tester.tap(lrc);
-    await tester.pump();
-    expect(prefsOf(r).writeLrc, isTrue);
-    expect(tester.widget<Switch>(lrc).value, isTrue);
-    // No consent needed, none given.
-    expect(prefsOf(r).noticeAcknowledged, isEmpty);
-
-    await tester.tap(lrc);
-    await tester.pump();
-    expect(prefsOf(r).writeLrc, isFalse);
+  testWidgets('there is no switch for writing .lrc files', (tester) async {
+    await pump(tester);
+    expect(find.text('Save picked lyrics as .lrc files'), findsNothing);
   });
 }

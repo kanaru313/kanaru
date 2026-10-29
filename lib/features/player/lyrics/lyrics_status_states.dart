@@ -107,18 +107,8 @@ class LyricsNoneView extends ConsumerWidget {
         l10n.lyricsNotFound(name),
         [if (online) find(l10n.lyricsSearchManually, () => run().choose())],
       ),
-      LyricsNoneReason.skipped => (
-        l10n.lyricsSkipped,
-        [
-          if (online) ...[
-            find(l10n.lyricsChoose, () => run().choose()),
-            more(
-              l10n.lyricsSearchAutomaticallyAgain,
-              () => run().searchAgain(),
-            ),
-          ],
-        ],
-      ),
+      // Their own texts come with the lyrics source button.
+      LyricsNoneReason.off || LyricsNoneReason.paused => (null, <Widget>[]),
       LyricsNoneReason.instrumental => (l10n.lyricsInstrumental, <Widget>[]),
     };
     final origin = none.origin;

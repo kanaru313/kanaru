@@ -2,9 +2,13 @@ import 'online_lyrics_prefs.dart';
 import 'settings_codec_values.dart';
 
 const _autoFetchKey = 'autoFetch';
-const _writeLrcKey = 'writeLrc';
 const _noticeAcknowledgedKey = 'noticeAcknowledged';
-const _knownKeys = {_autoFetchKey, _writeLrcKey, _noticeAcknowledgedKey};
+
+/// Written by older versions to turn on `.lrc` writing on a pick. It is
+/// known so that it is dropped on read instead of carried along as an
+/// unknown key, and is never written.
+const _legacyWriteLrcKey = 'writeLrc';
+const _knownKeys = {_autoFetchKey, _legacyWriteLrcKey, _noticeAcknowledgedKey};
 
 /// Reads the `onlineLyrics` object; each key falls back on its own. The
 /// second value holds the keys this version does not know, plus (under
@@ -31,7 +35,6 @@ const _knownKeys = {_autoFetchKey, _writeLrcKey, _noticeAcknowledgedKey};
       autoFetch:
           boolOr(map[_autoFetchKey], d.autoFetch) &&
           acknowledged.any(isAutoConsentKey),
-      writeLrc: boolOr(map[_writeLrcKey], d.writeLrc),
       noticeAcknowledged: acknowledged,
     ),
     {
@@ -51,7 +54,6 @@ Map<String, Object?> encodeOnlineLyricsPrefs(
   return {
     ...extra,
     _autoFetchKey: prefs.autoFetch,
-    _writeLrcKey: prefs.writeLrc,
     _noticeAcknowledgedKey: [
       ...(prefs.noticeAcknowledged.toList()..sort()),
       if (others is List) ...others,

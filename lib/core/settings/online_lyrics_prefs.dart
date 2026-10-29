@@ -9,15 +9,11 @@ import '../lyrics/online/lyrics_provider_registry.dart';
 class OnlineLyricsPrefs {
   const OnlineLyricsPrefs({
     this.autoFetch = false,
-    this.writeLrc = false,
     this.noticeAcknowledged = const {},
   });
 
   /// Look lyrics up online for the playing song (only with auto consent).
   final bool autoFetch;
-
-  /// Write a `.lrc` file next to a song when the user picks its lyrics.
-  final bool writeLrc;
 
   /// Consent keys the user accepted. Open-ended: keys of providers this
   /// version does not know are kept.
@@ -34,11 +30,9 @@ class OnlineLyricsPrefs {
 
   OnlineLyricsPrefs copyWith({
     bool? autoFetch,
-    bool? writeLrc,
     Set<String>? noticeAcknowledged,
   }) => OnlineLyricsPrefs(
     autoFetch: autoFetch ?? this.autoFetch,
-    writeLrc: writeLrc ?? this.writeLrc,
     noticeAcknowledged: noticeAcknowledged ?? this.noticeAcknowledged,
   );
 
@@ -46,20 +40,16 @@ class OnlineLyricsPrefs {
   bool operator ==(Object other) =>
       other is OnlineLyricsPrefs &&
       other.autoFetch == autoFetch &&
-      other.writeLrc == writeLrc &&
       other.noticeAcknowledged.length == noticeAcknowledged.length &&
       other.noticeAcknowledged.containsAll(noticeAcknowledged);
 
   @override
-  int get hashCode => Object.hash(
-    autoFetch,
-    writeLrc,
-    Object.hashAllUnordered(noticeAcknowledged),
-  );
+  int get hashCode =>
+      Object.hash(autoFetch, Object.hashAllUnordered(noticeAcknowledged));
 
   @override
   String toString() =>
-      'OnlineLyricsPrefs(autoFetch: $autoFetch, writeLrc: $writeLrc, '
+      'OnlineLyricsPrefs(autoFetch: $autoFetch, '
       'noticeAcknowledged: ${noticeAcknowledged.toList()..sort()})';
 }
 

@@ -2,6 +2,7 @@ import '../../database/library_database.dart';
 import '../../database/online_lyrics_queries.dart';
 import '../lrc_parser.dart';
 import '../lyrics.dart';
+import 'lyrics_choice.dart';
 
 /// Parses stored lyrics text once. The synced text wins; the plain text is
 /// the fallback when the synced one is absent or has no usable line. Online
@@ -15,11 +16,12 @@ Lyrics? parseStoredLyrics({String? synced, String? plain}) {
   return null;
 }
 
-/// A song's pick, with its text already parsed. A [remoteId] of `null` is a
-/// skip: the user chose no online lyrics for the song.
+/// A song's stored choice and pick, with the text already parsed. The pick
+/// fields are all `null` while the song has a choice but no pick.
 class LyricsPinEntry {
   const LyricsPinEntry({
     required this.pinnedAt,
+    this.choice = LyricsChoice.auto,
     this.providerId,
     this.remoteId,
     this.lyrics,
@@ -29,6 +31,7 @@ class LyricsPinEntry {
 
   factory LyricsPinEntry.fromRow(LyricsPinRow row) => LyricsPinEntry(
     pinnedAt: row.pinnedAt,
+    choice: parseLyricsChoice(row.mode),
     providerId: row.providerId,
     remoteId: row.remoteId,
     lyrics: parseStoredLyrics(synced: row.syncedText, plain: row.plainText),
@@ -37,15 +40,18 @@ class LyricsPinEntry {
   );
 
   final int pinnedAt;
+  final LyricsChoice choice;
   final String? providerId;
   final String? remoteId;
 
-  /// `null` for a skip, an instrumental pick or text with no usable line.
+  /// `null` without a pick, for an instrumental pick or text with no usable
+  /// line.
   final Lyrics? lyrics;
   final bool instrumental;
   final int? remoteDurationMs;
 
-  bool get isSkip => remoteId == null;
+  /// The song has a stored pick (usable or not).
+  bool get hasPick => remoteId != null;
 }
 
 /// One provider's cached answer for a metadata key, text already parsed.

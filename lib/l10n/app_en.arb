@@ -2780,17 +2780,9 @@
   "@lyricsPickerInstrumentalPreview": {
     "description": "Preview pane text for an instrumental result"
   },
-  "lyricsPinned": "Lyrics pinned to this song",
+  "lyricsPinned": "Lyrics chosen for this song",
   "@lyricsPinned": {
     "description": "Snackbar after the user picked online lyrics"
-  },
-  "lyricsSavedAsLrc": "Saved as .lrc",
-  "@lyricsSavedAsLrc": {
-    "description": "Detail of the snackbar when the picked lyrics were also saved as a .lrc file"
-  },
-  "lyricsNotSavedOutsideLibrary": "Not saved as .lrc: the song is outside your library folders",
-  "@lyricsNotSavedOutsideLibrary": {
-    "description": "Detail of the snackbar when the .lrc file was not written because of the song's location"
   },
   "lyricsPickFailed": "Couldn't pin these lyrics",
   "@lyricsPickFailed": {
@@ -2853,17 +2845,9 @@
   "@lyricsRetry": {
     "description": "Button on the failed lookup banner"
   },
-  "lyricsSkipped": "Online lyrics turned off for this song",
-  "@lyricsSkipped": {
-    "description": "Lyrics slot of Now Playing after the user rejected the matched lyrics"
-  },
   "lyricsChoose": "Choose lyrics…",
   "@lyricsChoose": {
     "description": "Button in the lyrics slot that opens the Choose lyrics dialog"
-  },
-  "lyricsSearchAutomaticallyAgain": "Search automatically again",
-  "@lyricsSearchAutomaticallyAgain": {
-    "description": "Button that forgets the user's choice for the song and looks it up again"
   },
   "lyricsInstrumental": "Instrumental",
   "@lyricsInstrumental": {
@@ -2882,39 +2866,12 @@
   "@lyricsCreditNotSynced": {
     "description": "Added to the lyrics credit when the lyrics have no timing"
   },
-  "lyricsCreditMatched": "matched automatically (off by {seconds} s)",
-  "@lyricsCreditMatched": {
-    "description": "Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's",
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "lyricsCreditMatchedExact": "matched automatically",
-  "@lyricsCreditMatchedExact": {
-    "description": "Header of the lyrics credit menu when the lengths agree or one is unknown"
-  },
-  "lyricsCreditPicked": "picked by you",
-  "@lyricsCreditPicked": {
-    "description": "Header of the lyrics credit menu for lyrics the user chose"
-  },
-  "lyricsMenuSearchAgain": "Search again",
-  "@lyricsMenuSearchAgain": {
-    "description": "Lyrics credit menu item that forgets the match and looks the song up again"
-  },
-  "lyricsMenuChooseOther": "Choose other lyrics…",
-  "@lyricsMenuChooseOther": {
-    "description": "Lyrics credit menu item that opens the Choose lyrics dialog"
-  },
   "lyricsMenuNotThese": "Not these lyrics",
   "@lyricsMenuNotThese": {
     "description": "Lyrics credit menu item that rejects the matched lyrics for the song"
   },
   "settingsAutoOnlineLyrics": "Find lyrics online automatically (LRCLIB)",
   "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
-  "settingsWriteLrc": "Save picked lyrics as .lrc files",
-  "settingsWriteLrcHint": "When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.",
   "settingsSavedLyrics": "Saved lyrics",
   "settingsSavedLyricsSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)",
   "@settingsSavedLyricsSummary": {

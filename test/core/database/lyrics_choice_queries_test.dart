@@ -46,13 +46,13 @@ void main() {
   Future<void> reject(
     String remoteId, {
     String? hash,
-    Set<String> duplicates = const {},
+    Set<(String, String)> duplicates = const {},
   }) => db.rejectOnlineLyrics(
     cacheKey: 'k',
     providerId: 'lrclib',
     remoteId: remoteId,
     contentHash: hash,
-    duplicateRemoteIds: duplicates,
+    duplicates: duplicates,
     trackKey: 't',
     now: 9,
   );
@@ -152,7 +152,7 @@ void main() {
       await db.saveOnlineLyrics(cached('k', 'dup', provider: 'other'));
       await db.saveOnlineLyrics(cached('k', 'keep', provider: 'third'));
       await db.saveOnlineLyrics(cached('elsewhere', 'bad'));
-      await reject('bad', hash: 'h', duplicates: {'dup'});
+      await reject('bad', hash: 'h', duplicates: {('other', 'dup')});
 
       final rows = await db.watchOnlineLyrics('k').first;
       expect(rows.map((r) => r.remoteId), ['keep']);
@@ -162,6 +162,22 @@ void main() {
       expect(matches.ids, {('lrclib', 'bad')});
       expect(matches.hashes, {'h'});
     });
+
+    test(
+      'drops duplicates and the rejected id only on their provider',
+      () async {
+        await db.saveOnlineLyrics(cached('k', 'bad'));
+        await db.saveOnlineLyrics(cached('k', 'bad', provider: 'other'));
+        await db.saveOnlineLyrics(cached('k', 'dup', provider: 'third'));
+        await reject('bad', duplicates: {('other', 'dup')});
+
+        final rows = await db.watchOnlineLyrics('k').first;
+        expect(
+          {for (final r in rows) (r.providerId, r.remoteId)},
+          {('other', 'bad'), ('third', 'dup')},
+        );
+      },
+    );
 
     test('on a pick with mode online deletes the row', () async {
       await db.pinLyrics(pin('t', 'bad', mode: 'online', plain: 'w'));

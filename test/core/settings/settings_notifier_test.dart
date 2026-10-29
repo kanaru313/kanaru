@@ -340,16 +340,16 @@ void main() {
       expect(prefsOf(container).autoFetch, isFalse);
     });
 
-    test('setOnlineLyrics keeps the acknowledged keys and saves the rest', () {
+    test('setOnlineLyrics keeps the acknowledged keys', () {
       final container = containerFor();
       final notifier = container.read(settingsProvider.notifier);
       notifier.acknowledgeOnlineLyricsNotice(lrclib.consentKey);
 
       notifier.setOnlineLyrics(
-        const OnlineLyricsPrefs(writeLrc: true, noticeAcknowledged: {'x@y.z'}),
+        const OnlineLyricsPrefs(autoFetch: true, noticeAcknowledged: {'x@y.z'}),
       );
 
-      expect(prefsOf(container).writeLrc, isTrue);
+      expect(prefsOf(container).autoFetch, isFalse);
       expect(prefsOf(container).noticeAcknowledged, {lrclib.consentKey});
     });
 

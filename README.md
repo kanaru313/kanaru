@@ -35,7 +35,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 ### Lyrics
 
 - 📝 Lyrics from `.lrc` files next to the song and from the file's tags (embedded lyrics read with lofty), with a synced view that follows the line being sung and seeks on click
-- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick can also be saved as a `.lrc` file next to the song
+- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick is kept in your library and never written to a file next to the song
 
 ### Remote sources (planned)
 
@@ -106,7 +106,7 @@ Kanaru sends nothing unless you turn a network feature on. Each feature asks bef
 
 Never sent for lyrics: file paths, file names or device information.
 
-Writing files: a `.lrc` file is written next to a song only for lyrics you picked, only when *Save picked lyrics as .lrc files* is on, never over an existing `.lrc` or `.LRC` file, and only inside your library folders. Automatic matches are never written to disk. *Clear saved lyrics* in Settings removes the stored lyrics and your choices; it never touches `.lrc` files.
+Writing files: Kanaru writes no lyrics file next to a song. Your picks and choices are kept in the library database. *Clear saved lyrics* in Settings removes the stored lyrics, your choices and your rejected matches; it never touches `.lrc` files.
 
 No telemetry, no analytics, no account.
 

@@ -116,7 +116,6 @@ Future<StatusRig> createStatusRig({
   bool autoConsent = true,
   bool manualConsent = true,
   bool withDatabase = true,
-  bool writeLrc = false,
   Duration debounce = rigDebounce,
   List<Override> overrides = const [],
 }) async {
@@ -130,7 +129,6 @@ Future<StatusRig> createStatusRig({
     autoConsent: autoConsent,
     manualConsent: manualConsent,
     withDatabase: withDatabase,
-    writeLrc: writeLrc,
     overrides: [
       audioBackendProvider.overrideWithValue(FakeAudioBackend()),
       embeddedLyricsReaderProvider.overrideWithValue(rig.embedded),

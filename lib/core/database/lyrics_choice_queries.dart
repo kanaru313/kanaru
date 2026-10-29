@@ -58,8 +58,9 @@ extension LyricsChoiceQueries on LibraryDatabase {
   }
 
   /// "Not these lyrics", in one transaction: remembers the rejected match
-  /// (and its text hash) for [cacheKey], deletes the found rows of that key
-  /// holding [remoteId] or any of [duplicateRemoteIds], and clears the pick
+  /// (and its text hash) for [cacheKey], deletes the cached rows of that key
+  /// for [remoteId] or any of [duplicates] (provider id, remote id pairs, so
+  /// another provider's record with the same id stays), and clears the pick
   /// of [trackKey] when it is that record. A pin left with no pick and a
   /// `online` or empty mode is deleted. Writes no skip: the song goes back to
   /// automatic resolution unless its choice is `local` or `off`.
@@ -68,7 +69,7 @@ extension LyricsChoiceQueries on LibraryDatabase {
     required String providerId,
     required String remoteId,
     String? contentHash,
-    Set<String> duplicateRemoteIds = const {},
+    Set<(String providerId, String remoteId)> duplicates = const {},
     required String trackKey,
     required int now,
   }) {
@@ -82,9 +83,16 @@ extension LyricsChoiceQueries on LibraryDatabase {
           rejectedAt: now,
         ),
       );
-      final gone = {remoteId, ...duplicateRemoteIds};
-      await (delete(onlineLyrics)
-            ..where((t) => t.cacheKey.equals(cacheKey) & t.remoteId.isIn(gone)))
+      final gone = {(providerId, remoteId), ...duplicates};
+      await (delete(onlineLyrics)..where((t) {
+            Expression<bool> goneRow = const Constant(false);
+            for (final (provider, remote) in gone) {
+              goneRow =
+                  goneRow |
+                  (t.providerId.equals(provider) & t.remoteId.equals(remote));
+            }
+            return t.cacheKey.equals(cacheKey) & goneRow;
+          }))
           .go();
       final pin = await (select(
         lyricsPins,

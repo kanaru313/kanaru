@@ -13,8 +13,12 @@ enum LyricsNoneReason {
   /// The last lookup failed; nothing was stored.
   error,
 
-  /// The user chose "Not these lyrics" for the song.
-  skipped,
+  /// The user turned lyrics off for the song.
+  off,
+
+  /// Automatic lookups are paused after a failure; see
+  /// [LyricsNone.resumeAt].
+  paused,
 
   /// The matching record says the song has no words.
   instrumental,
@@ -107,7 +111,13 @@ final class LyricsFound extends PlayingLyricsStatus {
 
 /// No lyrics to show. [origin] is set for an instrumental record.
 final class LyricsNone extends PlayingLyricsStatus {
-  const LyricsNone(super.uri, this.reason, {this.origin, this.failure});
+  const LyricsNone(
+    super.uri,
+    this.reason, {
+    this.origin,
+    this.failure,
+    this.resumeAt,
+  });
 
   final LyricsNoneReason reason;
   final OnlineLyricsOrigin? origin;
@@ -116,14 +126,19 @@ final class LyricsNone extends PlayingLyricsStatus {
   /// not a request error.
   final LyricsFetchKind? failure;
 
+  /// When automatic lookups start again, for [LyricsNoneReason.paused] only.
+  final DateTime? resumeAt;
+
   @override
   bool operator ==(Object other) =>
       other is LyricsNone &&
       other.uri == uri &&
       other.reason == reason &&
       other.origin == origin &&
-      other.failure == failure;
+      other.failure == failure &&
+      other.resumeAt == resumeAt;
 
   @override
-  int get hashCode => Object.hash(LyricsNone, uri, reason, origin, failure);
+  int get hashCode =>
+      Object.hash(LyricsNone, uri, reason, origin, failure, resumeAt);
 }

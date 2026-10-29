@@ -4625,20 +4625,8 @@ abstract class AppLocalizations {
   /// Snackbar after the user picked online lyrics
   ///
   /// In en, this message translates to:
-  /// **'Lyrics pinned to this song'**
+  /// **'Lyrics chosen for this song'**
   String get lyricsPinned;
-
-  /// Detail of the snackbar when the picked lyrics were also saved as a .lrc file
-  ///
-  /// In en, this message translates to:
-  /// **'Saved as .lrc'**
-  String get lyricsSavedAsLrc;
-
-  /// Detail of the snackbar when the .lrc file was not written because of the song's location
-  ///
-  /// In en, this message translates to:
-  /// **'Not saved as .lrc: the song is outside your library folders'**
-  String get lyricsNotSavedOutsideLibrary;
 
   /// Snackbar when pinning the lyrics the user picked failed
   ///
@@ -4694,23 +4682,11 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get lyricsRetry;
 
-  /// Lyrics slot of Now Playing after the user rejected the matched lyrics
-  ///
-  /// In en, this message translates to:
-  /// **'Online lyrics turned off for this song'**
-  String get lyricsSkipped;
-
   /// Button in the lyrics slot that opens the Choose lyrics dialog
   ///
   /// In en, this message translates to:
   /// **'Choose lyrics…'**
   String get lyricsChoose;
-
-  /// Button that forgets the user's choice for the song and looks it up again
-  ///
-  /// In en, this message translates to:
-  /// **'Search automatically again'**
-  String get lyricsSearchAutomaticallyAgain;
 
   /// Lyrics slot of Now Playing for a song the service marks as instrumental
   ///
@@ -4730,36 +4706,6 @@ abstract class AppLocalizations {
   /// **'not synced'**
   String get lyricsCreditNotSynced;
 
-  /// Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's
-  ///
-  /// In en, this message translates to:
-  /// **'matched automatically (off by {seconds} s)'**
-  String lyricsCreditMatched(int seconds);
-
-  /// Header of the lyrics credit menu when the lengths agree or one is unknown
-  ///
-  /// In en, this message translates to:
-  /// **'matched automatically'**
-  String get lyricsCreditMatchedExact;
-
-  /// Header of the lyrics credit menu for lyrics the user chose
-  ///
-  /// In en, this message translates to:
-  /// **'picked by you'**
-  String get lyricsCreditPicked;
-
-  /// Lyrics credit menu item that forgets the match and looks the song up again
-  ///
-  /// In en, this message translates to:
-  /// **'Search again'**
-  String get lyricsMenuSearchAgain;
-
-  /// Lyrics credit menu item that opens the Choose lyrics dialog
-  ///
-  /// In en, this message translates to:
-  /// **'Choose other lyrics…'**
-  String get lyricsMenuChooseOther;
-
   /// Lyrics credit menu item that rejects the matched lyrics for the song
   ///
   /// In en, this message translates to:
@@ -4777,18 +4723,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.'**
   String get settingsAutoOnlineLyricsHint;
-
-  /// No description provided for @settingsWriteLrc.
-  ///
-  /// In en, this message translates to:
-  /// **'Save picked lyrics as .lrc files'**
-  String get settingsWriteLrc;
-
-  /// No description provided for @settingsWriteLrcHint.
-  ///
-  /// In en, this message translates to:
-  /// **'When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.'**
-  String get settingsWriteLrcHint;
 
   /// No description provided for @settingsSavedLyrics.
   ///

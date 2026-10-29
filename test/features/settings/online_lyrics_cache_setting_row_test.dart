@@ -212,7 +212,7 @@ void main() {
       expect(rig.requests, 0);
     });
 
-    test('after Search again, Clear sends no further request', () async {
+    test('after a manual lookup, Clear sends no further request', () async {
       final rig = await createStatusRig(autoFetch: false);
       rig.fake.lookupResult = fakeCandidate();
       final song = fakeSong('/m/a.flac');
@@ -222,7 +222,7 @@ void main() {
 
       await rig.container
           .read(onlineLyricsActionsProvider)
-          .searchAgain(LyricsTarget.fromTrack(song));
+          .retry(LyricsTarget.fromTrack(song));
       await rig.until(() => rig.status is LyricsFound);
       final before = rig.requests;
       expect(before, 1);

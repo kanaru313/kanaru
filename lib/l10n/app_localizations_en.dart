@@ -3158,14 +3158,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsPickerInstrumentalPreview => 'This song is instrumental';
 
   @override
-  String get lyricsPinned => 'Lyrics pinned to this song';
-
-  @override
-  String get lyricsSavedAsLrc => 'Saved as .lrc';
-
-  @override
-  String get lyricsNotSavedOutsideLibrary =>
-      'Not saved as .lrc: the song is outside your library folders';
+  String get lyricsPinned => 'Lyrics chosen for this song';
 
   @override
   String get lyricsPickFailed => 'Couldn\'t pin these lyrics';
@@ -3205,13 +3198,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsRetry => 'Retry';
 
   @override
-  String get lyricsSkipped => 'Online lyrics turned off for this song';
-
-  @override
   String get lyricsChoose => 'Choose lyrics…';
-
-  @override
-  String get lyricsSearchAutomaticallyAgain => 'Search automatically again';
 
   @override
   String get lyricsInstrumental => 'Instrumental';
@@ -3225,23 +3212,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsCreditNotSynced => 'not synced';
 
   @override
-  String lyricsCreditMatched(int seconds) {
-    return 'matched automatically (off by $seconds s)';
-  }
-
-  @override
-  String get lyricsCreditMatchedExact => 'matched automatically';
-
-  @override
-  String get lyricsCreditPicked => 'picked by you';
-
-  @override
-  String get lyricsMenuSearchAgain => 'Search again';
-
-  @override
-  String get lyricsMenuChooseOther => 'Choose other lyrics…';
-
-  @override
   String get lyricsMenuNotThese => 'Not these lyrics';
 
   @override
@@ -3251,13 +3221,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsAutoOnlineLyricsHint =>
       'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.';
-
-  @override
-  String get settingsWriteLrc => 'Save picked lyrics as .lrc files';
-
-  @override
-  String get settingsWriteLrcHint =>
-      'When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.';
 
   @override
   String get settingsSavedLyrics => 'Saved lyrics';

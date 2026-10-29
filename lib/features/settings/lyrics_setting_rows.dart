@@ -62,16 +62,6 @@ class LyricsSettingRows extends ConsumerWidget {
             },
           ),
         ),
-        SettingRow.single(
-          title: l10n.settingsWriteLrc,
-          subtitle: l10n.settingsWriteLrcHint,
-          control: Switch(
-            value: online.writeLrc,
-            onChanged: (on) => ref
-                .read(settingsProvider.notifier)
-                .setOnlineLyrics(online.copyWith(writeLrc: on)),
-          ),
-        ),
         const OnlineLyricsCacheSettingRow(),
       ],
     );

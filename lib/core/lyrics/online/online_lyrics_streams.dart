@@ -10,12 +10,14 @@ import 'online_lyrics_entries.dart';
 export 'online_lyrics_backoff.dart';
 export 'online_lyrics_entries.dart';
 
-/// What a pin row is told apart by; a rewrite of the same pick is the same.
-String _pinIdentity(LyricsPinRow? row) =>
-    row == null ? '' : '${row.providerId}|${row.remoteId}|${row.pinnedAt}';
+/// What a pin row is told apart by; a rewrite of the same pick and mode is
+/// the same, a change of mode alone is not.
+String _pinIdentity(LyricsPinRow? row) => row == null
+    ? ''
+    : '${row.providerId}|${row.remoteId}|${row.pinnedAt}|${row.mode}';
 
-/// The song's pick or skip with its text parsed once, `null` when it has
-/// none. Drift emits again on any write to the table, so unchanged rows are
+/// The song's choice and pick with the text parsed once, `null` when it has
+/// no row. Drift emits again on any write to the table, so unchanged rows are
 /// dropped before parsing: the same [Lyrics] instance is kept while the pin
 /// is.
 final lyricsPinProvider = StreamProvider.autoDispose
