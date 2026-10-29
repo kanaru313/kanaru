@@ -1,0 +1,162 @@
+import '../../database/text_keys.dart';
+import '../../search/typo_correction.dart';
+import 'lyrics_match_keys.dart';
+import 'lyrics_provider.dart';
+
+/// A title or artist at least this similar counts as the same.
+const titleSimilarityMin = 0.85;
+const artistSimilarityMin = 0.85;
+
+/// Largest difference between the song's and the record's duration, inclusive.
+const maxDurationDelta = Duration(seconds: 3);
+
+const _unknownArtists = {'unknown artist', 'unknown', '<unknown>'};
+
+/// `1 - edits / longer length` over code points, 1 for equal strings and 0
+/// when more than a fifth of the longer string has to change.
+double similarity(String a, String b) {
+  if (a == b) return 1;
+  final longest = a.runes.length > b.runes.length
+      ? a.runes.length
+      : b.runes.length;
+  final distance = boundedTypoDistance(a, b, (0.2 * longest).floor());
+  return distance == null ? 0 : 1 - distance / longest;
+}
+
+// Float rounding must not turn 0.85 into 0.8499999.
+bool _atLeast(double value, double min) => value + 1e-9 >= min;
+
+/// A candidate with its verdict for one query.
+class LyricsMatch {
+  const LyricsMatch({
+    required this.candidate,
+    required this.score,
+    required this.delta,
+    required this.goodMatch,
+  });
+
+  final LyricsCandidate candidate;
+
+  /// Title similarity, 0 to 1.
+  final double score;
+
+  /// Absolute duration difference; `null` when either side has no duration.
+  final Duration? delta;
+
+  /// Title, artist, duration and body all pass: safe to use without asking.
+  final bool goodMatch;
+}
+
+/// Whether [query] has what an automatic search needs: a title, a real
+/// artist (not "Unknown Artist") and a duration. Without an artist tag only
+/// the manual search runs.
+bool isAutoSearchable(LyricsQuery query) {
+  final title = query.title?.trim() ?? '';
+  final artist = primaryArtist(query.artist)?.trim() ?? '';
+  final duration = query.duration;
+  if (title.isEmpty || artist.isEmpty) return false;
+  if (duration == null || duration <= Duration.zero) return false;
+  return !_unknownArtists.contains(sortKey(artist).trim()) &&
+      !_unknownArtists.contains(foldArtist(artist));
+}
+
+bool _artistMatches(String? local, String remote) {
+  final primary = primaryArtist(local);
+  if (primary == null) return false;
+  final localFull = foldArtist(local!);
+  final remoteFull = foldArtist(remote);
+  if (localFull.isEmpty || remoteFull.isEmpty) return false;
+  if (localFull == remoteFull) return true;
+  final mine = foldArtist(primary);
+  for (final name in remoteArtistNames(remote)) {
+    final theirs = foldArtist(name);
+    if (theirs.isEmpty) continue;
+    if (mine == theirs ||
+        _atLeast(similarity(mine, theirs), artistSimilarityMin)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Judges [candidate] against [query]. The gate needs: duration within
+/// [maxDurationDelta] (skipped when [query] has no duration, as in a manual
+/// search), title equal, joined-equal or [titleSimilarityMin] similar, the
+/// artist rule, and lyrics or the instrumental flag. A record in [rejected]
+/// never matches.
+LyricsMatch matchCandidate(
+  LyricsQuery query,
+  LyricsCandidate candidate, {
+  Set<({String providerId, String remoteId})> rejected = const {},
+}) {
+  final wanted = query.duration;
+  final has = candidate.duration;
+  final delta = wanted == null || has == null
+      ? null
+      : Duration(microseconds: (wanted - has).inMicroseconds.abs());
+  final durationOk =
+      wanted == null || (delta != null && delta <= maxDurationDelta);
+  final title = query.title?.trim() ?? '';
+  var score = 0.0;
+  var titleOk = false;
+  if (title.isNotEmpty) {
+    final mine = normalizeTitle(title);
+    final theirs = normalizeTitle(candidate.title);
+    score = similarity(mine, theirs);
+    titleOk =
+        mine.isNotEmpty &&
+        theirs.isNotEmpty &&
+        (_atLeast(score, titleSimilarityMin) ||
+            joinedTitle(mine) == joinedTitle(theirs));
+  }
+  final body = candidate.body;
+  final bodyOk = body != null && (body.hasLyrics || body.instrumental);
+  return LyricsMatch(
+    candidate: candidate,
+    score: score,
+    delta: delta,
+    goodMatch:
+        !rejected.contains(candidate.ref) &&
+        durationOk &&
+        titleOk &&
+        bodyOk &&
+        _artistMatches(query.artist, candidate.artist),
+  );
+}
+
+int _bodyRank(LyricsBody? body) {
+  if (body?.syncedLrc != null) return 0;
+  if (body?.plain != null) return 1;
+  return body != null && body.instrumental ? 2 : 3;
+}
+
+/// Judges every candidate not in [rejected] and orders them: good matches
+/// first, then synced before plain before instrumental, smaller duration
+/// difference, higher title similarity, and the given order for ties.
+List<LyricsMatch> rankCandidates(
+  LyricsQuery query,
+  Iterable<LyricsCandidate> candidates, {
+  Set<({String providerId, String remoteId})> rejected = const {},
+}) {
+  final indexed = <(int, LyricsMatch)>[
+    for (final (i, c) in candidates.indexed)
+      if (!rejected.contains(c.ref))
+        (i, matchCandidate(query, c, rejected: rejected)),
+  ];
+  indexed.sort((a, b) {
+    final x = a.$2;
+    final y = b.$2;
+    if (x.goodMatch != y.goodMatch) return x.goodMatch ? -1 : 1;
+    final body = _bodyRank(x.candidate.body)
+        .compareTo(_bodyRank(y.candidate.body));
+    if (body != 0) return body;
+    if (x.delta != y.delta) {
+      if (x.delta == null) return 1;
+      if (y.delta == null) return -1;
+      return x.delta!.compareTo(y.delta!);
+    }
+    final score = y.score.compareTo(x.score);
+    return score != 0 ? score : a.$1.compareTo(b.$1);
+  });
+  return [for (final (_, m) in indexed) m];
+}
