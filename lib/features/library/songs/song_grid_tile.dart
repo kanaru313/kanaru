@@ -149,6 +149,7 @@ class SongGridTile extends ConsumerWidget {
     return TrackActionsRegion(
       trackId: song.id,
       path: song.path,
+      song: song,
       hasArtist: artist?.isNotEmpty ?? false,
       hasAlbum: song.album?.isNotEmpty ?? false,
       onQueueAction: onQueueAction,

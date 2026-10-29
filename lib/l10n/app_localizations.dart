@@ -4507,6 +4507,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search'**
   String get onlineLyricsNoticeSearch;
+
+  /// Track menu row that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics online…'**
+  String get lyricsFindOnline;
+
+  /// Title of the dialog to pick online lyrics for a song
+  ///
+  /// In en, this message translates to:
+  /// **'Choose lyrics'**
+  String get lyricsPickerTitle;
+
+  /// Subtitle of the Choose lyrics dialog; duration is m:ss
+  ///
+  /// In en, this message translates to:
+  /// **'Song: {title} · {artist} · {duration}'**
+  String lyricsPickerSong(String title, String artist, String duration);
+
+  /// Button next to the query field of the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get lyricsPickerSearch;
+
+  /// Hint of the query field of the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Artist and title'**
+  String get lyricsPickerQueryHint;
+
+  /// Badge of a result with time-synced lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get lyricsPickerSynced;
+
+  /// Badge of a result with plain lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Plain'**
+  String get lyricsPickerPlain;
+
+  /// Badge of a result the service marks as instrumental
+  ///
+  /// In en, this message translates to:
+  /// **'Instrumental'**
+  String get lyricsPickerInstrumental;
+
+  /// Label of a result whose title, artist and length fit the song
+  ///
+  /// In en, this message translates to:
+  /// **'Good match'**
+  String get lyricsPickerGoodMatch;
+
+  /// How many seconds a result's length differs from the song's
+  ///
+  /// In en, this message translates to:
+  /// **'±{seconds}s'**
+  String lyricsPickerDelta(int seconds);
+
+  /// Shown when the search finds nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics found. Try other words.'**
+  String get lyricsPickerEmpty;
+
+  /// Shown when a lyrics service fails; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach {provider}'**
+  String lyricsPickerError(String provider);
+
+  /// Button that repeats a failed lyrics search
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get lyricsPickerRetry;
+
+  /// Footer of the Choose lyrics dialog; hosts are the web addresses of the service
+  ///
+  /// In en, this message translates to:
+  /// **'Results from {hosts} · the lyrics you pick are pinned to this song'**
+  String lyricsPickerFooter(String hosts);
+
+  /// Button that pins the selected lyrics to the song
+  ///
+  /// In en, this message translates to:
+  /// **'Use these lyrics'**
+  String get lyricsPickerUse;
+
+  /// Preview pane text when nothing is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Select a result to preview its lyrics'**
+  String get lyricsPickerNoPreview;
+
+  /// Preview pane text for a result without lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'These lyrics can\'t be previewed or used'**
+  String get lyricsPickerNoBody;
+
+  /// Preview pane text for an instrumental result
+  ///
+  /// In en, this message translates to:
+  /// **'This song is instrumental'**
+  String get lyricsPickerInstrumentalPreview;
+
+  /// Snackbar after the user picked online lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics pinned to this song'**
+  String get lyricsPinned;
+
+  /// Detail of the snackbar when the picked lyrics were also saved as a .lrc file
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as .lrc'**
+  String get lyricsSavedAsLrc;
+
+  /// Detail of the snackbar when the .lrc file was not written because of the song's location
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved as .lrc: the song is outside your library folders'**
+  String get lyricsNotSavedOutsideLibrary;
+
+  /// Snackbar when pinning the lyrics the user picked failed
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t pin these lyrics'**
+  String get lyricsPickFailed;
+
+  /// Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Online lyrics are turned off for {provider}. Allow it in Settings.'**
+  String lyricsPickerNotConsented(String provider);
 }
 
 class _AppLocalizationsDelegate

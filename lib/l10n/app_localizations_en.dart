@@ -3091,4 +3091,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeSearch => 'Search';
+
+  @override
+  String get lyricsFindOnline => 'Find lyrics online…';
+
+  @override
+  String get lyricsPickerTitle => 'Choose lyrics';
+
+  @override
+  String lyricsPickerSong(String title, String artist, String duration) {
+    return 'Song: $title · $artist · $duration';
+  }
+
+  @override
+  String get lyricsPickerSearch => 'Search';
+
+  @override
+  String get lyricsPickerQueryHint => 'Artist and title';
+
+  @override
+  String get lyricsPickerSynced => 'Synced';
+
+  @override
+  String get lyricsPickerPlain => 'Plain';
+
+  @override
+  String get lyricsPickerInstrumental => 'Instrumental';
+
+  @override
+  String get lyricsPickerGoodMatch => 'Good match';
+
+  @override
+  String lyricsPickerDelta(int seconds) {
+    return '±${seconds}s';
+  }
+
+  @override
+  String get lyricsPickerEmpty => 'No lyrics found. Try other words.';
+
+  @override
+  String lyricsPickerError(String provider) {
+    return 'Couldn\'t reach $provider';
+  }
+
+  @override
+  String get lyricsPickerRetry => 'Retry';
+
+  @override
+  String lyricsPickerFooter(String hosts) {
+    return 'Results from $hosts · the lyrics you pick are pinned to this song';
+  }
+
+  @override
+  String get lyricsPickerUse => 'Use these lyrics';
+
+  @override
+  String get lyricsPickerNoPreview => 'Select a result to preview its lyrics';
+
+  @override
+  String get lyricsPickerNoBody => 'These lyrics can\'t be previewed or used';
+
+  @override
+  String get lyricsPickerInstrumentalPreview => 'This song is instrumental';
+
+  @override
+  String get lyricsPinned => 'Lyrics pinned to this song';
+
+  @override
+  String get lyricsSavedAsLrc => 'Saved as .lrc';
+
+  @override
+  String get lyricsNotSavedOutsideLibrary =>
+      'Not saved as .lrc: the song is outside your library folders';
+
+  @override
+  String get lyricsPickFailed => 'Couldn\'t pin these lyrics';
+
+  @override
+  String lyricsPickerNotConsented(String provider) {
+    return 'Online lyrics are turned off for $provider. Allow it in Settings.';
+  }
 }

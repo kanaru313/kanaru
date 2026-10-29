@@ -63,6 +63,21 @@ class LyricsTarget {
             : Duration(milliseconds: item.durationMs!),
       );
 
+  /// From the tag fields of the library song at [path], as
+  /// `watchTrackLyricsFields` reports them.
+  factory LyricsTarget.fromLibraryFields(
+    String path,
+    ({String title, String? artist, String? album, int? durationMs}) f,
+  ) => LyricsTarget.fromFields(
+    uri: path,
+    title: f.title,
+    artist: f.artist,
+    album: f.album,
+    duration: f.durationMs == null
+        ? null
+        : Duration(milliseconds: f.durationMs!),
+  );
+
   final String trackKey;
 
   /// The local audio file; `null` for a song outside the file system.
@@ -124,17 +139,7 @@ final lyricsTargetProvider = StreamProvider.autoDispose<LyricsTarget?>((ref) {
   return db
       .watchTrackLyricsFields(path)
       .map(
-        (f) => f == null
-            ? fromTrack
-            : LyricsTarget.fromFields(
-                uri: path,
-                title: f.title,
-                artist: f.artist,
-                album: f.album,
-                duration: f.durationMs == null
-                    ? null
-                    : Duration(milliseconds: f.durationMs!),
-              ),
+        (f) => f == null ? fromTrack : LyricsTarget.fromLibraryFields(path, f),
       )
       .distinct();
 }, retry: (_, _) => null);

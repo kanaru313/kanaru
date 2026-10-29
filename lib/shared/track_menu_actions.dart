@@ -8,9 +8,11 @@ import '../core/database/library_database.dart';
 import '../core/database/library_startup.dart';
 import '../core/database/playlist_favorites.dart';
 import '../core/database/playlist_library_paths.dart';
+import '../core/lyrics/online/lyrics_target.dart';
 import '../l10n/l10n.dart';
 import 'icons/app_icons.dart';
 import 'library_route_keys.dart';
+import 'lyrics_picker/lyrics_picker.dart';
 import 'show_in_file_manager.dart';
 import 'track_menu_choice.dart';
 import 'widgets/queue_actions_menu.dart';
@@ -32,6 +34,8 @@ class TrackMenuRunner {
   TrackMenuRunner(WidgetRef ref, this._context)
     : _router = GoRouter.maybeOf(_context),
       _messenger = ScaffoldMessenger.maybeOf(_context),
+      _container = ProviderScope.containerOf(_context, listen: false),
+      _navigator = Navigator.maybeOf(_context, rootNavigator: true),
       _l10n = _context.l10n,
       _db = ref.read(libraryDatabaseProvider),
       _showInFileManager = ref.read(showInFileManagerProvider);
@@ -39,6 +43,11 @@ class TrackMenuRunner {
   final BuildContext _context;
   final GoRouter? _router;
   final ScaffoldMessengerState? _messenger;
+
+  /// The provider container and root navigator, which outlive the row: the
+  /// lyrics dialog is opened from them, never from the row's context.
+  final ProviderContainer _container;
+  final NavigatorState? _navigator;
   final AppLocalizations _l10n;
   final LibraryDatabase? _db;
   final Future<bool> Function(String path) _showInFileManager;
@@ -49,17 +58,28 @@ class TrackMenuRunner {
 
   /// Follows [choice] for the song [trackId] stored at [path]. A song
   /// credited to several artists asks which one at [position] (global).
-  /// Queue choices belong to the caller and are ignored.
+  /// Queue choices belong to the caller and are ignored. Finding lyrics needs
+  /// the song as a [lyricsTarget].
   Future<void> run(
     TrackMenuChoice choice, {
     required int trackId,
     required String path,
     required Offset position,
+    LyricsTarget? lyricsTarget,
   }) async {
     try {
       switch (choice) {
         case QueueChoice():
           return;
+        case FindLyricsChoice():
+          final navigator = _navigator;
+          if (navigator == null || lyricsTarget == null) return;
+          await showLyricsPicker(
+            navigator: navigator,
+            container: _container,
+            target: lyricsTarget,
+            messenger: _messenger,
+          );
         case FavoriteChoice(:final favorite):
           final db = _db;
           if (db == null) {

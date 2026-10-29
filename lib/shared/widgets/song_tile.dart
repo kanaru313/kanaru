@@ -85,6 +85,7 @@ class SongTile extends ConsumerWidget {
     return TrackActionsRegion(
       trackId: song.id,
       path: song.path,
+      song: song,
       showAlbum: showAlbum,
       hasArtist: song.artist?.isNotEmpty ?? false,
       hasAlbum: song.album?.isNotEmpty ?? false,

@@ -2889,4 +2889,84 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeSearch => 'Tìm';
+
+  @override
+  String get lyricsFindOnline => 'Tìm lời online…';
+
+  @override
+  String get lyricsPickerTitle => 'Chọn lời bài hát';
+
+  @override
+  String lyricsPickerSong(String title, String artist, String duration) {
+    return 'Bài: $title · $artist · $duration';
+  }
+
+  @override
+  String get lyricsPickerSearch => 'Tìm';
+
+  @override
+  String get lyricsPickerQueryHint => 'Nghệ sĩ và tên bài';
+
+  @override
+  String get lyricsPickerSynced => 'Có thời gian';
+
+  @override
+  String get lyricsPickerPlain => 'Thuần văn bản';
+
+  @override
+  String get lyricsPickerInstrumental => 'Nhạc không lời';
+
+  @override
+  String get lyricsPickerGoodMatch => 'Khớp tốt';
+
+  @override
+  String lyricsPickerDelta(int seconds) {
+    return '±$seconds giây';
+  }
+
+  @override
+  String get lyricsPickerEmpty => 'Không tìm thấy lời. Thử từ khóa khác.';
+
+  @override
+  String lyricsPickerError(String provider) {
+    return 'Không kết nối được $provider';
+  }
+
+  @override
+  String get lyricsPickerRetry => 'Thử lại';
+
+  @override
+  String lyricsPickerFooter(String hosts) {
+    return 'Kết quả từ $hosts · lời bạn chọn được ghim vào bài này';
+  }
+
+  @override
+  String get lyricsPickerUse => 'Dùng lời này';
+
+  @override
+  String get lyricsPickerNoPreview => 'Chọn một kết quả để xem trước lời';
+
+  @override
+  String get lyricsPickerNoBody => 'Không xem trước hoặc dùng được lời này';
+
+  @override
+  String get lyricsPickerInstrumentalPreview => 'Bài này không có lời';
+
+  @override
+  String get lyricsPinned => 'Đã ghim lời vào bài này';
+
+  @override
+  String get lyricsSavedAsLrc => 'Đã lưu thành file .lrc';
+
+  @override
+  String get lyricsNotSavedOutsideLibrary =>
+      'Chưa lưu thành .lrc: bài nằm ngoài các thư mục thư viện của bạn';
+
+  @override
+  String get lyricsPickFailed => 'Không ghim được lời này';
+
+  @override
+  String lyricsPickerNotConsented(String provider) {
+    return 'Lời online đang tắt cho $provider. Hãy bật lại trong Cài đặt.';
+  }
 }

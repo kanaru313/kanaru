@@ -1,9 +1,11 @@
+import 'package:drift/native.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
@@ -35,6 +37,7 @@ void main() {
       'Play next',
       'Add to queue',
       'Add to playlist…',
+      'Find lyrics online…',
       'Show artist',
       'Show album',
       'Show in folder',
@@ -242,5 +245,94 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(shown, ['/m/1.flac']);
+  });
+
+  group('Find lyrics online row', () {
+    const titled = TrackListItem(
+      id: 1,
+      path: '/m/1.flac',
+      title: 'Real title',
+      artist: 'Ann',
+    );
+
+    /// Opens the menu of [song] on a region with or without a library.
+    Future<void> openMenu(
+      WidgetTester tester,
+      TrackListItem? song, {
+      bool withDatabase = true,
+    }) async {
+      final db = LibraryDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            libraryDatabaseProvider.overrideWithValue(withDatabase ? db : null),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TrackActionsRegion(
+                trackId: 1,
+                path: song?.path ?? '/m/1.flac',
+                song: song,
+                onQueueAction: (_) {},
+                child: const Text('row'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('row'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('is shown for a local song with a real title', (tester) async {
+      await openMenu(tester, titled);
+      expect(find.text('Find lyrics online…'), findsOneWidget);
+    });
+
+    testWidgets('is hidden for a stream address', (tester) async {
+      await openMenu(
+        tester,
+        const TrackListItem(
+          id: 1,
+          path: 'https://example.org/a.mp3',
+          title: 'Real title',
+        ),
+      );
+      expect(find.text('Show artist'), findsOneWidget);
+      expect(find.text('Find lyrics online…'), findsNothing);
+    });
+
+    testWidgets('is hidden when the title is the file name', (tester) async {
+      await openMenu(
+        tester,
+        const TrackListItem(id: 1, path: '/m/Real.flac', title: 'Real'),
+      );
+      expect(find.text('Find lyrics online…'), findsNothing);
+    });
+
+    testWidgets('is hidden without a library database', (tester) async {
+      await openMenu(tester, titled, withDatabase: false);
+      expect(find.text('Add to queue'), findsOneWidget);
+      expect(find.text('Find lyrics online…'), findsNothing);
+    });
+
+    testWidgets('is hidden when the caller holds no song', (tester) async {
+      await openMenu(tester, null);
+      expect(find.text('Find lyrics online…'), findsNothing);
+    });
+
+    testWidgets('sits between the Favorites row and Show artist', (
+      tester,
+    ) async {
+      await openMenu(tester, titled);
+      final favorite = tester.getTopLeft(find.text('Add to favorites')).dy;
+      final lyricsRow = tester.getTopLeft(find.text('Find lyrics online…')).dy;
+      final artist = tester.getTopLeft(find.text('Show artist')).dy;
+      expect(favorite, lessThan(lyricsRow));
+      expect(lyricsRow, lessThan(artist));
+    });
   });
 }

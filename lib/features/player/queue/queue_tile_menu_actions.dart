@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/playlist_favorites.dart';
 import '../../../core/database/playlist_library_paths.dart';
+import '../../../core/lyrics/online/lyrics_target.dart';
 import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
@@ -103,7 +104,9 @@ class QueueRowMenuTarget {
           final id = trackId;
           final file = path;
           if (file == null ||
-              (id == null && choice is! ShowInFileManagerChoice)) {
+              (id == null &&
+                  choice is! ShowInFileManagerChoice &&
+                  choice is! FindLyricsChoice)) {
             return;
           }
           await runner.run(
@@ -111,6 +114,7 @@ class QueueRowMenuTarget {
             trackId: id ?? 0,
             path: file,
             position: position,
+            lyricsTarget: LyricsTarget.fromTrack(track),
           );
       }
     } catch (error, stack) {

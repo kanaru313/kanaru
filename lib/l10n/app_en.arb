@@ -2677,5 +2677,128 @@
   "onlineLyricsNoticeSearch": "Search",
   "@onlineLyricsNoticeSearch": {
     "description": "Button of the manual online lyrics notice that accepts and searches"
+  },
+  "lyricsFindOnline": "Find lyrics online…",
+  "@lyricsFindOnline": {
+    "description": "Track menu row that opens the Choose lyrics dialog"
+  },
+  "lyricsPickerTitle": "Choose lyrics",
+  "@lyricsPickerTitle": {
+    "description": "Title of the dialog to pick online lyrics for a song"
+  },
+  "lyricsPickerSong": "Song: {title} · {artist} · {duration}",
+  "@lyricsPickerSong": {
+    "description": "Subtitle of the Choose lyrics dialog; duration is m:ss",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "artist": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsPickerSearch": "Search",
+  "@lyricsPickerSearch": {
+    "description": "Button next to the query field of the Choose lyrics dialog"
+  },
+  "lyricsPickerQueryHint": "Artist and title",
+  "@lyricsPickerQueryHint": {
+    "description": "Hint of the query field of the Choose lyrics dialog"
+  },
+  "lyricsPickerSynced": "Synced",
+  "@lyricsPickerSynced": {
+    "description": "Badge of a result with time-synced lyrics"
+  },
+  "lyricsPickerPlain": "Plain",
+  "@lyricsPickerPlain": {
+    "description": "Badge of a result with plain lyrics"
+  },
+  "lyricsPickerInstrumental": "Instrumental",
+  "@lyricsPickerInstrumental": {
+    "description": "Badge of a result the service marks as instrumental"
+  },
+  "lyricsPickerGoodMatch": "Good match",
+  "@lyricsPickerGoodMatch": {
+    "description": "Label of a result whose title, artist and length fit the song"
+  },
+  "lyricsPickerDelta": "±{seconds}s",
+  "@lyricsPickerDelta": {
+    "description": "How many seconds a result's length differs from the song's",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsPickerEmpty": "No lyrics found. Try other words.",
+  "@lyricsPickerEmpty": {
+    "description": "Shown when the search finds nothing"
+  },
+  "lyricsPickerError": "Couldn't reach {provider}",
+  "@lyricsPickerError": {
+    "description": "Shown when a lyrics service fails; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsPickerRetry": "Retry",
+  "@lyricsPickerRetry": {
+    "description": "Button that repeats a failed lyrics search"
+  },
+  "lyricsPickerFooter": "Results from {hosts} · the lyrics you pick are pinned to this song",
+  "@lyricsPickerFooter": {
+    "description": "Footer of the Choose lyrics dialog; hosts are the web addresses of the service",
+    "placeholders": {
+      "hosts": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsPickerUse": "Use these lyrics",
+  "@lyricsPickerUse": {
+    "description": "Button that pins the selected lyrics to the song"
+  },
+  "lyricsPickerNoPreview": "Select a result to preview its lyrics",
+  "@lyricsPickerNoPreview": {
+    "description": "Preview pane text when nothing is selected"
+  },
+  "lyricsPickerNoBody": "These lyrics can't be previewed or used",
+  "@lyricsPickerNoBody": {
+    "description": "Preview pane text for a result without lyrics"
+  },
+  "lyricsPickerInstrumentalPreview": "This song is instrumental",
+  "@lyricsPickerInstrumentalPreview": {
+    "description": "Preview pane text for an instrumental result"
+  },
+  "lyricsPinned": "Lyrics pinned to this song",
+  "@lyricsPinned": {
+    "description": "Snackbar after the user picked online lyrics"
+  },
+  "lyricsSavedAsLrc": "Saved as .lrc",
+  "@lyricsSavedAsLrc": {
+    "description": "Detail of the snackbar when the picked lyrics were also saved as a .lrc file"
+  },
+  "lyricsNotSavedOutsideLibrary": "Not saved as .lrc: the song is outside your library folders",
+  "@lyricsNotSavedOutsideLibrary": {
+    "description": "Detail of the snackbar when the .lrc file was not written because of the song's location"
+  },
+  "lyricsPickFailed": "Couldn't pin these lyrics",
+  "@lyricsPickFailed": {
+    "description": "Snackbar when pinning the lyrics the user picked failed"
+  },
+  "lyricsPickerNotConsented": "Online lyrics are turned off for {provider}. Allow it in Settings.",
+  "@lyricsPickerNotConsented": {
+    "description": "Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
   }
 }

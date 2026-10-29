@@ -35,3 +35,8 @@ class FavoriteChoice extends TrackMenuChoice {
 
   final bool favorite;
 }
+
+/// Opens the Choose lyrics dialog to search online lyrics for the song.
+class FindLyricsChoice extends TrackMenuChoice {
+  const FindLyricsChoice();
+}
