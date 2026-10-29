@@ -1459,5 +1459,17 @@
   "lyricsCreditPicked": "do bạn chọn",
   "lyricsMenuSearchAgain": "Tìm lại",
   "lyricsMenuChooseOther": "Chọn lời khác…",
-  "lyricsMenuNotThese": "Không phải lời này"
+  "lyricsMenuNotThese": "Không phải lời này",
+  "settingsAutoOnlineLyrics": "Tự động tìm lời online (LRCLIB)",
+  "settingsAutoOnlineLyricsHint": "Khi Đang phát đang mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.",
+  "settingsWriteLrc": "Lưu lời đã chọn thành file .lrc",
+  "settingsWriteLrcHint": "Khi bạn chọn lời trong hộp Chọn lời, ghi thêm file .lrc cạnh bài nếu chưa có, trong các thư mục thư viện. Không bao giờ ghi đè.",
+  "settingsSavedLyrics": "Lời đã lưu",
+  "settingsSavedLyricsSummary": "{count, plural, other{{count} bài}} · {size} · {notFound} bài không tìm thấy (thử lại sau 14 ngày)",
+  "settingsSavedLyricsNone": "Chưa có lời đã lưu",
+  "settingsSavedLyricsClear": "Xóa",
+  "settingsSavedLyricsClearTitle": "Xóa lời đã lưu?",
+  "settingsSavedLyricsClearBody": "Lời online đã lưu trên máy này, các lời bạn đã chọn và lựa chọn \"không phải lời này\" sẽ bị xóa. File .lrc vẫn còn.",
+  "settingsSavedLyricsCleared": "Đã xóa lời đã lưu",
+  "settingsSavedLyricsClearFailed": "Không xóa được lời đã lưu"
 }

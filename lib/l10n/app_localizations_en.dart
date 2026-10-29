@@ -3235,4 +3235,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsMenuNotThese => 'Not these lyrics';
+
+  @override
+  String get settingsAutoOnlineLyrics =>
+      'Find lyrics online automatically (LRCLIB)';
+
+  @override
+  String get settingsAutoOnlineLyricsHint =>
+      'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.';
+
+  @override
+  String get settingsWriteLrc => 'Save picked lyrics as .lrc files';
+
+  @override
+  String get settingsWriteLrcHint =>
+      'When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.';
+
+  @override
+  String get settingsSavedLyrics => 'Saved lyrics';
+
+  @override
+  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$_temp0 · $size · $notFound not found (retried after 14 days)';
+  }
+
+  @override
+  String get settingsSavedLyricsNone => 'No saved lyrics';
+
+  @override
+  String get settingsSavedLyricsClear => 'Clear';
+
+  @override
+  String get settingsSavedLyricsClearTitle => 'Clear saved lyrics?';
+
+  @override
+  String get settingsSavedLyricsClearBody =>
+      'The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.';
+
+  @override
+  String get settingsSavedLyricsCleared => 'Saved lyrics cleared';
+
+  @override
+  String get settingsSavedLyricsClearFailed => 'Could not clear saved lyrics';
 }

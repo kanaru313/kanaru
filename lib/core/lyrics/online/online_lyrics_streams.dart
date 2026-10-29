@@ -66,3 +66,23 @@ final onlineLyricsCacheProvider = StreamProvider.autoDispose
             ],
           );
     }, retry: (_, _) => null);
+
+/// Row counts and text size of everything saved for online lyrics, live.
+/// Zeros without a library database.
+final onlineLyricsStatsProvider =
+    StreamProvider.autoDispose<
+      ({int found, int notFound, int picks, int skips, int rejects, int bytes})
+    >((ref) {
+      final db = ref.watch(libraryDatabaseProvider);
+      if (db == null) {
+        return Stream.value((
+          found: 0,
+          notFound: 0,
+          picks: 0,
+          skips: 0,
+          rejects: 0,
+          bytes: 0,
+        ));
+      }
+      return db.watchOnlineLyricsStats();
+    }, retry: (_, _) => null);

@@ -4753,6 +4753,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not these lyrics'**
   String get lyricsMenuNotThese;
+
+  /// No description provided for @settingsAutoOnlineLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics online automatically (LRCLIB)'**
+  String get settingsAutoOnlineLyrics;
+
+  /// No description provided for @settingsAutoOnlineLyricsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.'**
+  String get settingsAutoOnlineLyricsHint;
+
+  /// No description provided for @settingsWriteLrc.
+  ///
+  /// In en, this message translates to:
+  /// **'Save picked lyrics as .lrc files'**
+  String get settingsWriteLrc;
+
+  /// No description provided for @settingsWriteLrcHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.'**
+  String get settingsWriteLrcHint;
+
+  /// No description provided for @settingsSavedLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved lyrics'**
+  String get settingsSavedLyrics;
+
+  /// Saved online lyrics: songs with lyrics, their size and songs the service had none for
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)'**
+  String settingsSavedLyricsSummary(int count, String size, int notFound);
+
+  /// No description provided for @settingsSavedLyricsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved lyrics'**
+  String get settingsSavedLyricsNone;
+
+  /// No description provided for @settingsSavedLyricsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsSavedLyricsClear;
+
+  /// No description provided for @settingsSavedLyricsClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear saved lyrics?'**
+  String get settingsSavedLyricsClearTitle;
+
+  /// No description provided for @settingsSavedLyricsClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.'**
+  String get settingsSavedLyricsClearBody;
+
+  /// No description provided for @settingsSavedLyricsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved lyrics cleared'**
+  String get settingsSavedLyricsCleared;
+
+  /// No description provided for @settingsSavedLyricsClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear saved lyrics'**
+  String get settingsSavedLyricsClearFailed;
 }
 
 class _AppLocalizationsDelegate

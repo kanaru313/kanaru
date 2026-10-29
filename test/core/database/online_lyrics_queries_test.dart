@@ -259,12 +259,27 @@ void main() {
           trackKey: 't',
           pinnedAt: 1,
           plainText: const Value('日本'),
+          providerId: const Value('lrclib'),
+          remoteId: const Value('r'),
         ),
+      );
+      await db.pinLyrics(
+        LyricsPinsCompanion.insert(trackKey: 't2', pinnedAt: 1),
+      );
+      await db.rejectOnlineLyrics(
+        cacheKey: 'k',
+        providerId: 'lrclib',
+        remoteId: 'r9',
+        trackKey: 't3',
+        now: 1,
       );
       final stats = await db.watchOnlineLyricsStats().first;
       expect(stats.found, 1);
       expect(stats.notFound, 1);
-      expect(stats.pins, 1);
+      expect(stats.picks, 1);
+      // 't2' and the skip the rejection wrote for 't3'.
+      expect(stats.skips, 2);
+      expect(stats.rejects, 1);
       // 2 + 2 (é) + 6 (two CJK characters).
       expect(stats.bytes, 10);
     });
@@ -284,7 +299,10 @@ void main() {
       // 0 found (rejected), 2 pins, 1 reject.
       expect(await db.clearOnlineLyrics(), 3);
       final stats = await db.watchOnlineLyricsStats().first;
-      expect((stats.found, stats.notFound, stats.pins), (0, 0, 0));
+      expect(
+        (stats.found, stats.notFound, stats.picks, stats.skips, stats.rejects),
+        (0, 0, 0, 0, 0),
+      );
       expect(await db.rejectedRemoteIds('k'), isEmpty);
     });
   });

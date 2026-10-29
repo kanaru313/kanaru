@@ -192,6 +192,11 @@ Future<void> _checkLayout(
       inRow(l10n.settingsTranslationCache, find.byType(FilledButton)),
       l10n.translationCacheEmpty,
     ),
+    (
+      l10n.settingsSavedLyrics,
+      inRow(l10n.settingsSavedLyrics, find.byType(FilledButton)),
+      l10n.settingsSavedLyricsNone,
+    ),
   ]) {
     // `.last`: the sidebar can list the same word (Languages) before the page.
     final title = tester.getRect(find.text(label).last);
@@ -215,9 +220,9 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(26),
+    hasLength(27),
     reason:
-        'eleven buttons (two open the separator dialogs), five choices and ten dropdowns: the output device, '
+        'twelve buttons (two open the separator dialogs), five choices and ten dropdowns: the output device, '
         'ReplayGain mode, preamp, two scan filters and the translation language are wired, six options '
         'are not yet',
   );

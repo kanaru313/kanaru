@@ -117,23 +117,33 @@ extension OnlineLyricsQueries on LibraryDatabase {
   }
 
   /// Row counts and the UTF-8 size of all stored lyrics text. Rows with an
-  /// unknown status count toward bytes only.
-  Stream<({int found, int notFound, int pins, int bytes})>
+  /// unknown status count toward bytes only. Pins are split into picks (a
+  /// chosen match) and skips (no online lyrics for the song). A song with
+  /// both an automatic row and a pick may be counted twice: their keys
+  /// differ, so the song total is an approximation.
+  Stream<
+    ({int found, int notFound, int picks, int skips, int rejects, int bytes})
+  >
   watchOnlineLyricsStats() {
     return customSelect(
       'SELECT '
       "(SELECT COUNT(*) FROM online_lyrics WHERE status = 'found') AS found, "
       "(SELECT COUNT(*) FROM online_lyrics WHERE status = 'not_found') "
       'AS not_found, '
-      '(SELECT COUNT(*) FROM lyrics_pins) AS pins, '
+      '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NOT NULL) '
+      'AS picks, '
+      '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NULL) AS skips, '
+      '(SELECT COUNT(*) FROM online_lyrics_rejects) AS rejects, '
       '(SELECT COALESCE(SUM($_textBytes), 0) FROM online_lyrics) '
       '+ (SELECT COALESCE(SUM($_textBytes), 0) FROM lyrics_pins) AS bytes',
-      readsFrom: {onlineLyrics, lyricsPins},
+      readsFrom: {onlineLyrics, lyricsPins, onlineLyricsRejects},
     ).watchSingle().map(
       (r) => (
         found: r.read<int>('found'),
         notFound: r.read<int>('not_found'),
-        pins: r.read<int>('pins'),
+        picks: r.read<int>('picks'),
+        skips: r.read<int>('skips'),
+        rejects: r.read<int>('rejects'),
         bytes: r.read<int>('bytes'),
       ),
     );

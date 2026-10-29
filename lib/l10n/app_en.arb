@@ -2897,5 +2897,31 @@
   "lyricsMenuNotThese": "Not these lyrics",
   "@lyricsMenuNotThese": {
     "description": "Lyrics credit menu item that rejects the matched lyrics for the song"
-  }
+  },
+  "settingsAutoOnlineLyrics": "Find lyrics online automatically (LRCLIB)",
+  "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
+  "settingsWriteLrc": "Save picked lyrics as .lrc files",
+  "settingsWriteLrcHint": "When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.",
+  "settingsSavedLyrics": "Saved lyrics",
+  "settingsSavedLyricsSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)",
+  "@settingsSavedLyricsSummary": {
+    "description": "Saved online lyrics: songs with lyrics, their size and songs the service had none for",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      },
+      "notFound": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsSavedLyricsNone": "No saved lyrics",
+  "settingsSavedLyricsClear": "Clear",
+  "settingsSavedLyricsClearTitle": "Clear saved lyrics?",
+  "settingsSavedLyricsClearBody": "The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.",
+  "settingsSavedLyricsCleared": "Saved lyrics cleared",
+  "settingsSavedLyricsClearFailed": "Could not clear saved lyrics"
 }

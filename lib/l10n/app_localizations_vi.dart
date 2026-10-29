@@ -3033,4 +3033,50 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsMenuNotThese => 'Không phải lời này';
+
+  @override
+  String get settingsAutoOnlineLyrics => 'Tự động tìm lời online (LRCLIB)';
+
+  @override
+  String get settingsAutoOnlineLyricsHint =>
+      'Khi Đang phát đang mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
+
+  @override
+  String get settingsWriteLrc => 'Lưu lời đã chọn thành file .lrc';
+
+  @override
+  String get settingsWriteLrcHint =>
+      'Khi bạn chọn lời trong hộp Chọn lời, ghi thêm file .lrc cạnh bài nếu chưa có, trong các thư mục thư viện. Không bao giờ ghi đè.';
+
+  @override
+  String get settingsSavedLyrics => 'Lời đã lưu';
+
+  @override
+  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài',
+    );
+    return '$_temp0 · $size · $notFound bài không tìm thấy (thử lại sau 14 ngày)';
+  }
+
+  @override
+  String get settingsSavedLyricsNone => 'Chưa có lời đã lưu';
+
+  @override
+  String get settingsSavedLyricsClear => 'Xóa';
+
+  @override
+  String get settingsSavedLyricsClearTitle => 'Xóa lời đã lưu?';
+
+  @override
+  String get settingsSavedLyricsClearBody =>
+      'Lời online đã lưu trên máy này, các lời bạn đã chọn và lựa chọn \"không phải lời này\" sẽ bị xóa. File .lrc vẫn còn.';
+
+  @override
+  String get settingsSavedLyricsCleared => 'Đã xóa lời đã lưu';
+
+  @override
+  String get settingsSavedLyricsClearFailed => 'Không xóa được lời đã lưu';
 }
