@@ -1,9 +1,12 @@
 import '../../../core/database/artist_names.dart';
 import '../../../core/database/library_database.dart';
-import '../../../core/database/text_keys.dart';
-import '../albums/album_tile_data.dart';
-import '../../../shared/sort_compare.dart';
+import '../../../core/settings/library_sort.dart';
+import '../albums/album_sort.dart';
 import '../../../shared/artist_summaries.dart' show preferredSpelling;
+
+/// The order of both album sections of an artist page: by year, unknown last,
+/// then as the Albums tab breaks ties (title, then album key).
+const artistAlbumsSort = SortChoice(AlbumSortField.year);
 
 /// What an artist page lists:
 /// - [albums]: albums the artist owns (one of its album artists, else its
@@ -15,8 +18,7 @@ import '../../../shared/artist_summaries.dart' show preferredSpelling;
 /// - [appearsOn]: the other albums holding those tracks.
 ///
 /// Album details are the rows of the albums query, so a tile shows what the
-/// Albums list shows; both sections order by year (unknown last), then by
-/// the title sort key, then by album key.
+/// Albums list shows; both sections order by [artistAlbumsSort].
 class ArtistPageSections {
   const ArtistPageSections({
     required this.name,
@@ -30,18 +32,18 @@ class ArtistPageSections {
     List<BrowseTrack> tracks,
     List<AlbumSummary> albumRows,
   ) {
-    final owned = <AlbumSummary>[];
-    final other = <AlbumSummary>[];
+    var owned = <AlbumSummary>[];
+    var other = <AlbumSummary>[];
     for (final album in albumRows) {
       (_owners(album).contains(key) ? owned : other).add(album);
     }
-    owned.sort(_byYearThenTitle);
-    other.sort(_byYearThenTitle);
+    owned = sortAlbums(owned, artistAlbumsSort);
+    other = sortAlbums(other, artistAlbumsSort);
     return ArtistPageSections(
       name: _displayName(key, tracks) ?? key,
-      albums: [for (final a in owned) AlbumTileData.fromSummary(a)],
+      albums: owned,
       songs: _inTileOrder(tracks, [...owned, ...other]),
-      appearsOn: [for (final a in other) AlbumTileData.fromSummary(a)],
+      appearsOn: other,
     );
   }
 
@@ -55,9 +57,9 @@ class ArtistPageSections {
 
   /// The artist's name, chosen by [preferredSpelling] like in the list.
   final String name;
-  final List<AlbumTileData> albums;
+  final List<AlbumSummary> albums;
   final List<BrowseTrack> songs;
-  final List<AlbumTileData> appearsOn;
+  final List<AlbumSummary> appearsOn;
 
   /// Albums on the page, both sections.
   int get albumCount => albums.length + appearsOn.length;
@@ -119,21 +121,6 @@ Iterable<String> _namesOf(String key, String? tag) sync* {
 }
 
 final _letterOrDigit = RegExp(r'[\p{L}\p{N}]', unicode: true);
-
-/// Year ascending (unknown last), then the title sort key, then the key.
-int _byYearThenTitle(AlbumSummary a, AlbumSummary b) {
-  final year = compareNullsLast(a.year, b.year);
-  if (year != 0) return year;
-  final title = compareCodePoints(
-    a.titleSort ?? artistSortKey(a.title),
-    b.titleSort ?? artistSortKey(b.title),
-  );
-  if (title != 0) return title;
-  final artist = compareCodePoints(a.key.artistKey, b.key.artistKey);
-  return artist != 0
-      ? artist
-      : compareCodePoints(a.key.titleKey, b.key.titleKey);
-}
 
 /// [tracks] (already ordered by album key, disc, track, title and id, as
 /// the query returns them) grouped by the position of their album in

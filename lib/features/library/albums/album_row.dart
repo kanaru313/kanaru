@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_database.dart';
 import '../../../shared/widgets/card_shelf.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../widgets/library_grid_card.dart';
@@ -14,7 +15,8 @@ const _cellInset = libraryGridCardMargin + libraryGridCardPadding;
 
 /// [albums] as one line of grid tiles inside a [CustomScrollView], scrolling
 /// sideways like the Home shelves ([CardShelf]): arrow buttons, mouse drag,
-/// trackpad and Shift+wheel.
+/// trackpad and Shift+wheel. The tile data is made per built tile, so a long
+/// row costs only what is on screen.
 class SliverAlbumRow extends StatelessWidget {
   const SliverAlbumRow({
     super.key,
@@ -23,11 +25,11 @@ class SliverAlbumRow extends StatelessWidget {
     this.onQueueAction,
   });
 
-  final List<AlbumTileData> albums;
-  final void Function(AlbumTileData album) onTap;
+  final List<AlbumSummary> albums;
+  final void Function(AlbumSummary album) onTap;
 
   /// An action picked from the menu of [album]; no menus without it.
-  final void Function(AlbumTileData album, QueueAction action)? onQueueAction;
+  final void Function(AlbumSummary album, QueueAction action)? onQueueAction;
 
   @override
   Widget build(BuildContext context) => SliverToBoxAdapter(
@@ -38,7 +40,7 @@ class SliverAlbumRow extends StatelessWidget {
       // The arrows center on the artwork, not on the text below it.
       arrowTop: _cellInset + _artworkWidth / 2 - 24,
       itemBuilder: (context, i) => AlbumGridTile(
-        data: albums[i],
+        data: AlbumTileData.fromSummary(albums[i]),
         onTap: () => onTap(albums[i]),
         onQueueAction: onQueueAction == null
             ? null

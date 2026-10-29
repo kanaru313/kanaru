@@ -15,7 +15,6 @@ import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
 import '../albums/album_row.dart';
-import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
@@ -132,7 +131,7 @@ class _GenrePageState extends ConsumerState<_GenrePage>
                     ),
                     SliverAlbumRow(
                       albums: data.albums,
-                      onTap: (AlbumTileData album) =>
+                      onTap: (AlbumSummary album) =>
                           context.go(albumLocation(album.key)),
                       onQueueAction: (album, action) => enqueueAlbum(
                         ref,

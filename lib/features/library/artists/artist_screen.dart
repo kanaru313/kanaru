@@ -15,7 +15,6 @@ import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
 import '../albums/album_row.dart';
-import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
@@ -91,9 +90,9 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
       for (final t in list)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
-    void queueAlbum(AlbumTileData album, QueueAction action) =>
+    void queueAlbum(AlbumSummary album, QueueAction action) =>
         enqueueAlbum(ref, context, action, album.key, album.title);
-    void openAlbum(AlbumTileData album) =>
+    void openAlbum(AlbumSummary album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
     Widget heading(String text) => SliverToBoxAdapter(
       child: Padding(
