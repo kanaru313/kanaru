@@ -34,30 +34,34 @@ class PlainLyricsView extends StatelessWidget {
       context,
       current: true,
     ).copyWith(fontWeight: FontWeight.w400);
-    return ListView.builder(
-      // Room an overlay at the bottom claims through the ambient padding
-      // (see the lyrics-only body) comes on top of the usual margin.
-      padding: EdgeInsets.fromLTRB(
-        lyricsSidePadding,
-        48,
-        lyricsSidePadding,
-        48 + MediaQuery.paddingOf(context).bottom,
-      ),
-      itemCount: lyrics.lines.length,
-      itemBuilder: (context, i) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: lyricsLineGap / 2),
-        child: TranslatedLineText(
-          original: lyrics.lines[i].text,
-          mainStyle: style,
-          current: true,
-          duration: Duration.zero,
-          translation: translations != null && i < translations!.length
-              ? translations![i]
-              : null,
-          pending: translationPending,
-          display: display,
-          pulse: pulse,
-          translationDirection: translationDirection,
+    // Desktop platforms add a scrollbar; lyrics scroll without one.
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: ListView.builder(
+        // Room an overlay at the bottom claims through the ambient padding
+        // (see the lyrics-only body) comes on top of the usual margin.
+        padding: EdgeInsets.fromLTRB(
+          lyricsSidePadding,
+          48,
+          lyricsSidePadding,
+          48 + MediaQuery.paddingOf(context).bottom,
+        ),
+        itemCount: lyrics.lines.length,
+        itemBuilder: (context, i) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: lyricsLineGap / 2),
+          child: TranslatedLineText(
+            original: lyrics.lines[i].text,
+            mainStyle: style,
+            current: true,
+            duration: Duration.zero,
+            translation: translations != null && i < translations!.length
+                ? translations![i]
+                : null,
+            pending: translationPending,
+            display: display,
+            pulse: pulse,
+            translationDirection: translationDirection,
+          ),
         ),
       ),
     );

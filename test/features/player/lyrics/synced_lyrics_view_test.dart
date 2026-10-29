@@ -153,9 +153,7 @@ void main() {
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
-  testWidgets('a line change draws about 13 frames, no scrollbar flash', (
-    tester,
-  ) async {
+  testWidgets('a line change draws about 13 frames', (tester) async {
     // Desktop platforms put a scrollbar on every scrollable: it must not
     // fade in and out on the view's own scrolling.
     await pump(tester, platform: TargetPlatform.linux);
@@ -171,135 +169,54 @@ void main() {
     expect(frames, inInclusiveRange(10, 14));
   });
 
-  testWidgets('scrolling by hand still shows the scrollbar', (tester) async {
+  bool hasScrollbar(WidgetTester tester) => find
+      .byWidgetPredicate(
+        (w) => w is CustomPaint && w.foregroundPainter is ScrollbarPainter,
+      )
+      .evaluate()
+      .isNotEmpty;
+
+  testWidgets('desktop shows no scrollbar, and a drag still scrolls', (
+    tester,
+  ) async {
     await pump(tester, platform: TargetPlatform.linux);
     await playAt(tester, const Duration(seconds: 3));
-    double thumbOpacity() {
-      final paint = tester.widget<CustomPaint>(
-        find.byWidgetPredicate(
-          (w) => w is CustomPaint && w.foregroundPainter is ScrollbarPainter,
-        ),
-      );
-      return (paint.foregroundPainter! as ScrollbarPainter)
-          .fadeoutOpacityAnimation
-          .value;
-    }
+    expect(hasScrollbar(tester), isFalse);
 
-    // Long enough for a thumb shown by the auto-scroll to have faded again.
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pumpAndSettle();
-    expect(thumbOpacity(), 0);
-
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -80));
-    // The fade-in starts on the first frame, then runs for 300 ms.
-    await tester.pump(const Duration(milliseconds: 100));
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(thumbOpacity(), 1);
-    await tester.pumpAndSettle();
-  });
-
-  ScrollbarPainter scrollbarPainter(WidgetTester tester) =>
-      tester
-              .widget<CustomPaint>(
-                find.byWidgetPredicate(
-                  (w) =>
-                      w is CustomPaint &&
-                      w.foregroundPainter is ScrollbarPainter,
-                ),
-              )
-              .foregroundPainter!
-          as ScrollbarPainter;
-
-  /// Scrolls by hand once (so the painter knows a position), then lets
-  /// auto-scroll take over for three lines far down the list. Returns the
-  /// scroll position. The manual-scroll pause is shorter than its timer.
-  Future<ScrollPosition> manualThenAutoScroll(WidgetTester tester) async {
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -80));
-    await tester.pump(lyricsManualScrollPause);
-    await tester.pumpAndSettle();
-    for (final s in [10, 20, 30]) {
-      await playAt(tester, Duration(seconds: s));
-    }
     final position = tester
         .state<ScrollableState>(find.byType(Scrollable))
         .position;
-    expect(position.pixels, greaterThan(500));
-    return position;
-  }
-
-  Future<void> expectHoveredThumbAtOffset(
-    WidgetTester tester,
-    ScrollPosition position,
-  ) async {
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    addTearDown(mouse.removePointer);
-    await mouse.addPointer(location: const Offset(300, 200));
-    await mouse.moveTo(const Offset(598, 200));
+    final before = position.pixels;
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -80));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(position.pixels, greaterThan(before));
+    expect(hasScrollbar(tester), isFalse);
+    await tester.pump(lyricsManualScrollPause);
     await tester.pumpAndSettle();
+  });
 
-    final viewport = position.viewportDimension;
-    final max = position.maxScrollExtent;
-    final length = viewport * viewport / (viewport + max);
-    final centerY = position.pixels / max * (viewport - length) + length / 2;
-    // The tolerance is intentionally large: the hit test accepts any point on
-    // the thumb (about `length` px tall), while the stale thumb of a missed
-    // resync sits hundreds of px away, so a small tolerance adds nothing.
-    // The scaffold body starts at y = 0 in this 600 x 400 view.
-    expect(
-      scrollbarPainter(tester).hitTestOnlyThumbInteractive(
-        Offset(594, centerY),
-        PointerDeviceKind.mouse,
-      ),
-      isTrue,
-      reason: 'thumb must be drawn at the current offset ${position.pixels}',
-    );
-  }
-
-  testWidgets('after auto-scroll the hovered thumb sits at the offset', (
-    tester,
-  ) async {
+  testWidgets('the mouse wheel scrolls the view', (tester) async {
     await pump(tester, platform: TargetPlatform.linux);
-    final position = await manualThenAutoScroll(tester);
-    await expectHoveredThumbAtOffset(tester, position);
+    await playAt(tester, const Duration(seconds: 3));
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable))
+        .position;
+    final before = position.pixels;
+
+    await tester.sendEventToBinding(
+      PointerScrollEvent(
+        kind: PointerDeviceKind.mouse,
+        position: tester.getCenter(find.byType(SingleChildScrollView)),
+        scrollDelta: const Offset(0, 80),
+      ),
+    );
+    await tester.pump();
+
+    expect(position.pixels, greaterThan(before));
+    expect(hasScrollbar(tester), isFalse);
+    await tester.pump(lyricsManualScrollPause);
+    await tester.pumpAndSettle();
   });
-
-  testWidgets('with reduced motion the hovered thumb sits at the offset', (
-    tester,
-  ) async {
-    await pump(tester, platform: TargetPlatform.linux, reduceMotion: true);
-    final position = await manualThenAutoScroll(tester);
-    await expectHoveredThumbAtOffset(tester, position);
-  });
-
-  for (final reduceMotion in [false, true]) {
-    testWidgets('the scrollbar resync after auto-scroll does not fade it in '
-        '(reduceMotion: $reduceMotion)', (tester) async {
-      await pump(
-        tester,
-        platform: TargetPlatform.linux,
-        reduceMotion: reduceMotion,
-      );
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, -80),
-      );
-      await tester.pump(lyricsManualScrollPause);
-      await tester.pumpAndSettle();
-      expect(scrollbarPainter(tester).fadeoutOpacityAnimation.value, 0);
-
-      backend.emitPosition.add(const Duration(seconds: 30));
-      // Frame by frame through the glide and the resync after it: the
-      // thumb never starts to fade in.
-      for (var t = 0; t < 600; t += 16) {
-        await tester.pump(const Duration(milliseconds: 16));
-        expect(
-          scrollbarPainter(tester).fadeoutOpacityAnimation.value,
-          0,
-          reason: 'thumb visible $t ms after the line change',
-        );
-      }
-    });
-  }
 
   testWidgets('a line change draws only the lines that change', (tester) async {
     await pump(tester);

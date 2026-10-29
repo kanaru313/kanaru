@@ -14,11 +14,10 @@ const lyricsManualScrollPause = Duration(seconds: 3);
 const _scrollDuration = Duration(milliseconds: 200);
 
 /// The scrolling of the synced lyrics view: keeping the current line at
-/// [lyricsAnchor], telling the user's scrolling from the view's own, and the
-/// scrollbar. The state that mixes it in sets [lineKeys] and [lineIndex].
+/// [lyricsAnchor] and telling the user's scrolling from the view's own. The
+/// state that mixes it in sets [lineKeys] and [lineIndex].
 mixin SyncedLyricsScroll<T extends StatefulWidget> on State<T> {
   final scroll = ScrollController();
-  final viewKey = GlobalKey();
 
   /// One key per line, to find its render object.
   late List<GlobalKey> lineKeys;
@@ -61,7 +60,6 @@ mixin SyncedLyricsScroll<T extends StatefulWidget> on State<T> {
     if (!animate || MediaQuery.disableAnimationsOf(context)) {
       scroll.jumpTo(target);
       scrollingItself = false;
-      _syncScrollbar();
       return;
     }
     scroll
@@ -73,7 +71,6 @@ mixin SyncedLyricsScroll<T extends StatefulWidget> on State<T> {
         .whenComplete(() {
           if (generation != _scrollGeneration) return;
           scrollingItself = false;
-          _syncScrollbar();
         });
   }
 
@@ -83,24 +80,6 @@ mixin SyncedLyricsScroll<T extends StatefulWidget> on State<T> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && resume == null) reveal(animate: false);
     });
-  }
-
-  /// Hands the scrollbar the current metrics without showing it.
-  ///
-  /// The scrollbar's predicate ignores the view's own scrolling, and the
-  /// scrollbar only moves its thumb from scroll notifications, so after an
-  /// auto-scroll the thumb would stay where the last manual scroll left it and
-  /// show there on hover. A metrics notification updates the thumb but does not
-  /// fade the scrollbar in (it does only for an always-visible thumb), so one
-  /// at the end of a self-scroll fixes the thumb without the fade frames that
-  /// the predicate avoids.
-  void _syncScrollbar() {
-    final context = viewKey.currentContext;
-    if (!mounted || context == null || !scroll.hasClients) return;
-    ScrollMetricsNotification(
-      metrics: scroll.position.copyWith(),
-      context: context,
-    ).dispatch(context);
   }
 
   /// Scroll listener: a scroll the view did not start itself pauses

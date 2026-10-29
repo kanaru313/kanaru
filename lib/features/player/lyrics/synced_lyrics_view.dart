@@ -120,45 +120,39 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
           // Desktop platforms give every scrollable a scrollbar that fades in
           // and out on each scroll. Auto-scroll would flash it at every line
           // change: about 20 more frames each, more than the glide itself. So
-          // the view has its own, which ignores the view's own scrolling.
+          // the lyrics scroll without one; wheel, touch and trackpad drag still work.
           child: ScrollConfiguration(
             behavior: ScrollConfiguration.of(context)
                 .copyWith(scrollbars: false),
-            child: Scrollbar(
+            child: SingleChildScrollView(
               controller: scroll,
-              notificationPredicate: (notification) =>
-                  notification.depth == 0 && !scrollingItself,
-              child: SingleChildScrollView(
-                key: viewKey,
-                controller: scroll,
-                // Room above and below so the first and last lines can reach
-                // the anchor.
-                padding: EdgeInsets.fromLTRB(
-                  lyricsSidePadding - 12,
-                  height * lyricsAnchor,
-                  lyricsSidePadding - 12,
-                  height * (1 - lyricsAnchor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var i = 0; i < lyrics.lines.length; i++)
-                      LyricsLine(
-                        key: lineKeys[i],
-                        line: lyrics.lines[i],
-                        current: _current[i],
-                        onTap: () => _seek(i),
-                        translation:
-                            translations != null && i < translations.length
-                            ? translations[i]
-                            : null,
-                        translationPending: widget.translationPending,
-                        display: widget.display,
-                        pulse: widget.pulse,
-                        translationDirection: widget.translationDirection,
-                      ),
-                  ],
-                ),
+              // Room above and below so the first and last lines can reach
+              // the anchor.
+              padding: EdgeInsets.fromLTRB(
+                lyricsSidePadding - 12,
+                height * lyricsAnchor,
+                lyricsSidePadding - 12,
+                height * (1 - lyricsAnchor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < lyrics.lines.length; i++)
+                    LyricsLine(
+                      key: lineKeys[i],
+                      line: lyrics.lines[i],
+                      current: _current[i],
+                      onTap: () => _seek(i),
+                      translation:
+                          translations != null && i < translations.length
+                          ? translations[i]
+                          : null,
+                      translationPending: widget.translationPending,
+                      display: widget.display,
+                      pulse: widget.pulse,
+                      translationDirection: widget.translationDirection,
+                    ),
+                ],
               ),
             ),
           ),
