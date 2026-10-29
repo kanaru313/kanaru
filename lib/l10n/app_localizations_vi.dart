@@ -684,10 +684,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get foldersFlatView => 'Tất cả thư mục';
 
   @override
-  String get foldersSubfolders => 'Thư mục';
+  String get foldersFilterAll => 'Tất cả';
 
   @override
-  String get foldersSongs => 'Bài hát';
+  String foldersSectionFolders(int count) {
+    return 'Thư mục · $count';
+  }
+
+  @override
+  String foldersSectionSongs(int count) {
+    return 'Bài hát · $count';
+  }
 
   @override
   String foldersCounts(int songs, int folders) {

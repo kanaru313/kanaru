@@ -451,8 +451,19 @@
   "foldersNotFoundMessage": "It may have been removed or no longer holds songs.",
   "foldersTreeView": "Folder tree",
   "foldersFlatView": "All folders",
-  "foldersSubfolders": "Folders",
-  "foldersSongs": "Songs",
+  "foldersFilterAll": "All",
+  "foldersSectionFolders": "Folders · {count}",
+  "@foldersSectionFolders": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "foldersSectionSongs": "Songs · {count}",
+  "@foldersSectionSongs": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "foldersCounts": "{songs, plural, =1{1 song} other{{songs} songs}}, {folders, plural, =0{no subfolders} =1{1 subfolder} other{{folders} subfolders}}",
   "@foldersCounts": {
     "placeholders": {

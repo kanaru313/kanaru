@@ -8,8 +8,10 @@ import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/library/folders/folder_art.dart';
+import 'package:kanaru/features/library/folders/folder_content_view.dart';
 import 'package:kanaru/features/library/folders/folder_header.dart';
 import 'package:kanaru/features/library/folders/folder_list_tile.dart';
+import 'package:kanaru/features/library/folders/folder_page_parts.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/hover_underline_links.dart';
 import 'package:material_ui/material_ui.dart';
@@ -112,12 +114,18 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: _rock);
     double top(String text) => tester.getTopLeft(onPage(text)).dy;
 
-    expect(onPage('Folders'), findsOneWidget);
-    expect(onPage('Songs'), findsOneWidget);
+    expect(
+      find.byType(FolderSectionHeading),
+      findsNothing,
+      reason: 'a list has no headings',
+    );
     expect(find.byType(FolderListTile), findsNWidgets(2));
+    final rule = find.byKey(folderSongsDividerKey);
+    expect(rule, findsOneWidget);
+    double divider() => tester.getTopLeft(rule).dy;
     expect(top('CD 2'), lessThan(top('CD 10')));
-    expect(top('CD 10'), lessThan(top('Songs')));
-    expect(top('Songs'), lessThan(top('b2')));
+    expect(top('CD 10'), lessThan(divider()));
+    expect(divider(), lessThan(top('b2')));
     expect(top('b2'), lessThan(top('b10')));
     expect(find.text('c'), findsNothing, reason: 'a song of a subfolder');
     expect(find.text('j'), findsNothing);
@@ -362,7 +370,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(FolderListTile), findsNothing);
-    expect(onPage('Folders'), findsNothing);
+    expect(find.textContaining('Folders ·'), findsNothing);
     expect(find.text('b2'), findsOneWidget);
   });
 
@@ -510,7 +518,7 @@ void main() {
         tester.widget<FolderArt>(inHeader(find.byType(FolderArt))).direct,
         isTrue,
       );
-      expect(onPage('Folders'), findsNothing);
+      expect(find.textContaining('Folders ·'), findsNothing);
     });
 
     testWidgets('Play queues the songs in the folder only', (tester) async {
@@ -630,7 +638,7 @@ void main() {
       expect(play.onPressed, isNull);
       expect(shuffle.onPressed, isNull);
       expect(find.text('No songs in this folder'), findsOneWidget);
-      expect(onPage('Songs'), findsNothing);
+      expect(find.textContaining('Songs ·'), findsNothing);
     });
   });
 

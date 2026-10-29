@@ -171,8 +171,19 @@
   "foldersNotFoundMessage": "Có thể thư mục đã bị xoá hoặc không còn bài hát.",
   "foldersTreeView": "Cây thư mục",
   "foldersFlatView": "Tất cả thư mục",
-  "foldersSubfolders": "Thư mục",
-  "foldersSongs": "Bài hát",
+  "foldersFilterAll": "Tất cả",
+  "foldersSectionFolders": "Thư mục · {count}",
+  "@foldersSectionFolders": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "foldersSectionSongs": "Bài hát · {count}",
+  "@foldersSectionSongs": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "foldersCounts": "{songs} bài, {folders} thư mục con",
   "@foldersCounts": {
     "placeholders": {

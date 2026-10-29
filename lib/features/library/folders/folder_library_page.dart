@@ -2,22 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_startup.dart';
-import '../../../core/player/track.dart' as player;
-import '../../../l10n/l10n.dart';
-import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/library_route_keys.dart';
-import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/hover_underline_links.dart';
-import '../../../shared/widgets/song_tile.dart';
 import '../library_view_modes.dart';
 import 'folder_actions.dart';
+import 'folder_content_view.dart';
 import 'folder_counts_line.dart';
 import 'folder_header.dart';
 import 'folder_menu.dart';
-import 'folder_page_parts.dart';
-import 'folder_subfolders.dart';
-import 'folder_tree.dart';
 import 'folders_provider.dart';
 
 /// The page of a folder of the library: its subfolders (with the tree on)
@@ -36,20 +28,11 @@ class LibraryFolderPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
     final folder = data.folder;
     final modes = ref.watch(libraryViewModesProvider);
-    final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     final songs = data.songs;
-    final tracks = <player.Track>[
-      for (final s in songs) trackFromListItem(s, coverDirectory),
-    ];
     final flat = !modes.foldersHierarchy;
-    final children = flat ? const <FolderNode>[] : folder.children;
     final noSongs = flat && songs.isEmpty;
-    void open(FolderNode child) => context.go(folderLocation(child.path));
-    void act(FolderNode child, FolderAction action) =>
-        runFolderAction(ref, context, action, child);
     void run(FolderAction action) =>
         runFolderAction(ref, context, action, folder, recursive: !flat);
     // The folders above are links in the tree view only; the current folder
@@ -77,57 +60,27 @@ class LibraryFolderPage extends ConsumerWidget {
       ],
     );
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: FolderHeader(
-            folder: folder,
-            directArt: flat,
-            breadcrumb: breadcrumb,
-            counts: (style) => FolderCountsLine(
-              folder: folder,
-              style: style,
-              directSongs: flat ? songs.length : null,
-            ),
-            onPlay: noSongs ? null : () => run(FolderAction.play),
-            onShuffle: noSongs ? null : () => run(FolderAction.shuffle),
-            trailing: [
-              FolderActionsButton(
-                withPlayAllBelow: flat && folder.children.isNotEmpty,
-                withSongActions: !noSongs,
-                onSelected: run,
-              ),
-            ],
-          ),
+    return FolderContentView(
+      data: data,
+      header: FolderHeader(
+        folder: folder,
+        directArt: flat,
+        breadcrumb: breadcrumb,
+        counts: (style) => FolderCountsLine(
+          folder: folder,
+          style: style,
+          directSongs: flat ? songs.length : null,
         ),
-        if (children.isNotEmpty) ...[
-          FolderSectionHeading(l10n.foldersSubfolders),
-          SliverSubfolders(
-            children: children,
-            view: modes.folders,
-            onOpen: open,
-            onAction: act,
+        onPlay: noSongs ? null : () => run(FolderAction.play),
+        onShuffle: noSongs ? null : () => run(FolderAction.shuffle),
+        trailing: [
+          FolderActionsButton(
+            withPlayAllBelow: flat && folder.children.isNotEmpty,
+            withSongActions: !noSongs,
+            onSelected: run,
           ),
         ],
-        if (tracks.isNotEmpty) ...[
-          FolderSectionHeading(l10n.foldersSongs),
-          SliverList.builder(
-            itemCount: tracks.length,
-            itemBuilder: (context, i) {
-              void queue(action) => enqueueLoaded(ref, context, action, [
-                tracks[i],
-              ], tracks[i].title);
-              return SongTile(
-                song: songs[i],
-                onTap: () => playTracks(ref, tracks, i),
-                onQueueAction: queue,
-              );
-            },
-          ),
-        ],
-        if (tracks.isEmpty && children.isEmpty) const FolderEmptyNote(),
-        folderPageEnd,
-      ],
+      ),
     );
   }
 }
