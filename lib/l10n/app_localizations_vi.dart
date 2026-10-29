@@ -2969,4 +2969,68 @@ class AppLocalizationsVi extends AppLocalizations {
   String lyricsPickerNotConsented(String provider) {
     return 'Lời online đang tắt cho $provider. Hãy bật lại trong Cài đặt.';
   }
+
+  @override
+  String lyricsSearching(String provider) {
+    return 'Đang tìm trên $provider…';
+  }
+
+  @override
+  String get lyricsFindAutomatically => 'Tự động tìm lời';
+
+  @override
+  String lyricsNotFound(String provider) {
+    return 'Không có lời trên $provider';
+  }
+
+  @override
+  String get lyricsSearchManually => 'Tìm thủ công…';
+
+  @override
+  String lyricsOnlineError(String provider) {
+    return 'Không kết nối được $provider';
+  }
+
+  @override
+  String get lyricsRetry => 'Thử lại';
+
+  @override
+  String get lyricsSkipped => 'Đã tắt lời online cho bài này';
+
+  @override
+  String get lyricsChoose => 'Chọn lời…';
+
+  @override
+  String get lyricsSearchAutomaticallyAgain => 'Tự động tìm lại';
+
+  @override
+  String get lyricsInstrumental => 'Nhạc không lời';
+
+  @override
+  String lyricsCreditFrom(String provider) {
+    return 'Lời từ $provider';
+  }
+
+  @override
+  String get lyricsCreditNotSynced => 'không đồng bộ';
+
+  @override
+  String lyricsCreditMatched(int seconds) {
+    return 'tự động khớp (lệch $seconds giây)';
+  }
+
+  @override
+  String get lyricsCreditMatchedExact => 'tự động khớp';
+
+  @override
+  String get lyricsCreditPicked => 'do bạn chọn';
+
+  @override
+  String get lyricsMenuSearchAgain => 'Tìm lại';
+
+  @override
+  String get lyricsMenuChooseOther => 'Chọn lời khác…';
+
+  @override
+  String get lyricsMenuNotThese => 'Không phải lời này';
 }

@@ -4645,6 +4645,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Online lyrics are turned off for {provider}. Allow it in Settings.'**
   String lyricsPickerNotConsented(String provider);
+
+  /// Lyrics slot of Now Playing while a lookup runs; provider is the service name
+  ///
+  /// In en, this message translates to:
+  /// **'Searching {provider}…'**
+  String lyricsSearching(String provider);
+
+  /// Button in the empty lyrics slot that turns on automatic online lookup
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics automatically'**
+  String get lyricsFindAutomatically;
+
+  /// Lyrics slot of Now Playing when the service has no match; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics found on {provider}'**
+  String lyricsNotFound(String provider);
+
+  /// Button in the empty lyrics slot that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Search manually…'**
+  String get lyricsSearchManually;
+
+  /// Banner above the empty lyrics slot after a failed lookup; provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach {provider}'**
+  String lyricsOnlineError(String provider);
+
+  /// Button on the failed lookup banner
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get lyricsRetry;
+
+  /// Lyrics slot of Now Playing after the user rejected the matched lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'Online lyrics turned off for this song'**
+  String get lyricsSkipped;
+
+  /// Button in the lyrics slot that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Choose lyrics…'**
+  String get lyricsChoose;
+
+  /// Button that forgets the user's choice for the song and looks it up again
+  ///
+  /// In en, this message translates to:
+  /// **'Search automatically again'**
+  String get lyricsSearchAutomaticallyAgain;
+
+  /// Lyrics slot of Now Playing for a song the service marks as instrumental
+  ///
+  /// In en, this message translates to:
+  /// **'Instrumental'**
+  String get lyricsInstrumental;
+
+  /// Credit under online lyrics; provider is the service name
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics from {provider}'**
+  String lyricsCreditFrom(String provider);
+
+  /// Added to the lyrics credit when the lyrics have no timing
+  ///
+  /// In en, this message translates to:
+  /// **'not synced'**
+  String get lyricsCreditNotSynced;
+
+  /// Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's
+  ///
+  /// In en, this message translates to:
+  /// **'matched automatically (off by {seconds} s)'**
+  String lyricsCreditMatched(int seconds);
+
+  /// Header of the lyrics credit menu when the lengths agree or one is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'matched automatically'**
+  String get lyricsCreditMatchedExact;
+
+  /// Header of the lyrics credit menu for lyrics the user chose
+  ///
+  /// In en, this message translates to:
+  /// **'picked by you'**
+  String get lyricsCreditPicked;
+
+  /// Lyrics credit menu item that forgets the match and looks the song up again
+  ///
+  /// In en, this message translates to:
+  /// **'Search again'**
+  String get lyricsMenuSearchAgain;
+
+  /// Lyrics credit menu item that opens the Choose lyrics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Choose other lyrics…'**
+  String get lyricsMenuChooseOther;
+
+  /// Lyrics credit menu item that rejects the matched lyrics for the song
+  ///
+  /// In en, this message translates to:
+  /// **'Not these lyrics'**
+  String get lyricsMenuNotThese;
 }
 
 class _AppLocalizationsDelegate

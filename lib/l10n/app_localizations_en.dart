@@ -3171,4 +3171,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String lyricsPickerNotConsented(String provider) {
     return 'Online lyrics are turned off for $provider. Allow it in Settings.';
   }
+
+  @override
+  String lyricsSearching(String provider) {
+    return 'Searching $provider…';
+  }
+
+  @override
+  String get lyricsFindAutomatically => 'Find lyrics automatically';
+
+  @override
+  String lyricsNotFound(String provider) {
+    return 'No lyrics found on $provider';
+  }
+
+  @override
+  String get lyricsSearchManually => 'Search manually…';
+
+  @override
+  String lyricsOnlineError(String provider) {
+    return 'Couldn\'t reach $provider';
+  }
+
+  @override
+  String get lyricsRetry => 'Retry';
+
+  @override
+  String get lyricsSkipped => 'Online lyrics turned off for this song';
+
+  @override
+  String get lyricsChoose => 'Choose lyrics…';
+
+  @override
+  String get lyricsSearchAutomaticallyAgain => 'Search automatically again';
+
+  @override
+  String get lyricsInstrumental => 'Instrumental';
+
+  @override
+  String lyricsCreditFrom(String provider) {
+    return 'Lyrics from $provider';
+  }
+
+  @override
+  String get lyricsCreditNotSynced => 'not synced';
+
+  @override
+  String lyricsCreditMatched(int seconds) {
+    return 'matched automatically (off by $seconds s)';
+  }
+
+  @override
+  String get lyricsCreditMatchedExact => 'matched automatically';
+
+  @override
+  String get lyricsCreditPicked => 'picked by you';
+
+  @override
+  String get lyricsMenuSearchAgain => 'Search again';
+
+  @override
+  String get lyricsMenuChooseOther => 'Choose other lyrics…';
+
+  @override
+  String get lyricsMenuNotThese => 'Not these lyrics';
 }

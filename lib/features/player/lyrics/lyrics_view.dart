@@ -1,27 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/lyrics/playing_track_lyrics_provider.dart';
-import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
-import '../../../core/lyrics_translation/lyrics_translation_state.dart';
+import '../../../core/lyrics/online/playing_lyrics_status_provider.dart';
 import '../../../core/player/player_service.dart';
-import '../../../core/settings/settings_provider.dart';
-import 'lyrics_empty_state.dart';
-import 'plain_lyrics_view.dart';
-import 'synced_lyrics_view.dart';
-import 'translation/lyrics_translation_banner.dart';
-import 'translation/translated_line_text.dart';
+import 'lyrics_found_body.dart';
+import 'lyrics_status_states.dart';
 
-/// One step of the placeholder pulse.
-const _pulseDuration = Duration(milliseconds: 900);
-
-/// Lyrics of the playing track for Now Playing: synced lyrics follow
-/// playback, plain lyrics are shown as they are. Shows nothing while the
-/// current track's lyrics load (the value may still be the previous
-/// track's). A track without lyrics shows the empty state. With translation
-/// on, each line carries its translation (or a placeholder while it comes)
-/// and a banner reports a failure. The credit is on the header's translate
-/// button.
+/// The lyrics slot of Now Playing, drawn from the playing song's lyrics
+/// status: nothing while it is read, a pulsing bar while an online lookup
+/// runs, the lyrics (with the online source's credit when they came from the
+/// web) once found, and the empty state with the ways to find some
+/// otherwise. A status that is not the playing track's yet shows nothing, so
+/// the previous track's words never flash. The slot is the same in every
+/// state; the layout around it never changes with them.
 class LyricsView extends ConsumerWidget {
   const LyricsView({super.key});
 
@@ -30,124 +21,15 @@ class LyricsView extends ConsumerWidget {
     final uri = ref.watch(
       playerServiceProvider.select((s) => s.queue.current?.uri),
     );
-    final async = ref.watch(playingTrackLyricsProvider);
-    final playing = async.value;
-    if (playing == null || playing.uri != uri) {
-      // Blank while the answer is on its way, so the empty state never
-      // flashes between tracks.
-      return async.isLoading || uri == null
-          ? const SizedBox.expand()
-          : const LyricsEmptyState();
-    }
-    final lyrics = playing.lyrics;
-    final appLang = Localizations.localeOf(context).languageCode;
-    final state = ref.watch(lyricsTranslationProvider(appLang));
-    final display = ref.watch(
-      settingsProvider.select((s) => s.translation.display),
-    );
-    final ready = state is TranslationReady ? state : null;
-    final loading = state is TranslationLoading;
-    final direction = ready == null
-        ? null
-        : translationDirectionOf(ready.info.effective.code);
-    return _PulseHost(
-      active: loading,
-      builder: (context, pulse) => Column(
-        children: [
-          // The banner has its own room above the lyrics, so it never covers
-          // the first lines. Its slot is always there, which keeps the view's
-          // place in the tree.
-          state is TranslationFailed
-              ? LyricsTranslationBanner(state: state, appLang: appLang)
-              : const SizedBox.shrink(),
-          Expanded(
-            // A new key per lyrics resets the scroll position and line
-            // state.
-            child: lyrics.synced
-                ? SyncedLyricsView(
-                    key: ObjectKey(lyrics),
-                    lyrics: lyrics,
-                    translations: ready?.lines,
-                    translationPending: loading,
-                    display: display,
-                    pulse: pulse,
-                    translationDirection: direction,
-                  )
-                : PlainLyricsView(
-                    key: ObjectKey(lyrics),
-                    lyrics: lyrics,
-                    translations: ready?.lines,
-                    translationPending: loading,
-                    display: display,
-                    pulse: pulse,
-                    translationDirection: direction,
-                  ),
-          ),
-        ],
+    final status = ref.watch(playingLyricsStatusProvider);
+    if (status == null || status.uri != uri) return const SizedBox.expand();
+    return switch (status) {
+      LyricsReading() => const SizedBox.expand(),
+      LyricsSearching(:final providerId) => LyricsSearchingView(
+        providerId: providerId,
       ),
-    );
+      LyricsFound() => LyricsFoundBody(found: status),
+      LyricsNone() => LyricsNoneView(none: status),
+    };
   }
-}
-
-/// Owns the one controller that pulses every placeholder bar of the view. It
-/// runs only while [active] and motion is allowed; the animation handed to
-/// [builder] is `null` otherwise, which keeps the bars still.
-class _PulseHost extends StatefulWidget {
-  const _PulseHost({required this.active, required this.builder});
-
-  final bool active;
-  final Widget Function(BuildContext context, Animation<double>? pulse) builder;
-
-  @override
-  State<_PulseHost> createState() => _PulseHostState();
-}
-
-class _PulseHostState extends State<_PulseHost>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: _pulseDuration,
-  );
-  late final CurvedAnimation _curve = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.easeInOut,
-  );
-  late final Animation<double> _opacity = Tween<double>(
-    begin: 0.35,
-    end: 1,
-  ).animate(_curve);
-
-  bool get _pulsing =>
-      widget.active && !MediaQuery.disableAnimationsOf(context);
-
-  void _sync() {
-    if (_pulsing) {
-      if (!_controller.isAnimating) _controller.repeat(reverse: true);
-    } else {
-      _controller.stop();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(_PulseHost oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _sync();
-  }
-
-  @override
-  void dispose() {
-    _curve.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) =>
-      widget.builder(context, _pulsing ? _opacity : null);
 }

@@ -2800,5 +2800,102 @@
         "type": "String"
       }
     }
+  },
+  "lyricsSearching": "Searching {provider}…",
+  "@lyricsSearching": {
+    "description": "Lyrics slot of Now Playing while a lookup runs; provider is the service name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsFindAutomatically": "Find lyrics automatically",
+  "@lyricsFindAutomatically": {
+    "description": "Button in the empty lyrics slot that turns on automatic online lookup"
+  },
+  "lyricsNotFound": "No lyrics found on {provider}",
+  "@lyricsNotFound": {
+    "description": "Lyrics slot of Now Playing when the service has no match; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSearchManually": "Search manually…",
+  "@lyricsSearchManually": {
+    "description": "Button in the empty lyrics slot that opens the Choose lyrics dialog"
+  },
+  "lyricsOnlineError": "Couldn't reach {provider}",
+  "@lyricsOnlineError": {
+    "description": "Banner above the empty lyrics slot after a failed lookup; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsRetry": "Retry",
+  "@lyricsRetry": {
+    "description": "Button on the failed lookup banner"
+  },
+  "lyricsSkipped": "Online lyrics turned off for this song",
+  "@lyricsSkipped": {
+    "description": "Lyrics slot of Now Playing after the user rejected the matched lyrics"
+  },
+  "lyricsChoose": "Choose lyrics…",
+  "@lyricsChoose": {
+    "description": "Button in the lyrics slot that opens the Choose lyrics dialog"
+  },
+  "lyricsSearchAutomaticallyAgain": "Search automatically again",
+  "@lyricsSearchAutomaticallyAgain": {
+    "description": "Button that forgets the user's choice for the song and looks it up again"
+  },
+  "lyricsInstrumental": "Instrumental",
+  "@lyricsInstrumental": {
+    "description": "Lyrics slot of Now Playing for a song the service marks as instrumental"
+  },
+  "lyricsCreditFrom": "Lyrics from {provider}",
+  "@lyricsCreditFrom": {
+    "description": "Credit under online lyrics; provider is the service name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsCreditNotSynced": "not synced",
+  "@lyricsCreditNotSynced": {
+    "description": "Added to the lyrics credit when the lyrics have no timing"
+  },
+  "lyricsCreditMatched": "matched automatically (off by {seconds} s)",
+  "@lyricsCreditMatched": {
+    "description": "Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsCreditMatchedExact": "matched automatically",
+  "@lyricsCreditMatchedExact": {
+    "description": "Header of the lyrics credit menu when the lengths agree or one is unknown"
+  },
+  "lyricsCreditPicked": "picked by you",
+  "@lyricsCreditPicked": {
+    "description": "Header of the lyrics credit menu for lyrics the user chose"
+  },
+  "lyricsMenuSearchAgain": "Search again",
+  "@lyricsMenuSearchAgain": {
+    "description": "Lyrics credit menu item that forgets the match and looks the song up again"
+  },
+  "lyricsMenuChooseOther": "Choose other lyrics…",
+  "@lyricsMenuChooseOther": {
+    "description": "Lyrics credit menu item that opens the Choose lyrics dialog"
+  },
+  "lyricsMenuNotThese": "Not these lyrics",
+  "@lyricsMenuNotThese": {
+    "description": "Lyrics credit menu item that rejects the matched lyrics for the song"
   }
 }

@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/lyrics_view.dart';
@@ -18,6 +20,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/lyrics/fake_lyrics_readers.dart';
 import '../../../core/player/fake_audio_backend.dart';
+import 'fake_playing_lyrics_status.dart';
 
 const _withLyrics = Track(uri: '/m/sung.flac', title: 'Sung', artist: 'A');
 const _without = Track(uri: '/m/instrumental.flac', title: 'Instrumental');
@@ -37,6 +40,7 @@ void main() {
     Size size = const Size(1280, 800),
     List<Track> tracks = const [_withLyrics, _without],
     bool open = true,
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -49,6 +53,7 @@ void main() {
         audioBackendProvider.overrideWithValue(FakeAudioBackend()),
         embeddedLyricsReaderProvider.overrideWithValue(embedded),
         lrcSidecarReaderProvider.overrideWithValue(sidecar),
+        ...overrides,
       ],
     );
     addTearDown(container.dispose);
@@ -291,6 +296,149 @@ void main() {
       await pump(tester, size: const Size(400, 800), tracks: tracks);
       await walk(
         tester,
+        () {
+          expect(lyricsTab, findsOneWidget);
+          final view = tester.widget<PageView>(find.byType(PageView));
+          expect(view.controller!.page, 2);
+        },
+        before: () async {
+          await tester.tap(lyricsTab);
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+  });
+
+  group('layout stays put across online lyrics states', () {
+    const uri = '/m/sung.flac';
+    const origin = OnlineLyricsOrigin(
+      providerId: 'lrclib',
+      remoteId: '1',
+      pinned: false,
+    );
+
+    /// Local lyrics, none, searching, found online, error, local again; the
+    /// status moves by hand, the layout [check] must not notice.
+    Future<void> walk(
+      WidgetTester tester,
+      FakePlayingLyricsStatus status,
+      void Function() check, {
+      required Future<void> Function() before,
+      void Function(PlayingLyricsStatus step)? checkStep,
+    }) async {
+      await before();
+      final steps = <PlayingLyricsStatus>[
+        LyricsFound(uri, fakeSyncedLyrics()),
+        const LyricsNone(uri, LyricsNoneReason.noLyrics),
+        const LyricsSearching(uri, 'lrclib'),
+        LyricsFound(uri, fakePlainLyrics('Online words'), origin: origin),
+        const LyricsNone(uri, LyricsNoneReason.error),
+        LyricsFound(uri, fakeSyncedLyrics()),
+      ];
+      for (final step in steps) {
+        status.emit(step);
+        // A search pulses forever, so step instead of settling.
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 400));
+        check();
+        checkStep?.call(step);
+      }
+    }
+
+    FakePlayingLyricsStatus fresh() =>
+        FakePlayingLyricsStatus(LyricsFound(uri, fakeSyncedLyrics()));
+
+    testWidgets('Split keeps the Queue tab', (tester) async {
+      final status = fresh();
+      await pump(
+        tester,
+        overrides: [playingLyricsStatusProvider.overrideWith(() => status)],
+      );
+      await walk(
+        tester,
+        status,
+        () {
+          expect(find.byType(QueuePanel), findsOneWidget);
+          expect(
+            tester.widget<TabBar>(find.byType(TabBar)).controller!.index,
+            1,
+          );
+        },
+        before: () async {
+          await tester.tap(queueTab);
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+
+    testWidgets('Split with the Lyrics tab shows every state in it', (
+      tester,
+    ) async {
+      final status = fresh();
+      await pump(
+        tester,
+        overrides: [playingLyricsStatusProvider.overrideWith(() => status)],
+      );
+      await walk(
+        tester,
+        status,
+        () {
+          expect(find.byType(QueuePanel), findsNothing);
+          expect(
+            tester.widget<TabBar>(find.byType(TabBar)).controller!.index,
+            0,
+          );
+        },
+        before: () async {},
+        checkStep: (step) {
+          final text = switch (step) {
+            LyricsFound(origin: null) => 'First words',
+            LyricsFound() => 'Online words',
+            LyricsSearching() => 'Searching LRCLIB…',
+            LyricsNone(reason: LyricsNoneReason.error) =>
+              "Couldn't reach LRCLIB",
+            _ => 'No lyrics for this song',
+          };
+          expect(find.text(text), findsOneWidget, reason: '$step');
+        },
+      );
+    });
+
+    testWidgets('Lyrics only keeps its body and mode', (tester) async {
+      final status = fresh();
+      await pump(
+        tester,
+        overrides: [playingLyricsStatusProvider.overrideWith(() => status)],
+      );
+      await walk(
+        tester,
+        status,
+        () {
+          expect(find.byType(NowPlayingLyricsOnlyBody), findsOneWidget);
+          expect(
+            container.read(nowPlayingViewModeProvider),
+            NowPlayingViewMode.lyricsOnly,
+          );
+        },
+        before: () async {
+          container
+              .read(nowPlayingViewModeProvider.notifier)
+              .choose(NowPlayingViewMode.lyricsOnly);
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+
+    testWidgets('narrow keeps the lyrics page', (tester) async {
+      final status = fresh();
+      await pump(
+        tester,
+        size: const Size(400, 800),
+        overrides: [playingLyricsStatusProvider.overrideWith(() => status)],
+      );
+      await walk(
+        tester,
+        status,
         () {
           expect(lyricsTab, findsOneWidget);
           final view = tester.widget<PageView>(find.byType(PageView));
