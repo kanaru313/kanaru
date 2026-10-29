@@ -9,6 +9,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_artwork.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_cover_only_body.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_seek_slot.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'now_playing_body_harness.dart';
@@ -120,12 +121,18 @@ void main() {
   });
 
   group('text', () {
-    testWidgets('title and artist · album show', (tester) async {
+    testWidgets('title, artist and album show on their own lines', (
+      tester,
+    ) async {
       await pump(tester);
-      expect(find.text('Short'), findsOneWidget);
-      expect(find.text('Ann'), findsOneWidget);
-      expect(find.text('Blue Album'), findsOneWidget);
-      expect(find.text('·'), findsOneWidget);
+      final title = tester.getRect(find.text('Short'));
+      final artist = tester.getRect(find.text('Ann'));
+      final albumRect = tester.getRect(find.text('Blue Album'));
+      expect(artist.top, greaterThanOrEqualTo(title.bottom));
+      expect(albumRect.top, greaterThanOrEqualTo(artist.bottom));
+      expect(find.byIcon(AppIcons.artist), findsOneWidget);
+      expect(find.byIcon(AppIcons.album), findsOneWidget);
+      expect(find.text('·'), findsNothing);
     });
 
     testWidgets('stays visible while the controls are hidden', (tester) async {
@@ -145,19 +152,52 @@ void main() {
       }
     });
 
-    testWidgets('no separator without an album', (tester) async {
+    testWidgets('without an album only the artist line shows', (tester) async {
       await pump(tester, withAlbum: false);
       expect(find.text('Ann'), findsOneWidget);
-      expect(find.text('·'), findsNothing);
+      expect(find.byIcon(AppIcons.artist), findsOneWidget);
+      expect(find.byIcon(AppIcons.album), findsNothing);
     });
 
-    testWidgets('no separator without an artist', (tester) async {
+    testWidgets('without an artist only the album line shows', (tester) async {
       await pump(
         tester,
         tracks: [const Track(uri: '/music/none.flac', title: 'Nameless')],
       );
       expect(find.text('Blue Album'), findsOneWidget);
-      expect(find.text('·'), findsNothing);
+      expect(find.byIcon(AppIcons.album), findsOneWidget);
+      expect(find.byIcon(AppIcons.artist), findsNothing);
+    });
+
+    testWidgets('long artist and album take one line each', (tester) async {
+      final long = List.filled(40, 'Long').join(' ');
+      await pump(
+        tester,
+        size: const Size(720, 800),
+        tracks: [Track(uri: '/music/long.flac', title: 'Long', artist: long)],
+        albumResult: NowPlayingAlbum(title: long, key: null),
+      );
+      expect(tester.takeException(), isNull);
+      for (final text in find.text(long).evaluate()) {
+        expect(tester.getSize(find.byWidget(text.widget)).height, lessThan(30));
+      }
+    });
+
+    testWidgets('the icon sits at the start of a right-to-left line', (
+      tester,
+    ) async {
+      await h.pump(
+        tester,
+        overrides: [nowPlayingAlbumProvider.overrideWith((ref) async => album)],
+        body: (chrome) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: NowPlayingCoverOnlyBody(chrome: chrome),
+        ),
+      );
+      expect(
+        tester.getCenter(find.byIcon(AppIcons.artist)).dx,
+        greaterThan(tester.getCenter(find.text('Ann')).dx),
+      );
     });
 
     testWidgets('a long title takes at most two lines', (tester) async {
