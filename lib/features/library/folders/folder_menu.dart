@@ -4,6 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/menu_keyboard_region.dart';
+import 'folder_tree.dart';
 
 /// What the menu of a folder can do, on all the songs below it (or only the
 /// songs directly in it in the flat view).
@@ -98,6 +99,21 @@ class FolderActionsRegion extends StatelessWidget {
     ),
   );
 }
+
+/// The menu of a folder tile: none without [onAction]; with [direct] (the
+/// flat view) a folder with subfolders also offers "Play all below".
+Widget folderTileMenu({
+  required FolderNode folder,
+  required bool direct,
+  required ValueChanged<FolderAction>? onAction,
+  required Widget child,
+}) => onAction == null
+    ? child
+    : FolderActionsRegion(
+        onAction: onAction,
+        withPlayAllBelow: direct && folder.children.isNotEmpty,
+        child: child,
+      );
 
 /// The "more" button of a folder page, next to its Play and Shuffle buttons.
 class FolderActionsButton extends StatelessWidget {

@@ -17,3 +17,19 @@ List<FolderNode> folderTrail(FolderTree tree, FolderNode folder) {
   }
   return trail;
 }
+
+/// The line under a flat folder's name: the folders above it, joined by
+/// " › " (the label without its last part, which leads with the music
+/// folder's name when there are several). A direct child of the only music
+/// folder reads that folder's name; a music folder itself, the directory it
+/// is in.
+String folderParentLine(FolderNode folder) {
+  if (folder.isRoot) {
+    final cut = folder.path.lastIndexOf('/');
+    return cut <= 0 ? '/' : folder.path.substring(0, cut);
+  }
+  final parts = folder.label.split('/')..removeLast();
+  if (parts.isNotEmpty) return parts.join(' › ');
+  final rootCut = folder.rootPath.lastIndexOf('/');
+  return folder.rootPath.substring(rootCut + 1);
+}

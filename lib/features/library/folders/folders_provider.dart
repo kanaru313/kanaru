@@ -44,15 +44,24 @@ final folderTreeProvider = StreamProvider<FolderTree>((ref) {
 });
 
 /// The songs directly in one folder (by path), in natural order of their
-/// names, reloaded like the tree. Disposed when its page closes.
+/// names, reloaded like the tree (a music folder's range covers the whole
+/// library, so its songs reload at the tree's slower interval). Disposed
+/// when its page closes.
 final folderSongsProvider = StreamProvider.autoDispose
     .family<List<TrackListItem>, String>((ref, path) {
       final db = ref.watch(libraryDatabaseProvider);
       if (db == null) return Stream.value(const []);
+      final isRoot = ref.watch(
+        folderTreeProvider.select(
+          (t) => t.value?.byPath[path]?.isRoot ?? false,
+        ),
+      );
       return throttledTracksQuery(
         db,
         () => readFolderSongs(db, path, recursive: false),
-        interval: ref.watch(libraryBrowseRefreshIntervalProvider),
+        interval:
+            ref.watch(libraryBrowseRefreshIntervalProvider) *
+            (isRoot ? _folderTreeIntervalFactor : 1),
       );
     });
 

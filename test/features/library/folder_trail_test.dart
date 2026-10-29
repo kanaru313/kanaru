@@ -10,6 +10,8 @@ List<String> names(FolderTree tree, String path) => [
 ];
 
 void main() {
+  parentLineTests();
+
   test('a music folder is its own trail', () {
     final tree = buildFolderTree(['/m'], [c('/m', 1)]);
 
@@ -62,5 +64,43 @@ void main() {
     );
 
     expect(names(slim, '/m/a'), ['a']);
+  });
+}
+
+String parentLine(FolderTree tree, String path) =>
+    folderParentLine(tree.byPath[path]!);
+
+void parentLineTests() {
+  group('parent line', () {
+    test('a direct child of the only music folder reads its name', () {
+      final tree = buildFolderTree(['/x/Library'], [c('/x/Library/Rock', 1)]);
+
+      expect(parentLine(tree, '/x/Library/Rock'), 'Library');
+    });
+
+    test('a deeper folder reads the folders above it', () {
+      final tree = buildFolderTree(['/m'], [c('/m/Việt Nam/Rock/CD 1', 1)]);
+
+      expect(parentLine(tree, '/m/Việt Nam/Rock/CD 1'), 'Việt Nam › Rock');
+    });
+
+    test('with several music folders it leads with the music folder', () {
+      final tree = buildFolderTree(
+        ['/a/Music', '/b/Rock'],
+        [c('/a/Music/x/y', 1), c('/b/Rock/z', 1)],
+      );
+
+      expect(parentLine(tree, '/a/Music/x/y'), 'Music › x');
+      expect(parentLine(tree, '/b/Rock/z'), 'Rock');
+    });
+
+    test('a music folder reads the directory it is in', () {
+      final tree = buildFolderTree(
+        ['/home/me/Music'],
+        [c('/home/me/Music', 1)],
+      );
+
+      expect(parentLine(tree, '/home/me/Music'), '/home/me');
+    });
   });
 }

@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/settings/library_sort.dart';
-import 'folder_grid_tile.dart';
+import 'folder_grid.dart';
 import 'folder_list_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
@@ -24,7 +24,10 @@ class SliverSubfolders extends StatelessWidget {
   @override
   Widget build(BuildContext context) => switch (view) {
     AlbumsView.grid => SliverFolderGrid(
-      folders: [for (final c in children) (folder: c, title: c.name)],
+      folders: [
+        for (final c in children)
+          (folder: c, title: c.name, parentLine: null, direct: false),
+      ],
       onTap: onOpen,
       onAction: onAction,
     ),
