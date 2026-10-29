@@ -696,7 +696,7 @@ void main() {
       await pump(tester, showTranslate: true, overrides: longLabel());
       await tester.tap(find.byType(LyricsSourceButton));
       await tester.pumpAndSettle();
-      expect(find.text('Lyrics for this song'), findsOneWidget);
+      expect(find.text('Automatic'), findsOneWidget);
       expect(floating.value, isTrue);
 
       await tester.tapAt(const Offset(600, 600));

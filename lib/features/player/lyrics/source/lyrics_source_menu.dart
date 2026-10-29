@@ -9,15 +9,18 @@ import '../../../../core/player/local_path_of.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/format_duration.dart';
 import '../lyrics_action_runner.dart';
-import '../lyrics_credit_row.dart' show lyricsProviderName;
+import '../lyrics_provider_name.dart';
 import 'lyrics_source_labels.dart';
+import 'lyrics_source_menu_item.dart';
 
 /// Items of the lyrics source menu, for the song and lyrics source the
 /// [runner] captured when the menu opened. Every item, and the dialogs they
 /// open, act on that snapshot, so a track change while the menu is open
 /// cannot redirect them. [ownSource] is where the song's own lyrics came
-/// from, read when the menu opened. [firstItemFocus] goes to the first item, which is
-/// what a keyboard open focuses.
+/// from, read when the menu opened. [firstItemFocus] goes to the first item,
+/// which is what a keyboard open focuses. [headerFocus] is on the header, a
+/// place for the focus when that item is disabled: a menu that holds the
+/// focus gets Escape, one that does not leaves it to the screen behind.
 ///
 /// Choosing needs the library and a local file; without them those items
 /// are disabled and "Find lyrics online…" is left out.
@@ -27,6 +30,7 @@ List<Widget> lyricsSourceMenuItems(
   List<LyricsProviderRegistration> providers, {
   LyricsSource? ownSource,
   FocusNode? firstItemFocus,
+  FocusNode? headerFocus,
 }) {
   final source = runner.source;
   if (source == null || runner.target == null) return const [];
@@ -58,15 +62,19 @@ List<Widget> lyricsSourceMenuItems(
   ];
 
   return [
-    Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-      child: Text(
-        l10n.lyricsSourceMenuHeader,
-        style: Theme.of(context).textTheme.labelMedium
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+    Focus(
+      focusNode: headerFocus,
+      skipTraversal: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+        child: Text(
+          lyricsSourceMenuTitle(l10n, source, providers),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
       ),
     ),
-    _item(
+    lyricsSourceMenuItem(
       context,
       focusNode: firstItemFocus,
       title: l10n.lyricsSourceAutoItem,
@@ -76,12 +84,12 @@ List<Widget> lyricsSourceMenuItems(
     ),
     const Divider(height: 9),
     if (source.hasLocal || source.chosen == LyricsChoice.local)
-      _item(
+      lyricsSourceMenuItem(
         context,
         title: l10n.lyricsSourceLocalItem,
         subtitle: !source.hasLocal
             ? l10n.lyricsSourceLocalMissing
-            : _localSubtitle(l10n, ownSource),
+            : lyricsSourceLocalSubtitle(l10n, ownSource),
         checked: effective == LyricsChoice.local,
         onPressed: when(
           canChoose && source.hasLocal,
@@ -89,7 +97,7 @@ List<Widget> lyricsSourceMenuItems(
         ),
       ),
     if (hasPick)
-      _item(
+      lyricsSourceMenuItem(
         context,
         title: l10n.lyricsSourceOnlineItem(
           lyricsProviderName(providers, pin?.providerId ?? ''),
@@ -109,85 +117,34 @@ List<Widget> lyricsSourceMenuItems(
     if (origin != null &&
         !origin.pinned &&
         (!hasPick || pin?.remoteId == origin.remoteId))
-      _item(
+      lyricsSourceMenuItem(
         context,
         title: l10n.lyricsSourceKeep,
         onPressed: when(canChoose, runner.keep),
       ),
     if (origin != null)
-      _item(
+      lyricsSourceMenuItem(
         context,
         title: l10n.lyricsMenuNotThese,
         onPressed: when(canChoose, runner.reject),
       ),
     if (registration != null && canChoose)
-      _item(
+      lyricsSourceMenuItem(
         context,
         title: l10n.lyricsFindOnline,
         onPressed: runner.findOnline,
       ),
-    _item(
+    lyricsSourceMenuItem(
       context,
       title: l10n.lyricsSourceSave,
       onPressed: when(canChoose && origin != null, runner.save),
     ),
     const Divider(height: 9),
-    _item(
+    lyricsSourceMenuItem(
       context,
       title: l10n.lyricsSourceTurnOff,
       checked: effective == LyricsChoice.off,
       onPressed: when(canChoose, () => runner.choose(LyricsChoice.off)),
     ),
   ];
-}
-
-/// "`.lrc` file" or "In the tag", from where the song's own lyrics come from.
-String? _localSubtitle(AppLocalizations l10n, LyricsSource? own) =>
-    switch (own) {
-      LyricsSource.sidecar => l10n.lyricsSourceFile,
-      LyricsSource.embedded => l10n.lyricsSourceLocalTag,
-      null => null,
-    };
-
-/// One row: a check mark column, the title and an optional subtitle.
-Widget _item(
-  BuildContext context, {
-  required String title,
-  required VoidCallback? onPressed,
-  String? subtitle,
-  bool checked = false,
-  FocusNode? focusNode,
-}) {
-  final theme = Theme.of(context);
-  return MenuItemButton(
-    focusNode: focusNode,
-    onPressed: onPressed,
-    leadingIcon: SizedBox(
-      width: 20,
-      child: checked
-          ? Icon(
-              Icons.check_rounded,
-              size: 18,
-              color: theme.colorScheme.primary,
-            )
-          : null,
-    ),
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(title),
-          if (subtitle != null)
-            Text(
-              subtitle,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-        ],
-      ),
-    ),
-  );
 }

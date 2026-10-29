@@ -3203,14 +3203,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsInstrumental => 'Instrumental';
 
   @override
-  String lyricsCreditFrom(String provider) {
-    return 'Lyrics from $provider';
-  }
-
-  @override
-  String get lyricsCreditNotSynced => 'not synced';
-
-  @override
   String get lyricsMenuNotThese => 'Not these lyrics';
 
   @override
@@ -3362,6 +3354,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsSourceMenuHeader => 'Lyrics for this song';
+
+  @override
+  String lyricsSourceMenuFrom(String source) {
+    return 'Lyrics from $source';
+  }
 
   @override
   String get lyricsSourceAutoItem => 'Automatic';

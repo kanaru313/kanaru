@@ -10,6 +10,7 @@ import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
@@ -30,6 +31,7 @@ import '../../../core/lyrics/online/fake_lyrics_provider.dart';
 import '../../../core/lyrics/online/status_test_rig.dart';
 import '../../../core/player/fake_audio_backend.dart';
 import '../fake_translation_controller.dart';
+import 'fake_playing_lyrics_resolution.dart';
 import 'fake_playing_lyrics_status.dart';
 
 const _uri = '/m/song.flac';
@@ -175,35 +177,21 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
 
-    statusTest('found local lyrics have no credit', (tester) async {
+    statusTest('found lyrics have no credit row, online or not', (
+      tester,
+    ) async {
       await pumpStatus(tester, LyricsFound(_uri, fakeSyncedLyrics()));
       expect(find.text('First words'), findsOneWidget);
       expect(find.textContaining('Lyrics from'), findsNothing);
-    });
 
-    statusTest('found online lyrics: credit, "not synced" for plain', (
-      tester,
-    ) async {
-      await pumpStatus(
-        tester,
-        LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin),
-      );
-      expect(find.text('Lyrics from Fake'), findsOneWidget);
+      status.emit(LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin));
+      await tester.pump();
+      expect(find.textContaining('Lyrics from'), findsNothing);
 
       status.emit(LyricsFound(_uri, fakePlainLyrics(), origin: _origin));
       await tester.pump();
-      expect(find.text('Lyrics from Fake · not synced'), findsOneWidget);
-    });
-
-    statusTest('the credit is plain text without a menu', (tester) async {
-      await pumpStatus(
-        tester,
-        LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin),
-      );
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      expect(find.byType(MenuItemButton), findsNothing);
-      expect(find.byType(MenuAnchor), findsNothing);
+      expect(find.textContaining('Lyrics from'), findsNothing);
+      expect(find.textContaining('not synced'), findsNothing);
     });
 
     statusTest('no lyrics: both buttons; auto hidden once on', (tester) async {
@@ -450,13 +438,13 @@ void main() {
       expect(find.byType(SnackBar), findsNothing);
     });
 
-    statusTest('instrumental: the title and the credit', (tester) async {
+    statusTest('instrumental: the title and no credit', (tester) async {
       await pumpStatus(
         tester,
         const LyricsNone(_uri, LyricsNoneReason.instrumental, origin: _origin),
       );
       expect(find.text('Instrumental'), findsOneWidget);
-      expect(find.text('Lyrics from Fake'), findsOneWidget);
+      expect(find.textContaining('Lyrics from'), findsNothing);
     });
 
     statusTest('Vietnamese strings', (tester) async {
@@ -562,7 +550,7 @@ void main() {
     });
   });
 
-  group('source credit is shown in Now Playing', () {
+  group('the source is named by the header button, not under the lyrics', () {
     for (final (name, size, mode) in [
       ('Split', const Size(1280, 800), NowPlayingViewMode.split),
       ('Lyrics only', const Size(1280, 800), NowPlayingViewMode.lyricsOnly),
@@ -572,15 +560,19 @@ void main() {
         testWidgets('$name, ${synced ? 'synced' : 'plain'} lyrics', (
           tester,
         ) async {
+          final found = LyricsFound(
+            _uri,
+            synced ? fakeSyncedLyrics() : fakePlainLyrics(),
+            origin: _origin,
+          );
           await pumpOverlay(
             tester,
-            LyricsFound(
-              _uri,
-              synced ? fakeSyncedLyrics() : fakePlainLyrics(),
-              origin: _origin,
-            ),
+            found,
             size: size,
             overrides: [
+              playingLyricsResolutionProvider.overrideWith(
+                () => FakePlayingLyricsResolution(fakeResolution(found)),
+              ),
               lyricsProvidersProvider.overrideWithValue([
                 LyricsProviderRegistration(FakeLyricsProvider()),
               ]),
@@ -592,9 +584,11 @@ void main() {
             await tester.tap(find.byTooltip('Lyrics'));
             await tester.pumpAndSettle();
           }
+          expect(find.textContaining('Lyrics from'), findsNothing);
+          expect(find.textContaining('not synced'), findsNothing);
           expect(
-            find.text(
-              synced ? 'Lyrics from Fake' : 'Lyrics from Fake · not synced',
+            find.byTooltip(
+              synced ? 'Lyrics from Fake · Synced' : 'Lyrics from Fake · Plain',
             ),
             findsOneWidget,
           );
@@ -603,8 +597,8 @@ void main() {
     }
   });
 
-  group('source credit with a translation on', () {
-    testWidgets('the credit is plain; the header pill opens its menu', (
+  group('with a translation on', () {
+    testWidgets('the translate pill opens its menu and no credit shows', (
       tester,
     ) async {
       final fake = FakeTranslationController(
@@ -634,9 +628,7 @@ void main() {
       );
       expect(find.text('Dòng một'), findsOneWidget);
 
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      expect(find.byType(MenuItemButton), findsNothing);
+      expect(find.text('Lyrics from Fake'), findsNothing);
       expect(find.text('Show translation'), findsNothing);
 
       await tester.tap(find.text('Google · English'));
@@ -700,11 +692,11 @@ void main() {
 
       expect(rig.fake.lookupCalls, 2);
       expect(find.text(unreadable), findsNothing);
-      expect(find.text('Lyrics from Fake'), findsOneWidget);
+      expect(find.textContaining('Lyrics from'), findsNothing);
     });
 
     testWidgets(
-      'picked lyrics over embedded ones show their credit and send nothing',
+      'picked lyrics over embedded ones replace them and send nothing',
       (tester) async {
         await pumpRig(
           tester,
@@ -730,7 +722,7 @@ void main() {
         );
         await settle(tester);
         expect(find.text('Picked words'), findsOneWidget);
-        expect(find.text('Lyrics from Fake'), findsOneWidget);
+        expect(find.textContaining('Lyrics from'), findsNothing);
         expect(rig.requests, 0);
       },
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
@@ -112,6 +113,16 @@ void main() {
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
     expect(prefs().show, isFalse);
+    expect(find.text('Show translation'), findsOneWidget);
+  });
+
+  testWidgets('Enter on the open menu flips the switch', (tester) async {
+    await pump(tester, TranslationOff(fakeTranslationInfo()));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+
+    expect(prefs().show, isTrue);
     expect(find.text('Show translation'), findsOneWidget);
   });
 

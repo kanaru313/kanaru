@@ -4694,18 +4694,6 @@ abstract class AppLocalizations {
   /// **'Instrumental'**
   String get lyricsInstrumental;
 
-  /// Credit under online lyrics; provider is the service name
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics from {provider}'**
-  String lyricsCreditFrom(String provider);
-
-  /// Added to the lyrics credit when the lyrics have no timing
-  ///
-  /// In en, this message translates to:
-  /// **'not synced'**
-  String get lyricsCreditNotSynced;
-
   /// Lyrics credit menu item that rejects the matched lyrics for the song
   ///
   /// In en, this message translates to:
@@ -4957,6 +4945,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lyrics for this song'**
   String get lyricsSourceMenuHeader;
+
+  /// Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as "LRCLIB · Synced" or ".lrc file"
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics from {source}'**
+  String lyricsSourceMenuFrom(String source);
 
   /// Lyrics source menu item that lets Kanaru pick the lyrics
   ///

@@ -9,7 +9,7 @@ import '../../../core/player/local_path_of.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import 'lyrics_action_runner.dart';
-import 'lyrics_credit_row.dart';
+import 'lyrics_provider_name.dart';
 import 'lyrics_error_banner.dart';
 import 'lyrics_empty_state.dart';
 import 'lyrics_pulse_host.dart';
@@ -121,7 +121,6 @@ class LyricsNoneView extends ConsumerWidget {
       ),
       LyricsNoneReason.instrumental => (l10n.lyricsInstrumental, <Widget>[]),
     };
-    final origin = none.origin;
     return Column(
       children: [
         reason == LyricsNoneReason.error
@@ -134,8 +133,6 @@ class LyricsNoneView extends ConsumerWidget {
         Expanded(
           child: LyricsEmptyState(title: title, actions: actions),
         ),
-        if (reason == LyricsNoneReason.instrumental && origin != null)
-          LyricsCreditRow(origin: origin),
       ],
     );
   }

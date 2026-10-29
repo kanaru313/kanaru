@@ -435,7 +435,7 @@ void main() {
   });
 
   group('the L key', () {
-    final sourceMenu = find.text('Lyrics for this song');
+    final sourceMenu = find.text('Automatic');
 
     setUp(() {
       startSettings = const AppSettings();

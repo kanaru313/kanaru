@@ -119,10 +119,14 @@ void main() {
               find.descendant(of: row, matching: find.byType(Text)).first,
             )
             .data!;
-        final checked = find
-            .descendant(of: row, matching: find.byIcon(Icons.check_rounded))
-            .evaluate()
-            .isNotEmpty;
+        // Choice rows are radio rows; the selected one is the choice in effect.
+        final radio = find.ancestor(
+          of: row,
+          matching: find.byType(RadioMenuButton<bool>),
+        );
+        final checked =
+            radio.evaluate().isNotEmpty &&
+            tester.widget<RadioMenuButton<bool>>(radio).groupValue == true;
         return '${checked ? '✓ ' : ''}$title'
             '${button.onPressed == null ? ' (off)' : ''}';
       }(),
@@ -227,7 +231,6 @@ void main() {
     pin: pick ? fakePin(lyrics: _lyrics()) : null,
   );
 
-  const header = 'Lyrics for this song';
   final states = <_State>[
     (
       name: 'automatic, the song\'s .lrc',
@@ -361,7 +364,7 @@ void main() {
         await pump(tester, state.resolution(), ownLyrics: _lyrics());
         expect(find.text(state.label), findsOneWidget);
         await openMenu(tester);
-        expect(find.text(header), findsOneWidget);
+        expect(find.text('Automatic'), findsOneWidget);
         expect(menuRows(tester), state.menu);
       });
     }
@@ -393,7 +396,7 @@ void main() {
         await pump(tester, found(_lyrics(), hasLocal: true), room: room);
         expect(findPill, findsNothing);
         expect(find.text('Auto · .lrc file'), findsNothing);
-        expect(find.byTooltip('Auto · .lrc file'), findsOneWidget);
+        expect(find.byTooltip('Lyrics from .lrc file'), findsOneWidget);
         expect(find.byType(IconButton), findsOneWidget);
       });
     }
@@ -401,6 +404,25 @@ void main() {
     testWidgets('grows a label from 64 px of room', (tester) async {
       await pump(tester, found(_lyrics(), hasLocal: true), room: 64);
       expect(findPill, findsOneWidget);
+    });
+
+    testWidgets('without lyrics the menu keeps the plain header', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        fakeResolution(const LyricsNone(_uri, LyricsNoneReason.noLyrics)),
+      );
+      await openMenu(tester);
+      expect(find.text('Lyrics for this song'), findsOneWidget);
+      expect(find.textContaining('Lyrics from'), findsNothing);
+    });
+
+    testWidgets('with lyrics the menu header names the source', (tester) async {
+      await pump(tester, found(_lyrics(), hasLocal: true));
+      await openMenu(tester);
+      expect(find.text('Lyrics from .lrc file'), findsOneWidget);
+      expect(find.text('Lyrics for this song'), findsNothing);
     });
 
     testWidgets('speaks Vietnamese', (tester) async {
@@ -417,7 +439,7 @@ void main() {
       );
       expect(find.text('Fake · Đồng bộ'), findsOneWidget);
       await openMenu(tester);
-      expect(find.text('Nguồn lời cho bài này'), findsOneWidget);
+      expect(find.text('Lời từ Fake · Đồng bộ'), findsOneWidget);
       expect(find.text('Tắt lời cho bài này'), findsOneWidget);
       expect(find.text('Lưu lời…'), findsOneWidget);
     });
@@ -543,7 +565,7 @@ void main() {
         await tester.tap(item(title));
         await tester.pumpAndSettle();
         expect(log, [expected]);
-        expect(find.text(header), findsNothing);
+        expect(find.text('Automatic'), findsNothing);
       });
     }
 
@@ -579,7 +601,7 @@ void main() {
     testWidgets('a track change closes the open menu', (tester) async {
       await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
       await openMenu(tester);
-      expect(find.text(header), findsOneWidget);
+      expect(find.text('Automatic'), findsOneWidget);
 
       await container.read(playerServiceProvider.notifier).openTracks([_other]);
       resolution.emit(
@@ -593,7 +615,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(header), findsNothing);
+      expect(find.text('Automatic'), findsNothing);
       expect(menuEvents, [true, false]);
     });
 
@@ -687,9 +709,9 @@ void main() {
       await pump(tester, found(_lyrics()), track: _other);
       await tester.tap(find.byType(LyricsSourceButton));
       await tester.pumpAndSettle();
-      expect(find.text(header), findsNothing);
+      expect(find.text('Automatic'), findsNothing);
       expect(opener.value!(), isFalse);
-      expect(find.text(header), findsNothing);
+      expect(find.text('Automatic'), findsNothing);
       // The press left a tooltip timer behind: let it run out.
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 2));
@@ -714,7 +736,7 @@ void main() {
       expect(opener.value, isNotNull);
       opener.value!();
       await tester.pumpAndSettle();
-      expect(find.text(header), findsOneWidget);
+      expect(find.text('Automatic'), findsOneWidget);
 
       FocusNode focusOf(String title) =>
           Focus.of(tester.element(find.text(title)));

@@ -3000,14 +3000,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsInstrumental => 'Nhạc không lời';
 
   @override
-  String lyricsCreditFrom(String provider) {
-    return 'Lời từ $provider';
-  }
-
-  @override
-  String get lyricsCreditNotSynced => 'lời thường';
-
-  @override
   String get lyricsMenuNotThese => 'Không phải lời này';
 
   @override
@@ -3157,6 +3149,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsSourceMenuHeader => 'Nguồn lời cho bài này';
+
+  @override
+  String lyricsSourceMenuFrom(String source) {
+    return 'Lời từ $source';
+  }
 
   @override
   String get lyricsSourceAutoItem => 'Tự động';

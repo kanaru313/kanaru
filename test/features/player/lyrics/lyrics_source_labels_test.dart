@@ -126,6 +126,13 @@ void main() {
         },
       );
 
+      test('reading the song reads "searching", not "no lyrics"', () {
+        expect(
+          label(l10n, const LyricsReading(_uri)),
+          pick('Searching…', 'Đang tìm…'),
+        );
+      });
+
       test('everything else reads "no lyrics"', () {
         final none = pick('No lyrics', 'Không có lời');
         for (final reason in [
@@ -136,7 +143,6 @@ void main() {
         ]) {
           expect(label(l10n, LyricsNone(_uri, reason)), none);
         }
-        expect(label(l10n, const LyricsReading(_uri)), none);
       });
     });
   }

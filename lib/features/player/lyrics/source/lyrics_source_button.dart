@@ -2,18 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/lyrics/lyrics.dart' show LyricsSource;
+import '../../../../core/lyrics/online/playing_lyrics_status.dart'
+    show LyricsFound;
 import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../core/lyrics/playing_local_lyrics_provider.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../../shared/icons/app_icons.dart';
-import '../../now_playing/now_playing_header_pill.dart';
-import '../../playback_controls.dart';
 import '../lyrics_action_runner.dart';
 import '../translation/lyrics_translation_pill.dart'
     show lyricsTranslationMinLabelWidth;
 import 'lyrics_source_labels.dart';
 import 'lyrics_source_menu.dart';
+import 'lyrics_source_menu_focus.dart';
+import 'lyrics_source_trigger.dart';
 
 /// Header button that names where the playing song's lyrics come from and
 /// opens the menu to change it. With room for a label it is a pill, like the
@@ -51,7 +52,7 @@ class LyricsSourceButton extends ConsumerStatefulWidget {
 
 class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
   final _menu = MenuController();
-  final _firstItem = FocusNode(debugLabel: 'Lyrics source: first item');
+  final _focus = LyricsSourceMenuFocus();
 
   /// What the open menu acts on; taken when it opens.
   LyricsActionRunner? _runner;
@@ -83,7 +84,7 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
     final opener = widget.menuOpener;
     if (opener != null && opener.value == _openFromKey) opener.value = null;
     _setOpen(false);
-    _firstItem.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -117,15 +118,16 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
     return true;
   }
 
-  /// The `L` key: opens the menu and puts the focus on its first item, so
-  /// the arrow keys work at once. `false` when nothing opened.
-  bool _openFromKey() {
-    if (_menu.isOpen || !_toggle()) return false;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _menu.isOpen) _firstItem.requestFocus();
-    });
-    return true;
-  }
+  /// The `L` key: opens the menu (which focuses its first item, so the arrow
+  /// keys work at once). `false` when nothing opened.
+  bool _openFromKey() => !_menu.isOpen && _toggle();
+
+  /// Puts the focus into the menu however it opened, so Escape closes the
+  /// menu and not the screen behind it.
+  void _focusMenu() => _focus.focusAfterFrame(
+    isAlive: () => mounted,
+    isOpen: () => _menu.isOpen,
+  );
 
   void _closeLater() => WidgetsBinding.instance.addPostFrameCallback((_) {
     if (mounted && _menu.isOpen) _menu.close();
@@ -134,7 +136,6 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final source = ref.watch(playingLyricsSourceProvider);
     final providers = ref.watch(lyricsProvidersProvider);
     _anchored = source != null;
@@ -163,7 +164,10 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
 
     return MenuAnchor(
       controller: _menu,
-      onOpen: () => _setOpen(true),
+      onOpen: () {
+        _setOpen(true);
+        _focusMenu();
+      },
       onClose: () => _setOpen(false),
       menuChildren: runner == null
           ? const []
@@ -172,29 +176,17 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
               runner,
               providers,
               ownSource: _ownSource,
-              firstItemFocus: _firstItem,
+              firstItemFocus: _focus.firstItem,
+              headerFocus: _focus.header,
             ),
-      builder: (context, controller, _) {
-        if (room >= lyricsTranslationMinLabelWidth) {
-          return NowPlayingHeaderPill(
-            icon: AppIcons.lyrics,
-            label: label,
-            tooltip: l10n.lyricsSourceMenuHeader,
-            maxLabelWidth: room,
-            muted: muted,
-            onPressed: () => _toggle(),
-          );
-        }
-        return IconButton(
-          icon: const Icon(AppIcons.lyrics),
-          iconSize: playerIconSize,
-          style: muted
-              ? null
-              : IconButton.styleFrom(foregroundColor: scheme.primary),
-          tooltip: label,
-          onPressed: () => _toggle(),
-        );
-      },
+      builder: (context, controller, _) => LyricsSourceTrigger(
+        label: label,
+        title: lyricsSourceMenuTitle(l10n, source, providers),
+        found: source.status is LyricsFound,
+        muted: muted,
+        room: room,
+        onPressed: _toggle,
+      ),
     );
   }
 }

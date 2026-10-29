@@ -10,6 +10,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/translation_notice_dialog.dart';
 import 'lyrics_translation_labels.dart';
+import 'lyrics_translation_switch_row.dart';
 
 /// Value of the "Default" item of the language submenu.
 const _defaultLanguage = '';
@@ -22,12 +23,15 @@ const _footerMaxWidth = 280.0;
 /// Call it from the `build` of the widget that anchors the menu, so the open
 /// menu follows [state] and the settings. [context] is the anchor's: the
 /// network notice opens on it. [appLang] picks the controller.
+/// [firstItemFocus] is on a wrapper of the switch row, so the open menu holds
+/// the focus (Escape closes it) and Enter or Space flips the switch.
 List<Widget> lyricsTranslationMenuItems(
   BuildContext context,
   WidgetRef ref,
   LyricsTranslationState state,
-  String appLang,
-) {
+  String appLang, {
+  FocusNode? firstItemFocus,
+}) {
   final info = translationInfoOf(state);
   if (info == null) return const [];
   final l10n = context.l10n;
@@ -49,25 +53,11 @@ List<Widget> lyricsTranslationMenuItems(
   }
 
   return [
-    MenuItemButton(
-      closeOnActivate: false,
-      onPressed: toggle,
-      trailingIcon: ExcludeFocus(
-        child: Switch(value: on, onChanged: (_) => toggle()),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l10n.lyricsTranslationShow),
-          const SizedBox(width: 12),
-          Text(
-            'T',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
+    lyricsTranslationSwitchRow(
+      context,
+      on: on,
+      onToggle: toggle,
+      focusNode: firstItemFocus,
     ),
     SubmenuButton(
       menuChildren: [
