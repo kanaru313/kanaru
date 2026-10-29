@@ -61,7 +61,7 @@ void main() {
     expect(nfcText('Plain Text'), 'Plain Text');
   });
 
-  test('lookup sends title, artist and album in NFC', () async {
+  test('lookup sends title and artist in NFC, without the album', () async {
     await provider.lookup(
       const LyricsQuery(
         title: _nfdTitle,
@@ -74,7 +74,6 @@ void main() {
     expect(server.requests.single.uri.queryParameters, {
       'track_name': _nfcTitle,
       'artist_name': 'Châu',
-      'album_name': 'Nói $_nfcHangul',
       'duration': '200',
     });
   });

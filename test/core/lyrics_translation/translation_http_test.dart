@@ -103,6 +103,23 @@ void main() {
     );
   });
 
+  test('a larger cap passed by the caller is honored', () async {
+    server = await LoopbackServer.start(
+      (_) => Reply(
+        200,
+        '',
+        bodyBytes: List.filled(maxTranslationResponseBytes + 1, 0x61),
+      ),
+    );
+    final response = await sendTranslationRequest(
+      client,
+      method: 'GET',
+      uri: server.baseUri,
+      maxBytes: 2 * maxTranslationResponseBytes,
+    );
+    expect(response.body.length, maxTranslationResponseBytes + 1);
+  });
+
   test('a body that is not UTF-8 is an invalid response', () async {
     server = await LoopbackServer.start(
       (_) => const Reply(200, '', bodyBytes: [0xff, 0xfe, 0xfd]),

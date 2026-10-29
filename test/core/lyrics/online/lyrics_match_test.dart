@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/text_keys.dart';
+import 'package:kanaru/core/lyrics/online/candidate_content_hash.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_match.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_match_keys.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
@@ -274,6 +275,25 @@ void main() {
       ]);
       expect(remoteArtistNames('Malcolm X'), ['Malcolm X']);
     });
+
+    test('a name ending in X survives an ampersand list', () {
+      expect(remoteArtistNames('Lil Nas X & Billy Ray Cyrus'), [
+        'Lil Nas X',
+        'Billy Ray Cyrus',
+      ]);
+      expect(remoteArtistNames('Skrillex x Diplo'), ['Skrillex', 'Diplo']);
+      expect(
+        matchCandidate(
+          const LyricsQuery(
+            title: 'Rodeo',
+            artist: 'Lil Nas X',
+            duration: Duration(seconds: 200),
+          ),
+          _candidate('Rodeo', 'Lil Nas X & Billy Ray Cyrus'),
+        ).goodMatch,
+        isTrue,
+      );
+    });
   });
 
   group('autoSearchable', () {
@@ -385,6 +405,60 @@ void main() {
       );
     });
 
+    test('a duplicate text of a rejected record is rejected by hash', () {
+      final twin = _candidate(
+        'Song',
+        'X',
+        id: 2,
+        body: const LyricsBody(plain: 'a'),
+      );
+      final other = _candidate(
+        'Song',
+        'X',
+        id: 3,
+        body: const LyricsBody(plain: 'different words'),
+      );
+      final hashes = {candidateContentHash(_candidate('Song', 'X'))!};
+      expect(
+        matchCandidate(query, twin, rejectedHashes: hashes).rejected,
+        isTrue,
+      );
+      expect(
+        matchCandidate(query, twin, rejectedHashes: hashes).goodMatch,
+        isFalse,
+      );
+      expect(
+        matchCandidate(query, other, rejectedHashes: hashes).goodMatch,
+        isTrue,
+      );
+      final ranked = rankCandidates(query, [
+        _candidate('Song', 'X'),
+        twin,
+        other,
+      ], rejectedHashes: hashes);
+      expect(ranked.map((m) => m.candidate.remoteId), ['3']);
+      final kept = rankCandidates(
+        query,
+        [twin, other],
+        rejectedHashes: hashes,
+        keepRejected: true,
+      );
+      expect(kept.map((m) => (m.candidate.remoteId, m.rejected)), [
+        ('3', false),
+        ('2', true),
+      ]);
+    });
+
+    test('an instrumental or empty record has no hash', () {
+      expect(
+        candidateContentHash(
+          _candidate('S', 'X', body: const LyricsBody(instrumental: true)),
+        ),
+        isNull,
+      );
+      expect(candidateContentHash(_candidate('S', 'X', body: null)), isNull);
+    });
+
     test('a manual search without a duration skips the duration gate', () {
       const manual = LyricsQuery(title: 'Song', artist: 'X');
       final ranked = rankCandidates(manual, [
@@ -428,6 +502,25 @@ void main() {
       expect(key(title: 'HELLO (feat. Z)', artist: 'ADELE; Z'), key());
       expect(key(title: 'Hèllo', artist: 'Adélé'), key());
       expect(key(duration: const Duration(milliseconds: 200400)), key());
+    });
+
+    test('a tagged key is pinned byte for byte', () {
+      expect(
+        key(),
+        '5434a04b86df90c978116054df3f3c83a03b1a81c27c67baf2a4d26be9fe3f9a',
+      );
+    });
+
+    test('a scope separates keys, none keeps the plain key', () {
+      const query = LyricsQuery(duration: Duration(seconds: 200));
+      expect(
+        onlineLyricsCacheKey(query, scope: '/a.flac'),
+        isNot(onlineLyricsCacheKey(query, scope: '/b.flac')),
+      );
+      expect(
+        onlineLyricsCacheKey(query, scope: '/a.flac'),
+        isNot(onlineLyricsCacheKey(query)),
+      );
     });
 
     test('differs by title, album, rounded duration and keys version', () {

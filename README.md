@@ -101,7 +101,7 @@ Kanaru sends nothing unless you turn a network feature on. Each feature asks bef
 
 | Feature | Sent to | What is sent | When |
 |---|---|---|---|
-| Online lyrics (LRCLIB) | `lrclib.net` | Title, primary artist, album when known, duration rounded to whole seconds; or, in a manual search, the text you typed. The request carries `User-Agent: Kanaru/<version>` (+ repository URL) | Automatic lookup: only while Now Playing is open, with *Find lyrics automatically* on and accepted. Manual search: only when you search |
+| Online lyrics (LRCLIB) | `lrclib.net` | Title, primary artist, duration rounded to whole seconds (never the album); or, in a manual search, the text you typed. The request carries `User-Agent: Kanaru/<version>` (+ repository URL) | Automatic lookup: only while Now Playing is open, with *Find lyrics automatically* on and accepted. Manual search: only when you search |
 | Lyrics translation | Google Translate or DeepL (the service you chose) | The lyric lines of the playing song, and your DeepL key to DeepL | Only after you accept that service's notice, and only while a Now Playing widget shows the song |
 
 Never sent for lyrics: file paths, file names or device information.

@@ -137,14 +137,40 @@ void main() {
     expect(server.requests, hasLength(1));
   });
 
-  test('the whole call is cut off as a network timeout', () async {
-    server = await LoopbackServer.start((_) => _busy(503));
+  test('busy then too slow to retry is rateLimited with Retry-After', () async {
+    server = await LoopbackServer.start((_) => _busy(503, '2'));
     final never = Completer<void>();
     final http = LyricsHttp.forTesting(
       client: client,
       hosts: const ['127.0.0.1'],
       sleep: (_) => never.future,
-      overallTimeout: const Duration(milliseconds: 200),
+      overallTimeout: const Duration(milliseconds: 100),
+    );
+    await expectLater(
+      http.get(get()),
+      throwsA(
+        isA<LyricsFetchException>()
+            .having((e) => e.kind, 'kind', LyricsFetchKind.rateLimited)
+            .having(
+              (e) => e.retryAfter,
+              'retryAfter',
+              const Duration(seconds: 2),
+            ),
+      ),
+    );
+    never.complete();
+    await pumpEventQueue();
+    expect(server.requests, hasLength(1));
+  });
+
+  test('a slow answer without a busy one is a network timeout', () async {
+    server = await LoopbackServer.start(
+      (_) => const Reply(200, '{}', delay: Duration(milliseconds: 600)),
+    );
+    final http = LyricsHttp.forTesting(
+      client: client,
+      hosts: const ['127.0.0.1'],
+      overallTimeout: const Duration(milliseconds: 100),
     );
     await expectLater(
       http.get(get()),
@@ -156,8 +182,27 @@ void main() {
         ),
       ),
     );
-    never.complete();
-    await pumpEventQueue();
+  });
+
+  test('consent withdrawn during a retry wait sends nothing more', () async {
+    var allowed = true;
+    server = await LoopbackServer.start((_) => _busy(503));
+    final http = LyricsHttp.forTesting(
+      client: client,
+      hosts: const ['127.0.0.1'],
+      sleep: (wait) async => allowed = false,
+      allowed: () => allowed,
+    );
+    await expectLater(
+      http.get(get()),
+      throwsA(
+        isA<LyricsFetchException>().having(
+          (e) => e.kind,
+          'kind',
+          LyricsFetchKind.notConsented,
+        ),
+      ),
+    );
     expect(server.requests, hasLength(1));
   });
 

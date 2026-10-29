@@ -32,8 +32,8 @@ class LrclibProvider implements LyricsProvider {
   @override
   List<String> get hosts => [_base.host];
 
-  /// `GET /api/get` with the title, the primary artist, the album when known
-  /// and the duration in whole seconds when it is 1..3600. Throws
+  /// `GET /api/get` with the title, the primary artist and the duration in
+  /// whole seconds when it is 1..3600. Throws
   /// [ArgumentError] when the title or primary artist is missing (`null`
   /// means only that the service has no such record).
   @override
@@ -43,7 +43,6 @@ class LrclibProvider implements LyricsProvider {
     if (title.isEmpty || artist.isEmpty) {
       throw ArgumentError('lookup needs a title and a primary artist');
     }
-    final album = query.album?.trim() ?? '';
     final seconds = query.duration?.inMilliseconds;
     final rounded = seconds == null ? null : (seconds / 1000).round();
     final uri = _uri(
@@ -51,7 +50,6 @@ class LrclibProvider implements LyricsProvider {
       {
         'track_name': title,
         'artist_name': artist,
-        if (album.isNotEmpty) 'album_name': album,
         if (rounded != null && rounded >= 1 && rounded <= 3600)
           'duration': '$rounded',
       },

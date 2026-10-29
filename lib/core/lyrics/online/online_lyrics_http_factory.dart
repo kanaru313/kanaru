@@ -13,7 +13,8 @@ import 'lyrics_provider_registry.dart';
 /// (automatic lookup, Retry, Search again, the Choose lyrics dialog) can
 /// reach the network without it.
 ///
-/// Consent is read when asked for, not when the factory is made, so
+/// Consent is read when asked for and again before every send of the
+/// [LyricsHttp] handed out (retries and a second request included), so
 /// withdrawing it takes effect at once. The shared [HttpClient] is created
 /// on the first allowed request; a refusal opens nothing.
 class OnlineLyricsHttpFactory {
@@ -55,6 +56,7 @@ class OnlineLyricsHttpFactory {
       _client(),
       sleep: _sleep,
       abandoned: abandoned,
+      allowed: () => _acknowledged().contains(key),
     );
   }
 }

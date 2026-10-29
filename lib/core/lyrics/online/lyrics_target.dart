@@ -87,8 +87,20 @@ class LyricsTarget {
   /// An automatic lookup has what it needs: title, real artist, duration.
   bool get isAutoSearchable => match.isAutoSearchable(query);
 
-  /// Key of this song's rows in the online lyrics cache, computed once.
-  late final String cacheKey = onlineLyricsCacheKey(query);
+  /// Key of this song's rows in the online lyrics cache, computed once. A
+  /// song with no title and no real artist (none, or a placeholder such as
+  /// "Unknown Artist") folds in its [trackKey], so two untagged songs of the
+  /// same length do not share rejects.
+  late final String cacheKey = onlineLyricsCacheKey(
+    query,
+    scope: _isUntagged ? trackKey : null,
+  );
+
+  bool get _isUntagged {
+    if (query.title != null) return false;
+    final artist = query.artist;
+    return artist == null || match.isUnknownArtist(artist);
+  }
 
   @override
   bool operator ==(Object other) =>

@@ -124,9 +124,9 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
         return;
       } on LyricsFetchException catch (e) {
         if (e.kind != LyricsFetchKind.notConsented) failure = e;
-      } on Object catch (e, st) {
+      } on Object catch (e) {
         if (!ref.mounted) return;
-        _log.warning('Online lyrics lookup failed', e, st);
+        _log.warning('Online lyrics lookup failed: ${e.runtimeType}');
         otherFailure = e;
       }
     }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
+import 'package:kanaru/core/lyrics/online/candidate_content_hash.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
@@ -144,6 +145,36 @@ void main() {
       controller().select(2);
       expect(state().selection!.rejected, isTrue);
     });
+
+    test(
+      'a duplicate text of a rejected record is flagged and skipped',
+      () async {
+        keepAlive();
+        const words = LyricsBody(plain: 'same words');
+        await h.db.rejectOnlineLyrics(
+          cacheKey: fakeTarget.cacheKey,
+          providerId: 'fake',
+          remoteId: 'bad',
+          contentHash: candidateContentHash(
+            fakeCandidate(remoteId: 'bad', body: words),
+          ),
+          trackKey: fakeTarget.trackKey,
+          now: 1,
+        );
+        await searchWith([
+          fakeCandidate(remoteId: 'twin', body: words),
+          fakeCandidate(
+            remoteId: 'other',
+            body: const LyricsBody(plain: 'other words'),
+          ),
+        ]);
+
+        final results = state().results;
+        expect(results.map((r) => r.candidate.remoteId), ['other', 'twin']);
+        expect(results.map((r) => r.rejected), [false, true]);
+        expect(state().selection!.candidate.remoteId, 'other');
+      },
+    );
 
     test('only rejected records: listed, nothing selected', () async {
       keepAlive();

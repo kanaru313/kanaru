@@ -85,9 +85,9 @@ void main() {
       expect(request.uri.queryParameters, {
         'track_name': 'Song',
         'artist_name': 'X',
-        'album_name': 'Alb',
         'duration': '200',
       });
+      expect(request.uri.queryParameters.containsKey('album_name'), isFalse);
     });
 
     test('sends the primary artist of a multi-artist tag', () async {

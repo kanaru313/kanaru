@@ -1,5 +1,6 @@
 import '../../database/text_keys.dart';
 import '../../search/typo_correction.dart';
+import 'candidate_content_hash.dart';
 import 'lyrics_match_keys.dart';
 import 'lyrics_provider.dart';
 
@@ -61,9 +62,13 @@ bool isAutoSearchable(LyricsQuery query) {
   final duration = query.duration;
   if (title.isEmpty || artist.isEmpty) return false;
   if (duration == null || duration <= Duration.zero) return false;
-  return !_unknownArtists.contains(sortKey(artist).trim()) &&
-      !_unknownArtists.contains(foldArtist(artist));
+  return !isUnknownArtist(artist);
 }
+
+/// Whether [artist] is a placeholder such as "Unknown Artist", not a name.
+bool isUnknownArtist(String artist) =>
+    _unknownArtists.contains(sortKey(artist).trim()) ||
+    _unknownArtists.contains(foldArtist(artist));
 
 bool _artistMatches(String? local, String remote) {
   final primary = primaryArtist(local);
@@ -87,12 +92,14 @@ bool _artistMatches(String? local, String remote) {
 /// Judges [candidate] against [query]. The gate needs: duration within
 /// [maxDurationDelta] (skipped when [query] has no duration, as in a manual
 /// search), title equal, joined-equal or [titleSimilarityMin] similar, the
-/// artist rule, and lyrics or the instrumental flag. A record in [rejected]
-/// never matches.
+/// artist rule, and lyrics or the instrumental flag. A record in [rejected],
+/// or whose text hashes into [rejectedHashes] (a duplicate of a rejected
+/// record, see `candidateContentHash`), never matches.
 LyricsMatch matchCandidate(
   LyricsQuery query,
   LyricsCandidate candidate, {
   Set<({String providerId, String remoteId})> rejected = const {},
+  Set<String> rejectedHashes = const {},
 }) {
   final wanted = query.duration;
   final has = candidate.duration;
@@ -114,7 +121,7 @@ LyricsMatch matchCandidate(
         (_atLeast(score, titleSimilarityMin) ||
             joinedTitle(mine) == joinedTitle(theirs));
   }
-  final isRejected = rejected.contains(candidate.ref);
+  final isRejected = _isRejected(candidate, rejected, rejectedHashes);
   final body = candidate.body;
   final bodyOk = body != null && (body.hasLyrics || body.instrumental);
   return LyricsMatch(
@@ -131,28 +138,49 @@ LyricsMatch matchCandidate(
   );
 }
 
+bool _isRejected(
+  LyricsCandidate candidate,
+  Set<({String providerId, String remoteId})> rejected,
+  Set<String> rejectedHashes,
+) {
+  if (rejected.contains(candidate.ref)) return true;
+  if (rejectedHashes.isEmpty) return false;
+  final hash = candidateContentHash(candidate);
+  return hash != null && rejectedHashes.contains(hash);
+}
+
 int _bodyRank(LyricsBody? body) {
   if (body?.syncedLrc != null) return 0;
   if (body?.plain != null) return 1;
   return body != null && body.instrumental ? 2 : 3;
 }
 
-/// Judges every candidate not in [rejected] and orders them: good matches
-/// first, then synced before plain before instrumental, smaller duration
-/// difference, higher title similarity, and the given order for ties. With
-/// [keepRejected] (the manual search) records in [rejected] stay in the list,
-/// flagged and after every other one; automatic lookups leave it off.
+/// Judges every candidate not in [rejected] (by id or text, [rejectedHashes])
+/// and orders them: good matches first, then synced before plain before
+/// instrumental, smaller duration difference, higher title similarity, and
+/// the given order for ties. With [keepRejected] (the manual search) records
+/// in [rejected] stay in the list, flagged and after every other one;
+/// automatic lookups leave it off.
 List<LyricsMatch> rankCandidates(
   LyricsQuery query,
   Iterable<LyricsCandidate> candidates, {
   Set<({String providerId, String remoteId})> rejected = const {},
+  Set<String> rejectedHashes = const {},
   bool keepRejected = false,
 }) {
   final indexed = <(int, LyricsMatch)>[
     for (final (i, c) in candidates.indexed)
-      if (keepRejected || !rejected.contains(c.ref))
-        (i, matchCandidate(query, c, rejected: rejected)),
+      (
+        i,
+        matchCandidate(
+          query,
+          c,
+          rejected: rejected,
+          rejectedHashes: rejectedHashes,
+        ),
+      ),
   ];
+  if (!keepRejected) indexed.removeWhere((e) => e.$2.rejected);
   indexed.sort((a, b) {
     final x = a.$2;
     final y = b.$2;

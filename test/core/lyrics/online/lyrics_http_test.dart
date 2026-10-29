@@ -88,8 +88,10 @@ void main() {
     expect(server.requests, hasLength(1));
   });
 
-  test('a body over 2 MiB is an invalid response', () async {
-    server.handler = (_) => Reply(200, 'a' * (2 * 1024 * 1024 + 10));
+  test('a 3 MiB body is accepted and a 5 MiB body is rejected', () async {
+    server.handler = (_) => Reply(200, 'a' * (3 * 1024 * 1024));
+    expect((await testing().get(server.baseUri)).body.length, 3 * 1024 * 1024);
+    server.handler = (_) => Reply(200, 'a' * (5 * 1024 * 1024));
     expect(
       await _kindOf(testing().get(server.baseUri)),
       LyricsFetchKind.invalidResponse,
