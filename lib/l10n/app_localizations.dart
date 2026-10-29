@@ -4487,7 +4487,7 @@ abstract class AppLocalizations {
   /// Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses
   ///
   /// In en, this message translates to:
-  /// **'Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.'**
+  /// **'Kanaru sends the song title, artist and length to {hosts}, never the album. No file names, paths or device details.'**
   String onlineLyricsNoticeBody(String hosts);
 
   /// Hint under the automatic online lyrics notice saying where to turn it off
@@ -4574,17 +4574,17 @@ abstract class AppLocalizations {
   /// **'±{seconds}s'**
   String lyricsPickerDelta(int seconds);
 
+  /// Shown in the Choose lyrics dialog before any search when the query field is blank
+  ///
+  /// In en, this message translates to:
+  /// **'Type the artist and title, then press Search'**
+  String get lyricsPickerBlankHint;
+
   /// Shown when the search finds nothing
   ///
   /// In en, this message translates to:
   /// **'No lyrics found. Try other words.'**
   String get lyricsPickerEmpty;
-
-  /// Shown when a lyrics service fails; provider is its name
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t reach {provider}'**
-  String lyricsPickerError(String provider);
 
   /// Button that repeats a failed lyrics search
   ///
@@ -4637,7 +4637,7 @@ abstract class AppLocalizations {
   /// Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name
   ///
   /// In en, this message translates to:
-  /// **'Online lyrics are turned off for {provider}. Allow it in Settings.'**
+  /// **'You haven\'t allowed lyrics search on {provider}.'**
   String lyricsPickerNotConsented(String provider);
 
   /// Lyrics slot of Now Playing while a lookup runs; provider is the service name

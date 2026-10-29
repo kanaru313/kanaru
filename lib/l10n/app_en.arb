@@ -2657,7 +2657,7 @@
       }
     }
   },
-  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.",
+  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist and length to {hosts}, never the album. No file names, paths or device details.",
   "@onlineLyricsNoticeBody": {
     "description": "Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses",
     "placeholders": {
@@ -2738,18 +2738,13 @@
       }
     }
   },
+  "lyricsPickerBlankHint": "Type the artist and title, then press Search",
+  "@lyricsPickerBlankHint": {
+    "description": "Shown in the Choose lyrics dialog before any search when the query field is blank"
+  },
   "lyricsPickerEmpty": "No lyrics found. Try other words.",
   "@lyricsPickerEmpty": {
     "description": "Shown when the search finds nothing"
-  },
-  "lyricsPickerError": "Couldn't reach {provider}",
-  "@lyricsPickerError": {
-    "description": "Shown when a lyrics service fails; provider is its name",
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
-    }
   },
   "lyricsPickerRetry": "Retry",
   "@lyricsPickerRetry": {
@@ -2788,7 +2783,7 @@
   "@lyricsPickFailed": {
     "description": "Snackbar when pinning the lyrics the user picked failed"
   },
-  "lyricsPickerNotConsented": "Online lyrics are turned off for {provider}. Allow it in Settings.",
+  "lyricsPickerNotConsented": "You haven't allowed lyrics search on {provider}.",
   "@lyricsPickerNotConsented": {
     "description": "Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name",
     "placeholders": {

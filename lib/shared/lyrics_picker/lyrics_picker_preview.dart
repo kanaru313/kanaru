@@ -5,8 +5,12 @@ import '../../core/lyrics/lyrics.dart';
 import '../../core/lyrics/online/lyrics_provider.dart';
 import '../../l10n/l10n.dart';
 
-/// The lyrics of the selected result as plain lines: synced lyrics are shown
-/// without their time tags.
+/// The lyrics of the selected result. Synced lyrics show each line's start
+/// time (`mm:ss.xx`, `h:mm:ss.xx` from one hour) in a fixed-width column
+/// before the text, so the timing can be judged; a wrapped line stays under
+/// the text, and an empty line (an instrumental gap) shows its time with a
+/// dim note. Plain lyrics, and synced text that does not parse, show the
+/// text only.
 class LyricsPickerPreview extends StatelessWidget {
   const LyricsPickerPreview({super.key, required this.candidate});
 
@@ -31,15 +35,74 @@ class LyricsPickerPreview extends StatelessWidget {
             : l10n.lyricsPickerNoBody,
       );
     }
+    final lines = lyrics.lines;
+    if (!lyrics.synced) {
+      return ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: lines.length,
+        itemBuilder: (context, i) =>
+            Text(lines[i].text.isEmpty ? ' ' : lines[i].text),
+      );
+    }
+    final hours =
+        lines.fold(Duration.zero, (m, l) => l.time > m ? l.time : m) >=
+        const Duration(hours: 1);
+    final theme = Theme.of(context);
+    final timeStyle = theme.textTheme.bodySmall!.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+      fontFamily: 'monospace',
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    // The widest time sets the column; every time has the same length.
+    final painter = TextPainter(
+      text: TextSpan(text: _formatTime(Duration.zero, hours), style: timeStyle),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final column = painter.width + _timeGap;
+    painter.dispose();
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: lyrics.lines.length,
+      itemCount: lines.length,
       itemBuilder: (context, i) {
-        final line = lyrics.lines[i].text;
-        return Text(line.isEmpty ? ' ' : line);
+        final line = lines[i];
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: column,
+              child: Text(_formatTime(line.time, hours), style: timeStyle),
+            ),
+            Expanded(
+              child: line.text.isEmpty
+                  ? Text(
+                      '♪',
+                      style: theme.textTheme.bodySmall!.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    )
+                  : Text(line.text),
+            ),
+          ],
+        );
       },
     );
   }
+}
+
+const _timeGap = 12.0;
+
+/// `mm:ss.xx` (hundredths, rounded down), or `h:mm:ss.xx` when [hours].
+String _formatTime(Duration d, bool hours) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  final h = d.inHours;
+  final m = d.inMinutes.remainder(60);
+  final sec = d.inSeconds.remainder(60);
+  final cs = d.inMilliseconds.remainder(1000) ~/ 10;
+  final tail = '${two(sec)}.${two(cs)}';
+  return hours ? '$h:${two(m)}:$tail' : '${two(d.inMinutes)}:$tail';
 }
 
 class _Note extends StatelessWidget {

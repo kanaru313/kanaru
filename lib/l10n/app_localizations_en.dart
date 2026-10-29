@@ -3079,7 +3079,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String onlineLyricsNoticeBody(String hosts) {
-    return 'Kanaru sends the song title, artist, album and length to $hosts. No file paths or device details.';
+    return 'Kanaru sends the song title, artist and length to $hosts, never the album. No file names, paths or device details.';
   }
 
   @override
@@ -3130,12 +3130,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lyricsPickerEmpty => 'No lyrics found. Try other words.';
+  String get lyricsPickerBlankHint =>
+      'Type the artist and title, then press Search';
 
   @override
-  String lyricsPickerError(String provider) {
-    return 'Couldn\'t reach $provider';
-  }
+  String get lyricsPickerEmpty => 'No lyrics found. Try other words.';
 
   @override
   String get lyricsPickerRetry => 'Retry';
@@ -3165,7 +3164,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String lyricsPickerNotConsented(String provider) {
-    return 'Online lyrics are turned off for $provider. Allow it in Settings.';
+    return 'You haven\'t allowed lyrics search on $provider.';
   }
 
   @override

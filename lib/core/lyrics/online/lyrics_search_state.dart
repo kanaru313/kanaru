@@ -76,9 +76,11 @@ class LyricsSearchState {
   );
 }
 
-/// The text the search box starts with: `"{primary artist} {title}"`.
+/// The text the search box starts with: `"{primary artist} {title}"`. A
+/// placeholder artist ("Unknown Artist") is left out.
 String lyricsSearchPrefill(LyricsTarget target) {
-  final artist = primaryArtist(target.query.artist)?.trim();
+  var artist = primaryArtist(target.query.artist)?.trim();
+  if (artist != null && isUnknownArtist(artist)) artist = null;
   final title = target.query.title?.trim();
   return [
     if (artist != null && artist.isNotEmpty) artist,

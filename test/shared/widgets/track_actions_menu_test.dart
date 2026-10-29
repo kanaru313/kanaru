@@ -305,12 +305,12 @@ void main() {
       expect(find.text('Find lyrics online…'), findsNothing);
     });
 
-    testWidgets('is hidden when the title is the file name', (tester) async {
+    testWidgets('is shown for a song with no tags', (tester) async {
       await openMenu(
         tester,
         const TrackListItem(id: 1, path: '/m/Real.flac', title: 'Real'),
       );
-      expect(find.text('Find lyrics online…'), findsNothing);
+      expect(find.text('Find lyrics online…'), findsOneWidget);
     });
 
     testWidgets('is hidden without a library database', (tester) async {

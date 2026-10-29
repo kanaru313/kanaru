@@ -206,10 +206,13 @@ void main() {
     );
   });
 
-  testWidgets('synced lyrics preview without time tags', (tester) async {
+  testWidgets('synced lyrics preview shows the time as a column', (
+    tester,
+  ) async {
     await open(tester);
 
     expect(find.text('hello'), findsOneWidget);
+    expect(find.text('00:01.00'), findsOneWidget);
     expect(find.textContaining('[00:01'), findsNothing);
   });
 

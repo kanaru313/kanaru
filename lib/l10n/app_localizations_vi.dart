@@ -2877,7 +2877,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String onlineLyricsNoticeBody(String hosts) {
-    return 'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới $hosts. Không gửi đường dẫn file hay thông tin máy.';
+    return 'Kanaru sẽ gửi tên bài, nghệ sĩ và độ dài tới $hosts, không gửi album. Không gửi tên file, đường dẫn hay thông tin máy.';
   }
 
   @override
@@ -2908,10 +2908,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerQueryHint => 'Nghệ sĩ và tên bài';
 
   @override
-  String get lyricsPickerSynced => 'Có thời gian';
+  String get lyricsPickerSynced => 'Đồng bộ';
 
   @override
-  String get lyricsPickerPlain => 'Thuần văn bản';
+  String get lyricsPickerPlain => 'Lời thường';
 
   @override
   String get lyricsPickerInstrumental => 'Nhạc không lời';
@@ -2928,12 +2928,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsPickerEmpty => 'Không tìm thấy lời. Thử từ khóa khác.';
+  String get lyricsPickerBlankHint => 'Nhập ca sĩ và tên bài rồi bấm Tìm';
 
   @override
-  String lyricsPickerError(String provider) {
-    return 'Không kết nối được $provider';
-  }
+  String get lyricsPickerEmpty => 'Không tìm thấy lời. Thử từ khóa khác.';
 
   @override
   String get lyricsPickerRetry => 'Thử lại';
@@ -2963,7 +2961,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String lyricsPickerNotConsented(String provider) {
-    return 'Lời online đang tắt cho $provider. Hãy bật lại trong Cài đặt.';
+    return 'Bạn chưa cho phép tìm lời trên $provider.';
   }
 
   @override
@@ -3007,7 +3005,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsCreditNotSynced => 'không đồng bộ';
+  String get lyricsCreditNotSynced => 'lời thường';
 
   @override
   String get lyricsMenuNotThese => 'Không phải lời này';
@@ -3017,7 +3015,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsAutoOnlineLyricsHint =>
-      'Khi Đang phát đang mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
+      'Khi màn hình Đang phát mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
 
   @override
   String get settingsSavedLyrics => 'Lời đã lưu';

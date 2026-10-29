@@ -7,7 +7,6 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/database/playlist_favorites.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
-import '../../../core/lyrics/online/lyrics_target.dart';
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
@@ -61,12 +60,10 @@ class QueueTileMenuRegion extends ConsumerWidget {
     }
   }
 
-  /// Find lyrics online is offered for a local file with a real title when
-  /// the library is open (a pick is stored there).
-  bool _canFindLyrics(ProviderContainer container, Track track, String? path) =>
-      path != null &&
-      container.read(libraryDatabaseProvider) != null &&
-      LyricsTarget.fromTrack(track).query.title != null;
+  /// Find lyrics online is offered for a local file, tagged or not, when the
+  /// library is open (a pick is stored there).
+  bool _canFindLyrics(ProviderContainer container, String? path) =>
+      path != null && container.read(libraryDatabaseProvider) != null;
 
   Future<void> _open(
     BuildContext context,
@@ -100,7 +97,7 @@ class QueueTileMenuRegion extends ConsumerWidget {
       hasAlbum: state?.hasAlbum ?? false,
       showLinks: state != null,
       showFileManager: path != null,
-      showFindLyrics: _canFindLyrics(container, trackAtOpen, path),
+      showFindLyrics: _canFindLyrics(container, path),
     );
     final choice = await showMenu<Object>(
       context: context,

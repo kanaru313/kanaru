@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_favorites.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 
@@ -55,6 +56,7 @@ void main() {
     await openQueueMenu(tester, 'x');
     expect(menuLabels(tester, allMenuLabels), [
       'Play next',
+      'Find lyrics online…',
       'Show in file manager',
       'Remove from queue',
     ]);
@@ -79,6 +81,27 @@ void main() {
     ]);
   });
 
+  testWidgets('an untagged local file can find lyrics', (tester) async {
+    await open(
+      tester,
+      (p) => [lib(p, 'a'), const Track(uri: '/elsewhere/x.mp3', title: 'x')],
+    );
+    await openQueueMenu(tester, 'x');
+    expect(menuLabels(tester, allMenuLabels), contains('Find lyrics online…'));
+
+    // The dialog's cache key is scoped to the track, so two untagged songs
+    // of the same length do not share rejects.
+    const same = Duration(seconds: 200);
+    final one = LyricsTarget.fromTrack(
+      const Track(uri: '/elsewhere/x.mp3', title: 'x', duration: same),
+    );
+    final other = LyricsTarget.fromTrack(
+      const Track(uri: '/elsewhere/y.mp3', title: 'y', duration: same),
+    );
+    expect(one.query.title, isNull);
+    expect(one.cacheKey, isNot(other.cacheKey));
+  });
+
   testWidgets('a favorite outside the library can be taken out', (
     tester,
   ) async {
@@ -93,6 +116,7 @@ void main() {
     expect(menuLabels(tester, allMenuLabels), [
       'Play next',
       'Remove from favorites',
+      'Find lyrics online…',
       'Show in file manager',
       'Remove from queue',
     ]);
