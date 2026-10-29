@@ -80,13 +80,30 @@ String albumLocation(AlbumKey key) => '$albumsPath/${encodeAlbumRouteKey(key)}';
 String artistLocation(String artistKey) =>
     '$artistsPath/${encodeArtistRouteKey(artistKey)}';
 
+/// An album page opened from the page at [parent], below it in the same
+/// branch.
+String albumUnderLocation(String parent, AlbumKey albumKey) =>
+    '$parent/album/${encodeAlbumRouteKey(albumKey)}';
+
 /// An album opened from an artist page, staying in the Artists branch.
 String artistAlbumLocation(String artistKey, AlbumKey albumKey) =>
-    '${artistLocation(artistKey)}/album/${encodeAlbumRouteKey(albumKey)}';
+    albumUnderLocation(artistLocation(artistKey), albumKey);
+
+/// The full list of an artist's own albums.
+String artistAlbumsLocation(String artistKey) =>
+    '${artistLocation(artistKey)}/albums';
+
+/// The full list of the albums an artist appears on.
+String artistAppearsOnLocation(String artistKey) =>
+    '${artistLocation(artistKey)}/appears-on';
 
 /// A genre page; [genreKey] comes from `genreKey` in `genre_names.dart`.
 String genreLocation(String genreKey) =>
     '$genresPath/${encodeGenreRouteKey(genreKey)}';
+
+/// The full list of the albums of a genre.
+String genreAlbumsLocation(String genreKey) =>
+    '${genreLocation(genreKey)}/albums';
 
 /// A language page; [languageKey] is the normalized language code or name.
 String languageLocation(String languageKey) =>

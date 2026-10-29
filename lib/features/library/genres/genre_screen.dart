@@ -8,11 +8,8 @@ import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
-import '../../../shared/widgets/empty_state.dart';
-import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
@@ -26,6 +23,7 @@ import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'genre_display_name.dart';
 import 'genre_header.dart';
+import 'genre_not_found.dart';
 import 'genre_page_data.dart';
 
 /// One genre: header, then its albums on one line scrolling sideways, then its
@@ -43,7 +41,7 @@ class GenreScreen extends ConsumerWidget {
     return LibraryDetailBody<GenrePageData>(
       page: genreKey == null ? null : genrePageProvider(genreKey),
       what: 'the genre',
-      notFound: const _GenreNotFound(),
+      notFound: const GenreNotFound(),
       builder: (data) => _GenrePage(genreKey: genreKey!, data: data),
     );
   }
@@ -189,23 +187,6 @@ class _GenrePageState extends ConsumerState<_GenrePage>
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _GenreNotFound extends StatelessWidget {
-  const _GenreNotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: l10n.genresTitle,
-      body: EmptyState(
-        icon: AppIcons.genreOutlined,
-        title: l10n.genresNotFound,
-        message: l10n.genresNotFoundMessage,
       ),
     );
   }

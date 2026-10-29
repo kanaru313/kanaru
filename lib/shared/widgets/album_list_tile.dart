@@ -21,6 +21,7 @@ class AlbumListTile extends ConsumerWidget {
     required this.album,
     required this.onTap,
     this.onQueueAction,
+    this.showTotals = true,
   });
 
   final AlbumSummary album;
@@ -28,6 +29,10 @@ class AlbumListTile extends ConsumerWidget {
 
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
+
+  /// False leaves the "N songs • M min" line blank, for lists whose albums
+  /// hold more songs than the list is about; the row keeps its height.
+  final bool showTotals;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,10 +54,13 @@ class AlbumListTile extends ConsumerWidget {
           ),
           rowYear(album.year),
         ]),
-        joinRowDetails([
-          l10n.albumsSongCount(album.trackCount),
-          if (durationMs != null) l10n.albumsMinutes(rowMinutes(durationMs)),
-        ]),
+        if (showTotals)
+          joinRowDetails([
+            l10n.albumsSongCount(album.trackCount),
+            if (durationMs != null) l10n.albumsMinutes(rowMinutes(durationMs)),
+          ])
+        else
+          '',
       ],
       onTap: onTap,
       onPlay: () => unawaited(playAlbum(ref, album.key)),

@@ -8,11 +8,8 @@ import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
-import '../../../shared/widgets/empty_state.dart';
-import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
@@ -25,6 +22,7 @@ import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'artist_header.dart';
+import 'artist_not_found.dart';
 import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
 
@@ -45,7 +43,7 @@ class ArtistScreen extends ConsumerWidget {
     return LibraryDetailBody<ArtistPageSections>(
       page: artistKey == null ? null : artistPageProvider(artistKey),
       what: 'the artist',
-      notFound: const _ArtistNotFound(),
+      notFound: const ArtistNotFound(),
       builder: (sections) =>
           _ArtistPage(artistKey: artistKey!, sections: sections),
     );
@@ -191,23 +189,6 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _ArtistNotFound extends StatelessWidget {
-  const _ArtistNotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: l10n.navArtists,
-      body: EmptyState(
-        icon: AppIcons.artistOutline,
-        title: l10n.artistsNotFound,
-        message: l10n.artistsNotFoundMessage,
       ),
     );
   }

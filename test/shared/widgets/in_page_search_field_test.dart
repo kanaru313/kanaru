@@ -162,4 +162,35 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     expect(InPageFilterRegistry.instance.openTop(), isFalse);
   });
+
+  testWidgets('the open box shows a custom hint and keeps a custom width', (
+    tester,
+  ) async {
+    filter = InPageFilterController();
+    addTearDown(filter.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
+        home: Scaffold(
+          body: Row(
+            children: [
+              InPageSearchField(
+                controller: filter,
+                hintText: 'Filter albums',
+                width: 200,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Filter in this page'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Filter albums'), findsOneWidget);
+    expect(tester.getSize(box()).width, 200);
+  });
 }

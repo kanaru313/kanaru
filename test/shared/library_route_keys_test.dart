@@ -146,4 +146,23 @@ void main() {
       '/artists/${encodeArtistRouteKey('a')}/album/${encodeAlbumRouteKey(key)}',
     );
   });
+
+  test('album list locations are children of their page', () {
+    const key = AlbumKey('a', 'b');
+    final albumRoute = encodeAlbumRouteKey(key);
+    final artist = encodeArtistRouteKey('a');
+    final genre = encodeGenreRouteKey('rock');
+    expect(albumUnderLocation('/x/y', key), '/x/y/album/$albumRoute');
+    expect(artistAlbumsLocation('a'), '/artists/$artist/albums');
+    expect(artistAppearsOnLocation('a'), '/artists/$artist/appears-on');
+    expect(genreAlbumsLocation('rock'), '/genres/$genre/albums');
+    expect(
+      albumUnderLocation(artistAlbumsLocation('a'), key),
+      '/artists/$artist/albums/album/$albumRoute',
+    );
+    expect(
+      artistAlbumLocation('a', key),
+      albumUnderLocation(artistLocation('a'), key),
+    );
+  });
 }
