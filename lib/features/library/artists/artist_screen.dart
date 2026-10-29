@@ -8,32 +8,29 @@ import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
-import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
-import '../../../shared/widgets/empty_state.dart';
-import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/in_page_filter.dart';
 import '../../../shared/in_page_filter_host.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
+import '../../../shared/widgets/section_heading.dart';
 import '../albums/album_row.dart';
-import '../albums/album_tile_data.dart';
 import '../browse_songs_sliver.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'artist_header.dart';
+import 'artist_not_found.dart';
 import 'artist_page_data.dart';
 import 'artist_page_sections.dart';
 
 /// One artist: header, then their albums and the albums they appear on,
 /// each as one line scrolling sideways, then their songs. A wide window
 /// puts the header in a side pane beside the rest. Tapping a song plays the
-/// Songs section from it. [routeKey]
-/// comes from the URL; a broken key or an artist without tracks shows
-/// "not found".
+/// Songs section from it. [routeKey] comes from the URL; a broken key or an
+/// artist without tracks shows "not found".
 class ArtistScreen extends ConsumerWidget {
   const ArtistScreen({super.key, required this.routeKey});
 
@@ -45,7 +42,7 @@ class ArtistScreen extends ConsumerWidget {
     return LibraryDetailBody<ArtistPageSections>(
       page: artistKey == null ? null : artistPageProvider(artistKey),
       what: 'the artist',
-      notFound: const _ArtistNotFound(),
+      notFound: const ArtistNotFound(),
       builder: (sections) =>
           _ArtistPage(artistKey: artistKey!, sections: sections),
     );
@@ -84,7 +81,6 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
   Widget build(BuildContext context) {
     final artistKey = widget.artistKey;
     final sections = widget.sections;
-    final theme = Theme.of(context);
     final l10n = context.l10n;
     final songs = sections.songs;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
@@ -93,15 +89,22 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
       for (final t in list)
         trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
     ];
-    void queueAlbum(AlbumTileData album, QueueAction action) =>
+    void queueAlbum(AlbumSummary album, QueueAction action) =>
         enqueueAlbum(ref, context, action, album.key, album.title);
-    void openAlbum(AlbumTileData album) =>
+    void openAlbum(AlbumSummary album) =>
         context.go(artistAlbumLocation(artistKey, album.key));
-    Widget heading(String text) => SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
-        child: Text(text, style: theme.textTheme.titleLarge),
-      ),
+    Widget heading(String title, int count, String location) =>
+        SliverToBoxAdapter(
+          child: SectionHeading(
+            title: title,
+            count: count,
+            onSeeAll: () => context.go(location),
+          ),
+        );
+    Widget albumRow(List<AlbumSummary> albums) => SliverAlbumRow(
+      albums: albums,
+      onTap: openAlbum,
+      onQueueAction: queueAlbum,
     );
     // Play and Shuffle in the header always take every song.
     void onPlay() => playTracks(ref, queueOf(songs), 0);
@@ -133,20 +136,20 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
                       ),
                     ),
                   if (!filtering && sections.albums.isNotEmpty) ...[
-                    heading(l10n.artistsAlbums),
-                    SliverAlbumRow(
-                      albums: sections.albums,
-                      onTap: openAlbum,
-                      onQueueAction: queueAlbum,
+                    heading(
+                      l10n.artistsAlbums,
+                      sections.albums.length,
+                      artistAlbumsLocation(artistKey),
                     ),
+                    albumRow(sections.albums),
                   ],
                   if (!filtering && sections.appearsOn.isNotEmpty) ...[
-                    heading(l10n.artistsAppearsOn),
-                    SliverAlbumRow(
-                      albums: sections.appearsOn,
-                      onTap: openAlbum,
-                      onQueueAction: queueAlbum,
+                    heading(
+                      l10n.artistsAppearsOn,
+                      sections.appearsOn.length,
+                      artistAppearsOnLocation(artistKey),
                     ),
+                    albumRow(sections.appearsOn),
                   ],
                   SliverTracksToolbar(
                     songCount: songs.length,
@@ -191,23 +194,6 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _ArtistNotFound extends StatelessWidget {
-  const _ArtistNotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: l10n.navArtists,
-      body: EmptyState(
-        icon: AppIcons.artistOutline,
-        title: l10n.artistsNotFound,
-        message: l10n.artistsNotFoundMessage,
       ),
     );
   }

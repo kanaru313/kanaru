@@ -11,11 +11,11 @@ import '../features/home/home_routes.dart';
 import '../features/home/home_screen.dart';
 import '../features/library/albums/album_screen.dart';
 import '../features/library/albums/albums_screen.dart';
-import '../features/library/artists/artist_screen.dart';
+import '../features/library/artists/artist_routes.dart';
 import '../features/library/artists/artists_screen.dart';
 import '../features/library/folders/folder_screen.dart';
 import '../features/library/folders/folders_screen.dart';
-import '../features/library/genres/genre_screen.dart';
+import '../features/library/genres/genre_routes.dart';
 import '../features/library/genres/genres_screen.dart';
 import '../features/library/languages/languages_routes.dart';
 import '../features/library/languages/languages_screen.dart';
@@ -86,29 +86,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                             AlbumScreen(routeKey: state.pathParameters['key']!),
                       ),
                     ],
-                    AppDestination.artists => [
-                      GoRoute(
-                        path: ':key',
-                        builder: (context, state) => ArtistScreen(
-                          routeKey: state.pathParameters['key']!,
-                        ),
-                        routes: [
-                          GoRoute(
-                            path: 'album/:albumKey',
-                            builder: (context, state) => AlbumScreen(
-                              routeKey: state.pathParameters['albumKey']!,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    AppDestination.genres => [
-                      GoRoute(
-                        path: ':key',
-                        builder: (context, state) =>
-                            GenreScreen(routeKey: state.pathParameters['key']!),
-                      ),
-                    ],
+                    AppDestination.artists => artistRoutes,
+                    AppDestination.genres => genreRoutes,
                     AppDestination.folders => [
                       GoRoute(
                         path: ':key',

@@ -15,19 +15,11 @@ import '../../../shared/enqueue_tracks.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'album_grid_tile.dart';
-import '../../../shared/widgets/album_list_tile.dart';
+import 'album_list_view.dart';
+import 'albums_view_toggle.dart';
 import 'albums_provider.dart';
 
 final _log = Logger('library');
-
-/// Row used to measure the list view.
-const _prototypeAlbum = AlbumSummary(
-  key: AlbumKey('', ''),
-  title: 'Title',
-  artist: 'Artist',
-  trackCount: 1,
-  addedAt: 0,
-);
 
 /// Every album as a grid or a list, in the saved sort. Tapping one opens its
 /// page.
@@ -55,21 +47,7 @@ class AlbumsScreen extends ConsumerWidget {
         title: l10n.navAlbums,
         actions: [
           if (showActions) ...[
-            // Shows the current view; a tap switches to the other one.
-            IconButton(
-              tooltip: switch (view) {
-                AlbumsView.grid => l10n.albumsGridView,
-                AlbumsView.list => l10n.albumsListView,
-              },
-              icon: Icon(switch (view) {
-                AlbumsView.grid => AppIcons.viewGrid,
-                AlbumsView.list => AppIcons.viewList,
-              }),
-              onPressed: () => settings.setAlbumsView(switch (view) {
-                AlbumsView.grid => AlbumsView.list,
-                AlbumsView.list => AlbumsView.grid,
-              }),
-            ),
+            const AlbumsViewToggle(),
             const SizedBox(width: 8),
             LibrarySortControls<AlbumSortField>(
               choice: sort,
@@ -93,24 +71,11 @@ class AlbumsScreen extends ConsumerWidget {
               onQueueAction: (album, action) =>
                   enqueueAlbum(ref, context, action, album.key, album.title),
             ),
-            AlbumsView.list => ListView.builder(
-              padding: libraryListBottomPadding,
-              prototypeItem: AlbumListTile(
-                album: _prototypeAlbum,
-                onTap: () {},
-              ),
-              itemCount: albums.length,
-              itemBuilder: (context, i) => AlbumListTile(
-                album: albums[i],
-                onTap: () => open(albums[i].key),
-                onQueueAction: (action) => enqueueAlbum(
-                  ref,
-                  context,
-                  action,
-                  albums[i].key,
-                  albums[i].title,
-                ),
-              ),
+            AlbumsView.list => AlbumListView(
+              albums: albums,
+              onTap: (album) => open(album.key),
+              onQueueAction: (album, action) =>
+                  enqueueAlbum(ref, context, action, album.key, album.title),
             ),
           },
         ),

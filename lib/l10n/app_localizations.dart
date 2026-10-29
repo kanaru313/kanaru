@@ -902,6 +902,36 @@ abstract class AppLocalizations {
   /// **'List'**
   String get albumsListView;
 
+  /// Hint of the filter box on a full album list
+  ///
+  /// In en, this message translates to:
+  /// **'Filter albums'**
+  String get albumsFilterHint;
+
+  /// Shown on a full album list when no album matches the filter text
+  ///
+  /// In en, this message translates to:
+  /// **'No albums match “{query}”'**
+  String albumsFilterNoMatch(String query);
+
+  /// Subtitle of a full album list: whose albums, and how many (or how many are shown)
+  ///
+  /// In en, this message translates to:
+  /// **'{owner} · {albums}'**
+  String albumsOwnerSummary(String owner, String albums);
+
+  /// Albums matching the filter out of all of them, e.g. 3 / 12 albums
+  ///
+  /// In en, this message translates to:
+  /// **'{shown} / {albums}'**
+  String albumsShownOfTotal(int shown, String albums);
+
+  /// Shown on a full album list whose albums all vanished after a library update
+  ///
+  /// In en, this message translates to:
+  /// **'No albums here any more'**
+  String get albumsSectionEmpty;
+
   /// No description provided for @albumsNoRootsMessage.
   ///
   /// In en, this message translates to:

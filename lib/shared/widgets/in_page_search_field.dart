@@ -18,6 +18,7 @@ class InPageSearchBox extends StatelessWidget {
     required this.controller,
     this.onEscape,
     this.width = inPageSearchWidth,
+    this.hintText,
   });
 
   final InPageFilterController controller;
@@ -25,6 +26,9 @@ class InPageSearchBox extends StatelessWidget {
 
   /// Width of the box; `double.infinity` fills the row it sits in.
   final double width;
+
+  /// Placeholder of the empty box; the generic filter hint when null.
+  final String? hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +51,7 @@ class InPageSearchBox extends StatelessWidget {
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             isDense: true,
-            hintText: l10n.inPageSearchHint,
+            hintText: hintText ?? l10n.inPageSearchHint,
             prefixIcon: const Icon(AppIcons.search, size: 20),
             suffixIcon: ValueListenableBuilder(
               valueListenable: controller.text,
@@ -71,9 +75,20 @@ class InPageSearchBox extends StatelessWidget {
 /// when pressed. `Ctrl+F` is wired by the page that owns the controller (see
 /// `InPageFilterHost`), not here.
 class InPageSearchField extends StatefulWidget {
-  const InPageSearchField({super.key, required this.controller});
+  const InPageSearchField({
+    super.key,
+    required this.controller,
+    this.hintText,
+    this.width = inPageSearchWidth,
+  });
 
   final InPageFilterController controller;
+
+  /// Placeholder of the open box; the generic filter hint when null.
+  final String? hintText;
+
+  /// Width of the open box.
+  final double width;
 
   @override
   State<InPageSearchField> createState() => _InPageSearchFieldState();
@@ -100,12 +115,21 @@ class _InPageSearchFieldState extends State<InPageSearchField> {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) => controller.isOpen
-          ? InPageSearchBox(controller: controller, onEscape: _focusButton)
-          : IconButton(
-              focusNode: _iconFocus,
-              icon: const Icon(AppIcons.search),
-              tooltip: context.l10n.inPageSearchOpen,
-              onPressed: controller.open,
+          ? InPageSearchBox(
+              controller: controller,
+              onEscape: _focusButton,
+              width: widget.width,
+              hintText: widget.hintText,
+            )
+          // Joins the text-field tap region so a click here does not count as
+          // a tap outside a focused field.
+          : TextFieldTapRegion(
+              child: IconButton(
+                focusNode: _iconFocus,
+                icon: const Icon(AppIcons.search),
+                tooltip: context.l10n.inPageSearchOpen,
+                onPressed: controller.open,
+              ),
             ),
     );
   }

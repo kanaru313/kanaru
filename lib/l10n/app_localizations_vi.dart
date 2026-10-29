@@ -539,6 +539,27 @@ class AppLocalizationsVi extends AppLocalizations {
   String get albumsListView => 'Danh sách';
 
   @override
+  String get albumsFilterHint => 'Lọc album';
+
+  @override
+  String albumsFilterNoMatch(String query) {
+    return 'Không có album nào khớp «$query»';
+  }
+
+  @override
+  String albumsOwnerSummary(String owner, String albums) {
+    return '$owner · $albums';
+  }
+
+  @override
+  String albumsShownOfTotal(int shown, String albums) {
+    return '$shown / $albums';
+  }
+
+  @override
+  String get albumsSectionEmpty => 'Không còn album nào ở đây';
+
+  @override
   String get albumsNoRootsMessage => 'Thêm thư mục nhạc ở mục Bài hát.';
 
   @override

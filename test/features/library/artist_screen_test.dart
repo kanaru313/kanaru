@@ -7,6 +7,8 @@ import 'package:kanaru/features/library/albums/album_artist_link.dart';
 import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/in_page_search_field.dart';
+import 'package:kanaru/shared/widgets/section_heading.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
@@ -68,7 +70,7 @@ void main() {
 
     // The songs come after the album rows: bring the row into view.
     await tester.scrollUntilVisible(
-      find.text('guest').last,
+      find.text('guest'),
       200,
       scrollable: find
           .descendant(
@@ -120,6 +122,101 @@ void main() {
     expect(onPage('Albums'), findsNothing);
     expect(onPage('Appears on'), findsNothing);
     expect(onPage('anna'), findsOneWidget);
+  });
+
+  testWidgets('the row headings count their albums and open the lists', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack('a1', artist: 'Ann', album: 'Alpha', albumArtist: 'Ann'),
+      TestTrack('z1', artist: 'Ann', album: 'Zeta', albumArtist: 'Ann'),
+      TestTrack('t1', artist: 'X; Ann', album: 'Theirs', albumArtist: 'X'),
+    ], location: _ann);
+
+    Finder heading(String title) => find.widgetWithText(SectionHeading, title);
+    Finder count(String title, String n) =>
+        find.descendant(of: heading(title), matching: find.text(n));
+    expect(count('Albums', '2'), findsOneWidget);
+    expect(count('Appears on', '1'), findsOneWidget);
+
+    Finder seeAll(String title) => find.descendant(
+      of: heading(title),
+      matching: find.byTooltip('See all'),
+    );
+    await tester.tap(seeAll('Albums'));
+    await tester.pumpAndSettle();
+    expect(location(h), artistAlbumsLocation('ann'));
+    expect(_selectedSidebarItem(tester), 'Artists');
+
+    goTo(tester, h, _ann);
+    await tester.pumpAndSettle();
+    await tester.tap(seeAll('Appears on'));
+    await tester.pumpAndSettle();
+    expect(location(h), artistAppearsOnLocation('ann'));
+    expect(_selectedSidebarItem(tester), 'Artists');
+  });
+
+  testWidgets('back from an album keeps the list sort, filter and subtitle', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, const [
+      TestTrack(
+        'a1',
+        artist: 'Ann',
+        album: 'Alpha',
+        albumArtist: 'Ann',
+        year: 2010,
+      ),
+      TestTrack(
+        'z1',
+        artist: 'Ann',
+        album: 'Zeta',
+        albumArtist: 'Ann',
+        year: 1990,
+      ),
+      TestTrack(
+        'm1',
+        artist: 'Ann',
+        album: 'Alto',
+        albumArtist: 'Ann',
+        year: 2000,
+      ),
+    ], location: artistAlbumsLocation('ann'));
+
+    List<String> titles() => [
+      for (final w in tester.widgetList<AlbumGridTile>(
+        find.byType(AlbumGridTile),
+      ))
+        w.data.title,
+    ];
+    final field = find.descendant(
+      of: find.byType(InPageSearchBox),
+      matching: find.byType(TextField),
+    );
+
+    await tester.tap(find.byTooltip('Order: Ascending'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Filter in this page'));
+    await tester.pumpAndSettle();
+    await tester.enterText(field, 'al');
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.pumpAndSettle();
+    expect(titles(), ['Alpha', 'Alto']);
+    expect(find.text('Ann · 2 / 3 albums'), findsOneWidget);
+
+    await tester.tap(find.text('Alpha'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(FilledButton, 'Play'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(location(h), artistAlbumsLocation('ann'));
+    expect(titles(), ['Alpha', 'Alto']);
+    expect(tester.widget<TextField>(field).controller?.text, 'al');
+    expect(find.text('Ann · 2 / 3 albums'), findsOneWidget);
   });
 
   testWidgets('an album opens inside the Artists branch', (tester) async {

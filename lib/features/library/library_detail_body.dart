@@ -21,6 +21,7 @@ class LibraryDetailBody<T extends Object> extends ConsumerWidget {
     required this.what,
     required this.notFound,
     required this.builder,
+    this.logErrors = true,
   });
 
   final ProviderListenable<AsyncValue<T?>>? page;
@@ -29,6 +30,9 @@ class LibraryDetailBody<T extends Object> extends ConsumerWidget {
   final String what;
   final Widget notFound;
   final Widget Function(T data) builder;
+
+  /// False when the page below already logs the same failure.
+  final bool logErrors;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,7 +44,7 @@ class LibraryDetailBody<T extends Object> extends ConsumerWidget {
       body = notFound;
     } else {
       ref.listen(page, (previous, next) {
-        if (next.hasError && !(previous?.hasError ?? false)) {
+        if (logErrors && next.hasError && !(previous?.hasError ?? false)) {
           _log.severe(
             'Reading $what failed',
             _underlying(next.error),

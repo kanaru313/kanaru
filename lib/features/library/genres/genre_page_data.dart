@@ -4,15 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/genre_queries.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/database/text_keys.dart';
+import '../../../core/settings/library_sort.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../shared/library_browse_refresh.dart';
-import '../../../shared/sort_compare.dart';
-import '../albums/album_tile_data.dart';
+import '../albums/album_sort.dart';
 import 'genres_provider.dart';
 
+/// The order of the albums of a genre page: by title, then album key, as the
+/// Albums tab breaks ties.
+const genreAlbumsSort = SortChoice(AlbumSortField.title);
+
 /// What a genre page shows: its name, the albums holding at least one of its
-/// tracks (each as the Albums list shows it) and its tracks by title.
+/// tracks (each as the Albums list shows it, in [genreAlbumsSort] order) and
+/// its tracks by title.
 class GenrePageData {
   const GenrePageData({
     required this.name,
@@ -22,7 +26,7 @@ class GenrePageData {
   });
 
   final String name;
-  final List<AlbumTileData> albums;
+  final List<AlbumSummary> albums;
   final List<BrowseTrack> tracks;
 
   /// Up to four distinct cover keys for the header collage, from
@@ -80,27 +84,13 @@ Future<GenrePageData?> readGenrePage(
     db.genreAlbums(raws, includeNull: includeNull),
   ).wait;
   if (tracks.isEmpty) return null;
-  albums.sort(_byTitle);
   return GenrePageData(
     name: name,
-    albums: [for (final a in albums) AlbumTileData.fromSummary(a)],
+    albums: sortAlbums(albums, genreAlbumsSort),
     tracks: tracks,
     coverKeys: coverKeys,
   );
 });
-
-/// Title sort key, then the album key.
-int _byTitle(AlbumSummary a, AlbumSummary b) {
-  final title = compareCodePoints(
-    a.titleSort ?? sortKey(a.title),
-    b.titleSort ?? sortKey(b.title),
-  );
-  if (title != 0) return title;
-  final artist = compareCodePoints(a.key.artistKey, b.key.artistKey);
-  return artist != 0
-      ? artist
-      : compareCodePoints(a.key.titleKey, b.key.titleKey);
-}
 
 /// The page of one genre (by key), reloaded at most every
 /// [libraryBrowseRefreshIntervalProvider] while the library changes. The
