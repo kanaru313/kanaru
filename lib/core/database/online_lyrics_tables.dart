@@ -13,17 +13,24 @@ import 'package:drift/drift.dart';
 // 3. A `found` row never expires. A `not_found` row older than the miss TTL
 //    counts as a miss and the next lookup overwrites it.
 // 4. A rejected (cache_key, provider_id, remote_id) is never stored as found
-//    for that key again; lookups drop rejected ids before ranking.
+//    for that key again, and neither is a record whose text hash equals a
+//    rejected `content_hash`; lookups drop rejected ids and hashes before
+//    ranking. A reject made before hashes existed has a null hash and
+//    matches by id only.
 // 5. `status` holds only `found` or `not_found` and `provider_id` only ids of
 //    known providers; there is no CHECK constraint, readers skip unknown
 //    values so a newer build's rows do not break an older one.
 // 6. `remote_id` is null exactly when `status` is `not_found`. In
-//    `lyrics_pins`, a null `remote_id` means the user chose no online lyrics
-//    for the song (skip); a pin carries its own text and never reads
+//    `lyrics_pins`, `mode` is the song's lyrics choice: `local`, `online` or
+//    `off`. Null or an unknown value (from a newer build) reads as auto and
+//    the row is kept. `online` implies a pick is present. A null `remote_id`
+//    means no pick is stored. A pin carries its own text and never reads
 //    `online_lyrics`.
 // 7. "Clear online lyrics" empties all three tables. It never touches `.lrc`
 //    files.
-// 8. Unbounded by design (a few KB per song); settings shows count and size.
+// 8. Resolving which lyrics to show never writes; only user actions and
+//    lookups do.
+// 9. Unbounded by design (a few KB per song); settings shows count and size.
 
 /// One lookup result for one metadata key from one provider.
 @DataClassName('OnlineLyricsRow')
@@ -53,14 +60,17 @@ class OnlineLyrics extends Table {
   Set<Column> get primaryKey => {cacheKey, providerId};
 }
 
-/// The lyrics the user picked for one song, or the choice to have none.
+/// The lyrics choice and the online pick of one song.
 @DataClassName('LyricsPinRow')
 class LyricsPins extends Table {
   TextColumn get trackKey => text()();
 
   TextColumn get providerId => text().nullable()();
 
-  /// Null = skip: show no online lyrics for this song.
+  /// The lyrics choice: `local`, `online` or `off`; null = auto.
+  TextColumn get mode => text().nullable()();
+
+  /// Null = no pick stored.
   TextColumn get remoteId => text().nullable()();
 
   TextColumn get syncedText => text().nullable()();
@@ -85,6 +95,9 @@ class OnlineLyricsRejects extends Table {
   TextColumn get providerId => text()();
 
   TextColumn get remoteId => text()();
+
+  /// `lyricsContentHash` of the rejected text; null for older rejects.
+  TextColumn get contentHash => text().nullable()();
 
   IntColumn get rejectedAt => integer()();
 

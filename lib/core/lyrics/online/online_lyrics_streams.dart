@@ -71,7 +71,14 @@ final onlineLyricsCacheProvider = StreamProvider.autoDispose
 /// Zeros without a library database.
 final onlineLyricsStatsProvider =
     StreamProvider.autoDispose<
-      ({int found, int notFound, int picks, int skips, int rejects, int bytes})
+      ({
+        int found,
+        int notFound,
+        int picks,
+        int choices,
+        int rejects,
+        int bytes,
+      })
     >((ref) {
       final db = ref.watch(libraryDatabaseProvider);
       if (db == null) {
@@ -79,7 +86,7 @@ final onlineLyricsStatsProvider =
           found: 0,
           notFound: 0,
           picks: 0,
-          skips: 0,
+          choices: 0,
           rejects: 0,
           bytes: 0,
         ));

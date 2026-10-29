@@ -6203,6 +6203,15 @@ class $LyricsPinsTable extends LyricsPins
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _remoteIdMeta = const VerificationMeta(
     'remoteId',
   );
@@ -6277,6 +6286,7 @@ class $LyricsPinsTable extends LyricsPins
   List<GeneratedColumn> get $columns => [
     trackKey,
     providerId,
+    mode,
     remoteId,
     syncedText,
     plainText,
@@ -6308,6 +6318,12 @@ class $LyricsPinsTable extends LyricsPins
       context.handle(
         _providerIdMeta,
         providerId.isAcceptableOrUnknown(data['provider_id']!, _providerIdMeta),
+      );
+    }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
       );
     }
     if (data.containsKey('remote_id')) {
@@ -6371,6 +6387,10 @@ class $LyricsPinsTable extends LyricsPins
         DriftSqlType.string,
         data['${effectivePrefix}provider_id'],
       ),
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      ),
       remoteId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}remote_id'],
@@ -6408,7 +6428,10 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
   final String trackKey;
   final String? providerId;
 
-  /// Null = skip: show no online lyrics for this song.
+  /// The lyrics choice: `local`, `online` or `off`; null = auto.
+  final String? mode;
+
+  /// Null = no pick stored.
   final String? remoteId;
   final String? syncedText;
   final String? plainText;
@@ -6418,6 +6441,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
   const LyricsPinRow({
     required this.trackKey,
     this.providerId,
+    this.mode,
     this.remoteId,
     this.syncedText,
     this.plainText,
@@ -6431,6 +6455,9 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
     map['track_key'] = Variable<String>(trackKey);
     if (!nullToAbsent || providerId != null) {
       map['provider_id'] = Variable<String>(providerId);
+    }
+    if (!nullToAbsent || mode != null) {
+      map['mode'] = Variable<String>(mode);
     }
     if (!nullToAbsent || remoteId != null) {
       map['remote_id'] = Variable<String>(remoteId);
@@ -6455,6 +6482,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
       providerId: providerId == null && nullToAbsent
           ? const Value.absent()
           : Value(providerId),
+      mode: mode == null && nullToAbsent ? const Value.absent() : Value(mode),
       remoteId: remoteId == null && nullToAbsent
           ? const Value.absent()
           : Value(remoteId),
@@ -6480,6 +6508,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
     return LyricsPinRow(
       trackKey: serializer.fromJson<String>(json['trackKey']),
       providerId: serializer.fromJson<String?>(json['providerId']),
+      mode: serializer.fromJson<String?>(json['mode']),
       remoteId: serializer.fromJson<String?>(json['remoteId']),
       syncedText: serializer.fromJson<String?>(json['syncedText']),
       plainText: serializer.fromJson<String?>(json['plainText']),
@@ -6494,6 +6523,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
     return <String, dynamic>{
       'trackKey': serializer.toJson<String>(trackKey),
       'providerId': serializer.toJson<String?>(providerId),
+      'mode': serializer.toJson<String?>(mode),
       'remoteId': serializer.toJson<String?>(remoteId),
       'syncedText': serializer.toJson<String?>(syncedText),
       'plainText': serializer.toJson<String?>(plainText),
@@ -6506,6 +6536,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
   LyricsPinRow copyWith({
     String? trackKey,
     Value<String?> providerId = const Value.absent(),
+    Value<String?> mode = const Value.absent(),
     Value<String?> remoteId = const Value.absent(),
     Value<String?> syncedText = const Value.absent(),
     Value<String?> plainText = const Value.absent(),
@@ -6515,6 +6546,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
   }) => LyricsPinRow(
     trackKey: trackKey ?? this.trackKey,
     providerId: providerId.present ? providerId.value : this.providerId,
+    mode: mode.present ? mode.value : this.mode,
     remoteId: remoteId.present ? remoteId.value : this.remoteId,
     syncedText: syncedText.present ? syncedText.value : this.syncedText,
     plainText: plainText.present ? plainText.value : this.plainText,
@@ -6530,6 +6562,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
       providerId: data.providerId.present
           ? data.providerId.value
           : this.providerId,
+      mode: data.mode.present ? data.mode.value : this.mode,
       remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
       syncedText: data.syncedText.present
           ? data.syncedText.value
@@ -6550,6 +6583,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
     return (StringBuffer('LyricsPinRow(')
           ..write('trackKey: $trackKey, ')
           ..write('providerId: $providerId, ')
+          ..write('mode: $mode, ')
           ..write('remoteId: $remoteId, ')
           ..write('syncedText: $syncedText, ')
           ..write('plainText: $plainText, ')
@@ -6564,6 +6598,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
   int get hashCode => Object.hash(
     trackKey,
     providerId,
+    mode,
     remoteId,
     syncedText,
     plainText,
@@ -6577,6 +6612,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
       (other is LyricsPinRow &&
           other.trackKey == this.trackKey &&
           other.providerId == this.providerId &&
+          other.mode == this.mode &&
           other.remoteId == this.remoteId &&
           other.syncedText == this.syncedText &&
           other.plainText == this.plainText &&
@@ -6588,6 +6624,7 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
 class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
   final Value<String> trackKey;
   final Value<String?> providerId;
+  final Value<String?> mode;
   final Value<String?> remoteId;
   final Value<String?> syncedText;
   final Value<String?> plainText;
@@ -6598,6 +6635,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
   const LyricsPinsCompanion({
     this.trackKey = const Value.absent(),
     this.providerId = const Value.absent(),
+    this.mode = const Value.absent(),
     this.remoteId = const Value.absent(),
     this.syncedText = const Value.absent(),
     this.plainText = const Value.absent(),
@@ -6609,6 +6647,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
   LyricsPinsCompanion.insert({
     required String trackKey,
     this.providerId = const Value.absent(),
+    this.mode = const Value.absent(),
     this.remoteId = const Value.absent(),
     this.syncedText = const Value.absent(),
     this.plainText = const Value.absent(),
@@ -6621,6 +6660,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
   static Insertable<LyricsPinRow> custom({
     Expression<String>? trackKey,
     Expression<String>? providerId,
+    Expression<String>? mode,
     Expression<String>? remoteId,
     Expression<String>? syncedText,
     Expression<String>? plainText,
@@ -6632,6 +6672,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
     return RawValuesInsertable({
       if (trackKey != null) 'track_key': trackKey,
       if (providerId != null) 'provider_id': providerId,
+      if (mode != null) 'mode': mode,
       if (remoteId != null) 'remote_id': remoteId,
       if (syncedText != null) 'synced_text': syncedText,
       if (plainText != null) 'plain_text': plainText,
@@ -6645,6 +6686,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
   LyricsPinsCompanion copyWith({
     Value<String>? trackKey,
     Value<String?>? providerId,
+    Value<String?>? mode,
     Value<String?>? remoteId,
     Value<String?>? syncedText,
     Value<String?>? plainText,
@@ -6656,6 +6698,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
     return LyricsPinsCompanion(
       trackKey: trackKey ?? this.trackKey,
       providerId: providerId ?? this.providerId,
+      mode: mode ?? this.mode,
       remoteId: remoteId ?? this.remoteId,
       syncedText: syncedText ?? this.syncedText,
       plainText: plainText ?? this.plainText,
@@ -6674,6 +6717,9 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
     }
     if (providerId.present) {
       map['provider_id'] = Variable<String>(providerId.value);
+    }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
     }
     if (remoteId.present) {
       map['remote_id'] = Variable<String>(remoteId.value);
@@ -6704,6 +6750,7 @@ class LyricsPinsCompanion extends UpdateCompanion<LyricsPinRow> {
     return (StringBuffer('LyricsPinsCompanion(')
           ..write('trackKey: $trackKey, ')
           ..write('providerId: $providerId, ')
+          ..write('mode: $mode, ')
           ..write('remoteId: $remoteId, ')
           ..write('syncedText: $syncedText, ')
           ..write('plainText: $plainText, ')
@@ -6755,6 +6802,17 @@ class $OnlineLyricsRejectsTable extends OnlineLyricsRejects
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _contentHashMeta = const VerificationMeta(
+    'contentHash',
+  );
+  @override
+  late final GeneratedColumn<String> contentHash = GeneratedColumn<String>(
+    'content_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _rejectedAtMeta = const VerificationMeta(
     'rejectedAt',
   );
@@ -6771,6 +6829,7 @@ class $OnlineLyricsRejectsTable extends OnlineLyricsRejects
     cacheKey,
     providerId,
     remoteId,
+    contentHash,
     rejectedAt,
   ];
   @override
@@ -6809,6 +6868,15 @@ class $OnlineLyricsRejectsTable extends OnlineLyricsRejects
     } else if (isInserting) {
       context.missing(_remoteIdMeta);
     }
+    if (data.containsKey('content_hash')) {
+      context.handle(
+        _contentHashMeta,
+        contentHash.isAcceptableOrUnknown(
+          data['content_hash']!,
+          _contentHashMeta,
+        ),
+      );
+    }
     if (data.containsKey('rejected_at')) {
       context.handle(
         _rejectedAtMeta,
@@ -6838,6 +6906,10 @@ class $OnlineLyricsRejectsTable extends OnlineLyricsRejects
         DriftSqlType.string,
         data['${effectivePrefix}remote_id'],
       )!,
+      contentHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_hash'],
+      ),
       rejectedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}rejected_at'],
@@ -6856,11 +6928,15 @@ class OnlineLyricsRejectRow extends DataClass
   final String cacheKey;
   final String providerId;
   final String remoteId;
+
+  /// `lyricsContentHash` of the rejected text; null for older rejects.
+  final String? contentHash;
   final int rejectedAt;
   const OnlineLyricsRejectRow({
     required this.cacheKey,
     required this.providerId,
     required this.remoteId,
+    this.contentHash,
     required this.rejectedAt,
   });
   @override
@@ -6869,6 +6945,9 @@ class OnlineLyricsRejectRow extends DataClass
     map['cache_key'] = Variable<String>(cacheKey);
     map['provider_id'] = Variable<String>(providerId);
     map['remote_id'] = Variable<String>(remoteId);
+    if (!nullToAbsent || contentHash != null) {
+      map['content_hash'] = Variable<String>(contentHash);
+    }
     map['rejected_at'] = Variable<int>(rejectedAt);
     return map;
   }
@@ -6878,6 +6957,9 @@ class OnlineLyricsRejectRow extends DataClass
       cacheKey: Value(cacheKey),
       providerId: Value(providerId),
       remoteId: Value(remoteId),
+      contentHash: contentHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contentHash),
       rejectedAt: Value(rejectedAt),
     );
   }
@@ -6891,6 +6973,7 @@ class OnlineLyricsRejectRow extends DataClass
       cacheKey: serializer.fromJson<String>(json['cacheKey']),
       providerId: serializer.fromJson<String>(json['providerId']),
       remoteId: serializer.fromJson<String>(json['remoteId']),
+      contentHash: serializer.fromJson<String?>(json['contentHash']),
       rejectedAt: serializer.fromJson<int>(json['rejectedAt']),
     );
   }
@@ -6901,6 +6984,7 @@ class OnlineLyricsRejectRow extends DataClass
       'cacheKey': serializer.toJson<String>(cacheKey),
       'providerId': serializer.toJson<String>(providerId),
       'remoteId': serializer.toJson<String>(remoteId),
+      'contentHash': serializer.toJson<String?>(contentHash),
       'rejectedAt': serializer.toJson<int>(rejectedAt),
     };
   }
@@ -6909,11 +6993,13 @@ class OnlineLyricsRejectRow extends DataClass
     String? cacheKey,
     String? providerId,
     String? remoteId,
+    Value<String?> contentHash = const Value.absent(),
     int? rejectedAt,
   }) => OnlineLyricsRejectRow(
     cacheKey: cacheKey ?? this.cacheKey,
     providerId: providerId ?? this.providerId,
     remoteId: remoteId ?? this.remoteId,
+    contentHash: contentHash.present ? contentHash.value : this.contentHash,
     rejectedAt: rejectedAt ?? this.rejectedAt,
   );
   OnlineLyricsRejectRow copyWithCompanion(OnlineLyricsRejectsCompanion data) {
@@ -6923,6 +7009,9 @@ class OnlineLyricsRejectRow extends DataClass
           ? data.providerId.value
           : this.providerId,
       remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      contentHash: data.contentHash.present
+          ? data.contentHash.value
+          : this.contentHash,
       rejectedAt: data.rejectedAt.present
           ? data.rejectedAt.value
           : this.rejectedAt,
@@ -6935,13 +7024,15 @@ class OnlineLyricsRejectRow extends DataClass
           ..write('cacheKey: $cacheKey, ')
           ..write('providerId: $providerId, ')
           ..write('remoteId: $remoteId, ')
+          ..write('contentHash: $contentHash, ')
           ..write('rejectedAt: $rejectedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(cacheKey, providerId, remoteId, rejectedAt);
+  int get hashCode =>
+      Object.hash(cacheKey, providerId, remoteId, contentHash, rejectedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -6949,6 +7040,7 @@ class OnlineLyricsRejectRow extends DataClass
           other.cacheKey == this.cacheKey &&
           other.providerId == this.providerId &&
           other.remoteId == this.remoteId &&
+          other.contentHash == this.contentHash &&
           other.rejectedAt == this.rejectedAt);
 }
 
@@ -6957,12 +7049,14 @@ class OnlineLyricsRejectsCompanion
   final Value<String> cacheKey;
   final Value<String> providerId;
   final Value<String> remoteId;
+  final Value<String?> contentHash;
   final Value<int> rejectedAt;
   final Value<int> rowid;
   const OnlineLyricsRejectsCompanion({
     this.cacheKey = const Value.absent(),
     this.providerId = const Value.absent(),
     this.remoteId = const Value.absent(),
+    this.contentHash = const Value.absent(),
     this.rejectedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -6970,6 +7064,7 @@ class OnlineLyricsRejectsCompanion
     required String cacheKey,
     required String providerId,
     required String remoteId,
+    this.contentHash = const Value.absent(),
     required int rejectedAt,
     this.rowid = const Value.absent(),
   }) : cacheKey = Value(cacheKey),
@@ -6980,6 +7075,7 @@ class OnlineLyricsRejectsCompanion
     Expression<String>? cacheKey,
     Expression<String>? providerId,
     Expression<String>? remoteId,
+    Expression<String>? contentHash,
     Expression<int>? rejectedAt,
     Expression<int>? rowid,
   }) {
@@ -6987,6 +7083,7 @@ class OnlineLyricsRejectsCompanion
       if (cacheKey != null) 'cache_key': cacheKey,
       if (providerId != null) 'provider_id': providerId,
       if (remoteId != null) 'remote_id': remoteId,
+      if (contentHash != null) 'content_hash': contentHash,
       if (rejectedAt != null) 'rejected_at': rejectedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -6996,6 +7093,7 @@ class OnlineLyricsRejectsCompanion
     Value<String>? cacheKey,
     Value<String>? providerId,
     Value<String>? remoteId,
+    Value<String?>? contentHash,
     Value<int>? rejectedAt,
     Value<int>? rowid,
   }) {
@@ -7003,6 +7101,7 @@ class OnlineLyricsRejectsCompanion
       cacheKey: cacheKey ?? this.cacheKey,
       providerId: providerId ?? this.providerId,
       remoteId: remoteId ?? this.remoteId,
+      contentHash: contentHash ?? this.contentHash,
       rejectedAt: rejectedAt ?? this.rejectedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -7020,6 +7119,9 @@ class OnlineLyricsRejectsCompanion
     if (remoteId.present) {
       map['remote_id'] = Variable<String>(remoteId.value);
     }
+    if (contentHash.present) {
+      map['content_hash'] = Variable<String>(contentHash.value);
+    }
     if (rejectedAt.present) {
       map['rejected_at'] = Variable<int>(rejectedAt.value);
     }
@@ -7035,6 +7137,7 @@ class OnlineLyricsRejectsCompanion
           ..write('cacheKey: $cacheKey, ')
           ..write('providerId: $providerId, ')
           ..write('remoteId: $remoteId, ')
+          ..write('contentHash: $contentHash, ')
           ..write('rejectedAt: $rejectedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -11128,6 +11231,7 @@ typedef $$OnlineLyricsTableProcessedTableManager =
 typedef $$LyricsPinsTableCreateCompanionBuilder = LyricsPinsCompanion Function({
   required String trackKey,
   Value<String?> providerId,
+  Value<String?> mode,
   Value<String?> remoteId,
   Value<String?> syncedText,
   Value<String?> plainText,
@@ -11139,6 +11243,7 @@ typedef $$LyricsPinsTableCreateCompanionBuilder = LyricsPinsCompanion Function({
 typedef $$LyricsPinsTableUpdateCompanionBuilder = LyricsPinsCompanion Function({
   Value<String> trackKey,
   Value<String?> providerId,
+  Value<String?> mode,
   Value<String?> remoteId,
   Value<String?> syncedText,
   Value<String?> plainText,
@@ -11164,6 +11269,11 @@ class $$LyricsPinsTableFilterComposer
 
   ColumnFilters<String> get providerId => $composableBuilder(
     column: $table.providerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11217,6 +11327,11 @@ class $$LyricsPinsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get remoteId => $composableBuilder(
     column: $table.remoteId,
     builder: (column) => ColumnOrderings(column),
@@ -11264,6 +11379,9 @@ class $$LyricsPinsTableAnnotationComposer
     column: $table.providerId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
 
   GeneratedColumn<String> get remoteId =>
       $composableBuilder(column: $table.remoteId, builder: (column) => column);
@@ -11323,6 +11441,7 @@ class $$LyricsPinsTableTableManager
               ({
                 Value<String> trackKey = const Value.absent(),
                 Value<String?> providerId = const Value.absent(),
+                Value<String?> mode = const Value.absent(),
                 Value<String?> remoteId = const Value.absent(),
                 Value<String?> syncedText = const Value.absent(),
                 Value<String?> plainText = const Value.absent(),
@@ -11333,6 +11452,7 @@ class $$LyricsPinsTableTableManager
               }) => LyricsPinsCompanion(
                 trackKey: trackKey,
                 providerId: providerId,
+                mode: mode,
                 remoteId: remoteId,
                 syncedText: syncedText,
                 plainText: plainText,
@@ -11345,6 +11465,7 @@ class $$LyricsPinsTableTableManager
               ({
                 required String trackKey,
                 Value<String?> providerId = const Value.absent(),
+                Value<String?> mode = const Value.absent(),
                 Value<String?> remoteId = const Value.absent(),
                 Value<String?> syncedText = const Value.absent(),
                 Value<String?> plainText = const Value.absent(),
@@ -11355,6 +11476,7 @@ class $$LyricsPinsTableTableManager
               }) => LyricsPinsCompanion.insert(
                 trackKey: trackKey,
                 providerId: providerId,
+                mode: mode,
                 remoteId: remoteId,
                 syncedText: syncedText,
                 plainText: plainText,
@@ -11402,6 +11524,7 @@ typedef $$OnlineLyricsRejectsTableCreateCompanionBuilder =
       required String cacheKey,
       required String providerId,
       required String remoteId,
+      Value<String?> contentHash,
       required int rejectedAt,
       Value<int> rowid,
     });
@@ -11410,6 +11533,7 @@ typedef $$OnlineLyricsRejectsTableUpdateCompanionBuilder =
       Value<String> cacheKey,
       Value<String> providerId,
       Value<String> remoteId,
+      Value<String?> contentHash,
       Value<int> rejectedAt,
       Value<int> rowid,
     });
@@ -11435,6 +11559,11 @@ class $$OnlineLyricsRejectsTableFilterComposer
 
   ColumnFilters<String> get remoteId => $composableBuilder(
     column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11468,6 +11597,11 @@ class $$OnlineLyricsRejectsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get rejectedAt => $composableBuilder(
     column: $table.rejectedAt,
     builder: (column) => ColumnOrderings(column),
@@ -11493,6 +11627,11 @@ class $$OnlineLyricsRejectsTableAnnotationComposer
 
   GeneratedColumn<String> get remoteId =>
       $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get rejectedAt => $composableBuilder(
     column: $table.rejectedAt,
@@ -11546,12 +11685,14 @@ class $$OnlineLyricsRejectsTableTableManager
                 Value<String> cacheKey = const Value.absent(),
                 Value<String> providerId = const Value.absent(),
                 Value<String> remoteId = const Value.absent(),
+                Value<String?> contentHash = const Value.absent(),
                 Value<int> rejectedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OnlineLyricsRejectsCompanion(
                 cacheKey: cacheKey,
                 providerId: providerId,
                 remoteId: remoteId,
+                contentHash: contentHash,
                 rejectedAt: rejectedAt,
                 rowid: rowid,
               ),
@@ -11560,12 +11701,14 @@ class $$OnlineLyricsRejectsTableTableManager
                 required String cacheKey,
                 required String providerId,
                 required String remoteId,
+                Value<String?> contentHash = const Value.absent(),
                 required int rejectedAt,
                 Value<int> rowid = const Value.absent(),
               }) => OnlineLyricsRejectsCompanion.insert(
                 cacheKey: cacheKey,
                 providerId: providerId,
                 remoteId: remoteId,
+                contentHash: contentHash,
                 rejectedAt: rejectedAt,
                 rowid: rowid,
               ),

@@ -3,6 +3,8 @@ import 'package:logging/logging.dart';
 
 import 'library_database.dart';
 
+export 'lyrics_choice_queries.dart';
+
 final _log = Logger('online_lyrics');
 bool _warnedUnknownStatus = false;
 
@@ -62,88 +64,19 @@ extension OnlineLyricsQueries on LibraryDatabase {
   Future<void> deleteOnlineLyrics(String cacheKey) =>
       (delete(onlineLyrics)..where((t) => t.cacheKey.equals(cacheKey))).go();
 
-  /// The song's pick (or skip), or null.
+  /// The song's lyrics choice and pick, or null.
   Stream<LyricsPinRow?> watchLyricsPin(String trackKey) => (select(
     lyricsPins,
   )..where((t) => t.trackKey.equals(trackKey))).watchSingleOrNull().distinct();
 
-  /// Replaces the whole pin of the song (pick or skip); columns the new row
-  /// leaves out are reset, not kept.
-  Future<void> pinLyrics(LyricsPinsCompanion row) =>
-      into(lyricsPins).insert(row, mode: InsertMode.insertOrReplace);
-
-  /// A pick, in one transaction: pins [row] and forgets that the user once
-  /// rejected the same match for [cacheKey], so picking a rejected record
-  /// undoes the reject.
-  Future<void> pickOnlineLyrics(
-    LyricsPinsCompanion row, {
-    required String cacheKey,
-    required String providerId,
-    required String remoteId,
-  }) {
-    return transaction(() async {
-      await pinLyrics(row);
-      await (delete(onlineLyricsRejects)..where(
-            (t) =>
-                t.cacheKey.equals(cacheKey) &
-                t.providerId.equals(providerId) &
-                t.remoteId.equals(remoteId),
-          ))
-          .go();
-    });
-  }
-
-  Future<void> removeLyricsPin(String trackKey) =>
-      (delete(lyricsPins)..where((t) => t.trackKey.equals(trackKey))).go();
-
-  /// "Not these lyrics", in one transaction: remembers the rejected match for
-  /// [cacheKey], drops the found row holding that match, and writes a skip
-  /// for [trackKey] so the song shows no online lyrics until the user picks.
-  Future<void> rejectOnlineLyrics({
-    required String cacheKey,
-    required String providerId,
-    required String remoteId,
-    required String trackKey,
-    required int now,
-  }) {
-    return transaction(() async {
-      await into(onlineLyricsRejects).insertOnConflictUpdate(
-        OnlineLyricsRejectsCompanion.insert(
-          cacheKey: cacheKey,
-          providerId: providerId,
-          remoteId: remoteId,
-          rejectedAt: now,
-        ),
-      );
-      await (delete(onlineLyrics)..where(
-            (t) =>
-                t.cacheKey.equals(cacheKey) &
-                t.providerId.equals(providerId) &
-                t.remoteId.equals(remoteId),
-          ))
-          .go();
-      await into(lyricsPins).insert(
-        LyricsPinsCompanion.insert(trackKey: trackKey, pinnedAt: now),
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
-
-  /// The rejected matches for one metadata key as (provider id, remote id).
-  Future<Set<(String, String)>> rejectedRemoteIds(String cacheKey) async {
-    final rows = await (select(
-      onlineLyricsRejects,
-    )..where((t) => t.cacheKey.equals(cacheKey))).get();
-    return {for (final r in rows) (r.providerId, r.remoteId)};
-  }
-
   /// Row counts and the UTF-8 size of all stored lyrics text. Rows with an
   /// unknown status count toward bytes only. Pins are split into picks (a
-  /// chosen match) and skips (no online lyrics for the song). A song with
-  /// both an automatic row and a pick may be counted twice: their keys
-  /// differ, so the song total is an approximation.
+  /// chosen match) and choices (`local` or `off` without a pick, so no song
+  /// is counted twice among pins). A song with both an automatic row and a
+  /// pick may still be counted in both tables: their keys differ, so the song
+  /// total is an approximation.
   Stream<
-    ({int found, int notFound, int picks, int skips, int rejects, int bytes})
+    ({int found, int notFound, int picks, int choices, int rejects, int bytes})
   >
   watchOnlineLyricsStats() {
     return customSelect(
@@ -153,7 +86,8 @@ extension OnlineLyricsQueries on LibraryDatabase {
       'AS not_found, '
       '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NOT NULL) '
       'AS picks, '
-      '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NULL) AS skips, '
+      '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NULL '
+      "AND mode IN ('local', 'off')) AS choices, "
       '(SELECT COUNT(*) FROM online_lyrics_rejects) AS rejects, '
       '(SELECT COALESCE(SUM($_textBytes), 0) FROM online_lyrics) '
       '+ (SELECT COALESCE(SUM($_textBytes), 0) FROM lyrics_pins) AS bytes',
@@ -163,7 +97,7 @@ extension OnlineLyricsQueries on LibraryDatabase {
         found: r.read<int>('found'),
         notFound: r.read<int>('not_found'),
         picks: r.read<int>('picks'),
-        skips: r.read<int>('skips'),
+        choices: r.read<int>('choices'),
         rejects: r.read<int>('rejects'),
         bytes: r.read<int>('bytes'),
       ),

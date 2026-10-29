@@ -48,10 +48,12 @@ class OnlineLyricsActions {
   }
 
   /// "Not these lyrics": remembers [origin]'s match as rejected for the
-  /// song's metadata, drops its cached row and shows no online lyrics for the
-  /// song until the user picks.
+  /// song's metadata, drops its cached row and the song's pick when it is that
+  /// match. Sends nothing itself: automatic resolution runs again.
   Future<void> skip(LyricsTarget target, OnlineLyricsOrigin origin) async {
-    await _db?.rejectOnlineLyrics(
+    final db = _db;
+    if (db == null) return;
+    await db.rejectOnlineLyrics(
       cacheKey: target.cacheKey,
       providerId: origin.providerId,
       remoteId: origin.remoteId,

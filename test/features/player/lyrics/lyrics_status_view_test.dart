@@ -600,7 +600,7 @@ void main() {
       expect(find.text('Lyrics from Fake'), findsOneWidget);
     });
 
-    testWidgets('Not these lyrics rejects the match and skips the song', (
+    testWidgets('Not these lyrics rejects the match and drops its credit', (
       tester,
     ) async {
       await pumpRig(
@@ -612,19 +612,16 @@ void main() {
       await tester.tap(find.text('Not these lyrics'));
       await settle(tester);
 
-      expect(
-        find.text('Online lyrics turned off for this song'),
-        findsOneWidget,
-      );
+      expect(find.text('Lyrics from Fake'), findsNothing);
+      expect(find.text('No lyrics found on Fake'), findsOneWidget);
       final rejected = await tester.runAsync(
-        () => rig.h.db.rejectedRemoteIds(cacheKey),
+        () async => (await rig.h.db.rejectedMatches(cacheKey)).ids,
       );
       expect(rejected, {('fake', '1')});
       final pin = await tester.runAsync(
         () => rig.h.db.watchLyricsPin(trackKey).first,
       );
-      expect(pin, isNotNull);
-      expect(pin!.providerId, isNull);
+      expect(pin, isNull);
     });
 
     testWidgets('picked lyrics over embedded ones show their credit; Search '

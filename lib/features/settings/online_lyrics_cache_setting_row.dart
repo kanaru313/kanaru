@@ -67,12 +67,12 @@ class _OnlineLyricsCacheSettingRowState
     final l10n = context.l10n;
     final stats =
         ref.watch(onlineLyricsStatsProvider).value ??
-        (found: 0, notFound: 0, picks: 0, skips: 0, rejects: 0, bytes: 0);
+        (found: 0, notFound: 0, picks: 0, choices: 0, rejects: 0, bytes: 0);
     final empty =
         stats.found +
             stats.notFound +
             stats.picks +
-            stats.skips +
+            stats.choices +
             stats.rejects ==
         0;
     final canClear =

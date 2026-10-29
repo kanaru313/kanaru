@@ -67,11 +67,12 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
 
   Future<Set<({String providerId, String remoteId})>> _loadRejected() async {
     try {
-      final rows = await ref
+      final matches = await ref
           .read(libraryDatabaseProvider)
-          ?.rejectedRemoteIds(target.cacheKey);
+          ?.rejectedMatches(target.cacheKey);
       return {
-        for (final (providerId, remoteId) in rows ?? const <(String, String)>{})
+        for (final (providerId, remoteId)
+            in matches?.ids ?? const <(String, String)>{})
           (providerId: providerId, remoteId: remoteId),
       };
     } on Object catch (e) {

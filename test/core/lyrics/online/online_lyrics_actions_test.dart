@@ -55,9 +55,10 @@ void main() {
       await show();
       rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
       await rig.until(() => rig.status is LyricsFound);
+      await rig.settle();
       await actions().skip(target, found().origin!);
       await rig.until(() => rig.status is LyricsNone);
-      expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), {
+      expect((await rig.h.db.rejectedMatches(target.cacheKey)).ids, {
         ('fake', 'x'),
       });
 
@@ -66,11 +67,12 @@ void main() {
 
       expect(found().origin!.remoteId, 'x');
       expect(found().origin!.pinned, isTrue);
-      expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), isEmpty);
+      expect((await rig.h.db.rejectedMatches(target.cacheKey)).ids, isEmpty);
 
-      // After unpin, an automatic lookup may find the record again.
+      // Searching again drops the pick; the record is no longer rejected, so
+      // an automatic lookup finds it again.
       final calls = rig.fake.lookupCalls;
-      await actions().unpin(target);
+      await actions().searchAgain(target);
       await rig.until(() => rig.fake.lookupCalls > calls);
       await rig.until(() => rig.status is LyricsFound);
       expect(found().origin!.remoteId, 'x');
@@ -124,19 +126,24 @@ void main() {
   });
 
   group('skip and search again', () {
-    test('Not these lyrics hides the match and sends nothing', () async {
-      await show();
-      rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
-      await rig.until(() => rig.status is LyricsFound);
-      final requests = rig.requests;
+    test(
+      'Not these lyrics drops the match and looks the song up again',
+      () async {
+        await show();
+        rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
+        await rig.until(() => rig.status is LyricsFound);
+        await rig.settle();
+        final requests = rig.requests;
 
-      await actions().skip(target, found().origin!);
-      await rig.until(() => rig.status is LyricsNone);
-      await rig.settle();
+        await actions().skip(target, found().origin!);
+        await rig.until(() => rig.status is LyricsNone);
+        await rig.settle();
 
-      expect((rig.status as LyricsNone).reason, LyricsNoneReason.skipped);
-      expect(rig.requests, requests);
-    });
+        expect((rig.status as LyricsNone).reason, LyricsNoneReason.notFound);
+        // The rejected record is excluded, so the new lookup finds nothing.
+        expect(rig.requests, greaterThan(requests));
+      },
+    );
 
     test('a skip does not hide the song\'s own lyrics', () async {
       rig = await createStatusRig();
@@ -159,13 +166,15 @@ void main() {
     });
 
     test(
-      'Search again drops the skip and excludes the rejected match',
+      'Search again drops the pick and excludes the rejected match',
       () async {
         await show();
         rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
         await rig.until(() => rig.status is LyricsFound);
+        await rig.settle();
         await actions().skip(target, found().origin!);
         await rig.until(() => rig.status is LyricsNone);
+        await rig.settle();
 
         rig.fake.searchResult = [
           fakeCandidate(
@@ -174,10 +183,11 @@ void main() {
           ),
         ];
         await actions().searchAgain(target);
+        await rig.settle();
         await rig.until(() => rig.status is LyricsFound);
 
         expect(found().origin!.remoteId, 'y');
-        expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), {
+        expect((await rig.h.db.rejectedMatches(target.cacheKey)).ids, {
           ('fake', 'x'),
         });
       },
@@ -187,6 +197,7 @@ void main() {
       await show();
       rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
       await rig.until(() => rig.status is LyricsFound);
+      await rig.settle();
       await actions().skip(target, found().origin!);
       await actions().searchAgain(target);
       await rig.until(

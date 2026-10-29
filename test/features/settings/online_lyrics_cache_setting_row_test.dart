@@ -80,7 +80,7 @@ void main() {
     expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
 
     await seed(tester, r);
-    // Two found rows and one pick; the skip the rejection wrote is no song.
+    // Two found rows and one pick; a reject is no song.
     await pumpIo(
       tester,
       done: () => find
@@ -94,9 +94,13 @@ void main() {
   for (final (name, write)
       in <(String, Future<void> Function(LibraryDatabase))>[
         (
-          'only a skip',
+          'only a lyrics choice',
           (db) => db.pinLyrics(
-            LyricsPinsCompanion.insert(trackKey: '/m/s.flac', pinnedAt: 1),
+            LyricsPinsCompanion.insert(
+              trackKey: '/m/s.flac',
+              pinnedAt: 1,
+              mode: const Value('off'),
+            ),
           ),
         ),
         (

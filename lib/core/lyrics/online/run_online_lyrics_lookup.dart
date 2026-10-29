@@ -33,7 +33,9 @@ Future<OnlineLyricsLookupResult> runOnlineLyricsLookup({
   final query = target.query;
   final cacheKey = target.cacheKey;
   final rejected = {
-    for (final (providerId, remoteId) in await db.rejectedRemoteIds(cacheKey))
+    for (final (providerId, remoteId) in (await db.rejectedMatches(
+      cacheKey,
+    )).ids)
       (providerId: providerId, remoteId: remoteId),
   };
   final provider = registration.provider;
