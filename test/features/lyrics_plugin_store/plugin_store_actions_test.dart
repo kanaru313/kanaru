@@ -95,7 +95,6 @@ void main() {
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.byTooltip('Install'), findsOneWidget);
-      // The other row still installs, this one cannot be tapped twice.
       expect(repos.installs, hasLength(1));
       gate.complete();
       await tester.pumpAndSettle();
@@ -210,8 +209,9 @@ void main() {
       );
       await tester.tap(find.text('Refresh & try again'));
       await tester.pumpAndSettle();
-      // Once on opening, once for the retry; the install ran twice.
-      expect(repos.refreshAllCalls, 2);
+      // Opening refreshed everything; the retry refreshes only that repository.
+      expect(repos.refreshAllCalls, 1);
+      expect(repos.refreshed, [repoA]);
       expect(repos.installs, hasLength(2));
     });
   });

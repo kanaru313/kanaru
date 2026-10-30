@@ -105,4 +105,26 @@ void main() {
     expect(find.text('This plugin is not in the repository.'), findsOneWidget);
     expect(opened.ids, isEmpty);
   });
+
+  testWidgets('an install made on the page stays with an Installed mark', (
+    tester,
+  ) async {
+    final opened = _Opened();
+    final fake = FakeRepos();
+    await pumpStore(
+      tester,
+      opened.page(),
+      repos: [repo],
+      reposController: fake,
+    );
+    await tester.tap(find.text('Install'));
+    await tester.pumpAndSettle();
+    // The library now has the plugin, as after a real install.
+    storeRecordsOf(tester)
+        .set([recordOf('plugin-plain', repoUrl: repoA, repoSlug: 'plain')]);
+    await tester.pumpAndSettle();
+    expect(find.text('Installed'), findsOneWidget);
+    expect(find.text('Install'), findsNothing);
+    expect(opened.ids, isEmpty);
+  });
 }

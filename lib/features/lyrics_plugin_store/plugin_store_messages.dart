@@ -44,17 +44,26 @@ class StoreMessages {
           duration: const Duration(seconds: 8),
           action: SnackBarAction(
             label: _l10n.lyricsStoreUndo,
-            onPressed: () => _undo(record.installId),
+            onPressed: () => _undo(record),
           ),
         ),
       );
   }
 
-  Future<void> _undo(String installId) async {
+  Future<void> _undo(LyricsPluginRecord record) async {
     final plugins = _container.read(lyricsPluginsControllerProvider);
     if (plugins == null) return;
     try {
-      await plugins.undoInstall(installId);
+      final result = await plugins.undoInstall(record.installId);
+      // The plugin is gone either way; only say so when there was nothing to
+      // undo.
+      if (result == LyricsPluginUninstall.missing ||
+          result == LyricsPluginUninstall.alreadyRemoved) {
+        message(
+          _l10n.lyricsStoreAlreadyGone(record.name),
+          kind: AppSnackBarKind.info,
+        );
+      }
     } on Object catch (error, stackTrace) {
       _log.warning('Undoing an install failed', error, stackTrace);
       this.error(_l10n.lyricsStoreUndoFailed);

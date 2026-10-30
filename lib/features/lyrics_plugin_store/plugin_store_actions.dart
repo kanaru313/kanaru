@@ -6,18 +6,12 @@ import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../core/lyrics/plugins/repo/plugin_catalog.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/widgets/app_snack_bar.dart';
-import 'install_problem_dialog.dart';
-import 'catalog_mismatch_lines.dart';
-import 'install_problem_text.dart';
+import 'plugin_store_failures.dart';
+import 'plugin_store_maintenance_actions.dart';
 import 'plugin_store_messages.dart';
 import 'plugin_store_providers.dart';
-import 'store_uninstall_dialog.dart';
 
 final _log = Logger('lyrics_plugin_store');
-
-/// What a plugin install or update was about, for the messages.
-typedef _Subject = ({String name, String? repoName, PluginCatalogEntry? entry});
 
 /// The things the store screens do: install, update, uninstall, install from
 /// a file, refresh. Built from a widget's [context]; everything the work
@@ -25,40 +19,46 @@ typedef _Subject = ({String name, String? repoName, PluginCatalogEntry? entry});
 /// that closes meanwhile does not break it. A dialog is shown only while the
 /// screen is still there; otherwise a failure becomes a snackbar.
 class PluginStoreActions {
-  PluginStoreActions(BuildContext context)
-    : _context = context,
-      _container = ProviderScope.containerOf(context),
-      _messages = StoreMessages(context),
-      _l10n = context.l10n;
+  factory PluginStoreActions(BuildContext context) {
+    final container = ProviderScope.containerOf(context);
+    final messages = StoreMessages(context);
+    final failures = StoreFailures(context, messages);
+    return PluginStoreActions._(
+      container,
+      messages,
+      failures,
+      StoreMaintenanceActions(context, container, messages, failures),
+      context.l10n,
+    );
+  }
 
-  final BuildContext _context;
+  PluginStoreActions._(
+    this._container,
+    this._messages,
+    this._failures,
+    this._maintenance,
+    this._l10n,
+  );
+
   final ProviderContainer _container;
   final StoreMessages _messages;
+  final StoreFailures _failures;
+  final StoreMaintenanceActions _maintenance;
   final AppLocalizations _l10n;
 
   LyricsPluginReposController? get _repos =>
       _container.read(lyricsPluginReposControllerProvider);
 
-  /// Fetches every repository and lets icons that failed be tried again.
-  Future<void> refreshAll() async {
-    final repos = _repos;
-    if (repos == null) return;
-    try {
-      await repos.refreshAll();
-      _container.read(repoIconCacheProvider).clearFailures();
-    } on Object catch (error, stackTrace) {
-      _log.warning('Refreshing the repositories failed', error, stackTrace);
-    }
-  }
+  Future<void> refreshAll() => _maintenance.refreshAll();
 
-  /// Fetches one repository again.
-  Future<void> refreshOne(String url) async {
-    try {
-      await _repos?.refresh(url);
-    } on Object catch (error, stackTrace) {
-      _log.warning('Refreshing a repository failed', error, stackTrace);
-    }
-  }
+  Future<void> refreshOne(String url) => _maintenance.refreshOne(url);
+
+  Future<void> updateAll() => _maintenance.updateAll();
+
+  Future<void> uninstall(LyricsPluginRecord record) =>
+      _maintenance.uninstall(record);
+
+  Future<void> installFromFile() => _maintenance.installFromFile();
 
   /// Installs plugin [slug] of [repoUrl] now (on, last in priority).
   Future<void> install({
@@ -79,7 +79,7 @@ class PluginStoreActions {
       result = await repos.install(repoUrl, slug);
     } on Object catch (error, stackTrace) {
       _log.warning('Installing a plugin failed', error, stackTrace);
-      _messages.error(_l10n.lyricsStoreFailStorage);
+      _messages.error(_l10n.lyricsStoreFailUnexpected);
       return;
     } finally {
       pending.end(key);
@@ -87,22 +87,31 @@ class PluginStoreActions {
     await _handle(
       result,
       (name: name, repoName: repoName, entry: entry),
-      () => install(
-        repoUrl: repoUrl,
-        slug: slug,
-        name: name,
-        repoName: repoName,
-        entry: entry,
+      () => _refreshThen(
+        repoUrl,
+        slug,
+        _subjectLine(name, repoName),
+        (fresh) => install(
+          repoUrl: repoUrl,
+          slug: slug,
+          name: name,
+          repoName: repoName,
+          entry: fresh,
+        ),
       ),
     );
   }
 
-  /// Updates the plugin [installId] to its catalog version.
+  /// Updates the plugin [installId] to its catalog version. [repoUrl] and
+  /// [slug] name its catalog entry, so a retry after a mismatch can read the
+  /// refreshed entry.
   Future<void> update({
     required String installId,
     required String name,
     String? repoName,
     PluginCatalogEntry? entry,
+    String? repoUrl,
+    String? slug,
   }) async {
     final repos = _repos;
     if (repos == null) return;
@@ -111,98 +120,29 @@ class PluginStoreActions {
       result = await repos.update(installId);
     } on Object catch (error, stackTrace) {
       _log.warning('Updating a plugin failed', error, stackTrace);
-      _messages.error(_l10n.lyricsStoreFailStorage);
+      _messages.error(_l10n.lyricsStoreFailUnexpected);
       return;
     }
+    Future<void> again(PluginCatalogEntry? fresh) => update(
+      installId: installId,
+      name: name,
+      repoName: repoName,
+      entry: fresh,
+      repoUrl: repoUrl,
+      slug: slug,
+    );
     await _handle(
       result,
       (name: name, repoName: repoName, entry: entry),
-      () => update(
-        installId: installId,
-        name: name,
-        repoName: repoName,
-        entry: entry,
-      ),
+      () => repoUrl == null || slug == null
+          ? _refreshAllThen(() => again(entry))
+          : _refreshThen(repoUrl, slug, _subjectLine(name, repoName), again),
     );
-  }
-
-  /// Updates every plugin that has an update.
-  Future<void> updateAll() async {
-    final repos = _repos;
-    if (repos == null) return;
-    try {
-      final outcomes = await repos.updateAll();
-      var done = 0;
-      var failed = 0;
-      for (final outcome in outcomes) {
-        switch (outcome.result) {
-          case RepoPluginDone():
-            done++;
-          case RepoPluginFailed(:final failure):
-            if (failure != RepoPluginFailure.noNewerVersion) failed++;
-        }
-      }
-      if (done == 0 && failed == 0) return;
-      _messages.message(
-        failed == 0
-            ? _l10n.lyricsStoreUpdatedAll(done)
-            : _l10n.lyricsStoreUpdatedAllPartial(done, failed),
-        kind: failed == 0 ? AppSnackBarKind.success : AppSnackBarKind.warning,
-      );
-    } on Object catch (error, stackTrace) {
-      _log.warning('Updating all plugins failed', error, stackTrace);
-      _messages.error(_l10n.lyricsStoreFailStorage);
-    }
-  }
-
-  /// Asks, then uninstalls [record].
-  Future<void> uninstall(LyricsPluginRecord record) async {
-    if (!await confirmStoreUninstall(_context, record)) return;
-    final plugins = _container.read(lyricsPluginsControllerProvider);
-    if (plugins == null) return;
-    try {
-      await plugins.uninstall(record.installId);
-      _messages.message(_l10n.lyricsStoreUninstalled(record.name));
-    } on Object catch (error, stackTrace) {
-      _log.warning('Uninstalling a plugin failed', error, stackTrace);
-      _messages.error(_l10n.lyricsStoreUninstallFailed(record.name));
-    }
-  }
-
-  /// Asks for a zip and installs it as a new plugin.
-  Future<void> installFromFile() async {
-    final String? path;
-    try {
-      path = await _container.read(pluginZipPickerProvider)();
-    } on Object catch (error, stackTrace) {
-      _log.warning('Picking a plugin file failed', error, stackTrace);
-      return;
-    }
-    final plugins = _container.read(lyricsPluginsControllerProvider);
-    if (path == null || plugins == null) return;
-    final name = path.split(RegExp(r'[\\/]')).last;
-    final PluginInstallOutcome outcome;
-    try {
-      outcome = await plugins.installFromFile(path);
-    } on Object catch (error, stackTrace) {
-      _log.warning('Installing a plugin file failed', error, stackTrace);
-      _messages.error(_l10n.lyricsStoreFailStorage);
-      return;
-    }
-    if (outcome case PluginInstalled(:final record)) {
-      _messages.installed(record);
-      return;
-    }
-    final reason = fileOutcomeText(_l10n, outcome) ?? '';
-    final subject = outcome is PluginInstallRejected
-        ? _l10n.lyricsStoreInstallFailedFile(name)
-        : name;
-    await _showProblem(subject, [reason]);
   }
 
   Future<void> _handle(
     RepoPluginResult result,
-    _Subject subject,
+    StoreSubject subject,
     Future<void> Function() retry,
   ) async {
     switch (result) {
@@ -215,57 +155,44 @@ class PluginStoreActions {
           _messages.installed(record);
         }
       case RepoPluginFailed failed:
-        await _failed(failed, subject, retry);
+        await _failures.failed(failed, subject, retry);
     }
   }
 
-  Future<void> _failed(
-    RepoPluginFailed failed,
-    _Subject subject,
-    Future<void> Function() retry,
+  String _subjectLine(String name, String? repoName) => repoName == null
+      ? name
+      : _l10n.lyricsStoreInstallFailedRepo(name, repoName);
+
+  Future<void> _refreshAllThen(Future<void> Function() run) async {
+    await _maintenance.refreshAll();
+    await run();
+  }
+
+  /// Fetches [repoUrl] again, reads the entry [slug] from the new catalog and
+  /// runs [run] with it. When the repository or the entry is gone now, says
+  /// so instead of trying with the old entry.
+  Future<void> _refreshThen(
+    String repoUrl,
+    String slug,
+    String subjectLine,
+    Future<void> Function(PluginCatalogEntry fresh) run,
   ) async {
-    // An install that joined a running update, or an update that was not
-    // needed: nothing went wrong.
-    if (failed.failure == RepoPluginFailure.noNewerVersion) return;
-    final repoLine = subject.repoName == null
-        ? subject.name
-        : _l10n.lyricsStoreInstallFailedRepo(subject.name, subject.repoName!);
-    if (needsNewerApp(failed)) {
-      if (_context.mounted) {
-        await showNeedsNewerAppDialog(_context, subject.name);
-      } else {
-        _messages.error(_l10n.lyricsStoreNeedsNewerBody(subject.name));
+    await _maintenance.refreshOne(repoUrl);
+    PluginCatalogEntry? fresh;
+    try {
+      final repos = await _repos?.watchRepos().first;
+      for (final repo in repos ?? const <PluginRepo>[]) {
+        if (repo.url == repoUrl) fresh = repo.entry(slug);
       }
+    } on Object catch (error, stackTrace) {
+      _log.warning('Reading the refreshed catalog failed', error, stackTrace);
+      _messages.error(_l10n.lyricsStoreFailUnexpected);
       return;
     }
-    if (failed.failure == RepoPluginFailure.catalogMismatch) {
-      if (!_context.mounted) {
-        _messages.error(_l10n.lyricsStoreFailMismatch);
-        return;
-      }
-      final again = await showCatalogMismatchDialog(
-        _context,
-        subject: repoLine,
-        differences: mismatchLines(_l10n, failed, subject.entry),
-      );
-      if (again) {
-        await refreshAll();
-        await retry();
-      }
+    if (fresh == null) {
+      await _failures.problem(subjectLine, [_l10n.lyricsStoreFailUnknownEntry]);
       return;
     }
-    await _showProblem(repoLine, [repoFailureText(_l10n, failed)]);
-  }
-
-  Future<void> _showProblem(String subject, List<String> reasons) async {
-    if (_context.mounted) {
-      await showInstallProblemDialog(
-        _context,
-        subject: subject,
-        reasons: reasons,
-      );
-    } else {
-      _messages.error(reasons.join('\n'));
-    }
+    await run(fresh);
   }
 }

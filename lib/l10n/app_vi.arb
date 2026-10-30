@@ -1698,6 +1698,8 @@
   "lyricsStoreFailSecretsUnavailable": "Không xóa được bí mật của lần cài trước trong kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.",
   "lyricsStoreFailGone": "Plugin này không còn được cài nên không cập nhật được.",
   "lyricsStoreFailStorage": "Không ghi được plugin vào thư viện (đĩa đầy hoặc thiếu quyền?)",
+  "lyricsStoreFailUnexpected": "Đã có lỗi, thử lại sau",
+  "lyricsStoreAlreadyGone": "{name} đã được gỡ từ trước",
   "lyricsStoreFailPackageTooLarge": "gói quá lớn",
   "lyricsStoreItemAuthor": "{author} (tự khai)",
   "lyricsStoreItemUnknownAuthor": "Không rõ tác giả",

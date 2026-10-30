@@ -3955,6 +3955,14 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không ghi được plugin vào thư viện (đĩa đầy hoặc thiếu quyền?)';
 
   @override
+  String get lyricsStoreFailUnexpected => 'Đã có lỗi, thử lại sau';
+
+  @override
+  String lyricsStoreAlreadyGone(String name) {
+    return '$name đã được gỡ từ trước';
+  }
+
+  @override
   String get lyricsStoreFailPackageTooLarge => 'gói quá lớn';
 
   @override

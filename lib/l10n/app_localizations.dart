@@ -6182,6 +6182,18 @@ abstract class AppLocalizations {
   /// **'Could not write the plugin to the library (disk full or missing permission?)'**
   String get lyricsStoreFailStorage;
 
+  /// Snackbar when a plugin action threw an unexpected error
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get lyricsStoreFailUnexpected;
+
+  /// Snackbar when uninstalling or undoing found the plugin already removed
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was already removed'**
+  String lyricsStoreAlreadyGone(String name);
+
   /// Download failure reason
   ///
   /// In en, this message translates to:

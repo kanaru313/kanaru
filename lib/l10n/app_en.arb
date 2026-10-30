@@ -3946,6 +3946,19 @@
   "@lyricsStoreFailStorage": {
     "description": "Install failure"
   },
+  "lyricsStoreFailUnexpected": "Something went wrong. Try again.",
+  "@lyricsStoreFailUnexpected": {
+    "description": "Snackbar when a plugin action threw an unexpected error"
+  },
+  "lyricsStoreAlreadyGone": "{name} was already removed",
+  "@lyricsStoreAlreadyGone": {
+    "description": "Snackbar when uninstalling or undoing found the plugin already removed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "lyricsStoreFailPackageTooLarge": "package too large",
   "@lyricsStoreFailPackageTooLarge": {
     "description": "Download failure reason"

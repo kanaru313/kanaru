@@ -62,9 +62,11 @@ LyricsPluginRecord recordOf(
   String? repoUrl,
   String? repoSlug,
   String sourceName = 'demo.zip',
+  String? author,
 }) => LyricsPluginRecord(
   installId: id,
   name: name,
+  author: author,
   version: version,
   apiVersion: 1,
   hosts: const ['music.example.com'],
@@ -111,6 +113,20 @@ class FakeRepos extends Fake implements LyricsPluginReposController {
 
   /// When set, `add` waits for it.
   Completer<void>? addGate;
+
+  /// When set, `updateAll` waits for it.
+  Completer<void>? updateAllGate;
+
+  /// When set, `install` throws it.
+  Object? installError;
+
+  /// What `watchRepos` answers (the stored catalogs). `pumpStore` fills it
+  /// with its `repos` when null; `onRefresh` may change it, as a real refresh
+  /// stores a new catalog.
+  List<PluginRepo>? catalog;
+
+  /// Runs on each `refresh(url)`, before it returns.
+  void Function(String url)? onRefresh;
   Set<String> _updating = {};
   final _changes = StreamController<Set<String>>.broadcast();
 
@@ -126,6 +142,10 @@ class FakeRepos extends Fake implements LyricsPluginReposController {
   Stream<Set<String>> get updatingChanges => _changes.stream;
 
   @override
+  Stream<List<PluginRepo>> watchRepos() =>
+      Stream.value(catalog ?? const <PluginRepo>[]);
+
+  @override
   Future<List<RepoRefreshResult>> refreshAll() async {
     refreshAllCalls++;
     return const [];
@@ -134,6 +154,7 @@ class FakeRepos extends Fake implements LyricsPluginReposController {
   @override
   Future<RepoRefreshResult?> refresh(String url) async {
     refreshed.add(url);
+    onRefresh?.call(url);
     return null;
   }
 
@@ -141,6 +162,7 @@ class FakeRepos extends Fake implements LyricsPluginReposController {
   Future<RepoPluginResult> install(String repoUrl, String slug) async {
     installs.add((repoUrl, slug));
     await installGate?.future;
+    if (installError != null) throw installError!;
     return installResult;
   }
 
@@ -153,6 +175,7 @@ class FakeRepos extends Fake implements LyricsPluginReposController {
   @override
   Future<List<RepoUpdateOutcome>> updateAll() async {
     updateAllCalls++;
+    await updateAllGate?.future;
     return updateAllResult;
   }
 
@@ -176,17 +199,19 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   final undos = <String>[];
   final files = <String>[];
   PluginInstallOutcome fileResult = PluginInstalled(recordOf('plugin-file'));
+  LyricsPluginUninstall uninstallResult = LyricsPluginUninstall.deleted;
+  LyricsPluginUninstall undoResult = LyricsPluginUninstall.deleted;
 
   @override
   Future<LyricsPluginUninstall> uninstall(String installId) async {
     uninstalls.add(installId);
-    return LyricsPluginUninstall.deleted;
+    return uninstallResult;
   }
 
   @override
   Future<LyricsPluginUninstall> undoInstall(String installId) async {
     undos.add(installId);
-    return LyricsPluginUninstall.deleted;
+    return undoResult;
   }
 
   @override
@@ -194,6 +219,32 @@ class FakePlugins extends Fake implements LyricsPluginsController {
     files.add(path);
     return fileResult;
   }
+}
+
+/// The records the store sees in tests; change them with
+/// `storeRecordsOf(tester).set(...)` to act like the library changing.
+class StoreTestRecords extends Notifier<List<LyricsPluginRecord>> {
+  StoreTestRecords(this._initial);
+
+  final List<LyricsPluginRecord> _initial;
+
+  @override
+  List<LyricsPluginRecord> build() => _initial;
+
+  void set(List<LyricsPluginRecord> records) => state = records;
+}
+
+final storeTestRecordsProvider =
+    NotifierProvider<StoreTestRecords, List<LyricsPluginRecord>>(
+      () => throw UnimplementedError('overridden by pumpStore'),
+    );
+
+/// The notifier behind the records a [pumpStore] page shows.
+StoreTestRecords storeRecordsOf(WidgetTester tester) {
+  final container = ProviderScope.containerOf(
+    tester.element(find.byType(MaterialApp)),
+  );
+  return container.read(storeTestRecordsProvider.notifier);
 }
 
 /// Pumps [page] in an app with the English strings and the fakes wired in.
@@ -211,16 +262,19 @@ Future<void> pumpStore(
   Size size = const Size(1000, 1600),
   List<Override> overrides = const [],
 }) async {
+  final fakeRepos = reposController ?? FakeRepos();
+  fakeRepos.catalog ??= repos;
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        pluginStoreRawInputProvider.overrideWithValue(
-          AsyncData(
+        storeTestRecordsProvider.overrideWith(() => StoreTestRecords(records)),
+        pluginStoreRawInputProvider.overrideWith(
+          (ref) => AsyncData(
             PluginStoreInput(
-              records: records,
+              records: ref.watch(storeTestRecordsProvider),
               repos: repos,
               available: available,
             ),
@@ -228,7 +282,7 @@ Future<void> pumpStore(
         ),
         lyricsPluginReposProvider.overrideWith((ref) => Stream.value(repos)),
         lyricsPluginReposControllerProvider.overrideWithValue(
-          available ? (reposController ?? FakeRepos()) : null,
+          available ? fakeRepos : null,
         ),
         lyricsPluginsControllerProvider.overrideWithValue(
           available ? (plugins ?? FakePlugins()) : null,

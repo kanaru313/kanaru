@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:file_selector/file_selector.dart' as picker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -56,14 +58,22 @@ final pluginStoreViewProvider =
       });
     });
 
-/// Install ids being updated right now, for the spinners on the rows.
+/// Install ids being updated right now, for the spinners on the rows. The
+/// controller's stream is subscribed before the current set is added, so no
+/// change slips in between.
 final pluginStoreUpdatingProvider = StreamProvider.autoDispose<Set<String>>((
   ref,
-) async* {
+) {
   final controller = ref.watch(lyricsPluginReposControllerProvider);
-  if (controller == null) return;
-  yield controller.updating;
-  yield* controller.updatingChanges;
+  if (controller == null) return const Stream.empty();
+  final out = StreamController<Set<String>>();
+  final sub = controller.updatingChanges.listen(out.add, onError: out.addError);
+  out.add(controller.updating);
+  ref.onDispose(() {
+    sub.cancel();
+    out.close();
+  });
+  return out.stream;
 });
 
 /// Installs started from this screen and not finished, by [pendingInstallKey]:
@@ -86,6 +96,9 @@ final pluginStorePendingInstallsProvider =
     NotifierProvider<PluginStorePendingInstalls, Set<String>>(
       PluginStorePendingInstalls.new,
     );
+
+/// The pending key of a running "update all".
+const pendingUpdateAllKey = 'update-all';
 
 /// The key of the install of plugin [slug] of the repository [repoUrl].
 String pendingInstallKey(String repoUrl, String slug) => '$repoUrl\n$slug';

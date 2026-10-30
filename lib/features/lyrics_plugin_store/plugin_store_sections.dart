@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
 import 'plugin_store_actions.dart';
+import 'plugin_store_providers.dart';
 import 'plugin_store_row.dart';
 
 /// The store list: the sections Cập nhật, Đã cài and Chưa cài (empty ones are
@@ -60,10 +62,7 @@ class PluginStoreSections extends StatelessWidget {
             l10n.lyricsStoreSectionUpdates(view.updates.length),
             view.updates,
             StoreRowKind.update,
-            action: TextButton(
-              onPressed: () => PluginStoreActions(context).updateAll(),
-              child: Text(l10n.lyricsStoreUpdateAll),
-            ),
+            action: const _UpdateAllButton(),
           ),
         if (view.installed.isNotEmpty)
           section(
@@ -143,6 +142,25 @@ class _Section extends StatelessWidget {
           child: Column(children: children),
         ),
       ],
+    );
+  }
+}
+
+/// "Cập nhật tất cả"; off while an update-all runs, so a second tap does not
+/// start a second round with its own result message.
+class _UpdateAllButton extends ConsumerWidget {
+  const _UpdateAllButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final running = ref.watch(
+      pluginStorePendingInstallsProvider.select(
+        (pending) => pending.contains(pendingUpdateAllKey),
+      ),
+    );
+    return TextButton(
+      onPressed: running ? null : () => PluginStoreActions(context).updateAll(),
+      child: Text(context.l10n.lyricsStoreUpdateAll),
     );
   }
 }

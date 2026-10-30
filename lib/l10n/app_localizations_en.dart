@@ -4183,6 +4183,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not write the plugin to the library (disk full or missing permission?)';
 
   @override
+  String get lyricsStoreFailUnexpected => 'Something went wrong. Try again.';
+
+  @override
+  String lyricsStoreAlreadyGone(String name) {
+    return '$name was already removed';
+  }
+
+  @override
   String get lyricsStoreFailPackageTooLarge => 'package too large';
 
   @override

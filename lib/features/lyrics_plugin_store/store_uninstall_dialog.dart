@@ -13,6 +13,11 @@ Future<bool> confirmStoreUninstall(
 ) async {
   final l10n = context.l10n;
   final colors = Theme.of(context).colorScheme;
+  // The author is what the plugin says about itself, and may be absent.
+  final author = record.author;
+  final subtitle = author == null || author.isEmpty
+      ? 'v${record.version}'
+      : '${l10n.lyricsStoreItemAuthor(author)} · v${record.version}';
   final hasSecret = record.config.any(isSecretField);
   final confirmed = await showDialog<bool>(
     context: context,
@@ -23,6 +28,14 @@ Future<bool> confirmStoreUninstall(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
+              ),
+            ),
             ProblemBox(
               error: false,
               title: l10n.lyricsStoreUninstallRemoves,

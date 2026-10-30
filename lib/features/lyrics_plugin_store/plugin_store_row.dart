@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_providers.dart';
 import 'store_row_icon.dart';
@@ -100,13 +101,15 @@ class PluginStoreRow extends ConsumerWidget {
             name: row.name,
             repoName: row.repoName,
             entry: row.entry,
+            repoUrl: row.repoUrl,
+            slug: row.entry?.slug,
           ),
         );
       case StoreRowKind.installed:
         if (record == null) return null;
         return _button(
           label: l10n.lyricsStoreUninstallTooltip,
-          icon: Icons.delete_outline,
+          icon: AppIcons.deleteOutline,
           onPressed: () => PluginStoreActions(context).uninstall(record),
         );
       case StoreRowKind.available:

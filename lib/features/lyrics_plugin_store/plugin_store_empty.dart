@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'add_repository_dialog.dart';
 import 'plugin_store_actions.dart';
 
@@ -19,7 +20,7 @@ class PluginStoreEmpty extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.extension_outlined,
+              Icons.file_download_outlined,
               size: 40,
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -35,7 +36,7 @@ class PluginStoreEmpty extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: [
                 FilledButton.tonalIcon(
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(AppIcons.add),
                   label: Text(l10n.lyricsStoreAddRepository),
                   onPressed: () => showAddRepositoryDialog(context),
                 ),
