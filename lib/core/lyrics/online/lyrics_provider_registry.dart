@@ -25,6 +25,9 @@ String? lyricsHostProblem(String host) {
     return 'malformed label';
   }
   if (RegExp(r'^\d+$').hasMatch(labels.last)) return 'IP address';
+  // Top-level domains are alphabetic (or `xn--`): this refuses numeric
+  // spellings a resolver may read as an address, such as `127.0.0.0x1`.
+  if (!RegExp(r'^[a-z]').hasMatch(labels.last)) return 'numeric top label';
   if (_localSuffixes.any(host.endsWith)) return 'local name';
   return null;
 }

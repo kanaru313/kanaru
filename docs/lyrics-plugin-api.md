@@ -181,3 +181,59 @@ Evaluates the bundled CryptoJS 4.2.0 (MIT) and defines the global `CryptoJS` (AE
 ### What is absent
 
 `XMLHttpRequest`, `WebSocket`, `require`, `import`, `setTimeout`/`setInterval`, and file and process APIs.
+
+## Plugin package
+
+`lib/core/lyrics/plugins/package/` reads a plugin `.zip` entirely in memory: nothing is written to disk and no script runs. `PluginPackageReader(PluginRuntime).read(bytes)` returns `PluginPackageAccepted(PluginPackage)` or `PluginPackageRejected(PluginPackageProblem)`; a package is accepted whole or not at all. Core holds no UI text: a problem is a `kind` plus `detail` (control characters replaced, cut to 200 code points) (and `line`, `message` for script errors) and the app maps it to a message.
+
+### Layout
+
+```
+plugin.json        required
+icon.png           optional
+src/<name>.js      flat; <name> matches ^[A-Za-z0-9_.-]+$; scripts load each other with load('<name>.js')
+```
+
+Other entries are ignored and never unpacked, but their names, count and declared sizes still count toward every limit. If `plugin.json` is not at the root but is at `<dir>/plugin.json` and every entry is under `<dir>/`, that one folder is stripped (zipping a folder is the common mistake). A deeper or partial folder is not stripped.
+
+### Zip rules
+
+Any failure refuses the whole package.
+
+- File over 5 MiB: `tooLarge`, before decoding. The central directory is walked before the zip parser sees it: bytes without an end record that closes the file exactly (no trailing bytes; the end record is the first signature found scanning back from the end, and a second end signature anywhere in the last 64 KiB plus 22 bytes, such as a fake record in the comment, refuses the package so both parsers agree), zip64 (a locator or an all-ones size or offset field) and multi-disk archives, a directory that does not end exactly at the announced size and count, a bad central record, an over-long name, extra field or comment (1 KiB, in central and local headers), a local header that is missing, and two records sharing one local header are all `notZip`. A hostile directory therefore costs a cheap walk, never the parser's per-record allocations.
+- Only stored and deflate entries are read; an unsupported method or an encrypted entry that has to be read, an entry that cannot be inflated, a size or CRC that does not match the data: `notZip`.
+- More than 50 entries (folders count): `tooManyEntries`, decided on the end record's count and again while walking, stopping at the 51st record.
+- Sum of uncompressed sizes over 5 MiB: `tooLarge`, checked on the declared sizes first and again on what inflating really produces. A header that lies is caught because inflating goes through an output that refuses any byte past the declared size (`tooLarge`); an entry that declares more than it holds is `notZip`. Ignored entries are never inflated. Per entry: script 1 MiB, `plugin.json` 64 KiB.
+- Entry names (all entries, kept or not): no absolute path, no `..` segment, no `\`, no drive letter, no NUL; no symlink (Unix `S_IFLNK` in the external attributes); no two names equal ignoring case: `unsafeEntry` with the name.
+- No `plugin.json`: `missingManifest`.
+- A script that is not valid UTF-8: `scriptError` naming the file. A UTF-8 BOM is stripped from scripts and `plugin.json`.
+
+### `plugin.json`
+
+Unknown fields are ignored. Every length below counts Unicode code points, not UTF-16 units. `author`, `description` (newlines kept) and config titles are cleaned like `name`. Anything wrong in a field is `invalidManifest` with the field path as detail (for example `metadata.name`, `config.cookie.default`).
+
+| Field | Rule |
+|---|---|
+| `metadata.apiVersion` | int. `1` is supported; greater: `needsNewerApp`; anything else: `invalidManifest` |
+| `metadata.type` | must be `"lyrics"`, else `wrongType` |
+| `metadata.name` | 1 to 80 code points after control, format (bidi, zero-width, BOM) and line-separator characters are removed and the text is trimmed |
+| `metadata.version` | int, 1 to 2147483647 |
+| `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher must do that at connect time), else `badHost` with the host |
+| `metadata.author` | optional, at most 80 characters |
+| `metadata.description` | optional, at most 500 characters (newlines kept) |
+| `script.search`, `script.lyrics` | file names matching the name pattern above; a name not in `src/` is `missingScript` |
+| `config` | optional object, at most 20 fields, kept in order |
+
+Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`:
+
+- `input`: `format` is `text` (default), `number` or `secret`. Optional `default`: a string; for `number` also a finite JSON number or a plain decimal string (`-2.5`, `1e3`; no `NaN`, `Infinity` or hex), stored as text because scripts read config as strings).
+- `select`: `format` is absent or `single`. `options` is 1 to 50 items of `{value, title}`, both required, values unique. Optional `default` must be one of the values.
+- `toggle`: no `format`. Optional `default` is a boolean.
+
+### Icon
+
+`icon.png` must have the PNG signature, an IHDR chunk, a size of at most 256 x 256 pixels and at most 64 KiB. A bad icon is dropped (the reason is logged, nothing else) and the install goes on; `PluginPackage.icon` is then null.
+
+### Script check
+
+Every kept `src/*.js` goes through `PluginRuntime.check`; the first syntax error is `scriptError` with file, 1-based line (null when unknown) and the engine message. Files are checked in name order, after the manifest and the script names pass. If the runtime cannot check at all (native library missing) the package is refused as `checkUnavailable`, never accepted unchecked.
