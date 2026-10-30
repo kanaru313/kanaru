@@ -260,6 +260,55 @@ void main() {
     });
   });
 
+  group('an automatic pick without lyrics', () {
+    test('gives way to the next usable result, which is fetched', () async {
+      fake.searchResult = [
+        bodyless('a'),
+        bodyless('b', duration: const Duration(seconds: 201)),
+      ];
+      fake.bodies['b'] = _words;
+
+      await controller().search('artist song');
+
+      expect(fake.fetched, ['a', 'b']);
+      expect(state().results.first.bodyMissing, isTrue);
+      expect(state().selection!.candidate.remoteId, 'b');
+      expect(state().selection!.hasBody, isTrue);
+    });
+
+    test('a result the user clicked stays selected', () async {
+      fake.searchResult = [
+        fakeCandidate(remoteId: 'first'),
+        fakeCandidate(remoteId: 'second'),
+        fakeCandidate(
+          remoteId: 'far',
+          body: null,
+          duration: const Duration(seconds: 230),
+        ),
+      ];
+      await controller().search('artist song');
+
+      await controller().select(2);
+
+      expect(fake.fetched, ['far']);
+      expect(state().selection!.candidate.remoteId, 'far');
+      expect(state().selection!.bodyMissing, isTrue);
+    });
+
+    test('stops after 3 automatic fetches', () async {
+      fake.searchResult = [
+        for (var i = 0; i < 4; i++)
+          bodyless('r$i', duration: Duration(seconds: 200 + i)),
+      ];
+
+      await controller().search('artist song');
+
+      expect(fake.fetched, hasLength(3));
+      expect(state().selection!.candidate.remoteId, 'r2');
+      expect(state().selection!.bodyMissing, isTrue);
+    });
+  });
+
   group('a newer search', () {
     test('abandons the older one, which shows nothing', () async {
       fake

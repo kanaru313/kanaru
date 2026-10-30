@@ -100,6 +100,11 @@ void main() {
     },
   );
 
+  test('the plugin\'s accept-encoding never reaches the server', () async {
+    await http().send(request(headers: {'Accept-Encoding': 'br'}));
+    expect(server.requests.single.header('accept-encoding'), isNot('br'));
+  });
+
   test('a rejected request sends nothing', () async {
     final bad = [
       request(method: 'PUT'),

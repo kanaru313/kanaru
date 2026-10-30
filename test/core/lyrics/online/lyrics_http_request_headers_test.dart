@@ -21,6 +21,12 @@ void main() {
       });
     });
 
+    test('accept-encoding is dropped, whatever its value', () {
+      expect(lyricsRequestHeaders({'Accept-Encoding': 'br'}), {
+        'accept': '*/*',
+      });
+    });
+
     test('every denied name is dropped in any case', () {
       const denied = [
         'user-agent',
@@ -35,6 +41,7 @@ void main() {
         'proxy-connection',
         'trailer',
         'expect',
+        'accept-encoding',
       ];
       for (final name in denied) {
         expect(lyricsRequestHeaders({name.toUpperCase(): 'x', 'x-ok': '1'}), {

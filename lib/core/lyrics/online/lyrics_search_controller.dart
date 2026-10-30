@@ -11,6 +11,7 @@ import 'lyrics_http_retry.dart' show LyricsRequestAbandoned;
 import 'lyrics_match.dart';
 import 'lyrics_provider.dart';
 import 'lyrics_provider_registry.dart';
+import 'run_online_lyrics_lookup.dart' show maxLookupFetches;
 import 'lyrics_search_state.dart';
 import 'lyrics_source_names.dart';
 import 'lyrics_target.dart';
@@ -47,6 +48,10 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
   // The selection was made by the search, not by a click.
   bool _autoSelected = false;
 
+  // Automatic body fetches made for the current search; capped so a list of
+  // results without lyrics does not turn into a run of requests.
+  int _autoFetches = 0;
+
   @override
   LyricsSearchState build() =>
       LyricsSearchState(query: lyricsSearchPrefill(target));
@@ -65,6 +70,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
     _raw.clear();
     _bodyMissing.clear();
     _autoSelected = false;
+    _autoFetches = 0;
     state = LyricsSearchState(
       query: query,
       byProvider: {
@@ -100,6 +106,10 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
     if (candidate.body != null || result.bodyMissing) return;
     if (state.bodyFetches[candidate.ref]?.phase == BodyFetchPhase.loading) {
       return;
+    }
+    if (_autoSelected) {
+      if (_autoFetches >= maxLookupFetches) return;
+      _autoFetches++;
     }
     final registration = ref
         .read(lyricsProvidersProvider)
@@ -146,14 +156,16 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
       for (final r in state.results)
         r.candidate.ref == candidate.ref ? _judge(candidate, body) : r,
     ];
-    // An automatic pick whose fetched text turns out to be a rejected one
-    // gives way to the next usable result.
+    // An automatic pick whose fetched text turns out to be a rejected one, or
+    // that has no lyrics, gives way to the next usable result, until the
+    // fetch cap of the search is spent (then the selection stays).
     final current = state.selected;
     final next =
         _autoSelected &&
+            _autoFetches < maxLookupFetches &&
             current != null &&
             results[current].candidate.ref == candidate.ref &&
-            results[current].rejected
+            (results[current].rejected || results[current].bodyMissing)
         ? _autoPick(results)
         : -1;
     state = state.copyWith(
