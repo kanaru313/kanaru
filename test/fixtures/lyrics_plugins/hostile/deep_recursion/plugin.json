@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: unbounded recursion",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. unbounded recursion."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}

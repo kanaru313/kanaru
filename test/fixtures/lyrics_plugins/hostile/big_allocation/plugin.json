@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: 64 MiB allocation",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. 64 MiB allocation."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}

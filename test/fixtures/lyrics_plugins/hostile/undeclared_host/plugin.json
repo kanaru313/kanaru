@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: fetch to an undeclared host",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. fetch to an undeclared host."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" },
+  "config": {
+    "token": { "title": "Token", "mode": "input", "format": "secret" }
+  }
+}
