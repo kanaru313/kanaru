@@ -39,6 +39,13 @@ impl ByteBudget {
         }
     }
 
+    /// Marks the budget as overrun without charging, for a holder that
+    /// refuses on its own limit (an oversized document) and wants the same
+    /// outcome as a budget overrun: the call ends `memory`.
+    pub fn mark_hit(&self) {
+        self.hit.store(true, Ordering::SeqCst);
+    }
+
     /// Gives `bytes` back (a holder was released).
     pub fn release(&self, bytes: usize) {
         self.used.set(self.used.get().saturating_sub(bytes));

@@ -68,6 +68,10 @@ fn constants_match_the_documented_limits() {
     assert_eq!(limits::MAX_FETCH_REQUEST_BODY_BYTES, 256 * 1024);
     assert_eq!(limits::MAX_FETCH_SENDS, 10);
     assert_eq!(limits::RUST_BYTE_BUDGET, 16 * 1024 * 1024);
+    assert_eq!(limits::MAX_HTML_INPUT_BYTES, 4 * 1024 * 1024);
+    assert_eq!(limits::MAX_HTML_DOCUMENTS, 8);
+    assert_eq!(limits::MAX_HTML_NODES, 200_000);
+    assert_eq!(limits::MAX_HTML_SELECTOR_BYTES, 1024);
     assert_eq!(limits::STORAGE_QUOTA_BYTES, 64 * 1024);
     assert_eq!(limits::MAX_LOG_LINES, 50);
     assert_eq!(limits::MAX_LOG_LINE_CHARS, 500);

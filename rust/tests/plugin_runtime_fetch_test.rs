@@ -672,7 +672,7 @@ fn network_apis_and_module_loaders_do_not_exist() {
     );
     assert_eq!(
         r.output_json,
-        r#"["undefined","undefined","undefined","undefined","undefined","undefined","undefined","function","function","object","object","object","object"]"#
+        r#"["undefined","undefined","undefined","undefined","undefined","undefined","object","function","function","object","object","object","object"]"#
     );
 }
 

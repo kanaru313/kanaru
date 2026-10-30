@@ -1,5 +1,5 @@
 //! The host API a script sees besides `Response` and `load`: `fetch`, `sleep`,
-//! `localConfig`, `localStorage`, `console` and `Log`.
+//! `localConfig`, `localStorage`, `console`, `Log` and `Html`.
 //!
 //! Rust provides small natives (`host_*.rs`); `js/host_prelude.js` wraps them
 //! into the script-facing objects and errors. The natives are handed to the
@@ -18,12 +18,14 @@ use super::collector::Collector;
 use super::globals::eval_classic;
 use super::host_budget::ByteBudget;
 use super::host_callback::Answerer;
-use super::{host_console, host_fetch, host_sleep, host_storage};
+use super::{host_console, host_fetch, host_html, host_sleep, host_storage};
 
 /// Why a run was stopped (set by the interrupt handler or a blocked host call).
 pub const STOP_NONE: u8 = 0;
 pub const STOP_CANCELLED: u8 = 1;
 pub const STOP_TIMEOUT: u8 = 2;
+/// A host function panicked; the run ends `internal`.
+pub const STOP_INTERNAL: u8 = 3;
 
 const HOST_PRELUDE: &str = include_str!("js/host_prelude.js");
 
@@ -64,21 +66,32 @@ impl HostEnv {
         self.mark_stopped(why);
         let message = if why == STOP_CANCELLED {
             "the call was cancelled"
+        } else if why == STOP_INTERNAL {
+            "internal error in a host function"
         } else {
             "the call ran out of time"
         };
         Exception::throw_message(ctx, message)
     }
 
+    /// Why the call should stop now (cancelled, or out of time), without
+    /// throwing: for code that holds a borrow and must not throw inside it.
+    pub fn stop_reason(&self) -> Option<u8> {
+        if self.cancel.load(Ordering::SeqCst) {
+            Some(STOP_CANCELLED)
+        } else if Instant::now() >= self.deadline {
+            Some(STOP_TIMEOUT)
+        } else {
+            None
+        }
+    }
+
     /// Throws when the call was cancelled or its time is up.
     pub fn check_alive<'js>(&self, ctx: &Ctx<'js>) -> rquickjs::Result<()> {
-        if self.cancel.load(Ordering::SeqCst) {
-            return Err(self.stop_error(ctx, STOP_CANCELLED));
+        match self.stop_reason() {
+            Some(why) => Err(self.stop_error(ctx, why)),
+            None => Ok(()),
         }
-        if Instant::now() >= self.deadline {
-            return Err(self.stop_error(ctx, STOP_TIMEOUT));
-        }
-        Ok(())
     }
 }
 
@@ -90,6 +103,7 @@ pub fn install<'js>(ctx: &Ctx<'js>, env: HostEnv) -> rquickjs::Result<()> {
     host_console::register(ctx, &natives, &env)?;
     host_fetch::register(ctx, &natives, &env)?;
     host_sleep::register(ctx, &natives, &env)?;
+    host_html::register(ctx, &natives, &env)?;
     let init: Function = eval_classic(ctx, HOST_PRELUDE, "<runtime>")?
         .into_function()
         .ok_or_else(|| Exception::throw_message(ctx, "host prelude did not return a function"))?;

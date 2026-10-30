@@ -108,6 +108,75 @@
     clear: function clear() { n.storageClear(); }
   }));
 
+  // Html: `Element` and `Elements` keep their Rust handles in private fields, so
+  // a script can neither read nor make up a handle. The constructors need a token
+  // only this closure has, so `new el.constructor(...)` cannot forge one either.
+  var htmlToken = {};
+  function wrapElement(h) { return new Element(htmlToken, h); }
+  function wrapElements(handles) { return new Elements(htmlToken, handles); }
+  function checkFn(fn) {
+    if (typeof fn !== 'function') throw new TypeError('the callback must be a function');
+    return fn;
+  }
+
+  class Element {
+    #h;
+    constructor(token, h) {
+      if (token !== htmlToken) throw new TypeError('Element cannot be constructed by a script');
+      this.#h = h;
+    }
+    select(css) { return wrapElements(n.htmlSelect(this.#h, strict(css), false)); }
+    selectFirst(css) {
+      var r = n.htmlSelect(this.#h, strict(css), true);
+      return r.length === 0 ? null : wrapElement(r[0]);
+    }
+    text() { return n.htmlText(this.#h); }
+    html() { return n.htmlHtml(this.#h, false); }
+    outerHtml() { return n.htmlHtml(this.#h, true); }
+    attr(name) { return n.htmlAttr(this.#h, strict(name)); }
+    tagName() { return n.htmlTag(this.#h); }
+  }
+
+  class Elements {
+    #hs;
+    constructor(token, handles) {
+      if (token !== htmlToken) throw new TypeError('Elements cannot be constructed by a script');
+      this.#hs = handles;
+    }
+    size() { return this.#hs.length; }
+    get(i) {
+      var h = this.#hs[Num(i)];
+      return h === undefined ? null : wrapElement(h);
+    }
+    first() { return this.get(0); }
+    last() { return this.get(this.#hs.length - 1); }
+    text() {
+      var parts = [];
+      for (var i = 0; i < this.#hs.length; i++) parts[i] = n.htmlText(this.#hs[i]);
+      return join(parts, '\n');
+    }
+    attr(name) { return this.#hs.length === 0 ? '' : n.htmlAttr(this.#hs[0], strict(name)); }
+    map(fn) {
+      checkFn(fn);
+      var out = [];
+      for (var i = 0; i < this.#hs.length; i++) out[i] = fn(wrapElement(this.#hs[i]), i);
+      return out;
+    }
+    forEach(fn) {
+      checkFn(fn);
+      for (var i = 0; i < this.#hs.length; i++) fn(wrapElement(this.#hs[i]), i);
+    }
+    toArray() {
+      var out = [];
+      for (var i = 0; i < this.#hs.length; i++) out[i] = wrapElement(this.#hs[i]);
+      return out;
+    }
+  }
+
+  define('Html', freeze({
+    parse: function parse(text) { return wrapElement(n.htmlParse(strict(text))); }
+  }));
+
   function format(a) {
     if (typeof a === 'string') return a;
     if (a !== null && typeof a === 'object' && !(a instanceof Err)) {

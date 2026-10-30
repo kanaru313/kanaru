@@ -16,7 +16,7 @@ use rquickjs::{Context, Ctx, Runtime};
 
 use super::collector::Collector;
 use super::globals::{self, Finished, JsFailure, RunFailure, Sources};
-use super::host::{HostEnv, STOP_CANCELLED, STOP_NONE, STOP_TIMEOUT};
+use super::host::{HostEnv, STOP_CANCELLED, STOP_INTERNAL, STOP_NONE, STOP_TIMEOUT};
 use super::host_budget::ByteBudget;
 use super::host_callback::{no_network, Answerer};
 use super::limits::{MAX_OUTPUT_BYTES, MEMORY_LIMIT_BYTES, RUST_BYTE_BUDGET, SCRIPT_STACK_BYTES};
@@ -245,9 +245,10 @@ fn run_in_context<'js>(
         let (status, message) = stop_status(stopped, spec.timeout);
         return failure(status, message);
     }
-    // The Rust byte budget was overrun at some point: the call is `memory`
-    // even if the script caught the RangeError and returned normally.
-    if budget_hit.load(Ordering::SeqCst)
+    // The Rust byte budget was overrun, or the QuickJS heap cap refused an
+    // allocation, at some point: the call is `memory` even if the script
+    // caught the error and returned normally.
+    if (budget_hit.load(Ordering::SeqCst) || memory_hit.load(Ordering::SeqCst))
         && !matches!(
             result.status,
             PluginScriptStatus::Cancelled | PluginScriptStatus::Timeout
@@ -268,10 +269,15 @@ fn memory_message() -> String {
     )
 }
 
-/// Status and text of a run stopped by cancel or deadline.
+/// Text of a run stopped because a host function panicked.
+const INTERNAL_MESSAGE: &str = "a host function failed internally";
+
+/// Status and text of a run stopped by cancel, deadline or an internal failure.
 fn stop_status(stop: u8, timeout: Duration) -> (PluginScriptStatus, String) {
     if stop == STOP_CANCELLED {
         (PluginScriptStatus::Cancelled, "cancelled".to_owned())
+    } else if stop == STOP_INTERNAL {
+        (PluginScriptStatus::Internal, INTERNAL_MESSAGE.to_owned())
     } else {
         (
             PluginScriptStatus::Timeout,
@@ -311,6 +317,11 @@ fn map_js_failure(
             PluginScriptStatus::Timeout,
             PluginErrorKind::None,
             format!("the script ran longer than {} ms", timeout.as_millis()),
+        ),
+        STOP_INTERNAL => (
+            PluginScriptStatus::Internal,
+            PluginErrorKind::None,
+            INTERNAL_MESSAGE.to_owned(),
         ),
         _ if memory_hit => (
             PluginScriptStatus::Memory,

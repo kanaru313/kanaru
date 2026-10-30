@@ -73,13 +73,20 @@ fn install_quiet_hook() {
     });
 }
 
-/// Runs `f` with callback panics silenced; `None` if it panicked.
-fn quietly<T>(f: impl FnOnce() -> T) -> Option<T> {
+/// Runs `f` with panics silenced; the panic payload if it panicked.
+pub(super) fn quietly_catching<T>(
+    f: impl FnOnce() -> T,
+) -> Result<T, Box<dyn std::any::Any + Send>> {
     install_quiet_hook();
     QUIET.with(|q| q.set(true));
-    let result = catch_unwind(AssertUnwindSafe(f)).ok();
+    let result = catch_unwind(AssertUnwindSafe(f));
     QUIET.with(|q| q.set(false));
     result
+}
+
+/// Runs `f` with callback panics silenced; `None` if it panicked.
+fn quietly<T>(f: impl FnOnce() -> T) -> Option<T> {
+    quietly_catching(f).ok()
 }
 
 /// How the wait for an answer ended.

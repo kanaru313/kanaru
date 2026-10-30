@@ -29,6 +29,25 @@ pub const MAX_FETCH_SENDS: u32 = 10;
 /// Rust-side bytes one job may hold in fetch bodies that were not read yet.
 /// QuickJS' heap cap does not see Rust allocations, so this is a second cap.
 pub const RUST_BYTE_BUDGET: usize = 16 * 1024 * 1024;
+/// Largest text `Html.parse` accepts, UTF-8 bytes.
+pub const MAX_HTML_INPUT_BYTES: usize = 4 * 1024 * 1024;
+/// Parsed documents one call may hold.
+pub const MAX_HTML_DOCUMENTS: usize = 8;
+/// Nodes (elements, text, comments) one parsed document may have.
+pub const MAX_HTML_NODES: usize = 200_000;
+/// Deepest element nesting a parsed document may have, counted from the
+/// document node (`<html>` is 1). Deeper pages are refused (`RangeError`):
+/// html5ever takes quadratic time for deeply nested `<div>`, selector
+/// matching is quadratic in the depth, and `:has` overflows the thread stack
+/// at tens of thousands of levels. 512 is also Chrome's parser depth limit.
+pub const MAX_HTML_DEPTH: Option<u32> = Some(512);
+/// What one parsed node is charged against the Rust byte budget (the tree
+/// node, its element or text data, and its handle slot), on top of the input
+/// size that stands for the text and attribute data.
+pub const HTML_NODE_COST_BYTES: usize = 160;
+/// Longest CSS selector `select` accepts, bytes. Matching a selector with many
+/// alternatives against every node cannot be interrupted, so its size is capped.
+pub const MAX_HTML_SELECTOR_BYTES: usize = 1024;
 /// How often a blocked host call (fetch, sleep) looks at the cancel flag.
 pub const CANCEL_POLL: Duration = Duration::from_millis(50);
 /// `localStorage` quota: keys plus values, UTF-8 bytes.

@@ -188,3 +188,39 @@ fn cancelled_before_start_has_no_js_error_but_an_explanation() {
     assert!(!r.error_message.is_empty());
     assert!(r.logs.is_empty());
 }
+
+#[test]
+fn a_panic_in_an_html_native_is_internal_even_when_the_script_catches_it() {
+    let r = run_script(
+        &script_with_log(
+            "var d = Html.parse('<p>x</p>'), caught = '';
+             try { d.select('__panic__'); } catch (e) { caught = e.message; }
+             return Response.success(caught);",
+        ),
+        0,
+    );
+    assert_eq!(r.status, S::Internal, "{r:?}");
+    assert_logged(&r);
+    // The pool still works.
+    let r = run_script(
+        "function execute() { return Response.success(Html.parse('<p>y</p>').text()); }",
+        0,
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    assert_eq!(r.output_json, r#""y""#);
+}
+
+#[test]
+fn a_heap_overflow_the_script_catches_still_ends_memory() {
+    let r = run_script(
+        &script_with_log(
+            "var a = [];
+             try { while (true) a.push({x: a.length, y: 'padding padding'}); } catch (e) {}
+             a = null;
+             return Response.success('recovered');",
+        ),
+        0,
+    );
+    assert_eq!(r.status, S::Memory, "{r:?}");
+    assert_logged(&r);
+}
