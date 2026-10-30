@@ -282,7 +282,8 @@ void main() {
       await db.setLyricsChoice('e', 'future-mode', 1);
       final stats = await db.watchOnlineLyricsStats().first;
       expect(stats.picks, 2);
-      expect(stats.choices, 2);
+      // Every pin without a pick, including an unknown mode.
+      expect(stats.choices, 3);
       // 2 (é) + 6 (two CJK characters).
       expect(stats.bytes, 8);
     });

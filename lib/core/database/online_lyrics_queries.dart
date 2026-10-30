@@ -70,11 +70,11 @@ extension OnlineLyricsQueries on LibraryDatabase {
   )..where((t) => t.trackKey.equals(trackKey))).watchSingleOrNull().distinct();
 
   /// Row counts and the UTF-8 size of all stored lyrics text. Rows with an
-  /// unknown status count toward bytes only. Pins are split into picks (a
-  /// chosen match) and choices (`local` or `off` without a pick, so no song
-  /// is counted twice among pins). A song with both an automatic row and a
-  /// pick may still be counted in both tables: their keys differ, so the song
-  /// total is an approximation.
+  /// unknown status count as not found, so no stored row goes uncounted. Pins are split into picks (a
+  /// chosen match) and choices (every other pin, whatever its mode, so no pin
+  /// is counted twice and no stored row goes uncounted). A song with both an
+  /// automatic row and a pick may still be counted in both tables: their keys
+  /// differ, so the song total is an approximation.
   Stream<
     ({int found, int notFound, int picks, int choices, int rejects, int bytes})
   >
@@ -82,12 +82,13 @@ extension OnlineLyricsQueries on LibraryDatabase {
     return customSelect(
       'SELECT '
       "(SELECT COUNT(*) FROM online_lyrics WHERE status = 'found') AS found, "
-      "(SELECT COUNT(*) FROM online_lyrics WHERE status = 'not_found') "
+      // Any status but found, so a row from a newer build still counts.
+      "(SELECT COUNT(*) FROM online_lyrics WHERE status <> 'found') "
       'AS not_found, '
       '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NOT NULL) '
       'AS picks, '
-      '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NULL '
-      "AND mode IN ('local', 'off')) AS choices, "
+      '(SELECT COUNT(*) FROM lyrics_pins WHERE remote_id IS NULL) '
+      'AS choices, '
       '(SELECT COUNT(*) FROM online_lyrics_rejects) AS rejects, '
       '(SELECT COALESCE(SUM($_textBytes), 0) FROM online_lyrics) '
       '+ (SELECT COALESCE(SUM($_textBytes), 0) FROM lyrics_pins) AS bytes',

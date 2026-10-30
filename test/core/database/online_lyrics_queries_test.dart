@@ -284,6 +284,22 @@ void main() {
       expect(stats.bytes, 10);
     });
 
+    test(
+      'a row with an unknown status and no text counts as not found',
+      () async {
+        await db.saveOnlineLyrics(
+          OnlineLyricsCompanion.insert(
+            cacheKey: 'k',
+            providerId: 'lrclib',
+            status: 'future',
+            fetchedAt: 1,
+          ),
+        );
+        final stats = await db.watchOnlineLyricsStats().first;
+        expect((stats.found, stats.notFound, stats.bytes), (0, 1, 0));
+      },
+    );
+
     test('clear empties all three tables and returns the row count', () async {
       await db.saveOnlineLyrics(lyrics('k', 'lrclib'));
       await db.pinLyrics(

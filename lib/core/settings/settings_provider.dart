@@ -150,7 +150,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
       prefs.show && prefs.needsNotice ? prefs.copyWith(show: false) : prefs;
 
   /// Saves [prefs], except `noticeAcknowledged`, which only
-  /// [acknowledgeOnlineLyricsNotice] and [enableAutoOnlineLyrics] change.
+  /// [acknowledgeOnlineLyricsNotice], [enableAutoOnlineLyrics] and
+  /// [withdrawOnlineLyricsConsent] change (a withdrawal turns automatic
+  /// fetch off for every provider).
   /// `autoFetch` can only be on with an automatic-lookup consent.
   void setOnlineLyrics(OnlineLyricsPrefs prefs) {
     final acknowledged = state.onlineLyrics.noticeAcknowledged;
@@ -186,6 +188,25 @@ class SettingsNotifier extends Notifier<AppSettings> {
               registration.consentKey,
               registration.autoConsentKey,
             ]),
+          ),
+        ),
+      );
+
+  /// Withdraws the consent for [registration]: removes its manual and
+  /// automatic keys and turns automatic lookup off, in one write. Other
+  /// providers' keys and unknown entries stay. [setOnlineLyrics] cannot do
+  /// this: it keeps the acknowledged keys.
+  void withdrawOnlineLyricsConsent(LyricsProviderRegistration registration) =>
+      _update(
+        state.copyWith(
+          onlineLyrics: state.onlineLyrics.copyWith(
+            autoFetch: false,
+            noticeAcknowledged: Set.unmodifiable(
+              state.onlineLyrics.noticeAcknowledged.difference({
+                registration.consentKey,
+                registration.autoConsentKey,
+              }),
+            ),
           ),
         ),
       );

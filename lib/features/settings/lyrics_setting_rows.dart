@@ -8,6 +8,7 @@ import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/online_lyrics_notice_dialog.dart';
 import 'online_lyrics_cache_setting_row.dart';
+import 'online_lyrics_consent_setting_row.dart';
 import 'setting_row.dart';
 
 /// Lyrics options, in the playback section: whether lyrics embedded in the
@@ -62,6 +63,7 @@ class LyricsSettingRows extends ConsumerWidget {
             },
           ),
         ),
+        OnlineLyricsConsentSettingRow(registration: registration),
         const OnlineLyricsCacheSettingRow(),
       ],
     );

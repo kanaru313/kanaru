@@ -184,6 +184,38 @@ void main() {
     );
   });
 
+  test(
+    'consent withdrawn before the overall timeout is not a timeout',
+    () async {
+      var allowed = true;
+      server = await LoopbackServer.start(
+        (_) => const Reply(200, '{}', delay: Duration(milliseconds: 600)),
+      );
+      final http = LyricsHttp.forTesting(
+        client: client,
+        hosts: const ['127.0.0.1'],
+        overallTimeout: const Duration(milliseconds: 100),
+        allowed: () => allowed,
+      );
+      unawaited(
+        Future<void>.delayed(
+          const Duration(milliseconds: 30),
+          () => allowed = false,
+        ),
+      );
+      await expectLater(
+        http.get(get()),
+        throwsA(
+          isA<LyricsFetchException>().having(
+            (e) => e.kind,
+            'kind',
+            LyricsFetchKind.notConsented,
+          ),
+        ),
+      );
+    },
+  );
+
   test('consent withdrawn during a retry wait sends nothing more', () async {
     var allowed = true;
     server = await LoopbackServer.start((_) => _busy(503));

@@ -2855,25 +2855,53 @@
   "settingsAutoOnlineLyrics": "Find lyrics online automatically (LRCLIB)",
   "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
   "settingsSavedLyrics": "Saved lyrics",
-  "settingsSavedLyricsSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)",
-  "@settingsSavedLyricsSummary": {
-    "description": "Saved online lyrics: songs with lyrics, their size and songs the service had none for",
+  "settingsSavedLyricsSongs": "{count, plural, =1{1 song with lyrics} other{{count} songs with lyrics}}",
+  "@settingsSavedLyricsSongs": {
+    "description": "Saved lyrics summary: songs that have lyrics",
     "placeholders": {
       "count": {
-        "type": "int"
-      },
-      "size": {
-        "type": "String"
-      },
-      "notFound": {
         "type": "int"
       }
     }
   },
-  "settingsSavedLyricsNone": "No saved lyrics",
+  "settingsSavedLyricsNotFound": "{count, plural, other{{count} not found}}",
+  "@settingsSavedLyricsNotFound": {
+    "description": "Saved lyrics summary: songs the service had none for",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsSavedLyricsChoices": "{count, plural, =1{1 source choice} other{{count} source choices}}",
+  "@settingsSavedLyricsChoices": {
+    "description": "Saved lyrics summary: songs with a chosen lyrics source",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsSavedLyricsRejects": "{count, plural, other{{count} rejected}}",
+  "@settingsSavedLyricsRejects": {
+    "description": "Saved lyrics summary: lyrics versions the user rejected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLyricsConsent": "LRCLIB lyrics search permission",
+  "settingsLyricsConsentNone": "Not allowed",
+  "settingsLyricsConsentManual": "Manual search allowed",
+  "settingsLyricsConsentAuto": "Manual and automatic search allowed",
+  "settingsLyricsConsentWithdraw": "Withdraw",
+  "settingsLyricsConsentWithdrawTitle": "Withdraw permission?",
+  "settingsLyricsConsentWithdrawBody": "Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.",
+  "settingsSavedLyricsNone": "Nothing saved",
   "settingsSavedLyricsClear": "Clear",
   "settingsSavedLyricsClearTitle": "Clear saved lyrics?",
-  "settingsSavedLyricsClearBody": "The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.",
+  "settingsSavedLyricsClearBody": "Deleted: the lyrics saved on this computer, the lyrics source chosen for each song and the rejected versions. .lrc files next to songs stay.",
   "settingsSavedLyricsCleared": "Saved lyrics cleared",
   "settingsSavedLyricsClearFailed": "Could not clear saved lyrics",
   "lyricsSaveTitle": "Save lyrics",

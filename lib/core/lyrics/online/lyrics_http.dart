@@ -129,6 +129,9 @@ class LyricsHttp {
       return response;
     } on TimeoutException {
       expired = true;
+      // Consent withdrawn during the wait ends as notConsented, with no
+      // backoff.
+      _checkAllowed();
       final last = busy;
       if (last == null) {
         throw const LyricsFetchException(LyricsFetchKind.network);

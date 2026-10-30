@@ -3013,17 +3013,69 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsSavedLyrics => 'Lời đã lưu';
 
   @override
-  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+  String settingsSavedLyricsSongs(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bài',
+      other: '$count bài có lời',
     );
-    return '$_temp0 · $size · $notFound bài không tìm thấy (thử lại sau 14 ngày)';
+    return '$_temp0';
   }
 
   @override
-  String get settingsSavedLyricsNone => 'Chưa có lời đã lưu';
+  String settingsSavedLyricsNotFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài không thấy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsSavedLyricsChoices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lựa chọn nguồn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsSavedLyricsRejects(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bản đã từ chối',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsLyricsConsent => 'Quyền tìm lời trên LRCLIB';
+
+  @override
+  String get settingsLyricsConsentNone => 'Chưa cho phép';
+
+  @override
+  String get settingsLyricsConsentManual => 'Đã cho phép tìm thủ công';
+
+  @override
+  String get settingsLyricsConsentAuto => 'Đã cho phép tìm thủ công và tự động';
+
+  @override
+  String get settingsLyricsConsentWithdraw => 'Rút lại đồng ý';
+
+  @override
+  String get settingsLyricsConsentWithdrawTitle => 'Rút lại đồng ý?';
+
+  @override
+  String get settingsLyricsConsentWithdrawBody =>
+      'Không còn gửi gì tới LRCLIB, và tìm tự động sẽ tắt. Lời đã lưu vẫn còn, và app sẽ hỏi lại trước lần tìm tiếp theo.';
+
+  @override
+  String get settingsSavedLyricsNone => 'Chưa lưu gì';
 
   @override
   String get settingsSavedLyricsClear => 'Xóa';
@@ -3033,7 +3085,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsSavedLyricsClearBody =>
-      'Lời online đã lưu trên máy này, các lời bạn đã chọn và lựa chọn \"không phải lời này\" sẽ bị xóa. File .lrc vẫn còn.';
+      'Sẽ xóa: lời đã lưu, lựa chọn nguồn của từng bài và các bản đã từ chối. File .lrc cạnh bài không bị xóa.';
 
   @override
   String get settingsSavedLyricsCleared => 'Đã xóa lời đã lưu';

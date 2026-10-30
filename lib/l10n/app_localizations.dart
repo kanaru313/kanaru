@@ -4718,16 +4718,76 @@ abstract class AppLocalizations {
   /// **'Saved lyrics'**
   String get settingsSavedLyrics;
 
-  /// Saved online lyrics: songs with lyrics, their size and songs the service had none for
+  /// Saved lyrics summary: songs that have lyrics
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)'**
-  String settingsSavedLyricsSummary(int count, String size, int notFound);
+  /// **'{count, plural, =1{1 song with lyrics} other{{count} songs with lyrics}}'**
+  String settingsSavedLyricsSongs(int count);
+
+  /// Saved lyrics summary: songs the service had none for
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{{count} not found}}'**
+  String settingsSavedLyricsNotFound(int count);
+
+  /// Saved lyrics summary: songs with a chosen lyrics source
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 source choice} other{{count} source choices}}'**
+  String settingsSavedLyricsChoices(int count);
+
+  /// Saved lyrics summary: lyrics versions the user rejected
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{{count} rejected}}'**
+  String settingsSavedLyricsRejects(int count);
+
+  /// No description provided for @settingsLyricsConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'LRCLIB lyrics search permission'**
+  String get settingsLyricsConsent;
+
+  /// No description provided for @settingsLyricsConsentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed'**
+  String get settingsLyricsConsentNone;
+
+  /// No description provided for @settingsLyricsConsentManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual search allowed'**
+  String get settingsLyricsConsentManual;
+
+  /// No description provided for @settingsLyricsConsentAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual and automatic search allowed'**
+  String get settingsLyricsConsentAuto;
+
+  /// No description provided for @settingsLyricsConsentWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get settingsLyricsConsentWithdraw;
+
+  /// No description provided for @settingsLyricsConsentWithdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw permission?'**
+  String get settingsLyricsConsentWithdrawTitle;
+
+  /// No description provided for @settingsLyricsConsentWithdrawBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.'**
+  String get settingsLyricsConsentWithdrawBody;
 
   /// No description provided for @settingsSavedLyricsNone.
   ///
   /// In en, this message translates to:
-  /// **'No saved lyrics'**
+  /// **'Nothing saved'**
   String get settingsSavedLyricsNone;
 
   /// No description provided for @settingsSavedLyricsClear.
@@ -4745,7 +4805,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSavedLyricsClearBody.
   ///
   /// In en, this message translates to:
-  /// **'The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.'**
+  /// **'Deleted: the lyrics saved on this computer, the lyrics source chosen for each song and the rejected versions. .lrc files next to songs stay.'**
   String get settingsSavedLyricsClearBody;
 
   /// No description provided for @settingsSavedLyricsCleared.

@@ -3217,18 +3217,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSavedLyrics => 'Saved lyrics';
 
   @override
-  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+  String settingsSavedLyricsSongs(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count songs',
-      one: '1 song',
+      other: '$count songs with lyrics',
+      one: '1 song with lyrics',
     );
-    return '$_temp0 · $size · $notFound not found (retried after 14 days)';
+    return '$_temp0';
   }
 
   @override
-  String get settingsSavedLyricsNone => 'No saved lyrics';
+  String settingsSavedLyricsNotFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count not found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsSavedLyricsChoices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count source choices',
+      one: '1 source choice',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsSavedLyricsRejects(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rejected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsLyricsConsent => 'LRCLIB lyrics search permission';
+
+  @override
+  String get settingsLyricsConsentNone => 'Not allowed';
+
+  @override
+  String get settingsLyricsConsentManual => 'Manual search allowed';
+
+  @override
+  String get settingsLyricsConsentAuto => 'Manual and automatic search allowed';
+
+  @override
+  String get settingsLyricsConsentWithdraw => 'Withdraw';
+
+  @override
+  String get settingsLyricsConsentWithdrawTitle => 'Withdraw permission?';
+
+  @override
+  String get settingsLyricsConsentWithdrawBody =>
+      'Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.';
+
+  @override
+  String get settingsSavedLyricsNone => 'Nothing saved';
 
   @override
   String get settingsSavedLyricsClear => 'Clear';
@@ -3238,7 +3291,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSavedLyricsClearBody =>
-      'The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.';
+      'Deleted: the lyrics saved on this computer, the lyrics source chosen for each song and the rejected versions. .lrc files next to songs stay.';
 
   @override
   String get settingsSavedLyricsCleared => 'Saved lyrics cleared';
