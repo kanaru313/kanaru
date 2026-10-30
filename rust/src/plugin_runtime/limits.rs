@@ -22,6 +22,21 @@ pub const MAX_OUTPUT_BYTES: usize = 2 * 1024 * 1024;
 pub const MAX_ERROR_MESSAGE_CHARS: usize = 1000;
 /// Longest thrown-error stack kept, in bytes.
 pub const MAX_ERROR_STACK_BYTES: usize = 16 * 1024;
+/// Largest request body a script may hand to `fetch`.
+pub const MAX_FETCH_REQUEST_BODY_BYTES: usize = 256 * 1024;
+/// HTTP sends (retries included) one call may use; the next `fetch` is refused.
+pub const MAX_FETCH_SENDS: u32 = 10;
+/// Rust-side bytes one job may hold in fetch bodies that were not read yet.
+/// QuickJS' heap cap does not see Rust allocations, so this is a second cap.
+pub const RUST_BYTE_BUDGET: usize = 16 * 1024 * 1024;
+/// How often a blocked host call (fetch, sleep) looks at the cancel flag.
+pub const CANCEL_POLL: Duration = Duration::from_millis(50);
+/// `localStorage` quota: keys plus values, UTF-8 bytes.
+pub const STORAGE_QUOTA_BYTES: usize = 64 * 1024;
+/// Console lines kept per call, the "N lines dropped" line included.
+pub const MAX_LOG_LINES: usize = 50;
+/// Longest console line kept, in characters.
+pub const MAX_LOG_LINE_CHARS: usize = 500;
 
 /// The wall time of a call: the request's value capped by [`WALL_TIME`];
 /// 0 means the full [`WALL_TIME`].

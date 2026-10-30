@@ -137,6 +137,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<PluginScriptResult> crateApiPluginRuntimeRunPluginScript({
     required PluginScriptRequest request,
+    required FutureOr<PluginFetchResponse> Function(PluginFetchRequest) fetch,
   });
 
   Future<SyncedLyricLine> crateApiLyricsSyncedLyricLineDefault();
@@ -628,12 +629,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Future<PluginScriptResult> crateApiPluginRuntimeRunPluginScript({
     required PluginScriptRequest request,
+    required FutureOr<PluginFetchResponse> Function(PluginFetchRequest) fetch,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_box_autoadd_plugin_script_request(request, serializer);
+          sse_encode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+            fetch,
+            serializer,
+          );
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -646,7 +652,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: null,
         ),
         constMeta: kCrateApiPluginRuntimeRunPluginScriptConstMeta,
-        argValues: [request],
+        argValues: [request, fetch],
         apiImpl: this,
       ),
     );
@@ -655,7 +661,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiPluginRuntimeRunPluginScriptConstMeta =>
       const TaskConstMeta(
         debugName: "run_plugin_script",
-        argNames: ["request"],
+        argNames: ["request", "fetch"],
       );
 
   @override
@@ -774,6 +780,62 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argNames: ["path", "error"],
       );
 
+  Future<void> Function(int, dynamic)
+  encode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+    FutureOr<PluginFetchResponse> Function(PluginFetchRequest) raw,
+  ) {
+    return (callId, rawArg0) async {
+      final arg0 = dco_decode_plugin_fetch_request(rawArg0);
+
+      Box<PluginFetchResponse>? rawOutput;
+      Box<AnyhowException>? rawError;
+      try {
+        rawOutput = Box(await raw(arg0));
+      } catch (e, s) {
+        rawError = Box(AnyhowException("$e\n\n$s"));
+      }
+
+      final serializer = SseSerializer(generalizedFrbRustBinding);
+      assert((rawOutput != null) ^ (rawError != null));
+      if (rawOutput != null) {
+        serializer.buffer.putUint8(0);
+        sse_encode_plugin_fetch_response(rawOutput.value, serializer);
+      } else {
+        serializer.buffer.putUint8(1);
+        sse_encode_AnyhowException(rawError!.value, serializer);
+      }
+      final output = serializer.intoRaw();
+
+      generalizedFrbRustBinding.dartFnDeliverOutput(
+        callId: callId,
+        ptr: output.ptr,
+        rustVecLen: output.rustVecLen,
+        dataLen: output.dataLen,
+      );
+    };
+  }
+
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AnyhowException(raw as String);
+  }
+
+  @protected
+  FutureOr<PluginFetchResponse> Function(PluginFetchRequest)
+  dco_decode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError('');
+  }
+
+  @protected
+  Object dco_decode_DartOpaque(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return decodeDartOpaque(raw, generalizedFrbRustBinding);
+  }
+
   @protected
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -889,6 +951,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PlatformInt64 dco_decode_isize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeI64(raw);
+  }
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
@@ -916,6 +984,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
   }
 
   @protected
@@ -1024,6 +1098,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PluginFetchOutcome dco_decode_plugin_fetch_outcome(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PluginFetchOutcome.values[raw as int];
+  }
+
+  @protected
+  PluginFetchRequest dco_decode_plugin_fetch_request(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return PluginFetchRequest(
+      method: dco_decode_String(arr[0]),
+      url: dco_decode_String(arr[1]),
+      headers: dco_decode_list_record_string_string(arr[2]),
+      body: dco_decode_list_prim_u_8_strict(arr[3]),
+      deadlineMs: dco_decode_u_32(arr[4]),
+    );
+  }
+
+  @protected
+  PluginFetchResponse dco_decode_plugin_fetch_response(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return PluginFetchResponse(
+      outcome: dco_decode_plugin_fetch_outcome(arr[0]),
+      status: dco_decode_u_16(arr[1]),
+      url: dco_decode_String(arr[2]),
+      headers: dco_decode_list_record_string_string(arr[3]),
+      body: dco_decode_list_prim_u_8_strict(arr[4]),
+      retryAfterSec: dco_decode_opt_box_autoadd_u_32(arr[5]),
+      sends: dco_decode_u_32(arr[6]),
+    );
+  }
+
+  @protected
   PluginJsError dco_decode_plugin_js_error(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -1051,14 +1163,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PluginScriptRequest dco_decode_plugin_script_request(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return PluginScriptRequest(
       job: dco_decode_u_32(arr[0]),
       files: dco_decode_list_plugin_source_file(arr[1]),
       entry: dco_decode_String(arr[2]),
       inputJson: dco_decode_String(arr[3]),
       timeoutMs: dco_decode_u_32(arr[4]),
+      config: dco_decode_list_record_string_string(arr[5]),
+      storageJson: dco_decode_String(arr[6]),
     );
   }
 
@@ -1097,6 +1211,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       name: dco_decode_String(arr[0]),
       code: dco_decode_String(arr[1]),
     );
+  }
+
+  @protected
+  (String, String) dco_decode_record_string_string(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_String(arr[1]));
   }
 
   @protected
@@ -1168,6 +1292,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int dco_decode_u_16(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   int dco_decode_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -1186,9 +1316,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
   WaveformStatus dco_decode_waveform_status(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return WaveformStatus.values[raw as int];
+  }
+
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_String(deserializer);
+    return AnyhowException(inner);
+  }
+
+  @protected
+  Object sse_decode_DartOpaque(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_isize(deserializer);
+    return decodeDartOpaque(inner, generalizedFrbRustBinding);
   }
 
   @protected
@@ -1312,6 +1462,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PlatformInt64 sse_decode_isize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getPlatformInt64();
+  }
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1363,6 +1519,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, String)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_string(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -1542,6 +1712,57 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PluginFetchOutcome sse_decode_plugin_fetch_outcome(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return PluginFetchOutcome.values[inner];
+  }
+
+  @protected
+  PluginFetchRequest sse_decode_plugin_fetch_request(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_method = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_body = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_deadlineMs = sse_decode_u_32(deserializer);
+    return PluginFetchRequest(
+      method: var_method,
+      url: var_url,
+      headers: var_headers,
+      body: var_body,
+      deadlineMs: var_deadlineMs,
+    );
+  }
+
+  @protected
+  PluginFetchResponse sse_decode_plugin_fetch_response(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_outcome = sse_decode_plugin_fetch_outcome(deserializer);
+    var var_status = sse_decode_u_16(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_headers = sse_decode_list_record_string_string(deserializer);
+    var var_body = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_retryAfterSec = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_sends = sse_decode_u_32(deserializer);
+    return PluginFetchResponse(
+      outcome: var_outcome,
+      status: var_status,
+      url: var_url,
+      headers: var_headers,
+      body: var_body,
+      retryAfterSec: var_retryAfterSec,
+      sends: var_sends,
+    );
+  }
+
+  @protected
   PluginJsError sse_decode_plugin_js_error(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_message = sse_decode_String(deserializer);
@@ -1569,12 +1790,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_entry = sse_decode_String(deserializer);
     var var_inputJson = sse_decode_String(deserializer);
     var var_timeoutMs = sse_decode_u_32(deserializer);
+    var var_config = sse_decode_list_record_string_string(deserializer);
+    var var_storageJson = sse_decode_String(deserializer);
     return PluginScriptRequest(
       job: var_job,
       files: var_files,
       entry: var_entry,
       inputJson: var_inputJson,
       timeoutMs: var_timeoutMs,
+      config: var_config,
+      storageJson: var_storageJson,
     );
   }
 
@@ -1622,6 +1847,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_name = sse_decode_String(deserializer);
     var var_code = sse_decode_String(deserializer);
     return PluginSourceFile(name: var_name, code: var_code);
+  }
+
+  @protected
+  (String, String) sse_decode_record_string_string(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_String(deserializer);
+    return (var_field0, var_field1);
   }
 
   @protected
@@ -1702,6 +1937,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int sse_decode_u_16(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint16();
+  }
+
+  @protected
   int sse_decode_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint32();
@@ -1719,10 +1960,55 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
+  }
+
+  @protected
   WaveformStatus sse_decode_waveform_status(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return WaveformStatus.values[inner];
+  }
+
+  @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.message, serializer);
+  }
+
+  @protected
+  void
+  sse_encode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+    FutureOr<PluginFetchResponse> Function(PluginFetchRequest) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_DartOpaque(
+      encode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+        self,
+      ),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_DartOpaque(Object self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_isize(
+      PlatformPointerUtil.ptrToPlatformInt64(
+        encodeDartOpaque(
+          self,
+          portManager.dartHandlerPort,
+          generalizedFrbRustBinding,
+        ),
+      ),
+      serializer,
+    );
   }
 
   @protected
@@ -1853,6 +2139,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_isize(PlatformInt64 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putPlatformInt64(self);
+  }
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -1903,6 +2195,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_string(item, serializer);
+    }
   }
 
   @protected
@@ -2079,6 +2383,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_plugin_fetch_outcome(
+    PluginFetchOutcome self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_plugin_fetch_request(
+    PluginFetchRequest self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.method, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_list_prim_u_8_strict(self.body, serializer);
+    sse_encode_u_32(self.deadlineMs, serializer);
+  }
+
+  @protected
+  void sse_encode_plugin_fetch_response(
+    PluginFetchResponse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_plugin_fetch_outcome(self.outcome, serializer);
+    sse_encode_u_16(self.status, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_list_record_string_string(self.headers, serializer);
+    sse_encode_list_prim_u_8_strict(self.body, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.retryAfterSec, serializer);
+    sse_encode_u_32(self.sends, serializer);
+  }
+
+  @protected
   void sse_encode_plugin_js_error(
     PluginJsError self,
     SseSerializer serializer,
@@ -2109,6 +2450,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.entry, serializer);
     sse_encode_String(self.inputJson, serializer);
     sse_encode_u_32(self.timeoutMs, serializer);
+    sse_encode_list_record_string_string(self.config, serializer);
+    sse_encode_String(self.storageJson, serializer);
   }
 
   @protected
@@ -2148,6 +2491,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.name, serializer);
     sse_encode_String(self.code, serializer);
+  }
+
+  @protected
+  void sse_encode_record_string_string(
+    (String, String) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_String(self.$2, serializer);
   }
 
   @protected
@@ -2202,6 +2555,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_u_16(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint16(self);
+  }
+
+  @protected
   void sse_encode_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint32(self);
@@ -2216,6 +2575,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
   }
 
   @protected

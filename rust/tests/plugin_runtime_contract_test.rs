@@ -288,13 +288,13 @@ fn scripts_are_classic_global_sloppy_scripts() {
 #[test]
 fn no_modules_no_std_os_no_ambient_capabilities() {
     let r = run_script(
-        "function execute() { return Response.success([typeof std, typeof os, typeof require, typeof fetch, typeof setTimeout, typeof XMLHttpRequest, typeof WebSocket, typeof process]); }",
+        "function execute() { return Response.success([typeof std, typeof os, typeof require, typeof setTimeout, typeof XMLHttpRequest, typeof WebSocket, typeof process]); }",
         0,
     );
     assert_eq!(r.status, S::Ok, "{r:?}");
     assert_eq!(
         r.output_json,
-        r#"["undefined","undefined","undefined","undefined","undefined","undefined","undefined","undefined"]"#
+        r#"["undefined","undefined","undefined","undefined","undefined","undefined","undefined"]"#
     );
     for src in [
         "import x from 'y.js';",
@@ -382,7 +382,7 @@ fn load_inside_a_loaded_file_works() {
 }
 
 #[test]
-fn load_rejects_paths_unknown_files_and_the_reserved_name() {
+fn load_rejects_paths_and_unknown_files() {
     let names = [
         "../x.js",
         "a/b.js",
@@ -391,7 +391,6 @@ fn load_rejects_paths_unknown_files_and_the_reserved_name() {
         "missing.js",
         "util",
         "",
-        "crypto.js",
         "..\\x.js",
     ];
     for name in names {

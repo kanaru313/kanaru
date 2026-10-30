@@ -7,7 +7,7 @@ import '../frb_generated.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// Starts a job and returns its id. Ids come from the native side and only
 /// rise, so they stay unique across hot restarts of the Dart side.
@@ -28,10 +28,17 @@ void cancelPluginJob({required int job}) =>
 /// Runs the plugin script on one of 4 JS threads. Only queues the job and
 /// awaits the result, so no bridge worker blocks. Never panics; a full queue
 /// (16 waiting) is [`PluginScriptStatus::Busy`].
+///
+/// `fetch` is the Dart callback that answers the script's `fetch` calls. It is
+/// called on the JS thread, which then waits for the returned future (until
+/// the job is cancelled or its deadline passes); the Dart isolate stays free.
 Future<PluginScriptResult> runPluginScript({
   required PluginScriptRequest request,
-}) =>
-    RustLib.instance.api.crateApiPluginRuntimeRunPluginScript(request: request);
+  required FutureOr<PluginFetchResponse> Function(PluginFetchRequest) fetch,
+}) => RustLib.instance.api.crateApiPluginRuntimeRunPluginScript(
+  request: request,
+  fetch: fetch,
+);
 
 /// Compiles `code` as a classic script named `name` without running it.
 /// `None` when it parses, else the first syntax problem.
@@ -85,15 +92,139 @@ class PluginFetchFailure {
           message == other.message;
 }
 
-/// Why the first host `fetch` of a call failed. Filled by the fetch host API;
-/// always `None` while a script cannot fetch.
+/// Why the first failing host `fetch` of a call failed (same names as
+/// [`PluginFetchOutcome`]). A call that used up its 10 sends reports
+/// `InvalidRequest`.
 enum PluginFetchFailureKind {
   network,
   blockedHost,
   notConsented,
   abandoned,
   invalidRequest,
+  invalidResponse,
   rateLimited,
+}
+
+/// How Dart answered a [`PluginFetchRequest`].
+enum PluginFetchOutcome {
+  /// A response arrived; `status`, `url`, `headers` and `body` are set.
+  ok,
+
+  /// Connection, TLS, timeout or similar.
+  network,
+
+  /// The host is not on the plugin's allowlist.
+  blockedHost,
+
+  /// The user has not allowed this plugin to use the network.
+  notConsented,
+
+  /// The user stopped the lookup; the job ends `cancelled`.
+  abandoned,
+
+  /// Dart refused the request (method, header or body).
+  invalidRequest,
+
+  /// Dart refused the answer (e.g. a body over 4 MiB).
+  invalidResponse,
+
+  /// The server asked to slow down; see `retry_after_sec`.
+  rateLimited,
+}
+
+/// One `fetch` of the script, handed to the Dart callback.
+class PluginFetchRequest {
+  /// `GET` or `POST`.
+  final String method;
+
+  /// The script's URL with its `queries` already appended and encoded.
+  final String url;
+  final List<(String, String)> headers;
+  final Uint8List body;
+
+  /// What is left of the call's 15 s (or the script's smaller `timeout`).
+  /// Dart uses the smaller of this and 30 s as the overall timeout.
+  final int deadlineMs;
+
+  const PluginFetchRequest({
+    required this.method,
+    required this.url,
+    required this.headers,
+    required this.body,
+    required this.deadlineMs,
+  });
+
+  @override
+  int get hashCode =>
+      method.hashCode ^
+      url.hashCode ^
+      headers.hashCode ^
+      body.hashCode ^
+      deadlineMs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PluginFetchRequest &&
+          runtimeType == other.runtimeType &&
+          method == other.method &&
+          url == other.url &&
+          headers == other.headers &&
+          body == other.body &&
+          deadlineMs == other.deadlineMs;
+}
+
+/// Dart's answer to a [`PluginFetchRequest`].
+class PluginFetchResponse {
+  final PluginFetchOutcome outcome;
+
+  /// HTTP status; 0 unless `outcome` is `Ok`.
+  final int status;
+
+  /// The final URL after redirects.
+  final String url;
+  final List<(String, String)> headers;
+  final Uint8List body;
+
+  /// For `RateLimited`: the server's `Retry-After` in seconds, if it gave one.
+  final int? retryAfterSec;
+
+  /// HTTP sends Dart made for this request, retries counted. The runtime
+  /// adds them up and refuses further fetches after 10 in one call.
+  final int sends;
+
+  const PluginFetchResponse({
+    required this.outcome,
+    required this.status,
+    required this.url,
+    required this.headers,
+    required this.body,
+    this.retryAfterSec,
+    required this.sends,
+  });
+
+  @override
+  int get hashCode =>
+      outcome.hashCode ^
+      status.hashCode ^
+      url.hashCode ^
+      headers.hashCode ^
+      body.hashCode ^
+      retryAfterSec.hashCode ^
+      sends.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PluginFetchResponse &&
+          runtimeType == other.runtimeType &&
+          outcome == other.outcome &&
+          status == other.status &&
+          url == other.url &&
+          headers == other.headers &&
+          body == other.body &&
+          retryAfterSec == other.retryAfterSec &&
+          sends == other.sends;
 }
 
 /// A JavaScript exception: its message and stack (file names and line numbers kept).
@@ -158,12 +289,23 @@ class PluginScriptRequest {
   /// so the caller should keep its own outer deadline.
   final int timeoutMs;
 
+  /// The plugin's configuration, readable by the script as
+  /// `localConfig.getItem(key)`. Secrets included; the runtime never puts
+  /// these values in a log line or an error text it makes.
+  final List<(String, String)> config;
+
+  /// The plugin's stored map as a JSON object of strings (`localStorage`).
+  /// Empty text means nothing stored.
+  final String storageJson;
+
   const PluginScriptRequest({
     required this.job,
     required this.files,
     required this.entry,
     required this.inputJson,
     required this.timeoutMs,
+    required this.config,
+    required this.storageJson,
   });
 
   @override
@@ -172,7 +314,9 @@ class PluginScriptRequest {
       files.hashCode ^
       entry.hashCode ^
       inputJson.hashCode ^
-      timeoutMs.hashCode;
+      timeoutMs.hashCode ^
+      config.hashCode ^
+      storageJson.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -183,7 +327,9 @@ class PluginScriptRequest {
           files == other.files &&
           entry == other.entry &&
           inputJson == other.inputJson &&
-          timeoutMs == other.timeoutMs;
+          timeoutMs == other.timeoutMs &&
+          config == other.config &&
+          storageJson == other.storageJson;
 }
 
 /// Result of one run. Every field is filled on every status: `logs`,
@@ -218,7 +364,7 @@ class PluginScriptResult {
   final PluginFetchFailure? fetchFailure;
 
   /// The plugin's whole new storage map as JSON, only when the script
-  /// changed it. Filled by the storage host API.
+  /// changed it. Concurrent calls of one plugin: the last writer wins.
   final String? storageJson;
 
   const PluginScriptResult({

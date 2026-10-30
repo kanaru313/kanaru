@@ -9,6 +9,8 @@
 //! Every struct is flat on purpose so flutter_rust_bridge generates plain
 //! Dart classes.
 
+use flutter_rust_bridge::DartFnFuture;
+
 use crate::plugin_runtime;
 
 /// One file of the plugin's `src/` folder, already read and size-checked.
@@ -35,6 +37,65 @@ pub struct PluginScriptRequest {
     /// worker begins the job: time spent waiting in the queue is not counted,
     /// so the caller should keep its own outer deadline.
     pub timeout_ms: u32,
+    /// The plugin's configuration, readable by the script as
+    /// `localConfig.getItem(key)`. Secrets included; the runtime never puts
+    /// these values in a log line or an error text it makes.
+    pub config: Vec<(String, String)>,
+    /// The plugin's stored map as a JSON object of strings (`localStorage`).
+    /// Empty text means nothing stored.
+    pub storage_json: String,
+}
+
+/// One `fetch` of the script, handed to the Dart callback.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PluginFetchRequest {
+    /// `GET` or `POST`.
+    pub method: String,
+    /// The script's URL with its `queries` already appended and encoded.
+    pub url: String,
+    pub headers: Vec<(String, String)>,
+    pub body: Vec<u8>,
+    /// What is left of the call's 15 s (or the script's smaller `timeout`).
+    /// Dart uses the smaller of this and 30 s as the overall timeout.
+    pub deadline_ms: u32,
+}
+
+/// How Dart answered a [`PluginFetchRequest`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PluginFetchOutcome {
+    /// A response arrived; `status`, `url`, `headers` and `body` are set.
+    Ok,
+    /// Connection, TLS, timeout or similar.
+    Network,
+    /// The host is not on the plugin's allowlist.
+    BlockedHost,
+    /// The user has not allowed this plugin to use the network.
+    NotConsented,
+    /// The user stopped the lookup; the job ends `cancelled`.
+    Abandoned,
+    /// Dart refused the request (method, header or body).
+    InvalidRequest,
+    /// Dart refused the answer (e.g. a body over 4 MiB).
+    InvalidResponse,
+    /// The server asked to slow down; see `retry_after_sec`.
+    RateLimited,
+}
+
+/// Dart's answer to a [`PluginFetchRequest`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PluginFetchResponse {
+    pub outcome: PluginFetchOutcome,
+    /// HTTP status; 0 unless `outcome` is `Ok`.
+    pub status: u16,
+    /// The final URL after redirects.
+    pub url: String,
+    pub headers: Vec<(String, String)>,
+    pub body: Vec<u8>,
+    /// For `RateLimited`: the server's `Retry-After` in seconds, if it gave one.
+    pub retry_after_sec: Option<u32>,
+    /// HTTP sends Dart made for this request, retries counted. The runtime
+    /// adds them up and refuses further fetches after 10 in one call.
+    pub sends: u32,
 }
 
 /// How a run ended.
@@ -85,8 +146,9 @@ pub struct PluginJsError {
     pub stack: String,
 }
 
-/// Why the first host `fetch` of a call failed. Filled by the fetch host API;
-/// always `None` while a script cannot fetch.
+/// Why the first failing host `fetch` of a call failed (same names as
+/// [`PluginFetchOutcome`]). A call that used up its 10 sends reports
+/// `InvalidRequest`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PluginFetchFailureKind {
     Network,
@@ -94,6 +156,7 @@ pub enum PluginFetchFailureKind {
     NotConsented,
     Abandoned,
     InvalidRequest,
+    InvalidResponse,
     RateLimited,
 }
 
@@ -131,7 +194,7 @@ pub struct PluginScriptResult {
     /// First failing host `fetch`, whatever the status.
     pub fetch_failure: Option<PluginFetchFailure>,
     /// The plugin's whole new storage map as JSON, only when the script
-    /// changed it. Filled by the storage host API.
+    /// changed it. Concurrent calls of one plugin: the last writer wins.
     pub storage_json: Option<String>,
 }
 
@@ -166,8 +229,15 @@ pub fn cancel_plugin_job(job: u32) {
 /// Runs the plugin script on one of 4 JS threads. Only queues the job and
 /// awaits the result, so no bridge worker blocks. Never panics; a full queue
 /// (16 waiting) is [`PluginScriptStatus::Busy`].
-pub async fn run_plugin_script(request: PluginScriptRequest) -> PluginScriptResult {
-    plugin_runtime::run(request).await
+///
+/// `fetch` is the Dart callback that answers the script's `fetch` calls. It is
+/// called on the JS thread, which then waits for the returned future (until
+/// the job is cancelled or its deadline passes); the Dart isolate stays free.
+pub async fn run_plugin_script(
+    request: PluginScriptRequest,
+    fetch: impl Fn(PluginFetchRequest) -> DartFnFuture<PluginFetchResponse> + Send + Sync + 'static,
+) -> PluginScriptResult {
+    plugin_runtime::run_with(request, std::sync::Arc::new(fetch)).await
 }
 
 /// Compiles `code` as a classic script named `name` without running it.

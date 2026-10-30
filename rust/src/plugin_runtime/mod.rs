@@ -6,6 +6,7 @@
 //! fresh `Runtime` + `Context` on its worker, runs, and drops both there.
 //! See `docs/lyrics-plugin-api.md` ("Runtime and limits").
 
+mod charset;
 mod collector;
 mod compile_check;
 // `engine` and `limits` are public only so the integration tests under
@@ -13,6 +14,13 @@ mod compile_check;
 #[doc(hidden)]
 pub mod engine;
 mod globals;
+mod host;
+mod host_budget;
+mod host_callback;
+mod host_console;
+mod host_fetch;
+mod host_sleep;
+mod host_storage;
 mod jobs;
 #[doc(hidden)]
 pub mod limits;
@@ -26,6 +34,8 @@ use crate::api::plugin_runtime::{
     PluginScriptProblem, PluginScriptRequest, PluginScriptResult, PluginScriptStatus,
 };
 use engine::{failure, JobSpec};
+// Re-exported so tests and the bridge can name the answerer type and make one.
+pub use host_callback::{failed_response, no_network, Answerer};
 use pool::{completion, Completer, Pool};
 
 /// A job waiting for or running on a worker.
@@ -86,8 +96,14 @@ impl Drop for StopOnDrop {
     }
 }
 
-/// Queues the request and awaits its result. Never panics.
+/// [`run_with`] for a run that has no network: every `fetch` fails with `network`.
 pub async fn run(request: PluginScriptRequest) -> PluginScriptResult {
+    run_with(request, host_callback::no_network()).await
+}
+
+/// Queues the request and awaits its result. `fetch` calls of the script go to
+/// `answerer` on the JS worker thread. Never panics.
+pub async fn run_with(request: PluginScriptRequest, answerer: Answerer) -> PluginScriptResult {
     let Some(guard) = jobs::registry().claim(request.job) else {
         return failure(PluginScriptStatus::Cancelled, "unknown or cancelled job id");
     };
@@ -104,6 +120,9 @@ pub async fn run(request: PluginScriptRequest) -> PluginScriptResult {
     };
     let spec = JobSpec {
         job: request.job,
+        config: request.config,
+        storage_json: request.storage_json,
+        answerer,
         ..spec
     };
     let Some(pool) = pool() else {

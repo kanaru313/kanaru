@@ -14,6 +14,7 @@ use rquickjs::{
     CatchResultExt, CaughtError, Coerced, Ctx, Exception, FromJs, Function, Object, Value,
 };
 
+use super::host::{self, HostEnv};
 use super::limits::{MAX_ERROR_MESSAGE_CHARS, MAX_ERROR_STACK_BYTES, MAX_OUTPUT_BYTES};
 use crate::api::plugin_runtime::PluginErrorKind;
 
@@ -178,14 +179,20 @@ pub fn is_loadable_name(name: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'.' | b'-'))
 }
 
-/// Installs `Response` and `load()`; returns the prelude helpers.
+/// The bundled CryptoJS 4.2.0 build (MIT; notice and checksum in its header).
+/// `load('crypto.js')` evaluates it; it defines the global `CryptoJS`.
+const CRYPTO_JS: &str = include_str!("js/crypto-js.min.js");
+
+/// Installs `Response`, the host API and `load()`; returns the prelude helpers.
 /// `entry` counts as already loaded.
 pub fn install<'js>(
     ctx: &Ctx<'js>,
     sources: Sources,
     entry: &str,
-    #[cfg_attr(not(test), allow(unused_variables))] collector: &super::collector::Collector,
+    host: HostEnv,
 ) -> rquickjs::Result<Helpers<'js>> {
+    #[cfg(test)]
+    let collector = host.collector.clone();
     let helpers: Object = eval_classic(ctx, PRELUDE, "<runtime>")?
         .into_object()
         .ok_or_else(|| Exception::throw_message(ctx, "prelude did not return an object"))?;
@@ -205,17 +212,19 @@ pub fn install<'js>(
                     "load: the name must be a file name like util.js (letters, digits, _ . - only)",
                 ));
             }
-            if name == "crypto.js" {
-                return Err(Exception::throw_message(
-                    &ctx,
-                    "load: crypto.js is reserved and not available yet",
-                ));
-            }
-            let Some(code) = sources.get(&name) else {
-                return Err(Exception::throw_message(
-                    &ctx,
-                    &format!("load: no file named {name} in src/"),
-                ));
+            // The bundled file wins over a package file of the same name.
+            let code = if name == "crypto.js" {
+                CRYPTO_JS
+            } else {
+                match sources.get(&name) {
+                    Some(code) => code.as_str(),
+                    None => {
+                        return Err(Exception::throw_message(
+                            &ctx,
+                            &format!("load: no file named {name} in src/"),
+                        ))
+                    }
+                }
             };
             if !loaded.borrow_mut().insert(name.clone()) {
                 return Ok(());
@@ -224,9 +233,10 @@ pub fn install<'js>(
         },
     )?;
     ctx.globals().set("load", load)?;
+    host::install(ctx, host)?;
 
     #[cfg(test)]
-    install_test_hooks(ctx, collector)?;
+    install_test_hooks(ctx, &collector)?;
     Ok(helpers)
 }
 

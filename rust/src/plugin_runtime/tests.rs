@@ -45,6 +45,8 @@ fn request(job: u32, code: &str, timeout_ms: u32) -> PluginScriptRequest {
         entry: "search.js".to_owned(),
         input_json: "{}".to_owned(),
         timeout_ms,
+        config: Vec::new(),
+        storage_json: String::new(),
     }
 }
 

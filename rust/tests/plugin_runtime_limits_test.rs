@@ -65,6 +65,13 @@ fn constants_match_the_documented_limits() {
     assert_eq!(limits::THREAD_STACK_BYTES, 8 * 1024 * 1024);
     assert_eq!(limits::WALL_TIME, Duration::from_secs(15));
     assert_eq!(limits::MAX_OUTPUT_BYTES, 2 * 1024 * 1024);
+    assert_eq!(limits::MAX_FETCH_REQUEST_BODY_BYTES, 256 * 1024);
+    assert_eq!(limits::MAX_FETCH_SENDS, 10);
+    assert_eq!(limits::RUST_BYTE_BUDGET, 16 * 1024 * 1024);
+    assert_eq!(limits::STORAGE_QUOTA_BYTES, 64 * 1024);
+    assert_eq!(limits::MAX_LOG_LINES, 50);
+    assert_eq!(limits::MAX_LOG_LINE_CHARS, 500);
+    assert_eq!(limits::CANCEL_POLL, Duration::from_millis(50));
 }
 
 #[test]

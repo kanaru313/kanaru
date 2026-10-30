@@ -10,9 +10,10 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use rust_lib_kanaru::api::plugin_runtime::{
-    PluginScriptRequest, PluginScriptResult, PluginSourceFile,
+    PluginFetchOutcome, PluginFetchRequest, PluginFetchResponse, PluginScriptRequest,
+    PluginScriptResult, PluginSourceFile,
 };
-use rust_lib_kanaru::plugin_runtime;
+use rust_lib_kanaru::plugin_runtime::{self, Answerer};
 
 struct ThreadWaker(thread::Thread);
 impl Wake for ThreadWaker {
@@ -55,6 +56,8 @@ pub fn request_with(
         entry: "search.js".to_owned(),
         input_json: input_json.to_owned(),
         timeout_ms,
+        config: Vec::new(),
+        storage_json: String::new(),
     }
 }
 
@@ -73,4 +76,61 @@ pub fn run_script(code: &str, timeout_ms: u32) -> PluginScriptResult {
 pub fn run_files(files: Vec<PluginSourceFile>, input_json: &str) -> PluginScriptResult {
     let job = plugin_runtime::begin_job();
     block_on(plugin_runtime::run(request_with(job, files, input_json, 0)))
+}
+
+/// An `ok` answer with `body`, one send.
+pub fn ok_response(status: u16, body: &[u8]) -> PluginFetchResponse {
+    PluginFetchResponse {
+        status,
+        body: body.to_vec(),
+        url: "https://example.test/final".to_owned(),
+        sends: 1,
+        ..plugin_runtime::failed_response(PluginFetchOutcome::Ok)
+    }
+}
+
+/// An answer that is not `ok`.
+pub fn outcome_response(outcome: PluginFetchOutcome) -> PluginFetchResponse {
+    plugin_runtime::failed_response(outcome)
+}
+
+/// An answerer from a plain function; the answer is ready at once.
+pub fn answer_with(
+    f: impl Fn(PluginFetchRequest) -> PluginFetchResponse + Send + Sync + 'static,
+) -> Answerer {
+    Arc::new(move |request| {
+        let answer = f(request);
+        Box::pin(async move { answer })
+    })
+}
+
+/// An answerer whose future never completes (Dart that never replies).
+pub fn never_answers() -> Answerer {
+    Arc::new(|_request| Box::pin(std::future::pending()))
+}
+
+/// Everything a run can be given besides the code.
+pub struct RunOptions {
+    pub config: Vec<(String, String)>,
+    pub storage_json: String,
+    pub timeout_ms: u32,
+}
+
+impl Default for RunOptions {
+    fn default() -> Self {
+        Self {
+            config: Vec::new(),
+            storage_json: String::new(),
+            timeout_ms: 0,
+        }
+    }
+}
+
+/// Runs `code` as `search.js` with `answerer` answering its fetches.
+pub fn run_with_fetch(code: &str, answerer: Answerer, options: RunOptions) -> PluginScriptResult {
+    let job = plugin_runtime::begin_job();
+    let mut request = request_with(job, vec![file("search.js", code)], "{}", options.timeout_ms);
+    request.config = options.config;
+    request.storage_json = options.storage_json;
+    block_on(plugin_runtime::run_with(request, answerer))
 }

@@ -28,6 +28,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   });
 
   @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  FutureOr<PluginFetchResponse> Function(PluginFetchRequest)
+  dco_decode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+    dynamic raw,
+  );
+
+  @protected
+  Object dco_decode_DartOpaque(dynamic raw);
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
@@ -76,6 +88,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  PlatformInt64 dco_decode_isize(dynamic raw);
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
@@ -89,6 +104,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
   List<SyncedLyricLine> dco_decode_list_synced_lyric_line(dynamic raw);
@@ -140,6 +158,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PluginFetchFailureKind dco_decode_plugin_fetch_failure_kind(dynamic raw);
 
   @protected
+  PluginFetchOutcome dco_decode_plugin_fetch_outcome(dynamic raw);
+
+  @protected
+  PluginFetchRequest dco_decode_plugin_fetch_request(dynamic raw);
+
+  @protected
+  PluginFetchResponse dco_decode_plugin_fetch_response(dynamic raw);
+
+  @protected
   PluginJsError dco_decode_plugin_js_error(dynamic raw);
 
   @protected
@@ -158,6 +185,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PluginSourceFile dco_decode_plugin_source_file(dynamic raw);
 
   @protected
+  (String, String) dco_decode_record_string_string(dynamic raw);
+
+  @protected
   SyncedLyricLine dco_decode_synced_lyric_line(dynamic raw);
 
   @protected
@@ -170,6 +200,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   TrackWaveform dco_decode_track_waveform(dynamic raw);
 
   @protected
+  int dco_decode_u_16(dynamic raw);
+
+  @protected
   int dco_decode_u_32(dynamic raw);
 
   @protected
@@ -179,7 +212,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  BigInt dco_decode_usize(dynamic raw);
+
+  @protected
   WaveformStatus dco_decode_waveform_status(dynamic raw);
+
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
+  Object sse_decode_DartOpaque(SseDeserializer deserializer);
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
@@ -240,6 +282,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
+  PlatformInt64 sse_decode_isize(SseDeserializer deserializer);
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
@@ -257,6 +302,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<SyncedLyricLine> sse_decode_list_synced_lyric_line(
@@ -318,6 +368,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  PluginFetchOutcome sse_decode_plugin_fetch_outcome(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginFetchRequest sse_decode_plugin_fetch_request(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginFetchResponse sse_decode_plugin_fetch_response(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   PluginJsError sse_decode_plugin_js_error(SseDeserializer deserializer);
 
   @protected
@@ -344,6 +409,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PluginSourceFile sse_decode_plugin_source_file(SseDeserializer deserializer);
 
   @protected
+  (String, String) sse_decode_record_string_string(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   SyncedLyricLine sse_decode_synced_lyric_line(SseDeserializer deserializer);
 
   @protected
@@ -356,6 +426,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   TrackWaveform sse_decode_track_waveform(SseDeserializer deserializer);
 
   @protected
+  int sse_decode_u_16(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
@@ -365,7 +438,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
   WaveformStatus sse_decode_waveform_status(SseDeserializer deserializer);
+
+  @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+    FutureOr<PluginFetchResponse> Function(PluginFetchRequest) self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_DartOpaque(Object self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
@@ -443,6 +535,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
+  void sse_encode_isize(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
@@ -466,6 +561,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
     SseSerializer serializer,
   );
 
@@ -551,6 +652,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_plugin_fetch_outcome(
+    PluginFetchOutcome self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_fetch_request(
+    PluginFetchRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_fetch_response(
+    PluginFetchResponse self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_plugin_js_error(PluginJsError self, SseSerializer serializer);
 
   @protected
@@ -584,6 +703,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_record_string_string(
+    (String, String) self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_synced_lyric_line(
     SyncedLyricLine self,
     SseSerializer serializer,
@@ -599,6 +724,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_track_waveform(TrackWaveform self, SseSerializer serializer);
 
   @protected
+  void sse_encode_u_16(int self, SseSerializer serializer);
+
+  @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
@@ -606,6 +734,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer);
 
   @protected
   void sse_encode_waveform_status(

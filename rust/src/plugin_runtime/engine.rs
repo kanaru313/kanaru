@@ -16,16 +16,14 @@ use rquickjs::{Context, Ctx, Runtime};
 
 use super::collector::Collector;
 use super::globals::{self, Finished, JsFailure, RunFailure, Sources};
-use super::limits::{MAX_OUTPUT_BYTES, MEMORY_LIMIT_BYTES, SCRIPT_STACK_BYTES};
+use super::host::{HostEnv, STOP_CANCELLED, STOP_NONE, STOP_TIMEOUT};
+use super::host_budget::ByteBudget;
+use super::host_callback::{no_network, Answerer};
+use super::limits::{MAX_OUTPUT_BYTES, MEMORY_LIMIT_BYTES, RUST_BYTE_BUDGET, SCRIPT_STACK_BYTES};
 use super::memory::LimitedAllocator;
 use crate::api::plugin_runtime::{
     PluginErrorKind, PluginJsError, PluginScriptResult, PluginScriptStatus,
 };
-
-/// Why the interrupt handler stopped the script.
-const STOP_NONE: u8 = 0;
-const STOP_CANCELLED: u8 = 1;
-const STOP_TIMEOUT: u8 = 2;
 
 /// Everything one run needs.
 pub struct JobSpec {
@@ -36,6 +34,12 @@ pub struct JobSpec {
     pub input_json: String,
     pub timeout: Duration,
     pub cancel: Arc<AtomicBool>,
+    /// Read-only `localConfig` entries.
+    pub config: Vec<(String, String)>,
+    /// The plugin's stored map as JSON; empty means nothing stored.
+    pub storage_json: String,
+    /// Answers `fetch` calls; the default has no network.
+    pub answerer: Answerer,
 }
 
 impl JobSpec {
@@ -60,6 +64,9 @@ impl JobSpec {
             input_json,
             timeout,
             cancel,
+            config: Vec::new(),
+            storage_json: String::new(),
+            answerer: no_network(),
         })
     }
 }
@@ -114,10 +121,20 @@ fn run_guarded(spec: &JobSpec, collector: &Collector) -> PluginScriptResult {
         let (stop, cancel) = (stop.clone(), spec.cancel.clone());
         runtime.set_interrupt_handler(Some(Box::new(move || {
             if cancel.load(Ordering::SeqCst) {
-                stop.store(STOP_CANCELLED, Ordering::SeqCst);
+                let _ = stop.compare_exchange(
+                    STOP_NONE,
+                    STOP_CANCELLED,
+                    Ordering::SeqCst,
+                    Ordering::SeqCst,
+                );
                 true
             } else if Instant::now() >= deadline {
-                stop.store(STOP_TIMEOUT, Ordering::SeqCst);
+                let _ = stop.compare_exchange(
+                    STOP_NONE,
+                    STOP_TIMEOUT,
+                    Ordering::SeqCst,
+                    Ordering::SeqCst,
+                );
                 true
             } else {
                 false
@@ -129,7 +146,19 @@ fn run_guarded(spec: &JobSpec, collector: &Collector) -> PluginScriptResult {
         Err(e) => return failure(PluginScriptStatus::Internal, format!("context: {e}")),
     };
 
-    let result = context.with(|ctx| run_in_context(&ctx, spec, collector, &stop, &memory_hit));
+    let budget_hit = Arc::new(AtomicBool::new(false));
+    let host = HostEnv {
+        deadline,
+        cancel: spec.cancel.clone(),
+        stop: stop.clone(),
+        budget: ByteBudget::new(RUST_BYTE_BUDGET, budget_hit.clone()),
+        collector: collector.clone(),
+        answerer: spec.answerer.clone(),
+        config: spec.config.iter().cloned().collect(),
+        storage_json: spec.storage_json.clone(),
+    };
+    let result =
+        context.with(|ctx| run_in_context(&ctx, spec, host, &stop, &memory_hit, &budget_hit));
     // Drop order matters: Context first, Runtime last, both on this thread.
     drop(context);
     drop(runtime);
@@ -139,9 +168,10 @@ fn run_guarded(spec: &JobSpec, collector: &Collector) -> PluginScriptResult {
 fn run_in_context<'js>(
     ctx: &Ctx<'js>,
     spec: &JobSpec,
-    collector: &Collector,
+    host: HostEnv,
     stop: &AtomicU8,
     memory_hit: &AtomicBool,
+    budget_hit: &AtomicBool,
 ) -> PluginScriptResult {
     // A cancel or the deadline can land while the globals are being set up;
     // that is still a cancel or a timeout, not an internal failure.
@@ -155,7 +185,7 @@ fn run_in_context<'js>(
             format!("{what}: {}", f.message),
         )
     };
-    let helpers = match globals::install(ctx, spec.sources.clone(), &spec.entry, collector) {
+    let helpers = match globals::install(ctx, spec.sources.clone(), &spec.entry, host) {
         Ok(h) => h,
         Err(e) => return setup_failed(globals::describe_error(ctx, e), "globals"),
     };
@@ -174,7 +204,7 @@ fn run_in_context<'js>(
         Ok(_) => globals::call_execute(ctx, input, &helpers),
         Err(e) => Err(RunFailure::Js(globals::describe_error(ctx, e))),
     };
-    match outcome {
+    let result = match outcome {
         Ok(Finished::Success { output_json }) => PluginScriptResult {
             output_json,
             ..failure(PluginScriptStatus::Ok, "")
@@ -206,6 +236,47 @@ fn run_in_context<'js>(
             PluginScriptStatus::OutputTooLarge,
             format!("the output is larger than the limit of {MAX_OUTPUT_BYTES} bytes of JSON"),
         ),
+    };
+    // A blocked host call (fetch, sleep) that saw the cancel or the deadline
+    // throws a catchable error. If the script swallowed it and went on, the
+    // call still ends as cancelled / timed out, never as a normal result.
+    let stopped = stop.load(Ordering::SeqCst);
+    if stopped != STOP_NONE && result.js_error.is_none() {
+        let (status, message) = stop_status(stopped, spec.timeout);
+        return failure(status, message);
+    }
+    // The Rust byte budget was overrun at some point: the call is `memory`
+    // even if the script caught the RangeError and returned normally.
+    if budget_hit.load(Ordering::SeqCst)
+        && !matches!(
+            result.status,
+            PluginScriptStatus::Cancelled | PluginScriptStatus::Timeout
+        )
+    {
+        return PluginScriptResult {
+            js_error: result.js_error,
+            ..failure(PluginScriptStatus::Memory, memory_message())
+        };
+    }
+    result
+}
+
+fn memory_message() -> String {
+    format!(
+        "the script used more than {} MiB of memory",
+        MEMORY_LIMIT_BYTES >> 20
+    )
+}
+
+/// Status and text of a run stopped by cancel or deadline.
+fn stop_status(stop: u8, timeout: Duration) -> (PluginScriptStatus, String) {
+    if stop == STOP_CANCELLED {
+        (PluginScriptStatus::Cancelled, "cancelled".to_owned())
+    } else {
+        (
+            PluginScriptStatus::Timeout,
+            format!("the script ran longer than {} ms", timeout.as_millis()),
+        )
     }
 }
 

@@ -590,38 +590,15 @@ fn wire__crate__api__plugin_runtime__run_plugin_script_impl(
     rust_vec_len_: i32,
     data_len_: i32,
 ) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "run_plugin_script",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_request =
-                <crate::api::plugin_runtime::PluginScriptRequest>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| async move {
-                transform_result_sse::<_, ()>(
-                    (move || async move {
-                        let output_ok = Ok::<_, ()>(
-                            crate::api::plugin_runtime::run_plugin_script(api_request).await,
-                        )?;
-                        std::result::Result::Ok(output_ok)
-                    })()
-                    .await,
-                )
-            }
-        },
-    )
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec,_,_,_>(flutter_rust_bridge::for_generated::TaskInfo{ debug_name: "run_plugin_script", port: Some(port_), mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal }, move || {
+            let message = unsafe { flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(ptr_, rust_vec_len_, data_len_) };
+            let mut deserializer = flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_request = <crate::api::plugin_runtime::PluginScriptRequest>::sse_decode(&mut deserializer);
+let api_fetch = decode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(<flutter_rust_bridge::DartOpaque>::sse_decode(&mut deserializer));deserializer.end(); move |context| async move {
+                    transform_result_sse::<_, ()>((move || async move {
+                         let output_ok = Ok::<_, ()>(crate::api::plugin_runtime::run_plugin_script(api_request, api_fetch).await)?;   std::result::Result::Ok(output_ok)
+                    })().await)
+                } })
 }
 fn wire__crate__api__lyrics__synced_lyric_line_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
@@ -755,7 +732,65 @@ fn wire__crate__api__tags__track_tags_failed_impl(
     )
 }
 
+// Section: related_funcs
+
+fn decode_DartFn_Inputs_plugin_fetch_request_Output_plugin_fetch_response_AnyhowException(
+    dart_opaque: flutter_rust_bridge::DartOpaque,
+) -> impl Fn(
+    crate::api::plugin_runtime::PluginFetchRequest,
+) -> flutter_rust_bridge::DartFnFuture<crate::api::plugin_runtime::PluginFetchResponse> {
+    use flutter_rust_bridge::IntoDart;
+
+    async fn body(
+        dart_opaque: flutter_rust_bridge::DartOpaque,
+        arg0: crate::api::plugin_runtime::PluginFetchRequest,
+    ) -> crate::api::plugin_runtime::PluginFetchResponse {
+        let args = vec![arg0.into_into_dart().into_dart()];
+        let message = FLUTTER_RUST_BRIDGE_HANDLER
+            .dart_fn_invoke(dart_opaque, args)
+            .await;
+
+        let mut deserializer = flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+        let action = deserializer.cursor.read_u8().unwrap();
+        let ans = match action {
+            0 => std::result::Result::Ok(
+                <crate::api::plugin_runtime::PluginFetchResponse>::sse_decode(&mut deserializer),
+            ),
+            1 => std::result::Result::Err(
+                <flutter_rust_bridge::for_generated::anyhow::Error>::sse_decode(&mut deserializer),
+            ),
+            _ => unreachable!(),
+        };
+        deserializer.end();
+        let ans = ans.expect("Dart throws exception but Rust side assume it is not failable");
+        ans
+    }
+
+    move |arg0: crate::api::plugin_runtime::PluginFetchRequest| {
+        flutter_rust_bridge::for_generated::convert_into_dart_fn_future(body(
+            dart_opaque.clone(),
+            arg0,
+        ))
+    }
+}
+
 // Section: dart2rust
+
+impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::anyhow::anyhow!("{}", inner);
+    }
+}
+
+impl SseDecode for flutter_rust_bridge::DartOpaque {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return unsafe { flutter_rust_bridge::for_generated::sse_decode_dart_opaque(inner) };
+    }
+}
 
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -840,6 +875,13 @@ impl SseDecode for i64 {
     }
 }
 
+impl SseDecode for isize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i64::<NativeEndian>().unwrap() as _
+    }
+}
+
 impl SseDecode for Vec<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -899,6 +941,18 @@ impl SseDecode for Vec<u8> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<u8>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<(String, String)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<(String, String)>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -1088,8 +1142,68 @@ impl SseDecode for crate::api::plugin_runtime::PluginFetchFailureKind {
             2 => crate::api::plugin_runtime::PluginFetchFailureKind::NotConsented,
             3 => crate::api::plugin_runtime::PluginFetchFailureKind::Abandoned,
             4 => crate::api::plugin_runtime::PluginFetchFailureKind::InvalidRequest,
-            5 => crate::api::plugin_runtime::PluginFetchFailureKind::RateLimited,
+            5 => crate::api::plugin_runtime::PluginFetchFailureKind::InvalidResponse,
+            6 => crate::api::plugin_runtime::PluginFetchFailureKind::RateLimited,
             _ => unreachable!("Invalid variant for PluginFetchFailureKind: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::plugin_runtime::PluginFetchOutcome {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::plugin_runtime::PluginFetchOutcome::Ok,
+            1 => crate::api::plugin_runtime::PluginFetchOutcome::Network,
+            2 => crate::api::plugin_runtime::PluginFetchOutcome::BlockedHost,
+            3 => crate::api::plugin_runtime::PluginFetchOutcome::NotConsented,
+            4 => crate::api::plugin_runtime::PluginFetchOutcome::Abandoned,
+            5 => crate::api::plugin_runtime::PluginFetchOutcome::InvalidRequest,
+            6 => crate::api::plugin_runtime::PluginFetchOutcome::InvalidResponse,
+            7 => crate::api::plugin_runtime::PluginFetchOutcome::RateLimited,
+            _ => unreachable!("Invalid variant for PluginFetchOutcome: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::plugin_runtime::PluginFetchRequest {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_method = <String>::sse_decode(deserializer);
+        let mut var_url = <String>::sse_decode(deserializer);
+        let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_body = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_deadlineMs = <u32>::sse_decode(deserializer);
+        return crate::api::plugin_runtime::PluginFetchRequest {
+            method: var_method,
+            url: var_url,
+            headers: var_headers,
+            body: var_body,
+            deadline_ms: var_deadlineMs,
+        };
+    }
+}
+
+impl SseDecode for crate::api::plugin_runtime::PluginFetchResponse {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_outcome =
+            <crate::api::plugin_runtime::PluginFetchOutcome>::sse_decode(deserializer);
+        let mut var_status = <u16>::sse_decode(deserializer);
+        let mut var_url = <String>::sse_decode(deserializer);
+        let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_body = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_retryAfterSec = <Option<u32>>::sse_decode(deserializer);
+        let mut var_sends = <u32>::sse_decode(deserializer);
+        return crate::api::plugin_runtime::PluginFetchResponse {
+            outcome: var_outcome,
+            status: var_status,
+            url: var_url,
+            headers: var_headers,
+            body: var_body,
+            retry_after_sec: var_retryAfterSec,
+            sends: var_sends,
         };
     }
 }
@@ -1127,12 +1241,16 @@ impl SseDecode for crate::api::plugin_runtime::PluginScriptRequest {
         let mut var_entry = <String>::sse_decode(deserializer);
         let mut var_inputJson = <String>::sse_decode(deserializer);
         let mut var_timeoutMs = <u32>::sse_decode(deserializer);
+        let mut var_config = <Vec<(String, String)>>::sse_decode(deserializer);
+        let mut var_storageJson = <String>::sse_decode(deserializer);
         return crate::api::plugin_runtime::PluginScriptRequest {
             job: var_job,
             files: var_files,
             entry: var_entry,
             input_json: var_inputJson,
             timeout_ms: var_timeoutMs,
+            config: var_config,
+            storage_json: var_storageJson,
         };
     }
 }
@@ -1195,6 +1313,15 @@ impl SseDecode for crate::api::plugin_runtime::PluginSourceFile {
             name: var_name,
             code: var_code,
         };
+    }
+}
+
+impl SseDecode for (String, String) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field0 = <String>::sse_decode(deserializer);
+        let mut var_field1 = <String>::sse_decode(deserializer);
+        return (var_field0, var_field1);
     }
 }
 
@@ -1286,6 +1413,13 @@ impl SseDecode for crate::api::waveform::TrackWaveform {
     }
 }
 
+impl SseDecode for u16 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u16::<NativeEndian>().unwrap()
+    }
+}
+
 impl SseDecode for u32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1303,6 +1437,13 @@ impl SseDecode for u8 {
 impl SseDecode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {}
+}
+
+impl SseDecode for usize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
+    }
 }
 
 impl SseDecode for crate::api::waveform::WaveformStatus {
@@ -1544,7 +1685,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginFetchFa
             Self::NotConsented => 2.into_dart(),
             Self::Abandoned => 3.into_dart(),
             Self::InvalidRequest => 4.into_dart(),
-            Self::RateLimited => 5.into_dart(),
+            Self::InvalidResponse => 5.into_dart(),
+            Self::RateLimited => 6.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -1557,6 +1699,83 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::plugin_runtime::PluginFetchFa
     for crate::api::plugin_runtime::PluginFetchFailureKind
 {
     fn into_into_dart(self) -> crate::api::plugin_runtime::PluginFetchFailureKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginFetchOutcome {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Ok => 0.into_dart(),
+            Self::Network => 1.into_dart(),
+            Self::BlockedHost => 2.into_dart(),
+            Self::NotConsented => 3.into_dart(),
+            Self::Abandoned => 4.into_dart(),
+            Self::InvalidRequest => 5.into_dart(),
+            Self::InvalidResponse => 6.into_dart(),
+            Self::RateLimited => 7.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::plugin_runtime::PluginFetchOutcome
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::plugin_runtime::PluginFetchOutcome>
+    for crate::api::plugin_runtime::PluginFetchOutcome
+{
+    fn into_into_dart(self) -> crate::api::plugin_runtime::PluginFetchOutcome {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginFetchRequest {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.method.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.headers.into_into_dart().into_dart(),
+            self.body.into_into_dart().into_dart(),
+            self.deadline_ms.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::plugin_runtime::PluginFetchRequest
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::plugin_runtime::PluginFetchRequest>
+    for crate::api::plugin_runtime::PluginFetchRequest
+{
+    fn into_into_dart(self) -> crate::api::plugin_runtime::PluginFetchRequest {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginFetchResponse {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.outcome.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.headers.into_into_dart().into_dart(),
+            self.body.into_into_dart().into_dart(),
+            self.retry_after_sec.into_into_dart().into_dart(),
+            self.sends.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::plugin_runtime::PluginFetchResponse
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::plugin_runtime::PluginFetchResponse>
+    for crate::api::plugin_runtime::PluginFetchResponse
+{
+    fn into_into_dart(self) -> crate::api::plugin_runtime::PluginFetchResponse {
         self
     }
 }
@@ -1611,6 +1830,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginScriptR
             self.entry.into_into_dart().into_dart(),
             self.input_json.into_into_dart().into_dart(),
             self.timeout_ms.into_into_dart().into_dart(),
+            self.config.into_into_dart().into_dart(),
+            self.storage_json.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1826,6 +2047,20 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::waveform::WaveformStatus>
     }
 }
 
+impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(format!("{:?}", self), serializer);
+    }
+}
+
+impl SseEncode for flutter_rust_bridge::DartOpaque {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <usize>::sse_encode(self.encode(), serializer);
+    }
+}
+
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1906,6 +2141,16 @@ impl SseEncode for i64 {
     }
 }
 
+impl SseEncode for isize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer
+            .cursor
+            .write_i64::<NativeEndian>(self as _)
+            .unwrap();
+    }
+}
+
 impl SseEncode for Vec<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1952,6 +2197,16 @@ impl SseEncode for Vec<u8> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <u8>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<(String, String)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <(String, String)>::sse_encode(item, serializer);
         }
     }
 }
@@ -2113,13 +2368,60 @@ impl SseEncode for crate::api::plugin_runtime::PluginFetchFailureKind {
                 crate::api::plugin_runtime::PluginFetchFailureKind::NotConsented => 2,
                 crate::api::plugin_runtime::PluginFetchFailureKind::Abandoned => 3,
                 crate::api::plugin_runtime::PluginFetchFailureKind::InvalidRequest => 4,
-                crate::api::plugin_runtime::PluginFetchFailureKind::RateLimited => 5,
+                crate::api::plugin_runtime::PluginFetchFailureKind::InvalidResponse => 5,
+                crate::api::plugin_runtime::PluginFetchFailureKind::RateLimited => 6,
                 _ => {
                     unimplemented!("");
                 }
             },
             serializer,
         );
+    }
+}
+
+impl SseEncode for crate::api::plugin_runtime::PluginFetchOutcome {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::plugin_runtime::PluginFetchOutcome::Ok => 0,
+                crate::api::plugin_runtime::PluginFetchOutcome::Network => 1,
+                crate::api::plugin_runtime::PluginFetchOutcome::BlockedHost => 2,
+                crate::api::plugin_runtime::PluginFetchOutcome::NotConsented => 3,
+                crate::api::plugin_runtime::PluginFetchOutcome::Abandoned => 4,
+                crate::api::plugin_runtime::PluginFetchOutcome::InvalidRequest => 5,
+                crate::api::plugin_runtime::PluginFetchOutcome::InvalidResponse => 6,
+                crate::api::plugin_runtime::PluginFetchOutcome::RateLimited => 7,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::plugin_runtime::PluginFetchRequest {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.method, serializer);
+        <String>::sse_encode(self.url, serializer);
+        <Vec<(String, String)>>::sse_encode(self.headers, serializer);
+        <Vec<u8>>::sse_encode(self.body, serializer);
+        <u32>::sse_encode(self.deadline_ms, serializer);
+    }
+}
+
+impl SseEncode for crate::api::plugin_runtime::PluginFetchResponse {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::plugin_runtime::PluginFetchOutcome>::sse_encode(self.outcome, serializer);
+        <u16>::sse_encode(self.status, serializer);
+        <String>::sse_encode(self.url, serializer);
+        <Vec<(String, String)>>::sse_encode(self.headers, serializer);
+        <Vec<u8>>::sse_encode(self.body, serializer);
+        <Option<u32>>::sse_encode(self.retry_after_sec, serializer);
+        <u32>::sse_encode(self.sends, serializer);
     }
 }
 
@@ -2147,6 +2449,8 @@ impl SseEncode for crate::api::plugin_runtime::PluginScriptRequest {
         <String>::sse_encode(self.entry, serializer);
         <String>::sse_encode(self.input_json, serializer);
         <u32>::sse_encode(self.timeout_ms, serializer);
+        <Vec<(String, String)>>::sse_encode(self.config, serializer);
+        <String>::sse_encode(self.storage_json, serializer);
     }
 }
 
@@ -2196,6 +2500,14 @@ impl SseEncode for crate::api::plugin_runtime::PluginSourceFile {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.name, serializer);
         <String>::sse_encode(self.code, serializer);
+    }
+}
+
+impl SseEncode for (String, String) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.0, serializer);
+        <String>::sse_encode(self.1, serializer);
     }
 }
 
@@ -2251,6 +2563,13 @@ impl SseEncode for crate::api::waveform::TrackWaveform {
     }
 }
 
+impl SseEncode for u16 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_u16::<NativeEndian>(self).unwrap();
+    }
+}
+
 impl SseEncode for u32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2268,6 +2587,16 @@ impl SseEncode for u8 {
 impl SseEncode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
+}
+
+impl SseEncode for usize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer
+            .cursor
+            .write_u64::<NativeEndian>(self as _)
+            .unwrap();
+    }
 }
 
 impl SseEncode for crate::api::waveform::WaveformStatus {
