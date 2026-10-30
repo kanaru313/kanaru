@@ -1,0 +1,4 @@
+# Tags used by tests. `native` tests load the cargo-built debug library and
+# skip themselves when it is missing.
+tags:
+  native:

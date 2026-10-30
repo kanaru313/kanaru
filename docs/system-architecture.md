@@ -347,7 +347,7 @@ File paths, file names and device information are never sent. The `.lrc` writer 
 
 ### Plugin runtime
 
-Lyrics plugins are JavaScript (`search.js`, `lyrics.js`) run by a sandboxed QuickJS-NG engine in the Rust crate (`rust/src/plugin_runtime/`, bridged by `api/plugin_runtime.rs`; contract and limits in [lyrics-plugin-api.md](./lyrics-plugin-api.md)). Nothing in Dart calls it yet. Unit and integration tests inject a Rust closure instead of the Dart callback.
+Lyrics plugins are JavaScript (`search.js`, `lyrics.js`) run by a sandboxed QuickJS-NG engine in the Rust crate (`rust/src/plugin_runtime/`, bridged by `api/plugin_runtime.rs`; contract and limits in [lyrics-plugin-api.md](./lyrics-plugin-api.md)). Dart reaches it through `lib/core/plugin_runtime/`: `PluginRuntime` (`run`, `check`), `RustPluginRuntime` (the only file that imports the generated bindings) and `pluginRuntimeProvider` (no dependencies). `core/plugin_runtime` is generic and imports nothing from `core/lyrics`; the lyrics host maps its results to `LyricsFetchKind`. The wrapper begins a job per run, forwards `PluginCancel` to `cancel_plugin_job` (a token cancelled before the run still goes through Rust, which frees the id), answers a throwing fetcher as `network`, and returns a failed bridge call as status `internal` (details in [lyrics-plugin-api.md](./lyrics-plugin-api.md#dart-api)). Rust unit and integration tests inject a Rust closure instead of the Dart callback; `test/core/plugin_runtime/` has pure mapping tests plus a `native`-tagged test that loads the cargo-built debug library (skipped when it is missing).
 
 | Part | How it works | Where |
 |---|---|---|

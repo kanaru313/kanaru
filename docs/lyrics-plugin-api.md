@@ -82,6 +82,23 @@ Other statuses:
 
 `begin_plugin_job()` returns an id, `run_plugin_script` runs under it, `cancel_plugin_job(id)` stops it. An id runs once. Cancelling an id that has not started removes it, so nothing leaks if the run call never comes; cancelling an unknown or finished id does nothing.
 
+### Dart API
+
+`lib/core/plugin_runtime/` wraps the bindings; only `rust_plugin_runtime.dart` imports the generated code. It is generic and imports nothing from `core/lyrics`; the lyrics host maps its results to `LyricsFetchKind`. `pluginRuntimeProvider` (`Provider<PluginRuntime>`, no dependencies) gives the runtime; tests substitute their own `PluginRuntime`.
+
+- `PluginRuntime.run(PluginRunRequest, {required PluginFetcher fetch, PluginCancel? cancel})` returns a `PluginRunResult` and does not throw for a failed run. `PluginRunRequest`: `files` (`PluginSourceFile` name and code), `entry`, `inputJson`, `timeout` (null = runtime maximum), `config` (map), `storageJson` (empty = none). A bridge failure or a library that cannot load is returned as status `internal`, never thrown (a begun job id is cancelled to free it; a failing cancel listener is ignored).
+- `PluginRunResult` has the same fields as `PluginScriptResult` on every status: `status` (`PluginRunStatus`: `ok`, `scriptError`, `timeout`, `memory`, `stack`, `cancelled`, `outputTooLarge`, `internal`, `busy`), `outputJson`, `errorMessage`, `errorKind`, `retryAfterSec`, `jsError` (`message`, `stack`; null when there is no exception, `stack` null when the engine gave none), `logs` (unmodifiable), `fetchFailure` (`kind`, `retryAfterSec`, `message`; null when no fetch failed) and `storage` (the new storage JSON; null unless the status is `ok` or `scriptError` and the script changed it).
+- `PluginFetcher` answers a `PluginFetchCall` (`method`, `Uri url`, `headers`, `Uint8List body`, `deadline` as a `Duration`, `maxSends`) with a `PluginFetchAnswer` (`outcome`, `status`, final `url`, `headers`, `bytes`, `retryAfterSec`, `sends`). A fetcher that throws is answered as `network` (sends 0; Rust counts at least 1 for a network failure), and an `ok` answer without a final URL gets the call's URL, and a URL that is not a valid `Uri` is answered `invalidRequest` without calling the fetcher, so a bug in the app never crashes a job. A fetcher that is slower than the deadline is cut by the runtime (`timeout`). Numbers in an answer are clamped to the ranges the bridge encodes.
+- `PluginCancel.cancel()` calls `cancel_plugin_job` for a running job. A token cancelled before the run still goes through Rust: the job is begun, cancelled (which frees its id) and run, so the result is `cancelled` and no script code runs. A token stays cancelled and can serve several runs.
+- `check(fileName, code)` returns `PluginScriptProblem?` (`message`, `line` or null when unknown). Unlike `run` it throws when the library cannot load or the bridge fails: null would claim an unchecked script is valid.
+- A `timeout` of zero or under 1 ms is sent as 1 ms (Rust reads 0 as the 15 s maximum). `PluginFetchAnswer.sends` defaults to 0; `blockedHost` and `notConsented` answers use up no sends (the first failure is still kept as `fetch_failure`).
+- The `native`-tagged test (`test/core/plugin_runtime/rust_plugin_runtime_native_test.dart`) runs only after `cargo build --manifest-path rust/Cargo.toml`; it skips with a message when the debug library is missing or cannot be loaded (for example a stale build).
+- The runtime logs only the type of an error, never a URL, header or configuration value.
+
+### Binary size
+
+Cumulative release `librust_lib_kanaru.so` growth of the runtime work is 3,452,392 B (3.29 MiB) over the baseline of 10,678,816 B, inside the 4 MiB budget (14,131,208 B measured with `cargo build --release`). The Dart wrapper adds no native code.
+
 ## Host API
 
 Besides `Response` and `load`, a script has these globals. They are ordinary global properties (a package may declare its own `sleep` or `console`). Everything is synchronous; there are no Promises. The runtime knows nothing about hosts or consent: the app answers `fetch` through a callback (see [system-architecture.md](./system-architecture.md#plugin-runtime)).
