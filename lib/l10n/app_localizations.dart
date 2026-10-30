@@ -5671,6 +5671,738 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View log'**
   String get lyricsViewLog;
+
+  /// Title of the lyrics plugin store page
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin store'**
+  String get lyricsStoreTitle;
+
+  /// Hint of the store search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, author, repo, host'**
+  String get lyricsStoreSearchHint;
+
+  /// Source chip that shows every plugin
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get lyricsStoreChipAll;
+
+  /// Source chip and row subtitle of a plugin installed from a zip file
+  ///
+  /// In en, this message translates to:
+  /// **'From file'**
+  String get lyricsStoreFromFile;
+
+  /// Store section of plugins with a newer version
+  ///
+  /// In en, this message translates to:
+  /// **'Updates ({count})'**
+  String lyricsStoreSectionUpdates(int count);
+
+  /// Store section of installed plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Installed ({count})'**
+  String lyricsStoreSectionInstalled(int count);
+
+  /// Store section of catalog plugins that are not installed
+  ///
+  /// In en, this message translates to:
+  /// **'Not installed ({count})'**
+  String lyricsStoreSectionAvailable(int count);
+
+  /// Button that updates every plugin with an update
+  ///
+  /// In en, this message translates to:
+  /// **'Update all'**
+  String get lyricsStoreUpdateAll;
+
+  /// Shown when the search or filter matches no plugin
+  ///
+  /// In en, this message translates to:
+  /// **'No matching plugins.'**
+  String get lyricsStoreNoMatch;
+
+  /// Footer of the store list: plugins hidden because they need a newer app
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 plugin needs a newer Kanaru} other{{count} plugins need a newer Kanaru}}'**
+  String lyricsStoreNeedsNewerFooter(int count);
+
+  /// Banner when one repository failed to load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load {name}: {reason}'**
+  String lyricsStoreRepoFailedOne(String name, String reason);
+
+  /// Banner when several repositories failed to load
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 repository could not be loaded} other{{count} repositories could not be loaded}}'**
+  String lyricsStoreRepoFailedMany(int count);
+
+  /// Retry button of the repository error banner
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get lyricsStoreRetry;
+
+  /// Reason a repository could not be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'network error'**
+  String get lyricsStoreLoadNetwork;
+
+  /// Reason a repository could not be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'file not found'**
+  String get lyricsStoreLoadNotFound;
+
+  /// Reason a repository could not be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'file too large'**
+  String get lyricsStoreLoadTooLarge;
+
+  /// Reason a repository could not be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'not a valid plugin list'**
+  String get lyricsStoreLoadInvalid;
+
+  /// Reason a repository could not be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'address blocked'**
+  String get lyricsStoreLoadBlocked;
+
+  /// Tooltip of the install button of a store row
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get lyricsStoreInstallTooltip;
+
+  /// Tooltip of the update button of a store row
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get lyricsStoreUpdateTooltip;
+
+  /// Tooltip of the uninstall button of a store row
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall plugin'**
+  String get lyricsStoreUninstallTooltip;
+
+  /// Semantics label of the spinner shown while a plugin is installed or updated
+  ///
+  /// In en, this message translates to:
+  /// **'Working'**
+  String get lyricsStoreWorking;
+
+  /// Store menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Install from file…'**
+  String get lyricsStoreMenuInstallFile;
+
+  /// Store menu item that opens the repository list
+  ///
+  /// In en, this message translates to:
+  /// **'Repositories ({count})'**
+  String lyricsStoreMenuRepositories(int count);
+
+  /// Store menu item that reloads every repository
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh all'**
+  String get lyricsStoreMenuRefreshAll;
+
+  /// Empty store title
+  ///
+  /// In en, this message translates to:
+  /// **'No plugins yet'**
+  String get lyricsStoreEmptyTitle;
+
+  /// Button and dialog title for adding a plugin repository
+  ///
+  /// In en, this message translates to:
+  /// **'Add repository'**
+  String get lyricsStoreAddRepository;
+
+  /// Shown when the library database is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin store is not available right now.'**
+  String get lyricsStoreUnavailable;
+
+  /// Shown when the store data failed to load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the plugin store'**
+  String get lyricsStoreLoadFailed;
+
+  /// Snackbar after installing a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Installed {name}'**
+  String lyricsStoreInstalled(String name);
+
+  /// Snackbar action that removes the plugin just installed
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get lyricsStoreUndo;
+
+  /// Snackbar when undoing an install failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not undo'**
+  String get lyricsStoreUndoFailed;
+
+  /// Snackbar after updating a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {name} to v{version}'**
+  String lyricsStoreUpdated(String name, int version);
+
+  /// Snackbar after update all
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Updated 1 plugin} other{Updated {count} plugins}}'**
+  String lyricsStoreUpdatedAll(int count);
+
+  /// Snackbar after update all when some updates failed
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {done}, {failed} failed'**
+  String lyricsStoreUpdatedAllPartial(int done, int failed);
+
+  /// Snackbar after uninstalling a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstalled {name}'**
+  String lyricsStoreUninstalled(String name);
+
+  /// Snackbar when uninstalling failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not uninstall {name}'**
+  String lyricsStoreUninstallFailed(String name);
+
+  /// Uninstall dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall {name}?'**
+  String lyricsStoreUninstallTitle(String name);
+
+  /// Uninstall dialog box title
+  ///
+  /// In en, this message translates to:
+  /// **'Will be deleted'**
+  String get lyricsStoreUninstallRemoves;
+
+  /// Uninstall dialog box title
+  ///
+  /// In en, this message translates to:
+  /// **'Stays'**
+  String get lyricsStoreUninstallKeeps;
+
+  /// Uninstall dialog item
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s code'**
+  String get lyricsStoreUninstallCode;
+
+  /// Uninstall dialog item
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s settings'**
+  String get lyricsStoreUninstallSettings;
+
+  /// Uninstall dialog item
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s settings, including secret values in the keyring'**
+  String get lyricsStoreUninstallSettingsSecret;
+
+  /// Uninstall dialog item
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s own storage'**
+  String get lyricsStoreUninstallStorage;
+
+  /// Uninstall dialog item
+  ///
+  /// In en, this message translates to:
+  /// **'Saved and pinned lyrics from this source (if any)'**
+  String get lyricsStoreUninstallKeepLyrics;
+
+  /// Uninstall dialog item
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics .lrc files written next to songs'**
+  String get lyricsStoreUninstallKeepLrc;
+
+  /// Uninstall dialog confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall'**
+  String get lyricsStoreUninstallConfirm;
+
+  /// Install problem dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Could not install'**
+  String get lyricsStoreInstallFailedTitle;
+
+  /// Install problem dialog line for a file
+  ///
+  /// In en, this message translates to:
+  /// **'The file {name} is not a valid plugin.'**
+  String lyricsStoreInstallFailedFile(String name);
+
+  /// Install problem dialog line for a repository plugin
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · Repo: {repo}'**
+  String lyricsStoreInstallFailedRepo(String name, String repo);
+
+  /// Install problem dialog box title
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get lyricsStoreReasons;
+
+  /// Catalog mismatch dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Package does not match the list'**
+  String get lyricsStoreMismatchTitle;
+
+  /// Catalog mismatch dialog box title
+  ///
+  /// In en, this message translates to:
+  /// **'Differences'**
+  String get lyricsStoreMismatchDiffs;
+
+  /// Catalog mismatch line
+  ///
+  /// In en, this message translates to:
+  /// **'The list says version {catalog}, the downloaded package is version {package}'**
+  String lyricsStoreMismatchVersion(int catalog, int package);
+
+  /// Catalog mismatch line
+  ///
+  /// In en, this message translates to:
+  /// **'The list says host {catalog}, the package declares {package}'**
+  String lyricsStoreMismatchHosts(String catalog, String package);
+
+  /// Catalog mismatch line without details
+  ///
+  /// In en, this message translates to:
+  /// **'The package\'s version or hosts differ from the list'**
+  String get lyricsStoreMismatchGeneric;
+
+  /// Catalog mismatch hint
+  ///
+  /// In en, this message translates to:
+  /// **'Usually the repository was just updated and a cache has not caught up. Refresh the list and try again in a few minutes. If it still differs, tell the repository owner.'**
+  String get lyricsStoreMismatchHint;
+
+  /// Catalog mismatch dialog button
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh & try again'**
+  String get lyricsStoreMismatchRetry;
+
+  /// Dialog title when a plugin needs a newer app
+  ///
+  /// In en, this message translates to:
+  /// **'Needs a newer Kanaru'**
+  String get lyricsStoreNeedsNewerTitle;
+
+  /// Dialog body when a plugin needs a newer app
+  ///
+  /// In en, this message translates to:
+  /// **'{name} uses a newer plugin API than this Kanaru supports. Update Kanaru and install it again.'**
+  String lyricsStoreNeedsNewerBody(String name);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'The package, or an entry in it, is too large'**
+  String get lyricsStoreProblemTooLarge;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'The file is not a readable zip package'**
+  String get lyricsStoreProblemNotZip;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'The package has an unsafe entry name ({detail})'**
+  String lyricsStoreProblemUnsafeEntry(String detail);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'The package has too many files'**
+  String get lyricsStoreProblemTooManyEntries;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json is missing at the top of the package'**
+  String get lyricsStoreProblemMissingManifest;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json is invalid at \"{detail}\"'**
+  String lyricsStoreProblemInvalidManifest(String detail);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json is invalid'**
+  String get lyricsStoreProblemInvalidManifestPlain;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports'**
+  String get lyricsStoreProblemNeedsNewerApp;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json: type must be lyrics'**
+  String get lyricsStoreProblemWrongType;
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'hosts: \"{detail}\" is not a public domain name'**
+  String lyricsStoreProblemBadHost(String detail);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'src/{detail} is missing from the package'**
+  String lyricsStoreProblemMissingScript(String detail);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'The script {detail} has an error'**
+  String lyricsStoreProblemScriptError(String detail);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'The script {detail} has an error on line {line}'**
+  String lyricsStoreProblemScriptErrorLine(String detail, int line);
+
+  /// Package problem
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid'**
+  String get lyricsStoreProblemCheckUnavailable;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'This repository is no longer in the list'**
+  String get lyricsStoreFailUnknownRepo;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'The repository no longer lists this plugin. Refresh the list.'**
+  String get lyricsStoreFailUnknownEntry;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'This plugin was installed from a file so it has no updates. Uninstall it and install the new file.'**
+  String get lyricsStoreFailNotFromRepo;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'There is no newer version'**
+  String get lyricsStoreFailNoNewerVersion;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download the plugin package: {reason}'**
+  String lyricsStoreFailDownload(String reason);
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin package is not valid'**
+  String get lyricsStoreFailRejected;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'The package does not match the list'**
+  String get lyricsStoreFailMismatch;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'This package is older than the installed one so it is not used.'**
+  String get lyricsStoreFailOlderVersion;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'The secrets of the earlier install could not be deleted from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru and try again.'**
+  String get lyricsStoreFailSecretsUnavailable;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'This plugin is no longer installed so it cannot be updated.'**
+  String get lyricsStoreFailGone;
+
+  /// Install failure
+  ///
+  /// In en, this message translates to:
+  /// **'Could not write the plugin to the library (disk full or missing permission?)'**
+  String get lyricsStoreFailStorage;
+
+  /// Download failure reason
+  ///
+  /// In en, this message translates to:
+  /// **'package too large'**
+  String get lyricsStoreFailPackageTooLarge;
+
+  /// Author as the plugin states it
+  ///
+  /// In en, this message translates to:
+  /// **'{author} (self-declared)'**
+  String lyricsStoreItemAuthor(String author);
+
+  /// Shown when a plugin names no author
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown author'**
+  String get lyricsStoreItemUnknownAuthor;
+
+  /// Catalog item section title
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get lyricsStoreItemInfo;
+
+  /// Catalog item field
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get lyricsStoreItemDescription;
+
+  /// Catalog item field
+  ///
+  /// In en, this message translates to:
+  /// **'Repository'**
+  String get lyricsStoreItemRepo;
+
+  /// Catalog item field: hosts the plugin may contact
+  ///
+  /// In en, this message translates to:
+  /// **'Can only connect to'**
+  String get lyricsStoreItemHosts;
+
+  /// Catalog item install button
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get lyricsStoreItemInstall;
+
+  /// Catalog item page when the entry is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'This plugin is not in the repository.'**
+  String get lyricsStoreItemNotFound;
+
+  /// Title of the repository list page
+  ///
+  /// In en, this message translates to:
+  /// **'Repositories'**
+  String get lyricsStoreReposTitle;
+
+  /// Repository list when empty
+  ///
+  /// In en, this message translates to:
+  /// **'No repositories yet.'**
+  String get lyricsStoreReposEmpty;
+
+  /// Tooltip of the error mark of a repository
+  ///
+  /// In en, this message translates to:
+  /// **'The last load failed: {reason}'**
+  String lyricsStoreRepoErrorTooltip(String reason);
+
+  /// Tooltip of the remove button of a repository
+  ///
+  /// In en, this message translates to:
+  /// **'Remove repository'**
+  String get lyricsStoreRepoRemoveTooltip;
+
+  /// Remove repository dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}?'**
+  String lyricsStoreRemoveRepoTitle(String name);
+
+  /// Remove repository dialog body
+  ///
+  /// In en, this message translates to:
+  /// **'Plugins installed from this repository stay, but will no longer get updates.'**
+  String get lyricsStoreRemoveRepoBody;
+
+  /// Remove repository dialog confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get lyricsStoreRemoveRepoConfirm;
+
+  /// Snackbar after removing a repository
+  ///
+  /// In en, this message translates to:
+  /// **'Removed {name}'**
+  String lyricsStoreRepoRemoved(String name);
+
+  /// Snackbar when removing a repository failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove {name}'**
+  String lyricsStoreRepoRemoveFailed(String name);
+
+  /// Label of the add repository field
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get lyricsStoreAddUrlLabel;
+
+  /// Add repository dialog confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get lyricsStoreAddConfirm;
+
+  /// Add repository confirm button while loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get lyricsStoreAddLoading;
+
+  /// Snackbar after adding a repository
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added {name} · 1 plugin} other{Added {name} · {count} plugins}}'**
+  String lyricsStoreAddedRepo(String name, int count);
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'A public address needs https'**
+  String get lyricsStoreAddErrPublicNeedsHttps;
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid URL'**
+  String get lyricsStoreAddErrInvalidUrl;
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'This repository is already added'**
+  String get lyricsStoreAddErrDuplicate;
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the list: network error'**
+  String get lyricsStoreAddErrNetwork;
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'No plugin list was found at this address'**
+  String get lyricsStoreAddErrNotFound;
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'The file is not a valid plugin list'**
+  String get lyricsStoreAddErrBadFormat;
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'This address is blocked'**
+  String get lyricsStoreAddErrBlocked;
+
+  /// Add repository error with the rule that refused it
+  ///
+  /// In en, this message translates to:
+  /// **'This address is blocked: {reason}'**
+  String lyricsStoreAddErrBlockedReason(String reason);
+
+  /// Add repository error
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the repository'**
+  String get lyricsStoreAddErrStorage;
+
+  /// Address rule
+  ///
+  /// In en, this message translates to:
+  /// **'the address must not contain a user name or password'**
+  String get lyricsStoreAddressUserInfo;
+
+  /// Address rule
+  ///
+  /// In en, this message translates to:
+  /// **'a public repository must not point to a local address'**
+  String get lyricsStoreAddressLocalFromPublic;
+
+  /// Address rule
+  ///
+  /// In en, this message translates to:
+  /// **'this address may not be reached'**
+  String get lyricsStoreAddressRefused;
+
+  /// Address rule
+  ///
+  /// In en, this message translates to:
+  /// **'the name points to both local and public addresses'**
+  String get lyricsStoreAddressMixed;
+
+  /// Address rule
+  ///
+  /// In en, this message translates to:
+  /// **'a local-looking name points to a public address'**
+  String get lyricsStoreAddressLocalNamePublic;
+
+  /// Mark on the catalog item page of a plugin that is installed
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get lyricsStoreItemInstalled;
 }
 
 class _AppLocalizationsDelegate

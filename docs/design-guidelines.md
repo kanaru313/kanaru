@@ -194,6 +194,17 @@ Opens from the top bar at `/search?q=…`. An empty query shows "Search your lib
 - **Corrected query.** When part of the results come from a typo-fixed query (fewer than 5 songs matched as typed), a muted line “Results for “…”” sits above the first section. It shows the query with the fixed words replaced; syntax is kept. Without such results no line shows, and a query with no results at all keeps the plain “No results” state.
 - **History.** The query as typed (syntax included) is saved when the user opens a result from this page: plays or queues a song, opens an album or an artist. Typing alone saves nothing.
 
+## Lyrics plugin store
+
+Feature code: `lib/features/lyrics_plugin_store/`. The pages take callbacks (`onOpenInstalled`, `onOpenCatalogItem`, `onOpenRepositories`) and never navigate themselves; the router wires them to `lib/shared/lyrics_source_routes.dart`.
+
+- **Store page.** `PageScaffold` titled "Plugin store", content at most 720 px wide. Top to bottom: error banner (`errorContainer`, only while a repository failed: one repo names it and the reason, several show a count, both with Try again), search field, source chips (a horizontal scroll row, shown from two sources), then the sections Updates, Installed, Not installed as titled cards (title with count; Updates has the text button "Update all"). Empty sections are left out; a "N plugins need a newer Kanaru" note closes the list. The app bar menu has Install from file…, Repositories (N), a divider and Refresh all.
+- **Rows.** `ListTile` with a 40 px rounded icon (the installed package's icon, else the catalog icon, else the extension icon), name, and the repository name or "From file". One icon button on the right: update (primary), uninstall or install (primary). It has a tooltip and the same semantic label. While that work runs it becomes a 20 px spinner (labelled "Working") and cannot be tapped again. Tapping the row opens the plugin.
+- **Install is immediate.** No confirmation. The snackbar "Installed (name)" with Undo appears only for a new or revived plugin, never for an update (undo would uninstall a plugin the user already had). Errors never use a snackbar for install problems: they open a dialog ("Could not install" with the reasons in a bordered box, "Package does not match the list" with what differs and Refresh & try again, "Needs a newer Kanaru"). "No newer version" is quiet.
+- **Repository page.** Rows show name, URL and a trash can only; a repository whose last fetch failed has a red "!" circle with the reason as its tooltip. The "+" floating button sits at the bottom right and the list keeps 88 px of bottom padding so it never covers the last trash can. Removing asks first and says installed plugins stay but stop getting updates.
+- **Add repository dialog.** One URL field and Cancel / Add, no explanatory text. While adding, the field and Cancel are disabled and Add shows a spinner and "Loading…"; the dialog cannot be dismissed until the answer. A failure shows its text under the field and clears when the user edits it.
+- **Texts** come from the `lyricsStore…` keys in `lib/l10n/`.
+
 ## Cover art
 
 - Decode sizes are bucketed to 64, 128, 256 and 512 px (`shared/widgets/cover_art.dart`). Images are never decoded at full size in lists.

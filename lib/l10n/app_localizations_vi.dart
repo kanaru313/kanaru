@@ -3615,4 +3615,481 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsViewLog => 'Xem log';
+
+  @override
+  String get lyricsStoreTitle => 'Kho plugin';
+
+  @override
+  String get lyricsStoreSearchHint => 'Tìm theo tên, tác giả, repo, host';
+
+  @override
+  String get lyricsStoreChipAll => 'Tất cả';
+
+  @override
+  String get lyricsStoreFromFile => 'Từ file';
+
+  @override
+  String lyricsStoreSectionUpdates(int count) {
+    return 'Cập nhật ($count)';
+  }
+
+  @override
+  String lyricsStoreSectionInstalled(int count) {
+    return 'Đã cài ($count)';
+  }
+
+  @override
+  String lyricsStoreSectionAvailable(int count) {
+    return 'Chưa cài ($count)';
+  }
+
+  @override
+  String get lyricsStoreUpdateAll => 'Cập nhật tất cả';
+
+  @override
+  String get lyricsStoreNoMatch => 'Không có plugin khớp.';
+
+  @override
+  String lyricsStoreNeedsNewerFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plugin cần Kanaru mới hơn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsStoreRepoFailedOne(String name, String reason) {
+    return 'Không tải được $name: $reason';
+  }
+
+  @override
+  String lyricsStoreRepoFailedMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repository không tải được',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsStoreRetry => 'Thử lại';
+
+  @override
+  String get lyricsStoreLoadNetwork => 'lỗi mạng';
+
+  @override
+  String get lyricsStoreLoadNotFound => 'không tìm thấy file';
+
+  @override
+  String get lyricsStoreLoadTooLarge => 'file quá lớn';
+
+  @override
+  String get lyricsStoreLoadInvalid => 'không phải danh sách plugin hợp lệ';
+
+  @override
+  String get lyricsStoreLoadBlocked => 'địa chỉ bị chặn';
+
+  @override
+  String get lyricsStoreInstallTooltip => 'Cài';
+
+  @override
+  String get lyricsStoreUpdateTooltip => 'Cập nhật';
+
+  @override
+  String get lyricsStoreUninstallTooltip => 'Gỡ plugin';
+
+  @override
+  String get lyricsStoreWorking => 'Đang xử lý';
+
+  @override
+  String get lyricsStoreMenuInstallFile => 'Cài từ file…';
+
+  @override
+  String lyricsStoreMenuRepositories(int count) {
+    return 'Repository ($count)';
+  }
+
+  @override
+  String get lyricsStoreMenuRefreshAll => 'Làm mới tất cả';
+
+  @override
+  String get lyricsStoreEmptyTitle => 'Chưa có plugin nào';
+
+  @override
+  String get lyricsStoreAddRepository => 'Thêm repository';
+
+  @override
+  String get lyricsStoreUnavailable => 'Kho plugin chưa dùng được lúc này.';
+
+  @override
+  String get lyricsStoreLoadFailed => 'Không đọc được kho plugin';
+
+  @override
+  String lyricsStoreInstalled(String name) {
+    return 'Đã cài $name';
+  }
+
+  @override
+  String get lyricsStoreUndo => 'Hoàn tác';
+
+  @override
+  String get lyricsStoreUndoFailed => 'Không hoàn tác được';
+
+  @override
+  String lyricsStoreUpdated(String name, int version) {
+    return 'Đã cập nhật $name lên v$version';
+  }
+
+  @override
+  String lyricsStoreUpdatedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã cập nhật $count plugin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsStoreUpdatedAllPartial(int done, int failed) {
+    return 'Đã cập nhật $done plugin, $failed plugin lỗi';
+  }
+
+  @override
+  String lyricsStoreUninstalled(String name) {
+    return 'Đã gỡ $name';
+  }
+
+  @override
+  String lyricsStoreUninstallFailed(String name) {
+    return 'Không gỡ được $name';
+  }
+
+  @override
+  String lyricsStoreUninstallTitle(String name) {
+    return 'Gỡ $name?';
+  }
+
+  @override
+  String get lyricsStoreUninstallRemoves => 'Sẽ bị xóa';
+
+  @override
+  String get lyricsStoreUninstallKeeps => 'Vẫn giữ';
+
+  @override
+  String get lyricsStoreUninstallCode => 'Code của plugin';
+
+  @override
+  String get lyricsStoreUninstallSettings => 'Cài đặt của plugin';
+
+  @override
+  String get lyricsStoreUninstallSettingsSecret =>
+      'Cài đặt của plugin, kể cả giá trị bí mật trong kho khóa';
+
+  @override
+  String get lyricsStoreUninstallStorage => 'Bộ nhớ riêng của plugin';
+
+  @override
+  String get lyricsStoreUninstallKeepLyrics =>
+      'Lời đã lưu và lời đã ghim từ nguồn này (nếu có)';
+
+  @override
+  String get lyricsStoreUninstallKeepLrc => 'File .lrc đã ghi cạnh bài';
+
+  @override
+  String get lyricsStoreUninstallConfirm => 'Gỡ';
+
+  @override
+  String get lyricsStoreInstallFailedTitle => 'Không cài được';
+
+  @override
+  String lyricsStoreInstallFailedFile(String name) {
+    return 'File $name không phải plugin hợp lệ.';
+  }
+
+  @override
+  String lyricsStoreInstallFailedRepo(String name, String repo) {
+    return '$name · Repo: $repo';
+  }
+
+  @override
+  String get lyricsStoreReasons => 'Lý do';
+
+  @override
+  String get lyricsStoreMismatchTitle => 'Gói không khớp danh sách';
+
+  @override
+  String get lyricsStoreMismatchDiffs => 'Khác nhau';
+
+  @override
+  String lyricsStoreMismatchVersion(int catalog, int package) {
+    return 'Danh sách ghi phiên bản $catalog, gói tải về là phiên bản $package';
+  }
+
+  @override
+  String lyricsStoreMismatchHosts(String catalog, String package) {
+    return 'Danh sách ghi host $catalog, gói khai $package';
+  }
+
+  @override
+  String get lyricsStoreMismatchGeneric =>
+      'Phiên bản hoặc host của gói khác với danh sách';
+
+  @override
+  String get lyricsStoreMismatchHint =>
+      'Thường do repo vừa cập nhật và bộ nhớ đệm chưa kịp đổi. Làm mới danh sách rồi thử lại sau vài phút. Nếu vẫn lệch, hãy báo chủ repo.';
+
+  @override
+  String get lyricsStoreMismatchRetry => 'Làm mới & thử lại';
+
+  @override
+  String get lyricsStoreNeedsNewerTitle => 'Cần Kanaru mới hơn';
+
+  @override
+  String lyricsStoreNeedsNewerBody(String name) {
+    return '$name dùng API plugin mới hơn bản Kanaru này hỗ trợ. Hãy cập nhật Kanaru rồi cài lại.';
+  }
+
+  @override
+  String get lyricsStoreProblemTooLarge =>
+      'Gói, hoặc một mục trong gói, quá lớn';
+
+  @override
+  String get lyricsStoreProblemNotZip => 'File không phải gói zip đọc được';
+
+  @override
+  String lyricsStoreProblemUnsafeEntry(String detail) {
+    return 'Gói có tên mục không an toàn ($detail)';
+  }
+
+  @override
+  String get lyricsStoreProblemTooManyEntries => 'Gói có quá nhiều file';
+
+  @override
+  String get lyricsStoreProblemMissingManifest =>
+      'Không thấy plugin.json ở đầu gói';
+
+  @override
+  String lyricsStoreProblemInvalidManifest(String detail) {
+    return 'plugin.json không hợp lệ ở \"$detail\"';
+  }
+
+  @override
+  String get lyricsStoreProblemInvalidManifestPlain =>
+      'plugin.json không hợp lệ';
+
+  @override
+  String get lyricsStoreProblemNeedsNewerApp =>
+      'Cần Kanaru mới hơn: plugin dùng API plugin mới hơn bản này hỗ trợ';
+
+  @override
+  String get lyricsStoreProblemWrongType => 'plugin.json: type phải là lyrics';
+
+  @override
+  String lyricsStoreProblemBadHost(String detail) {
+    return 'hosts: \"$detail\" không phải tên miền công khai';
+  }
+
+  @override
+  String lyricsStoreProblemMissingScript(String detail) {
+    return 'Không thấy src/$detail trong gói';
+  }
+
+  @override
+  String lyricsStoreProblemScriptError(String detail) {
+    return 'Script $detail bị lỗi';
+  }
+
+  @override
+  String lyricsStoreProblemScriptErrorLine(String detail, int line) {
+    return 'Script $detail bị lỗi ở dòng $line';
+  }
+
+  @override
+  String get lyricsStoreProblemCheckUnavailable =>
+      'Kanaru chưa kiểm tra được script lúc này (thư viện chạy plugin không tải được) nên chưa biết gói có hợp lệ không';
+
+  @override
+  String get lyricsStoreFailUnknownRepo =>
+      'Repository này không còn trong danh sách';
+
+  @override
+  String get lyricsStoreFailUnknownEntry =>
+      'Repository không còn liệt kê plugin này. Hãy làm mới danh sách.';
+
+  @override
+  String get lyricsStoreFailNotFromRepo =>
+      'Plugin này cài từ file nên không có cập nhật. Hãy gỡ rồi cài file mới.';
+
+  @override
+  String get lyricsStoreFailNoNewerVersion => 'Chưa có phiên bản mới hơn';
+
+  @override
+  String lyricsStoreFailDownload(String reason) {
+    return 'Không tải được gói plugin: $reason';
+  }
+
+  @override
+  String get lyricsStoreFailRejected => 'Gói plugin không hợp lệ';
+
+  @override
+  String get lyricsStoreFailMismatch => 'Gói không khớp danh sách';
+
+  @override
+  String get lyricsStoreFailOlderVersion =>
+      'Gói này cũ hơn bản đã cài nên không được dùng.';
+
+  @override
+  String get lyricsStoreFailSecretsUnavailable =>
+      'Không xóa được bí mật của lần cài trước trong kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
+
+  @override
+  String get lyricsStoreFailGone =>
+      'Plugin này không còn được cài nên không cập nhật được.';
+
+  @override
+  String get lyricsStoreFailStorage =>
+      'Không ghi được plugin vào thư viện (đĩa đầy hoặc thiếu quyền?)';
+
+  @override
+  String get lyricsStoreFailPackageTooLarge => 'gói quá lớn';
+
+  @override
+  String lyricsStoreItemAuthor(String author) {
+    return '$author (tự khai)';
+  }
+
+  @override
+  String get lyricsStoreItemUnknownAuthor => 'Không rõ tác giả';
+
+  @override
+  String get lyricsStoreItemInfo => 'Thông tin';
+
+  @override
+  String get lyricsStoreItemDescription => 'Mô tả';
+
+  @override
+  String get lyricsStoreItemRepo => 'Repo';
+
+  @override
+  String get lyricsStoreItemHosts => 'Chỉ được kết nối tới';
+
+  @override
+  String get lyricsStoreItemInstall => 'Cài';
+
+  @override
+  String get lyricsStoreItemNotFound =>
+      'Không thấy plugin này trong repository.';
+
+  @override
+  String get lyricsStoreReposTitle => 'Repository';
+
+  @override
+  String get lyricsStoreReposEmpty => 'Chưa có repository nào.';
+
+  @override
+  String lyricsStoreRepoErrorTooltip(String reason) {
+    return 'Lần tải gần nhất bị lỗi: $reason';
+  }
+
+  @override
+  String get lyricsStoreRepoRemoveTooltip => 'Gỡ repository';
+
+  @override
+  String lyricsStoreRemoveRepoTitle(String name) {
+    return 'Gỡ $name?';
+  }
+
+  @override
+  String get lyricsStoreRemoveRepoBody =>
+      'Plugin đã cài từ repo này vẫn giữ, nhưng sẽ không còn nhận cập nhật.';
+
+  @override
+  String get lyricsStoreRemoveRepoConfirm => 'Gỡ';
+
+  @override
+  String lyricsStoreRepoRemoved(String name) {
+    return 'Đã gỡ $name';
+  }
+
+  @override
+  String lyricsStoreRepoRemoveFailed(String name) {
+    return 'Không gỡ được $name';
+  }
+
+  @override
+  String get lyricsStoreAddUrlLabel => 'URL';
+
+  @override
+  String get lyricsStoreAddConfirm => 'Thêm';
+
+  @override
+  String get lyricsStoreAddLoading => 'Đang tải…';
+
+  @override
+  String lyricsStoreAddedRepo(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã thêm $name · $count plugin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsStoreAddErrPublicNeedsHttps => 'Địa chỉ công khai cần https';
+
+  @override
+  String get lyricsStoreAddErrInvalidUrl => 'URL không hợp lệ';
+
+  @override
+  String get lyricsStoreAddErrDuplicate => 'Đã có repo này';
+
+  @override
+  String get lyricsStoreAddErrNetwork => 'Không tải được danh sách: lỗi mạng';
+
+  @override
+  String get lyricsStoreAddErrNotFound =>
+      'Không thấy danh sách plugin ở địa chỉ này';
+
+  @override
+  String get lyricsStoreAddErrBadFormat =>
+      'File không phải danh sách plugin hợp lệ';
+
+  @override
+  String get lyricsStoreAddErrBlocked => 'Địa chỉ này bị chặn';
+
+  @override
+  String lyricsStoreAddErrBlockedReason(String reason) {
+    return 'Địa chỉ này bị chặn: $reason';
+  }
+
+  @override
+  String get lyricsStoreAddErrStorage => 'Không lưu được repository';
+
+  @override
+  String get lyricsStoreAddressUserInfo =>
+      'địa chỉ không được chứa tên người dùng hay mật khẩu';
+
+  @override
+  String get lyricsStoreAddressLocalFromPublic =>
+      'repo công khai không được trỏ tới địa chỉ nội bộ';
+
+  @override
+  String get lyricsStoreAddressRefused =>
+      'địa chỉ này không được phép truy cập';
+
+  @override
+  String get lyricsStoreAddressMixed =>
+      'tên miền trỏ tới cả địa chỉ nội bộ và công khai';
+
+  @override
+  String get lyricsStoreAddressLocalNamePublic =>
+      'tên nội bộ lại trỏ tới địa chỉ công khai';
+
+  @override
+  String get lyricsStoreItemInstalled => 'Đã cài';
 }

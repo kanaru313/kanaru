@@ -3454,5 +3454,682 @@
   "lyricsViewLog": "View log",
   "@lyricsViewLog": {
     "description": "Action beside a lyrics plugin failure that shows that plugin's log file in the file manager"
+  },
+  "lyricsStoreTitle": "Plugin store",
+  "@lyricsStoreTitle": {
+    "description": "Title of the lyrics plugin store page"
+  },
+  "lyricsStoreSearchHint": "Search by name, author, repo, host",
+  "@lyricsStoreSearchHint": {
+    "description": "Hint of the store search field"
+  },
+  "lyricsStoreChipAll": "All",
+  "@lyricsStoreChipAll": {
+    "description": "Source chip that shows every plugin"
+  },
+  "lyricsStoreFromFile": "From file",
+  "@lyricsStoreFromFile": {
+    "description": "Source chip and row subtitle of a plugin installed from a zip file"
+  },
+  "lyricsStoreSectionUpdates": "Updates ({count})",
+  "@lyricsStoreSectionUpdates": {
+    "description": "Store section of plugins with a newer version",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreSectionInstalled": "Installed ({count})",
+  "@lyricsStoreSectionInstalled": {
+    "description": "Store section of installed plugins",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreSectionAvailable": "Not installed ({count})",
+  "@lyricsStoreSectionAvailable": {
+    "description": "Store section of catalog plugins that are not installed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreUpdateAll": "Update all",
+  "@lyricsStoreUpdateAll": {
+    "description": "Button that updates every plugin with an update"
+  },
+  "lyricsStoreNoMatch": "No matching plugins.",
+  "@lyricsStoreNoMatch": {
+    "description": "Shown when the search or filter matches no plugin"
+  },
+  "lyricsStoreNeedsNewerFooter": "{count, plural, =1{1 plugin needs a newer Kanaru} other{{count} plugins need a newer Kanaru}}",
+  "@lyricsStoreNeedsNewerFooter": {
+    "description": "Footer of the store list: plugins hidden because they need a newer app",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreRepoFailedOne": "Could not load {name}: {reason}",
+  "@lyricsStoreRepoFailedOne": {
+    "description": "Banner when one repository failed to load",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreRepoFailedMany": "{count, plural, =1{1 repository could not be loaded} other{{count} repositories could not be loaded}}",
+  "@lyricsStoreRepoFailedMany": {
+    "description": "Banner when several repositories failed to load",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreRetry": "Try again",
+  "@lyricsStoreRetry": {
+    "description": "Retry button of the repository error banner"
+  },
+  "lyricsStoreLoadNetwork": "network error",
+  "@lyricsStoreLoadNetwork": {
+    "description": "Reason a repository could not be loaded"
+  },
+  "lyricsStoreLoadNotFound": "file not found",
+  "@lyricsStoreLoadNotFound": {
+    "description": "Reason a repository could not be loaded"
+  },
+  "lyricsStoreLoadTooLarge": "file too large",
+  "@lyricsStoreLoadTooLarge": {
+    "description": "Reason a repository could not be loaded"
+  },
+  "lyricsStoreLoadInvalid": "not a valid plugin list",
+  "@lyricsStoreLoadInvalid": {
+    "description": "Reason a repository could not be loaded"
+  },
+  "lyricsStoreLoadBlocked": "address blocked",
+  "@lyricsStoreLoadBlocked": {
+    "description": "Reason a repository could not be loaded"
+  },
+  "lyricsStoreInstallTooltip": "Install",
+  "@lyricsStoreInstallTooltip": {
+    "description": "Tooltip of the install button of a store row"
+  },
+  "lyricsStoreUpdateTooltip": "Update",
+  "@lyricsStoreUpdateTooltip": {
+    "description": "Tooltip of the update button of a store row"
+  },
+  "lyricsStoreUninstallTooltip": "Uninstall plugin",
+  "@lyricsStoreUninstallTooltip": {
+    "description": "Tooltip of the uninstall button of a store row"
+  },
+  "lyricsStoreWorking": "Working",
+  "@lyricsStoreWorking": {
+    "description": "Semantics label of the spinner shown while a plugin is installed or updated"
+  },
+  "lyricsStoreMenuInstallFile": "Install from file…",
+  "@lyricsStoreMenuInstallFile": {
+    "description": "Store menu item"
+  },
+  "lyricsStoreMenuRepositories": "Repositories ({count})",
+  "@lyricsStoreMenuRepositories": {
+    "description": "Store menu item that opens the repository list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreMenuRefreshAll": "Refresh all",
+  "@lyricsStoreMenuRefreshAll": {
+    "description": "Store menu item that reloads every repository"
+  },
+  "lyricsStoreEmptyTitle": "No plugins yet",
+  "@lyricsStoreEmptyTitle": {
+    "description": "Empty store title"
+  },
+  "lyricsStoreAddRepository": "Add repository",
+  "@lyricsStoreAddRepository": {
+    "description": "Button and dialog title for adding a plugin repository"
+  },
+  "lyricsStoreUnavailable": "The plugin store is not available right now.",
+  "@lyricsStoreUnavailable": {
+    "description": "Shown when the library database is unavailable"
+  },
+  "lyricsStoreLoadFailed": "Could not read the plugin store",
+  "@lyricsStoreLoadFailed": {
+    "description": "Shown when the store data failed to load"
+  },
+  "lyricsStoreInstalled": "Installed {name}",
+  "@lyricsStoreInstalled": {
+    "description": "Snackbar after installing a plugin",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreUndo": "Undo",
+  "@lyricsStoreUndo": {
+    "description": "Snackbar action that removes the plugin just installed"
+  },
+  "lyricsStoreUndoFailed": "Could not undo",
+  "@lyricsStoreUndoFailed": {
+    "description": "Snackbar when undoing an install failed"
+  },
+  "lyricsStoreUpdated": "Updated {name} to v{version}",
+  "@lyricsStoreUpdated": {
+    "description": "Snackbar after updating a plugin",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreUpdatedAll": "{count, plural, =1{Updated 1 plugin} other{Updated {count} plugins}}",
+  "@lyricsStoreUpdatedAll": {
+    "description": "Snackbar after update all",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreUpdatedAllPartial": "Updated {done}, {failed} failed",
+  "@lyricsStoreUpdatedAllPartial": {
+    "description": "Snackbar after update all when some updates failed",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreUninstalled": "Uninstalled {name}",
+  "@lyricsStoreUninstalled": {
+    "description": "Snackbar after uninstalling a plugin",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreUninstallFailed": "Could not uninstall {name}",
+  "@lyricsStoreUninstallFailed": {
+    "description": "Snackbar when uninstalling failed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreUninstallTitle": "Uninstall {name}?",
+  "@lyricsStoreUninstallTitle": {
+    "description": "Uninstall dialog title",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreUninstallRemoves": "Will be deleted",
+  "@lyricsStoreUninstallRemoves": {
+    "description": "Uninstall dialog box title"
+  },
+  "lyricsStoreUninstallKeeps": "Stays",
+  "@lyricsStoreUninstallKeeps": {
+    "description": "Uninstall dialog box title"
+  },
+  "lyricsStoreUninstallCode": "The plugin's code",
+  "@lyricsStoreUninstallCode": {
+    "description": "Uninstall dialog item"
+  },
+  "lyricsStoreUninstallSettings": "The plugin's settings",
+  "@lyricsStoreUninstallSettings": {
+    "description": "Uninstall dialog item"
+  },
+  "lyricsStoreUninstallSettingsSecret": "The plugin's settings, including secret values in the keyring",
+  "@lyricsStoreUninstallSettingsSecret": {
+    "description": "Uninstall dialog item"
+  },
+  "lyricsStoreUninstallStorage": "The plugin's own storage",
+  "@lyricsStoreUninstallStorage": {
+    "description": "Uninstall dialog item"
+  },
+  "lyricsStoreUninstallKeepLyrics": "Saved and pinned lyrics from this source (if any)",
+  "@lyricsStoreUninstallKeepLyrics": {
+    "description": "Uninstall dialog item"
+  },
+  "lyricsStoreUninstallKeepLrc": "Lyrics .lrc files written next to songs",
+  "@lyricsStoreUninstallKeepLrc": {
+    "description": "Uninstall dialog item"
+  },
+  "lyricsStoreUninstallConfirm": "Uninstall",
+  "@lyricsStoreUninstallConfirm": {
+    "description": "Uninstall dialog confirm button"
+  },
+  "lyricsStoreInstallFailedTitle": "Could not install",
+  "@lyricsStoreInstallFailedTitle": {
+    "description": "Install problem dialog title"
+  },
+  "lyricsStoreInstallFailedFile": "The file {name} is not a valid plugin.",
+  "@lyricsStoreInstallFailedFile": {
+    "description": "Install problem dialog line for a file",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreInstallFailedRepo": "{name} · Repo: {repo}",
+  "@lyricsStoreInstallFailedRepo": {
+    "description": "Install problem dialog line for a repository plugin",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "repo": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreReasons": "Reason",
+  "@lyricsStoreReasons": {
+    "description": "Install problem dialog box title"
+  },
+  "lyricsStoreMismatchTitle": "Package does not match the list",
+  "@lyricsStoreMismatchTitle": {
+    "description": "Catalog mismatch dialog title"
+  },
+  "lyricsStoreMismatchDiffs": "Differences",
+  "@lyricsStoreMismatchDiffs": {
+    "description": "Catalog mismatch dialog box title"
+  },
+  "lyricsStoreMismatchVersion": "The list says version {catalog}, the downloaded package is version {package}",
+  "@lyricsStoreMismatchVersion": {
+    "description": "Catalog mismatch line",
+    "placeholders": {
+      "catalog": {
+        "type": "int"
+      },
+      "package": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreMismatchHosts": "The list says host {catalog}, the package declares {package}",
+  "@lyricsStoreMismatchHosts": {
+    "description": "Catalog mismatch line",
+    "placeholders": {
+      "catalog": {
+        "type": "String"
+      },
+      "package": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreMismatchGeneric": "The package's version or hosts differ from the list",
+  "@lyricsStoreMismatchGeneric": {
+    "description": "Catalog mismatch line without details"
+  },
+  "lyricsStoreMismatchHint": "Usually the repository was just updated and a cache has not caught up. Refresh the list and try again in a few minutes. If it still differs, tell the repository owner.",
+  "@lyricsStoreMismatchHint": {
+    "description": "Catalog mismatch hint"
+  },
+  "lyricsStoreMismatchRetry": "Refresh & try again",
+  "@lyricsStoreMismatchRetry": {
+    "description": "Catalog mismatch dialog button"
+  },
+  "lyricsStoreNeedsNewerTitle": "Needs a newer Kanaru",
+  "@lyricsStoreNeedsNewerTitle": {
+    "description": "Dialog title when a plugin needs a newer app"
+  },
+  "lyricsStoreNeedsNewerBody": "{name} uses a newer plugin API than this Kanaru supports. Update Kanaru and install it again.",
+  "@lyricsStoreNeedsNewerBody": {
+    "description": "Dialog body when a plugin needs a newer app",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreProblemTooLarge": "The package, or an entry in it, is too large",
+  "@lyricsStoreProblemTooLarge": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemNotZip": "The file is not a readable zip package",
+  "@lyricsStoreProblemNotZip": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemUnsafeEntry": "The package has an unsafe entry name ({detail})",
+  "@lyricsStoreProblemUnsafeEntry": {
+    "description": "Package problem",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreProblemTooManyEntries": "The package has too many files",
+  "@lyricsStoreProblemTooManyEntries": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemMissingManifest": "plugin.json is missing at the top of the package",
+  "@lyricsStoreProblemMissingManifest": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemInvalidManifest": "plugin.json is invalid at \"{detail}\"",
+  "@lyricsStoreProblemInvalidManifest": {
+    "description": "Package problem",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreProblemInvalidManifestPlain": "plugin.json is invalid",
+  "@lyricsStoreProblemInvalidManifestPlain": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemNeedsNewerApp": "Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports",
+  "@lyricsStoreProblemNeedsNewerApp": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemWrongType": "plugin.json: type must be lyrics",
+  "@lyricsStoreProblemWrongType": {
+    "description": "Package problem"
+  },
+  "lyricsStoreProblemBadHost": "hosts: \"{detail}\" is not a public domain name",
+  "@lyricsStoreProblemBadHost": {
+    "description": "Package problem",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreProblemMissingScript": "src/{detail} is missing from the package",
+  "@lyricsStoreProblemMissingScript": {
+    "description": "Package problem",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreProblemScriptError": "The script {detail} has an error",
+  "@lyricsStoreProblemScriptError": {
+    "description": "Package problem",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreProblemScriptErrorLine": "The script {detail} has an error on line {line}",
+  "@lyricsStoreProblemScriptErrorLine": {
+    "description": "Package problem",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      },
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreProblemCheckUnavailable": "Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid",
+  "@lyricsStoreProblemCheckUnavailable": {
+    "description": "Package problem"
+  },
+  "lyricsStoreFailUnknownRepo": "This repository is no longer in the list",
+  "@lyricsStoreFailUnknownRepo": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailUnknownEntry": "The repository no longer lists this plugin. Refresh the list.",
+  "@lyricsStoreFailUnknownEntry": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailNotFromRepo": "This plugin was installed from a file so it has no updates. Uninstall it and install the new file.",
+  "@lyricsStoreFailNotFromRepo": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailNoNewerVersion": "There is no newer version",
+  "@lyricsStoreFailNoNewerVersion": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailDownload": "Could not download the plugin package: {reason}",
+  "@lyricsStoreFailDownload": {
+    "description": "Install failure",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreFailRejected": "The plugin package is not valid",
+  "@lyricsStoreFailRejected": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailMismatch": "The package does not match the list",
+  "@lyricsStoreFailMismatch": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailOlderVersion": "This package is older than the installed one so it is not used.",
+  "@lyricsStoreFailOlderVersion": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailSecretsUnavailable": "The secrets of the earlier install could not be deleted from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru and try again.",
+  "@lyricsStoreFailSecretsUnavailable": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailGone": "This plugin is no longer installed so it cannot be updated.",
+  "@lyricsStoreFailGone": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailStorage": "Could not write the plugin to the library (disk full or missing permission?)",
+  "@lyricsStoreFailStorage": {
+    "description": "Install failure"
+  },
+  "lyricsStoreFailPackageTooLarge": "package too large",
+  "@lyricsStoreFailPackageTooLarge": {
+    "description": "Download failure reason"
+  },
+  "lyricsStoreItemAuthor": "{author} (self-declared)",
+  "@lyricsStoreItemAuthor": {
+    "description": "Author as the plugin states it",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreItemUnknownAuthor": "Unknown author",
+  "@lyricsStoreItemUnknownAuthor": {
+    "description": "Shown when a plugin names no author"
+  },
+  "lyricsStoreItemInfo": "Details",
+  "@lyricsStoreItemInfo": {
+    "description": "Catalog item section title"
+  },
+  "lyricsStoreItemDescription": "Description",
+  "@lyricsStoreItemDescription": {
+    "description": "Catalog item field"
+  },
+  "lyricsStoreItemRepo": "Repository",
+  "@lyricsStoreItemRepo": {
+    "description": "Catalog item field"
+  },
+  "lyricsStoreItemHosts": "Can only connect to",
+  "@lyricsStoreItemHosts": {
+    "description": "Catalog item field: hosts the plugin may contact"
+  },
+  "lyricsStoreItemInstall": "Install",
+  "@lyricsStoreItemInstall": {
+    "description": "Catalog item install button"
+  },
+  "lyricsStoreItemNotFound": "This plugin is not in the repository.",
+  "@lyricsStoreItemNotFound": {
+    "description": "Catalog item page when the entry is unknown"
+  },
+  "lyricsStoreReposTitle": "Repositories",
+  "@lyricsStoreReposTitle": {
+    "description": "Title of the repository list page"
+  },
+  "lyricsStoreReposEmpty": "No repositories yet.",
+  "@lyricsStoreReposEmpty": {
+    "description": "Repository list when empty"
+  },
+  "lyricsStoreRepoErrorTooltip": "The last load failed: {reason}",
+  "@lyricsStoreRepoErrorTooltip": {
+    "description": "Tooltip of the error mark of a repository",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreRepoRemoveTooltip": "Remove repository",
+  "@lyricsStoreRepoRemoveTooltip": {
+    "description": "Tooltip of the remove button of a repository"
+  },
+  "lyricsStoreRemoveRepoTitle": "Remove {name}?",
+  "@lyricsStoreRemoveRepoTitle": {
+    "description": "Remove repository dialog title",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreRemoveRepoBody": "Plugins installed from this repository stay, but will no longer get updates.",
+  "@lyricsStoreRemoveRepoBody": {
+    "description": "Remove repository dialog body"
+  },
+  "lyricsStoreRemoveRepoConfirm": "Remove",
+  "@lyricsStoreRemoveRepoConfirm": {
+    "description": "Remove repository dialog confirm button"
+  },
+  "lyricsStoreRepoRemoved": "Removed {name}",
+  "@lyricsStoreRepoRemoved": {
+    "description": "Snackbar after removing a repository",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreRepoRemoveFailed": "Could not remove {name}",
+  "@lyricsStoreRepoRemoveFailed": {
+    "description": "Snackbar when removing a repository failed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreAddUrlLabel": "URL",
+  "@lyricsStoreAddUrlLabel": {
+    "description": "Label of the add repository field"
+  },
+  "lyricsStoreAddConfirm": "Add",
+  "@lyricsStoreAddConfirm": {
+    "description": "Add repository dialog confirm button"
+  },
+  "lyricsStoreAddLoading": "Loading…",
+  "@lyricsStoreAddLoading": {
+    "description": "Add repository confirm button while loading"
+  },
+  "lyricsStoreAddedRepo": "{count, plural, =1{Added {name} · 1 plugin} other{Added {name} · {count} plugins}}",
+  "@lyricsStoreAddedRepo": {
+    "description": "Snackbar after adding a repository",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreAddErrPublicNeedsHttps": "A public address needs https",
+  "@lyricsStoreAddErrPublicNeedsHttps": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrInvalidUrl": "Invalid URL",
+  "@lyricsStoreAddErrInvalidUrl": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrDuplicate": "This repository is already added",
+  "@lyricsStoreAddErrDuplicate": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrNetwork": "Could not load the list: network error",
+  "@lyricsStoreAddErrNetwork": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrNotFound": "No plugin list was found at this address",
+  "@lyricsStoreAddErrNotFound": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrBadFormat": "The file is not a valid plugin list",
+  "@lyricsStoreAddErrBadFormat": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrBlocked": "This address is blocked",
+  "@lyricsStoreAddErrBlocked": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddErrBlockedReason": "This address is blocked: {reason}",
+  "@lyricsStoreAddErrBlockedReason": {
+    "description": "Add repository error with the rule that refused it",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsStoreAddErrStorage": "Could not save the repository",
+  "@lyricsStoreAddErrStorage": {
+    "description": "Add repository error"
+  },
+  "lyricsStoreAddressUserInfo": "the address must not contain a user name or password",
+  "@lyricsStoreAddressUserInfo": {
+    "description": "Address rule"
+  },
+  "lyricsStoreAddressLocalFromPublic": "a public repository must not point to a local address",
+  "@lyricsStoreAddressLocalFromPublic": {
+    "description": "Address rule"
+  },
+  "lyricsStoreAddressRefused": "this address may not be reached",
+  "@lyricsStoreAddressRefused": {
+    "description": "Address rule"
+  },
+  "lyricsStoreAddressMixed": "the name points to both local and public addresses",
+  "@lyricsStoreAddressMixed": {
+    "description": "Address rule"
+  },
+  "lyricsStoreAddressLocalNamePublic": "a local-looking name points to a public address",
+  "@lyricsStoreAddressLocalNamePublic": {
+    "description": "Address rule"
+  },
+  "lyricsStoreItemInstalled": "Installed",
+  "@lyricsStoreItemInstalled": {
+    "description": "Mark on the catalog item page of a plugin that is installed"
   }
 }
