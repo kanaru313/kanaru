@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../settings/settings_provider.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http.dart';
+import 'lyrics_http_pinned_connect.dart';
 import 'lyrics_http_retry.dart';
 import 'lyrics_provider_registry.dart';
 
@@ -68,10 +69,15 @@ class OnlineLyricsHttpFactory {
 /// How long opening a connection may take.
 const lyricsConnectTimeout = Duration(seconds: 10);
 
-/// The shared client for online lyrics, closed with its container. Tests
-/// override it.
+/// The shared client for online lyrics (LRCLIB and plugin `fetch`), closed
+/// with its container. Its connections go through the public-only pinned
+/// factory: a host name that resolves to a loopback, private or otherwise
+/// non-public address fails with `blockedHost` before anything is sent.
+/// Tests override it.
 final lyricsHttpClientProvider = Provider<HttpClient>((ref) {
-  final client = HttpClient()..connectionTimeout = lyricsConnectTimeout;
+  final client = HttpClient()
+    ..connectionTimeout = lyricsConnectTimeout
+    ..connectionFactory = lyricsPublicOnlyConnectionFactory();
   ref.onDispose(() => client.close(force: true));
   return client;
 });
