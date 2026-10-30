@@ -58,6 +58,10 @@ pub struct PluginFetchRequest {
     /// What is left of the call's 15 s (or the script's smaller `timeout`).
     /// Dart uses the smaller of this and 30 s as the overall timeout.
     pub deadline_ms: u32,
+    /// HTTP sends still allowed for this call (10 minus the sends used so
+    /// far), at least 1. Dart must not make more, retries included; a larger
+    /// `sends` in the answer is counted as this value.
+    pub max_sends: u32,
 }
 
 /// How Dart answered a [`PluginFetchRequest`].
@@ -194,7 +198,8 @@ pub struct PluginScriptResult {
     /// First failing host `fetch`, whatever the status.
     pub fetch_failure: Option<PluginFetchFailure>,
     /// The plugin's whole new storage map as JSON, only when the script
-    /// changed it. Concurrent calls of one plugin: the last writer wins.
+    /// changed it and finished on its own (status `Ok` or `ScriptError`);
+    /// `None` for every other status. Concurrent calls of one plugin: the last writer wins.
     pub storage_json: Option<String>,
 }
 

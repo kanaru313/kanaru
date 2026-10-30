@@ -1107,14 +1107,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PluginFetchRequest dco_decode_plugin_fetch_request(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return PluginFetchRequest(
       method: dco_decode_String(arr[0]),
       url: dco_decode_String(arr[1]),
       headers: dco_decode_list_record_string_string(arr[2]),
       body: dco_decode_list_prim_u_8_strict(arr[3]),
       deadlineMs: dco_decode_u_32(arr[4]),
+      maxSends: dco_decode_u_32(arr[5]),
     );
   }
 
@@ -1730,12 +1731,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_headers = sse_decode_list_record_string_string(deserializer);
     var var_body = sse_decode_list_prim_u_8_strict(deserializer);
     var var_deadlineMs = sse_decode_u_32(deserializer);
+    var var_maxSends = sse_decode_u_32(deserializer);
     return PluginFetchRequest(
       method: var_method,
       url: var_url,
       headers: var_headers,
       body: var_body,
       deadlineMs: var_deadlineMs,
+      maxSends: var_maxSends,
     );
   }
 
@@ -2402,6 +2405,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_record_string_string(self.headers, serializer);
     sse_encode_list_prim_u_8_strict(self.body, serializer);
     sse_encode_u_32(self.deadlineMs, serializer);
+    sse_encode_u_32(self.maxSends, serializer);
   }
 
   @protected

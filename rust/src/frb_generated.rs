@@ -1175,12 +1175,14 @@ impl SseDecode for crate::api::plugin_runtime::PluginFetchRequest {
         let mut var_headers = <Vec<(String, String)>>::sse_decode(deserializer);
         let mut var_body = <Vec<u8>>::sse_decode(deserializer);
         let mut var_deadlineMs = <u32>::sse_decode(deserializer);
+        let mut var_maxSends = <u32>::sse_decode(deserializer);
         return crate::api::plugin_runtime::PluginFetchRequest {
             method: var_method,
             url: var_url,
             headers: var_headers,
             body: var_body,
             deadline_ms: var_deadlineMs,
+            max_sends: var_maxSends,
         };
     }
 }
@@ -1738,6 +1740,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginFetchRe
             self.headers.into_into_dart().into_dart(),
             self.body.into_into_dart().into_dart(),
             self.deadline_ms.into_into_dart().into_dart(),
+            self.max_sends.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -2409,6 +2412,7 @@ impl SseEncode for crate::api::plugin_runtime::PluginFetchRequest {
         <Vec<(String, String)>>::sse_encode(self.headers, serializer);
         <Vec<u8>>::sse_encode(self.body, serializer);
         <u32>::sse_encode(self.deadline_ms, serializer);
+        <u32>::sse_encode(self.max_sends, serializer);
     }
 }
 

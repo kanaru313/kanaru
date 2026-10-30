@@ -58,9 +58,11 @@ fn assert_captured(r: &PluginScriptResult) {
         .as_ref()
         .unwrap_or_else(|| panic!("fetch_failure, {r:?}"));
     assert_eq!(failure.kind, PluginFetchFailureKind::Network, "{r:?}");
+    // A changed map is returned only when the script finished on its own.
+    let finished = matches!(r.status, S::Ok | S::ScriptError);
     assert_eq!(
         r.storage_json.as_deref(),
-        Some(r#"{"seen":"yes"}"#),
+        finished.then_some(r#"{"seen":"yes"}"#),
         "{r:?}"
     );
 }
@@ -276,4 +278,89 @@ fn error_texts_stay_capped() {
     let js = r.js_error.unwrap();
     assert_eq!(js.message.chars().count(), 1000);
     assert!(js.stack.len() <= 16 * 1024);
+}
+
+#[test]
+fn storage_changes_are_returned_only_for_a_run_that_finished_on_its_own() {
+    let change = "localStorage.setItem('k', 'v');";
+    let saved = Some(r#"{"k":"v"}"#);
+    let cases: [(&str, S, Option<&str>); 6] = [
+        ("throw new Error('x');", S::ScriptError, saved),
+        ("return Response.error('no');", S::ScriptError, saved),
+        ("return Response.success(1);", S::Ok, saved),
+        ("while (true) {}", S::Timeout, None),
+        (
+            "var a = []; while (true) a.push({x: a.length});",
+            S::Memory,
+            None,
+        ),
+        (
+            "return Response.success('x'.repeat(3 * 1024 * 1024));",
+            S::OutputTooLarge,
+            None,
+        ),
+    ];
+    for (tail, status, want) in cases {
+        let code = format!("function execute() {{ {change} {tail} }}");
+        let r = run_with_fetch(
+            &code,
+            answerer(),
+            RunOptions {
+                // Only the endless loop needs a short deadline.
+                timeout_ms: if tail.starts_with("while") { 300 } else { 0 },
+                ..RunOptions::default()
+            },
+        );
+        assert_eq!(r.status, status, "{tail}: {r:?}");
+        assert_eq!(r.storage_json.as_deref(), want, "{tail}");
+    }
+}
+
+#[test]
+fn storage_changes_are_dropped_when_the_job_is_cancelled() {
+    let job = plugin_runtime::begin_job();
+    let canceller = thread::spawn(move || {
+        thread::sleep(Duration::from_millis(250));
+        plugin_runtime::cancel_job(job);
+    });
+    let request = request_with(
+        job,
+        vec![file(
+            "search.js",
+            "function execute() { localStorage.setItem('k', 'v'); while (true) {} }",
+        )],
+        "{}",
+        0,
+    );
+    let r = block_on(plugin_runtime::run_with(request, answerer()));
+    canceller.join().unwrap();
+    assert_eq!(r.status, S::Cancelled, "{r:?}");
+    assert_eq!(r.storage_json, None);
+}
+
+#[test]
+fn a_caught_memory_failure_is_still_memory_and_drops_the_storage_change() {
+    // Rust byte budget: the overrun is caught and the script returns normally.
+    let r = run(
+        "var kept = [];
+         for (var i = 0; i < 6; i++) {
+           try { kept.push(fetch('https://t.test/big')); } catch (e) {}
+         }
+         return Response.success(1);",
+        answerer(),
+        0,
+    );
+    assert_eq!(r.status, S::Memory, "{r:?}");
+    assert_eq!(r.storage_json, None);
+    assert_eq!(r.logs.len(), 3, "logs still come back: {r:?}");
+
+    // Heap OOM caught by the script.
+    let r = run(
+        "try { var a = []; while (true) a.push({x: a.length}); } catch (e) {}
+         return Response.success(1);",
+        answerer(),
+        0,
+    );
+    assert_eq!(r.status, S::Memory, "{r:?}");
+    assert_eq!(r.storage_json, None);
 }

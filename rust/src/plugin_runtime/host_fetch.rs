@@ -293,12 +293,15 @@ fn fetch<'js>(
     if let Some(t) = parsed.timeout_ms.filter(|t| t.is_finite() && *t >= 1.0) {
         deadline_ms = deadline_ms.min(t.min(f64::from(u32::MAX)) as u32);
     }
+    // Sends still allowed for this call; at least 1 because the cap check above passed.
+    let max_sends = MAX_FETCH_SENDS - state.borrow().sends;
     let request = PluginFetchRequest {
         method: parsed.method.to_owned(),
         url: with_queries(&url, &parsed.queries),
         headers: parsed.headers,
         body: parsed.body,
         deadline_ms: deadline_ms.max(1),
+        max_sends,
     };
     // On this JS thread, never on a bridge worker or the Dart isolate.
     let response = match ask(&env.answerer, request, &env.cancel, env.deadline) {
@@ -314,11 +317,13 @@ fn fetch<'js>(
         response.outcome,
         Outcome::Ok | Outcome::Network | Outcome::RateLimited | Outcome::InvalidResponse
     );
-    let sends = if at_least_one {
+    let reported = if at_least_one {
         response.sends.max(1)
     } else {
         response.sends
     };
+    // The answerer may not use more than it was allowed; the total never passes the cap.
+    let sends = reported.min(max_sends);
     {
         let mut st = state.borrow_mut();
         st.sends = st.sends.saturating_add(sends);

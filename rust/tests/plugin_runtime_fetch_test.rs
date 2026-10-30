@@ -896,3 +896,54 @@ fn lone_surrogates_never_reach_rust_as_a_raw_conversion_error() {
     assert_eq!(r.logs[0], "a\u{fffd}b");
     assert_eq!(r.logs[1].chars().count(), 500);
 }
+
+#[test]
+fn max_sends_counts_down_and_a_reported_overshoot_is_clamped() {
+    let (answerer, seen) = recording(|request| {
+        let mut r = ok_response(200, b"x");
+        // The first answer claims far more sends than allowed; later ones use 3.
+        r.sends = if request.max_sends == 10 { 99 } else { 3 };
+        r
+    });
+    let r = run(
+        "function execute() {
+           var out = [];
+           for (var i = 0; i < 3; i++) {
+             try { fetch('https://t.test/'); out.push('ok'); } catch (e) { out.push(e.name); }
+           }
+           return Response.success(out);
+         }",
+        answerer,
+    );
+    // 99 is clamped to 10: the cap is reached after one fetch.
+    assert_eq!(
+        r.output_json,
+        r#"["ok","TooManyRequestsError","TooManyRequestsError"]"#
+    );
+    assert_eq!(seen.lock().unwrap().len(), 1);
+    assert_eq!(seen.lock().unwrap()[0].max_sends, 10);
+    assert_eq!(r.fetch_failure.unwrap().kind, Kind::InvalidRequest);
+}
+
+#[test]
+fn max_sends_is_ten_minus_the_sends_used_so_far() {
+    let (answerer, seen) = recording(|_| {
+        let mut r = ok_response(200, b"x");
+        r.sends = 4;
+        r
+    });
+    let r = run(
+        "function execute() {
+           for (var i = 0; i < 3; i++) { try { fetch('https://t.test/'); } catch (e) {} }
+           return Response.success(1);
+         }",
+        answerer,
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    let max: Vec<u32> = seen.lock().unwrap().iter().map(|q| q.max_sends).collect();
+    assert_eq!(
+        max,
+        vec![10, 6, 2],
+        "the third answer is clamped to 2, so the total is 10"
+    );
+}

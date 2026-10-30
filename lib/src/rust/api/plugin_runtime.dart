@@ -146,12 +146,18 @@ class PluginFetchRequest {
   /// Dart uses the smaller of this and 30 s as the overall timeout.
   final int deadlineMs;
 
+  /// HTTP sends still allowed for this call (10 minus the sends used so
+  /// far), at least 1. Dart must not make more, retries included; a larger
+  /// `sends` in the answer is counted as this value.
+  final int maxSends;
+
   const PluginFetchRequest({
     required this.method,
     required this.url,
     required this.headers,
     required this.body,
     required this.deadlineMs,
+    required this.maxSends,
   });
 
   @override
@@ -160,7 +166,8 @@ class PluginFetchRequest {
       url.hashCode ^
       headers.hashCode ^
       body.hashCode ^
-      deadlineMs.hashCode;
+      deadlineMs.hashCode ^
+      maxSends.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -171,7 +178,8 @@ class PluginFetchRequest {
           url == other.url &&
           headers == other.headers &&
           body == other.body &&
-          deadlineMs == other.deadlineMs;
+          deadlineMs == other.deadlineMs &&
+          maxSends == other.maxSends;
 }
 
 /// Dart's answer to a [`PluginFetchRequest`].
@@ -364,7 +372,8 @@ class PluginScriptResult {
   final PluginFetchFailure? fetchFailure;
 
   /// The plugin's whole new storage map as JSON, only when the script
-  /// changed it. Concurrent calls of one plugin: the last writer wins.
+  /// changed it and finished on its own (status `Ok` or `ScriptError`);
+  /// `None` for every other status. Concurrent calls of one plugin: the last writer wins.
   final String? storageJson;
 
   const PluginScriptResult({

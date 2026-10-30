@@ -242,6 +242,7 @@ mod tests {
             headers: Vec::new(),
             body: Vec::new(),
             deadline_ms: 1000,
+            max_sends: 10,
         }
     }
 

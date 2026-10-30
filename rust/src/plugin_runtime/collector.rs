@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use super::host_console::LogBuffer;
 use super::host_storage::Storage;
-use crate::api::plugin_runtime::{PluginFetchFailure, PluginScriptResult};
+use crate::api::plugin_runtime::{PluginFetchFailure, PluginScriptResult, PluginScriptStatus};
 
 #[derive(Default)]
 struct Captured {
@@ -54,6 +54,13 @@ impl Collector {
         let captured = self.lock();
         result.logs = captured.logs.lines();
         result.fetch_failure = captured.fetch_failure.clone();
-        result.storage_json = captured.storage.changed_json();
+        // A changed map is saved only when the script finished on its own; a
+        // run that was stopped may have left it half written.
+        result.storage_json = match result.status {
+            PluginScriptStatus::Ok | PluginScriptStatus::ScriptError => {
+                captured.storage.changed_json()
+            }
+            _ => None,
+        };
     }
 }

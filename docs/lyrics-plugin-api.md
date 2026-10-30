@@ -64,9 +64,9 @@ Returning anything else (a Promise, `undefined`, a plain object that merely look
 | `js_error` | the JavaScript exception that ended the run: `message` and `stack` (file names and line numbers kept, e.g. `search.js:12:5`). Set for thrown errors, syntax errors in the entry or a loaded file, and for `timeout`, `memory`, `stack` and a cancel of a running job (the engine's interrupt or limit exception). Not set when no script code was running or the host found the problem after `execute` returned: `cancelled` before start, `busy`, `internal`, `outputTooLarge`, `Response.error`, a non-`Response` return, a missing `execute` |
 | `logs` | console lines captured before the run ended, whatever the status |
 | `fetch_failure` | the first failing `fetch` of the call, even if the script caught the error |
-| `storage_json` | the plugin's whole new storage map, only when the script changed it |
+| `storage_json` | the plugin's whole new storage map, only when the script changed it **and** finished on its own (status `ok` or `scriptError`); `None` for every other status |
 
-`logs`, `fetch_failure` and `storage_json` are plumbed through every failure path (a per-job collector outlives the script, even a panic): a `timeout`, `memory` (heap or the Rust byte budget), `stack`, `cancelled`, `outputTooLarge`, `scriptError` or a panicking host callback still returns the console lines written so far, the `js_error` when the engine had one, and the first `fetch` failure. Tests cover each of these.
+`logs`, `fetch_failure` (and `js_error`) are plumbed through every failure path (a per-job collector outlives the script, even a panic): a `timeout`, `memory` (heap or the Rust byte budget), `stack`, `cancelled`, `outputTooLarge`, `scriptError` or a panicking host callback still returns the console lines written so far, the `js_error` when the engine had one, and the first `fetch` failure. Tests cover each of these.
 
 Other statuses:
 
@@ -108,6 +108,8 @@ Any other outcome throws an `Error` with a `name`:
 | `RateLimitedError` | the server asked to slow down; the error has `retryAfterSec` when known |
 | `TooManyRequestsError` | the call already used 10 HTTP sends (retries the app made count); nothing is sent |
 
+Each request carries `max_sends`: 10 minus the sends used so far (at least 1 whenever a request is sent). The app must not make more sends than that, retries included. A reply that reports more sends than `max_sends` is counted as `max_sends`, so the total never passes 10.
+
 Error messages made by the runtime are fixed texts: they never contain the URL, headers, body or any `localConfig` value.
 
 **Sticky failure.** The first failing outcome of a call is stored in the result as `fetch_failure` (kind, `retry_after_sec`, text), even when the script catches the error and returns `Response.success([])`, so the app does not cache that as "no lyrics". `TooManyRequestsError` is reported as kind `invalidRequest`.
@@ -126,7 +128,7 @@ The plugin's configuration as the app set it (secrets included): a string, or `n
 
 ### `localStorage`
 
-`getItem(key)` (string or `null`), `setItem(key, value)` (both coerced to strings), `removeItem(key)`, `clear()`. The script works on a copy of the plugin's stored map. The quota is 64 KiB of keys plus values (UTF-8 bytes); a `setItem` over it throws `QuotaExceededError` and changes nothing. When the script changed the map, the result's `storage_json` is the whole new map as a JSON object (also when the run failed afterwards); the app writes it back. If two calls of one plugin run at once, the last writer wins. Nothing is returned when the map ended as it started.
+`getItem(key)` (string or `null`), `setItem(key, value)` (both coerced to strings), `removeItem(key)`, `clear()`. The script works on a copy of the plugin's stored map. The quota is 64 KiB of keys plus values (UTF-8 bytes); a `setItem` over it throws `QuotaExceededError` and changes nothing. When the script changed the map and the run finished on its own (`ok`, or `scriptError`: a thrown error, `Response.error`, a non-`Response` return), the result's `storage_json` is the whole new map as a JSON object and the app writes it back. After `cancelled`, `timeout`, `memory`, `stack`, `outputTooLarge`, `internal` or `busy` nothing is returned or saved, even if the script changed the map first. If two calls of one plugin run at once, the last writer wins. Nothing is returned when the map ended as it started.
 
 ### `console` and `Log`
 
