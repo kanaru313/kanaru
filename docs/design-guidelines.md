@@ -227,6 +227,17 @@ Home uses `EmptyState` ("Your library is empty") only when the library has no so
 - Language choices: system, English, Vietnamese. The title bar choice (kanaru, system, none) needs a restart; the screen says so.
 - A save warning (`settings_save_warning.dart`) appears when settings cannot be saved.
 
+## Lyrics sources pages
+
+Sub-pages of Settings (`/settings/lyrics-sources`, `/settings/lyrics-sources/plugin/:installId`), opened from the first row of the Lyrics section ("Lyrics sources", subtitle: names of the enabled sources in order and how many are on). They sit in the Settings branch, so the sidebar keeps Settings lit and Back returns to Settings. Code: `features/lyrics_sources/`.
+
+- **Sources page.** A 720 px column under a page title with a ⋮ menu (Open log folder, Plugin writing guide). An info card explains the order (enabled sources are tried top to bottom; Choose lyrics searches all of them). The "Plugin store" button is shown disabled with a "Coming soon" tooltip until the store exists. One reorderable list holds LRCLIB (badge "Built in", switch and drag only, no page) and the installed plugins. A row: drag handle, 40 px icon (the plugin's `icon.png`, else a default icon), name, subline "author (self-declared) · vN · File: x.zip or Repo: name", the hosts, and a switch. Tapping a plugin row opens its page. With no plugin installed, a hint under LRCLIB points to the store.
+- **Reorder by keyboard and screen reader.** The handle starts a drag at once. A focused handle takes Alt + Up and Alt + Down; Flutter's list adds "Move up / down / to start / to end" actions to each row for screen readers. A dropped order is shown at once, before the database answers.
+- **Plugin page.** Title bar: the plugin name and a trash button (tooltip and semantics "Uninstall plugin"); no ⋮ menu and no uninstall button at the end of the page. Then the enable switch (far from the trash), "Details" (source, the hosts it can connect to, install date, description; the internal install id is never shown), "Plugin settings" built from the manifest (text, number with a number keyboard and a check, secret hidden with a reveal toggle, select, toggle; each saves on Enter, on leaving the field or on change, and a refused save says why in a snackbar) and "Data" (the plugin's own storage and the lyrics saved from it, each with Delete after a confirm). A plugin removed elsewhere shows "no longer installed" and a way back.
+- **Secrets.** A secret field is never filled with the saved value: it shows a dotted hint and "Saved in the system keyring" when one is stored, and a remove button. Without a system keyring the page shows the keyring warning instead (file or memory storage). A locked keyring on save says to unlock it or restart Kanaru.
+- **Uninstall dialog.** "Uninstall <name>?" with two boxes: "Will be deleted" (code, settings including secrets in the keyring when the plugin has any, its own storage with its size) and "Kept" (saved and pinned lyrics from the source with their count, `.lrc` files already written). Confirming returns to the sources page with a snackbar "Uninstalled <name>".
+- **Install failures.** `plugin_install_outcome_messages.dart` maps every install or update outcome (each package problem, each update refusal, an unavailable keyring, a plugin already gone) to text, and `plugin_install_failed_dialog.dart` shows them as "Could not install" with a "Reasons" box.
+
 ## Motion and reduced motion
 
 | Motion | Duration | Reduced motion |

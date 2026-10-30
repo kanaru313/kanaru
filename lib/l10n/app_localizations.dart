@@ -5119,6 +5119,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…'**
   String get lyricsAutoNeedsTags;
+
+  /// Title of the lyrics sources page and of its row in Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics sources'**
+  String get lyricsSourcesTitle;
+
+  /// Subtitle of the Lyrics sources row in Settings; names is the enabled sources, count how many
+  ///
+  /// In en, this message translates to:
+  /// **'{names} · {count} on'**
+  String lyricsSourcesRowSubtitle(String names, int count);
+
+  /// No description provided for @lyricsSourcesRowNoneOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Every source is off'**
+  String get lyricsSourcesRowNoneOn;
+
+  /// No description provided for @lyricsSourcesInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.'**
+  String get lyricsSourcesInfo;
+
+  /// No description provided for @lyricsSourcesStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin store'**
+  String get lyricsSourcesStore;
+
+  /// No description provided for @lyricsSourcesStoreSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get lyricsSourcesStoreSoon;
+
+  /// No description provided for @lyricsSourcesEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No plugins installed yet. You will be able to add some from Plugin store.'**
+  String get lyricsSourcesEmptyHint;
+
+  /// No description provided for @lyricsSourceBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Built in'**
+  String get lyricsSourceBuiltIn;
+
+  /// Subline of the built-in LRCLIB source; hosts is the address it connects to
+  ///
+  /// In en, this message translates to:
+  /// **'Built in · {hosts}'**
+  String lyricsSourceBuiltInHosts(String hosts);
+
+  /// No description provided for @lyricsSourceDragHandle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder (keyboard: Alt + Up or Down arrow)'**
+  String get lyricsSourceDragHandle;
+
+  /// No description provided for @lyricsSourceUnknownAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown author'**
+  String get lyricsSourceUnknownAuthor;
+
+  /// Author of a plugin as the plugin states it; Kanaru does not verify it
+  ///
+  /// In en, this message translates to:
+  /// **'{author} (self-declared)'**
+  String lyricsSourceAuthor(String author);
+
+  /// Where a plugin was installed from: a zip file
+  ///
+  /// In en, this message translates to:
+  /// **'File: {name}'**
+  String lyricsSourceFromFile(String name);
+
+  /// Where a plugin was installed from: a plugin repository
+  ///
+  /// In en, this message translates to:
+  /// **'Repo: {name}'**
+  String lyricsSourceFromRepo(String name);
+
+  /// No description provided for @lyricsSourcesMenuLogFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open log folder'**
+  String get lyricsSourcesMenuLogFolder;
+
+  /// No description provided for @lyricsSourcesMenuGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin writing guide'**
+  String get lyricsSourcesMenuGuide;
+
+  /// No description provided for @pluginUninstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall plugin'**
+  String get pluginUninstall;
+
+  /// No description provided for @pluginGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This plugin is no longer installed.'**
+  String get pluginGone;
+
+  /// No description provided for @pluginInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get pluginInfoTitle;
+
+  /// No description provided for @pluginInfoSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed from'**
+  String get pluginInfoSource;
+
+  /// No description provided for @pluginInfoHosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Can only connect to'**
+  String get pluginInfoHosts;
+
+  /// No description provided for @pluginInfoInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get pluginInfoInstalled;
+
+  /// When a plugin was installed and last updated; both are dates
+  ///
+  /// In en, this message translates to:
+  /// **'{installed} · updated {updated}'**
+  String pluginInfoInstalledUpdated(String installed, String updated);
+
+  /// No description provided for @pluginInfoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get pluginInfoDescription;
+
+  /// No description provided for @pluginConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin settings'**
+  String get pluginConfigTitle;
+
+  /// No description provided for @pluginSecretNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Secret: kept in the system keyring, never in settings or logs.'**
+  String get pluginSecretNote;
+
+  /// No description provided for @pluginSecretSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved in the system keyring'**
+  String get pluginSecretSaved;
+
+  /// No description provided for @pluginSecretFallbackNote.
+  ///
+  /// In en, this message translates to:
+  /// **'No system keyring found; secret values are kept in a file only you can read, or only until Kanaru closes. Do not share or sync that file.'**
+  String get pluginSecretFallbackNote;
+
+  /// No description provided for @pluginSecretShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show value'**
+  String get pluginSecretShow;
+
+  /// No description provided for @pluginSecretHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide value'**
+  String get pluginSecretHide;
+
+  /// No description provided for @pluginSecretClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved value'**
+  String get pluginSecretClear;
+
+  /// No description provided for @pluginConfigNumberInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number'**
+  String get pluginConfigNumberInvalid;
+
+  /// No description provided for @pluginConfigInvalidValue.
+  ///
+  /// In en, this message translates to:
+  /// **'That value is not allowed for this setting.'**
+  String get pluginConfigInvalidValue;
+
+  /// No description provided for @pluginConfigTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s settings are too large to save.'**
+  String get pluginConfigTooLarge;
+
+  /// No description provided for @pluginConfigUnknownKey.
+  ///
+  /// In en, this message translates to:
+  /// **'This setting no longer exists. The plugin may have been removed or changed.'**
+  String get pluginConfigUnknownKey;
+
+  /// No description provided for @pluginConfigSecretStoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the system keyring. Unlock the keyring or restart Kanaru, then try again.'**
+  String get pluginConfigSecretStoreFailed;
+
+  /// No description provided for @pluginDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get pluginDataTitle;
+
+  /// No description provided for @pluginStorageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin\'s own storage'**
+  String get pluginStorageTitle;
+
+  /// Space a plugin's own storage uses out of its limit; both are sizes
+  ///
+  /// In en, this message translates to:
+  /// **'{used} / {limit}'**
+  String pluginStorageUsage(String used, String limit);
+
+  /// No description provided for @pluginSavedLyricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics saved from this source'**
+  String get pluginSavedLyricsTitle;
+
+  /// No description provided for @pluginSavedLyricsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get pluginSavedLyricsNone;
+
+  /// Lyrics saved from one source: how many songs and their size
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}} · {size}'**
+  String pluginSavedLyricsSummary(int count, String size);
+
+  /// No description provided for @pluginDataClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get pluginDataClear;
+
+  /// No description provided for @pluginStorageClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the plugin\'s storage?'**
+  String get pluginStorageClearTitle;
+
+  /// No description provided for @pluginStorageClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin may have to sign in or set itself up again.'**
+  String get pluginStorageClearBody;
+
+  /// No description provided for @pluginStorageCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage deleted'**
+  String get pluginStorageCleared;
+
+  /// No description provided for @pluginSavedLyricsClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete saved lyrics from this source?'**
+  String get pluginSavedLyricsClearTitle;
+
+  /// No description provided for @pluginSavedLyricsClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics saved from this source are deleted. Lyrics you pinned and .lrc files stay.'**
+  String get pluginSavedLyricsClearBody;
+
+  /// No description provided for @pluginSavedLyricsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved lyrics deleted'**
+  String get pluginSavedLyricsCleared;
+
+  /// No description provided for @pluginDataFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the data'**
+  String get pluginDataFailed;
+
+  /// Title of the dialog that asks to uninstall a plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall {name}?'**
+  String pluginUninstallTitle(String name);
+
+  /// No description provided for @pluginUninstallRemoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be deleted'**
+  String get pluginUninstallRemoves;
+
+  /// No description provided for @pluginUninstallKeeps.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept'**
+  String get pluginUninstallKeeps;
+
+  /// No description provided for @pluginUninstallCode.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s code'**
+  String get pluginUninstallCode;
+
+  /// No description provided for @pluginUninstallSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s settings'**
+  String get pluginUninstallSettings;
+
+  /// No description provided for @pluginUninstallSettingsSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin\'s settings, including secret values in the keyring'**
+  String get pluginUninstallSettingsSecret;
+
+  /// Item of the uninstall dialog; size is how much the plugin's own storage holds
+  ///
+  /// In en, this message translates to:
+  /// **'Its own storage ({size})'**
+  String pluginUninstallStorage(String size);
+
+  /// Item of the uninstall dialog: lyrics saved from the plugin stay
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 saved song} other{{count} saved songs}} and lyrics pinned from this source'**
+  String pluginUninstallKeepLyrics(int count);
+
+  /// No description provided for @pluginUninstallKeepPinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics pinned from this source, if any'**
+  String get pluginUninstallKeepPinned;
+
+  /// No description provided for @pluginUninstallKeepLrc.
+  ///
+  /// In en, this message translates to:
+  /// **'The .lrc files already written next to songs'**
+  String get pluginUninstallKeepLrc;
+
+  /// No description provided for @pluginUninstallConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall'**
+  String get pluginUninstallConfirm;
+
+  /// Snackbar after a plugin was uninstalled
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstalled {name}'**
+  String pluginUninstalled(String name);
+
+  /// Snackbar when uninstalling a plugin failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not uninstall {name}'**
+  String pluginUninstallFailed(String name);
+
+  /// No description provided for @pluginInstallFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not install'**
+  String get pluginInstallFailedTitle;
+
+  /// Under the title of the dialog that lists why a plugin file was refused
+  ///
+  /// In en, this message translates to:
+  /// **'File {name} is not a valid plugin.'**
+  String pluginInstallFailedFile(String name);
+
+  /// No description provided for @pluginInstallFailedReasons.
+  ///
+  /// In en, this message translates to:
+  /// **'Reasons'**
+  String get pluginInstallFailedReasons;
+
+  /// No description provided for @pluginProblemTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The package, or something inside it, is too large'**
+  String get pluginProblemTooLarge;
+
+  /// No description provided for @pluginProblemNotZip.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is not a readable zip package'**
+  String get pluginProblemNotZip;
+
+  /// Why a plugin package was refused; detail comes from the package
+  ///
+  /// In en, this message translates to:
+  /// **'The package has an unsafe entry name ({detail})'**
+  String pluginProblemUnsafeEntry(String detail);
+
+  /// No description provided for @pluginProblemTooManyEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'The package has too many files'**
+  String get pluginProblemTooManyEntries;
+
+  /// No description provided for @pluginProblemMissingManifest.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no plugin.json at the top of the package'**
+  String get pluginProblemMissingManifest;
+
+  /// Why a plugin package was refused; detail comes from the package
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json is not valid at \"{detail}\"'**
+  String pluginProblemInvalidManifest(String detail);
+
+  /// No description provided for @pluginProblemInvalidManifestPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json is not valid'**
+  String get pluginProblemInvalidManifestPlain;
+
+  /// No description provided for @pluginProblemNeedsNewerApp.
+  ///
+  /// In en, this message translates to:
+  /// **'A newer Kanaru is needed: the plugin uses a newer plugin API than this version supports'**
+  String get pluginProblemNeedsNewerApp;
+
+  /// No description provided for @pluginProblemWrongType.
+  ///
+  /// In en, this message translates to:
+  /// **'plugin.json: the type must be lyrics'**
+  String get pluginProblemWrongType;
+
+  /// Why a plugin package was refused; detail comes from the package
+  ///
+  /// In en, this message translates to:
+  /// **'hosts: \"{detail}\" is not a public domain name'**
+  String pluginProblemBadHost(String detail);
+
+  /// Why a plugin package was refused; detail comes from the package
+  ///
+  /// In en, this message translates to:
+  /// **'The package has no src/{detail}'**
+  String pluginProblemMissingScript(String detail);
+
+  /// Why a plugin package was refused; detail comes from the package
+  ///
+  /// In en, this message translates to:
+  /// **'Script {detail} has an error'**
+  String pluginProblemScriptError(String detail);
+
+  /// Why a plugin package was refused; detail comes from the package
+  ///
+  /// In en, this message translates to:
+  /// **'Script {detail} has an error at line {line}'**
+  String pluginProblemScriptErrorLine(String detail, int line);
+
+  /// No description provided for @pluginProblemCheckUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanaru could not check the scripts now (the plugin runtime did not load), so it cannot tell whether the package is valid'**
+  String get pluginProblemCheckUnavailable;
+
+  /// No description provided for @pluginRefusedNotFromRepo.
+  ///
+  /// In en, this message translates to:
+  /// **'This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.'**
+  String get pluginRefusedNotFromRepo;
+
+  /// No description provided for @pluginRefusedOlderVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'This package is older than the installed version, so it was not used.'**
+  String get pluginRefusedOlderVersion;
+
+  /// No description provided for @pluginInstallSecretsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The secrets of the earlier install could not be removed from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru, then try again.'**
+  String get pluginInstallSecretsUnavailable;
+
+  /// No description provided for @pluginInstallGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This plugin is no longer installed, so it cannot be updated.'**
+  String get pluginInstallGone;
+
+  /// No description provided for @pluginConfigSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the setting'**
+  String get pluginConfigSaveFailed;
+
+  /// No description provided for @pluginConfigLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the plugin\'s settings'**
+  String get pluginConfigLoadFailed;
+
+  /// No description provided for @pluginSourcesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the list of plugins'**
+  String get pluginSourcesLoadFailed;
+
+  /// No description provided for @pluginRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get pluginRetry;
 }
 
 class _AppLocalizationsDelegate

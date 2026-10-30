@@ -3480,4 +3480,343 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsAutoNeedsTags =>
       'This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…';
+
+  @override
+  String get lyricsSourcesTitle => 'Lyrics sources';
+
+  @override
+  String lyricsSourcesRowSubtitle(String names, int count) {
+    return '$names · $count on';
+  }
+
+  @override
+  String get lyricsSourcesRowNoneOn => 'Every source is off';
+
+  @override
+  String get lyricsSourcesInfo =>
+      'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.';
+
+  @override
+  String get lyricsSourcesStore => 'Plugin store';
+
+  @override
+  String get lyricsSourcesStoreSoon => 'Coming soon';
+
+  @override
+  String get lyricsSourcesEmptyHint =>
+      'No plugins installed yet. You will be able to add some from Plugin store.';
+
+  @override
+  String get lyricsSourceBuiltIn => 'Built in';
+
+  @override
+  String lyricsSourceBuiltInHosts(String hosts) {
+    return 'Built in · $hosts';
+  }
+
+  @override
+  String get lyricsSourceDragHandle =>
+      'Drag to reorder (keyboard: Alt + Up or Down arrow)';
+
+  @override
+  String get lyricsSourceUnknownAuthor => 'Unknown author';
+
+  @override
+  String lyricsSourceAuthor(String author) {
+    return '$author (self-declared)';
+  }
+
+  @override
+  String lyricsSourceFromFile(String name) {
+    return 'File: $name';
+  }
+
+  @override
+  String lyricsSourceFromRepo(String name) {
+    return 'Repo: $name';
+  }
+
+  @override
+  String get lyricsSourcesMenuLogFolder => 'Open log folder';
+
+  @override
+  String get lyricsSourcesMenuGuide => 'Plugin writing guide';
+
+  @override
+  String get pluginUninstall => 'Uninstall plugin';
+
+  @override
+  String get pluginGone => 'This plugin is no longer installed.';
+
+  @override
+  String get pluginInfoTitle => 'Details';
+
+  @override
+  String get pluginInfoSource => 'Installed from';
+
+  @override
+  String get pluginInfoHosts => 'Can only connect to';
+
+  @override
+  String get pluginInfoInstalled => 'Installed';
+
+  @override
+  String pluginInfoInstalledUpdated(String installed, String updated) {
+    return '$installed · updated $updated';
+  }
+
+  @override
+  String get pluginInfoDescription => 'Description';
+
+  @override
+  String get pluginConfigTitle => 'Plugin settings';
+
+  @override
+  String get pluginSecretNote =>
+      'Secret: kept in the system keyring, never in settings or logs.';
+
+  @override
+  String get pluginSecretSaved => 'Saved in the system keyring';
+
+  @override
+  String get pluginSecretFallbackNote =>
+      'No system keyring found; secret values are kept in a file only you can read, or only until Kanaru closes. Do not share or sync that file.';
+
+  @override
+  String get pluginSecretShow => 'Show value';
+
+  @override
+  String get pluginSecretHide => 'Hide value';
+
+  @override
+  String get pluginSecretClear => 'Remove saved value';
+
+  @override
+  String get pluginConfigNumberInvalid => 'Enter a number';
+
+  @override
+  String get pluginConfigInvalidValue =>
+      'That value is not allowed for this setting.';
+
+  @override
+  String get pluginConfigTooLarge =>
+      'The plugin\'s settings are too large to save.';
+
+  @override
+  String get pluginConfigUnknownKey =>
+      'This setting no longer exists. The plugin may have been removed or changed.';
+
+  @override
+  String get pluginConfigSecretStoreFailed =>
+      'Could not reach the system keyring. Unlock the keyring or restart Kanaru, then try again.';
+
+  @override
+  String get pluginDataTitle => 'Data';
+
+  @override
+  String get pluginStorageTitle => 'Plugin\'s own storage';
+
+  @override
+  String pluginStorageUsage(String used, String limit) {
+    return '$used / $limit';
+  }
+
+  @override
+  String get pluginSavedLyricsTitle => 'Lyrics saved from this source';
+
+  @override
+  String get pluginSavedLyricsNone => 'None';
+
+  @override
+  String pluginSavedLyricsSummary(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$_temp0 · $size';
+  }
+
+  @override
+  String get pluginDataClear => 'Delete';
+
+  @override
+  String get pluginStorageClearTitle => 'Delete the plugin\'s storage?';
+
+  @override
+  String get pluginStorageClearBody =>
+      'The plugin may have to sign in or set itself up again.';
+
+  @override
+  String get pluginStorageCleared => 'Storage deleted';
+
+  @override
+  String get pluginSavedLyricsClearTitle =>
+      'Delete saved lyrics from this source?';
+
+  @override
+  String get pluginSavedLyricsClearBody =>
+      'The lyrics saved from this source are deleted. Lyrics you pinned and .lrc files stay.';
+
+  @override
+  String get pluginSavedLyricsCleared => 'Saved lyrics deleted';
+
+  @override
+  String get pluginDataFailed => 'Could not delete the data';
+
+  @override
+  String pluginUninstallTitle(String name) {
+    return 'Uninstall $name?';
+  }
+
+  @override
+  String get pluginUninstallRemoves => 'Will be deleted';
+
+  @override
+  String get pluginUninstallKeeps => 'Kept';
+
+  @override
+  String get pluginUninstallCode => 'The plugin\'s code';
+
+  @override
+  String get pluginUninstallSettings => 'The plugin\'s settings';
+
+  @override
+  String get pluginUninstallSettingsSecret =>
+      'The plugin\'s settings, including secret values in the keyring';
+
+  @override
+  String pluginUninstallStorage(String size) {
+    return 'Its own storage ($size)';
+  }
+
+  @override
+  String pluginUninstallKeepLyrics(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saved songs',
+      one: '1 saved song',
+    );
+    return '$_temp0 and lyrics pinned from this source';
+  }
+
+  @override
+  String get pluginUninstallKeepPinned =>
+      'Lyrics pinned from this source, if any';
+
+  @override
+  String get pluginUninstallKeepLrc =>
+      'The .lrc files already written next to songs';
+
+  @override
+  String get pluginUninstallConfirm => 'Uninstall';
+
+  @override
+  String pluginUninstalled(String name) {
+    return 'Uninstalled $name';
+  }
+
+  @override
+  String pluginUninstallFailed(String name) {
+    return 'Could not uninstall $name';
+  }
+
+  @override
+  String get pluginInstallFailedTitle => 'Could not install';
+
+  @override
+  String pluginInstallFailedFile(String name) {
+    return 'File $name is not a valid plugin.';
+  }
+
+  @override
+  String get pluginInstallFailedReasons => 'Reasons';
+
+  @override
+  String get pluginProblemTooLarge =>
+      'The package, or something inside it, is too large';
+
+  @override
+  String get pluginProblemNotZip => 'The file is not a readable zip package';
+
+  @override
+  String pluginProblemUnsafeEntry(String detail) {
+    return 'The package has an unsafe entry name ($detail)';
+  }
+
+  @override
+  String get pluginProblemTooManyEntries => 'The package has too many files';
+
+  @override
+  String get pluginProblemMissingManifest =>
+      'There is no plugin.json at the top of the package';
+
+  @override
+  String pluginProblemInvalidManifest(String detail) {
+    return 'plugin.json is not valid at \"$detail\"';
+  }
+
+  @override
+  String get pluginProblemInvalidManifestPlain => 'plugin.json is not valid';
+
+  @override
+  String get pluginProblemNeedsNewerApp =>
+      'A newer Kanaru is needed: the plugin uses a newer plugin API than this version supports';
+
+  @override
+  String get pluginProblemWrongType => 'plugin.json: the type must be lyrics';
+
+  @override
+  String pluginProblemBadHost(String detail) {
+    return 'hosts: \"$detail\" is not a public domain name';
+  }
+
+  @override
+  String pluginProblemMissingScript(String detail) {
+    return 'The package has no src/$detail';
+  }
+
+  @override
+  String pluginProblemScriptError(String detail) {
+    return 'Script $detail has an error';
+  }
+
+  @override
+  String pluginProblemScriptErrorLine(String detail, int line) {
+    return 'Script $detail has an error at line $line';
+  }
+
+  @override
+  String get pluginProblemCheckUnavailable =>
+      'Kanaru could not check the scripts now (the plugin runtime did not load), so it cannot tell whether the package is valid';
+
+  @override
+  String get pluginRefusedNotFromRepo =>
+      'This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.';
+
+  @override
+  String get pluginRefusedOlderVersion =>
+      'This package is older than the installed version, so it was not used.';
+
+  @override
+  String get pluginInstallSecretsUnavailable =>
+      'The secrets of the earlier install could not be removed from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru, then try again.';
+
+  @override
+  String get pluginInstallGone =>
+      'This plugin is no longer installed, so it cannot be updated.';
+
+  @override
+  String get pluginConfigSaveFailed => 'Could not save the setting';
+
+  @override
+  String get pluginConfigLoadFailed => 'Could not read the plugin\'s settings';
+
+  @override
+  String get pluginSourcesLoadFailed => 'Could not read the list of plugins';
+
+  @override
+  String get pluginRetry => 'Retry';
 }

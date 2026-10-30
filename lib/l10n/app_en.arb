@@ -3169,5 +3169,271 @@
   "lyricsAutoNeedsTags": "This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…",
   "@lyricsAutoNeedsTags": {
     "description": "Snackbar after turning on automatic lookup for a song that cannot be looked up automatically"
-  }
+  },
+  "lyricsSourcesTitle": "Lyrics sources",
+  "@lyricsSourcesTitle": {
+    "description": "Title of the lyrics sources page and of its row in Settings"
+  },
+  "lyricsSourcesRowSubtitle": "{names} · {count} on",
+  "@lyricsSourcesRowSubtitle": {
+    "description": "Subtitle of the Lyrics sources row in Settings; names is the enabled sources, count how many",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsSourcesRowNoneOn": "Every source is off",
+  "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.",
+  "lyricsSourcesStore": "Plugin store",
+  "lyricsSourcesStoreSoon": "Coming soon",
+  "lyricsSourcesEmptyHint": "No plugins installed yet. You will be able to add some from Plugin store.",
+  "lyricsSourceBuiltIn": "Built in",
+  "lyricsSourceBuiltInHosts": "Built in · {hosts}",
+  "@lyricsSourceBuiltInHosts": {
+    "description": "Subline of the built-in LRCLIB source; hosts is the address it connects to",
+    "placeholders": {
+      "hosts": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceDragHandle": "Drag to reorder (keyboard: Alt + Up or Down arrow)",
+  "lyricsSourceUnknownAuthor": "Unknown author",
+  "lyricsSourceAuthor": "{author} (self-declared)",
+  "@lyricsSourceAuthor": {
+    "description": "Author of a plugin as the plugin states it; Kanaru does not verify it",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceFromFile": "File: {name}",
+  "@lyricsSourceFromFile": {
+    "description": "Where a plugin was installed from: a zip file",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceFromRepo": "Repo: {name}",
+  "@lyricsSourceFromRepo": {
+    "description": "Where a plugin was installed from: a plugin repository",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourcesMenuLogFolder": "Open log folder",
+  "lyricsSourcesMenuGuide": "Plugin writing guide",
+  "pluginUninstall": "Uninstall plugin",
+  "pluginGone": "This plugin is no longer installed.",
+  "pluginInfoTitle": "Details",
+  "pluginInfoSource": "Installed from",
+  "pluginInfoHosts": "Can only connect to",
+  "pluginInfoInstalled": "Installed",
+  "pluginInfoInstalledUpdated": "{installed} · updated {updated}",
+  "@pluginInfoInstalledUpdated": {
+    "description": "When a plugin was installed and last updated; both are dates",
+    "placeholders": {
+      "installed": {
+        "type": "String"
+      },
+      "updated": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginInfoDescription": "Description",
+  "pluginConfigTitle": "Plugin settings",
+  "pluginSecretNote": "Secret: kept in the system keyring, never in settings or logs.",
+  "pluginSecretSaved": "Saved in the system keyring",
+  "pluginSecretFallbackNote": "No system keyring found; secret values are kept in a file only you can read, or only until Kanaru closes. Do not share or sync that file.",
+  "pluginSecretShow": "Show value",
+  "pluginSecretHide": "Hide value",
+  "pluginSecretClear": "Remove saved value",
+  "pluginConfigNumberInvalid": "Enter a number",
+  "pluginConfigInvalidValue": "That value is not allowed for this setting.",
+  "pluginConfigTooLarge": "The plugin's settings are too large to save.",
+  "pluginConfigUnknownKey": "This setting no longer exists. The plugin may have been removed or changed.",
+  "pluginConfigSecretStoreFailed": "Could not reach the system keyring. Unlock the keyring or restart Kanaru, then try again.",
+  "pluginDataTitle": "Data",
+  "pluginStorageTitle": "Plugin's own storage",
+  "pluginStorageUsage": "{used} / {limit}",
+  "@pluginStorageUsage": {
+    "description": "Space a plugin's own storage uses out of its limit; both are sizes",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginSavedLyricsTitle": "Lyrics saved from this source",
+  "pluginSavedLyricsNone": "None",
+  "pluginSavedLyricsSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size}",
+  "@pluginSavedLyricsSummary": {
+    "description": "Lyrics saved from one source: how many songs and their size",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginDataClear": "Delete",
+  "pluginStorageClearTitle": "Delete the plugin's storage?",
+  "pluginStorageClearBody": "The plugin may have to sign in or set itself up again.",
+  "pluginStorageCleared": "Storage deleted",
+  "pluginSavedLyricsClearTitle": "Delete saved lyrics from this source?",
+  "pluginSavedLyricsClearBody": "The lyrics saved from this source are deleted. Lyrics you pinned and .lrc files stay.",
+  "pluginSavedLyricsCleared": "Saved lyrics deleted",
+  "pluginDataFailed": "Could not delete the data",
+  "pluginUninstallTitle": "Uninstall {name}?",
+  "@pluginUninstallTitle": {
+    "description": "Title of the dialog that asks to uninstall a plugin",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginUninstallRemoves": "Will be deleted",
+  "pluginUninstallKeeps": "Kept",
+  "pluginUninstallCode": "The plugin's code",
+  "pluginUninstallSettings": "The plugin's settings",
+  "pluginUninstallSettingsSecret": "The plugin's settings, including secret values in the keyring",
+  "pluginUninstallStorage": "Its own storage ({size})",
+  "@pluginUninstallStorage": {
+    "description": "Item of the uninstall dialog; size is how much the plugin's own storage holds",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginUninstallKeepLyrics": "{count, plural, =1{1 saved song} other{{count} saved songs}} and lyrics pinned from this source",
+  "@pluginUninstallKeepLyrics": {
+    "description": "Item of the uninstall dialog: lyrics saved from the plugin stay",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginUninstallKeepPinned": "Lyrics pinned from this source, if any",
+  "pluginUninstallKeepLrc": "The .lrc files already written next to songs",
+  "pluginUninstallConfirm": "Uninstall",
+  "pluginUninstalled": "Uninstalled {name}",
+  "@pluginUninstalled": {
+    "description": "Snackbar after a plugin was uninstalled",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginUninstallFailed": "Could not uninstall {name}",
+  "@pluginUninstallFailed": {
+    "description": "Snackbar when uninstalling a plugin failed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginInstallFailedTitle": "Could not install",
+  "pluginInstallFailedFile": "File {name} is not a valid plugin.",
+  "@pluginInstallFailedFile": {
+    "description": "Under the title of the dialog that lists why a plugin file was refused",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginInstallFailedReasons": "Reasons",
+  "pluginProblemTooLarge": "The package, or something inside it, is too large",
+  "pluginProblemNotZip": "The file is not a readable zip package",
+  "pluginProblemUnsafeEntry": "The package has an unsafe entry name ({detail})",
+  "@pluginProblemUnsafeEntry": {
+    "description": "Why a plugin package was refused; detail comes from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemTooManyEntries": "The package has too many files",
+  "pluginProblemMissingManifest": "There is no plugin.json at the top of the package",
+  "pluginProblemInvalidManifest": "plugin.json is not valid at \"{detail}\"",
+  "@pluginProblemInvalidManifest": {
+    "description": "Why a plugin package was refused; detail comes from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemInvalidManifestPlain": "plugin.json is not valid",
+  "pluginProblemNeedsNewerApp": "A newer Kanaru is needed: the plugin uses a newer plugin API than this version supports",
+  "pluginProblemWrongType": "plugin.json: the type must be lyrics",
+  "pluginProblemBadHost": "hosts: \"{detail}\" is not a public domain name",
+  "@pluginProblemBadHost": {
+    "description": "Why a plugin package was refused; detail comes from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemMissingScript": "The package has no src/{detail}",
+  "@pluginProblemMissingScript": {
+    "description": "Why a plugin package was refused; detail comes from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemScriptError": "Script {detail} has an error",
+  "@pluginProblemScriptError": {
+    "description": "Why a plugin package was refused; detail comes from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemScriptErrorLine": "Script {detail} has an error at line {line}",
+  "@pluginProblemScriptErrorLine": {
+    "description": "Why a plugin package was refused; detail comes from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      },
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginProblemCheckUnavailable": "Kanaru could not check the scripts now (the plugin runtime did not load), so it cannot tell whether the package is valid",
+  "pluginRefusedNotFromRepo": "This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.",
+  "pluginRefusedOlderVersion": "This package is older than the installed version, so it was not used.",
+  "pluginInstallSecretsUnavailable": "The secrets of the earlier install could not be removed from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru, then try again.",
+  "pluginInstallGone": "This plugin is no longer installed, so it cannot be updated.",
+  "pluginConfigSaveFailed": "Could not save the setting",
+  "pluginConfigLoadFailed": "Could not read the plugin's settings",
+  "pluginSourcesLoadFailed": "Could not read the list of plugins",
+  "pluginRetry": "Retry"
 }
