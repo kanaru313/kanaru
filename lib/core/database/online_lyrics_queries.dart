@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:logging/logging.dart';
 
 import 'library_database.dart';
+import 'lyrics_plugin_spec.dart';
 
 export 'lyrics_choice_queries.dart';
 
@@ -57,8 +58,40 @@ extension OnlineLyricsQueries on LibraryDatabase {
   /// Inserts the row, or replaces the whole row with the same (cache_key,
   /// provider_id); columns the new row leaves out are reset, not kept. Other
   /// providers' rows stay.
-  Future<void> saveOnlineLyrics(OnlineLyricsCompanion row) =>
-      into(onlineLyrics).insert(row, mode: InsertMode.insertOrReplace);
+  ///
+  /// A plugin source's row (id starting with `plugin-`) is saved only while
+  /// that plugin's record exists and is not removed, so a lookup that
+  /// outlived an uninstall leaves no orphan row. Returns whether a row was
+  /// written; LRCLIB rows always are.
+  Future<bool> saveOnlineLyrics(OnlineLyricsCompanion row) async {
+    if (!isLyricsPluginId(row.providerId.value)) {
+      await into(onlineLyrics).insert(row, mode: InsertMode.insertOrReplace);
+      return true;
+    }
+    final changed = await customUpdate(
+      'INSERT OR REPLACE INTO online_lyrics (cache_key, provider_id, status, '
+      'remote_id, synced_text, plain_text, instrumental, remote_duration_ms, '
+      'fetched_at) '
+      'SELECT ?, install_id, ?, ?, ?, ?, ?, ?, ? FROM lyrics_plugins '
+      'WHERE install_id = ? AND removed_at IS NULL',
+      variables: [
+        Variable<String>(row.cacheKey.value),
+        Variable<String>(row.status.value),
+        Variable<String>(row.remoteId.present ? row.remoteId.value : null),
+        Variable<String>(row.syncedText.present ? row.syncedText.value : null),
+        Variable<String>(row.plainText.present ? row.plainText.value : null),
+        Variable<bool>(row.instrumental.present && row.instrumental.value),
+        Variable<int>(
+          row.remoteDurationMs.present ? row.remoteDurationMs.value : null,
+        ),
+        Variable<int>(row.fetchedAt.value),
+        Variable<String>(row.providerId.value),
+      ],
+      updates: {onlineLyrics},
+      updateKind: UpdateKind.insert,
+    );
+    return changed > 0;
+  }
 
   /// Removes every provider's row for one metadata key (forces a new lookup).
   Future<void> deleteOnlineLyrics(String cacheKey) =>
@@ -106,13 +139,16 @@ extension OnlineLyricsQueries on LibraryDatabase {
   }
 
   /// Empties all three tables in one transaction and returns the rows
-  /// removed. Never touches `.lrc` files.
+  /// removed. Also deletes every removed plugin record (nothing points to
+  /// them once the three tables are empty; they are not counted). Never
+  /// touches `.lrc` files.
   Future<int> clearOnlineLyrics() {
     return transaction(() async {
       var removed = 0;
       removed += await delete(onlineLyrics).go();
       removed += await delete(lyricsPins).go();
       removed += await delete(onlineLyricsRejects).go();
+      await (delete(lyricsPlugins)..where((t) => t.removedAt.isNotNull())).go();
       return removed;
     });
   }

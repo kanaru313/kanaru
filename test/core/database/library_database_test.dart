@@ -179,7 +179,7 @@ void main() {
     final row = await db.select(db.tracks).getSingle();
     expect(row.coverKey, isNull);
     expect(row.coverScanVersion, 0);
-    expect(db.schemaVersion, 10);
+    expect(db.schemaVersion, 11);
   });
 
   group('cover keys', () {

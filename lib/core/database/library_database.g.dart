@@ -7145,6 +7145,1964 @@ class OnlineLyricsRejectsCompanion
   }
 }
 
+class $LyricsPluginsTable extends LyricsPlugins
+    with TableInfo<$LyricsPluginsTable, LyricsPluginRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricsPluginsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _installIdMeta = const VerificationMeta(
+    'installId',
+  );
+  @override
+  late final GeneratedColumn<String> installId = GeneratedColumn<String>(
+    'install_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _apiVersionMeta = const VerificationMeta(
+    'apiVersion',
+  );
+  @override
+  late final GeneratedColumn<int> apiVersion = GeneratedColumn<int>(
+    'api_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _hostsMeta = const VerificationMeta('hosts');
+  @override
+  late final GeneratedColumn<String> hosts = GeneratedColumn<String>(
+    'hosts',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _configSchemaMeta = const VerificationMeta(
+    'configSchema',
+  );
+  @override
+  late final GeneratedColumn<String> configSchema = GeneratedColumn<String>(
+    'config_schema',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _packageDirMeta = const VerificationMeta(
+    'packageDir',
+  );
+  @override
+  late final GeneratedColumn<String> packageDir = GeneratedColumn<String>(
+    'package_dir',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceKindMeta = const VerificationMeta(
+    'sourceKind',
+  );
+  @override
+  late final GeneratedColumn<String> sourceKind = GeneratedColumn<String>(
+    'source_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceNameMeta = const VerificationMeta(
+    'sourceName',
+  );
+  @override
+  late final GeneratedColumn<String> sourceName = GeneratedColumn<String>(
+    'source_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _repoUrlMeta = const VerificationMeta(
+    'repoUrl',
+  );
+  @override
+  late final GeneratedColumn<String> repoUrl = GeneratedColumn<String>(
+    'repo_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _repoSlugMeta = const VerificationMeta(
+    'repoSlug',
+  );
+  @override
+  late final GeneratedColumn<String> repoSlug = GeneratedColumn<String>(
+    'repo_slug',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _installedAtMeta = const VerificationMeta(
+    'installedAt',
+  );
+  @override
+  late final GeneratedColumn<int> installedAt = GeneratedColumn<int>(
+    'installed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _removedAtMeta = const VerificationMeta(
+    'removedAt',
+  );
+  @override
+  late final GeneratedColumn<int> removedAt = GeneratedColumn<int>(
+    'removed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    installId,
+    name,
+    author,
+    description,
+    version,
+    apiVersion,
+    hosts,
+    configSchema,
+    packageDir,
+    sourceKind,
+    sourceName,
+    repoUrl,
+    repoSlug,
+    installedAt,
+    updatedAt,
+    removedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyrics_plugins';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricsPluginRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('install_id')) {
+      context.handle(
+        _installIdMeta,
+        installId.isAcceptableOrUnknown(data['install_id']!, _installIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_installIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('api_version')) {
+      context.handle(
+        _apiVersionMeta,
+        apiVersion.isAcceptableOrUnknown(data['api_version']!, _apiVersionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_apiVersionMeta);
+    }
+    if (data.containsKey('hosts')) {
+      context.handle(
+        _hostsMeta,
+        hosts.isAcceptableOrUnknown(data['hosts']!, _hostsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_hostsMeta);
+    }
+    if (data.containsKey('config_schema')) {
+      context.handle(
+        _configSchemaMeta,
+        configSchema.isAcceptableOrUnknown(
+          data['config_schema']!,
+          _configSchemaMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_configSchemaMeta);
+    }
+    if (data.containsKey('package_dir')) {
+      context.handle(
+        _packageDirMeta,
+        packageDir.isAcceptableOrUnknown(data['package_dir']!, _packageDirMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_packageDirMeta);
+    }
+    if (data.containsKey('source_kind')) {
+      context.handle(
+        _sourceKindMeta,
+        sourceKind.isAcceptableOrUnknown(data['source_kind']!, _sourceKindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceKindMeta);
+    }
+    if (data.containsKey('source_name')) {
+      context.handle(
+        _sourceNameMeta,
+        sourceName.isAcceptableOrUnknown(data['source_name']!, _sourceNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceNameMeta);
+    }
+    if (data.containsKey('repo_url')) {
+      context.handle(
+        _repoUrlMeta,
+        repoUrl.isAcceptableOrUnknown(data['repo_url']!, _repoUrlMeta),
+      );
+    }
+    if (data.containsKey('repo_slug')) {
+      context.handle(
+        _repoSlugMeta,
+        repoSlug.isAcceptableOrUnknown(data['repo_slug']!, _repoSlugMeta),
+      );
+    }
+    if (data.containsKey('installed_at')) {
+      context.handle(
+        _installedAtMeta,
+        installedAt.isAcceptableOrUnknown(
+          data['installed_at']!,
+          _installedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_installedAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('removed_at')) {
+      context.handle(
+        _removedAtMeta,
+        removedAt.isAcceptableOrUnknown(data['removed_at']!, _removedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {installId};
+  @override
+  LyricsPluginRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricsPluginRow(
+      installId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}install_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      apiVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}api_version'],
+      )!,
+      hosts: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hosts'],
+      )!,
+      configSchema: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_schema'],
+      )!,
+      packageDir: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}package_dir'],
+      )!,
+      sourceKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_kind'],
+      )!,
+      sourceName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_name'],
+      )!,
+      repoUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}repo_url'],
+      ),
+      repoSlug: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}repo_slug'],
+      ),
+      installedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}installed_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      removedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}removed_at'],
+      ),
+    );
+  }
+
+  @override
+  $LyricsPluginsTable createAlias(String alias) {
+    return $LyricsPluginsTable(attachedDatabase, alias);
+  }
+}
+
+class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
+  final String installId;
+  final String name;
+  final String? author;
+  final String? description;
+  final int version;
+  final int apiVersion;
+
+  /// JSON array of the hosts the plugin may reach.
+  final String hosts;
+
+  /// JSON text of the config form the package declares.
+  final String configSchema;
+
+  /// Relative directory of the current package.
+  final String packageDir;
+
+  /// `file` or `repo`.
+  final String sourceKind;
+
+  /// The file name, or the repository name, at install time.
+  final String sourceName;
+  final String? repoUrl;
+  final String? repoSlug;
+  final int installedAt;
+  final int updatedAt;
+
+  /// Set while the record is only a name for saved lyrics.
+  final int? removedAt;
+  const LyricsPluginRow({
+    required this.installId,
+    required this.name,
+    this.author,
+    this.description,
+    required this.version,
+    required this.apiVersion,
+    required this.hosts,
+    required this.configSchema,
+    required this.packageDir,
+    required this.sourceKind,
+    required this.sourceName,
+    this.repoUrl,
+    this.repoSlug,
+    required this.installedAt,
+    required this.updatedAt,
+    this.removedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['install_id'] = Variable<String>(installId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || author != null) {
+      map['author'] = Variable<String>(author);
+    }
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['version'] = Variable<int>(version);
+    map['api_version'] = Variable<int>(apiVersion);
+    map['hosts'] = Variable<String>(hosts);
+    map['config_schema'] = Variable<String>(configSchema);
+    map['package_dir'] = Variable<String>(packageDir);
+    map['source_kind'] = Variable<String>(sourceKind);
+    map['source_name'] = Variable<String>(sourceName);
+    if (!nullToAbsent || repoUrl != null) {
+      map['repo_url'] = Variable<String>(repoUrl);
+    }
+    if (!nullToAbsent || repoSlug != null) {
+      map['repo_slug'] = Variable<String>(repoSlug);
+    }
+    map['installed_at'] = Variable<int>(installedAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    if (!nullToAbsent || removedAt != null) {
+      map['removed_at'] = Variable<int>(removedAt);
+    }
+    return map;
+  }
+
+  LyricsPluginsCompanion toCompanion(bool nullToAbsent) {
+    return LyricsPluginsCompanion(
+      installId: Value(installId),
+      name: Value(name),
+      author: author == null && nullToAbsent
+          ? const Value.absent()
+          : Value(author),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      version: Value(version),
+      apiVersion: Value(apiVersion),
+      hosts: Value(hosts),
+      configSchema: Value(configSchema),
+      packageDir: Value(packageDir),
+      sourceKind: Value(sourceKind),
+      sourceName: Value(sourceName),
+      repoUrl: repoUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(repoUrl),
+      repoSlug: repoSlug == null && nullToAbsent
+          ? const Value.absent()
+          : Value(repoSlug),
+      installedAt: Value(installedAt),
+      updatedAt: Value(updatedAt),
+      removedAt: removedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(removedAt),
+    );
+  }
+
+  factory LyricsPluginRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricsPluginRow(
+      installId: serializer.fromJson<String>(json['installId']),
+      name: serializer.fromJson<String>(json['name']),
+      author: serializer.fromJson<String?>(json['author']),
+      description: serializer.fromJson<String?>(json['description']),
+      version: serializer.fromJson<int>(json['version']),
+      apiVersion: serializer.fromJson<int>(json['apiVersion']),
+      hosts: serializer.fromJson<String>(json['hosts']),
+      configSchema: serializer.fromJson<String>(json['configSchema']),
+      packageDir: serializer.fromJson<String>(json['packageDir']),
+      sourceKind: serializer.fromJson<String>(json['sourceKind']),
+      sourceName: serializer.fromJson<String>(json['sourceName']),
+      repoUrl: serializer.fromJson<String?>(json['repoUrl']),
+      repoSlug: serializer.fromJson<String?>(json['repoSlug']),
+      installedAt: serializer.fromJson<int>(json['installedAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      removedAt: serializer.fromJson<int?>(json['removedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'installId': serializer.toJson<String>(installId),
+      'name': serializer.toJson<String>(name),
+      'author': serializer.toJson<String?>(author),
+      'description': serializer.toJson<String?>(description),
+      'version': serializer.toJson<int>(version),
+      'apiVersion': serializer.toJson<int>(apiVersion),
+      'hosts': serializer.toJson<String>(hosts),
+      'configSchema': serializer.toJson<String>(configSchema),
+      'packageDir': serializer.toJson<String>(packageDir),
+      'sourceKind': serializer.toJson<String>(sourceKind),
+      'sourceName': serializer.toJson<String>(sourceName),
+      'repoUrl': serializer.toJson<String?>(repoUrl),
+      'repoSlug': serializer.toJson<String?>(repoSlug),
+      'installedAt': serializer.toJson<int>(installedAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+      'removedAt': serializer.toJson<int?>(removedAt),
+    };
+  }
+
+  LyricsPluginRow copyWith({
+    String? installId,
+    String? name,
+    Value<String?> author = const Value.absent(),
+    Value<String?> description = const Value.absent(),
+    int? version,
+    int? apiVersion,
+    String? hosts,
+    String? configSchema,
+    String? packageDir,
+    String? sourceKind,
+    String? sourceName,
+    Value<String?> repoUrl = const Value.absent(),
+    Value<String?> repoSlug = const Value.absent(),
+    int? installedAt,
+    int? updatedAt,
+    Value<int?> removedAt = const Value.absent(),
+  }) => LyricsPluginRow(
+    installId: installId ?? this.installId,
+    name: name ?? this.name,
+    author: author.present ? author.value : this.author,
+    description: description.present ? description.value : this.description,
+    version: version ?? this.version,
+    apiVersion: apiVersion ?? this.apiVersion,
+    hosts: hosts ?? this.hosts,
+    configSchema: configSchema ?? this.configSchema,
+    packageDir: packageDir ?? this.packageDir,
+    sourceKind: sourceKind ?? this.sourceKind,
+    sourceName: sourceName ?? this.sourceName,
+    repoUrl: repoUrl.present ? repoUrl.value : this.repoUrl,
+    repoSlug: repoSlug.present ? repoSlug.value : this.repoSlug,
+    installedAt: installedAt ?? this.installedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    removedAt: removedAt.present ? removedAt.value : this.removedAt,
+  );
+  LyricsPluginRow copyWithCompanion(LyricsPluginsCompanion data) {
+    return LyricsPluginRow(
+      installId: data.installId.present ? data.installId.value : this.installId,
+      name: data.name.present ? data.name.value : this.name,
+      author: data.author.present ? data.author.value : this.author,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      version: data.version.present ? data.version.value : this.version,
+      apiVersion: data.apiVersion.present
+          ? data.apiVersion.value
+          : this.apiVersion,
+      hosts: data.hosts.present ? data.hosts.value : this.hosts,
+      configSchema: data.configSchema.present
+          ? data.configSchema.value
+          : this.configSchema,
+      packageDir: data.packageDir.present
+          ? data.packageDir.value
+          : this.packageDir,
+      sourceKind: data.sourceKind.present
+          ? data.sourceKind.value
+          : this.sourceKind,
+      sourceName: data.sourceName.present
+          ? data.sourceName.value
+          : this.sourceName,
+      repoUrl: data.repoUrl.present ? data.repoUrl.value : this.repoUrl,
+      repoSlug: data.repoSlug.present ? data.repoSlug.value : this.repoSlug,
+      installedAt: data.installedAt.present
+          ? data.installedAt.value
+          : this.installedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      removedAt: data.removedAt.present ? data.removedAt.value : this.removedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPluginRow(')
+          ..write('installId: $installId, ')
+          ..write('name: $name, ')
+          ..write('author: $author, ')
+          ..write('description: $description, ')
+          ..write('version: $version, ')
+          ..write('apiVersion: $apiVersion, ')
+          ..write('hosts: $hosts, ')
+          ..write('configSchema: $configSchema, ')
+          ..write('packageDir: $packageDir, ')
+          ..write('sourceKind: $sourceKind, ')
+          ..write('sourceName: $sourceName, ')
+          ..write('repoUrl: $repoUrl, ')
+          ..write('repoSlug: $repoSlug, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('removedAt: $removedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    installId,
+    name,
+    author,
+    description,
+    version,
+    apiVersion,
+    hosts,
+    configSchema,
+    packageDir,
+    sourceKind,
+    sourceName,
+    repoUrl,
+    repoSlug,
+    installedAt,
+    updatedAt,
+    removedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricsPluginRow &&
+          other.installId == this.installId &&
+          other.name == this.name &&
+          other.author == this.author &&
+          other.description == this.description &&
+          other.version == this.version &&
+          other.apiVersion == this.apiVersion &&
+          other.hosts == this.hosts &&
+          other.configSchema == this.configSchema &&
+          other.packageDir == this.packageDir &&
+          other.sourceKind == this.sourceKind &&
+          other.sourceName == this.sourceName &&
+          other.repoUrl == this.repoUrl &&
+          other.repoSlug == this.repoSlug &&
+          other.installedAt == this.installedAt &&
+          other.updatedAt == this.updatedAt &&
+          other.removedAt == this.removedAt);
+}
+
+class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
+  final Value<String> installId;
+  final Value<String> name;
+  final Value<String?> author;
+  final Value<String?> description;
+  final Value<int> version;
+  final Value<int> apiVersion;
+  final Value<String> hosts;
+  final Value<String> configSchema;
+  final Value<String> packageDir;
+  final Value<String> sourceKind;
+  final Value<String> sourceName;
+  final Value<String?> repoUrl;
+  final Value<String?> repoSlug;
+  final Value<int> installedAt;
+  final Value<int> updatedAt;
+  final Value<int?> removedAt;
+  final Value<int> rowid;
+  const LyricsPluginsCompanion({
+    this.installId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.author = const Value.absent(),
+    this.description = const Value.absent(),
+    this.version = const Value.absent(),
+    this.apiVersion = const Value.absent(),
+    this.hosts = const Value.absent(),
+    this.configSchema = const Value.absent(),
+    this.packageDir = const Value.absent(),
+    this.sourceKind = const Value.absent(),
+    this.sourceName = const Value.absent(),
+    this.repoUrl = const Value.absent(),
+    this.repoSlug = const Value.absent(),
+    this.installedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.removedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricsPluginsCompanion.insert({
+    required String installId,
+    required String name,
+    this.author = const Value.absent(),
+    this.description = const Value.absent(),
+    required int version,
+    required int apiVersion,
+    required String hosts,
+    required String configSchema,
+    required String packageDir,
+    required String sourceKind,
+    required String sourceName,
+    this.repoUrl = const Value.absent(),
+    this.repoSlug = const Value.absent(),
+    required int installedAt,
+    required int updatedAt,
+    this.removedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : installId = Value(installId),
+       name = Value(name),
+       version = Value(version),
+       apiVersion = Value(apiVersion),
+       hosts = Value(hosts),
+       configSchema = Value(configSchema),
+       packageDir = Value(packageDir),
+       sourceKind = Value(sourceKind),
+       sourceName = Value(sourceName),
+       installedAt = Value(installedAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<LyricsPluginRow> custom({
+    Expression<String>? installId,
+    Expression<String>? name,
+    Expression<String>? author,
+    Expression<String>? description,
+    Expression<int>? version,
+    Expression<int>? apiVersion,
+    Expression<String>? hosts,
+    Expression<String>? configSchema,
+    Expression<String>? packageDir,
+    Expression<String>? sourceKind,
+    Expression<String>? sourceName,
+    Expression<String>? repoUrl,
+    Expression<String>? repoSlug,
+    Expression<int>? installedAt,
+    Expression<int>? updatedAt,
+    Expression<int>? removedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (installId != null) 'install_id': installId,
+      if (name != null) 'name': name,
+      if (author != null) 'author': author,
+      if (description != null) 'description': description,
+      if (version != null) 'version': version,
+      if (apiVersion != null) 'api_version': apiVersion,
+      if (hosts != null) 'hosts': hosts,
+      if (configSchema != null) 'config_schema': configSchema,
+      if (packageDir != null) 'package_dir': packageDir,
+      if (sourceKind != null) 'source_kind': sourceKind,
+      if (sourceName != null) 'source_name': sourceName,
+      if (repoUrl != null) 'repo_url': repoUrl,
+      if (repoSlug != null) 'repo_slug': repoSlug,
+      if (installedAt != null) 'installed_at': installedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (removedAt != null) 'removed_at': removedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricsPluginsCompanion copyWith({
+    Value<String>? installId,
+    Value<String>? name,
+    Value<String?>? author,
+    Value<String?>? description,
+    Value<int>? version,
+    Value<int>? apiVersion,
+    Value<String>? hosts,
+    Value<String>? configSchema,
+    Value<String>? packageDir,
+    Value<String>? sourceKind,
+    Value<String>? sourceName,
+    Value<String?>? repoUrl,
+    Value<String?>? repoSlug,
+    Value<int>? installedAt,
+    Value<int>? updatedAt,
+    Value<int?>? removedAt,
+    Value<int>? rowid,
+  }) {
+    return LyricsPluginsCompanion(
+      installId: installId ?? this.installId,
+      name: name ?? this.name,
+      author: author ?? this.author,
+      description: description ?? this.description,
+      version: version ?? this.version,
+      apiVersion: apiVersion ?? this.apiVersion,
+      hosts: hosts ?? this.hosts,
+      configSchema: configSchema ?? this.configSchema,
+      packageDir: packageDir ?? this.packageDir,
+      sourceKind: sourceKind ?? this.sourceKind,
+      sourceName: sourceName ?? this.sourceName,
+      repoUrl: repoUrl ?? this.repoUrl,
+      repoSlug: repoSlug ?? this.repoSlug,
+      installedAt: installedAt ?? this.installedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      removedAt: removedAt ?? this.removedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (installId.present) {
+      map['install_id'] = Variable<String>(installId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (apiVersion.present) {
+      map['api_version'] = Variable<int>(apiVersion.value);
+    }
+    if (hosts.present) {
+      map['hosts'] = Variable<String>(hosts.value);
+    }
+    if (configSchema.present) {
+      map['config_schema'] = Variable<String>(configSchema.value);
+    }
+    if (packageDir.present) {
+      map['package_dir'] = Variable<String>(packageDir.value);
+    }
+    if (sourceKind.present) {
+      map['source_kind'] = Variable<String>(sourceKind.value);
+    }
+    if (sourceName.present) {
+      map['source_name'] = Variable<String>(sourceName.value);
+    }
+    if (repoUrl.present) {
+      map['repo_url'] = Variable<String>(repoUrl.value);
+    }
+    if (repoSlug.present) {
+      map['repo_slug'] = Variable<String>(repoSlug.value);
+    }
+    if (installedAt.present) {
+      map['installed_at'] = Variable<int>(installedAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (removedAt.present) {
+      map['removed_at'] = Variable<int>(removedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPluginsCompanion(')
+          ..write('installId: $installId, ')
+          ..write('name: $name, ')
+          ..write('author: $author, ')
+          ..write('description: $description, ')
+          ..write('version: $version, ')
+          ..write('apiVersion: $apiVersion, ')
+          ..write('hosts: $hosts, ')
+          ..write('configSchema: $configSchema, ')
+          ..write('packageDir: $packageDir, ')
+          ..write('sourceKind: $sourceKind, ')
+          ..write('sourceName: $sourceName, ')
+          ..write('repoUrl: $repoUrl, ')
+          ..write('repoSlug: $repoSlug, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('removedAt: $removedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LyricsSourcePrefsTable extends LyricsSourcePrefs
+    with TableInfo<$LyricsSourcePrefsTable, LyricsSourcePrefRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricsSourcePrefsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _providerIdMeta = const VerificationMeta(
+    'providerId',
+  );
+  @override
+  late final GeneratedColumn<String> providerId = GeneratedColumn<String>(
+    'provider_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  @override
+  late final GeneratedColumn<bool> enabled = GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [providerId, enabled, position];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyrics_source_prefs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricsSourcePrefRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('provider_id')) {
+      context.handle(
+        _providerIdMeta,
+        providerId.isAcceptableOrUnknown(data['provider_id']!, _providerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_providerIdMeta);
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_positionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {providerId};
+  @override
+  LyricsSourcePrefRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricsSourcePrefRow(
+      providerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider_id'],
+      )!,
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enabled'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+    );
+  }
+
+  @override
+  $LyricsSourcePrefsTable createAlias(String alias) {
+    return $LyricsSourcePrefsTable(attachedDatabase, alias);
+  }
+}
+
+class LyricsSourcePrefRow extends DataClass
+    implements Insertable<LyricsSourcePrefRow> {
+  final String providerId;
+  final bool enabled;
+  final int position;
+  const LyricsSourcePrefRow({
+    required this.providerId,
+    required this.enabled,
+    required this.position,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['provider_id'] = Variable<String>(providerId);
+    map['enabled'] = Variable<bool>(enabled);
+    map['position'] = Variable<int>(position);
+    return map;
+  }
+
+  LyricsSourcePrefsCompanion toCompanion(bool nullToAbsent) {
+    return LyricsSourcePrefsCompanion(
+      providerId: Value(providerId),
+      enabled: Value(enabled),
+      position: Value(position),
+    );
+  }
+
+  factory LyricsSourcePrefRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricsSourcePrefRow(
+      providerId: serializer.fromJson<String>(json['providerId']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      position: serializer.fromJson<int>(json['position']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'providerId': serializer.toJson<String>(providerId),
+      'enabled': serializer.toJson<bool>(enabled),
+      'position': serializer.toJson<int>(position),
+    };
+  }
+
+  LyricsSourcePrefRow copyWith({
+    String? providerId,
+    bool? enabled,
+    int? position,
+  }) => LyricsSourcePrefRow(
+    providerId: providerId ?? this.providerId,
+    enabled: enabled ?? this.enabled,
+    position: position ?? this.position,
+  );
+  LyricsSourcePrefRow copyWithCompanion(LyricsSourcePrefsCompanion data) {
+    return LyricsSourcePrefRow(
+      providerId: data.providerId.present
+          ? data.providerId.value
+          : this.providerId,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      position: data.position.present ? data.position.value : this.position,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsSourcePrefRow(')
+          ..write('providerId: $providerId, ')
+          ..write('enabled: $enabled, ')
+          ..write('position: $position')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(providerId, enabled, position);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricsSourcePrefRow &&
+          other.providerId == this.providerId &&
+          other.enabled == this.enabled &&
+          other.position == this.position);
+}
+
+class LyricsSourcePrefsCompanion extends UpdateCompanion<LyricsSourcePrefRow> {
+  final Value<String> providerId;
+  final Value<bool> enabled;
+  final Value<int> position;
+  final Value<int> rowid;
+  const LyricsSourcePrefsCompanion({
+    this.providerId = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.position = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricsSourcePrefsCompanion.insert({
+    required String providerId,
+    this.enabled = const Value.absent(),
+    required int position,
+    this.rowid = const Value.absent(),
+  }) : providerId = Value(providerId),
+       position = Value(position);
+  static Insertable<LyricsSourcePrefRow> custom({
+    Expression<String>? providerId,
+    Expression<bool>? enabled,
+    Expression<int>? position,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (providerId != null) 'provider_id': providerId,
+      if (enabled != null) 'enabled': enabled,
+      if (position != null) 'position': position,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricsSourcePrefsCompanion copyWith({
+    Value<String>? providerId,
+    Value<bool>? enabled,
+    Value<int>? position,
+    Value<int>? rowid,
+  }) {
+    return LyricsSourcePrefsCompanion(
+      providerId: providerId ?? this.providerId,
+      enabled: enabled ?? this.enabled,
+      position: position ?? this.position,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (providerId.present) {
+      map['provider_id'] = Variable<String>(providerId.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<bool>(enabled.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsSourcePrefsCompanion(')
+          ..write('providerId: $providerId, ')
+          ..write('enabled: $enabled, ')
+          ..write('position: $position, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LyricsPluginReposTable extends LyricsPluginRepos
+    with TableInfo<$LyricsPluginReposTable, LyricsPluginRepoRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricsPluginReposTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+    'url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _addedAtMeta = const VerificationMeta(
+    'addedAt',
+  );
+  @override
+  late final GeneratedColumn<int> addedAt = GeneratedColumn<int>(
+    'added_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastFetchedAtMeta = const VerificationMeta(
+    'lastFetchedAt',
+  );
+  @override
+  late final GeneratedColumn<int> lastFetchedAt = GeneratedColumn<int>(
+    'last_fetched_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _catalogMeta = const VerificationMeta(
+    'catalog',
+  );
+  @override
+  late final GeneratedColumn<String> catalog = GeneratedColumn<String>(
+    'catalog',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    url,
+    name,
+    author,
+    addedAt,
+    lastFetchedAt,
+    lastError,
+    catalog,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyrics_plugin_repos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricsPluginRepoRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('url')) {
+      context.handle(
+        _urlMeta,
+        url.isAcceptableOrUnknown(data['url']!, _urlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_urlMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    }
+    if (data.containsKey('added_at')) {
+      context.handle(
+        _addedAtMeta,
+        addedAt.isAcceptableOrUnknown(data['added_at']!, _addedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_addedAtMeta);
+    }
+    if (data.containsKey('last_fetched_at')) {
+      context.handle(
+        _lastFetchedAtMeta,
+        lastFetchedAt.isAcceptableOrUnknown(
+          data['last_fetched_at']!,
+          _lastFetchedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('catalog')) {
+      context.handle(
+        _catalogMeta,
+        catalog.isAcceptableOrUnknown(data['catalog']!, _catalogMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {url};
+  @override
+  LyricsPluginRepoRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricsPluginRepoRow(
+      url: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}url'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      ),
+      addedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}added_at'],
+      )!,
+      lastFetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_fetched_at'],
+      ),
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      catalog: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}catalog'],
+      ),
+    );
+  }
+
+  @override
+  $LyricsPluginReposTable createAlias(String alias) {
+    return $LyricsPluginReposTable(attachedDatabase, alias);
+  }
+}
+
+class LyricsPluginRepoRow extends DataClass
+    implements Insertable<LyricsPluginRepoRow> {
+  final String url;
+  final String name;
+  final String? author;
+  final int addedAt;
+  final int? lastFetchedAt;
+
+  /// Kind of the last failed fetch; null after a success.
+  final String? lastError;
+
+  /// The last good catalog, as JSON text.
+  final String? catalog;
+  const LyricsPluginRepoRow({
+    required this.url,
+    required this.name,
+    this.author,
+    required this.addedAt,
+    this.lastFetchedAt,
+    this.lastError,
+    this.catalog,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['url'] = Variable<String>(url);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || author != null) {
+      map['author'] = Variable<String>(author);
+    }
+    map['added_at'] = Variable<int>(addedAt);
+    if (!nullToAbsent || lastFetchedAt != null) {
+      map['last_fetched_at'] = Variable<int>(lastFetchedAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    if (!nullToAbsent || catalog != null) {
+      map['catalog'] = Variable<String>(catalog);
+    }
+    return map;
+  }
+
+  LyricsPluginReposCompanion toCompanion(bool nullToAbsent) {
+    return LyricsPluginReposCompanion(
+      url: Value(url),
+      name: Value(name),
+      author: author == null && nullToAbsent
+          ? const Value.absent()
+          : Value(author),
+      addedAt: Value(addedAt),
+      lastFetchedAt: lastFetchedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastFetchedAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      catalog: catalog == null && nullToAbsent
+          ? const Value.absent()
+          : Value(catalog),
+    );
+  }
+
+  factory LyricsPluginRepoRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricsPluginRepoRow(
+      url: serializer.fromJson<String>(json['url']),
+      name: serializer.fromJson<String>(json['name']),
+      author: serializer.fromJson<String?>(json['author']),
+      addedAt: serializer.fromJson<int>(json['addedAt']),
+      lastFetchedAt: serializer.fromJson<int?>(json['lastFetchedAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      catalog: serializer.fromJson<String?>(json['catalog']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'url': serializer.toJson<String>(url),
+      'name': serializer.toJson<String>(name),
+      'author': serializer.toJson<String?>(author),
+      'addedAt': serializer.toJson<int>(addedAt),
+      'lastFetchedAt': serializer.toJson<int?>(lastFetchedAt),
+      'lastError': serializer.toJson<String?>(lastError),
+      'catalog': serializer.toJson<String?>(catalog),
+    };
+  }
+
+  LyricsPluginRepoRow copyWith({
+    String? url,
+    String? name,
+    Value<String?> author = const Value.absent(),
+    int? addedAt,
+    Value<int?> lastFetchedAt = const Value.absent(),
+    Value<String?> lastError = const Value.absent(),
+    Value<String?> catalog = const Value.absent(),
+  }) => LyricsPluginRepoRow(
+    url: url ?? this.url,
+    name: name ?? this.name,
+    author: author.present ? author.value : this.author,
+    addedAt: addedAt ?? this.addedAt,
+    lastFetchedAt: lastFetchedAt.present
+        ? lastFetchedAt.value
+        : this.lastFetchedAt,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    catalog: catalog.present ? catalog.value : this.catalog,
+  );
+  LyricsPluginRepoRow copyWithCompanion(LyricsPluginReposCompanion data) {
+    return LyricsPluginRepoRow(
+      url: data.url.present ? data.url.value : this.url,
+      name: data.name.present ? data.name.value : this.name,
+      author: data.author.present ? data.author.value : this.author,
+      addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+      lastFetchedAt: data.lastFetchedAt.present
+          ? data.lastFetchedAt.value
+          : this.lastFetchedAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      catalog: data.catalog.present ? data.catalog.value : this.catalog,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPluginRepoRow(')
+          ..write('url: $url, ')
+          ..write('name: $name, ')
+          ..write('author: $author, ')
+          ..write('addedAt: $addedAt, ')
+          ..write('lastFetchedAt: $lastFetchedAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('catalog: $catalog')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    url,
+    name,
+    author,
+    addedAt,
+    lastFetchedAt,
+    lastError,
+    catalog,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricsPluginRepoRow &&
+          other.url == this.url &&
+          other.name == this.name &&
+          other.author == this.author &&
+          other.addedAt == this.addedAt &&
+          other.lastFetchedAt == this.lastFetchedAt &&
+          other.lastError == this.lastError &&
+          other.catalog == this.catalog);
+}
+
+class LyricsPluginReposCompanion extends UpdateCompanion<LyricsPluginRepoRow> {
+  final Value<String> url;
+  final Value<String> name;
+  final Value<String?> author;
+  final Value<int> addedAt;
+  final Value<int?> lastFetchedAt;
+  final Value<String?> lastError;
+  final Value<String?> catalog;
+  final Value<int> rowid;
+  const LyricsPluginReposCompanion({
+    this.url = const Value.absent(),
+    this.name = const Value.absent(),
+    this.author = const Value.absent(),
+    this.addedAt = const Value.absent(),
+    this.lastFetchedAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.catalog = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricsPluginReposCompanion.insert({
+    required String url,
+    required String name,
+    this.author = const Value.absent(),
+    required int addedAt,
+    this.lastFetchedAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.catalog = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : url = Value(url),
+       name = Value(name),
+       addedAt = Value(addedAt);
+  static Insertable<LyricsPluginRepoRow> custom({
+    Expression<String>? url,
+    Expression<String>? name,
+    Expression<String>? author,
+    Expression<int>? addedAt,
+    Expression<int>? lastFetchedAt,
+    Expression<String>? lastError,
+    Expression<String>? catalog,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (url != null) 'url': url,
+      if (name != null) 'name': name,
+      if (author != null) 'author': author,
+      if (addedAt != null) 'added_at': addedAt,
+      if (lastFetchedAt != null) 'last_fetched_at': lastFetchedAt,
+      if (lastError != null) 'last_error': lastError,
+      if (catalog != null) 'catalog': catalog,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricsPluginReposCompanion copyWith({
+    Value<String>? url,
+    Value<String>? name,
+    Value<String?>? author,
+    Value<int>? addedAt,
+    Value<int?>? lastFetchedAt,
+    Value<String?>? lastError,
+    Value<String?>? catalog,
+    Value<int>? rowid,
+  }) {
+    return LyricsPluginReposCompanion(
+      url: url ?? this.url,
+      name: name ?? this.name,
+      author: author ?? this.author,
+      addedAt: addedAt ?? this.addedAt,
+      lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
+      lastError: lastError ?? this.lastError,
+      catalog: catalog ?? this.catalog,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (addedAt.present) {
+      map['added_at'] = Variable<int>(addedAt.value);
+    }
+    if (lastFetchedAt.present) {
+      map['last_fetched_at'] = Variable<int>(lastFetchedAt.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (catalog.present) {
+      map['catalog'] = Variable<String>(catalog.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPluginReposCompanion(')
+          ..write('url: $url, ')
+          ..write('name: $name, ')
+          ..write('author: $author, ')
+          ..write('addedAt: $addedAt, ')
+          ..write('lastFetchedAt: $lastFetchedAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('catalog: $catalog, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LyricsPluginDataTable extends LyricsPluginData
+    with TableInfo<$LyricsPluginDataTable, LyricsPluginDataRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LyricsPluginDataTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _installIdMeta = const VerificationMeta(
+    'installId',
+  );
+  @override
+  late final GeneratedColumn<String> installId = GeneratedColumn<String>(
+    'install_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _configValuesMeta = const VerificationMeta(
+    'configValues',
+  );
+  @override
+  late final GeneratedColumn<String> configValues = GeneratedColumn<String>(
+    'config_values',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _storageMeta = const VerificationMeta(
+    'storage',
+  );
+  @override
+  late final GeneratedColumn<String> storage = GeneratedColumn<String>(
+    'storage',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [installId, configValues, storage];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lyrics_plugin_data';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LyricsPluginDataRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('install_id')) {
+      context.handle(
+        _installIdMeta,
+        installId.isAcceptableOrUnknown(data['install_id']!, _installIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_installIdMeta);
+    }
+    if (data.containsKey('config_values')) {
+      context.handle(
+        _configValuesMeta,
+        configValues.isAcceptableOrUnknown(
+          data['config_values']!,
+          _configValuesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('storage')) {
+      context.handle(
+        _storageMeta,
+        storage.isAcceptableOrUnknown(data['storage']!, _storageMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {installId};
+  @override
+  LyricsPluginDataRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LyricsPluginDataRow(
+      installId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}install_id'],
+      )!,
+      configValues: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_values'],
+      )!,
+      storage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}storage'],
+      )!,
+    );
+  }
+
+  @override
+  $LyricsPluginDataTable createAlias(String alias) {
+    return $LyricsPluginDataTable(attachedDatabase, alias);
+  }
+}
+
+class LyricsPluginDataRow extends DataClass
+    implements Insertable<LyricsPluginDataRow> {
+  final String installId;
+  final String configValues;
+  final String storage;
+  const LyricsPluginDataRow({
+    required this.installId,
+    required this.configValues,
+    required this.storage,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['install_id'] = Variable<String>(installId);
+    map['config_values'] = Variable<String>(configValues);
+    map['storage'] = Variable<String>(storage);
+    return map;
+  }
+
+  LyricsPluginDataCompanion toCompanion(bool nullToAbsent) {
+    return LyricsPluginDataCompanion(
+      installId: Value(installId),
+      configValues: Value(configValues),
+      storage: Value(storage),
+    );
+  }
+
+  factory LyricsPluginDataRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LyricsPluginDataRow(
+      installId: serializer.fromJson<String>(json['installId']),
+      configValues: serializer.fromJson<String>(json['configValues']),
+      storage: serializer.fromJson<String>(json['storage']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'installId': serializer.toJson<String>(installId),
+      'configValues': serializer.toJson<String>(configValues),
+      'storage': serializer.toJson<String>(storage),
+    };
+  }
+
+  LyricsPluginDataRow copyWith({
+    String? installId,
+    String? configValues,
+    String? storage,
+  }) => LyricsPluginDataRow(
+    installId: installId ?? this.installId,
+    configValues: configValues ?? this.configValues,
+    storage: storage ?? this.storage,
+  );
+  LyricsPluginDataRow copyWithCompanion(LyricsPluginDataCompanion data) {
+    return LyricsPluginDataRow(
+      installId: data.installId.present ? data.installId.value : this.installId,
+      configValues: data.configValues.present
+          ? data.configValues.value
+          : this.configValues,
+      storage: data.storage.present ? data.storage.value : this.storage,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPluginDataRow(')
+          ..write('installId: $installId, ')
+          ..write('configValues: $configValues, ')
+          ..write('storage: $storage')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(installId, configValues, storage);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LyricsPluginDataRow &&
+          other.installId == this.installId &&
+          other.configValues == this.configValues &&
+          other.storage == this.storage);
+}
+
+class LyricsPluginDataCompanion extends UpdateCompanion<LyricsPluginDataRow> {
+  final Value<String> installId;
+  final Value<String> configValues;
+  final Value<String> storage;
+  final Value<int> rowid;
+  const LyricsPluginDataCompanion({
+    this.installId = const Value.absent(),
+    this.configValues = const Value.absent(),
+    this.storage = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LyricsPluginDataCompanion.insert({
+    required String installId,
+    this.configValues = const Value.absent(),
+    this.storage = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : installId = Value(installId);
+  static Insertable<LyricsPluginDataRow> custom({
+    Expression<String>? installId,
+    Expression<String>? configValues,
+    Expression<String>? storage,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (installId != null) 'install_id': installId,
+      if (configValues != null) 'config_values': configValues,
+      if (storage != null) 'storage': storage,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LyricsPluginDataCompanion copyWith({
+    Value<String>? installId,
+    Value<String>? configValues,
+    Value<String>? storage,
+    Value<int>? rowid,
+  }) {
+    return LyricsPluginDataCompanion(
+      installId: installId ?? this.installId,
+      configValues: configValues ?? this.configValues,
+      storage: storage ?? this.storage,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (installId.present) {
+      map['install_id'] = Variable<String>(installId.value);
+    }
+    if (configValues.present) {
+      map['config_values'] = Variable<String>(configValues.value);
+    }
+    if (storage.present) {
+      map['storage'] = Variable<String>(storage.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LyricsPluginDataCompanion(')
+          ..write('installId: $installId, ')
+          ..write('configValues: $configValues, ')
+          ..write('storage: $storage, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$LibraryDatabase extends GeneratedDatabase {
   _$LibraryDatabase(QueryExecutor e) : super(e);
   $LibraryDatabaseManager get managers => $LibraryDatabaseManager(this);
@@ -7238,6 +9196,18 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
   late final $LyricsPinsTable lyricsPins = $LyricsPinsTable(this);
   late final $OnlineLyricsRejectsTable onlineLyricsRejects =
       $OnlineLyricsRejectsTable(this);
+  late final $LyricsPluginsTable lyricsPlugins = $LyricsPluginsTable(this);
+  late final $LyricsSourcePrefsTable lyricsSourcePrefs =
+      $LyricsSourcePrefsTable(this);
+  late final $LyricsPluginReposTable lyricsPluginRepos =
+      $LyricsPluginReposTable(this);
+  late final $LyricsPluginDataTable lyricsPluginData = $LyricsPluginDataTable(
+    this,
+  );
+  late final Index lyricsPluginsRepoUnique = Index(
+    'lyrics_plugins_repo_unique',
+    'CREATE UNIQUE INDEX lyrics_plugins_repo_unique ON lyrics_plugins (repo_url, repo_slug) WHERE repo_url IS NOT NULL',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7275,6 +9245,11 @@ abstract class _$LibraryDatabase extends GeneratedDatabase {
     onlineLyrics,
     lyricsPins,
     onlineLyricsRejects,
+    lyricsPlugins,
+    lyricsSourcePrefs,
+    lyricsPluginRepos,
+    lyricsPluginData,
+    lyricsPluginsRepoUnique,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -11752,6 +13727,1081 @@ typedef $$OnlineLyricsRejectsTableProcessedTableManager =
       OnlineLyricsRejectRow,
       PrefetchHooks Function()
     >;
+typedef $$LyricsPluginsTableCreateCompanionBuilder =
+    LyricsPluginsCompanion Function({
+      required String installId,
+      required String name,
+      Value<String?> author,
+      Value<String?> description,
+      required int version,
+      required int apiVersion,
+      required String hosts,
+      required String configSchema,
+      required String packageDir,
+      required String sourceKind,
+      required String sourceName,
+      Value<String?> repoUrl,
+      Value<String?> repoSlug,
+      required int installedAt,
+      required int updatedAt,
+      Value<int?> removedAt,
+      Value<int> rowid,
+    });
+typedef $$LyricsPluginsTableUpdateCompanionBuilder =
+    LyricsPluginsCompanion Function({
+      Value<String> installId,
+      Value<String> name,
+      Value<String?> author,
+      Value<String?> description,
+      Value<int> version,
+      Value<int> apiVersion,
+      Value<String> hosts,
+      Value<String> configSchema,
+      Value<String> packageDir,
+      Value<String> sourceKind,
+      Value<String> sourceName,
+      Value<String?> repoUrl,
+      Value<String?> repoSlug,
+      Value<int> installedAt,
+      Value<int> updatedAt,
+      Value<int?> removedAt,
+      Value<int> rowid,
+    });
+
+class $$LyricsPluginsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginsTable> {
+  $$LyricsPluginsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get installId => $composableBuilder(
+    column: $table.installId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get apiVersion => $composableBuilder(
+    column: $table.apiVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hosts => $composableBuilder(
+    column: $table.hosts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get configSchema => $composableBuilder(
+    column: $table.configSchema,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get packageDir => $composableBuilder(
+    column: $table.packageDir,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceName => $composableBuilder(
+    column: $table.sourceName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get repoUrl => $composableBuilder(
+    column: $table.repoUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get repoSlug => $composableBuilder(
+    column: $table.repoSlug,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get removedAt => $composableBuilder(
+    column: $table.removedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricsPluginsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginsTable> {
+  $$LyricsPluginsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get installId => $composableBuilder(
+    column: $table.installId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get apiVersion => $composableBuilder(
+    column: $table.apiVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hosts => $composableBuilder(
+    column: $table.hosts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get configSchema => $composableBuilder(
+    column: $table.configSchema,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get packageDir => $composableBuilder(
+    column: $table.packageDir,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceName => $composableBuilder(
+    column: $table.sourceName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get repoUrl => $composableBuilder(
+    column: $table.repoUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get repoSlug => $composableBuilder(
+    column: $table.repoSlug,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get removedAt => $composableBuilder(
+    column: $table.removedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricsPluginsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginsTable> {
+  $$LyricsPluginsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get installId =>
+      $composableBuilder(column: $table.installId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get apiVersion => $composableBuilder(
+    column: $table.apiVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get hosts =>
+      $composableBuilder(column: $table.hosts, builder: (column) => column);
+
+  GeneratedColumn<String> get configSchema => $composableBuilder(
+    column: $table.configSchema,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get packageDir => $composableBuilder(
+    column: $table.packageDir,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceKind => $composableBuilder(
+    column: $table.sourceKind,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceName => $composableBuilder(
+    column: $table.sourceName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get repoUrl =>
+      $composableBuilder(column: $table.repoUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get repoSlug =>
+      $composableBuilder(column: $table.repoSlug, builder: (column) => column);
+
+  GeneratedColumn<int> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get removedAt =>
+      $composableBuilder(column: $table.removedAt, builder: (column) => column);
+}
+
+class $$LyricsPluginsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricsPluginsTable,
+          LyricsPluginRow,
+          $$LyricsPluginsTableFilterComposer,
+          $$LyricsPluginsTableOrderingComposer,
+          $$LyricsPluginsTableAnnotationComposer,
+          $$LyricsPluginsTableCreateCompanionBuilder,
+          $$LyricsPluginsTableUpdateCompanionBuilder,
+          (
+            LyricsPluginRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $LyricsPluginsTable,
+              LyricsPluginRow
+            >,
+          ),
+          LyricsPluginRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricsPluginsTableTableManager(
+    _$LibraryDatabase db,
+    $LyricsPluginsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricsPluginsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LyricsPluginsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LyricsPluginsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> installId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> author = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int> apiVersion = const Value.absent(),
+                Value<String> hosts = const Value.absent(),
+                Value<String> configSchema = const Value.absent(),
+                Value<String> packageDir = const Value.absent(),
+                Value<String> sourceKind = const Value.absent(),
+                Value<String> sourceName = const Value.absent(),
+                Value<String?> repoUrl = const Value.absent(),
+                Value<String?> repoSlug = const Value.absent(),
+                Value<int> installedAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int?> removedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPluginsCompanion(
+                installId: installId,
+                name: name,
+                author: author,
+                description: description,
+                version: version,
+                apiVersion: apiVersion,
+                hosts: hosts,
+                configSchema: configSchema,
+                packageDir: packageDir,
+                sourceKind: sourceKind,
+                sourceName: sourceName,
+                repoUrl: repoUrl,
+                repoSlug: repoSlug,
+                installedAt: installedAt,
+                updatedAt: updatedAt,
+                removedAt: removedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String installId,
+                required String name,
+                Value<String?> author = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                required int version,
+                required int apiVersion,
+                required String hosts,
+                required String configSchema,
+                required String packageDir,
+                required String sourceKind,
+                required String sourceName,
+                Value<String?> repoUrl = const Value.absent(),
+                Value<String?> repoSlug = const Value.absent(),
+                required int installedAt,
+                required int updatedAt,
+                Value<int?> removedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPluginsCompanion.insert(
+                installId: installId,
+                name: name,
+                author: author,
+                description: description,
+                version: version,
+                apiVersion: apiVersion,
+                hosts: hosts,
+                configSchema: configSchema,
+                packageDir: packageDir,
+                sourceKind: sourceKind,
+                sourceName: sourceName,
+                repoUrl: repoUrl,
+                repoSlug: repoSlug,
+                installedAt: installedAt,
+                updatedAt: updatedAt,
+                removedAt: removedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LyricsPluginsTable, LyricsPluginRow>(table),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricsPluginsTable,
+                    LyricsPluginRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricsPluginsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricsPluginsTable,
+      LyricsPluginRow,
+      $$LyricsPluginsTableFilterComposer,
+      $$LyricsPluginsTableOrderingComposer,
+      $$LyricsPluginsTableAnnotationComposer,
+      $$LyricsPluginsTableCreateCompanionBuilder,
+      $$LyricsPluginsTableUpdateCompanionBuilder,
+      (
+        LyricsPluginRow,
+        BaseReferences<_$LibraryDatabase, $LyricsPluginsTable, LyricsPluginRow>,
+      ),
+      LyricsPluginRow,
+      PrefetchHooks Function()
+    >;
+typedef $$LyricsSourcePrefsTableCreateCompanionBuilder =
+    LyricsSourcePrefsCompanion Function({
+      required String providerId,
+      Value<bool> enabled,
+      required int position,
+      Value<int> rowid,
+    });
+typedef $$LyricsSourcePrefsTableUpdateCompanionBuilder =
+    LyricsSourcePrefsCompanion Function({
+      Value<String> providerId,
+      Value<bool> enabled,
+      Value<int> position,
+      Value<int> rowid,
+    });
+
+class $$LyricsSourcePrefsTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricsSourcePrefsTable> {
+  $$LyricsSourcePrefsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricsSourcePrefsTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricsSourcePrefsTable> {
+  $$LyricsSourcePrefsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricsSourcePrefsTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricsSourcePrefsTable> {
+  $$LyricsSourcePrefsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get providerId => $composableBuilder(
+    column: $table.providerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+}
+
+class $$LyricsSourcePrefsTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricsSourcePrefsTable,
+          LyricsSourcePrefRow,
+          $$LyricsSourcePrefsTableFilterComposer,
+          $$LyricsSourcePrefsTableOrderingComposer,
+          $$LyricsSourcePrefsTableAnnotationComposer,
+          $$LyricsSourcePrefsTableCreateCompanionBuilder,
+          $$LyricsSourcePrefsTableUpdateCompanionBuilder,
+          (
+            LyricsSourcePrefRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $LyricsSourcePrefsTable,
+              LyricsSourcePrefRow
+            >,
+          ),
+          LyricsSourcePrefRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricsSourcePrefsTableTableManager(
+    _$LibraryDatabase db,
+    $LyricsSourcePrefsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricsSourcePrefsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LyricsSourcePrefsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LyricsSourcePrefsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> providerId = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsSourcePrefsCompanion(
+                providerId: providerId,
+                enabled: enabled,
+                position: position,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String providerId,
+                Value<bool> enabled = const Value.absent(),
+                required int position,
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsSourcePrefsCompanion.insert(
+                providerId: providerId,
+                enabled: enabled,
+                position: position,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LyricsSourcePrefsTable, LyricsSourcePrefRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricsSourcePrefsTable,
+                    LyricsSourcePrefRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricsSourcePrefsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricsSourcePrefsTable,
+      LyricsSourcePrefRow,
+      $$LyricsSourcePrefsTableFilterComposer,
+      $$LyricsSourcePrefsTableOrderingComposer,
+      $$LyricsSourcePrefsTableAnnotationComposer,
+      $$LyricsSourcePrefsTableCreateCompanionBuilder,
+      $$LyricsSourcePrefsTableUpdateCompanionBuilder,
+      (
+        LyricsSourcePrefRow,
+        BaseReferences<
+          _$LibraryDatabase,
+          $LyricsSourcePrefsTable,
+          LyricsSourcePrefRow
+        >,
+      ),
+      LyricsSourcePrefRow,
+      PrefetchHooks Function()
+    >;
+typedef $$LyricsPluginReposTableCreateCompanionBuilder =
+    LyricsPluginReposCompanion Function({
+      required String url,
+      required String name,
+      Value<String?> author,
+      required int addedAt,
+      Value<int?> lastFetchedAt,
+      Value<String?> lastError,
+      Value<String?> catalog,
+      Value<int> rowid,
+    });
+typedef $$LyricsPluginReposTableUpdateCompanionBuilder =
+    LyricsPluginReposCompanion Function({
+      Value<String> url,
+      Value<String> name,
+      Value<String?> author,
+      Value<int> addedAt,
+      Value<int?> lastFetchedAt,
+      Value<String?> lastError,
+      Value<String?> catalog,
+      Value<int> rowid,
+    });
+
+class $$LyricsPluginReposTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginReposTable> {
+  $$LyricsPluginReposTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastFetchedAt => $composableBuilder(
+    column: $table.lastFetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get catalog => $composableBuilder(
+    column: $table.catalog,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricsPluginReposTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginReposTable> {
+  $$LyricsPluginReposTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastFetchedAt => $composableBuilder(
+    column: $table.lastFetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get catalog => $composableBuilder(
+    column: $table.catalog,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricsPluginReposTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginReposTable> {
+  $$LyricsPluginReposTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<int> get addedAt =>
+      $composableBuilder(column: $table.addedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get lastFetchedAt => $composableBuilder(
+    column: $table.lastFetchedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<String> get catalog =>
+      $composableBuilder(column: $table.catalog, builder: (column) => column);
+}
+
+class $$LyricsPluginReposTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricsPluginReposTable,
+          LyricsPluginRepoRow,
+          $$LyricsPluginReposTableFilterComposer,
+          $$LyricsPluginReposTableOrderingComposer,
+          $$LyricsPluginReposTableAnnotationComposer,
+          $$LyricsPluginReposTableCreateCompanionBuilder,
+          $$LyricsPluginReposTableUpdateCompanionBuilder,
+          (
+            LyricsPluginRepoRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $LyricsPluginReposTable,
+              LyricsPluginRepoRow
+            >,
+          ),
+          LyricsPluginRepoRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricsPluginReposTableTableManager(
+    _$LibraryDatabase db,
+    $LyricsPluginReposTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricsPluginReposTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LyricsPluginReposTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LyricsPluginReposTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> url = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> author = const Value.absent(),
+                Value<int> addedAt = const Value.absent(),
+                Value<int?> lastFetchedAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<String?> catalog = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPluginReposCompanion(
+                url: url,
+                name: name,
+                author: author,
+                addedAt: addedAt,
+                lastFetchedAt: lastFetchedAt,
+                lastError: lastError,
+                catalog: catalog,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String url,
+                required String name,
+                Value<String?> author = const Value.absent(),
+                required int addedAt,
+                Value<int?> lastFetchedAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<String?> catalog = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPluginReposCompanion.insert(
+                url: url,
+                name: name,
+                author: author,
+                addedAt: addedAt,
+                lastFetchedAt: lastFetchedAt,
+                lastError: lastError,
+                catalog: catalog,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LyricsPluginReposTable, LyricsPluginRepoRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricsPluginReposTable,
+                    LyricsPluginRepoRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricsPluginReposTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricsPluginReposTable,
+      LyricsPluginRepoRow,
+      $$LyricsPluginReposTableFilterComposer,
+      $$LyricsPluginReposTableOrderingComposer,
+      $$LyricsPluginReposTableAnnotationComposer,
+      $$LyricsPluginReposTableCreateCompanionBuilder,
+      $$LyricsPluginReposTableUpdateCompanionBuilder,
+      (
+        LyricsPluginRepoRow,
+        BaseReferences<
+          _$LibraryDatabase,
+          $LyricsPluginReposTable,
+          LyricsPluginRepoRow
+        >,
+      ),
+      LyricsPluginRepoRow,
+      PrefetchHooks Function()
+    >;
+typedef $$LyricsPluginDataTableCreateCompanionBuilder =
+    LyricsPluginDataCompanion Function({
+      required String installId,
+      Value<String> configValues,
+      Value<String> storage,
+      Value<int> rowid,
+    });
+typedef $$LyricsPluginDataTableUpdateCompanionBuilder =
+    LyricsPluginDataCompanion Function({
+      Value<String> installId,
+      Value<String> configValues,
+      Value<String> storage,
+      Value<int> rowid,
+    });
+
+class $$LyricsPluginDataTableFilterComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginDataTable> {
+  $$LyricsPluginDataTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get installId => $composableBuilder(
+    column: $table.installId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get configValues => $composableBuilder(
+    column: $table.configValues,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get storage => $composableBuilder(
+    column: $table.storage,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LyricsPluginDataTableOrderingComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginDataTable> {
+  $$LyricsPluginDataTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get installId => $composableBuilder(
+    column: $table.installId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get configValues => $composableBuilder(
+    column: $table.configValues,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get storage => $composableBuilder(
+    column: $table.storage,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LyricsPluginDataTableAnnotationComposer
+    extends Composer<_$LibraryDatabase, $LyricsPluginDataTable> {
+  $$LyricsPluginDataTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get installId =>
+      $composableBuilder(column: $table.installId, builder: (column) => column);
+
+  GeneratedColumn<String> get configValues => $composableBuilder(
+    column: $table.configValues,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get storage =>
+      $composableBuilder(column: $table.storage, builder: (column) => column);
+}
+
+class $$LyricsPluginDataTableTableManager
+    extends
+        RootTableManager<
+          _$LibraryDatabase,
+          $LyricsPluginDataTable,
+          LyricsPluginDataRow,
+          $$LyricsPluginDataTableFilterComposer,
+          $$LyricsPluginDataTableOrderingComposer,
+          $$LyricsPluginDataTableAnnotationComposer,
+          $$LyricsPluginDataTableCreateCompanionBuilder,
+          $$LyricsPluginDataTableUpdateCompanionBuilder,
+          (
+            LyricsPluginDataRow,
+            BaseReferences<
+              _$LibraryDatabase,
+              $LyricsPluginDataTable,
+              LyricsPluginDataRow
+            >,
+          ),
+          LyricsPluginDataRow,
+          PrefetchHooks Function()
+        > {
+  $$LyricsPluginDataTableTableManager(
+    _$LibraryDatabase db,
+    $LyricsPluginDataTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LyricsPluginDataTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LyricsPluginDataTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LyricsPluginDataTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> installId = const Value.absent(),
+                Value<String> configValues = const Value.absent(),
+                Value<String> storage = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPluginDataCompanion(
+                installId: installId,
+                configValues: configValues,
+                storage: storage,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String installId,
+                Value<String> configValues = const Value.absent(),
+                Value<String> storage = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LyricsPluginDataCompanion.insert(
+                installId: installId,
+                configValues: configValues,
+                storage: storage,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LyricsPluginDataTable, LyricsPluginDataRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$LibraryDatabase,
+                    $LyricsPluginDataTable,
+                    LyricsPluginDataRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LyricsPluginDataTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LibraryDatabase,
+      $LyricsPluginDataTable,
+      LyricsPluginDataRow,
+      $$LyricsPluginDataTableFilterComposer,
+      $$LyricsPluginDataTableOrderingComposer,
+      $$LyricsPluginDataTableAnnotationComposer,
+      $$LyricsPluginDataTableCreateCompanionBuilder,
+      $$LyricsPluginDataTableUpdateCompanionBuilder,
+      (
+        LyricsPluginDataRow,
+        BaseReferences<
+          _$LibraryDatabase,
+          $LyricsPluginDataTable,
+          LyricsPluginDataRow
+        >,
+      ),
+      LyricsPluginDataRow,
+      PrefetchHooks Function()
+    >;
 
 class $LibraryDatabaseManager {
   final _$LibraryDatabase _db;
@@ -11786,4 +14836,12 @@ class $LibraryDatabaseManager {
       $$LyricsPinsTableTableManager(_db, _db.lyricsPins);
   $$OnlineLyricsRejectsTableTableManager get onlineLyricsRejects =>
       $$OnlineLyricsRejectsTableTableManager(_db, _db.onlineLyricsRejects);
+  $$LyricsPluginsTableTableManager get lyricsPlugins =>
+      $$LyricsPluginsTableTableManager(_db, _db.lyricsPlugins);
+  $$LyricsSourcePrefsTableTableManager get lyricsSourcePrefs =>
+      $$LyricsSourcePrefsTableTableManager(_db, _db.lyricsSourcePrefs);
+  $$LyricsPluginReposTableTableManager get lyricsPluginRepos =>
+      $$LyricsPluginReposTableTableManager(_db, _db.lyricsPluginRepos);
+  $$LyricsPluginDataTableTableManager get lyricsPluginData =>
+      $$LyricsPluginDataTableTableManager(_db, _db.lyricsPluginData);
 }

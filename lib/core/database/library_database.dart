@@ -9,10 +9,12 @@ import 'library_migration_v6.dart';
 import 'library_migration_v7.dart';
 import 'library_migration_v8.dart';
 import 'library_migration_v10.dart';
+import 'library_migration_v11.dart';
 import 'library_migration_v9.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
 import 'lyric_translation_tables.dart';
+import 'lyrics_plugin_tables.dart';
 import 'online_lyrics_tables.dart';
 import 'separator_rules.dart';
 import 'track_keys.dart';
@@ -44,6 +46,10 @@ const deleteChunkSize = 500;
     OnlineLyrics,
     LyricsPins,
     OnlineLyricsRejects,
+    LyricsPlugins,
+    LyricsSourcePrefs,
+    LyricsPluginRepos,
+    LyricsPluginData,
   ],
   include: {'library_search.drift', 'listen_history.drift'},
 )
@@ -51,7 +57,7 @@ class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -71,6 +77,7 @@ class LibraryDatabase extends _$LibraryDatabase {
       from7To8: (m, schema) => migrateLibraryToSchema8(this, m, schema),
       from8To9: (m, schema) => migrateLibraryToSchema9(this, m, schema),
       from9To10: (m, schema) => migrateLibraryToSchema10(this, m, schema),
+      from10To11: (m, schema) => migrateLibraryToSchema11(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).
