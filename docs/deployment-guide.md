@@ -170,6 +170,7 @@ The AppImage ships these builds. Versions and build flags are in `usr/share/lice
 | mpv (libmpv) | 0.41.0 (`-Dgpl=false`) | LGPL-2.1+ | git tag `v0.41.0`, commit in `SOURCES.txt` |
 | libplacebo | 6.338.2 (linked statically into libmpv) | LGPL-2.1+ | git tag `v6.338.2`, commit in `SOURCES.txt` |
 | libass | Debian 12 `libass9` package | ISC | Debian sources, recorded in `SOURCES.txt` |
+| CryptoJS (embedded in the Rust library as a lyrics plugin script) | 4.2.0 | MIT | npm `crypto-js@4.2.0` via jsDelivr; `rust/src/plugin_runtime/js/crypto-js.min.js`, sha256 in its header |
 
 License texts are in `usr/share/licenses/` inside the AppImage, with the Kanaru `LICENSE` (GPL-3.0-or-later). Not in the AppImage yet: license notices for the Rust crates linked into the app library (including symphonia, which is MPL-2.0) and for mimalloc.
 
