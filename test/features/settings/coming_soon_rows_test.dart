@@ -32,6 +32,7 @@ const _stored = AppSettings(
     fontScale: 1.25,
     sidebarTabs: {SidebarTab.songs},
     trackNumbersInAlbum: false,
+    colorFromCover: false,
   ),
 );
 
