@@ -232,7 +232,7 @@ A run that failed, or that printed to `console`, adds one line to `<data>/plugin
 
 ### Cookies and private addresses (version 1)
 
-There is no cookie jar. A script that needs a session reads the `set-cookie` header of a response with `res.header('set-cookie')`, keeps what it needs in `localStorage`, and sends a `Cookie` header itself, only to the hosts it declared (a request to any other host is `blockedHost`). The app does not yet block names that resolve to private addresses (see `metadata.hosts`): only the name is checked.
+There is no cookie jar. A script that needs a session reads the `set-cookie` header of a response with `res.header('set-cookie')`, keeps what it needs in `localStorage`, and sends a `Cookie` header itself, only to the hosts it declared (a request to any other host is `blockedHost`). Besides the name check, the app checks where the name leads: `fetch` connects only to a globally routable address. The name is resolved once, every address of the answer must be public (a name that resolves to loopback, RFC 1918, link-local, unique-local, CGNAT or any reserved range, or to a mix, is `BlockedHostError` and nothing is sent), and the socket goes to the address that was checked, with TLS verifying the original name, so a second DNS answer cannot redirect it (DNS rebinding). IPv4-mapped (`::ffff:0:0/96`) and NAT64 (`64:ff9b::/96`) addresses count as the IPv4 they carry. `198.18.0.0/15` counts as public because fake-ip proxies (Clash, mihomo, sing-box in TUN mode) answer every lookup from it. Behind a proxy set in the environment the proxy resolves the name, so the app looks the name up locally first (3 s limit) and refuses when that answer is not public; when the local lookup fails (a network that reaches only the proxy) the proxy is used as configured. A name that answers differently to the proxy is not caught.
 
 ## Plugin package
 
@@ -270,7 +270,7 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | `metadata.type` | must be `"lyrics"`, else `wrongType` |
 | `metadata.name` | 1 to 80 code points after control, format (bidi, zero-width, BOM) and line-separator characters are removed and the text is trimmed |
 | `metadata.version` | int, 1 to 2147483647 |
-| `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher must do that at connect time), else `badHost` with the host |
+| `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher does that at connect time, see "Cookies and private addresses"), else `badHost` with the host |
 | `metadata.author` | optional, at most 80 characters |
 | `metadata.description` | optional, at most 500 characters (newlines kept) |
 | `script.search`, `script.lyrics` | file names matching the name pattern above; a name not in `src/` is `missingScript` |
@@ -339,3 +339,47 @@ Without `rust/target/debug/librust_lib_kanaru.so` (or with a stale build the bri
 
 - `lyrics_plugin_lrclib_test.dart` and `lyrics_plugin_lrclib_unmirrored_test.dart`: the Dart provider and the plugin answer the same fake LRCLIB for a synced song, a plain-only song, an instrumental song and a miss; the stored rows (except `provider_id`) and the manual search's ranked order are compared.
 - `lyrics_plugin_hostile_test.dart` and `lyrics_plugin_hostile_slow_test.dart`: the packages in `test/fixtures/lyrics_plugins/hostile/` (endless loop, regex bomb, 64 MiB allocation, deep recursion, 11 fetches, undeclared host, `http://`, a swallowed network error, wrong output shape, 3 MiB output, `load('../x.js')`, console spam) each end as the expected `LyricsFetchKind` (an error the script throws, such as the one `load('../x.js')` throws, is `server`), store nothing as "not found", leave one event in the plugin's JSONL log (kind, console, requests without query strings; a config value the script prints or puts in an address appears as `***`) and one INFO line in the app log without song data. The console-spam package is the exception: it is a successful run with an empty answer, so a `not_found` row is stored, the log event is `ok` with the console capped at 50 lines, and the app log gets nothing. Each finishes in under 20 s; the endless loop and the regex bomb wait for the 15 s wall-time limit, so they live in their own file and run in parallel with the others.
+
+## Plugin repository
+
+A repository is one URL the user types; it serves a catalog (JSON) that lists plugins and where their zips and icons are. Code: `lib/core/lyrics/plugins/repo/`.
+
+### Catalog format
+
+```json
+{
+  "metadata": { "name": "Kho lời của hieu05", "author": "hieu05" },
+  "data": [{
+    "slug": "netease", "name": "NetEase Cloud Music", "version": 3, "apiVersion": 1,
+    "type": "lyrics", "hosts": ["music.163.com"],
+    "path": "dist/netease/plugin.zip", "icon": "dist/netease/icon.png",
+    "description": "...", "author": "..."
+  }]
+}
+```
+
+- At most 1 MiB and 500 entries (more entries: `invalidCatalog`; over the size: `tooLarge`). `metadata.name` is required (1 to 80 characters).
+- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics`. `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
+- An entry that breaks a rule is dropped and counted. A non-empty `data` with no usable entry is `invalidCatalog`; an empty `data` is a valid empty catalog.
+- `path` and `icon` may be relative; they are resolved against the address the catalog was served from (after redirects) and checked against the address rules below. A bad `path` drops the entry, a bad `icon` only the icon. A fetched icon must pass the package icon rules (PNG, at most 256 x 256, at most 64 KiB) or it is dropped.
+- The catalog is only a preview: the plugin's own `plugin.json` is the truth, and must agree with the entry's `version` and `hosts`.
+
+### Address rules
+
+Who chose the host decides the rule. The class of an address is decided on the **resolved** address, never on the name (`lyrics_http_address_class.dart`): public means globally routable unicast only; the rest is local or refused.
+
+| Class | Ranges |
+|---|---|
+| local | `127/8`, `::1`, `10/8`, `172.16/12`, `192.168/16`, `100.64/10` (CGNAT), `169.254/16`, `fe80::/10`, `fc00::/7`, `fec0::/10` |
+| refused | `0.0.0.0/8`, `::` and the rest of `::/8`, multicast (`224/4`, `ff00::/8`), `240/4` with the broadcast address, `192.0.0.0/24`, `192.0.2/24`, `198.51.100/24`, `203.0.113/24`, `192.88.99/24`, `2001::/23`, `2001:db8::/32`, `2002::/16`, `3fff::/20`, the local-use NAT64 prefix `64:ff9b:1::/48` (its IPv4 offset depends on the operator), everything outside `2000::/3` |
+| public | everything else, including `198.18.0.0/15` (fake-ip proxies) |
+
+`::ffff:a.b.c.d` and `64:ff9b::a.b.c.d` are classified as `a.b.c.d`. Names `localhost`, `*.local`, `*.lan`, `*.home.arpa`, `*.internal`, `*.localdomain` and `*.localhost` are local by convention; one that resolves to a public address is refused. An answer with addresses of more than one class is refused.
+
+| Address | Who chose it | Rule |
+|---|---|---|
+| Repository URL | the user | `http` or `https`, IP, port and `localhost` allowed. `http` only for a local destination; a public one needs `https` (the app shows "Địa chỉ công khai cần https"). No user info |
+| `path`, `icon` and every redirect hop | the repository owner | same class as the catalog: a **public** catalog may point only to public `https` addresses, never to a local address or `http`; a **local** catalog may point to local addresses (`http` or `https`) and to public `https` addresses. The catalog's class is the strictest reached along its redirect chain: once any hop is public the catalog is public, and its `path` and `icon` follow the public rules (a local address that redirects to a public host does not keep local privileges). The same narrowing holds along the redirect chain of a zip or an icon. At install, update and icon time the class is the stricter of the stored one and a fresh lookup of the repository URL, failing closed; an IP-literal or `.lan` repository counts as local on any network |
+| Plugin `hosts` | the plugin author | unchanged: `https`, public DNS name (`lyricsHostProblem()`), and the plugin `fetch` rule above |
+
+Refusals are `RepoFetchException(blockedAddress)` with a `RepoAddressProblem` reason (`invalidUrl`, `userInfo`, `publicNeedsHttps`, `localFromPublic`, `refusedAddress`, `mixedAddresses`, `localNameOnPublic`). A name that does not resolve, resolves to nothing or takes over 10 s to resolve is `network`, not a refusal; an answer that is only the unspecified address (a DNS blocker such as Pi-hole answering `0.0.0.0`) is `refusedAddress` / `blockedHost`. Other errors: `network`, `notFound` (404, 410), `tooLarge`, `invalidCatalog`.
