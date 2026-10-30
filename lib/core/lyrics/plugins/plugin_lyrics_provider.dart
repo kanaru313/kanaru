@@ -1,4 +1,6 @@
+import '../../database/artist_names.dart' show splitArtists;
 import '../online/lyrics_http.dart';
+import '../online/lyrics_match_keys.dart' show primaryArtist;
 import '../online/lyrics_provider.dart';
 import 'lyrics_plugin_record.dart';
 import 'plugin_output_reader.dart';
@@ -32,16 +34,23 @@ class PluginLyricsProvider implements LyricsProvider {
   Future<LyricsCandidate?> lookup(LyricsQuery query, LyricsHttp http) =>
       Future.value();
 
-  /// Runs `search.js` with `{title, artist, album, durationMs}` (missing
-  /// tags are `null`), or `{text}` for the manual search.
+  /// Runs `search.js` with `{title, artist, artists, album, durationMs}`:
+  /// `artist` is the primary artist of the tag and `artists` all its names
+  /// (split like the library does); missing tags are `null`. The manual
+  /// search gets `{text}`.
   @override
   Future<List<LyricsCandidate>> search(LyricsQuery query, LyricsHttp http) {
     final text = query.text;
+    final artists = [
+      for (final name in splitArtists(query.artist))
+        if (name.trim().isNotEmpty) name.trim(),
+    ];
     final input = text != null
         ? {'text': text}
         : {
             'title': query.title,
-            'artist': query.artist,
+            'artist': primaryArtist(query.artist),
+            'artists': artists.isEmpty ? null : artists,
             'album': query.album,
             'durationMs': query.duration?.inMilliseconds,
           };

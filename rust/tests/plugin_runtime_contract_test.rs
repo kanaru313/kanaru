@@ -88,9 +88,11 @@ fn response_error_carries_kind_and_retry_after() {
 fn missing_execute_is_a_script_error() {
     let r = run_script("var x = 1;", 0);
     assert_eq!(r.status, S::ScriptError);
+    assert_eq!(r.error_kind, PluginErrorKind::InvalidResponse);
     assert!(r.error_message.contains("execute"), "{}", r.error_message);
     let r = run_script("var execute = 5;", 0);
     assert_eq!(r.status, S::ScriptError);
+    assert_eq!(r.error_kind, PluginErrorKind::InvalidResponse);
 }
 
 #[test]
@@ -253,7 +255,7 @@ fn script_error_has_js_message_and_stack_with_line_numbers() {
         0,
     );
     assert_eq!(r.status, S::ScriptError);
-    assert_eq!(r.error_kind, PluginErrorKind::Server);
+    assert_eq!(r.error_kind, PluginErrorKind::InvalidResponse);
     let js = r.js_error.expect("js_error");
     assert!(js.message.contains("null"), "{js:?}");
     assert!(js.stack.contains("search.js:4"), "{js:?}");

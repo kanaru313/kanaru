@@ -136,9 +136,10 @@ pub enum PluginErrorKind {
     None,
     /// The source asked to slow down; see `retry_after_sec`.
     RateLimited,
-    /// The script returned something that is not a `Response`.
+    /// The script returned something that is not a `Response`, threw an
+    /// error, or has no `execute`.
     InvalidResponse,
-    /// Any other failure (default for `Response.error` and for exceptions).
+    /// Default kind of `Response.error`.
     Server,
 }
 

@@ -245,7 +245,7 @@ void main() {
           expect(result.jsError?.stack, contains('search.js'));
           expect(result.fetchFailure?.kind, PluginFetchFailureKind.blockedHost);
           expect(result.errorMessage, contains('kaput'));
-          expect(result.errorKind, PluginRunErrorKind.server);
+          expect(result.errorKind, PluginRunErrorKind.invalidResponse);
         },
       );
 

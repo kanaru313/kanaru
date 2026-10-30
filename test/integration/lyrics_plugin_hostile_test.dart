@@ -81,14 +81,13 @@ void main() {
         console: ['before the answer'],
       ),
     );
-    // An error the script throws (here the one load() throws) is `server`:
-    // the runtime reports a thrown error as a script error of kind `server`
-    // (engine.rs, map_js_failure). docs/lyrics-plugin-api.md (Errors) lists
-    // "a thrown error" with `invalidResponse`; the code is what is pinned here.
+    // An error the script throws (here the one load() throws) is a bug of
+    // the plugin, so `invalidResponse`, as docs/lyrics-plugin-api.md (Errors)
+    // says.
     hostileCaseTest(
       const HostileCase(
         'load_outside_package',
-        LyricsFetchKind.server,
+        LyricsFetchKind.invalidResponse,
         console: ['before the load'],
         message: 'load',
       ),
