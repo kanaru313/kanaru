@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -250,6 +251,65 @@ void main() {
       expect(request.aborted, isTrue);
     },
   );
+
+  test('decode: false returns the raw bytes, even when not UTF-8', () async {
+    server = await LoopbackServer.start(
+      (_) => const Reply(200, '', bodyBytes: [0xff, 0xfe, 0x00, 0x41]),
+    );
+    final response = await sendTranslationRequest(
+      client,
+      method: 'GET',
+      uri: server.baseUri,
+      decode: false,
+    );
+    expect(response.status, 200);
+    expect(response.bytes, [0xff, 0xfe, 0x00, 0x41]);
+    expect(response.body, isEmpty);
+  });
+
+  test('decode: false still enforces the cap', () async {
+    server = await LoopbackServer.start(
+      (_) => Reply(
+        200,
+        '',
+        bodyBytes: List.filled(maxTranslationResponseBytes + 1, 0x61),
+      ),
+    );
+    expect(
+      await _failureOf(
+        sendTranslationRequest(
+          client,
+          method: 'GET',
+          uri: server.baseUri,
+          decode: false,
+        ),
+      ),
+      TranslationFailureKind.invalidResponse,
+    );
+  });
+
+  test('bodyBytes is sent as given, binary included', () async {
+    server = await LoopbackServer.start((_) => const Reply(200, 'ok'));
+    await sendTranslationRequest(
+      client,
+      method: 'POST',
+      uri: server.baseUri,
+      bodyBytes: utf8.encode('a=b&c=\u00e9'),
+    );
+    expect(server.requests.single.body, 'a=b&c=\u00e9');
+    expect(server.requests.single.header('content-length'), '8');
+  });
+
+  test('the default decodes and leaves bytes empty', () async {
+    server = await LoopbackServer.start((_) => const Reply(200, 'ok'));
+    final response = await sendTranslationRequest(
+      client,
+      method: 'GET',
+      uri: server.baseUri,
+    );
+    expect(response.body, 'ok');
+    expect(response.bytes, isEmpty);
+  });
 }
 
 /// A client whose connection never opens until the test says so.

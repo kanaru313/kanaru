@@ -123,7 +123,8 @@ void main() {
           AppSettings(
             onlineLyrics: OnlineLyricsPrefs(
               autoFetch: autoOn,
-              noticeAcknowledged: {if (autoOn) registration.autoConsentKey},
+              manualConsent: autoOn,
+              autoConsent: autoOn,
             ),
           ),
         ),

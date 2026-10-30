@@ -4,6 +4,7 @@ import '../../../../core/database/library_startup.dart';
 import '../../../../core/lyrics/lyrics.dart';
 import '../../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../core/player/local_path_of.dart';
 import '../../../../l10n/l10n.dart';
@@ -27,7 +28,8 @@ import 'lyrics_source_menu_item.dart';
 List<Widget> lyricsSourceMenuItems(
   BuildContext context,
   LyricsActionRunner runner,
-  List<LyricsProviderRegistration> providers, {
+  List<LyricsProviderRegistration> providers,
+  Map<String, LyricsSourceName> names, {
   LyricsSource? ownSource,
   FocusNode? firstItemFocus,
   FocusNode? headerFocus,
@@ -50,7 +52,7 @@ List<Widget> lyricsSourceMenuItems(
       enabled ? action : null;
 
   final autoText = found != null && effective == LyricsChoice.auto
-      ? l10n.lyricsSourceAutoNow(lyricsSourceDetail(l10n, found, providers))
+      ? l10n.lyricsSourceAutoNow(lyricsSourceDetail(l10n, found, names))
       : l10n.lyricsSourceAutoHint(registration?.displayName ?? '');
   final pickKind = pin?.lyrics?.synced;
   final pickLength = pin?.remoteDurationMs;
@@ -68,7 +70,7 @@ List<Widget> lyricsSourceMenuItems(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
         child: Text(
-          lyricsSourceMenuTitle(l10n, source, providers),
+          lyricsSourceMenuTitle(l10n, source, names),
           style: Theme.of(context).textTheme.labelMedium
               ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
@@ -100,7 +102,7 @@ List<Widget> lyricsSourceMenuItems(
       lyricsSourceMenuItem(
         context,
         title: l10n.lyricsSourceOnlineItem(
-          lyricsProviderName(providers, pin?.providerId ?? ''),
+          lyricsSourceDisplayName(names, pin?.providerId ?? ''),
         ),
         subtitle: switch (pickSubtitle) {
           [] => null,

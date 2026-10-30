@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
@@ -275,6 +276,23 @@ void main() {
       expect(server.requests, hasLength(1));
     });
 
+    test('abandoned before the extra search keeps the plain hit', () async {
+      var abandoned = false;
+      await setUpWith((_) {
+        abandoned = true;
+        return Reply(200, jsonEncode(plain(1)), headers: _json);
+      });
+
+      await h.lookups.start(fakeTarget, auto: true, abandoned: () => abandoned);
+
+      final row =
+          (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
+      expect((row.status, row.remoteId, row.syncedText), ('found', '1', null));
+      expect(server.requests, hasLength(1));
+      expect(h.container.read(onlineLyricsLookupsProvider), isEmpty);
+      expect(h.backoff.isBlocked, isFalse);
+    });
+
     test('a 503 on the extra search keeps the plain exact hit', () async {
       await setUpWith(
         (r) => r.uri.path == '/api/get'
@@ -306,20 +324,20 @@ void main() {
     test(
       'consent withdrawn while a synced answer arrives stores nothing',
       () async {
-        final registration = LyricsProviderRegistration(LrclibProvider());
-        final acknowledged = {
-          registration.consentKey,
-          registration.autoConsentKey,
-        };
+        var prefs = const OnlineLyricsPrefs(
+          autoFetch: true,
+          manualConsent: true,
+          autoConsent: true,
+        );
         await setUpWith(
           (_) {
-            acknowledged.clear();
+            prefs = const OnlineLyricsPrefs();
             return Reply(200, jsonEncode(_record(5)), headers: _json);
           },
           overrides: [
             onlineLyricsHttpFactoryProvider.overrideWith(
               (ref) => OnlineLyricsHttpFactory(
-                acknowledged: () => acknowledged,
+                prefs: () => prefs,
                 client: () => client,
               ),
             ),
@@ -335,17 +353,16 @@ void main() {
     );
 
     test('consent withdrawn between the two requests stores nothing', () async {
-      final acknowledged = <String>{};
-      final registration = LyricsProviderRegistration(LrclibProvider());
-      acknowledged.addAll([
-        registration.consentKey,
-        registration.autoConsentKey,
-      ]);
+      var prefs = const OnlineLyricsPrefs(
+        autoFetch: true,
+        manualConsent: true,
+        autoConsent: true,
+      );
       await setUpWith(
         (r) {
           if (r.uri.path == '/api/get') {
             // Consent is withdrawn right after the first answer.
-            Future<void>.microtask(acknowledged.clear);
+            Future<void>.microtask(() => prefs = const OnlineLyricsPrefs());
             return Reply(200, jsonEncode(plain(1)), headers: _json);
           }
           return Reply(200, jsonEncode([_record(2)]), headers: _json);
@@ -353,7 +370,7 @@ void main() {
         overrides: [
           onlineLyricsHttpFactoryProvider.overrideWith(
             (ref) => OnlineLyricsHttpFactory(
-              acknowledged: () => acknowledged,
+              prefs: () => prefs,
               client: () => client,
             ),
           ),

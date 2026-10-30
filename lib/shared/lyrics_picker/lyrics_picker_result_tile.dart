@@ -7,7 +7,10 @@ import '../format_duration.dart';
 
 /// One search result: title, "artist · album", a body badge, the length
 /// (with the difference to the song's when it is over the match limit) and
-/// "Good match" and, for a record the user rejected before, "Rejected". A result without lyrics shows dimmed and cannot be selected.
+/// "Good match" and, for a record the user rejected before, "Rejected". A
+/// result that has no lyrics and cannot get any shows dimmed and cannot be
+/// selected; one that came without lyrics but can be asked for them (no
+/// badge yet) is selectable.
 class LyricsPickerResultTile extends StatelessWidget {
   const LyricsPickerResultTile({
     super.key,
@@ -88,7 +91,7 @@ class LyricsPickerResultTile extends StatelessWidget {
                     ),
                     style: small?.copyWith(color: colors.error),
                   ),
-                if (result.match.goodMatch)
+                if (result.match.goodMatch && !result.bodyMissing)
                   Text(
                     l10n.lyricsPickerGoodMatch,
                     style: small?.copyWith(color: colors.primary),

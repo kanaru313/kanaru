@@ -68,6 +68,9 @@ class StatusRig {
 
   late final LyricsHarness h;
   late final FakeLyricsProvider fake;
+
+  /// Enabled sources after [fake], in order.
+  late final List<FakeLyricsProvider> others;
   late final CountingHttpClient client;
   final embedded = FakeEmbeddedLyricsReader();
   final sidecar = FakeLrcSidecarReader();
@@ -81,7 +84,8 @@ class StatusRig {
       container.read(playingLyricsStatusProvider);
 
   /// Requests the fake provider has been asked to make.
-  int get requests => fake.lookupCalls + fake.searchCalls;
+  int get requests =>
+      [fake, ...others].fold(0, (n, f) => n + f.lookupCalls + f.searchCalls);
 
   /// Starts watching the status (Now Playing shown).
   void watch() {
@@ -128,13 +132,17 @@ Future<StatusRig> createStatusRig({
   bool manualConsent = true,
   bool withDatabase = true,
   Duration debounce = rigDebounce,
+  List<FakeLyricsProvider> others = const [],
   List<Override> overrides = const [],
 }) async {
   final rig = StatusRig._()
     ..fake = FakeLyricsProvider()
+    ..others = others
     ..client = CountingHttpClient();
   rig.h = await createHarness(
-    [LyricsProviderRegistration(rig.fake)],
+    [
+      for (final f in [rig.fake, ...others]) LyricsProviderRegistration(f),
+    ],
     client: rig.client,
     autoFetch: autoFetch,
     autoConsent: autoConsent,

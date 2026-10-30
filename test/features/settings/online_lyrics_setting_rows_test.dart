@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/lyrics_setting_rows.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
@@ -47,7 +48,8 @@ void main() {
       expect(notice, findsNothing);
       expect(tester.widget<Switch>(auto).value, isFalse);
       expect(prefsOf(r).autoFetch, isFalse);
-      expect(prefsOf(r).noticeAcknowledged, isEmpty);
+      expect(prefsOf(r).manualConsent, isFalse);
+      expect(prefsOf(r).autoConsent, isFalse);
     },
   );
 
@@ -62,19 +64,15 @@ void main() {
 
     expect(tester.widget<Switch>(auto).value, isTrue);
     expect(prefsOf(r).autoFetch, isTrue);
-    expect(
-      prefsOf(r).noticeAcknowledged,
-      contains(r.registration.autoConsentKey),
-    );
+    expect(prefsOf(r).autoConsent, isTrue);
+    expect(prefsOf(r).manualConsent, isTrue);
 
     await tester.tap(auto);
     await tester.pumpAndSettle();
     expect(notice, findsNothing);
     expect(tester.widget<Switch>(auto).value, isFalse);
-    expect(
-      prefsOf(r).noticeAcknowledged,
-      contains(r.registration.autoConsentKey),
-    );
+    expect(prefsOf(r).autoConsent, isTrue);
+    expect(prefsOf(r).manualConsent, isTrue);
 
     await tester.tap(auto);
     await tester.pumpAndSettle();
@@ -93,7 +91,7 @@ void main() {
     expect(prefsOf(r).autoFetch, isFalse);
   });
 
-  testWidgets('a switch kept on without this provider\'s key shows off', (
+  testWidgets('a switch kept on without the automatic consent shows off', (
     tester,
   ) async {
     await pump(tester, autoFetch: true);
@@ -147,10 +145,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(prefsOf(r).autoFetch, isTrue);
-      expect(prefsOf(r).noticeAcknowledged, hasLength(2));
+      expect(prefsOf(r).manualConsent, isTrue);
+      expect(prefsOf(r).autoConsent, isTrue);
     });
 
-    testWidgets('removes both keys, turns auto off and the notice returns', (
+    testWidgets('clears both flags, turns auto off and the notice returns', (
       tester,
     ) async {
       final r = await pump(
@@ -164,7 +163,8 @@ void main() {
       await confirmWithdraw(tester);
 
       expect(prefsOf(r).autoFetch, isFalse);
-      expect(prefsOf(r).noticeAcknowledged, isEmpty);
+      expect(prefsOf(r).manualConsent, isFalse);
+      expect(prefsOf(r).autoConsent, isFalse);
       expect(find.text('Not allowed'), findsOneWidget);
       expect(tester.widget<FilledButton>(withdraw).onPressed, isNull);
       expect(tester.widget<Switch>(auto).value, isFalse);
@@ -190,5 +190,43 @@ void main() {
       expect(fake.lookupCalls, 0);
       expect(fake.searchCalls, 0);
     });
+  });
+
+  testWidgets('two enabled sources: one notice, then one global consent', (
+    tester,
+  ) async {
+    final r = await LyricsRowsHarness.create(
+      tester,
+      const LyricsSettingRows(),
+      extraProviders: [FakeLyricsProvider(id: 'second')],
+    );
+    expect(r.container.read(lyricsProvidersProvider).map((p) => p.id), [
+      'fake',
+      'second',
+    ]);
+
+    await tester.tap(auto);
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(notice, findsOneWidget);
+    await tester.tap(find.text('Turn on'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Manual and automatic search allowed'), findsOneWidget);
+    expect(tester.widget<Switch>(auto).value, isTrue);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Withdraw'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, 'Withdraw'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(prefsOf(r), const OnlineLyricsPrefs());
+    expect(find.text('Not allowed'), findsOneWidget);
   });
 }

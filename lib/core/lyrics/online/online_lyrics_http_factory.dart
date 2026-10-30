@@ -19,36 +19,40 @@ import 'lyrics_provider_registry.dart';
 /// on the first allowed request; a refusal opens nothing.
 class OnlineLyricsHttpFactory {
   OnlineLyricsHttpFactory({
-    required this._acknowledged,
+    required this._prefs,
     required this._client,
     this._sleep = realLyricsSleep,
   });
 
-  final Set<String> Function() _acknowledged;
+  final OnlineLyricsPrefs Function() _prefs;
   final HttpClient Function() _client;
   final LyricsSleep _sleep;
 
   /// For a request the user started (a search in the dialog, Retry, Search
-  /// again). Needs the provider's manual consent key. Throws
+  /// again). Needs the manual consent. Throws
   /// `LyricsFetchException(notConsented)` before any socket otherwise.
-  LyricsHttp forManual(LyricsProviderRegistration registration) =>
-      _make(registration, registration.consentKey, null);
+  /// [abandoned], when given, is asked before every send like in [forAuto]:
+  /// a search that a newer one replaced sends nothing more.
+  LyricsHttp forManual(
+    LyricsProviderRegistration registration, {
+    bool Function()? abandoned,
+  }) => _make(registration, (p) => p.manualConsent, abandoned);
 
-  /// For a lookup Kanaru starts by itself. Needs the provider's separate
-  /// automatic key; the manual key is not enough. [abandoned] is asked after
-  /// each wait between sends of a busy answer; once it is true no further
-  /// request goes out.
+  /// For a lookup Kanaru starts by itself. Needs the separate automatic
+  /// consent; the manual one is not enough. [abandoned] is asked before
+  /// every send, the first one included; once it is true no further request
+  /// goes out.
   LyricsHttp forAuto(
     LyricsProviderRegistration registration, {
     bool Function()? abandoned,
-  }) => _make(registration, registration.autoConsentKey, abandoned);
+  }) => _make(registration, (p) => p.autoConsent, abandoned);
 
   LyricsHttp _make(
     LyricsProviderRegistration registration,
-    String key,
+    bool Function(OnlineLyricsPrefs) consent,
     bool Function()? abandoned,
   ) {
-    if (!_acknowledged().contains(key)) {
+    if (!consent(_prefs())) {
       throw const LyricsFetchException(LyricsFetchKind.notConsented);
     }
     return LyricsHttp(
@@ -56,7 +60,7 @@ class OnlineLyricsHttpFactory {
       _client(),
       sleep: _sleep,
       abandoned: abandoned,
-      allowed: () => _acknowledged().contains(key),
+      allowed: () => consent(_prefs()),
     );
   }
 }
@@ -82,8 +86,7 @@ final lyricsRetrySleepProvider = Provider<LyricsSleep>(
 /// client lazily, on each request.
 final onlineLyricsHttpFactoryProvider = Provider<OnlineLyricsHttpFactory>(
   (ref) => OnlineLyricsHttpFactory(
-    acknowledged: () =>
-        ref.read(settingsProvider).onlineLyrics.noticeAcknowledged,
+    prefs: () => ref.read(settingsProvider).onlineLyrics,
     client: () => ref.read(lyricsHttpClientProvider),
     sleep: (wait) => ref.read(lyricsRetrySleepProvider)(wait),
   ),

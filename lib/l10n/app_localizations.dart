@@ -4484,17 +4484,17 @@ abstract class AppLocalizations {
   /// **'Find lyrics online automatically?'**
   String get onlineLyricsNoticeAutoTitle;
 
-  /// Title of the dialog asking to search one online lyrics service; provider is its name
+  /// Title of the dialog asking to search the enabled online lyrics sources
   ///
   /// In en, this message translates to:
-  /// **'Search lyrics on {provider}?'**
-  String onlineLyricsNoticeManualTitle(String provider);
+  /// **'Search lyrics online?'**
+  String get onlineLyricsNoticeManualTitle;
 
-  /// Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses
+  /// Body of the online lyrics notice dialog; one consent covers every enabled source
   ///
   /// In en, this message translates to:
-  /// **'Kanaru sends the song title, artist and length to {hosts}, never the album. No file names, paths or device details.'**
-  String onlineLyricsNoticeBody(String hosts);
+  /// **'Kanaru sends the song title, artist, album and length to the sources you have turned on. No file names, paths or device details.'**
+  String get onlineLyricsNoticeSourcesBody;
 
   /// Hint under the automatic online lyrics notice saying where to turn it off
   ///
@@ -4751,7 +4751,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsLyricsConsent.
   ///
   /// In en, this message translates to:
-  /// **'LRCLIB lyrics search permission'**
+  /// **'Online lyrics search permission'**
   String get settingsLyricsConsent;
 
   /// No description provided for @settingsLyricsConsentNone.
@@ -4787,7 +4787,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsLyricsConsentWithdrawBody.
   ///
   /// In en, this message translates to:
-  /// **'Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.'**
+  /// **'Nothing is sent to online lyrics sources any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.'**
   String get settingsLyricsConsentWithdrawBody;
 
   /// No description provided for @settingsSavedLyricsNone.

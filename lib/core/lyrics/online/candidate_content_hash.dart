@@ -12,7 +12,11 @@ class _Hash {
 
 /// The `lyricsContentHash` of [candidate]'s text, as a rejected record is
 /// remembered by it; `null` for an instrumental record or one without usable
-/// text. Computed once per candidate instance.
+/// text. A record that came without a body has no hash, so it is never
+/// rejected by text before its body is fetched; the fetched body goes into
+/// a new candidate (`withBody`), which is hashed on its own and checked
+/// against the rejected hashes before it can be chosen. Computed once per
+/// candidate instance.
 String? candidateContentHash(LyricsCandidate candidate) {
   final cached = _hashes[candidate];
   if (cached != null) return cached.value;

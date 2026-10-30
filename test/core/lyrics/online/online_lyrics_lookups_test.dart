@@ -327,6 +327,40 @@ void main() {
     });
   });
 
+  group('sources that already missed', () {
+    Future<void> miss(LyricsHarness h) => h.db.saveOnlineLyrics(
+      OnlineLyricsCompanion.insert(
+        cacheKey: fakeTarget.cacheKey,
+        providerId: 'fake',
+        status: OnlineLyricsStatus.notFound.value,
+        fetchedAt: h.now.millisecondsSinceEpoch,
+      ),
+    );
+
+    test('a manual lookup asks again, an automatic one does not', () async {
+      final h = await harness();
+      await miss(h);
+
+      await h.lookups.start(fakeTarget, auto: false);
+      expect(fake.lookupCalls, 1);
+
+      await miss(h);
+      await h.lookups.start(fakeTarget, auto: true);
+      expect(fake.lookupCalls, 1);
+    });
+
+    test('a failed cache read is a failure with a pause', () async {
+      final h = await harness();
+      await h.db.customStatement('DROP TABLE online_lyrics');
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      expect(states(h)[fakeTarget.cacheKey], isA<LookupFailed>());
+      expect(h.backoff.isBlocked, isTrue);
+      expect(fake.lookupCalls, 0);
+    });
+  });
+
   group('in flight', () {
     test('two starts for one key make one request', () async {
       final h = await harness();

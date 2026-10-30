@@ -2874,14 +2874,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onlineLyricsNoticeAutoTitle => 'Tự động tìm lời online?';
 
   @override
-  String onlineLyricsNoticeManualTitle(String provider) {
-    return 'Tìm lời bài hát trên $provider?';
-  }
+  String get onlineLyricsNoticeManualTitle => 'Tìm lời bài hát online?';
 
   @override
-  String onlineLyricsNoticeBody(String hosts) {
-    return 'Kanaru sẽ gửi tên bài, nghệ sĩ và độ dài tới $hosts, không gửi album. Không gửi tên file, đường dẫn hay thông tin máy.';
-  }
+  String get onlineLyricsNoticeSourcesBody =>
+      'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới các nguồn lời đang bật. Không gửi tên file, đường dẫn hay thông tin máy.';
 
   @override
   String get onlineLyricsNoticeAutoHint =>
@@ -3056,7 +3053,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get settingsLyricsConsent => 'Quyền tìm lời trên LRCLIB';
+  String get settingsLyricsConsent => 'Quyền tìm lời online';
 
   @override
   String get settingsLyricsConsentNone => 'Chưa cho phép';
@@ -3075,7 +3072,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsLyricsConsentWithdrawBody =>
-      'Không còn gửi gì tới LRCLIB, và tìm tự động sẽ tắt. Lời đã lưu vẫn còn, và app sẽ hỏi lại trước lần tìm tiếp theo.';
+      'Không còn gửi gì tới các nguồn lời online, và tìm tự động sẽ tắt. Lời đã lưu vẫn còn, và app sẽ hỏi lại trước lần tìm tiếp theo.';
 
   @override
   String get settingsSavedLyricsNone => 'Chưa lưu gì';

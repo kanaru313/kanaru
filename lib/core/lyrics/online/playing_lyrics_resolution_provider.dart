@@ -13,6 +13,7 @@ import 'auto_lyrics_lookup_provider.dart';
 import 'lyrics_choice.dart';
 import 'lyrics_source_resolution.dart';
 import 'lyrics_provider_registry.dart';
+import 'lyrics_source_names.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_lookups.dart';
 import 'online_lyrics_resolution.dart';
@@ -137,6 +138,8 @@ class PlayingLyricsResolutionNotifier
   }
 
   PlayingLyricsStatus _fromCacheOrLookup(String uri, LyricsTarget song) {
+    // Until the sources are known, nothing is cached-checked or looked up.
+    if (!ref.watch(lyricsSourcesLoadedProvider)) return LyricsReading(uri);
     final cache = ref.watch(onlineLyricsCacheProvider(song.cacheKey));
     if (cache.hasError) {
       _logOnce(cache.error!);
@@ -144,24 +147,31 @@ class PlayingLyricsResolutionNotifier
     }
     if (cache.isLoading) return LyricsReading(uri);
     final now = ref.read(onlineLyricsClockProvider)();
+    final registrations = ref.watch(lyricsProvidersProvider);
     final cached = statusFromCache(
       uri,
       cache.requireValue,
       now,
       song.query.duration,
+      enabledIds: [for (final r in registrations) r.id],
     );
     if (cached != null) return cached;
 
     // A miss: look it up when automatic lookups are allowed. The auto
     // provider stays watched while its lookup runs, so an answer that has
     // not reached the cache stream yet does not start a second one.
-    final registrations = ref.watch(lyricsProvidersProvider);
+    // Only a source that still has to be asked can start the lookup.
+    final toAsk = sourcesToAsk(cache.requireValue, [
+      for (final r in registrations) r.id,
+    ], now).toSet();
     final providerId = ref.watch(
       settingsProvider.select(
-        (s) => registrations
-            .where(s.onlineLyrics.autoAllowedFor)
-            .map((r) => r.id)
-            .firstOrNull,
+        (s) => s.onlineLyrics.autoAllowed
+            ? registrations
+                  .where((r) => toAsk.contains(r.id))
+                  .map((r) => r.id)
+                  .firstOrNull
+            : null,
       ),
     );
     // The end of the pause, not only whether it runs: a longer pause updates

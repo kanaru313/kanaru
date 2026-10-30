@@ -35,7 +35,7 @@ class LyricsBody {
   bool get hasLyrics => syncedLrc != null || plain != null;
 }
 
-/// A provider's record, already sanitized by the provider.
+/// A provider's record, checked by the host.
 class LyricsCandidate {
   const LyricsCandidate({
     required this.providerId,
@@ -75,9 +75,15 @@ class LyricsCandidate {
 /// * [id], [displayName] and [hosts] are read once, when the provider is
 ///   registered; later changes are ignored;
 /// * every failure is a `LyricsFetchException`, never a raw error, and only
-///   an answer the service documents may be reported as "not found".
+///   an answer the service documents may be reported as "not found";
+/// * a `LyricsRequestAbandoned` thrown by [LyricsHttp] passes through
+///   unwrapped, and a `LyricsRequestRejected` from `http.send` is mapped to
+///   a `LyricsFetchException`;
+/// * `search` and `lookup` may return records whose `body` is null; the host
+///   then gets the lyrics with `fetch`, where null means no lyrics;
+/// * the host checks all output before it is shown or stored.
 abstract interface class LyricsProvider {
-  /// Short stable name, used in the cache and in consent keys.
+  /// Short stable name, used in the cache.
   String get id;
 
   String get displayName;

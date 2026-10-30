@@ -2,61 +2,74 @@ import 'online_lyrics_prefs.dart';
 import 'settings_codec_values.dart';
 
 const _autoFetchKey = 'autoFetch';
-const _noticeAcknowledgedKey = 'noticeAcknowledged';
+const _manualConsentKey = 'manualConsent';
+const _autoConsentKey = 'autoConsent';
 
-/// Written by older versions to turn on `.lrc` writing on a pick. It is
-/// known so that it is dropped on read instead of carried along as an
-/// unknown key, and is never written.
+/// Written by older versions: a list of per-source consent keys
+/// (`<id>@<hosts>` for a search, `<id>@<hosts>:auto` for an automatic
+/// lookup). It is read once to migrate the consent and never written, so it
+/// is known here and dropped on save instead of carried along.
+const _legacyConsentKeysKey = 'noticeAcknowledged';
+
+/// Written by older versions to turn on `.lrc` writing on a pick. Known so
+/// that it is dropped on read, and never written.
 const _legacyWriteLrcKey = 'writeLrc';
-const _knownKeys = {_autoFetchKey, _legacyWriteLrcKey, _noticeAcknowledgedKey};
+const _knownKeys = {
+  _autoFetchKey,
+  _manualConsentKey,
+  _autoConsentKey,
+  _legacyConsentKeysKey,
+  _legacyWriteLrcKey,
+};
 
 /// Reads the `onlineLyrics` object; each key falls back on its own. The
-/// second value holds the keys this version does not know, plus (under
-/// `noticeAcknowledged`) the entries that are not strings, so that saving
+/// second value holds the keys this version does not know, so that saving
 /// keeps them.
 ///
-/// `autoFetch` is read as off unless an automatic-lookup consent key is
-/// acknowledged, so a hand-edited file cannot start requests without the
-/// notice.
+/// When neither consent flag is stored, the legacy consent list is migrated:
+/// a string with `@` grants the manual consent, and one ending `:auto`
+/// grants the automatic consent and, as the old code always stored both
+/// together, the manual one too. Stored flags win over the legacy list.
+///
+/// `autoFetch` is read as off unless the automatic consent is given, so a
+/// hand-edited file cannot start requests without the notice.
 (OnlineLyricsPrefs, Map<String, Object?>) decodeOnlineLyricsPrefs(
   Object? json,
 ) {
   final map = objectOrEmpty(json);
   const d = OnlineLyricsPrefs();
-  final list = map[_noticeAcknowledgedKey];
-  final entries = list is List ? list : const <Object?>[];
-  final acknowledged = Set<String>.unmodifiable(entries.whereType<String>());
-  final others = [
-    for (final entry in entries)
-      if (entry is! String) entry,
-  ];
+  var manual = boolOr(map[_manualConsentKey], d.manualConsent);
+  var auto = boolOr(map[_autoConsentKey], d.autoConsent);
+  if (!map.containsKey(_manualConsentKey) &&
+      !map.containsKey(_autoConsentKey)) {
+    final legacy = map[_legacyConsentKeysKey];
+    final keys = legacy is List ? legacy.whereType<String>() : const <String>[];
+    for (final key in keys) {
+      if (key.endsWith(':auto')) {
+        auto = true;
+        manual = true;
+      } else if (key.contains('@')) {
+        manual = true;
+      }
+    }
+  }
   return (
     OnlineLyricsPrefs(
-      autoFetch:
-          boolOr(map[_autoFetchKey], d.autoFetch) &&
-          acknowledged.any(isAutoConsentKey),
-      noticeAcknowledged: acknowledged,
+      autoFetch: boolOr(map[_autoFetchKey], d.autoFetch) && auto,
+      manualConsent: manual,
+      autoConsent: auto,
     ),
-    {
-      ...unknownEntries(map, _knownKeys),
-      if (others.isNotEmpty) _noticeAcknowledgedKey: others,
-    },
+    unknownEntries(map, _knownKeys),
   );
 }
 
-/// The `onlineLyrics` object, with [extra] (unknown keys and entries)
-/// carried over.
+/// The `onlineLyrics` object, with [extra] (unknown keys) carried over.
 Map<String, Object?> encodeOnlineLyricsPrefs(
   OnlineLyricsPrefs prefs, {
   Map<String, Object?> extra = const {},
-}) {
-  final others = extra[_noticeAcknowledgedKey];
-  return {
-    ...extra,
-    _autoFetchKey: prefs.autoFetch,
-    _noticeAcknowledgedKey: [
-      ...(prefs.noticeAcknowledged.toList()..sort()),
-      if (others is List) ...others,
-    ],
-  };
-}
+}) => {
+  ...extra,
+  _autoFetchKey: prefs.autoFetch,
+  _manualConsentKey: prefs.manualConsent,
+  _autoConsentKey: prefs.autoConsent,
+};

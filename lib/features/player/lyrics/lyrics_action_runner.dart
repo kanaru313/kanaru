@@ -3,7 +3,6 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/lyrics/online/lyrics_choice.dart';
-import '../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../core/lyrics/online/lyrics_target.dart';
 import '../../../core/lyrics/online/online_lyrics_actions.dart';
 import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
@@ -152,26 +151,24 @@ class LyricsActionRunner {
   /// Asks for consent to look lyrics up automatically and turns it on. A
   /// song that cannot be looked up automatically (no title, artist or
   /// length) is told so, since turning it on will not find anything for it.
-  Future<void> enableAutomatic(LyricsProviderRegistration registration) =>
-      guarded(() async {
-        final on = await confirmOnlineLyricsNotice(
-          navigator,
-          container,
-          registration,
-          auto: true,
-        );
-        final target = this.target;
-        if (!on || target == null || target.isAutoSearchable) return;
-        if (!navigator.mounted) return;
-        messenger
-          ?..clearSnackBars()
-          ..showSnackBar(
-            appSnackBar(
-              kind: AppSnackBarKind.info,
-              title: navigator.context.l10n.lyricsAutoNeedsTags,
-            ),
-          );
-      });
+  Future<void> enableAutomatic() => guarded(() async {
+    final on = await confirmOnlineLyricsNotice(
+      navigator,
+      container,
+      auto: true,
+    );
+    final target = this.target;
+    if (!on || target == null || target.isAutoSearchable) return;
+    if (!navigator.mounted) return;
+    messenger
+      ?..clearSnackBars()
+      ..showSnackBar(
+        appSnackBar(
+          kind: AppSnackBarKind.info,
+          title: navigator.context.l10n.lyricsAutoNeedsTags,
+        ),
+      );
+  });
 
   Future<void> retry() => _run(_actions.retry);
 }

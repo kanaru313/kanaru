@@ -5,6 +5,7 @@ import '../../database/library_database.dart';
 import '../../database/library_startup.dart';
 import '../../database/online_lyrics_queries.dart';
 import 'lyrics_provider_registry.dart';
+import 'lyrics_source_names.dart';
 import 'online_lyrics_entries.dart';
 
 export 'online_lyrics_backoff.dart';
@@ -33,28 +34,54 @@ final lyricsPinProvider = StreamProvider.autoDispose
 String _rowIdentity(OnlineLyricsRow row) =>
     '${row.providerId}|${row.status}|${row.remoteId}|${row.fetchedAt}';
 
-/// The cached answers for one metadata key, in registry order, with text
-/// parsed once. Rows of providers that are not registered are ignored. The
-/// list is only re-emitted when a row is added, replaced or removed.
+/// Enabled sources first, in the user's order, then the other known sources
+/// by name. Rows of sources that are not known are dropped; rows of known
+/// sources that are not enabled stay only when they hold lyrics, so a
+/// disabled source keeps showing what it found but never counts as a miss.
+List<OnlineLyricsRow> _listedRows(
+  List<OnlineLyricsRow> rows,
+  List<String> enabled,
+  Map<String, LyricsSourceName> names,
+) {
+  int rank(String id) {
+    final i = enabled.indexOf(id);
+    return i >= 0 ? i : enabled.length;
+  }
+
+  String nameOf(String id) => names[id]?.displayName.toLowerCase() ?? id;
+
+  return [
+    for (final row in rows)
+      if (names.containsKey(row.providerId) &&
+          (enabled.contains(row.providerId) ||
+              row.lookupStatus == OnlineLyricsStatus.found))
+        row,
+  ]..sort((a, b) {
+    final byRank = rank(a.providerId).compareTo(rank(b.providerId));
+    if (byRank != 0) return byRank;
+    final byName = nameOf(a.providerId).compareTo(nameOf(b.providerId));
+    return byName != 0 ? byName : a.providerId.compareTo(b.providerId);
+  });
+}
+
+/// The cached answers for one metadata key: enabled sources in the user's
+/// order, then the lyrics of other known sources, with text parsed once.
+/// Rows of unknown sources are ignored. Loading until the sources are
+/// loaded. The list is only re-emitted when a row is added, replaced or
+/// removed.
 final onlineLyricsCacheProvider = StreamProvider.autoDispose
     .family<List<OnlineLyricsEntry>, String>((ref, cacheKey) {
       final db = ref.watch(libraryDatabaseProvider);
       if (db == null) return Stream.value(const []);
-      final order = [for (final r in ref.watch(lyricsProvidersProvider)) r.id];
+      // An empty stream never emits: the provider stays loading.
+      if (!ref.watch(lyricsSourcesLoadedProvider)) return const Stream.empty();
+      final enabled = [
+        for (final r in ref.watch(lyricsProvidersProvider)) r.id,
+      ];
+      final names = ref.watch(lyricsSourceNamesProvider);
       return db
           .watchOnlineLyrics(cacheKey)
-          .map((rows) {
-            final known =
-                [
-                  for (final row in rows)
-                    if (order.contains(row.providerId)) row,
-                ]..sort(
-                  (a, b) => order
-                      .indexOf(a.providerId)
-                      .compareTo(order.indexOf(b.providerId)),
-                );
-            return known;
-          })
+          .map((rows) => _listedRows(rows, enabled, names))
           .distinct(
             (a, b) => listEquals(
               [for (final r in a) _rowIdentity(r)],

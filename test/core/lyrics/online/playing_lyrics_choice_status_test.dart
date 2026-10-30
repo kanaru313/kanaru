@@ -158,7 +158,9 @@ void main() {
     test('a longer pause updates the time it reports', () async {
       await failFirstSong();
       await rig.player.next();
-      await rig.until(() => rig.status?.uri == '/m/b.flac');
+      await rig.until(
+        () => rig.status is LyricsNone && rig.status?.uri == '/m/b.flac',
+      );
       await rig.settle();
       final first = (rig.status as LyricsNone).resumeAt!;
 

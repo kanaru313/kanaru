@@ -14,6 +14,7 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_dialog.dart';
 
+import '../../core/lyrics/online/bodyless_lyrics_provider.dart';
 import '../../core/lyrics/online/counting_http_client.dart';
 import '../../core/lyrics/online/fake_lyrics_provider.dart';
 import '../../core/lyrics/online/lookup_test_harness.dart';
@@ -58,7 +59,11 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
       // A search nobody answers keeps its progress indicator spinning.
-      if (fake is _HeldProvider) {
+      final fetching = fake;
+      if (fake is _HeldProvider ||
+          (fetching is BodylessLyricsProvider &&
+              fetching.fetchGate != null &&
+              !fetching.fetchGate!.isCompleted)) {
         await tester.pump(const Duration(milliseconds: 100));
       } else {
         await tester.pumpAndSettle();
@@ -158,7 +163,9 @@ void main() {
   testWidgets('shows the prefilled query, badges and a warned length', (
     tester,
   ) async {
-    await open(tester);
+    // A good body-less result ranks before the warned one and would push it
+    // out of the list's viewport, so it is left out here.
+    await open(tester, found: [synced, farPlain, instrumental]);
 
     expect(find.text('Choose lyrics'), findsOneWidget);
     expect(find.text('Song: Song · Artist · 3:20'), findsOneWidget);
@@ -204,6 +211,53 @@ void main() {
           .onPressed,
       isNull,
     );
+  });
+
+  group('a result that came without its lyrics', () {
+    BodylessLyricsProvider twoStep() =>
+        BodylessLyricsProvider()
+          ..searchResult = [fakeCandidate(remoteId: 'a', body: null)];
+
+    FilledButton useButton(WidgetTester tester) => tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Use these lyrics'),
+    );
+
+    testWidgets('shows progress, then the preview and enables the button', (
+      tester,
+    ) async {
+      final gate = Completer<void>();
+      final provider = twoStep()
+        ..fetchGate = gate
+        ..bodies['a'] = const LyricsBody(syncedLrc: '[00:01.00] fetched');
+      await open(tester, provider: provider);
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('fetched'), findsNothing);
+      expect(useButton(tester).onPressed, isNull);
+
+      gate.complete();
+      await settle(tester);
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('fetched'), findsOneWidget);
+      expect(useButton(tester).onPressed, isNotNull);
+
+      await tester.tap(find.text('Use these lyrics'));
+      await settle(tester);
+
+      final row = await pin(tester);
+      expect((row!.remoteId, row.syncedText), ('a', '[00:01.00] fetched'));
+    });
+
+    testWidgets('shows the failure and keeps the button off', (tester) async {
+      final provider = twoStep()
+        ..bodies['a'] = const LyricsFetchException(LyricsFetchKind.network);
+      await open(tester, provider: provider);
+
+      expect(find.textContaining("Couldn't reach"), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(useButton(tester).onPressed, isNull);
+    });
   });
 
   testWidgets('synced lyrics preview shows the time as a column', (

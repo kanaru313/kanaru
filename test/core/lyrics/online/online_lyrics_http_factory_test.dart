@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_http_retry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_http_factory.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -12,14 +13,12 @@ void main() {
   final lrclib = LyricsProviderRegistration(LrclibProvider());
   late CountingHttpClient client;
 
-  ProviderContainer containerWith(Set<String> acknowledged) {
+  ProviderContainer containerWith(OnlineLyricsPrefs prefs) {
     client = CountingHttpClient();
     final container = ProviderContainer(
       overrides: [
         initialSettingsProvider.overrideWithValue(
-          AppSettings(
-            onlineLyrics: OnlineLyricsPrefs(noticeAcknowledged: acknowledged),
-          ),
+          AppSettings(onlineLyrics: prefs),
         ),
         lyricsHttpClientProvider.overrideWithValue(client),
       ],
@@ -37,8 +36,9 @@ void main() {
     return null;
   }
 
-  test('without any key both are refused and no socket is opened', () async {
-    final factory = containerWith({}).read(onlineLyricsHttpFactoryProvider);
+  test('without consent both are refused and no socket is opened', () async {
+    final factory = containerWith(const OnlineLyricsPrefs())
+        .read(onlineLyricsHttpFactoryProvider);
 
     expect(
       kindOf(() => factory.forManual(lrclib)),
@@ -48,8 +48,8 @@ void main() {
     expect(client.opened, 0);
   });
 
-  test('the manual key allows manual but refuses auto', () async {
-    final factory = containerWith({lrclib.consentKey})
+  test('the manual consent allows manual but refuses auto', () async {
+    final factory = containerWith(const OnlineLyricsPrefs(manualConsent: true))
         .read(onlineLyricsHttpFactoryProvider);
 
     expect(kindOf(() => factory.forManual(lrclib)), isNull);
@@ -57,28 +57,28 @@ void main() {
     expect(client.opened, 0);
   });
 
-  test('the auto key allows both', () {
-    final factory = containerWith({lrclib.consentKey, lrclib.autoConsentKey})
+  test('the automatic consent alone allows auto and refuses manual', () {
+    final factory = containerWith(const OnlineLyricsPrefs(autoConsent: true))
         .read(onlineLyricsHttpFactoryProvider);
+
+    expect(kindOf(() => factory.forAuto(lrclib)), isNull);
+    expect(
+      kindOf(() => factory.forManual(lrclib)),
+      LyricsFetchKind.notConsented,
+    );
+  });
+
+  test('both consents allow both', () {
+    final factory = containerWith(
+      const OnlineLyricsPrefs(manualConsent: true, autoConsent: true),
+    ).read(onlineLyricsHttpFactoryProvider);
 
     expect(kindOf(() => factory.forManual(lrclib)), isNull);
     expect(kindOf(() => factory.forAuto(lrclib)), isNull);
   });
 
-  test('a key of the same id at other hosts is not consent', () {
-    final factory = containerWith({
-      'lrclib@elsewhere.example',
-      'lrclib@elsewhere.example:auto',
-    }).read(onlineLyricsHttpFactoryProvider);
-
-    expect(
-      kindOf(() => factory.forManual(lrclib)),
-      LyricsFetchKind.notConsented,
-    );
-  });
-
   test('consent given later is seen by an existing factory', () {
-    final container = containerWith({});
+    final container = containerWith(const OnlineLyricsPrefs());
     final factory = container.read(onlineLyricsHttpFactoryProvider);
     expect(
       kindOf(() => factory.forManual(lrclib)),
@@ -87,20 +87,20 @@ void main() {
 
     container
         .read(settingsProvider.notifier)
-        .acknowledgeOnlineLyricsNotice(lrclib.consentKey);
+        .acknowledgeOnlineLyricsNotice(auto: false);
 
     expect(kindOf(() => factory.forManual(lrclib)), isNull);
   });
 
   test('consent is checked again before every send of the same client', () {
-    final acknowledged = {lrclib.consentKey};
+    var prefs = const OnlineLyricsPrefs(manualConsent: true);
     final unused = CountingHttpClient();
     final factory = OnlineLyricsHttpFactory(
-      acknowledged: () => acknowledged,
+      prefs: () => prefs,
       client: () => unused,
     );
     final http = factory.forManual(lrclib);
-    acknowledged.clear();
+    prefs = const OnlineLyricsPrefs();
 
     expect(
       http.get(Uri.parse('https://lrclib.net/api/get')),
@@ -111,6 +111,23 @@ void main() {
           LyricsFetchKind.notConsented,
         ),
       ),
+    );
+    expect(unused.opened, 0);
+  });
+
+  test('a manual client asks abandoned before every send', () {
+    final unused = CountingHttpClient();
+    final factory = OnlineLyricsHttpFactory(
+      prefs: () => const OnlineLyricsPrefs(manualConsent: true),
+      client: () => unused,
+    );
+    var abandoned = false;
+    final http = factory.forManual(lrclib, abandoned: () => abandoned);
+    abandoned = true;
+
+    expect(
+      http.get(Uri.parse('https://lrclib.net/api/get')),
+      throwsA(isA<LyricsRequestAbandoned>()),
     );
     expect(unused.opened, 0);
   });

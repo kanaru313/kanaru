@@ -8,6 +8,7 @@ import '../../settings/settings_provider.dart';
 import 'lyrics_provider_registry.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_backoff.dart';
+import 'online_lyrics_entries.dart';
 import 'online_lyrics_lookups.dart';
 
 /// Waits the debounce, then starts the automatic lookup of [target]. Watched
@@ -17,10 +18,11 @@ import 'online_lyrics_lookups.dart';
 /// disposal during a wait before a busy answer is sent again stops that
 /// lookup, unless another caller has joined it.
 ///
-/// A lookup that ends with nothing recorded (its failure was dropped by
-/// Settings "Clear", say) leaves the song neither answered nor failed, so
-/// the provider restarts itself. A stored answer (found or not found) ends
-/// it, so there is no request loop.
+/// A lookup that ends with an enabled source that has no stored row (its
+/// failure was dropped by Settings "Clear", say) and no usable lyrics leaves
+/// the song neither answered nor failed, so the provider restarts itself.
+/// Any stored row, found or not found, stale or not, counts as an answer, so
+/// there is no request loop.
 final autoLyricsLookupProvider = FutureProvider.autoDispose
     .family<void, LyricsTarget>((ref, target) async {
       final waited = Completer<void>();
@@ -49,7 +51,20 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
       final db = ref.read(libraryDatabaseProvider);
       if (db == null || !target.isAutoSearchable) return;
       final prefs = ref.read(settingsProvider).onlineLyrics;
-      if (!ref.read(lyricsProvidersProvider).any(prefs.autoAllowedFor)) return;
+      if (!prefs.autoAllowed || ref.read(lyricsProvidersProvider).isEmpty) {
+        return;
+      }
       final stored = await db.watchOnlineLyrics(target.cacheKey).first;
-      if (ref.mounted && !abandoned && stored.isEmpty) ref.invalidateSelf();
+      if (!ref.mounted || abandoned) return;
+      final hasLyrics = stored.any((row) {
+        final entry = OnlineLyricsEntry.fromRow(row, row.lookupStatus!);
+        return entry.status == OnlineLyricsStatus.found &&
+            (entry.lyrics != null || entry.instrumental);
+      });
+      // Only a source with no row at all was dropped; a stale or unparsable
+      // row is a stored answer and must not restart the lookup.
+      final unanswered = ref
+          .read(lyricsProvidersProvider)
+          .any((r) => !stored.any((row) => row.providerId == r.id));
+      if (!hasLyrics && unanswered) ref.invalidateSelf();
     }, retry: (_, _) => null);

@@ -106,7 +106,9 @@ Kanaru sends nothing unless you turn a network feature on. Each feature asks bef
 
 Never sent for lyrics: file paths, file names or device information.
 
-Writing files: Kanaru writes a lyrics file only when you choose *Save lyrics*, and only inside your library folders. It writes `<song name>.lrc` next to the song. If a lyrics file is already there, Kanaru asks first, and the old file is moved to the trash, never deleted. Your picks and choices are otherwise kept in the library database. *Clear saved lyrics* in Settings removes the stored lyrics, your choices and your rejected matches; it never touches `.lrc` files. You can withdraw your consent at any time in Settings (*LRCLIB lyrics search permission*): nothing is sent after that, and Kanaru asks again before the next search.
+The consent notice covers every enabled online lyrics source, so it lists the album among what a source may receive; LRCLIB never sends it.
+
+Writing files: Kanaru writes a lyrics file only when you choose *Save lyrics*, and only inside your library folders. It writes `<song name>.lrc` next to the song. If a lyrics file is already there, Kanaru asks first, and the old file is moved to the trash, never deleted. Your picks and choices are otherwise kept in the library database. *Clear saved lyrics* in Settings removes the stored lyrics, your choices and your rejected matches; it never touches `.lrc` files. Consent is one notice for all enabled online lyrics sources, asked once; it does not change when a source is added or removed. You can withdraw it at any time in Settings (*Online lyrics search permission*): nothing is sent after that, and Kanaru asks again before the next search.
 
 No telemetry, no analytics, no account.
 

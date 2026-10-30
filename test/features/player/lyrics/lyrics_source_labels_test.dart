@@ -1,24 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/features/player/lyrics/source/lyrics_source_labels.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/l10n/app_localizations_en.dart';
 import 'package:kanaru/l10n/app_localizations_vi.dart';
 
-import '../../../core/lyrics/online/fake_lyrics_provider.dart';
 import 'fake_playing_lyrics_resolution.dart';
 
 const _uri = '/m/song.flac';
-
-class _Lrclib extends FakeLyricsProvider {
-  _Lrclib() : super(id: 'lrclib');
-
-  @override
-  String get displayName => 'LRCLIB';
-}
 
 Lyrics _lyrics({bool synced = true, LyricsSource? source}) => Lyrics(
   lines: const [LyricLine(Duration.zero, 'words')],
@@ -30,7 +22,7 @@ OnlineLyricsOrigin _origin({required bool pinned}) =>
     OnlineLyricsOrigin(providerId: 'lrclib', remoteId: '1', pinned: pinned);
 
 void main() {
-  final providers = [LyricsProviderRegistration(_Lrclib())];
+  final providers = {'lrclib': const LyricsSourceName(displayName: 'LRCLIB')};
 
   String label(
     AppLocalizations l10n,

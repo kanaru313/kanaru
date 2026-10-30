@@ -3076,14 +3076,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onlineLyricsNoticeAutoTitle => 'Find lyrics online automatically?';
 
   @override
-  String onlineLyricsNoticeManualTitle(String provider) {
-    return 'Search lyrics on $provider?';
-  }
+  String get onlineLyricsNoticeManualTitle => 'Search lyrics online?';
 
   @override
-  String onlineLyricsNoticeBody(String hosts) {
-    return 'Kanaru sends the song title, artist and length to $hosts, never the album. No file names, paths or device details.';
-  }
+  String get onlineLyricsNoticeSourcesBody =>
+      'Kanaru sends the song title, artist, album and length to the sources you have turned on. No file names, paths or device details.';
 
   @override
   String get onlineLyricsNoticeAutoHint =>
@@ -3261,7 +3258,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsLyricsConsent => 'LRCLIB lyrics search permission';
+  String get settingsLyricsConsent => 'Online lyrics search permission';
 
   @override
   String get settingsLyricsConsentNone => 'Not allowed';
@@ -3280,7 +3277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLyricsConsentWithdrawBody =>
-      'Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.';
+      'Nothing is sent to online lyrics sources any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.';
 
   @override
   String get settingsSavedLyricsNone => 'Nothing saved';

@@ -1,15 +1,16 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
 import '../../app_identity.dart';
 import '../../logging/app_logging.dart';
-import '../../lyrics_translation/translation_failure.dart';
-import '../../lyrics_translation/translation_http.dart';
 import 'lyrics_fetch_exception.dart';
+import 'lyrics_http_request.dart';
 import 'lyrics_http_retry.dart';
+import 'lyrics_http_send_loop.dart';
 import 'lyrics_provider_registry.dart';
+
+export 'lyrics_http_request.dart';
 
 /// What came back: the HTTP `status`, the decoded `body` and the response
 /// `headers` (lower-case names).
@@ -19,15 +20,13 @@ typedef LyricsHttpResponse = ({
   Map<String, String> headers,
 });
 
-/// Largest lyrics response body read, in bytes.
-const lyricsMaxResponseBytes = 4 * 1024 * 1024;
-
 /// The only way a [LyricsProvider] reaches the network. The host builds one
 /// from a provider's registration, so a provider cannot reach a host it did
 /// not register.
 ///
-/// GET only, `https` only, no explicit port, no user info; a request to
-/// anything else fails with `blockedHost` before a socket is opened. Timeouts
+/// GET ([get], LRCLIB) or GET and POST ([send], plugin sources), `https`
+/// only, no explicit port, no user info; a request to anything else fails
+/// with `blockedHost` before a socket is opened. Timeouts
 /// are 10 s to connect and 20 s per send, and 30 s for the whole call with
 /// its waits (then `network`); the body is at most 4 MiB
 /// ([lyricsMaxResponseBytes]), redirects are not followed. A request that was
@@ -35,13 +34,13 @@ const lyricsMaxResponseBytes = 4 * 1024 * 1024;
 ///
 /// A 429 or 503 that asks for at most 5 s (a 503 without `Retry-After` asks
 /// for 1 s) is waited out and sent again, at most twice, one request at a
-/// time; the last answer is returned as it is. If `abandoned` turns true
-/// during a wait, [LyricsRequestAbandoned] is thrown instead of the next
-/// send. `allowed` (the user's consent) is asked before every send, the
-/// first one and each retry; when it is false,
+/// time; the last answer is returned as it is. `abandoned` is asked before
+/// every send, the first one and each retry: when it is true,
+/// [LyricsRequestAbandoned] is thrown and nothing is sent. Then `allowed`
+/// (the user's consent) is asked; when it is false,
 /// `LyricsFetchException(notConsented)` is thrown and nothing is sent.
 ///
-/// Only a `User-Agent` naming the app and its repository is sent. The
+/// The `User-Agent` is always the one naming the app and its repository. The
 /// address and query are never logged.
 class LyricsHttp {
   LyricsHttp(
@@ -84,24 +83,27 @@ class LyricsHttp {
        );
 
   LyricsHttp._(
-    this._client,
+    HttpClient client,
     Iterable<String> hosts, {
     required this._strict,
-    required this._sleep,
-    required this._abandoned,
-    required this._allowed,
-    required this._maxRetries,
+    required LyricsSleep sleep,
+    required bool Function()? abandoned,
+    required bool Function()? allowed,
+    required int maxRetries,
     required this._overallTimeout,
-  }) : _hosts = Set.unmodifiable(hosts);
+  }) : _hosts = Set.unmodifiable(hosts),
+       _loop = LyricsSendLoop(
+         client: client,
+         sleep: sleep,
+         abandoned: abandoned,
+         allowed: allowed,
+         maxRetries: maxRetries,
+       );
 
-  final HttpClient _client;
   final Set<String> _hosts;
   final bool _strict;
-  final LyricsSleep _sleep;
-  final bool Function()? _abandoned;
-  final bool Function()? _allowed;
-  final int _maxRetries;
   final Duration _overallTimeout;
+  final LyricsSendLoop _loop;
 
   static const _userAgent = 'Kanaru/$kanaruVersion (+$kanaruRepositoryUrl)';
 
@@ -116,78 +118,74 @@ class LyricsHttp {
     if (!_allows(uri)) {
       throw const LyricsFetchException(LyricsFetchKind.blockedHost);
     }
-    var expired = false;
-    LyricsHttpResponse? busy;
-    try {
-      final response = await _getWithRetries(
-        uri,
-        () => expired,
-        (response) => busy = response,
-      ).timeout(_overallTimeout);
-      // An answer that arrives after consent was withdrawn is dropped.
-      _checkAllowed();
-      return response;
-    } on TimeoutException {
-      expired = true;
-      // Consent withdrawn during the wait ends as notConsented, with no
-      // backoff.
-      _checkAllowed();
-      final last = busy;
-      if (last == null) {
-        throw const LyricsFetchException(LyricsFetchKind.network);
-      }
-      throw LyricsFetchException(
-        LyricsFetchKind.rateLimited,
-        retryAfter: parseRetryAfter(last.headers['retry-after']),
-      );
-    }
+    final result = await _loop.run(
+      method: 'GET',
+      uri: uri,
+      headers: const {'user-agent': _userAgent, 'accept': 'application/json'},
+      timeout: _overallTimeout,
+    );
+    final response = result.response;
+    return (
+      status: response.status,
+      body: response.body,
+      headers: response.headers,
+    );
   }
 
-  /// Sends [uri] and again after a short busy answer. Once [expired] (the
-  /// caller gave up) or the lookup is abandoned, no further send goes out.
-  Future<LyricsHttpResponse> _getWithRetries(
-    Uri uri,
-    bool Function() expired,
-    void Function(LyricsHttpResponse) busy,
-  ) async {
-    bool abandoned() => _abandoned?.call() ?? false;
-    for (var retries = 0; ; retries++) {
-      _checkAllowed();
-      final response = await _send(uri);
-      if (response.status == 429 || response.status == 503) busy(response);
-      final wait = retries < _maxRetries
-          ? shortRetryWait(response.status, response.headers)
-          : null;
-      if (wait == null || expired()) return response;
-      if (abandoned()) throw const LyricsRequestAbandoned();
-      await _sleep(wait);
-      if (expired()) return response;
-      if (abandoned()) throw const LyricsRequestAbandoned();
+  /// Sends [request] for a plugin source and returns the raw answer whatever
+  /// its status. The rules of [get] apply (address, consent, retries, the
+  /// overall timeout and abandon), with these differences: the method is GET
+  /// or POST, the source's headers are filtered by [lyricsRequestHeaders]
+  /// (the `User-Agent` is always the app's), the body is sent as given, the
+  /// bytes are not decoded, and the whole call ends at the smaller of
+  /// `request.deadline` and the overall timeout (a socket still open then is
+  /// closed too).
+  ///
+  /// [onSend] is called right before every actual send, retries included, so
+  /// the caller can count sends even when the call fails.
+  ///
+  /// A malformed request throws [LyricsRequestRejected] before anything is
+  /// sent. Otherwise the failures are those of [get], except that bytes need
+  /// not be UTF-8.
+  Future<LyricsHttpRawResponse> send(
+    LyricsHttpRequest request, {
+    void Function()? onSend,
+  }) async {
+    final method = checkLyricsRequest(request);
+    // A copy, so the caller cannot change the bytes during a busy wait.
+    final source = request.body;
+    final body = source == null ? null : Uint8List.fromList(source);
+    final headers = lyricsRequestHeaders(request.headers);
+    if (!_allows(request.uri)) {
+      throw const LyricsFetchException(LyricsFetchKind.blockedHost);
     }
-  }
-
-  void _checkAllowed() {
-    if (!(_allowed?.call() ?? true)) {
-      throw const LyricsFetchException(LyricsFetchKind.notConsented);
+    final deadline = request.deadline;
+    var timeout = _overallTimeout;
+    if (deadline != null && deadline < timeout) timeout = deadline;
+    if (timeout <= Duration.zero) {
+      // No time left: nothing goes out.
+      _loop.checkAbandoned();
+      _loop.checkAllowed();
+      throw const LyricsFetchException(LyricsFetchKind.network);
     }
-  }
-
-  Future<LyricsHttpResponse> _send(Uri uri) async {
-    try {
-      return await sendTranslationRequest(
-        _client,
-        method: 'GET',
-        uri: uri,
-        headers: const {'user-agent': _userAgent, 'accept': 'application/json'},
-        maxBytes: lyricsMaxResponseBytes,
-      );
-    } on TranslationException catch (e) {
-      throw LyricsFetchException(
-        e.kind == TranslationFailureKind.network
-            ? LyricsFetchKind.network
-            : LyricsFetchKind.invalidResponse,
-      );
-    }
+    final result = await _loop.run(
+      method: method,
+      uri: request.uri,
+      headers: {...headers, 'user-agent': _userAgent},
+      body: body,
+      decode: false,
+      timeout: timeout,
+      onSend: onSend,
+      boundRequests: true,
+    );
+    final response = result.response;
+    return LyricsHttpRawResponse(
+      status: response.status,
+      bytes: response.bytes,
+      headers: response.headers,
+      url: request.uri,
+      sends: result.sends,
+    );
   }
 
   bool _allows(Uri uri) {

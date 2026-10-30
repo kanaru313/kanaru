@@ -86,12 +86,8 @@ Future<LyricsHarness> createHarness(
         AppSettings(
           onlineLyrics: OnlineLyricsPrefs(
             autoFetch: autoFetch,
-            noticeAcknowledged: {
-              for (final r in registrations) ...[
-                if (manualConsent) r.consentKey,
-                if (autoConsent) r.autoConsentKey,
-              ],
-            },
+            manualConsent: manualConsent,
+            autoConsent: autoConsent,
           ),
         ),
       ),

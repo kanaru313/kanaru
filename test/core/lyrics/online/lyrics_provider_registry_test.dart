@@ -29,19 +29,10 @@ class _Stub implements LyricsProvider {
 }
 
 void main() {
-  test('the default registry holds LRCLIB with its consent keys', () {
+  test('the default registry holds LRCLIB', () {
     final registration = registerLyricsProviders([LrclibProvider()]).single;
     expect(registration.id, 'lrclib');
     expect(registration.hosts, ['lrclib.net']);
-    expect(registration.consentKey, 'lrclib@lrclib.net');
-    expect(registration.autoConsentKey, 'lrclib@lrclib.net:auto');
-  });
-
-  test('the consent key lists the hosts sorted', () {
-    final r = LyricsProviderRegistration(
-      _Stub('x', ['b.example.com', 'a.example.com']),
-    );
-    expect(r.consentKey, 'x@a.example.com,b.example.com');
   });
 
   test('a duplicate id is rejected', () {
@@ -92,12 +83,11 @@ void main() {
     );
   });
 
-  test('a repeated host is kept once, so the consent key is stable', () {
+  test('a repeated host is kept once', () {
     final r = LyricsProviderRegistration(
       _Stub('x', ['b.example.com', 'A.example.com', 'a.example.com']),
     );
     expect(r.hosts, ['a.example.com', 'b.example.com']);
-    expect(r.consentKey, 'x@a.example.com,b.example.com');
   });
 
   test('hosts are lower-cased and the snapshot cannot change', () {
@@ -105,7 +95,6 @@ void main() {
     final r = LyricsProviderRegistration(stub);
     stub.hosts = ['evil.example.com'];
     expect(r.hosts, ['api.example.com']);
-    expect(r.consentKey, 'x@api.example.com');
     expect(() => r.hosts.add('a.b.com'), throwsUnsupportedError);
   });
 }

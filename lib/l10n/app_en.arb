@@ -2652,23 +2652,13 @@
   "@onlineLyricsNoticeAutoTitle": {
     "description": "Title of the dialog asking to look lyrics up online without asking each time"
   },
-  "onlineLyricsNoticeManualTitle": "Search lyrics on {provider}?",
+  "onlineLyricsNoticeManualTitle": "Search lyrics online?",
   "@onlineLyricsNoticeManualTitle": {
-    "description": "Title of the dialog asking to search one online lyrics service; provider is its name",
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
-    }
+    "description": "Title of the dialog asking to search the enabled online lyrics sources"
   },
-  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist and length to {hosts}, never the album. No file names, paths or device details.",
-  "@onlineLyricsNoticeBody": {
-    "description": "Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses",
-    "placeholders": {
-      "hosts": {
-        "type": "String"
-      }
-    }
+  "onlineLyricsNoticeSourcesBody": "Kanaru sends the song title, artist, album and length to the sources you have turned on. No file names, paths or device details.",
+  "@onlineLyricsNoticeSourcesBody": {
+    "description": "Body of the online lyrics notice dialog; one consent covers every enabled source"
   },
   "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Lyrics.",
   "@onlineLyricsNoticeAutoHint": {
@@ -2895,13 +2885,13 @@
       }
     }
   },
-  "settingsLyricsConsent": "LRCLIB lyrics search permission",
+  "settingsLyricsConsent": "Online lyrics search permission",
   "settingsLyricsConsentNone": "Not allowed",
   "settingsLyricsConsentManual": "Manual search allowed",
   "settingsLyricsConsentAuto": "Manual and automatic search allowed",
   "settingsLyricsConsentWithdraw": "Withdraw",
   "settingsLyricsConsentWithdrawTitle": "Withdraw permission?",
-  "settingsLyricsConsentWithdrawBody": "Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.",
+  "settingsLyricsConsentWithdrawBody": "Nothing is sent to online lyrics sources any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.",
   "settingsSavedLyricsNone": "Nothing saved",
   "settingsSavedLyricsClear": "Clear",
   "settingsSavedLyricsClearTitle": "Clear saved lyrics?",

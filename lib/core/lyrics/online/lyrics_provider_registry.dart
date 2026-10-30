@@ -47,7 +47,7 @@ class LyricsProviderRegistration {
     if (!_idPattern.hasMatch(id)) {
       throw ArgumentError.value(id, 'id', 'malformed provider id');
     }
-    // A set, so a repeated host cannot change the consent key.
+    // A set, so a repeated host is listed once.
     final hosts = {
       for (final host in provider.hosts) host.trim().toLowerCase(),
     }.toList()..sort();
@@ -74,13 +74,6 @@ class LyricsProviderRegistration {
 
   /// Lower-case host names, unmodifiable.
   final List<String> hosts;
-
-  /// What the user agrees to: this provider at these hosts. A provider whose
-  /// hosts change gets a new key, so the user is asked again.
-  String get consentKey => '$id@${([...hosts]..sort()).join(',')}';
-
-  /// Consent to look lyrics up without being asked each time.
-  String get autoConsentKey => '$consentKey:auto';
 }
 
 /// Registers [providers]; ids must be unique.
