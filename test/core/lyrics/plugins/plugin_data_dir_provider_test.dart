@@ -8,12 +8,10 @@ import 'package:kanaru/core/lyrics/plugins/plugin_log_paths.dart';
 
 void main() {
   test('under flutter test the real data folder is never resolved', () {
+    final db = LibraryDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
     final container = ProviderContainer(
-      overrides: [
-        libraryDatabaseProvider.overrideWithValue(
-          LibraryDatabase(NativeDatabase.memory()),
-        ),
-      ],
+      overrides: [libraryDatabaseProvider.overrideWithValue(db)],
     );
     addTearDown(container.dispose);
     expect(container.read(lyricsPluginDataDirectoryProvider), isNull);

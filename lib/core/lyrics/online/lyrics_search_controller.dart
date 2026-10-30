@@ -19,6 +19,8 @@ import 'online_lyrics_http_factory.dart';
 
 export 'lyrics_search_state.dart';
 
+part 'lyrics_search_body_fetch.dart';
+
 final _log = Logger('lyrics_search');
 
 /// The manual search of the Choose lyrics dialog for one song. Every
@@ -32,24 +34,32 @@ final _log = Logger('lyrics_search');
 /// A result that came without its lyrics (a two-step source) can be
 /// selected; selecting it fetches them, and [LyricsSearchState.bodyFetches]
 /// tells whether that is running or failed.
-class LyricsSearchController extends Notifier<LyricsSearchState> {
+class LyricsSearchController extends Notifier<LyricsSearchState>
+    with _SearchBodyFetch {
   LyricsSearchController(this.target);
 
+  @override
   final LyricsTarget target;
 
   int _generation = 0;
+  @override
   final _raw = <String, List<LyricsCandidate>>{};
+  @override
   Set<({String providerId, String remoteId})> _rejected = const {};
+  @override
   Set<String> _rejectedHashes = const {};
 
   // Results whose lyrics were fetched and the provider has none.
+  @override
   final _bodyMissing = <({String providerId, String remoteId})>{};
 
   // The selection was made by the search, not by a click.
+  @override
   bool _autoSelected = false;
 
   // Automatic body fetches made for the current search; capped so a list of
   // results without lyrics does not turn into a run of requests.
+  @override
   int _autoFetches = 0;
 
   @override
@@ -99,110 +109,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
     if (inRange) await _ensureBody(state.results[index], _generation);
   }
 
-  /// Fetches the lyrics of [result] when it came without any, was not asked
-  /// yet and is not being asked.
-  Future<void> _ensureBody(RankedCandidate result, int generation) async {
-    final candidate = result.candidate;
-    if (candidate.body != null || result.bodyMissing) return;
-    if (state.bodyFetches[candidate.ref]?.phase == BodyFetchPhase.loading) {
-      return;
-    }
-    if (_autoSelected) {
-      if (_autoFetches >= maxLookupFetches) return;
-      _autoFetches++;
-    }
-    final registration = ref
-        .read(lyricsProvidersProvider)
-        .where((r) => r.id == candidate.providerId)
-        .firstOrNull;
-    _setFetch(candidate, const BodyFetchState(BodyFetchPhase.loading));
-    LyricsBody? body;
-    try {
-      if (registration == null) {
-        throw const LyricsFetchException(LyricsFetchKind.blockedHost);
-      }
-      final http = ref
-          .read(onlineLyricsHttpFactoryProvider)
-          .forManual(registration, abandoned: () => !_current(generation));
-      body = checkFetchedBody(
-        await registration.provider.fetch(candidate.remoteId, http),
-      );
-    } on LyricsRequestAbandoned {
-      return;
-    } on LyricsFetchException catch (e) {
-      if (_current(generation)) {
-        _setFetch(candidate, BodyFetchState(BodyFetchPhase.failed, e.kind));
-      }
-      return;
-    } on Object catch (e) {
-      _log.warning('lyrics fetch failed: ${e.runtimeType}');
-      if (_current(generation)) {
-        _setFetch(candidate, const BodyFetchState(BodyFetchPhase.failed));
-      }
-      return;
-    }
-    if (!_current(generation)) return;
-    if (body == null) {
-      _bodyMissing.add(candidate.ref);
-    } else {
-      final list = _raw[candidate.providerId] ?? const [];
-      _raw[candidate.providerId] = [
-        for (final c in list)
-          c.remoteId == candidate.remoteId ? c.withBody(body) : c,
-      ];
-    }
-    // The list keeps its order: the fetched result is updated in place.
-    final results = [
-      for (final r in state.results)
-        r.candidate.ref == candidate.ref ? _judge(candidate, body) : r,
-    ];
-    // An automatic pick whose fetched text turns out to be a rejected one, or
-    // that has no lyrics, gives way to the next usable result, until the
-    // fetch cap of the search is spent (then the selection stays).
-    final current = state.selected;
-    final next =
-        _autoSelected &&
-            _autoFetches < maxLookupFetches &&
-            current != null &&
-            results[current].candidate.ref == candidate.ref &&
-            (results[current].rejected || results[current].bodyMissing)
-        ? _autoPick(results)
-        : -1;
-    state = state.copyWith(
-      results: results,
-      selected: next >= 0 ? next : current,
-      bodyFetches: {...state.bodyFetches}..remove(candidate.ref),
-    );
-    if (next >= 0) await _ensureBody(results[next], generation);
-  }
-
-  // The first result that can be used: one with its lyrics, or a good match
-  // whose lyrics are fetched next.
-  int _autoPick(List<RankedCandidate> results) => results.indexWhere(
-    (r) => r.selectable && !r.rejected && (r.hasBody || r.match.goodMatch),
-  );
-
-  void _setFetch(LyricsCandidate candidate, BodyFetchState fetch) {
-    state = state.copyWith(
-      selected: state.selected,
-      bodyFetches: {...state.bodyFetches, candidate.ref: fetch},
-    );
-  }
-
-  RankedCandidate _judge(LyricsCandidate candidate, LyricsBody? body) {
-    final judged = body == null ? candidate : candidate.withBody(body);
-    return RankedCandidate(
-      judged,
-      matchCandidate(
-        target.query,
-        judged,
-        rejected: _rejected,
-        rejectedHashes: _rejectedHashes,
-      ),
-      bodyMissing: body == null,
-    );
-  }
-
+  @override
   bool _current(int generation) => ref.mounted && generation == _generation;
 
   Future<void> _loadRejected() async {
@@ -242,6 +149,9 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
     } on LyricsRequestAbandoned {
       // A newer search replaced this one before the request went out.
       return;
+    } on LyricsSourceSkipped {
+      // Did not run: shown as done with no results, and no error.
+      outcome = const ProviderSearchState(ProviderSearchPhase.done);
     } on LyricsFetchException catch (e) {
       outcome = ProviderSearchState(ProviderSearchPhase.error, e.kind);
     } on Object catch (e) {

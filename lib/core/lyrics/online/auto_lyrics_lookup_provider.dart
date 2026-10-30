@@ -22,7 +22,10 @@ import 'online_lyrics_lookups.dart';
 /// failure was dropped by Settings "Clear", say) and no usable lyrics leaves
 /// the song neither answered nor failed, so the provider restarts itself.
 /// Any stored row, found or not found, stale or not, counts as an answer, so
-/// there is no request loop.
+/// there is no request loop. A source the lookup skipped without a failure (a
+/// busy plugin runtime) is asked again only after
+/// [onlineLyricsSkipRetryProvider], or when the song is shown again; the
+/// pending retry is dropped with the provider.
 final autoLyricsLookupProvider = FutureProvider.autoDispose
     .family<void, LyricsTarget>((ref, target) async {
       final waited = Completer<void>();
@@ -38,9 +41,8 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
       });
       await waited.future;
       if (!ref.mounted) return;
-      await ref
-          .read(onlineLyricsLookupsProvider.notifier)
-          .start(target, auto: true, abandoned: () => abandoned);
+      final lookups = ref.read(onlineLyricsLookupsProvider.notifier);
+      await lookups.start(target, auto: true, abandoned: () => abandoned);
       if (!ref.mounted || abandoned) return;
       if (ref.read(onlineLyricsLookupsProvider).containsKey(target.cacheKey)) {
         return;
@@ -66,5 +68,13 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
       final unanswered = ref
           .read(lyricsProvidersProvider)
           .any((r) => !stored.any((row) => row.providerId == r.id));
-      if (!hasLyrics && unanswered) ref.invalidateSelf();
+      if (hasLyrics || !unanswered) return;
+      if (!lookups.leftSourceUnasked(target.cacheKey)) {
+        ref.invalidateSelf();
+        return;
+      }
+      final retry = Timer(ref.read(onlineLyricsSkipRetryProvider), () {
+        if (ref.mounted && !abandoned) ref.invalidateSelf();
+      });
+      ref.onDispose(retry.cancel);
     }, retry: (_, _) => null);

@@ -60,8 +60,8 @@ Future<Set<String>> lyricsPluginLogOwners(Directory logDir) async {
 }
 
 /// Deletes `<installId>.jsonl*` from [logDir]. Returns how many files were
-/// removed; a file that cannot be deleted is skipped (the next sweep retries) and reported to [onFailure]
-///.
+/// removed; a file that cannot be deleted is skipped (the next sweep retries)
+/// and reported to [onFailure].
 Future<int> deleteLyricsPluginLogs(
   Directory logDir,
   String installId, {

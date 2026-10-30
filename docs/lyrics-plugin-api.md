@@ -149,7 +149,7 @@ The plugin's configuration as the app set it (secrets included): a string, or `n
 
 ### `console` and `Log`
 
-`console.log`, `.info`, `.warn`, `.error`, `.debug` and `Log.log` all write one line: the arguments joined by a space (objects through `JSON.stringify`, falling back to `String()`; an `Error` as `String(error)`). A line is cut at 500 characters. A call keeps at most 50 lines; past that the first 49 are kept and the last entry reads `… N lines dropped`. The lines are returned in `logs`; the app writes them to its log. Do not log secrets or query strings.
+`console.log`, `.info`, `.warn`, `.error`, `.debug` and `Log.log` all write one line: the arguments joined by a space (objects through `JSON.stringify`, falling back to `String()`; an `Error` as `String(error)`). A line is cut at 500 characters. A call keeps at most 50 lines; past that the first 49 are kept and the last entry reads `… N lines dropped`. The lines are returned in `logs`; the app adds them to the plugin's own log file (see [Logs](#logs)). Do not log secrets or query strings.
 
 ### `Html.parse(text)`
 
@@ -181,6 +181,58 @@ Evaluates the bundled CryptoJS 4.2.0 (MIT) and defines the global `CryptoJS` (AE
 ### What is absent
 
 `XMLHttpRequest`, `WebSocket`, `require`, `import`, `setTimeout`/`setInterval`, and file and process APIs.
+
+## Lyrics scripts in a lookup
+
+How the app uses a plugin (`lib/core/lyrics/plugins/plugin_lyrics_provider.dart`, `plugin_script_runner.dart`, `plugin_output_reader.dart`; data flow in [system-architecture.md](./system-architecture.md#plugin-lyrics-provider-and-source-list)). A plugin has no exact-match call: the app runs `search.js`, matches the results against the song (title, artist, duration) and then runs `lyrics.js` for the best matches.
+
+### `search.js`
+
+`execute(input)` gets one of:
+
+- an automatic lookup or a search by tags: `{title, artist, album, durationMs}`; a missing tag is `null`. `artist` is the primary artist;
+- the manual search of the Choose lyrics dialog: `{text}` with the text the user typed.
+
+It returns `Response.success(items)`, an array of at most 20 useful items (more are cut):
+
+| Field | Rule |
+|---|---|
+| `id` | string, 1 to 256 characters |
+| `title`, `artist` | non-empty strings |
+| `album` | optional string |
+| `durationMs` | optional integer above 0 (a whole number written as `200000.0` is accepted); 24 hours or more is ignored |
+| `lyrics` | optional string: lyrics that came with the search result (saves the second call). Read like the `data` of `lyrics.js`; over 1 MiB, the item is dropped |
+
+An item that breaks a rule is dropped, with a note in the plugin's log (`result #4: "artist" must be a non-empty string`); the others are kept. An output that is not an array is an invalid response. Results are checked again by the app (lengths, control characters, duration range) and matched against the song, and an empty array is "no result", not an error. Returning `[]` after a `fetch` that failed is still a failure (see Errors).
+
+### `lyrics.js`
+
+`execute(input)` gets the `id` of a result as a string. It returns `Response.success(value)` with:
+
+- `null`: this record has no lyrics;
+- `{instrumental: true}`: the song has no words (wins over `data`);
+- `{data, type?}`: `data` is the text (at most 1 MiB, blank means no lyrics); `type` `lrc` is synced text, `txt` is plain text; missing or any other value is synced when the text has a `[mm:ss.xx]` stamp and plain otherwise.
+
+Anything else is an invalid response.
+
+### Errors
+
+The app maps the result of a run to a failure in this order:
+
+1. `cancelled`: nothing is recorded. If the plugin was uninstalled or updated during the run, the source is only skipped for this lookup (like `busy`) and the other sources go on; if the lookup was abandoned, the whole lookup ends;
+2. a failed `fetch` of the run, even if the script caught it and returned data: `NetworkError` is `network`, `BlockedHostError` `blockedHost`, `NotConsentedError` `notConsented`, `RateLimitedError` `rateLimited` (with `retryAfterSec` read like a `Retry-After` header, 1 s to 15 min), `InvalidRequestError`, `InvalidResponseError` and `TooManyRequestsError` `invalidResponse`;
+3. `Response.error(message, {kind, retryAfterSec})`: kind `rateLimited` (with `retryAfterSec`), `invalidResponse`, or `server` (the default);
+4. `busy` (every worker busy and the queue full): the source is skipped for this lookup, with no failure and no pause; the app asks again for the next song or after about 30 s. `timeout` is `network`. `memory`, `stack`, `outputTooLarge`, a thrown error, a bad output shape and an `internal` failure of the runtime are `invalidResponse`.
+
+A failure is never stored as "no lyrics": only a successful empty answer is. A failure pauses that source (and only that source) for at least 60 seconds. Besides the 15 s of script time, a run has an outer deadline of 60 s from the call (queue wait included); when it passes the run is cancelled and counts as `network`.
+
+### Logs
+
+A run that failed, or that printed to `console`, adds one line to `<data>/plugin-logs/<installId>.jsonl` (JSON Lines): `{ts, installId, pluginName, version, script, query, kind, message, stack, console, requests}`. `kind` is `ok` (a run that only printed), `network`, `server`, `rateLimited`, `invalidResponse`, `blockedHost` or `notConsented`. `query` is the input of the run, so the file holds song titles and artists: it stays on this device, is never attached to a bug report automatically and is deleted when the plugin is uninstalled. `requests` has `{method, host, path, status, ms}` for each `fetch` (no query string, header or body; `status` is null when no answer came). Every config value of four characters or more is replaced by `***` in `message`, `stack`, `console` and the request paths. A file over 512 KiB moves to `<installId>.jsonl.1` (the older one is replaced), so a plugin keeps at most about 1 MiB. The app log gets one INFO line per failed run with the plugin's name, id, script and kind (and the host of a blocked address), and nothing else.
+
+### Cookies and private addresses (version 1)
+
+There is no cookie jar. A script that needs a session reads the `set-cookie` header of a response with `res.header('set-cookie')`, keeps what it needs in `localStorage`, and sends a `Cookie` header itself, only to the hosts it declared (a request to any other host is `blockedHost`). The app does not yet block names that resolve to private addresses (see `metadata.hosts`): only the name is checked.
 
 ## Plugin package
 

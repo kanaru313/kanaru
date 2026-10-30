@@ -1,16 +1,12 @@
 import 'dart:io';
 
-import 'package:logging/logging.dart';
-
 import '../../../database/library_database.dart';
 import '../../../database/lyrics_plugin_queries.dart';
-import '../plugin_log_paths.dart';
+import '../plugin_run_log.dart';
 import '../plugin_run_registry.dart';
 import 'lyrics_plugin_config_store.dart';
 import 'lyrics_plugin_dirs.dart';
 import 'plugin_config_schema_codec.dart';
-
-final _log = Logger('lyrics_plugins');
 
 /// Removes a plugin: in-flight runs are cancelled first, the database change
 /// comes next (it decides what is kept, see `uninstallLyricsPlugin`), and the
@@ -59,11 +55,9 @@ class LyricsPluginUninstaller {
     final schema = decodePluginConfigSchema(result.configSchema ?? '[]');
     await _config.deleteSecretsOf(installId, schema);
     await _dirs.deleteInstallTree(installId);
-    await deleteLyricsPluginLogs(
-      _logDir,
-      installId,
-      onFailure: () => _log.warning('Could not delete a plugin log file'),
-    );
+    // Inside the log's own write queue, so a write already waiting cannot
+    // bring the file back.
+    await PluginRunLog(_logDir).deleteLogs(installId);
     return result.outcome;
   }
 }

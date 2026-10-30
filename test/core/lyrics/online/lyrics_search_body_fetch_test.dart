@@ -361,4 +361,34 @@ void main() {
       expect(state().bodyFetches, isEmpty);
     });
   });
+
+  group('a skipped source', () {
+    test('shows no results and no error for its search', () async {
+      fake.searchResult = const LyricsSourceSkipped();
+
+      await controller().search('artist song');
+
+      expect(state().results, isEmpty);
+      expect(state().byProvider['fake']!.phase, ProviderSearchPhase.done);
+      expect(state().byProvider['fake']!.kind, isNull);
+    });
+
+    test('leaves a result as not fetched when its fetch is skipped', () async {
+      fake.searchResult = [bodyless('a')];
+      fake.bodies['a'] = const LyricsSourceSkipped();
+
+      await controller().search('artist song');
+
+      expect(fake.fetched, ['a']);
+      expect(state().bodyFetches, isEmpty);
+      expect(state().results.single.hasBody, isFalse);
+      expect(state().results.single.bodyMissing, isFalse);
+
+      // Selecting it again tries again.
+      fake.bodies['a'] = _words;
+      await controller().select(0);
+      expect(fake.fetched, ['a', 'a']);
+      expect(state().selection!.hasBody, isTrue);
+    });
+  });
 }

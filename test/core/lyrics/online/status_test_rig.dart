@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_database.dart'
+    show LibraryDatabase;
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
@@ -131,6 +133,9 @@ Future<StatusRig> createStatusRig({
   bool autoConsent = true,
   bool manualConsent = true,
   bool withDatabase = true,
+  bool forceSourcesLoaded = true,
+  bool realSources = false,
+  LibraryDatabase? database,
   Duration debounce = rigDebounce,
   List<FakeLyricsProvider> others = const [],
   List<Override> overrides = const [],
@@ -140,14 +145,19 @@ Future<StatusRig> createStatusRig({
     ..others = others
     ..client = CountingHttpClient();
   rig.h = await createHarness(
-    [
-      for (final f in [rig.fake, ...others]) LyricsProviderRegistration(f),
-    ],
+    realSources
+        ? null
+        : [
+            for (final f in [rig.fake, ...others])
+              LyricsProviderRegistration(f),
+          ],
     client: rig.client,
     autoFetch: autoFetch,
     autoConsent: autoConsent,
     manualConsent: manualConsent,
     withDatabase: withDatabase,
+    forceSourcesLoaded: forceSourcesLoaded,
+    database: database,
     overrides: [
       audioBackendProvider.overrideWithValue(FakeAudioBackend()),
       embeddedLyricsReaderProvider.overrideWithValue(rig.embedded),

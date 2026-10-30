@@ -177,6 +177,7 @@ class LyricsHttp {
       timeout: timeout,
       onSend: onSend,
       boundRequests: true,
+      maxSends: request.maxSends,
     );
     final response = result.response;
     return LyricsHttpRawResponse(

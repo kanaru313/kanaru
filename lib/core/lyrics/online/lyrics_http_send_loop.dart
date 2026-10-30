@@ -32,7 +32,8 @@ class LyricsSendLoop {
   /// for all sends and waits. Before every send `abandoned` is asked
   /// ([LyricsRequestAbandoned] if true) and then `allowed`
   /// (`notConsented` if false); nothing is sent in either case. Once the
-  /// timeout hit or the lookup is abandoned, no further send goes out.
+  /// timeout hit or the lookup is abandoned, no further send goes out; nor
+  /// after [maxSends] sends, when given.
   Future<LyricsSendResult> run({
     required String method,
     required Uri uri,
@@ -42,6 +43,7 @@ class LyricsSendLoop {
     bool decode = true,
     void Function()? onSend,
     bool boundRequests = false,
+    int? maxSends,
   }) async {
     final clock = Stopwatch()..start();
     var expired = false;
@@ -63,7 +65,9 @@ class LyricsSendLoop {
         }
         final response = await _send(method, uri, headers, body, decode, limit);
         if (response.status == 429 || response.status == 503) busy = response;
-        final wait = retries < maxRetries
+        // A send cap acts like running out of retries: the last answer stands.
+        final capped = maxSends != null && sends >= maxSends;
+        final wait = retries < maxRetries && !capped
             ? shortRetryWait(response.status, response.headers)
             : null;
         if (wait == null || expired) return (response: response, sends: sends);
