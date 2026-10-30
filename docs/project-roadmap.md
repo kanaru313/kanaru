@@ -1,10 +1,10 @@
 # Project roadmap
 
-Phases follow the README roadmap. Status is what the code does on 2026-10-23 (`main` at `ff93a6c`), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
+Phases follow the README roadmap. Status is what the code does on 2026-10-30 (`main` at `b3caa138` plus the lyrics source PR), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
 
 Status labels: **Done** (shipped, merged), **Partial** (some of the requirement shipped), **Open** (not started), **Known issue** (shipped, with a documented limit).
 
-Last updated: 2026-10-23.
+Last updated: 2026-10-30.
 
 ## Summary
 
@@ -49,7 +49,7 @@ PRs merged to `main`, 418 commits from 2026-10-18 to 2026-10-22 (PR merge dates 
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: done in PR #40 (off, track, album, auto; preamp; clipping protection; output device choice in Settings > Advanced). |
 | Dynamic color from album art | Done | UI-03 | "Colors from the cover" switch: the playing cover's seed tints the whole app and Now Playing gets a gradient of its colors. Colors come from one Rust function, are worked out by the scan's cover pass (or at once for the playing track) and stored per cover. |
 | Packaging: AppImage, Flatpak, `.deb` | Partial | PKG-01 to PKG-03 | AppImage done (PR #32, `make appimage`, x86_64). No Flatpak or `.deb` files exist. The AppImage ships a `.desktop` file with audio MIME types (SYS-07). |
-| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v9 with migration steps. Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v10 with migration steps (v1 to v10). Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
 | Check LRCLIB lyrics data license / terms before first release | **Open**, not blocking | LYR-03 | Online lyrics come from lrclib.net. Confirm its data terms before the first release; does not block the online lyrics PR. |
 
 Also shipped in Phase 1 and not listed in the README: responsive shell (UI-05), reduced motion (UI-06), custom title bar choice (UI-07), i18n en and vi (UI-10), single instance on Release and Profile builds (SYS-06), desktop accent color (UI-04), scan progress (IDX-10).
@@ -112,7 +112,11 @@ Partly shipped: the lyrics and translation rows are in progress; the other rows 
 
 | Item | Features | Current state |
 |---|---|---|
-| Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 (LYR-03 done, with open items) | Shipped: `.lrc` and embedded lyrics, the synced view, online lookup (opt-in, manual search, Choose lyrics, pins, saved lyrics and the `.lrc` writer). Open: multiple sources and a source picker, a narrow-window Choose lyrics dialog, the provider plugin runtime, LYR-05 to LYR-06 |
+| Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 (LYR-03 done, with open items) | Shipped: `.lrc` and embedded lyrics, the synced view, online lookup (opt-in, manual search, Choose lyrics, pins, saved lyrics and the `.lrc` writer), and the lyrics source button in Now Playing (automatic, file or tag lyrics, the online pick, or off). Open: several online providers, a narrow-window Choose lyrics dialog, the provider plugin runtime, LYR-05 to LYR-06 |
+| Save lyrics into the music tags | LYR-06, META-08 | **Open**. Save lyrics shows "In the music tags" as coming soon. Tag editing (META-08) and remembering the last save target come with it. |
+| Lyrics availability flag at scan | — | **Open**. Record at scan whether each song has lyrics, so lists can show it without reading the file at play time. |
+| Trash for replaced `.lrc` files under Flatpak | PKG-02 | **Open**. A replaced `.lrc` moves to the trash through GIO; a portal-based trash is not built, and no Flatpak build exists yet. |
+| Distinct empty state for rejected lyrics | LYR-03 | **Open**. After "Not these lyrics", the song shows the generic no-lyrics state; rejected matches have no message of their own. |
 | Lyrics translation (Google or DeepL) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Advanced rows (service, DeepL key, default language, saved translations) |
 | Waveform seekbar, visualizer, transitions | NP-05, NP-06 | Waveform seek bar built in the wide Now Playing modes (NP-05); visualizer and transitions not started |
 | Equalizer, crossfade, sleep timer, volume boost, speed and pitch | PLAY-05, PLAY-08, PLAY-09, PLAY-14, PLAY-15 | Not started |

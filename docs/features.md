@@ -382,7 +382,7 @@ Log tự che mật khẩu, token, cookie và user:pass trong URL (cả dạng pe
 | PKG-05 | Nix             | Package trong `flake.nix`                                                 | P2      | 1     |
 | PKG-06 | Windows / macOS | Installer MSIX/EXE, bản portable; `.dmg` đã ký                            | P1      | 2     |
 | PKG-07 | Android / iOS   | Play Store, F-Droid (bản không có thành phần đóng), App Store             | P1      | 2     |
-| PKG-08 | Gộp schema DB trước khi phát hành | Chưa phát hành nên chưa có DB nào của người dùng cần nâng cấp; các bước migrate hiện có (v1→v9) chỉ để máy dev khỏi phải quét lại. Ngay trước bản phát hành đầu tiên: xoá lịch sử schema cũ (`drift_schemas/library_db/`, `library_database.steps.dart`, các `fromXToY`, `library_migration_v*.dart`, test migration), đặt `schemaVersion = 1` và chụp lại snapshot v1. Từ bản phát hành trở đi mới bắt buộc viết migration. Giữ `library_keys_backfill.dart`: nó chạy theo `keysVersion`, không phụ thuộc migration | P0 | 1 |
+| PKG-08 | Gộp schema DB trước khi phát hành | Chưa phát hành nên chưa có DB nào của người dùng cần nâng cấp; các bước migrate hiện có (v1→v10) chỉ để máy dev khỏi phải quét lại. Ngay trước bản phát hành đầu tiên: xoá lịch sử schema cũ (`drift_schemas/library_db/`, `library_database.steps.dart`, các `fromXToY`, `library_migration_v*.dart`, test migration), đặt `schemaVersion = 1` và chụp lại snapshot v1. Từ bản phát hành trở đi mới bắt buộc viết migration. Giữ `library_keys_backfill.dart`: nó chạy theo `keysVersion`, không phụ thuộc migration | P0 | 1 |
 
 ## 19. Yêu cầu phi chức năng
 
