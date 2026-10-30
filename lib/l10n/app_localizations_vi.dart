@@ -2877,7 +2877,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String onlineLyricsNoticeBody(String hosts) {
-    return 'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới $hosts. Không gửi đường dẫn file hay thông tin máy.';
+    return 'Kanaru sẽ gửi tên bài, nghệ sĩ và độ dài tới $hosts, không gửi album. Không gửi tên file, đường dẫn hay thông tin máy.';
   }
 
   @override
@@ -2908,10 +2908,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerQueryHint => 'Nghệ sĩ và tên bài';
 
   @override
-  String get lyricsPickerSynced => 'Có thời gian';
+  String get lyricsPickerSynced => 'Đồng bộ';
 
   @override
-  String get lyricsPickerPlain => 'Thuần văn bản';
+  String get lyricsPickerPlain => 'Lời thường';
 
   @override
   String get lyricsPickerInstrumental => 'Nhạc không lời';
@@ -2928,12 +2928,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsPickerEmpty => 'Không tìm thấy lời. Thử từ khóa khác.';
+  String get lyricsPickerBlankHint => 'Nhập ca sĩ và tên bài rồi bấm Tìm';
 
   @override
-  String lyricsPickerError(String provider) {
-    return 'Không kết nối được $provider';
-  }
+  String get lyricsPickerEmpty => 'Không tìm thấy lời. Thử từ khóa khác.';
 
   @override
   String get lyricsPickerRetry => 'Thử lại';
@@ -2956,21 +2954,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerInstrumentalPreview => 'Bài này không có lời';
 
   @override
-  String get lyricsPinned => 'Đã ghim lời vào bài này';
-
-  @override
-  String get lyricsSavedAsLrc => 'Đã lưu thành file .lrc';
-
-  @override
-  String get lyricsNotSavedOutsideLibrary =>
-      'Chưa lưu thành .lrc: bài nằm ngoài các thư mục thư viện của bạn';
+  String get lyricsPinned => 'Đã chọn lời cho bài này';
 
   @override
   String get lyricsPickFailed => 'Không ghim được lời này';
 
   @override
   String lyricsPickerNotConsented(String provider) {
-    return 'Lời online đang tắt cho $provider. Hãy bật lại trong Cài đặt.';
+    return 'Bạn chưa cho phép tìm lời trên $provider.';
   }
 
   @override
@@ -3003,41 +2994,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsRetry => 'Thử lại';
 
   @override
-  String get lyricsSkipped => 'Đã tắt lời online cho bài này';
-
-  @override
   String get lyricsChoose => 'Chọn lời…';
 
   @override
-  String get lyricsSearchAutomaticallyAgain => 'Tự động tìm lại';
-
-  @override
   String get lyricsInstrumental => 'Nhạc không lời';
-
-  @override
-  String lyricsCreditFrom(String provider) {
-    return 'Lời từ $provider';
-  }
-
-  @override
-  String get lyricsCreditNotSynced => 'không đồng bộ';
-
-  @override
-  String lyricsCreditMatched(int seconds) {
-    return 'tự động khớp (lệch $seconds giây)';
-  }
-
-  @override
-  String get lyricsCreditMatchedExact => 'tự động khớp';
-
-  @override
-  String get lyricsCreditPicked => 'do bạn chọn';
-
-  @override
-  String get lyricsMenuSearchAgain => 'Tìm lại';
-
-  @override
-  String get lyricsMenuChooseOther => 'Chọn lời khác…';
 
   @override
   String get lyricsMenuNotThese => 'Không phải lời này';
@@ -3047,30 +3007,75 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsAutoOnlineLyricsHint =>
-      'Khi Đang phát đang mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
-
-  @override
-  String get settingsWriteLrc => 'Lưu lời đã chọn thành file .lrc';
-
-  @override
-  String get settingsWriteLrcHint =>
-      'Khi bạn chọn lời trong hộp Chọn lời, ghi thêm file .lrc cạnh bài nếu chưa có, trong các thư mục thư viện. Không bao giờ ghi đè.';
+      'Khi màn hình Đang phát mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
 
   @override
   String get settingsSavedLyrics => 'Lời đã lưu';
 
   @override
-  String settingsSavedLyricsSummary(int count, String size, int notFound) {
+  String settingsSavedLyricsSongs(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bài',
+      other: '$count bài có lời',
     );
-    return '$_temp0 · $size · $notFound bài không tìm thấy (thử lại sau 14 ngày)';
+    return '$_temp0';
   }
 
   @override
-  String get settingsSavedLyricsNone => 'Chưa có lời đã lưu';
+  String settingsSavedLyricsNotFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài không thấy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsSavedLyricsChoices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lựa chọn nguồn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsSavedLyricsRejects(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bản đã từ chối',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsLyricsConsent => 'Quyền tìm lời trên LRCLIB';
+
+  @override
+  String get settingsLyricsConsentNone => 'Chưa cho phép';
+
+  @override
+  String get settingsLyricsConsentManual => 'Đã cho phép tìm thủ công';
+
+  @override
+  String get settingsLyricsConsentAuto => 'Đã cho phép tìm thủ công và tự động';
+
+  @override
+  String get settingsLyricsConsentWithdraw => 'Rút lại đồng ý';
+
+  @override
+  String get settingsLyricsConsentWithdrawTitle => 'Rút lại đồng ý?';
+
+  @override
+  String get settingsLyricsConsentWithdrawBody =>
+      'Không còn gửi gì tới LRCLIB, và tìm tự động sẽ tắt. Lời đã lưu vẫn còn, và app sẽ hỏi lại trước lần tìm tiếp theo.';
+
+  @override
+  String get settingsSavedLyricsNone => 'Chưa lưu gì';
 
   @override
   String get settingsSavedLyricsClear => 'Xóa';
@@ -3080,11 +3085,194 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsSavedLyricsClearBody =>
-      'Lời online đã lưu trên máy này, các lời bạn đã chọn và lựa chọn \"không phải lời này\" sẽ bị xóa. File .lrc vẫn còn.';
+      'Sẽ xóa: lời đã lưu, lựa chọn nguồn của từng bài và các bản đã từ chối. File .lrc cạnh bài không bị xóa.';
 
   @override
   String get settingsSavedLyricsCleared => 'Đã xóa lời đã lưu';
 
   @override
   String get settingsSavedLyricsClearFailed => 'Không xóa được lời đã lưu';
+
+  @override
+  String get lyricsSaveTitle => 'Lưu lời';
+
+  @override
+  String get lyricsSaveOptionLrc => 'File .lrc';
+
+  @override
+  String get lyricsSaveOptionTags => 'Trong tag nhạc';
+
+  @override
+  String get lyricsSaveOptionTagsSoon => 'Sắp có';
+
+  @override
+  String get lyricsSaveConfirm => 'Lưu';
+
+  @override
+  String lyricsReplaceTitle(String files, String title) {
+    return 'Thay file $files của bài $title?';
+  }
+
+  @override
+  String get lyricsReplaceBody => 'File cũ được chuyển vào thùng rác.';
+
+  @override
+  String get lyricsReplaceAction => 'Thay';
+
+  @override
+  String get lyricsSaveWritten => 'Đã lưu lời thành file .lrc';
+
+  @override
+  String get lyricsSaveIdentical => 'File .lrc đã có đúng lời này';
+
+  @override
+  String get lyricsSaveKeptTag =>
+      'Bài vẫn dùng bản đã chọn vì đang ưu tiên lời trong tag';
+
+  @override
+  String get lyricsSaveKeptOtherFile =>
+      'Bài vẫn dùng bản đã chọn vì Kanaru đọc một file lời khác của bài';
+
+  @override
+  String get lyricsSaveOutsideLibrary =>
+      'Không lưu được: bài nằm ngoài thư mục thư viện';
+
+  @override
+  String get lyricsSaveFailed =>
+      'Không lưu được file .lrc (thư mục chỉ đọc, hết chỗ hoặc không có quyền)';
+
+  @override
+  String get lyricsSaveTrashFailed =>
+      'Không chuyển được file cũ vào thùng rác nên chưa thay gì';
+
+  @override
+  String get lyricsSaveTrashedNotWritten =>
+      'Đã chuyển file cũ vào thùng rác nhưng không ghi được file mới; khôi phục trong thùng rác nếu cần';
+
+  @override
+  String get lyricsSaveNothing => 'Không có lời để lưu';
+
+  @override
+  String get lyricsSaveTrashTimedOut =>
+      'Thùng rác không trả lời kịp; file cũ có thể đã nằm trong thùng rác, chưa ghi file mới';
+
+  @override
+  String get lyricsSaveReplaceRaced =>
+      'Vừa có một file lời khác xuất hiện nên chưa thay gì';
+
+  @override
+  String lyricsReplaceFilesJoin(String first, String second) {
+    return '$first và $second';
+  }
+
+  @override
+  String get lyricsSourceOff => 'Đã tắt lời';
+
+  @override
+  String get lyricsSourceSearching => 'Đang tìm…';
+
+  @override
+  String get lyricsSourcePaused => 'Tạm dừng tìm';
+
+  @override
+  String get lyricsSourceNone => 'Không có lời';
+
+  @override
+  String get lyricsSourceFile => 'File .lrc';
+
+  @override
+  String get lyricsSourceTag => 'Lời trong tag';
+
+  @override
+  String get lyricsSourceSynced => 'Đồng bộ';
+
+  @override
+  String get lyricsSourcePlain => 'Lời thường';
+
+  @override
+  String lyricsSourceOnline(String provider, String kind) {
+    return '$provider · $kind';
+  }
+
+  @override
+  String lyricsSourceAuto(String label) {
+    return 'Tự động · $label';
+  }
+
+  @override
+  String get lyricsSourceMenuHeader => 'Nguồn lời cho bài này';
+
+  @override
+  String lyricsSourceMenuFrom(String source) {
+    return 'Lời từ $source';
+  }
+
+  @override
+  String get lyricsSourceAutoItem => 'Tự động';
+
+  @override
+  String lyricsSourceAutoNow(String label) {
+    return 'Đang dùng: $label';
+  }
+
+  @override
+  String lyricsSourceAutoHint(String provider) {
+    return 'File hoặc tag trước, sau đó $provider';
+  }
+
+  @override
+  String lyricsSourceForgetPick(String text) {
+    return '$text · bỏ bản đã chọn';
+  }
+
+  @override
+  String get lyricsSourceLocalItem => 'Lời trong file';
+
+  @override
+  String get lyricsSourceLocalTag => 'Trong tag';
+
+  @override
+  String get lyricsSourceLocalMissing => 'Không tìm thấy lời trong file';
+
+  @override
+  String lyricsSourceOnlineItem(String provider) {
+    return '$provider · bản đã chọn';
+  }
+
+  @override
+  String lyricsSourceOnlineSubtitle(String kind, String length) {
+    return '$kind · $length';
+  }
+
+  @override
+  String get lyricsSourceKeep => 'Giữ bản này';
+
+  @override
+  String get lyricsSourceSave => 'Lưu lời…';
+
+  @override
+  String get lyricsSourceTurnOff => 'Tắt lời cho bài này';
+
+  @override
+  String get lyricsOffTitle => 'Đã tắt lời cho bài này';
+
+  @override
+  String get lyricsOffTurnOn => 'Bật lại';
+
+  @override
+  String lyricsPausedTitle(String provider, DateTime time) {
+    final intl.DateFormat timeDateFormat = intl.DateFormat.jm(localeName);
+    final String timeString = timeDateFormat.format(time);
+
+    return '$provider đang bận, Kanaru tự tìm lại lúc $timeString';
+  }
+
+  @override
+  String lyricsOnlineUnreadable(String provider) {
+    return '$provider trả lời mà Kanaru không đọc được';
+  }
+
+  @override
+  String get lyricsAutoNeedsTags =>
+      'Bài này thiếu tên bài, ca sĩ hoặc thời lượng nên không tự tìm được; dùng Tìm lời online…';
 }

@@ -82,9 +82,7 @@ void main() {
       await pumpPane(tester, LyricsFetchKind.notConsented);
 
       expect(
-        find.text(
-          'Online lyrics are turned off for Fake. Allow it in Settings.',
-        ),
+        find.text("You haven't allowed lyrics search on Fake."),
         findsOneWidget,
       );
       expect(find.text('Retry'), findsNothing);
@@ -106,6 +104,50 @@ void main() {
       expect(find.text("Couldn't reach Fake"), findsNothing);
       expect(find.text('Retry'), findsOneWidget);
     });
+  });
+
+  testWidgets('an unreadable answer says so and keeps Retry', (tester) async {
+    await _pump(
+      tester,
+      LyricsPickerResultsPane(
+        state: const LyricsSearchState(
+          query: 'x',
+          byProvider: {
+            'fake': ProviderSearchState(
+              ProviderSearchPhase.error,
+              LyricsFetchKind.invalidResponse,
+            ),
+          },
+        ),
+        providerNames: const {'fake': 'Fake'},
+        onSelect: (_) {},
+        onRetry: () {},
+      ),
+    );
+
+    expect(
+      find.text('Fake answered but Kanaru could not read it'),
+      findsOneWidget,
+    );
+    expect(find.text('Retry'), findsOneWidget);
+  });
+
+  testWidgets('a blank query before any search shows the note', (tester) async {
+    await _pump(
+      tester,
+      LyricsPickerResultsPane(
+        state: const LyricsSearchState(query: ''),
+        providerNames: const {},
+        onSelect: (_) {},
+        onRetry: () {},
+      ),
+    );
+
+    expect(
+      find.text('Type the artist and title, then press Search'),
+      findsOneWidget,
+    );
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('synced text that does not parse previews the plain text', (

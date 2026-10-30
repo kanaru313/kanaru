@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
 import '../../core/database/online_lyrics_queries.dart';
-import '../../core/lyrics/online/lrc_sidecar_writer.dart';
 import '../../core/lyrics/online/lyrics_provider.dart';
 import '../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
@@ -22,7 +21,7 @@ final _log = Logger('lyrics_picker');
 /// [navigator] and the [container], never a `WidgetRef`. The consent notice
 /// comes first; on Cancel nothing opens and nothing is sent. The dialog is
 /// built on the navigator's context under [container]. After a pick the
-/// lyrics are pinned (and saved as `.lrc` when the setting asks for it) and
+/// lyrics are pinned (no file is written) and
 /// [messenger] (else the navigator's) tells the result.
 Future<void> showLyricsPicker({
   required NavigatorState navigator,
@@ -81,12 +80,9 @@ Future<void> _pin(
   LyricsCandidate picked,
   ScaffoldMessengerState? messenger,
 ) async {
-  LrcWriteResult? written;
   Object? failure;
   try {
-    written = await container
-        .read(onlineLyricsActionsProvider)
-        .pick(target, picked);
+    await container.read(onlineLyricsActionsProvider).pick(target, picked);
   } on Object catch (e) {
     _log.warning('could not pin lyrics: ${e.runtimeType}');
     failure = e;
@@ -100,16 +96,7 @@ Future<void> _pin(
     );
     return;
   }
-  final details = switch (written) {
-    LrcWriteResult.written => l10n.lyricsSavedAsLrc,
-    LrcWriteResult.outsideLibrary => l10n.lyricsNotSavedOutsideLibrary,
-    _ => null,
-  };
   bar?.showSnackBar(
-    appSnackBar(
-      kind: AppSnackBarKind.success,
-      title: l10n.lyricsPinned,
-      details: details,
-    ),
+    appSnackBar(kind: AppSnackBarKind.success, title: l10n.lyricsPinned),
   );
 }

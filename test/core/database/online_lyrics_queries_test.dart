@@ -116,31 +116,35 @@ void main() {
   });
 
   group('replace and distinct', () {
-    test('rejecting resets a pick to a bare skip', () async {
-      await db.pinLyrics(
-        LyricsPinsCompanion.insert(
+    test(
+      'rejecting resets a pick under an off choice to the bare choice',
+      () async {
+        await db.pinLyrics(
+          LyricsPinsCompanion.insert(
+            trackKey: 't',
+            pinnedAt: 1,
+            mode: const Value('off'),
+            providerId: const Value('lrclib'),
+            remoteId: const Value('r1'),
+            syncedText: const Value('[00:01.00]x'),
+            instrumental: const Value(true),
+          ),
+        );
+        await db.rejectOnlineLyrics(
+          cacheKey: 'k',
+          providerId: 'lrclib',
+          remoteId: 'r1',
           trackKey: 't',
-          pinnedAt: 1,
-          providerId: const Value('lrclib'),
-          remoteId: const Value('r1'),
-          syncedText: const Value('[00:01.00]x'),
-          instrumental: const Value(true),
-        ),
-      );
-      await db.rejectOnlineLyrics(
-        cacheKey: 'k',
-        providerId: 'lrclib',
-        remoteId: 'r1',
-        trackKey: 't',
-        now: 2,
-      );
-      final pin = (await db.watchLyricsPin('t').first)!;
-      expect(pin.providerId, isNull);
-      expect(pin.remoteId, isNull);
-      expect(pin.syncedText, isNull);
-      expect(pin.plainText, isNull);
-      expect(pin.instrumental, isFalse);
-    });
+          now: 2,
+        );
+        final pin = (await db.watchLyricsPin('t').first)!;
+        expect(pin.providerId, isNull);
+        expect(pin.remoteId, isNull);
+        expect(pin.syncedText, isNull);
+        expect(pin.plainText, isNull);
+        expect(pin.instrumental, isFalse);
+      },
+    );
 
     test('saving not_found clears the old text and bytes', () async {
       await db.saveOnlineLyrics(
@@ -214,9 +218,9 @@ void main() {
   });
 
   group('reject', () {
-    test('drops the rejected found row, keeps others, writes a skip', () async {
+    test('drops the rejected found row, keeps others, writes no pin', () async {
       await db.saveOnlineLyrics(lyrics('k', 'lrclib', remoteId: 'bad'));
-      await db.saveOnlineLyrics(lyrics('k', 'other', remoteId: 'bad'));
+      await db.saveOnlineLyrics(lyrics('k', 'other', remoteId: 'good'));
       await db.rejectOnlineLyrics(
         cacheKey: 'k',
         providerId: 'lrclib',
@@ -226,11 +230,9 @@ void main() {
       );
       final rows = await db.watchOnlineLyrics('k').first;
       expect(rows.single.providerId, 'other');
-      final pin = await db.watchLyricsPin('/m/a.flac').first;
-      expect(pin, isNotNull);
-      expect(pin!.remoteId, isNull);
-      expect(await db.rejectedRemoteIds('k'), {('lrclib', 'bad')});
-      expect(await db.rejectedRemoteIds('elsewhere'), isEmpty);
+      expect(await db.watchLyricsPin('/m/a.flac').first, isNull);
+      expect((await db.rejectedMatches('k')).ids, {('lrclib', 'bad')});
+      expect((await db.rejectedMatches('elsewhere')).ids, isEmpty);
     });
 
     test('keeps a found row that has a different remote id', () async {
@@ -263,9 +265,8 @@ void main() {
           remoteId: const Value('r'),
         ),
       );
-      await db.pinLyrics(
-        LyricsPinsCompanion.insert(trackKey: 't2', pinnedAt: 1),
-      );
+      // A choice without a pick is counted once, as a choice.
+      await db.setLyricsChoice('t2', 'off', 1);
       await db.rejectOnlineLyrics(
         cacheKey: 'k',
         providerId: 'lrclib',
@@ -277,12 +278,27 @@ void main() {
       expect(stats.found, 1);
       expect(stats.notFound, 1);
       expect(stats.picks, 1);
-      // 't2' and the skip the rejection wrote for 't3'.
-      expect(stats.skips, 2);
+      expect(stats.choices, 1);
       expect(stats.rejects, 1);
       // 2 + 2 (é) + 6 (two CJK characters).
       expect(stats.bytes, 10);
     });
+
+    test(
+      'a row with an unknown status and no text counts as not found',
+      () async {
+        await db.saveOnlineLyrics(
+          OnlineLyricsCompanion.insert(
+            cacheKey: 'k',
+            providerId: 'lrclib',
+            status: 'future',
+            fetchedAt: 1,
+          ),
+        );
+        final stats = await db.watchOnlineLyricsStats().first;
+        expect((stats.found, stats.notFound, stats.bytes), (0, 1, 0));
+      },
+    );
 
     test('clear empties all three tables and returns the row count', () async {
       await db.saveOnlineLyrics(lyrics('k', 'lrclib'));
@@ -296,14 +312,20 @@ void main() {
         trackKey: 't2',
         now: 2,
       );
-      // 0 found (rejected), 2 pins, 1 reject.
-      expect(await db.clearOnlineLyrics(), 3);
+      // 0 found (rejected), 1 pin, 1 reject.
+      expect(await db.clearOnlineLyrics(), 2);
       final stats = await db.watchOnlineLyricsStats().first;
       expect(
-        (stats.found, stats.notFound, stats.picks, stats.skips, stats.rejects),
+        (
+          stats.found,
+          stats.notFound,
+          stats.picks,
+          stats.choices,
+          stats.rejects,
+        ),
         (0, 0, 0, 0, 0),
       );
-      expect(await db.rejectedRemoteIds('k'), isEmpty);
+      expect((await db.rejectedMatches('k')).ids, isEmpty);
     });
   });
 

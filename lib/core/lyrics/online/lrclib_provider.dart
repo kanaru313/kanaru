@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../database/artist_names.dart';
 import '../../database/text_keys.dart';
 import 'lrclib_record.dart';
+import 'lyrics_artist_match.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http.dart';
 import 'lyrics_provider.dart';
@@ -32,8 +33,8 @@ class LrclibProvider implements LyricsProvider {
   @override
   List<String> get hosts => [_base.host];
 
-  /// `GET /api/get` with the title, the primary artist, the album when known
-  /// and the duration in whole seconds when it is 1..3600. Throws
+  /// `GET /api/get` with the title, the primary artist and the duration in
+  /// whole seconds when it is 1..3600. Throws
   /// [ArgumentError] when the title or primary artist is missing (`null`
   /// means only that the service has no such record).
   @override
@@ -43,7 +44,6 @@ class LrclibProvider implements LyricsProvider {
     if (title.isEmpty || artist.isEmpty) {
       throw ArgumentError('lookup needs a title and a primary artist');
     }
-    final album = query.album?.trim() ?? '';
     final seconds = query.duration?.inMilliseconds;
     final rounded = seconds == null ? null : (seconds / 1000).round();
     final uri = _uri(
@@ -51,7 +51,6 @@ class LrclibProvider implements LyricsProvider {
       {
         'track_name': title,
         'artist_name': artist,
-        if (album.isNotEmpty) 'album_name': album,
         if (rounded != null && rounded >= 1 && rounded <= 3600)
           'duration': '$rounded',
       },
@@ -61,8 +60,13 @@ class LrclibProvider implements LyricsProvider {
     return _record(found.json);
   }
 
-  /// `GET /api/search` by free text (`q`), else by title and primary artist.
-  /// No title and no text gives an empty list without a request.
+  /// `GET /api/search` by free text (`q`), else by `track_name` and, when the
+  /// tag names exactly one real artist, `artist_name` (LRCLIB matches it
+  /// against any position of a record's artist string, and a bare common
+  /// title fills the 20 results with other songs). A tag with several artists
+  /// sends the title only: the song is often filed under another of them, so
+  /// the caller's matcher filters by artist. No title and no text gives an
+  /// empty list without a request.
   @override
   Future<List<LyricsCandidate>> search(
     LyricsQuery query,
@@ -71,13 +75,15 @@ class LrclibProvider implements LyricsProvider {
     final text = query.text?.trim() ?? '';
     final title = query.title?.trim() ?? '';
     if (text.isEmpty && title.isEmpty) return const [];
-    final artist = _primaryArtist(query.artist);
+    final names = [
+      for (final name in splitArtists(query.artist))
+        if (name.trim().isNotEmpty && !isUnknownArtist(name)) name.trim(),
+    ];
     final uri = _uri(
       const ['api', 'search'],
       {
-        if (text.isNotEmpty) 'q': text,
-        if (text.isEmpty) 'track_name': title,
-        if (text.isEmpty && artist.isNotEmpty) 'artist_name': artist,
+        if (text.isNotEmpty) 'q': text else 'track_name': title,
+        if (text.isEmpty && names.length == 1) 'artist_name': names.single,
       },
     );
     final json = (await _getJson(http, uri)).json;

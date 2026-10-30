@@ -340,16 +340,16 @@ void main() {
       expect(prefsOf(container).autoFetch, isFalse);
     });
 
-    test('setOnlineLyrics keeps the acknowledged keys and saves the rest', () {
+    test('setOnlineLyrics keeps the acknowledged keys', () {
       final container = containerFor();
       final notifier = container.read(settingsProvider.notifier);
       notifier.acknowledgeOnlineLyricsNotice(lrclib.consentKey);
 
       notifier.setOnlineLyrics(
-        const OnlineLyricsPrefs(writeLrc: true, noticeAcknowledged: {'x@y.z'}),
+        const OnlineLyricsPrefs(autoFetch: true, noticeAcknowledged: {'x@y.z'}),
       );
 
-      expect(prefsOf(container).writeLrc, isTrue);
+      expect(prefsOf(container).autoFetch, isFalse);
       expect(prefsOf(container).noticeAcknowledged, {lrclib.consentKey});
     });
 
@@ -404,6 +404,45 @@ void main() {
       expect(prefsOf(container).autoFetch, isFalse);
       expect(prefsOf(container).hasAutoConsent, isFalse);
       expect(prefsOf(container).noticeAcknowledged, {lrclib.consentKey});
+    });
+
+    test(
+      'withdrawing removes both keys and turns auto off, in one save',
+      () async {
+        final container = containerFor();
+        final notifier = container.read(settingsProvider.notifier);
+        notifier.enableAutoOnlineLyrics(lrclib);
+        notifier.acknowledgeOnlineLyricsNotice('other@provider');
+        notifier.acknowledgeOnlineLyricsNotice('future-key');
+        await notifier.flush();
+
+        notifier.withdrawOnlineLyricsConsent(lrclib);
+        await notifier.flush();
+
+        expect(prefsOf(container).autoFetch, isFalse);
+        expect(prefsOf(container).noticeAcknowledged, {
+          'other@provider',
+          'future-key',
+        });
+        final json = stored()['onlineLyrics']! as Map;
+        expect(json['autoFetch'], isFalse);
+        expect(json['noticeAcknowledged'], isNot(contains(lrclib.consentKey)));
+        expect(
+          json['noticeAcknowledged'],
+          isNot(contains(lrclib.autoConsentKey)),
+        );
+      },
+    );
+
+    test('withdrawing with nothing acknowledged changes nothing', () {
+      final container = containerFor();
+      final before = container.read(settingsProvider);
+
+      container
+          .read(settingsProvider.notifier)
+          .withdrawOnlineLyricsConsent(lrclib);
+
+      expect(container.read(settingsProvider), before);
     });
   });
 

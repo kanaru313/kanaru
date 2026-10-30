@@ -4,6 +4,8 @@ import 'package:kanaru/features/settings/lyrics_setting_rows.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/lyrics/online/fake_lyrics_provider.dart';
+import '../../core/lyrics/online/lookup_test_harness.dart';
 import 'online_lyrics_switch_harness.dart';
 
 void main() {
@@ -12,7 +14,6 @@ void main() {
     matching: find.byType(Switch),
   );
   final auto = switchOf('Find lyrics online automatically (LRCLIB)');
-  final lrc = switchOf('Save picked lyrics as .lrc files');
   final notice = find.text('Find lyrics online automatically?');
 
   Future<LyricsRowsHarness> pump(
@@ -99,22 +100,95 @@ void main() {
     expect(tester.widget<Switch>(auto).value, isFalse);
   });
 
-  testWidgets('the .lrc switch is never disabled and writes writeLrc', (
-    tester,
-  ) async {
-    final r = await pump(tester);
-    expect(tester.widget<Switch>(lrc).onChanged, isNotNull);
-    expect(tester.widget<Switch>(lrc).value, isFalse);
+  testWidgets('there is no switch for writing .lrc files', (tester) async {
+    await pump(tester);
+    expect(find.text('Save picked lyrics as .lrc files'), findsNothing);
+  });
 
-    await tester.tap(lrc);
-    await tester.pump();
-    expect(prefsOf(r).writeLrc, isTrue);
-    expect(tester.widget<Switch>(lrc).value, isTrue);
-    // No consent needed, none given.
-    expect(prefsOf(r).noticeAcknowledged, isEmpty);
+  group('consent withdrawal', () {
+    final withdraw = find.widgetWithText(FilledButton, 'Withdraw');
 
-    await tester.tap(lrc);
-    await tester.pump();
-    expect(prefsOf(r).writeLrc, isFalse);
+    Future<void> confirmWithdraw(WidgetTester tester) async {
+      await tester.tap(withdraw);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.widgetWithText(FilledButton, 'Withdraw'),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('nothing allowed reads as not allowed and Withdraw is off', (
+      tester,
+    ) async {
+      await pump(tester);
+      expect(find.text('Not allowed'), findsOneWidget);
+      expect(tester.widget<FilledButton>(withdraw).onPressed, isNull);
+    });
+
+    testWidgets('manual only reads as manual', (tester) async {
+      await pump(tester, manualConsent: true);
+      expect(find.text('Manual search allowed'), findsOneWidget);
+      expect(tester.widget<FilledButton>(withdraw).onPressed, isNotNull);
+    });
+
+    testWidgets('Cancel keeps everything', (tester) async {
+      final r = await pump(
+        tester,
+        autoFetch: true,
+        autoConsent: true,
+        manualConsent: true,
+      );
+      await tester.tap(withdraw);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(prefsOf(r).autoFetch, isTrue);
+      expect(prefsOf(r).noticeAcknowledged, hasLength(2));
+    });
+
+    testWidgets('removes both keys, turns auto off and the notice returns', (
+      tester,
+    ) async {
+      final r = await pump(
+        tester,
+        autoFetch: true,
+        autoConsent: true,
+        manualConsent: true,
+      );
+      expect(find.text('Manual and automatic search allowed'), findsOneWidget);
+
+      await confirmWithdraw(tester);
+
+      expect(prefsOf(r).autoFetch, isFalse);
+      expect(prefsOf(r).noticeAcknowledged, isEmpty);
+      expect(find.text('Not allowed'), findsOneWidget);
+      expect(tester.widget<FilledButton>(withdraw).onPressed, isNull);
+      expect(tester.widget<Switch>(auto).value, isFalse);
+
+      await tester.tap(auto);
+      await tester.pumpAndSettle();
+      expect(notice, findsOneWidget);
+    });
+
+    testWidgets('no request leaves after it', (tester) async {
+      final r = await pump(
+        tester,
+        autoFetch: true,
+        autoConsent: true,
+        manualConsent: true,
+      );
+      final fake = r.registration.provider as FakeLyricsProvider;
+
+      await confirmWithdraw(tester);
+      await tester.runAsync(() => r.h.lookups.start(fakeTarget, auto: false));
+      await tester.runAsync(() => r.h.lookups.start(fakeTarget, auto: true));
+
+      expect(fake.lookupCalls, 0);
+      expect(fake.searchCalls, 0);
+    });
   });
 }

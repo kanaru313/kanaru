@@ -35,7 +35,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 ### Lyrics
 
 - 📝 Lyrics from `.lrc` files next to the song and from the file's tags (embedded lyrics read with lofty), with a synced view that follows the line being sung and seeks on click
-- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick can also be saved as a `.lrc` file next to the song
+- 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick is kept in your library. A source button in Now Playing (press `L`) shows where the lyrics come from and lets you choose per song: automatic, the file's own lyrics, your pick, or none. *Save lyrics…* writes a `.lrc` next to the song only when you ask; a file it replaces goes to the trash
 
 ### Remote sources (planned)
 
@@ -101,12 +101,12 @@ Kanaru sends nothing unless you turn a network feature on. Each feature asks bef
 
 | Feature | Sent to | What is sent | When |
 |---|---|---|---|
-| Online lyrics (LRCLIB) | `lrclib.net` | Title, primary artist, album when known, duration rounded to whole seconds; or, in a manual search, the text you typed. The request carries `User-Agent: Kanaru/<version>` (+ repository URL) | Automatic lookup: only while Now Playing is open, with *Find lyrics automatically* on and accepted. Manual search: only when you search |
+| Online lyrics (LRCLIB) | `lrclib.net` | `/api/get`: title, primary artist, duration rounded to whole seconds (never the album). Automatic `/api/search`: the title, plus the primary artist when the song has one artist. Manual search: the text you typed. The request carries `User-Agent: Kanaru/<version>` (+ repository URL) | Automatic lookup: only while Now Playing is open, with *Find lyrics automatically* on and accepted. Manual search: only when you search |
 | Lyrics translation | Google Translate or DeepL (the service you chose) | The lyric lines of the playing song, and your DeepL key to DeepL | Only after you accept that service's notice, and only while a Now Playing widget shows the song |
 
 Never sent for lyrics: file paths, file names or device information.
 
-Writing files: a `.lrc` file is written next to a song only for lyrics you picked, only when *Save picked lyrics as .lrc files* is on, never over an existing `.lrc` or `.LRC` file, and only inside your library folders. Automatic matches are never written to disk. *Clear saved lyrics* in Settings removes the stored lyrics and your choices; it never touches `.lrc` files.
+Writing files: Kanaru writes a lyrics file only when you choose *Save lyrics*, and only inside your library folders. It writes `<song name>.lrc` next to the song. If a lyrics file is already there, Kanaru asks first, and the old file is moved to the trash, never deleted. Your picks and choices are otherwise kept in the library database. *Clear saved lyrics* in Settings removes the stored lyrics, your choices and your rejected matches; it never touches `.lrc` files. You can withdraw your consent at any time in Settings (*LRCLIB lyrics search permission*): nothing is sent after that, and Kanaru asks again before the next search.
 
 No telemetry, no analytics, no account.
 
@@ -150,7 +150,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 
 **Phase 4 — Juicy**
 
-- [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, pins, saved lyrics and the synced view are done; open: several lyrics sources and a source picker, a narrow-window *Choose lyrics* dialog, the provider plugin runtime, manual lyrics entry, time offset
+- [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, picks, the per-song source button, *Save lyrics…* and the synced view are done; open: several online providers, a narrow-window *Choose lyrics* dialog, the provider plugin runtime, manual lyrics entry, time offset
 - [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Advanced: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade, sleep timer

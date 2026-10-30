@@ -301,7 +301,9 @@ void main() {
       await rig.player.next();
       await rig.until(() => rig.status?.uri == '/m/b.flac');
       await rig.settle();
-      expect(none(rig.status).reason, LyricsNoneReason.noLyrics);
+      // The other song is waiting for the pause to end, and says so.
+      expect(none(rig.status).reason, LyricsNoneReason.paused);
+      expect(none(rig.status).resumeAt, rig.h.backoff.state);
       expect(rig.requests, 1);
 
       await rig.player.previous();

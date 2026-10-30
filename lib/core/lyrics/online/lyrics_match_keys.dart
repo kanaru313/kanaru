@@ -81,28 +81,31 @@ String? primaryArtist(String? tag) {
   return names.isEmpty ? null : names.first;
 }
 
-final _remoteSeparators = RegExp(
-  r'\s*,\s*|\s+&\s+|\s+x\s+',
-  caseSensitive: false,
-);
+final _remoteSeparators = RegExp(r'\s*,\s*|\s+&\s+');
+final _times = RegExp(r'\s+x\s+', caseSensitive: false);
 
 /// The names inside a remote artist string: split like a library tag, then
-/// on `,`, ` & ` and ` x `. A band like `Earth, Wind & Fire` is also
-/// compared as a whole by the caller.
+/// on `,` and ` & `, and only then each part on ` x `, so `Lil Nas X & Billy
+/// Ray Cyrus` keeps `Lil Nas X` whole while `Skrillex x Diplo` gives both. A
+/// band like `Earth, Wind & Fire` is also compared as a whole by the caller.
 List<String> remoteArtistNames(String artist) => [
   for (final part in splitArtists(artist))
-    for (final name in part.split(_remoteSeparators))
-      if (name.trim().isNotEmpty) name.trim(),
+    for (final piece in part.split(_remoteSeparators))
+      for (final name in piece.split(_times))
+        if (name.trim().isNotEmpty) name.trim(),
 ];
 
 /// Key of the online lyrics cache and the rejected-lyrics list: sha256 hex
 /// of `v1.k<keysVersion>|artist|title|album|seconds` over the folded primary
 /// artist, title and album and the rounded duration. A song without a title
 /// (the file name is never used) has an empty title field. Changing a
-/// `sortKey` rule moves keys on purpose through [textKeysVersion].
+/// `sortKey` rule moves keys on purpose through [textKeysVersion]. A [scope]
+/// (the track key of a song with no tags) is appended to the hashed text, so
+/// such songs do not share a key.
 String onlineLyricsCacheKey(
   LyricsQuery query, {
   int keysVersion = textKeysVersion,
+  String? scope,
 }) {
   final artist = primaryArtist(query.artist);
   final millis = query.duration?.inMilliseconds;
@@ -112,6 +115,7 @@ String onlineLyricsCacheKey(
     query.album == null ? '' : _plain(sortKey(query.album!)),
     millis == null ? '' : '${(millis / 1000).round()}',
   ];
-  final text = 'v1.k$keysVersion|${fields.join('|')}';
+  final text =
+      'v1.k$keysVersion|${fields.join('|')}${scope == null ? '' : '|$scope'}';
   return sha256.convert(utf8.encode(text)).toString();
 }

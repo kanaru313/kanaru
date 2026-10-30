@@ -33,13 +33,18 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     text: lyricsSearchPrefill(widget.target),
   );
 
+  bool get _searchesOnOpen => widget.target.query.title != null;
+
   LyricsSearchController get _controller =>
       ref.read(lyricsSearchControllerProvider(widget.target).notifier);
 
   @override
   void initState() {
     super.initState();
-    // A provider may not change while widgets build.
+    // Only a song with a real title searches on open; any other waits for
+    // the user to press Search. A provider may not change while widgets
+    // build.
+    if (!_searchesOnOpen) return;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) _controller.search(_query.text);
     });
@@ -84,6 +89,8 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                       query.artist ?? '-',
                       duration == null ? '-' : formatDuration(duration),
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -105,9 +112,13 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      FilledButton.tonal(
-                        onPressed: _search,
-                        child: Text(l10n.lyricsPickerSearch),
+                      // Search stays off while the field is blank.
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _query,
+                        builder: (context, value, _) => FilledButton.tonal(
+                          onPressed: value.text.trim().isEmpty ? null : _search,
+                          child: Text(l10n.lyricsPickerSearch),
+                        ),
                       ),
                     ],
                   ),
@@ -119,6 +130,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                           width: _listWidth,
                           child: LyricsPickerResultsPane(
                             state: state,
+                            searchPending: _searchesOnOpen,
                             providerNames: {
                               for (final r in registrations)
                                 r.id: r.displayName,

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/app_settings.dart';
+import 'package:kanaru/core/settings/online_lyrics_prefs_codec.dart';
 import 'package:kanaru/core/settings/settings_codec.dart';
 
 void main() {
@@ -438,7 +439,6 @@ void main() {
 
       expect(prefs, const OnlineLyricsPrefs());
       expect(prefs.autoFetch, isFalse);
-      expect(prefs.writeLrc, isFalse);
       expect(prefs.noticeAcknowledged, isEmpty);
     });
 
@@ -446,14 +446,13 @@ void main() {
       const settings = AppSettings(
         onlineLyrics: OnlineLyricsPrefs(
           autoFetch: true,
-          writeLrc: true,
           noticeAcknowledged: {manual, auto},
         ),
       );
       final json = encodeSettings(settings);
       final decoded = decodeSettings(json);
 
-      expect((json['onlineLyrics']! as Map)['writeLrc'], true);
+      expect((json['onlineLyrics']! as Map).containsKey('writeLrc'), isFalse);
       expect(decoded.settings, settings);
       expect(decoded.unknownKeys, isEmpty);
     });
@@ -505,7 +504,6 @@ void main() {
     test('a value of the wrong type gives that key its default', () {
       final prefs = decode(<String, Object?>{
         'autoFetch': 'yes',
-        'writeLrc': 1,
         'noticeAcknowledged': 'lrclib@lrclib.net',
       });
 
@@ -513,8 +511,17 @@ void main() {
       expect(decode('nope'), const OnlineLyricsPrefs());
     });
 
-    test('writeLrc is independent of consent', () {
-      expect(decode(<String, Object?>{'writeLrc': true}).writeLrc, isTrue);
+    test('the legacy writeLrc key is dropped, not kept as an extra', () {
+      final (prefs, extra) = decodeOnlineLyricsPrefs(<String, Object?>{
+        'writeLrc': true,
+      });
+
+      expect(prefs, const OnlineLyricsPrefs());
+      expect(extra, isEmpty);
+      expect(
+        encodeOnlineLyricsPrefs(prefs, extra: extra).keys,
+        isNot(contains('writeLrc')),
+      );
     });
   });
 }

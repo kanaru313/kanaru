@@ -50,6 +50,7 @@ class LyricsTranslationButton extends ConsumerStatefulWidget {
 class _LyricsTranslationButtonState
     extends ConsumerState<LyricsTranslationButton> {
   final _menu = MenuController();
+  final _firstItem = FocusNode(debugLabel: 'Lyrics translation: first item');
   bool _open = false;
 
   void _setOpen(bool open) {
@@ -61,6 +62,7 @@ class _LyricsTranslationButtonState
   @override
   void dispose() {
     _setOpen(false);
+    _firstItem.dispose();
     super.dispose();
   }
 
@@ -83,9 +85,22 @@ class _LyricsTranslationButtonState
 
     return MenuAnchor(
       controller: _menu,
-      onOpen: () => _setOpen(true),
+      onOpen: () {
+        _setOpen(true);
+        // The open menu holds the focus, so Escape closes it and not the
+        // screen behind it.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _menu.isOpen) _firstItem.requestFocus();
+        });
+      },
       onClose: () => _setOpen(false),
-      menuChildren: lyricsTranslationMenuItems(context, ref, state, appLang),
+      menuChildren: lyricsTranslationMenuItems(
+        context,
+        ref,
+        state,
+        appLang,
+        firstItemFocus: _firstItem,
+      ),
       builder: (context, controller, _) {
         void toggle() =>
             controller.isOpen ? controller.close() : controller.open();

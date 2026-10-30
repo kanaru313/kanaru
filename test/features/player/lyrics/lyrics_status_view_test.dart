@@ -8,8 +8,13 @@ import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/online_lyrics_entries.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_source_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
+import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
@@ -28,6 +33,7 @@ import '../../../core/lyrics/online/fake_lyrics_provider.dart';
 import '../../../core/lyrics/online/status_test_rig.dart';
 import '../../../core/player/fake_audio_backend.dart';
 import '../fake_translation_controller.dart';
+import 'fake_playing_lyrics_resolution.dart';
 import 'fake_playing_lyrics_status.dart';
 
 const _uri = '/m/song.flac';
@@ -39,8 +45,24 @@ const _origin = OnlineLyricsOrigin(
   durationDelta: Duration(seconds: 2),
 );
 
+/// Records the actions the empty states ask for instead of doing them.
+class _RecordingActions extends OnlineLyricsActions {
+  _RecordingActions(super.ref, this.log);
+
+  final List<String> log;
+
+  @override
+  Future<void> choose(LyricsTarget target, LyricsChoice choice) async =>
+      log.add('choose ${choice.name} ${target.trackKey}');
+
+  @override
+  Future<void> retry(LyricsTarget target) async =>
+      log.add('retry ${target.trackKey}');
+}
+
 void main() {
   late ProviderContainer container;
+  final calls = <String>[];
   late FakePlayingLyricsStatus status;
 
   Widget app({Locale locale = const Locale('en')}) => UncontrolledProviderScope(
@@ -67,6 +89,7 @@ void main() {
     Size size = const Size(800, 700),
     bool reduceMotion = false,
     Locale locale = const Locale('en'),
+    LyricsPinEntry? pin,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -82,10 +105,18 @@ void main() {
     final db = LibraryDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     status = FakePlayingLyricsStatus(initial);
+    calls.clear();
     container = ProviderContainer(
       overrides: [
         audioBackendProvider.overrideWithValue(FakeAudioBackend()),
         playingLyricsStatusProvider.overrideWith(() => status),
+        onlineLyricsActionsProvider.overrideWith(
+          (ref) => _RecordingActions(ref, calls),
+        ),
+        if (pin != null)
+          playingLyricsSourceProvider.overrideWithValue(
+            fakeResolution(initial!, pin: pin),
+          ),
         lyricsProvidersProvider.overrideWithValue([registration]),
         libraryDatabaseProvider.overrideWithValue(library ? db : null),
         initialSettingsProvider.overrideWithValue(
@@ -153,91 +184,21 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
 
-    statusTest('found local lyrics have no credit', (tester) async {
+    statusTest('found lyrics have no credit row, online or not', (
+      tester,
+    ) async {
       await pumpStatus(tester, LyricsFound(_uri, fakeSyncedLyrics()));
       expect(find.text('First words'), findsOneWidget);
       expect(find.textContaining('Lyrics from'), findsNothing);
-    });
 
-    statusTest('found online lyrics: credit, "not synced" for plain', (
-      tester,
-    ) async {
-      await pumpStatus(
-        tester,
-        LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin),
-      );
-      expect(find.text('Lyrics from Fake'), findsOneWidget);
+      status.emit(LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin));
+      await tester.pump();
+      expect(find.textContaining('Lyrics from'), findsNothing);
 
       status.emit(LyricsFound(_uri, fakePlainLyrics(), origin: _origin));
       await tester.pump();
-      expect(find.text('Lyrics from Fake · not synced'), findsOneWidget);
-    });
-
-    statusTest('the credit menu: matched header and three items', (
-      tester,
-    ) async {
-      await pumpStatus(
-        tester,
-        LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin),
-      );
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('Lyrics from Fake · matched automatically (off by 2 s)'),
-        findsOneWidget,
-      );
-      expect(find.text('Search again'), findsOneWidget);
-      expect(find.text('Choose other lyrics…'), findsOneWidget);
-      expect(find.text('Not these lyrics'), findsOneWidget);
-    });
-
-    for (final (delta, header) in [
-      (
-        const Duration(milliseconds: 2400),
-        'Lyrics from Fake · matched automatically (off by 3 s)',
-      ),
-      (
-        const Duration(milliseconds: 700),
-        'Lyrics from Fake · matched automatically (off by 1 s)',
-      ),
-      (Duration.zero, 'Lyrics from Fake · matched automatically'),
-      (null, 'Lyrics from Fake · matched automatically'),
-    ]) {
-      statusTest('the credit menu header for a difference of $delta', (
-        tester,
-      ) async {
-        await pumpStatus(
-          tester,
-          LyricsFound(
-            _uri,
-            fakeSyncedLyrics(),
-            origin: OnlineLyricsOrigin(
-              providerId: 'fake',
-              remoteId: '1',
-              pinned: false,
-              durationDelta: delta,
-            ),
-          ),
-        );
-        await tester.tap(find.text('Lyrics from Fake'));
-        await tester.pumpAndSettle();
-        expect(find.text(header), findsOneWidget);
-      });
-    }
-
-    statusTest('the credit menu of picked lyrics says so', (tester) async {
-      const picked = OnlineLyricsOrigin(
-        providerId: 'fake',
-        remoteId: '1',
-        pinned: true,
-      );
-      await pumpStatus(
-        tester,
-        LyricsFound(_uri, fakeSyncedLyrics(), origin: picked),
-      );
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      expect(find.text('Lyrics from Fake · picked by you'), findsOneWidget);
+      expect(find.textContaining('Lyrics from'), findsNothing);
+      expect(find.textContaining('not synced'), findsNothing);
     });
 
     statusTest('no lyrics: both buttons; auto hidden once on', (tester) async {
@@ -293,21 +254,32 @@ void main() {
       expect(find.text('Search manually…'), findsOneWidget);
     });
 
-    statusTest('error: banner with Retry above the plain empty state', (
-      tester,
-    ) async {
-      await pumpStatus(tester, const LyricsNone(_uri, LyricsNoneReason.error));
-      expect(find.text("Couldn't reach Fake"), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
-      expect(find.text('No lyrics for this song'), findsOneWidget);
-      expect(findOnline, findsOneWidget);
-      expect(findAuto, findsNothing);
-      expect(find.byType(SnackBar), findsNothing);
-      expect(
-        tester.getTopLeft(find.text("Couldn't reach Fake")).dy,
-        lessThan(tester.getTopLeft(find.text('No lyrics for this song')).dy),
-      );
-    });
+    statusTest(
+      'error without a request failure: the generic banner with Retry above the plain empty state',
+      (tester) async {
+        await pumpStatus(
+          tester,
+          const LyricsNone(_uri, LyricsNoneReason.error),
+        );
+        expect(
+          find.text('Something went wrong. See the log for details.'),
+          findsOneWidget,
+        );
+        expect(find.text('Retry'), findsOneWidget);
+        expect(find.text('No lyrics for this song'), findsOneWidget);
+        expect(findOnline, findsOneWidget);
+        expect(findAuto, findsNothing);
+        expect(find.byType(SnackBar), findsNothing);
+        expect(
+          tester
+              .getTopLeft(
+                find.text('Something went wrong. See the log for details.'),
+              )
+              .dy,
+          lessThan(tester.getTopLeft(find.text('No lyrics for this song')).dy),
+        );
+      },
+    );
 
     statusTest('error after a busy answer says the service is busy', (
       tester,
@@ -340,28 +312,172 @@ void main() {
       expect(find.textContaining('busy'), findsNothing);
     });
 
-    statusTest('skipped: choose and search again', (tester) async {
-      await pumpStatus(
-        tester,
-        const LyricsNone(_uri, LyricsNoneReason.skipped),
-      );
-      expect(
-        find.text('Online lyrics turned off for this song'),
-        findsOneWidget,
-      );
-      expect(find.text('Choose lyrics…'), findsOneWidget);
-      expect(find.text('Search automatically again'), findsOneWidget);
-    });
-
-    statusTest('instrumental: the title and the credit with its menu', (
+    statusTest('off: the title, and Turn back on returns to automatic', (
       tester,
     ) async {
+      await pumpStatus(tester, const LyricsNone(_uri, LyricsNoneReason.off));
+      expect(find.text('Lyrics are off for this song'), findsOneWidget);
+      expect(findOnline, findsNothing);
+      expect(findAuto, findsNothing);
+
+      await tester.tap(find.text('Turn back on'));
+      await tester.pump();
+      expect(calls, ['choose auto $_uri']);
+    });
+
+    statusTest('off with a stored pick: Turn back on restores that pick', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.off),
+        pin: fakePin(choice: LyricsChoice.off),
+      );
+      await tester.tap(find.text('Turn back on'));
+      await tester.pump();
+      expect(calls, ['choose online $_uri']);
+    });
+
+    statusTest('off with a pin but no pick: Turn back on goes to automatic', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.off),
+        pin: const LyricsPinEntry(pinnedAt: 0, choice: LyricsChoice.off),
+      );
+      await tester.tap(find.text('Turn back on'));
+      await tester.pump();
+      expect(calls, ['choose auto $_uri']);
+    });
+
+    statusTest('paused: the resume time follows an extended pause', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        LyricsNone(
+          _uri,
+          LyricsNoneReason.paused,
+          resumeAt: DateTime(2026, 10, 29, 14, 5),
+        ),
+      );
+      expect(
+        find.textContaining('Fake is busy. Kanaru searches again at 2:05'),
+        findsOneWidget,
+      );
+      expect(findOnline, findsNothing);
+
+      status.emit(
+        LyricsNone(
+          _uri,
+          LyricsNoneReason.paused,
+          resumeAt: DateTime(2026, 10, 29, 14, 20),
+        ),
+      );
+      await tester.pump();
+      expect(
+        find.textContaining('Fake is busy. Kanaru searches again at 2:20'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Retry'));
+      await tester.pump();
+      expect(calls, ['retry $_uri']);
+    });
+
+    statusTest('paused in Vietnamese uses the 24-hour clock', (tester) async {
+      await pumpStatus(
+        tester,
+        LyricsNone(
+          _uri,
+          LyricsNoneReason.paused,
+          resumeAt: DateTime(2026, 10, 29, 14, 5),
+        ),
+        locale: const Locale('vi'),
+      );
+      expect(
+        find.text('Fake đang bận, Kanaru tự tìm lại lúc 14:05'),
+        findsOneWidget,
+      );
+      expect(find.text('Thử lại'), findsOneWidget);
+    });
+
+    for (final (kind, text) in const [
+      (LyricsFetchKind.network, "Couldn't reach Fake"),
+      (LyricsFetchKind.rateLimited, 'Fake is busy. Try again in a moment.'),
+      (LyricsFetchKind.server, 'Fake answered but Kanaru could not read it'),
+      (
+        LyricsFetchKind.invalidResponse,
+        'Fake answered but Kanaru could not read it',
+      ),
+      (
+        LyricsFetchKind.blockedHost,
+        'Fake answered but Kanaru could not read it',
+      ),
+    ]) {
+      statusTest('the banner after a ${kind.name} failure says why', (
+        tester,
+      ) async {
+        await pumpStatus(
+          tester,
+          LyricsNone(_uri, LyricsNoneReason.error, failure: kind),
+        );
+        expect(find.text(text), findsOneWidget);
+        expect(find.text('Retry'), findsOneWidget);
+        await tester.tap(find.text('Retry'));
+        await tester.pump();
+        expect(calls, ['retry $_uri']);
+      });
+    }
+
+    statusTest('turning on automatic lookup for a song it cannot look up '
+        'says why', (tester) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.noLyrics),
+      );
+      await tester.tap(findAuto);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Turn on'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(settingsProvider).onlineLyrics.autoFetch, isTrue);
+      expect(
+        find.textContaining('lacks a title, artist or length'),
+        findsOneWidget,
+      );
+    });
+
+    statusTest('turning on automatic lookup for a complete song says nothing', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.noLyrics),
+        track: const Track(
+          uri: _uri,
+          title: 'Song',
+          artist: 'Artist',
+          duration: Duration(seconds: 200),
+        ),
+      );
+      await tester.tap(findAuto);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Turn on'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(settingsProvider).onlineLyrics.autoFetch, isTrue);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    statusTest('instrumental: the title and no credit', (tester) async {
       await pumpStatus(
         tester,
         const LyricsNone(_uri, LyricsNoneReason.instrumental, origin: _origin),
       );
       expect(find.text('Instrumental'), findsOneWidget);
-      expect(find.text('Lyrics from Fake'), findsOneWidget);
+      expect(find.textContaining('Lyrics from'), findsNothing);
     });
 
     statusTest('Vietnamese strings', (tester) async {
@@ -371,7 +487,13 @@ void main() {
         locale: const Locale('vi'),
       );
       expect(find.text('Đang tìm trên Fake…'), findsOneWidget);
-      status.emit(const LyricsNone(_uri, LyricsNoneReason.error));
+      status.emit(
+        const LyricsNone(
+          _uri,
+          LyricsNoneReason.error,
+          failure: LyricsFetchKind.network,
+        ),
+      );
       await tester.pump();
       expect(find.text('Không kết nối được Fake'), findsOneWidget);
       expect(find.text('Thử lại'), findsOneWidget);
@@ -384,7 +506,14 @@ void main() {
           const LyricsNone(_uri, LyricsNoneReason.noLyrics),
           const LyricsNone(_uri, LyricsNoneReason.notFound),
           const LyricsNone(_uri, LyricsNoneReason.error),
-          const LyricsNone(_uri, LyricsNoneReason.skipped),
+          for (final kind in LyricsFetchKind.values)
+            LyricsNone(_uri, LyricsNoneReason.error, failure: kind),
+          const LyricsNone(_uri, LyricsNoneReason.off),
+          LyricsNone(
+            _uri,
+            LyricsNoneReason.paused,
+            resumeAt: DateTime(2026, 10, 29, 14, 5),
+          ),
           const LyricsNone(
             _uri,
             LyricsNoneReason.instrumental,
@@ -454,7 +583,7 @@ void main() {
     });
   });
 
-  group('source credit is reachable in Now Playing', () {
+  group('the source is named by the header button, not under the lyrics', () {
     for (final (name, size, mode) in [
       ('Split', const Size(1280, 800), NowPlayingViewMode.split),
       ('Lyrics only', const Size(1280, 800), NowPlayingViewMode.lyricsOnly),
@@ -464,15 +593,19 @@ void main() {
         testWidgets('$name, ${synced ? 'synced' : 'plain'} lyrics', (
           tester,
         ) async {
+          final found = LyricsFound(
+            _uri,
+            synced ? fakeSyncedLyrics() : fakePlainLyrics(),
+            origin: _origin,
+          );
           await pumpOverlay(
             tester,
-            LyricsFound(
-              _uri,
-              synced ? fakeSyncedLyrics() : fakePlainLyrics(),
-              origin: _origin,
-            ),
+            found,
             size: size,
             overrides: [
+              playingLyricsResolutionProvider.overrideWith(
+                () => FakePlayingLyricsResolution(fakeResolution(found)),
+              ),
               lyricsProvidersProvider.overrideWithValue([
                 LyricsProviderRegistration(FakeLyricsProvider()),
               ]),
@@ -484,20 +617,21 @@ void main() {
             await tester.tap(find.byTooltip('Lyrics'));
             await tester.pumpAndSettle();
           }
-          await tester.tap(
-            find.text(
-              synced ? 'Lyrics from Fake' : 'Lyrics from Fake · not synced',
+          expect(find.textContaining('Lyrics from'), findsNothing);
+          expect(find.textContaining('not synced'), findsNothing);
+          expect(
+            find.byTooltip(
+              synced ? 'Lyrics from Fake · Synced' : 'Lyrics from Fake · Plain',
             ),
+            findsOneWidget,
           );
-          await tester.pumpAndSettle();
-          expect(find.text('Search again'), findsOneWidget);
         });
       }
     }
   });
 
-  group('source credit with a translation on', () {
-    testWidgets('the credit and the header pill open their own menus', (
+  group('with a translation on', () {
+    testWidgets('the translate pill opens its menu and no credit shows', (
       tester,
     ) async {
       final fake = FakeTranslationController(
@@ -527,25 +661,18 @@ void main() {
       );
       expect(find.text('Dòng một'), findsOneWidget);
 
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      expect(find.text('Search again'), findsOneWidget);
+      expect(find.text('Lyrics from Fake'), findsNothing);
       expect(find.text('Show translation'), findsNothing);
-      await tester.tapAt(const Offset(5, 5));
-      await tester.pumpAndSettle();
-      expect(find.text('Search again'), findsNothing);
 
       await tester.tap(find.text('Google · English'));
       await tester.pumpAndSettle();
       expect(find.text('Show translation'), findsOneWidget);
-      expect(find.text('Search again'), findsNothing);
     });
   });
 
   group('actions on the real status', () {
     late StatusRig rig;
     final trackKey = LyricsTarget.fromTrack(fakeSong('/m/a.flac')).trackKey;
-    final cacheKey = LyricsTarget.fromTrack(fakeSong('/m/a.flac')).cacheKey;
 
     /// Real time for the database and the lookups, then the fake clock.
     Future<void> settle(WidgetTester tester) async {
@@ -588,7 +715,8 @@ void main() {
           LyricsFetchKind.server,
         ),
       );
-      expect(find.text("Couldn't reach Fake"), findsOneWidget);
+      const unreadable = 'Fake answered but Kanaru could not read it';
+      expect(find.text(unreadable), findsOneWidget);
       expect(rig.fake.lookupCalls, 1);
 
       rig.fake.lookupResult = fakeCandidate();
@@ -596,77 +724,41 @@ void main() {
       await settle(tester);
 
       expect(rig.fake.lookupCalls, 2);
-      expect(find.text("Couldn't reach Fake"), findsNothing);
-      expect(find.text('Lyrics from Fake'), findsOneWidget);
-    });
-
-    testWidgets('Not these lyrics rejects the match and skips the song', (
-      tester,
-    ) async {
-      await pumpRig(
-        tester,
-        prepare: (rig) => rig.fake.lookupResult = fakeCandidate(),
-      );
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Not these lyrics'));
-      await settle(tester);
-
-      expect(
-        find.text('Online lyrics turned off for this song'),
-        findsOneWidget,
-      );
-      final rejected = await tester.runAsync(
-        () => rig.h.db.rejectedRemoteIds(cacheKey),
-      );
-      expect(rejected, {('fake', '1')});
-      final pin = await tester.runAsync(
-        () => rig.h.db.watchLyricsPin(trackKey).first,
-      );
-      expect(pin, isNotNull);
-      expect(pin!.providerId, isNull);
-    });
-
-    testWidgets('picked lyrics over embedded ones show their credit; Search '
-        'again drops the pick and sends one request', (tester) async {
-      await pumpRig(
-        tester,
-        prepare: (rig) {
-          rig.sidecar.byPath['/m/a.flac'] = '[00:00.00]Own words';
-          rig.fake.lookupResult = fakeCandidate();
-        },
-      );
-      expect(find.text('Own words'), findsOneWidget);
+      expect(find.text(unreadable), findsNothing);
       expect(find.textContaining('Lyrics from'), findsNothing);
-
-      await tester.runAsync(
-        () => rig.h.db.pinLyrics(
-          LyricsPinsCompanion.insert(
-            trackKey: trackKey,
-            pinnedAt: 1,
-            providerId: const Value('fake'),
-            remoteId: const Value('p'),
-            syncedText: const Value('[00:00.00]Picked words'),
-          ),
-        ),
-      );
-      await settle(tester);
-      expect(find.text('Picked words'), findsOneWidget);
-      await tester.tap(find.text('Lyrics from Fake'));
-      await tester.pumpAndSettle();
-      expect(find.text('Lyrics from Fake · picked by you'), findsOneWidget);
-      expect(rig.requests, 0);
-
-      await tester.tap(find.text('Search again'));
-      await settle(tester);
-
-      final pin = await tester.runAsync(
-        () => rig.h.db.watchLyricsPin(trackKey).first,
-      );
-      expect(pin, isNull);
-      expect(rig.requests, 1);
-      expect(find.text('Own words'), findsOneWidget);
     });
+
+    testWidgets(
+      'picked lyrics over embedded ones replace them and send nothing',
+      (tester) async {
+        await pumpRig(
+          tester,
+          prepare: (rig) {
+            rig.sidecar.byPath['/m/a.flac'] = '[00:00.00]Own words';
+            rig.fake.lookupResult = fakeCandidate();
+          },
+        );
+        expect(find.text('Own words'), findsOneWidget);
+        expect(find.textContaining('Lyrics from'), findsNothing);
+
+        await tester.runAsync(
+          () => rig.h.db.pinLyrics(
+            LyricsPinsCompanion.insert(
+              trackKey: trackKey,
+              pinnedAt: 1,
+              mode: const Value('online'),
+              providerId: const Value('fake'),
+              remoteId: const Value('p'),
+              syncedText: const Value('[00:00.00]Picked words'),
+            ),
+          ),
+        );
+        await settle(tester);
+        expect(find.text('Picked words'), findsOneWidget);
+        expect(find.textContaining('Lyrics from'), findsNothing);
+        expect(rig.requests, 0);
+      },
+    );
 
     testWidgets('Find lyrics online with consent declined sends nothing', (
       tester,

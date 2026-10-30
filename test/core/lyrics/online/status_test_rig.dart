@@ -22,14 +22,25 @@ class FakeLrcSidecarWriter implements LrcSidecarWriter {
   LrcWriteResult result = LrcWriteResult.written;
   final writes = <(String, LyricsBody)>[];
 
+  /// The `replace` flag of each write, in order.
+  final replaces = <bool>[];
+
+  /// Answers instead of [result] when set (a real writer, say).
+  LrcSidecarWriter? delegate;
+
   /// Runs when a write is asked for, before it answers.
   Future<void> Function()? onWrite;
 
   @override
-  Future<LrcWriteResult> write(String audioPath, LyricsBody body) async {
+  Future<LrcWriteResult> write(
+    String audioPath,
+    LyricsBody body, {
+    bool replace = false,
+  }) async {
     writes.add((audioPath, body));
+    replaces.add(replace);
     await onWrite?.call();
-    return result;
+    return delegate?.write(audioPath, body, replace: replace) ?? result;
   }
 }
 
@@ -116,7 +127,6 @@ Future<StatusRig> createStatusRig({
   bool autoConsent = true,
   bool manualConsent = true,
   bool withDatabase = true,
-  bool writeLrc = false,
   Duration debounce = rigDebounce,
   List<Override> overrides = const [],
 }) async {
@@ -130,7 +140,6 @@ Future<StatusRig> createStatusRig({
     autoConsent: autoConsent,
     manualConsent: manualConsent,
     withDatabase: withDatabase,
-    writeLrc: writeLrc,
     overrides: [
       audioBackendProvider.overrideWithValue(FakeAudioBackend()),
       embeddedLyricsReaderProvider.overrideWithValue(rig.embedded),

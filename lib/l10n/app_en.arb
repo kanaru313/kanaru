@@ -2657,7 +2657,7 @@
       }
     }
   },
-  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist, album and length to {hosts}. No file paths or device details.",
+  "onlineLyricsNoticeBody": "Kanaru sends the song title, artist and length to {hosts}, never the album. No file names, paths or device details.",
   "@onlineLyricsNoticeBody": {
     "description": "Body of the online lyrics notice dialog; hosts is the list of web addresses the service uses",
     "placeholders": {
@@ -2738,18 +2738,13 @@
       }
     }
   },
+  "lyricsPickerBlankHint": "Type the artist and title, then press Search",
+  "@lyricsPickerBlankHint": {
+    "description": "Shown in the Choose lyrics dialog before any search when the query field is blank"
+  },
   "lyricsPickerEmpty": "No lyrics found. Try other words.",
   "@lyricsPickerEmpty": {
     "description": "Shown when the search finds nothing"
-  },
-  "lyricsPickerError": "Couldn't reach {provider}",
-  "@lyricsPickerError": {
-    "description": "Shown when a lyrics service fails; provider is its name",
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
-    }
   },
   "lyricsPickerRetry": "Retry",
   "@lyricsPickerRetry": {
@@ -2780,23 +2775,15 @@
   "@lyricsPickerInstrumentalPreview": {
     "description": "Preview pane text for an instrumental result"
   },
-  "lyricsPinned": "Lyrics pinned to this song",
+  "lyricsPinned": "Lyrics chosen for this song",
   "@lyricsPinned": {
     "description": "Snackbar after the user picked online lyrics"
-  },
-  "lyricsSavedAsLrc": "Saved as .lrc",
-  "@lyricsSavedAsLrc": {
-    "description": "Detail of the snackbar when the picked lyrics were also saved as a .lrc file"
-  },
-  "lyricsNotSavedOutsideLibrary": "Not saved as .lrc: the song is outside your library folders",
-  "@lyricsNotSavedOutsideLibrary": {
-    "description": "Detail of the snackbar when the .lrc file was not written because of the song's location"
   },
   "lyricsPickFailed": "Couldn't pin these lyrics",
   "@lyricsPickFailed": {
     "description": "Snackbar when pinning the lyrics the user picked failed"
   },
-  "lyricsPickerNotConsented": "Online lyrics are turned off for {provider}. Allow it in Settings.",
+  "lyricsPickerNotConsented": "You haven't allowed lyrics search on {provider}.",
   "@lyricsPickerNotConsented": {
     "description": "Shown in the Choose lyrics dialog when the user's consent for a lyrics service was withdrawn; provider is its name",
     "placeholders": {
@@ -2853,59 +2840,13 @@
   "@lyricsRetry": {
     "description": "Button on the failed lookup banner"
   },
-  "lyricsSkipped": "Online lyrics turned off for this song",
-  "@lyricsSkipped": {
-    "description": "Lyrics slot of Now Playing after the user rejected the matched lyrics"
-  },
   "lyricsChoose": "Choose lyrics…",
   "@lyricsChoose": {
     "description": "Button in the lyrics slot that opens the Choose lyrics dialog"
   },
-  "lyricsSearchAutomaticallyAgain": "Search automatically again",
-  "@lyricsSearchAutomaticallyAgain": {
-    "description": "Button that forgets the user's choice for the song and looks it up again"
-  },
   "lyricsInstrumental": "Instrumental",
   "@lyricsInstrumental": {
     "description": "Lyrics slot of Now Playing for a song the service marks as instrumental"
-  },
-  "lyricsCreditFrom": "Lyrics from {provider}",
-  "@lyricsCreditFrom": {
-    "description": "Credit under online lyrics; provider is the service name",
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsCreditNotSynced": "not synced",
-  "@lyricsCreditNotSynced": {
-    "description": "Added to the lyrics credit when the lyrics have no timing"
-  },
-  "lyricsCreditMatched": "matched automatically (off by {seconds} s)",
-  "@lyricsCreditMatched": {
-    "description": "Header of the lyrics credit menu; seconds is how far the lyrics' length is from the song's",
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "lyricsCreditMatchedExact": "matched automatically",
-  "@lyricsCreditMatchedExact": {
-    "description": "Header of the lyrics credit menu when the lengths agree or one is unknown"
-  },
-  "lyricsCreditPicked": "picked by you",
-  "@lyricsCreditPicked": {
-    "description": "Header of the lyrics credit menu for lyrics the user chose"
-  },
-  "lyricsMenuSearchAgain": "Search again",
-  "@lyricsMenuSearchAgain": {
-    "description": "Lyrics credit menu item that forgets the match and looks the song up again"
-  },
-  "lyricsMenuChooseOther": "Choose other lyrics…",
-  "@lyricsMenuChooseOther": {
-    "description": "Lyrics credit menu item that opens the Choose lyrics dialog"
   },
   "lyricsMenuNotThese": "Not these lyrics",
   "@lyricsMenuNotThese": {
@@ -2913,28 +2854,326 @@
   },
   "settingsAutoOnlineLyrics": "Find lyrics online automatically (LRCLIB)",
   "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
-  "settingsWriteLrc": "Save picked lyrics as .lrc files",
-  "settingsWriteLrcHint": "When you pick lyrics in Choose lyrics, also writes a .lrc file next to the song if there is none, inside your library folders. Never overwrites.",
   "settingsSavedLyrics": "Saved lyrics",
-  "settingsSavedLyricsSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size} · {notFound} not found (retried after 14 days)",
-  "@settingsSavedLyricsSummary": {
-    "description": "Saved online lyrics: songs with lyrics, their size and songs the service had none for",
+  "settingsSavedLyricsSongs": "{count, plural, =1{1 song with lyrics} other{{count} songs with lyrics}}",
+  "@settingsSavedLyricsSongs": {
+    "description": "Saved lyrics summary: songs that have lyrics",
     "placeholders": {
       "count": {
-        "type": "int"
-      },
-      "size": {
-        "type": "String"
-      },
-      "notFound": {
         "type": "int"
       }
     }
   },
-  "settingsSavedLyricsNone": "No saved lyrics",
+  "settingsSavedLyricsNotFound": "{count, plural, other{{count} not found}}",
+  "@settingsSavedLyricsNotFound": {
+    "description": "Saved lyrics summary: songs the service had none for",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsSavedLyricsChoices": "{count, plural, =1{1 source choice} other{{count} source choices}}",
+  "@settingsSavedLyricsChoices": {
+    "description": "Saved lyrics summary: songs with a chosen lyrics source",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsSavedLyricsRejects": "{count, plural, other{{count} rejected}}",
+  "@settingsSavedLyricsRejects": {
+    "description": "Saved lyrics summary: lyrics versions the user rejected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLyricsConsent": "LRCLIB lyrics search permission",
+  "settingsLyricsConsentNone": "Not allowed",
+  "settingsLyricsConsentManual": "Manual search allowed",
+  "settingsLyricsConsentAuto": "Manual and automatic search allowed",
+  "settingsLyricsConsentWithdraw": "Withdraw",
+  "settingsLyricsConsentWithdrawTitle": "Withdraw permission?",
+  "settingsLyricsConsentWithdrawBody": "Nothing is sent to LRCLIB any more, and automatic search turns off. Saved lyrics stay, and you will be asked again before the next search.",
+  "settingsSavedLyricsNone": "Nothing saved",
   "settingsSavedLyricsClear": "Clear",
   "settingsSavedLyricsClearTitle": "Clear saved lyrics?",
-  "settingsSavedLyricsClearBody": "The online lyrics saved on this computer, your picks and the \"not these lyrics\" choices are deleted. .lrc files stay.",
+  "settingsSavedLyricsClearBody": "Deleted: the lyrics saved on this computer, the lyrics source chosen for each song and the rejected versions. .lrc files next to songs stay.",
   "settingsSavedLyricsCleared": "Saved lyrics cleared",
-  "settingsSavedLyricsClearFailed": "Could not clear saved lyrics"
+  "settingsSavedLyricsClearFailed": "Could not clear saved lyrics",
+  "lyricsSaveTitle": "Save lyrics",
+  "@lyricsSaveTitle": {
+    "description": "Title of the Save lyrics dialog"
+  },
+  "lyricsSaveOptionLrc": ".lrc file",
+  "@lyricsSaveOptionLrc": {
+    "description": "Save lyrics option: a .lrc file next to the song"
+  },
+  "lyricsSaveOptionTags": "In the music tags",
+  "@lyricsSaveOptionTags": {
+    "description": "Save lyrics option, not available yet"
+  },
+  "lyricsSaveOptionTagsSoon": "Coming soon",
+  "@lyricsSaveOptionTagsSoon": {
+    "description": "Shown under the disabled tag option of Save lyrics"
+  },
+  "lyricsSaveConfirm": "Save",
+  "@lyricsSaveConfirm": {
+    "description": "Confirm button of the Save lyrics dialog"
+  },
+  "lyricsReplaceTitle": "Replace {files} of {title}?",
+  "@lyricsReplaceTitle": {
+    "description": "Title of the confirm before an existing .lrc file is replaced; files are the names of the lyrics files, title the song",
+    "placeholders": {
+      "files": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsReplaceBody": "The old file is moved to the trash.",
+  "@lyricsReplaceBody": {
+    "description": "Body of the replace confirm"
+  },
+  "lyricsReplaceAction": "Replace",
+  "@lyricsReplaceAction": {
+    "description": "Confirm button of the replace confirm"
+  },
+  "lyricsSaveWritten": "Lyrics saved as a .lrc file",
+  "@lyricsSaveWritten": {
+    "description": "Snackbar after the .lrc file was written"
+  },
+  "lyricsSaveIdentical": "The .lrc file already has these lyrics",
+  "@lyricsSaveIdentical": {
+    "description": "Snackbar when the .lrc file already holds the same text"
+  },
+  "lyricsSaveKeptTag": "The song still uses the lyrics you chose because lyrics in tags are preferred",
+  "@lyricsSaveKeptTag": {
+    "description": "Details under the save snackbar when tags win over the saved file"
+  },
+  "lyricsSaveKeptOtherFile": "The song still uses the lyrics you chose because Kanaru reads another lyrics file of the song",
+  "@lyricsSaveKeptOtherFile": {
+    "description": "Details under the save snackbar when another lyrics file is read"
+  },
+  "lyricsSaveOutsideLibrary": "Could not save: the song is outside the library folders",
+  "@lyricsSaveOutsideLibrary": {
+    "description": "Snackbar when the song is not in a library folder"
+  },
+  "lyricsSaveFailed": "Could not save the .lrc file (read-only folder, no space or no permission)",
+  "@lyricsSaveFailed": {
+    "description": "Snackbar when writing the .lrc file failed"
+  },
+  "lyricsSaveTrashFailed": "Could not move the old file to the trash, so nothing was replaced",
+  "@lyricsSaveTrashFailed": {
+    "description": "Snackbar when the old file could not be trashed"
+  },
+  "lyricsSaveTrashedNotWritten": "The old file was moved to the trash but the new one could not be written; restore it from the trash if needed",
+  "@lyricsSaveTrashedNotWritten": {
+    "description": "Snackbar when the old file is in the trash and the new one is missing"
+  },
+  "lyricsSaveNothing": "No lyrics to save",
+  "@lyricsSaveNothing": {
+    "description": "Snackbar when the lyrics are instrumental, empty or gone"
+  },
+  "lyricsSaveTrashTimedOut": "The trash did not answer in time; the old file may be in the trash and no new file was written",
+  "@lyricsSaveTrashTimedOut": {
+    "description": "Snackbar when the trash timed out on the first old file"
+  },
+  "lyricsSaveReplaceRaced": "Another lyrics file just appeared, so nothing was replaced",
+  "@lyricsSaveReplaceRaced": {
+    "description": "Snackbar when a lyrics file appeared during a replace"
+  },
+  "lyricsReplaceFilesJoin": "{first} and {second}",
+  "@lyricsReplaceFilesJoin": {
+    "description": "Joins the names of two lyrics files in the replace confirm",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceOff": "Lyrics off",
+  "@lyricsSourceOff": {
+    "description": "Lyrics source button label when the user turned lyrics off for the song"
+  },
+  "lyricsSourceSearching": "Searching…",
+  "@lyricsSourceSearching": {
+    "description": "Lyrics source button label while a lookup runs"
+  },
+  "lyricsSourcePaused": "Lookups paused",
+  "@lyricsSourcePaused": {
+    "description": "Lyrics source button label while automatic lookups wait after a failure"
+  },
+  "lyricsSourceNone": "No lyrics",
+  "@lyricsSourceNone": {
+    "description": "Lyrics source button label when the song has no lyrics"
+  },
+  "lyricsSourceFile": ".lrc file",
+  "@lyricsSourceFile": {
+    "description": "Lyrics source button label and menu subtitle: lyrics from the .lrc file next to the song"
+  },
+  "lyricsSourceTag": "Tag lyrics",
+  "@lyricsSourceTag": {
+    "description": "Lyrics source button label: lyrics stored in the song's tags"
+  },
+  "lyricsSourceSynced": "Synced",
+  "@lyricsSourceSynced": {
+    "description": "Kind of online lyrics with timing, in the source button and menu"
+  },
+  "lyricsSourcePlain": "Plain",
+  "@lyricsSourcePlain": {
+    "description": "Kind of online lyrics without timing, in the source button and menu"
+  },
+  "lyricsSourceOnline": "{provider} · {kind}",
+  "@lyricsSourceOnline": {
+    "description": "Lyrics source button label for chosen online lyrics; provider is the service name, kind is Synced or Plain",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceAuto": "Auto · {label}",
+  "@lyricsSourceAuto": {
+    "description": "Lyrics source button label when the lyrics were picked automatically; label says which",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceMenuHeader": "Lyrics for this song",
+  "@lyricsSourceMenuHeader": {
+    "description": "Heading of the lyrics source menu"
+  },
+  "lyricsSourceMenuFrom": "Lyrics from {source}",
+  "@lyricsSourceMenuFrom": {
+    "description": "Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as \"LRCLIB · Synced\" or \".lrc file\"",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceAutoItem": "Automatic",
+  "@lyricsSourceAutoItem": {
+    "description": "Lyrics source menu item that lets Kanaru pick the lyrics"
+  },
+  "lyricsSourceAutoNow": "In use: {label}",
+  "@lyricsSourceAutoNow": {
+    "description": "Subtitle of the Automatic item naming the lyrics now shown",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceAutoHint": "The file or tag first, then {provider}",
+  "@lyricsSourceAutoHint": {
+    "description": "Subtitle of the Automatic item; provider is the service name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceForgetPick": "{text} · drops the chosen version",
+  "@lyricsSourceForgetPick": {
+    "description": "Subtitle of the Automatic item when a chosen online version is stored and would be forgotten",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceLocalItem": "Lyrics in the file",
+  "@lyricsSourceLocalItem": {
+    "description": "Lyrics source menu item for the song's own lyrics"
+  },
+  "lyricsSourceLocalTag": "In the tag",
+  "@lyricsSourceLocalTag": {
+    "description": "Subtitle of the file item when the lyrics are in the song's tags"
+  },
+  "lyricsSourceLocalMissing": "No lyrics found in the file",
+  "@lyricsSourceLocalMissing": {
+    "description": "Subtitle of the file item when the song has no own lyrics"
+  },
+  "lyricsSourceOnlineItem": "{provider} · chosen version",
+  "@lyricsSourceOnlineItem": {
+    "description": "Lyrics source menu item for the online lyrics picked for the song",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceOnlineSubtitle": "{kind} · {length}",
+  "@lyricsSourceOnlineSubtitle": {
+    "description": "Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "length": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSourceKeep": "Keep this one",
+  "@lyricsSourceKeep": {
+    "description": "Lyrics source menu item that picks the automatic match for good"
+  },
+  "lyricsSourceSave": "Save lyrics…",
+  "@lyricsSourceSave": {
+    "description": "Lyrics source menu item that opens the save dialog"
+  },
+  "lyricsSourceTurnOff": "Turn lyrics off for this song",
+  "@lyricsSourceTurnOff": {
+    "description": "Lyrics source menu item that hides lyrics for the song"
+  },
+  "lyricsOffTitle": "Lyrics are off for this song",
+  "@lyricsOffTitle": {
+    "description": "Lyrics slot text when the user turned lyrics off for the song"
+  },
+  "lyricsOffTurnOn": "Turn back on",
+  "@lyricsOffTurnOn": {
+    "description": "Button in the lyrics slot that returns the song to automatic lyrics"
+  },
+  "lyricsPausedTitle": "{provider} is busy. Kanaru searches again at {time}",
+  "@lyricsPausedTitle": {
+    "description": "Lyrics slot text while automatic lookups are paused; provider is the service name, time when they resume",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jm"
+      }
+    }
+  },
+  "lyricsOnlineUnreadable": "{provider} answered but Kanaru could not read it",
+  "@lyricsOnlineUnreadable": {
+    "description": "Banner above the empty lyrics slot when the service sent an error or an answer that could not be read; provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsAutoNeedsTags": "This song lacks a title, artist or length, so Kanaru cannot look it up automatically. Use Find lyrics online…",
+  "@lyricsAutoNeedsTags": {
+    "description": "Snackbar after turning on automatic lookup for a song that cannot be looked up automatically"
+  }
 }

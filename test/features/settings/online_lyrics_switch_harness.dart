@@ -24,7 +24,6 @@ class LyricsRowsHarness {
     bool autoConsent = false,
     bool manualConsent = false,
     bool withDatabase = true,
-    bool writeLrc = false,
   }) async {
     final h = await createHarness(
       [LyricsProviderRegistration(FakeLyricsProvider())],
@@ -32,7 +31,6 @@ class LyricsRowsHarness {
       autoConsent: autoConsent,
       manualConsent: manualConsent,
       withDatabase: withDatabase,
-      writeLrc: writeLrc,
     );
     tester.view.physicalSize = const Size(1280, 1600);
     tester.view.devicePixelRatio = 1;

@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
+import 'package:kanaru/core/native/file_trash.dart';
+
+import 'fake_file_trash.dart';
 
 const _synced = LyricsBody(syncedLrc: '[00:01.00]one\r\n[00:02.00]two\n\n');
 
@@ -15,11 +18,15 @@ void main() {
   var excluded = <String>[];
   var roots = <String>[];
   Future<void> Function()? hook;
+  late FakeFileTrash trash;
+  DateTime Function()? clock;
 
   FileLrcSidecarWriter writer() => FileLrcSidecarWriter(
     libraryRoots: () async => roots,
     excludedFolders: () async => excluded,
+    trash: trash,
     beforeRecheck: hook == null ? null : () => hook!(),
+    now: clock,
   );
 
   String newSong(String dir, [String name = 'a.mp3']) {
@@ -42,6 +49,8 @@ void main() {
     roots = [library];
     excluded = [];
     hook = null;
+    clock = null;
+    trash = FakeFileTrash('${tmp.path}/trash');
   });
 
   tearDown(() {
@@ -104,16 +113,19 @@ void main() {
     expect(File('$library/album/a.lrc').existsSync(), isFalse);
   });
 
-  test('a folder or a dangling link of that name counts', () async {
-    Directory('$library/album/a.lrc').createSync();
-    expect(await writer().write(song, _synced), LrcWriteResult.exists);
-    Directory('$library/album/a.lrc').deleteSync();
+  test(
+    'a folder of that name cannot be replaced, a dangling link counts',
+    () async {
+      Directory('$library/album/a.lrc').createSync();
+      expect(await writer().write(song, _synced), LrcWriteResult.trashFailed);
+      Directory('$library/album/a.lrc').deleteSync();
 
-    Link('$library/album/a.lrc').createSync('$library/album/missing');
-    expect(await writer().write(song, _synced), LrcWriteResult.exists);
-    expect(Link('$library/album/a.lrc').existsSync(), isTrue);
-    expect(File('$library/album/missing').existsSync(), isFalse);
-  });
+      Link('$library/album/a.lrc').createSync('$library/album/missing');
+      expect(await writer().write(song, _synced), LrcWriteResult.exists);
+      expect(Link('$library/album/a.lrc').existsSync(), isTrue);
+      expect(File('$library/album/missing').existsSync(), isFalse);
+    },
+  );
 
   test('a candidate that appears before the rename is not replaced', () async {
     hook = () async {
@@ -270,10 +282,243 @@ void main() {
     final failing = FileLrcSidecarWriter(
       libraryRoots: () async => throw StateError('closed'),
       excludedFolders: () async => excluded,
+      trash: trash,
     );
 
     expect(await failing.write(song, _synced), LrcWriteResult.failed);
     expect(leftovers('$library/album'), isEmpty);
     expect(File('$library/album/a.lrc').existsSync(), isFalse);
+  });
+
+  group('same text', () {
+    test('an identical file is reported and left alone', () async {
+      File('$library/album/a.lrc')
+          .writeAsStringSync('[00:01.00]one\n[00:02.00]two\n');
+
+      expect(await writer().write(song, _synced), LrcWriteResult.identical);
+      expect(trash.calls, isEmpty);
+      expect(leftovers('$library/album'), isEmpty);
+    });
+
+    test('identical is read from the first spelling that exists', () async {
+      File('$library/album/a.LRC')
+          .writeAsStringSync('[00:01.00]one\n[00:02.00]two\n');
+
+      expect(await writer().write(song, _synced), LrcWriteResult.identical);
+    });
+
+    test('a FIFO named .lrc is not identical and does not hang', () async {
+      Process.runSync('mkfifo', ['$library/album/a.lrc']);
+
+      // It can never be replaced, so the user is not asked to confirm.
+      expect(await writer().write(song, _synced), LrcWriteResult.trashFailed);
+      expect(trash.calls, isEmpty);
+    });
+
+    test('an oversized file is not identical', () async {
+      File('$library/album/a.lrc').writeAsStringSync('x' * (lrcMaxBytes + 1));
+
+      expect(await writer().write(song, _synced), LrcWriteResult.exists);
+    });
+
+    test('synced text that does not parse writes the plain text', () async {
+      const body = LyricsBody(syncedLrc: '[00:01.00]   ', plain: 'real words');
+
+      expect(await writer().write(song, body), LrcWriteResult.written);
+      expect(File('$library/album/a.lrc').readAsStringSync(), 'real words\n');
+    });
+  });
+
+  group('replace', () {
+    String lrc() => '$library/album/a.lrc';
+    String upper() => '$library/album/a.LRC';
+
+    test(
+      'the old file goes to the trash, then the new one is written',
+      () async {
+        File(lrc()).writeAsStringSync('mine');
+
+        expect(
+          await writer().write(song, _synced, replace: true),
+          LrcWriteResult.written,
+        );
+        expect(trash.calls, [lrc()]);
+        expect(File('${trash.folder}/1').readAsStringSync(), 'mine');
+        expect(
+          File(lrc()).readAsStringSync(),
+          '[00:01.00]one\n[00:02.00]two\n',
+        );
+        expect(leftovers('$library/album'), isEmpty);
+      },
+    );
+
+    test('replace without an existing file just writes', () async {
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.written,
+      );
+      expect(trash.calls, isEmpty);
+    });
+
+    test('both spellings are trashed in order', () async {
+      // A case-sensitive folder can hold both.
+      File(lrc()).writeAsStringSync('lower');
+      File(upper()).writeAsStringSync('upper');
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.written,
+      );
+      expect(trash.calls, [lrc(), upper()]);
+      expect(File(upper()).existsSync(), isFalse);
+    });
+
+    for (final refusal in [TrashResult.unsupported, TrashResult.failed]) {
+      test('trash $refusal gives trashFailed and changes nothing', () async {
+        File(lrc()).writeAsStringSync('mine');
+        trash.results.add(refusal);
+
+        expect(
+          await writer().write(song, _synced, replace: true),
+          LrcWriteResult.trashFailed,
+        );
+        expect(File(lrc()).readAsStringSync(), 'mine');
+        expect(leftovers('$library/album'), isEmpty);
+      });
+    }
+
+    test('a trash timeout on the first file is trashTimedOut', () async {
+      File(lrc()).writeAsStringSync('mine');
+      trash.results.add(TrashResult.timedOut);
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.trashTimedOut,
+      );
+      expect(File(lrc()).readAsStringSync(), 'mine');
+      expect(leftovers('$library/album'), isEmpty);
+    });
+
+    test('a timeout after an earlier trash is trashedNotWritten', () async {
+      File(lrc()).writeAsStringSync('lower');
+      File(upper()).writeAsStringSync('upper');
+      trash.results.addAll([TrashResult.trashed, TrashResult.timedOut]);
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.trashedNotWritten,
+      );
+    });
+
+    test('a failing second trash is trashedNotWritten', () async {
+      File(lrc()).writeAsStringSync('lower');
+      File(upper()).writeAsStringSync('upper');
+      trash.results.addAll([TrashResult.trashed, TrashResult.failed]);
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.trashedNotWritten,
+      );
+      expect(File(lrc()).existsSync(), isFalse);
+      expect(File(upper()).readAsStringSync(), 'upper');
+      expect(leftovers('$library/album'), isEmpty);
+    });
+
+    test(
+      'a file that reappears after the trash is trashedNotWritten',
+      () async {
+        File(lrc()).writeAsStringSync('mine');
+        trash.afterTrashed = (_) => File(lrc()).writeAsStringSync('again');
+
+        expect(
+          await writer().write(song, _synced, replace: true),
+          LrcWriteResult.trashedNotWritten,
+        );
+        expect(File(lrc()).readAsStringSync(), 'again');
+        expect(leftovers('$library/album'), isEmpty);
+      },
+    );
+
+    test('a folder named .LRC stops the replace before any trash', () async {
+      File(lrc()).writeAsStringSync('mine');
+      Directory(upper()).createSync();
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.trashFailed,
+      );
+      expect(trash.calls, isEmpty);
+      expect(File(lrc()).readAsStringSync(), 'mine');
+      expect(leftovers('$library/album'), isEmpty);
+    });
+
+    test('a dangling link is trashed as a link', () async {
+      Link(lrc()).createSync('$library/album/missing');
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.written,
+      );
+      expect(trash.calls, [lrc()]);
+      expect(Link('${trash.folder}/1').existsSync(), isTrue);
+    });
+
+    test('a read-only folder gives failed with nothing trashed', () async {
+      if (Process.runSync('id', ['-u']).stdout.toString().trim() == '0') {
+        markTestSkipped('root ignores folder permissions');
+        return;
+      }
+      File(lrc()).writeAsStringSync('mine');
+      Process.runSync('chmod', ['555', '$library/album']);
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.failed,
+      );
+      expect(trash.calls, isEmpty);
+      expect(File(lrc()).readAsStringSync(), 'mine');
+    });
+
+    test('a failed rename after the trash is trashedNotWritten', () async {
+      File(lrc()).writeAsStringSync('mine');
+      // The destination is a folder by the time of the rename.
+      trash.afterTrashed = (_) => Directory(lrc()).createSync();
+
+      expect(
+        await writer().write(song, _synced, replace: true),
+        LrcWriteResult.trashedNotWritten,
+      );
+    });
+  });
+
+  group('stale temp folders', () {
+    test('an old one is removed and a fresh one is kept', () async {
+      Directory('$library/album/.kanaru-lrc-old').createSync();
+      Directory('$library/album/.kanaru-lrc-fresh').createSync();
+      Directory('$library/album/other').createSync();
+
+      // Both are "now"; a clock 11 minutes ahead makes them old.
+      clock = () => DateTime.now().add(const Duration(minutes: 11));
+      await writer().write(song, _synced);
+      expect(leftovers('$library/album'), isEmpty);
+      expect(Directory('$library/album/other').existsSync(), isTrue);
+
+      Directory('$library/album/.kanaru-lrc-fresh').createSync();
+      clock = null;
+      File('$library/album/a.lrc').deleteSync();
+      await writer().write(song, _synced);
+      expect(leftovers('$library/album'), ['$library/album/.kanaru-lrc-fresh']);
+    });
+
+    test('a link with the temp name is not followed', () async {
+      final outside = Directory('${tmp.path}/outside')..createSync();
+      File('${outside.path}/keep').writeAsStringSync('x');
+      Link('$library/album/.kanaru-lrc-link').createSync(outside.path);
+
+      clock = () => DateTime.now().add(const Duration(minutes: 11));
+      await writer().write(song, _synced);
+
+      expect(File('${outside.path}/keep').existsSync(), isTrue);
+    });
   });
 }

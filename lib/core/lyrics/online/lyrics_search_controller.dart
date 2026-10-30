@@ -28,6 +28,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
   int _generation = 0;
   final _raw = <String, List<LyricsCandidate>>{};
   Set<({String providerId, String remoteId})> _rejected = const {};
+  Set<String> _rejectedHashes = const {};
 
   @override
   LyricsSearchState build() =>
@@ -47,7 +48,9 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
           r.id: const ProviderSearchState(ProviderSearchPhase.searching),
       },
     );
-    _rejected = await _loadRejected();
+    final rejects = await _loadRejected();
+    _rejected = rejects.ids;
+    _rejectedHashes = rejects.hashes;
     if (!_current(generation)) return;
     await Future.wait([
       for (final r in registrations) _searchOne(r, query, generation),
@@ -65,18 +68,28 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
 
   bool _current(int generation) => ref.mounted && generation == _generation;
 
-  Future<Set<({String providerId, String remoteId})>> _loadRejected() async {
+  Future<
+    ({Set<({String providerId, String remoteId})> ids, Set<String> hashes})
+  >
+  _loadRejected() async {
     try {
-      final rows = await ref
+      final matches = await ref
           .read(libraryDatabaseProvider)
-          ?.rejectedRemoteIds(target.cacheKey);
-      return {
-        for (final (providerId, remoteId) in rows ?? const <(String, String)>{})
-          (providerId: providerId, remoteId: remoteId),
-      };
+          ?.rejectedMatches(target.cacheKey);
+      return (
+        ids: {
+          for (final (providerId, remoteId)
+              in matches?.ids ?? const <(String, String)>{})
+            (providerId: providerId, remoteId: remoteId),
+        },
+        hashes: matches?.hashes ?? const <String>{},
+      );
     } on Object catch (e) {
       _log.warning('could not read rejected lyrics: ${e.runtimeType}');
-      return const {};
+      return (
+        ids: const <({String providerId, String remoteId})>{},
+        hashes: const <String>{},
+      );
     }
   }
 
@@ -121,6 +134,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
       target.query,
       [for (final list in _raw.values) ...list],
       rejected: _rejected,
+      rejectedHashes: _rejectedHashes,
       keepRejected: true,
     );
     return [

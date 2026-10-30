@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_backoff.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_http_factory.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_lookups.dart';
@@ -32,10 +35,23 @@ Map<String, Object?> _record(int id) => {
   'plainLyrics': 'hi',
 };
 
+/// Sends `/api/search` nowhere when [failSearch] is set: the connection fails.
+class _FlakyClient extends RewritingHttpClient {
+  _FlakyClient(super.base);
+
+  bool failSearch = false;
+
+  @override
+  Future<HttpClientRequest> openUrl(String method, Uri url) =>
+      failSearch && url.path == '/api/search'
+      ? Future.error(const SocketException('search is down'))
+      : super.openUrl(method, url);
+}
+
 /// The real LRCLIB client against a loopback server standing in for it.
 void main() {
   late LoopbackServer server;
-  late RewritingHttpClient client;
+  late _FlakyClient client;
   late LyricsHarness h;
   final sleeps = <Duration>[];
 
@@ -45,12 +61,13 @@ void main() {
   Future<void> setUpWith(
     Reply Function(RecordedRequest) handler, {
     bool autoConsent = true,
+    List<Override> overrides = const [],
   }) async {
     sleeps.clear();
     onSleep = null;
     server = await LoopbackServer.start(handler);
     addTearDown(server.close);
-    client = RewritingHttpClient(server.baseUri);
+    client = _FlakyClient(server.baseUri);
     addTearDown(() => client.close(force: true));
     h = await createHarness(
       [LyricsProviderRegistration(LrclibProvider())],
@@ -62,6 +79,7 @@ void main() {
           await onSleep?.call();
         }),
         onlineLyricsDebounceProvider.overrideWithValue(Duration.zero),
+        ...overrides,
       ],
     );
   }
@@ -112,6 +130,39 @@ void main() {
     expect((row.status, row.remoteId), ('found', '9'));
   });
 
+  test('a search hit filed under the other artist is found', () async {
+    final target = LyricsTarget.fromFields(
+      uri: '/music/duo.flac',
+      title: 'Song',
+      artist: 'Ngân Ngân, Châu Khải Phong',
+      album: 'Alb',
+      duration: const Duration(seconds: 200),
+    );
+    await setUpWith(
+      (r) => r.uri.path == '/api/get'
+          ? _notFound
+          : Reply(
+              200,
+              jsonEncode([
+                {..._record(9), 'artistName': 'Chau Khai Phong'},
+              ]),
+              headers: _json,
+            ),
+    );
+
+    await h.lookups.start(target, auto: true);
+
+    final row = (await h.db.watchOnlineLyrics(target.cacheKey).first).single;
+    expect((row.status, row.remoteId), ('found', '9'));
+    final get = server.requests.first.uri;
+    expect(get.path, '/api/get');
+    expect(get.queryParameters['artist_name'], 'Ngân Ngân');
+    final search = server.requests.last.uri;
+    expect(search.path, '/api/search');
+    expect(search.queryParameters, {'track_name': 'Song'});
+    expect(server.requests, hasLength(2));
+  });
+
   final failures = <String, Reply>{
     '404 with an HTML body': const Reply(
       404,
@@ -160,6 +211,161 @@ void main() {
 
     expect(client.opened, 0);
     expect(server.requests, isEmpty);
+  });
+
+  group('synced preferred over a plain exact hit', () {
+    Map<String, Object?> plain(int id) => {
+      ..._record(id),
+      'syncedLyrics': null,
+      'plainLyrics': 'hello there',
+    };
+
+    test('a synced search match replaces the plain exact hit', () async {
+      await setUpWith(
+        (r) => r.uri.path == '/api/get'
+            ? Reply(200, jsonEncode(plain(1)), headers: _json)
+            : Reply(200, jsonEncode([plain(1), _record(2)]), headers: _json),
+      );
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      final row =
+          (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
+      expect((row.status, row.remoteId), ('found', '2'));
+      expect(row.syncedText, isNotNull);
+      expect(server.requests.last.uri.path, '/api/search');
+      expect(server.requests.last.uri.queryParameters, {
+        'track_name': 'Song',
+        'artist_name': 'Artist',
+      });
+      expect(server.requests, hasLength(2));
+      expect(
+        server.requests.first.uri.queryParameters.containsKey('album_name'),
+        isFalse,
+      );
+    });
+
+    test('without a synced match the plain exact hit is kept', () async {
+      await setUpWith(
+        (r) => r.uri.path == '/api/get'
+            ? Reply(200, jsonEncode(plain(1)), headers: _json)
+            : Reply(200, jsonEncode([plain(1), plain(3)]), headers: _json),
+      );
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      final row =
+          (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
+      expect((row.status, row.remoteId, row.syncedText), ('found', '1', null));
+      expect(server.requests, hasLength(2));
+      expect(server.requests.last.uri.path, '/api/search');
+      expect(server.requests.last.uri.queryParameters, {
+        'track_name': 'Song',
+        'artist_name': 'Artist',
+      });
+    });
+
+    test('a synced exact hit needs no search', () async {
+      await setUpWith(
+        (_) => Reply(200, jsonEncode(_record(5)), headers: _json),
+      );
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      expect(server.requests, hasLength(1));
+    });
+
+    test('a 503 on the extra search keeps the plain exact hit', () async {
+      await setUpWith(
+        (r) => r.uri.path == '/api/get'
+            ? Reply(200, jsonEncode(plain(1)), headers: _json)
+            : const Reply(503, '{}', headers: _json),
+      );
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      final row =
+          (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
+      expect((row.status, row.remoteId), ('found', '1'));
+      expect(h.backoff.isBlocked, isFalse);
+      expect(h.container.read(onlineLyricsLookupsProvider), isEmpty);
+    });
+
+    test('a network failure on the extra search keeps the hit', () async {
+      await setUpWith((_) => Reply(200, jsonEncode(plain(1)), headers: _json));
+      client.failSearch = true;
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      final row =
+          (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
+      expect((row.status, row.remoteId), ('found', '1'));
+      expect(h.backoff.isBlocked, isFalse);
+    });
+
+    test(
+      'consent withdrawn while a synced answer arrives stores nothing',
+      () async {
+        final registration = LyricsProviderRegistration(LrclibProvider());
+        final acknowledged = {
+          registration.consentKey,
+          registration.autoConsentKey,
+        };
+        await setUpWith(
+          (_) {
+            acknowledged.clear();
+            return Reply(200, jsonEncode(_record(5)), headers: _json);
+          },
+          overrides: [
+            onlineLyricsHttpFactoryProvider.overrideWith(
+              (ref) => OnlineLyricsHttpFactory(
+                acknowledged: () => acknowledged,
+                client: () => client,
+              ),
+            ),
+          ],
+        );
+
+        await h.lookups.start(fakeTarget, auto: true);
+
+        expect(await rowCount(), 0);
+        expect(h.backoff.isBlocked, isFalse);
+        expect(h.container.read(onlineLyricsLookupsProvider), isEmpty);
+      },
+    );
+
+    test('consent withdrawn between the two requests stores nothing', () async {
+      final acknowledged = <String>{};
+      final registration = LyricsProviderRegistration(LrclibProvider());
+      acknowledged.addAll([
+        registration.consentKey,
+        registration.autoConsentKey,
+      ]);
+      await setUpWith(
+        (r) {
+          if (r.uri.path == '/api/get') {
+            // Consent is withdrawn right after the first answer.
+            Future<void>.microtask(acknowledged.clear);
+            return Reply(200, jsonEncode(plain(1)), headers: _json);
+          }
+          return Reply(200, jsonEncode([_record(2)]), headers: _json);
+        },
+        overrides: [
+          onlineLyricsHttpFactoryProvider.overrideWith(
+            (ref) => OnlineLyricsHttpFactory(
+              acknowledged: () => acknowledged,
+              client: () => client,
+            ),
+          ),
+        ],
+      );
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      expect(server.requests.map((r) => r.uri.path), ['/api/get']);
+      expect(await rowCount(), 0);
+      expect(h.backoff.isBlocked, isFalse);
+    });
   });
 
   group('busy answers', () {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_streams.dart';
 
@@ -148,7 +149,7 @@ void main() {
       expect(await settled(lyricsPinProvider('/a.flac')), isNull);
     });
 
-    test('a pick has parsed lyrics, a skip has none', () async {
+    test('a pick has parsed lyrics, a choice alone has no pick', () async {
       await h.db.pinLyrics(
         LyricsPinsCompanion.insert(
           trackKey: '/a.flac',
@@ -163,12 +164,47 @@ void main() {
       );
 
       final pick = (await settled(lyricsPinProvider('/a.flac')))!;
-      final skip = (await settled(lyricsPinProvider('/b.flac')))!;
+      final bare = (await settled(lyricsPinProvider('/b.flac')))!;
 
-      expect(pick.isSkip, isFalse);
+      expect(pick.hasPick, isTrue);
+      expect(pick.choice, LyricsChoice.auto);
       expect(pick.lyrics!.lines.single.text, 'pinned');
-      expect(skip.isSkip, isTrue);
-      expect(skip.lyrics, isNull);
+      expect(bare.hasPick, isFalse);
+      expect(bare.lyrics, isNull);
+    });
+
+    test('a change of mode alone emits again', () async {
+      Future<void> write(String? mode) => h.db.pinLyrics(
+        LyricsPinsCompanion.insert(
+          trackKey: '/a.flac',
+          pinnedAt: 1,
+          mode: Value(mode),
+          providerId: const Value('first'),
+          remoteId: const Value('r'),
+          syncedText: const Value('[00:02.00] pinned'),
+        ),
+      );
+      final provider = lyricsPinProvider('/a.flac');
+      final seen = <LyricsChoice?>[];
+      final sub = container.listen(
+        provider,
+        (_, next) => seen.add(next.value?.choice),
+        fireImmediately: true,
+      );
+      addTearDown(sub.close);
+
+      await write('local');
+      await pump();
+      await write('online');
+      await pump();
+      await write('off');
+      await pump();
+
+      expect(seen.whereType<LyricsChoice>().toList(), [
+        LyricsChoice.local,
+        LyricsChoice.online,
+        LyricsChoice.off,
+      ]);
     });
 
     test('an unrelated write keeps the same entry', () async {

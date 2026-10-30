@@ -1,30 +1,14 @@
-import '../../database/text_keys.dart';
-import '../../search/typo_correction.dart';
+import 'candidate_content_hash.dart';
+import 'lyrics_artist_match.dart';
 import 'lyrics_match_keys.dart';
+import 'lyrics_match_similarity.dart';
 import 'lyrics_provider.dart';
 
-/// A title or artist at least this similar counts as the same.
-const titleSimilarityMin = 0.85;
-const artistSimilarityMin = 0.85;
+export 'lyrics_artist_match.dart' show isUnknownArtist;
+export 'lyrics_match_similarity.dart';
 
 /// Largest difference between the song's and the record's duration, inclusive.
 const maxDurationDelta = Duration(seconds: 3);
-
-const _unknownArtists = {'unknown artist', 'unknown', '<unknown>'};
-
-/// `1 - edits / longer length` over code points, 1 for equal strings and 0
-/// when more than a fifth of the longer string has to change.
-double similarity(String a, String b) {
-  if (a == b) return 1;
-  final longest = a.runes.length > b.runes.length
-      ? a.runes.length
-      : b.runes.length;
-  final distance = boundedTypoDistance(a, b, (0.2 * longest).floor());
-  return distance == null ? 0 : 1 - distance / longest;
-}
-
-// Float rounding must not turn 0.85 into 0.8499999.
-bool _atLeast(double value, double min) => value + 1e-9 >= min;
 
 /// A candidate with its verdict for one query.
 class LyricsMatch {
@@ -61,38 +45,20 @@ bool isAutoSearchable(LyricsQuery query) {
   final duration = query.duration;
   if (title.isEmpty || artist.isEmpty) return false;
   if (duration == null || duration <= Duration.zero) return false;
-  return !_unknownArtists.contains(sortKey(artist).trim()) &&
-      !_unknownArtists.contains(foldArtist(artist));
-}
-
-bool _artistMatches(String? local, String remote) {
-  final primary = primaryArtist(local);
-  if (primary == null) return false;
-  final localFull = foldArtist(local!);
-  final remoteFull = foldArtist(remote);
-  if (localFull.isEmpty || remoteFull.isEmpty) return false;
-  if (localFull == remoteFull) return true;
-  final mine = foldArtist(primary);
-  for (final name in remoteArtistNames(remote)) {
-    final theirs = foldArtist(name);
-    if (theirs.isEmpty) continue;
-    if (mine == theirs ||
-        _atLeast(similarity(mine, theirs), artistSimilarityMin)) {
-      return true;
-    }
-  }
-  return false;
+  return !isUnknownArtist(artist);
 }
 
 /// Judges [candidate] against [query]. The gate needs: duration within
 /// [maxDurationDelta] (skipped when [query] has no duration, as in a manual
 /// search), title equal, joined-equal or [titleSimilarityMin] similar, the
-/// artist rule, and lyrics or the instrumental flag. A record in [rejected]
-/// never matches.
+/// artist rule, and lyrics or the instrumental flag. A record in [rejected],
+/// or whose text hashes into [rejectedHashes] (a duplicate of a rejected
+/// record, see `candidateContentHash`), never matches.
 LyricsMatch matchCandidate(
   LyricsQuery query,
   LyricsCandidate candidate, {
   Set<({String providerId, String remoteId})> rejected = const {},
+  Set<String> rejectedHashes = const {},
 }) {
   final wanted = query.duration;
   final has = candidate.duration;
@@ -111,10 +77,10 @@ LyricsMatch matchCandidate(
     titleOk =
         mine.isNotEmpty &&
         theirs.isNotEmpty &&
-        (_atLeast(score, titleSimilarityMin) ||
+        (atLeast(score, titleSimilarityMin) ||
             joinedTitle(mine) == joinedTitle(theirs));
   }
-  final isRejected = rejected.contains(candidate.ref);
+  final isRejected = _isRejected(candidate, rejected, rejectedHashes);
   final body = candidate.body;
   final bodyOk = body != null && (body.hasLyrics || body.instrumental);
   return LyricsMatch(
@@ -127,8 +93,19 @@ LyricsMatch matchCandidate(
         durationOk &&
         titleOk &&
         bodyOk &&
-        _artistMatches(query.artist, candidate.artist),
+        artistMatches(query.artist, candidate.artist),
   );
+}
+
+bool _isRejected(
+  LyricsCandidate candidate,
+  Set<({String providerId, String remoteId})> rejected,
+  Set<String> rejectedHashes,
+) {
+  if (rejected.contains(candidate.ref)) return true;
+  if (rejectedHashes.isEmpty) return false;
+  final hash = candidateContentHash(candidate);
+  return hash != null && rejectedHashes.contains(hash);
 }
 
 int _bodyRank(LyricsBody? body) {
@@ -137,22 +114,32 @@ int _bodyRank(LyricsBody? body) {
   return body != null && body.instrumental ? 2 : 3;
 }
 
-/// Judges every candidate not in [rejected] and orders them: good matches
-/// first, then synced before plain before instrumental, smaller duration
-/// difference, higher title similarity, and the given order for ties. With
-/// [keepRejected] (the manual search) records in [rejected] stay in the list,
-/// flagged and after every other one; automatic lookups leave it off.
+/// Judges every candidate not in [rejected] (by id or text, [rejectedHashes])
+/// and orders them: good matches first, then synced before plain before
+/// instrumental, smaller duration difference, higher title similarity, and
+/// the given order for ties. With [keepRejected] (the manual search) records
+/// in [rejected] stay in the list, flagged and after every other one;
+/// automatic lookups leave it off.
 List<LyricsMatch> rankCandidates(
   LyricsQuery query,
   Iterable<LyricsCandidate> candidates, {
   Set<({String providerId, String remoteId})> rejected = const {},
+  Set<String> rejectedHashes = const {},
   bool keepRejected = false,
 }) {
   final indexed = <(int, LyricsMatch)>[
     for (final (i, c) in candidates.indexed)
-      if (keepRejected || !rejected.contains(c.ref))
-        (i, matchCandidate(query, c, rejected: rejected)),
+      (
+        i,
+        matchCandidate(
+          query,
+          c,
+          rejected: rejected,
+          rejectedHashes: rejectedHashes,
+        ),
+      ),
   ];
+  if (!keepRejected) indexed.removeWhere((e) => e.$2.rejected);
   indexed.sort((a, b) {
     final x = a.$2;
     final y = b.$2;

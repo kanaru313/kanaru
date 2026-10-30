@@ -125,8 +125,9 @@ void main() {
     expect(find.text('Search lyrics on LRCLIB?'), findsOneWidget);
     expect(
       find.text(
-        'Kanaru sends the song title, artist, album and length to '
-        'lrclib.net. No file paths or device details.',
+        'Kanaru sends the song title, artist and length to '
+        'lrclib.net, never the album. No file names, paths or device '
+        'details.',
       ),
       findsOneWidget,
     );

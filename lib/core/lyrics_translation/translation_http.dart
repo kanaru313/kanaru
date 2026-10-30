@@ -27,9 +27,9 @@ typedef TranslationResponse = ({
 /// failure leaves as a [TranslationException]:
 ///
 /// * no connection, TLS failure, broken stream or timeout: `network`;
-/// * body over [maxTranslationResponseBytes], or a 2xx body that is not
-///   UTF-8: `invalidResponse` (an error status keeps its meaning, so its body
-///   is decoded leniently);
+/// * body over [maxBytes] (default [maxTranslationResponseBytes]), or a 2xx
+///   body that is not UTF-8: `invalidResponse` (an error status keeps its
+///   meaning, so its body is decoded leniently);
 /// * a header value Dart refuses (it quotes the value in its message):
 ///   `badKey`, since only the API key is ever sent as a custom header;
 /// * any other [Exception]: `invalidResponse`. Errors are not caught.
@@ -46,6 +46,7 @@ Future<TranslationResponse> sendTranslationRequest(
   String? body,
   Duration connectTimeout = translationConnectTimeout,
   Duration requestTimeout = translationRequestTimeout,
+  int maxBytes = maxTranslationResponseBytes,
 }) async {
   // Kept so that a request still connecting when we give up is aborted
   // once it opens, instead of leaking.
@@ -63,6 +64,7 @@ Future<TranslationResponse> sendTranslationRequest(
       body,
       connectTimeout,
       requestTimeout,
+      maxBytes,
     ).timeout(requestTimeout);
   } on TranslationException {
     _abortWhenOpen(pending);
@@ -98,6 +100,7 @@ Future<TranslationResponse> _exchange(
   String? body,
   Duration connectTimeout,
   Duration requestTimeout,
+  int maxBytes,
 ) async {
   final clock = Stopwatch()..start();
   final HttpClientRequest request;
@@ -129,7 +132,7 @@ Future<TranslationResponse> _exchange(
   )) {
     chunks.add(chunk);
     if (clock.elapsed > requestTimeout) throw TimeoutException(null);
-    if (chunks.length > maxTranslationResponseBytes) {
+    if (chunks.length > maxBytes) {
       throw const TranslationException(TranslationFailureKind.invalidResponse);
     }
   }

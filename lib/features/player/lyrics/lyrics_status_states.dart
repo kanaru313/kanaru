@@ -2,13 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
-import '../../../core/lyrics/online/lyrics_fetch_exception.dart';
+import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/local_path_of.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
-import 'lyrics_credit_row.dart';
+import 'lyrics_action_runner.dart';
+import 'lyrics_provider_name.dart';
 import 'lyrics_error_banner.dart';
 import 'lyrics_empty_state.dart';
 import 'lyrics_pulse_host.dart';
@@ -61,8 +63,9 @@ class LyricsSearchingView extends ConsumerWidget {
 
 /// The lyrics slot when the song has no lyrics to show: the reason, and the
 /// ways to look for some. Online buttons show only for a local file with a
-/// library (the lookups need both). A failed lookup adds a banner above, in
-/// its own slot, so the empty state keeps its place.
+/// library (the lookups need both). "Turn back on" restores the stored pick
+/// when the song has one, else goes to automatic. A failed lookup adds a
+/// banner above, in its own slot, so the empty state keeps its place.
 class LyricsNoneView extends ConsumerWidget {
   const LyricsNoneView({super.key, required this.none});
 
@@ -82,6 +85,11 @@ class LyricsNoneView extends ConsumerWidget {
             registration != null && s.onlineLyrics.autoAllowedFor(registration),
       ),
     );
+    // Turning lyrics back on keeps a stored pick: only the menu's Automatic
+    // item drops it.
+    final hasPick = ref.watch(
+      playingLyricsSourceProvider.select((s) => s?.pin?.hasPick ?? false),
+    );
     final name = registration?.displayName ?? '';
     final reason = none.reason;
 
@@ -89,13 +97,13 @@ class LyricsNoneView extends ConsumerWidget {
         FilledButton.tonal(onPressed: onPressed, child: Text(label));
     Widget more(String label, VoidCallback onPressed) =>
         TextButton(onPressed: onPressed, child: Text(label));
-    LyricsActionRunner run() => LyricsActionRunner.of(context);
+    LyricsActionRunner run() => LyricsActionRunner.snapshot(context);
 
     final (title, actions) = switch (reason) {
       LyricsNoneReason.noLyrics || LyricsNoneReason.error => (
         null,
         [
-          if (online) find(l10n.lyricsFindOnline, () => run().choose()),
+          if (online) find(l10n.lyricsFindOnline, () => run().findOnline()),
           if (online && !autoOn && reason == LyricsNoneReason.noLyrics)
             more(
               l10n.lyricsFindAutomatically,
@@ -105,37 +113,39 @@ class LyricsNoneView extends ConsumerWidget {
       ),
       LyricsNoneReason.notFound => (
         l10n.lyricsNotFound(name),
-        [if (online) find(l10n.lyricsSearchManually, () => run().choose())],
+        [if (online) find(l10n.lyricsSearchManually, () => run().findOnline())],
       ),
-      LyricsNoneReason.skipped => (
-        l10n.lyricsSkipped,
+      LyricsNoneReason.off => (
+        l10n.lyricsOffTitle,
         [
-          if (online) ...[
-            find(l10n.lyricsChoose, () => run().choose()),
-            more(
-              l10n.lyricsSearchAutomaticallyAgain,
-              () => run().searchAgain(),
-            ),
-          ],
+          find(
+            l10n.lyricsOffTurnOn,
+            () =>
+                run().choose(hasPick ? LyricsChoice.online : LyricsChoice.auto),
+          ),
         ],
+      ),
+      LyricsNoneReason.paused => (
+        switch (none.resumeAt) {
+          final at? => l10n.lyricsPausedTitle(name, at),
+          null => l10n.lyricsOnlineBusy(name),
+        },
+        [if (online) find(l10n.lyricsRetry, () => run().retry())],
       ),
       LyricsNoneReason.instrumental => (l10n.lyricsInstrumental, <Widget>[]),
     };
-    final origin = none.origin;
     return Column(
       children: [
         reason == LyricsNoneReason.error
             ? LyricsErrorBanner(
                 providerName: name,
                 canRetry: online,
-                busy: none.failure == LyricsFetchKind.rateLimited,
+                failure: none.failure,
               )
             : const SizedBox.shrink(),
         Expanded(
           child: LyricsEmptyState(title: title, actions: actions),
         ),
-        if (reason == LyricsNoneReason.instrumental && origin != null)
-          LyricsCreditRow(origin: origin),
       ],
     );
   }

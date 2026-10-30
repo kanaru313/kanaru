@@ -1,62 +1,23 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../lyrics/translation/lyrics_translation_button.dart';
-import '../lyrics/translation/lyrics_translation_pill.dart';
 import '../playback_controls.dart';
 import '../repeat/repeat_button.dart';
 import '../sleep_timer/sleep_timer_button.dart';
 import '../volume_button.dart';
 import 'now_playing_actions.dart';
+import 'now_playing_header_pills.dart';
 import 'now_playing_title_bar.dart';
 
 /// Height of the header strip across the top of Now Playing.
 const nowPlayingHeaderHeight = 64.0;
 
-/// Air before the first button.
-const _leftInset = 30.0;
-
-/// Gap between the left buttons that close or switch the view and those that
-/// act on the song.
-const _leftGap = 16.0;
-
-/// Room the right group needs for its four buttons.
-const _rightButtonsWidth = 4 * 48.0;
-
-/// Room the sleep timer label needs beside its button.
-const _sleepLabelWidth = 56.0;
-
-/// Gap, divider line and gap between the right buttons and the window
-/// buttons.
-const _rightSeparatorWidth = 25.0;
-
-/// Width of one round header button.
-const _buttonWidth = 48.0;
-
-/// Room the translate button's label may take in a header [width] wide: what
-/// is left after every other button, the sleep timer label's reserve and the
-/// window buttons' divider, plus the round button the pill replaces, minus the
-/// pill's own padding and icon. Zero or less means no room for a label.
-@visibleForTesting
-double nowPlayingTranslateLabelRoom({
-  required double width,
-  required bool hasModeButton,
-  required bool hasWindowButtons,
-}) {
-  final left = _leftInset + (hasModeButton ? 5 : 4) * _buttonWidth + _leftGap;
-  final right =
-      _rightButtonsWidth +
-      _sleepLabelWidth +
-      (hasWindowButtons ? _rightSeparatorWidth : 0);
-  return width - left - right + _buttonWidth - lyricsTranslationPillChrome;
-}
-
 /// Wide Now Playing's header: close and the song actions on the left; shuffle,
 /// repeat, sleep timer and volume on the right. The window buttons, when the
 /// app draws them, come after it (see [NowPlayingTitleBar.wrapHeader]).
 ///
-/// [floatingOpen] is set to whether one of the four things that float outside
-/// the header is open: the volume popup, or the repeat, sleep timer or
-/// translation menu. Whoever hides the header on inactivity listens to it to
+/// [floatingOpen] is set to whether one of the things that float outside the
+/// header is open: the volume popup, or the repeat, sleep timer, translation
+/// or lyrics source menu. Whoever hides the header on inactivity listens to it to
 /// keep the header shown meanwhile.
 class NowPlayingHeader extends StatefulWidget {
   const NowPlayingHeader({
@@ -68,6 +29,7 @@ class NowPlayingHeader extends StatefulWidget {
     this.modeButton,
     this.showTranslate = false,
     this.translateEnabled = true,
+    this.sourceMenuOpener,
   });
 
   final VoidCallback onClose;
@@ -85,11 +47,16 @@ class NowPlayingHeader extends StatefulWidget {
   /// Sits right of the close button; `null` leaves the spot empty.
   final Widget? modeButton;
 
-  /// Whether the lyrics translation button follows the playlist button.
+  /// Whether the lyrics translation and source buttons follow the playlist
+  /// button.
   final bool showTranslate;
 
   /// False greys the translation button out, for a song without lyrics.
   final bool translateEnabled;
+
+  /// Receives the callback that opens the lyrics source menu while its
+  /// button (which follows the translation button) is in the header.
+  final ValueNotifier<bool Function()?>? sourceMenuOpener;
 
   @override
   State<NowPlayingHeader> createState() => _NowPlayingHeaderState();
@@ -100,9 +67,10 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
   bool _sleepOpen = false;
   bool _repeatOpen = false;
   bool _translateOpen = false;
+  bool _sourceOpen = false;
 
   void _report() => widget.floatingOpen.value =
-      _volumeOpen || _sleepOpen || _repeatOpen || _translateOpen;
+      _volumeOpen || _sleepOpen || _repeatOpen || _translateOpen || _sourceOpen;
 
   @override
   void dispose() {
@@ -111,6 +79,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
     _sleepOpen = false;
     _repeatOpen = false;
     _translateOpen = false;
+    _sourceOpen = false;
     _report();
     super.dispose();
   }
@@ -125,26 +94,29 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
         builder: (context, bounds) => Row(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: _leftInset),
+              padding: const EdgeInsets.only(left: nowPlayingHeaderLeftInset),
               child: exclude(
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     NowPlayingCloseButton(onPressed: widget.onClose),
                     ?widget.modeButton,
-                    const SizedBox(width: _leftGap),
+                    const SizedBox(width: nowPlayingHeaderLeftGap),
                     const NowPlayingFavoriteButton(),
                     const NowPlayingPlaylistButton(),
                     if (widget.showTranslate)
-                      LyricsTranslationButton(
-                        enabled: widget.translateEnabled,
-                        maxLabelWidth: nowPlayingTranslateLabelRoom(
-                          width: bounds.maxWidth,
-                          hasModeButton: widget.modeButton != null,
-                          hasWindowButtons: widget.hasWindowButtons,
-                        ),
-                        onMenuChanged: (open) {
+                      NowPlayingLyricsPills(
+                        width: bounds.maxWidth,
+                        hasModeButton: widget.modeButton != null,
+                        hasWindowButtons: widget.hasWindowButtons,
+                        translateEnabled: widget.translateEnabled,
+                        sourceMenuOpener: widget.sourceMenuOpener,
+                        onTranslateMenuChanged: (open) {
                           _translateOpen = open;
+                          _report();
+                        },
+                        onSourceMenuChanged: (open) {
+                          _sourceOpen = open;
                           _report();
                         },
                       ),
@@ -156,7 +128,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
               child: LayoutBuilder(
                 builder: (context, side) {
                   final separator = widget.hasWindowButtons
-                      ? _rightSeparatorWidth
+                      ? nowPlayingHeaderSeparatorWidth
                       : 0.0;
                   return Align(
                     alignment: Alignment.centerRight,
@@ -175,7 +147,8 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                             child: SleepTimerButton(
                               showLabel:
                                   side.maxWidth - separator >=
-                                  _rightButtonsWidth + _sleepLabelWidth,
+                                  nowPlayingHeaderRightButtonsWidth +
+                                      nowPlayingHeaderSleepLabelWidth,
                               onMenuChanged: (open) {
                                 _sleepOpen = open;
                                 _report();
@@ -191,7 +164,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                           ),
                           if (widget.hasWindowButtons)
                             SizedBox(
-                              width: _rightSeparatorWidth,
+                              width: nowPlayingHeaderSeparatorWidth,
                               height: 24,
                               child: Center(
                                 child: VerticalDivider(

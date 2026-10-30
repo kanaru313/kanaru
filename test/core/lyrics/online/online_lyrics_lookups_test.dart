@@ -160,6 +160,50 @@ void main() {
     });
   });
 
+  group('forgetting failures', () {
+    test('drops the failed entries and keeps the pause alone', () async {
+      final h = await harness();
+      fake.lookupResult = const LyricsFetchException(LyricsFetchKind.server);
+      await h.lookups.start(fakeTarget, auto: true);
+      expect(states(h)[fakeTarget.cacheKey], isA<LookupFailed>());
+
+      h.lookups.forgetFailures();
+
+      expect(states(h), isEmpty);
+    });
+
+    test(
+      'a lookup held open across it records no failure and no pause',
+      () async {
+        final h = await harness();
+        fake.gate = Completer();
+        fake.lookupResult = const LyricsFetchException(LyricsFetchKind.server);
+
+        final done = h.lookups.start(fakeTarget, auto: true);
+        await Future<void>.delayed(Duration.zero);
+        expect(states(h)[fakeTarget.cacheKey], isA<LookupRunning>());
+        h.lookups.forgetFailures();
+        fake.gate!.complete();
+        await done;
+
+        expect(states(h), isEmpty);
+        expect(h.backoff.isBlocked, isFalse);
+        expect(await rows(h), isEmpty);
+      },
+    );
+
+    test('a lookup started afterwards fails as usual', () async {
+      final h = await harness();
+      h.lookups.forgetFailures();
+      fake.lookupResult = const LyricsFetchException(LyricsFetchKind.server);
+
+      await h.lookups.start(fakeTarget, auto: true);
+
+      expect(states(h)[fakeTarget.cacheKey], isA<LookupFailed>());
+      expect(h.backoff.isBlocked, isTrue);
+    });
+  });
+
   group('backoff', () {
     test('Retry-After 120 blocks for at least 120 s', () async {
       final h = await harness();

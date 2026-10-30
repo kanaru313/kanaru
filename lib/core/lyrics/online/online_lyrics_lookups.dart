@@ -48,8 +48,26 @@ final class LookupFailed extends LookupState {
 class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
   final _inFlight = <String, _Flight>{};
 
+  /// Bumped by [forgetFailures]; a lookup started before the bump records no
+  /// failure and starts no pause.
+  int _generation = 0;
+
   @override
   Map<String, LookupState> build() => const {};
+
+  /// Drops every remembered failure (Settings "Clear"), so a song shows its
+  /// state again as if nothing had gone wrong. A lookup already running
+  /// finishes, but its failure is not recorded and starts no pause. A found
+  /// or not-found answer it stores after this call still lands: a sent
+  /// request cannot be aborted.
+  void forgetFailures() {
+    _generation++;
+    if (!ref.mounted) return;
+    state = {
+      for (final e in state.entries)
+        if (e.value is! LookupFailed) e.key: e.value,
+    };
+  }
 
   /// Looks [target] up at every provider the user agreed to, until one
   /// finds it. A lookup already in flight for the same key is returned
@@ -95,6 +113,7 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
   ) async {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null || !target.isAutoSearchable) return;
+    final generation = _generation;
     final prefs = ref.read(settingsProvider).onlineLyrics;
     final factory = ref.read(onlineLyricsHttpFactoryProvider);
     final now = ref.read(onlineLyricsClockProvider);
@@ -124,14 +143,16 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
         return;
       } on LyricsFetchException catch (e) {
         if (e.kind != LyricsFetchKind.notConsented) failure = e;
-      } on Object catch (e, st) {
+      } on Object catch (e) {
         if (!ref.mounted) return;
-        _log.warning('Online lyrics lookup failed', e, st);
+        _log.warning('Online lyrics lookup failed: ${e.runtimeType}');
         otherFailure = e;
       }
     }
     if (!ref.mounted) return;
-    if (found || (failure == null && otherFailure == null)) {
+    if (found ||
+        (failure == null && otherFailure == null) ||
+        generation != _generation) {
       _set(key, null);
       return;
     }

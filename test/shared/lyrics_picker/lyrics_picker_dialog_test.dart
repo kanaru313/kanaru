@@ -69,7 +69,6 @@ void main() {
   Future<void> open(
     WidgetTester tester, {
     bool manualConsent = true,
-    bool writeLrc = false,
     List<LyricsCandidate>? found,
     Size window = const Size(1280, 900),
     FakeLyricsProvider? provider,
@@ -88,7 +87,6 @@ void main() {
       [LyricsProviderRegistration(fake)],
       client: client,
       manualConsent: manualConsent,
-      writeLrc: writeLrc,
       overrides: [lrcSidecarWriterProvider.overrideWithValue(writer)],
     );
     await tester.pumpWidget(
@@ -208,10 +206,13 @@ void main() {
     );
   });
 
-  testWidgets('synced lyrics preview without time tags', (tester) async {
+  testWidgets('synced lyrics preview shows the time as a column', (
+    tester,
+  ) async {
     await open(tester);
 
     expect(find.text('hello'), findsOneWidget);
+    expect(find.text('00:01.00'), findsOneWidget);
     expect(find.textContaining('[00:01'), findsNothing);
   });
 
@@ -222,44 +223,22 @@ void main() {
     await settle(tester);
 
     expect(find.byType(LyricsPickerDialog), findsNothing);
-    expect(find.text('Lyrics pinned to this song'), findsOneWidget);
+    expect(find.text('Lyrics chosen for this song'), findsOneWidget);
     final row = await pin(tester);
     expect(row!.remoteId, 'good');
     expect(row.syncedText, '[00:01.00] hello');
     expect(writer.writes, isEmpty);
   });
 
-  testWidgets('with .lrc saving on, the file is written after the pin', (
-    tester,
-  ) async {
-    await open(tester, writeLrc: true);
-    LyricsPinRow? pinAtWrite;
-    writer.onWrite = () async {
-      pinAtWrite = await h.db.watchLyricsPin(fakeTarget.trackKey).first;
-    };
+  testWidgets('a pick shows only that the lyrics were chosen', (tester) async {
+    await open(tester);
 
     await tester.tap(find.text('Use these lyrics'));
     await settle(tester);
 
-    expect(writer.writes.single.$1, fakeTarget.path);
-    expect(pinAtWrite, isNotNull);
-    expect(find.text('Lyrics pinned to this song'), findsOneWidget);
-    expect(find.text('Saved as .lrc'), findsOneWidget);
-  });
-
-  testWidgets('a song outside the library keeps the pin and says so', (
-    tester,
-  ) async {
-    await open(tester, writeLrc: true);
-    writer.result = LrcWriteResult.outsideLibrary;
-
-    await tester.tap(find.text('Use these lyrics'));
-    await settle(tester);
-
-    expect(
-      find.text('Not saved as .lrc: the song is outside your library folders'),
-      findsOneWidget,
-    );
+    expect(find.text('Lyrics chosen for this song'), findsOneWidget);
+    expect(find.textContaining('.lrc'), findsNothing);
+    expect(writer.writes, isEmpty);
     expect((await pin(tester))!.remoteId, 'good');
   });
 

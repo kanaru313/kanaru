@@ -220,9 +220,9 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(27),
+    hasLength(28),
     reason:
-        'twelve buttons (two open the separator dialogs), five choices and ten dropdowns: the output device, '
+        'thirteen buttons (two open the separator dialogs, one withdraws the lyrics search permission), five choices and ten dropdowns: the output device, '
         'ReplayGain mode, preamp, two scan filters and the translation language are wired, six options '
         'are not yet',
   );

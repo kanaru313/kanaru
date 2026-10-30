@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
-import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
+import 'package:kanaru/core/lyrics/online/online_lyrics_entries.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 
 import 'fake_lyrics_provider.dart';
@@ -24,56 +24,29 @@ void main() {
       rig.container.read(onlineLyricsActionsProvider);
   LyricsFound found() => rig.status as LyricsFound;
 
-  Future<void> show({bool writeLrc = false, bool autoFetch = true}) async {
-    rig = await createStatusRig(writeLrc: writeLrc, autoFetch: autoFetch);
+  Future<void> show({bool autoFetch = true, bool local = false}) async {
+    rig = await createStatusRig(autoFetch: autoFetch);
+    if (local) rig.sidecar.byPath['/m/a.flac'] = _lrc;
     rig.watch();
     await rig.play([song]);
   }
 
-  group('pick and unpin', () {
-    test('a pick beats embedded lyrics; unpin shows them again', () async {
-      rig = await createStatusRig();
-      rig.sidecar.byPath['/m/a.flac'] = _lrc;
-      rig.watch();
-      await rig.play([song]);
+  group('pick', () {
+    test('beats the song\'s own lyrics and writes no file', () async {
+      await show(autoFetch: false, local: true);
       await rig.until(() => rig.status is LyricsFound);
       expect(found().origin, isNull);
 
       await actions().pick(target, picked);
       await rig.until(() => found().origin != null);
+
       expect(found().origin!.pinned, isTrue);
       expect(found().origin!.remoteId, 'pick');
       expect(found().lyrics.lines.single.text, 'picked');
-
-      await actions().unpin(target);
-      await rig.until(() => found().origin == null);
-      expect(found().lyrics.lines.single.text, 'local');
+      expect(rig.writer.writes, isEmpty);
+      final pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
+      expect(pin!.mode, 'online');
       expect(rig.requests, 0);
-    });
-
-    test('picking a rejected record pins it and clears the reject', () async {
-      await show();
-      rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
-      await rig.until(() => rig.status is LyricsFound);
-      await actions().skip(target, found().origin!);
-      await rig.until(() => rig.status is LyricsNone);
-      expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), {
-        ('fake', 'x'),
-      });
-
-      await actions().pick(target, fakeCandidate(remoteId: 'x'));
-      await rig.until(() => rig.status is LyricsFound);
-
-      expect(found().origin!.remoteId, 'x');
-      expect(found().origin!.pinned, isTrue);
-      expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), isEmpty);
-
-      // After unpin, an automatic lookup may find the record again.
-      final calls = rig.fake.lookupCalls;
-      await actions().unpin(target);
-      await rig.until(() => rig.fake.lookupCalls > calls);
-      await rig.until(() => rig.status is LyricsFound);
-      expect(found().origin!.remoteId, 'x');
     });
 
     test('a pick without a body is refused', () async {
@@ -84,129 +57,100 @@ void main() {
       );
     });
 
-    test('write .lrc on: written once, after the pin exists', () async {
-      await show(writeLrc: true, autoFetch: false);
-      Object? pinAtWrite;
-      rig.writer.onWrite = () async {
-        pinAtWrite = await rig.h.db.watchLyricsPin(target.trackKey).first;
-      };
-
-      final result = await actions().pick(target, picked);
-
-      expect(result, LrcWriteResult.written);
-      expect(rig.writer.writes, hasLength(1));
-      expect(rig.writer.writes.single.$1, '/m/a.flac');
-      expect(pinAtWrite, isNotNull);
-    });
-
-    test('write .lrc off: the writer is not called', () async {
-      await show(autoFetch: false);
-      expect(await actions().pick(target, picked), isNull);
-      expect(rig.writer.writes, isEmpty);
-    });
-
-    test('a failed write keeps the pinned lyrics', () async {
-      await show(writeLrc: true, autoFetch: false);
-      rig.writer.result = LrcWriteResult.failed;
-
-      expect(await actions().pick(target, picked), LrcWriteResult.failed);
-      await rig.until(() => rig.status is LyricsFound);
-      expect(found().origin!.pinned, isTrue);
-    });
-
-    test('a song outside the file system is never written', () async {
-      rig = await createStatusRig(writeLrc: true);
-      final remote = LyricsTarget.fromTrack(fakeSong('https://x.test/a.mp3'));
-
-      expect(await actions().pick(remote, picked), isNull);
-      expect(rig.writer.writes, isEmpty);
-    });
-  });
-
-  group('skip and search again', () {
-    test('Not these lyrics hides the match and sends nothing', () async {
+    test('picking a rejected record pins it and clears the reject', () async {
       await show();
       rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
       await rig.until(() => rig.status is LyricsFound);
-      final requests = rig.requests;
-
-      await actions().skip(target, found().origin!);
+      await rig.settle();
+      final shown = found();
+      await actions().reject(target, shown.origin!, shown.lyrics);
       await rig.until(() => rig.status is LyricsNone);
-      await rig.settle();
+      expect((await rig.h.db.rejectedMatches(target.cacheKey)).ids, {
+        ('fake', 'x'),
+      });
 
-      expect((rig.status as LyricsNone).reason, LyricsNoneReason.skipped);
-      expect(rig.requests, requests);
-    });
+      await actions().pick(target, fakeCandidate(remoteId: 'x'));
+      await rig.until(() => rig.status is LyricsFound);
 
-    test('a skip does not hide the song\'s own lyrics', () async {
-      rig = await createStatusRig();
-      rig.sidecar.byPath['/m/a.flac'] = _lrc;
-      rig.watch();
-      await rig.play([song]);
-      await actions().skip(
-        target,
-        const OnlineLyricsOrigin(
-          providerId: 'fake',
-          remoteId: 'x',
-          pinned: false,
-        ),
-      );
-      await rig.settle();
-
-      expect(found().origin, isNull);
-      expect(found().lyrics.lines.single.text, 'local');
-      expect(rig.requests, 0);
+      expect(found().origin!.remoteId, 'x');
+      expect(found().origin!.pinned, isTrue);
+      final matches = await rig.h.db.rejectedMatches(target.cacheKey);
+      expect(matches.ids, isEmpty);
+      expect(matches.hashes, isEmpty);
     });
 
     test(
-      'Search again drops the skip and excludes the rejected match',
+      'a copy of a rejected text is no longer rejected once picked',
       () async {
-        await show();
-        rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
-        await rig.until(() => rig.status is LyricsFound);
-        await actions().skip(target, found().origin!);
-        await rig.until(() => rig.status is LyricsNone);
-
-        rig.fake.searchResult = [
-          fakeCandidate(
-            remoteId: 'y',
-            body: const LyricsBody(syncedLrc: '[00:01.00] next'),
+        await show(autoFetch: false);
+        await rig.settle();
+        await actions().reject(
+          target,
+          const OnlineLyricsOrigin(
+            providerId: 'fake',
+            remoteId: 'old',
+            pinned: false,
           ),
-        ];
-        await actions().searchAgain(target);
-        await rig.until(() => rig.status is LyricsFound);
+          parseStoredLyrics(synced: '[00:01.00] hello')!,
+        );
+        expect(
+          (await rig.h.db.rejectedMatches(target.cacheKey)).hashes,
+          hasLength(1),
+        );
 
-        expect(found().origin!.remoteId, 'y');
-        expect(await rig.h.db.rejectedRemoteIds(target.cacheKey), {
-          ('fake', 'x'),
-        });
+        await actions().pick(target, fakeCandidate(remoteId: 'copy'));
+
+        expect(
+          (await rig.h.db.rejectedMatches(target.cacheKey)).hashes,
+          isEmpty,
+        );
       },
     );
+  });
 
-    test('Search again with only the rejected match left finds none', () async {
+  group('keep', () {
+    test('turns an automatic match into the song\'s pick', () async {
       await show();
       rig.fake.lookupResult = fakeCandidate(remoteId: 'x');
       await rig.until(() => rig.status is LyricsFound);
-      await actions().skip(target, found().origin!);
-      await actions().searchAgain(target);
-      await rig.until(
-        () => rig.status is LyricsNone && rig.fake.lookupCalls == 2,
-      );
+      await rig.settle();
+      expect(found().origin!.pinned, isFalse);
+      final text = found().lyrics;
+
+      await actions().keep(target, found().origin!);
+      await rig.until(() => found().origin!.pinned);
+
+      expect(found().origin!.remoteId, 'x');
+      expect(found().lyrics.lines.first.text, text.lines.first.text);
+      final pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
+      expect(pin!.mode, 'online');
+    });
+
+    test('does nothing when the text is gone from the cache', () async {
+      await show(autoFetch: false);
       await rig.settle();
 
-      expect((rig.status as LyricsNone).reason, LyricsNoneReason.notFound);
-    });
-
-    test('Retry and Search again send nothing without consent', () async {
-      rig = await createStatusRig(
-        autoFetch: false,
-        autoConsent: false,
-        manualConsent: false,
+      await actions().keep(
+        target,
+        const OnlineLyricsOrigin(
+          providerId: 'fake',
+          remoteId: 'gone',
+          pinned: false,
+        ),
       );
-      await actions().retry(target);
-      await actions().searchAgain(target);
 
-      expect(rig.requests, 0);
+      expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
     });
+  });
+
+  test('Retry sends nothing without consent', () async {
+    rig = await createStatusRig(
+      autoFetch: false,
+      autoConsent: false,
+      manualConsent: false,
+    );
+    await actions().retry(target);
+
+    expect(rig.requests, 0);
   });
 }

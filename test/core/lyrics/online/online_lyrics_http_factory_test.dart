@@ -92,6 +92,29 @@ void main() {
     expect(kindOf(() => factory.forManual(lrclib)), isNull);
   });
 
+  test('consent is checked again before every send of the same client', () {
+    final acknowledged = {lrclib.consentKey};
+    final unused = CountingHttpClient();
+    final factory = OnlineLyricsHttpFactory(
+      acknowledged: () => acknowledged,
+      client: () => unused,
+    );
+    final http = factory.forManual(lrclib);
+    acknowledged.clear();
+
+    expect(
+      http.get(Uri.parse('https://lrclib.net/api/get')),
+      throwsA(
+        isA<LyricsFetchException>().having(
+          (e) => e.kind,
+          'kind',
+          LyricsFetchKind.notConsented,
+        ),
+      ),
+    );
+    expect(unused.opened, 0);
+  });
+
   test('the default client times out connecting after 10 s and closes', () {
     final container = ProviderContainer();
     final client = container.read(lyricsHttpClientProvider);

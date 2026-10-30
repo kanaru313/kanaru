@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_match_keys.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
@@ -38,6 +39,56 @@ void main() {
         ),
       );
       expect(named('first').cacheKey, named('second').cacheKey);
+    });
+
+    test('untagged songs of one length get different keys', () {
+      LyricsTarget untagged(String file) => LyricsTarget.fromTrack(
+        Track(uri: '/music/$file.flac', title: file, duration: duration),
+      );
+      expect(untagged('a').cacheKey, isNot(untagged('b').cacheKey));
+      expect(untagged('a').cacheKey, untagged('a').cacheKey);
+    });
+
+    test('a placeholder artist without a title is scoped too', () {
+      LyricsTarget unknown(String file) => LyricsTarget.fromTrack(
+        Track(
+          uri: '/music/$file.flac',
+          title: file,
+          artist: 'Unknown Artist',
+          duration: duration,
+        ),
+      );
+      expect(unknown('a').cacheKey, isNot(unknown('b').cacheKey));
+    });
+
+    test('a Various Artists song without a title is scoped too', () {
+      for (final artist in ['Various Artists', 'VA', 'V.A.', 'Nhiều ca sĩ']) {
+        LyricsTarget various(String file) => LyricsTarget.fromTrack(
+          Track(
+            uri: '/music/$file.flac',
+            title: file,
+            artist: artist,
+            duration: duration,
+          ),
+        );
+        expect(
+          various('a').cacheKey,
+          isNot(various('b').cacheKey),
+          reason: artist,
+        );
+      }
+    });
+
+    test('a tagged song keeps the unscoped key', () {
+      final target = LyricsTarget.fromTrack(
+        const Track(
+          uri: '/music/a.flac',
+          title: 'Real',
+          artist: 'Artist',
+          duration: duration,
+        ),
+      );
+      expect(target.cacheKey, onlineLyricsCacheKey(target.query));
     });
 
     test('a real title is kept and searchable', () {
