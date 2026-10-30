@@ -200,7 +200,6 @@ void main() {
       // An instrumental record passes the gate; the host caches it as
       // instrumental.
       expect(_good('S', 'X', 'S', 'X', body: const LyricsBody()), isFalse);
-      expect(_good('S', 'X', 'S', 'X', body: null), isFalse);
       expect(
         _good('S', 'X', 'S', 'X', body: const LyricsBody(instrumental: true)),
         isTrue,

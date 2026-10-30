@@ -140,4 +140,53 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('while the lyrics are fetched it shows progress', (tester) async {
+    await _pumpPreview(
+      tester,
+      LyricsPickerPreview(candidate: fakeCandidate(body: null), loading: true),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('These lyrics can\'t be previewed or used'), findsNothing);
+  });
+
+  testWidgets('a failed fetch shows its sentence', (tester) async {
+    await _pumpPreview(
+      tester,
+      LyricsPickerPreview(
+        candidate: fakeCandidate(body: null),
+        failure: 'Couldn\'t reach Fake',
+      ),
+    );
+
+    expect(find.text('Couldn\'t reach Fake'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('a result that came without lyrics and has none is a note', (
+    tester,
+  ) async {
+    await _pumpPreview(
+      tester,
+      LyricsPickerPreview(candidate: fakeCandidate(body: null)),
+    );
+
+    expect(
+      find.text('These lyrics can\'t be previewed or used'),
+      findsOneWidget,
+    );
+  });
 }
+
+Future<void> _pumpPreview(WidgetTester tester, Widget preview) =>
+    tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: SizedBox(width: 400, height: 300, child: preview)),
+      ),
+    );

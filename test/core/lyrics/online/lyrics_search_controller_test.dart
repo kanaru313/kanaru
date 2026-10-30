@@ -103,7 +103,7 @@ void main() {
     test('selects the first candidate that has lyrics', () async {
       keepAlive();
       await searchWith([
-        fakeCandidate(remoteId: 'empty', body: null),
+        fakeCandidate(remoteId: 'empty', body: const LyricsBody()),
         fakeCandidate(remoteId: 'ok'),
       ]);
 

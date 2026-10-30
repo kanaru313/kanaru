@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_http_retry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_http_factory.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -111,6 +112,23 @@ void main() {
           LyricsFetchKind.notConsented,
         ),
       ),
+    );
+    expect(unused.opened, 0);
+  });
+
+  test('a manual client asks abandoned before every send', () {
+    final unused = CountingHttpClient();
+    final factory = OnlineLyricsHttpFactory(
+      acknowledged: () => {lrclib.consentKey},
+      client: () => unused,
+    );
+    var abandoned = false;
+    final http = factory.forManual(lrclib, abandoned: () => abandoned);
+    abandoned = true;
+
+    expect(
+      http.get(Uri.parse('https://lrclib.net/api/get')),
+      throwsA(isA<LyricsRequestAbandoned>()),
     );
     expect(unused.opened, 0);
   });

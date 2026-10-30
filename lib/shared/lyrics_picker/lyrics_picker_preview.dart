@@ -10,18 +10,33 @@ import '../../l10n/l10n.dart';
 /// before the text, so the timing can be judged; a wrapped line stays under
 /// the text, and an empty line (an instrumental gap) shows its time with a
 /// dim note. Plain lyrics, and synced text that does not parse, show the
-/// text only.
+/// text only. While the lyrics of a result that came without them are being
+/// fetched it shows a progress indicator, and the sentence for the failure
+/// when that failed.
 class LyricsPickerPreview extends StatelessWidget {
-  const LyricsPickerPreview({super.key, required this.candidate});
+  const LyricsPickerPreview({
+    super.key,
+    required this.candidate,
+    this.loading = false,
+    this.failure,
+  });
 
   /// `null` when nothing is selected.
   final LyricsCandidate? candidate;
+
+  /// The lyrics of [candidate] are being fetched.
+  final bool loading;
+
+  /// The sentence for a failed fetch of the lyrics of [candidate].
+  final String? failure;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final body = candidate?.body;
     if (candidate == null) return _Note(l10n.lyricsPickerNoPreview);
+    if (loading) return const Center(child: CircularProgressIndicator());
+    if (failure != null) return _Note(failure!);
     if (body == null) return _Note(l10n.lyricsPickerNoBody);
     // Synced text that does not parse falls back to the plain text.
     final lyrics = [body.syncedLrc, body.plain].nonNulls

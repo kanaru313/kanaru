@@ -9,6 +9,7 @@ import '../../core/lyrics/online/lyrics_source_names.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
 import '../../l10n/l10n.dart';
 import '../format_duration.dart';
+import 'lyrics_failure_message.dart';
 import 'lyrics_picker_preview.dart';
 import 'lyrics_picker_results_pane.dart';
 
@@ -68,6 +69,17 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     final query = widget.target.query;
     final duration = query.duration;
     final selection = state.selection;
+    final providerNames = {
+      for (final r in registrations) r.id: names[r.id]?.displayName ?? r.id,
+    };
+    final fetch = state.selectionFetch;
+    final failure = fetch?.phase == BodyFetchPhase.failed
+        ? lyricsFailureMessage(
+            l10n,
+            fetch?.kind,
+            providerNames[selection?.candidate.providerId] ?? '',
+          )
+        : null;
     return Dialog(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -133,10 +145,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                           child: LyricsPickerResultsPane(
                             state: state,
                             searchPending: _searchesOnOpen,
-                            providerNames: {
-                              for (final r in registrations)
-                                r.id: names[r.id]?.displayName ?? r.id,
-                            },
+                            providerNames: providerNames,
                             onSelect: _controller.select,
                             onRetry: _controller.retry,
                           ),
@@ -145,6 +154,8 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                         Expanded(
                           child: LyricsPickerPreview(
                             candidate: selection?.candidate,
+                            loading: fetch?.phase == BodyFetchPhase.loading,
+                            failure: failure,
                           ),
                         ),
                       ],
@@ -171,7 +182,8 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                       ),
                       const SizedBox(width: 8),
                       FilledButton(
-                        onPressed: selection != null && selection.selectable
+                        // Stays off until the lyrics are there.
+                        onPressed: selection != null && selection.hasBody
                             ? () =>
                                   Navigator.of(context).pop(selection.candidate)
                             : null,

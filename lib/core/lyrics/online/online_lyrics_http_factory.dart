@@ -31,8 +31,12 @@ class OnlineLyricsHttpFactory {
   /// For a request the user started (a search in the dialog, Retry, Search
   /// again). Needs the provider's manual consent key. Throws
   /// `LyricsFetchException(notConsented)` before any socket otherwise.
-  LyricsHttp forManual(LyricsProviderRegistration registration) =>
-      _make(registration, registration.consentKey, null);
+  /// [abandoned], when given, is asked before every send like in [forAuto]:
+  /// a search that a newer one replaced sends nothing more.
+  LyricsHttp forManual(
+    LyricsProviderRegistration registration, {
+    bool Function()? abandoned,
+  }) => _make(registration, registration.consentKey, abandoned);
 
   /// For a lookup Kanaru starts by itself. Needs the provider's separate
   /// automatic key; the manual key is not enough. [abandoned] is asked before

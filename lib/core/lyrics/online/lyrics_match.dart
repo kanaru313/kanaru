@@ -1,5 +1,6 @@
 import 'candidate_content_hash.dart';
 import 'lyrics_artist_match.dart';
+import 'lyrics_candidate_checks.dart';
 import 'lyrics_match_keys.dart';
 import 'lyrics_match_similarity.dart';
 import 'lyrics_provider.dart';
@@ -17,6 +18,7 @@ class LyricsMatch {
     required this.score,
     required this.delta,
     required this.goodMatch,
+    required this.metadataGood,
     this.rejected = false,
   });
 
@@ -28,7 +30,15 @@ class LyricsMatch {
   /// Absolute duration difference; `null` when either side has no duration.
   final Duration? delta;
 
-  /// Title, artist, duration and body all pass: safe to use without asking.
+  /// Title, artist and duration pass and the record is not rejected,
+  /// whatever its body.
+  final bool metadataGood;
+
+  /// [metadataGood] and, when the record came with a body, a body with
+  /// lyrics or the instrumental flag: safe to use without asking. A record
+  /// with no body at all (a two-step source answers the search without
+  /// lyrics) is judged by its metadata only; its body is fetched next and
+  /// checked then.
   final bool goodMatch;
 
   /// The user marked this record "Not these lyrics" for the song. Only a
@@ -51,9 +61,10 @@ bool isAutoSearchable(LyricsQuery query) {
 /// Judges [candidate] against [query]. The gate needs: duration within
 /// [maxDurationDelta] (skipped when [query] has no duration, as in a manual
 /// search), title equal, joined-equal or [titleSimilarityMin] similar, the
-/// artist rule, and lyrics or the instrumental flag. A record in [rejected],
-/// or whose text hashes into [rejectedHashes] (a duplicate of a rejected
-/// record, see `candidateContentHash`), never matches.
+/// artist rule, and lyrics or the instrumental flag (a record with no body
+/// at all passes on its metadata; see [LyricsMatch.goodMatch]). A record in
+/// [rejected], or whose text hashes into [rejectedHashes] (a duplicate of a
+/// rejected record, see `candidateContentHash`), never matches.
 LyricsMatch matchCandidate(
   LyricsQuery query,
   LyricsCandidate candidate, {
@@ -81,19 +92,19 @@ LyricsMatch matchCandidate(
             joinedTitle(mine) == joinedTitle(theirs));
   }
   final isRejected = _isRejected(candidate, rejected, rejectedHashes);
-  final body = candidate.body;
-  final bodyOk = body != null && (body.hasLyrics || body.instrumental);
+  final bodyOk = candidate.body == null || candidate.hasBody;
+  final metadataGood =
+      !isRejected &&
+      durationOk &&
+      titleOk &&
+      artistMatches(query.artist, candidate.artist);
   return LyricsMatch(
     candidate: candidate,
     score: score,
     delta: delta,
     rejected: isRejected,
-    goodMatch:
-        !isRejected &&
-        durationOk &&
-        titleOk &&
-        bodyOk &&
-        artistMatches(query.artist, candidate.artist),
+    metadataGood: metadataGood,
+    goodMatch: metadataGood && bodyOk,
   );
 }
 
@@ -116,8 +127,9 @@ int _bodyRank(LyricsBody? body) {
 
 /// Judges every candidate not in [rejected] (by id or text, [rejectedHashes])
 /// and orders them: good matches first, then synced before plain before
-/// instrumental, smaller duration difference, higher title similarity, and
-/// the given order for ties. With [keepRejected] (the manual search) records
+/// instrumental before a record without lyrics (a body-less record ranks
+/// after every one with a body), smaller duration difference, higher title
+/// similarity, and the given order for ties. With [keepRejected] (the manual search) records
 /// in [rejected] stay in the list, flagged and after every other one;
 /// automatic lookups leave it off.
 List<LyricsMatch> rankCandidates(
