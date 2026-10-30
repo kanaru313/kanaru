@@ -115,6 +115,82 @@ void main() {
     });
   });
 
+  group('add that overlaps or loses its row', () {
+    test('two adds of one address share one run', () async {
+      final gate = Completer<void>();
+      holdCatalog(gate);
+      final a = env.repos.add(catalogUrl);
+      final b = env.repos.add(catalogUrl);
+      expect(identical(a, b), isTrue);
+      await waitForRequest();
+      gate.complete();
+      expect(await a, isA<AddRepoAdded>());
+      expect(await stored(), hasLength(1));
+      expect(env.server.requests.length, 1);
+      // The entry is gone: the same address is now a duplicate.
+      expect(
+        failureOf(await env.repos.add(catalogUrl)),
+        AddRepoFailure.duplicate,
+      );
+    });
+
+    test('a row removed during the add is storage and not stored', () async {
+      await env.store.db.customStatement(
+        'CREATE TRIGGER drop_row AFTER INSERT ON lyrics_plugin_repos '
+        'BEGIN DELETE FROM lyrics_plugin_repos WHERE url = NEW.url; END',
+      );
+      final result = await env.repos.add(catalogUrl);
+      expect(failureOf(result), AddRepoFailure.storage);
+      expect(await stored(), isEmpty);
+    });
+  });
+
+  group('refresh of one repository', () {
+    test('fetches and stores one repo only', () async {
+      await env.repos.add(catalogUrl);
+      await env.repos.add(otherUrl);
+      env.server.requests.clear();
+      final result = await env.repos.refresh(catalogUrl);
+      expect(result?.url, catalogUrl);
+      expect(result?.error, isNull);
+      expect(env.server.requests.map((r) => r.uri.path), ['/plugins.json']);
+    });
+
+    test('shares the fetch of a refresh all that is running', () async {
+      await env.repos.add(catalogUrl);
+      env.server.requests.clear();
+      final gate = Completer<void>();
+      holdCatalog(gate);
+      final all = env.repos.refreshAll();
+      await waitForRequest();
+      final one = env.repos.refresh(catalogUrl);
+      gate.complete();
+      expect((await one)?.url, catalogUrl);
+      expect(await all, hasLength(1));
+      expect(env.server.requests.length, 1);
+    });
+
+    test('is null for an unknown repo and one being added', () async {
+      expect(await env.repos.refresh(otherUrl), isNull);
+      expect(env.server.requests, isEmpty);
+      final gate = Completer<void>();
+      holdCatalog(gate);
+      final add = env.repos.add(catalogUrl);
+      await waitForRequest();
+      expect(await env.repos.refresh(catalogUrl), isNull);
+      gate.complete();
+      await add;
+    });
+
+    test('reports a failed fetch and keeps the old catalog', () async {
+      await env.repos.add(catalogUrl);
+      env.routes.remove('/plugins.json');
+      final result = await env.repos.refresh(catalogUrl);
+      expect(result?.error?.kind, RepoFetchErrorKind.notFound);
+      expect((await stored()).single.catalog, isNotNull);
+    });
+  });
+
   group('add and remove while a refresh runs', () {
     test('a repo removed meanwhile does not come back', () async {
       await env.repos.add(catalogUrl);

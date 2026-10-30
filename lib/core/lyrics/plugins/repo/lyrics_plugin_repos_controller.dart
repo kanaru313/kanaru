@@ -6,7 +6,6 @@ import '../../../database/library_database.dart';
 import '../../../database/lyrics_plugin_queries.dart';
 import '../lyrics_plugins_controller.dart';
 import '../package/plugin_package_reader.dart';
-import 'plugin_catalog.dart';
 import 'plugin_repo.dart';
 import 'plugin_repo_reader.dart';
 import 'repo_address_rules.dart';
@@ -14,15 +13,14 @@ import 'repo_fetch_exception.dart';
 import 'repo_http.dart';
 import 'repo_operation_results.dart';
 import 'repo_plugin_installer.dart';
+import 'repo_refresh_runner.dart';
 import 'repo_url.dart';
 
 export 'plugin_repo.dart' show PluginRepo, RepoLoadError;
 export 'repo_operation_results.dart';
+export 'repo_refresh_runner.dart' show repoRefreshParallelism;
 
 final _log = Logger('lyrics_plugin_repos');
-
-/// At most this many repositories are fetched at once by a refresh.
-const repoRefreshParallelism = 4;
 
 /// Repositories and what they offer: add, remove, refresh, and install or
 /// update a plugin from a catalog. Fetches happen only when called (the
@@ -45,6 +43,13 @@ class LyricsPluginReposController {
       http: _http,
       repoReader: _reader,
     );
+    _refresher = RepoRefreshRunner(
+      db: _db,
+      http: _http,
+      reader: _reader,
+      now: _now,
+      isAdding: _adds.containsKey,
+    );
   }
 
   final LibraryDatabase _db;
@@ -52,29 +57,38 @@ class LyricsPluginReposController {
   final DateTime Function() _clock;
   final _reader = PluginRepoReader();
   late final RepoPluginInstaller _installer;
-  Future<List<RepoRefreshResult>>? _refreshing;
+  late final RepoRefreshRunner _refresher;
 
-  /// Repositories being added: a refresh leaves them alone, so it cannot
-  /// write an error over the catalog the add is about to store.
-  final _adding = <String>{};
+  /// Repositories being added, by address: a second add shares the first, and
+  /// a refresh leaves them alone.
+  final _adds = <String, Future<AddRepoResult>>{};
 
   /// The repositories, oldest first, with their last good catalog.
   Stream<List<PluginRepo>> watchRepos() =>
       _db.watchLyricsPluginRepos().map(_reader.readAll);
 
   /// Adds the repository at [input] after fetching its catalog once. A
-  /// failure after the row was inserted removes it again.
-  Future<AddRepoResult> add(String input) async {
+  /// failure after the row was inserted removes it again. Two calls for one
+  /// address at the same time share the first one's result. A repository
+  /// removed while it was being added is `storage` (nothing was stored).
+  Future<AddRepoResult> add(String input) {
     final url = normalizeRepoUrl(input);
-    if (url == null) return const AddRepoFailed(AddRepoFailure.invalidUrl);
+    if (url == null) {
+      return Future.value(const AddRepoFailed(AddRepoFailure.invalidUrl));
+    }
+    return _adds[url] ??= _add(url).whenComplete(() {
+      _adds.remove(url);
+    });
+  }
+
+  Future<AddRepoResult> _add(String url) async {
     var inserted = false;
     var stored = false;
-    _adding.add(url);
     try {
       if ((await _db.watchLyricsPluginRepos().first).any((r) => r.url == url)) {
         return const AddRepoFailed(AddRepoFailure.duplicate);
       }
-      final fetched = await _fetch(url);
+      final fetched = await _refresher.fetch(url);
       final catalog = fetched.catalog;
       inserted = await _db.addLyricsPluginRepo(
         url,
@@ -88,6 +102,10 @@ class LyricsPluginReposController {
         catalog: fetched.stored,
         now: _now(),
       );
+      if (saved == LyricsPluginWrite.skipped) {
+        // The row was removed under us: nothing is stored.
+        return const AddRepoFailed(AddRepoFailure.storage);
+      }
       if (saved != LyricsPluginWrite.written) {
         return const AddRepoFailed(AddRepoFailure.badFormat);
       }
@@ -103,7 +121,6 @@ class LyricsPluginReposController {
       _log.warning('Adding a repository failed: ${error.runtimeType}');
       return const AddRepoFailed(AddRepoFailure.storage);
     } finally {
-      _adding.remove(url);
       if (inserted && !stored) {
         try {
           await _db.removeLyricsPluginRepo(url);
@@ -125,85 +142,12 @@ class LyricsPluginReposController {
   /// A repository removed meanwhile, or being added, is left out of the
   /// result. A call made while another runs shares its result. Never throws:
   /// when the repositories cannot be listed the result is empty.
-  Future<List<RepoRefreshResult>> refreshAll() =>
-      _refreshing ??= _refreshAll().whenComplete(() => _refreshing = null);
+  Future<List<RepoRefreshResult>> refreshAll() => _refresher.refreshAll();
 
-  Future<List<RepoRefreshResult>> _refreshAll() async {
-    final List<String> urls;
-    try {
-      urls = [
-        for (final repo in await _db.watchLyricsPluginRepos().first)
-          if (!_adding.contains(repo.url)) repo.url,
-      ];
-    } on Object catch (error) {
-      _log.warning('Listing repositories failed: ${error.runtimeType}');
-      return const [];
-    }
-    final results = List<RepoRefreshResult?>.filled(urls.length, null);
-    var next = 0;
-    Future<void> worker() async {
-      while (next < urls.length) {
-        final i = next++;
-        results[i] = await _refreshOne(urls[i]);
-      }
-    }
-
-    await Future.wait([
-      for (var i = 0; i < repoRefreshParallelism && i < urls.length; i++)
-        worker(),
-    ]);
-    return List.unmodifiable(results.nonNulls);
-  }
-
-  /// Null when the repository was removed (or is being added) meanwhile.
-  Future<RepoRefreshResult?> _refreshOne(String url) async {
-    RepoLoadError? error;
-    try {
-      final fetched = await _fetch(url);
-      final saved = await _db.saveLyricsPluginRepoFetch(
-        url,
-        catalog: fetched.stored,
-        now: _now(),
-      );
-      if (saved == LyricsPluginWrite.skipped) return null;
-      if (saved == LyricsPluginWrite.tooLarge) {
-        error = const RepoLoadError(RepoFetchErrorKind.tooLarge);
-      }
-    } on RepoFetchException catch (failure) {
-      error = RepoLoadError.of(failure);
-    } on Object catch (failure) {
-      _log.warning('Refreshing a repository failed: ${failure.runtimeType}');
-      error = const RepoLoadError(RepoFetchErrorKind.network);
-    }
-    // Only the kind is stored; the reason of a refused address is kept here,
-    // before the write so the emission that follows carries it.
-    _reader.setReason(url, error?.reason);
-    if (error != null && !_adding.contains(url)) {
-      try {
-        final saved = await _db.saveLyricsPluginRepoFetch(
-          url,
-          error: error.encode(),
-          now: _now(),
-        );
-        if (saved == LyricsPluginWrite.skipped) return null;
-      } on Object catch (failure) {
-        _log.warning('Saving a fetch error failed: ${failure.runtimeType}');
-      }
-    }
-    return RepoRefreshResult(url, error);
-  }
-
-  Future<({PluginCatalog catalog, String stored})> _fetch(String url) async {
-    final response = await _http.fetchCatalog(Uri.parse(url));
-    final catalog = parsePluginCatalog(response.bytes, (
-      url: response.finalUrl,
-      kind: response.kind,
-    ));
-    return (
-      catalog: catalog,
-      stored: encodeStoredCatalog(catalog, response.kind),
-    );
-  }
+  /// Refreshes one repository, like [refreshAll] does for each. Shares the
+  /// fetch already running for [url]. Null when [url] is not added, is being
+  /// added, or was removed meanwhile.
+  Future<RepoRefreshResult?> refresh(String url) => _refresher.refresh(url);
 
   /// Installs plugin [slug] of the repository [repoUrl] (a [PluginRepo.url]).
   /// Undo (`undoInstall`) is only for a [RepoPluginChange.installed] or
@@ -228,6 +172,12 @@ class LyricsPluginReposController {
 
   /// Ends [updateOutcomes]. Call when the controller is dropped.
   Future<void> dispose() => _installer.dispose();
+
+  /// The [updating] set each time it changes (read [updating] for the value
+  /// before the first event). Empty again when every started update ended,
+  /// also those that failed or were skipped. For the UI: show a spinner on
+  /// the rows in it.
+  Stream<Set<String>> get updatingChanges => _installer.updatingChanges;
 
   int _now() => _clock().millisecondsSinceEpoch;
 }

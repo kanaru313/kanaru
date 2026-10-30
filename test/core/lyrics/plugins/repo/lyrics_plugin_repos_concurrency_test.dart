@@ -84,6 +84,60 @@ void main() {
       expect(await env.store.controller.watchRecords().first, hasLength(1));
     });
 
+    test('an install over a live plugin and an update share one run', () async {
+      final id = ((await env.repos.install(
+        catalogUrl,
+        'demo',
+      )) as RepoPluginDone).record.installId;
+      await publish(4);
+      slowZips();
+      final before = zipRequests();
+      final seen = <Set<String>>[];
+      final sub = env.repos.updatingChanges.listen(seen.add);
+      final install = env.repos.install(catalogUrl, 'demo');
+      final update = env.repos.update(id);
+      await Future<void>.delayed(Duration.zero);
+      expect(env.repos.updating, {id});
+      final results = await Future.wait([install, update]);
+      expect(identical(results[0], results[1]), isTrue);
+      expect(results[0], isA<RepoPluginDone>());
+      expect(zipRequests() - before, 1);
+      expect(env.repos.updating, isEmpty);
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(seen, [
+        {id},
+        <String>{},
+      ]);
+      expect(
+        (await env.store.controller.watchRecords().first).single.version,
+        4,
+      );
+    });
+
+    test('updating ends empty for skipped and failed plugins too', () async {
+      final id = ((await env.repos.install(
+        catalogUrl,
+        'demo',
+      )) as RepoPluginDone).record.installId;
+      await publish(4);
+      env.failing['/demo.zip'] = 500;
+      Set<String>? last;
+      final sub = env.repos.updatingChanges.listen((s) => last = s);
+      final outcomes = await env.repos.updateAll();
+      expect(failureOf(outcomes.single.result), RepoPluginFailure.download);
+      // A plugin with nothing newer is refused at once and still leaves.
+      env.failing.clear();
+      await env.repos.update(id);
+      env.routes['/demo.zip'] = pluginZip(version: 4);
+      await env.repos.update(id);
+      await env.repos.update(id);
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(last, isEmpty);
+      expect(env.repos.updating, isEmpty);
+    });
+
     test('two updates at once share one download', () async {
       final id = ((await env.repos.install(
         catalogUrl,

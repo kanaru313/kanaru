@@ -23,7 +23,8 @@ const repoIconRetryAfter = Duration(seconds: 60);
 /// dropped first. An icon that failed a definitive check (not a PNG, too
 /// large, refused address, not found) is remembered as missing, so a list
 /// does not refetch it on every rebuild; a network failure is remembered for
-/// [repoIconRetryAfter] only, or until [clearFailures]. Concurrent asks for
+/// [repoIconRetryAfter] only, or until [clearFailures]; so is a failed or
+/// refused recheck of the repository's own address. Concurrent asks for
 /// one icon share one fetch.
 ///
 /// An icon obeys the stricter of its repository's stored class and a fresh
@@ -86,8 +87,17 @@ class RepoIconCache {
     Uri url,
   ) async {
     Uint8List? icon;
+    final RepoAddressKind kind;
     try {
-      final kind = await _kindOf(repoUrl, stored);
+      kind = await _kindOf(repoUrl, stored);
+    } on RepoFetchException {
+      // The recheck of the repository's own address failed or refused it
+      // (not the icon's address): that can change, so retry after the window
+      // like a network failure, and let [clearFailures] forget it.
+      _networkFailedAt[key] = _clock();
+      return null;
+    }
+    try {
       final response = await _http.fetchIcon(url, catalogKind: kind);
       icon = pluginIconProblem(response.bytes) == null ? response.bytes : null;
     } on RepoFetchException catch (error) {

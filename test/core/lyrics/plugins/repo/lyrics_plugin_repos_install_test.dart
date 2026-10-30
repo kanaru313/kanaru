@@ -56,6 +56,9 @@ void main() {
       env.routes['/demo.zip'] = pluginZip(version: 4);
       final result = await env.repos.install(catalogUrl, 'demo');
       expect(failureOf(result), RepoPluginFailure.catalogMismatch);
+      final declared = (result as RepoPluginFailed).packageDeclared;
+      expect(declared?.version, 4);
+      expect(declared?.hosts, ['music.example.com']);
       expect(await recordCount(), 0);
       expect(env.store.root.existsSync(), isFalse);
     });
@@ -66,11 +69,15 @@ void main() {
         ['other.example.com'],
       ]) {
         env.routes['/demo.zip'] = pluginZip(hosts: hosts);
+        final result = await env.repos.install(catalogUrl, 'demo');
         expect(
-          failureOf(await env.repos.install(catalogUrl, 'demo')),
+          failureOf(result),
           RepoPluginFailure.catalogMismatch,
           reason: '$hosts',
         );
+        final declared = (result as RepoPluginFailed).packageDeclared;
+        expect(declared?.version, 3);
+        expect(declared?.hosts, hosts);
       }
       env.serveCatalog([
         entryJson(hosts: ['music.example.com', 'extra.example.com']),

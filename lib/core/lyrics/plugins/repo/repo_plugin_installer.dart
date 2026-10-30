@@ -5,16 +5,17 @@ import 'package:logging/logging.dart';
 import '../../../database/library_database.dart';
 import '../../../database/lyrics_plugin_queries.dart';
 import '../lyrics_plugins_controller.dart';
-import '../package/plugin_manifest.dart';
 import '../package/plugin_manifest_parser.dart' show supportedPluginApiVersion;
 import '../package/plugin_package_reader.dart';
 import 'plugin_catalog.dart';
 import 'plugin_repo.dart';
 import 'plugin_repo_reader.dart';
 import 'plugin_update_check.dart';
-import 'repo_fetch_exception.dart';
 import 'repo_http.dart';
 import 'repo_operation_results.dart';
+import 'repo_package_download.dart';
+import 'repo_run_tracker.dart';
+import 'repo_update_all.dart';
 
 final _log = Logger('lyrics_plugin_repos');
 
@@ -43,31 +44,60 @@ class RepoPluginInstaller {
   final RepoHttp _http;
   final PluginRepoReader _repoReader;
 
-  /// Running installs (`i:<repo url>\n<slug>`) and updates (`u:<install id>`).
-  final _inFlight = <String, Future<RepoPluginResult>>{};
-  final _updatingIds = <String>{};
+  final _runs = RepoRunTracker();
   Future<List<RepoUpdateOutcome>>? _updatingAll;
   final _outcomes = StreamController<RepoUpdateOutcome>.broadcast();
 
-  /// Install ids being updated right now (by [update] or [updateAll]).
-  Set<String> get updating => Set.unmodifiable(_updatingIds);
+  /// Install ids being updated right now (by [update], [updateAll], or an
+  /// install that turns out to update a live plugin).
+  Set<String> get updating => _runs.updating;
+
+  /// The [updating] set each time it changes. Every started id is removed
+  /// again, also when the plugin was skipped or its update failed.
+  Stream<Set<String>> get updatingChanges => _runs.updatingChanges;
 
   /// Each plugin's outcome, as soon as [updateAll] finishes it.
   Stream<RepoUpdateOutcome> get updateOutcomes => _outcomes.stream;
 
-  Future<void> dispose() => _outcomes.close();
+  Future<void> dispose() async {
+    await _outcomes.close();
+    await _runs.dispose();
+  }
 
   /// Installs plugin [slug] of the repository at [repoUrl]. A removed record
   /// of the same repo and slug is revived under its old id; a live one is
   /// updated (an older package is refused). [RepoPluginDone.change] tells
   /// which happened: Undo is for `installed` and `revived` only.
-  Future<RepoPluginResult> install(String repoUrl, String slug) =>
-      _shared('i:$repoUrl\n$slug', () => _install(repoUrl, slug));
+  Future<RepoPluginResult> install(String repoUrl, String slug) async {
+    // A live record of this repo and slug makes the install an update of that
+    // plugin, so it shares the run (and the `updating` entry) of update().
+    String? liveId;
+    try {
+      final before = await _db.lyricsPluginByRepo(repoUrl, slug);
+      if (before != null && before.removedAt == null) liveId = before.installId;
+    } on Object catch (error) {
+      _log.warning('Reading a plugin failed: ${error.runtimeType}');
+      return const RepoPluginFailed(RepoPluginFailure.storage);
+    }
+    return liveId == null
+        ? _runs.share(
+            'i:$repoUrl\n$slug',
+            _guard(() => _install(repoUrl, slug)),
+          )
+        : _runs.share(
+            'u:$liveId',
+            _guard(() => _install(repoUrl, slug)),
+            updatingId: liveId,
+          );
+  }
 
   /// Updates the plugin [installId] to the version in its repository's
   /// catalog. No consent prompt, whatever changed.
-  Future<RepoPluginResult> update(String installId) =>
-      _shared('u:$installId', () => _update(installId), updatingId: installId);
+  Future<RepoPluginResult> update(String installId) => _runs.share(
+    'u:$installId',
+    _guard(() => _update(installId)),
+    updatingId: installId,
+  );
 
   /// Updates every plugin that has an update, one after the other. A failed
   /// plugin is a failed outcome and the run goes on. A call made while
@@ -76,25 +106,11 @@ class RepoPluginInstaller {
   Future<List<RepoUpdateOutcome>> updateAll() =>
       _updatingAll ??= _updateAll().whenComplete(() => _updatingAll = null);
 
-  Future<RepoPluginResult> _shared(
-    String key,
-    Future<RepoPluginResult> Function() run, {
-    String? updatingId,
-  }) {
-    final running = _inFlight[key];
-    if (running != null) return running;
-    if (updatingId != null) _updatingIds.add(updatingId);
-    return _inFlight[key] = _guarded(run).whenComplete(() {
-      _inFlight.remove(key);
-      if (updatingId != null) _updatingIds.remove(updatingId);
-    });
-  }
-
   /// Maps what the typed steps do not (database, disk) to `storage`. Logs the
   /// error type only: a message may carry a path or an address.
-  Future<RepoPluginResult> _guarded(
+  Future<RepoPluginResult> Function() _guard(
     Future<RepoPluginResult> Function() run,
-  ) async {
+  ) => () async {
     try {
       return await run();
     } on Object catch (error) {
@@ -103,7 +119,7 @@ class RepoPluginInstaller {
       );
       return const RepoPluginFailed(RepoPluginFailure.storage);
     }
-  }
+  };
 
   Future<RepoPluginResult> _install(String repoUrl, String slug) async {
     final repo = await _repo(repoUrl);
@@ -171,69 +187,30 @@ class RepoPluginInstaller {
     });
   }
 
-  Future<List<RepoUpdateOutcome>> _updateAll() async {
-    final List<LyricsPluginRecord> due;
-    try {
+  Future<List<RepoUpdateOutcome>> _updateAll() => runUpdateAll(
+    listDue: () async {
       final repos = {for (final r in await _repos()) r.url: r};
-      due = [
+      return [
         for (final row in await _db.watchLyricsPluginRecords().first)
           if (availableUpdate(LyricsPluginRecord.fromRow(row), repos) != null)
             LyricsPluginRecord.fromRow(row),
       ];
-    } on Object catch (error) {
-      _log.warning('Listing plugin updates failed: ${error.runtimeType}');
-      return const [];
-    }
-    final outcomes = <RepoUpdateOutcome>[];
-    for (final record in due) {
-      final result = await update(record.installId);
-      // Updated or removed by someone else since the list was made.
-      if (result is RepoPluginFailed &&
-          (result.failure == RepoPluginFailure.noNewerVersion ||
-              result.failure == RepoPluginFailure.gone)) {
-        continue;
-      }
-      final outcome = RepoUpdateOutcome(record.installId, record.name, result);
-      outcomes.add(outcome);
+    },
+    update: update,
+    emit: (outcome) {
       if (!_outcomes.isClosed) _outcomes.add(outcome);
-    }
-    return List.unmodifiable(outcomes);
-  }
+    },
+  );
 
-  /// Downloads the entry's zip and checks it, then hands the package to
-  /// [write]. The zip is fetched with the stricter of the repository's
-  /// stored class and a fresh look at its address ([RepoHttp.effectiveKind]),
-  /// failing closed.
+  /// Downloads and checks the entry's zip, then hands the package to [write].
   Future<RepoPluginResult> _apply(
     PluginRepo repo,
     PluginCatalogEntry entry,
     Future<RepoPluginResult> Function(PluginPackage package) write,
   ) async {
-    final stored = repo.kind;
-    if (stored == null) {
-      return const RepoPluginFailed(RepoPluginFailure.unknownRepo);
-    }
-    final RepoResponse download;
-    try {
-      final kind = await _http.effectiveKind(Uri.parse(repo.url), stored);
-      download = await _http.fetchZip(entry.path, catalogKind: kind);
-    } on RepoFetchException catch (error) {
-      return RepoPluginFailed(
-        RepoPluginFailure.download,
-        fetchError: RepoLoadError.of(error),
-      );
-    }
-    final read = await _reader.read(download.bytes);
-    if (read is PluginPackageRejected) {
-      return RepoPluginFailed(
-        RepoPluginFailure.rejected,
-        problem: read.problem,
-      );
-    }
-    final package = (read as PluginPackageAccepted).package;
-    if (!_matches(entry, package.manifest)) {
-      return const RepoPluginFailed(RepoPluginFailure.catalogMismatch);
-    }
+    final outcome = await downloadRepoPackage(_http, _reader, repo, entry);
+    final package = outcome.package;
+    if (package == null) return outcome.failed!;
     try {
       return await write(package);
     } on PluginUpdateRefusedException catch (refused) {
@@ -244,17 +221,6 @@ class RepoPluginInstaller {
     } on PluginSecretsUnavailableException {
       return const RepoPluginFailed(RepoPluginFailure.secretsUnavailable);
     }
-  }
-
-  /// `version` equal and `hosts` equal as sets: what the user was shown in
-  /// the store is what the package declares.
-  bool _matches(PluginCatalogEntry entry, PluginManifest manifest) {
-    final same =
-        manifest.version == entry.version &&
-        manifest.hosts.toSet().length == entry.hosts.toSet().length &&
-        manifest.hosts.toSet().containsAll(entry.hosts);
-    if (!same) _log.info('Package differs from its catalog entry');
-    return same;
   }
 
   /// Reads only the row of [url]; other catalogs are not decoded.

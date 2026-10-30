@@ -145,12 +145,18 @@ class RepoPluginFailed extends RepoPluginResult {
     this.fetchError,
     this.problem,
     this.refusal,
+    this.packageDeclared,
   });
 
   final RepoPluginFailure failure;
   final RepoLoadError? fetchError;
   final PluginPackageProblem? problem;
   final PluginUpdateRefusal? refusal;
+
+  /// Set for [RepoPluginFailure.catalogMismatch]: what the downloaded package
+  /// itself declares, to show next to what the catalog promised. The hosts
+  /// already passed the host rules.
+  final ({int version, List<String> hosts})? packageDeclared;
 }
 
 /// One plugin of an update-all run, in the order it was tried.

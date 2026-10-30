@@ -157,6 +157,35 @@ void main() {
     });
   });
 
+  group('a refused recheck of the repository address', () {
+    void refuse() => resolver.answers['repo.lan'] = [
+      ['0.0.0.0'],
+    ];
+    void allow() => resolver.answers['repo.lan'] = [
+      ['192.168.1.5'],
+    ];
+
+    test('is retried after the window, not remembered as missing', () async {
+      refuse();
+      expect(await cache.iconOf(repo, entry('/ok.png')), isNull);
+      expect(server.requests, isEmpty);
+      allow();
+      // Inside the window: no new attempt.
+      expect(await cache.iconOf(repo, entry('/ok.png')), isNull);
+      expect(server.requests, isEmpty);
+      now = now.add(repoIconRetryAfter + const Duration(seconds: 1));
+      expect(await cache.iconOf(repo, entry('/ok.png')), isA<Uint8List>());
+    });
+
+    test('clearFailures forgets it', () async {
+      refuse();
+      expect(await cache.iconOf(repo, entry('/ok.png')), isNull);
+      allow();
+      cache.clearFailures();
+      expect(await cache.iconOf(repo, entry('/ok.png')), isA<Uint8List>());
+    });
+  });
+
   test('keeps at most the budget, dropping the least recently used', () async {
     final small = RepoIconCache(
       RepoHttp(resolver: resolver.call, dialer: RecordingDialer(server).call),
