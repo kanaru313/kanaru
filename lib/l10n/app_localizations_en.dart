@@ -1417,6 +1417,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows each song\'s number before its cover on an album page.';
 
   @override
+  String get settingsLyrics => 'Lyrics';
+
+  @override
   String get settingsAdvanced => 'Advanced';
 
   @override
@@ -2851,11 +2854,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationBannerNoKey =>
-      'Add your DeepL key in Settings › Advanced.';
+      'Add your DeepL key in Settings › Lyrics.';
 
   @override
   String get lyricsTranslationBannerBadKey =>
-      'DeepL rejected the key. Check the key in Settings › Advanced.';
+      'DeepL rejected the key. Check the key in Settings › Lyrics.';
 
   @override
   String translationNoticeTitle(String service) {
@@ -3084,7 +3087,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeAutoHint =>
-      'You can turn it off in Settings › Advanced › Lyrics.';
+      'You can turn it off in Settings › Lyrics.';
 
   @override
   String get onlineLyricsNoticeTurnOn => 'Turn on';
@@ -3206,8 +3209,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsMenuNotThese => 'Not these lyrics';
 
   @override
-  String get settingsAutoOnlineLyrics =>
-      'Find lyrics online automatically (LRCLIB)';
+  String get settingsAutoOnlineLyrics => 'Find lyrics online automatically';
 
   @override
   String get settingsAutoOnlineLyricsHint =>

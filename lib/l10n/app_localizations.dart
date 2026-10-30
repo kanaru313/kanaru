@@ -2174,6 +2174,12 @@ abstract class AppLocalizations {
   /// **'Shows each song\'s number before its cover on an album page.'**
   String get settingsTrackNumbersHint;
 
+  /// Title of the Lyrics section in Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get settingsLyrics;
+
   /// No description provided for @settingsAdvanced.
   ///
   /// In en, this message translates to:
@@ -4157,13 +4163,13 @@ abstract class AppLocalizations {
   /// Lyrics translation error banner: DeepL is selected but no key is saved
   ///
   /// In en, this message translates to:
-  /// **'Add your DeepL key in Settings › Advanced.'**
+  /// **'Add your DeepL key in Settings › Lyrics.'**
   String get lyricsTranslationBannerNoKey;
 
   /// Lyrics translation error banner: DeepL did not accept the saved key
   ///
   /// In en, this message translates to:
-  /// **'DeepL rejected the key. Check the key in Settings › Advanced.'**
+  /// **'DeepL rejected the key. Check the key in Settings › Lyrics.'**
   String get lyricsTranslationBannerBadKey;
 
   /// Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL
@@ -4493,7 +4499,7 @@ abstract class AppLocalizations {
   /// Hint under the automatic online lyrics notice saying where to turn it off
   ///
   /// In en, this message translates to:
-  /// **'You can turn it off in Settings › Advanced › Lyrics.'**
+  /// **'You can turn it off in Settings › Lyrics.'**
   String get onlineLyricsNoticeAutoHint;
 
   /// Button of the automatic online lyrics notice that accepts
@@ -4703,7 +4709,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAutoOnlineLyrics.
   ///
   /// In en, this message translates to:
-  /// **'Find lyrics online automatically (LRCLIB)'**
+  /// **'Find lyrics online automatically'**
   String get settingsAutoOnlineLyrics;
 
   /// No description provided for @settingsAutoOnlineLyricsHint.

@@ -215,7 +215,7 @@ Desktop environments: the bundle is GTK 3 and talks to the compositor through th
 
 Backups: copy the config and data directories while Kanaru is closed. The cache can be deleted at any time; covers are rebuilt on the next scan.
 
-Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, the DeepL key is kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Settings > Advanced shows the real path of the file in a warning whenever the key is kept there, and "Clear" on the DeepL key row removes the key from the keyring and from the file. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
+Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, the DeepL key is kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Settings > Lyrics shows the real path of the file in a warning whenever the key is kept there, and "Clear" on the DeepL key row removes the key from the keyring and from the file. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
 
 ## Reset targets
 

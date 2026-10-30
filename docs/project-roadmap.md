@@ -117,7 +117,7 @@ Partly shipped: the lyrics and translation rows are in progress; the other rows 
 | Lyrics availability flag at scan | — | **Open**. Record at scan whether each song has lyrics, so lists can show it without reading the file at play time. |
 | Trash for replaced `.lrc` files under Flatpak | PKG-02 | **Open**. A replaced `.lrc` moves to the trash through GIO; a portal-based trash is not built, and no Flatpak build exists yet. |
 | Distinct empty state for rejected lyrics | LYR-03 | **Open**. After "Not these lyrics", the song shows the generic no-lyrics state; rejected matches have no message of their own. |
-| Lyrics translation (Google or DeepL) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Advanced rows (service, DeepL key, default language, saved translations) |
+| Lyrics translation (Google or DeepL) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Lyrics rows (service, DeepL key, default language, saved translations) |
 | Waveform seekbar, visualizer, transitions | NP-05, NP-06 | Waveform seek bar built in the wide Now Playing modes (NP-05); visualizer and transitions not started |
 | Equalizer, crossfade, sleep timer, volume boost, speed and pitch | PLAY-05, PLAY-08, PLAY-09, PLAY-14, PLAY-15 | Not started |
 | Listening stats, scrobbling (Last.fm, ListenBrainz, Discord) | STAT-03, EXT-01 to EXT-03 | Listen recording (STAT-01, STAT-10) and the history UI (STAT-06 to STAT-08) are built; STAT-02 and STAT-11 are Phase 1 and not built |
