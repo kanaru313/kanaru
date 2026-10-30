@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: network error caught and hidden",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. network error caught and hidden."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}

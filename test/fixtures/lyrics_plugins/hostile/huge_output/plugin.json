@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: 3 MiB output",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. 3 MiB output."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}

@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "LRCLIB (sample)",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru",
+    "description": "Sample plugin: finds synced and plain lyrics at lrclib.net. Used as the documentation example and as an end-to-end test fixture."
+  },
+  "script": {
+    "search": "search.js",
+    "lyrics": "lyrics.js"
+  }
+}

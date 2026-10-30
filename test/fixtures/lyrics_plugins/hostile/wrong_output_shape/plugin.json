@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: wrong output shape",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. wrong output shape."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}

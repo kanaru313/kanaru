@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: load() outside the package",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. load() outside the package."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}

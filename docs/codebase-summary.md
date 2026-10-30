@@ -167,6 +167,7 @@ The step file is rewritten by `make-migrations`; the `fromXToY` wiring lives in 
 | `test/features/player/` | Player bar, repeat menu, Now Playing layout and auto-hide, volume popup; `waveform/` (bar layout, level contrast, painter pixels, seek track) |
 | `test/features/settings/` | Settings widgets |
 | `test/app/`, `test/shared/` | Router, shell (incl. top bar search history and shortcuts), sidebar (`sidebar_*_test.dart`: tabs, history entries, Playlists item, reduced motion), shared widgets, in-page filter registry |
+| `test/integration/`, `test/fixtures/lyrics_plugins/` | Lyrics plugin end to end on the native runtime (`native` tag, skipped without the cargo-built library): the sample LRCLIB plugin against the Dart provider, and hostile plugins; fixture folders are zipped by the tests |
 | `rust/tests/`, `#[cfg(test)]` | 43 integration and 10 unit tests (format fixtures) |
 
 Counts are from the scout snapshot; the last full run on `feat/library-browse-2` (2026-10-23) reported 2,243 passing and 11 skipped Dart tests. Commands and helper details: [development.md](./development.md#tests--lints) and [code-standards.md](./code-standards.md#testing).

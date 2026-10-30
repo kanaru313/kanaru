@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "apiVersion": 1,
+    "type": "lyrics",
+    "name": "Hostile: endless loop",
+    "version": 1,
+    "hosts": ["lrclib.net"],
+    "author": "Kanaru tests",
+    "description": "Test fixture. endless loop."
+  },
+  "script": { "search": "search.js", "lyrics": "lyrics.js" }
+}
