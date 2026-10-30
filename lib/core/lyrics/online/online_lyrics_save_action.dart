@@ -75,9 +75,14 @@ Future<LyricsSaveOutcome> saveOnlineLyrics(
       );
   final saved =
       result == LrcWriteResult.written || result == LrcWriteResult.identical;
-  if (!saved || !ref.mounted || savedLyrics == null) {
-    return (result: result, kept: null);
+  if (!ref.mounted) return (result: result, kept: null);
+  // The old file may be in the trash: read the song's own lyrics again so
+  // the menu stops offering a file that is gone.
+  if (result == LrcWriteResult.trashedNotWritten ||
+      result == LrcWriteResult.trashTimedOut) {
+    ref.invalidate(playingLocalLyricsProvider);
   }
+  if (!saved || savedLyrics == null) return (result: result, kept: null);
   ref.invalidate(playingLocalLyricsProvider);
   final preferEmbedded = ref
       .read(settingsProvider)

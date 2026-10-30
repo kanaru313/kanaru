@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/local_path_of.dart';
 import '../../../core/settings/settings_provider.dart';
@@ -62,8 +63,9 @@ class LyricsSearchingView extends ConsumerWidget {
 
 /// The lyrics slot when the song has no lyrics to show: the reason, and the
 /// ways to look for some. Online buttons show only for a local file with a
-/// library (the lookups need both). A failed lookup adds a banner above, in
-/// its own slot, so the empty state keeps its place.
+/// library (the lookups need both). "Turn back on" restores the stored pick
+/// when the song has one, else goes to automatic. A failed lookup adds a
+/// banner above, in its own slot, so the empty state keeps its place.
 class LyricsNoneView extends ConsumerWidget {
   const LyricsNoneView({super.key, required this.none});
 
@@ -82,6 +84,11 @@ class LyricsNoneView extends ConsumerWidget {
         (s) =>
             registration != null && s.onlineLyrics.autoAllowedFor(registration),
       ),
+    );
+    // Turning lyrics back on keeps a stored pick: only the menu's Automatic
+    // item drops it.
+    final hasPick = ref.watch(
+      playingLyricsSourceProvider.select((s) => s?.pin?.hasPick ?? false),
     );
     final name = registration?.displayName ?? '';
     final reason = none.reason;
@@ -110,7 +117,13 @@ class LyricsNoneView extends ConsumerWidget {
       ),
       LyricsNoneReason.off => (
         l10n.lyricsOffTitle,
-        [find(l10n.lyricsOffTurnOn, () => run().choose(LyricsChoice.auto))],
+        [
+          find(
+            l10n.lyricsOffTurnOn,
+            () =>
+                run().choose(hasPick ? LyricsChoice.online : LyricsChoice.auto),
+          ),
+        ],
       ),
       LyricsNoneReason.paused => (
         switch (none.resumeAt) {

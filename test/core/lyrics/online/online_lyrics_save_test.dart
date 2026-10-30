@@ -9,6 +9,7 @@ import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_source_provider.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_content_hash.dart';
@@ -108,6 +109,34 @@ void main() {
       expect(outcome, (result: result, kept: null));
     }
     expect(await choice(), LyricsChoice.online);
+  });
+
+  test('a partial save reads the song\'s own lyrics again', () async {
+    for (final result in [
+      LrcWriteResult.trashedNotWritten,
+      LrcWriteResult.trashTimedOut,
+    ]) {
+      rig = await createStatusRig(autoFetch: false);
+      rig.watch();
+      rig.sidecar.byPath['/m/a.flac'] = '[00:01.00] old';
+      await rig.play([song]);
+      await rig.until(
+        () => rig.container.read(playingLyricsSourceProvider)?.hasLocal == true,
+      );
+      await actions().pick(target, picked);
+      // The old file went to the trash and the new one was not written.
+      rig.sidecar.byPath.remove('/m/a.flac');
+      rig.writer.result = result;
+
+      final outcome = await actions().save(target, origin);
+
+      expect(outcome, (result: result, kept: null));
+      await rig.until(
+        () =>
+            rig.container.read(playingLyricsSourceProvider)?.hasLocal == false,
+      );
+      rig.unwatch();
+    }
   });
 
   test('stored text that is gone gives no result and writes nothing', () async {

@@ -69,12 +69,12 @@ extension OnlineLyricsQueries on LibraryDatabase {
     lyricsPins,
   )..where((t) => t.trackKey.equals(trackKey))).watchSingleOrNull().distinct();
 
-  /// Row counts and the UTF-8 size of all stored lyrics text. Rows with an
-  /// unknown status count as not found, so no stored row goes uncounted. Pins are split into picks (a
-  /// chosen match) and choices (every other pin, whatever its mode, so no pin
-  /// is counted twice and no stored row goes uncounted). A song with both an
-  /// automatic row and a pick may still be counted in both tables: their keys
-  /// differ, so the song total is an approximation.
+  /// Row counts and the UTF-8 size of all stored lyrics text. Any status
+  /// but found counts as not found, so no stored row goes uncounted. Pins
+  /// are split into picks (a chosen match) and choices (every other pin,
+  /// whatever its mode), so no pin is counted twice. A song with both an
+  /// automatic row and a pick may still be counted in both tables: their
+  /// keys differ, so the song total is an approximation.
   Stream<
     ({int found, int notFound, int picks, int choices, int rejects, int bytes})
   >

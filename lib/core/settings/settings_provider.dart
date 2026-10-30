@@ -193,9 +193,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
       );
 
   /// Withdraws the consent for [registration]: removes its manual and
-  /// automatic keys and turns automatic lookup off, in one write. Other
-  /// providers' keys and unknown entries stay. [setOnlineLyrics] cannot do
-  /// this: it keeps the acknowledged keys.
+  /// automatic keys and turns automatic lookup off for every provider, in
+  /// one write. Other providers' keys and unknown entries stay.
+  /// [setOnlineLyrics] cannot do this: it keeps the acknowledged keys.
   void withdrawOnlineLyricsConsent(LyricsProviderRegistration registration) =>
       _update(
         state.copyWith(

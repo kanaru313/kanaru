@@ -10,7 +10,9 @@ import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/online_lyrics_entries.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_source_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
@@ -87,6 +89,7 @@ void main() {
     Size size = const Size(800, 700),
     bool reduceMotion = false,
     Locale locale = const Locale('en'),
+    LyricsPinEntry? pin,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -110,6 +113,10 @@ void main() {
         onlineLyricsActionsProvider.overrideWith(
           (ref) => _RecordingActions(ref, calls),
         ),
+        if (pin != null)
+          playingLyricsSourceProvider.overrideWithValue(
+            fakeResolution(initial!, pin: pin),
+          ),
         lyricsProvidersProvider.overrideWithValue([registration]),
         libraryDatabaseProvider.overrideWithValue(library ? db : null),
         initialSettingsProvider.overrideWithValue(
@@ -313,6 +320,32 @@ void main() {
       expect(findOnline, findsNothing);
       expect(findAuto, findsNothing);
 
+      await tester.tap(find.text('Turn back on'));
+      await tester.pump();
+      expect(calls, ['choose auto $_uri']);
+    });
+
+    statusTest('off with a stored pick: Turn back on restores that pick', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.off),
+        pin: fakePin(choice: LyricsChoice.off),
+      );
+      await tester.tap(find.text('Turn back on'));
+      await tester.pump();
+      expect(calls, ['choose online $_uri']);
+    });
+
+    statusTest('off with a pin but no pick: Turn back on goes to automatic', (
+      tester,
+    ) async {
+      await pumpStatus(
+        tester,
+        const LyricsNone(_uri, LyricsNoneReason.off),
+        pin: const LyricsPinEntry(pinnedAt: 0, choice: LyricsChoice.off),
+      );
       await tester.tap(find.text('Turn back on'));
       await tester.pump();
       expect(calls, ['choose auto $_uri']);

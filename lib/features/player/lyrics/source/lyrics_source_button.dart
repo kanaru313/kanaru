@@ -66,18 +66,29 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
   bool _anchored = false;
 
   @override
-  void initState() {
-    super.initState();
-    widget.menuOpener?.value = _openFromKey;
-  }
-
-  @override
   void didUpdateWidget(LyricsSourceButton old) {
     super.didUpdateWidget(old);
     if (old.menuOpener == widget.menuOpener) return;
-    if (old.menuOpener?.value == _openFromKey) old.menuOpener?.value = null;
-    widget.menuOpener?.value = _openFromKey;
+    final previous = old.menuOpener;
+    // After the frame, so a listener of the notifier never runs while the
+    // tree is building.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (previous?.value == _openFromKey) previous?.value = null;
+    });
   }
+
+  /// Hands `L` the opener while there is a song to act on, and takes it
+  /// back otherwise. Runs after the frame: the notifier is never written
+  /// during a build, so a listener can safely rebuild.
+  void _syncOpener() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    final opener = widget.menuOpener;
+    if (!mounted || opener == null) return;
+    if (!_anchored && opener.value == _openFromKey) {
+      opener.value = null;
+    } else if (_anchored && opener.value != _openFromKey) {
+      opener.value = _openFromKey;
+    }
+  });
 
   @override
   void dispose() {
@@ -140,14 +151,7 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
     final providers = ref.watch(lyricsProvidersProvider);
     _anchored = source != null;
     // Without a source there is nothing to open: `L` must see no callback.
-    final opener = widget.menuOpener;
-    if (opener != null) {
-      if (source == null && opener.value == _openFromKey) {
-        opener.value = null;
-      } else if (source != null && opener.value != _openFromKey) {
-        opener.value = _openFromKey;
-      }
-    }
+    if (widget.menuOpener != null) _syncOpener();
     if (source == null) {
       // Nothing plays: the menu has nothing to act on.
       if (_open) _closeLater();
