@@ -45,6 +45,10 @@ libc = "0.2"
 # at most 1 MiB, so an MP3 with a large embedded cover would be unsupported.
 # 0.6 API (`next_packet() -> Result<Option<Packet>>`), not the 0.5 one.
 symphonia = { version = "=0.6.1", default-features = false, features = ["mp3", "flac", "ogg", "vorbis", "aac", "alac", "isomp4", "pcm", "wav", "id3v2"] }
+# Lyrics plugin runtime: the QuickJS-NG engine. `std` only (no `loader`, so
+# `import` cannot reach files; no `parallel`, so a Runtime stays on the one
+# thread that made it). Pinned exact: pre-1.0, minor releases break the API.
+rquickjs = { version = "=0.14.0", default-features = false, features = ["std"] }
 # Atomic writes into the cover cache (temp file in the same directory, then rename).
 tempfile = "3"
 

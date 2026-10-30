@@ -3,5 +3,6 @@
 
 pub mod cover_colors;
 pub mod lyrics;
+pub mod plugin_runtime;
 pub mod tags;
 pub mod waveform;

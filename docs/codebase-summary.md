@@ -95,6 +95,7 @@ Key files by area:
 | `rust/src/cover_batch.rs` | | Covers of a batch of files, thumbnails cached, on a low-priority pool of its own (no tag reading) |
 | `rust/src/cover_decode_limits.rs`, `jpeg_header.rs`, `webp_exif.rs` | | Limits for decoding a cover image (shared by the thumbnail maker and the original-cover reader); JPEG header facts and metadata stripping; WebP EXIF orientation without a decoder |
 | `rust/src/lyrics_reader.rs`, `lyrics_sylt.rs` | | Embedded lyrics read with lofty, with a size cap; ID3v2 `SYLT` frames turned into timed lines |
+| `rust/src/plugin_runtime/`, `rust/src/api/plugin_runtime.rs` | | Lyrics plugin runtime (QuickJS-NG via `rquickjs`): 4-thread pool and bounded queue (`pool.rs`), job id registry (`jobs.rs`), fresh Runtime + Context per call with limits (`engine.rs`, `limits.rs`, heap cap allocator `memory.rs`), `Response`/`load()`/`execute` contract (`globals.rs`), per-job logs and failure collector (`collector.rs`), compile-only syntax check (`compile_check.rs`); bridge: `begin_plugin_job`, `run_plugin_script`, `cancel_plugin_job`, `check_plugin_script`. Tests: `rust/tests/plugin_runtime_limits_test.rs`, `plugin_runtime_contract_test.rs` |
 | `rust/src/lib.rs` | | Crate root: module tree, reads audio tags and covers for the indexer, exposes them to Dart through flutter_rust_bridge |
 | `rust/src/frb_generated.rs` | 1,607 | **Generated** by flutter_rust_bridge |
 | `rust/Cargo.toml` | | crate `rust_lib_kanaru`, rust 1.89, deps pinned (see [code-standards.md](./code-standards.md#rust)) |

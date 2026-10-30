@@ -12,6 +12,10 @@ mod frb_generated;
 pub mod jpeg_header;
 mod lyrics_reader;
 mod lyrics_sylt;
+// Public only so the integration tests under `rust/tests` can reach the
+// runtime's engine; the Dart-facing API is `api::plugin_runtime`.
+#[doc(hidden)]
+pub mod plugin_runtime;
 pub mod tag_batch;
 pub mod tag_mapping;
 pub mod tag_reader;

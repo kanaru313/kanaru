@@ -8,6 +8,7 @@
 
 import 'api/cover_colors.dart';
 import 'api/lyrics.dart';
+import 'api/plugin_runtime.dart';
 import 'api/tags.dart';
 import 'api/waveform.dart';
 
@@ -37,6 +38,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
+
+  @protected
+  PluginFetchFailure dco_decode_box_autoadd_plugin_fetch_failure(dynamic raw);
+
+  @protected
+  PluginJsError dco_decode_box_autoadd_plugin_js_error(dynamic raw);
+
+  @protected
+  PluginScriptProblem dco_decode_box_autoadd_plugin_script_problem(dynamic raw);
+
+  @protected
+  PluginScriptRequest dco_decode_box_autoadd_plugin_script_request(dynamic raw);
 
   @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
@@ -69,6 +82,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<CoverColorResult> dco_decode_list_cover_color_result(dynamic raw);
 
   @protected
+  List<PluginSourceFile> dco_decode_list_plugin_source_file(dynamic raw);
+
+  @protected
   Uint32List dco_decode_list_prim_u_32_strict(dynamic raw);
 
   @protected
@@ -93,6 +109,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
+  PluginFetchFailure? dco_decode_opt_box_autoadd_plugin_fetch_failure(
+    dynamic raw,
+  );
+
+  @protected
+  PluginJsError? dco_decode_opt_box_autoadd_plugin_js_error(dynamic raw);
+
+  @protected
+  PluginScriptProblem? dco_decode_opt_box_autoadd_plugin_script_problem(
+    dynamic raw,
+  );
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
@@ -100,6 +129,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  PluginErrorKind dco_decode_plugin_error_kind(dynamic raw);
+
+  @protected
+  PluginFetchFailure dco_decode_plugin_fetch_failure(dynamic raw);
+
+  @protected
+  PluginFetchFailureKind dco_decode_plugin_fetch_failure_kind(dynamic raw);
+
+  @protected
+  PluginJsError dco_decode_plugin_js_error(dynamic raw);
+
+  @protected
+  PluginScriptProblem dco_decode_plugin_script_problem(dynamic raw);
+
+  @protected
+  PluginScriptRequest dco_decode_plugin_script_request(dynamic raw);
+
+  @protected
+  PluginScriptResult dco_decode_plugin_script_result(dynamic raw);
+
+  @protected
+  PluginScriptStatus dco_decode_plugin_script_status(dynamic raw);
+
+  @protected
+  PluginSourceFile dco_decode_plugin_source_file(dynamic raw);
 
   @protected
   SyncedLyricLine dco_decode_synced_lyric_line(dynamic raw);
@@ -140,6 +196,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
+  PluginFetchFailure sse_decode_box_autoadd_plugin_fetch_failure(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginJsError sse_decode_box_autoadd_plugin_js_error(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginScriptProblem sse_decode_box_autoadd_plugin_script_problem(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginScriptRequest sse_decode_box_autoadd_plugin_script_request(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -172,6 +248,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<PluginSourceFile> sse_decode_list_plugin_source_file(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Uint32List sse_decode_list_prim_u_32_strict(SseDeserializer deserializer);
 
   @protected
@@ -200,6 +281,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
+  PluginFetchFailure? sse_decode_opt_box_autoadd_plugin_fetch_failure(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginJsError? sse_decode_opt_box_autoadd_plugin_js_error(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginScriptProblem? sse_decode_opt_box_autoadd_plugin_script_problem(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -207,6 +303,45 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  PluginErrorKind sse_decode_plugin_error_kind(SseDeserializer deserializer);
+
+  @protected
+  PluginFetchFailure sse_decode_plugin_fetch_failure(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginFetchFailureKind sse_decode_plugin_fetch_failure_kind(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginJsError sse_decode_plugin_js_error(SseDeserializer deserializer);
+
+  @protected
+  PluginScriptProblem sse_decode_plugin_script_problem(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginScriptRequest sse_decode_plugin_script_request(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginScriptResult sse_decode_plugin_script_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginScriptStatus sse_decode_plugin_script_status(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  PluginSourceFile sse_decode_plugin_source_file(SseDeserializer deserializer);
 
   @protected
   SyncedLyricLine sse_decode_synced_lyric_line(SseDeserializer deserializer);
@@ -251,6 +386,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_plugin_fetch_failure(
+    PluginFetchFailure self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_plugin_js_error(
+    PluginJsError self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_plugin_script_problem(
+    PluginScriptProblem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_plugin_script_request(
+    PluginScriptRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
@@ -289,6 +448,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_cover_color_result(
     List<CoverColorResult> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_plugin_source_file(
+    List<PluginSourceFile> self,
     SseSerializer serializer,
   );
 
@@ -338,6 +503,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_plugin_fetch_failure(
+    PluginFetchFailure? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_plugin_js_error(
+    PluginJsError? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_plugin_script_problem(
+    PluginScriptProblem? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
@@ -346,6 +529,57 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_list_prim_u_8_strict(
     Uint8List? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_error_kind(
+    PluginErrorKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_fetch_failure(
+    PluginFetchFailure self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_fetch_failure_kind(
+    PluginFetchFailureKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_js_error(PluginJsError self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_plugin_script_problem(
+    PluginScriptProblem self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_script_request(
+    PluginScriptRequest self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_script_result(
+    PluginScriptResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_script_status(
+    PluginScriptStatus self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_plugin_source_file(
+    PluginSourceFile self,
     SseSerializer serializer,
   );
 

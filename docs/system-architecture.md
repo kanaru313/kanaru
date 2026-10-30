@@ -345,6 +345,20 @@ Every request the lyrics features can make. The app has no telemetry and sends n
 
 File paths, file names and device information are never sent. The `.lrc` writer and the cache do not use the network.
 
+### Plugin runtime
+
+Lyrics plugins are JavaScript (`search.js`, `lyrics.js`) run by a sandboxed QuickJS-NG engine in the Rust crate (`rust/src/plugin_runtime/`, bridged by `api/plugin_runtime.rs`; contract and limits in [lyrics-plugin-api.md](./lyrics-plugin-api.md)). Nothing in Dart calls it yet.
+
+| Part | How it works | Where |
+|---|---|---|
+| Threads | A pool of 4 `plugin-js` threads (8 MiB stack each) and a queue of 16; the 17th waiting job is `Busy` (the caller skips that source for the lookup). `run_plugin_script` is an `async` bridge function that only queues the job and awaits a one-shot, so no bridge worker or Dart isolate blocks | `pool.rs`, `mod.rs` |
+| Per call | A fresh `Runtime` and `Context` on the worker, dropped on the same thread; nothing is shared between calls (about 1 ms with a trivial script, measured; the budget is 5 ms) | `engine.rs` |
+| Limits | Heap 32 MiB (a counting allocator sets a flag when it refuses memory), JS stack 1 MiB, 15 s wall time, 2 MiB of output. The interrupt handler (cancel flag or deadline) is uncatchable by the script; the stack error comes from the engine | `limits.rs`, `memory.rs`, `engine.rs` |
+| Scripts | Classic global sloppy-mode scripts. `load()` reaches only files of the request; no `std`, `os`, module `import`, `require`, timers or Promise job queue. `execute(input)` must return `Response.success/error` | `globals.rs` |
+| Job ids | `begin_plugin_job` registers a cancel flag; cancelling a job that has not started removes it, so a later run is `Cancelled` at once | `jobs.rs` |
+| Failures | A panic in a job is caught and ends as `Internal`; the next job still runs. Console lines, the first fetch failure and the JS error (message and stack) are returned on every status, because a per-job collector outlives the failing script | `collector.rs`, `engine.rs` |
+| Syntax check | `check_plugin_script` compiles without running (`JS_Eval` with the compile-only flag) on a thread of its own | `compile_check.rs` |
+
 ---
 
 ## 5. System media controls (MPRIS)
