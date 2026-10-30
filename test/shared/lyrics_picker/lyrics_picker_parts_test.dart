@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_match.dart';
@@ -11,14 +12,17 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/online/fake_lyrics_provider.dart';
 
+// A failure line holds the View log button, which reads providers.
 Future<void> _pump(WidgetTester tester, Widget child) => tester.pumpWidget(
-  MaterialApp(
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      ...GlobalMaterialLocalizations.delegates,
-    ],
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(body: child),
+  ProviderScope(
+    child: MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: child),
+    ),
   ),
 );
 

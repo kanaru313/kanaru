@@ -3819,4 +3819,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pluginRetry => 'Retry';
+
+  @override
+  String lyricsSourceNameRemoved(String name) {
+    return '$name (removed)';
+  }
+
+  @override
+  String lyricsSourceNameWithAuthor(String name, String author) {
+    return '$name · $author';
+  }
+
+  @override
+  String lyricsPickerAllSources(int count) {
+    return 'All sources ($count)';
+  }
+
+  @override
+  String get lyricsViewLog => 'View log';
 }

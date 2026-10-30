@@ -5647,6 +5647,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get pluginRetry;
+
+  /// Name of a lyrics source whose plugin was uninstalled but whose saved lyrics are still shown
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (removed)'**
+  String lyricsSourceNameRemoved(String name);
+
+  /// Name of a lyrics source plus its author, used where two sources share a name
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {author}'**
+  String lyricsSourceNameWithAuthor(String name, String author);
+
+  /// First chip of the Choose lyrics source filter: shows the results of every source; count is how many sources returned results
+  ///
+  /// In en, this message translates to:
+  /// **'All sources ({count})'**
+  String lyricsPickerAllSources(int count);
+
+  /// Action beside a lyrics plugin failure that shows that plugin's log file in the file manager
+  ///
+  /// In en, this message translates to:
+  /// **'View log'**
+  String get lyricsViewLog;
 }
 
 class _AppLocalizationsDelegate

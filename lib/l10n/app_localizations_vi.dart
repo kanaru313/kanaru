@@ -3597,4 +3597,22 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get pluginRetry => 'Thử lại';
+
+  @override
+  String lyricsSourceNameRemoved(String name) {
+    return '$name (đã gỡ)';
+  }
+
+  @override
+  String lyricsSourceNameWithAuthor(String name, String author) {
+    return '$name · $author';
+  }
+
+  @override
+  String lyricsPickerAllSources(int count) {
+    return 'Mọi nguồn ($count)';
+  }
+
+  @override
+  String get lyricsViewLog => 'Xem log';
 }

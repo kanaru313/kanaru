@@ -61,9 +61,14 @@ Future<bool> savePluginConfigValueWith({
     message = l10n.pluginConfigSaveFailed;
   }
   if (message == null) return true;
-  messenger?.showSnackBar(
-    appSnackBar(kind: AppSnackBarKind.error, title: message),
-  );
+  if (messenger == null) {
+    // Torn down with nowhere to tell the user: keep a trace.
+    _log.warning('A plugin setting was not saved and nothing could show it');
+  } else {
+    messenger.showSnackBar(
+      appSnackBar(kind: AppSnackBarKind.error, title: message),
+    );
+  }
   return false;
 }
 

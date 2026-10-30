@@ -93,6 +93,26 @@ void main() {
       expect(top(tester, 'Alpha'), lessThan(top(tester, 'Beta')));
     });
 
+    testWidgets('shows the saved order when the database never confirms', (
+      tester,
+    ) async {
+      final input = StreamController<LyricsSourcesInput>();
+      addTearDown(input.close);
+      input.add(LyricsSourcesInput([a, b], const []));
+      final plugins = FakePlugins();
+      await pumpSources(tester, plugins: plugins, input: input.stream);
+
+      await dragFirstPluginBelowSecond(tester, settle: false);
+      expect(plugins.reorders, hasLength(1));
+      // The chosen order is shown while the database is silent.
+      expect(top(tester, 'Beta'), lessThan(top(tester, 'Alpha')));
+
+      // After the pause the page drops it and shows the saved order.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(top(tester, 'Alpha'), lessThan(top(tester, 'Beta')));
+    });
+
     testWidgets('a plugin that vanishes mid-reorder leaves the saved order', (
       tester,
     ) async {

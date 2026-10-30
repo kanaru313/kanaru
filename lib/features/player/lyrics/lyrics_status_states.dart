@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/lyrics_plugin_spec.dart' show lrclibSourceId;
 import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
@@ -27,7 +28,8 @@ class LyricsSearchingView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final name = lyricsSourceDisplayName(
+    final name = lyricsSourceNameText(
+      context.l10n,
       ref.watch(lyricsSourceNamesProvider),
       providerId,
     );
@@ -75,22 +77,32 @@ class LyricsNoneView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final registration = ref.watch(lyricsProvidersProvider).firstOrNull;
+    // The sources that run, in the user's order. Any of them can be a plugin,
+    // and the first is not special: the buttons need only one to be on.
+    final enabled = ref.watch(lyricsProvidersProvider);
+    final hasSource = enabled.isNotEmpty;
     final online =
-        registration != null &&
+        hasSource &&
         localPathOf(none.uri) != null &&
         ref.watch(libraryDatabaseProvider) != null;
     final autoOn = ref.watch(
-      settingsProvider.select(
-        (s) => registration != null && s.onlineLyrics.autoAllowed,
-      ),
+      settingsProvider.select((s) => hasSource && s.onlineLyrics.autoAllowed),
     );
     // Turning lyrics back on keeps a stored pick: only the menu's Automatic
     // item drops it.
     final hasPick = ref.watch(
       playingLyricsSourceProvider.select((s) => s?.pin?.hasPick ?? false),
     );
-    final name = registration?.displayName ?? '';
+    // The status does not say which source answered, so with several on the
+    // texts name them all; with one, that one.
+    final names = ref.watch(lyricsSourceNamesProvider);
+    final name = enabled
+        .map((r) => lyricsSourceNameText(l10n, names, r.id))
+        .join(', ');
+    // View log leads to one plugin's file: only when the one source that
+    // runs is that plugin (with LRCLIB beside it the failure may be LRCLIB's).
+    final onlyPlugin =
+        enabled.length == 1 && enabled.first.id != lrclibSourceId;
     final reason = none.reason;
 
     Widget find(String label, VoidCallback onPressed) =>
@@ -136,6 +148,7 @@ class LyricsNoneView extends ConsumerWidget {
         reason == LyricsNoneReason.error
             ? LyricsErrorBanner(
                 providerName: name,
+                logProviderId: onlyPlugin ? enabled.first.id : null,
                 canRetry: online,
                 failure: none.failure,
               )

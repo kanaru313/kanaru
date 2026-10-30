@@ -3435,5 +3435,24 @@
   "pluginConfigSaveFailed": "Could not save the setting",
   "pluginConfigLoadFailed": "Could not read the plugin's settings",
   "pluginSourcesLoadFailed": "Could not read the list of plugins",
-  "pluginRetry": "Retry"
+  "pluginRetry": "Retry",
+  "lyricsSourceNameRemoved": "{name} (removed)",
+  "@lyricsSourceNameRemoved": {
+    "description": "Name of a lyrics source whose plugin was uninstalled but whose saved lyrics are still shown",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "lyricsSourceNameWithAuthor": "{name} · {author}",
+  "@lyricsSourceNameWithAuthor": {
+    "description": "Name of a lyrics source plus its author, used where two sources share a name",
+    "placeholders": {"name": {"type": "String"}, "author": {"type": "String"}}
+  },
+  "lyricsPickerAllSources": "All sources ({count})",
+  "@lyricsPickerAllSources": {
+    "description": "First chip of the Choose lyrics source filter: shows the results of every source; count is how many sources returned results",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "lyricsViewLog": "View log",
+  "@lyricsViewLog": {
+    "description": "Action beside a lyrics plugin failure that shows that plugin's log file in the file manager"
+  }
 }

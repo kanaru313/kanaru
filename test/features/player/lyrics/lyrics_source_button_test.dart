@@ -450,6 +450,97 @@ void main() {
       expect(find.text('Off source · Synced'), findsOneWidget);
     });
 
+    testWidgets('credits a removed plugin with (removed)', (tester) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: OnlineLyricsOrigin(
+            providerId: 'gone',
+            remoteId: '1',
+            pinned: true,
+          ),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'fake': const LyricsSourceName(displayName: 'Fake'),
+            'gone': const LyricsSourceName(
+              displayName: 'NetEase',
+              author: 'hieu05',
+              removed: true,
+            ),
+          }),
+        ],
+      );
+      expect(find.text('NetEase (removed) · Synced'), findsOneWidget);
+      await openMenu(tester);
+      expect(
+        find.text('Lyrics from NetEase (removed) · Synced'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('credits a removed plugin in Vietnamese', (tester) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: OnlineLyricsOrigin(
+            providerId: 'gone',
+            remoteId: '1',
+            pinned: true,
+          ),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        locale: const Locale('vi'),
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'fake': const LyricsSourceName(displayName: 'Fake'),
+            'gone': const LyricsSourceName(
+              displayName: 'NetEase',
+              removed: true,
+            ),
+          }),
+        ],
+      );
+      await openMenu(tester);
+      expect(find.text('Lời từ NetEase (đã gỡ) · Đồng bộ'), findsOneWidget);
+    });
+
+    testWidgets('an 80-character plugin name ellipsizes without overflow', (
+      tester,
+    ) async {
+      final longName = List.filled(80, 'N').join();
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: OnlineLyricsOrigin(
+            providerId: 'long',
+            remoteId: '1',
+            pinned: true,
+          ),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        room: 160,
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'fake': const LyricsSourceName(displayName: 'Fake'),
+            'long': LyricsSourceName(displayName: longName),
+          }),
+        ],
+      );
+      expect(tester.takeException(), isNull);
+      expect(tester.getSize(findPill).width, lessThan(260));
+    });
+
     testWidgets('speaks Vietnamese', (tester) async {
       await pump(
         tester,

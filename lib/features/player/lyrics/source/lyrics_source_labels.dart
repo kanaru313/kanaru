@@ -26,7 +26,7 @@ String lyricsSourceLabel(
       return l10n.lyricsSourceSearching;
     case LyricsFound(:final origin?) when !origin.pinned:
       return l10n.lyricsSourceAuto(
-        lyricsSourceDisplayName(names, origin.providerId),
+        lyricsSourceNameText(l10n, names, origin.providerId),
       );
     case LyricsFound():
       final detail = lyricsSourceDetail(l10n, status, names);
@@ -61,7 +61,7 @@ String lyricsSourceDetail(
   final origin = found.origin;
   if (origin != null) {
     return l10n.lyricsSourceOnline(
-      lyricsSourceDisplayName(names, origin.providerId),
+      lyricsSourceNameText(l10n, names, origin.providerId),
       lyricsSourceKind(l10n, found.lyrics.synced),
     );
   }

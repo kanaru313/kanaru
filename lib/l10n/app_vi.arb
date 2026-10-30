@@ -1608,5 +1608,9 @@
   "pluginConfigSaveFailed": "Không lưu được cài đặt",
   "pluginConfigLoadFailed": "Không đọc được cài đặt của plugin",
   "pluginSourcesLoadFailed": "Không đọc được danh sách plugin",
-  "pluginRetry": "Thử lại"
+  "pluginRetry": "Thử lại",
+  "lyricsSourceNameRemoved": "{name} (đã gỡ)",
+  "lyricsSourceNameWithAuthor": "{name} · {author}",
+  "lyricsPickerAllSources": "Mọi nguồn ({count})",
+  "lyricsViewLog": "Xem log"
 }

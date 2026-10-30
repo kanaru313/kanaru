@@ -17,11 +17,16 @@ class LyricsPickerResultTile extends StatelessWidget {
     required this.result,
     required this.selected,
     required this.onTap,
+    this.sourceName,
   });
 
   final RankedCandidate result;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Display name of the source that returned the result, drawn first in the
+  /// detail row; `null` leaves it out.
+  final String? sourceName;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +80,16 @@ class LyricsPickerResultTile extends StatelessWidget {
               runSpacing: 2,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                if (sourceName != null)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 180),
+                    child: Text(
+                      sourceName!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: small?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 if (badge != null) _Badge(badge),
                 if (result.rejected)
                   _Badge(
