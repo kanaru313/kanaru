@@ -47,7 +47,7 @@ class LyricsProviderRegistration {
     if (!_idPattern.hasMatch(id)) {
       throw ArgumentError.value(id, 'id', 'malformed provider id');
     }
-    // A set, so a repeated host cannot change the consent key.
+    // A set, so a repeated host is listed once.
     final hosts = {
       for (final host in provider.hosts) host.trim().toLowerCase(),
     }.toList()..sort();

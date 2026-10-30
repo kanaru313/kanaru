@@ -100,7 +100,7 @@ class AppSettings {
   /// Lyrics translation options (no credentials).
   final TranslationPrefs translation;
 
-  /// Online lyrics options (consent keys, `.lrc` writing).
+  /// Online lyrics options (automatic lookup and its consent).
   final OnlineLyricsPrefs onlineLyrics;
 
   AppSettings copyWith({

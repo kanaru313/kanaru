@@ -114,4 +114,43 @@ void main() {
       );
     });
   });
+
+  group('waiting for the sources to load', () {
+    final loaded = StateProvider<bool>((ref) => false);
+    final waiting = Provider<Future<void>>(whenLyricsSourcesLoaded);
+
+    ProviderContainer containerWaiting() {
+      final c = ProviderContainer(
+        overrides: [
+          lyricsSourcesLoadedProvider.overrideWith((ref) => ref.watch(loaded)),
+        ],
+      );
+      addTearDown(c.dispose);
+      return c;
+    }
+
+    test('completes when the sources load', () async {
+      final c = containerWaiting();
+      // A mounted app has a widget or notifier watching the flag.
+      c.listen(lyricsSourcesLoadedProvider, (_, _) {});
+      var done = false;
+      final future = c.read(waiting).then((_) => done = true);
+      await Future<void>.delayed(Duration.zero);
+      expect(done, isFalse);
+
+      c.read(loaded.notifier).state = true;
+      await future;
+
+      expect(done, isTrue);
+    });
+
+    test('completes when its owner is disposed first', () async {
+      final c = containerWaiting();
+      final future = c.read(waiting);
+
+      c.dispose();
+
+      await future.timeout(const Duration(seconds: 1));
+    });
+  });
 }

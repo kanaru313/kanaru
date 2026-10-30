@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -107,6 +109,36 @@ void main() {
       expect(reason(), LyricsNoneReason.noLyrics);
       expect(rig.statuses.whereType<LyricsSearching>(), isEmpty);
       expect(rig.requests, 0);
+    },
+  );
+
+  test(
+    'a failure dropped by Clear is retried when another source missed',
+    () async {
+      await start();
+      second.gate = Completer<void>();
+      second.lookupResult = const LyricsFetchException(LyricsFetchKind.server);
+      rig.watch();
+      await rig.play([fakeSong(_song)]);
+      // The first source answers "no match"; the second is held in flight.
+      await rig.until(() => second.lookupCalls > 0);
+      await rig.settle();
+
+      // Settings Clear while the second request runs, then it fails.
+      rig.h.lookups.forgetFailures();
+      rig.h.backoff.clear();
+      second.gate!.complete();
+
+      // The dropped failure is asked again once and recorded; the source that
+      // already missed is not asked again, and the status leaves Searching.
+      await rig.until(
+        () => second.lookupCalls == 2 && rig.status is! LyricsSearching,
+      );
+      await rig.settle();
+
+      expect(second.lookupCalls, 2);
+      expect(rig.fake.lookupCalls, 1);
+      expect(reason(), LyricsNoneReason.error);
     },
   );
 

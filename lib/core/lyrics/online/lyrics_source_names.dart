@@ -68,12 +68,17 @@ final lyricsSourceNamesProvider = Provider<Map<String, LyricsSourceName>>((
 final lyricsSourcesLoadedProvider = Provider<bool>((ref) => true);
 
 /// Completes once [lyricsSourcesLoadedProvider] is true; at once when it
-/// already is.
+/// already is. Also completes when [ref] is disposed first, so a waiting
+/// caller never hangs: it must check that [ref] is still mounted after the
+/// await.
 Future<void> whenLyricsSourcesLoaded(Ref ref) {
   if (ref.read(lyricsSourcesLoadedProvider)) return Future.value();
   final done = Completer<void>();
   final sub = ref.listen<bool>(lyricsSourcesLoadedProvider, (_, loaded) {
     if (loaded && !done.isCompleted) done.complete();
+  });
+  ref.onDispose(() {
+    if (!done.isCompleted) done.complete();
   });
   return done.future.whenComplete(sub.close);
 }

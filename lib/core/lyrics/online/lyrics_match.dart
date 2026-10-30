@@ -129,9 +129,9 @@ int _bodyRank(LyricsBody? body) {
 /// and orders them: good matches first, then synced before plain before
 /// instrumental before a record without lyrics (a body-less record ranks
 /// after every one with a body), smaller duration difference, higher title
-/// similarity, and the given order for ties. With [keepRejected] (the manual search) records
-/// in [rejected] stay in the list, flagged and after every other one;
-/// automatic lookups leave it off.
+/// similarity, and the given order for ties. With [keepRejected] (the manual
+/// search) records in [rejected] stay in the list, flagged and after every
+/// other one; automatic lookups leave it off.
 List<LyricsMatch> rankCandidates(
   LyricsQuery query,
   Iterable<LyricsCandidate> candidates, {

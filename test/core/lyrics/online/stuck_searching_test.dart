@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 
 import 'fake_lyrics_provider.dart';
@@ -53,5 +54,34 @@ void main() {
       expect(rig.requests, 1);
       expect(rig.status, isNot(isA<LyricsSearching>()));
     });
+
+    test(
+      'a stored answer whose text does not parse is not requested again',
+      () async {
+        final rig = await createStatusRig();
+        rig.fake.lookupResult = fakeCandidate(
+          body: const LyricsBody(syncedLrc: 'no timestamps here'),
+        );
+        rig.watch();
+        await rig.play([fakeSong('/m/a.flac')]);
+        await rig.until(() => rig.fake.lookupCalls > 0);
+        await rig.settle();
+        await rig.settle();
+
+        final rows = await rig.h.db.select(rig.h.db.onlineLyrics).get();
+        expect(rows, hasLength(1));
+        // Stored as found, with neither text nor the instrumental flag.
+        expect(
+          (
+            rows.single.status,
+            rows.single.syncedText,
+            rows.single.instrumental,
+          ),
+          ('found', null, false),
+        );
+        expect(rig.fake.lookupCalls, 1);
+        expect(rig.status, isNot(isA<LyricsSearching>()));
+      },
+    );
   });
 }
