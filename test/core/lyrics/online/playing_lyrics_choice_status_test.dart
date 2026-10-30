@@ -152,7 +152,7 @@ void main() {
 
       final status = rig.status as LyricsNone;
       expect(status.reason, LyricsNoneReason.paused);
-      expect(status.resumeAt, rig.h.backoff.state);
+      expect(status.resumeAt, rig.h.backoff.state['fake']);
     });
 
     test('a longer pause updates the time it reports', () async {
@@ -164,10 +164,10 @@ void main() {
       await rig.settle();
       final first = (rig.status as LyricsNone).resumeAt!;
 
-      rig.h.backoff.failed(const Duration(seconds: 120));
+      rig.h.backoff.failed('fake', const Duration(seconds: 120));
       await rig.until(() => (rig.status as LyricsNone).resumeAt != first);
 
-      expect((rig.status as LyricsNone).resumeAt, rig.h.backoff.state);
+      expect((rig.status as LyricsNone).resumeAt, rig.h.backoff.state['fake']);
       expect((rig.status as LyricsNone).resumeAt!.isAfter(first), isTrue);
     });
 

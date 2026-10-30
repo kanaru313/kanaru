@@ -9,7 +9,9 @@ const lyricsMaxRequestBytes = 256 * 1024;
 /// A request a source asks `LyricsHttp.send` to make. `method` is `GET` or
 /// `POST` (lower or upper case); [body] only goes with `POST`. [deadline] is
 /// the time the caller has left: the whole call ends at the smaller of it and
-/// the overall timeout of `LyricsHttp`.
+/// the overall timeout of `LyricsHttp`. [maxSends], when set, caps the sends
+/// of the call, retries included (at least one is always made); when the cap
+/// is reached the last answer is returned as if the retries had run out.
 class LyricsHttpRequest {
   const LyricsHttpRequest({
     required this.method,
@@ -17,6 +19,7 @@ class LyricsHttpRequest {
     this.headers = const {},
     this.body,
     this.deadline,
+    this.maxSends,
   });
 
   final String method;
@@ -24,6 +27,7 @@ class LyricsHttpRequest {
   final Map<String, String> headers;
   final List<int>? body;
   final Duration? deadline;
+  final int? maxSends;
 }
 
 /// The answer to a [LyricsHttpRequest], whatever its status: raw [bytes] (at

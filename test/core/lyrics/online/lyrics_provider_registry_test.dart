@@ -51,6 +51,11 @@ void main() {
     'api.localhost',
     '10.0.0.1',
     '169.254.1.1',
+    '127.0.0.0x1',
+    '0x7f.0x1',
+    '127.1.0x0',
+    '1.2.3.4a',
+    'example.1com',
     '[::1]',
     'music',
     'lrclib.net:8443',
@@ -71,6 +76,12 @@ void main() {
       );
     });
   }
+
+  test('internationalized and ordinary public hosts are accepted', () {
+    expect(lyricsHostProblem('xn--80ak6aa92e.com'), isNull);
+    expect(lyricsHostProblem('music.xn--p1ai'), isNull);
+    expect(lyricsHostProblem('a1.example.co.uk'), isNull);
+  });
 
   test('no host, or a malformed id, is rejected', () {
     expect(

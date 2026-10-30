@@ -11,6 +11,8 @@ import 'lyrics_fetch_exception.dart';
 import 'lyrics_http_retry.dart';
 import 'lyrics_provider_registry.dart';
 import 'lyrics_source_names.dart';
+import 'lookup_flight.dart';
+import 'lookup_state.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_backoff.dart';
 import 'online_lyrics_entries.dart';
@@ -18,33 +20,10 @@ import 'online_lyrics_http_factory.dart';
 import 'online_lyrics_resolution.dart';
 import 'run_online_lyrics_lookup.dart';
 
+export 'lookup_state.dart';
 export 'run_online_lyrics_lookup.dart';
 
 final _log = Logger('online_lyrics');
-
-/// Where the lookup of one metadata key stands. A finished lookup leaves no
-/// entry: its answer is in the cache.
-sealed class LookupState {
-  const LookupState();
-}
-
-/// A request is in flight at [providerId].
-final class LookupRunning extends LookupState {
-  const LookupRunning({required this.providerId, required this.auto});
-
-  final String providerId;
-
-  /// Kanaru started it, not the user.
-  final bool auto;
-}
-
-/// The last lookup failed and wrote nothing. [kind] is `null` for a failure
-/// that is not a request error (e.g. the database).
-final class LookupFailed extends LookupState {
-  const LookupFailed(this.kind);
-
-  final LyricsFetchKind? kind;
-}
 
 /// Runs online lookups, keyed by cache key. Lives as long as the app: a sent
 /// request cannot be aborted, so a lookup finishes and stores its answer
@@ -55,7 +34,13 @@ final class LookupFailed extends LookupState {
 /// failure and no backoff. A plain-only exact hit already received is still
 /// stored when only its extra search is cut off.
 class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
-  final _inFlight = <String, _Flight>{};
+  final _inFlight = <String, LookupFlight>{};
+
+  /// Keys whose last lookup left a source unasked: it skipped (the plugin
+  /// runtime was busy) or its answer could not be stored (the plugin was
+  /// removed meanwhile). Nothing was recorded for that source, so the caller
+  /// decides when to try again.
+  final _unasked = <String>{};
 
   /// Bumped by [forgetFailures]; a lookup started before the bump records no
   /// failure and starts no pause.
@@ -99,7 +84,7 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
       running.callers.add(abandoned);
       return running.done;
     }
-    final flight = _Flight(abandoned);
+    final flight = LookupFlight(abandoned);
     _inFlight[key] = flight;
     return flight.done = _run(
       target,
@@ -124,6 +109,11 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     return sourcesToAsk(entries, [for (final r in enabled) r.id], now).toSet();
   }
 
+  /// Whether the last lookup of [key] left an enabled source unasked without
+  /// a failure (see `_unasked`). The automatic lookup waits before it
+  /// retries such a song, so a busy runtime is not asked again every second.
+  bool leftSourceUnasked(String key) => _unasked.contains(key);
+
   void _set(String key, LookupState? value) {
     if (!ref.mounted) return;
     final next = {...state};
@@ -140,6 +130,7 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null || !target.isAutoSearchable) return;
     final generation = _generation;
+    _unasked.remove(key);
     // The list of sources is complete before any request goes out.
     if (!ref.read(lyricsSourcesLoadedProvider)) {
       await whenLyricsSourcesLoaded(ref);
@@ -152,6 +143,15 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     Object? otherFailure;
     var found = false;
     final enabled = ref.read(lyricsProvidersProvider);
+    final backoff = ref.read(onlineLyricsBackoffProvider.notifier);
+    // Pauses only the source that failed, and only when the user has not
+    // cleared the failures since this lookup started.
+    void pause(String providerId, Duration? retryAfter) {
+      if (ref.mounted && generation == _generation) {
+        backoff.failed(providerId, retryAfter);
+      }
+    }
+
     Set<String>? toAsk;
     if (auto) {
       try {
@@ -161,12 +161,19 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
         _log.warning('Online lyrics lookup failed: ${e.runtimeType}');
         otherFailure = e;
         toAsk = const {};
+        for (final registration in enabled) {
+          pause(registration.id, null);
+        }
       }
     }
     if (!ref.mounted) return;
     for (final registration in enabled) {
+      if (!ref.mounted) return;
       if (toAsk != null && !toAsk.contains(registration.id)) continue;
       if (auto && !prefs.autoAllowed) continue;
+      // A paused source is left alone until its pause ends; the user's own
+      // lookups (Retry, Search again) lift every pause first.
+      if (auto && backoff.isPaused(registration.id)) continue;
       try {
         final http = auto
             ? factory.forAuto(registration, abandoned: abandoned)
@@ -183,15 +190,26 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
           found = true;
           break;
         }
+        // Nothing was stored (the plugin was removed during the lookup): the
+        // source is left unasked, not counted as a miss.
+        if (result == OnlineLyricsLookupResult.notStored) _unasked.add(key);
       } on LyricsRequestAbandoned {
         _set(key, null);
         return;
+      } on LyricsSourceSkipped {
+        // Not run this time: no failure, no pause, nothing stored.
+        _unasked.add(key);
+        continue;
       } on LyricsFetchException catch (e) {
-        if (e.kind != LyricsFetchKind.notConsented) failure = e;
+        if (e.kind != LyricsFetchKind.notConsented) {
+          failure = e;
+          pause(registration.id, e.retryAfter);
+        }
       } on Object catch (e) {
         if (!ref.mounted) return;
         _log.warning('Online lyrics lookup failed: ${e.runtimeType}');
         otherFailure = e;
+        pause(registration.id, null);
       }
     }
     if (!ref.mounted) return;
@@ -202,20 +220,8 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
       return;
     }
     _log.info('Online lyrics lookup failed: ${failure?.kind.name}');
-    ref.read(onlineLyricsBackoffProvider.notifier).failed(failure?.retryAfter);
     _set(key, LookupFailed(failure?.kind));
   }
-}
-
-/// One lookup in flight and the abandon checks of everyone waiting on it.
-class _Flight {
-  _Flight(bool Function()? first) : callers = [first];
-
-  /// One entry per caller; `null` for a caller that never abandons.
-  final List<bool Function()?> callers;
-  late final Future<void> done;
-
-  bool abandoned() => callers.every((check) => check != null && check());
 }
 
 final onlineLyricsLookupsProvider =

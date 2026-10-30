@@ -222,7 +222,7 @@ void main() {
 
     test('a short wait still blocks for 60 s', () async {
       final h = await harness();
-      h.backoff.failed(const Duration(seconds: 5));
+      h.backoff.failed('fake', const Duration(seconds: 5));
       h.now = h.now.add(const Duration(seconds: 59));
       expect(h.backoff.isBlocked, isTrue);
       h.now = h.now.add(const Duration(seconds: 2));
@@ -231,23 +231,23 @@ void main() {
 
     test('a huge wait is clamped to 15 minutes', () async {
       final h = await harness();
-      h.backoff.failed(const Duration(days: 2));
+      h.backoff.failed('fake', const Duration(days: 2));
       h.now = h.now.add(const Duration(minutes: 15, seconds: 1));
       expect(h.backoff.isBlocked, isFalse);
     });
 
     test('jitter adds up to 30 percent of the wait', () async {
       final h = await harness();
-      h.backoff.failed(const Duration(seconds: 100));
+      h.backoff.failed('fake', const Duration(seconds: 100));
       expect(
-        h.container.read(onlineLyricsBackoffProvider),
+        h.container.read(onlineLyricsBackoffProvider)['fake'],
         h.now.add(const Duration(seconds: 100)),
       );
       h.backoff.clear();
       h.jitter = 1;
-      h.backoff.failed(const Duration(seconds: 100));
+      h.backoff.failed('fake', const Duration(seconds: 100));
       expect(
-        h.container.read(onlineLyricsBackoffProvider),
+        h.container.read(onlineLyricsBackoffProvider)['fake'],
         h.now.add(const Duration(seconds: 130)),
       );
     });
@@ -256,10 +256,10 @@ void main() {
       'clear ends the pause and a later failure does not shorten it',
       () async {
         final h = await harness();
-        h.backoff.failed(const Duration(minutes: 10));
-        final until = h.container.read(onlineLyricsBackoffProvider);
-        h.backoff.failed();
-        expect(h.container.read(onlineLyricsBackoffProvider), until);
+        h.backoff.failed('fake', const Duration(minutes: 10));
+        final until = h.container.read(onlineLyricsBackoffProvider)['fake'];
+        h.backoff.failed('fake');
+        expect(h.container.read(onlineLyricsBackoffProvider)['fake'], until);
         h.backoff.clear();
         expect(h.backoff.isBlocked, isFalse);
       },

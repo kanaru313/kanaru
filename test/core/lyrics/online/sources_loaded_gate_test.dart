@@ -23,7 +23,10 @@ final _gated = lyricsSourcesLoadedProvider.overrideWith(
 
 void main() {
   test('a cached-miss song sends nothing and reads until loaded', () async {
-    final rig = await createStatusRig(overrides: [_gated]);
+    final rig = await createStatusRig(
+      forceSourcesLoaded: false,
+      overrides: [_gated],
+    );
     rig.watch();
     await rig.play([fakeSong('/m/a.flac')]);
     await rig.settle();
@@ -43,6 +46,7 @@ void main() {
     final fake = FakeLyricsProvider();
     final h = await createHarness(
       [LyricsProviderRegistration(fake)],
+      forceSourcesLoaded: false,
       overrides: [_gated],
     );
 
@@ -59,6 +63,7 @@ void main() {
     final fake = FakeLyricsProvider();
     final h = await createHarness(
       [LyricsProviderRegistration(fake)],
+      forceSourcesLoaded: false,
       overrides: [_gated],
     );
     final provider = lyricsSearchControllerProvider(fakeTarget);

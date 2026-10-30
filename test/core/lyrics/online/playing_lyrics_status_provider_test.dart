@@ -303,7 +303,7 @@ void main() {
       await rig.settle();
       // The other song is waiting for the pause to end, and says so.
       expect(none(rig.status).reason, LyricsNoneReason.paused);
-      expect(none(rig.status).resumeAt, rig.h.backoff.state);
+      expect(none(rig.status).resumeAt, rig.h.backoff.state['fake']);
       expect(rig.requests, 1);
 
       await rig.player.previous();
@@ -324,7 +324,7 @@ void main() {
       rig.watch();
       await rig.play([fakeSong('/m/a.flac')]);
       await rig.until(() => rig.status is LyricsNone);
-      final until = rig.h.backoff.state!;
+      final until = rig.h.backoff.state['fake']!;
 
       // Shown again just before the pause ends; nothing else changes.
       rig.h.now = until.subtract(const Duration(milliseconds: 300));
@@ -350,7 +350,7 @@ void main() {
         fakeSong('/m/a2.flac'),
       ]);
       await rig.until(() => rig.status is LyricsNone);
-      rig.h.now = rig.h.backoff.state!.add(const Duration(seconds: 1));
+      rig.h.now = rig.h.backoff.state['fake']!.add(const Duration(seconds: 1));
       rig.fake.lookupResult = fakeCandidate();
 
       await rig.player.next();
@@ -375,7 +375,7 @@ void main() {
 
       expect((rig.status! as LyricsNone).failure, LyricsFetchKind.rateLimited);
       expect(
-        rig.h.backoff.state!.difference(rig.h.now),
+        rig.h.backoff.state['fake']!.difference(rig.h.now),
         greaterThanOrEqualTo(const Duration(seconds: 120)),
       );
     });
@@ -442,7 +442,7 @@ void main() {
           fetchedAt: 1,
         ),
       );
-      rig.h.backoff.failed();
+      rig.h.backoff.failed('fake');
       final prefs = rig.container.read(settingsProvider).onlineLyrics;
       rig.container
           .read(settingsProvider.notifier)

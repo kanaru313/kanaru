@@ -80,7 +80,7 @@ Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no
 | Rust | `1.89`+ | `rust/Cargo.toml` |
 | libmpv | `>= 0.36` | [development.md](./development.md#what-you-need) |
 | GTK | `>= 3.24` | same |
-| Database | SQLite via drift, `schemaVersion = 10` | [system-architecture.md](./system-architecture.md#7-library-database-schema) |
+| Database | SQLite via drift, `schemaVersion = 11` | [system-architecture.md](./system-architecture.md#7-library-database-schema) |
 | License | GPL-3.0-or-later | [LICENSE](../LICENSE) |
 
 ## Current status

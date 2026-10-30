@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 
 import 'fake_lyrics_provider.dart';
 
@@ -29,19 +30,26 @@ void main() {
 
     final names = container.read(lyricsSourceNamesProvider);
 
-    expect(names.keys, ['a', 'b']);
+    expect(names.keys.toSet(), {'lrclib', 'a', 'b'});
     expect(names['a'], const LyricsSourceName(displayName: 'Alpha'));
     expect(names['b']!.removed, isFalse);
     expect(names['b']!.author, isNull);
   });
 
-  test('the default list names LRCLIB and is loaded at once', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+  test(
+    'the default list names LRCLIB and is loaded without a library',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    expect(container.read(lyricsSourceNamesProvider).keys, ['lrclib']);
-    expect(container.read(lyricsSourcesLoadedProvider), isTrue);
-  });
+      expect(container.read(lyricsSourceNamesProvider).keys, ['lrclib']);
+      // The list is read from a stream, so it is loaded a moment later.
+      container.listen(lyricsSourcesLoadedProvider, (_, _) {});
+      expect(container.read(lyricsSourcesLoadedProvider), isFalse);
+      await container.read(lyricsSourcesInputProvider.future);
+      expect(container.read(lyricsSourcesLoadedProvider), isTrue);
+    },
+  );
 
   test('names are equal by value', () {
     expect(

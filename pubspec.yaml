@@ -28,6 +28,9 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  # Plugin zip reader (lib/core/lyrics/plugins/package): in-memory unzip of
+  # untrusted plugin packages. 4.x caps inflating at the declared entry size.
+  archive: ^4.5.2
   crypto: ^3.0.7
   dbus: ^0.8.0
   drift: ^2.35.2

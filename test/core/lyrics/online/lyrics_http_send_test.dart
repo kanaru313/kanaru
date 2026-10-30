@@ -47,6 +47,7 @@ void main() {
     Map<String, String> headers = const {},
     List<int>? body,
     Duration? deadline,
+    int? maxSends,
     String path = '/x',
   }) => LyricsHttpRequest(
     method: method,
@@ -54,6 +55,7 @@ void main() {
     headers: headers,
     body: body,
     deadline: deadline,
+    maxSends: maxSends,
   );
 
   test(
@@ -352,4 +354,43 @@ void main() {
       expect(server.requests.map((r) => r.body), ['payload', 'payload']);
     },
   );
+
+  group('maxSends', () {
+    setUp(() {
+      server.handler = (_) =>
+          const Reply(429, 'slow', headers: {'retry-after': '1'});
+    });
+
+    test('a cap of 1 sends once and returns the busy answer', () async {
+      var sends = 0;
+      final response = await http(sleep: (_) async {})
+          .send(request(maxSends: 1), onSend: () => sends++);
+      expect((response.status, response.sends, sends), (429, 1, 1));
+      expect(server.requests, hasLength(1));
+    });
+
+    test('a cap of 2 allows one retry, not two', () async {
+      final response = await http(sleep: (_) async {})
+          .send(request(maxSends: 2));
+      expect((response.status, response.sends), (429, 2));
+      expect(server.requests, hasLength(2));
+    });
+
+    test('a cap of 0 still makes the first send', () async {
+      final response = await http(sleep: (_) async {})
+          .send(request(maxSends: 0));
+      expect(response.sends, 1);
+    });
+
+    test('a cap above the retry limit changes nothing', () async {
+      final response = await http(sleep: (_) async {})
+          .send(request(maxSends: 10));
+      expect(response.sends, 3);
+    });
+
+    test('without a cap the retries run as before', () async {
+      final response = await http(sleep: (_) async {}).send(request());
+      expect(response.sends, 3);
+    });
+  });
 }

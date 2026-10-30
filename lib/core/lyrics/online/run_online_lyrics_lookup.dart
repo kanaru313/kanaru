@@ -11,8 +11,11 @@ import 'lyrics_provider.dart';
 import 'lyrics_provider_registry.dart';
 import 'lyrics_target.dart';
 
-/// What a finished lookup stored.
-enum OnlineLyricsLookupResult { found, notFound }
+/// What a finished lookup stored. [notStored] means the answer was refused by
+/// the database because the plugin source was removed (or uninstalled) while
+/// the lookup ran: nothing was written, so the lookup neither found nor
+/// missed.
+enum OnlineLyricsLookupResult { found, notFound, notStored }
 
 /// Most `fetch` calls one lookup makes for matches that came without lyrics.
 const maxLookupFetches = 3;
@@ -41,6 +44,10 @@ const maxLookupFetches = 3;
 /// match has to be fetched. If that extra search or fetch fails with a
 /// `LyricsFetchException` other than `notConsented`, the plain record is
 /// kept.
+///
+/// A plugin source's row is saved only while its record exists and is not
+/// removed; when the database refuses it the result is [notStored], never
+/// `found`.
 ///
 /// Rejected records, and duplicates of their text, are excluded from both the
 /// gate and the ranking. Any other failure throws (a `LyricsFetchException`
@@ -141,13 +148,16 @@ Future<OnlineLyricsLookupResult> runOnlineLyricsLookup({
     } on LyricsRequestAbandoned {
       // Abandoned before the bonus request went out: keep the plain hit.
       if (!exactNeedsSynced) rethrow;
+    } on LyricsSourceSkipped {
+      // The source could not run the bonus request: keep the plain hit.
+      if (!exactNeedsSynced) rethrow;
     }
   }
 
   final fetchedAt = now().millisecondsSinceEpoch;
   final body = chosen?.body;
   if (chosen == null || body == null) {
-    await db.saveOnlineLyrics(
+    final saved = await db.saveOnlineLyrics(
       OnlineLyricsCompanion.insert(
         cacheKey: cacheKey,
         providerId: registration.id,
@@ -155,9 +165,11 @@ Future<OnlineLyricsLookupResult> runOnlineLyricsLookup({
         fetchedAt: fetchedAt,
       ),
     );
-    return OnlineLyricsLookupResult.notFound;
+    return saved
+        ? OnlineLyricsLookupResult.notFound
+        : OnlineLyricsLookupResult.notStored;
   }
-  await db.saveOnlineLyrics(
+  final saved = await db.saveOnlineLyrics(
     OnlineLyricsCompanion.insert(
       cacheKey: cacheKey,
       providerId: registration.id,
@@ -170,5 +182,7 @@ Future<OnlineLyricsLookupResult> runOnlineLyricsLookup({
       fetchedAt: fetchedAt,
     ),
   );
-  return OnlineLyricsLookupResult.found;
+  return saved
+      ? OnlineLyricsLookupResult.found
+      : OnlineLyricsLookupResult.notStored;
 }

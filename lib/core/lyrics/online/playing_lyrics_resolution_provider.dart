@@ -160,28 +160,39 @@ class PlayingLyricsResolutionNotifier
     // A miss: look it up when automatic lookups are allowed. The auto
     // provider stays watched while its lookup runs, so an answer that has
     // not reached the cache stream yet does not start a second one.
-    // Only a source that still has to be asked can start the lookup.
+    // Only a source that still has to be asked can start the lookup, and a
+    // paused source waits for its own pause to end.
     final toAsk = sourcesToAsk(cache.requireValue, [
       for (final r in registrations) r.id,
     ], now).toSet();
-    final providerId = ref.watch(
-      settingsProvider.select(
-        (s) => s.onlineLyrics.autoAllowed
-            ? registrations
-                  .where((r) => toAsk.contains(r.id))
-                  .map((r) => r.id)
-                  .firstOrNull
-            : null,
-      ),
+    final autoAllowed = ref.watch(
+      settingsProvider.select((s) => s.onlineLyrics.autoAllowed),
     );
-    // The end of the pause, not only whether it runs: a longer pause updates
-    // the time the status reports.
-    final until = ref.watch(onlineLyricsBackoffProvider);
-    final blocked = until != null && now.isBefore(until);
-    final wanted = song.isAutoSearchable ? providerId : null;
-    final autoId = blocked ? null : wanted;
+    final pauses = ref.watch(onlineLyricsBackoffProvider);
+    DateTime? pauseOf(String id) {
+      final until = pauses[id];
+      return until != null && now.isBefore(until) ? until : null;
+    }
+
+    final askable = autoAllowed && song.isAutoSearchable
+        ? [
+            for (final r in registrations)
+              if (toAsk.contains(r.id)) r.id,
+          ]
+        : const <String>[];
+    final wanted = askable.isNotEmpty;
+    final autoId = askable.where((id) => pauseOf(id) == null).firstOrNull;
+    // Every source that could be asked is paused: the status reports the
+    // first moment one of them is free again.
+    DateTime? until;
+    if (wanted && autoId == null) {
+      for (final id in askable) {
+        final end = pauseOf(id);
+        if (end != null && (until == null || end.isBefore(until))) until = end;
+      }
+    }
     if (autoId != null) ref.watch(autoLyricsLookupProvider(song));
-    if (blocked && wanted != null) {
+    if (until != null) {
       // The pause ends without any state changing, so wake up when it does.
       final wake = Timer(
         until.difference(now) + const Duration(milliseconds: 1),
@@ -195,7 +206,7 @@ class PlayingLyricsResolutionNotifier
     return statusFromLookup(
       uri: uri,
       lookup: lookup,
-      wanted: wanted != null,
+      wanted: wanted,
       pausedUntil: until,
       now: now,
       autoProviderId: autoId,

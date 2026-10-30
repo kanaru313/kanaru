@@ -304,6 +304,7 @@ void main() {
   test('stay loading until the sources are loaded', () async {
     final gated = await createHarness(
       [LyricsProviderRegistration(FakeLyricsProvider(id: 'first'))],
+      forceSourcesLoaded: false,
       overrides: [lyricsSourcesLoadedProvider.overrideWithValue(false)],
     );
     final provider = onlineLyricsCacheProvider('key');

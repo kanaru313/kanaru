@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_http_factory.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_lookups.dart';
@@ -68,18 +69,23 @@ class LyricsHarness {
       container.read(onlineLyricsBackoffProvider.notifier);
 }
 
+/// [registrations] replaces the whole source list; `null` keeps the real one
+/// (LRCLIB and the plugins in the database), for tests of the dynamic list.
 Future<LyricsHarness> createHarness(
-  List<LyricsProviderRegistration> registrations, {
+  List<LyricsProviderRegistration>? registrations, {
   HttpClient? client,
   bool autoFetch = true,
   bool autoConsent = true,
   bool manualConsent = true,
   bool withDatabase = true,
+  bool forceSourcesLoaded = true,
+  LibraryDatabase? database,
   List<Override> overrides = const [],
 }) async {
-  final harness = LyricsHarness._()..registrations = registrations;
-  harness.db = LibraryDatabase(NativeDatabase.memory());
-  addTearDown(harness.db.close);
+  final harness = LyricsHarness._()..registrations = registrations ?? const [];
+  // A database given by the test is closed by the test.
+  harness.db = database ?? LibraryDatabase(NativeDatabase.memory());
+  if (database == null) addTearDown(harness.db.close);
   harness.container = ProviderContainer(
     overrides: [
       initialSettingsProvider.overrideWithValue(
@@ -91,7 +97,12 @@ Future<LyricsHarness> createHarness(
           ),
         ),
       ),
-      lyricsProvidersProvider.overrideWithValue(registrations),
+      if (registrations != null)
+        lyricsProvidersProvider.overrideWithValue(registrations),
+      // The source list is ready at once unless a test of the loading gate
+      // asks for [forceSourcesLoaded] false or passes its own override.
+      if (forceSourcesLoaded)
+        lyricsSourcesLoadedProvider.overrideWithValue(true),
       lyricsHttpClientProvider.overrideWithValue(
         client ?? CountingHttpClient(),
       ),

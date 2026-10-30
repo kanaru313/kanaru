@@ -26,17 +26,28 @@ final onlineLyricsDebounceProvider = Provider<Duration>(
   (ref) => const Duration(seconds: 1),
 );
 
-/// Session pause of automatic lookups after a failure. The state is the
-/// moment the pause ends (`null` for none); it lives in memory only and is
-/// fed by failed lookups, never by a missing consent.
-class OnlineLyricsBackoff extends Notifier<DateTime?> {
-  @override
-  DateTime? build() => null;
+/// How long an automatic lookup waits before it asks again for a song where a
+/// source was left unasked without a failure (the plugin runtime had every
+/// worker busy). Without it the song would be retried once per debounce for
+/// as long as the runtime stays busy. A new song starts its own lookup at
+/// once.
+final onlineLyricsSkipRetryProvider = Provider<Duration>(
+  (ref) => const Duration(seconds: 30),
+);
 
-  /// Pauses until now plus [minBackoff], or the wait the service asked for
-  /// (clamped to [minRetryAfter]..[maxRetryAfter]) when that is longer, plus
-  /// up to [maxBackoffJitter] of it. A pause never gets shorter.
-  void failed([Duration? retryAfter]) {
+/// Session pause of automatic lookups after a failure, kept per source. The
+/// state maps a provider id to the moment its pause ends; an entry whose time
+/// has passed is as good as none. It lives in memory only and is fed by failed
+/// lookups, never by a missing consent. A failing source pauses only itself,
+/// so the others keep looking songs up.
+class OnlineLyricsBackoff extends Notifier<Map<String, DateTime>> {
+  @override
+  Map<String, DateTime> build() => const {};
+
+  /// Pauses [providerId] until now plus [minBackoff], or the wait the service
+  /// asked for (clamped to [minRetryAfter]..[maxRetryAfter]) when that is
+  /// longer, plus up to [maxBackoffJitter] of it. A pause never gets shorter.
+  void failed(String providerId, [Duration? retryAfter]) {
     var wait = minBackoff;
     if (retryAfter != null) {
       final asked = retryAfter < minRetryAfter
@@ -48,20 +59,34 @@ class OnlineLyricsBackoff extends Notifier<DateTime?> {
     final until = ref
         .read(onlineLyricsClockProvider)()
         .add(wait + wait * (jitter * maxBackoffJitter));
-    final current = state;
-    if (current == null || until.isAfter(current)) state = until;
+    final current = state[providerId];
+    if (current == null || until.isAfter(current)) {
+      state = {...state, providerId: until};
+    }
   }
 
-  /// Ends the pause (Retry, Search again).
-  void clear() => state = null;
+  /// Lifts every pause (Retry, Search again, Clear saved lyrics).
+  void clear() => state = const {};
 
-  /// Whether the pause is still running.
+  /// Whether the pause of [providerId] is still running.
+  bool isPaused(String providerId) => pausedUntil(providerId) != null;
+
+  /// When the pause of [providerId] ends, or `null` when it is not paused.
+  DateTime? pausedUntil(String providerId) =>
+      _running(state[providerId], ref.read(onlineLyricsClockProvider)());
+
+  /// Whether any source is paused. Used by tests and diagnostics only; the
+  /// lookups ask [isPaused] per source.
   bool get isBlocked {
-    final until = state;
-    return until != null &&
-        ref.read(onlineLyricsClockProvider)().isBefore(until);
+    final now = ref.read(onlineLyricsClockProvider)();
+    return state.values.any((until) => _running(until, now) != null);
   }
 }
 
+DateTime? _running(DateTime? until, DateTime now) =>
+    until != null && now.isBefore(until) ? until : null;
+
 final onlineLyricsBackoffProvider =
-    NotifierProvider<OnlineLyricsBackoff, DateTime?>(OnlineLyricsBackoff.new);
+    NotifierProvider<OnlineLyricsBackoff, Map<String, DateTime>>(
+      OnlineLyricsBackoff.new,
+    );

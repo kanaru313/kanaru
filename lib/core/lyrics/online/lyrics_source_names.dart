@@ -4,7 +4,13 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../database/lyrics_plugin_spec.dart' show lrclibSourceId;
+import '../plugins/lyrics_sources_provider.dart';
+import 'lrclib_provider.dart';
 import 'lyrics_provider_registry.dart';
+
+export '../plugins/lyrics_sources_provider.dart'
+    show lyricsSourcesLoadedProvider;
 
 /// How the UI names one lyrics source it knows of.
 class LyricsSourceName {
@@ -49,23 +55,29 @@ class _NameMap extends UnmodifiableMapView<String, LyricsSourceName> {
       entries.fold(0, (h, e) => h ^ Object.hash(e.key, e.value));
 }
 
-/// Every source whose stored lyrics may be shown, by provider id: the
-/// enabled ones and, apart from them, sources that are known but do not run.
-/// It decides what is listed and how it is named; [lyricsProvidersProvider]
-/// decides what runs.
+/// Every source whose stored lyrics may be shown, by provider id: LRCLIB (a
+/// known provider, named even when turned off), the enabled sources and
+/// every plugin record, installed (on or off) or removed. A removed record
+/// is only a name for lyrics it saved. It decides what is listed and how it
+/// is named; [lyricsProvidersProvider] decides what runs.
 final lyricsSourceNamesProvider = Provider<Map<String, LyricsSourceName>>((
   ref,
 ) {
-  final enabled = ref.watch(lyricsProvidersProvider);
-  return _NameMap({
-    for (final r in enabled) r.id: LyricsSourceName(displayName: r.displayName),
-  });
+  final names = <String, LyricsSourceName>{
+    lrclibSourceId: LyricsSourceName(displayName: LrclibProvider().displayName),
+    for (final r in ref.watch(lyricsProvidersProvider))
+      r.id: LyricsSourceName(displayName: r.displayName),
+  };
+  for (final record in ref.watch(lyricsPluginRecordsProvider)) {
+    final author = record.author?.trim();
+    names[record.installId] = LyricsSourceName(
+      displayName: record.name,
+      author: author == null || author.isEmpty ? null : author,
+      removed: record.isRemoved,
+    );
+  }
+  return _NameMap(names);
 });
-
-/// Whether the list of sources is complete. Until it is, no row is listed
-/// and no lookup starts, so a source still being loaded is not mistaken for
-/// a missing one.
-final lyricsSourcesLoadedProvider = Provider<bool>((ref) => true);
 
 /// Completes once [lyricsSourcesLoadedProvider] is true; at once when it
 /// already is. Also completes when [ref] is disposed first, so a waiting

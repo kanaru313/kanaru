@@ -17,9 +17,12 @@ import 'package:drift/drift.dart';
 //    rejected `content_hash`; lookups drop rejected ids and hashes before
 //    ranking. A reject made before hashes existed has a null hash and
 //    matches by id only.
-// 5. `status` holds only `found` or `not_found` and `provider_id` only ids of
-//    known providers; there is no CHECK constraint, readers skip unknown
-//    values so a newer build's rows do not break an older one.
+// 5. `status` holds only `found` or `not_found`. `provider_id` holds ids of
+//    known providers: `lrclib` and every `lyrics_plugins.install_id`,
+//    installed or removed (`lyrics_plugin_tables.dart`); readers skip other
+//    values. A plugin's row is saved only while its record exists and is not
+//    removed. There is no CHECK constraint, so a newer build's rows do not
+//    break an older one.
 // 6. `remote_id` is null exactly when `status` is `not_found`. In
 //    `lyrics_pins`, `mode` is the song's lyrics choice: `local`, `online` or
 //    `off`. Null or an unknown value (from a newer build) reads as auto and
