@@ -4,6 +4,7 @@ import '../../database/library_database.dart';
 import '../../database/online_lyrics_queries.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http.dart';
+import 'lyrics_http_retry.dart';
 import 'lyrics_match.dart';
 import 'lyrics_provider.dart';
 import 'lyrics_provider_registry.dart';
@@ -71,6 +72,9 @@ Future<OnlineLyricsLookupResult> runOnlineLyricsLookup({
     } on LyricsFetchException catch (e) {
       // The plain hit is already good; a failed bonus search must not lose it.
       if (!exactNeedsSynced || e.kind == LyricsFetchKind.notConsented) rethrow;
+    } on LyricsRequestAbandoned {
+      // Abandoned before the bonus search went out: keep the plain hit.
+      if (!exactNeedsSynced) rethrow;
     }
     final ranked = rankCandidates(
       query,

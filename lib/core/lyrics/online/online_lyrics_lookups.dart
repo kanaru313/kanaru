@@ -42,9 +42,11 @@ final class LookupFailed extends LookupState {
 /// Runs online lookups, keyed by cache key. Lives as long as the app: a sent
 /// request cannot be aborted, so a lookup finishes and stores its answer
 /// even when the song has changed or nothing watches it any more. The one
-/// exception is the wait before a busy answer is sent again: when every
-/// caller of the lookup has abandoned it by then, it ends there with no
-/// failure and no backoff.
+/// exception is the point before a request is sent (the first one, the
+/// second search or a retry after a busy wait): when every caller of the
+/// lookup has abandoned it by then, nothing more is sent and it ends with no
+/// failure and no backoff. A plain-only exact hit already received is still
+/// stored when only its extra search is cut off.
 class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
   final _inFlight = <String, _Flight>{};
 

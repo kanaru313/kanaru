@@ -275,6 +275,23 @@ void main() {
       expect(server.requests, hasLength(1));
     });
 
+    test('abandoned before the extra search keeps the plain hit', () async {
+      var abandoned = false;
+      await setUpWith((_) {
+        abandoned = true;
+        return Reply(200, jsonEncode(plain(1)), headers: _json);
+      });
+
+      await h.lookups.start(fakeTarget, auto: true, abandoned: () => abandoned);
+
+      final row =
+          (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
+      expect((row.status, row.remoteId, row.syncedText), ('found', '1', null));
+      expect(server.requests, hasLength(1));
+      expect(h.container.read(onlineLyricsLookupsProvider), isEmpty);
+      expect(h.backoff.isBlocked, isFalse);
+    });
+
     test('a 503 on the extra search keeps the plain exact hit', () async {
       await setUpWith(
         (r) => r.uri.path == '/api/get'

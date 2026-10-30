@@ -125,7 +125,23 @@ void main() {
   });
 
   test('abandoned during the first send: no wait, no second send', () async {
-    server = await LoopbackServer.start((_) => _busy(503));
+    server = await LoopbackServer.start((_) {
+      abandoned = true;
+      return _busy(503);
+    });
+    final http = LyricsHttp.forTesting(
+      client: client,
+      hosts: const ['127.0.0.1'],
+      sleep: (wait) async => sleeps.add(wait),
+      abandoned: () => abandoned,
+    );
+    await expectLater(http.get(get()), throwsA(isA<LyricsRequestAbandoned>()));
+    expect(sleeps, isEmpty);
+    expect(server.requests, hasLength(1));
+  });
+
+  test('abandoned before the first send: nothing is sent', () async {
+    server = await LoopbackServer.start((_) => _ok);
     final http = LyricsHttp.forTesting(
       client: client,
       hosts: const ['127.0.0.1'],
@@ -134,7 +150,7 @@ void main() {
     );
     await expectLater(http.get(get()), throwsA(isA<LyricsRequestAbandoned>()));
     expect(sleeps, isEmpty);
-    expect(server.requests, hasLength(1));
+    expect(server.requests, isEmpty);
   });
 
   test('busy then too slow to retry is rateLimited with Retry-After', () async {

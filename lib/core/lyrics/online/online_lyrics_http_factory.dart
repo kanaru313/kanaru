@@ -35,9 +35,9 @@ class OnlineLyricsHttpFactory {
       _make(registration, registration.consentKey, null);
 
   /// For a lookup Kanaru starts by itself. Needs the provider's separate
-  /// automatic key; the manual key is not enough. [abandoned] is asked after
-  /// each wait between sends of a busy answer; once it is true no further
-  /// request goes out.
+  /// automatic key; the manual key is not enough. [abandoned] is asked before
+  /// every send, the first one included; once it is true no further request
+  /// goes out.
   LyricsHttp forAuto(
     LyricsProviderRegistration registration, {
     bool Function()? abandoned,

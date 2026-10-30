@@ -15,12 +15,15 @@ const translationConnectTimeout = Duration(seconds: 10);
 /// How long the whole request, response body included, may take.
 const translationRequestTimeout = Duration(seconds: 20);
 
-/// What came back from a translation service: the HTTP [status], the decoded
-/// [body] and the response [headers] (lower-case names).
+/// What came back from a service: the HTTP [status], the decoded [body], the
+/// response [headers] (lower-case names) and the raw [bytes]. [bytes] is
+/// filled only when the request asked for `decode: false`; [body] is then
+/// empty. Otherwise [bytes] is empty.
 typedef TranslationResponse = ({
   int status,
   String body,
   Map<String, String> headers,
+  Uint8List bytes,
 });
 
 /// Sends one request and reads the whole answer, whatever the status. Every
@@ -36,6 +39,12 @@ typedef TranslationResponse = ({
 ///
 /// Redirects are not followed: a 3xx comes back as the response.
 ///
+/// [bodyBytes], when given, is sent as the request body instead of [body]
+/// (the two are exclusive). With `decode: false` the answer is not read as
+/// text: its raw bytes are in [TranslationResponse.bytes] and no UTF-8 check
+/// is made. The caller then owns header validation: a refused header value
+/// still maps to `badKey`.
+///
 /// The original exception is never attached or logged: its text may hold
 /// header values or the request address. No retry is made here.
 Future<TranslationResponse> sendTranslationRequest(
@@ -44,10 +53,13 @@ Future<TranslationResponse> sendTranslationRequest(
   required Uri uri,
   Map<String, String> headers = const {},
   String? body,
+  List<int>? bodyBytes,
+  bool decode = true,
   Duration connectTimeout = translationConnectTimeout,
   Duration requestTimeout = translationRequestTimeout,
   int maxBytes = maxTranslationResponseBytes,
 }) async {
+  assert(body == null || bodyBytes == null, 'body and bodyBytes are exclusive');
   // Kept so that a request still connecting when we give up is aborted
   // once it opens, instead of leaking.
   final Future<HttpClientRequest> pending;
@@ -61,7 +73,8 @@ Future<TranslationResponse> sendTranslationRequest(
     return await _exchange(
       pending,
       headers,
-      body,
+      bodyBytes ?? (body == null ? null : utf8.encode(body)),
+      decode,
       connectTimeout,
       requestTimeout,
       maxBytes,
@@ -97,7 +110,8 @@ void _abortWhenOpen(Future<HttpClientRequest> pending) {
 Future<TranslationResponse> _exchange(
   Future<HttpClientRequest> pending,
   Map<String, String> headers,
-  String? body,
+  List<int>? body,
+  bool decode,
   Duration connectTimeout,
   Duration requestTimeout,
   int maxBytes,
@@ -117,9 +131,8 @@ Future<TranslationResponse> _exchange(
     throw const TranslationException(TranslationFailureKind.badKey);
   }
   if (body != null) {
-    final bytes = utf8.encode(body);
-    request.contentLength = bytes.length;
-    request.add(bytes);
+    request.contentLength = body.length;
+    request.add(body);
   }
   final response = await request.close();
   final chunks = BytesBuilder(copy: false);
@@ -141,6 +154,14 @@ Future<TranslationResponse> _exchange(
     (name, values) => received[name] = values.join(', '),
   );
   final status = response.statusCode;
+  if (!decode) {
+    return (
+      status: status,
+      body: '',
+      headers: received,
+      bytes: chunks.takeBytes(),
+    );
+  }
   return (
     status: status,
     // An error status keeps its meaning even when its body is garbage.
@@ -149,5 +170,6 @@ Future<TranslationResponse> _exchange(
       allowMalformed: status < 200 || status >= 300,
     ),
     headers: received,
+    bytes: Uint8List(0),
   );
 }
