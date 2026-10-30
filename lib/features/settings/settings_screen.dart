@@ -7,6 +7,7 @@ import 'advanced_settings_section.dart';
 import 'appearance_settings_section.dart';
 import 'backup_settings_section.dart';
 import 'library_settings_section.dart';
+import 'lyrics_settings_section.dart';
 import 'settings_save_warning.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -32,6 +33,7 @@ class SettingsScreen extends StatelessWidget {
                   SettingsSaveWarning(),
                   AppearanceSettingsSection(),
                   LibrarySettingsSection(),
+                  LyricsSettingsSection(),
                   BackupSettingsSection(),
                   AdvancedSettingsSection(),
                   AboutSettingsSection(),

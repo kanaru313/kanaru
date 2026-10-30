@@ -4,13 +4,11 @@ import '../../l10n/l10n.dart';
 import 'interface_setting_rows.dart';
 import 'listen_history_setting_rows.dart';
 import 'log_folder_setting_row.dart';
-import 'lyrics_translation_setting_rows.dart';
 import 'playback_setting_rows.dart';
 import 'settings_section.dart';
 
 /// Settings that are rarely changed: listen history, the log folder, the
-/// playback options, lyrics translation, and the interface options that are
-/// not wired yet.
+/// playback options, and the interface options that are not wired yet.
 class AdvancedSettingsSection extends StatelessWidget {
   const AdvancedSettingsSection({super.key});
 
@@ -22,7 +20,6 @@ class AdvancedSettingsSection extends StatelessWidget {
         ListenHistorySettingRows(),
         LogFolderSettingRow(),
         PlaybackSettingRows(),
-        LyricsTranslationSettingRows(),
         InterfaceSettingRows(),
       ],
     );

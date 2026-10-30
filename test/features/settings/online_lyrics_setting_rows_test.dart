@@ -13,7 +13,7 @@ void main() {
     of: find.ancestor(of: find.text(title), matching: find.byType(SettingRow)),
     matching: find.byType(Switch),
   );
-  final auto = switchOf('Find lyrics online automatically (LRCLIB)');
+  final auto = switchOf('Find lyrics online automatically');
   final notice = find.text('Find lyrics online automatically?');
 
   Future<LyricsRowsHarness> pump(

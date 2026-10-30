@@ -882,6 +882,10 @@
   "settingsTabLanguages": "Languages",
   "settingsTrackNumbers": "Track numbers in albums",
   "settingsTrackNumbersHint": "Shows each song's number before its cover on an album page.",
+  "settingsLyrics": "Lyrics",
+  "@settingsLyrics": {
+    "description": "Title of the Lyrics section in Settings"
+  },
   "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreRow": "Back up and restore data",
@@ -2494,11 +2498,11 @@
       }
     }
   },
-  "lyricsTranslationBannerNoKey": "Add your DeepL key in Settings › Advanced.",
+  "lyricsTranslationBannerNoKey": "Add your DeepL key in Settings › Lyrics.",
   "@lyricsTranslationBannerNoKey": {
     "description": "Lyrics translation error banner: DeepL is selected but no key is saved"
   },
-  "lyricsTranslationBannerBadKey": "DeepL rejected the key. Check the key in Settings › Advanced.",
+  "lyricsTranslationBannerBadKey": "DeepL rejected the key. Check the key in Settings › Lyrics.",
   "@lyricsTranslationBannerBadKey": {
     "description": "Lyrics translation error banner: DeepL did not accept the saved key"
   },
@@ -2666,7 +2670,7 @@
       }
     }
   },
-  "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Advanced › Lyrics.",
+  "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Lyrics.",
   "@onlineLyricsNoticeAutoHint": {
     "description": "Hint under the automatic online lyrics notice saying where to turn it off"
   },
@@ -2852,7 +2856,7 @@
   "@lyricsMenuNotThese": {
     "description": "Lyrics credit menu item that rejects the matched lyrics for the song"
   },
-  "settingsAutoOnlineLyrics": "Find lyrics online automatically (LRCLIB)",
+  "settingsAutoOnlineLyrics": "Find lyrics online automatically",
   "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
   "settingsSavedLyrics": "Saved lyrics",
   "settingsSavedLyricsSongs": "{count, plural, =1{1 song with lyrics} other{{count} songs with lyrics}}",

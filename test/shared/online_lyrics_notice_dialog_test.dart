@@ -148,7 +148,7 @@ void main() {
     expect(find.text('Find lyrics online automatically?'), findsOneWidget);
     expect(find.textContaining('lrclib.net'), findsOneWidget);
     expect(
-      find.text('You can turn it off in Settings › Advanced › Lyrics.'),
+      find.text('You can turn it off in Settings › Lyrics.'),
       findsOneWidget,
     );
     await tester.tap(find.text('Turn on'));

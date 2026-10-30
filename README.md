@@ -151,7 +151,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 **Phase 4 — Juicy**
 
 - [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, picks, the per-song source button, *Save lyrics…* and the synced view are done; open: several online providers, a narrow-window *Choose lyrics* dialog, the provider plugin runtime, manual lyrics entry, time offset
-- [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Advanced: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
+- [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Lyrics: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade, sleep timer
 - [ ] Listening stats, Last.fm / ListenBrainz scrobbling

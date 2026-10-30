@@ -1361,6 +1361,9 @@ class AppLocalizationsVi extends AppLocalizations {
       'Hiện số thứ tự của từng bài trước ảnh bìa trên trang album.';
 
   @override
+  String get settingsLyrics => 'Lời bài hát';
+
+  @override
   String get settingsAdvanced => 'Nâng cao';
 
   @override
@@ -2657,11 +2660,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationBannerNoKey =>
-      'Hãy thêm khóa DeepL trong Cài đặt › Nâng cao.';
+      'Hãy thêm khóa DeepL trong Cài đặt › Lời bài hát.';
 
   @override
   String get lyricsTranslationBannerBadKey =>
-      'DeepL từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Nâng cao.';
+      'DeepL từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Lời bài hát.';
 
   @override
   String translationNoticeTitle(String service) {
@@ -2882,7 +2885,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeAutoHint =>
-      'Tắt lại được trong Cài đặt › Nâng cao › Lời bài hát.';
+      'Tắt lại được trong Cài đặt › Lời bài hát.';
 
   @override
   String get onlineLyricsNoticeTurnOn => 'Bật';
@@ -3003,7 +3006,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsMenuNotThese => 'Không phải lời này';
 
   @override
-  String get settingsAutoOnlineLyrics => 'Tự động tìm lời online (LRCLIB)';
+  String get settingsAutoOnlineLyrics => 'Tự động tìm lời online';
 
   @override
   String get settingsAutoOnlineLyricsHint =>
