@@ -4,6 +4,7 @@ import 'dart:io';
 import '../../lyrics_translation/translation_failure.dart';
 import '../../lyrics_translation/translation_http.dart';
 import 'lyrics_fetch_exception.dart';
+import 'lyrics_http_pinned_connect.dart';
 import 'lyrics_http_request.dart';
 import 'lyrics_http_retry.dart';
 
@@ -148,6 +149,10 @@ class LyricsSendLoop {
         maxBytes: lyricsMaxResponseBytes,
       );
     } on TranslationException catch (e) {
+      // The pinned connection refused the address the host name resolved to.
+      if (e is LyricsBlockedAddressException) {
+        throw const LyricsFetchException(LyricsFetchKind.blockedHost);
+      }
       throw LyricsFetchException(
         e.kind == TranslationFailureKind.network
             ? LyricsFetchKind.network
