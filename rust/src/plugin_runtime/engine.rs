@@ -224,8 +224,10 @@ fn run_in_context<'js>(
             memory_hit.load(Ordering::SeqCst),
             spec.timeout,
         ),
+        // A missing `execute` or a return that is not a `Response` is a bug of
+        // the plugin, not a failure of a server.
         Err(RunFailure::Contract(message)) => PluginScriptResult {
-            error_kind: PluginErrorKind::Server,
+            error_kind: PluginErrorKind::InvalidResponse,
             ..failure(PluginScriptStatus::ScriptError, message)
         },
         Err(RunFailure::InvalidResponse(message)) => PluginScriptResult {
@@ -336,9 +338,10 @@ fn map_js_failure(
             PluginErrorKind::None,
             "the script nested calls too deeply".to_owned(),
         ),
+        // A thrown error is a bug of the plugin, not a failure of a server.
         _ => (
             PluginScriptStatus::ScriptError,
-            PluginErrorKind::Server,
+            PluginErrorKind::InvalidResponse,
             f.message.clone(),
         ),
     };

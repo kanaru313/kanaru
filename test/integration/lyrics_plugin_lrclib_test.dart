@@ -3,6 +3,8 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 
 import '../core/lyrics_translation/loopback_server.dart';
@@ -105,11 +107,25 @@ void main() {
             [('401', null)],
           );
         }
-        // A tag with two artists: no artist_name in the plugin's search.
-        await autoLookup(plugin, multi, server, database: env.db);
-        expect(server.requests.single.uri.queryParameters, {
-          'track_name': 'Synced Song',
-        });
+        // A tag with two artists: both providers' searches go by title only
+        // (a song filed under another of the artists must still be found), so
+        // neither sends artist_name. The Dart host finds this song with its
+        // exact lookup and never searches, so its search is called directly.
+        Future<Map<String, String>> searchSent(
+          LyricsProviderRegistration r,
+        ) async {
+          server.requests.clear();
+          await r.provider.search(
+            LyricsQuery(title: multi.title, artist: multi.artist),
+            LyricsHttp(r, LrclibRoutingClient(server)),
+          );
+          return server.requests.single.uri.queryParameters;
+        }
+
+        final dartSent = await searchSent(dart);
+        final pluginSent = await searchSent(plugin);
+        expect(dartSent, {'track_name': 'Synced Song'});
+        expect(pluginSent, dartSent);
       },
     );
 

@@ -117,7 +117,7 @@ Any other outcome throws an `Error` with a `name`:
 | Name | Meaning |
 |---|---|
 | `NetworkError` | connection, TLS or timeout failure |
-| `BlockedHostError` | the host is not on the plugin's allowlist |
+| `BlockedHostError` | the host is not on the plugin's allowlist, or the URL is not `https` (plain `http`, an explicit port or user info are refused) |
 | `NotConsentedError` | the user has not allowed the plugin to use the network |
 | `AbortError` | the user stopped the lookup; the call ends `cancelled` even if the script catches this |
 | `InvalidRequestError` | the app refused the request (method, headers, body) or the body is over 256 KiB |
@@ -190,7 +190,7 @@ How the app uses a plugin (`lib/core/lyrics/plugins/plugin_lyrics_provider.dart`
 
 `execute(input)` gets one of:
 
-- an automatic lookup or a search by tags: `{title, artist, album, durationMs}`; a missing tag is `null`. `artist` is the primary artist;
+- an automatic lookup or a search by tags: `{title, artist, artists, album, durationMs}`; a missing tag is `null`. `artist` is the primary artist (the first name of the tag) and `artists` the list of all the song's artist names, split like the library splits a tag (`;`, `/`, `feat.`, `ft.`, `featuring`, `with`, with the keep-whole list such as `AC/DC`); `artists` is `null` when there is no artist tag;
 - the manual search of the Choose lyrics dialog: `{text}` with the text the user typed.
 
 It returns `Response.success(items)`, an array of at most 20 useful items (more are cut):
@@ -298,7 +298,7 @@ Every kept `src/*.js` goes through `PluginRuntime.check`; the first syntax error
 |---|---|
 | `plugin.json` | `hosts: ["lrclib.net"]`, no `config`; names the two entry scripts |
 | `src/common.js` | shared helpers, reached with `load('common.js')`: `lrclibGet(path, queries)` accepts only a 200 JSON answer or LRCLIB's documented `TrackNotFound` 404 and turns everything else into a `Response.error` (429/503 `rateLimited` with `retryAfterSec`, other statuses `server`, wrong content type or JSON `invalidResponse`); `nfc()` sends text in NFC like the Dart provider |
-| `src/search.js` | `GET /api/search` with `track_name` and `artist_name`, or `q` for the manual search's `text`; sends `artist_name` only when the tag names exactly one artist (split on `;`, `/`, `feat.`, `ft.`, `featuring`, `with`); maps each record to `{id, title, artist, album, durationMs, lyrics}` like the Dart provider (seconds to milliseconds, a duration of 0 leaves `durationMs` out, a negative or over-a-day duration or a field of the wrong type drops the record, synced text before plain, no `lyrics` for an instrumental record), at most 20 items; a non-empty answer with no usable record is an invalid response |
+| `src/search.js` | `GET /api/search` with `track_name` and `artist_name`, or `q` for the manual search's `text`; sends `artist_name` only when `artists` has exactly one entry (more than one: `track_name` only, like the Dart provider); maps each record to `{id, title, artist, album, durationMs, lyrics}` like the Dart provider (seconds to milliseconds, a duration of 0 leaves `durationMs` out, a negative or over-a-day duration or a field of the wrong type drops the record, synced text before plain, no `lyrics` for an instrumental record), at most 20 items; a non-empty answer with no usable record is an invalid response |
 | `src/lyrics.js` | `GET /api/get/<id>`; returns `null`, `{instrumental: true}` or `{data, type}` with `type` `'lrc'` or `'txt'` |
 
 ```js
@@ -311,7 +311,7 @@ function execute(input) {
   if (hasText(input.text)) {
     queries = { q: nfc(input.text.trim()) };
   } else {
-    var names = artistNames(input.artist);
+    var names = artistNames(input.artists);
     queries = {
       track_name: nfc(input.title.trim()),
       artist_name: names.length === 1 ? nfc(names[0]) : undefined,
@@ -324,7 +324,7 @@ function execute(input) {
 }
 ```
 
-Known differences from the Dart provider (pinned by the tests below): a plugin result carries one text, so a record that has both synced and plain lyrics is stored with the synced text only; and a plugin has no exact-match call, so the host runs `search.js` where the Dart provider asks `/api/get` first (an instrumental record, which a search result cannot mark, costs a second request to `lyrics.js`). The sample also leaves out four things the Dart provider does, none of which changes what the app stores: the keep-whole list of artist names that contain a separator (`AC/DC`), bracketed `(feat. X)` parts, dropping a placeholder artist such as `Unknown Artist` (the plugin would send it as `artist_name`, but the app never runs a structured search for one), and cleaning titles and albums (the app checks plugin results again before it shows or stores them).
+Known differences from the Dart provider (pinned by the tests below): a plugin result carries one text, so a record that has both synced and plain lyrics is stored with the synced text only; and a plugin has no exact-match call, so the host runs `search.js` where the Dart provider asks `/api/get` first (an instrumental record, which a search result cannot mark, costs a second request to `lyrics.js`). The sample also leaves out two things the Dart provider does, none of which changes what the app stores: dropping a placeholder artist such as `Unknown Artist` (the plugin would send it as `artist_name`, but the app never runs a structured search for one), and cleaning titles and albums (the app checks plugin results again before it shows or stores them).
 
 ### Integration tests
 
@@ -338,4 +338,4 @@ flutter test test/integration
 Without `rust/target/debug/librust_lib_kanaru.so` (or with a stale build the bridge cannot load) every test there is reported skipped with that hint.
 
 - `lyrics_plugin_lrclib_test.dart` and `lyrics_plugin_lrclib_unmirrored_test.dart`: the Dart provider and the plugin answer the same fake LRCLIB for a synced song, a plain-only song, an instrumental song and a miss; the stored rows (except `provider_id`) and the manual search's ranked order are compared.
-- `lyrics_plugin_hostile_test.dart` and `lyrics_plugin_hostile_slow_test.dart`: the packages in `test/fixtures/lyrics_plugins/hostile/` (endless loop, regex bomb, 64 MiB allocation, deep recursion, 11 fetches, undeclared host, `http://`, a swallowed network error, wrong output shape, 3 MiB output, `load('../x.js')`, console spam) each end as the expected `LyricsFetchKind` (an error the script throws, such as the one `load('../x.js')` throws, is `server`), store nothing as "not found", leave one event in the plugin's JSONL log (kind, console, requests without query strings; a config value the script prints or puts in an address appears as `***`) and one INFO line in the app log without song data. The console-spam package is the exception: it is a successful run with an empty answer, so a `not_found` row is stored, the log event is `ok` with the console capped at 50 lines, and the app log gets nothing. Each finishes in under 20 s; the endless loop and the regex bomb wait for the 15 s wall-time limit, so they live in their own file and run in parallel with the others.
+- `lyrics_plugin_hostile_test.dart` and `lyrics_plugin_hostile_slow_test.dart`: the packages in `test/fixtures/lyrics_plugins/hostile/` (endless loop, regex bomb, 64 MiB allocation, deep recursion, 11 fetches, undeclared host, `http://`, a swallowed network error, wrong output shape, 3 MiB output, `load('../x.js')`, console spam) each end as the expected `LyricsFetchKind` (an error the script throws, such as the one `load('../x.js')` throws, is `invalidResponse`), store nothing as "not found", leave one event in the plugin's JSONL log (kind, console, requests without query strings; a config value the script prints or puts in an address appears as `***`) and one INFO line in the app log without song data. The console-spam package is the exception: it is a successful run with an empty answer, so a `not_found` row is stored, the log event is `ok` with the console capped at 50 lines, and the app log gets nothing. Each finishes in under 20 s; the endless loop and the regex bomb wait for the 15 s wall-time limit, so they live in their own file and run in parallel with the others.

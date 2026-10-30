@@ -1,6 +1,6 @@
 // search.js: find records for a song.
 //
-// input is {title, artist, album, durationMs} for an automatic lookup (a
+// input is {title, artist, artists, album, durationMs} for an automatic lookup (a
 // missing tag is null) or {text} for the manual search. The app matches the
 // results against the song and picks the best, so this script only maps
 // LRCLIB's records. It returns at most 20 items:
@@ -19,10 +19,10 @@ function execute(input) {
     queries = { q: nfc(input.text.trim()) };
   } else if (hasText(input.title)) {
     // LRCLIB matches artist_name against any position of a record's artist
-    // string, so it is sent only when the tag names exactly one artist; a tag
-    // with several searches by title and the app filters by artist. fetch()
-    // skips undefined values.
-    var names = artistNames(input.artist);
+    // string, so it is sent only when the song has exactly one artist
+    // (`artists` is the full list); a song with several searches by title and
+    // the app filters by artist. fetch() skips undefined values.
+    var names = artistNames(input.artists);
     queries = {
       track_name: nfc(input.title.trim()),
       artist_name: names.length === 1 ? nfc(names[0]) : undefined,
@@ -99,21 +99,19 @@ function isOptional(value, type) {
   return value == null || typeof value === type;
 }
 
-// The artist names of a tag, split like the app does (`;`, `/`, " feat. ",
-// " ft. ", " featuring ", " with "). Not copied from the Dart provider:
-//   - the keep-whole list of names that contain a separator (AC/DC);
-//   - bracketed "(feat. X)" parts;
+// The artist names of the `artists` input: trimmed, blank and repeated
+// names dropped. Not copied from the Dart provider:
 //   - dropping placeholder artists such as "Unknown Artist" (the app never
 //     runs a structured search for one);
 //   - cleaning titles and albums (control characters, spaces) and dropping a
 //     blank title: the app checks plugin results again before it shows or
 //     stores them.
-function artistNames(tag) {
-  if (typeof tag !== 'string') return [];
-  var parts = tag.split(/\s*;\s*|\s*\/\s*|\s+(?:feat\.?|ft\.?|featuring|with)\s+/i);
+function artistNames(artists) {
+  if (!Array.isArray(artists)) return [];
   var names = [];
-  for (var i = 0; i < parts.length; i++) {
-    var name = parts[i].trim();
+  for (var i = 0; i < artists.length; i++) {
+    if (typeof artists[i] !== 'string') continue;
+    var name = artists[i].trim();
     if (name !== '' && names.indexOf(name) < 0) names.push(name);
   }
   return names;

@@ -71,11 +71,26 @@ void main() {
       expect(inputs[0], {
         'title': 'Song',
         'artist': 'Artist',
+        'artists': ['Artist'],
         'album': 'Alb',
         'durationMs': 200000,
       });
       expect(inputs[1], {'text': 'free text'});
       expect(env.runtime.requests.first.entry, 'search.js');
+    });
+
+    test('a multi-artist tag sends the primary artist and all names', () async {
+      await env
+          .providerFor(record)
+          .search(
+            const LyricsQuery(title: 'Duet', artist: 'Alice; Bob'),
+            countingHttp(),
+          );
+      final input = jsonDecode(
+        env.runtime.requests.single.inputJson,
+      ) as Map<String, Object?>;
+      expect(input['artist'], 'Alice');
+      expect(input['artists'], ['Alice', 'Bob']);
     });
 
     test('missing tags are null', () async {
@@ -85,6 +100,7 @@ void main() {
       expect(jsonDecode(env.runtime.requests.single.inputJson), {
         'title': 'Only',
         'artist': null,
+        'artists': null,
         'album': null,
         'durationMs': null,
       });
