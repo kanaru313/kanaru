@@ -286,6 +286,38 @@ void main() {
   });
 
   group('setup failures', () {
+    test('a run stopped while loading logs nothing and is skipped', () async {
+      final loading = Completer<Map<String, String>>();
+      final started = Completer<void>();
+      env = await PluginProviderEnv.create(
+        loadConfig: (_) {
+          started.complete();
+          return loading.future;
+        },
+      );
+      addTearDown(env.dispose);
+      record = await env.install();
+      appLog.clear();
+
+      final run = env.providerFor(record).search(_tags, countingHttp());
+      final expectation = expectLater(run, throwsA(isA<LyricsSourceSkipped>()));
+      await started.future;
+      // The uninstall cancels, waits its short limit, and goes on; the
+      // loader is still slower than that.
+      await env.controller.uninstall(record.installId);
+      loading.completeError(StateError('late'));
+      await expectation;
+      await pumpLog();
+
+      expect(env.events(record.installId), isEmpty);
+      expect(
+        Directory(env.store.logs.path).existsSync() &&
+            Directory(env.store.logs.path).listSync().isNotEmpty,
+        isFalse,
+      );
+      expect(appLog, isEmpty);
+    });
+
     test('an unreadable settings store is a logged invalid response', () async {
       env = await PluginProviderEnv.create(
         loadConfig: (_) async => throw StateError('secret=xyz'),

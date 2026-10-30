@@ -134,11 +134,17 @@ class PluginScriptRunner {
         record: row,
       ).timeout(_outerDeadline);
     } on PluginPackageUnreadable catch (e) {
+      // Stopped by an update or uninstall while loading: log nothing.
+      if (cancel.isCancelled) throw const LyricsSourceSkipped();
       throw _failedBeforeRun(event('invalidResponse', e.reason));
     } on PluginRunSetupException catch (e) {
+      // Stopped by an update or uninstall while loading: log nothing.
+      if (cancel.isCancelled) throw const LyricsSourceSkipped();
       // Treated like any unreadable input of the plugin: invalid response.
       throw _failedBeforeRun(event('invalidResponse', e.reason));
     } on TimeoutException {
+      // Stopped by an update or uninstall while loading: log nothing.
+      if (cancel.isCancelled) throw const LyricsSourceSkipped();
       throw _failedBeforeRun(
         event('network', 'loading the plugin took too long'),
         LyricsFetchKind.network,
