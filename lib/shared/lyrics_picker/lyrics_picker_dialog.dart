@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/online/lyrics_provider.dart';
 import '../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../core/lyrics/online/lyrics_search_controller.dart';
+import '../../core/lyrics/online/lyrics_source_names.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
 import '../../l10n/l10n.dart';
 import '../format_duration.dart';
@@ -63,6 +64,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     final l10n = context.l10n;
     final state = ref.watch(lyricsSearchControllerProvider(widget.target));
     final registrations = ref.watch(lyricsProvidersProvider);
+    final names = ref.watch(lyricsSourceNamesProvider);
     final query = widget.target.query;
     final duration = query.duration;
     final selection = state.selection;
@@ -133,7 +135,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                             searchPending: _searchesOnOpen,
                             providerNames: {
                               for (final r in registrations)
-                                r.id: r.displayName,
+                                r.id: names[r.id]?.displayName ?? r.id,
                             },
                             onSelect: _controller.select,
                             onRetry: _controller.retry,

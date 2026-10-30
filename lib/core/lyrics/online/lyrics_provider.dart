@@ -35,7 +35,7 @@ class LyricsBody {
   bool get hasLyrics => syncedLrc != null || plain != null;
 }
 
-/// A provider's record, already sanitized by the provider.
+/// A provider's record, checked by the host.
 class LyricsCandidate {
   const LyricsCandidate({
     required this.providerId,

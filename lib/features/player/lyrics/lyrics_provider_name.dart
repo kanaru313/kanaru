@@ -1,12 +1,7 @@
-import '../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../core/lyrics/online/lyrics_source_names.dart';
 
-/// Name of the service [providerId]; the id when it is not registered.
-String lyricsProviderName(
-  List<LyricsProviderRegistration> registrations,
+/// Name of the source [providerId]; the id when it is not known.
+String lyricsSourceDisplayName(
+  Map<String, LyricsSourceName> names,
   String providerId,
-) {
-  for (final r in registrations) {
-    if (r.id == providerId) return r.displayName;
-  }
-  return providerId;
-}
+) => names[providerId]?.displayName ?? providerId;

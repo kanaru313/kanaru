@@ -9,6 +9,7 @@ import 'package:kanaru/core/lyrics/lyrics.dart';
 import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
@@ -423,6 +424,30 @@ void main() {
       await openMenu(tester);
       expect(find.text('Lyrics from .lrc file'), findsOneWidget);
       expect(find.text('Lyrics for this song'), findsNothing);
+    });
+
+    testWidgets('names a known source that is not enabled', (tester) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: OnlineLyricsOrigin(
+            providerId: 'disabled',
+            remoteId: '1',
+            pinned: true,
+          ),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'fake': const LyricsSourceName(displayName: 'Fake'),
+            'disabled': const LyricsSourceName(displayName: 'Off source'),
+          }),
+        ],
+      );
+      expect(find.text('Off source · Synced'), findsOneWidget);
     });
 
     testWidgets('speaks Vietnamese', (tester) async {

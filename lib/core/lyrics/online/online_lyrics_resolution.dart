@@ -39,18 +39,42 @@ PlayingLyricsStatus? statusFromPick(
   return null;
 }
 
-/// The status the cached answers give, or `null` for a miss (nothing cached,
-/// or only "no match" answers older than [notFoundTtl]). [entries] are in
-/// registry order. Lyrics beat an instrumental record, which beats a recent
-/// "no match". A found entry with neither text nor instrumental flag is
-/// unusable and counts as "no match" whatever its age, so it never causes a
-/// new lookup.
+/// Whether [e] means its source has no usable answer for the song: a recent
+/// "no match", or a found record with neither text nor instrumental flag
+/// (which counts as "no match" whatever its age, so it never causes a new
+/// lookup).
+bool _isMiss(OnlineLyricsEntry e, DateTime now) => switch (e.status) {
+  OnlineLyricsStatus.found => e.lyrics == null && !e.instrumental,
+  OnlineLyricsStatus.notFound =>
+    now.difference(DateTime.fromMillisecondsSinceEpoch(e.fetchedAt)) <
+        notFoundTtl,
+};
+
+/// The ids in [enabledIds] whose entry is not a usable miss: no entry, a
+/// "no match" older than [notFoundTtl], or a found entry with lyrics or the
+/// instrumental flag. These are the sources a lookup still has to ask.
+List<String> sourcesToAsk(
+  List<OnlineLyricsEntry> entries,
+  Iterable<String> enabledIds,
+  DateTime now,
+) => [
+  for (final id in enabledIds)
+    if (!entries.any((e) => e.providerId == id && _isMiss(e, now))) id,
+];
+
+/// The status the cached answers give, or `null` for a miss: some enabled
+/// source in [enabledIds] has no answer, or only a "no match" older than
+/// [notFoundTtl]. [entries] are in listing order (enabled sources first).
+/// Lyrics beat an instrumental record, which beats "not found". Not found
+/// needs every enabled source to have missed; a source that is known but not
+/// enabled counts only when it found something.
 PlayingLyricsStatus? statusFromCache(
   String uri,
   List<OnlineLyricsEntry> entries,
   DateTime now,
-  Duration? songDuration,
-) {
+  Duration? songDuration, {
+  required Iterable<String> enabledIds,
+}) {
   OnlineLyricsOrigin originOf(OnlineLyricsEntry e) => OnlineLyricsOrigin(
     providerId: e.providerId,
     remoteId: e.remoteId ?? '',
@@ -73,14 +97,10 @@ PlayingLyricsStatus? statusFromCache(
       );
     }
   }
-  final unusable = found.isNotEmpty;
-  final recent = entries.any(
-    (e) =>
-        e.status == OnlineLyricsStatus.notFound &&
-        now.difference(DateTime.fromMillisecondsSinceEpoch(e.fetchedAt)) <
-            notFoundTtl,
-  );
-  return unusable || recent ? LyricsNone(uri, LyricsNoneReason.notFound) : null;
+  final enabled = enabledIds.toList();
+  final allMissed =
+      enabled.isNotEmpty && sourcesToAsk(entries, enabled, now).isEmpty;
+  return allMissed ? LyricsNone(uri, LyricsNoneReason.notFound) : null;
 }
 
 /// What a song resolves to: the status, and the choice that produced it. The

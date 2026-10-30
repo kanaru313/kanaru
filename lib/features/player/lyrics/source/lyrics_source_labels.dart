@@ -1,6 +1,6 @@
 import '../../../../core/lyrics/lyrics.dart';
 import '../../../../core/lyrics/online/lyrics_choice.dart';
-import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../l10n/l10n.dart';
@@ -8,11 +8,11 @@ import '../lyrics_provider_name.dart';
 
 /// The text of the lyrics source button for [source]: what the song shows
 /// now and, for lyrics picked without a choice, that Kanaru picked them
-/// ("Auto · …"). [providers] names the online service.
+/// ("Auto · …"). [names] names the online service.
 String lyricsSourceLabel(
   AppLocalizations l10n,
   LyricsSourceResolution source,
-  List<LyricsProviderRegistration> providers,
+  Map<String, LyricsSourceName> names,
 ) {
   final status = source.status;
   switch (status) {
@@ -26,10 +26,10 @@ String lyricsSourceLabel(
       return l10n.lyricsSourceSearching;
     case LyricsFound(:final origin?) when !origin.pinned:
       return l10n.lyricsSourceAuto(
-        lyricsProviderName(providers, origin.providerId),
+        lyricsSourceDisplayName(names, origin.providerId),
       );
     case LyricsFound():
-      final detail = lyricsSourceDetail(l10n, status, providers);
+      final detail = lyricsSourceDetail(l10n, status, names);
       return source.effective == LyricsChoice.auto
           ? l10n.lyricsSourceAuto(detail)
           : detail;
@@ -44,11 +44,11 @@ String lyricsSourceLabel(
 String lyricsSourceMenuTitle(
   AppLocalizations l10n,
   LyricsSourceResolution source,
-  List<LyricsProviderRegistration> providers,
+  Map<String, LyricsSourceName> names,
 ) {
   final status = source.status;
   if (status is! LyricsFound) return l10n.lyricsSourceMenuHeader;
-  return l10n.lyricsSourceMenuFrom(lyricsSourceDetail(l10n, status, providers));
+  return l10n.lyricsSourceMenuFrom(lyricsSourceDetail(l10n, status, names));
 }
 
 /// What [found] is, without the "Auto" mark: the file or the tag, or the
@@ -56,12 +56,12 @@ String lyricsSourceMenuTitle(
 String lyricsSourceDetail(
   AppLocalizations l10n,
   LyricsFound found,
-  List<LyricsProviderRegistration> providers,
+  Map<String, LyricsSourceName> names,
 ) {
   final origin = found.origin;
   if (origin != null) {
     return l10n.lyricsSourceOnline(
-      lyricsProviderName(providers, origin.providerId),
+      lyricsSourceDisplayName(names, origin.providerId),
       lyricsSourceKind(l10n, found.lyrics.synced),
     );
   }

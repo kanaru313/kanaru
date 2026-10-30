@@ -5,6 +5,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
+import '../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/local_path_of.dart';
 import '../../../core/settings/settings_provider.dart';
@@ -26,8 +27,8 @@ class LyricsSearchingView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final name = lyricsProviderName(
-      ref.watch(lyricsProvidersProvider),
+    final name = lyricsSourceDisplayName(
+      ref.watch(lyricsSourceNamesProvider),
       providerId,
     );
     final style =

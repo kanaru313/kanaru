@@ -8,6 +8,7 @@ import 'lyrics_match.dart';
 import 'lyrics_provider.dart';
 import 'lyrics_provider_registry.dart';
 import 'lyrics_search_state.dart';
+import 'lyrics_source_names.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_http_factory.dart';
 
@@ -34,11 +35,16 @@ class LyricsSearchController extends Notifier<LyricsSearchState> {
   LyricsSearchState build() =>
       LyricsSearchState(query: lyricsSearchPrefill(target));
 
-  /// Searches every provider for [text]. A blank text does nothing.
+  /// Searches every enabled provider for [text], once the sources are
+  /// loaded. A blank text does nothing.
   Future<void> search(String text) async {
     final query = text.trim();
     if (query.isEmpty) return;
     final generation = ++_generation;
+    if (!ref.read(lyricsSourcesLoadedProvider)) {
+      await whenLyricsSourcesLoaded(ref);
+      if (!_current(generation)) return;
+    }
     final registrations = ref.read(lyricsProvidersProvider);
     _raw.clear();
     state = LyricsSearchState(

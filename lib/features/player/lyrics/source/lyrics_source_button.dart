@@ -5,6 +5,7 @@ import '../../../../core/lyrics/lyrics.dart' show LyricsSource;
 import '../../../../core/lyrics/online/playing_lyrics_status.dart'
     show LyricsFound;
 import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../core/lyrics/playing_local_lyrics_provider.dart';
 import '../../../../l10n/l10n.dart';
@@ -149,6 +150,7 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
     final l10n = context.l10n;
     final source = ref.watch(playingLyricsSourceProvider);
     final providers = ref.watch(lyricsProvidersProvider);
+    final names = ref.watch(lyricsSourceNamesProvider);
     _anchored = source != null;
     // Without a source there is nothing to open: `L` must see no callback.
     if (widget.menuOpener != null) _syncOpener();
@@ -162,7 +164,7 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
       // The menu would act on the previous song.
       _closeLater();
     }
-    final label = lyricsSourceLabel(l10n, source, providers);
+    final label = lyricsSourceLabel(l10n, source, names);
     final muted = lyricsSourceMuted(source);
     final room = widget.maxLabelWidth ?? 0;
 
@@ -179,13 +181,14 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
               context,
               runner,
               providers,
+              names,
               ownSource: _ownSource,
               firstItemFocus: _focus.firstItem,
               headerFocus: _focus.header,
             ),
       builder: (context, controller, _) => LyricsSourceTrigger(
         label: label,
-        title: lyricsSourceMenuTitle(l10n, source, providers),
+        title: lyricsSourceMenuTitle(l10n, source, names),
         found: source.status is LyricsFound,
         muted: muted,
         room: room,

@@ -5,6 +5,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_streams.dart';
 
 import 'fake_lyrics_provider.dart';
@@ -242,5 +243,73 @@ void main() {
 
       expect(container.read(provider).requireValue, isNull);
     });
+  });
+
+  group('known sources that are not enabled', () {
+    late ProviderContainer known;
+
+    setUp(() async {
+      final other = await createHarness(
+        [
+          LyricsProviderRegistration(FakeLyricsProvider(id: 'first')),
+          LyricsProviderRegistration(FakeLyricsProvider(id: 'second')),
+        ],
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'first': const LyricsSourceName(displayName: 'First'),
+            'second': const LyricsSourceName(displayName: 'Second'),
+            'zeta': const LyricsSourceName(displayName: 'Zeta'),
+            'alpha': const LyricsSourceName(displayName: 'Alpha'),
+            'beta': const LyricsSourceName(displayName: 'Beta', removed: true),
+          }),
+        ],
+      );
+      h = other;
+      known = other.container;
+    });
+
+    Future<List<OnlineLyricsEntry>> entries() {
+      final provider = onlineLyricsCacheProvider('key');
+      known.listen(provider, (_, _) {});
+      return known.read(provider.future);
+    }
+
+    test('list after the enabled ones, by name, only when found', () async {
+      await h.db.saveOnlineLyrics(_row('zeta'));
+      await h.db.saveOnlineLyrics(_row('second', remoteId: 'b'));
+      await h.db.saveOnlineLyrics(_row('alpha'));
+      await h.db.saveOnlineLyrics(_row('first', remoteId: 'a'));
+      await h.db.saveOnlineLyrics(
+        _row('beta', status: 'not_found', remoteId: null, synced: null),
+      );
+      await h.db.saveOnlineLyrics(_row('unknown'));
+
+      expect((await entries()).map((e) => e.providerId), [
+        'first',
+        'second',
+        'alpha',
+        'zeta',
+      ]);
+    });
+
+    test('a not-found row of an enabled source stays listed', () async {
+      await h.db.saveOnlineLyrics(
+        _row('second', status: 'not_found', remoteId: null, synced: null),
+      );
+
+      expect((await entries()).single.providerId, 'second');
+    });
+  });
+
+  test('stay loading until the sources are loaded', () async {
+    final gated = await createHarness(
+      [LyricsProviderRegistration(FakeLyricsProvider(id: 'first'))],
+      overrides: [lyricsSourcesLoadedProvider.overrideWithValue(false)],
+    );
+    final provider = onlineLyricsCacheProvider('key');
+    gated.container.listen(provider, (_, _) {});
+    await pump();
+
+    expect(gated.container.read(provider).isLoading, isTrue);
   });
 }

@@ -1,14 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../../database/library_database.dart';
 import '../../database/library_startup.dart';
+import '../../database/online_lyrics_queries.dart';
 import '../../settings/settings_provider.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http_retry.dart';
 import 'lyrics_provider_registry.dart';
+import 'lyrics_source_names.dart';
 import 'lyrics_target.dart';
 import 'online_lyrics_backoff.dart';
+import 'online_lyrics_entries.dart';
 import 'online_lyrics_http_factory.dart';
+import 'online_lyrics_resolution.dart';
 import 'run_online_lyrics_lookup.dart';
 
 export 'run_online_lyrics_lookup.dart';
@@ -71,9 +78,11 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     };
   }
 
-  /// Looks [target] up at every provider the user agreed to, until one
-  /// finds it. A lookup already in flight for the same key is returned
-  /// instead of a second one, and [abandoned] joins it: the lookup is
+  /// Looks [target] up at every enabled provider the user agreed to, until
+  /// one finds it. An automatic lookup skips a provider that already has a
+  /// recent "no match" for the song; a manual one asks them all again. A
+  /// lookup already in flight for the same key is returned instead of a
+  /// second one, and [abandoned] joins it: the lookup is
   /// dropped only once every caller's check says so, and a caller without
   /// one (a manual lookup) keeps it. Nothing is sent, and nothing recorded,
   /// for a target that is not auto-searchable, without a library, or
@@ -100,6 +109,21 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     ).whenComplete(() => _inFlight.remove(key));
   }
 
+  /// The ids of the [enabled] sources whose row for [key] is not a usable
+  /// miss: no row, a stale "no match", or a found row (see [sourcesToAsk]).
+  Future<Set<String>> _sourcesToAsk(
+    LibraryDatabase db,
+    String key,
+    List<LyricsProviderRegistration> enabled,
+    DateTime now,
+  ) async {
+    final rows = await db.watchOnlineLyrics(key).first;
+    final entries = [
+      for (final row in rows) OnlineLyricsEntry.fromRow(row, row.lookupStatus!),
+    ];
+    return sourcesToAsk(entries, [for (final r in enabled) r.id], now).toSet();
+  }
+
   void _set(String key, LookupState? value) {
     if (!ref.mounted) return;
     final next = {...state};
@@ -116,13 +140,32 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     final db = ref.read(libraryDatabaseProvider);
     if (db == null || !target.isAutoSearchable) return;
     final generation = _generation;
+    // The list of sources is complete before any request goes out.
+    if (!ref.read(lyricsSourcesLoadedProvider)) {
+      await whenLyricsSourcesLoaded(ref);
+      if (!ref.mounted) return;
+    }
     final prefs = ref.read(settingsProvider).onlineLyrics;
     final factory = ref.read(onlineLyricsHttpFactoryProvider);
     final now = ref.read(onlineLyricsClockProvider);
     LyricsFetchException? failure;
     Object? otherFailure;
     var found = false;
-    for (final registration in ref.read(lyricsProvidersProvider)) {
+    final enabled = ref.read(lyricsProvidersProvider);
+    Set<String>? toAsk;
+    if (auto) {
+      try {
+        toAsk = await _sourcesToAsk(db, key, enabled, now());
+      } on Object catch (e) {
+        if (!ref.mounted) return;
+        _log.warning('Online lyrics lookup failed: ${e.runtimeType}');
+        otherFailure = e;
+        toAsk = const {};
+      }
+    }
+    if (!ref.mounted) return;
+    for (final registration in enabled) {
+      if (toAsk != null && !toAsk.contains(registration.id)) continue;
       if (auto && !prefs.autoAllowedFor(registration)) continue;
       try {
         final http = auto
