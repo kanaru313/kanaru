@@ -82,8 +82,7 @@ class LyricsNoneView extends ConsumerWidget {
         ref.watch(libraryDatabaseProvider) != null;
     final autoOn = ref.watch(
       settingsProvider.select(
-        (s) =>
-            registration != null && s.onlineLyrics.autoAllowedFor(registration),
+        (s) => registration != null && s.onlineLyrics.autoAllowed,
       ),
     );
     // Turning lyrics back on keeps a stored pick: only the menu's Automatic
@@ -106,10 +105,7 @@ class LyricsNoneView extends ConsumerWidget {
         [
           if (online) find(l10n.lyricsFindOnline, () => run().findOnline()),
           if (online && !autoOn && reason == LyricsNoneReason.noLyrics)
-            more(
-              l10n.lyricsFindAutomatically,
-              () => run().enableAutomatic(registration),
-            ),
+            more(l10n.lyricsFindAutomatically, () => run().enableAutomatic()),
         ],
       ),
       LyricsNoneReason.notFound => (

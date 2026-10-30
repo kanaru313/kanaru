@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../core/lyrics/online/lyrics_provider_registry.dart';
 import '../core/settings/settings_provider.dart';
 import '../l10n/l10n.dart';
 
-/// Makes sure the user accepted sending song details to [registration]'s
-/// service. Returns true at once when they did before; otherwise asks and,
-/// on Continue, records the consent and returns true. On Cancel nothing is
-/// written and the answer is false.
+/// Makes sure the user accepted sending song details to the enabled online
+/// lyrics sources (one consent for all of them, asked once). Returns true at
+/// once when they did before; otherwise asks and, on Continue, records the
+/// consent and returns true. On Cancel nothing is written and the answer is
+/// false.
 ///
 /// [auto] asks for permission to look lyrics up without asking each time:
 /// Continue turns that on (and accepts the manual search too) in one write.
@@ -22,44 +22,31 @@ import '../l10n/l10n.dart';
 /// `WidgetRef` for the same reason.
 Future<bool> confirmOnlineLyricsNotice(
   NavigatorState navigator,
-  ProviderContainer container,
-  LyricsProviderRegistration registration, {
+  ProviderContainer container, {
   required bool auto,
 }) async {
   final settings = container.read(settingsProvider.notifier);
-  final key = auto ? registration.autoConsentKey : registration.consentKey;
-  final accepted = container
-      .read(settingsProvider)
-      .onlineLyrics
-      .noticeAcknowledged
-      .contains(key);
+  final prefs = container.read(settingsProvider).onlineLyrics;
+  final accepted = auto ? prefs.autoConsent : prefs.manualConsent;
   if (accepted) {
-    // Confirming auto always leaves automatic lookup on, also when the key
-    // was kept while the switch was turned off. Writes nothing new then.
-    if (auto) settings.enableAutoOnlineLyrics(registration);
+    // Confirming auto always leaves automatic lookup on, also when the
+    // consent was kept while the switch was turned off. Writes nothing new
+    // then.
+    if (auto) settings.enableAutoOnlineLyrics();
     return true;
   }
   final answer = await showDialog<bool>(
     context: navigator.context,
-    builder: (context) =>
-        _OnlineLyricsNoticeDialog(registration: registration, auto: auto),
+    builder: (context) => _OnlineLyricsNoticeDialog(auto: auto),
   );
   if (answer != true) return false;
-  if (auto) {
-    settings.enableAutoOnlineLyrics(registration);
-  } else {
-    settings.acknowledgeOnlineLyricsNotice(registration.consentKey);
-  }
+  settings.acknowledgeOnlineLyricsNotice(auto: auto);
   return true;
 }
 
 class _OnlineLyricsNoticeDialog extends StatelessWidget {
-  const _OnlineLyricsNoticeDialog({
-    required this.registration,
-    required this.auto,
-  });
+  const _OnlineLyricsNoticeDialog({required this.auto});
 
-  final LyricsProviderRegistration registration;
   final bool auto;
 
   @override
@@ -69,13 +56,13 @@ class _OnlineLyricsNoticeDialog extends StatelessWidget {
       title: Text(
         auto
             ? l10n.onlineLyricsNoticeAutoTitle
-            : l10n.onlineLyricsNoticeManualTitle(registration.displayName),
+            : l10n.onlineLyricsNoticeManualTitle,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.onlineLyricsNoticeBody(registration.hosts.join(', '))),
+          Text(l10n.onlineLyricsNoticeSourcesBody),
           if (auto) ...[
             const SizedBox(height: 12),
             Text(l10n.onlineLyricsNoticeAutoHint),

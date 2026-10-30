@@ -166,11 +166,12 @@ class PlayingLyricsResolutionNotifier
     ], now).toSet();
     final providerId = ref.watch(
       settingsProvider.select(
-        (s) => registrations
-            .where((r) => toAsk.contains(r.id))
-            .where(s.onlineLyrics.autoAllowedFor)
-            .map((r) => r.id)
-            .firstOrNull,
+        (s) => s.onlineLyrics.autoAllowed
+            ? registrations
+                  .where((r) => toAsk.contains(r.id))
+                  .map((r) => r.id)
+                  .firstOrNull
+            : null,
       ),
     );
     // The end of the pause, not only whether it runs: a longer pause updates

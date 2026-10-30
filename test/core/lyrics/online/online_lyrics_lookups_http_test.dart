@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
@@ -323,20 +324,20 @@ void main() {
     test(
       'consent withdrawn while a synced answer arrives stores nothing',
       () async {
-        final registration = LyricsProviderRegistration(LrclibProvider());
-        final acknowledged = {
-          registration.consentKey,
-          registration.autoConsentKey,
-        };
+        var prefs = const OnlineLyricsPrefs(
+          autoFetch: true,
+          manualConsent: true,
+          autoConsent: true,
+        );
         await setUpWith(
           (_) {
-            acknowledged.clear();
+            prefs = const OnlineLyricsPrefs();
             return Reply(200, jsonEncode(_record(5)), headers: _json);
           },
           overrides: [
             onlineLyricsHttpFactoryProvider.overrideWith(
               (ref) => OnlineLyricsHttpFactory(
-                acknowledged: () => acknowledged,
+                prefs: () => prefs,
                 client: () => client,
               ),
             ),
@@ -352,17 +353,16 @@ void main() {
     );
 
     test('consent withdrawn between the two requests stores nothing', () async {
-      final acknowledged = <String>{};
-      final registration = LyricsProviderRegistration(LrclibProvider());
-      acknowledged.addAll([
-        registration.consentKey,
-        registration.autoConsentKey,
-      ]);
+      var prefs = const OnlineLyricsPrefs(
+        autoFetch: true,
+        manualConsent: true,
+        autoConsent: true,
+      );
       await setUpWith(
         (r) {
           if (r.uri.path == '/api/get') {
             // Consent is withdrawn right after the first answer.
-            Future<void>.microtask(acknowledged.clear);
+            Future<void>.microtask(() => prefs = const OnlineLyricsPrefs());
             return Reply(200, jsonEncode(plain(1)), headers: _json);
           }
           return Reply(200, jsonEncode([_record(2)]), headers: _json);
@@ -370,7 +370,7 @@ void main() {
         overrides: [
           onlineLyricsHttpFactoryProvider.overrideWith(
             (ref) => OnlineLyricsHttpFactory(
-              acknowledged: () => acknowledged,
+              prefs: () => prefs,
               client: () => client,
             ),
           ),

@@ -24,9 +24,13 @@ class LyricsRowsHarness {
     bool autoConsent = false,
     bool manualConsent = false,
     bool withDatabase = true,
+    List<FakeLyricsProvider> extraProviders = const [],
   }) async {
     final h = await createHarness(
-      [LyricsProviderRegistration(FakeLyricsProvider())],
+      [
+        for (final p in [FakeLyricsProvider(), ...extraProviders])
+          LyricsProviderRegistration(p),
+      ],
       autoFetch: autoFetch,
       autoConsent: autoConsent,
       manualConsent: manualConsent,

@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/database/online_lyrics_queries.dart';
 import '../../core/lyrics/online/lyrics_provider.dart';
-import '../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
 import '../../core/lyrics/online/online_lyrics_actions.dart';
 import '../../l10n/l10n.dart';
@@ -29,15 +28,12 @@ Future<void> showLyricsPicker({
   required LyricsTarget target,
   ScaffoldMessengerState? messenger,
 }) async {
-  for (final registration in container.read(lyricsProvidersProvider)) {
-    final accepted = await confirmOnlineLyricsNotice(
-      navigator,
-      container,
-      registration,
-      auto: false,
-    );
-    if (!accepted) return;
-  }
+  final accepted = await confirmOnlineLyricsNotice(
+    navigator,
+    container,
+    auto: false,
+  );
+  if (!accepted) return;
   // The library's row is the one both entry points agree on, so a song has
   // one cache key whichever menu opened the dialog.
   final song = await _libraryTarget(container, target);

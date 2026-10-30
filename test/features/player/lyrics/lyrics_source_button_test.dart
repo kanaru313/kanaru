@@ -607,7 +607,7 @@ void main() {
       await openMenu(tester);
       await tester.tap(item('Find lyrics online…'));
       await tester.pumpAndSettle();
-      expect(find.text('Search lyrics on Fake?'), findsOneWidget);
+      expect(find.text('Search lyrics online?'), findsOneWidget);
     });
 
     testWidgets('Save lyrics saves the record on screen', (tester) async {

@@ -49,7 +49,9 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
       final db = ref.read(libraryDatabaseProvider);
       if (db == null || !target.isAutoSearchable) return;
       final prefs = ref.read(settingsProvider).onlineLyrics;
-      if (!ref.read(lyricsProvidersProvider).any(prefs.autoAllowedFor)) return;
+      if (!prefs.autoAllowed || ref.read(lyricsProvidersProvider).isEmpty) {
+        return;
+      }
       final stored = await db.watchOnlineLyrics(target.cacheKey).first;
       if (ref.mounted && !abandoned && stored.isEmpty) ref.invalidateSelf();
     }, retry: (_, _) => null);

@@ -166,7 +166,7 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     if (!ref.mounted) return;
     for (final registration in enabled) {
       if (toAsk != null && !toAsk.contains(registration.id)) continue;
-      if (auto && !prefs.autoAllowedFor(registration)) continue;
+      if (auto && !prefs.autoAllowed) continue;
       try {
         final http = auto
             ? factory.forAuto(registration, abandoned: abandoned)

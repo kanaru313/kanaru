@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/online_lyrics_notice_dialog.dart';
@@ -11,7 +10,7 @@ import 'online_lyrics_cache_setting_row.dart';
 import 'online_lyrics_consent_setting_row.dart';
 import 'setting_row.dart';
 
-/// Lyrics options, in the playback section: whether lyrics embedded in the
+/// Lyrics options, in the Lyrics section: whether lyrics embedded in the
 /// file are tried before the `.lrc` file next to it (changing it reloads the
 /// playing track's lyrics), the online lookup switches and the saved online
 /// lyrics.
@@ -23,7 +22,6 @@ class LyricsSettingRows extends ConsumerWidget {
     final l10n = context.l10n;
     final playback = ref.watch(settingsProvider.select((s) => s.playback));
     final online = ref.watch(settingsProvider.select((s) => s.onlineLyrics));
-    final registration = ref.watch(lyricsProvidersProvider).first;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,9 +40,9 @@ class LyricsSettingRows extends ConsumerWidget {
           title: l10n.settingsAutoOnlineLyrics,
           subtitle: l10n.settingsAutoOnlineLyricsHint,
           control: Switch(
-            // Only with this provider's own auto consent, so a stale key never
-            // shows "on" while lookups are refused.
-            value: online.autoAllowedFor(registration),
+            // Only with the automatic consent, so a stale flag never shows
+            // "on" while lookups are refused.
+            value: online.autoAllowed,
             onChanged: (on) {
               final settings = ref.read(settingsProvider.notifier);
               if (!on) {
@@ -56,14 +54,13 @@ class LyricsSettingRows extends ConsumerWidget {
                 confirmOnlineLyricsNotice(
                   Navigator.of(context, rootNavigator: true),
                   ProviderScope.containerOf(context),
-                  registration,
                   auto: true,
                 ),
               );
             },
           ),
         ),
-        OnlineLyricsConsentSettingRow(registration: registration),
+        const OnlineLyricsConsentSettingRow(),
         const OnlineLyricsCacheSettingRow(),
       ],
     );

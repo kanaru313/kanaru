@@ -74,13 +74,6 @@ class LyricsProviderRegistration {
 
   /// Lower-case host names, unmodifiable.
   final List<String> hosts;
-
-  /// What the user agrees to: this provider at these hosts. A provider whose
-  /// hosts change gets a new key, so the user is asked again.
-  String get consentKey => '$id@${([...hosts]..sort()).join(',')}';
-
-  /// Consent to look lyrics up without being asked each time.
-  String get autoConsentKey => '$consentKey:auto';
 }
 
 /// Registers [providers]; ids must be unique.

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../lyrics/online/lyrics_provider_registry.dart';
 import '../lyrics_translation/translation_service.dart';
 import 'app_settings.dart';
 import 'settings_file.dart';
@@ -149,70 +148,53 @@ class SettingsNotifier extends Notifier<AppSettings> {
   static TranslationPrefs _acknowledgedOnly(TranslationPrefs prefs) =>
       prefs.show && prefs.needsNotice ? prefs.copyWith(show: false) : prefs;
 
-  /// Saves [prefs], except `noticeAcknowledged`, which only
+  /// Saves [prefs], except the two consent flags, which only
   /// [acknowledgeOnlineLyricsNotice], [enableAutoOnlineLyrics] and
-  /// [withdrawOnlineLyricsConsent] change (a withdrawal turns automatic
-  /// fetch off for every provider).
-  /// `autoFetch` can only be on with an automatic-lookup consent.
+  /// [withdrawOnlineLyricsConsent] change.
+  /// `autoFetch` can only be on with the automatic consent.
   void setOnlineLyrics(OnlineLyricsPrefs prefs) {
-    final acknowledged = state.onlineLyrics.noticeAcknowledged;
+    final current = state.onlineLyrics;
     _update(
       state.copyWith(
         onlineLyrics: prefs.copyWith(
-          autoFetch: prefs.autoFetch && acknowledged.any(isAutoConsentKey),
-          noticeAcknowledged: acknowledged,
+          autoFetch: prefs.autoFetch && current.autoConsent,
+          manualConsent: current.manualConsent,
+          autoConsent: current.autoConsent,
         ),
       ),
     );
   }
 
-  /// Records that the user accepted [key] (a consent key). Accepting a
-  /// manual key never turns automatic lookup on.
-  void acknowledgeOnlineLyricsNotice(String key) => _update(
+  /// Records that the user accepted the online lyrics notice. With [auto]
+  /// that also accepts automatic lookup (and turns it on); otherwise only
+  /// the manual search is accepted and automatic lookup stays as it was.
+  /// Call it only after the user accepted the notice.
+  void acknowledgeOnlineLyricsNotice({required bool auto}) => _update(
     state.copyWith(
       onlineLyrics: state.onlineLyrics.copyWith(
-        noticeAcknowledged: _withKeys([key]),
+        manualConsent: true,
+        autoConsent: auto ? true : null,
+        autoFetch: auto ? true : null,
       ),
     ),
   );
 
-  /// Accepts [registration] for manual and automatic lookup and turns
-  /// automatic lookup on, in one write. Call it only after the user accepted
-  /// the automatic notice.
-  void enableAutoOnlineLyrics(LyricsProviderRegistration registration) =>
-      _update(
-        state.copyWith(
-          onlineLyrics: state.onlineLyrics.copyWith(
-            autoFetch: true,
-            noticeAcknowledged: _withKeys([
-              registration.consentKey,
-              registration.autoConsentKey,
-            ]),
-          ),
-        ),
-      );
+  /// Turns automatic lookup on for a user who accepted it before (the switch
+  /// was turned off, the consent kept), accepting the manual search too, in
+  /// one write. Call it only after the user accepted the automatic notice.
+  void enableAutoOnlineLyrics() => acknowledgeOnlineLyricsNotice(auto: true);
 
-  /// Withdraws the consent for [registration]: removes its manual and
-  /// automatic keys and turns automatic lookup off for every provider, in
-  /// one write. Other providers' keys and unknown entries stay.
-  /// [setOnlineLyrics] cannot do this: it keeps the acknowledged keys.
-  void withdrawOnlineLyricsConsent(LyricsProviderRegistration registration) =>
-      _update(
-        state.copyWith(
-          onlineLyrics: state.onlineLyrics.copyWith(
-            autoFetch: false,
-            noticeAcknowledged: Set.unmodifiable(
-              state.onlineLyrics.noticeAcknowledged.difference({
-                registration.consentKey,
-                registration.autoConsentKey,
-              }),
-            ),
-          ),
-        ),
-      );
-
-  Set<String> _withKeys(Iterable<String> keys) =>
-      Set.unmodifiable({...state.onlineLyrics.noticeAcknowledged, ...keys});
+  /// Withdraws the consent: both flags and automatic lookup go off in one
+  /// write. [setOnlineLyrics] cannot do this: it keeps the consent flags.
+  void withdrawOnlineLyricsConsent() => _update(
+    state.copyWith(
+      onlineLyrics: state.onlineLyrics.copyWith(
+        autoFetch: false,
+        manualConsent: false,
+        autoConsent: false,
+      ),
+    ),
+  );
 
   /// Records that the first-run source picker is done for good.
   void markLibraryOnboarded() =>

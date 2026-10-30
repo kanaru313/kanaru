@@ -1,59 +1,51 @@
-import '../lyrics/online/lyrics_provider_registry.dart';
-
 /// Options of the online lyrics lookup.
 ///
-/// [noticeAcknowledged] holds consent keys (`LyricsProviderRegistration`):
-/// the manual key `<id>@<hosts>` lets the user search that provider, the
-/// auto key `<id>@<hosts>:auto` lets Kanaru look lyrics up without asking.
-/// Consent to search never implies consent to look up automatically.
+/// Consent is one answer for every online lyrics source, not tied to a
+/// source: [manualConsent] lets the user search, [autoConsent] lets Kanaru
+/// look lyrics up without asking. Consent to search never implies consent to
+/// look up automatically.
 class OnlineLyricsPrefs {
   const OnlineLyricsPrefs({
     this.autoFetch = false,
-    this.noticeAcknowledged = const {},
+    this.manualConsent = false,
+    this.autoConsent = false,
   });
 
   /// Look lyrics up online for the playing song (only with auto consent).
   final bool autoFetch;
 
-  /// Consent keys the user accepted. Open-ended: keys of providers this
-  /// version does not know are kept.
-  final Set<String> noticeAcknowledged;
+  /// The user accepted sending song details to the enabled sources when they
+  /// search.
+  final bool manualConsent;
 
-  /// At least one provider was accepted for automatic lookup.
-  bool get hasAutoConsent => noticeAcknowledged.any(isAutoConsentKey);
+  /// The user accepted looking lyrics up without being asked each time.
+  final bool autoConsent;
 
-  /// Automatic lookup may run for [registration]: the switch is on and that
-  /// provider's own auto key was accepted (a key of another provider or of
-  /// other hosts does not count).
-  bool autoAllowedFor(LyricsProviderRegistration registration) =>
-      autoFetch && noticeAcknowledged.contains(registration.autoConsentKey);
+  /// Automatic lookup may run: the switch is on and its consent was given.
+  bool get autoAllowed => autoFetch && autoConsent;
 
   OnlineLyricsPrefs copyWith({
     bool? autoFetch,
-    Set<String>? noticeAcknowledged,
+    bool? manualConsent,
+    bool? autoConsent,
   }) => OnlineLyricsPrefs(
     autoFetch: autoFetch ?? this.autoFetch,
-    noticeAcknowledged: noticeAcknowledged ?? this.noticeAcknowledged,
+    manualConsent: manualConsent ?? this.manualConsent,
+    autoConsent: autoConsent ?? this.autoConsent,
   );
 
   @override
   bool operator ==(Object other) =>
       other is OnlineLyricsPrefs &&
       other.autoFetch == autoFetch &&
-      other.noticeAcknowledged.length == noticeAcknowledged.length &&
-      other.noticeAcknowledged.containsAll(noticeAcknowledged);
+      other.manualConsent == manualConsent &&
+      other.autoConsent == autoConsent;
 
   @override
-  int get hashCode =>
-      Object.hash(autoFetch, Object.hashAllUnordered(noticeAcknowledged));
+  int get hashCode => Object.hash(autoFetch, manualConsent, autoConsent);
 
   @override
   String toString() =>
       'OnlineLyricsPrefs(autoFetch: $autoFetch, '
-      'noticeAcknowledged: ${noticeAcknowledged.toList()..sort()})';
+      'manualConsent: $manualConsent, autoConsent: $autoConsent)';
 }
-
-/// Whether [key] is an automatic-lookup consent key. A manual key is
-/// `<id>@<hosts>` and a host name never holds a colon, so only an auto key
-/// ends this way.
-bool isAutoConsentKey(String key) => key.endsWith(':auto');

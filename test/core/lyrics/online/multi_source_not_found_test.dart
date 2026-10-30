@@ -4,11 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
-import 'package:kanaru/core/settings/settings_provider.dart';
 
 import 'fake_lyrics_provider.dart';
 import 'status_test_rig.dart';
@@ -93,24 +91,24 @@ void main() {
     expect((rig.status as LyricsNone).failure, LyricsFetchKind.server);
   });
 
-  test('a miss of the only auto-allowed source leaves no search', () async {
-    // Only the first source has the automatic consent; the other has none
-    // and no row, so nothing may run and nothing may read as searching.
-    second = FakeLyricsProvider(id: 'second');
-    rig = await createStatusRig(others: [second], autoConsent: false);
-    rig.container
-        .read(settingsProvider.notifier)
-        .enableAutoOnlineLyrics(LyricsProviderRegistration(rig.fake));
-    await missed('fake');
-    rig.watch();
-    await rig.play([fakeSong(_song)]);
-    await rig.until(() => rig.status is LyricsNone);
-    await rig.settle();
+  test(
+    'one source missed, another unasked, no automatic consent: no search',
+    () async {
+      // Without the automatic consent nothing may run for the source that has
+      // no row, and nothing may read as searching.
+      second = FakeLyricsProvider(id: 'second');
+      rig = await createStatusRig(others: [second], autoConsent: false);
+      await missed('fake');
+      rig.watch();
+      await rig.play([fakeSong(_song)]);
+      await rig.until(() => rig.status is LyricsNone);
+      await rig.settle();
 
-    expect(reason(), LyricsNoneReason.noLyrics);
-    expect(rig.statuses.whereType<LyricsSearching>(), isEmpty);
-    expect(rig.requests, 0);
-  });
+      expect(reason(), LyricsNoneReason.noLyrics);
+      expect(rig.statuses.whereType<LyricsSearching>(), isEmpty);
+      expect(rig.requests, 0);
+    },
+  );
 
   group('a known source that is not enabled', () {
     Future<void> startWithGone() => start(
