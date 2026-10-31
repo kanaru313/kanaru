@@ -70,25 +70,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(QueuePanel), findsOneWidget);
-    expect(find.text('End of track'), findsWidgets);
+    expect(find.text('Sleep after'), findsOneWidget);
   });
 
-  testWidgets('Esc closes the sheet after a bar menu was used', (tester) async {
+  testWidgets('Esc closes the sleep dialog first, then the sheet', (
+    tester,
+  ) async {
     await pumpApp(tester);
     final sleep = find.descendant(
       of: find.byType(PlayerBar),
       matching: find.byTooltip('Sleep timer'),
     );
 
-    // Open the sleep menu from the bar and close it again.
     await tester.tap(sleep);
     await tester.pumpAndSettle();
-    expect(find.text('End of track'), findsWidgets);
-    await tester.tap(sleep);
+    expect(find.text('Sleep after'), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
+    expect(find.text('Sleep after'), findsNothing);
     expect(find.byType(QueuePanel), findsOneWidget);
 
-    // Focus is now on a bar control, outside the sheet.
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
     expect(find.byType(QueuePanel), findsNothing);
@@ -106,26 +108,4 @@ void main() {
     expect(find.byType(NowPlayingScreen), findsNothing);
     expect(find.byType(QueuePanel), findsNothing);
   });
-
-  testWidgets(
-    'Esc with a mouse-opened bar menu closes the sheet and leaves the menu',
-    (tester) async {
-      await pumpApp(tester);
-      await tester.tap(
-        find.descendant(
-          of: find.byType(PlayerBar),
-          matching: find.byTooltip('Sleep timer'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('End of track'), findsWidgets);
-
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(QueuePanel), findsNothing);
-      // The menu holds no focus when opened by mouse: it stays until a click.
-      expect(find.text('End of track'), findsWidgets);
-    },
-  );
 }

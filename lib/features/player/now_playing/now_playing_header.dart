@@ -150,7 +150,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                                   side.maxWidth - separator >=
                                   nowPlayingHeaderRightButtonsWidth +
                                       nowPlayingHeaderSleepLabelWidth,
-                              onMenuChanged: (open) {
+                              onDialogChanged: (open) {
                                 _sleepOpen = open;
                                 _report();
                               },

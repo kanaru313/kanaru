@@ -1946,40 +1946,6 @@
       }
     }
   },
-  "sleepTimerCustom": "Custom…",
-  "@sleepTimerCustom": {
-    "description": "Sleep timer menu item that asks for a number of minutes"
-  },
-  "sleepTimerEndOfTrack": "End of track",
-  "@sleepTimerEndOfTrack": {
-    "description": "Sleep timer mode: pause when the current track ends"
-  },
-  "sleepTimerEndOfAlbum": "End of album",
-  "@sleepTimerEndOfAlbum": {
-    "description": "Sleep timer mode: pause when the album ends"
-  },
-  "sleepTimerEndOfQueue": "End of queue",
-  "@sleepTimerEndOfQueue": {
-    "description": "Sleep timer mode: pause when the last track of the queue ends"
-  },
-  "sleepTimerLeft": "{time} left",
-  "@sleepTimerLeft": {
-    "description": "Header of the sleep timer menu while counting minutes",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "sleepTimerLeftPaused": "{time} left (paused)",
-  "@sleepTimerLeftPaused": {
-    "description": "Header of the sleep timer menu while the countdown is on hold",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "sleepTimerAdd": "Add 5 minutes",
   "@sleepTimerAdd": {
     "description": "Sleep timer menu item"
@@ -1995,30 +1961,6 @@
   "sleepTimerResumeCounting": "Resume counting",
   "@sleepTimerResumeCounting": {
     "description": "Sleep timer menu item that continues a held countdown"
-  },
-  "sleepTimerCancel": "Cancel timer",
-  "@sleepTimerCancel": {
-    "description": "Sleep timer menu item that turns the timer off"
-  },
-  "sleepTimerCustomTitle": "Custom sleep timer",
-  "@sleepTimerCustomTitle": {
-    "description": "Title of the dialog that asks for minutes"
-  },
-  "sleepTimerCustomLabel": "Minutes",
-  "@sleepTimerCustomLabel": {
-    "description": "Field label in the custom sleep timer dialog"
-  },
-  "sleepTimerCustomInvalid": "Enter a whole number from {min} to {max}",
-  "@sleepTimerCustomInvalid": {
-    "description": "Validation message in the custom sleep timer dialog",
-    "placeholders": {
-      "min": {
-        "type": "int"
-      },
-      "max": {
-        "type": "int"
-      }
-    }
   },
   "sleepTimerStart": "Start",
   "@sleepTimerStart": {
@@ -2041,10 +1983,135 @@
     "description": "Short label beside the moon button while the timer counts tracks",
     "placeholders": {"count": {"type": "int"}}
   },
-  "sleepTimerPausesAfterTracks": "{count, plural, =1{Pauses after 1 track} other{Pauses after {count} tracks}}",
+  "sleepTimerPausesAfterTracks": "{count, plural, =1{Pauses after 1 more track} other{Pauses after {count} more tracks}}",
   "@sleepTimerPausesAfterTracks": {
     "description": "Sleep timer status while it waits for some more tracks to end (the current one included)",
     "placeholders": {"count": {"type": "int"}}
+  },
+  "sleepTimerSetupTitle": "Sleep after",
+  "@sleepTimerSetupTitle": {
+    "description": "Title of the sleep timer dialog while choosing when to pause"
+  },
+  "sleepTimerTabMinutes": "Minutes",
+  "@sleepTimerTabMinutes": {
+    "description": "Sleep timer dialog tab for a number of minutes"
+  },
+  "sleepTimerTabTracks": "Tracks",
+  "@sleepTimerTabTracks": {
+    "description": "Sleep timer dialog tab for a number of tracks"
+  },
+  "sleepTimerTabEndOf": "End of…",
+  "@sleepTimerTabEndOf": {
+    "description": "Sleep timer dialog tab for the end of the track, album or queue"
+  },
+  "sleepTimerUnitMinutes": "min",
+  "@sleepTimerUnitMinutes": {
+    "description": "Unit under the big number of the sleep timer dialog"
+  },
+  "sleepTimerUnitTracks": "{count, plural, =1{track} other{tracks}}",
+  "@sleepTimerUnitTracks": {
+    "description": "Unit under the big number of the sleep timer dialog on the tracks tab",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "sleepTimerStopsAt": "Stops at {time}",
+  "@sleepTimerStopsAt": {
+    "description": "Hint under the slider: the clock time the timer pauses playback",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "sleepTimerTracksHint": "{count, plural, =1{Pauses after 1 track, this one included} other{Pauses after {count} tracks, this one included}}",
+  "@sleepTimerTracksHint": {
+    "description": "Hint under the slider on the tracks tab",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "sleepTimerChipMinutes": "{minutes}m",
+  "@sleepTimerChipMinutes": {
+    "description": "Quick choice chip: minutes",
+    "placeholders": {"minutes": {"type": "int"}}
+  },
+  "sleepTimerChipHours": "{hours}h",
+  "@sleepTimerChipHours": {
+    "description": "Quick choice chip: whole hours",
+    "placeholders": {"hours": {"type": "int"}}
+  },
+  "sleepTimerChipHoursMinutes": "{hours}h{minutes}",
+  "@sleepTimerChipHoursMinutes": {
+    "description": "Quick choice chip: hours and minutes",
+    "placeholders": {"hours": {"type": "int"}, "minutes": {"type": "int"}}
+  },
+  "sleepTimerSleepingIn": "Sleeping in {time}",
+  "@sleepTimerSleepingIn": {
+    "description": "Status line of the running sleep timer in minutes mode",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "sleepTimerPausedLeft": "Counting paused · {time} left",
+  "@sleepTimerPausedLeft": {
+    "description": "Status line of the sleep timer while its countdown is on hold",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "sleepTimerPausesEndOfTrack": "Pauses at the end of this track",
+  "@sleepTimerPausesEndOfTrack": {
+    "description": "Status line of the sleep timer waiting for the end of the track"
+  },
+  "sleepTimerPausesEndOfAlbum": "Pauses at the end of this album",
+  "@sleepTimerPausesEndOfAlbum": {
+    "description": "Status line of the sleep timer waiting for the end of the album"
+  },
+  "sleepTimerPausesEndOfQueue": "Pauses at the end of the queue",
+  "@sleepTimerPausesEndOfQueue": {
+    "description": "Status line of the sleep timer waiting for the end of the queue"
+  },
+  "sleepTimerCountingPaused": "Counting paused",
+  "@sleepTimerCountingPaused": {
+    "description": "Caption under the big number while the countdown is on hold"
+  },
+  "sleepTimerTracksLeftCaption": "{count, plural, =1{track left, this one included} other{tracks left, this one included}}",
+  "@sleepTimerTracksLeftCaption": {
+    "description": "Caption under the number of tracks left",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "sleepTimerEndCaption": "Pauses there; the queue stays",
+  "@sleepTimerEndCaption": {
+    "description": "Caption of the running sleep timer in an end of track, album or queue mode"
+  },
+  "sleepTimerAddShort": "+5 min",
+  "@sleepTimerAddShort": {
+    "description": "Button of the running sleep timer: add five minutes"
+  },
+  "sleepTimerSubtractShort": "−5 min",
+  "@sleepTimerSubtractShort": {
+    "description": "Button of the running sleep timer: take five minutes off"
+  },
+  "sleepTimerAddTrack": "Add one track",
+  "@sleepTimerAddTrack": {
+    "description": "Tooltip of the button that adds one track to the running sleep timer"
+  },
+  "sleepTimerRemoveTrack": "Remove one track",
+  "@sleepTimerRemoveTrack": {
+    "description": "Tooltip of the button that takes one track off the running sleep timer"
+  },
+  "sleepTimerAddTrackShort": "+1 track",
+  "@sleepTimerAddTrackShort": {
+    "description": "Button of the running sleep timer: add one track"
+  },
+  "sleepTimerRemoveTrackShort": "−1 track",
+  "@sleepTimerRemoveTrackShort": {
+    "description": "Button of the running sleep timer: take one track off"
+  },
+  "sleepTimerTracksFieldLabel": "Number of tracks",
+  "@sleepTimerTracksFieldLabel": {
+    "description": "Screen reader label of the number field on the tracks tab"
+  },
+  "sleepTimerTurnOff": "Turn off",
+  "@sleepTimerTurnOff": {
+    "description": "Button that turns the running sleep timer off"
+  },
+  "sleepTimerChange": "Change…",
+  "@sleepTimerChange": {
+    "description": "Button that goes back to choosing a new sleep timer"
+  },
+  "sleepTimerBackToRunning": "Running",
+  "@sleepTimerBackToRunning": {
+    "description": "Chip that goes back to the view of the running sleep timer"
   },
   "navLanguages": "Languages",
   "@navLanguages": {

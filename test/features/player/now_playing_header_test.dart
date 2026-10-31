@@ -252,20 +252,31 @@ void main() {
     expect(floating.value, isFalse);
   });
 
-  testWidgets('the sleep menu opens downward and sets floatingOpen', (
+  testWidgets('the sleep dialog opens centred and sets floatingOpen', (
     tester,
   ) async {
     await pump(tester);
-    final button = tester.getRect(find.byTooltip('Sleep timer'));
 
     await tester.tap(find.byTooltip('Sleep timer'));
     await tester.pumpAndSettle();
 
     expect(floating.value, isTrue);
-    final menu = tester.getRect(find.text('15 minutes'));
-    expect(menu.top, greaterThanOrEqualTo(button.bottom));
+    expect(find.text('Sleep after'), findsOneWidget);
+    expect(
+      tester
+          .getCenter(
+            find
+                .descendant(
+                  of: find.byType(Dialog),
+                  matching: find.byType(Material),
+                )
+                .first,
+          )
+          .dx,
+      closeTo(tester.view.physicalSize.width / 2, 1),
+    );
 
-    await tester.tap(find.text('15 minutes'));
+    await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(floating.value, isFalse);
   });
@@ -326,7 +337,7 @@ void main() {
     container.read(sleepTimerProvider.notifier).startMinutes(30);
     await tester.pump();
     expect(find.text('30:00'), findsNothing);
-    expect(find.byTooltip('Sleep timer: 30:00 left'), findsOneWidget);
+    expect(find.byTooltip('Sleep timer: Sleeping in 30:00'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
