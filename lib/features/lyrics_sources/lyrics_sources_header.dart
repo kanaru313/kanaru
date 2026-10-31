@@ -1,11 +1,12 @@
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_source_routes.dart';
 
 /// Above the source list: how the order works, and the Plugin store button.
-/// The button is shown but disabled (with a "Coming soon" tooltip) until the
-/// store exists.
+/// The button opens the store; going back returns here.
 class LyricsSourcesHeader extends StatelessWidget {
   const LyricsSourcesHeader({super.key});
 
@@ -45,13 +46,10 @@ class LyricsSourcesHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Tooltip(
-            message: l10n.lyricsSourcesStoreSoon,
-            child: FilledButton.tonalIcon(
-              onPressed: null,
-              icon: const Icon(Icons.download_outlined),
-              label: Text(l10n.lyricsSourcesStore),
-            ),
+          FilledButton.tonalIcon(
+            onPressed: () => context.go(lyricsStoreRoute),
+            icon: const Icon(Icons.download_outlined),
+            label: Text(l10n.lyricsSourcesStore),
           ),
         ],
       ),

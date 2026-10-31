@@ -3500,11 +3500,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourcesStore => 'Plugin store';
 
   @override
-  String get lyricsSourcesStoreSoon => 'Coming soon';
-
-  @override
   String get lyricsSourcesEmptyHint =>
-      'No plugins installed yet. You will be able to add some from Plugin store.';
+      'No plugins installed yet. You can add some from Plugin store.';
 
   @override
   String get lyricsSourceBuiltIn => 'Built in';
@@ -3547,6 +3544,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pluginGone => 'This plugin is no longer installed.';
+
+  @override
+  String pluginUpdateAvailable(int version) {
+    return 'New version v$version';
+  }
+
+  @override
+  String get pluginUpdateAction => 'Update';
+
+  @override
+  String pluginUpdateFailed(String name) {
+    return 'Could not update $name';
+  }
 
   @override
   String get pluginInfoTitle => 'Details';
@@ -3837,4 +3847,499 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsViewLog => 'View log';
+
+  @override
+  String get lyricsStoreTitle => 'Plugin store';
+
+  @override
+  String get lyricsStoreSearchHint => 'Search by name, author, repo, host';
+
+  @override
+  String get lyricsStoreChipAll => 'All';
+
+  @override
+  String get lyricsStoreFromFile => 'From file';
+
+  @override
+  String lyricsStoreSectionUpdates(int count) {
+    return 'Updates ($count)';
+  }
+
+  @override
+  String lyricsStoreSectionInstalled(int count) {
+    return 'Installed ($count)';
+  }
+
+  @override
+  String lyricsStoreSectionAvailable(int count) {
+    return 'Not installed ($count)';
+  }
+
+  @override
+  String get lyricsStoreUpdateAll => 'Update all';
+
+  @override
+  String get lyricsStoreNoMatch => 'No matching plugins.';
+
+  @override
+  String lyricsStoreNeedsNewerFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plugins need a newer Kanaru',
+      one: '1 plugin needs a newer Kanaru',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsStoreRepoFailedOne(String name, String reason) {
+    return 'Could not load $name: $reason';
+  }
+
+  @override
+  String lyricsStoreRepoFailedMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repositories could not be loaded',
+      one: '1 repository could not be loaded',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsStoreRetry => 'Try again';
+
+  @override
+  String get lyricsStoreLoadNetwork => 'network error';
+
+  @override
+  String get lyricsStoreLoadNotFound => 'file not found';
+
+  @override
+  String get lyricsStoreLoadTooLarge => 'file too large';
+
+  @override
+  String get lyricsStoreLoadInvalid => 'not a valid plugin list';
+
+  @override
+  String get lyricsStoreLoadBlocked => 'address blocked';
+
+  @override
+  String get lyricsStoreInstallTooltip => 'Install';
+
+  @override
+  String get lyricsStoreUpdateTooltip => 'Update';
+
+  @override
+  String get lyricsStoreUninstallTooltip => 'Uninstall plugin';
+
+  @override
+  String get lyricsStoreWorking => 'Working';
+
+  @override
+  String get lyricsStoreMenuInstallFile => 'Install from file…';
+
+  @override
+  String lyricsStoreMenuRepositories(int count) {
+    return 'Repositories ($count)';
+  }
+
+  @override
+  String get lyricsStoreMenuRefreshAll => 'Refresh all';
+
+  @override
+  String get lyricsStoreEmptyTitle => 'No plugins yet';
+
+  @override
+  String get lyricsStoreAddRepository => 'Add repository';
+
+  @override
+  String get lyricsStoreUnavailable =>
+      'The plugin store is not available right now.';
+
+  @override
+  String get lyricsStoreLoadFailed => 'Could not read the plugin store';
+
+  @override
+  String lyricsStoreInstalled(String name) {
+    return 'Installed $name';
+  }
+
+  @override
+  String get lyricsStoreUndo => 'Undo';
+
+  @override
+  String get lyricsStoreUndoFailed => 'Could not undo';
+
+  @override
+  String lyricsStoreUpdated(String name, int version) {
+    return 'Updated $name to v$version';
+  }
+
+  @override
+  String lyricsStoreUpdatedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Updated $count plugins',
+      one: 'Updated 1 plugin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsStoreUpdatedAllPartial(int done, int failed) {
+    return 'Updated $done, $failed failed';
+  }
+
+  @override
+  String lyricsStoreUninstalled(String name) {
+    return 'Uninstalled $name';
+  }
+
+  @override
+  String lyricsStoreUninstallFailed(String name) {
+    return 'Could not uninstall $name';
+  }
+
+  @override
+  String lyricsStoreUninstallTitle(String name) {
+    return 'Uninstall $name?';
+  }
+
+  @override
+  String get lyricsStoreUninstallRemoves => 'Will be deleted';
+
+  @override
+  String get lyricsStoreUninstallKeeps => 'Stays';
+
+  @override
+  String get lyricsStoreUninstallCode => 'The plugin\'s code';
+
+  @override
+  String get lyricsStoreUninstallSettings => 'The plugin\'s settings';
+
+  @override
+  String get lyricsStoreUninstallSettingsSecret =>
+      'The plugin\'s settings, including secret values in the keyring';
+
+  @override
+  String get lyricsStoreUninstallStorage => 'The plugin\'s own storage';
+
+  @override
+  String get lyricsStoreUninstallKeepLyrics =>
+      'Saved and pinned lyrics from this source (if any)';
+
+  @override
+  String get lyricsStoreUninstallKeepLrc =>
+      'Lyrics .lrc files written next to songs';
+
+  @override
+  String get lyricsStoreUninstallConfirm => 'Uninstall';
+
+  @override
+  String get lyricsStoreInstallFailedTitle => 'Could not install';
+
+  @override
+  String lyricsStoreInstallFailedFile(String name) {
+    return 'The file $name is not a valid plugin.';
+  }
+
+  @override
+  String lyricsStoreInstallFailedRepo(String name, String repo) {
+    return '$name · Repo: $repo';
+  }
+
+  @override
+  String get lyricsStoreReasons => 'Reason';
+
+  @override
+  String get lyricsStoreMismatchTitle => 'Package does not match the list';
+
+  @override
+  String get lyricsStoreMismatchDiffs => 'Differences';
+
+  @override
+  String lyricsStoreMismatchVersion(int catalog, int package) {
+    return 'The list says version $catalog, the downloaded package is version $package';
+  }
+
+  @override
+  String lyricsStoreMismatchHosts(String catalog, String package) {
+    return 'The list says host $catalog, the package declares $package';
+  }
+
+  @override
+  String get lyricsStoreMismatchGeneric =>
+      'The package\'s version or hosts differ from the list';
+
+  @override
+  String get lyricsStoreMismatchHint =>
+      'Usually the repository was just updated and a cache has not caught up. Refresh the list and try again in a few minutes. If it still differs, tell the repository owner.';
+
+  @override
+  String get lyricsStoreMismatchRetry => 'Refresh & try again';
+
+  @override
+  String get lyricsStoreNeedsNewerTitle => 'Needs a newer Kanaru';
+
+  @override
+  String lyricsStoreNeedsNewerBody(String name) {
+    return '$name uses a newer plugin API than this Kanaru supports. Update Kanaru and install it again.';
+  }
+
+  @override
+  String get lyricsStoreProblemTooLarge =>
+      'The package, or an entry in it, is too large';
+
+  @override
+  String get lyricsStoreProblemNotZip =>
+      'The file is not a readable zip package';
+
+  @override
+  String lyricsStoreProblemUnsafeEntry(String detail) {
+    return 'The package has an unsafe entry name ($detail)';
+  }
+
+  @override
+  String get lyricsStoreProblemTooManyEntries =>
+      'The package has too many files';
+
+  @override
+  String get lyricsStoreProblemMissingManifest =>
+      'plugin.json is missing at the top of the package';
+
+  @override
+  String lyricsStoreProblemInvalidManifest(String detail) {
+    return 'plugin.json is invalid at \"$detail\"';
+  }
+
+  @override
+  String get lyricsStoreProblemInvalidManifestPlain => 'plugin.json is invalid';
+
+  @override
+  String get lyricsStoreProblemNeedsNewerApp =>
+      'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports';
+
+  @override
+  String get lyricsStoreProblemWrongType => 'plugin.json: type must be lyrics';
+
+  @override
+  String lyricsStoreProblemBadHost(String detail) {
+    return 'hosts: \"$detail\" is not a public domain name';
+  }
+
+  @override
+  String lyricsStoreProblemMissingScript(String detail) {
+    return 'src/$detail is missing from the package';
+  }
+
+  @override
+  String lyricsStoreProblemScriptError(String detail) {
+    return 'The script $detail has an error';
+  }
+
+  @override
+  String lyricsStoreProblemScriptErrorLine(String detail, int line) {
+    return 'The script $detail has an error on line $line';
+  }
+
+  @override
+  String get lyricsStoreProblemCheckUnavailable =>
+      'Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid';
+
+  @override
+  String get lyricsStoreFailUnknownRepo =>
+      'This repository is no longer in the list';
+
+  @override
+  String get lyricsStoreFailUnknownEntry =>
+      'The repository no longer lists this plugin. Refresh the list.';
+
+  @override
+  String get lyricsStoreFailNotFromRepo =>
+      'This plugin was installed from a file so it has no updates. Uninstall it and install the new file.';
+
+  @override
+  String get lyricsStoreFailNoNewerVersion => 'There is no newer version';
+
+  @override
+  String lyricsStoreFailDownload(String reason) {
+    return 'Could not download the plugin package: $reason';
+  }
+
+  @override
+  String get lyricsStoreFailRejected => 'The plugin package is not valid';
+
+  @override
+  String get lyricsStoreFailMismatch => 'The package does not match the list';
+
+  @override
+  String get lyricsStoreFailOlderVersion =>
+      'This package is older than the installed one so it is not used.';
+
+  @override
+  String get lyricsStoreFailSecretsUnavailable =>
+      'The secrets of the earlier install could not be deleted from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru and try again.';
+
+  @override
+  String get lyricsStoreFailGone =>
+      'This plugin is no longer installed so it cannot be updated.';
+
+  @override
+  String get lyricsStoreFailStorage =>
+      'Could not write the plugin to the library (disk full or missing permission?)';
+
+  @override
+  String get lyricsStoreFailUnexpected => 'Something went wrong. Try again.';
+
+  @override
+  String lyricsStoreAlreadyGone(String name) {
+    return '$name was already removed';
+  }
+
+  @override
+  String get lyricsStoreFailPackageTooLarge => 'package too large';
+
+  @override
+  String lyricsStoreItemAuthor(String author) {
+    return '$author (self-declared)';
+  }
+
+  @override
+  String get lyricsStoreItemUnknownAuthor => 'Unknown author';
+
+  @override
+  String get lyricsStoreItemInfo => 'Details';
+
+  @override
+  String get lyricsStoreItemDescription => 'Description';
+
+  @override
+  String get lyricsStoreItemRepo => 'Repository';
+
+  @override
+  String get lyricsStoreItemHosts => 'Can only connect to';
+
+  @override
+  String get lyricsStoreItemInstall => 'Install';
+
+  @override
+  String get lyricsStoreItemNotFound => 'This plugin is not in the repository.';
+
+  @override
+  String get lyricsStoreReposTitle => 'Repositories';
+
+  @override
+  String get lyricsStoreReposEmpty => 'No repositories yet.';
+
+  @override
+  String lyricsStoreRepoErrorTooltip(String reason) {
+    return 'The last load failed: $reason';
+  }
+
+  @override
+  String get lyricsStoreRepoRemoveTooltip => 'Remove repository';
+
+  @override
+  String lyricsStoreRemoveRepoTitle(String name) {
+    return 'Remove $name?';
+  }
+
+  @override
+  String get lyricsStoreRemoveRepoBody =>
+      'Plugins installed from this repository stay, but will no longer get updates.';
+
+  @override
+  String get lyricsStoreRemoveRepoConfirm => 'Remove';
+
+  @override
+  String lyricsStoreRepoRemoved(String name) {
+    return 'Removed $name';
+  }
+
+  @override
+  String lyricsStoreRepoRemoveFailed(String name) {
+    return 'Could not remove $name';
+  }
+
+  @override
+  String get lyricsStoreAddUrlLabel => 'URL';
+
+  @override
+  String get lyricsStoreAddConfirm => 'Add';
+
+  @override
+  String get lyricsStoreAddLoading => 'Loading…';
+
+  @override
+  String lyricsStoreAddedRepo(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added $name · $count plugins',
+      one: 'Added $name · 1 plugin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsStoreAddErrPublicNeedsHttps =>
+      'A public address needs https';
+
+  @override
+  String get lyricsStoreAddErrInvalidUrl => 'Invalid URL';
+
+  @override
+  String get lyricsStoreAddErrDuplicate => 'This repository is already added';
+
+  @override
+  String get lyricsStoreAddErrNetwork =>
+      'Could not load the list: network error';
+
+  @override
+  String get lyricsStoreAddErrNotFound =>
+      'No plugin list was found at this address';
+
+  @override
+  String get lyricsStoreAddErrBadFormat =>
+      'The file is not a valid plugin list';
+
+  @override
+  String get lyricsStoreAddErrBlocked => 'This address is blocked';
+
+  @override
+  String lyricsStoreAddErrBlockedReason(String reason) {
+    return 'This address is blocked: $reason';
+  }
+
+  @override
+  String get lyricsStoreAddErrStorage => 'Could not save the repository';
+
+  @override
+  String get lyricsStoreAddressUserInfo =>
+      'the address must not contain a user name or password';
+
+  @override
+  String get lyricsStoreAddressLocalFromPublic =>
+      'a public repository must not point to a local address';
+
+  @override
+  String get lyricsStoreAddressRefused => 'this address may not be reached';
+
+  @override
+  String get lyricsStoreAddressMixed =>
+      'the name points to both local and public addresses';
+
+  @override
+  String get lyricsStoreAddressLocalNamePublic =>
+      'a local-looking name points to a public address';
+
+  @override
+  String get lyricsStoreItemInstalled => 'Installed';
+
+  @override
+  String get lyricsStoreItemOpenInstalled => 'Open';
 }

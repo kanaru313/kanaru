@@ -62,9 +62,7 @@ void main() {
     expect(find.text('hieu05 (tự khai) · v3 · File: demo.zip'), findsOneWidget);
   });
 
-  testWidgets('the Plugin store button is disabled and says coming soon', (
-    tester,
-  ) async {
+  testWidgets('the Plugin store button is enabled', (tester) async {
     await pumpSources(tester, plugins: FakePlugins());
 
     final button = tester.widget<ButtonStyleButton>(
@@ -73,8 +71,7 @@ void main() {
         matching: find.bySubtype<ButtonStyleButton>(),
       ),
     );
-    expect(button.onPressed, isNull);
-    expect(find.byTooltip(en.lyricsSourcesStoreSoon), findsOneWidget);
+    expect(button.onPressed, isNotNull);
   });
 
   testWidgets('an empty plugin list shows LRCLIB and a hint', (tester) async {

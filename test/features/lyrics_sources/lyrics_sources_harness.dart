@@ -10,6 +10,7 @@ import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
+import 'package:kanaru/features/lyrics_plugin_store/lyrics_plugin_store_routes.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_routes.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_data_stats_provider.dart';
 import 'package:kanaru/l10n/l10n.dart';
@@ -134,7 +135,8 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   }
 }
 
-/// Opens the sources routes, nested under a `/settings` page like the app's
+/// Opens the sources routes (with the plugin store's pages when [withStore]),
+/// nested under a `/settings` page like the app's
 /// router, inside a shell with a [Scaffold] (snackbars need one).
 Future<GoRouter> pumpSources(
   WidgetTester tester, {
@@ -146,6 +148,7 @@ Future<GoRouter> pumpSources(
   Locale locale = const Locale('en'),
   List<Override> overrides = const [],
   Stream<LyricsSourcesInput>? input,
+  bool withStore = false,
 }) async {
   tester.view.physicalSize = const Size(1000, 1600);
   tester.view.devicePixelRatio = 1;
@@ -159,7 +162,9 @@ Future<GoRouter> pumpSources(
           GoRoute(
             path: '/settings',
             builder: (context, state) => const Text('settings page'),
-            routes: lyricsSourcesRoutes,
+            routes: lyricsSourcesRoutesWith(
+              children: withStore ? lyricsStoreRoutes : const [],
+            ),
           ),
         ],
       ),
