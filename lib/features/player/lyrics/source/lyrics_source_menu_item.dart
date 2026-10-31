@@ -39,6 +39,8 @@ Widget lyricsSourceMenuItem(
   required String title,
   required VoidCallback? onPressed,
   String? subtitle,
+  Widget? subtitleWidget,
+  String? tooltip,
   String? tag,
   IconData? icon,
   bool? checked,
@@ -77,7 +79,19 @@ Widget lyricsSourceMenuItem(
               ),
             ],
           ),
-        if (subtitle != null)
+        if (subtitleWidget != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: DefaultTextStyle(
+              style:
+                  theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ) ??
+                  const TextStyle(),
+              child: subtitleWidget,
+            ),
+          )
+        else if (subtitle != null)
           Padding(
             padding: const EdgeInsets.only(top: 3),
             child: Text(
@@ -90,6 +104,8 @@ Widget lyricsSourceMenuItem(
       ],
     ),
   );
+  final tip = tooltip;
+  final shown = tip == null ? label : Tooltip(message: tip, child: label);
   if (checked == null) {
     return _spaced(
       MenuItemButton(
@@ -97,7 +113,7 @@ Widget lyricsSourceMenuItem(
         style: _rowStyle(),
         leadingIcon: icon == null ? null : Icon(icon, size: 20),
         onPressed: onPressed,
-        child: label,
+        child: shown,
       ),
     );
   }
@@ -112,7 +128,7 @@ Widget lyricsSourceMenuItem(
       groupValue: checked ? true : null,
       toggleable: true,
       onChanged: onPressed == null ? null : (_) => onPressed(),
-      child: label,
+      child: shown,
     ),
   );
 }
@@ -139,3 +155,31 @@ Widget lyricsSourceSwitchItem(
     ),
   ),
 );
+
+/// The subtitle of the "Online version" row: the source name (cut with an
+/// ellipsis when long), "removed plugin" when its plugin is gone (dim), and
+/// the kind and length, which are never cut.
+Widget lyricsSourcePickSubtitle(
+  BuildContext context, {
+  required String name,
+  required String? removedNote,
+  required String? detail,
+}) {
+  final scheme = Theme.of(context).colorScheme;
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Flexible(child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis)),
+      if (removedNote != null)
+        Text(
+          ' · $removedNote',
+          maxLines: 1,
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            color: scheme.error.withValues(alpha: 0.8),
+          ),
+        ),
+      if (detail != null) Text(' · $detail', maxLines: 1),
+    ],
+  );
+}

@@ -4703,7 +4703,7 @@ abstract class AppLocalizations {
   /// Lyrics credit menu item that rejects the matched lyrics for the song
   ///
   /// In en, this message translates to:
-  /// **'Not these lyrics'**
+  /// **'Not the current lyrics'**
   String get lyricsMenuNotThese;
 
   /// No description provided for @settingsAutoOnlineLyrics.
@@ -5042,12 +5042,6 @@ abstract class AppLocalizations {
   /// **'The file or tag first, then online sources'**
   String get lyricsSourceAutoHint;
 
-  /// Subtitle of the Automatic item when a chosen online version is stored and would be forgotten
-  ///
-  /// In en, this message translates to:
-  /// **'{text} · drops the chosen version'**
-  String lyricsSourceForgetPick(String text);
-
   /// Lyrics source menu item for the song's own lyrics
   ///
   /// In en, this message translates to:
@@ -5078,11 +5072,17 @@ abstract class AppLocalizations {
   /// **'Source'**
   String get lyricsSourceMenuSection;
 
-  /// Small tag on the lyrics source menu row of the online version the user picked
+  /// Title of the lyrics source menu row for the online version the user picked; its subtitle names the source
   ///
   /// In en, this message translates to:
-  /// **'Chosen'**
-  String get lyricsSourceChosenTag;
+  /// **'Online version'**
+  String get lyricsSourceOnlineVersion;
+
+  /// Dim note after the name of a lyrics source whose plugin was uninstalled but whose saved lyrics are still shown
+  ///
+  /// In en, this message translates to:
+  /// **'removed plugin'**
+  String get lyricsSourceRemovedPlugin;
 
   /// Switch at the end of the lyrics source menu: off hides lyrics for the song, on goes back to Automatic
   ///

@@ -64,7 +64,7 @@ void main() {
       expect(rig.requests, 0);
     });
 
-    test('automatic forgets the pick', () async {
+    test('automatic keeps the pick, and online brings it back', () async {
       await show();
       await actions().pick(target, picked);
       await rig.until(() => found().origin != null);
@@ -72,10 +72,26 @@ void main() {
       await actions().choose(target, LyricsChoice.auto);
       await rig.until(() => found().origin == null);
 
-      expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
+      final pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
+      expect(pin!.mode, isNull);
+      expect(pin.remoteId, 'pick');
       expect(source().chosen, LyricsChoice.auto);
       expect(source().effective, LyricsChoice.auto);
+      expect(source().pin!.hasPick, isTrue);
       expect(source().hasLocal, isTrue);
+
+      // Choosing automatic again writes nothing.
+      final writes = <Object?>[];
+      final sub = rig.h.db.tableUpdates().listen(writes.add);
+      addTearDown(sub.cancel);
+      await actions().choose(target, LyricsChoice.auto);
+      await rig.settle();
+      expect(writes, isEmpty);
+
+      await actions().choose(target, LyricsChoice.online);
+      await rig.until(() => found().origin != null);
+      expect(found().origin!.remoteId, 'pick');
+      expect(source().chosen, LyricsChoice.online);
     });
 
     test('online without a pick does nothing', () async {

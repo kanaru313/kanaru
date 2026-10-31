@@ -45,9 +45,9 @@ class OnlineLyricsActions {
 
   /// Sets which lyrics the song shows.
   ///
-  /// * `auto` forgets the choice and the pick (the row goes);
-  /// * `local` and `off` keep a stored pick, so choosing `online` again
-  ///   brings it back;
+  /// * `auto` forgets the choice but keeps a stored pick, so choosing
+  ///   `online` again brings it back; with no pick the row goes;
+  /// * `local` and `off` keep a stored pick too;
   /// * `online` needs a stored pick and does nothing without one.
   ///
   /// Choosing what is already stored writes nothing. After `auto` or `local`,
@@ -59,7 +59,7 @@ class OnlineLyricsActions {
     if (db == null) return;
     final pin = await db.watchLyricsPin(target.trackKey).first;
     final same = choice == LyricsChoice.auto
-        ? pin == null
+        ? pin == null || parseLyricsChoice(pin.mode) == LyricsChoice.auto
         : pin != null && parseLyricsChoice(pin.mode) == choice;
     if (same) {
       // Nothing to write, but picking the checked item is a way to ask for
@@ -69,7 +69,11 @@ class OnlineLyricsActions {
     }
     switch (choice) {
       case LyricsChoice.auto:
-        await db.removeLyricsPin(target.trackKey);
+        if (pin?.remoteId == null) {
+          await db.removeLyricsPin(target.trackKey);
+        } else {
+          await db.clearLyricsChoice(target.trackKey, _now);
+        }
       case LyricsChoice.online:
         if (pin?.remoteId == null) return;
         await db.setLyricsChoice(target.trackKey, 'online', _now);

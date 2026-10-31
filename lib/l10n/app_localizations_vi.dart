@@ -3223,11 +3223,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'File hoặc tag trước, sau đó các nguồn trực tuyến';
 
   @override
-  String lyricsSourceForgetPick(String text) {
-    return '$text · bỏ bản đã chọn';
-  }
-
-  @override
   String get lyricsSourceLocalItem => 'Lời trong file';
 
   @override
@@ -3245,7 +3240,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsSourceMenuSection => 'Nguồn';
 
   @override
-  String get lyricsSourceChosenTag => 'Đã chọn';
+  String get lyricsSourceOnlineVersion => 'Bản online';
+
+  @override
+  String get lyricsSourceRemovedPlugin => 'plugin đã gỡ';
 
   @override
   String get lyricsSourceSwitch => 'Lời cho bài này';

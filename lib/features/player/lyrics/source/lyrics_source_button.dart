@@ -170,6 +170,8 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
 
     return MenuAnchor(
       controller: _menu,
+      // Air between the button and the menu.
+      alignmentOffset: const Offset(0, 8),
       onOpen: () {
         _setOpen(true);
         _focusMenu();

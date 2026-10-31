@@ -2842,7 +2842,7 @@
   "@lyricsInstrumental": {
     "description": "Lyrics slot of Now Playing for a song the service marks as instrumental"
   },
-  "lyricsMenuNotThese": "Not these lyrics",
+  "lyricsMenuNotThese": "Not the current lyrics",
   "@lyricsMenuNotThese": {
     "description": "Lyrics credit menu item that rejects the matched lyrics for the song"
   },
@@ -3081,15 +3081,6 @@
   "@lyricsSourceAutoHint": {
     "description": "Subtitle of the Automatic item while at least one online lyrics source (built in or plugin) is enabled"
   },
-  "lyricsSourceForgetPick": "{text} · drops the chosen version",
-  "@lyricsSourceForgetPick": {
-    "description": "Subtitle of the Automatic item when a chosen online version is stored and would be forgotten",
-    "placeholders": {
-      "text": {
-        "type": "String"
-      }
-    }
-  },
   "lyricsSourceLocalItem": "Lyrics in the file",
   "@lyricsSourceLocalItem": {
     "description": "Lyrics source menu item for the song's own lyrics"
@@ -3118,9 +3109,13 @@
   "@lyricsSourceMenuSection": {
     "description": "Heading of the lyrics source menu (shown in capitals)"
   },
-  "lyricsSourceChosenTag": "Chosen",
-  "@lyricsSourceChosenTag": {
-    "description": "Small tag on the lyrics source menu row of the online version the user picked"
+  "lyricsSourceOnlineVersion": "Online version",
+  "@lyricsSourceOnlineVersion": {
+    "description": "Title of the lyrics source menu row for the online version the user picked; its subtitle names the source"
+  },
+  "lyricsSourceRemovedPlugin": "removed plugin",
+  "@lyricsSourceRemovedPlugin": {
+    "description": "Dim note after the name of a lyrics source whose plugin was uninstalled but whose saved lyrics are still shown"
   },
   "lyricsSourceSwitch": "Lyrics for this song",
   "@lyricsSourceSwitch": {

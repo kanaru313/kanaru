@@ -60,9 +60,26 @@ void main() {
     expect(text(en, names, 'plugin-b'), 'NetEase · z');
   });
 
-  test('a removed plugin that clashes shows author and mark', () {
+  test('a removed plugin and a running one do not clash', () {
     final names = {
       'plugin-a': const LyricsSourceName(displayName: 'NetEase', author: 'a'),
+      'plugin-b': const LyricsSourceName(
+        displayName: 'NetEase',
+        author: 'b',
+        removed: true,
+      ),
+    };
+    expect(text(vi, names, 'plugin-b'), 'NetEase (đã gỡ)');
+    expect(text(vi, names, 'plugin-a'), 'NetEase');
+  });
+
+  test('two removed plugins that share a name show author and mark', () {
+    final names = {
+      'plugin-a': const LyricsSourceName(
+        displayName: 'NetEase',
+        author: 'a',
+        removed: true,
+      ),
       'plugin-b': const LyricsSourceName(
         displayName: 'NetEase',
         author: 'b',

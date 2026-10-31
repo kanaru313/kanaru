@@ -3203,7 +3203,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsInstrumental => 'Instrumental';
 
   @override
-  String get lyricsMenuNotThese => 'Not these lyrics';
+  String get lyricsMenuNotThese => 'Not the current lyrics';
 
   @override
   String get settingsAutoOnlineLyrics => 'Find lyrics online automatically';
@@ -3428,11 +3428,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The file or tag first, then online sources';
 
   @override
-  String lyricsSourceForgetPick(String text) {
-    return '$text · drops the chosen version';
-  }
-
-  @override
   String get lyricsSourceLocalItem => 'Lyrics in the file';
 
   @override
@@ -3450,7 +3445,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourceMenuSection => 'Source';
 
   @override
-  String get lyricsSourceChosenTag => 'Chosen';
+  String get lyricsSourceOnlineVersion => 'Online version';
+
+  @override
+  String get lyricsSourceRemovedPlugin => 'removed plugin';
 
   @override
   String get lyricsSourceSwitch => 'Lyrics for this song';

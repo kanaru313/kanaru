@@ -263,10 +263,10 @@ void main() {
       menu: [
         'Automatic',
         'Lyrics in the file',
-        '✓ Fake',
+        '✓ Online version',
         'Find lyrics online…',
         'Save current lyrics…',
-        'Not these lyrics',
+        'Not the current lyrics',
         '✓ Lyrics for this song',
       ],
     ),
@@ -283,7 +283,7 @@ void main() {
       menu: [
         'Automatic',
         '✓ Lyrics in the file',
-        'Fake',
+        'Online version',
         'Find lyrics online…',
         'Save current lyrics… (off)',
         '✓ Lyrics for this song',
@@ -301,10 +301,11 @@ void main() {
       menu: [
         '✓ Automatic',
         'Lyrics in the file (off)',
-        'Fake',
+        'Online version',
+        'Keep this one',
         'Find lyrics online…',
         'Save current lyrics…',
-        'Not these lyrics',
+        'Not the current lyrics',
         '✓ Lyrics for this song',
       ],
     ),
@@ -317,7 +318,7 @@ void main() {
         'Keep this one',
         'Find lyrics online…',
         'Save current lyrics…',
-        'Not these lyrics',
+        'Not the current lyrics',
         '✓ Lyrics for this song',
       ],
     ),
@@ -549,6 +550,60 @@ void main() {
       expect(tester.getSize(findPill).width, lessThan(260));
     });
 
+    testWidgets('the Online version row marks a removed plugin', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: _origin(pinned: true, remoteId: '7'),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        // The test font is as wide as it is tall, wider than any real font:
+        // a smaller scale keeps the fixed tail of the subtitle in the row.
+        textScale: 0.6,
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'fake': const LyricsSourceName(
+              displayName: 'NetEase',
+              removed: true,
+            ),
+          }),
+        ],
+      );
+      await openMenu(tester);
+      expect(find.text('Online version'), findsOneWidget);
+      expect(find.text('NetEase'), findsOneWidget);
+      expect(find.text(' · removed plugin'), findsOneWidget);
+      expect(find.text(' · Synced · 4:05'), findsOneWidget);
+    });
+
+    testWidgets('a long plugin name is cut in the menu row', (tester) async {
+      final longName = List.filled(80, 'N').join();
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: _origin(pinned: true, remoteId: '7'),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        overrides: [
+          lyricsSourceNamesProvider.overrideWithValue({
+            'fake': LyricsSourceName(displayName: longName),
+          }),
+        ],
+      );
+      await openMenu(tester);
+      expect(tester.takeException(), isNull);
+      // The kind and the length stay whole beside the cut name.
+      expect(find.text(' · Synced · 4:05'), findsOneWidget);
+    });
+
     testWidgets('speaks Vietnamese', (tester) async {
       await pump(
         tester,
@@ -604,13 +659,12 @@ void main() {
       );
       await openMenu(tester);
       expect(
-        find.text(
-          'The file or tag first, then online sources · drops the chosen version',
-        ),
+        find.text('The file or tag first, then online sources'),
         findsOneWidget,
       );
       expect(find.text('In the tag'), findsOneWidget);
-      expect(find.text('Synced · 4:05'), findsOneWidget);
+      expect(find.text(' · Synced · 4:05'), findsOneWidget);
+      expect(find.text('Fake'), findsOneWidget);
     });
 
     testWidgets('Automatic names no source with several enabled', (
@@ -632,9 +686,7 @@ void main() {
       );
       await openMenu(tester);
       expect(
-        find.text(
-          'The file or tag first, then online sources · drops the chosen version',
-        ),
+        find.text('The file or tag first, then online sources'),
         findsOneWidget,
       );
       expect(find.textContaining('Second'), findsNothing);
@@ -655,10 +707,7 @@ void main() {
         providers: const [],
       );
       await openMenu(tester);
-      expect(
-        find.text('The file or tag only · drops the chosen version'),
-        findsOneWidget,
-      );
+      expect(find.text('The file or tag only'), findsOneWidget);
       expect(find.text('Find lyrics online…'), findsNothing);
     });
 
@@ -707,7 +756,7 @@ void main() {
           'Lyrics in the file (off)',
           'Keep this one (off)',
           'Save current lyrics… (off)',
-          'Not these lyrics (off)',
+          'Not the current lyrics (off)',
           '✓ Lyrics for this song (off)',
         ]);
       });
@@ -718,9 +767,9 @@ void main() {
     for (final (title, expected) in [
       ('Automatic', 'choose auto $_uri'),
       ('Lyrics in the file', 'choose local $_uri'),
-      ('Fake', 'choose online $_uri'),
+      ('Online version', 'choose online $_uri'),
       ('Lyrics for this song', 'choose off $_uri'),
-      ('Not these lyrics', 'reject 7 $_uri'),
+      ('Not the current lyrics', 'reject 7 $_uri'),
     ]) {
       testWidgets('$title acts on the song', (tester) async {
         await pump(

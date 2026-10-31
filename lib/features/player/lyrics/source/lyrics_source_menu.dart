@@ -92,7 +92,7 @@ List<Widget> lyricsSourceMenuItems(
         context,
         focusNode: firstItemFocus,
         title: l10n.lyricsSourceAutoItem,
-        subtitle: hasPick ? l10n.lyricsSourceForgetPick(autoText) : autoText,
+        subtitle: autoText,
         checked: effective == LyricsChoice.auto,
         onPressed: when(canChoose, () => runner.choose(LyricsChoice.auto)),
       ),
@@ -113,28 +113,34 @@ List<Widget> lyricsSourceMenuItems(
         ),
       ),
     if (hasPick)
-      choice(
-        lyricsSourceMenuItem(
+      choice(() {
+        final parts = lyricsSourceNameParts(l10n, names, pin?.providerId ?? '');
+        final detail = switch (pickSubtitle) {
+          [] => null,
+          [final one] => one,
+          [final kind, final length] => l10n.lyricsSourceOnlineSubtitle(
+            kind,
+            length,
+          ),
+          _ => null,
+        };
+        return lyricsSourceMenuItem(
           context,
-          title: lyricsSourceNameText(l10n, names, pin?.providerId ?? ''),
-          tag: l10n.lyricsSourceChosenTag,
-          subtitle: switch (pickSubtitle) {
-            [] => null,
-            [final one] => one,
-            [final kind, final length] => l10n.lyricsSourceOnlineSubtitle(
-              kind,
-              length,
-            ),
-            _ => null,
-          },
+          title: l10n.lyricsSourceOnlineVersion,
+          subtitleWidget: lyricsSourcePickSubtitle(
+            context,
+            name: parts.name,
+            removedNote: parts.removed ? l10n.lyricsSourceRemovedPlugin : null,
+            detail: detail,
+          ),
+          tooltip: lyricsSourceNameText(l10n, names, pin?.providerId ?? ''),
           checked: effective == LyricsChoice.online,
           onPressed: when(canChoose, () => runner.choose(LyricsChoice.online)),
-        ),
-      ),
+        );
+      }()),
     const Divider(height: 9),
-    if (origin != null &&
-        !origin.pinned &&
-        (!hasPick || pin?.remoteId == origin.remoteId))
+    // Keeping replaces a stored pick of another version.
+    if (origin != null && !origin.pinned)
       lyricsSourceMenuItem(
         context,
         icon: AppIcons.lyricsKeep,

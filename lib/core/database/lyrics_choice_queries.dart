@@ -28,6 +28,16 @@ extension LyricsChoiceQueries on LibraryDatabase {
     );
   }
 
+  /// Automatic that keeps the stored pick: the mode goes back to null (which
+  /// reads as auto) and the pick stays, so the song can return to it.
+  Future<void> clearLyricsChoice(String trackKey, int now) {
+    return customUpdate(
+      'UPDATE lyrics_pins SET mode = NULL, pinned_at = ?2 WHERE track_key = ?1',
+      variables: [Variable<String>(trackKey), Variable<int>(now)],
+      updates: {lyricsPins},
+    );
+  }
+
   /// Back to automatic: forgets the choice and the pick.
   Future<void> removeLyricsPin(String trackKey) =>
       (delete(lyricsPins)..where((t) => t.trackKey.equals(trackKey))).go();
