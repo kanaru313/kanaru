@@ -11,6 +11,25 @@ String? lyricsSourceLocalSubtitle(AppLocalizations l10n, LyricsSource? own) =>
       null => null,
     };
 
+/// Room inside a row, and the gap between rows: the rows breathe, and the
+/// tint of the choice in effect is a rounded block, not a full-width band.
+const _rowPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 9);
+
+ButtonStyle _rowStyle({Color? background}) => ButtonStyle(
+  padding: const WidgetStatePropertyAll(_rowPadding),
+  shape: WidgetStatePropertyAll(
+    RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  ),
+  backgroundColor: background == null
+      ? null
+      : WidgetStatePropertyAll(background),
+);
+
+Widget _spaced(Widget row) => Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+  child: row,
+);
+
 /// One row: a title, an optional [tag] after it and an optional subtitle. With [checked] set it is a
 /// radio row, selected when `true` (the choice in effect); pressing the row
 /// that is already selected still acts, as the choice may carry a stored
@@ -59,38 +78,42 @@ Widget lyricsSourceMenuItem(
             ],
           ),
         if (subtitle != null)
-          Text(
-            subtitle,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              subtitle,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
       ],
     ),
   );
   if (checked == null) {
-    return MenuItemButton(
-      focusNode: focusNode,
-      leadingIcon: icon == null ? null : Icon(icon, size: 20),
-      onPressed: onPressed,
-      child: label,
+    return _spaced(
+      MenuItemButton(
+        focusNode: focusNode,
+        style: _rowStyle(),
+        leadingIcon: icon == null ? null : Icon(icon, size: 20),
+        onPressed: onPressed,
+        child: label,
+      ),
     );
   }
-  return RadioMenuButton<bool>(
-    focusNode: focusNode,
-    // The row in effect is tinted, so it reads at a glance.
-    style: checked
-        ? ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(
-              scheme.primary.withValues(alpha: 0.14),
-            ),
-          )
-        : null,
-    value: true,
-    groupValue: checked ? true : null,
-    toggleable: true,
-    onChanged: onPressed == null ? null : (_) => onPressed(),
-    child: label,
+  return _spaced(
+    RadioMenuButton<bool>(
+      focusNode: focusNode,
+      // The row in effect is tinted, so it reads at a glance.
+      style: _rowStyle(
+        background: checked ? scheme.primary.withValues(alpha: 0.14) : null,
+      ),
+      value: true,
+      groupValue: checked ? true : null,
+      toggleable: true,
+      onChanged: onPressed == null ? null : (_) => onPressed(),
+      child: label,
+    ),
   );
 }
 
@@ -101,15 +124,18 @@ Widget lyricsSourceSwitchItem(
   required String title,
   required bool on,
   required ValueChanged<bool>? onChanged,
-}) => MenuItemButton(
-  onPressed: onChanged == null ? null : () => onChanged(!on),
-  trailingIcon: IgnorePointer(
-    child: ExcludeFocus(
-      child: Switch(value: on, onChanged: onChanged == null ? null : (_) {}),
+}) => _spaced(
+  MenuItemButton(
+    style: _rowStyle(),
+    onPressed: onChanged == null ? null : () => onChanged(!on),
+    trailingIcon: IgnorePointer(
+      child: ExcludeFocus(
+        child: Switch(value: on, onChanged: onChanged == null ? null : (_) {}),
+      ),
     ),
-  ),
-  child: ConstrainedBox(
-    constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
-    child: Text(title),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
+      child: Text(title),
+    ),
   ),
 );
