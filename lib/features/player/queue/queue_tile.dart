@@ -161,6 +161,9 @@ class _QueueDragHandle extends StatelessWidget {
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {},
+      // The long press on the handle is swallowed so it does not open the
+      // row's menu.
+      onLongPress: () {},
       child: MouseRegion(
         cursor: SystemMouseCursors.grab,
         child: Tooltip(

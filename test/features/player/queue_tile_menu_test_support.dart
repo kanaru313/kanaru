@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import '../library/library_test_harness.dart';
 import '../playlists/playlist_test_data.dart';
 
@@ -26,11 +27,12 @@ Future<void> playAndOpenQueue(
 Finder queueRow(String title) =>
     find.ancestor(of: find.text(title), matching: find.byType(QueueTile));
 
-/// Right clicks the row titled [title] and waits for the menu.
+/// Right clicks the row titled [title] and waits for its menu: the song
+/// modal for a library song, a popup for any other.
 Future<void> openQueueMenu(WidgetTester tester, String title) async {
   await tester.tap(queueRow(title).last, buttons: kSecondaryButton);
   await settleDb(tester);
-  await tester.pumpAndSettle();
+  await settleSongModal(tester);
 }
 
 /// Titles of the queue in play order.
@@ -67,10 +69,3 @@ const allMenuLabels = [
   'Show in file manager',
   'Remove from queue',
 ];
-
-/// Whether the menu row labelled [label] is enabled.
-bool menuRowEnabled(WidgetTester tester, String label) => tester
-    .widget<PopupMenuItem<dynamic>>(
-      find.ancestor(of: find.text(label), matching: _menuItem),
-    )
-    .enabled;

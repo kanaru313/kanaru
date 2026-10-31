@@ -1556,6 +1556,12 @@ abstract class AppLocalizations {
   /// **'The queue changed, so nothing was done'**
   String get queueMenuStale;
 
+  /// Snackbar when Play next is picked on the queue row that is playing or already in the play next block
+  ///
+  /// In en, this message translates to:
+  /// **'Already playing or up next'**
+  String get queueAlreadyUpNext;
+
   /// No description provided for @queueReorder.
   ///
   /// In en, this message translates to:

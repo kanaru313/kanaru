@@ -66,14 +66,14 @@ class QueueRowMenuTarget {
   /// Global point the menu opened at, where an artist picker would go.
   final Offset position;
 
-  void _say(AppSnackBarKind kind, String text) => messenger
+  void say(AppSnackBarKind kind, String text) => messenger
     ?..clearSnackBars()
     ..showSnackBar(appSnackBar(kind: kind, title: text));
 
   /// The play position of the entry, or null when the queue no longer holds
   /// this very track at it. Entry numbers are reused after the queue is
   /// cleared or replaced, so a number alone could name another song.
-  int? _livePosition() {
+  int? livePosition() {
     final queue = container.read(playerServiceProvider).queue;
     if (entry >= queue.original.length) return null;
     if (!identical(queue.original[entry], track)) return null;
@@ -83,9 +83,9 @@ class QueueRowMenuTarget {
 
   /// Carries out the picked [choice]. Never throws.
   Future<void> run(Object choice) async {
-    final at = _livePosition();
+    final at = livePosition();
     if (at == null) {
-      _say(AppSnackBarKind.info, l10n.queueMenuStale);
+      say(AppSnackBarKind.info, l10n.queueMenuStale);
       return;
     }
     try {
@@ -119,7 +119,7 @@ class QueueRowMenuTarget {
       }
     } catch (error, stack) {
       _log.severe('A queue row menu action failed', error, stack);
-      _say(AppSnackBarKind.error, l10n.libraryUnexpectedError);
+      say(AppSnackBarKind.error, l10n.libraryUnexpectedError);
     }
   }
 
@@ -130,7 +130,7 @@ class QueueRowMenuTarget {
     // Only a song of the library is added, as everywhere else; any song in
     // Favorites can be taken out. Checked now: a rescan may have dropped it.
     if (favorite && !(await db.libraryPathsAmong([file])).contains(file)) {
-      _say(AppSnackBarKind.error, l10n.libraryTrackGone);
+      say(AppSnackBarKind.error, l10n.libraryTrackGone);
       return;
     }
     await db.setFavorite(
@@ -138,7 +138,7 @@ class QueueRowMenuTarget {
       favorite: favorite,
       now: DateTime.now().millisecondsSinceEpoch,
     );
-    _say(
+    say(
       AppSnackBarKind.success,
       favorite ? l10n.favoritesAdded : l10n.favoritesRemoved,
     );

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_browse_track_links.dart';
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/library_track_of_path.dart';
 import '../../../core/database/playlist_favorites.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
@@ -15,17 +16,19 @@ import '../../../shared/widgets/menu_keyboard_region.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/track_link_menu_items.dart'
     show trackLinkMenuItems;
+import 'queue_song_modal.dart';
 import 'queue_tile.dart' show isUpNextRow;
 import 'queue_tile_menu_actions.dart';
 
 final _log = Logger('queue');
 
-/// The menu of a queue row, on a right click, a long press or the menu key:
-/// Play next (a move, never a copy), Add to playlist, the Favorites row, the
-/// artist and album links, Show in file manager and Remove from queue. Songs
-/// outside the library get no playlist, no Add to favorites and no links;
-/// any song in Favorites can be taken out. Every action is checked against
-/// the queue when picked, so a queue replaced meanwhile is left alone.
+/// The menu of a queue row, on a right click, a long press or the menu key.
+/// A song of the library opens the song modal (see [openQueueSongModal]).
+/// Any other song (a stream, a file outside the library, no library open)
+/// gets a cut-down popup: Play next (a move, never a copy), the Favorites
+/// row (any song in Favorites can be taken out), Find lyrics online, Show in
+/// file manager and Remove from queue. Every action is checked against the
+/// queue when picked, so a queue replaced meanwhile is left alone.
 class QueueTileMenuRegion extends ConsumerWidget {
   const QueueTileMenuRegion({
     super.key,
@@ -68,8 +71,9 @@ class QueueTileMenuRegion extends ConsumerWidget {
   Future<void> _open(
     BuildContext context,
     WidgetRef ref,
-    Offset position,
-  ) async {
+    Offset position, {
+    bool viaKeyboard = false,
+  }) async {
     // Everything the actions need is captured here: after the menu or the
     // reads the row may be gone (the sheet closes when the queue empties).
     final container = ProviderScope.containerOf(context, listen: false);
@@ -88,6 +92,37 @@ class QueueTileMenuRegion extends ConsumerWidget {
     final runner = TrackMenuRunner(ref, context);
     final messenger = ScaffoldMessenger.maybeOf(context);
     final navigator = Navigator.of(context, rootNavigator: true);
+
+    // The library row of the song is watched by the row, so it is there
+    // already and the modal opens in this very frame; only a row opened
+    // before that read ended waits for it.
+    final provider = path == null ? null : libraryTrackOfPathProvider(path);
+    var item = provider == null ? null : ref.read(provider).value;
+    if (item == null && provider != null && ref.read(provider).isLoading) {
+      item = await ref.read(provider.future);
+      if (!context.mounted) return;
+    }
+    if (item != null) {
+      openQueueSongModal(
+        context,
+        ref,
+        item: item,
+        viaKeyboard: viaKeyboard,
+        target: QueueRowMenuTarget(
+          container: container,
+          entry: entry,
+          track: trackAtOpen,
+          path: path,
+          trackId: item.id,
+          runner: runner,
+          messenger: messenger,
+          l10n: l10n,
+          navigator: navigator,
+          position: position,
+        ),
+      );
+      return;
+    }
 
     final (:favorite, :state) = await _read(container, path);
     if (!context.mounted) return;
@@ -137,7 +172,7 @@ class QueueTileMenuRegion extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => MenuKeyboardRegion(
-    onOpen: (position) => _open(context, ref, position),
+    onOpen: (position) => _open(context, ref, position, viaKeyboard: true),
     child: GestureDetector(
       behavior: HitTestBehavior.translucent,
       onSecondaryTapUp: (details) =>

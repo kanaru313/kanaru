@@ -980,6 +980,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueMenuStale => 'The queue changed, so nothing was done';
 
   @override
+  String get queueAlreadyUpNext => 'Already playing or up next';
+
+  @override
   String get queueReorder => 'Drag to reorder';
 
   @override

@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_dialog.dart';
+import 'package:kanaru/shared/song_modal/song_modal_header.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
 import '../library/browse_test_data.dart';
@@ -56,12 +57,12 @@ void main() {
     expect(player().upNextRun, 1);
   });
 
-  testWidgets('Show album goes to the album of the library row', (
+  testWidgets('Go to album goes to the album of the library row', (
     tester,
   ) async {
     await open(tester);
     await openQueueMenu(tester, 'b');
-    await pick(tester, 'Show album');
+    await pick(tester, 'Go to album');
 
     expect(location(h), albumLocation(const AlbumKey('ann', 'al')));
   });
@@ -149,20 +150,17 @@ void main() {
     expect(find.text('The queue changed, so nothing was done'), findsOneWidget);
   });
 
-  testWidgets('a failed database read leaves the cut-down menu', (
+  testWidgets('a failed read of the library row falls back to the popup', (
     tester,
   ) async {
-    await open(tester);
-    gate.failNext('has_album');
+    await openWithTracks(tester, h, _library, location: '/home');
+    final p = await trackPaths(tester, h);
+    gate.failNext('FROM tracks WHERE path');
+    await playAndOpenQueue(tester, h, [Track(uri: p['b']!, title: 'b')]);
     await openQueueMenu(tester, 'b');
 
-    // Finding lyrics does not need the library row, so it stays.
-    expect(menuLabels(tester, allMenuLabels), [
-      'Play next',
-      'Find lyrics online…',
-      'Show in file manager',
-      'Remove from queue',
-    ]);
+    expect(find.byType(SongModalHeader), findsNothing);
+    expect(menuLabels(tester, allMenuLabels), contains('Remove from queue'));
     expect(tester.takeException(), isNull);
   });
 }

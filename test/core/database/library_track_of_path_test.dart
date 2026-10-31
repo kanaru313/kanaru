@@ -25,13 +25,18 @@ void main() {
     return container;
   }
 
+  // The provider is autoDispose: hold it while its first value is awaited.
+  Future<TrackListItem?> rowOf(ProviderContainer container, String path) {
+    final provider = libraryTrackOfPathProvider(path);
+    container.listen(provider, (_, _) {});
+    return container.read(provider.future);
+  }
+
   test('gives the row of a library path with its id', () async {
     await db.upsertTracks([track(root, '/m/a'), track(root, '/m/b')]);
     final container = containerWith(db);
 
-    final item = await container.read(
-      libraryTrackOfPathProvider('/m/b').future,
-    );
+    final item = await rowOf(container, '/m/b');
 
     expect(item, isNotNull);
     expect(item!.path, '/m/b');
@@ -42,28 +47,37 @@ void main() {
     await db.upsertTracks([track(root, '/m/a')]);
     final container = containerWith(db);
 
-    expect(
-      await container.read(libraryTrackOfPathProvider('/x/b').future),
-      isNull,
-    );
+    expect(await rowOf(container, '/x/b'), isNull);
   });
 
   test('is null without a library', () async {
     final container = containerWith(null);
 
-    expect(
-      await container.read(libraryTrackOfPathProvider('/m/a').future),
-      isNull,
-    );
+    expect(await rowOf(container, '/m/a'), isNull);
   });
 
   test('is null when the read fails', () async {
     final container = containerWith(db);
     await db.close();
 
-    expect(
-      await container.read(libraryTrackOfPathProvider('/m/a').future),
-      isNull,
+    expect(await rowOf(container, '/m/a'), isNull);
+  });
+
+  test('turns null after a rescan drops the row', () async {
+    await db.upsertTracks([track(root, '/m/a')]);
+    final container = containerWith(db);
+    final seen = <String?>[];
+    container.listen(
+      libraryTrackOfPathProvider('/m/a'),
+      (_, next) => seen.add(next.value?.path),
+      fireImmediately: true,
     );
+    await rowOf(container, '/m/a');
+
+    await db.delete(db.tracks).go();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(container.read(libraryTrackOfPathProvider('/m/a')).value, isNull);
+    expect(seen, contains('/m/a'));
   });
 }

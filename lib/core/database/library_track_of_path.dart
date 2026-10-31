@@ -24,17 +24,30 @@ extension LibraryTrackOfPath on LibraryDatabase {
 }
 
 /// The library row of the song at the path, or null without a library or when
-/// the path is not a row of it. A read error is logged and also gives null, so
-/// callers fall back to their plain behavior. It does not follow rescans, and
-/// is only built for rows on screen; while it loads the value is null.
-final libraryTrackOfPathProvider = FutureProvider.autoDispose
-    .family<TrackListItem?, String>((ref, path) async {
+/// the path is not a row of it. It follows the library: a rescan that drops or
+/// changes the row updates it. A read error is logged and also gives null, so
+/// callers fall back to their plain behavior. It is only built for rows on
+/// screen; while it loads the value is null.
+final libraryTrackOfPathProvider = StreamProvider.autoDispose
+    .family<TrackListItem?, String>((ref, path) async* {
       final db = ref.watch(libraryDatabaseProvider);
-      if (db == null) return null;
+      if (db == null) {
+        yield null;
+        return;
+      }
       try {
-        return await db.libraryTrackOfPath(path);
+        final rows = db
+            .customSelect(
+              'SELECT $songColumns FROM tracks WHERE path = ?1',
+              variables: [Variable.withString(path)],
+              readsFrom: {db.tracks},
+            )
+            .watchSingleOrNull();
+        await for (final row in rows) {
+          yield row == null ? null : trackListItemFromRow(row);
+        }
       } catch (e, s) {
         _log.warning('Reading the library row of a path failed', e, s);
-        return null;
+        yield null;
       }
     });
