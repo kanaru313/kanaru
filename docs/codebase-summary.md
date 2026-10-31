@@ -2,9 +2,9 @@
 
 Map of the Kanaru repository: where things live, what each module does, and what is generated. For layering rules see [code-standards.md](./code-standards.md); for runtime design see [system-architecture.md](./system-architecture.md).
 
-Snapshot: 2026-10-31, `main` (`8c2a1506`), lyrics folder counts refreshed for the plugin work. Commit and PR counts are still from `1cd20bc` (2026-10-21): 208 commits, PRs #1–#22, no tags. Version `0.1.0+1` (`pubspec.yaml`, `rust/Cargo.toml`). License GPL-3.0-or-later ([LICENSE](../LICENSE)).
+Snapshot: 2026-10-31, base `main` `e6832504` (the docs branch adds one commit on top). Counts: 747 commits (`git rev-list --count HEAD`), 87 merged PRs (`gh pr list --state merged`), no tags. Version `0.1.0+1` (`pubspec.yaml`, `rust/Cargo.toml`). License GPL-3.0-or-later ([LICENSE](../LICENSE)).
 
-Regenerate the compaction with `repomix --style xml -o repomix-output.xml` (see [Compaction](#compaction)); `repomix-output.xml` is not gitignored.
+Regenerate the compaction with `repomix --style xml -o repomix-output.xml` (see [Compaction](#compaction)); `repomix-output.xml` is gitignored (`.gitignore:59`).
 
 ## Entry points
 
@@ -39,6 +39,7 @@ Sizes are scout counts: files / lines, generated files included where noted.
 | `lib/core/paths/` | 2 / 160 | XDG directory resolution; `local_audio_path.dart` (`localAudioPath`: the one check that a path or `file:` URI from outside the library is a local audio file, returned in canonical spelling) |
 | `lib/core/player/` | 49 / 5,552 (`session/`: 6 / 1,021) | `PlayerService`, `PlayQueue`, `playingTrackPathProvider` (local path of the playing track, for the playing-row highlight), `MediaKitBackend`, ReplayGain and output device (`ReplayGainSync`, `AlbumRunKeyCache`, `OutputDeviceSync`, `AudioOutputControl`, `MpvAudioOutput`), session persistence (`session/`) |
 | `lib/core/settings/` | 14 / 1,516 | `settings.json` codec, file I/O, `SettingsNotifier`, applied appearance, preference groups (`library_scan_prefs.dart` incl. `watchFolders`, read by the indexer and folder watcher; `playback_prefs.dart` incl. ReplayGain and output device with `withAudioDevice`, read by the player; `display_prefs.dart`; and their codecs) |
+| `lib/features/player/now_playing/now_playing_tab_header_layout.dart` | 1 / 59 | `NowPlayingTabHeaderLayout`: narrow Now Playing header, with the button group at the start, the tab dots, and a drag strip kept between them |
 | `lib/features/history/` | 38 / 3,711 | History page (`history_screen.dart`: two-column page; `history_page_layout.dart` side pane or header by width, `history_side_pane.dart` pane, header and details, `history_page_actions.dart` Play / Shuffle / queue of every played song; day-grouped timeline, year chips, calendar jump, Undo delete; `history_filter_results.dart` plays matching the in-page filter, `history_play_menu_actions.dart` row menu shared by timeline and filter); Most played page (`most_played_screen.dart`, `/most-played`, hosts `most_played_view.dart`: range state, filter, `HistoryTwoColumnLayout` shared with History; `most_played_side_pane.dart` pane and header, `most_played_actions.dart` Play / Shuffle / ⋯ menu, `most_played_list.dart` and `most_played_row_tile.dart` ranked `SongTile` rows, `history_range_span.dart` range text; `history_range_dialog.dart` custom range dialog on the `table_calendar` package, with `history_range_calendar.dart` the grid, `history_calendar_style.dart` its look and day cell, `history_range_dialog_header.dart` title, month bar and hint); per-song page (`history_track_screen.dart`, `/history/track?path=` and `/most-played/track?path=`); route seam (`history_routes.dart`: `historyPath`, `historyRoutes`, `historyTrackLocation`, `mostPlayedPath`, `mostPlayedRoutes`, `mostPlayedTrackLocation`) |
 | `lib/features/home/` | 1 / 31 | Placeholder screen |
 | `lib/features/library/` | 58 / 5,135 | Songs, Albums, Artists, Genres and Folders (grid or list, `library_view_modes.dart` keeps the view in memory; `genres/` has the round `GenreAvatar`, list and grid tiles, page and header; `widgets/round_grid_tile.dart` is the round grid cell shared with Artists; `folders/` has the pure `folder_tree.dart`, `folder_songs.dart` (subtree reads in tree order), `folders_provider.dart`, list and grid tiles, counts line, folder page and header, and the six folder actions in `folder_actions.dart` and `folder_menu.dart`), onboarding, library state machine, sort controls (field menu + direction arrow); the Play, Shuffle and queue buttons of album and artist headers come from `shared/widgets/detail_page/play_shuffle_actions.dart`, `artists/artist_header.dart`, `artists/artist_grid_tile.dart` |
@@ -119,7 +120,7 @@ Total Rust (`rust/src`): 28 files, 7,104 lines, including the generated bridge. 
 | `tool/` | `generate_text_key_tables.py` (generator for `text_key_tables.dart`), `dart-mcp.sh` (MCP launcher) |
 | `flake.nix`, `flutter_rust_bridge.yaml` | Nix dev shell; FRB codegen config (`rust_input` `crate::api`, `dart_output` `lib/src/rust`) |
 | `.mcp.json` | Registers the Dart MCP server |
-| `docs/` | This documentation set |
+| `docs/` | This documentation set. Architecture is split: [system-architecture.md](./system-architecture.md) (index) and topic files [playback](./system-architecture-playback.md), [library](./system-architecture-library.md), [database](./system-architecture-database.md), [lyrics](./system-architecture-lyrics.md), [lyrics plugins](./system-architecture-lyrics-plugins.md), [user data](./system-architecture-user-data.md) |
 | `plans/` | Local planning and reports (gitignored) |
 
 ## Size stats

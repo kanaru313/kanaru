@@ -142,6 +142,12 @@ Shipped in v1 (`apiVersion` 1, lyrics plugins only). These are deliberately out 
 | Source choice by song language | Not needed yet | Open |
 | `server` config type (the user types a server address, such as a self-hosted LRCLIB) | Its address follows the repository URL rules | Open |
 | iOS store policy for downloaded code | Not relevant on GNU/Linux | Open |
+| Repository fetch through an environment proxy (address checks on the proxy side) | A16 decided no proxy for repositories in v1; a proxy needs address-class checks on the proxy side, a separate design | Open |
+| Plugin runtime builds on Android and Windows (rquickjs; verify `rquickjs` issue #709 on Android) | Linux first; no CI yet; no Android or Windows toolchain in `flake.nix` to verify the build | Open |
+| Show a plugin's hosts before an update from the Sources banner | The v1 banner shows the reason only; host changes need a richer prompt | Open |
+| Refetch a plugin's saved lyrics when its version changes | v1 keeps saved lyrics until the song is looked up again | Open |
+| Isolated runs use a file secret store instead of the shared keyring | Isolated dev runs share the real keyring, so the DeepL key is read and overwritten; documented in the dev guide for now | Open |
+| Split `docs/features.md` (119 KB) | Single file is hard to navigate and review; split by topic when next edited | Open |
 
 ## Open decisions
 
