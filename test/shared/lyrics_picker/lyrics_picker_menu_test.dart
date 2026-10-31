@@ -32,7 +32,7 @@ void main() {
     }
   }
 
-  testWidgets('the row can go away while the menu is open and the pick still '
+  testWidgets('the row can go away while the modal is open and the pick still '
       'lands', (tester) async {
     tester.view
       ..physicalSize = const Size(1280, 900)
@@ -57,8 +57,6 @@ void main() {
               valueListenable: rowShown,
               builder: (_, shown, _) => shown
                   ? TrackActionsRegion(
-                      trackId: song.id,
-                      path: song.path,
                       song: song,
                       onQueueAction: (_) {},
                       child: const Text('row'),
@@ -72,9 +70,13 @@ void main() {
 
     await tester.tap(find.text('row'), buttons: kSecondaryButton);
     await settle(tester);
+    // Find lyrics online sits on the Advanced page.
+    expect(find.text('Find lyrics online…'), findsNothing);
+    await tester.tap(find.text('Advanced'));
+    await settle(tester);
     expect(find.text('Find lyrics online…'), findsOneWidget);
 
-    // A rescan rebuilds the row away while the menu is open.
+    // A rescan rebuilds the row away while the modal is open.
     rowShown.value = false;
     await tester.pump();
     expect(find.text('row'), findsNothing);

@@ -203,7 +203,7 @@ void main() {
 
     await dragFirstRowDown(tester);
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(find.byTooltip('Playlist actions'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Add to queue'));
     await settleDb(tester);

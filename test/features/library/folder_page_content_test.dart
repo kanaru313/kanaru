@@ -9,6 +9,7 @@ import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 import 'list_view_modes_override.dart';
@@ -228,6 +229,17 @@ void main() {
       expect(find.textContaining('Songs ·'), findsNothing);
       expect(find.text('No songs in this folder'), findsOneWidget);
     });
+  });
+
+  testWidgets('a song on its own folder page offers Go to folder', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: vn);
+
+    await openSongModal(tester, find.text('a'));
+
+    expect(modalAction('folder'), findsOneWidget);
   });
 
   testWidgets('a subfolder and back start at All again', (tester) async {

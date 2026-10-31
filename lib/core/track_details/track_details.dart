@@ -19,6 +19,7 @@ class TrackDetails {
     this.discTotal,
     this.year,
     this.releaseDate,
+    this.releaseDateRaw,
     this.genre,
     this.composer,
     this.comment,
@@ -55,6 +56,7 @@ class TrackDetails {
       discTotal: row.discTotal,
       year: row.year,
       releaseDate: raw == null ? null : parseReleaseDate(raw),
+      releaseDateRaw: raw,
       genre: row.genre,
       composer: row.composer,
       comment: row.comment,
@@ -93,6 +95,10 @@ class TrackDetails {
   /// Parsed from the stored raw tag value; null when not stored yet, absent
   /// in the tag or unparseable.
   final ReleaseDate? releaseDate;
+
+  /// The release date as the tag wrote it; null when not stored yet or
+  /// absent in the tag.
+  final String? releaseDateRaw;
   final String? genre;
   final String? composer;
   final String? comment;

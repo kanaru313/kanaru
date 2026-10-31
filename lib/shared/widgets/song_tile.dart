@@ -5,6 +5,7 @@ import '../../core/database/library_database.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../core/player/playing_track_path.dart';
+import '../song_modal/song_more_button.dart';
 import 'favorite_button.dart';
 import 'library_row.dart';
 import 'queue_actions_menu.dart';
@@ -45,14 +46,16 @@ class SongTile extends ConsumerWidget {
   final TrackListItem song;
   final VoidCallback onTap;
 
-  /// Picked from the menu of a right click or long press; no menu without it.
+  /// Picked from the song modal (right click, long press or the ⋮ button);
+  /// no modal and no ⋮ without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
   /// Shown right-aligned in a column before the cover (a track number on an
   /// album page; empty keeps the column); no column when null.
   final String? number;
 
-  /// False leaves Show album out of the menu (rows on the album's own page).
+  /// False leaves Go to album out of the song modal (rows on the album's own
+  /// page).
   final bool showAlbum;
 
   /// Drawn before the cover, e.g. a drag handle; replaces [number], so not
@@ -82,14 +85,11 @@ class SongTile extends ConsumerWidget {
         highlightPlaying &&
         ref.watch(playingTrackPathProvider.select((p) => p == song.path));
     final durationMs = song.durationMs;
+    final onQueue = onQueueAction;
     return TrackActionsRegion(
-      trackId: song.id,
-      path: song.path,
       song: song,
       showAlbum: showAlbum,
-      hasArtist: song.artist?.isNotEmpty ?? false,
-      hasAlbum: song.album?.isNotEmpty ?? false,
-      onQueueAction: onQueueAction,
+      onQueueAction: onQueue,
       child: SongRowView(
         title: song.title,
         artist: song.artist,
@@ -107,6 +107,16 @@ class SongTile extends ConsumerWidget {
         number: number,
         leading: leadingAccessory,
         trailing: trailingAccessory,
+        more: onQueue == null
+            ? null
+            : SongMoreButton(
+                song: song,
+                onQueueAction: onQueue,
+                showAlbum: showAlbum,
+                color: playing
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : null,
+              ),
         heart: FavoriteButton(
           path: song.path,
           iconSize: 20,

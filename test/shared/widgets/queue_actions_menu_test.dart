@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../features/library/browse_test_data.dart';
 import '../../features/library/library_test_harness.dart';
+import '../song_modal/song_modal_test_support.dart';
 
 const _tracks = [TestTrack('a'), TestTrack('b'), TestTrack('c')];
 
@@ -15,47 +16,35 @@ void main() {
       t.title,
   ];
 
-  /// Where the first entry of the open menu starts.
-  Offset menuCorner(WidgetTester tester) => tester.getTopLeft(
-    find.ancestor(
-      of: find.text('Play next'),
-      matching: find.byWidgetPredicate(
-        (w) => w is PopupMenuItem,
-        skipOffstage: false,
-      ),
-    ),
-  );
+  group('song modal opening', () {
+    testWidgets(
+      'a right click opens the song modal, not a popup at the pointer',
+      (tester) async {
+        final h = LibraryHarness();
+        await openWithTracks(tester, h, _tracks, location: '/songs');
 
-  group('menu position', () {
-    testWidgets('opens at the pointer on the wide layout with the sidebar', (
-      tester,
-    ) async {
+        await openSongModal(tester, find.text('b'));
+
+        expect(find.text('Go to artist'), findsOneWidget);
+        expect(find.byType(PopupMenuItem<Object?>), findsNothing);
+        // A centered dialog, not anchored at the pointer.
+        final window = tester.getSize(find.byType(MaterialApp).first);
+        expect(
+          tester.getCenter(modalAction('artist')).dx,
+          closeTo(window.width / 2, window.width / 4),
+        );
+      },
+    );
+
+    testWidgets('a long press opens the song modal', (tester) async {
       final h = LibraryHarness();
       await openWithTracks(tester, h, _tracks, location: '/songs');
-      final pointer = tester.getCenter(find.text('b'));
-      // The page is inside the shell, not at the window's corner.
-      expect(pointer.dx, greaterThan(200));
-
-      await tester.tap(find.text('b'), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
-
-      final corner = menuCorner(tester);
-      expect((corner.dx - pointer.dx).abs(), lessThan(2));
-      // The menu's own padding sits above its first entry.
-      expect(corner.dy - pointer.dy, inInclusiveRange(0, 16));
-    });
-
-    testWidgets('opens at the pointer on a long press', (tester) async {
-      final h = LibraryHarness();
-      await openWithTracks(tester, h, _tracks, location: '/songs');
-      final pointer = tester.getCenter(find.text('b'));
 
       await tester.longPress(find.text('b'));
-      await tester.pumpAndSettle();
+      await settleSongModal(tester);
 
-      final corner = menuCorner(tester);
-      expect((corner.dx - pointer.dx).abs(), lessThan(2));
-      expect(corner.dy - pointer.dy, inInclusiveRange(0, 16));
+      expect(find.text('Go to artist'), findsOneWidget);
+      expect(find.byType(PopupMenuItem<Object?>), findsNothing);
     });
   });
 

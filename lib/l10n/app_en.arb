@@ -4116,5 +4116,394 @@
   "lyricsStoreItemOpenInstalled": "Open",
   "@lyricsStoreItemOpenInstalled": {
     "description": "Button on the catalog item page of an installed plugin that opens its installed page"
+  },
+  "contextModalBack": "Back",
+  "@contextModalBack": {
+    "description": "Back button of a sub-page in a context menu"
+  },
+  "contextModalClose": "Close",
+  "@contextModalClose": {
+    "description": "Closes the menu; also the label of its dismiss area"
+  },
+  "contextModalLabel": "Menu",
+  "@contextModalLabel": {
+    "description": "Screen reader name of the opened context menu dialog"
+  },
+  "contextModalComingSoon": "Coming soon",
+  "@contextModalComingSoon": {
+    "description": "Badge on a menu action that is not available yet"
+  },
+  "contextModalComingSoonSnack": "This isn't available yet. It's coming soon.",
+  "@contextModalComingSoonSnack": {
+    "description": "Snackbar after tapping a menu action that is not available yet"
+  },
+  "songModalLabel": "Song options",
+  "@songModalLabel": {
+    "description": "Screen reader name of the song options dialog"
+  },
+  "songModalMoreOptions": "More options",
+  "@songModalMoreOptions": {
+    "description": "Tooltip of the button at the end of a song row that opens the song options"
+  },
+  "songModalGoToAlbum": "Go to album",
+  "@songModalGoToAlbum": {
+    "description": "Song options row that opens the album page"
+  },
+  "songModalGoToArtist": "Go to artist",
+  "@songModalGoToArtist": {
+    "description": "Song options row that opens the artist page"
+  },
+  "songModalGoToAlbumArtist": "Go to album artist",
+  "@songModalGoToAlbumArtist": {
+    "description": "Song options row that opens the page of the album's artist"
+  },
+  "songModalGoToFolder": "Go to folder",
+  "@songModalGoToFolder": {
+    "description": "Song options row that opens the folder page of the song"
+  },
+  "songModalNoAlbum": "No album",
+  "@songModalNoAlbum": {
+    "description": "Quiet line under a disabled Go to album row"
+  },
+  "songModalNoArtist": "No artist",
+  "@songModalNoArtist": {
+    "description": "Quiet line under a disabled Go to artist row"
+  },
+  "songModalUnknownAlbum": "Unknown album",
+  "@songModalUnknownAlbum": {
+    "description": "Album line in the header of the song options when the song has no album"
+  },
+  "songModalEditTags": "Edit tags",
+  "@songModalEditTags": {
+    "description": "Song options row (not available yet) that edits the tags of the file"
+  },
+  "songModalAdvanced": "Advanced",
+  "@songModalAdvanced": {
+    "description": "Song options row that opens a page of less common actions; also its title"
+  },
+  "songModalRemoveFromLibrary": "Remove from library",
+  "@songModalRemoveFromLibrary": {
+    "description": "Advanced song option (not available yet) that takes the song out of the library"
+  },
+  "songModalDeleteFile": "Delete file from disk",
+  "@songModalDeleteFile": {
+    "description": "Advanced song option (not available yet) that deletes the file"
+  },
+  "songModalArtistsCount": "{count, plural, =1{1 artist} other{{count} artists}}",
+  "@songModalArtistsCount": {
+    "description": "Quiet line under the Go to artist row of a song with several artists",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoTitle": "Song info",
+  "@songInfoTitle": {
+    "description": "Title of the Song info page"
+  },
+  "songInfoShowUnknown": "Show unknown fields",
+  "@songInfoShowUnknown": {
+    "description": "Tooltip of the eye button that shows fields with no value"
+  },
+  "songInfoHideUnknown": "Hide unknown fields",
+  "@songInfoHideUnknown": {
+    "description": "Tooltip of the eye button that hides fields with no value"
+  },
+  "songInfoPreview": "Play the best part · coming soon",
+  "@songInfoPreview": {
+    "description": "Tooltip of the disabled preview button"
+  },
+  "songInfoPlays": "Total plays: {count}",
+  "@songInfoPlays": {
+    "description": "Play count line of Song info",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "songInfoFirstPlayed": "First listened: {date}",
+  "@songInfoFirstPlayed": {
+    "description": "First play line of Song info",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoLastPlayed": "Last listened: {date}",
+  "@songInfoLastPlayed": {
+    "description": "Last play line of Song info",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoNeverPlayed": "Never played",
+  "@songInfoNeverPlayed": {
+    "description": "Song info line for a song that was never played"
+  },
+  "songInfoGroupTags": "Tags",
+  "@songInfoGroupTags": {
+    "description": "Group heading on Song info"
+  },
+  "songInfoGroupAudio": "Audio",
+  "@songInfoGroupAudio": {
+    "description": "Group heading on Song info"
+  },
+  "songInfoGroupFile": "File",
+  "@songInfoGroupFile": {
+    "description": "Group heading on Song info"
+  },
+  "songInfoLabelTitle": "Title",
+  "@songInfoLabelTitle": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelArtist": "Artist",
+  "@songInfoLabelArtist": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelAlbum": "Album",
+  "@songInfoLabelAlbum": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelAlbumArtist": "Album artist",
+  "@songInfoLabelAlbumArtist": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelGenre": "Genre",
+  "@songInfoLabelGenre": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelComposer": "Composer",
+  "@songInfoLabelComposer": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelReleaseDate": "Release date",
+  "@songInfoLabelReleaseDate": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelTrack": "Track",
+  "@songInfoLabelTrack": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelDisc": "Disc",
+  "@songInfoLabelDisc": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelLanguage": "Language",
+  "@songInfoLabelLanguage": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelComment": "Comment",
+  "@songInfoLabelComment": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelDuration": "Duration",
+  "@songInfoLabelDuration": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelFormat": "Format",
+  "@songInfoLabelFormat": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelBitrate": "Bitrate",
+  "@songInfoLabelBitrate": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelSampleRate": "Sample rate",
+  "@songInfoLabelSampleRate": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelBitDepth": "Bit depth",
+  "@songInfoLabelBitDepth": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelChannels": "Channels",
+  "@songInfoLabelChannels": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelPath": "Path",
+  "@songInfoLabelPath": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelSize": "Size",
+  "@songInfoLabelSize": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelModified": "Modified",
+  "@songInfoLabelModified": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelAdded": "Date added",
+  "@songInfoLabelAdded": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoUnknown": "Unknown",
+  "@songInfoUnknown": {
+    "description": "Value shown for a field the song has no value for"
+  },
+  "songInfoCopied": "Copied: {value}",
+  "@songInfoCopied": {
+    "description": "Snackbar after a Song info value is copied",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoCopy": "Copy",
+  "@songInfoCopy": {
+    "description": "Tooltip of a copyable Song info value"
+  },
+  "songInfoYearsAgo": "{count, plural, =0{this year} =1{1 year ago} other{{count} years ago}}",
+  "@songInfoYearsAgo": {
+    "description": "Chip next to the release date: how long ago the song came out",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoChannelsMany": "{count, plural, =1{1 channel} other{{count} channels}}",
+  "@songInfoChannelsMany": {
+    "description": "Channel count of a song with neither one nor two channels",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoMono": "Mono",
+  "@songInfoMono": {
+    "description": "One audio channel"
+  },
+  "songInfoStereo": "Stereo",
+  "@songInfoStereo": {
+    "description": "Two audio channels"
+  },
+  "songInfoKbps": "{count} kbps",
+  "@songInfoKbps": {
+    "description": "Bitrate",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "songInfoKhz": "{value} kHz",
+  "@songInfoKhz": {
+    "description": "Sample rate",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoBits": "{count} bit",
+  "@songInfoBits": {
+    "description": "Bit depth",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoFileSizeMb": "{value} MB",
+  "@songInfoFileSizeMb": {
+    "description": "File size from one megabyte up",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoGone": "This song is no longer in the library",
+  "@songInfoGone": {
+    "description": "Song info message when the song was removed from the library"
+  },
+  "songInfoLoadFailed": "Could not load the song info",
+  "@songInfoLoadFailed": {
+    "description": "Song info message when reading the song fails"
+  },
+  "songInfoFileSizeGb": "{value} GB",
+  "@songInfoFileSizeGb": {
+    "description": "File size from one gigabyte up",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songLyricsTitle": "Lyrics",
+  "@songLyricsTitle": {
+    "description": "Song info: heading of the lyrics card"
+  },
+  "songLyricsPageTitle": "Lyrics · {title}",
+  "@songLyricsPageTitle": {
+    "description": "Title of the full lyrics page; title is the song's title",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songLyricsViewAll": "View all · {count, plural, =1{1 line} other{{count} lines}}",
+  "@songLyricsViewAll": {
+    "description": "Button under the lyrics preview; count is the number of lines that have words",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songLyricsSidecar": ".lrc file",
+  "@songLyricsSidecar": {
+    "description": "Chip: the lyrics come from a .lrc file next to the song"
+  },
+  "songLyricsEmbedded": "Embedded",
+  "@songLyricsEmbedded": {
+    "description": "Chip: the lyrics are stored in the song's tags"
+  },
+  "songLyricsOnline": "Online · {name}",
+  "@songLyricsOnline": {
+    "description": "Chip: the lyrics come from an online source; name is the source's name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "songLyricsSynced": "Synced",
+  "@songLyricsSynced": {
+    "description": "Chip: the lyrics have a time for each line"
+  },
+  "songLyricsNone": "No lyrics",
+  "@songLyricsNone": {
+    "description": "Lyrics card: the song has no lyrics"
+  },
+  "songLyricsFindOnline": "Find online",
+  "@songLyricsFindOnline": {
+    "description": "Lyrics card button that opens the online lyrics search"
+  },
+  "songLyricsShowTimestamps": "Show timestamps",
+  "@songLyricsShowTimestamps": {
+    "description": "Tooltip of the button that shows each line's time"
+  },
+  "songLyricsHideTimestamps": "Hide timestamps",
+  "@songLyricsHideTimestamps": {
+    "description": "Tooltip of the button that hides each line's time"
+  },
+  "songLyricsCopy": "Copy lyrics",
+  "@songLyricsCopy": {
+    "description": "Tooltip of the button that copies the lyrics as plain text"
+  },
+  "songLyricsCopied": "Lyrics copied",
+  "@songLyricsCopied": {
+    "description": "Snackbar after the lyrics were copied"
   }
 }

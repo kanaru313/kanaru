@@ -1,9 +1,9 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/show_in_file_manager.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 
@@ -13,37 +13,36 @@ const _tracks = [
 ];
 
 void main() {
-  Future<void> openMenu(WidgetTester tester, String row) async {
-    await tester.tap(find.text(row), buttons: kSecondaryButton);
-    await tester.pumpAndSettle();
-  }
+  Future<void> openMenu(WidgetTester tester, String row) =>
+      openSongModal(tester, find.text(row));
 
-  testWidgets('Show album goes to the album page', (tester) async {
+  testWidgets('Go to album goes to the album page and closes the modal', (
+    tester,
+  ) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await openMenu(tester, 'solo');
-    await tester.tap(find.text('Show album'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Go to album');
 
     expect(location(h), albumLocation(const AlbumKey('ann', 'al')));
+    expect(modalAction('album'), findsNothing);
   });
 
-  testWidgets('Show in folder goes to the folder page', (tester) async {
+  testWidgets('Go to folder goes to the folder page', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, [
       const TestTrack('solo', artist: 'Ann', path: '/m/A/x.flac'),
     ], location: '/songs');
 
     await openMenu(tester, 'solo');
-    await tester.tap(find.text('Show in folder'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Go to folder');
 
     expect(location(h), folderLocation('/m/A'));
     expect(find.text('A'), findsWidgets);
   });
 
-  testWidgets('Show in folder of a song removed while the menu was open says '
+  testWidgets('Go to folder of a song removed while the modal was open says '
       'so', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/songs');
@@ -51,56 +50,70 @@ void main() {
     await openMenu(tester, 'solo');
     await tester.runAsync(() => h.db.delete(h.db.tracks).go());
     await tester.pump();
-    await tester.tap(find.text('Show in folder'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Go to folder');
 
     expect(find.text('This song is no longer in the library'), findsOneWidget);
     expect(location(h), '/songs');
   });
 
-  testWidgets('Show artist of a song with one artist goes to the artist', (
+  testWidgets('Go to artist of a song with one artist goes to the artist', (
     tester,
   ) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await openMenu(tester, 'solo');
-    await tester.tap(find.text('Show artist'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Go to artist');
 
     expect(location(h), artistLocation('ann'));
   });
 
-  testWidgets('Show artist of a song with two artists asks which', (
-    tester,
-  ) async {
+  testWidgets('a song with two artists lists them as chips', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await openMenu(tester, 'duet');
-    await tester.tap(find.text('Show artist'));
-    await tester.pumpAndSettle();
+    expect(find.text('2 artists'), findsOneWidget);
     expect(find.text('Bob'), findsOneWidget);
     expect(location(h), '/songs', reason: 'nothing chosen yet');
 
-    await tester.tap(find.text('Bob'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Bob');
 
     expect(location(h), artistLocation('bob'));
   });
 
-  testWidgets('a song removed while its menu was open says so', (tester) async {
+  testWidgets('Go to artist of a song removed while the modal was open says '
+      'so', (tester) async {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await openMenu(tester, 'solo');
     await tester.runAsync(() => h.db.delete(h.db.tracks).go());
     await tester.pump();
-    await tester.tap(find.text('Show artist'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Go to artist');
 
     expect(find.text('This song is no longer in the library'), findsOneWidget);
+    expect(location(h), '/songs');
   });
+
+  testWidgets(
+    'Go to album of a song removed while the modal was open says so',
+    (tester) async {
+      final h = LibraryHarness();
+      await openWithTracks(tester, h, _tracks, location: '/songs');
+
+      await openMenu(tester, 'solo');
+      await tester.runAsync(() => h.db.delete(h.db.tracks).go());
+      await tester.pump();
+      await tapModalAction(tester, 'Go to album');
+
+      expect(
+        find.text('This song is no longer in the library'),
+        findsOneWidget,
+      );
+      expect(location(h), '/songs');
+    },
+  );
 
   testWidgets('Show in file manager hands over the song path', (tester) async {
     final shown = <String>[];
@@ -115,12 +128,13 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await openMenu(tester, 'solo');
-    await tester.tap(find.text('Show in file manager'));
-    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Show in file manager'));
+    await settleSongModal(tester);
 
     expect(shown, hasLength(1));
     expect(shown.single, startsWith('/m/'));
     expect(find.text("Couldn't open the file manager"), findsNothing);
+    expect(modalAction('folder'), findsNothing);
   });
 
   testWidgets('a file manager that fails is reported', (tester) async {
@@ -132,8 +146,8 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await openMenu(tester, 'solo');
-    await tester.tap(find.text('Show in file manager'));
-    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Show in file manager'));
+    await settleSongModal(tester);
 
     expect(find.text("Couldn't open the file manager"), findsOneWidget);
   });
@@ -150,28 +164,9 @@ void main() {
         "UPDATE tracks SET album_title_key = NULL WHERE title = 'solo'",
       ),
     );
-    await tester.tap(find.text('Show album'));
-    await tester.pumpAndSettle();
+    await tapModalAction(tester, 'Go to album');
 
     expect(find.text('This song has no album'), findsOneWidget);
     expect(location(h), '/songs');
-  });
-
-  testWidgets('a song whose artist tag was cleared says it has none', (
-    tester,
-  ) async {
-    final h = LibraryHarness();
-    await openWithTracks(tester, h, _tracks, location: '/songs');
-
-    await openMenu(tester, 'solo');
-    await tester.runAsync(
-      () => h.db.customStatement(
-        "UPDATE tracks SET artist = NULL WHERE title = 'solo'",
-      ),
-    );
-    await tester.tap(find.text('Show artist'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('This song has no artist'), findsOneWidget);
   });
 }

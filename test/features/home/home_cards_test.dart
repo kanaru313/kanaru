@@ -48,7 +48,7 @@ void main() {
       expect(queue.current?.title, 'T /b');
     });
 
-    testWidgets('right click on a song opens the track menu', (tester) async {
+    testWidgets('right click on a song opens the song modal', (tester) async {
       final h = HomeHarness();
       await h.addTrack('/a', artist: 'Ann', addedAt: daysAgo(0));
       await play(h, '/a', daysAgo(0));
@@ -57,7 +57,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Play next'), findsOneWidget);
       expect(find.text('Add to queue'), findsOneWidget);
-      expect(find.text('Show artist'), findsOneWidget);
+      expect(find.text('Go to artist'), findsOneWidget);
     });
 
     testWidgets('an album card opens the album page and has a menu', (

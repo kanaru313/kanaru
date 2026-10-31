@@ -4096,4 +4096,298 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreItemOpenInstalled => 'Mở';
+
+  @override
+  String get contextModalBack => 'Quay lại';
+
+  @override
+  String get contextModalClose => 'Đóng';
+
+  @override
+  String get contextModalLabel => 'Menu';
+
+  @override
+  String get contextModalComingSoon => 'Sắp có';
+
+  @override
+  String get contextModalComingSoonSnack =>
+      'Tính năng này chưa có. Sắp ra mắt.';
+
+  @override
+  String get songModalLabel => 'Tùy chọn bài hát';
+
+  @override
+  String get songModalMoreOptions => 'Tùy chọn khác';
+
+  @override
+  String get songModalGoToAlbum => 'Đi tới album';
+
+  @override
+  String get songModalGoToArtist => 'Đi tới nghệ sĩ';
+
+  @override
+  String get songModalGoToAlbumArtist => 'Đi tới nghệ sĩ album';
+
+  @override
+  String get songModalGoToFolder => 'Đi tới thư mục';
+
+  @override
+  String get songModalNoAlbum => 'Không có album';
+
+  @override
+  String get songModalNoArtist => 'Không có nghệ sĩ';
+
+  @override
+  String get songModalUnknownAlbum => 'Album không rõ';
+
+  @override
+  String get songModalEditTags => 'Chỉnh sửa thẻ';
+
+  @override
+  String get songModalAdvanced => 'Nâng cao';
+
+  @override
+  String get songModalRemoveFromLibrary => 'Loại khỏi thư viện';
+
+  @override
+  String get songModalDeleteFile => 'Xoá tệp khỏi ổ đĩa';
+
+  @override
+  String songModalArtistsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nghệ sĩ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songInfoTitle => 'Thông tin bài hát';
+
+  @override
+  String get songInfoShowUnknown => 'Hiện trường không xác định';
+
+  @override
+  String get songInfoHideUnknown => 'Ẩn trường không xác định';
+
+  @override
+  String get songInfoPreview => 'Nghe thử đoạn hay nhất · sắp có';
+
+  @override
+  String songInfoPlays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Tổng lượt nghe: $countString';
+  }
+
+  @override
+  String songInfoFirstPlayed(String date) {
+    return 'Nghe lần đầu: $date';
+  }
+
+  @override
+  String songInfoLastPlayed(String date) {
+    return 'Nghe gần nhất: $date';
+  }
+
+  @override
+  String get songInfoNeverPlayed => 'Chưa nghe lần nào';
+
+  @override
+  String get songInfoGroupTags => 'Thẻ';
+
+  @override
+  String get songInfoGroupAudio => 'Âm thanh';
+
+  @override
+  String get songInfoGroupFile => 'Tệp';
+
+  @override
+  String get songInfoLabelTitle => 'Tiêu đề';
+
+  @override
+  String get songInfoLabelArtist => 'Nghệ sĩ';
+
+  @override
+  String get songInfoLabelAlbum => 'Album';
+
+  @override
+  String get songInfoLabelAlbumArtist => 'Nghệ sĩ album';
+
+  @override
+  String get songInfoLabelGenre => 'Thể loại';
+
+  @override
+  String get songInfoLabelComposer => 'Nhà soạn nhạc';
+
+  @override
+  String get songInfoLabelReleaseDate => 'Ngày phát hành';
+
+  @override
+  String get songInfoLabelTrack => 'Số bài';
+
+  @override
+  String get songInfoLabelDisc => 'Đĩa';
+
+  @override
+  String get songInfoLabelLanguage => 'Ngôn ngữ';
+
+  @override
+  String get songInfoLabelComment => 'Bình luận';
+
+  @override
+  String get songInfoLabelDuration => 'Thời lượng';
+
+  @override
+  String get songInfoLabelFormat => 'Định dạng';
+
+  @override
+  String get songInfoLabelBitrate => 'Tốc độ bit';
+
+  @override
+  String get songInfoLabelSampleRate => 'Tần số lấy mẫu';
+
+  @override
+  String get songInfoLabelBitDepth => 'Độ sâu bit';
+
+  @override
+  String get songInfoLabelChannels => 'Kênh';
+
+  @override
+  String get songInfoLabelPath => 'Đường dẫn';
+
+  @override
+  String get songInfoLabelSize => 'Dung lượng';
+
+  @override
+  String get songInfoLabelModified => 'Ngày sửa';
+
+  @override
+  String get songInfoLabelAdded => 'Ngày thêm';
+
+  @override
+  String get songInfoUnknown => 'Không xác định';
+
+  @override
+  String songInfoCopied(String value) {
+    return 'Đã sao chép: $value';
+  }
+
+  @override
+  String get songInfoCopy => 'Sao chép';
+
+  @override
+  String songInfoYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count năm trước',
+      zero: 'năm nay',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String songInfoChannelsMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kênh',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songInfoMono => 'Mono';
+
+  @override
+  String get songInfoStereo => 'Stereo';
+
+  @override
+  String songInfoKbps(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString kbps';
+  }
+
+  @override
+  String songInfoKhz(String value) {
+    return '$value kHz';
+  }
+
+  @override
+  String songInfoBits(int count) {
+    return '$count bit';
+  }
+
+  @override
+  String songInfoFileSizeMb(String value) {
+    return '$value MB';
+  }
+
+  @override
+  String get songInfoGone => 'Bài hát này không còn trong thư viện';
+
+  @override
+  String get songInfoLoadFailed => 'Không tải được thông tin bài hát';
+
+  @override
+  String songInfoFileSizeGb(String value) {
+    return '$value GB';
+  }
+
+  @override
+  String get songLyricsTitle => 'Lời bài hát';
+
+  @override
+  String songLyricsPageTitle(String title) {
+    return 'Lời · $title';
+  }
+
+  @override
+  String songLyricsViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dòng',
+    );
+    return 'Xem toàn bộ · $_temp0';
+  }
+
+  @override
+  String get songLyricsSidecar => 'Tệp .lrc';
+
+  @override
+  String get songLyricsEmbedded => 'Nhúng trong thẻ';
+
+  @override
+  String songLyricsOnline(String name) {
+    return 'Online · $name';
+  }
+
+  @override
+  String get songLyricsSynced => 'Đồng bộ';
+
+  @override
+  String get songLyricsNone => 'Không có lời';
+
+  @override
+  String get songLyricsFindOnline => 'Tìm online';
+
+  @override
+  String get songLyricsShowTimestamps => 'Hiện mốc thời gian';
+
+  @override
+  String get songLyricsHideTimestamps => 'Ẩn mốc thời gian';
+
+  @override
+  String get songLyricsCopy => 'Sao chép lời';
+
+  @override
+  String get songLyricsCopied => 'Đã sao chép lời bài hát';
 }

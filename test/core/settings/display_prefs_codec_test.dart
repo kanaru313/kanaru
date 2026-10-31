@@ -15,6 +15,7 @@ void main() {
     expect(d.fontScale, 1.0);
     expect(d.sidebarTabs, SidebarTab.values.toSet());
     expect(d.trackNumbersInAlbum, isTrue);
+    expect(d.songInfoShowUnknown, isFalse);
   });
 
   test('values round-trip, tabs in enum order', () {
@@ -23,6 +24,7 @@ void main() {
       fontScale: 1.25,
       sidebarTabs: {SidebarTab.genres, SidebarTab.songs},
       trackNumbersInAlbum: false,
+      songInfoShowUnknown: true,
     );
 
     final json = encodeDisplayPrefs(prefs);
@@ -44,6 +46,7 @@ void main() {
         'fontScale': bad,
         'hiddenSidebarTabs': bad is List ? 5 : bad,
         'trackNumbersInAlbum': bad,
+        'songInfoShowUnknown': bad,
       }).$1;
 
       expect(decoded, const DisplayPrefs(), reason: '$bad');

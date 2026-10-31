@@ -4354,4 +4354,302 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreItemOpenInstalled => 'Open';
+
+  @override
+  String get contextModalBack => 'Back';
+
+  @override
+  String get contextModalClose => 'Close';
+
+  @override
+  String get contextModalLabel => 'Menu';
+
+  @override
+  String get contextModalComingSoon => 'Coming soon';
+
+  @override
+  String get contextModalComingSoonSnack =>
+      'This isn\'t available yet. It\'s coming soon.';
+
+  @override
+  String get songModalLabel => 'Song options';
+
+  @override
+  String get songModalMoreOptions => 'More options';
+
+  @override
+  String get songModalGoToAlbum => 'Go to album';
+
+  @override
+  String get songModalGoToArtist => 'Go to artist';
+
+  @override
+  String get songModalGoToAlbumArtist => 'Go to album artist';
+
+  @override
+  String get songModalGoToFolder => 'Go to folder';
+
+  @override
+  String get songModalNoAlbum => 'No album';
+
+  @override
+  String get songModalNoArtist => 'No artist';
+
+  @override
+  String get songModalUnknownAlbum => 'Unknown album';
+
+  @override
+  String get songModalEditTags => 'Edit tags';
+
+  @override
+  String get songModalAdvanced => 'Advanced';
+
+  @override
+  String get songModalRemoveFromLibrary => 'Remove from library';
+
+  @override
+  String get songModalDeleteFile => 'Delete file from disk';
+
+  @override
+  String songModalArtistsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count artists',
+      one: '1 artist',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songInfoTitle => 'Song info';
+
+  @override
+  String get songInfoShowUnknown => 'Show unknown fields';
+
+  @override
+  String get songInfoHideUnknown => 'Hide unknown fields';
+
+  @override
+  String get songInfoPreview => 'Play the best part · coming soon';
+
+  @override
+  String songInfoPlays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Total plays: $countString';
+  }
+
+  @override
+  String songInfoFirstPlayed(String date) {
+    return 'First listened: $date';
+  }
+
+  @override
+  String songInfoLastPlayed(String date) {
+    return 'Last listened: $date';
+  }
+
+  @override
+  String get songInfoNeverPlayed => 'Never played';
+
+  @override
+  String get songInfoGroupTags => 'Tags';
+
+  @override
+  String get songInfoGroupAudio => 'Audio';
+
+  @override
+  String get songInfoGroupFile => 'File';
+
+  @override
+  String get songInfoLabelTitle => 'Title';
+
+  @override
+  String get songInfoLabelArtist => 'Artist';
+
+  @override
+  String get songInfoLabelAlbum => 'Album';
+
+  @override
+  String get songInfoLabelAlbumArtist => 'Album artist';
+
+  @override
+  String get songInfoLabelGenre => 'Genre';
+
+  @override
+  String get songInfoLabelComposer => 'Composer';
+
+  @override
+  String get songInfoLabelReleaseDate => 'Release date';
+
+  @override
+  String get songInfoLabelTrack => 'Track';
+
+  @override
+  String get songInfoLabelDisc => 'Disc';
+
+  @override
+  String get songInfoLabelLanguage => 'Language';
+
+  @override
+  String get songInfoLabelComment => 'Comment';
+
+  @override
+  String get songInfoLabelDuration => 'Duration';
+
+  @override
+  String get songInfoLabelFormat => 'Format';
+
+  @override
+  String get songInfoLabelBitrate => 'Bitrate';
+
+  @override
+  String get songInfoLabelSampleRate => 'Sample rate';
+
+  @override
+  String get songInfoLabelBitDepth => 'Bit depth';
+
+  @override
+  String get songInfoLabelChannels => 'Channels';
+
+  @override
+  String get songInfoLabelPath => 'Path';
+
+  @override
+  String get songInfoLabelSize => 'Size';
+
+  @override
+  String get songInfoLabelModified => 'Modified';
+
+  @override
+  String get songInfoLabelAdded => 'Date added';
+
+  @override
+  String get songInfoUnknown => 'Unknown';
+
+  @override
+  String songInfoCopied(String value) {
+    return 'Copied: $value';
+  }
+
+  @override
+  String get songInfoCopy => 'Copy';
+
+  @override
+  String songInfoYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years ago',
+      one: '1 year ago',
+      zero: 'this year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String songInfoChannelsMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count channels',
+      one: '1 channel',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songInfoMono => 'Mono';
+
+  @override
+  String get songInfoStereo => 'Stereo';
+
+  @override
+  String songInfoKbps(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString kbps';
+  }
+
+  @override
+  String songInfoKhz(String value) {
+    return '$value kHz';
+  }
+
+  @override
+  String songInfoBits(int count) {
+    return '$count bit';
+  }
+
+  @override
+  String songInfoFileSizeMb(String value) {
+    return '$value MB';
+  }
+
+  @override
+  String get songInfoGone => 'This song is no longer in the library';
+
+  @override
+  String get songInfoLoadFailed => 'Could not load the song info';
+
+  @override
+  String songInfoFileSizeGb(String value) {
+    return '$value GB';
+  }
+
+  @override
+  String get songLyricsTitle => 'Lyrics';
+
+  @override
+  String songLyricsPageTitle(String title) {
+    return 'Lyrics · $title';
+  }
+
+  @override
+  String songLyricsViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines',
+      one: '1 line',
+    );
+    return 'View all · $_temp0';
+  }
+
+  @override
+  String get songLyricsSidecar => '.lrc file';
+
+  @override
+  String get songLyricsEmbedded => 'Embedded';
+
+  @override
+  String songLyricsOnline(String name) {
+    return 'Online · $name';
+  }
+
+  @override
+  String get songLyricsSynced => 'Synced';
+
+  @override
+  String get songLyricsNone => 'No lyrics';
+
+  @override
+  String get songLyricsFindOnline => 'Find online';
+
+  @override
+  String get songLyricsShowTimestamps => 'Show timestamps';
+
+  @override
+  String get songLyricsHideTimestamps => 'Hide timestamps';
+
+  @override
+  String get songLyricsCopy => 'Copy lyrics';
+
+  @override
+  String get songLyricsCopied => 'Lyrics copied';
 }
