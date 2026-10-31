@@ -5672,11 +5672,23 @@ abstract class AppLocalizations {
   /// **'{name} · {author}'**
   String lyricsSourceNameWithAuthor(String name, String author);
 
-  /// First chip of the Choose lyrics source filter: shows the results of every source; count is how many sources returned results
+  /// Label of the Choose lyrics source filter chip while it shows every source; count is how many sources returned results
   ///
   /// In en, this message translates to:
   /// **'All sources ({count})'**
   String lyricsPickerAllSources(int count);
+
+  /// Chip label while fewer than two sources have results, and first item of the source filter menu that shows every source
+  ///
+  /// In en, this message translates to:
+  /// **'All sources'**
+  String get lyricsPickerSourceMenuAll;
+
+  /// Screen reader label of the Choose lyrics source filter button; source is its current label
+  ///
+  /// In en, this message translates to:
+  /// **'Source filter: {source}'**
+  String lyricsPickerSourceFilterLabel(String source);
 
   /// Action beside a lyrics plugin failure that shows that plugin's log file in the file manager
   ///

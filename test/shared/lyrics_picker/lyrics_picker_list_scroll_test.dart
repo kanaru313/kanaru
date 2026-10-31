@@ -129,7 +129,9 @@ void main() {
     await tester.pump();
     expect(controller.offset, greaterThan(0));
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Beta'));
+    await tester.tap(find.text('All sources (2)'));
+    await settle(tester);
+    await tester.tap(find.widgetWithText(MenuItemButton, 'Beta'));
     await settle(tester);
 
     expect(controller.offset, 0);

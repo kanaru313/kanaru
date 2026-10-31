@@ -1614,6 +1614,8 @@
   "lyricsSourceNameRemoved": "{name} (đã gỡ)",
   "lyricsSourceNameWithAuthor": "{name} · {author}",
   "lyricsPickerAllSources": "Mọi nguồn ({count})",
+  "lyricsPickerSourceMenuAll": "Mọi nguồn",
+  "lyricsPickerSourceFilterLabel": "Lọc theo nguồn: {source}",
   "lyricsViewLog": "Xem log",
   "lyricsStoreTitle": "Kho plugin",
   "lyricsStoreSearchHint": "Tìm theo tên, tác giả, repo, host",

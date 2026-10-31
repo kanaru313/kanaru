@@ -5,12 +5,12 @@ import '../../core/lyrics/online/lyrics_search_controller.dart';
 import '../../l10n/l10n.dart';
 import 'lyrics_failure_message.dart';
 import 'lyrics_picker_result_tile.dart';
-import 'lyrics_picker_source_chips.dart';
+import 'lyrics_picker_result_sources.dart';
 import 'lyrics_view_log_button.dart';
 
 /// The left side of the Choose lyrics dialog: progress while searching, the
-/// results (each with its source, and a source filter when two or more
-/// sources returned some), "no lyrics found", one line per source that
+/// results (each with its source, narrowed to one source by the filter in the
+/// search row), "no lyrics found", one line per source that
 /// failed, with Retry and, for a plugin with a log, View log, and, before the
 /// first search of a song without a title, a note to type the query.
 class LyricsPickerResultsPane extends StatelessWidget {
@@ -22,7 +22,6 @@ class LyricsPickerResultsPane extends StatelessWidget {
     required this.onRetry,
     this.searchPending = false,
     this.sourceFilter,
-    this.onSourceFilter,
     this.scrollController,
   });
 
@@ -42,7 +41,6 @@ class LyricsPickerResultsPane extends StatelessWidget {
   /// The provider id the list is filtered to; `null` shows every source. One
   /// that returned no results (a new search) counts as `null`.
   final String? sourceFilter;
-  final ValueChanged<String?>? onSourceFilter;
 
   /// Controls the result list, so the owner can scroll it back to the top.
   final ScrollController? scrollController;
@@ -92,14 +90,10 @@ class LyricsPickerResultsPane extends StatelessWidget {
       }
       return _Centered(children: [Text(l10n.lyricsPickerEmpty)]);
     }
-    // Sources that returned results, in the order of the results.
-    final sources = <String>[];
-    for (final r in results) {
-      if (!sources.contains(r.candidate.providerId)) {
-        sources.add(r.candidate.providerId);
-      }
-    }
-    final filter = sources.contains(sourceFilter) ? sourceFilter : null;
+    final filter = effectiveSourceFilter(
+      sourceFilter,
+      lyricsResultSources(results),
+    );
     final shown = [
       for (var i = 0; i < results.length; i++)
         if (filter == null || results[i].candidate.providerId == filter) i,
@@ -114,12 +108,6 @@ class LyricsPickerResultsPane extends StatelessWidget {
             kind: f.value.kind,
             onRetry: onRetry,
           ),
-        LyricsPickerSourceChips(
-          sources: sources,
-          providerNames: providerNames,
-          selected: filter,
-          onSelected: (id) => onSourceFilter?.call(id),
-        ),
         // Ink and hover paint on the nearest Material, which would be the
         // dialog; this one inside the clip keeps them within the list.
         Expanded(

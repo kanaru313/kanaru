@@ -12,7 +12,9 @@ import '../format_duration.dart';
 import 'lyrics_failure_message.dart';
 import 'lyrics_picker_dialog_size.dart';
 import 'lyrics_picker_preview.dart';
+import 'lyrics_picker_result_sources.dart';
 import 'lyrics_picker_results_pane.dart';
+import 'lyrics_picker_search_row.dart';
 import 'lyrics_source_name_text.dart';
 
 /// The Choose lyrics dialog: a query field, the ranked results of the manual
@@ -104,6 +106,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     final query = widget.target.query;
     final duration = query.duration;
     final selection = state.selection;
+    final sources = lyricsResultSources(state.results);
     final providerNames = {
       for (final r in registrations)
         r.id: lyricsSourceNameText(l10n, names, r.id),
@@ -148,31 +151,13 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _query,
-                          autofocus: true,
-                          textInputAction: TextInputAction.search,
-                          onSubmitted: (_) => _search(),
-                          decoration: InputDecoration(
-                            hintText: l10n.lyricsPickerQueryHint,
-                            isDense: true,
-                            border: const OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Search stays off while the field is blank.
-                      ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: _query,
-                        builder: (context, value, _) => FilledButton.tonal(
-                          onPressed: value.text.trim().isEmpty ? null : _search,
-                          child: Text(l10n.lyricsPickerSearch),
-                        ),
-                      ),
-                    ],
+                  LyricsPickerSearchRow(
+                    query: _query,
+                    sources: sources,
+                    providerNames: providerNames,
+                    sourceFilter: _sourceFilter,
+                    onSourceFilter: _filterBySource,
+                    onSearch: _search,
                   ),
                   const SizedBox(height: 16),
                   Expanded(
@@ -185,8 +170,10 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                             scrollController: _listScroll,
                             searchPending: _searchesOnOpen,
                             providerNames: providerNames,
-                            sourceFilter: _sourceFilter,
-                            onSourceFilter: _filterBySource,
+                            sourceFilter: effectiveSourceFilter(
+                              _sourceFilter,
+                              sources,
+                            ),
                             onSelect: _controller.select,
                             onRetry: _controller.retry,
                           ),
