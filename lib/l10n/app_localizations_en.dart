@@ -3846,6 +3846,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get lyricsPickerSourceMenuAll => 'All sources';
+
+  @override
+  String lyricsPickerSourceFilterLabel(String source) {
+    return 'Source filter: $source';
+  }
+
+  @override
   String get lyricsViewLog => 'View log';
 
   @override

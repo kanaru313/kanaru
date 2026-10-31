@@ -10,18 +10,18 @@ import '../../core/lyrics/online/lyrics_target.dart';
 import '../../l10n/l10n.dart';
 import '../format_duration.dart';
 import 'lyrics_failure_message.dart';
+import 'lyrics_picker_dialog_size.dart';
 import 'lyrics_picker_preview.dart';
+import 'lyrics_picker_result_sources.dart';
 import 'lyrics_picker_results_pane.dart';
+import 'lyrics_picker_search_row.dart';
 import 'lyrics_source_name_text.dart';
-
-const _contentWidth = 840.0;
-const _contentHeight = 520.0;
-const _listWidth = 420.0;
 
 /// The Choose lyrics dialog: a query field, the ranked results of the manual
 /// search and a preview of the selected one. Pops the chosen
-/// [LyricsCandidate], or `null` on Cancel. The content has a fixed size and
-/// scrolls inside a smaller window.
+/// [LyricsCandidate], or `null` on Cancel. The content is 840 px wide and tall
+/// by the window (see [lyricsPickerContentHeight]); it scrolls inside a smaller
+/// window.
 class LyricsPickerDialog extends ConsumerStatefulWidget {
   const LyricsPickerDialog({super.key, required this.target});
 
@@ -38,6 +38,9 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
 
   /// Provider id the results are filtered to; `null` shows every source.
   String? _sourceFilter;
+
+  /// Scroll position of the result list, reset when the list changes.
+  final _listScroll = ScrollController();
 
   bool get _searchesOnOpen => widget.target.query.title != null;
 
@@ -59,7 +62,12 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
   @override
   void dispose() {
     _query.dispose();
+    _listScroll.dispose();
     super.dispose();
+  }
+
+  void _resetListScroll() {
+    if (_listScroll.hasClients) _listScroll.jumpTo(0);
   }
 
   /// Filters the list to [id] (`null`: every source). A selection the filter
@@ -67,6 +75,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
   /// belong to a row the user cannot see.
   void _filterBySource(String? id) {
     setState(() => _sourceFilter = id);
+    _resetListScroll();
     if (id == null) return;
     final results = ref
         .read(lyricsSearchControllerProvider(widget.target))
@@ -84,6 +93,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
   void _search() {
     // A new query starts from every source again.
     setState(() => _sourceFilter = null);
+    _resetListScroll();
     _controller.search(_query.text);
   }
 
@@ -96,6 +106,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     final query = widget.target.query;
     final duration = query.duration;
     final selection = state.selection;
+    final sources = lyricsResultSources(state.results);
     final providerNames = {
       for (final r in registrations)
         r.id: lyricsSourceNameText(l10n, names, r.id),
@@ -113,8 +124,10 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
         scrollDirection: Axis.horizontal,
         child: SingleChildScrollView(
           child: SizedBox(
-            width: _contentWidth,
-            height: _contentHeight,
+            width: lyricsPickerContentWidth,
+            height: lyricsPickerContentHeight(
+              MediaQuery.sizeOf(context).height,
+            ),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -138,44 +151,29 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _query,
-                          autofocus: true,
-                          textInputAction: TextInputAction.search,
-                          onSubmitted: (_) => _search(),
-                          decoration: InputDecoration(
-                            hintText: l10n.lyricsPickerQueryHint,
-                            isDense: true,
-                            border: const OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Search stays off while the field is blank.
-                      ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: _query,
-                        builder: (context, value, _) => FilledButton.tonal(
-                          onPressed: value.text.trim().isEmpty ? null : _search,
-                          child: Text(l10n.lyricsPickerSearch),
-                        ),
-                      ),
-                    ],
+                  LyricsPickerSearchRow(
+                    query: _query,
+                    sources: sources,
+                    providerNames: providerNames,
+                    sourceFilter: _sourceFilter,
+                    onSourceFilter: _filterBySource,
+                    onSearch: _search,
                   ),
                   const SizedBox(height: 16),
                   Expanded(
                     child: Row(
                       children: [
                         SizedBox(
-                          width: _listWidth,
+                          width: lyricsPickerListWidth,
                           child: LyricsPickerResultsPane(
                             state: state,
+                            scrollController: _listScroll,
                             searchPending: _searchesOnOpen,
                             providerNames: providerNames,
-                            sourceFilter: _sourceFilter,
-                            onSourceFilter: _filterBySource,
+                            sourceFilter: effectiveSourceFilter(
+                              _sourceFilter,
+                              sources,
+                            ),
                             onSelect: _controller.select,
                             onRetry: _controller.retry,
                           ),

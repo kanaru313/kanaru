@@ -3478,8 +3478,17 @@
   },
   "lyricsPickerAllSources": "All sources ({count})",
   "@lyricsPickerAllSources": {
-    "description": "First chip of the Choose lyrics source filter: shows the results of every source; count is how many sources returned results",
+    "description": "Label of the Choose lyrics source filter chip while it shows every source; count is how many sources returned results",
     "placeholders": {"count": {"type": "int"}}
+  },
+  "lyricsPickerSourceMenuAll": "All sources",
+  "@lyricsPickerSourceMenuAll": {
+    "description": "Chip label while fewer than two sources have results, and first item of the source filter menu that shows every source"
+  },
+  "lyricsPickerSourceFilterLabel": "Source filter: {source}",
+  "@lyricsPickerSourceFilterLabel": {
+    "description": "Screen reader label of the Choose lyrics source filter button; source is its current label",
+    "placeholders": {"source": {"type": "String"}}
   },
   "lyricsViewLog": "View log",
   "@lyricsViewLog": {

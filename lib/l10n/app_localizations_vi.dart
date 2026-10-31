@@ -3623,6 +3623,14 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get lyricsPickerSourceMenuAll => 'Mọi nguồn';
+
+  @override
+  String lyricsPickerSourceFilterLabel(String source) {
+    return 'Lọc theo nguồn: $source';
+  }
+
+  @override
   String get lyricsViewLog => 'Xem log';
 
   @override

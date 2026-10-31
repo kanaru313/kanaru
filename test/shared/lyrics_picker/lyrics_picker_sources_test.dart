@@ -9,7 +9,6 @@ import 'package:kanaru/core/lyrics/online/lyrics_search_state.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_log_paths.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_results_pane.dart';
-import 'package:kanaru/shared/lyrics_picker/lyrics_picker_source_chips.dart';
 import 'package:kanaru/shared/show_in_file_manager.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -33,20 +32,25 @@ RankedCandidate _result(String providerId, String title) {
   return RankedCandidate(candidate, matchCandidate(_query, candidate));
 }
 
-/// Hosts a pane over [state] with the filter kept like the dialog keeps it.
+/// Hosts a pane over [state] filtered to [filter].
 class _Host extends StatefulWidget {
-  const _Host({required this.state, required this.names, this.onSelect});
+  const _Host({
+    required this.state,
+    required this.names,
+    this.onSelect,
+    this.filter,
+  });
 
   final LyricsSearchState state;
   final Map<String, String> names;
   final ValueChanged<int>? onSelect;
+  final String? filter;
 
   @override
   State<_Host> createState() => _HostState();
 }
 
 class _HostState extends State<_Host> {
-  String? filter;
   int retries = 0;
 
   @override
@@ -57,8 +61,7 @@ class _HostState extends State<_Host> {
         child: LyricsPickerResultsPane(
           state: widget.state,
           providerNames: widget.names,
-          sourceFilter: filter,
-          onSourceFilter: (id) => setState(() => filter = id),
+          sourceFilter: widget.filter,
           onSelect: widget.onSelect ?? (_) {},
           onRetry: () => setState(() => retries++),
         ),
@@ -123,61 +126,30 @@ void main() {
     testWidgets('each result names its source', (tester) async {
       await pump(tester, _Host(state: two(), names: names));
 
-      expect(find.text('LRCLIB'), findsNWidgets(3)); // two tiles + chip
-      expect(find.text('NetEase · hieu05'), findsNWidgets(2)); // tile + chip
+      expect(find.text('LRCLIB'), findsNWidgets(2));
+      expect(find.text('NetEase · hieu05'), findsOneWidget);
     });
 
-    testWidgets('two sources with results show the chips', (tester) async {
-      await pump(tester, _Host(state: two(), names: names));
-
-      expect(find.byType(ChoiceChip), findsNWidgets(3));
-      expect(find.text('All sources (2)'), findsOneWidget);
-    });
-
-    testWidgets('one source with results shows no chips', (tester) async {
-      final one = LyricsSearchState(
-        query: 'x',
-        byProvider: const {
-          'lrclib': ProviderSearchState(ProviderSearchPhase.done),
-          _plugin: ProviderSearchState(ProviderSearchPhase.done),
-        },
-        results: [_result('lrclib', 'A'), _result('lrclib', 'B')],
-      );
-      await pump(tester, _Host(state: one, names: names));
-
-      expect(find.byType(ChoiceChip), findsNothing);
-      expect(find.text('A'), findsOneWidget);
-    });
-
-    testWidgets('a chip filters the list, All brings everything back', (
+    testWidgets('a filter narrows the list, a tap reports the full index', (
       tester,
     ) async {
       final selected = <int>[];
       await pump(
         tester,
-        _Host(state: two(), names: names, onSelect: selected.add),
+        _Host(
+          state: two(),
+          names: names,
+          onSelect: selected.add,
+          filter: _plugin,
+        ),
       );
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'NetEase · hieu05'));
-      await tester.pump();
       expect(find.text('From plugin'), findsOneWidget);
       expect(find.text('From lrclib'), findsNothing);
       expect(find.text('Second lrclib'), findsNothing);
 
-      // A tap reports the index in the full result list.
       await tester.tap(find.text('From plugin'));
       expect(selected, [1]);
-
-      await tester.tap(find.widgetWithText(ChoiceChip, 'LRCLIB'));
-      await tester.pump();
-      expect(find.text('From lrclib'), findsOneWidget);
-      expect(find.text('Second lrclib'), findsOneWidget);
-      expect(find.text('From plugin'), findsNothing);
-
-      await tester.tap(find.text('All sources (2)'));
-      await tester.pump();
-      expect(find.text('From plugin'), findsOneWidget);
-      expect(find.text('From lrclib'), findsOneWidget);
     });
 
     testWidgets('a filter on a source with no results shows everything', (
@@ -196,21 +168,6 @@ void main() {
 
       expect(find.text('From plugin'), findsOneWidget);
       expect(find.text('From lrclib'), findsOneWidget);
-    });
-
-    testWidgets('an 80-character name shortens in the chip', (tester) async {
-      final long = List.filled(80, 'W').join();
-      await pump(
-        tester,
-        LyricsPickerSourceChips(
-          sources: const ['lrclib', _plugin],
-          providerNames: {'lrclib': 'LRCLIB', _plugin: long},
-          selected: null,
-          onSelected: (_) {},
-        ),
-      );
-
-      expect(tester.takeException(), isNull);
     });
   });
 
@@ -297,8 +254,6 @@ void main() {
       expect(find.text('Found one'), findsOneWidget);
       expect(find.text("Couldn't reach NetEase · hieu05"), findsOneWidget);
       expect(find.text('View log'), findsOneWidget);
-      // One source returned results: no filter.
-      expect(find.byType(ChoiceChip), findsNothing);
     });
   });
 }
