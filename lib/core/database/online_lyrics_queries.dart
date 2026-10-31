@@ -157,16 +157,27 @@ extension OnlineLyricsQueries on LibraryDatabase {
   /// null when the path is not in the library.
   Stream<({String title, String? artist, String? album, int? durationMs})?>
   watchTrackLyricsFields(String path) {
-    return (select(tracks)..where((t) => t.path.equals(path)))
+    // Explicit columns are cheaper than a full row (no extra tags or comment
+    // read), and `.distinct()` below drops the wake-ups that writes to other
+    // columns (cover, extra tags) cause.
+    final query = selectOnly(tracks)
+      ..addColumns([
+        tracks.title,
+        tracks.artist,
+        tracks.album,
+        tracks.durationMs,
+      ])
+      ..where(tracks.path.equals(path));
+    return query
         .watchSingleOrNull()
         .map(
-          (t) => t == null
+          (r) => r == null
               ? null
               : (
-                  title: t.title,
-                  artist: t.artist,
-                  album: t.album,
-                  durationMs: t.durationMs,
+                  title: r.read(tracks.title)!,
+                  artist: r.read(tracks.artist),
+                  album: r.read(tracks.album),
+                  durationMs: r.read(tracks.durationMs),
                 ),
         )
         .distinct();

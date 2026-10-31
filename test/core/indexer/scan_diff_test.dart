@@ -12,12 +12,14 @@ TrackSnapshot row(
   int mtime = 1,
   int size = 10,
   bool error = false,
+  bool extra = false,
 }) => TrackSnapshot(
   id: id,
   path: path,
   mtimeMs: mtime,
   sizeBytes: size,
   hasScanError: error,
+  needsExtraTags: extra,
 );
 
 void main() {
@@ -47,6 +49,17 @@ void main() {
     ]);
     expect(diff.toRead, isEmpty);
     expect(diff.toDelete, isEmpty);
+  });
+
+  test('an unchanged file lacking extra tags goes to extraOnly only', () {
+    final diff = diffScan(
+      WalkResult(files: [file('/m/a.mp3'), file('/m/b.mp3', mtime: 2)]),
+      [row(1, '/m/a.mp3', extra: true), row(2, '/m/b.mp3', extra: true)],
+    );
+    expect(diff.extraOnly.map((t) => (t.id, t.file.path)), [(1, '/m/a.mp3')]);
+    expect(diff.toRead.map((f) => f.path), ['/m/b.mp3']);
+    expect(diff.addedPaths, isEmpty);
+    expect(diff.updatedPaths, {'/m/b.mp3'});
   });
 
   test('a vanished file is deleted', () {

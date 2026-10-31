@@ -24,6 +24,7 @@ class TrackSnapshot {
     required this.mtimeMs,
     required this.sizeBytes,
     this.hasScanError = false,
+    this.needsExtraTags = false,
   });
 
   final int id;
@@ -35,6 +36,26 @@ class TrackSnapshot {
   /// [permanentScanErrorPrefix] one); a rescan tries again even when the file
   /// is unchanged.
   final bool hasScanError;
+
+  /// `extra_tags` is missing or older than `extraTagsVersion`; a rescan
+  /// reads the file again to fill it, even when the file is unchanged.
+  final bool needsExtraTags;
+}
+
+/// One `tracks.extra_tags` write for `updateExtraTags`, guarded by the
+/// mtime and size of the file the JSON was read from.
+class ExtraTagsUpdate {
+  const ExtraTagsUpdate({
+    required this.id,
+    required this.mtimeMs,
+    required this.sizeBytes,
+    required this.json,
+  });
+
+  final int id;
+  final int mtimeMs;
+  final int sizeBytes;
+  final String json;
 }
 
 /// The few columns a track list row shows, so listing a big library does not

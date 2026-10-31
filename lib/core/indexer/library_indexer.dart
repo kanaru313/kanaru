@@ -14,6 +14,7 @@ import '../database/separator_rules_provider.dart';
 import '../settings/settings_provider.dart';
 import 'cover_cache_cleanup.dart';
 import 'cover_pass.dart';
+import 'extra_tags_pass.dart';
 import 'indexer_providers.dart';
 import 'indexer_state.dart';
 import 'root_scan_result.dart';
@@ -571,16 +572,7 @@ class LibraryIndexer extends Notifier<IndexerState> {
         // The native call keeps its bridge worker until it returns, which
         // may be never: hand it no more work until it does. Its result is
         // dropped; the next scan reads these files again.
-        _readerStuck = true;
-        if (!_autoStarted) _retryWhenReaderFrees = true;
-        void freed() {
-          _readerStuck = false;
-          if (!_retryWhenReaderFrees) return;
-          _retryWhenReaderFrees = false;
-          _scanAutomatically();
-        }
-
-        pending.then((_) => freed(), onError: (_) => freed());
+        _holdReaderStuck(pending);
         _log.warning(
           'Tag batch took over ${timeouts.tagBatch}, gave up: ${root.path}',
         );
@@ -626,6 +618,44 @@ class LibraryIndexer extends Notifier<IndexerState> {
       }
       _publish(reading(end));
     }
+    if (diff.extraOnly.isNotEmpty && !_readerStuck) {
+      // Unchanged files that only lack the extra tags: no "updated" count.
+      tagTime.start();
+      final extraTotal = diff.extraOnly.length;
+      IndexerScanning extraReading(int done) => IndexerScanning(
+        phase: ScanPhase.reading,
+        rootPath: root.path,
+        done: done,
+        total: extraTotal,
+      );
+      _publish(extraReading(0));
+      final extra = await fillExtraTags(
+        db: db,
+        reader: reader,
+        extraOnly: diff.extraOnly,
+        batchSize: tagBatchSizeFor(extraTotal),
+        timeout: timeouts.tagBatch,
+        onTimeout: _holdReaderStuck,
+        onProgress: (done) => _publish(extraReading(done)),
+      );
+      tagTime.stop();
+      if (extra.timedOut) {
+        return RootScanResult(
+          added: added,
+          updated: updated,
+          failedTags: failedTags,
+          undecodableNames: undecodable,
+          undecodableSampleDirs: undecodableDirs,
+          skippedFolderNames: skippedFolders,
+          skipReason: SkipReason.timedOut,
+          dirs: walk.dirs,
+          deferred: walk.deferred,
+          walkTime: walkTime.elapsed,
+          tagTime: tagTime.elapsed,
+          dbTime: dbTime.elapsed,
+        );
+      }
+    }
     dbTime.start();
     final deletes = await shortRules.deletes(db, root.id, diff.toDelete);
     await db.deleteTracksById(deletes);
@@ -651,6 +681,22 @@ class LibraryIndexer extends Notifier<IndexerState> {
       tagTime: tagTime.elapsed,
       dbTime: dbTime.elapsed,
     );
+  }
+
+  /// Marks the reader stuck while [pending] (a tag read that timed out) has
+  /// not returned, and scans again once it frees up, if an automatic scan
+  /// may follow.
+  void _holdReaderStuck(Future<Object?> pending) {
+    _readerStuck = true;
+    if (!_autoStarted) _retryWhenReaderFrees = true;
+    void freed() {
+      _readerStuck = false;
+      if (!_retryWhenReaderFrees) return;
+      _retryWhenReaderFrees = false;
+      _scanAutomatically();
+    }
+
+    pending.then((_) => freed(), onError: (_) => freed());
   }
 
   /// A first scan of a huge library on a slow disk can outlast the walk

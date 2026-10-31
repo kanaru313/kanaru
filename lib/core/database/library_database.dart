@@ -9,7 +9,9 @@ import 'library_migration_v6.dart';
 import 'library_migration_v7.dart';
 import 'library_migration_v8.dart';
 import 'library_migration_v10.dart';
+import 'extra_tags.dart';
 import 'library_migration_v11.dart';
+import 'library_migration_v12.dart';
 import 'library_migration_v9.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
@@ -57,7 +59,7 @@ class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -78,6 +80,7 @@ class LibraryDatabase extends _$LibraryDatabase {
       from8To9: (m, schema) => migrateLibraryToSchema9(this, m, schema),
       from9To10: (m, schema) => migrateLibraryToSchema10(this, m, schema),
       from10To11: (m, schema) => migrateLibraryToSchema11(this, m, schema),
+      from11To12: (m, schema) => migrateLibraryToSchema12(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).
@@ -132,6 +135,17 @@ class LibraryDatabase extends _$LibraryDatabase {
     final retryable =
         tracks.scanError.isNotNull() &
         tracks.scanError.like('$permanentScanErrorPrefix%').not();
+    // No JSON yet, or written by an older `extraTagsVersion`: the file must
+    // be read again, but only for that (see `updateExtraTags`). A row with a
+    // scan error is not flagged: retryable errors are read in full anyway,
+    // and permanent ones would otherwise be read on every scan.
+    final needsExtra = CustomExpression<bool>(
+      'CASE WHEN tracks.scan_error IS NOT NULL THEN 0 '
+      'WHEN tracks.extra_tags IS NULL THEN 1 '
+      'WHEN json_valid(tracks.extra_tags) THEN '
+      "coalesce(json_extract(tracks.extra_tags, '\$.v'), 0) < $extraTagsVersion "
+      'ELSE 1 END',
+    );
     final query = selectOnly(tracks)
       ..addColumns([
         tracks.id,
@@ -139,6 +153,7 @@ class LibraryDatabase extends _$LibraryDatabase {
         tracks.mtimeMs,
         tracks.sizeBytes,
         retryable,
+        needsExtra,
       ])
       ..where(tracks.rootId.equals(rootId));
     final rows = await query.get();
@@ -150,8 +165,40 @@ class LibraryDatabase extends _$LibraryDatabase {
           mtimeMs: row.read(tracks.mtimeMs)!,
           sizeBytes: row.read(tracks.sizeBytes)!,
           hasScanError: row.read(retryable)!,
+          needsExtraTags: row.read(needsExtra)!,
         ),
     ];
+  }
+
+  /// Writes `extra_tags` of the given tracks and nothing else, in chunks of
+  /// [deleteChunkSize] per transaction. A row is written only while its
+  /// `mtime_ms` and `size_bytes` still match the file that was read, so a
+  /// file changed since is left for the scan to read fully. Never touches
+  /// `updated_at`, the cover columns or the keys. Returns how many rows were
+  /// written.
+  Future<int> updateExtraTags(List<ExtraTagsUpdate> updates) async {
+    var written = 0;
+    for (var i = 0; i < updates.length; i += deleteChunkSize) {
+      final end = i + deleteChunkSize < updates.length
+          ? i + deleteChunkSize
+          : updates.length;
+      await transaction(() async {
+        for (final u in updates.sublist(i, end)) {
+          written += await customUpdate(
+            'UPDATE tracks SET extra_tags = ? '
+            'WHERE id = ? AND mtime_ms = ? AND size_bytes = ?',
+            variables: [
+              Variable<String>(u.json),
+              Variable<int>(u.id),
+              Variable<int>(u.mtimeMs),
+              Variable<int>(u.sizeBytes),
+            ],
+            updates: {tracks},
+          );
+        }
+      });
+    }
+    return written;
   }
 
   /// Inserts new tracks and updates known ones, matched by `path`, in one

@@ -79,7 +79,7 @@ Startup overrides are assembled in [lib/main.dart](../lib/main.dart) into one ma
 
 ## Version constants
 
-Four constants tell the app to redo work on existing libraries. Bump only the one that matches your change. The full procedure is in [development.md](./development.md#library-version-constants).
+Five constants tell the app to redo work on existing libraries. Bump only the one that matches your change. The full procedure is in [development.md](./development.md#library-version-constants).
 
 | Constant | Location | Bump when |
 |---|---|---|
@@ -87,11 +87,12 @@ Four constants tell the app to redo work on existing libraries. Bump only the on
 | `coverScanVersion` | `lib/core/database/library_rows.dart` (currently `1`) | Cover extraction or thumbnail rules change (also when `THUMBNAIL_SIDE` or the `covers/<size>` directory changes) |
 | `tagReaderVersion` | `lib/core/database/library_rows.dart` (currently `1`) | The Rust reader starts accepting files it used to reject |
 | `coverColorAlgoVersion` | `lib/core/cover_colors/cover_palette.dart` (currently `100512`: `coverColorAlgoRevision * 100000 + coverThumbnailSize`) | Bump `coverColorAlgoRevision` together with `COLOR_ALGO_REVISION` in `rust/src/cover_colors.rs` when the colors for the same thumbnail change; a new thumbnail size changes it by itself |
+| `extraTagsVersion` | `lib/core/database/extra_tags.dart` (currently `1`) | A new key is added to the `tracks.extra_tags` JSON: every row is read once more by the next scan (no schema change) |
 | `PERMANENT_ERROR_PREFIX` | `rust/src/tag_reader.rs` (currently `permanent:v1:`) | Must carry the same `N` as `tagReaderVersion` |
 
 Other version numbers that must stay in step:
 
-- `schemaVersion` in `core/database/library_database.dart` (currently `11`). After bumping it, run `make migrations`.
+- `schemaVersion` in `core/database/library_database.dart` (currently `12`). After bumping it, run `make migrations`.
 - `flutter_rust_bridge` (Dart package, crate, and codegen binary) are pinned to `2.13.0`. Change all three together.
 - `KANARU_VERSION` is passed at build time with `--dart-define` (see [deployment-guide.md](./deployment-guide.md#build-a-release-bundle)).
 
@@ -154,7 +155,7 @@ Commands: [development.md](./development.md#tests--lints). Layout: [codebase-sum
 - File opens use `O_NONBLOCK` (through `libc`, see `rust/src/cover_art.rs`), so a FIFO cannot block a batch.
 - Rayon pool is named `kanaru-tags-N`, sized `max(cpus/2, 2)`, with 8 MiB stacks.
 - Public API lives in `rust/src/api/` only. The bridge reads `crate::api` (`flutter_rust_bridge.yaml`).
-- Text limits are enforced in Rust: 1 KB for title, artist, album, album artist, genre, composer; 128 bytes language; 4 KB comment; 32 artists. Covers are capped at 4096 px (a baseline JPEG, decoded scaled down, up to 8192 px), 16 MB source, 64 MB decode; the alpha blend and resize work on the decoded buffer, so the peak stays near the decode size (RGBA 4096² measured at about 74 MiB).
+- Text limits are enforced in Rust: 1 KB for title, artist, album, album artist, genre, composer; 128 bytes language; 64 bytes raw release date (longer is dropped, not cut); 4 KB comment; 32 artists. Covers are capped at 4096 px (a baseline JPEG, decoded scaled down, up to 8192 px), 16 MB source, 64 MB decode; the alpha blend and resize work on the decoded buffer, so the peak stays near the decode size (RGBA 4096² measured at about 74 MiB).
 
 ## Commits and branches
 
