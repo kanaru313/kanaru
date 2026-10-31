@@ -69,6 +69,12 @@ class Tracks extends Table {
   IntColumn get bitDepth => integer().nullable()();
   IntColumn get channels => integer().nullable()();
 
+  /// JSON object written by `encodeExtraTags` (extra_tags.dart): tag values
+  /// the library does not index, read only for one track (the details
+  /// dialog). Null until the scan has read the file; never selected by list
+  /// queries.
+  TextColumn get extraTags => text().nullable()();
+
   /// When the file was first indexed; never changes on rescan.
   IntColumn get addedAt => integer()();
   IntColumn get updatedAt => integer()();

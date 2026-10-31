@@ -46,6 +46,9 @@ pub struct TrackTags {
     pub disc_total: Option<u32>,
     /// Four-digit year taken from the recording date.
     pub year: Option<u32>,
+    /// Release date as written in the tag (`2019`, `2019-07-15`, `20190715`),
+    /// trimmed. Dart parses it; `None` when absent or over 64 bytes.
+    pub release_date: Option<String>,
     pub genre: Option<String>,
     pub composer: Option<String>,
     pub comment: Option<String>,

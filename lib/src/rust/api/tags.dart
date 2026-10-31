@@ -113,6 +113,10 @@ class TrackTags {
 
   /// Four-digit year taken from the recording date.
   final int? year;
+
+  /// Release date as written in the tag (`2019`, `2019-07-15`, `20190715`),
+  /// trimmed. Dart parses it; `None` when absent or over 64 bytes.
+  final String? releaseDate;
   final String? genre;
   final String? composer;
   final String? comment;
@@ -141,6 +145,7 @@ class TrackTags {
     this.discNo,
     this.discTotal,
     this.year,
+    this.releaseDate,
     this.genre,
     this.composer,
     this.comment,
@@ -177,6 +182,7 @@ class TrackTags {
       discNo.hashCode ^
       discTotal.hashCode ^
       year.hashCode ^
+      releaseDate.hashCode ^
       genre.hashCode ^
       composer.hashCode ^
       comment.hashCode ^
@@ -203,6 +209,7 @@ class TrackTags {
           discNo == other.discNo &&
           discTotal == other.discTotal &&
           year == other.year &&
+          releaseDate == other.releaseDate &&
           genre == other.genre &&
           composer == other.composer &&
           comment == other.comment &&

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../database/extra_tags.dart';
 import '../database/library_database.dart' hide Track;
 import '../player/track.dart';
 import 'tag_reader.dart';
@@ -55,5 +56,11 @@ TracksCompanion _row(int rootId, WalkedFile file, TrackTags? tags, int now) {
     updatedAt: now,
     scanError: Value(tags == null ? 'no tags returned' : tags.error),
     coverScanVersion: const Value(0),
+    // A failed read stores NULL so the next scan reads the file again.
+    extraTags: Value(
+      tags == null || tags.error != null
+          ? null
+          : encodeExtraTags(releaseDate: tags.releaseDate),
+    ),
   );
 }

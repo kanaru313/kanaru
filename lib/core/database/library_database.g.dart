@@ -1798,6 +1798,17 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _extraTagsMeta = const VerificationMeta(
+    'extraTags',
+  );
+  @override
+  late final GeneratedColumn<String> extraTags = GeneratedColumn<String>(
+    'extra_tags',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _addedAtMeta = const VerificationMeta(
     'addedAt',
   );
@@ -2003,6 +2014,7 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     sampleRate,
     bitDepth,
     channels,
+    extraTags,
     addedAt,
     updatedAt,
     scanError,
@@ -2178,6 +2190,12 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
       context.handle(
         _channelsMeta,
         channels.isAcceptableOrUnknown(data['channels']!, _channelsMeta),
+      );
+    }
+    if (data.containsKey('extra_tags')) {
+      context.handle(
+        _extraTagsMeta,
+        extraTags.isAcceptableOrUnknown(data['extra_tags']!, _extraTagsMeta),
       );
     }
     if (data.containsKey('added_at')) {
@@ -2408,6 +2426,10 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         DriftSqlType.int,
         data['${effectivePrefix}channels'],
       ),
+      extraTags: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extra_tags'],
+      ),
       addedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}added_at'],
@@ -2521,6 +2543,12 @@ class Track extends DataClass implements Insertable<Track> {
   final int? bitDepth;
   final int? channels;
 
+  /// JSON object written by `encodeExtraTags` (extra_tags.dart): tag values
+  /// the library does not index, read only for one track (the details
+  /// dialog). Null until the scan has read the file; never selected by list
+  /// queries.
+  final String? extraTags;
+
   /// When the file was first indexed; never changes on rescan.
   final int addedAt;
   final int updatedAt;
@@ -2589,6 +2617,7 @@ class Track extends DataClass implements Insertable<Track> {
     this.sampleRate,
     this.bitDepth,
     this.channels,
+    this.extraTags,
     required this.addedAt,
     required this.updatedAt,
     this.scanError,
@@ -2665,6 +2694,9 @@ class Track extends DataClass implements Insertable<Track> {
     }
     if (!nullToAbsent || channels != null) {
       map['channels'] = Variable<int>(channels);
+    }
+    if (!nullToAbsent || extraTags != null) {
+      map['extra_tags'] = Variable<String>(extraTags);
     }
     map['added_at'] = Variable<int>(addedAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -2764,6 +2796,9 @@ class Track extends DataClass implements Insertable<Track> {
       channels: channels == null && nullToAbsent
           ? const Value.absent()
           : Value(channels),
+      extraTags: extraTags == null && nullToAbsent
+          ? const Value.absent()
+          : Value(extraTags),
       addedAt: Value(addedAt),
       updatedAt: Value(updatedAt),
       scanError: scanError == null && nullToAbsent
@@ -2834,6 +2869,7 @@ class Track extends DataClass implements Insertable<Track> {
       sampleRate: serializer.fromJson<int?>(json['sampleRate']),
       bitDepth: serializer.fromJson<int?>(json['bitDepth']),
       channels: serializer.fromJson<int?>(json['channels']),
+      extraTags: serializer.fromJson<String?>(json['extraTags']),
       addedAt: serializer.fromJson<int>(json['addedAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       scanError: serializer.fromJson<String?>(json['scanError']),
@@ -2883,6 +2919,7 @@ class Track extends DataClass implements Insertable<Track> {
       'sampleRate': serializer.toJson<int?>(sampleRate),
       'bitDepth': serializer.toJson<int?>(bitDepth),
       'channels': serializer.toJson<int?>(channels),
+      'extraTags': serializer.toJson<String?>(extraTags),
       'addedAt': serializer.toJson<int>(addedAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
       'scanError': serializer.toJson<String?>(scanError),
@@ -2926,6 +2963,7 @@ class Track extends DataClass implements Insertable<Track> {
     Value<int?> sampleRate = const Value.absent(),
     Value<int?> bitDepth = const Value.absent(),
     Value<int?> channels = const Value.absent(),
+    Value<String?> extraTags = const Value.absent(),
     int? addedAt,
     int? updatedAt,
     Value<String?> scanError = const Value.absent(),
@@ -2966,6 +3004,7 @@ class Track extends DataClass implements Insertable<Track> {
     sampleRate: sampleRate.present ? sampleRate.value : this.sampleRate,
     bitDepth: bitDepth.present ? bitDepth.value : this.bitDepth,
     channels: channels.present ? channels.value : this.channels,
+    extraTags: extraTags.present ? extraTags.value : this.extraTags,
     addedAt: addedAt ?? this.addedAt,
     updatedAt: updatedAt ?? this.updatedAt,
     scanError: scanError.present ? scanError.value : this.scanError,
@@ -3024,6 +3063,7 @@ class Track extends DataClass implements Insertable<Track> {
           : this.sampleRate,
       bitDepth: data.bitDepth.present ? data.bitDepth.value : this.bitDepth,
       channels: data.channels.present ? data.channels.value : this.channels,
+      extraTags: data.extraTags.present ? data.extraTags.value : this.extraTags,
       addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       scanError: data.scanError.present ? data.scanError.value : this.scanError,
@@ -3089,6 +3129,7 @@ class Track extends DataClass implements Insertable<Track> {
           ..write('sampleRate: $sampleRate, ')
           ..write('bitDepth: $bitDepth, ')
           ..write('channels: $channels, ')
+          ..write('extraTags: $extraTags, ')
           ..write('addedAt: $addedAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('scanError: $scanError, ')
@@ -3134,6 +3175,7 @@ class Track extends DataClass implements Insertable<Track> {
     sampleRate,
     bitDepth,
     channels,
+    extraTags,
     addedAt,
     updatedAt,
     scanError,
@@ -3178,6 +3220,7 @@ class Track extends DataClass implements Insertable<Track> {
           other.sampleRate == this.sampleRate &&
           other.bitDepth == this.bitDepth &&
           other.channels == this.channels &&
+          other.extraTags == this.extraTags &&
           other.addedAt == this.addedAt &&
           other.updatedAt == this.updatedAt &&
           other.scanError == this.scanError &&
@@ -3220,6 +3263,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
   final Value<int?> sampleRate;
   final Value<int?> bitDepth;
   final Value<int?> channels;
+  final Value<String?> extraTags;
   final Value<int> addedAt;
   final Value<int> updatedAt;
   final Value<String?> scanError;
@@ -3260,6 +3304,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.sampleRate = const Value.absent(),
     this.bitDepth = const Value.absent(),
     this.channels = const Value.absent(),
+    this.extraTags = const Value.absent(),
     this.addedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.scanError = const Value.absent(),
@@ -3301,6 +3346,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.sampleRate = const Value.absent(),
     this.bitDepth = const Value.absent(),
     this.channels = const Value.absent(),
+    this.extraTags = const Value.absent(),
     required int addedAt,
     required int updatedAt,
     this.scanError = const Value.absent(),
@@ -3348,6 +3394,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Expression<int>? sampleRate,
     Expression<int>? bitDepth,
     Expression<int>? channels,
+    Expression<String>? extraTags,
     Expression<int>? addedAt,
     Expression<int>? updatedAt,
     Expression<String>? scanError,
@@ -3389,6 +3436,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
       if (sampleRate != null) 'sample_rate': sampleRate,
       if (bitDepth != null) 'bit_depth': bitDepth,
       if (channels != null) 'channels': channels,
+      if (extraTags != null) 'extra_tags': extraTags,
       if (addedAt != null) 'added_at': addedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (scanError != null) 'scan_error': scanError,
@@ -3433,6 +3481,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Value<int?>? sampleRate,
     Value<int?>? bitDepth,
     Value<int?>? channels,
+    Value<String?>? extraTags,
     Value<int>? addedAt,
     Value<int>? updatedAt,
     Value<String?>? scanError,
@@ -3474,6 +3523,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
       sampleRate: sampleRate ?? this.sampleRate,
       bitDepth: bitDepth ?? this.bitDepth,
       channels: channels ?? this.channels,
+      extraTags: extraTags ?? this.extraTags,
       addedAt: addedAt ?? this.addedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       scanError: scanError ?? this.scanError,
@@ -3565,6 +3615,9 @@ class TracksCompanion extends UpdateCompanion<Track> {
     if (channels.present) {
       map['channels'] = Variable<int>(channels.value);
     }
+    if (extraTags.present) {
+      map['extra_tags'] = Variable<String>(extraTags.value);
+    }
     if (addedAt.present) {
       map['added_at'] = Variable<int>(addedAt.value);
     }
@@ -3642,6 +3695,7 @@ class TracksCompanion extends UpdateCompanion<Track> {
           ..write('sampleRate: $sampleRate, ')
           ..write('bitDepth: $bitDepth, ')
           ..write('channels: $channels, ')
+          ..write('extraTags: $extraTags, ')
           ..write('addedAt: $addedAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('scanError: $scanError, ')
@@ -10578,6 +10632,7 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   Value<int?> sampleRate,
   Value<int?> bitDepth,
   Value<int?> channels,
+  Value<String?> extraTags,
   required int addedAt,
   required int updatedAt,
   Value<String?> scanError,
@@ -10619,6 +10674,7 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int?> sampleRate,
   Value<int?> bitDepth,
   Value<int?> channels,
+  Value<String?> extraTags,
   Value<int> addedAt,
   Value<int> updatedAt,
   Value<String?> scanError,
@@ -10793,6 +10849,11 @@ class $$TracksTableFilterComposer
 
   ColumnFilters<int> get channels => $composableBuilder(
     column: $table.channels,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get extraTags => $composableBuilder(
+    column: $table.extraTags,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11044,6 +11105,11 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get extraTags => $composableBuilder(
+    column: $table.extraTags,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get addedAt => $composableBuilder(
     column: $table.addedAt,
     builder: (column) => ColumnOrderings(column),
@@ -11231,6 +11297,9 @@ class $$TracksTableAnnotationComposer
   GeneratedColumn<int> get channels =>
       $composableBuilder(column: $table.channels, builder: (column) => column);
 
+  GeneratedColumn<String> get extraTags =>
+      $composableBuilder(column: $table.extraTags, builder: (column) => column);
+
   GeneratedColumn<int> get addedAt =>
       $composableBuilder(column: $table.addedAt, builder: (column) => column);
 
@@ -11399,6 +11468,7 @@ class $$TracksTableTableManager
                 Value<int?> sampleRate = const Value.absent(),
                 Value<int?> bitDepth = const Value.absent(),
                 Value<int?> channels = const Value.absent(),
+                Value<String?> extraTags = const Value.absent(),
                 Value<int> addedAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<String?> scanError = const Value.absent(),
@@ -11439,6 +11509,7 @@ class $$TracksTableTableManager
                 sampleRate: sampleRate,
                 bitDepth: bitDepth,
                 channels: channels,
+                extraTags: extraTags,
                 addedAt: addedAt,
                 updatedAt: updatedAt,
                 scanError: scanError,
@@ -11481,6 +11552,7 @@ class $$TracksTableTableManager
                 Value<int?> sampleRate = const Value.absent(),
                 Value<int?> bitDepth = const Value.absent(),
                 Value<int?> channels = const Value.absent(),
+                Value<String?> extraTags = const Value.absent(),
                 required int addedAt,
                 required int updatedAt,
                 Value<String?> scanError = const Value.absent(),
@@ -11521,6 +11593,7 @@ class $$TracksTableTableManager
                 sampleRate: sampleRate,
                 bitDepth: bitDepth,
                 channels: channels,
+                extraTags: extraTags,
                 addedAt: addedAt,
                 updatedAt: updatedAt,
                 scanError: scanError,

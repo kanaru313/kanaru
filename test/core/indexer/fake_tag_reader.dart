@@ -38,6 +38,15 @@ class FakeTagReader implements TagReader {
   /// File name → duration in ms, for files that should not read as 1000 ms.
   final Map<String, int> durationByName = {};
 
+  /// File names whose read reports a permanent error.
+  final Set<String> permanentReads = {};
+
+  /// File names whose read reports a transient error.
+  final Set<String> failingReads = {};
+
+  /// File name → raw release date the fake reports for it (none by default).
+  final Map<String, String> releaseDateByName = {};
+
   /// File name → cover name (see [fakeCoverKey]).
   final Map<String, String> coverByName = {};
   final Set<String> failingCovers = {};
@@ -76,10 +85,13 @@ class FakeTagReader implements TagReader {
             path,
             error: 'permanent:v1:unsupported',
           ),
-          final name when name.startsWith('flaky') => _tags(
+          final name when permanentReads.contains(name) => _tags(
             path,
-            error: 'Permission denied',
+            error: 'permanent:v1:unsupported',
           ),
+          final name
+              when name.startsWith('flaky') || failingReads.contains(name) =>
+            _tags(path, error: 'Permission denied'),
           final name when name.endsWith('.dsf') || name.endsWith('.dff') =>
             _tags(path),
           _ => _tags(path, title: path.split('/').last.toUpperCase()),
@@ -95,6 +107,7 @@ class FakeTagReader implements TagReader {
     durationMs: error == null
         ? durationByName[path.split('/').last] ?? 1000
         : null,
+    releaseDate: error == null ? releaseDateByName[path.split('/').last] : null,
   );
 
   @override

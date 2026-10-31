@@ -1253,8 +1253,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TrackTags dco_decode_track_tags(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 20)
-      throw Exception('unexpected arr length: expect 20 but see ${arr.length}');
+    if (arr.length != 21)
+      throw Exception('unexpected arr length: expect 21 but see ${arr.length}');
     return TrackTags(
       path: dco_decode_String(arr[0]),
       title: dco_decode_opt_String(arr[1]),
@@ -1266,16 +1266,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       discNo: dco_decode_opt_box_autoadd_u_32(arr[7]),
       discTotal: dco_decode_opt_box_autoadd_u_32(arr[8]),
       year: dco_decode_opt_box_autoadd_u_32(arr[9]),
-      genre: dco_decode_opt_String(arr[10]),
-      composer: dco_decode_opt_String(arr[11]),
-      comment: dco_decode_opt_String(arr[12]),
-      language: dco_decode_opt_String(arr[13]),
-      durationMs: dco_decode_opt_box_autoadd_i_64(arr[14]),
-      bitrate: dco_decode_opt_box_autoadd_u_32(arr[15]),
-      sampleRate: dco_decode_opt_box_autoadd_u_32(arr[16]),
-      bitDepth: dco_decode_opt_box_autoadd_u_8(arr[17]),
-      channels: dco_decode_opt_box_autoadd_u_8(arr[18]),
-      error: dco_decode_opt_String(arr[19]),
+      releaseDate: dco_decode_opt_String(arr[10]),
+      genre: dco_decode_opt_String(arr[11]),
+      composer: dco_decode_opt_String(arr[12]),
+      comment: dco_decode_opt_String(arr[13]),
+      language: dco_decode_opt_String(arr[14]),
+      durationMs: dco_decode_opt_box_autoadd_i_64(arr[15]),
+      bitrate: dco_decode_opt_box_autoadd_u_32(arr[16]),
+      sampleRate: dco_decode_opt_box_autoadd_u_32(arr[17]),
+      bitDepth: dco_decode_opt_box_autoadd_u_8(arr[18]),
+      channels: dco_decode_opt_box_autoadd_u_8(arr[19]),
+      error: dco_decode_opt_String(arr[20]),
     );
   }
 
@@ -1892,6 +1893,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_discNo = sse_decode_opt_box_autoadd_u_32(deserializer);
     var var_discTotal = sse_decode_opt_box_autoadd_u_32(deserializer);
     var var_year = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_releaseDate = sse_decode_opt_String(deserializer);
     var var_genre = sse_decode_opt_String(deserializer);
     var var_composer = sse_decode_opt_String(deserializer);
     var var_comment = sse_decode_opt_String(deserializer);
@@ -1913,6 +1915,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       discNo: var_discNo,
       discTotal: var_discTotal,
       year: var_year,
+      releaseDate: var_releaseDate,
       genre: var_genre,
       composer: var_composer,
       comment: var_comment,
@@ -2538,6 +2541,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_box_autoadd_u_32(self.discNo, serializer);
     sse_encode_opt_box_autoadd_u_32(self.discTotal, serializer);
     sse_encode_opt_box_autoadd_u_32(self.year, serializer);
+    sse_encode_opt_String(self.releaseDate, serializer);
     sse_encode_opt_String(self.genre, serializer);
     sse_encode_opt_String(self.composer, serializer);
     sse_encode_opt_String(self.comment, serializer);

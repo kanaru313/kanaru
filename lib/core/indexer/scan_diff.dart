@@ -6,6 +6,7 @@ class ScanDiff {
   const ScanDiff({
     this.toRead = const [],
     this.toDelete = const [],
+    this.extraOnly = const [],
     this.addedPaths = const {},
     this.updatedPaths = const {},
     this.rootEmpty = false,
@@ -13,6 +14,11 @@ class ScanDiff {
 
   /// New or changed files, whose tags must be (re)read.
   final List<WalkedFile> toRead;
+
+  /// Unchanged files whose `extra_tags` is missing or outdated. Their tags
+  /// are read again only to fill that column (never the full upsert), and
+  /// they count as neither added nor updated.
+  final List<({int id, WalkedFile file})> extraOnly;
 
   /// Ids of tracks that are gone for sure.
   final List<int> toDelete;
@@ -36,7 +42,8 @@ class ScanDiff {
 /// an unreadable or empty folder (an unmounted mount point lists as empty),
 /// not unstattable, the root is present, and the walk found at least one
 /// file. A missing root deletes nothing and reads nothing. An unchanged file
-/// whose tags failed to read last time is read again. [barredRows] is how
+/// whose tags failed to read last time is read again; one that only lacks
+/// current `extra_tags` goes to [ScanDiff.extraOnly]. [barredRows] is how
 /// many stored rows the hidden-file and hidden-folder rules now bar. An empty
 /// walk deletes rows only when every stored row is barred (a deliberate
 /// filter); with any other row left, the empty walk may be an unmounted
@@ -51,6 +58,7 @@ ScanDiff diffScan(
 
   final known = {for (final track in existing) track.path: track};
   final toRead = <WalkedFile>[];
+  final extraOnly = <({int id, WalkedFile file})>[];
   final addedPaths = <String>{}, updatedPaths = <String>{};
   for (final file in walk.files) {
     final track = known[file.path];
@@ -63,6 +71,8 @@ ScanDiff diffScan(
       toRead.add(file);
     } else if (track.hasScanError) {
       toRead.add(file);
+    } else if (track.needsExtraTags) {
+      extraOnly.add((id: track.id, file: file));
     }
   }
 
@@ -93,6 +103,7 @@ ScanDiff diffScan(
   }
   return ScanDiff(
     toRead: toRead,
+    extraOnly: extraOnly,
     toDelete: toDelete,
     addedPaths: addedPaths,
     updatedPaths: updatedPaths,

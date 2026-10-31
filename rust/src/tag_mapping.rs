@@ -17,6 +17,10 @@ const MAX_COMMENT_BYTES: usize = 4096;
 /// Longest stored language tag, in bytes.
 const MAX_LANGUAGE_BYTES: usize = 128;
 
+/// Longest accepted raw release date, in bytes. A date is never longer, so a
+/// longer value is junk and is dropped rather than cut.
+const MAX_RELEASE_DATE_BYTES: usize = 64;
+
 /// Most artist values joined into the artist field.
 const MAX_ARTISTS: usize = 32;
 
@@ -51,6 +55,7 @@ pub fn apply_tag(out: &mut TrackTags, tag: &Tag) {
         .get_string(ItemKey::RecordingDate)
         .or_else(|| tag.get_string(ItemKey::Year))
         .and_then(parse_year);
+    out.release_date = release_date(tag);
     out.genre = capped(non_empty(tag.genre()), MAX_TEXT_BYTES);
     out.composer = capped(
         non_empty(tag.get_string(ItemKey::Composer).map(Into::into)),
@@ -69,6 +74,32 @@ pub fn apply_properties(out: &mut TrackTags, props: &FileProperties) {
     out.sample_rate = props.sample_rate().filter(|v| *v > 0);
     out.bit_depth = props.bit_depth().filter(|v| *v > 0);
     out.channels = props.channels().filter(|v| *v > 0);
+}
+
+/// The raw release date: the first usable of recording date, release date,
+/// year and original release date. A value that is empty after cleaning or
+/// longer than [`MAX_RELEASE_DATE_BYTES`] is skipped, so the next key is tried.
+/// Control characters are dropped. `year` reads recording date, then year, so
+/// the two agree on the date's year only when a recording date is present;
+/// without one the release date may come from `ReleaseDate` while `year`
+/// comes from `Year`.
+fn release_date(tag: &Tag) -> Option<String> {
+    [
+        ItemKey::RecordingDate,
+        ItemKey::ReleaseDate,
+        ItemKey::Year,
+        ItemKey::OriginalReleaseDate,
+    ]
+    .into_iter()
+    .filter_map(|key| tag.get_string(key))
+    .map(|raw| {
+        raw.chars()
+            .filter(|c| !c.is_control())
+            .collect::<String>()
+            .trim()
+            .to_owned()
+    })
+    .find(|v| !v.is_empty() && v.len() <= MAX_RELEASE_DATE_BYTES)
 }
 
 /// All track artists joined with [`ARTIST_SEPARATOR`]. Prefers the explicit
@@ -254,6 +285,62 @@ mod tests {
         let mut out = TrackTags::default();
         apply_tag(&mut out, &tag);
         assert_eq!(out.year, Some(2019));
+    }
+
+    fn release_of(items: &[(ItemKey, &str)]) -> Option<String> {
+        let mut tag = Tag::new(TagType::VorbisComments);
+        for (key, value) in items {
+            tag.insert_text(*key, (*value).to_owned());
+        }
+        let mut out = TrackTags::default();
+        apply_tag(&mut out, &tag);
+        out.release_date
+    }
+
+    #[test]
+    fn release_date_follows_key_order() {
+        let all = [
+            (ItemKey::OriginalReleaseDate, "1970"),
+            (ItemKey::Year, "1985"),
+            (ItemKey::ReleaseDate, "2020-01-01"),
+            (ItemKey::RecordingDate, " 2019-07-15 "),
+        ];
+        assert_eq!(release_of(&all).as_deref(), Some("2019-07-15"));
+        assert_eq!(release_of(&all[..3]).as_deref(), Some("2020-01-01"));
+        assert_eq!(release_of(&all[..2]).as_deref(), Some("1985"));
+        assert_eq!(release_of(&all[..1]).as_deref(), Some("1970"));
+        assert_eq!(release_of(&[]), None);
+    }
+
+    #[test]
+    fn oversized_recording_date_falls_back_to_the_next_key() {
+        let long = "9".repeat(65);
+        assert_eq!(
+            release_of(&[
+                (ItemKey::RecordingDate, &long),
+                (ItemKey::ReleaseDate, "2020-01-01"),
+            ])
+            .as_deref(),
+            Some("2020-01-01")
+        );
+        assert_eq!(
+            release_of(&[(ItemKey::RecordingDate, &long), (ItemKey::Year, "1985")]).as_deref(),
+            Some("1985")
+        );
+    }
+
+    #[test]
+    fn release_date_drops_control_chars_blank_and_long_values() {
+        assert_eq!(
+            release_of(&[(ItemKey::RecordingDate, "20\u{0}19\n")]).as_deref(),
+            Some("2019")
+        );
+        assert_eq!(release_of(&[(ItemKey::RecordingDate, " \t ")]), None);
+        assert_eq!(
+            release_of(&[(ItemKey::RecordingDate, &"9".repeat(65))]),
+            None
+        );
+        assert!(release_of(&[(ItemKey::RecordingDate, &"9".repeat(64))]).is_some());
     }
 
     #[test]
