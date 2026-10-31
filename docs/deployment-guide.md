@@ -248,7 +248,7 @@ Planned from [features.md section 18](./features.md). Only PKG-01 is done.
 | PKG-03 | `.deb` and `.rpm` | P1 | Not started | Declare `libmpv2`, `libsecret-1-0` (once needed) and GTK 3 as dependencies. |
 | PKG-04 | AUR `kanaru-bin` | P2 | Not started | Depends on a published binary. |
 | PKG-05 | Nix package | P2 | Not started | Only the dev shell is defined in `flake.nix`. |
-| PKG-08 | Schema history collapse | P0 | Not started | Must happen before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| PKG-08 | Schema history collapse | P0 | Not started | Must happen before the first release; see [system-architecture.md](./system-architecture-database.md#7-library-database-schema). |
 
 Before the first release: set the release version in `pubspec.yaml` and in the metainfo file, and decide on a tag format.
 

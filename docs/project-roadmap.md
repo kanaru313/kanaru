@@ -49,7 +49,7 @@ PRs merged to `main`, 418 commits from 2026-10-18 to 2026-10-22 (PR merge dates 
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: done in PR #40 (off, track, album, auto; preamp; clipping protection; output device choice in Settings > Advanced). |
 | Dynamic color from album art | Done | UI-03 | "Colors from the cover" switch: the playing cover's seed tints the whole app and Now Playing gets a gradient of its colors. Colors come from one Rust function, are worked out by the scan's cover pass (or at once for the playing track) and stored per cover. |
 | Packaging: AppImage, Flatpak, `.deb` | Partial | PKG-01 to PKG-03 | AppImage done (PR #32, `make appimage`, x86_64). No Flatpak or `.deb` files exist. The AppImage ships a `.desktop` file with audio MIME types (SYS-07). |
-| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v11 with migration steps (v1 to v11). Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v11 with migration steps (v1 to v11). Required before the first release; see [system-architecture.md](./system-architecture-database.md#7-library-database-schema). |
 | Check LRCLIB lyrics data license / terms before first release | **Open**, not blocking | LYR-03 | Online lyrics come from lrclib.net. Confirm its data terms before the first release; does not block the online lyrics PR. |
 
 Also shipped in Phase 1 and not listed in the README: responsive shell (UI-05), reduced motion (UI-06), custom title bar choice (UI-07), i18n en and vi (UI-10), single instance on Release and Profile builds (SYS-06), desktop accent color (UI-04), scan progress (IDX-10).
@@ -142,6 +142,12 @@ Shipped in v1 (`apiVersion` 1, lyrics plugins only). These are deliberately out 
 | Source choice by song language | Not needed yet | Open |
 | `server` config type (the user types a server address, such as a self-hosted LRCLIB) | Its address follows the repository URL rules | Open |
 | iOS store policy for downloaded code | Not relevant on GNU/Linux | Open |
+| Repository fetch through an environment proxy (address checks on the proxy side) | A16 decided no proxy for repositories in v1; a proxy needs address-class checks on the proxy side, a separate design | Open |
+| Plugin runtime builds on Android and Windows (rquickjs; verify `rquickjs` issue #709 on Android) | Linux first; no CI yet; no Android or Windows toolchain in `flake.nix` to verify the build | Open |
+| Show a plugin's hosts before an update from the Sources banner | The v1 banner shows the reason only; host changes need a richer prompt | Open |
+| Refetch a plugin's saved lyrics when its version changes | v1 keeps saved lyrics until the song is looked up again | Open |
+| Isolated runs use a file secret store instead of the shared keyring | Isolated dev runs share the real keyring, so the DeepL key is read and overwritten; documented in the dev guide for now | Open |
+| Split `docs/features.md` (119 KB) | Single file is hard to navigate and review; split by topic when next edited | Open |
 
 ## Open decisions
 
