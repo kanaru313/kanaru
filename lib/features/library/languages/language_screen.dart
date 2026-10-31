@@ -15,11 +15,11 @@ import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/song_tile.dart';
-import '../albums/album_grid_tile.dart';
-import '../albums/album_tile_data.dart';
 import '../library_detail_body.dart';
 import 'language_header.dart';
 import 'language_page_data.dart';
+import '../../../shared/widgets/library_grid/album_tile_data.dart';
+import '../albums/album_grid.dart';
 
 /// One language: header, then its albums and its songs. Tapping a song plays
 /// the songs from it. [routeKey] comes from the URL; a broken key or a

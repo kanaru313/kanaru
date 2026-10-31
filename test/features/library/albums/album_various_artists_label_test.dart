@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_rows.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/albums/album_header.dart';
-import 'package:kanaru/features/library/albums/album_tile_data.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/album_artist_label.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/album_tile_data.dart';
 
 const _key = AlbumKey('', 'hits');
 

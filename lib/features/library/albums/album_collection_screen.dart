@@ -16,10 +16,10 @@ import '../../../shared/widgets/in_page_search_field.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../widgets/library_sort_controls.dart';
-import 'album_grid_tile.dart';
 import 'album_list_view.dart';
 import 'album_sort.dart';
 import 'albums_view_toggle.dart';
+import 'album_grid.dart';
 
 /// A full list of [albums] that belong to someone ([ownerName]): title with
 /// "owner · N albums", a filter on what the tiles show, a sort kept only

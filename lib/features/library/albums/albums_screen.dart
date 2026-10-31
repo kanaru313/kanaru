@@ -14,10 +14,10 @@ import '../../../shared/library_route_keys.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
-import 'album_grid_tile.dart';
 import 'album_list_view.dart';
 import 'albums_view_toggle.dart';
 import 'albums_provider.dart';
+import 'album_grid.dart';
 
 final _log = Logger('library');
 

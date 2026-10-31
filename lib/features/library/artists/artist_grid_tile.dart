@@ -4,9 +4,9 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/artist_summaries.dart';
 import '../../../shared/widgets/artist_avatar.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../albums/album_grid_tile.dart';
 import '../library_browse_body.dart';
 import '../widgets/round_grid_tile.dart';
+import '../albums/album_grid.dart';
 
 /// One artist in a grid: round avatar, name, "N songs".
 class ArtistGridTile extends StatelessWidget {

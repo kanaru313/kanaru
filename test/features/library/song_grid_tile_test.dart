@@ -9,7 +9,6 @@ import 'package:kanaru/core/database/playlist_providers.dart';
 import 'package:kanaru/core/player/playing_track_path.dart';
 import 'package:kanaru/core/settings/library_sort.dart';
 import 'package:kanaru/features/library/library_view_modes.dart';
-import 'package:kanaru/features/library/songs/song_grid_tile.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/widgets/cover_art.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
@@ -19,6 +18,10 @@ import 'package:material_ui/material_ui.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 import 'list_view_modes_override.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/song_grid_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/library_grid_card.dart';
+import 'package:kanaru/features/library/songs/song_grid_delegate.dart';
 
 TrackListItem _song({String? album = 'Album', int? durationMs = 262000}) =>
     TrackListItem(
@@ -282,7 +285,7 @@ void main() {
     }
 
     final tile = await rectOf(SongGridTile(song: _song(), onTap: () {}));
-    final placeholder = await rectOf(const SongGridTilePlaceholder());
+    final placeholder = await rectOf(const LibraryGridCardPlaceholder());
     // In a grid cell both get the same tight box, so the cards coincide.
     expect(placeholder, tile);
   });

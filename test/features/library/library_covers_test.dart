@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
@@ -14,6 +13,8 @@ import '../../core/indexer/fake_tag_reader.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 import 'list_view_modes_override.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 const _covers = '/cache/kanaru/covers/512';
 final _red = fakeCoverKey('red');

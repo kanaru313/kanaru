@@ -5,7 +5,6 @@ import 'package:kanaru/app/router.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/tag_reader.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/albums/album_page_data.dart';
 import 'package:kanaru/features/library/albums/albums_provider.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
@@ -15,6 +14,8 @@ import 'package:logging/logging.dart';
 import '../../core/indexer/fake_tag_reader.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 /// A tag reader that waits for [release], to look at a scan in progress.
 class _GatedTagReader extends FakeTagReader {

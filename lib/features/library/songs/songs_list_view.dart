@@ -9,7 +9,6 @@ import '../../../core/indexer/indexer_providers.dart';
 import '../../../core/indexer/indexer_state.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
-import '../albums/album_grid_tile.dart' show albumGridPadding;
 import '../library_browse_body.dart';
 import '../library_view_modes.dart';
 import '../../../shared/enqueue_tracks.dart';
@@ -17,11 +16,13 @@ import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/library_loading.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/song_tile.dart';
-import 'song_grid_tile.dart';
 import 'songs_empty_view.dart';
 import 'songs_list_provider.dart';
 import 'songs_windowed_list.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
+import '../../../shared/widgets/library_grid/song_grid_tile.dart';
+import '../albums/album_grid.dart' show albumGridPadding;
+import 'song_grid_delegate.dart';
 
 final _log = Logger('library');
 

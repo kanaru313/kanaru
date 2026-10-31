@@ -2,11 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/artists/artist_grid_tile.dart';
 import 'package:kanaru/features/library/folders/folder_grid_tile.dart';
 import 'package:kanaru/features/library/genres/genre_grid_tile.dart';
-import 'package:kanaru/features/library/songs/song_grid_tile.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/song_grid_tile.dart';
 
 void main() {
   const tracks = [

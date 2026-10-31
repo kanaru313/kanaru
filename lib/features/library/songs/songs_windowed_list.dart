@@ -4,14 +4,16 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_song_paging.dart';
 import '../../../core/database/library_startup.dart';
-import '../albums/album_grid_tile.dart' show albumGridPadding;
 import '../library_browse_body.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import 'song_grid_tile.dart';
 import 'song_row_cache.dart';
 import '../../../shared/widgets/song_tile.dart';
 import '../../../shared/widgets/song_tile_placeholder.dart';
 import 'songs_list_provider.dart';
+import '../../../shared/widgets/library_grid/song_grid_tile.dart';
+import '../../../shared/widgets/library_grid/library_grid_card.dart';
+import '../albums/album_grid.dart' show albumGridPadding;
+import 'song_grid_delegate.dart';
 
 /// Row used to measure the list: every line and a duration, the tallest a
 /// row gets, so rows without an artist or album are not squeezed.
@@ -116,7 +118,7 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
           itemCount: widget.songs.ids.length,
           itemBuilder: (context, i) {
             final song = _cache.rowAt(i);
-            if (song == null) return const SongGridTilePlaceholder();
+            if (song == null) return const LibraryGridCardPlaceholder();
             return SongGridTile(
               song: song,
               onTap: () => widget.onTap(song.id),

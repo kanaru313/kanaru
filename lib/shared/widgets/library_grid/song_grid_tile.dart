@@ -5,18 +5,15 @@ import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/playing_track_path.dart';
-import '../../../shared/fixed_line_strut.dart';
-import '../../../shared/format_duration.dart';
-import '../../../shared/icons/app_icons.dart';
-import '../../../shared/widgets/cover_art.dart';
-import '../../../shared/widgets/library_row.dart';
-import '../../../shared/widgets/queue_actions_menu.dart';
-import '../../../shared/widgets/track_actions_menu.dart';
-import '../albums/album_grid_tile.dart';
-import '../widgets/library_grid_card.dart';
+import '../../fixed_line_strut.dart';
+import '../../format_duration.dart';
+import '../../icons/app_icons.dart';
+import '../cover_art.dart';
+import '../library_row.dart';
+import '../queue_actions_menu.dart';
+import '../track_actions_menu.dart';
+import 'library_grid_card.dart';
 import 'song_grid_tile_parts.dart';
-
-export 'song_grid_tile_parts.dart' show SongGridTilePlaceholder;
 
 /// One song in the Songs grid: a rounded card with the square cover (a heart
 /// on its corner), the title, the artist and "Album • length". Tap plays;
@@ -153,7 +150,3 @@ class SongGridTile extends ConsumerWidget {
     );
   }
 }
-
-/// Grid layout of the Songs grid in a [width] wide area.
-SliverGridDelegate songGridDelegate(BuildContext context, double width) =>
-    libraryGridDelegate(context, width, tileHeight: SongGridTile.heightFor);

@@ -1,11 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../albums/album_grid_tile.dart';
 import '../../../shared/fixed_line_strut.dart';
+import '../../../shared/widgets/library_grid/library_grid_card.dart';
 
 /// Height of a [RoundGridTile] whose avatar is [width] wide, for
-/// [libraryGridDelegate]: the avatar (as wide as a square cover), the gap and
+/// `libraryGridDelegate`: the avatar (as wide as a square cover), the gap and
 /// two text lines at the current text scale.
 double roundGridTileHeight(BuildContext context, double width) {
   final theme = Theme.of(context).textTheme;

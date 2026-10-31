@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/features/library/artists/artist_page_sections.dart';
 import 'package:kanaru/shared/in_page_filter_registry.dart';
@@ -16,6 +15,8 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 const _ann = [
   TestTrack(
