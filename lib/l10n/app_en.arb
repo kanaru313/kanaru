@@ -4165,5 +4165,9 @@
   "lyricsStoreItemInstalled": "Installed",
   "@lyricsStoreItemInstalled": {
     "description": "Mark on the catalog item page of a plugin that is installed"
+  },
+  "lyricsStoreItemOpenInstalled": "Open",
+  "@lyricsStoreItemOpenInstalled": {
+    "description": "Button on the catalog item page of an installed plugin that opens its installed page"
   }
 }

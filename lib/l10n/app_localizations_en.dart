@@ -4339,4 +4339,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreItemInstalled => 'Installed';
+
+  @override
+  String get lyricsStoreItemOpenInstalled => 'Open';
 }

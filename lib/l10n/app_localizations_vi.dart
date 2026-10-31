@@ -4110,4 +4110,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreItemInstalled => 'Đã cài';
+
+  @override
+  String get lyricsStoreItemOpenInstalled => 'Mở';
 }

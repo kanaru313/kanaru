@@ -29,6 +29,9 @@ class RepositoriesPage extends ConsumerWidget {
     final repos = ref.watch(lyricsPluginReposProvider);
     return PageScaffold(
       title: l10n.lyricsStoreReposTitle,
+      // Pages with header buttons center their title in a button-high row;
+      // an empty one of that height keeps this title on the same line.
+      actions: const [SizedBox(height: kMinInteractiveDimension)],
       body: !available
           ? Center(child: Text(l10n.lyricsStoreUnavailable))
           : Stack(

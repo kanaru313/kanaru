@@ -6427,6 +6427,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Installed'**
   String get lyricsStoreItemInstalled;
+
+  /// Button on the catalog item page of an installed plugin that opens its installed page
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get lyricsStoreItemOpenInstalled;
 }
 
 class _AppLocalizationsDelegate

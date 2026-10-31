@@ -47,7 +47,7 @@ class LyricsSourcesHeader extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           FilledButton.tonalIcon(
-            onPressed: () => context.push(lyricsStoreRoute),
+            onPressed: () => context.go(lyricsStoreRoute),
             icon: const Icon(Icons.download_outlined),
             label: Text(l10n.lyricsSourcesStore),
           ),

@@ -140,13 +140,36 @@ void main() {
     expect(find.text(en.pluginProblemNotZip), findsOneWidget);
   });
 
-  testWidgets('a download failure shows the title only', (tester) async {
+  Future<void> failWith(WidgetTester tester, RepoPluginFailed failed) async {
     final fake = await pump(tester, records: [installed]);
-    fake.updateResult = const RepoPluginFailed(RepoPluginFailure.download);
+    fake.updateResult = failed;
     await tester.tap(find.text(en.pluginUpdateAction));
     await tester.pump();
     await tester.pump();
     expect(find.text(en.pluginUpdateFailed('Plain')), findsOneWidget);
+  }
+
+  testWidgets('a download failure shows the title and the network reason', (
+    tester,
+  ) async {
+    await failWith(tester, const RepoPluginFailed(RepoPluginFailure.download));
+    expect(
+      find.text(en.lyricsStoreFailDownload(en.lyricsStoreLoadNetwork)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a catalog mismatch shows its reason', (tester) async {
+    await failWith(
+      tester,
+      const RepoPluginFailed(RepoPluginFailure.catalogMismatch),
+    );
+    expect(find.text(en.lyricsStoreFailMismatch), findsOneWidget);
+  });
+
+  testWidgets('a storage failure shows its reason', (tester) async {
+    await failWith(tester, const RepoPluginFailed(RepoPluginFailure.storage));
+    expect(find.text(en.lyricsStoreFailStorage), findsOneWidget);
   });
 
   testWidgets('a thrown error shows the failure title', (tester) async {
@@ -166,6 +189,7 @@ void main() {
     await tester.tap(find.text(en.pluginUpdateAction));
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.bySemanticsLabel(en.lyricsStoreWorking), findsOneWidget);
     expect(find.text(en.pluginUpdateAction), findsNothing);
     gate.complete(const RepoPluginFailed(RepoPluginFailure.noNewerVersion));
     await tester.pump();

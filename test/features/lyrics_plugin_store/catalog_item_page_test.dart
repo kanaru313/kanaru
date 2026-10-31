@@ -83,7 +83,7 @@ void main() {
     expect(find.text('Could not install'), findsOneWidget);
   });
 
-  testWidgets('an installed plugin hands over to the installed page', (
+  testWidgets('an installed plugin shows Installed and Open, and stays', (
     tester,
   ) async {
     final opened = _Opened();
@@ -93,8 +93,12 @@ void main() {
       repos: [repo],
       records: [recordOf('plugin-plain', repoUrl: repoA, repoSlug: 'plain')],
     );
-    expect(opened.ids, ['plugin-plain']);
+    expect(find.text('Installed'), findsOneWidget);
     expect(find.text('Install'), findsNothing);
+    expect(opened.ids, isEmpty);
+    await tester.tap(find.text('Open'));
+    await tester.pump();
+    expect(opened.ids, ['plugin-plain']);
   });
 
   testWidgets('an unknown item says it is not in the repository', (
@@ -125,6 +129,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Installed'), findsOneWidget);
     expect(find.text('Install'), findsNothing);
+    expect(find.text('Open'), findsOneWidget);
     expect(opened.ids, isEmpty);
+    await tester.tap(find.text('Open'));
+    await tester.pump();
+    expect(opened.ids, ['plugin-plain']);
   });
 }

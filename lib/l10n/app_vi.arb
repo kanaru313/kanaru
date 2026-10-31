@@ -1738,5 +1738,6 @@
   "lyricsStoreAddressRefused": "địa chỉ này không được phép truy cập",
   "lyricsStoreAddressMixed": "tên miền trỏ tới cả địa chỉ nội bộ và công khai",
   "lyricsStoreAddressLocalNamePublic": "tên nội bộ lại trỏ tới địa chỉ công khai",
-  "lyricsStoreItemInstalled": "Đã cài"
+  "lyricsStoreItemInstalled": "Đã cài",
+  "lyricsStoreItemOpenInstalled": "Mở"
 }

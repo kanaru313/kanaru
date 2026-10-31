@@ -1,4 +1,3 @@
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -13,9 +12,9 @@ import 'store_row_icon.dart';
 /// The page of one plugin a repository offers: who wrote it, its version,
 /// description, repository, the hosts it may reach, and "Cài".
 ///
-/// A plugin that is already installed when the page opens is shown by
-/// [onOpenInstalled] instead (the router replaces this page with it). A plugin
-/// installed from this page stays here with an "Đã cài" mark.
+/// A plugin that is installed (already, or from this page) shows an "Đã cài"
+/// mark and a button that calls [onOpenInstalled]. The page never leaves by
+/// itself, so going back from the installed page does not bounce forward again.
 class CatalogItemPage extends ConsumerStatefulWidget {
   const CatalogItemPage({
     super.key,
@@ -33,9 +32,6 @@ class CatalogItemPage extends ConsumerStatefulWidget {
 }
 
 class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
-  /// Whether the first answer was looked at for an installed copy.
-  bool _checked = false;
-
   LyricsPluginRecord? _installed(PluginStoreInput input) {
     for (final r in input.records) {
       if (!r.isRemoved &&
@@ -58,15 +54,6 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
       );
     }
     final installed = _installed(input);
-    if (!_checked) {
-      _checked = true;
-      if (installed != null) {
-        final id = installed.installId;
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          if (mounted) widget.onOpenInstalled(id);
-        });
-      }
-    }
     PluginRepo? repo;
     for (final r in input.repos) {
       if (r.url == widget.repoUrl) repo = r;
@@ -109,7 +96,18 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
                 title: Text(entry.name, style: theme.textTheme.titleLarge),
                 subtitle: Text('$author · v${entry.version}'),
                 trailing: installed != null
-                    ? Chip(label: Text(l10n.lyricsStoreItemInstalled))
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Chip(label: Text(l10n.lyricsStoreItemInstalled)),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () =>
+                                widget.onOpenInstalled(installed.installId),
+                            child: Text(l10n.lyricsStoreItemOpenInstalled),
+                          ),
+                        ],
+                      )
                     : FilledButton.icon(
                         icon: pending
                             ? const SizedBox.square(

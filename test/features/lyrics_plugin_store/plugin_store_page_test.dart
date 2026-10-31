@@ -279,5 +279,18 @@ void main() {
       await tester.pumpAndSettle();
       expect(fake.refreshAllCalls, 2);
     });
+
+    testWidgets('refresh all is disabled without a repository', (tester) async {
+      await pumpStore(tester, _Taps().page(), repos: const []);
+      await tester.tap(find.byTooltip('Show menu'));
+      await tester.pumpAndSettle();
+      final item = tester.widget<PopupMenuItem<Object?>>(
+        find.ancestor(
+          of: find.text('Refresh all'),
+          matching: find.byWidgetPredicate((w) => w is PopupMenuItem),
+        ),
+      );
+      expect(item.enabled, isFalse);
+    });
   });
 }

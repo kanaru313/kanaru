@@ -5,31 +5,14 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
-import '../../core/lyrics/plugins/package/plugin_package_problem.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../core/lyrics/plugins/repo/plugin_update_check.dart';
-import '../../core/lyrics/plugins/store/plugin_install_outcome.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'plugin_install_outcome_messages.dart';
+import 'plugin_update_failure_reason.dart';
+import 'plugin_updating_ids_provider.dart';
 
 final _log = Logger('lyrics_sources');
-
-/// Install ids the core is updating right now, whoever started it (the store
-/// page, update all, this banner). The controller's stream is subscribed
-/// before the current set is added, so no change slips in between.
-final _updatingIdsProvider = StreamProvider.autoDispose<Set<String>>((ref) {
-  final controller = ref.watch(lyricsPluginReposControllerProvider);
-  if (controller == null) return const Stream.empty();
-  final out = StreamController<Set<String>>();
-  final sub = controller.updatingChanges.listen(out.add, onError: out.addError);
-  out.add(controller.updating);
-  ref.onDispose(() {
-    sub.cancel();
-    out.close();
-  });
-  return out.stream;
-});
 
 /// A "New version" banner with an Update button, on the page of an installed
 /// plugin whose repository lists a newer version. Shows nothing for a plugin
@@ -74,7 +57,7 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
         final RepoPluginFailed failed => appSnackBar(
           kind: AppSnackBarKind.error,
           title: l10n.pluginUpdateFailed(name),
-          details: _failureReason(l10n, failed),
+          details: pluginUpdateFailureReason(l10n, failed),
         ),
       });
     } catch (error, stackTrace) {
@@ -90,27 +73,6 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
     }
   }
 
-  /// The reason of the refusals the package checks name; other failures
-  /// (download, catalog, storage) get only the title.
-  String? _failureReason(AppLocalizations l10n, RepoPluginFailed failed) {
-    final problem = failed.problem;
-    final refusal = failed.refusal;
-    final outcome = switch (failed.failure) {
-      RepoPluginFailure.rejected when problem != null => PluginInstallRejected(
-        problem,
-      ),
-      RepoPluginFailure.refused when refusal != null => PluginInstallRefused(
-        refusal,
-      ),
-      RepoPluginFailure.needsNewerApp => PluginInstallRejected(
-        const PluginPackageProblem(PluginPackageProblemKind.needsNewerApp),
-      ),
-      _ => null,
-    };
-    if (outcome == null) return null;
-    return pluginInstallOutcomeReasons(l10n, outcome).firstOrNull;
-  }
-
   @override
   Widget build(BuildContext context) {
     final repos = ref.watch(lyricsPluginReposProvider).asData?.value;
@@ -124,7 +86,7 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
     final busy =
         _updating ||
         (ref
-                .watch(_updatingIdsProvider)
+                .watch(pluginUpdatingIdsProvider)
                 .asData
                 ?.value
                 .contains(widget.record.installId) ??
@@ -154,9 +116,12 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
               FilledButton(
                 onPressed: busy ? null : _update,
                 child: busy
-                    ? const SizedBox.square(
-                        dimension: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    ? Semantics(
+                        label: l10n.lyricsStoreWorking,
+                        child: const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
                     : Text(l10n.pluginUpdateAction),
               ),

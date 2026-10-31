@@ -47,6 +47,8 @@ class PluginStoreMenu extends StatelessWidget {
         const PopupMenuDivider(),
         PopupMenuItem(
           value: _Choice.refreshAll,
+          // Nothing to refresh without a repository.
+          enabled: repositoryCount > 0,
           child: ListTile(
             leading: const Icon(AppIcons.refresh),
             title: Text(l10n.lyricsStoreMenuRefreshAll),
