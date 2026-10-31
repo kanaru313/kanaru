@@ -62,14 +62,13 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
     enqueueLoaded(ref, context, action, [track], row.track!.title);
   }
 
-  /// Song history for the modal of [row], with the listen count under the
-  /// album; built when the modal opens. Plays are not removed from here.
+  /// Song history for the modal of [row]; built when the modal opens. Plays
+  /// are not removed from here.
   SongModalExtras _extras(HistoryTopRow row) => historyPlayExtras(
     context: context,
     ref: ref,
     path: row.path,
     location: mostPlayedTrackLocation,
-    headerNote: context.l10n.historyTopPlayCount(row.count),
   );
 
   /// The small menu of a row with no song in the library.
