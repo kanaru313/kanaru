@@ -159,7 +159,8 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, picks, the per-song source button, *Save current lyrics…*, the synced view and the *Lyrics sources* page (order, switches, per-plugin settings and data, uninstall) are done; the plugin store (browse, install, update, uninstall, repositories) is reachable from the Sources page; open: a narrow-window *Choose lyrics* dialog, manual lyrics entry, time offset
 - [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Lyrics: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
 - [ ] Waveform seekbar, visualizer, polished transitions
-- [ ] Equalizer, crossfade, sleep timer
+- [ ] Equalizer, crossfade
+- [x] Sleep timer: a centred dialog from the Now Playing header or the player bar; pause after 1 to 720 minutes, after 1 to 20 tracks, or at the end of the track, album or queue; a pill in the header shows the time left (the fade switch is not built yet)
 - [ ] Listening stats, Last.fm / ListenBrainz scrobbling
 - [ ] Sync playlists & settings across devices
 
