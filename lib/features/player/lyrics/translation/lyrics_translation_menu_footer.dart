@@ -38,7 +38,7 @@ List<Widget> lyricsTranslationMenuFooter(
       );
   if (state case TranslationReady(fromOtherService: false)) {
     return [
-      const Divider(height: 1),
+      const Divider(height: 9),
       statusRow(
         run: controller.retranslate,
         status: Row(
@@ -59,7 +59,7 @@ List<Widget> lyricsTranslationMenuFooter(
   }
   if (state is TranslationLoading) {
     return [
-      const Divider(height: 1),
+      const Divider(height: 9),
       statusRow(
         run: null,
         status: Text(
@@ -96,7 +96,7 @@ List<Widget> lyricsTranslationMenuFooter(
   };
   if (text == null) return const [];
   return [
-    const Divider(height: 1),
+    const Divider(height: 9),
     Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: ConstrainedBox(
