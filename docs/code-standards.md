@@ -29,6 +29,7 @@ Rules that follow from it:
 - **Theme** lives in `lib/app/theme.dart`. Use theme tokens and `Theme.of(context)`; avoid hard-coded colors outside the placeholder palette (`shared/widgets/placeholder_colors.dart`). A white icon over a darkened image (scrim or black overlay) is allowed, e.g. the Now Playing cover button and the equalizer on the playing song's cover in `song_tile_cover.dart`.
 - **Icons go through `AppIcons`** (`lib/shared/icons/app_icons.dart`), never `Icons.` directly. Add a new icon there, named by meaning. `test/shared/icons/app_icons_usage_test.dart` enforces it.
 - **Layout numbers** that are shared across a file sit at file level as `const` values with a `///` doc. Breakpoints are named constants, not inline literals (see [design-guidelines.md](./design-guidelines.md#breakpoints)).
+- **Item menus** (song and similar context menus) are built with `showContextModal` from `shared/widgets/context_modal/`, not with a new popup menu. The framework holds no song code and no providers; features supply the page and action specs.
 - **Strings**: every user-visible string comes from `context.l10n` (see [Localization](#localization)).
 
 ## Riverpod

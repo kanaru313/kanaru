@@ -4036,5 +4036,25 @@
   "lyricsStoreItemOpenInstalled": "Open",
   "@lyricsStoreItemOpenInstalled": {
     "description": "Button on the catalog item page of an installed plugin that opens its installed page"
+  },
+  "contextModalBack": "Back",
+  "@contextModalBack": {
+    "description": "Back button of a sub-page in a context menu"
+  },
+  "contextModalClose": "Close",
+  "@contextModalClose": {
+    "description": "Closes the menu; also the label of its dismiss area"
+  },
+  "contextModalLabel": "Menu",
+  "@contextModalLabel": {
+    "description": "Screen reader name of the opened context menu dialog"
+  },
+  "contextModalComingSoon": "Coming soon",
+  "@contextModalComingSoon": {
+    "description": "Badge on a menu action that is not available yet"
+  },
+  "contextModalComingSoonSnack": "This isn't available yet. It's coming soon.",
+  "@contextModalComingSoonSnack": {
+    "description": "Snackbar after tapping a menu action that is not available yet"
   }
 }

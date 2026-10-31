@@ -4241,4 +4241,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreItemOpenInstalled => 'Open';
+
+  @override
+  String get contextModalBack => 'Back';
+
+  @override
+  String get contextModalClose => 'Close';
+
+  @override
+  String get contextModalLabel => 'Menu';
+
+  @override
+  String get contextModalComingSoon => 'Coming soon';
+
+  @override
+  String get contextModalComingSoonSnack =>
+      'This isn\'t available yet. It\'s coming soon.';
 }

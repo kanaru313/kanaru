@@ -1714,5 +1714,10 @@
   "lyricsStoreAddressMixed": "tên miền trỏ tới cả địa chỉ cục bộ và công khai",
   "lyricsStoreAddressLocalNamePublic": "tên trông như cục bộ lại trỏ tới địa chỉ công khai",
   "lyricsStoreItemInstalled": "Đã cài",
-  "lyricsStoreItemOpenInstalled": "Mở"
+  "lyricsStoreItemOpenInstalled": "Mở",
+  "contextModalBack": "Quay lại",
+  "contextModalClose": "Đóng",
+  "contextModalLabel": "Menu",
+  "contextModalComingSoon": "Sắp có",
+  "contextModalComingSoonSnack": "Tính năng này chưa có. Sắp ra mắt."
 }

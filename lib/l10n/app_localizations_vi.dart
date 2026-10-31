@@ -4013,4 +4013,20 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreItemOpenInstalled => 'Mở';
+
+  @override
+  String get contextModalBack => 'Quay lại';
+
+  @override
+  String get contextModalClose => 'Đóng';
+
+  @override
+  String get contextModalLabel => 'Menu';
+
+  @override
+  String get contextModalComingSoon => 'Sắp có';
+
+  @override
+  String get contextModalComingSoonSnack =>
+      'Tính năng này chưa có. Sắp ra mắt.';
 }

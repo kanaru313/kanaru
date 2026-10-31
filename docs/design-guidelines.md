@@ -34,6 +34,7 @@ Width thresholds in logical pixels. Use the named constant; do not add a new lit
 | 180 | `_compactBelow` (`app/shell/sidebar/sidebar.dart`) | Sidebar uses the icon-only rail layout below this width. |
 | 560 | `_historyButtonsMinWidth` (`app/shell/top_bar.dart`) | Back and forward buttons hidden below this width. Mouse side buttons still navigate. |
 | 560 | `_compactBelow` (`features/settings/setting_row.dart`) | Settings rows stack their control under the label. |
+| 600 | `contextModalSheetBelow` (`shared/widgets/context_modal/context_modal_shell.dart`) | Context modal is a bottom sheet below this width, a centered dialog at or above. Switches live on resize and keeps the current page. |
 | 640 | `pageHeaderCompactWidth` (`shared/widgets/page_scaffold.dart`) | Page header compacts its actions. |
 | 640 | `_centerMaxWidth` (`features/player/player_bar.dart`) | Widest the player bar's controls and seek column gets. |
 | 720 | `_sidebarBreakpoint` (`app/shell/app_shell.dart`) | At or above: sidebar is a column. Below: sidebar is a drawer. |
@@ -250,6 +251,18 @@ Sub-pages of Settings (`/settings/lyrics-sources`, `/settings/lyrics-sources/plu
 - **Uninstall dialog.** One dialog (`lib/shared/lyrics_plugins/plugin_uninstall_dialog.dart`) for the plugin page and the store: "Uninstall <name>?" with two boxes: "Will be deleted" (code, settings including secrets in the keyring when the plugin has any, its own storage with its size) and "Kept" (saved and pinned lyrics from the source with their count, `.lrc` files already written). Confirming returns to the sources page with a snackbar "Uninstalled <name>".
 - **Install failures.** `lib/shared/lyrics_plugins/plugin_failure_text.dart` (with `plugin_problem_text.dart` for package problems) maps every install or update outcome (each package problem, each update refusal, an unavailable keyring, a plugin already gone) to text, and the store's `install_problem_dialog.dart` shows them as "Could not install" with a "Reasons" box. The Sources and store pages share this text.
 
+## Context modal
+
+One framework for item menus (`lib/shared/widgets/context_modal/`, opened with `showContextModal`). It knows nothing about songs: the caller passes a root `ContextModalPage` whose body is a list of `ContextModalAction` specs (`contextModalSections` joins groups with dividers; a caller prepends context groups such as queue or playlist). No providers are read inside it.
+
+- **Wide**: centered dialog, 400 px wide on every page, at most `min(640, height - 48)` tall, radius 28, scrim 45 %. **Narrow** (below 600 px): full-width bottom sheet, radius 28 on top, drag handle, at most 85 % of the height. Only the handle drags: past 25 % of the sheet height or a fast fling closes it, so the body keeps its own scrolling.
+- **Pages** are a stack (`nav.push`, `nav.pop`, `nav.close`). A change slides 24 px and fades over 200 ms; with reduced motion the page swaps at once. Sub-pages use `ContextModalTopBar` (back arrow, title, icon buttons).
+- **Rows** show an icon, label and one ellipsized subtitle line, then optional trailing icon buttons (tooltip required), a chevron when the row opens a page, or a chevron that rotates when it folds chips. `destructive` uses the error color. `comingSoon` dims the row, adds a "Coming soon" badge, takes no focus, and a click shows an info snackbar. `premium` is kept in the spec but not drawn until licensing exists.
+- **Chips**: a horizontal strip in the dialog (mouse wheel scrolls it sideways, edges fade), wrapped lines in the sheet (at most 116 px, scrolls).
+- **Edges**: scrollbars are hidden; the top and bottom 28 px fade only while there is more content in that direction (`FadeEdgeScrollView`).
+- **Keys**: Esc goes back one page and closes at the first; Backspace goes back and does nothing at the first (and is left to a focused text field). Up and Down move focus between rows, Enter and Space activate. Opened from the keyboard, focus lands on the first row; closing returns focus to where it was.
+- **Accessibility**: the modal is a named route; rows are buttons with label and subtitle; a coming-soon row announces "Coming soon".
+
 ## Motion and reduced motion
 
 | Motion | Duration | Reduced motion |
@@ -261,6 +274,7 @@ Sub-pages of Settings (`/settings/lyrics-sources`, `/settings/lyrics-sources/plu
 | Now Playing slide | 500 ms | Checked (`now_playing_overlay.dart`) |
 | Auto-hide fade | 100 to 150 ms | Not gated |
 | Now Playing cover gradient fade | 300 ms | Instant (`cover_tint_background.dart`) |
+| Context modal page change | 200 ms slide 24 px + fade (route fade 140 ms) | Instant (`context_modal_shell.dart`) |
 | Waveform fade-in | 200 ms, bars over the flat track | Instant (`waveform_seek_track.dart`) |
 | Now Playing mode switch | 300 ms crossfade, the outgoing body is not remounted and ignores pointer and focus while it fades | Checked (`now_playing_wide_layout.dart`) (lyrics never cause a switch) |
 
@@ -279,6 +293,7 @@ Reduced motion comes from the platform setting, or from Settings → Appearance 
 | V | Cycle the Now Playing view mode | Wide Now Playing only; no modifier; not in a text field or while the volume popup or a header menu is open |
 | L | Open the lyrics source menu (focus on its first item) | Wide and narrow Now Playing, not in Cover only; no modifier; not in a text field or while a header popup or menu is open; nothing when there is no source button |
 | Esc | Close overlay, sheet or drawer | Now Playing, queue sheet, drawer |
+| Esc, Backspace | Back one page; Esc also closes at the first page | Context modal |
 | Ctrl+F | Focus the top bar search field and select its text | App-wide; a page filter box takes it first, and pressing it again inside that box goes to the top bar; nothing while a dialog, menu or Now Playing is open |
 | / | Same as Ctrl+F, never opens a page filter | Only when no text input has focus; nothing while a dialog, menu or Now Playing is open |
 | Mouse back, forward | History back, forward | Anywhere |

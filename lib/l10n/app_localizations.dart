@@ -6283,6 +6283,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open'**
   String get lyricsStoreItemOpenInstalled;
+
+  /// Back button of a sub-page in the song menu
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get contextModalBack;
+
+  /// Closes the song menu; also the label of its dismiss area
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get contextModalClose;
+
+  /// Screen reader name of the opened menu dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get contextModalLabel;
+
+  /// Badge on a menu action that is not available yet
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get contextModalComingSoon;
+
+  /// Snackbar after tapping a menu action that is not available yet
+  ///
+  /// In en, this message translates to:
+  /// **'This isn\'t available yet. It\'s coming soon.'**
+  String get contextModalComingSoonSnack;
 }
 
 class _AppLocalizationsDelegate
