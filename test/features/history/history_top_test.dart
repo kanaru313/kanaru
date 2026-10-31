@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart' show OrderingTerm;
+import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
@@ -11,6 +12,7 @@ import 'package:kanaru/features/history/most_played_row_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int month, int day, [int hour = 9]) =>
@@ -97,7 +99,7 @@ bool _itemEnabled(WidgetTester tester, Finder item) =>
 /// Opens the menu of a row the way a pointer does: a long press on it.
 Future<void> _rowMenu(WidgetTester tester, int index) async {
   await tester.longPress(find.byType(MostPlayedRowTile).at(index));
-  await tester.pumpAndSettle();
+  await settleSongModal(tester);
 }
 
 /// Picks the days [from] to [to] of October 2026 in the range dialog.
@@ -382,13 +384,121 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    historyTestWidgets('the row menu has no remove item', (tester) async {
+    historyTestWidgets('the row modal has Song history and no remove item', (
+      tester,
+    ) async {
       await _openTop(tester, h);
 
       await _rowMenu(tester, 0);
 
+      expect(find.bySemanticsLabel('Song options'), findsWidgets);
       expect(find.text('Play next'), findsOneWidget);
       expect(find.text('Add to queue'), findsOneWidget);
+      expect(find.text('Song history'), findsOneWidget);
+      expect(find.text('Remove from history'), findsNothing);
+      // B was played 3 times: the header says so, as the row badge does.
+      expect(find.text('3 listens'), findsWidgets);
+    });
+
+    historyTestWidgets('every way to open the row modal works', (tester) async {
+      await _openTop(tester, h);
+      final row = find.byType(MostPlayedRowTile).first;
+
+      await tester.tap(row, buttons: kSecondaryButton);
+      await settleSongModal(tester);
+      expect(find.text('Song history'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settleSongModal(tester);
+
+      await tester.tap(
+        find.descendant(of: row, matching: find.byTooltip('More options')),
+      );
+      await settleSongModal(tester);
+      expect(find.text('Song history'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settleSongModal(tester);
+
+      for (final shift in [false, true]) {
+        final ink = find.descendant(of: row, matching: find.byType(InkWell));
+        final inside = find.descendant(
+          of: find
+              .descendant(of: ink.first, matching: find.byType(Focus))
+              .first,
+          matching: find.byType(Semantics),
+        );
+        Focus.of(tester.element(inside.first)).requestFocus();
+        await tester.pump();
+        if (shift) {
+          await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        }
+        await tester.sendKeyEvent(
+          shift ? LogicalKeyboardKey.f10 : LogicalKeyboardKey.contextMenu,
+        );
+        if (shift) {
+          await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        }
+        await settleSongModal(tester);
+        expect(find.text('Song history'), findsOneWidget, reason: '$shift');
+        expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await settleSongModal(tester);
+      }
+    });
+
+    historyTestWidgets('a narrow row with rank, a large count, heart and more '
+        'button does not overflow', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await _openTop(
+        tester,
+        h,
+        plays: [
+          for (var i = 0; i < 1234; i++)
+            ('A', _at(10, 20, 1).add(Duration(seconds: i))),
+        ],
+      );
+
+      expect(find.text('1234 listens'), findsOneWidget);
+      expect(find.byTooltip('More options'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    historyTestWidgets('Song history in the modal opens the song page', (
+      tester,
+    ) async {
+      await _openTop(tester, h);
+      await _rowMenu(tester, 0);
+
+      await tester.tap(find.text('Song history'));
+      await settleSongModal(tester);
+
+      expect(location(h), mostPlayedTrackLocation('/m/B.flac'));
+    });
+
+    historyTestWidgets('Add to queue in the modal queues the row song', (
+      tester,
+    ) async {
+      await _openTop(tester, h);
+      await _rowMenu(tester, 0);
+
+      await tester.tap(find.text('Add to queue'));
+      await settleSongModal(tester);
+
+      expect(_queue(h), ['/m/B.flac']);
+    });
+
+    historyTestWidgets('a song gone from the library keeps the small menu', (
+      tester,
+    ) async {
+      await _openTop(tester, h, plays: [('Ghost', _at(10, 15))]);
+
+      expect(find.byTooltip('More options'), findsNothing);
+      await tester.tap(find.text('Ghost.flac'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsWidgets);
+      expect(find.bySemanticsLabel('Song options'), findsNothing);
       expect(find.text('Remove from history'), findsNothing);
     });
   });
