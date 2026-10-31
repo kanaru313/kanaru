@@ -126,8 +126,22 @@ void main() {
     await filterBy(tester, 'one');
 
     expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
+    expect(rows(tester), hasLength(3));
+    expect(find.byTooltip('More options'), findsNWidgets(3));
     expect(find.byIcon(Icons.delete_rounded), findsNothing);
     expect(find.byType(ReorderableListView), findsNothing);
+  });
+
+  testWidgets('the more button of a filtered row opens its menu', (
+    tester,
+  ) async {
+    await openSheet(tester);
+    await filterBy(tester, 'delta');
+
+    await tester.tap(find.byTooltip('More options'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Remove from queue'), findsOneWidget);
   });
 
   testWidgets('tapping a row jumps to it without changing the queue', (

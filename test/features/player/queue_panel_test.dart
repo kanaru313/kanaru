@@ -74,29 +74,20 @@ void main() {
     matching: find.byIcon(Icons.drag_handle_rounded),
   );
 
-  Finder remove(int row) => find.descendant(
+  Finder more(int row) => find.descendant(
     of: find.byType(QueueTile).at(row),
-    matching: find.byTooltip('Remove from queue'),
+    matching: find.byTooltip('More options'),
   );
 
   /// Height of a queue row.
   double rowExtent(WidgetTester tester) =>
       tester.getSize(find.byType(QueueTile).first).height;
 
-  /// Puts the mouse over a row, which reveals its remove button.
-  Future<TestGesture> hoverRow(WidgetTester tester, int row) async {
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    addTearDown(mouse.removePointer);
-    await mouse.addPointer(location: Offset.zero);
-    await mouse.moveTo(tester.getCenter(find.byType(QueueTile).at(row)));
-    await tester.pump();
-    return mouse;
-  }
-
-  /// Hovers a row and presses its remove button.
+  /// Opens a row's menu with its ⋮ button and picks Remove from queue.
   Future<void> removeRow(WidgetTester tester, int row) async {
-    await hoverRow(tester, row);
-    await tester.tap(remove(row));
+    await tester.tap(more(row));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remove from queue'));
     await tester.pumpAndSettle();
   }
 
@@ -128,20 +119,9 @@ void main() {
       expect(find.text('4 tracks'), findsOneWidget);
       expect(find.byType(QueueTile), findsNWidgets(4));
       expect(tester.getSize(find.byType(QueuePanel)).width, 440);
-      // The remove icon is filled and hidden until a row is hovered or
-      // focused.
-      expect(find.byIcon(Icons.delete_rounded), findsNWidgets(4));
-      expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
-      expect(
-        tester
-            .widget<IgnorePointer>(
-              find
-                  .ancestor(of: remove(0), matching: find.byType(IgnorePointer))
-                  .first,
-            )
-            .ignoring,
-        isTrue,
-      );
+      // Every row has its ⋮ button; there is no hover remove.
+      expect(find.byTooltip('More options'), findsNWidgets(4));
+      expect(find.byIcon(Icons.delete_rounded), findsNothing);
       // Clear and save sit in the header's overflow menu; the header has no
       // jump-to-current button (the floating one appears only when needed).
       expect(find.byTooltip('Clear queue'), findsNothing);

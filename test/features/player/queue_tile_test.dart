@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +11,6 @@ import 'package:kanaru/features/player/queue/queue_button.dart';
 import 'package:kanaru/features/player/queue/queue_play_next_marker.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
-import 'package:kanaru/shared/widgets/hover_reveal_action.dart';
 import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -105,11 +103,8 @@ void main() {
     TextScaler.linear(clampTo),
   );
 
-  bool removeRevealed(WidgetTester tester, int row) => tester
-      .widget<RevealableAction>(
-        find.descendant(of: tile(row), matching: find.byType(RevealableAction)),
-      )
-      .revealed;
+  Finder moreButton(int row) =>
+      find.descendant(of: tile(row), matching: find.byTooltip('More options'));
 
   /// Tabs until the focus is inside the row at [row].
   Future<void> focusRow(WidgetTester tester, int row) async {
@@ -310,27 +305,22 @@ void main() {
   });
 
   group('remove', () {
-    rowTest('is hidden at rest, shown on hover and on focus', (tester) async {
+    rowTest('the more button is always visible and opens the menu', (
+      tester,
+    ) async {
       await pumpApp(tester, named(3));
-      expect(removeRevealed(tester, 1), isFalse);
+      expect(moreButton(1), findsOneWidget);
 
-      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-      addTearDown(mouse.removePointer);
-      await mouse.addPointer(location: Offset.zero);
-      await mouse.moveTo(tester.getCenter(tile(1)));
-      await tester.pump();
-      expect(removeRevealed(tester, 1), isTrue);
-      expect(removeRevealed(tester, 0), isFalse);
+      await tester.tap(moreButton(1));
+      await tester.pumpAndSettle();
+      expect(find.text('Remove from queue'), findsOneWidget);
 
-      await mouse.moveTo(const Offset(5, 5));
-      await tester.pump();
-      expect(removeRevealed(tester, 1), isFalse);
-
-      await focusRow(tester, 2);
-      expect(removeRevealed(tester, 2), isTrue);
+      await tester.tap(find.text('Remove from queue'));
+      await tester.pumpAndSettle();
+      expect(titles(), ['t0', 't2']);
     });
 
-    rowTest('Tab reaches the hidden button', (tester) async {
+    rowTest('Enter on the focused more button opens the menu', (tester) async {
       await pumpApp(tester, named(3));
       await focusRow(tester, 1);
 
@@ -341,10 +331,12 @@ void main() {
         final context = FocusManager.instance.primaryFocus?.context;
         reached =
             context?.findAncestorWidgetOfExactType<IconButton>()?.tooltip ==
-            'Remove from queue';
+            'More options';
       }
       expect(reached, isTrue);
-      expect(removeRevealed(tester, 1), isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(find.text('Remove from queue'), findsOneWidget);
     });
 
     rowTest('a screen reader can remove through a custom action', (
