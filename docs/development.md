@@ -207,6 +207,41 @@ playerctl -p kanaru position 30       # absolute; "10+" / "10-" for relative
 playerctl -p kanaru metadata --follow
 ```
 
+### Run with isolated data
+
+Use this to try a build, a first run or a scan without touching your real settings, library database or cache.
+
+| Kind | Where | What |
+|---|---|---|
+| Config | `$XDG_CONFIG_HOME/kanaru` | `settings.json`, `playback-session.json` |
+| Data | `$XDG_DATA_HOME/kanaru` | `library.db`, `search_history.json`, `secrets.json` (only without Secret Service), lyrics plugin files and plugin logs |
+| Cache | `$XDG_CACHE_HOME/kanaru` | logs, cover thumbnails, waveforms |
+| Keyring | system Secret Service | DeepL key, plugin secrets. Global: never isolated |
+| Temp | `$TMPDIR` (a `nix-shell.*` folder in the dev shell) or `/tmp` | `media_kit` playlist and helper files |
+
+Paths and file names are listed in [Data locations](deployment-guide.md#data-locations).
+
+Inside the dev shell (`nix develop`, or direnv), run both commands from the repo root: the bundle needs the shell's libmpv, and without it there is no playback. Build once, then start the bundle with all three variables under one throwaway root:
+
+```bash
+flutter build linux --debug
+ROOT=$(mktemp -d /tmp/kanaru-try.XXXX)
+XDG_CONFIG_HOME=$ROOT/config XDG_DATA_HOME=$ROOT/data XDG_CACHE_HOME=$ROOT/cache \
+  build/linux/x64/debug/bundle/kanaru
+```
+
+Use the Debug build: it never joins another instance. A Profile or Release build is single-instance, so it only activates a Kanaru that is already running (with that one's real folders), and while it runs it receives your normal launches and opened files.
+
+GTK theme, user fonts and the XDG Music folder also come from these variables, so the window and the first-run folder suggestion may differ.
+
+To clean up, quit Kanaru, then run `command rm -rf "${ROOT:?}"` (`rm` may be an alias). `make reset-all` also works, but only with all three set exactly as at launch: `XDG_CONFIG_HOME=$ROOT/config XDG_DATA_HOME=$ROOT/data XDG_CACHE_HOME=$ROOT/cache make reset-all`; a missing variable makes it delete your real folder of that kind. Values must be absolute: the app ignores a relative or empty value and uses `~/...`, while the `Makefile` uses a relative value as given.
+
+Rules for isolated runs:
+
+- **Always set all three variables.** With only `XDG_DATA_HOME`, the run reads and overwrites your real settings and playback session, and uses your real cover cache. A library scan, removing a library folder, or Clear cover cache then deletes real cover thumbnails that the throwaway library does not use.
+- **Do not set or clear the DeepL key.** The keyring is shared with your real Kanaru. Plugin secrets set here stay in the keyring after cleanup. Do not copy a real `secrets.json` into the root: its key is moved into the shared keyring.
+- **Do not use Save lyrics.** It writes `.lrc` files next to your real music. When it replaces one, the old file goes to `$XDG_DATA_HOME/Trash` (inside the root when `/tmp` is on the same disk as the song), and removing the root deletes it for good.
+
 ### Logs
 
 Kanaru writes its log to `$XDG_CACHE_HOME/kanaru/logs/kanaru.log` (`~/.cache/kanaru/logs` when `XDG_CACHE_HOME` is unset or not an absolute path). Debug builds also print every line to the console.
@@ -222,6 +257,8 @@ Kanaru writes its log to `$XDG_CACHE_HOME/kanaru/logs/kanaru.log` (`~/.cache/kan
 tail -f ~/.cache/kanaru/logs/kanaru.log
 KC=$(mktemp -d) && KANARU_LOG_LEVEL=fine XDG_CACHE_HOME=$KC flutter run -d linux   # throwaway log dir
 ```
+
+The throwaway log dir above changes only the cache: it still uses your real config and data. For a fully separate run, see [Run with isolated data](#run-with-isolated-data).
 
 ### Tests & lints
 
