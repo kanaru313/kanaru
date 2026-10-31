@@ -4,11 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/database/library_database.dart' show LibraryDatabase;
-import '../core/database/library_startup.dart';
 import '../core/player/playing_track_art.dart' show localPathOf;
 import '../core/player/track.dart';
 import '../l10n/l10n.dart';
-import 'enqueue_tracks.dart';
+import 'enqueue_chain.dart';
 import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
 
@@ -19,31 +18,20 @@ final _hostKey = Object();
 /// asked is still on screen. The song modal runs its queue actions after it
 /// has closed, when that row can already be gone; [enqueueLoaded] then uses
 /// the host instead of the row's own `WidgetRef` and `BuildContext`, which
-/// are no longer valid.
+/// are no longer valid. Only [enqueueLoaded] honors a host.
+///
+/// A caller that itself checks `mounted` before acting (the songs list) still
+/// drops the action when its whole screen is gone; that is accepted.
 class QueueHost {
-  QueueHost._(
-    this._container,
-    this._messenger,
-    this._l10n,
-    this._dialogContext,
-    this._db,
-  );
-
-  /// Captures the host from [context]; null when the tree has no messenger
-  /// or root navigator (a menu in an isolated widget), where the row's own
-  /// context is all there is.
-  static QueueHost? capture(WidgetRef ref, BuildContext context) {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    final navigator = Navigator.maybeOf(context, rootNavigator: true);
-    if (messenger == null || navigator == null) return null;
-    return QueueHost._(
-      ProviderScope.containerOf(context, listen: false),
-      messenger,
-      context.l10n,
-      navigator.context,
-      ref.read(libraryDatabaseProvider),
-    );
-  }
+  /// Built by `TrackMenuRunner` from the fields it captured before the modal
+  /// opened; the host only wraps them, nothing is captured a second time.
+  QueueHost.captured({
+    required this._container,
+    required this._messenger,
+    required this._l10n,
+    required this._dialogContext,
+    required this._db,
+  });
 
   final ProviderContainer _container;
   final ScaffoldMessengerState _messenger;
@@ -56,8 +44,9 @@ class QueueHost {
   /// The host of the queue action running right now, if any.
   static QueueHost? get current => Zone.current[_hostKey] as QueueHost?;
 
-  /// Runs [action] so that [enqueueLoaded] calls made synchronously inside
-  /// it use [host]. A null [host] runs [action] unchanged.
+  /// Runs [action] so that [enqueueLoaded] calls made inside it, sync or
+  /// async (work started in its zone), use [host]. A null [host] runs
+  /// [action] unchanged.
   static void run(QueueHost? host, void Function() action) {
     if (host == null) return action();
     runZoned(action, zoneValues: {_hostKey: host});

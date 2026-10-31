@@ -102,7 +102,6 @@ abstract final class AppIcons {
   static const IconData edit = Icons.edit_outlined;
   static const IconData editTags = Icons.edit_note_outlined;
   static const IconData advanced = Icons.code;
-  static const IconData infoOutline = Icons.info_outline;
   static const IconData visibility = Icons.visibility_outlined;
   static const IconData visibilityOff = Icons.visibility_off_outlined;
   static const IconData headphones = Icons.headphones;

@@ -37,7 +37,6 @@ class SongModalSession {
     required this.runner,
     required this.onQueueAction,
     required this.lyricsTarget,
-    this.queueHost,
     this.showAlbum = true,
     this.extraActions = const [],
   });
@@ -46,13 +45,9 @@ class SongModalSession {
   final TrackMenuRunner runner;
   final ValueChanged<QueueAction> onQueueAction;
 
-  /// Captured before the modal opened; queue actions run with it because the
-  /// row that opened the modal can be gone when one is picked.
-  final QueueHost? queueHost;
-
   /// Runs a queue action of the footer or Add to playlist.
   void queue(QueueAction action) =>
-      QueueHost.run(queueHost, () => onQueueAction(action));
+      QueueHost.run(runner.queueHost, () => onQueueAction(action));
 
   /// What Find lyrics online searches for; null leaves that action out.
   final LyricsTarget? lyricsTarget;
