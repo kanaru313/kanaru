@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import 'plugin_icon.dart';
 import 'plugin_source_text.dart';
 

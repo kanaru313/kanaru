@@ -3768,40 +3768,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsStoreUninstallTitle(String name) {
-    return 'Gỡ $name?';
-  }
-
-  @override
-  String get lyricsStoreUninstallRemoves => 'Sẽ bị xóa';
-
-  @override
-  String get lyricsStoreUninstallKeeps => 'Vẫn giữ';
-
-  @override
-  String get lyricsStoreUninstallCode => 'Code của plugin';
-
-  @override
-  String get lyricsStoreUninstallSettings => 'Cài đặt của plugin';
-
-  @override
-  String get lyricsStoreUninstallSettingsSecret =>
-      'Cài đặt của plugin, kể cả giá trị bí mật trong kho khóa';
-
-  @override
-  String get lyricsStoreUninstallStorage => 'Bộ nhớ riêng của plugin';
-
-  @override
-  String get lyricsStoreUninstallKeepLyrics =>
-      'Lời đã lưu và lời đã ghim từ nguồn này (nếu có)';
-
-  @override
-  String get lyricsStoreUninstallKeepLrc => 'File .lrc đã ghi cạnh bài';
-
-  @override
-  String get lyricsStoreUninstallConfirm => 'Gỡ';
-
-  @override
   String get lyricsStoreInstallFailedTitle => 'Không cài được';
 
   @override

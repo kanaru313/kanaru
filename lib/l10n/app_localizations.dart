@@ -5888,66 +5888,6 @@ abstract class AppLocalizations {
   /// **'Could not uninstall {name}'**
   String lyricsStoreUninstallFailed(String name);
 
-  /// Uninstall dialog title
-  ///
-  /// In en, this message translates to:
-  /// **'Uninstall {name}?'**
-  String lyricsStoreUninstallTitle(String name);
-
-  /// Uninstall dialog box title
-  ///
-  /// In en, this message translates to:
-  /// **'Will be deleted'**
-  String get lyricsStoreUninstallRemoves;
-
-  /// Uninstall dialog box title
-  ///
-  /// In en, this message translates to:
-  /// **'Stays'**
-  String get lyricsStoreUninstallKeeps;
-
-  /// Uninstall dialog item
-  ///
-  /// In en, this message translates to:
-  /// **'The plugin\'s code'**
-  String get lyricsStoreUninstallCode;
-
-  /// Uninstall dialog item
-  ///
-  /// In en, this message translates to:
-  /// **'The plugin\'s settings'**
-  String get lyricsStoreUninstallSettings;
-
-  /// Uninstall dialog item
-  ///
-  /// In en, this message translates to:
-  /// **'The plugin\'s settings, including secret values in the keyring'**
-  String get lyricsStoreUninstallSettingsSecret;
-
-  /// Uninstall dialog item
-  ///
-  /// In en, this message translates to:
-  /// **'The plugin\'s own storage'**
-  String get lyricsStoreUninstallStorage;
-
-  /// Uninstall dialog item
-  ///
-  /// In en, this message translates to:
-  /// **'Saved and pinned lyrics from this source (if any)'**
-  String get lyricsStoreUninstallKeepLyrics;
-
-  /// Uninstall dialog item
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics .lrc files written next to songs'**
-  String get lyricsStoreUninstallKeepLrc;
-
-  /// Uninstall dialog confirm button
-  ///
-  /// In en, this message translates to:
-  /// **'Uninstall'**
-  String get lyricsStoreUninstallConfirm;
-
   /// Install problem dialog title
   ///
   /// In en, this message translates to:

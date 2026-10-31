@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
-import 'package:kanaru/features/lyrics_sources/plugin_data_stats_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
 

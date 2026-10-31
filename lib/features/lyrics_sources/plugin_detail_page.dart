@@ -7,20 +7,20 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
+import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_record_text.dart';
+import '../../shared/lyrics_plugins/plugin_uninstall_dialog.dart';
 import '../../shared/lyrics_source_routes.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_config_form.dart';
 import 'plugin_config_save.dart';
 import 'plugin_data_rows.dart';
-import 'plugin_data_stats_provider.dart';
 import 'plugin_icon.dart';
 import 'plugin_info_section.dart';
-import 'plugin_source_text.dart';
 import 'plugin_update_banner.dart';
-import 'plugin_uninstall_dialog.dart';
 
 final _log = Logger('lyrics_sources');
 

@@ -3994,41 +3994,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lyricsStoreUninstallTitle(String name) {
-    return 'Uninstall $name?';
-  }
-
-  @override
-  String get lyricsStoreUninstallRemoves => 'Will be deleted';
-
-  @override
-  String get lyricsStoreUninstallKeeps => 'Stays';
-
-  @override
-  String get lyricsStoreUninstallCode => 'The plugin\'s code';
-
-  @override
-  String get lyricsStoreUninstallSettings => 'The plugin\'s settings';
-
-  @override
-  String get lyricsStoreUninstallSettingsSecret =>
-      'The plugin\'s settings, including secret values in the keyring';
-
-  @override
-  String get lyricsStoreUninstallStorage => 'The plugin\'s own storage';
-
-  @override
-  String get lyricsStoreUninstallKeepLyrics =>
-      'Saved and pinned lyrics from this source (if any)';
-
-  @override
-  String get lyricsStoreUninstallKeepLrc =>
-      'Lyrics .lrc files written next to songs';
-
-  @override
-  String get lyricsStoreUninstallConfirm => 'Uninstall';
-
-  @override
   String get lyricsStoreInstallFailedTitle => 'Could not install';
 
   @override

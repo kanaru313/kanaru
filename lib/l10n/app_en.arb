@@ -3687,51 +3687,6 @@
       }
     }
   },
-  "lyricsStoreUninstallTitle": "Uninstall {name}?",
-  "@lyricsStoreUninstallTitle": {
-    "description": "Uninstall dialog title",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreUninstallRemoves": "Will be deleted",
-  "@lyricsStoreUninstallRemoves": {
-    "description": "Uninstall dialog box title"
-  },
-  "lyricsStoreUninstallKeeps": "Stays",
-  "@lyricsStoreUninstallKeeps": {
-    "description": "Uninstall dialog box title"
-  },
-  "lyricsStoreUninstallCode": "The plugin's code",
-  "@lyricsStoreUninstallCode": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallSettings": "The plugin's settings",
-  "@lyricsStoreUninstallSettings": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallSettingsSecret": "The plugin's settings, including secret values in the keyring",
-  "@lyricsStoreUninstallSettingsSecret": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallStorage": "The plugin's own storage",
-  "@lyricsStoreUninstallStorage": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallKeepLyrics": "Saved and pinned lyrics from this source (if any)",
-  "@lyricsStoreUninstallKeepLyrics": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallKeepLrc": "Lyrics .lrc files written next to songs",
-  "@lyricsStoreUninstallKeepLrc": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallConfirm": "Uninstall",
-  "@lyricsStoreUninstallConfirm": {
-    "description": "Uninstall dialog confirm button"
-  },
   "lyricsStoreInstallFailedTitle": "Could not install",
   "@lyricsStoreInstallFailedTitle": {
     "description": "Install problem dialog title"

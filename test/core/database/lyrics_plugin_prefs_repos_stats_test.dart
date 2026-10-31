@@ -252,9 +252,17 @@ void main() {
 
     test('zero for a plugin with nothing', () async {
       final s = await db.lyricsPluginDataStats('plugin-a');
-      expect((s.storageBytes, s.foundCount, s.textBytes), (2, 0, 0));
+      expect((s.storageBytes, s.foundCount, s.textBytes), (0, 0, 0));
       final none = await db.lyricsPluginDataStats('plugin-z');
       expect((none.storageBytes, none.foundCount, none.textBytes), (0, 0, 0));
+    });
+
+    test('a stored object with one key counts its bytes', () async {
+      await db.setLyricsPluginStorage('plugin-a', {
+        'a': 1,
+      }, expectedUpdatedAt: 1);
+      final s = await db.lyricsPluginDataStats('plugin-a');
+      expect(s.storageBytes, 7);
     });
 
     test('counts storage and the plugin own found rows', () async {

@@ -1,11 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
+import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../core/lyrics/plugins/store/plugin_config_schema_codec.dart';
 import '../../l10n/l10n.dart';
-import 'plugin_data_stats_provider.dart';
-import 'plugin_size_text.dart';
-import 'plugin_source_text.dart';
+import 'plugin_record_text.dart';
 
 /// Asks whether to uninstall [record], and says what goes ("Sẽ bị xóa") and
 /// what stays ("Vẫn giữ"), with the numbers in [stats]. Completes with `true`

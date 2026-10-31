@@ -5,12 +5,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/lyrics_plugin_spec.dart'
     show lyricsPluginDataMaxBytes;
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
+import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'plugin_confirm_dialog.dart';
-import 'plugin_data_stats_provider.dart';
 import 'plugin_section_title.dart';
-import 'plugin_size_text.dart';
 
 final _log = Logger('lyrics_sources');
 

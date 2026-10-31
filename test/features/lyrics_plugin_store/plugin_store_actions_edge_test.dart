@@ -462,7 +462,7 @@ void main() {
       expect(find.text('hieu05 (self-declared) · v3'), findsOneWidget);
     });
 
-    testWidgets('the dialog leaves the author out when there is none', (
+    testWidgets('the dialog says the author is unknown when there is none', (
       tester,
     ) async {
       await pumpStore(
@@ -473,7 +473,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('Gỡ plugin'));
       await tester.pumpAndSettle();
-      expect(find.text('v3'), findsOneWidget);
+      expect(find.text('Không rõ tác giả · v3'), findsOneWidget);
       expect(find.textContaining('tự khai'), findsNothing);
     });
   });
