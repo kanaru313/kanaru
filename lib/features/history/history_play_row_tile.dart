@@ -2,7 +2,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/menu_keyboard_region.dart';
+import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_row_view.dart';
 import '../../shared/widgets/song_tile.dart';
 
@@ -11,16 +13,20 @@ import '../../shared/widgets/song_tile.dart';
 /// is not in the library shows its file name, is dimmed and does not play.
 /// Only the newest play of the playing track gets the playing fill.
 ///
-/// The menu opens on a right click, a long press and the Menu key, through
-/// [onMenu] with the pointer position (the row's start for the key). Removing
-/// a play is only in that menu, never one tap on the row: the list moves
-/// under the pointer when plays come and go.
+/// A row in the library opens the song modal (right click, long press, Menu
+/// key, Shift+F10 or the ⋮ button) with [modalExtras]. A missing file has no
+/// song modal: its small menu opens through [onMenu] with the pointer position
+/// (the row's start for the key). Removing a play is only in those menus,
+/// never one tap on the row: the list moves under the pointer when plays come
+/// and go.
 class HistoryPlayRowTile extends StatelessWidget {
   const HistoryPlayRowTile({
     super.key,
     required this.row,
     required this.onTap,
     required this.onMenu,
+    required this.onQueueAction,
+    required this.modalExtras,
   });
 
   final HistoryPlayRow row;
@@ -30,6 +36,12 @@ class HistoryPlayRowTile extends StatelessWidget {
 
   /// Opens the menu with its corner at the given global position.
   final ValueChanged<Offset> onMenu;
+
+  /// Queue action picked in the song modal of a row in the library.
+  final ValueChanged<QueueAction> onQueueAction;
+
+  /// Song history and Remove from history, built when the modal opens.
+  final SongModalExtrasBuilder modalExtras;
 
   @override
   Widget build(BuildContext context) {
@@ -61,36 +73,38 @@ class HistoryPlayRowTile extends StatelessWidget {
       );
     }
 
+    if (track != null) {
+      return SongTile(
+        song: track,
+        onTap: onTap,
+        detail: playedAt,
+        badge: badge,
+        // Only the newest play of the playing track is marked, not every
+        // listen of it in the journal.
+        highlightPlaying: row.latest,
+        onQueueAction: onQueueAction,
+        modalExtras: modalExtras,
+      );
+    }
     // A missing play has no ink well to take focus, so it is a focus stop of
     // its own: the Menu key needs focus inside the region.
-    final Widget content = track == null
-        ? Focus(
-            child: Opacity(
-              opacity: 0.6,
-              child: SongRowView(
-                title: row.path.split('/').last,
-                artist: l10n.historyTrackMissing,
-                detail: playedAt,
-                badge: badge,
-              ),
-            ),
-          )
-        : SongTile(
-            song: track,
-            onTap: onTap,
-            detail: playedAt,
-            badge: badge,
-            // Only the newest play of the playing track is marked, not every
-            // listen of it in the journal.
-            highlightPlaying: row.latest,
-          );
     return MenuKeyboardRegion(
       onOpen: onMenu,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onSecondaryTapUp: (d) => onMenu(d.globalPosition),
         onLongPressStart: (d) => onMenu(d.globalPosition),
-        child: content,
+        child: Focus(
+          child: Opacity(
+            opacity: 0.6,
+            child: SongRowView(
+              title: row.path.split('/').last,
+              artist: l10n.historyTrackMissing,
+              detail: playedAt,
+              badge: badge,
+            ),
+          ),
+        ),
       ),
     );
   }

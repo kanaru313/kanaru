@@ -11,6 +11,7 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../playlists/playlist_test_data.dart' show breakWrites;
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'history_test_harness.dart';
 
 const _removed = 'Removed one listen from history';
@@ -26,9 +27,9 @@ Future<void> _remove(WidgetTester tester, String title) async {
     matching: find.byType(HistoryPlayRowTile),
   );
   await tester.tap(row, buttons: kSecondaryButton);
-  await tester.pumpAndSettle();
+  await settleSongModal(tester);
   await tester.tap(find.text('Remove from history'));
-  await tester.pumpAndSettle();
+  await settleSongModal(tester);
   await settleHistory(tester);
 }
 
