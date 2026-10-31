@@ -9,6 +9,7 @@ import 'now_playing_actions.dart';
 import 'now_playing_compact_page.dart';
 import 'now_playing_header.dart' show nowPlayingHeaderHeight;
 import 'now_playing_tab_dot.dart';
+import 'now_playing_tab_header_layout.dart';
 import 'now_playing_title_bar.dart';
 
 /// Pages of the narrow layout, left to right.
@@ -103,69 +104,73 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
     return Column(
       children: [
         // The wrapper adds the window buttons beside the header, so the dots
-        // are laid over the whole row instead of inside it: they then center
-        // on the window. The dots' Center only hit-tests the dots themselves,
-        // so the rest of the strip still drags the window.
-        Stack(
-          children: [
-            widget.wrapHeader(
-              SizedBox(
-                height: nowPlayingHeaderHeight,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: widget.excludeFromDrag(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          NowPlayingCloseButton(onPressed: widget.onClose),
-                          // On the queue page the same spot leads back.
-                          if (_page == _Tab.queue.index)
-                            IconButton(
-                              icon: const Icon(AppIcons.back),
-                              tooltip: l10n.nowPlayingBackToTrack,
-                              onPressed: () => _select(_Tab.track),
-                            )
-                          else
-                            QueueButton(onPressed: () => _select(_Tab.queue)),
-                          LyricsTranslationButton(
-                            enabled: widget.hasLyrics,
-                            onMenuChanged: (open) {
-                              _translateOpen = open;
-                              _report();
-                            },
-                          ),
-                          LyricsSourceButton(
-                            menuOpener: widget.sourceMenuOpener,
-                            onMenuChanged: (open) {
-                              _sourceOpen = open;
-                              _report();
-                            },
-                          ),
-                        ],
-                      ),
+        // center on the window (not on the header) through the layout
+        // delegate, which also keeps a drag strip after the buttons. Both
+        // groups are excluded from the window drag; the empty strip around
+        // them still drags and maximizes. The header starts at the window's
+        // left edge (the overlay covers the window), so the window's center
+        // is half the window width.
+        widget.wrapHeader(
+          SizedBox(
+            height: nowPlayingHeaderHeight,
+            child: CustomMultiChildLayout(
+              delegate: NowPlayingTabHeaderLayout(
+                windowCenterX: MediaQuery.sizeOf(context).width / 2,
+              ),
+              children: [
+                LayoutId(
+                  id: NowPlayingTabHeaderSlot.left,
+                  child: widget.excludeFromDrag(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        NowPlayingCloseButton(onPressed: widget.onClose),
+                        // On the queue page the same spot leads back.
+                        if (_page == _Tab.queue.index)
+                          IconButton(
+                            icon: const Icon(AppIcons.back),
+                            tooltip: l10n.nowPlayingBackToTrack,
+                            onPressed: () => _select(_Tab.track),
+                          )
+                        else
+                          QueueButton(onPressed: () => _select(_Tab.queue)),
+                        LyricsTranslationButton(
+                          enabled: widget.hasLyrics,
+                          onMenuChanged: (open) {
+                            _translateOpen = open;
+                            _report();
+                          },
+                        ),
+                        LyricsSourceButton(
+                          menuOpener: widget.sourceMenuOpener,
+                          onMenuChanged: (open) {
+                            _sourceOpen = open;
+                            _report();
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ),
-            Positioned.fill(
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final tab in tabs)
-                      NowPlayingTabDot(
-                        label: labels[tab]!,
-                        selected: _page == tab.index,
-                        onTap: () => _select(tab),
-                      ),
-                  ],
+                LayoutId(
+                  id: NowPlayingTabHeaderSlot.dots,
+                  child: widget.excludeFromDrag(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final tab in tabs)
+                          NowPlayingTabDot(
+                            label: labels[tab]!,
+                            selected: _page == tab.index,
+                            onTap: () => _select(tab),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
         Expanded(
           child: PageView(
