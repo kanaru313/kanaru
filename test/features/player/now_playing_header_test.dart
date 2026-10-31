@@ -407,6 +407,18 @@ void main() {
         expect(floating.value, isTrue);
       });
 
+      testWidgets('leaves a gap between the translate icon and the source '
+          'pill', (tester) async {
+        await pump(tester, showTranslate: true, overrides: scripted());
+
+        expect(find.textContaining('Google ·'), findsNothing);
+        expect(
+          tester.getRect(find.byType(LyricsSourceButton)).left -
+              tester.getRect(find.byType(LyricsTranslationButton)).right,
+          nowPlayingPillGap,
+        );
+      });
+
       testWidgets('leaves a gap before the lyrics source pill', (tester) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
@@ -575,7 +587,7 @@ void main() {
       );
 
       // The translation is an icon: the source label gets all of the room.
-      expect(rooms(598).source, 52);
+      expect(rooms(598).source, 52 - nowPlayingPillGap);
       expect(rooms(598).translate, 0);
       expect(rooms(552, mode: true, window: true).source, lessThan(0));
       expect(rooms(720, mode: true).source, greaterThan(64));
@@ -694,6 +706,34 @@ void main() {
       final source = tester.getRect(find.byType(LyricsSourceButton));
       expect(source.left, greaterThanOrEqualTo(translate.right));
       expect(find.text('a-long-service-name · Synced'), findsOneWidget);
+    });
+
+    testWidgets('is only its icon when lyrics are off', (tester) async {
+      await pump(
+        tester,
+        showTranslate: true,
+        overrides: [
+          playingLyricsResolutionProvider.overrideWith(
+            () => FakePlayingLyricsResolution(
+              fakeResolution(
+                const LyricsNone(uri, LyricsNoneReason.off),
+                chosen: LyricsChoice.off,
+                effective: LyricsChoice.off,
+              ),
+            ),
+          ),
+        ],
+      );
+
+      final source = tester.getRect(find.byType(LyricsSourceButton));
+      expect(find.text('Lyrics off'), findsNothing);
+      expect(source.width, lessThanOrEqualTo(48));
+      // No pill, so no gap: it sits beside the translate icon like the
+      // other round buttons.
+      expect(
+        source.left,
+        tester.getRect(find.byType(LyricsTranslationButton)).right,
+      );
     });
 
     testWidgets('is absent when the layout hides the lyrics buttons', (

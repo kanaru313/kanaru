@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
+import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../lyrics/source/lyrics_source_button.dart';
@@ -27,8 +29,8 @@ const nowPlayingHeaderSeparatorWidth = 25.0;
 /// Width of one round header button.
 const _buttonWidth = 48.0;
 
-/// Air between the translation pill and the lyrics source pill, so the two
-/// tinted pills read as separate buttons.
+/// Air before the lyrics source pill, so it reads apart from the translate
+/// button beside it, whether that is a pill or a tinted round icon.
 const nowPlayingPillGap = 8.0;
 
 /// Room the labels of the two lyrics buttons (translation, then lyrics
@@ -37,9 +39,10 @@ const nowPlayingPillGap = 8.0;
 /// plus the round buttons the pills replace, minus each pill's own padding
 /// and icon. Zero or less means no room for a label.
 ///
-/// The room is split in two only when the translation is a pill
-/// ([translatePill]), after the [nowPlayingPillGap] between them; otherwise
-/// the source pill gets all of it and the translate button stays an icon.
+/// The [nowPlayingPillGap] before the source pill comes off first. The room
+/// is split in two only when the translation is a pill ([translatePill]);
+/// otherwise the source pill gets all of it and the translate button stays
+/// an icon.
 @visibleForTesting
 ({double source, double translate}) nowPlayingPillLabelRooms({
   required double width,
@@ -56,17 +59,18 @@ const nowPlayingPillGap = 8.0;
       nowPlayingHeaderRightButtonsWidth +
       nowPlayingHeaderSleepLabelWidth +
       (hasWindowButtons ? nowPlayingHeaderSeparatorWidth : 0);
-  final free = width - left - right;
+  final free = width - left - right - nowPlayingPillGap;
   const spare = _buttonWidth - lyricsTranslationPillChrome;
   if (!translatePill) return (source: free + spare, translate: 0);
-  final half = (free + 2 * spare - nowPlayingPillGap) / 2;
+  final half = (free + 2 * spare) / 2;
   return (source: half, translate: half);
 }
 
 /// The translate button followed by the lyrics source button, sharing the
 /// room [nowPlayingPillLabelRooms] gives them. Only whether the translation
 /// is a pill is watched here, so the pair rebuilds when that flips and not
-/// on every translation change.
+/// on every translation change. Lyrics turned off for the song keep the
+/// source button a round icon.
 class NowPlayingLyricsPills extends ConsumerWidget {
   const NowPlayingLyricsPills({
     super.key,
@@ -94,6 +98,15 @@ class NowPlayingLyricsPills extends ConsumerWidget {
     final translatePill = ref.watch(
       lyricsTranslationProvider(appLang).select((s) => s is TranslationReady),
     );
+    // Lyrics turned off for the song: the source button is only its icon.
+    final sourceOff = ref.watch(
+      playingLyricsSourceProvider.select(
+        (s) => switch (s?.status) {
+          LyricsNone(reason: LyricsNoneReason.off) => true,
+          _ => false,
+        },
+      ),
+    );
     final rooms = nowPlayingPillLabelRooms(
       width: width,
       hasModeButton: hasModeButton,
@@ -108,12 +121,12 @@ class NowPlayingLyricsPills extends ConsumerWidget {
           maxLabelWidth: rooms.translate,
           onMenuChanged: onTranslateMenuChanged,
         ),
-        // Only between two pills: a translation squeezed back to its icon
-        // keeps the round buttons' usual spacing.
-        if (translatePill && rooms.translate >= lyricsTranslationMinLabelWidth)
+        // Only before a source pill: a source squeezed back to its round
+        // icon keeps the round buttons' usual spacing.
+        if (!sourceOff && rooms.source >= lyricsTranslationMinLabelWidth)
           const SizedBox(width: nowPlayingPillGap),
         LyricsSourceButton(
-          maxLabelWidth: rooms.source,
+          maxLabelWidth: sourceOff ? 0 : rooms.source,
           menuOpener: sourceMenuOpener,
           onMenuChanged: onSourceMenuChanged,
         ),
