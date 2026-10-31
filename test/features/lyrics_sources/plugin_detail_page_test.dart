@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
-import 'package:kanaru/features/lyrics_sources/plugin_data_stats_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
 
@@ -81,7 +81,9 @@ void main() {
   testWidgets('shows the plugin, its hosts and no install id', (tester) async {
     await open(tester, plain);
 
-    expect(find.text('Alpha'), findsWidgets);
+    // The name is in the header card only; the app bar is generic.
+    expect(find.text('Alpha'), findsOneWidget);
+    expect(find.text(en.pluginDetailsTitle), findsOneWidget);
     expect(find.text('someone (self-declared) · v3'), findsOneWidget);
     expect(find.text(en.pluginInfoHosts), findsOneWidget);
     expect(find.text('music.example.com'), findsOneWidget);

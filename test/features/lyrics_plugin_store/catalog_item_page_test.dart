@@ -30,7 +30,9 @@ void main() {
 
   testWidgets('shows the details of the catalog entry', (tester) async {
     await pumpStore(tester, _Opened().page(), repos: [repo]);
-    expect(find.text('Plain'), findsWidgets);
+    // The name is in the header card only; the app bar is generic.
+    expect(find.text('Plain'), findsOneWidget);
+    expect(find.text(en.pluginDetailsTitle), findsOneWidget);
     expect(find.text('hieu05 (self-declared) · v7'), findsOneWidget);
     expect(find.text('Lyrics from somewhere'), findsOneWidget);
     expect(find.text('Kho A'), findsOneWidget);
@@ -47,7 +49,7 @@ void main() {
       repos: [repo],
       locale: const Locale('vi'),
     );
-    expect(find.text('hieu05 (tự khai) · v7'), findsOneWidget);
+    expect(find.text('hieu05 (tự khai báo) · v7'), findsOneWidget);
     expect(find.text('Chỉ được kết nối tới'), findsOneWidget);
   });
 

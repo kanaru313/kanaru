@@ -3289,7 +3289,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsSourcesInfo =>
-      'Kanaru thử các nguồn đang bật theo thứ tự từ trên xuống khi tự động tìm; hộp Chọn lời tìm ở mọi nguồn đang bật. Kéo tay cầm để đổi thứ tự.';
+      'Kanaru thử lần lượt các nguồn đang bật, từ trên xuống, khi tự động tìm lời. Chọn lời sẽ tìm ở mọi nguồn đang bật. Bạn có thể kéo tay cầm để đổi thứ tự.';
 
   @override
   String get lyricsSourcesStore => 'Kho plugin';
@@ -3315,7 +3315,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String lyricsSourceAuthor(String author) {
-    return '$author (tự khai)';
+    return '$author (tự khai báo)';
   }
 
   @override
@@ -3346,6 +3346,17 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get pluginDetailsTitle => 'Chi tiết plugin';
+
+  @override
+  String get pluginUpdateRefreshList => 'Làm mới danh sách';
+
+  @override
+  String lyricsStoreUpdateVersions(int installed, int available) {
+    return 'v$installed → v$available';
+  }
+
+  @override
   String get pluginUpdateAction => 'Cập nhật';
 
   @override
@@ -3354,10 +3365,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get pluginInfoTitle => 'Thông tin';
+  String get pluginInfoTitle => 'Chi tiết';
 
   @override
-  String get pluginInfoSource => 'Nguồn cài';
+  String get pluginInfoSource => 'Cài từ';
 
   @override
   String get pluginInfoHosts => 'Chỉ được kết nối tới';
@@ -3378,14 +3389,14 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get pluginSecretNote =>
-      'Bí mật: lưu trong kho khóa hệ thống, không vào cài đặt hay log.';
+      'Giá trị bí mật: lưu trong kho khóa của hệ thống, không nằm trong cài đặt hay log.';
 
   @override
   String get pluginSecretSaved => 'Đã lưu trong kho khóa';
 
   @override
   String get pluginSecretFallbackNote =>
-      'Không tìm thấy kho khóa của hệ thống; giá trị bí mật được lưu trong một tệp chỉ bạn đọc được, hoặc chỉ giữ tới khi đóng Kanaru. Đừng chia sẻ hay đồng bộ tệp này.';
+      'Không tìm thấy kho khóa của hệ thống. Giá trị bí mật được lưu trong một file chỉ bạn đọc được, hoặc chỉ được giữ tới khi đóng Kanaru. Đừng chia sẻ hay đồng bộ file này.';
 
   @override
   String get pluginSecretShow => 'Hiện giá trị';
@@ -3400,8 +3411,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get pluginConfigNumberInvalid => 'Nhập một số';
 
   @override
-  String get pluginConfigInvalidValue =>
-      'Giá trị này không hợp lệ cho cài đặt này.';
+  String get pluginConfigInvalidValue => 'Cài đặt này không nhận giá trị đó.';
 
   @override
   String get pluginConfigTooLarge =>
@@ -3491,7 +3501,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String pluginUninstallKeepLyrics(int count) {
-    return '$count bài lời đã lưu và lời đã ghim từ nguồn này';
+    return 'Lời đã lưu của $count bài và lời đã ghim từ nguồn này';
   }
 
   @override
@@ -3514,17 +3524,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get pluginInstallFailedTitle => 'Không cài được';
-
-  @override
-  String pluginInstallFailedFile(String name) {
-    return 'File $name không phải plugin hợp lệ.';
-  }
-
-  @override
-  String get pluginInstallFailedReasons => 'Lý do';
-
-  @override
   String get pluginProblemTooLarge => 'Gói, hoặc một mục trong gói, quá lớn';
 
   @override
@@ -3543,7 +3542,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String pluginProblemInvalidManifest(String detail) {
-    return 'plugin.json không hợp lệ ở \"$detail\"';
+    return 'Mục \"$detail\" trong plugin.json không hợp lệ';
   }
 
   @override
@@ -3578,7 +3577,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get pluginProblemCheckUnavailable =>
-      'Kanaru chưa kiểm tra được script lúc này (thư viện chạy plugin không tải được) nên chưa biết gói có hợp lệ không';
+      'Kanaru chưa kiểm tra được script lúc này (thành phần chạy plugin không tải được) nên chưa biết gói có hợp lệ không';
 
   @override
   String get pluginRefusedNotFromRepo =>
@@ -3590,7 +3589,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get pluginInstallSecretsUnavailable =>
-      'Không xóa được bí mật của lần cài trước trong kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
+      'Không xóa được các giá trị bí mật của lần cài trước khỏi kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
 
   @override
   String get pluginInstallGone =>
@@ -3779,40 +3778,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsStoreUninstallTitle(String name) {
-    return 'Gỡ $name?';
-  }
-
-  @override
-  String get lyricsStoreUninstallRemoves => 'Sẽ bị xóa';
-
-  @override
-  String get lyricsStoreUninstallKeeps => 'Vẫn giữ';
-
-  @override
-  String get lyricsStoreUninstallCode => 'Code của plugin';
-
-  @override
-  String get lyricsStoreUninstallSettings => 'Cài đặt của plugin';
-
-  @override
-  String get lyricsStoreUninstallSettingsSecret =>
-      'Cài đặt của plugin, kể cả giá trị bí mật trong kho khóa';
-
-  @override
-  String get lyricsStoreUninstallStorage => 'Bộ nhớ riêng của plugin';
-
-  @override
-  String get lyricsStoreUninstallKeepLyrics =>
-      'Lời đã lưu và lời đã ghim từ nguồn này (nếu có)';
-
-  @override
-  String get lyricsStoreUninstallKeepLrc => 'File .lrc đã ghi cạnh bài';
-
-  @override
-  String get lyricsStoreUninstallConfirm => 'Gỡ';
-
-  @override
   String get lyricsStoreInstallFailedTitle => 'Không cài được';
 
   @override
@@ -3832,7 +3797,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsStoreMismatchTitle => 'Gói không khớp danh sách';
 
   @override
-  String get lyricsStoreMismatchDiffs => 'Khác nhau';
+  String get lyricsStoreMismatchDiffs => 'Điểm khác biệt';
 
   @override
   String lyricsStoreMismatchVersion(int catalog, int package) {
@@ -3841,7 +3806,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String lyricsStoreMismatchHosts(String catalog, String package) {
-    return 'Danh sách ghi host $catalog, gói khai $package';
+    return 'Danh sách ghi host $catalog, gói khai báo $package';
   }
 
   @override
@@ -3850,10 +3815,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreMismatchHint =>
-      'Thường do repo vừa cập nhật và bộ nhớ đệm chưa kịp đổi. Làm mới danh sách rồi thử lại sau vài phút. Nếu vẫn lệch, hãy báo chủ repo.';
+      'Thường do repository vừa được cập nhật và cache chưa kịp đổi. Hãy làm mới danh sách rồi thử lại sau vài phút. Nếu vẫn khác, hãy báo cho chủ repository.';
 
   @override
-  String get lyricsStoreMismatchRetry => 'Làm mới & thử lại';
+  String get lyricsStoreMismatchRetry => 'Làm mới rồi thử lại';
 
   @override
   String get lyricsStoreNeedsNewerTitle => 'Cần Kanaru mới hơn';
@@ -3864,75 +3829,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsStoreProblemTooLarge =>
-      'Gói, hoặc một mục trong gói, quá lớn';
-
-  @override
-  String get lyricsStoreProblemNotZip => 'File không phải gói zip đọc được';
-
-  @override
-  String lyricsStoreProblemUnsafeEntry(String detail) {
-    return 'Gói có tên mục không an toàn ($detail)';
-  }
-
-  @override
-  String get lyricsStoreProblemTooManyEntries => 'Gói có quá nhiều file';
-
-  @override
-  String get lyricsStoreProblemMissingManifest =>
-      'Không thấy plugin.json ở đầu gói';
-
-  @override
-  String lyricsStoreProblemInvalidManifest(String detail) {
-    return 'plugin.json không hợp lệ ở \"$detail\"';
-  }
-
-  @override
-  String get lyricsStoreProblemInvalidManifestPlain =>
-      'plugin.json không hợp lệ';
-
-  @override
-  String get lyricsStoreProblemNeedsNewerApp =>
-      'Cần Kanaru mới hơn: plugin dùng API plugin mới hơn bản này hỗ trợ';
-
-  @override
-  String get lyricsStoreProblemWrongType => 'plugin.json: type phải là lyrics';
-
-  @override
-  String lyricsStoreProblemBadHost(String detail) {
-    return 'hosts: \"$detail\" không phải tên miền công khai';
-  }
-
-  @override
-  String lyricsStoreProblemMissingScript(String detail) {
-    return 'Không thấy src/$detail trong gói';
-  }
-
-  @override
-  String lyricsStoreProblemScriptError(String detail) {
-    return 'Script $detail bị lỗi';
-  }
-
-  @override
-  String lyricsStoreProblemScriptErrorLine(String detail, int line) {
-    return 'Script $detail bị lỗi ở dòng $line';
-  }
-
-  @override
-  String get lyricsStoreProblemCheckUnavailable =>
-      'Kanaru chưa kiểm tra được script lúc này (thư viện chạy plugin không tải được) nên chưa biết gói có hợp lệ không';
-
-  @override
   String get lyricsStoreFailUnknownRepo =>
       'Repository này không còn trong danh sách';
 
   @override
   String get lyricsStoreFailUnknownEntry =>
       'Repository không còn liệt kê plugin này. Hãy làm mới danh sách.';
-
-  @override
-  String get lyricsStoreFailNotFromRepo =>
-      'Plugin này cài từ file nên không có cập nhật. Hãy gỡ rồi cài file mới.';
 
   @override
   String get lyricsStoreFailNoNewerVersion => 'Chưa có phiên bản mới hơn';
@@ -3949,23 +3851,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsStoreFailMismatch => 'Gói không khớp danh sách';
 
   @override
-  String get lyricsStoreFailOlderVersion =>
-      'Gói này cũ hơn bản đã cài nên không được dùng.';
-
-  @override
-  String get lyricsStoreFailSecretsUnavailable =>
-      'Không xóa được bí mật của lần cài trước trong kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
-
-  @override
-  String get lyricsStoreFailGone =>
-      'Plugin này không còn được cài nên không cập nhật được.';
-
-  @override
   String get lyricsStoreFailStorage =>
-      'Không ghi được plugin vào thư viện (đĩa đầy hoặc thiếu quyền?)';
+      'Không ghi được plugin vào ổ đĩa (đĩa đầy hoặc thiếu quyền?)';
 
   @override
-  String get lyricsStoreFailUnexpected => 'Đã có lỗi, thử lại sau';
+  String get lyricsStoreFailUnexpected => 'Đã xảy ra lỗi. Hãy thử lại.';
 
   @override
   String lyricsStoreAlreadyGone(String name) {
@@ -3977,20 +3867,20 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String lyricsStoreItemAuthor(String author) {
-    return '$author (tự khai)';
+    return '$author (tự khai báo)';
   }
 
   @override
   String get lyricsStoreItemUnknownAuthor => 'Không rõ tác giả';
 
   @override
-  String get lyricsStoreItemInfo => 'Thông tin';
+  String get lyricsStoreItemInfo => 'Chi tiết';
 
   @override
   String get lyricsStoreItemDescription => 'Mô tả';
 
   @override
-  String get lyricsStoreItemRepo => 'Repo';
+  String get lyricsStoreItemRepo => 'Repository';
 
   @override
   String get lyricsStoreItemHosts => 'Chỉ được kết nối tới';
@@ -4023,7 +3913,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreRemoveRepoBody =>
-      'Plugin đã cài từ repo này vẫn giữ, nhưng sẽ không còn nhận cập nhật.';
+      'Plugin đã cài từ repository này vẫn được giữ, nhưng sẽ không còn nhận cập nhật.';
 
   @override
   String get lyricsStoreRemoveRepoConfirm => 'Gỡ';
@@ -4064,7 +3954,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsStoreAddErrInvalidUrl => 'URL không hợp lệ';
 
   @override
-  String get lyricsStoreAddErrDuplicate => 'Đã có repo này';
+  String get lyricsStoreAddErrDuplicate => 'Repository này đã được thêm';
 
   @override
   String get lyricsStoreAddErrNetwork => 'Không tải được danh sách: lỗi mạng';
@@ -4094,7 +3984,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreAddressLocalFromPublic =>
-      'repo công khai không được trỏ tới địa chỉ nội bộ';
+      'repository công khai không được trỏ tới địa chỉ cục bộ';
 
   @override
   String get lyricsStoreAddressRefused =>
@@ -4102,11 +3992,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreAddressMixed =>
-      'tên miền trỏ tới cả địa chỉ nội bộ và công khai';
+      'tên miền trỏ tới cả địa chỉ cục bộ và công khai';
 
   @override
   String get lyricsStoreAddressLocalNamePublic =>
-      'tên nội bộ lại trỏ tới địa chỉ công khai';
+      'tên trông như cục bộ lại trỏ tới địa chỉ công khai';
 
   @override
   String get lyricsStoreItemInstalled => 'Đã cài';

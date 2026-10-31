@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/database/library_startup.dart';
-import '../../core/database/lyrics_plugin_queries.dart';
+import '../../database/library_startup.dart';
+import '../../database/lyrics_plugin_queries.dart';
 
 /// What one plugin keeps: its own storage and the lyrics saved from it.
 typedef PluginDataStats = ({int storageBytes, int foundCount, int textBytes});

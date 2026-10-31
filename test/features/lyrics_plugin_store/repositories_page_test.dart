@@ -128,7 +128,7 @@ void main() {
       expect(find.text('Gỡ Kho A?'), findsOneWidget);
       expect(
         find.text(
-          'Plugin đã cài từ repo này vẫn giữ, nhưng sẽ không còn nhận cập nhật.',
+          'Plugin đã cài từ repository này vẫn được giữ, nhưng sẽ không còn nhận cập nhật.',
         ),
         findsOneWidget,
       );

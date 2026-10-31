@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
-import 'package:kanaru/features/lyrics_plugin_store/install_problem_text.dart';
+import 'package:kanaru/shared/lyrics_plugins/plugin_failure_text.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_actions.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_providers.dart';
@@ -149,7 +149,7 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
       expect(
         find.text(
-          repoFailureText(
+          repoPluginFailureText(
             en,
             const RepoPluginFailed(RepoPluginFailure.download),
           ),
@@ -252,7 +252,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(repos.installs, hasLength(2));
       expect(
@@ -277,7 +277,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('Install'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(repos.installs, hasLength(1));
       expect(find.text('•  ${en.lyricsStoreFailUnknownEntry}'), findsOneWidget);
@@ -296,7 +296,7 @@ void main() {
       final before = cache.cleared;
       await tester.tap(find.byTooltip('Install'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(cache.cleared, before + 1);
     });
@@ -369,7 +369,7 @@ void main() {
         recordOf('plugin-plain', version: 6),
         RepoPluginChange.updated,
       );
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(repos.refreshed, [repoA]);
       expect(repos.updates, ['plugin-plain', 'plugin-plain']);
@@ -462,7 +462,7 @@ void main() {
       expect(find.text('hieu05 (self-declared) · v3'), findsOneWidget);
     });
 
-    testWidgets('the dialog leaves the author out when there is none', (
+    testWidgets('the dialog says the author is unknown when there is none', (
       tester,
     ) async {
       await pumpStore(
@@ -473,7 +473,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('Gỡ plugin'));
       await tester.pumpAndSettle();
-      expect(find.text('v3'), findsOneWidget);
+      expect(find.text('Không rõ tác giả · v3'), findsOneWidget);
       expect(find.textContaining('tự khai'), findsNothing);
     });
   });

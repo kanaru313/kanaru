@@ -3187,9 +3187,9 @@
     }
   },
   "lyricsSourcesRowNoneOn": "Every source is off",
-  "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.",
+  "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.",
   "lyricsSourcesStore": "Plugin store",
-  "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from Plugin store.",
+  "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from the Plugin store.",
   "lyricsSourceBuiltIn": "Built in",
   "lyricsSourceBuiltInHosts": "Built in · {hosts}",
   "@lyricsSourceBuiltInHosts": {
@@ -3238,6 +3238,26 @@
     "description": "Banner on the installed plugin page when its repository lists a newer version",
     "placeholders": {
       "version": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginDetailsTitle": "Plugin details",
+  "@pluginDetailsTitle": {
+    "description": "App bar title of the page of one plugin, installed or from a catalog; the plugin name is in the header below"
+  },
+  "pluginUpdateRefreshList": "Refresh list",
+  "@pluginUpdateRefreshList": {
+    "description": "Action of the error snackbar when an update did not match the repository list; it only refreshes the list"
+  },
+  "lyricsStoreUpdateVersions": "v{installed} → v{available}",
+  "@lyricsStoreUpdateVersions": {
+    "description": "Subtitle of an update row in the plugin store: installed version, then the version in the list",
+    "placeholders": {
+      "installed": {
+        "type": "int"
+      },
+      "available": {
         "type": "int"
       }
     }
@@ -3373,18 +3393,7 @@
       }
     }
   },
-  "pluginInstallFailedTitle": "Could not install",
-  "pluginInstallFailedFile": "File {name} is not a valid plugin.",
-  "@pluginInstallFailedFile": {
-    "description": "Under the title of the dialog that lists why a plugin file was refused",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "pluginInstallFailedReasons": "Reasons",
-  "pluginProblemTooLarge": "The package, or something inside it, is too large",
+  "pluginProblemTooLarge": "The package, or an entry in it, is too large",
   "pluginProblemNotZip": "The file is not a readable zip package",
   "pluginProblemUnsafeEntry": "The package has an unsafe entry name ({detail})",
   "@pluginProblemUnsafeEntry": {
@@ -3396,8 +3405,8 @@
     }
   },
   "pluginProblemTooManyEntries": "The package has too many files",
-  "pluginProblemMissingManifest": "There is no plugin.json at the top of the package",
-  "pluginProblemInvalidManifest": "plugin.json is not valid at \"{detail}\"",
+  "pluginProblemMissingManifest": "plugin.json is missing at the top of the package",
+  "pluginProblemInvalidManifest": "plugin.json is invalid at \"{detail}\"",
   "@pluginProblemInvalidManifest": {
     "description": "Why a plugin package was refused; detail comes from the package",
     "placeholders": {
@@ -3406,9 +3415,9 @@
       }
     }
   },
-  "pluginProblemInvalidManifestPlain": "plugin.json is not valid",
-  "pluginProblemNeedsNewerApp": "A newer Kanaru is needed: the plugin uses a newer plugin API than this version supports",
-  "pluginProblemWrongType": "plugin.json: the type must be lyrics",
+  "pluginProblemInvalidManifestPlain": "plugin.json is invalid",
+  "pluginProblemNeedsNewerApp": "Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports",
+  "pluginProblemWrongType": "plugin.json: type must be lyrics",
   "pluginProblemBadHost": "hosts: \"{detail}\" is not a public domain name",
   "@pluginProblemBadHost": {
     "description": "Why a plugin package was refused; detail comes from the package",
@@ -3418,7 +3427,7 @@
       }
     }
   },
-  "pluginProblemMissingScript": "The package has no src/{detail}",
+  "pluginProblemMissingScript": "src/{detail} is missing from the package",
   "@pluginProblemMissingScript": {
     "description": "Why a plugin package was refused; detail comes from the package",
     "placeholders": {
@@ -3427,7 +3436,7 @@
       }
     }
   },
-  "pluginProblemScriptError": "Script {detail} has an error",
+  "pluginProblemScriptError": "The script {detail} has an error",
   "@pluginProblemScriptError": {
     "description": "Why a plugin package was refused; detail comes from the package",
     "placeholders": {
@@ -3436,7 +3445,7 @@
       }
     }
   },
-  "pluginProblemScriptErrorLine": "Script {detail} has an error at line {line}",
+  "pluginProblemScriptErrorLine": "The script {detail} has an error on line {line}",
   "@pluginProblemScriptErrorLine": {
     "description": "Why a plugin package was refused; detail comes from the package",
     "placeholders": {
@@ -3448,7 +3457,7 @@
       }
     }
   },
-  "pluginProblemCheckUnavailable": "Kanaru could not check the scripts now (the plugin runtime did not load), so it cannot tell whether the package is valid",
+  "pluginProblemCheckUnavailable": "Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid",
   "pluginRefusedNotFromRepo": "This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.",
   "pluginRefusedOlderVersion": "This package is older than the installed version, so it was not used.",
   "pluginInstallSecretsUnavailable": "The secrets of the earlier install could not be removed from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru, then try again.",
@@ -3698,51 +3707,6 @@
       }
     }
   },
-  "lyricsStoreUninstallTitle": "Uninstall {name}?",
-  "@lyricsStoreUninstallTitle": {
-    "description": "Uninstall dialog title",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreUninstallRemoves": "Will be deleted",
-  "@lyricsStoreUninstallRemoves": {
-    "description": "Uninstall dialog box title"
-  },
-  "lyricsStoreUninstallKeeps": "Stays",
-  "@lyricsStoreUninstallKeeps": {
-    "description": "Uninstall dialog box title"
-  },
-  "lyricsStoreUninstallCode": "The plugin's code",
-  "@lyricsStoreUninstallCode": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallSettings": "The plugin's settings",
-  "@lyricsStoreUninstallSettings": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallSettingsSecret": "The plugin's settings, including secret values in the keyring",
-  "@lyricsStoreUninstallSettingsSecret": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallStorage": "The plugin's own storage",
-  "@lyricsStoreUninstallStorage": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallKeepLyrics": "Saved and pinned lyrics from this source (if any)",
-  "@lyricsStoreUninstallKeepLyrics": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallKeepLrc": "Lyrics .lrc files written next to songs",
-  "@lyricsStoreUninstallKeepLrc": {
-    "description": "Uninstall dialog item"
-  },
-  "lyricsStoreUninstallConfirm": "Uninstall",
-  "@lyricsStoreUninstallConfirm": {
-    "description": "Uninstall dialog confirm button"
-  },
   "lyricsStoreInstallFailedTitle": "Could not install",
   "@lyricsStoreInstallFailedTitle": {
     "description": "Install problem dialog title"
@@ -3812,7 +3776,7 @@
   "@lyricsStoreMismatchHint": {
     "description": "Catalog mismatch hint"
   },
-  "lyricsStoreMismatchRetry": "Refresh & try again",
+  "lyricsStoreMismatchRetry": "Refresh and try again",
   "@lyricsStoreMismatchRetry": {
     "description": "Catalog mismatch dialog button"
   },
@@ -3829,105 +3793,12 @@
       }
     }
   },
-  "lyricsStoreProblemTooLarge": "The package, or an entry in it, is too large",
-  "@lyricsStoreProblemTooLarge": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemNotZip": "The file is not a readable zip package",
-  "@lyricsStoreProblemNotZip": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemUnsafeEntry": "The package has an unsafe entry name ({detail})",
-  "@lyricsStoreProblemUnsafeEntry": {
-    "description": "Package problem",
-    "placeholders": {
-      "detail": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreProblemTooManyEntries": "The package has too many files",
-  "@lyricsStoreProblemTooManyEntries": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemMissingManifest": "plugin.json is missing at the top of the package",
-  "@lyricsStoreProblemMissingManifest": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemInvalidManifest": "plugin.json is invalid at \"{detail}\"",
-  "@lyricsStoreProblemInvalidManifest": {
-    "description": "Package problem",
-    "placeholders": {
-      "detail": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreProblemInvalidManifestPlain": "plugin.json is invalid",
-  "@lyricsStoreProblemInvalidManifestPlain": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemNeedsNewerApp": "Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports",
-  "@lyricsStoreProblemNeedsNewerApp": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemWrongType": "plugin.json: type must be lyrics",
-  "@lyricsStoreProblemWrongType": {
-    "description": "Package problem"
-  },
-  "lyricsStoreProblemBadHost": "hosts: \"{detail}\" is not a public domain name",
-  "@lyricsStoreProblemBadHost": {
-    "description": "Package problem",
-    "placeholders": {
-      "detail": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreProblemMissingScript": "src/{detail} is missing from the package",
-  "@lyricsStoreProblemMissingScript": {
-    "description": "Package problem",
-    "placeholders": {
-      "detail": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreProblemScriptError": "The script {detail} has an error",
-  "@lyricsStoreProblemScriptError": {
-    "description": "Package problem",
-    "placeholders": {
-      "detail": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsStoreProblemScriptErrorLine": "The script {detail} has an error on line {line}",
-  "@lyricsStoreProblemScriptErrorLine": {
-    "description": "Package problem",
-    "placeholders": {
-      "detail": {
-        "type": "String"
-      },
-      "line": {
-        "type": "int"
-      }
-    }
-  },
-  "lyricsStoreProblemCheckUnavailable": "Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid",
-  "@lyricsStoreProblemCheckUnavailable": {
-    "description": "Package problem"
-  },
   "lyricsStoreFailUnknownRepo": "This repository is no longer in the list",
   "@lyricsStoreFailUnknownRepo": {
     "description": "Install failure"
   },
   "lyricsStoreFailUnknownEntry": "The repository no longer lists this plugin. Refresh the list.",
   "@lyricsStoreFailUnknownEntry": {
-    "description": "Install failure"
-  },
-  "lyricsStoreFailNotFromRepo": "This plugin was installed from a file so it has no updates. Uninstall it and install the new file.",
-  "@lyricsStoreFailNotFromRepo": {
     "description": "Install failure"
   },
   "lyricsStoreFailNoNewerVersion": "There is no newer version",
@@ -3951,19 +3822,7 @@
   "@lyricsStoreFailMismatch": {
     "description": "Install failure"
   },
-  "lyricsStoreFailOlderVersion": "This package is older than the installed one so it is not used.",
-  "@lyricsStoreFailOlderVersion": {
-    "description": "Install failure"
-  },
-  "lyricsStoreFailSecretsUnavailable": "The secrets of the earlier install could not be deleted from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru and try again.",
-  "@lyricsStoreFailSecretsUnavailable": {
-    "description": "Install failure"
-  },
-  "lyricsStoreFailGone": "This plugin is no longer installed so it cannot be updated.",
-  "@lyricsStoreFailGone": {
-    "description": "Install failure"
-  },
-  "lyricsStoreFailStorage": "Could not write the plugin to the library (disk full or missing permission?)",
+  "lyricsStoreFailStorage": "Could not save the plugin (disk full or missing permission?)",
   "@lyricsStoreFailStorage": {
     "description": "Install failure"
   },

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_problem.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/store/plugin_install_outcome.dart';
-import 'package:kanaru/features/lyrics_plugin_store/install_problem_text.dart';
+import 'package:kanaru/shared/lyrics_plugins/plugin_failure_text.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -132,7 +132,9 @@ void main() {
         expect(find.text('Could not install'), findsOneWidget);
         expect(find.text('Plain · Repo: Kho A'), findsOneWidget);
         expect(
-          find.text('•  ${repoFailureText(en, RepoPluginFailed(failure))}'),
+          find.text(
+            '•  ${repoPluginFailureText(en, RepoPluginFailed(failure))}',
+          ),
           findsOneWidget,
         );
         await tester.tap(find.text('Close'));
@@ -207,7 +209,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       // Opening refreshed everything; the retry refreshes only that repository.
       expect(repos.refreshAllCalls, 1);

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_problem.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
@@ -26,6 +27,8 @@ void main() {
     repoSlug: 'plain',
   );
 
+  late GoRouter router;
+
   Future<store.FakeRepos> pump(
     WidgetTester tester, {
     store.FakeRepos? fakeRepos,
@@ -36,7 +39,7 @@ void main() {
     Stream<LyricsSourcesInput>? input,
   }) async {
     final fake = fakeRepos ?? store.FakeRepos();
-    await pumpSources(
+    router = await pumpSources(
       tester,
       records: records,
       plugins: FakePlugins(),
@@ -165,6 +168,60 @@ void main() {
       const RepoPluginFailed(RepoPluginFailure.catalogMismatch),
     );
     expect(find.text(en.lyricsStoreFailMismatch), findsOneWidget);
+  });
+
+  group('refresh action', () {
+    const mismatch = RepoPluginFailed(RepoPluginFailure.catalogMismatch);
+
+    Future<store.FakeRepos> failed(
+      WidgetTester tester,
+      RepoPluginFailed result, {
+      List<LyricsPluginRecord>? records,
+    }) async {
+      final fake = await pump(tester, records: records ?? [installed]);
+      fake.updateResult = result;
+      await tester.tap(find.text(en.pluginUpdateAction));
+      await tester.pump();
+      await tester.pump();
+      return fake;
+    }
+
+    testWidgets('a mismatch offers Refresh list, which only refreshes', (
+      tester,
+    ) async {
+      final fake = await failed(tester, mismatch);
+      expect(find.text(en.pluginUpdateRefreshList), findsOneWidget);
+      // Let the snackbar slide in.
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(en.pluginUpdateRefreshList));
+      await tester.pump();
+      expect(fake.refreshed, [store.repoA]);
+      expect(fake.updates, [id]);
+    });
+
+    testWidgets('the action still refreshes after the page was left', (
+      tester,
+    ) async {
+      final fake = await failed(tester, mismatch);
+      router.go(lyricsSourcesRoute);
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsOneWidget);
+      await tester.tap(find.text(en.pluginUpdateRefreshList));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(fake.refreshed, [store.repoA]);
+      expect(fake.updates, [id]);
+    });
+
+    testWidgets('a download failure has no action', (tester) async {
+      await failed(tester, const RepoPluginFailed(RepoPluginFailure.download));
+      expect(find.text(en.pluginUpdateRefreshList), findsNothing);
+    });
+
+    testWidgets('a storage failure has no action', (tester) async {
+      await failed(tester, const RepoPluginFailed(RepoPluginFailure.storage));
+      expect(find.text(en.pluginUpdateRefreshList), findsNothing);
+    });
   });
 
   testWidgets('a storage failure shows its reason', (tester) async {

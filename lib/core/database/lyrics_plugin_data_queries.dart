@@ -71,12 +71,14 @@ extension LyricsPluginDataQueries on LibraryDatabase {
   }
 
   /// What the plugin keeps: localStorage bytes, and the found rows it saved
-  /// with the UTF-8 size of their text. Zero for a plugin with none.
+  /// with the UTF-8 size of their text. Zero for a plugin with none; a storage
+  /// that is the empty object `{}` counts 0 bytes.
   Future<({int storageBytes, int foundCount, int textBytes})>
   lyricsPluginDataStats(String installId) async {
     final row = await customSelect(
       'SELECT '
-      '(SELECT COALESCE(SUM(LENGTH(CAST(storage AS BLOB))), 0) '
+      "(SELECT COALESCE(SUM(CASE WHEN storage = '{}' THEN 0 "
+      'ELSE LENGTH(CAST(storage AS BLOB)) END), 0) '
       'FROM lyrics_plugin_data WHERE install_id = ?1) AS storage_bytes, '
       '(SELECT COUNT(*) FROM online_lyrics '
       "WHERE provider_id = ?1 AND status = 'found') AS found_count, "

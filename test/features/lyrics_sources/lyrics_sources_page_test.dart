@@ -59,7 +59,7 @@ void main() {
     );
     expect(find.text('Nguồn lời'), findsOneWidget);
     expect(find.text('Kho plugin'), findsOneWidget);
-    expect(find.text('hieu05 (tự khai) · v3 · File: demo.zip'), findsOneWidget);
+    expect(find.text('hieu05 (tự khai báo) · v3 · File: demo.zip'), findsOneWidget);
   });
 
   testWidgets('the Plugin store button is enabled', (tester) async {

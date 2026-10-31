@@ -3,14 +3,15 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
+import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_failure_text.dart';
+import '../../shared/lyrics_plugins/plugin_uninstall_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'install_problem_text.dart';
 import 'plugin_store_failures.dart';
 import 'plugin_store_messages.dart';
 import 'plugin_store_providers.dart';
-import 'store_uninstall_dialog.dart';
 
 final _log = Logger('lyrics_plugin_store');
 
@@ -92,8 +93,34 @@ class StoreMaintenanceActions {
   }
 
   /// Asks, then uninstalls [record]. "Uninstalled" only when something was.
+  /// A second call for the same plugin while one runs does nothing, so a quick
+  /// double tap cannot stack two dialogs.
   Future<void> uninstall(LyricsPluginRecord record) async {
-    if (!await confirmStoreUninstall(_context, record)) return;
+    final key = pendingUninstallKey(record.installId);
+    final pending = _container.read(
+      pluginStorePendingInstallsProvider.notifier,
+    );
+    if (!pending.begin(key)) return;
+    try {
+      await _confirmAndUninstall(record);
+    } finally {
+      pending.end(key);
+    }
+  }
+
+  Future<void> _confirmAndUninstall(LyricsPluginRecord record) async {
+    // Read again: lookups may have saved lyrics since the store opened.
+    PluginDataStats stats;
+    try {
+      stats = await _container.refresh(
+        pluginDataStatsProvider(record.installId).future,
+      );
+    } on Object catch (error, stackTrace) {
+      _log.warning('Reading the plugin data sizes failed', error, stackTrace);
+      stats = (storageBytes: 0, foundCount: 0, textBytes: 0);
+    }
+    if (!_context.mounted) return;
+    if (!await confirmPluginUninstall(_context, record, stats)) return;
     final plugins = _container.read(lyricsPluginsControllerProvider);
     if (plugins == null) return;
     try {
@@ -139,7 +166,7 @@ class StoreMaintenanceActions {
       _messages.installed(record);
       return;
     }
-    final reason = fileOutcomeText(_l10n, outcome) ?? '';
+    final reason = pluginOutcomeText(_l10n, outcome) ?? '';
     final subject = outcome is PluginInstallRejected
         ? _l10n.lyricsStoreInstallFailedFile(name)
         : name;
