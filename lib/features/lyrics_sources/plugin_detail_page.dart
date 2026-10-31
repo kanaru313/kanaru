@@ -18,6 +18,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_config_form.dart';
 import 'plugin_config_save.dart';
 import 'plugin_data_rows.dart';
+import 'plugin_detail_states.dart';
 import 'plugin_icon.dart';
 import 'plugin_info_section.dart';
 import 'plugin_update_banner.dart';
@@ -111,17 +112,17 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
         body: _uninstalling
             ? const SizedBox.shrink()
             : failed
-            ? _LoadFailed(
+            ? PluginDetailLoadFailed(
                 onRetry: () => ref.invalidate(lyricsSourcesInputProvider),
               )
             // Until the first answer a missing plugin is not yet "gone".
-            : (loaded ? const _Gone() : const SizedBox.shrink()),
+            : (loaded ? const PluginDetailGone() : const SizedBox.shrink()),
       );
     }
     final record = entry.record!;
     final controller = ref.watch(lyricsPluginsControllerProvider);
     return PageScaffold(
-      title: record.name,
+      title: l10n.pluginDetailsTitle,
       actions: [
         IconButton(
           tooltip: l10n.pluginUninstall,
@@ -168,49 +169,6 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _LoadFailed extends StatelessWidget {
-  const _LoadFailed({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l10n.pluginSourcesLoadFailed),
-          const SizedBox(height: 16),
-          FilledButton.tonal(onPressed: onRetry, child: Text(l10n.pluginRetry)),
-        ],
-      ),
-    );
-  }
-}
-
-class _Gone extends StatelessWidget {
-  const _Gone();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l10n.pluginGone),
-          const SizedBox(height: 16),
-          FilledButton.tonal(
-            onPressed: () => context.go(lyricsSourcesRoute),
-            child: Text(l10n.lyricsSourcesTitle),
-          ),
-        ],
       ),
     );
   }

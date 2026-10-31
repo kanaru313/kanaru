@@ -3494,7 +3494,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsSourcesInfo =>
-      'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.';
+      'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.';
 
   @override
   String get lyricsSourcesStore => 'Plugin store';
@@ -3548,6 +3548,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String pluginUpdateAvailable(int version) {
     return 'New version v$version';
+  }
+
+  @override
+  String get pluginDetailsTitle => 'Plugin details';
+
+  @override
+  String get pluginUpdateRefreshList => 'Refresh list';
+
+  @override
+  String lyricsStoreUpdateVersions(int installed, int available) {
+    return 'v$installed → v$available';
   }
 
   @override

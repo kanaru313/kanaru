@@ -3289,7 +3289,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsSourcesInfo =>
-      'Kanaru thử các nguồn đang bật theo thứ tự từ trên xuống khi tự động tìm; hộp Chọn lời tìm ở mọi nguồn đang bật. Kéo tay cầm để đổi thứ tự.';
+      'Kanaru thử các nguồn đang bật theo thứ tự từ trên xuống khi tự động tìm lời. Hộp Chọn lời tìm ở mọi nguồn đang bật, và bạn có thể kéo tay cầm để đổi thứ tự.';
 
   @override
   String get lyricsSourcesStore => 'Kho plugin';
@@ -3343,6 +3343,17 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String pluginUpdateAvailable(int version) {
     return 'Có bản mới v$version';
+  }
+
+  @override
+  String get pluginDetailsTitle => 'Chi tiết plugin';
+
+  @override
+  String get pluginUpdateRefreshList => 'Làm mới danh sách';
+
+  @override
+  String lyricsStoreUpdateVersions(int installed, int available) {
+    return 'v$installed → v$available';
   }
 
   @override

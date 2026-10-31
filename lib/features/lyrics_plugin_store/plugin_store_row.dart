@@ -59,7 +59,16 @@ class PluginStoreRow extends ConsumerWidget {
                 .watch(pluginStorePendingInstallsProvider)
                 .contains(pendingInstallKey(row.repoUrl!, slug)),
     };
-    final subtitle = row.isFromFile
+    final entry = row.entry;
+    // An update row adds what the update changes after the repository name.
+    final repoName = row.repoName ?? '';
+    final subtitle =
+        kind == StoreRowKind.update && record != null && entry != null
+        ? [
+            if (repoName.isNotEmpty) repoName,
+            l10n.lyricsStoreUpdateVersions(record.version, entry.version),
+          ].join(' · ')
+        : row.isFromFile
         ? l10n.lyricsStoreFromFile
         : (row.repoName ?? '');
     return ListTile(

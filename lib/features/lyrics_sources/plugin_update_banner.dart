@@ -38,6 +38,7 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
     final name = widget.record.name;
+    final repoUrl = widget.record.repoUrl;
     final controller = ref.read(lyricsPluginReposControllerProvider);
     if (controller == null || _updating) return;
     setState(() => _updating = true);
@@ -58,6 +59,13 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
           kind: AppSnackBarKind.error,
           title: l10n.pluginUpdateFailed(name),
           details: repoPluginFailureText(l10n, failed),
+          action: failed.failure == RepoPluginFailure.catalogMismatch
+              ? _refreshAction(
+                  controller,
+                  repoUrl,
+                  l10n.pluginUpdateRefreshList,
+                )
+              : null,
         ),
       });
     } catch (error, stackTrace) {
@@ -71,6 +79,27 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
     } finally {
       if (mounted) setState(() => _updating = false);
     }
+  }
+
+  /// "Refresh list" for a catalog mismatch: only refreshes the repository, the
+  /// user taps Update again. Built from plain values, not from this State, as
+  /// the snackbar outlives the page. Null without a repository.
+  static SnackBarAction? _refreshAction(
+    LyricsPluginReposController controller,
+    String? repoUrl,
+    String label,
+  ) {
+    if (repoUrl == null) return null;
+    return SnackBarAction(
+      label: label,
+      onPressed: () => unawaited(() async {
+        try {
+          await controller.refresh(repoUrl);
+        } catch (error, stackTrace) {
+          _log.warning('Refreshing a repository failed', error, stackTrace);
+        }
+      }()),
+    );
   }
 
   @override

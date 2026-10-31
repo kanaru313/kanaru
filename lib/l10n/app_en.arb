@@ -3187,7 +3187,7 @@
     }
   },
   "lyricsSourcesRowNoneOn": "Every source is off",
-  "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.",
+  "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.",
   "lyricsSourcesStore": "Plugin store",
   "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from Plugin store.",
   "lyricsSourceBuiltIn": "Built in",
@@ -3238,6 +3238,26 @@
     "description": "Banner on the installed plugin page when its repository lists a newer version",
     "placeholders": {
       "version": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginDetailsTitle": "Plugin details",
+  "@pluginDetailsTitle": {
+    "description": "App bar title of the page of one plugin, installed or from a catalog; the plugin name is in the header below"
+  },
+  "pluginUpdateRefreshList": "Refresh list",
+  "@pluginUpdateRefreshList": {
+    "description": "Action of the error snackbar when an update did not match the repository list; it only refreshes the list"
+  },
+  "lyricsStoreUpdateVersions": "v{installed} → v{available}",
+  "@lyricsStoreUpdateVersions": {
+    "description": "Subtitle of an update row in the plugin store: installed version, then the version in the list",
+    "placeholders": {
+      "installed": {
+        "type": "int"
+      },
+      "available": {
         "type": "int"
       }
     }

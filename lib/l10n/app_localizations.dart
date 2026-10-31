@@ -5141,7 +5141,7 @@ abstract class AppLocalizations {
   /// No description provided for @lyricsSourcesInfo.
   ///
   /// In en, this message translates to:
-  /// **'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.'**
+  /// **'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.'**
   String get lyricsSourcesInfo;
 
   /// No description provided for @lyricsSourcesStore.
@@ -5227,6 +5227,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New version v{version}'**
   String pluginUpdateAvailable(int version);
+
+  /// App bar title of the page of one plugin, installed or from a catalog; the plugin name is in the header below
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin details'**
+  String get pluginDetailsTitle;
+
+  /// Action of the error snackbar when an update did not match the repository list; it only refreshes the list
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh list'**
+  String get pluginUpdateRefreshList;
+
+  /// Subtitle of an update row in the plugin store: installed version, then the version in the list
+  ///
+  /// In en, this message translates to:
+  /// **'v{installed} → v{available}'**
+  String lyricsStoreUpdateVersions(int installed, int available);
 
   /// Button of the update banner on the installed plugin page
   ///

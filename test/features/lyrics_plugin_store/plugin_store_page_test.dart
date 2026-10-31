@@ -73,7 +73,9 @@ void main() {
     expect(find.text('1 plugin needs a newer Kanaru'), findsOneWidget);
     expect(find.text('Plain'), findsOneWidget);
     // The repository name, or "From file", is the subtitle.
-    expect(find.text('Kho A'), findsNWidgets(4)); // 3 rows + chip
+    expect(find.textContaining('Kho A'), findsNWidgets(4)); // 3 rows + chip
+    // The update row adds the version change after the repository name.
+    expect(find.text('Kho A · v3 → v5'), findsOneWidget);
     expect(find.text('From file'), findsWidgets);
   });
 

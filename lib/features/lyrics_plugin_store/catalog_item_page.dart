@@ -83,7 +83,7 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
     final repoName = repo.name;
     final repoUrl = repo.url;
     return PageScaffold(
-      title: entry.name,
+      title: l10n.pluginDetailsTitle,
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
