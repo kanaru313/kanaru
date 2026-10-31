@@ -5030,11 +5030,17 @@ abstract class AppLocalizations {
   /// **'In use: {label}'**
   String lyricsSourceAutoNow(String label);
 
-  /// Subtitle of the Automatic item; provider is the service name
+  /// Subtitle of the Automatic item when no online lyrics source is enabled
   ///
   /// In en, this message translates to:
-  /// **'The file or tag first, then {provider}'**
-  String lyricsSourceAutoHint(String provider);
+  /// **'The file or tag only'**
+  String get lyricsSourceAutoHintLocalOnly;
+
+  /// Subtitle of the Automatic item while at least one online lyrics source (built in or plugin) is enabled
+  ///
+  /// In en, this message translates to:
+  /// **'The file or tag first, then online sources'**
+  String get lyricsSourceAutoHint;
 
   /// Subtitle of the Automatic item when a chosen online version is stored and would be forgotten
   ///

@@ -145,6 +145,7 @@ void main() {
     double textScale = 1,
     Size size = const Size(900, 700),
     List<Override> overrides = const [],
+    List<LyricsProviderRegistration>? providers,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -166,9 +167,9 @@ void main() {
               ? null
               : (uri: ownUri ?? track.uri, lyrics: ownLyrics),
         ),
-        lyricsProvidersProvider.overrideWithValue([
-          LyricsProviderRegistration(FakeLyricsProvider()),
-        ]),
+        lyricsProvidersProvider.overrideWithValue(
+          providers ?? [LyricsProviderRegistration(FakeLyricsProvider())],
+        ),
         libraryDatabaseProvider.overrideWithValue(library ? db : null),
         onlineLyricsActionsProvider.overrideWith(
           (ref) => _RecordingActions(ref, log),
@@ -596,12 +597,61 @@ void main() {
       await openMenu(tester);
       expect(
         find.text(
-          'The file or tag first, then Fake · drops the chosen version',
+          'The file or tag first, then online sources · drops the chosen version',
         ),
         findsOneWidget,
       );
       expect(find.text('In the tag'), findsOneWidget);
       expect(find.text('Synced · 4:05'), findsOneWidget);
+    });
+
+    testWidgets('Automatic names no source with several enabled', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: _origin(pinned: true, remoteId: '7'),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        providers: [
+          LyricsProviderRegistration(FakeLyricsProvider()),
+          LyricsProviderRegistration(_NamedProvider('second', 'Second')),
+        ],
+      );
+      await openMenu(tester);
+      expect(
+        find.text(
+          'The file or tag first, then online sources · drops the chosen version',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Second'), findsNothing);
+    });
+
+    testWidgets('Automatic says file or tag only with no source enabled', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: _origin(pinned: true, remoteId: '7'),
+          chosen: LyricsChoice.online,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+        providers: const [],
+      );
+      await openMenu(tester);
+      expect(
+        find.text('The file or tag only · drops the chosen version'),
+        findsOneWidget,
+      );
+      expect(find.text('Find lyrics online…'), findsNothing);
     });
 
     testWidgets('automatic names the lyrics in use', (tester) async {
@@ -871,4 +921,12 @@ void main() {
       expect(opener.value, isNull);
     });
   });
+}
+
+/// A fake source with its own id and name, for a list of several sources.
+class _NamedProvider extends FakeLyricsProvider {
+  _NamedProvider(String id, this.displayName) : super(id: id);
+
+  @override
+  final String displayName;
 }

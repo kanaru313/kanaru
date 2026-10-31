@@ -3216,9 +3216,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsSourceAutoHint(String provider) {
-    return 'File hoặc tag trước, sau đó $provider';
-  }
+  String get lyricsSourceAutoHintLocalOnly => 'Chỉ file hoặc tag';
+
+  @override
+  String get lyricsSourceAutoHint =>
+      'File hoặc tag trước, sau đó các nguồn trực tuyến';
 
   @override
   String lyricsSourceForgetPick(String text) {

@@ -42,7 +42,6 @@ List<Widget> lyricsSourceMenuItems(
   final origin = runner.origin;
   final pin = source.pin;
   final hasPick = pin?.hasPick ?? false;
-  final registration = providers.firstOrNull;
   final canChoose =
       runner.container.read(libraryDatabaseProvider) != null &&
       localPathOf(status.uri) != null;
@@ -53,7 +52,11 @@ List<Widget> lyricsSourceMenuItems(
 
   final autoText = found != null && effective == LyricsChoice.auto
       ? l10n.lyricsSourceAutoNow(lyricsSourceDetail(l10n, found, names))
-      : l10n.lyricsSourceAutoHint(registration?.displayName ?? '');
+      // No source names: the list grows with every plugin, and the
+      // Sources page shows their order.
+      : providers.isEmpty
+      ? l10n.lyricsSourceAutoHintLocalOnly
+      : l10n.lyricsSourceAutoHint;
   final pickKind = pin?.lyrics?.synced;
   final pickLength = pin?.remoteDurationMs;
   final pickSubtitle = [
@@ -130,7 +133,7 @@ List<Widget> lyricsSourceMenuItems(
         title: l10n.lyricsMenuNotThese,
         onPressed: when(canChoose, runner.reject),
       ),
-    if (registration != null && canChoose)
+    if (providers.isNotEmpty && canChoose)
       lyricsSourceMenuItem(
         context,
         title: l10n.lyricsFindOnline,

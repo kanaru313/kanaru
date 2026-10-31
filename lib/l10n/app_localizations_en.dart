@@ -3421,9 +3421,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lyricsSourceAutoHint(String provider) {
-    return 'The file or tag first, then $provider';
-  }
+  String get lyricsSourceAutoHintLocalOnly => 'The file or tag only';
+
+  @override
+  String get lyricsSourceAutoHint =>
+      'The file or tag first, then online sources';
 
   @override
   String lyricsSourceForgetPick(String text) {
