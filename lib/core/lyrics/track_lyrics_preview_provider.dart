@@ -55,7 +55,8 @@ final _trackTargetProvider = StreamProvider.autoDispose
 ///
 /// It only reads. Unlike Now Playing it never starts an online lookup: a
 /// song with nothing saved resolves to `null`, so opening a song's details
-/// sends no request. Loading while anything is still being read; `null`
+/// sends no request. Loading while anything is still being read for the first
+/// time (a reload keeps the last value); `null`
 /// data when the song has no lyrics or the user turned them off. Without a
 /// library only the song's own lyrics count.
 final trackLyricsPreviewProvider = Provider.autoDispose
@@ -67,17 +68,17 @@ final trackLyricsPreviewProvider = Provider.autoDispose
       }
 
       if (ref.watch(libraryDatabaseProvider) == null) {
-        return local.isLoading ? const AsyncLoading() : AsyncData(own());
+        return _noValueYet(local) ? const AsyncLoading() : AsyncData(own());
       }
       final pin = ref.watch(lyricsPinProvider(path));
       final target = ref.watch(_trackTargetProvider(path));
       for (final async in [pin, target]) {
         if (async.hasError) {
           _log.warning('Lyrics preview needs the library', async.error);
-          return local.isLoading ? const AsyncLoading() : AsyncData(own());
+          return _noValueYet(local) ? const AsyncLoading() : AsyncData(own());
         }
       }
-      if (pin.isLoading || target.isLoading || local.isLoading) {
+      if (_noValueYet(pin) || _noValueYet(target) || _noValueYet(local)) {
         return const AsyncLoading();
       }
 
@@ -102,6 +103,12 @@ final trackLyricsPreviewProvider = Provider.autoDispose
       };
     });
 
+/// True only for a first load. An input that is reloading (a setting changed,
+/// a row was rewritten) still holds its last value, which keeps being used so
+/// the preview never drops back to loading and loses what it showed.
+bool _noValueYet(AsyncValue<Object?> async) =>
+    async.isLoading && !async.hasValue;
+
 /// The saved online answers for [song]; a miss is no lyrics, never a lookup.
 PlayingLyricsStatus _fromCache(Ref ref, String path, LyricsTarget? song) {
   if (song == null) return LyricsNone(path, LyricsNoneReason.noLyrics);
@@ -111,7 +118,7 @@ PlayingLyricsStatus _fromCache(Ref ref, String path, LyricsTarget? song) {
     _log.warning('Saved online lyrics could not be read', cache.error);
     return LyricsNone(path, LyricsNoneReason.noLyrics);
   }
-  if (cache.isLoading) return LyricsReading(path);
+  if (_noValueYet(cache)) return LyricsReading(path);
   final cached = statusFromCache(
     path,
     cache.requireValue,

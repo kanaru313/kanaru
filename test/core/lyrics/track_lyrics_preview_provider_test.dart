@@ -151,6 +151,35 @@ void main() {
     expect(p.requireValue!.lyrics.synced, isTrue);
   });
 
+  test(
+    'an input that reloads never drops the preview back to loading',
+    () async {
+      await setUpRig();
+      rig.sidecar.byPath[_path] = _lrc;
+      rig.embedded.byPath[_path] = (text: 'tag line', synced: const []);
+      expect(firstText(await preview()), 'side line');
+
+      final seen = <AsyncValue<TrackLyricsPreview?>>[];
+      rig.container.listen(
+        trackLyricsPreviewProvider(_path),
+        (_, next) => seen.add(next),
+      );
+      rig.container
+          .read(settingsProvider.notifier)
+          .setPlayback(const PlaybackPrefs(preferEmbeddedLyrics: true));
+      await rig.until(
+        () =>
+            rig.container.read(trackLyricsPreviewProvider(_path)).value?.kind ==
+            TrackLyricsKind.embedded,
+      );
+      await rig.settle();
+
+      expect(seen, isNotEmpty);
+      expect(seen.every((p) => p.hasValue && p.value != null), isTrue);
+      expect(firstText(seen.last), 'tag line');
+    },
+  );
+
   group('the same inputs give the same source as Now Playing', () {
     final scenarios = <String, Future<void> Function()>{
       'pick': () async {
