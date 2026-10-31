@@ -1,6 +1,6 @@
 # Lyrics plugin API
 
-What a lyrics plugin script can rely on. Plugins are JavaScript files in the package's `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Architecture: [system-architecture.md](./system-architecture.md#plugin-runtime).
+What a lyrics plugin script can rely on. Plugins are JavaScript files in the package's `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Architecture: [system-architecture.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
 
 ## Runtime and limits
 
@@ -114,7 +114,7 @@ Cumulative release `librust_lib_kanaru.so` growth of the runtime work is 3,452,3
 
 ## Host API
 
-Besides `Response` and `load`, a script has these globals. They are ordinary global properties (a package may declare its own `sleep` or `console`). Everything is synchronous; there are no Promises. The runtime knows nothing about hosts or consent: the app answers `fetch` through a callback (see [system-architecture.md](./system-architecture.md#plugin-runtime)).
+Besides `Response` and `load`, a script has these globals. They are ordinary global properties (a package may declare its own `sleep` or `console`). Everything is synchronous; there are no Promises. The runtime knows nothing about hosts or consent: the app answers `fetch` through a callback (see [system-architecture.md](./system-architecture-lyrics-plugins.md#plugin-runtime)).
 
 ### `fetch(url, options?)`
 
@@ -197,7 +197,7 @@ Evaluates the bundled CryptoJS 4.2.0 (MIT) and defines the global `CryptoJS` (AE
 
 ## Lyrics scripts in a lookup
 
-How the app uses a plugin (`lib/core/lyrics/plugins/plugin_lyrics_provider.dart`, `plugin_script_runner.dart`, `plugin_output_reader.dart`; data flow in [system-architecture.md](./system-architecture.md#plugin-lyrics-provider-and-source-list)). A plugin has no exact-match call: the app runs `search.js`, matches the results against the song (title, artist, duration) and then runs `lyrics.js` for the best matches.
+How the app uses a plugin (`lib/core/lyrics/plugins/plugin_lyrics_provider.dart`, `plugin_script_runner.dart`, `plugin_output_reader.dart`; data flow in [system-architecture.md](./system-architecture-lyrics-plugins.md#plugin-lyrics-provider-and-source-list)). A plugin has no exact-match call: the app runs `search.js`, matches the results against the song (title, artist, duration) and then runs `lyrics.js` for the best matches.
 
 ### `search.js`
 
@@ -239,7 +239,7 @@ The app maps the result of a run to a failure in this order:
 
 A failure is never stored as "no lyrics": only a successful empty answer is. A failure pauses that source (and only that source) for at least 60 seconds.
 
-**Caching.** A lyric the host got from a source is stored with that source's id and reused without a new call. A `not found` row for a song is written only when every enabled source gave a successful empty answer (no failed run, no skipped source), so a plugin that fails never causes one. The stored rows are listed in [system-architecture.md](./system-architecture.md#7-library-database-schema). Besides the 15 s of script time, a run has an outer deadline of 60 s from the call (queue wait included); when it passes the run is cancelled and counts as `network`.
+**Caching.** A lyric the host got from a source is stored with that source's id and reused without a new call. A `not found` row for a song is written only when every enabled source gave a successful empty answer (no failed run, no skipped source), so a plugin that fails never causes one. The stored rows are listed in [system-architecture.md](./system-architecture-database.md#7-library-database-schema). Besides the 15 s of script time, a run has an outer deadline of 60 s from the call (queue wait included); when it passes the run is cancelled and counts as `network`.
 
 ### Logs
 
