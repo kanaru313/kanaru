@@ -3404,42 +3404,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 minute} other{{count} minutes}}'**
   String sleepTimerMinutes(int count);
 
-  /// Sleep timer menu item that asks for a number of minutes
-  ///
-  /// In en, this message translates to:
-  /// **'Custom…'**
-  String get sleepTimerCustom;
-
-  /// Sleep timer mode: pause when the current track ends
-  ///
-  /// In en, this message translates to:
-  /// **'End of track'**
-  String get sleepTimerEndOfTrack;
-
-  /// Sleep timer mode: pause when the album ends
-  ///
-  /// In en, this message translates to:
-  /// **'End of album'**
-  String get sleepTimerEndOfAlbum;
-
-  /// Sleep timer mode: pause when the last track of the queue ends
-  ///
-  /// In en, this message translates to:
-  /// **'End of queue'**
-  String get sleepTimerEndOfQueue;
-
-  /// Header of the sleep timer menu while counting minutes
-  ///
-  /// In en, this message translates to:
-  /// **'{time} left'**
-  String sleepTimerLeft(String time);
-
-  /// Header of the sleep timer menu while the countdown is on hold
-  ///
-  /// In en, this message translates to:
-  /// **'{time} left (paused)'**
-  String sleepTimerLeftPaused(String time);
-
   /// Sleep timer menu item
   ///
   /// In en, this message translates to:
@@ -3464,30 +3428,6 @@ abstract class AppLocalizations {
   /// **'Resume counting'**
   String get sleepTimerResumeCounting;
 
-  /// Sleep timer menu item that turns the timer off
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel timer'**
-  String get sleepTimerCancel;
-
-  /// Title of the dialog that asks for minutes
-  ///
-  /// In en, this message translates to:
-  /// **'Custom sleep timer'**
-  String get sleepTimerCustomTitle;
-
-  /// Field label in the custom sleep timer dialog
-  ///
-  /// In en, this message translates to:
-  /// **'Minutes'**
-  String get sleepTimerCustomLabel;
-
-  /// Validation message in the custom sleep timer dialog
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a whole number from {min} to {max}'**
-  String sleepTimerCustomInvalid(int min, int max);
-
   /// Button of the custom sleep timer dialog
   ///
   /// In en, this message translates to:
@@ -3511,6 +3451,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Queue'**
   String get sleepTimerLabelQueue;
+
+  /// Short label beside the moon button while the timer counts tracks
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 track} other{{count} tracks}}'**
+  String sleepTimerTracksShort(int count);
+
+  /// Sleep timer status while it waits for some more tracks to end (the current one included)
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Pauses after 1 more track} other{Pauses after {count} more tracks}}'**
+  String sleepTimerPausesAfterTracks(int count);
+
+  /// Title of the sleep timer dialog while choosing when to pause
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep after'**
+  String get sleepTimerSetupTitle;
+
+  /// Sleep timer dialog tab for a number of minutes
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get sleepTimerTabMinutes;
+
+  /// Sleep timer dialog tab for a number of tracks
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks'**
+  String get sleepTimerTabTracks;
+
+  /// Sleep timer dialog tab for the end of the track, album or queue
+  ///
+  /// In en, this message translates to:
+  /// **'End of…'**
+  String get sleepTimerTabEndOf;
+
+  /// Unit under the big number of the sleep timer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get sleepTimerUnitMinutes;
+
+  /// Unit under the big number of the sleep timer dialog on the tracks tab
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{track} other{tracks}}'**
+  String sleepTimerUnitTracks(int count);
+
+  /// Hint under the slider: the clock time the timer pauses playback
+  ///
+  /// In en, this message translates to:
+  /// **'Stops at {time}'**
+  String sleepTimerStopsAt(String time);
+
+  /// Hint under the slider on the tracks tab
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Pauses after 1 track, this one included} other{Pauses after {count} tracks, this one included}}'**
+  String sleepTimerTracksHint(int count);
+
+  /// Quick choice chip: minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m'**
+  String sleepTimerChipMinutes(int minutes);
+
+  /// Quick choice chip: whole hours
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h'**
+  String sleepTimerChipHours(int hours);
+
+  /// Quick choice chip: hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h{minutes}'**
+  String sleepTimerChipHoursMinutes(int hours, int minutes);
+
+  /// Status line of the running sleep timer in minutes mode
+  ///
+  /// In en, this message translates to:
+  /// **'Sleeping in {time}'**
+  String sleepTimerSleepingIn(String time);
+
+  /// Status line of the sleep timer while its countdown is on hold
+  ///
+  /// In en, this message translates to:
+  /// **'Counting paused · {time} left'**
+  String sleepTimerPausedLeft(String time);
+
+  /// Status line of the sleep timer waiting for the end of the track
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses at the end of this track'**
+  String get sleepTimerPausesEndOfTrack;
+
+  /// Status line of the sleep timer waiting for the end of the album
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses at the end of this album'**
+  String get sleepTimerPausesEndOfAlbum;
+
+  /// Status line of the sleep timer waiting for the end of the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses at the end of the queue'**
+  String get sleepTimerPausesEndOfQueue;
+
+  /// Caption under the big number while the countdown is on hold
+  ///
+  /// In en, this message translates to:
+  /// **'Counting paused'**
+  String get sleepTimerCountingPaused;
+
+  /// Caption under the number of tracks left
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{track left, this one included} other{tracks left, this one included}}'**
+  String sleepTimerTracksLeftCaption(int count);
+
+  /// Caption of the running sleep timer in an end of track, album or queue mode
+  ///
+  /// In en, this message translates to:
+  /// **'Pauses there; the queue stays'**
+  String get sleepTimerEndCaption;
+
+  /// Button of the running sleep timer: add five minutes
+  ///
+  /// In en, this message translates to:
+  /// **'+5 min'**
+  String get sleepTimerAddShort;
+
+  /// Button of the running sleep timer: take five minutes off
+  ///
+  /// In en, this message translates to:
+  /// **'−5 min'**
+  String get sleepTimerSubtractShort;
+
+  /// Tooltip of the button that adds one track to the running sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Add one track'**
+  String get sleepTimerAddTrack;
+
+  /// Tooltip of the button that takes one track off the running sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Remove one track'**
+  String get sleepTimerRemoveTrack;
+
+  /// Button of the running sleep timer: add one track
+  ///
+  /// In en, this message translates to:
+  /// **'+1 track'**
+  String get sleepTimerAddTrackShort;
+
+  /// Button of the running sleep timer: take one track off
+  ///
+  /// In en, this message translates to:
+  /// **'−1 track'**
+  String get sleepTimerRemoveTrackShort;
+
+  /// Screen reader label of the number field on the tracks tab
+  ///
+  /// In en, this message translates to:
+  /// **'Number of tracks'**
+  String get sleepTimerTracksFieldLabel;
+
+  /// Button that turns the running sleep timer off
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get sleepTimerTurnOff;
+
+  /// Button that goes back to choosing a new sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Change…'**
+  String get sleepTimerChange;
+
+  /// Chip that goes back to the view of the running sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get sleepTimerBackToRunning;
 
   /// Sidebar and page title for song languages
   ///

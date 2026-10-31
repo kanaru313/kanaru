@@ -2237,28 +2237,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get sleepTimerCustom => 'Tuỳ chỉnh…';
-
-  @override
-  String get sleepTimerEndOfTrack => 'Hết bài';
-
-  @override
-  String get sleepTimerEndOfAlbum => 'Hết album';
-
-  @override
-  String get sleepTimerEndOfQueue => 'Hết hàng đợi';
-
-  @override
-  String sleepTimerLeft(String time) {
-    return 'Còn $time';
-  }
-
-  @override
-  String sleepTimerLeftPaused(String time) {
-    return 'Còn $time (tạm dừng đếm)';
-  }
-
-  @override
   String get sleepTimerAdd => 'Thêm 5 phút';
 
   @override
@@ -2271,20 +2249,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sleepTimerResumeCounting => 'Tiếp tục đếm';
 
   @override
-  String get sleepTimerCancel => 'Huỷ hẹn giờ';
-
-  @override
-  String get sleepTimerCustomTitle => 'Hẹn giờ ngủ tuỳ chỉnh';
-
-  @override
-  String get sleepTimerCustomLabel => 'Số phút';
-
-  @override
-  String sleepTimerCustomInvalid(int min, int max) {
-    return 'Nhập số nguyên từ $min đến $max';
-  }
-
-  @override
   String get sleepTimerStart => 'Bắt đầu';
 
   @override
@@ -2295,6 +2259,121 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sleepTimerLabelQueue => 'Hàng đợi';
+
+  @override
+  String sleepTimerTracksShort(int count) {
+    return '$count bài';
+  }
+
+  @override
+  String sleepTimerPausesAfterTracks(int count) {
+    return 'Tạm dừng sau $count bài';
+  }
+
+  @override
+  String get sleepTimerSetupTitle => 'Tạm dừng sau';
+
+  @override
+  String get sleepTimerTabMinutes => 'Phút';
+
+  @override
+  String get sleepTimerTabTracks => 'Số bài';
+
+  @override
+  String get sleepTimerTabEndOf => 'Khi hết…';
+
+  @override
+  String get sleepTimerUnitMinutes => 'phút';
+
+  @override
+  String sleepTimerUnitTracks(int count) {
+    return 'bài';
+  }
+
+  @override
+  String sleepTimerStopsAt(String time) {
+    return 'Dừng lúc $time';
+  }
+
+  @override
+  String sleepTimerTracksHint(int count) {
+    return 'Tạm dừng sau $count bài, tính cả bài này';
+  }
+
+  @override
+  String sleepTimerChipMinutes(int minutes) {
+    return '$minutes ph';
+  }
+
+  @override
+  String sleepTimerChipHours(int hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String sleepTimerChipHoursMinutes(int hours, int minutes) {
+    return '$hours giờ $minutes';
+  }
+
+  @override
+  String sleepTimerSleepingIn(String time) {
+    return 'Ngủ sau $time';
+  }
+
+  @override
+  String sleepTimerPausedLeft(String time) {
+    return 'Tạm dừng đếm · còn $time';
+  }
+
+  @override
+  String get sleepTimerPausesEndOfTrack => 'Tạm dừng khi hết bài này';
+
+  @override
+  String get sleepTimerPausesEndOfAlbum => 'Tạm dừng khi hết album này';
+
+  @override
+  String get sleepTimerPausesEndOfQueue => 'Tạm dừng khi hết hàng đợi';
+
+  @override
+  String get sleepTimerCountingPaused => 'Đã tạm dừng đếm';
+
+  @override
+  String sleepTimerTracksLeftCaption(int count) {
+    return 'bài còn lại, tính cả bài này';
+  }
+
+  @override
+  String get sleepTimerEndCaption => 'Tạm dừng ở đó; hàng đợi vẫn giữ';
+
+  @override
+  String get sleepTimerAddShort => '+5 phút';
+
+  @override
+  String get sleepTimerSubtractShort => '−5 phút';
+
+  @override
+  String get sleepTimerAddTrack => 'Thêm một bài';
+
+  @override
+  String get sleepTimerRemoveTrack => 'Bớt một bài';
+
+  @override
+  String get sleepTimerAddTrackShort => '+1 bài';
+
+  @override
+  String get sleepTimerRemoveTrackShort => '−1 bài';
+
+  @override
+  String get sleepTimerTracksFieldLabel => 'Số bài';
+
+  @override
+  String get sleepTimerTurnOff => 'Tắt hẹn giờ';
+
+  @override
+  String get sleepTimerChange => 'Đổi…';
+
+  @override
+  String get sleepTimerBackToRunning => 'Đang chạy';
 
   @override
   String get navLanguages => 'Ngôn ngữ';

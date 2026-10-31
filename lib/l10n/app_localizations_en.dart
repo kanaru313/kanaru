@@ -2424,28 +2424,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get sleepTimerCustom => 'Custom…';
-
-  @override
-  String get sleepTimerEndOfTrack => 'End of track';
-
-  @override
-  String get sleepTimerEndOfAlbum => 'End of album';
-
-  @override
-  String get sleepTimerEndOfQueue => 'End of queue';
-
-  @override
-  String sleepTimerLeft(String time) {
-    return '$time left';
-  }
-
-  @override
-  String sleepTimerLeftPaused(String time) {
-    return '$time left (paused)';
-  }
-
-  @override
   String get sleepTimerAdd => 'Add 5 minutes';
 
   @override
@@ -2458,20 +2436,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTimerResumeCounting => 'Resume counting';
 
   @override
-  String get sleepTimerCancel => 'Cancel timer';
-
-  @override
-  String get sleepTimerCustomTitle => 'Custom sleep timer';
-
-  @override
-  String get sleepTimerCustomLabel => 'Minutes';
-
-  @override
-  String sleepTimerCustomInvalid(int min, int max) {
-    return 'Enter a whole number from $min to $max';
-  }
-
-  @override
   String get sleepTimerStart => 'Start';
 
   @override
@@ -2482,6 +2446,151 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sleepTimerLabelQueue => 'Queue';
+
+  @override
+  String sleepTimerTracksShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tracks',
+      one: '1 track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerPausesAfterTracks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pauses after $count more tracks',
+      one: 'Pauses after 1 more track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sleepTimerSetupTitle => 'Sleep after';
+
+  @override
+  String get sleepTimerTabMinutes => 'Minutes';
+
+  @override
+  String get sleepTimerTabTracks => 'Tracks';
+
+  @override
+  String get sleepTimerTabEndOf => 'End of…';
+
+  @override
+  String get sleepTimerUnitMinutes => 'min';
+
+  @override
+  String sleepTimerUnitTracks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'tracks',
+      one: 'track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerStopsAt(String time) {
+    return 'Stops at $time';
+  }
+
+  @override
+  String sleepTimerTracksHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pauses after $count tracks, this one included',
+      one: 'Pauses after 1 track, this one included',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerChipMinutes(int minutes) {
+    return '${minutes}m';
+  }
+
+  @override
+  String sleepTimerChipHours(int hours) {
+    return '${hours}h';
+  }
+
+  @override
+  String sleepTimerChipHoursMinutes(int hours, int minutes) {
+    return '${hours}h$minutes';
+  }
+
+  @override
+  String sleepTimerSleepingIn(String time) {
+    return 'Sleeping in $time';
+  }
+
+  @override
+  String sleepTimerPausedLeft(String time) {
+    return 'Counting paused · $time left';
+  }
+
+  @override
+  String get sleepTimerPausesEndOfTrack => 'Pauses at the end of this track';
+
+  @override
+  String get sleepTimerPausesEndOfAlbum => 'Pauses at the end of this album';
+
+  @override
+  String get sleepTimerPausesEndOfQueue => 'Pauses at the end of the queue';
+
+  @override
+  String get sleepTimerCountingPaused => 'Counting paused';
+
+  @override
+  String sleepTimerTracksLeftCaption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'tracks left, this one included',
+      one: 'track left, this one included',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sleepTimerEndCaption => 'Pauses there; the queue stays';
+
+  @override
+  String get sleepTimerAddShort => '+5 min';
+
+  @override
+  String get sleepTimerSubtractShort => '−5 min';
+
+  @override
+  String get sleepTimerAddTrack => 'Add one track';
+
+  @override
+  String get sleepTimerRemoveTrack => 'Remove one track';
+
+  @override
+  String get sleepTimerAddTrackShort => '+1 track';
+
+  @override
+  String get sleepTimerRemoveTrackShort => '−1 track';
+
+  @override
+  String get sleepTimerTracksFieldLabel => 'Number of tracks';
+
+  @override
+  String get sleepTimerTurnOff => 'Turn off';
+
+  @override
+  String get sleepTimerChange => 'Change…';
+
+  @override
+  String get sleepTimerBackToRunning => 'Running';
 
   @override
   String get navLanguages => 'Languages';

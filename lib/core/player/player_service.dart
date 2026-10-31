@@ -192,7 +192,8 @@ class PlayerService extends Notifier<PlayerState>
   /// repeat mode is dropped: it is not a play of what is current now. A
   /// counted repeat uses up one play per loop; at the start of the last one
   /// the engine gets the base mode back, so the track ends and playback goes
-  /// on as before. A loop already in flight when a count is armed over repeat
+  /// on as before. A loop that is not a sleep stop is announced on
+  /// `trackEnds`. A loop already in flight when a count is armed over repeat
   /// one still counts toward it (a window of a few ms).
   void _onLooped(Track track) {
     final counting = state.repeatTimes > 0;
@@ -222,6 +223,8 @@ class PlayerService extends Notifier<PlayerState>
     if (sleep) {
       _restAtStart();
       _followEngine('queue the next track', _queueNext);
+    } else {
+      _announceTrackEnd();
     }
   }
 
@@ -231,9 +234,12 @@ class PlayerService extends Notifier<PlayerState>
   /// a later queue edit loads its track paused. After a stop after the
   /// current track, the next one is loaded paused. Under repeat all shuffled
   /// the last track of a pass is followed by the first of a new random order.
+  /// A track that ended by itself is announced on `trackEnds` once the state
+  /// shows what follows.
   void _onCompleted() {
     final next = state.queue.nextIndex;
     final sleep = _takeSleepStop();
+    final counts = !sleep && _failuresInRow == 0;
     if (next != null && !_allFailed) {
       // The engine was handed no next track on the last one: the pass is
       // over, the next one is a new random order.
@@ -242,10 +248,11 @@ class PlayerService extends Notifier<PlayerState>
         'continue after the engine stopped',
         () => _play(next, play: _wantsPlaying && !sleep),
       );
-      return;
+    } else {
+      // Position and duration stay so the user can seek back into the track.
+      _markStopped(ended: true, resetPosition: false);
     }
-    // Position and duration stay so the user can seek back into the track.
-    _markStopped(ended: true, resetPosition: false);
+    if (counts) _announceTrackEnd();
   }
 
   void _onFailed(PlaybackError error) {
