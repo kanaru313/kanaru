@@ -302,6 +302,20 @@ void main() {
     );
   });
 
+  testWidgets('the service and language submenus are not tight', (
+    tester,
+  ) async {
+    await pump(tester, TranslationOff(fakeTranslationInfo()));
+
+    await openServiceSubmenu(tester);
+    final panel = find.ancestor(
+      of: serviceRadio('Google'),
+      matching: find.byType(Material),
+    );
+    expect(tester.getSize(panel.first).width, greaterThanOrEqualTo(160));
+    expect(tester.takeException(), isNull);
+  });
+
   group('the service submenu', () {
     testWidgets('lists both services, checks the selected, a pick closes', (
       tester,

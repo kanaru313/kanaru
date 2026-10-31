@@ -14,6 +14,10 @@ import 'lyrics_translation_labels.dart';
 import 'lyrics_translation_menu_footer.dart';
 import 'lyrics_translation_switch_row.dart';
 
+/// Least width of the text of an option in the language and service
+/// submenus, so their rows are not tight.
+const _optionMinWidth = 120.0;
+
 /// Tallest the language submenu grows before it scrolls.
 const _languageMenuMaxHeight = 320.0;
 
@@ -70,7 +74,10 @@ List<Widget> lyricsTranslationMenuItems(
     value: value,
     groupValue: groupValue,
     onChanged: (_) => onChanged(),
-    child: Text(label),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: _optionMinWidth),
+      child: Text(label),
+    ),
   );
 
   return [
@@ -117,10 +124,15 @@ List<Widget> lyricsTranslationMenuItems(
     menuRowSpaced(
       SubmenuButton(
         style: menuRowStyle(),
-        trailingIcon: Text(
-          translationServiceName(prefs.service),
-          style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        // A gap before the arrow.
+        trailingIcon: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Text(
+            translationServiceName(prefs.service),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
         menuChildren: [
           for (final service in LyricsTranslationService.values)
