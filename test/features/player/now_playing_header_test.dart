@@ -16,6 +16,7 @@ import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pill.dart';
+import 'package:kanaru/features/player/sleep_timer/sleep_timer_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pills.dart'
     show nowPlayingPillGap, nowPlayingPillLabelRooms;
 import 'package:kanaru/features/player/playback_controls.dart'
@@ -303,6 +304,14 @@ void main() {
     container.read(sleepTimerProvider.notifier).startMinutes(30);
     await tester.pump();
     expect(find.text('30:00'), findsOneWidget);
+    // The countdown repaints only its own layer.
+    expect(
+      find.descendant(
+        of: find.byType(SleepTimerButton),
+        matching: find.byType(RepaintBoundary),
+      ),
+      findsWidgets,
+    );
     // A running timer is a pill, like the lyrics buttons.
     expect(
       find.ancestor(

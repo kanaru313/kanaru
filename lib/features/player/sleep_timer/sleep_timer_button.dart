@@ -68,56 +68,60 @@ class _SleepTimerButtonState extends ConsumerState<SleepTimerButton> {
         ? scheme.primary.withValues(alpha: 0.5)
         : scheme.primary;
 
-    return MenuAnchor(
-      // Air between the button and the menu.
-      alignmentOffset: const Offset(0, 8),
-      onOpen: () => _setOpen(true),
-      onClose: () => _setOpen(false),
-      menuChildren: sleepTimerMenuItems(context, ref, state),
-      builder: (context, controller, _) {
-        void toggle() =>
-            controller.isOpen ? controller.close() : controller.open();
-        if (widget.pill && state.active && widget.showLabel) {
-          return NowPlayingHeaderPill(
-            icon: AppIcons.sleepTimerActive,
-            label: sleepTimerShortLabel(l10n, state),
-            tooltip: tooltip,
-            maxLabelWidth: _pillLabelWidth,
-            muted: state.countingPaused,
-            tabularFigures: true,
-            onPressed: toggle,
-          );
-        }
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(AppIcons.sleepTimer),
-              selectedIcon: const Icon(AppIcons.sleepTimerActive),
-              isSelected: state.active,
-              color: state.active ? scheme.primary : null,
-              iconSize: playerIconSize,
+    // The countdown changes the label every second: its own layer keeps
+    // that repaint from reaching the rest of the header.
+    return RepaintBoundary(
+      child: MenuAnchor(
+        // Air between the button and the menu.
+        alignmentOffset: const Offset(0, 8),
+        onOpen: () => _setOpen(true),
+        onClose: () => _setOpen(false),
+        menuChildren: sleepTimerMenuItems(context, ref, state),
+        builder: (context, controller, _) {
+          void toggle() =>
+              controller.isOpen ? controller.close() : controller.open();
+          if (widget.pill && state.active && widget.showLabel) {
+            return NowPlayingHeaderPill(
+              icon: AppIcons.sleepTimerActive,
+              label: sleepTimerShortLabel(l10n, state),
               tooltip: tooltip,
+              maxLabelWidth: _pillLabelWidth,
+              muted: state.countingPaused,
+              tabularFigures: true,
               onPressed: toggle,
-            ),
-            // The tooltip already carries this text for screen readers.
-            if (state.active && widget.showLabel)
-              Flexible(
-                child: ExcludeSemantics(
-                  child: Text(
-                    sleepTimerShortLabel(l10n, state),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: labelColor,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+            );
+          }
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(AppIcons.sleepTimer),
+                selectedIcon: const Icon(AppIcons.sleepTimerActive),
+                isSelected: state.active,
+                color: state.active ? scheme.primary : null,
+                iconSize: playerIconSize,
+                tooltip: tooltip,
+                onPressed: toggle,
+              ),
+              // The tooltip already carries this text for screen readers.
+              if (state.active && widget.showLabel)
+                Flexible(
+                  child: ExcludeSemantics(
+                    child: Text(
+                      sleepTimerShortLabel(l10n, state),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: labelColor,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 }
