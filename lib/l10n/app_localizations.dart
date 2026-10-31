@@ -5087,7 +5087,7 @@ abstract class AppLocalizations {
   /// Lyrics source menu item that opens the save dialog
   ///
   /// In en, this message translates to:
-  /// **'Save lyrics…'**
+  /// **'Save current lyrics…'**
   String get lyricsSourceSave;
 
   /// Lyrics source menu item that hides lyrics for the song

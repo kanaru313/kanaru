@@ -1515,7 +1515,7 @@
   "lyricsSourceOnlineItem": "{provider} · bản đã chọn",
   "lyricsSourceOnlineSubtitle": "{kind} · {length}",
   "lyricsSourceKeep": "Giữ bản này",
-  "lyricsSourceSave": "Lưu lời…",
+  "lyricsSourceSave": "Lưu lời đang hiện…",
   "lyricsSourceTurnOff": "Tắt lời cho bài này",
   "lyricsOffTitle": "Đã tắt lời cho bài này",
   "lyricsOffTurnOn": "Bật lại",

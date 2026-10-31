@@ -3127,7 +3127,7 @@
   "@lyricsSourceKeep": {
     "description": "Lyrics source menu item that picks the automatic match for good"
   },
-  "lyricsSourceSave": "Save lyrics…",
+  "lyricsSourceSave": "Save current lyrics…",
   "@lyricsSourceSave": {
     "description": "Lyrics source menu item that opens the save dialog"
   },

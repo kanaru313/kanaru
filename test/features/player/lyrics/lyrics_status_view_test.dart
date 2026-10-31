@@ -407,7 +407,7 @@ void main() {
     for (final (kind, text) in const [
       (LyricsFetchKind.network, "Couldn't reach Fake"),
       (LyricsFetchKind.rateLimited, 'Fake is busy. Try again in a moment.'),
-      (LyricsFetchKind.server, 'Fake answered but Kanaru could not read it'),
+      (LyricsFetchKind.server, 'Fake is having trouble, try again later'),
       (
         LyricsFetchKind.invalidResponse,
         'Fake answered but Kanaru could not read it',
@@ -716,7 +716,7 @@ void main() {
           LyricsFetchKind.server,
         ),
       );
-      const unreadable = 'Fake answered but Kanaru could not read it';
+      const unreadable = 'Fake is having trouble, try again later';
       expect(find.text(unreadable), findsOneWidget);
       expect(rig.fake.lookupCalls, 1);
 

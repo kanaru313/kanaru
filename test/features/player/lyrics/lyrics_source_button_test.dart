@@ -242,7 +242,7 @@ void main() {
         '✓ Automatic',
         'Lyrics in the file',
         'Find lyrics online…',
-        'Save lyrics… (off)',
+        'Save current lyrics… (off)',
         'Turn lyrics off for this song',
       ],
     ),
@@ -263,7 +263,7 @@ void main() {
         '✓ Fake · chosen version',
         'Not these lyrics',
         'Find lyrics online…',
-        'Save lyrics…',
+        'Save current lyrics…',
         'Turn lyrics off for this song',
       ],
     ),
@@ -282,7 +282,7 @@ void main() {
         '✓ Lyrics in the file',
         'Fake · chosen version',
         'Find lyrics online…',
-        'Save lyrics… (off)',
+        'Save current lyrics… (off)',
         'Turn lyrics off for this song',
       ],
     ),
@@ -301,7 +301,7 @@ void main() {
         'Fake · chosen version',
         'Not these lyrics',
         'Find lyrics online…',
-        'Save lyrics…',
+        'Save current lyrics…',
         'Turn lyrics off for this song',
       ],
     ),
@@ -314,7 +314,7 @@ void main() {
         'Keep this one',
         'Not these lyrics',
         'Find lyrics online…',
-        'Save lyrics…',
+        'Save current lyrics…',
         'Turn lyrics off for this song',
       ],
     ),
@@ -325,7 +325,7 @@ void main() {
       menu: [
         '✓ Automatic',
         'Find lyrics online…',
-        'Save lyrics… (off)',
+        'Save current lyrics… (off)',
         'Turn lyrics off for this song',
       ],
     ),
@@ -337,7 +337,7 @@ void main() {
       menu: [
         '✓ Automatic',
         'Find lyrics online…',
-        'Save lyrics… (off)',
+        'Save current lyrics… (off)',
         'Turn lyrics off for this song',
       ],
     ),
@@ -354,7 +354,7 @@ void main() {
         'Automatic',
         'Lyrics in the file',
         'Find lyrics online…',
-        'Save lyrics… (off)',
+        'Save current lyrics… (off)',
         '✓ Turn lyrics off for this song',
       ],
     ),
@@ -558,7 +558,7 @@ void main() {
       await openMenu(tester);
       expect(find.text('Lời từ Fake · Đồng bộ'), findsOneWidget);
       expect(find.text('Tắt lời cho bài này'), findsOneWidget);
-      expect(find.text('Lưu lời…'), findsOneWidget);
+      expect(find.text('Lưu lời đang hiện…'), findsOneWidget);
     });
 
     testWidgets('ellipsizes at text scale 2 without overflow', (tester) async {
@@ -699,7 +699,7 @@ void main() {
           'Lyrics in the file (off)',
           'Keep this one (off)',
           'Not these lyrics (off)',
-          'Save lyrics… (off)',
+          'Save current lyrics… (off)',
           'Turn lyrics off for this song (off)',
         ]);
       });
@@ -754,7 +754,7 @@ void main() {
     testWidgets('Save lyrics saves the record on screen', (tester) async {
       await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
       await openMenu(tester);
-      await tester.tap(item('Save lyrics…'));
+      await tester.tap(item('Save current lyrics…'));
       await tester.pumpAndSettle();
       expect(find.text('Save lyrics'), findsOneWidget);
       await tester.tap(find.text('Save').last);
@@ -790,7 +790,7 @@ void main() {
       (tester) async {
         await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
         await openMenu(tester);
-        await tester.tap(item('Save lyrics…'));
+        await tester.tap(item('Save current lyrics…'));
         await tester.pumpAndSettle();
         expect(find.text('Save lyrics'), findsOneWidget);
 

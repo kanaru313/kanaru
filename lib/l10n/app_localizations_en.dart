@@ -3455,7 +3455,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourceKeep => 'Keep this one';
 
   @override
-  String get lyricsSourceSave => 'Save lyrics…';
+  String get lyricsSourceSave => 'Save current lyrics…';
 
   @override
   String get lyricsSourceTurnOff => 'Turn lyrics off for this song';

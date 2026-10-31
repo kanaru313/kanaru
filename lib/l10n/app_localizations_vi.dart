@@ -3250,7 +3250,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsSourceKeep => 'Giữ bản này';
 
   @override
-  String get lyricsSourceSave => 'Lưu lời…';
+  String get lyricsSourceSave => 'Lưu lời đang hiện…';
 
   @override
   String get lyricsSourceTurnOff => 'Tắt lời cho bài này';
