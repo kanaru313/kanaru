@@ -329,13 +329,15 @@ void main() {
       expect(find.byTooltip('Lyrics translation'), findsOneWidget);
     });
 
-    testWidgets('sits right after the playlist button', (tester) async {
+    testWidgets('sits right after the lyrics source button', (tester) async {
       await pump(tester, showTranslate: true, overrides: scripted());
 
-      final playlist = centerX(tester, 'Add to playlist');
-      final translate = centerX(tester, 'Lyrics translation');
-      expect(translate - playlist, 48);
-      expect(translate, lessThan(centerX(tester, 'Shuffle')));
+      final source = tester.getRect(find.byType(LyricsSourceButton));
+      final translate = tester.getRect(find.byType(LyricsTranslationButton));
+      // The playlist button's 48 px slot ends where the source starts.
+      expect(source.left, centerX(tester, 'Add to playlist') + 24);
+      expect(translate.left - source.right, anyOf(0, nowPlayingPillGap));
+      expect(translate.right, lessThan(centerX(tester, 'Shuffle')));
     });
 
     testWidgets('is disabled when told so', (tester) async {
@@ -407,25 +409,25 @@ void main() {
         expect(floating.value, isTrue);
       });
 
-      testWidgets('leaves a gap between the translate icon and the source '
-          'pill', (tester) async {
+      testWidgets('leaves a gap between the source pill and the translate '
+          'icon', (tester) async {
         await pump(tester, showTranslate: true, overrides: scripted());
 
         expect(find.textContaining('Google ·'), findsNothing);
         expect(
-          tester.getRect(find.byType(LyricsSourceButton)).left -
-              tester.getRect(find.byType(LyricsTranslationButton)).right,
+          tester.getRect(find.byType(LyricsTranslationButton)).left -
+              tester.getRect(find.byType(LyricsSourceButton)).right,
           nowPlayingPillGap,
         );
       });
 
-      testWidgets('leaves a gap before the lyrics source pill', (tester) async {
+      testWidgets('leaves a gap after the lyrics source pill', (tester) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
         expect(find.text('Google · English'), findsOneWidget);
         expect(
-          tester.getRect(find.byType(LyricsSourceButton)).left -
-              tester.getRect(find.byType(LyricsTranslationButton)).right,
+          tester.getRect(find.byType(LyricsTranslationButton)).left -
+              tester.getRect(find.byType(LyricsSourceButton)).right,
           nowPlayingPillGap,
         );
       });
@@ -694,7 +696,7 @@ void main() {
       ),
     ];
 
-    testWidgets('follows the translate button and shows the source', (
+    testWidgets('comes before the translate button and shows the source', (
       tester,
     ) async {
       await pump(
@@ -704,7 +706,7 @@ void main() {
       );
       final translate = tester.getRect(find.byType(LyricsTranslationButton));
       final source = tester.getRect(find.byType(LyricsSourceButton));
-      expect(source.left, greaterThanOrEqualTo(translate.right));
+      expect(translate.left, greaterThanOrEqualTo(source.right));
       expect(find.text('a-long-service-name · Synced'), findsOneWidget);
     });
 
@@ -728,11 +730,11 @@ void main() {
       final source = tester.getRect(find.byType(LyricsSourceButton));
       expect(find.text('Lyrics off'), findsNothing);
       expect(source.width, lessThanOrEqualTo(48));
-      // No pill, so no gap: it sits beside the translate icon like the
+      // No pill, so no gap: the translate icon sits beside it like the
       // other round buttons.
       expect(
-        source.left,
-        tester.getRect(find.byType(LyricsTranslationButton)).right,
+        tester.getRect(find.byType(LyricsTranslationButton)).left,
+        source.right,
       );
     });
 
@@ -796,7 +798,7 @@ void main() {
                 find.byType(LyricsTranslationButton),
               );
               final source = tester.getRect(find.byType(LyricsSourceButton));
-              expect(source.left, greaterThanOrEqualTo(translate.right));
+              expect(translate.left, greaterThanOrEqualTo(source.right));
               expect(
                 source.right,
                 lessThanOrEqualTo(

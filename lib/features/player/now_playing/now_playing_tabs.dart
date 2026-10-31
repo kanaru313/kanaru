@@ -134,17 +134,17 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                           )
                         else
                           QueueButton(onPressed: () => _select(_Tab.queue)),
-                        LyricsTranslationButton(
-                          enabled: widget.hasLyrics,
-                          onMenuChanged: (open) {
-                            _translateOpen = open;
-                            _report();
-                          },
-                        ),
                         LyricsSourceButton(
                           menuOpener: widget.sourceMenuOpener,
                           onMenuChanged: (open) {
                             _sourceOpen = open;
+                            _report();
+                          },
+                        ),
+                        LyricsTranslationButton(
+                          enabled: widget.hasLyrics,
+                          onMenuChanged: (open) {
+                            _translateOpen = open;
                             _report();
                           },
                         ),

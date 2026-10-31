@@ -5,7 +5,7 @@ import 'package:kanaru/app/app.dart';
 import 'package:kanaru/app/shell/window/desktop_window.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
+import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_tab_dot.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,7 +17,7 @@ import '../core/player/fake_audio_backend.dart';
 /// still under the wide breakpoint (720).
 const _narrow = Size(640, 800);
 
-/// Wide header has no tab dots: probe this far right of the source button,
+/// Wide header has no tab dots: probe this far right of the translate button,
 /// inside the empty strip.
 const _wideHeaderProbeGap = 32.0;
 
@@ -88,18 +88,22 @@ void main() {
   }
 
   /// A point in empty header space, derived from the layout so a new header
-  /// button does not stale the tests: right of the lyrics source button (the
+  /// button does not stale the tests: right of the translate button (the
   /// last control of the left group), and left of the tab dots when the
   /// narrow header has them. Asserts the point is inside the window and that no
   /// button (`ButtonStyleButton`, `IconButton`) or `NowPlayingTabDot` is under it.
   Offset emptyHeaderPoint(WidgetTester tester) {
-    final source = tester.getRect(find.byType(LyricsSourceButton));
+    final last = tester.getRect(find.byType(LyricsTranslationButton));
     final dots = find.byType(NowPlayingTabDot);
     final gapEnd = dots.evaluate().isEmpty
-        ? source.right + _wideHeaderProbeGap
+        ? last.right + _wideHeaderProbeGap
         : tester.getRect(dots.first).left;
-    expect(gapEnd, greaterThan(source.right), reason: 'no gap right of source');
-    final point = Offset((source.right + gapEnd) / 2, source.center.dy);
+    expect(
+      gapEnd,
+      greaterThan(last.right),
+      reason: 'no gap right of translate',
+    );
+    final point = Offset((last.right + gapEnd) / 2, last.center.dy);
     expect(
       point.dx,
       lessThan(tester.view.physicalSize.width),

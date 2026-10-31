@@ -7,7 +7,7 @@ import 'package:kanaru/app/shell/window/desktop_window.dart';
 import 'package:kanaru/app/shell/window/window_buttons.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
+import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_tab_dot.dart';
 import 'package:material_ui/material_ui.dart';
@@ -116,18 +116,16 @@ void main() {
 
   final dots = find.byType(NowPlayingTabDot);
 
-  Rect sourceRect(WidgetTester tester) =>
-      tester.getRect(find.byType(LyricsSourceButton));
+  // The translate button is the last control of the left group.
+  Rect lastButtonRect(WidgetTester tester) =>
+      tester.getRect(find.byType(LyricsTranslationButton));
 
   Rect firstDotRect(WidgetTester tester) => tester.getRect(dots.first);
 
   /// Middle of the strip between the left button group and the first dot.
   Offset stripCenter(WidgetTester tester) {
-    final source = sourceRect(tester);
-    return Offset(
-      (source.right + firstDotRect(tester).left) / 2,
-      source.center.dy,
-    );
+    final last = lastButtonRect(tester);
+    return Offset((last.right + firstDotRect(tester).left) / 2, last.center.dy);
   }
 
   /// Dot [index]'s `selected` flag.
@@ -135,7 +133,7 @@ void main() {
       tester.widget<NowPlayingTabDot>(dots.at(index)).selected;
 
   void expectDragStripFits(WidgetTester tester, {required bool customBar}) {
-    final source = sourceRect(tester);
+    final group = lastButtonRect(tester);
     final first = firstDotRect(tester);
     final last = tester.getRect(dots.last);
     // The header ends where the window buttons start, else at the window edge.
@@ -146,11 +144,11 @@ void main() {
     expect(buttons, customBar ? findsOneWidget : findsNothing);
     expect(dots, findsNWidgets(3));
     expect(
-      first.left - source.right,
+      first.left - group.right,
       greaterThanOrEqualTo(_minDragStrip),
-      reason: 'strip between the source button and the first dot',
+      reason: 'strip between the translate button and the first dot',
     );
-    expect(first.left, greaterThan(source.right), reason: 'dots overlap');
+    expect(first.left, greaterThan(group.right), reason: 'dots overlap');
     expect(
       last.right,
       lessThanOrEqualTo(headerEnd - _minDragStrip),
