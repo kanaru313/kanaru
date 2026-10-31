@@ -294,3 +294,82 @@ fn fifo_fails_fast_without_hanging() {
 extern "C" {
     fn mkfifo(path: *const std::ffi::c_char, mode: u32) -> i32;
 }
+
+/// Writes `items` into a fresh tag of `tag_type` on a copy of the `source`
+/// fixture and reads the release date back through the scan reader.
+fn release_date_of_written(
+    source: &str,
+    tag_type: lofty::tag::TagType,
+    items: &[(lofty::tag::ItemKey, &str)],
+) -> Option<String> {
+    use lofty::config::WriteOptions;
+    use lofty::prelude::*;
+    use lofty::tag::Tag;
+
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join(format!("dated.{source}"));
+    fs::copy(fixture(&format!("sample.{source}")), &path).unwrap();
+    let mut tag = Tag::new(tag_type);
+    tag.set_title("T".to_owned());
+    for (key, value) in items {
+        tag.insert_text(*key, (*value).to_owned());
+    }
+    tag.save_to_path(&path, WriteOptions::default()).unwrap();
+    let tags = read(&path.to_string_lossy());
+    assert_eq!(tags.error, None);
+    tags.release_date
+}
+
+fn release_date_of_written_mp3(items: &[(lofty::tag::ItemKey, &str)]) -> Option<String> {
+    release_date_of_written("mp3", lofty::tag::TagType::Id3v2, items)
+}
+
+#[test]
+fn release_date_is_the_raw_tag_value_in_every_format() {
+    for name in FULLY_TAGGED {
+        let date = read(&fixture(name)).release_date;
+        let date = date.unwrap_or_else(|| panic!("{name} has no release date"));
+        assert!(date.starts_with("2019"), "{name}: {date}");
+    }
+    let v23 = read(&fixture("sample_v23.mp3")).release_date;
+    assert!(v23.expect("v2.3 date").starts_with("2019"));
+}
+
+#[test]
+fn release_date_reads_recording_then_release_date_frames() {
+    use lofty::tag::ItemKey;
+    assert_eq!(
+        release_date_of_written_mp3(&[(ItemKey::RecordingDate, "2019-07-15")]).as_deref(),
+        Some("2019-07-15")
+    );
+    assert_eq!(
+        release_date_of_written_mp3(&[(ItemKey::ReleaseDate, "2020-03-01")]).as_deref(),
+        Some("2020-03-01")
+    );
+    assert_eq!(release_date_of_written_mp3(&[]), None);
+}
+
+#[test]
+fn overlong_release_date_is_none() {
+    use lofty::tag::{ItemKey, TagType};
+    // ID3 normalizes dates while parsing, so the long value goes in a Vorbis
+    // comment, which keeps it as written.
+    let long = "1".repeat(200);
+    assert_eq!(
+        release_date_of_written(
+            "flac",
+            TagType::VorbisComments,
+            &[(ItemKey::RecordingDate, &long)]
+        ),
+        None
+    );
+    assert_eq!(
+        release_date_of_written(
+            "flac",
+            TagType::VorbisComments,
+            &[(ItemKey::RecordingDate, "2019-07-15")]
+        )
+        .as_deref(),
+        Some("2019-07-15")
+    );
+}

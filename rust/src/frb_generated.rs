@@ -1366,6 +1366,7 @@ impl SseDecode for crate::api::tags::TrackTags {
         let mut var_discNo = <Option<u32>>::sse_decode(deserializer);
         let mut var_discTotal = <Option<u32>>::sse_decode(deserializer);
         let mut var_year = <Option<u32>>::sse_decode(deserializer);
+        let mut var_releaseDate = <Option<String>>::sse_decode(deserializer);
         let mut var_genre = <Option<String>>::sse_decode(deserializer);
         let mut var_composer = <Option<String>>::sse_decode(deserializer);
         let mut var_comment = <Option<String>>::sse_decode(deserializer);
@@ -1387,6 +1388,7 @@ impl SseDecode for crate::api::tags::TrackTags {
             disc_no: var_discNo,
             disc_total: var_discTotal,
             year: var_year,
+            release_date: var_releaseDate,
             genre: var_genre,
             composer: var_composer,
             comment: var_comment,
@@ -1981,6 +1983,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::tags::TrackTags {
             self.disc_no.into_into_dart().into_dart(),
             self.disc_total.into_into_dart().into_dart(),
             self.year.into_into_dart().into_dart(),
+            self.release_date.into_into_dart().into_dart(),
             self.genre.into_into_dart().into_dart(),
             self.composer.into_into_dart().into_dart(),
             self.comment.into_into_dart().into_dart(),
@@ -2545,6 +2548,7 @@ impl SseEncode for crate::api::tags::TrackTags {
         <Option<u32>>::sse_encode(self.disc_no, serializer);
         <Option<u32>>::sse_encode(self.disc_total, serializer);
         <Option<u32>>::sse_encode(self.year, serializer);
+        <Option<String>>::sse_encode(self.release_date, serializer);
         <Option<String>>::sse_encode(self.genre, serializer);
         <Option<String>>::sse_encode(self.composer, serializer);
         <Option<String>>::sse_encode(self.comment, serializer);
