@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/playlist_side_pane.dart';
-import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart'
     show
@@ -10,18 +9,20 @@ import 'package:material_ui/material_ui.dart'
         BoxDecoration,
         CustomScrollView,
         DecoratedBox,
-        IconButton,
         Icons,
         Scrollable,
         ScrollableState,
         SizedBox;
 
 import 'playlist_entries_view_harness.dart';
-import 'playlist_test_data.dart' show hoverRow, rowExtent;
+import 'playlist_test_data.dart' show removeRowViaModal, rowExtent;
 
 void main() {
   final view = EntriesViewHarness();
-  setUp(view.reset);
+  setUp(() {
+    view.reset();
+    view.rowModals = true;
+  });
 
   group('reorder', () {
     final rows = [available(0), available(1), available(2)];
@@ -262,8 +263,7 @@ void main() {
       expect(view.shownIds(tester), [2, 1, 0], reason: 'the head is taken');
 
       // Later heads are taken again: a failed removal rolls back on screen.
-      await hoverRow(tester, 0);
-      await tester.tap(find.byTooltip('Remove from playlist').at(0));
+      await removeRowViaModal(tester, 0);
       await tester.pump();
       await view.finishRemove(tester, ok: false);
       await view.reloadHead(tester);
@@ -303,8 +303,7 @@ void main() {
     ) async {
       await view.pump(tester, rows);
 
-      await hoverRow(tester, 1);
-      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await removeRowViaModal(tester, 1);
       await tester.pump();
 
       expect(view.shownIds(tester), [0, 2]);
@@ -327,8 +326,7 @@ void main() {
       tester,
     ) async {
       await view.pump(tester, rows);
-      await hoverRow(tester, 1);
-      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await removeRowViaModal(tester, 1);
       await tester.pump();
 
       await view.finishRemove(tester, ok: false);
@@ -343,8 +341,7 @@ void main() {
       await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
       expect(view.shownIds(tester), [1, 2, 0]);
 
-      await hoverRow(tester, 1);
-      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await removeRowViaModal(tester, 1);
       await tester.pump();
       expect(view.removed, [2], reason: 'by entry id, not by index');
       expect(view.shownIds(tester), [1, 0]);
@@ -361,15 +358,10 @@ void main() {
     ) async {
       await view.pump(tester, [for (var i = 0; i < 4; i++) available(i)]);
 
-      // Pressed straight through the buttons: no frame, and so no hover
-      // change, between the two presses.
-      // The hit-test path is covered by 'a hidden button does not take the tap'
-      // in playlist_row_view_test.dart.
+      // Called straight on the rows: no frame between the two removals.
       void press(int row) => tester
-          .widget<IconButton>(
-            find.widgetWithIcon(IconButton, AppIcons.closeRounded).at(row),
-          )
-          .onPressed!();
+          .widget<PlaylistEntryTile>(find.byType(PlaylistEntryTile).at(row))
+          .onRemove!();
       press(0);
       press(2);
       await tester.pump();
@@ -382,8 +374,7 @@ void main() {
     testWidgets('removing the last row shows the empty state', (tester) async {
       await view.pump(tester, [available(0)]);
 
-      await hoverRow(tester, 0);
-      await tester.tap(find.byTooltip('Remove from playlist'));
+      await removeRowViaModal(tester, 0);
       await tester.pump();
 
       expect(find.text('This playlist is empty'), findsOneWidget);

@@ -86,6 +86,9 @@ class EntriesViewHarness {
   /// What `onSettled` last returned: heads below it are ignored.
   var minSeq = 0;
 
+  /// Gives every row a queue handler, so each opens its song modal.
+  bool rowModals = false;
+
   bool _readOnly = false;
   Locale? _locale;
   void Function(QueueAction)? _onQueueAction;
@@ -102,6 +105,7 @@ class EntriesViewHarness {
     moveResult = Completer<bool>();
     removeResult = Completer<bool>();
     moveError = null;
+    rowModals = false;
   }
 
   Future<List<PlaylistPositionedEntry>> _loadRows(int start, int count) async {
@@ -182,7 +186,9 @@ class EntriesViewHarness {
     _readOnly = readOnly;
     _locale = locale;
     _onQueueAction = onQueueAction;
-    _onEntryQueueAction = onEntryQueueAction;
+    // A row opens its song modal only with a queue handler; the real screens
+    // always give one.
+    _onEntryQueueAction = onEntryQueueAction ?? (rowModals ? (_, _) {} : null);
     tester.view
       ..physicalSize = Size(width, 900)
       ..devicePixelRatio = 1;

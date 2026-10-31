@@ -159,8 +159,7 @@ void main() {
       final id = await openMix(tester, h);
       await breakWrites(tester, h, 'playlist_entries', 'DELETE');
 
-      await hoverRow(tester, 1);
-      await tester.tap(find.byTooltip('Remove from playlist').at(1));
+      await removeRowViaModal(tester, 1);
       await settleDb(tester);
 
       expect(find.text(_saveFailed), findsOneWidget);

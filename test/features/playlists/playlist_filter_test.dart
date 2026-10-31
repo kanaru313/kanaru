@@ -93,17 +93,17 @@ void main() {
     );
   });
 
-  testWidgets('no drag handle or remove button while filtering', (
+  testWidgets('no drag handle or Remove from playlist while filtering', (
     tester,
   ) async {
     await openMixOf(tester);
     expect(find.byIcon(AppIcons.dragHandle), findsWidgets);
-    expect(find.byTooltip('Remove from playlist'), findsWidgets);
+    await expectRowModalRemove(tester, 0, present: true);
 
     await filterBy(tester, 'love');
 
     expect(find.byIcon(AppIcons.dragHandle), findsNothing);
-    expect(find.byTooltip('Remove from playlist'), findsNothing);
+    await expectRowModalRemove(tester, 0, present: false);
   });
 
   testWidgets('no match says so and Esc brings back the whole list', (

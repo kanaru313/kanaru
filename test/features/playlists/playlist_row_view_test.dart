@@ -65,37 +65,26 @@ void main() {
     expect(view.played, isEmpty);
   });
 
-  group('remove button', () {
+  group('remove button of a missing row', () {
     testWidgets('is hidden at rest', (tester) async {
-      await view.pump(tester, [available(1), available(2)]);
-
-      expect(removeOpacity(tester, 0), 0);
-      expect(removeOpacity(tester, 1), 0);
-    });
-
-    testWidgets('shows on the row the mouse is over only', (tester) async {
-      await view.pump(tester, [available(1), available(2)]);
-
-      await hoverRow(tester, 1);
-
-      expect(removeOpacity(tester, 0), 0);
-      expect(removeOpacity(tester, 1), 1);
-    });
-
-    testWidgets('shows for a missing row on hover', (tester) async {
       await view.pump(tester, [missing(1)]);
+
       expect(removeOpacity(tester, 0), 0);
+    });
+
+    testWidgets('shows on hover and removes the entry', (tester) async {
+      await view.pump(tester, [missing(1)]);
 
       await hoverRow(tester, 0);
+      expect(removeOpacity(tester, 0), 1);
       await tester.tap(remove);
 
       expect(view.removed, [1]);
     });
 
     testWidgets('shows when keyboard focus reaches it', (tester) async {
-      await view.pump(tester, [available(1), available(2)]);
+      await view.pump(tester, [missing(1), missing(2)]);
 
-      // Tab walks the focusable parts; the first row's controls come first.
       for (var i = 0; i < 6 && removeOpacity(tester, 0) == 0; i++) {
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pump();
@@ -106,13 +95,19 @@ void main() {
     });
 
     testWidgets('a hidden button does not take the tap', (tester) async {
-      await view.pump(tester, [available(1)]);
+      await view.pump(tester, [missing(1)]);
 
       await tester.tap(remove, warnIfMissed: false);
       await tester.pump();
 
       expect(view.removed, isEmpty);
     });
+  });
+
+  testWidgets('a row of the library has no remove button', (tester) async {
+    await view.pump(tester, [available(1), available(2)]);
+
+    expect(remove, findsNothing);
   });
 
   testWidgets('clicking the handle does not play', (tester) async {

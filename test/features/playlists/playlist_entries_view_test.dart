@@ -1,12 +1,15 @@
+import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'playlist_entries_view_harness.dart';
-import 'playlist_test_data.dart' show hoverRow;
+import 'playlist_test_data.dart' show removeRowViaModal;
 
 void main() {
   final view = EntriesViewHarness();
@@ -56,13 +59,82 @@ void main() {
       expect(find.text('Play next'), findsOneWidget);
     });
 
-    testWidgets('the remove button reports the entry id', (tester) async {
+    testWidgets('Remove from playlist in the modal reports the entry id', (
+      tester,
+    ) async {
+      view.rowModals = true;
       await view.pump(tester, [available(1), available(2)]);
 
-      await hoverRow(tester, 1);
-      await tester.tap(find.byTooltip('Remove from playlist').last);
+      await removeRowViaModal(tester, 1);
 
       expect(view.removed, [2]);
+    });
+
+    testWidgets('removing the second copy of a file removes only that entry', (
+      tester,
+    ) async {
+      final copy = PlaylistEntryRow(
+        entryId: 9,
+        path: available(1).path,
+        track: available(1).track,
+      );
+      view.rowModals = true;
+      await view.pump(tester, [available(1), copy]);
+
+      await removeRowViaModal(tester, 1);
+
+      expect(view.removed, [9]);
+    });
+
+    testWidgets('Remove from playlist is red and rows have no remove button', (
+      tester,
+    ) async {
+      view.rowModals = true;
+      await view.pump(tester, [available(1)]);
+      expect(find.byTooltip('Remove from playlist'), findsNothing);
+
+      await tester.tap(
+        find.byType(PlaylistEntryTile),
+        buttons: kSecondaryButton,
+      );
+      await settleSongModal(tester);
+
+      final error = Theme.of(tester.element(find.byType(PlaylistEntryTile)))
+          .colorScheme
+          .error;
+      final action = modalAction('remove-from-playlist');
+      expect(action, findsOneWidget);
+      expect(
+        tester
+            .widget<Icon>(
+              find.descendant(of: action, matching: find.byType(Icon)).first,
+            )
+            .color,
+        error,
+      );
+      final label = find.descendant(
+        of: action,
+        matching: find.text('Remove from playlist'),
+      );
+      expect(
+        tester.widget<Text>(label).style?.color ??
+            DefaultTextStyle.of(tester.element(label)).style.color,
+        error,
+      );
+    });
+
+    testWidgets('the modal of a read-only list has no Remove', (tester) async {
+      view.rowModals = true;
+      await view.pump(tester, [available(1)], readOnly: true);
+
+      await tester.tap(
+        find.byType(PlaylistEntryTile),
+        buttons: kSecondaryButton,
+      );
+      await settleSongModal(tester);
+
+      expect(find.text('Go to artist'), findsOneWidget);
+      expect(modalAction('remove-from-playlist'), findsNothing);
     });
 
     testWidgets('without callbacks rows have no handle and no remove button', (
