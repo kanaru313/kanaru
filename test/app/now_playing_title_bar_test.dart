@@ -5,13 +5,21 @@ import 'package:kanaru/app/app.dart';
 import 'package:kanaru/app/shell/window/desktop_window.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_tab_dot.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
 
-/// Narrow window: Now Playing shows the tab header with its buttons.
-const _narrow = Size(480, 800);
+/// Narrow window: Now Playing shows the tab header with its buttons. Wide
+/// enough that the centered tab dots leave a gap after the left button group,
+/// still under the wide breakpoint (720).
+const _narrow = Size(640, 800);
+
+/// Wide header has no tab dots: probe this far right of the source button,
+/// inside the empty strip.
+const _wideHeaderProbeGap = 32.0;
 
 /// Wide window: Now Playing shows the header strip, empty without lyrics.
 const _wide = Size(1280, 800);
@@ -79,6 +87,41 @@ void main() {
     await tester.pump();
   }
 
+  /// A point in empty header space, derived from the layout so a new header
+  /// button does not stale the tests: right of the lyrics source button (the
+  /// last control of the left group), and left of the tab dots when the
+  /// narrow header has them. Asserts the point is inside the window and that no
+  /// button (`ButtonStyleButton`, `IconButton`) or `NowPlayingTabDot` is under it.
+  Offset emptyHeaderPoint(WidgetTester tester) {
+    final source = tester.getRect(find.byType(LyricsSourceButton));
+    final dots = find.byType(NowPlayingTabDot);
+    final gapEnd = dots.evaluate().isEmpty
+        ? source.right + _wideHeaderProbeGap
+        : tester.getRect(dots.first).left;
+    expect(gapEnd, greaterThan(source.right), reason: 'no gap right of source');
+    final point = Offset((source.right + gapEnd) / 2, source.center.dy);
+    expect(
+      point.dx,
+      lessThan(tester.view.physicalSize.width),
+      reason: 'point $point is outside the window',
+    );
+    final onControl = find
+        .byWidgetPredicate(
+          (w) =>
+              w is ButtonStyleButton ||
+              w is IconButton ||
+              w is NowPlayingTabDot,
+        )
+        .evaluate()
+        .any((e) => tester.getRect(find.byWidget(e.widget)).contains(point));
+    expect(
+      onControl,
+      isFalse,
+      reason: 'point $point must not land on a header control',
+    );
+    return point;
+  }
+
   final queueButton = find.byIcon(Icons.queue_music_rounded);
 
   testWidgets('double clicking a header button leaves the window alone', (
@@ -113,9 +156,7 @@ void main() {
   ) async {
     await pumpNowPlaying(tester);
 
-    // Right of the close, queue and translate buttons (end at x 152), left
-    // of the tab dots and the window buttons.
-    await doubleClick(tester, const Offset(190, 32));
+    await doubleClick(tester, emptyHeaderPoint(tester));
 
     expect(toggles, hasLength(1));
   });
@@ -123,8 +164,9 @@ void main() {
   testWidgets('dragging empty header space moves the window', (tester) async {
     await pumpNowPlaying(tester);
 
+    final empty = emptyHeaderPoint(tester);
     final gesture = await tester.startGesture(
-      const Offset(190, 32),
+      empty,
       kind: PointerDeviceKind.mouse,
     );
     await gesture.moveBy(const Offset(40, 0));
@@ -138,7 +180,7 @@ void main() {
   ) async {
     await pumpNowPlaying(tester, size: _wide);
 
-    await doubleClick(tester, const Offset(400, 32));
+    await doubleClick(tester, emptyHeaderPoint(tester));
 
     expect(toggles, hasLength(1));
   });
