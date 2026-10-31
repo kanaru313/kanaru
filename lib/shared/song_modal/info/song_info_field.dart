@@ -7,7 +7,7 @@ import 'release_date_chips.dart';
 import 'song_info_groups.dart';
 import 'wrap_anywhere.dart';
 
-/// One "Label: value" line. The value wraps from the start of the line and,
+/// One "Label: value" row, full width. The value wraps from the start of the line and,
 /// when long and unbroken (a path), anywhere. Tapping a known value copies
 /// it as it is stored; an unknown one shows "Unknown" in italics and cannot
 /// be copied.
@@ -37,14 +37,13 @@ class SongInfoFieldTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final value = field.value;
-    final label = TextSpan(
-      text: '${field.label}: ',
-      style: TextStyle(color: colors.onSurfaceVariant),
-    );
     final text = Text.rich(
       TextSpan(
         children: [
-          label,
+          TextSpan(
+            text: '${field.label}: ',
+            style: TextStyle(color: colors.onSurfaceVariant),
+          ),
           value == null
               ? TextSpan(
                   text: l10n.songInfoUnknown,
@@ -55,46 +54,48 @@ class SongInfoFieldTile extends StatelessWidget {
                 )
               : TextSpan(
                   text: wrapAnywhere(value),
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
         ],
       ),
       style: theme.textTheme.bodyMedium,
     );
-    final line = value == null
-        ? Semantics(
-            label: '${field.label}: ${l10n.songInfoUnknown}',
-            excludeSemantics: true,
-            child: text,
-          )
-        : Tooltip(
-            message: l10n.songInfoCopy,
-            excludeFromSemantics: true,
-            child: InkWell(
-              mouseCursor: SystemMouseCursors.click,
-              borderRadius: BorderRadius.circular(6),
-              onTap: () => _copy(context, value),
-              child: Semantics(
-                button: true,
-                label: '${field.label}: $value',
-                hint: l10n.songInfoCopy,
-                excludeSemantics: true,
-                child: text,
-              ),
-            ),
-          );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    // The chips of a release date continue on the same line, and wrap under
+    // it only when the row is narrow.
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 4,
         children: [
-          line,
+          text,
           if (field.chips.isNotEmpty && value != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: ReleaseDateChips(labels: field.chips),
-            ),
+            ReleaseDateChips(labels: field.chips),
         ],
+      ),
+    );
+    if (value == null) {
+      return Semantics(
+        label: '${field.label}: ${l10n.songInfoUnknown}',
+        excludeSemantics: true,
+        child: content,
+      );
+    }
+    // The whole row, edge to edge, is the hover and tap target.
+    return Tooltip(
+      message: l10n.songInfoCopy,
+      excludeFromSemantics: true,
+      child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
+        onTap: () => _copy(context, value),
+        child: Semantics(
+          button: true,
+          label: '${field.label}: $value',
+          hint: l10n.songInfoCopy,
+          excludeSemantics: true,
+          child: content,
+        ),
       ),
     );
   }

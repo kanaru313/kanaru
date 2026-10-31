@@ -107,6 +107,9 @@ void main() {
     setShowUnknown(container, on: true);
     await tester.pump();
 
+    // The taller rows push the card down; scroll it into view first.
+    await tester.ensureVisible(find.byKey(const ValueKey('song-lyrics-find')));
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('song-lyrics-find')));
     await settleSongModal(tester);
 

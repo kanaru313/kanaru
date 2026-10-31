@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/core/track_details/release_date.dart';
 import 'package:kanaru/core/track_details/track_details.dart';
 import 'package:kanaru/core/track_details/track_details_provider.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -15,18 +16,23 @@ import '../song_modal_test_support.dart' hide openSongModal;
 const _song = TrackListItem(id: 1, path: '/m/1.flac', title: 'one');
 final _longPath = '/home/someone/Music/${'Very Long Folder Name' * 4}/one.flac';
 
-TrackDetails _details({int plays = 0, String? path}) => TrackDetails(
-  id: 1,
-  title: 'One',
-  localPath: path ?? _longPath,
-  artist: 'Somebody',
-  sizeBytes: 1000,
-  modifiedAtMs: 0,
-  addedAtMs: 0,
-  playCount: plays,
-  firstPlayedAt: plays > 0 ? 1700000000000 : null,
-  lastPlayedAt: plays > 0 ? 1700000000000 : null,
-);
+TrackDetails _details({int plays = 0, String? path, String? release}) =>
+    TrackDetails(
+      id: 1,
+      title: 'One',
+      localPath: path ?? _longPath,
+      artist: 'Somebody',
+      releaseDateRaw: release,
+      releaseDate: release == null
+          ? null
+          : const ReleaseDate(year: 2012, month: 1, day: 1),
+      sizeBytes: 1000,
+      modifiedAtMs: 0,
+      addedAtMs: 0,
+      playCount: plays,
+      firstPlayedAt: plays > 0 ? 1700000000000 : null,
+      lastPlayedAt: plays > 0 ? 1700000000000 : null,
+    );
 
 Future<ProviderContainer> _openInfo(
   WidgetTester tester,
@@ -146,5 +152,89 @@ void main() {
   testWidgets('shows a skeleton while the details load', (tester) async {
     await _openInfo(tester, () => const Stream.empty());
     expect(find.byKey(const ValueKey('song-info-skeleton')), findsOne);
+  });
+
+  testWidgets('a thin divider separates the rows of a group', (tester) async {
+    await _openInfo(tester, () => Stream.value(_details()));
+
+    final title = tester.getRect(find.byKey(const ValueKey('song-info-title')));
+    final artist = tester.getRect(
+      find.byKey(const ValueKey('song-info-artist')),
+    );
+    final dividers = find
+        .byType(Divider)
+        .evaluate()
+        .map((e) => tester.getRect(find.byElementPredicate((x) => x == e)));
+    expect(
+      dividers.where(
+        (d) => d.top >= title.bottom - 1 && d.bottom <= artist.top + 1,
+      ),
+      isNotEmpty,
+    );
+  });
+
+  testWidgets('the release chips sit inside the release date row', (
+    tester,
+  ) async {
+    await _openInfo(
+      tester,
+      () => Stream.value(_details(release: '2012-01-01')),
+    );
+
+    final row = find.byKey(const ValueKey('song-info-release-date'));
+    expect(row, findsOne);
+    expect(
+      find.descendant(
+        of: row,
+        matching: find.textContaining(
+          'Release date: 2012-01-01',
+          findRichText: true,
+        ),
+      ),
+      findsOne,
+    );
+    expect(
+      find.descendant(of: row, matching: find.text('Jan 1, 2012')),
+      findsOne,
+    );
+    // On the same line as the date, not under it.
+    final date = tester.getRect(
+      find.descendant(
+        of: row,
+        matching: find.textContaining('Release date', findRichText: true),
+      ),
+    );
+    final chip = tester.getRect(
+      find.descendant(of: row, matching: find.text('Jan 1, 2012')),
+    );
+    expect((chip.center.dy - date.center.dy).abs(), lessThan(date.height));
+  });
+
+  testWidgets('a tap on the empty end of a row copies its value', (
+    tester,
+  ) async {
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await _openInfo(tester, () => Stream.value(_details()));
+
+    final row = tester.getRect(find.byKey(const ValueKey('song-info-artist')));
+    await tester.tapAt(Offset(row.right - 4, row.center.dy));
+    await tester.pump();
+
+    expect(copied, 'Somebody');
   });
 }

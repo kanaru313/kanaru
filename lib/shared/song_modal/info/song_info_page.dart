@@ -106,11 +106,14 @@ class _InfoBody extends ConsumerWidget {
         SongInfoHero(details: details),
         for (final group in groups) ...[
           SongInfoGroupHeading(title: group.title),
-          for (final field in group.visibleFields(showUnknown: show))
+          for (final (i, field)
+              in group.visibleFields(showUnknown: show).indexed) ...[
+            if (i > 0) const Divider(height: 1, indent: 20, endIndent: 20),
             SongInfoFieldTile(
               key: ValueKey('song-info-${field.id}'),
               field: field,
             ),
+          ],
           // The lyrics sit between the Tags and Audio groups.
           if (group.id == 'tags' && lyricsPath != null)
             SongLyricsCard(session: session, path: lyricsPath, nav: nav),
