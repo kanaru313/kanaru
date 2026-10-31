@@ -20,6 +20,7 @@ class NowPlayingHeaderPill extends StatelessWidget {
     required this.maxLabelWidth,
     required this.onPressed,
     this.muted = false,
+    this.tabularFigures = false,
   });
 
   final IconData icon;
@@ -31,6 +32,10 @@ class NowPlayingHeaderPill extends StatelessWidget {
 
   final VoidCallback? onPressed;
   final bool muted;
+
+  /// Digits of one width, for a label that counts (a timer), so the pill
+  /// does not change width every second.
+  final bool tabularFigures;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +71,11 @@ class NowPlayingHeaderPill extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.ellipsis,
+                style: tabularFigures
+                    ? const TextStyle(
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      )
+                    : null,
               ),
             ),
           ],

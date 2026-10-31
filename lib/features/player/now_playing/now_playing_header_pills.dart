@@ -19,8 +19,9 @@ const nowPlayingHeaderLeftGap = 16.0;
 /// Room the right group needs for its four buttons.
 const nowPlayingHeaderRightButtonsWidth = 4 * 48.0;
 
-/// Room the sleep timer label needs beside its button.
-const nowPlayingHeaderSleepLabelWidth = 56.0;
+/// Room the sleep timer pill needs beyond its round button: the label (56)
+/// and what the pill's padding and icon add to the 48 px button (12).
+const nowPlayingHeaderSleepLabelWidth = 68.0;
 
 /// Gap, divider line and gap between the right buttons and the window
 /// buttons.

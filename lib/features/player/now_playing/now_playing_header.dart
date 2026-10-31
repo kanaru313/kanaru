@@ -145,6 +145,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                           ),
                           Flexible(
                             child: SleepTimerButton(
+                              pill: true,
                               showLabel:
                                   side.maxWidth - separator >=
                                   nowPlayingHeaderRightButtonsWidth +

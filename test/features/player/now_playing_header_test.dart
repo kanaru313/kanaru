@@ -15,6 +15,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_header_pill.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pills.dart'
     show nowPlayingPillGap, nowPlayingPillLabelRooms;
 import 'package:kanaru/features/player/playback_controls.dart'
@@ -302,6 +303,14 @@ void main() {
     container.read(sleepTimerProvider.notifier).startMinutes(30);
     await tester.pump();
     expect(find.text('30:00'), findsOneWidget);
+    // A running timer is a pill, like the lyrics buttons.
+    expect(
+      find.ancestor(
+        of: find.text('30:00'),
+        matching: find.byType(NowPlayingHeaderPill),
+      ),
+      findsOneWidget,
+    );
 
     // The right group is left with less than its buttons and the label.
     await pump(tester, width: 430);
@@ -498,11 +507,11 @@ void main() {
       testWidgets('at the tightest edge the pill and sleep label both fit', (
         tester,
       ) async {
-        // Header 768 px wide: after the gap between them, each of the two
+        // Header 780 px wide: after the gap between them, each of the two
         // pills gets a label room just above the 64 px minimum.
         await pump(
           tester,
-          width: 768 + windowButtons,
+          width: 780 + windowButtons,
           windowButtons: true,
           textScale: 1.5,
           showTranslate: true,
@@ -574,8 +583,9 @@ void main() {
 
     test('the label room budget', () {
       // Left: 30 inset, 5 buttons (close, favorite, playlist, translate,
-      // source) and a 16 gap. Right: 4 buttons and the 56 sleep label. A pill
-      // replaces its 48 px button and spends 60 px on padding and icon.
+      // source) and a 16 gap. Right: 4 buttons, the 56 sleep label and the 12 px
+      // the sleep pill adds to its button. A pill replaces its 48 px button
+      // and spends 60 px on padding and icon.
       ({double source, double translate}) rooms(
         double width, {
         bool mode = false,
@@ -589,7 +599,7 @@ void main() {
       );
 
       // The translation is an icon: the source label gets all of the room.
-      expect(rooms(598).source, 52 - nowPlayingPillGap);
+      expect(rooms(598).source, 40 - nowPlayingPillGap);
       expect(rooms(598).translate, 0);
       expect(rooms(552, mode: true, window: true).source, lessThan(0));
       expect(rooms(720, mode: true).source, greaterThan(64));
@@ -603,7 +613,7 @@ void main() {
       // both pills replaced a button each and the gap between them.
       final both = rooms(1000, pill: true);
       expect(both.source, both.translate);
-      expect(both.source, (1000 - 286 - 248 - 24 - nowPlayingPillGap) / 2);
+      expect(both.source, (1000 - 286 - 260 - 24 - nowPlayingPillGap) / 2);
     });
 
     for (final locale in const [Locale('en'), Locale('vi')]) {
