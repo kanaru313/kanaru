@@ -209,7 +209,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       // Opening refreshed everything; the retry refreshes only that repository.
       expect(repos.refreshAllCalls, 1);

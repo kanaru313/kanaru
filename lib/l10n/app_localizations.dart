@@ -5153,7 +5153,7 @@ abstract class AppLocalizations {
   /// No description provided for @lyricsSourcesEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'No plugins installed yet. You can add some from Plugin store.'**
+  /// **'No plugins installed yet. You can add some from the Plugin store.'**
   String get lyricsSourcesEmptyHint;
 
   /// No description provided for @lyricsSourceBuiltIn.
@@ -5969,7 +5969,7 @@ abstract class AppLocalizations {
   /// Catalog mismatch dialog button
   ///
   /// In en, this message translates to:
-  /// **'Refresh & try again'**
+  /// **'Refresh and try again'**
   String get lyricsStoreMismatchRetry;
 
   /// Dialog title when a plugin needs a newer app
@@ -6023,7 +6023,7 @@ abstract class AppLocalizations {
   /// Install failure
   ///
   /// In en, this message translates to:
-  /// **'Could not write the plugin to the library (disk full or missing permission?)'**
+  /// **'Could not save the plugin (disk full or missing permission?)'**
   String get lyricsStoreFailStorage;
 
   /// Snackbar when a plugin action threw an unexpected error

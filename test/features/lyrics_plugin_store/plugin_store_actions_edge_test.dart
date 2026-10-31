@@ -252,7 +252,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(repos.installs, hasLength(2));
       expect(
@@ -277,7 +277,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('Install'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(repos.installs, hasLength(1));
       expect(find.text('•  ${en.lyricsStoreFailUnknownEntry}'), findsOneWidget);
@@ -296,7 +296,7 @@ void main() {
       final before = cache.cleared;
       await tester.tap(find.byTooltip('Install'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(cache.cleared, before + 1);
     });
@@ -369,7 +369,7 @@ void main() {
         recordOf('plugin-plain', version: 6),
         RepoPluginChange.updated,
       );
-      await tester.tap(find.text('Refresh & try again'));
+      await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
       expect(repos.refreshed, [repoA]);
       expect(repos.updates, ['plugin-plain', 'plugin-plain']);

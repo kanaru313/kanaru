@@ -3189,7 +3189,7 @@
   "lyricsSourcesRowNoneOn": "Every source is off",
   "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.",
   "lyricsSourcesStore": "Plugin store",
-  "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from Plugin store.",
+  "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from the Plugin store.",
   "lyricsSourceBuiltIn": "Built in",
   "lyricsSourceBuiltInHosts": "Built in · {hosts}",
   "@lyricsSourceBuiltInHosts": {
@@ -3776,7 +3776,7 @@
   "@lyricsStoreMismatchHint": {
     "description": "Catalog mismatch hint"
   },
-  "lyricsStoreMismatchRetry": "Refresh & try again",
+  "lyricsStoreMismatchRetry": "Refresh and try again",
   "@lyricsStoreMismatchRetry": {
     "description": "Catalog mismatch dialog button"
   },
@@ -3822,7 +3822,7 @@
   "@lyricsStoreFailMismatch": {
     "description": "Install failure"
   },
-  "lyricsStoreFailStorage": "Could not write the plugin to the library (disk full or missing permission?)",
+  "lyricsStoreFailStorage": "Could not save the plugin (disk full or missing permission?)",
   "@lyricsStoreFailStorage": {
     "description": "Install failure"
   },

@@ -3501,7 +3501,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsSourcesEmptyHint =>
-      'No plugins installed yet. You can add some from Plugin store.';
+      'No plugins installed yet. You can add some from the Plugin store.';
 
   @override
   String get lyricsSourceBuiltIn => 'Built in';
@@ -4045,7 +4045,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Usually the repository was just updated and a cache has not caught up. Refresh the list and try again in a few minutes. If it still differs, tell the repository owner.';
 
   @override
-  String get lyricsStoreMismatchRetry => 'Refresh & try again';
+  String get lyricsStoreMismatchRetry => 'Refresh and try again';
 
   @override
   String get lyricsStoreNeedsNewerTitle => 'Needs a newer Kanaru';
@@ -4079,7 +4079,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreFailStorage =>
-      'Could not write the plugin to the library (disk full or missing permission?)';
+      'Could not save the plugin (disk full or missing permission?)';
 
   @override
   String get lyricsStoreFailUnexpected => 'Something went wrong. Try again.';

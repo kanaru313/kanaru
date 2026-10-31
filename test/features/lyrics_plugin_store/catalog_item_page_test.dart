@@ -49,7 +49,7 @@ void main() {
       repos: [repo],
       locale: const Locale('vi'),
     );
-    expect(find.text('hieu05 (tự khai) · v7'), findsOneWidget);
+    expect(find.text('hieu05 (tự khai báo) · v7'), findsOneWidget);
     expect(find.text('Chỉ được kết nối tới'), findsOneWidget);
   });
 
