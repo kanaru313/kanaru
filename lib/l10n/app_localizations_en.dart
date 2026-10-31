@@ -3475,6 +3475,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lyricsOnlineServerError(String provider) {
+    return '$provider is having trouble, try again later';
+  }
+
+  @override
   String lyricsOnlineUnreadable(String provider) {
     return '$provider answered but Kanaru could not read it';
   }

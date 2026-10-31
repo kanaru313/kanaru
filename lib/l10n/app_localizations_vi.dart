@@ -3270,6 +3270,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String lyricsOnlineServerError(String provider) {
+    return '$provider đang gặp sự cố, hãy thử lại sau';
+  }
+
+  @override
   String lyricsOnlineUnreadable(String provider) {
     return '$provider trả lời mà Kanaru không đọc được';
   }

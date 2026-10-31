@@ -12,7 +12,7 @@ String lyricsFailureMessage(
 ) => switch (kind) {
   LyricsFetchKind.rateLimited => l10n.lyricsOnlineBusy(provider),
   LyricsFetchKind.network => l10n.lyricsOnlineError(provider),
-  LyricsFetchKind.server ||
+  LyricsFetchKind.server => l10n.lyricsOnlineServerError(provider),
   LyricsFetchKind.invalidResponse ||
   LyricsFetchKind.blockedHost => l10n.lyricsOnlineUnreadable(provider),
   LyricsFetchKind.notConsented => l10n.lyricsPickerNotConsented(provider),

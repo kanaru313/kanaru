@@ -1520,6 +1520,7 @@
   "lyricsOffTitle": "Đã tắt lời cho bài này",
   "lyricsOffTurnOn": "Bật lại",
   "lyricsPausedTitle": "{provider} đang bận, Kanaru tự tìm lại lúc {time}",
+  "lyricsOnlineServerError": "{provider} đang gặp sự cố, hãy thử lại sau",
   "lyricsOnlineUnreadable": "{provider} trả lời mà Kanaru không đọc được",
   "lyricsAutoNeedsTags": "Bài này thiếu tên bài, ca sĩ hoặc thời lượng nên không tự tìm được; dùng Tìm lời online…",
   "lyricsSourcesTitle": "Nguồn lời",

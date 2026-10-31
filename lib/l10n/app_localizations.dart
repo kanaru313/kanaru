@@ -5114,7 +5114,13 @@ abstract class AppLocalizations {
   /// **'{provider} is busy. Kanaru searches again at {time}'**
   String lyricsPausedTitle(String provider, DateTime time);
 
-  /// Banner above the empty lyrics slot when the service sent an error or an answer that could not be read; provider is its name
+  /// Banner above the empty lyrics slot when the service answered with a server error (for example 502); provider is its name
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} is having trouble, try again later'**
+  String lyricsOnlineServerError(String provider);
+
+  /// Banner above the empty lyrics slot when the service sent an answer that could not be read; provider is its name
   ///
   /// In en, this message translates to:
   /// **'{provider} answered but Kanaru could not read it'**

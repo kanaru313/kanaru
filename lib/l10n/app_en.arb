@@ -3156,9 +3156,18 @@
       }
     }
   },
+  "lyricsOnlineServerError": "{provider} is having trouble, try again later",
+  "@lyricsOnlineServerError": {
+    "description": "Banner above the empty lyrics slot when the service answered with a server error (for example 502); provider is its name",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
   "lyricsOnlineUnreadable": "{provider} answered but Kanaru could not read it",
   "@lyricsOnlineUnreadable": {
-    "description": "Banner above the empty lyrics slot when the service sent an error or an answer that could not be read; provider is its name",
+    "description": "Banner above the empty lyrics slot when the service sent an answer that could not be read; provider is its name",
     "placeholders": {
       "provider": {
         "type": "String"
