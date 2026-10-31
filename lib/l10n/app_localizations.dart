@@ -6679,6 +6679,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value} GB'**
   String songInfoFileSizeGb(String value);
+
+  /// Song info: heading of the lyrics card
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get songLyricsTitle;
+
+  /// Title of the full lyrics page; title is the song's title
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics · {title}'**
+  String songLyricsPageTitle(String title);
+
+  /// Button under the lyrics preview; count is the number of lines that have words
+  ///
+  /// In en, this message translates to:
+  /// **'View all · {count, plural, =1{1 line} other{{count} lines}}'**
+  String songLyricsViewAll(int count);
+
+  /// Chip: the lyrics come from a .lrc file next to the song
+  ///
+  /// In en, this message translates to:
+  /// **'.lrc file'**
+  String get songLyricsSidecar;
+
+  /// Chip: the lyrics are stored in the song's tags
+  ///
+  /// In en, this message translates to:
+  /// **'Embedded'**
+  String get songLyricsEmbedded;
+
+  /// Chip: the lyrics come from an online source; name is the source's name
+  ///
+  /// In en, this message translates to:
+  /// **'Online · {name}'**
+  String songLyricsOnline(String name);
+
+  /// Chip: the lyrics have a time for each line
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get songLyricsSynced;
+
+  /// Lyrics card: the song has no lyrics
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics'**
+  String get songLyricsNone;
+
+  /// Lyrics card button that opens the online lyrics search
+  ///
+  /// In en, this message translates to:
+  /// **'Find online'**
+  String get songLyricsFindOnline;
+
+  /// Tooltip of the button that shows each line's time
+  ///
+  /// In en, this message translates to:
+  /// **'Show timestamps'**
+  String get songLyricsShowTimestamps;
+
+  /// Tooltip of the button that hides each line's time
+  ///
+  /// In en, this message translates to:
+  /// **'Hide timestamps'**
+  String get songLyricsHideTimestamps;
+
+  /// Tooltip of the button that copies the lyrics as plain text
+  ///
+  /// In en, this message translates to:
+  /// **'Copy lyrics'**
+  String get songLyricsCopy;
+
+  /// Snackbar after the lyrics were copied
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics copied'**
+  String get songLyricsCopied;
 }
 
 class _AppLocalizationsDelegate

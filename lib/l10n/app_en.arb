@@ -4362,5 +4362,72 @@
         "type": "String"
       }
     }
+  },
+  "songLyricsTitle": "Lyrics",
+  "@songLyricsTitle": {
+    "description": "Song info: heading of the lyrics card"
+  },
+  "songLyricsPageTitle": "Lyrics · {title}",
+  "@songLyricsPageTitle": {
+    "description": "Title of the full lyrics page; title is the song's title",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "songLyricsViewAll": "View all · {count, plural, =1{1 line} other{{count} lines}}",
+  "@songLyricsViewAll": {
+    "description": "Button under the lyrics preview; count is the number of lines that have words",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songLyricsSidecar": ".lrc file",
+  "@songLyricsSidecar": {
+    "description": "Chip: the lyrics come from a .lrc file next to the song"
+  },
+  "songLyricsEmbedded": "Embedded",
+  "@songLyricsEmbedded": {
+    "description": "Chip: the lyrics are stored in the song's tags"
+  },
+  "songLyricsOnline": "Online · {name}",
+  "@songLyricsOnline": {
+    "description": "Chip: the lyrics come from an online source; name is the source's name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "songLyricsSynced": "Synced",
+  "@songLyricsSynced": {
+    "description": "Chip: the lyrics have a time for each line"
+  },
+  "songLyricsNone": "No lyrics",
+  "@songLyricsNone": {
+    "description": "Lyrics card: the song has no lyrics"
+  },
+  "songLyricsFindOnline": "Find online",
+  "@songLyricsFindOnline": {
+    "description": "Lyrics card button that opens the online lyrics search"
+  },
+  "songLyricsShowTimestamps": "Show timestamps",
+  "@songLyricsShowTimestamps": {
+    "description": "Tooltip of the button that shows each line's time"
+  },
+  "songLyricsHideTimestamps": "Hide timestamps",
+  "@songLyricsHideTimestamps": {
+    "description": "Tooltip of the button that hides each line's time"
+  },
+  "songLyricsCopy": "Copy lyrics",
+  "@songLyricsCopy": {
+    "description": "Tooltip of the button that copies the lyrics as plain text"
+  },
+  "songLyricsCopied": "Lyrics copied",
+  "@songLyricsCopied": {
+    "description": "Snackbar after the lyrics were copied"
   }
 }

@@ -4491,4 +4491,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String songInfoFileSizeGb(String value) {
     return '$value GB';
   }
+
+  @override
+  String get songLyricsTitle => 'Lyrics';
+
+  @override
+  String songLyricsPageTitle(String title) {
+    return 'Lyrics · $title';
+  }
+
+  @override
+  String songLyricsViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines',
+      one: '1 line',
+    );
+    return 'View all · $_temp0';
+  }
+
+  @override
+  String get songLyricsSidecar => '.lrc file';
+
+  @override
+  String get songLyricsEmbedded => 'Embedded';
+
+  @override
+  String songLyricsOnline(String name) {
+    return 'Online · $name';
+  }
+
+  @override
+  String get songLyricsSynced => 'Synced';
+
+  @override
+  String get songLyricsNone => 'No lyrics';
+
+  @override
+  String get songLyricsFindOnline => 'Find online';
+
+  @override
+  String get songLyricsShowTimestamps => 'Show timestamps';
+
+  @override
+  String get songLyricsHideTimestamps => 'Hide timestamps';
+
+  @override
+  String get songLyricsCopy => 'Copy lyrics';
+
+  @override
+  String get songLyricsCopied => 'Lyrics copied';
 }

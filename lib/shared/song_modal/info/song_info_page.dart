@@ -9,6 +9,8 @@ import '../../icons/app_icons.dart';
 import '../../widgets/context_modal/context_modal_route.dart';
 import '../../widgets/favorite_button.dart';
 import '../song_modal_session.dart';
+import '../lyrics/song_lyrics_card.dart';
+import 'remembered_scroll_controller.dart';
 import 'song_info_field.dart';
 import 'song_info_groups.dart';
 import 'song_info_hero.dart';
@@ -18,6 +20,7 @@ import 'song_info_hero.dart';
 /// is on; the choice is kept in the display settings.
 ContextModalPage songInfoPage(SongModalSession session) => ContextModalPage(
   key: 'song-info',
+  scrollController: RememberedScrollController(),
   headerBuilder: (context, nav) => ContextModalTopBar(
     title: context.l10n.songInfoTitle,
     onBack: nav.pop,
@@ -38,7 +41,7 @@ ContextModalPage songInfoPage(SongModalSession session) => ContextModalPage(
         return details.when(
           data: (d) => d == null
               ? _Message(text: context.l10n.songInfoGone, onBack: nav.pop)
-              : _InfoBody(details: d),
+              : _InfoBody(details: d, session: session, nav: nav),
           loading: () => const _Skeleton(),
           error: (_, _) =>
               _Message(text: context.l10n.songInfoLoadFailed, onBack: nav.pop),
@@ -76,9 +79,15 @@ class _ShowUnknownButton extends ConsumerWidget {
 }
 
 class _InfoBody extends ConsumerWidget {
-  const _InfoBody({required this.details});
+  const _InfoBody({
+    required this.details,
+    required this.session,
+    required this.nav,
+  });
 
   final TrackDetails details;
+  final SongModalSession session;
+  final ContextModalNav nav;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -90,6 +99,7 @@ class _InfoBody extends ConsumerWidget {
       details,
       now: DateTime.now(),
     );
+    final lyricsPath = details.localPath;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -101,6 +111,9 @@ class _InfoBody extends ConsumerWidget {
               key: ValueKey('song-info-${field.id}'),
               field: field,
             ),
+          // The lyrics sit between the Tags and Audio groups.
+          if (group.id == 'tags' && lyricsPath != null)
+            SongLyricsCard(session: session, path: lyricsPath, nav: nav),
         ],
         const SizedBox(height: 12),
       ],

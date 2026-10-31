@@ -4260,4 +4260,54 @@ class AppLocalizationsVi extends AppLocalizations {
   String songInfoFileSizeGb(String value) {
     return '$value GB';
   }
+
+  @override
+  String get songLyricsTitle => 'Lời bài hát';
+
+  @override
+  String songLyricsPageTitle(String title) {
+    return 'Lời · $title';
+  }
+
+  @override
+  String songLyricsViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dòng',
+    );
+    return 'Xem toàn bộ · $_temp0';
+  }
+
+  @override
+  String get songLyricsSidecar => 'Tệp .lrc';
+
+  @override
+  String get songLyricsEmbedded => 'Nhúng trong thẻ';
+
+  @override
+  String songLyricsOnline(String name) {
+    return 'Online · $name';
+  }
+
+  @override
+  String get songLyricsSynced => 'Đồng bộ';
+
+  @override
+  String get songLyricsNone => 'Không có lời';
+
+  @override
+  String get songLyricsFindOnline => 'Tìm online';
+
+  @override
+  String get songLyricsShowTimestamps => 'Hiện mốc thời gian';
+
+  @override
+  String get songLyricsHideTimestamps => 'Ẩn mốc thời gian';
+
+  @override
+  String get songLyricsCopy => 'Sao chép lời';
+
+  @override
+  String get songLyricsCopied => 'Đã sao chép lời bài hát';
 }

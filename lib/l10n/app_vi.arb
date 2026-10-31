@@ -1780,5 +1780,18 @@
   "songInfoFileSizeMb": "{value} MB",
   "songInfoGone": "Bài hát này không còn trong thư viện",
   "songInfoLoadFailed": "Không tải được thông tin bài hát",
-  "songInfoFileSizeGb": "{value} GB"
+  "songInfoFileSizeGb": "{value} GB",
+  "songLyricsTitle": "Lời bài hát",
+  "songLyricsPageTitle": "Lời · {title}",
+  "songLyricsViewAll": "Xem toàn bộ · {count, plural, other{{count} dòng}}",
+  "songLyricsSidecar": "Tệp .lrc",
+  "songLyricsEmbedded": "Nhúng trong thẻ",
+  "songLyricsOnline": "Online · {name}",
+  "songLyricsSynced": "Đồng bộ",
+  "songLyricsNone": "Không có lời",
+  "songLyricsFindOnline": "Tìm online",
+  "songLyricsShowTimestamps": "Hiện mốc thời gian",
+  "songLyricsHideTimestamps": "Ẩn mốc thời gian",
+  "songLyricsCopy": "Sao chép lời",
+  "songLyricsCopied": "Đã sao chép lời bài hát"
 }

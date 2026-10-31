@@ -21,6 +21,7 @@ class ContextModalPage {
     required this.bodyBuilder,
     this.headerBuilder,
     this.footerBuilder,
+    this.scrollController,
   });
 
   /// Identifies the page for the slide transition; two pages on one stack
@@ -29,6 +30,11 @@ class ContextModalPage {
   final ContextModalPageBuilder? headerBuilder;
   final ContextModalBodyBuilder bodyBuilder;
   final ContextModalPageBuilder? footerBuilder;
+
+  /// Scrolls the body when given. The modal shows only the top page, so a
+  /// page below is unmounted; a controller that remembers its offset
+  /// returns to it when the page is shown again.
+  final ScrollController? scrollController;
 
   /// The page's widgets, sized to its content so the dialog wraps it.
   Widget build(BuildContext context, ContextModalNav nav) {
@@ -60,6 +66,7 @@ class _PageBody extends StatelessWidget {
     return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
       child: FadeEdgeScrollView(
+        controller: page.scrollController,
         builder: (controller) => ListView(
           controller: controller,
           shrinkWrap: true,

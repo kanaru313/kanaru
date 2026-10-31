@@ -107,6 +107,8 @@ abstract final class AppIcons {
   static const IconData visibilityOff = Icons.visibility_off_outlined;
   static const IconData headphones = Icons.headphones;
   static const IconData schedule = Icons.schedule;
+  static const IconData copy = Icons.content_copy_outlined;
+  static const IconData findOnline = Icons.travel_explore;
   static const IconData previewPlay = Icons.play_circle_outline;
   static const IconData removeFromLibrary = Icons.playlist_remove;
   static const IconData deleteOutline = Icons.delete_outline;

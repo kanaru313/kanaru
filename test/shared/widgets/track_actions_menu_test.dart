@@ -36,6 +36,10 @@ Future<void> _pumpRegion(
   List<Override> overrides = const [],
   bool withRouter = false,
 }) async {
+  // Tall enough for every row of the modal, the Song info row included.
+  tester.view.physicalSize = const Size(800, 1000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   final region = TrackActionsRegion(
     song: song,
     onQueueAction: onQueueAction,
@@ -87,13 +91,13 @@ void main() {
       'Add to playlist…',
       'Add to favorites',
       'Edit tags',
+      'Song info',
       'Advanced',
       'Play next',
       'Add to queue',
     ]) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
-    expect(find.text('Song info'), findsNothing);
     expect(find.bySemanticsLabel('Song options'), findsWidgets);
   });
 
