@@ -69,6 +69,22 @@ void main() {
         other,
       );
 
+  /// Opens the Service submenu of the open menu.
+  Future<void> openServiceSubmenu(WidgetTester tester) async {
+    await tester.tap(find.text('Service'));
+    await tester.pumpAndSettle();
+  }
+
+  Finder serviceRadio(String name) =>
+      find.widgetWithText(RadioMenuButton<LyricsTranslationService>, name);
+
+  /// Picks [name] in the Service submenu of the open menu.
+  Future<void> pickService(WidgetTester tester, String name) async {
+    await openServiceSubmenu(tester);
+    await tester.tap(serviceRadio(name));
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('items come in order and the first three work while off', (
     tester,
   ) async {
@@ -77,26 +93,35 @@ void main() {
     final order = [
       'Show translation',
       'Translate to: English',
-      'Display style',
+      'Service',
+      'DISPLAY STYLE',
       'Under each line',
       'Replace',
-      'Service',
-      'Google',
-      'DeepL',
     ].map((text) => tester.getTopLeft(find.text(text)).dy).toList();
     expect(order, orderedEquals([...order]..sort()));
     expect(find.text('T'), findsOneWidget);
     expect(find.text('Translation saved'), findsNothing);
-    for (final text in ['Translate to: English', 'Replace', 'DeepL']) {
-      final item = find.ancestor(
-        of: find.text(text),
-        matching: find.byWidgetPredicate(
-          (w) =>
-              w is MenuItemButton || w is SubmenuButton || w is RadioMenuButton,
+    // The service row shows the selected service; the list is in its submenu.
+    expect(find.text('Google'), findsOneWidget);
+    expect(find.text('DeepL'), findsNothing);
+    for (final text in ['Translate to: English', 'Service']) {
+      expect(
+        find.ancestor(
+          of: find.text(text),
+          matching: find.byType(SubmenuButton),
         ),
+        findsWidgets,
+        reason: text,
       );
-      expect(item, findsWidgets, reason: text);
     }
+    expect(
+      find.ancestor(
+        of: find.text('Replace'),
+        matching: find.byType(SegmentedButton<LyricsTranslationDisplay>),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the switch turns translation on and the menu stays open', (
@@ -208,7 +233,7 @@ void main() {
     });
   });
 
-  testWidgets('the display and service radios write the global settings', (
+  testWidgets('the display style button writes the setting and stays open', (
     tester,
   ) async {
     await pump(tester, TranslationOff(fakeTranslationInfo()));
@@ -216,14 +241,64 @@ void main() {
     await tester.tap(find.text('Replace'));
     await tester.pumpAndSettle();
     expect(prefs().display, LyricsTranslationDisplay.replace);
+    expect(find.text('Show translation'), findsOneWidget);
 
-    await tester.tap(find.byType(IconButton));
+    await tester.tap(find.text('Under each line'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('DeepL'));
-    await tester.pumpAndSettle();
-    expect(prefs().service, _deepl);
+    expect(prefs().display, LyricsTranslationDisplay.underLine);
     expect(prefs().show, isFalse);
+    expect(prefs().service, _google);
     expect(fake.songTargets, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the selected display style is the selected segment', (
+    tester,
+  ) async {
+    await pump(tester, TranslationOff(fakeTranslationInfo()));
+
+    SegmentedButton<LyricsTranslationDisplay> segmented() =>
+        tester.widget(find.byType(SegmentedButton<LyricsTranslationDisplay>));
+    expect(segmented().selected, {LyricsTranslationDisplay.underLine});
+    await tester.tap(find.text('Replace'));
+    await tester.pumpAndSettle();
+    expect(segmented().selected, {LyricsTranslationDisplay.replace});
+  });
+
+  group('the service submenu', () {
+    testWidgets('lists both services, checks the selected, a pick closes', (
+      tester,
+    ) async {
+      await pump(tester, TranslationOff(fakeTranslationInfo()));
+
+      await openServiceSubmenu(tester);
+      expect(serviceRadio('Google'), findsOneWidget);
+      expect(serviceRadio('DeepL'), findsOneWidget);
+      final google = tester.widget<RadioMenuButton<LyricsTranslationService>>(
+        serviceRadio('Google'),
+      );
+      expect(google.value, google.groupValue);
+
+      await tester.tap(serviceRadio('DeepL'));
+      await tester.pumpAndSettle();
+      expect(prefs().service, _deepl);
+      expect(prefs().show, isFalse);
+      expect(fake.songTargets, isEmpty);
+      expect(find.text('Show translation'), findsNothing);
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text('Service'),
+            matching: find.byType(SubmenuButton),
+          ),
+          matching: find.text('DeepL'),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 
   group('the footer', () {
@@ -386,8 +461,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('DeepL'));
-      await tester.pumpAndSettle();
+      await pickService(tester, 'DeepL');
       expect(find.text('Lyrics will be sent to DeepL'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
@@ -397,8 +471,7 @@ void main() {
 
       await tester.tap(find.byType(IconButton));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('DeepL'));
-      await tester.pumpAndSettle();
+      await pickService(tester, 'DeepL');
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       expect(prefs().service, _deepl);
@@ -409,8 +482,7 @@ void main() {
     testWidgets('choosing a service while off asks nothing', (tester) async {
       await pump(tester, off, settings: const TranslationPrefs());
 
-      await tester.tap(find.text('DeepL'));
-      await tester.pumpAndSettle();
+      await pickService(tester, 'DeepL');
 
       expect(find.textContaining('will be sent'), findsNothing);
       expect(prefs().service, _deepl);
@@ -419,9 +491,14 @@ void main() {
     });
   });
 
-  for (final (locale, switchText, language) in [
-    (const Locale('vi'), 'Hiện bản dịch', 'Dịch sang: Tiếng Việt'),
-    (const Locale('en'), 'Show translation', 'Translate to: Vietnamese'),
+  for (final (locale, switchText, language, service) in [
+    (const Locale('vi'), 'Hiện bản dịch', 'Dịch sang: Tiếng Việt', 'Dịch vụ'),
+    (
+      const Locale('en'),
+      'Show translation',
+      'Translate to: Vietnamese',
+      'Service',
+    ),
   ]) {
     testWidgets('the menu is translated: ${locale.languageCode}', (
       tester,
@@ -433,6 +510,7 @@ void main() {
       );
       expect(find.text(switchText), findsOneWidget);
       expect(find.text(language), findsOneWidget);
+      expect(find.text(service), findsOneWidget);
     });
   }
 }

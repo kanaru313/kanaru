@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/lyrics/lyrics.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/menu_row.dart';
 
 /// "`.lrc` file" or "In the tag", from where the song's own lyrics come from.
 String? lyricsSourceLocalSubtitle(AppLocalizations l10n, LyricsSource? own) =>
@@ -10,25 +11,6 @@ String? lyricsSourceLocalSubtitle(AppLocalizations l10n, LyricsSource? own) =>
       LyricsSource.embedded => l10n.lyricsSourceLocalTag,
       null => null,
     };
-
-/// Room inside a row, and the gap between rows: the rows breathe, and the
-/// tint of the choice in effect is a rounded block, not a full-width band.
-const _rowPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 9);
-
-ButtonStyle _rowStyle({Color? background}) => ButtonStyle(
-  padding: const WidgetStatePropertyAll(_rowPadding),
-  shape: WidgetStatePropertyAll(
-    RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-  ),
-  backgroundColor: background == null
-      ? null
-      : WidgetStatePropertyAll(background),
-);
-
-Widget _spaced(Widget row) => Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-  child: row,
-);
 
 /// One row: a title, an optional [tag] after it and an optional subtitle. With [checked] set it is a
 /// radio row, selected when `true` (the choice in effect); pressing the row
@@ -107,22 +89,22 @@ Widget lyricsSourceMenuItem(
   final tip = tooltip;
   final shown = tip == null ? label : Tooltip(message: tip, child: label);
   if (checked == null) {
-    return _spaced(
+    return menuRowSpaced(
       MenuItemButton(
         focusNode: focusNode,
-        style: _rowStyle(),
+        style: menuRowStyle(),
         leadingIcon: icon == null ? null : Icon(icon, size: 20),
         onPressed: onPressed,
         child: shown,
       ),
     );
   }
-  return _spaced(
+  return menuRowSpaced(
     RadioMenuButton<bool>(
       focusNode: focusNode,
       // The row in effect is tinted, so it reads at a glance.
-      style: _rowStyle(
-        background: checked ? scheme.primary.withValues(alpha: 0.14) : null,
+      style: menuRowStyle(
+        background: checked ? menuRowSelectedTint(scheme) : null,
       ),
       value: true,
       groupValue: checked ? true : null,
@@ -140,9 +122,9 @@ Widget lyricsSourceSwitchItem(
   required String title,
   required bool on,
   required ValueChanged<bool>? onChanged,
-}) => _spaced(
+}) => menuRowSpaced(
   MenuItemButton(
-    style: _rowStyle(),
+    style: menuRowStyle(),
     onPressed: onChanged == null ? null : () => onChanged(!on),
     trailingIcon: IgnorePointer(
       child: ExcludeFocus(

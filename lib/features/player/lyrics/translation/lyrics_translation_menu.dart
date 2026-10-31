@@ -9,17 +9,17 @@ import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/translation_notice_dialog.dart';
+import '../../../../shared/widgets/menu_row.dart';
 import 'lyrics_translation_labels.dart';
+import 'lyrics_translation_menu_footer.dart';
 import 'lyrics_translation_switch_row.dart';
 
 /// Value of the "Default" item of the language submenu.
 const _defaultLanguage = '';
 
-/// Widest the footer text grows before it wraps.
-const _footerMaxWidth = 280.0;
-
 /// Items of the lyrics translation menu: the switch, the language submenu,
-/// the display style, the service and a footer about the saved translation.
+/// the service submenu, the display style as a segmented button and a footer
+/// about the saved translation.
 /// Call it from the `build` of the widget that anchors the menu, so the open
 /// menu follows [state] and the settings. [context] is the anchor's: the
 /// network notice opens on it. [appLang] picks the controller.
@@ -52,6 +52,24 @@ List<Widget> lyricsTranslationMenuItems(
     }
   }
 
+  // A radio row of a submenu; the one in effect is tinted like the lyrics
+  // source menu's.
+  final scheme = Theme.of(context).colorScheme;
+  Widget radio<T>({
+    required T value,
+    required T groupValue,
+    required VoidCallback onChanged,
+    required String label,
+  }) => RadioMenuButton<T>(
+    style: menuRowStyle(
+      background: value == groupValue ? menuRowSelectedTint(scheme) : null,
+    ),
+    value: value,
+    groupValue: groupValue,
+    onChanged: (_) => onChanged(),
+    child: Text(label),
+  );
+
   return [
     lyricsTranslationSwitchRow(
       context,
@@ -59,125 +77,75 @@ List<Widget> lyricsTranslationMenuItems(
       onToggle: toggle,
       focusNode: firstItemFocus,
     ),
-    SubmenuButton(
-      menuChildren: [
-        RadioMenuButton<String>(
-          value: _defaultLanguage,
-          groupValue: info.songOverride ?? _defaultLanguage,
-          onChanged: (_) => controller.setSongTarget(null),
-          child: Text(
-            l10n.lyricsTranslationTargetDefault(
+    menuRowSpaced(
+      SubmenuButton(
+        style: menuRowStyle(),
+        menuChildren: [
+          radio<String>(
+            value: _defaultLanguage,
+            groupValue: info.songOverride ?? _defaultLanguage,
+            onChanged: () => controller.setSongTarget(null),
+            label: l10n.lyricsTranslationTargetDefault(
               translationLanguageName(l10n, info.defaultTarget),
             ),
           ),
-        ),
-        for (final language in translationLanguages)
-          RadioMenuButton<String>(
-            value: language.code,
-            groupValue: info.songOverride ?? _defaultLanguage,
-            onChanged: (_) => controller.setSongTarget(language.code),
-            child: Text(translationLanguageName(l10n, language)),
+          for (final language in translationLanguages)
+            radio<String>(
+              value: language.code,
+              groupValue: info.songOverride ?? _defaultLanguage,
+              onChanged: () => controller.setSongTarget(language.code),
+              label: translationLanguageName(l10n, language),
+            ),
+        ],
+        child: Text(
+          l10n.lyricsTranslationTarget(
+            translationLanguageName(l10n, info.effective),
           ),
-      ],
-      child: Text(
-        l10n.lyricsTranslationTarget(
-          translationLanguageName(l10n, info.effective),
         ),
       ),
     ),
-    const Divider(height: 1),
-    _header(context, l10n.lyricsTranslationDisplayHeader),
-    for (final (display, label) in [
-      (LyricsTranslationDisplay.underLine, l10n.lyricsTranslationDisplayUnder),
-      (LyricsTranslationDisplay.replace, l10n.lyricsTranslationDisplayReplace),
-    ])
-      RadioMenuButton<LyricsTranslationDisplay>(
-        value: display,
-        groupValue: prefs.display,
-        onChanged: (value) =>
-            settings.setTranslation(prefs.copyWith(display: value ?? display)),
-        child: Text(label),
-      ),
-    const Divider(height: 1),
-    _header(context, l10n.lyricsTranslationServiceHeader),
-    for (final service in LyricsTranslationService.values)
-      RadioMenuButton<LyricsTranslationService>(
-        value: service,
-        groupValue: prefs.service,
-        onChanged: (_) => pickService(service),
-        child: Text(translationServiceName(service)),
-      ),
-    ..._footer(context, state, prefs.service, controller),
-  ];
-}
-
-Widget _header(BuildContext context, String text) => Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-  child: Semantics(
-    header: true,
-    child: Text(text, style: Theme.of(context).textTheme.labelLarge),
-  ),
-);
-
-/// The note about the translation on screen and the action that goes with
-/// it; nothing while translation is off.
-List<Widget> _footer(
-  BuildContext context,
-  LyricsTranslationState state,
-  LyricsTranslationService selected,
-  LyricsTranslationController controller,
-) {
-  final l10n = context.l10n;
-  final (String? text, String? action, VoidCallback? run) = switch (state) {
-    TranslationReady(:final service, :final fromOtherService) => (
-      fromOtherService
-          ? l10n.lyricsTranslationSavedFrom(translationServiceName(service))
-          : l10n.lyricsTranslationSaved,
-      fromOtherService
-          ? l10n.lyricsTranslationRetranslateWith(
-              translationServiceName(selected),
-            )
-          : l10n.lyricsTranslationRetranslate,
-      controller.retranslate,
-    ),
-    TranslationSameLanguage(:final info) => (
-      l10n.lyricsTranslationSameLanguage(
-        languageNameInSentence(
-          l10n,
-          translationLanguageName(l10n, info.effective),
+    menuRowSpaced(
+      SubmenuButton(
+        style: menuRowStyle(),
+        trailingIcon: Text(
+          translationServiceName(prefs.service),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
+        menuChildren: [
+          for (final service in LyricsTranslationService.values)
+            radio<LyricsTranslationService>(
+              value: service,
+              groupValue: prefs.service,
+              onChanged: () => pickService(service),
+              label: translationServiceName(service),
+            ),
+        ],
+        child: Text(l10n.lyricsTranslationServiceHeader),
       ),
-      null,
-      null,
     ),
-    TranslationLoading() => (
-      l10n.lyricsTranslationLoading,
-      l10n.lyricsTranslationRetranslate,
-      null,
-    ),
-    TranslationFailed(:final kind) => (
-      translationFailureMessage(l10n, kind),
-      l10n.lyricsTranslationRetry,
-      controller.retry,
-    ),
-    _ => (null, null, null),
-  };
-  if (text == null) return const [];
-  return [
-    const Divider(height: 1),
+    menuSectionLabel(context, l10n.lyricsTranslationDisplayHeader),
+    // Not a menu item: the menu stays open so the result shows at once.
     Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: _footerMaxWidth),
-        child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+      child: SegmentedButton<LyricsTranslationDisplay>(
+        showSelectedIcon: false,
+        expandedInsets: EdgeInsets.zero,
+        segments: [
+          ButtonSegment(
+            value: LyricsTranslationDisplay.underLine,
+            label: Text(l10n.lyricsTranslationDisplayUnder),
+          ),
+          ButtonSegment(
+            value: LyricsTranslationDisplay.replace,
+            label: Text(l10n.lyricsTranslationDisplayReplace),
+          ),
+        ],
+        selected: {prefs.display},
+        onSelectionChanged: (s) =>
+            settings.setTranslation(prefs.copyWith(display: s.single)),
       ),
     ),
-    if (action != null)
-      // Stays open so the footer shows the new state.
-      MenuItemButton(
-        closeOnActivate: false,
-        onPressed: run,
-        child: Text(action),
-      ),
+    ...lyricsTranslationMenuFooter(context, state, prefs.service, controller),
   ];
 }

@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/menu_row.dart';
 
 /// The first row of the translation menu: the "Show translation" switch,
 /// with its `T` key hint. [onToggle] flips it; [focusNode] is the menu's
@@ -32,24 +33,27 @@ Widget lyricsTranslationSwitchRow(
       onToggle();
       return KeyEventResult.handled;
     },
-    child: MenuItemButton(
-      closeOnActivate: false,
-      onPressed: onToggle,
-      trailingIcon: ExcludeFocus(
-        child: Switch(value: on, onChanged: (_) => onToggle()),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l10n.lyricsTranslationShow),
-          const SizedBox(width: 12),
-          Text(
-            'T',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+    child: menuRowSpaced(
+      MenuItemButton(
+        style: menuRowStyle(),
+        closeOnActivate: false,
+        onPressed: onToggle,
+        trailingIcon: ExcludeFocus(
+          child: Switch(value: on, onChanged: (_) => onToggle()),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.lyricsTranslationShow),
+            const SizedBox(width: 12),
+            Text(
+              'T',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );

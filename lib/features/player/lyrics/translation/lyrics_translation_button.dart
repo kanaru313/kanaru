@@ -85,6 +85,8 @@ class _LyricsTranslationButtonState
 
     return MenuAnchor(
       controller: _menu,
+      // Air between the button and the menu.
+      alignmentOffset: const Offset(0, 8),
       onOpen: () {
         _setOpen(true);
         // The open menu holds the focus, so Escape closes it and not the
