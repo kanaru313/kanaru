@@ -10,6 +10,7 @@ import '../widgets/context_modal/context_modal_route.dart';
 import '../widgets/queue_actions_menu.dart';
 import '../widgets/track_menu_lookups.dart';
 import 'song_modal_actions_page.dart';
+import 'song_modal_extras.dart';
 import 'song_modal_session.dart';
 
 /// Opens the song modal for [song]. Returns at once: everything the actions
@@ -20,8 +21,8 @@ import 'song_modal_session.dart';
 /// what the runner captured here so they work after the row is gone; the rest
 /// is carried out by a `TrackMenuRunner` after the modal has closed. [showAlbum] false
 /// leaves out Go to album, on the page of the song's own album.
-/// [extraActions] are the actions of the screen the song is listed on; they
-/// come first. [viaKeyboard] focuses the first row.
+/// [extras] are the actions and header note of the screen the song is listed
+/// on; the actions come first. [viaKeyboard] focuses the first row.
 void openSongModal(
   BuildContext context,
   WidgetRef ref, {
@@ -29,7 +30,7 @@ void openSongModal(
   required ValueChanged<QueueAction> onQueueAction,
   bool showAlbum = true,
   bool viaKeyboard = false,
-  List<ContextModalAction> extraActions = const [],
+  SongModalExtras extras = const SongModalExtras(),
 }) {
   final session = SongModalSession(
     song: song,
@@ -37,7 +38,8 @@ void openSongModal(
     onQueueAction: onQueueAction,
     lyricsTarget: menuLyricsTarget(ref, song),
     showAlbum: showAlbum,
-    extraActions: extraActions,
+    extraActions: extras.actions,
+    headerNote: extras.headerNote,
   );
   unawaited(
     showContextModal<void>(

@@ -7,6 +7,7 @@ import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
 import '../widgets/queue_actions_menu.dart';
 import 'open_song_modal.dart';
+import 'song_modal_extras.dart';
 
 /// The ⋮ button at the end of a song row: opens the song modal. Always
 /// visible, so the modal is reachable without a right click or a long press.
@@ -17,6 +18,7 @@ class SongMoreButton extends ConsumerWidget {
     required this.onQueueAction,
     this.showAlbum = true,
     this.color,
+    this.modalExtras,
   });
 
   final TrackListItem song;
@@ -25,6 +27,9 @@ class SongMoreButton extends ConsumerWidget {
 
   /// Icon color; null keeps the theme's.
   final Color? color;
+
+  /// Screen actions and note, built when the modal opens.
+  final SongModalExtrasBuilder? modalExtras;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,6 +41,7 @@ class SongMoreButton extends ConsumerWidget {
       onQueueAction: onQueueAction,
       showAlbum: showAlbum,
       viaKeyboard: viaKeyboard,
+      extras: modalExtras?.call() ?? const SongModalExtras(),
     );
     // Enter and Space on the focused button open the modal from the keyboard
     // (focus lands on its first row); a click does not.
