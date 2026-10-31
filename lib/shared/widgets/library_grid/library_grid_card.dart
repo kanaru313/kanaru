@@ -26,9 +26,9 @@ const libraryGridTextInset = 8.0;
 const libraryGridCoverRadius = 8.0;
 
 /// A grid cell's card (songs and albums): [libraryGridCardMargin] around, a
-/// [songCardColor] fill, and [child] inside the card's padding. The `Material` is always present,
-/// so the tree does not change when [playing] flips. [onTap] null draws no
-/// ink (the placeholder).
+/// [songCardColor] fill, and [child] inside the card's padding. The
+/// `Material` is always present, so the tree does not change when [playing]
+/// flips. [onTap] null draws no ink (the placeholder).
 class LibraryGridCard extends StatelessWidget {
   const LibraryGridCard({
     super.key,
@@ -65,8 +65,9 @@ class LibraryGridCard extends StatelessWidget {
   }
 }
 
-/// Placeholder of any card grid tile (song or album) still loading: the card with the cover's
-/// square in the placeholder colour, so the grid does not jump when it loads.
+/// Placeholder of any card grid tile (song or album) still loading: the card
+/// with the cover's square in the placeholder colour, so the grid does not
+/// jump when it loads.
 class LibraryGridCardPlaceholder extends StatelessWidget {
   const LibraryGridCardPlaceholder({super.key});
 

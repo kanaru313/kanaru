@@ -1,11 +1,21 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
+import 'package:kanaru/features/home/home_album_card.dart';
+import 'package:kanaru/features/home/home_album_grid_screen.dart';
+import 'package:kanaru/features/home/home_artist_card.dart';
+import 'package:kanaru/features/home/home_providers.dart';
+import 'package:kanaru/core/database/library_database.dart' show AlbumSummary;
 import 'package:kanaru/features/home/home_screen.dart';
 import 'package:kanaru/features/home/home_tile_metrics.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/card_shelf.dart';
 import 'package:kanaru/shared/widgets/cover_art.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/library_grid_card.dart';
 import 'package:kanaru/shared/widgets/library_grid/song_grid_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -34,12 +44,14 @@ void main() {
     HomeHarness h, {
     double width = 1280,
     double textScale = 1,
+    List<Override> overrides = const [],
   }) => h.pump(
     tester,
     const HomeScreen(),
     width: width,
     height: 2400,
     textScale: textScale,
+    overrides: overrides,
   );
 
   group('song shelves', () {
@@ -104,6 +116,91 @@ void main() {
           )
           .where((m) => m.color == scheme.primaryContainer);
       expect(tinted, isNotEmpty);
+    });
+  });
+
+  group('album shelf', () {
+    testWidgets('draws album grid cards, artists keep their own card', (
+      tester,
+    ) async {
+      final h = await played(3);
+      await open(tester, h);
+      final albums = find.byType(AlbumGridTile);
+      expect(albums, findsWidgets);
+      expect(
+        find.descendant(
+          of: find.byType(HomeAlbumCard),
+          matching: find.byType(AlbumGridTile),
+        ),
+        findsWidgets,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(HomeArtistCard),
+          matching: find.byType(LibraryGridCard),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('keep the cover 8 px down', (tester) async {
+      final h = await played(3);
+      await open(tester, h);
+      final tile = tester.getRect(find.byType(AlbumGridTile).first);
+      final cover = tester.getRect(
+        find.descendant(
+          of: find.byType(AlbumGridTile).first,
+          matching: find.byType(CoverArt),
+        ),
+      );
+      expect(cover.top, tile.top + homeGridCardInset);
+      expect(cover.height, homeGridCardCoverSize);
+    });
+
+    testWidgets('do not overflow at x2 text in a narrow window', (
+      tester,
+    ) async {
+      final h = await played(3);
+      await open(tester, h, width: 480, textScale: 2);
+      expect(find.byType(AlbumGridTile), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the full grid draws album cards without overflow at x2', (
+      tester,
+    ) async {
+      final h = await played(3);
+      await h.pump(
+        tester,
+        const HomeAlbumGridScreen(),
+        width: 480,
+        height: 2400,
+        textScale: 2,
+      );
+      expect(find.byType(AlbumGridTile), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a loading shelf is as tall as a loaded one', (tester) async {
+      final h = await played(3);
+      await open(
+        tester,
+        h,
+        overrides: [
+          homeRecentAlbumsProvider.overrideWith(
+            (ref) => Completer<List<AlbumSummary>>().future,
+          ),
+        ],
+      );
+      final placeholder = find.byType(LibraryGridCardPlaceholder).first;
+      final shelf = find
+          .ancestor(of: placeholder, matching: find.byType(CardShelf))
+          .first;
+      expect(
+        tester.getSize(shelf).height,
+        homeAlbumShelfHeight(tester.element(shelf)),
+      );
+      expect(tester.takeException(), isNull);
     });
   });
 }

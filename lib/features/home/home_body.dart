@@ -79,6 +79,8 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
               child: _row<AlbumSummary>(
                 ref.watch(homeRecentAlbumsProvider),
                 (_, items, i) => HomeAlbumCard(album: items[i]),
+                height: homeAlbumShelfHeight,
+                placeholder: const LibraryGridCardPlaceholder(),
               ),
             ),
             HomeSection(

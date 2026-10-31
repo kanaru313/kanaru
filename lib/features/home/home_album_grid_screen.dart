@@ -6,6 +6,7 @@ import '../../shared/icons/app_icons.dart';
 import 'home_album_card.dart';
 import 'home_card_grid_screen.dart';
 import 'home_paged_providers.dart';
+import 'home_tile_metrics.dart';
 
 /// Every album played, newest listen first.
 class HomeAlbumGridScreen extends StatelessWidget {
@@ -20,6 +21,7 @@ class HomeAlbumGridScreen extends StatelessWidget {
       emptyIcon: AppIcons.albumOutlined,
       pages: homeRecentAlbumsPagesProvider,
       cardBuilder: (album) => HomeAlbumCard(album: album),
+      cellHeight: homeAlbumShelfHeight,
     );
   }
 }
