@@ -5,9 +5,11 @@ import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
+import 'package:kanaru/shared/song_modal/song_modal_header.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
+import '../../shared/song_modal/song_modal_test_support.dart';
 import '../playlists/playlist_test_data.dart';
 
 void main() {
@@ -31,7 +33,7 @@ void main() {
   Future<void> openMenu(WidgetTester tester, String title) async {
     await tester.tap(row(title).last, buttons: kSecondaryButton);
     await settleDb(tester);
-    await tester.pumpAndSettle();
+    await settleSongModal(tester);
   }
 
   testWidgets('the heart adds a library song to Favorites and takes it out', (
@@ -99,7 +101,8 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.f10);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
     await settleDb(tester);
-    await tester.pumpAndSettle();
+    await settleSongModal(tester);
     expect(find.text('Remove from queue'), findsOneWidget);
+    expect(find.byType(SongModalHeader), findsOneWidget);
   });
 }

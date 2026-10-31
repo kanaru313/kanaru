@@ -653,6 +653,10 @@
   "@queueMenuStale": {
     "description": "Snackbar when a queue row menu item is picked after the queue was replaced or cleared"
   },
+  "queueAlreadyUpNext": "Already playing or up next",
+  "@queueAlreadyUpNext": {
+    "description": "Snackbar when Play next is picked on the queue row that is playing or already in the play next block"
+  },
   "queueReorder": "Drag to reorder",
   "queueShowCurrent": "Jump to current song",
   "queueClose": "Close now playing list",

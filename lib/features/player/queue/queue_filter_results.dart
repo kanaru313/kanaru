@@ -33,8 +33,8 @@ List<int> queueFilterPositions(
 
 /// The rows of the queue that match the filter, best match first. They are
 /// the real rows of the queue, so tapping one jumps to it in the queue
-/// (nothing is replaced). They have no drag handle or remove button, since
-/// they are not the whole queue; the row menu can still remove one.
+/// (nothing is replaced). They have no drag handle, since they are not the
+/// whole queue; the ⋮ button and the row menu can still remove one.
 /// [positions] are play positions in [queue].
 class QueueFilterResults extends StatelessWidget {
   const QueueFilterResults({

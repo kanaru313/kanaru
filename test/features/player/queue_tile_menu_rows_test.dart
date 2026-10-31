@@ -30,22 +30,6 @@ void main() {
 
   Track lib(Map<String, String> p, String t) => Track(uri: p[t]!, title: t);
 
-  testWidgets('a library row shows every row in order', (tester) async {
-    await open(tester, (p) => [lib(p, 'a'), lib(p, 'b'), lib(p, 'c')]);
-    await openQueueMenu(tester, 'c');
-    expect(menuLabels(tester, allMenuLabels), [
-      'Play next',
-      'Add to playlist…',
-      'Add to favorites',
-      'Find lyrics online…',
-      'Show artist',
-      'Show album',
-      'Show in folder',
-      'Show in file manager',
-      'Remove from queue',
-    ]);
-  });
-
   testWidgets('a local file outside the library has no library rows', (
     tester,
   ) async {
@@ -140,33 +124,37 @@ void main() {
   testWidgets('the playing row and a play next row have no Play next', (
     tester,
   ) async {
-    await open(tester, (p) => [lib(p, 'a'), lib(p, 'b'), lib(p, 'c')]);
-    await openQueueMenu(tester, 'a');
+    await open(
+      tester,
+      (p) => [
+        const Track(uri: '/elsewhere/p.mp3', title: 'p'),
+        const Track(uri: '/elsewhere/q.mp3', title: 'q'),
+        const Track(uri: '/elsewhere/r.mp3', title: 'r'),
+      ],
+    );
+    await openQueueMenu(tester, 'p');
     expect(menuLabels(tester, allMenuLabels), isNot(contains('Play next')));
     await tester.tapAt(const Offset(2, 2));
     await tester.pumpAndSettle();
 
     await h.container.read(playerServiceProvider.notifier).moveToPlayNext(2);
     await tester.pumpAndSettle();
-    await openQueueMenu(tester, 'c');
+    await openQueueMenu(tester, 'r');
     expect(menuLabels(tester, allMenuLabels), isNot(contains('Play next')));
   });
 
   testWidgets('a played row still offers Play next', (tester) async {
-    await open(tester, (p) => [lib(p, 'a'), lib(p, 'b'), lib(p, 'c')]);
+    await open(
+      tester,
+      (p) => [
+        const Track(uri: '/elsewhere/p.mp3', title: 'p'),
+        const Track(uri: '/elsewhere/q.mp3', title: 'q'),
+        const Track(uri: '/elsewhere/r.mp3', title: 'r'),
+      ],
+    );
     await h.container.read(playerServiceProvider.notifier).jump(2);
     await tester.pumpAndSettle();
-    await openQueueMenu(tester, 'a');
+    await openQueueMenu(tester, 'p');
     expect(menuLabels(tester, allMenuLabels), contains('Play next'));
-  });
-
-  testWidgets('Show album is enabled from the library row, not the snapshot', (
-    tester,
-  ) async {
-    // A restored queue holds tracks without their album.
-    await open(tester, (p) => [lib(p, 'a'), lib(p, 'b')]);
-    await openQueueMenu(tester, 'b');
-    expect(menuRowEnabled(tester, 'Show album'), isTrue);
-    expect(menuRowEnabled(tester, 'Show artist'), isTrue);
   });
 }

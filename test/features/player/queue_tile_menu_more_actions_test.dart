@@ -3,6 +3,8 @@ import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 
+import 'package:kanaru/shared/song_modal/song_modal_header.dart';
+
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 import '../playlists/playlist_test_data.dart';
@@ -72,15 +74,17 @@ void main() {
     );
   });
 
-  testWidgets('Add to favorites says so when a rescan dropped the song', (
+  testWidgets('a rescan that dropped the song leaves no way to favorite it', (
     tester,
   ) async {
     final p = await open(tester);
-    await openQueueMenu(tester, 'b');
     await tester.runAsync(() => h.db.delete(h.db.tracks).go());
-    await pick(tester, 'Add to favorites');
+    await settleDb(tester);
+    await openQueueMenu(tester, 'b');
 
-    expect(find.text('This song is no longer in the library'), findsOneWidget);
+    expect(find.byType(SongModalHeader), findsNothing);
+    expect(find.text('Remove from queue'), findsOneWidget);
+    expect(find.text('Add to favorites'), findsNothing);
     expect(await tester.runAsync(() => h.db.isFavorite(p['b']!)), isFalse);
   });
 

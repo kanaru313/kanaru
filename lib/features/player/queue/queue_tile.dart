@@ -2,7 +2,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/playlist_library_paths.dart';
+import '../../../core/database/library_track_of_path.dart';
 import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
@@ -10,9 +10,9 @@ import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/favorite_button.dart';
-import '../../../shared/widgets/hover_reveal_action.dart';
 import '../../../shared/widgets/library_row.dart';
 import '../../../shared/widgets/song_row_view.dart';
+import 'queue_more_button.dart';
 import 'queue_play_next_marker.dart';
 import 'queue_tile_menu.dart';
 
@@ -30,14 +30,10 @@ bool isUpNextRow(PlayQueue queue, int position, int upNextRun) =>
 /// padding around a 20 px icon.
 const _handleWidth = 36.0;
 
-/// Width of the remove button, or of the gap that takes its place, so
-/// durations line up.
-const _removeWidth = 40.0;
-
 /// One queued track, drawn as the library's song row ([SongRowView]): drag
-/// handle, cover, title, artist, "album • year", length and heart, plus a
-/// remove button that shows on hover or focus. Tapping plays it; a right
-/// click, long press or the menu key opens its menu.
+/// handle, cover, title, artist, "album • year", length and heart and a ⋮ button.
+/// Tapping plays it; a right click, long press, the menu key or the ⋮ button
+/// opens its menu.
 ///
 /// Tracks already played are dimmed; the playing one has the playing-song
 /// colors, the same while paused. A "play next" row has a bar on its edge.
@@ -66,8 +62,8 @@ class QueueTile extends ConsumerWidget {
   /// This track is in the "play next" block right after the playing one.
   final bool upNext;
 
-  /// `false` for a row shown by the filter: no drag handle and no remove
-  /// button, since the rows are not the whole queue. The row menu is kept.
+  /// `false` for a row shown by the filter: no drag handle, since the rows
+  /// are not the whole queue. The ⋮ button and the row menu are kept.
   final bool editable;
 
   @override
@@ -80,7 +76,7 @@ class QueueTile extends ConsumerWidget {
     // read it stays off (an added favorite can always be taken out again), so
     // it never offers an add that the press would refuse.
     final canAdd = path != null
-        ? (ref.watch(isLibraryPathProvider(path)).value ?? false)
+        ? (ref.watch(libraryTrackOfPathProvider(path)).value != null)
         : false;
 
     // The row height is fixed, so its text stops growing at a cap instead of
@@ -98,47 +94,30 @@ class QueueTile extends ConsumerWidget {
                 CustomSemanticsAction(label: l10n.queueRemove): () =>
                     player.removeTrack(position),
             },
-            child: HoverRevealAction(
-              builder: (context, revealed) => SongRowView(
-                title: track.title,
-                artist: track.artist,
-                detail: joinRowDetails([track.album, rowYear(track.year)]),
-                coverPath: track.artUri,
-                duration: track.duration,
-                playing: current,
-                // The playing row's tap does nothing, but it is not null: a
-                // row without a handler cannot take focus, and the menu key
-                // would not reach it.
-                onTap: current ? () {} : () => player.jump(position),
-                leading: editable
-                    ? _QueueDragHandle(position: position, current: current)
-                    : const SizedBox(width: _handleWidth),
-                overlay: upNext ? const QueuePlayNextMarker() : null,
-                semanticsHint: upNext ? l10n.queuePlayNext : null,
-                heart: FavoriteButton(
-                  path: path,
-                  compact: true,
-                  iconSize: 20,
-                  color: current ? colors.onPrimaryContainer : null,
-                  canAdd: canAdd,
-                ),
-                trailing: editable
-                    ? RevealableAction(
-                        revealed: revealed,
-                        child: IconButton(
-                          icon: const Icon(AppIcons.deleteRounded),
-                          iconSize: 20,
-                          constraints: const BoxConstraints.tightFor(
-                            width: _removeWidth,
-                            height: _removeWidth,
-                          ),
-                          color: current ? colors.onPrimaryContainer : null,
-                          tooltip: l10n.queueRemove,
-                          onPressed: () => player.removeTrack(position),
-                        ),
-                      )
-                    : const SizedBox(width: _removeWidth),
+            child: SongRowView(
+              title: track.title,
+              artist: track.artist,
+              detail: joinRowDetails([track.album, rowYear(track.year)]),
+              coverPath: track.artUri,
+              duration: track.duration,
+              playing: current,
+              // The playing row's tap does nothing, but it is not null: a
+              // row without a handler cannot take focus, and the menu key
+              // would not reach it.
+              onTap: current ? () {} : () => player.jump(position),
+              leading: editable
+                  ? _QueueDragHandle(position: position, current: current)
+                  : const SizedBox(width: _handleWidth),
+              overlay: upNext ? const QueuePlayNextMarker() : null,
+              semanticsHint: upNext ? l10n.queuePlayNext : null,
+              heart: FavoriteButton(
+                path: path,
+                compact: true,
+                iconSize: 20,
+                color: current ? colors.onPrimaryContainer : null,
+                canAdd: canAdd,
               ),
+              more: QueueMoreButton(position: position, current: current),
             ),
           ),
         ),
@@ -161,6 +140,9 @@ class _QueueDragHandle extends StatelessWidget {
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {},
+      // The long press on the handle is swallowed so it does not open the
+      // row's menu.
+      onLongPress: () {},
       child: MouseRegion(
         cursor: SystemMouseCursors.grab,
         child: Tooltip(
