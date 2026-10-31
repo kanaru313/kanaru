@@ -10,10 +10,6 @@ import 'song_modal_data.dart';
 /// shows the artist chips open; with this many or more they start folded.
 const artistsOpenBelow = 4;
 
-/// Whether the Song info page exists. Off until the page is built: the row
-/// and the header chevron stay hidden.
-const songInfoAvailable = false;
-
 /// The folder name shown under Go to folder: the last part of the song's
 /// directory.
 String songFolderName(String path) {
@@ -169,14 +165,13 @@ List<List<ContextModalAction>> songModalSections(
         label: l10n.songModalEditTags,
         comingSoon: true,
       ),
-      if (songInfoAvailable)
-        ContextModalAction(
-          id: 'song-info',
-          icon: AppIcons.infoOutline,
-          label: l10n.songModalSongInfo,
-          opensPage: true,
-          onTap: h.openInfo,
-        ),
+      ContextModalAction(
+        id: 'song-info',
+        icon: AppIcons.infoOutline,
+        label: l10n.songModalSongInfo,
+        opensPage: true,
+        onTap: h.openInfo,
+      ),
       ContextModalAction(
         id: 'advanced',
         icon: AppIcons.advanced,

@@ -6403,6 +6403,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 artist} other{{count} artists}}'**
   String songModalArtistsCount(int count);
+
+  /// Title of the Song info page
+  ///
+  /// In en, this message translates to:
+  /// **'Song info'**
+  String get songInfoTitle;
+
+  /// Tooltip of the eye button that shows fields with no value
+  ///
+  /// In en, this message translates to:
+  /// **'Show unknown fields'**
+  String get songInfoShowUnknown;
+
+  /// Tooltip of the eye button that hides fields with no value
+  ///
+  /// In en, this message translates to:
+  /// **'Hide unknown fields'**
+  String get songInfoHideUnknown;
+
+  /// Tooltip of the disabled preview button
+  ///
+  /// In en, this message translates to:
+  /// **'Play the best part · coming soon'**
+  String get songInfoPreview;
+
+  /// Play count line of Song info
+  ///
+  /// In en, this message translates to:
+  /// **'Total plays: {count}'**
+  String songInfoPlays(int count);
+
+  /// First play line of Song info
+  ///
+  /// In en, this message translates to:
+  /// **'First listened: {date}'**
+  String songInfoFirstPlayed(String date);
+
+  /// Last play line of Song info
+  ///
+  /// In en, this message translates to:
+  /// **'Last listened: {date}'**
+  String songInfoLastPlayed(String date);
+
+  /// Song info line for a song that was never played
+  ///
+  /// In en, this message translates to:
+  /// **'Never played'**
+  String get songInfoNeverPlayed;
+
+  /// Group heading on Song info
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get songInfoGroupTags;
+
+  /// Group heading on Song info
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get songInfoGroupAudio;
+
+  /// Group heading on Song info
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get songInfoGroupFile;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get songInfoLabelTitle;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get songInfoLabelArtist;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get songInfoLabelAlbum;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Album artist'**
+  String get songInfoLabelAlbumArtist;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get songInfoLabelGenre;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Composer'**
+  String get songInfoLabelComposer;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Release date'**
+  String get songInfoLabelReleaseDate;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get songInfoLabelTrack;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Disc'**
+  String get songInfoLabelDisc;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get songInfoLabelLanguage;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get songInfoLabelComment;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get songInfoLabelDuration;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get songInfoLabelFormat;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Bitrate'**
+  String get songInfoLabelBitrate;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Sample rate'**
+  String get songInfoLabelSampleRate;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Bit depth'**
+  String get songInfoLabelBitDepth;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Channels'**
+  String get songInfoLabelChannels;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get songInfoLabelPath;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get songInfoLabelSize;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Modified'**
+  String get songInfoLabelModified;
+
+  /// Field name on Song info (shown before a colon)
+  ///
+  /// In en, this message translates to:
+  /// **'Date added'**
+  String get songInfoLabelAdded;
+
+  /// Value shown for a field the song has no value for
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get songInfoUnknown;
+
+  /// Snackbar after a Song info value is copied
+  ///
+  /// In en, this message translates to:
+  /// **'Copied: {value}'**
+  String songInfoCopied(String value);
+
+  /// Tooltip of a copyable Song info value
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get songInfoCopy;
+
+  /// Chip next to the release date: how long ago the song came out
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{this year} =1{1 year ago} other{{count} years ago}}'**
+  String songInfoYearsAgo(int count);
+
+  /// Channel count of a song with neither one nor two channels
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 channel} other{{count} channels}}'**
+  String songInfoChannelsMany(int count);
+
+  /// One audio channel
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get songInfoMono;
+
+  /// Two audio channels
+  ///
+  /// In en, this message translates to:
+  /// **'Stereo'**
+  String get songInfoStereo;
+
+  /// Bitrate
+  ///
+  /// In en, this message translates to:
+  /// **'{count} kbps'**
+  String songInfoKbps(int count);
+
+  /// Sample rate
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kHz'**
+  String songInfoKhz(String value);
+
+  /// Bit depth
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bit'**
+  String songInfoBits(int count);
+
+  /// File size from one megabyte up
+  ///
+  /// In en, this message translates to:
+  /// **'{value} MB'**
+  String songInfoFileSizeMb(String value);
+
+  /// Song info message when the song was removed from the library
+  ///
+  /// In en, this message translates to:
+  /// **'This song is no longer in the library'**
+  String get songInfoGone;
+
+  /// Song info message when reading the song fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the song info'**
+  String get songInfoLoadFailed;
+
+  /// File size from one gigabyte up
+  ///
+  /// In en, this message translates to:
+  /// **'{value} GB'**
+  String songInfoFileSizeGb(String value);
 }
 
 class _AppLocalizationsDelegate

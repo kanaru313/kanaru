@@ -233,11 +233,10 @@ void main() {
   });
 
   group('other rows', () {
-    test('Edit tags is coming soon and Song info is hidden for now', () {
+    test('Edit tags is coming soon and Song info opens a page', () {
       final all = _byId(_data(links: _links()));
       expect(all['edit-tags']!.comingSoon, isTrue);
-      expect(songInfoAvailable, isFalse);
-      expect(all, isNot(contains('song-info')));
+      expect(all['song-info']!.opensPage, isTrue);
       expect(all['advanced']!.opensPage, isTrue);
     });
 

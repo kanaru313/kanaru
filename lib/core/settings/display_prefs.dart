@@ -21,7 +21,8 @@ const maxFontScale = 1.5;
 /// today. Read: [colorFromCover] (the cover palette and the scan),
 /// [waveformSeekBar] (`NowPlayingSeekSlot`),
 /// [fontScale] (the app's builder, `lib/app/app.dart`) and
-/// [trackNumbersInAlbum] (album pages) and [sidebarTabs] (the sidebar).
+/// [trackNumbersInAlbum] (album pages), [sidebarTabs] (the sidebar) and
+/// [songInfoShowUnknown] (the Song info page).
 class DisplayPrefs {
   const DisplayPrefs({
     this.colorFromCover = true,
@@ -29,6 +30,7 @@ class DisplayPrefs {
     this.fontScale = 1.0,
     this.sidebarTabs = _allTabs,
     this.trackNumbersInAlbum = true,
+    this.songInfoShowUnknown = false,
   });
 
   /// Tint the app with colors taken from the cover being played.
@@ -51,12 +53,17 @@ class DisplayPrefs {
   /// the song's cover there instead.
   final bool trackNumbersInAlbum;
 
+  /// Song info lists the fields a song has no value for, as "Unknown"; off
+  /// leaves them out.
+  final bool songInfoShowUnknown;
+
   DisplayPrefs copyWith({
     bool? colorFromCover,
     bool? waveformSeekBar,
     double? fontScale,
     Set<SidebarTab>? sidebarTabs,
     bool? trackNumbersInAlbum,
+    bool? songInfoShowUnknown,
   }) => DisplayPrefs(
     colorFromCover: colorFromCover ?? this.colorFromCover,
     waveformSeekBar: waveformSeekBar ?? this.waveformSeekBar,
@@ -65,6 +72,7 @@ class DisplayPrefs {
         ? this.sidebarTabs
         : Set.unmodifiable(sidebarTabs),
     trackNumbersInAlbum: trackNumbersInAlbum ?? this.trackNumbersInAlbum,
+    songInfoShowUnknown: songInfoShowUnknown ?? this.songInfoShowUnknown,
   );
 
   @override
@@ -74,7 +82,8 @@ class DisplayPrefs {
       other.waveformSeekBar == waveformSeekBar &&
       other.fontScale == fontScale &&
       setEquals(other.sidebarTabs, sidebarTabs) &&
-      other.trackNumbersInAlbum == trackNumbersInAlbum;
+      other.trackNumbersInAlbum == trackNumbersInAlbum &&
+      other.songInfoShowUnknown == songInfoShowUnknown;
 
   @override
   int get hashCode => Object.hash(
@@ -83,6 +92,7 @@ class DisplayPrefs {
     fontScale,
     Object.hashAllUnordered(sidebarTabs),
     trackNumbersInAlbum,
+    songInfoShowUnknown,
   );
 
   @override
@@ -90,5 +100,6 @@ class DisplayPrefs {
       'DisplayPrefs(colorFromCover: $colorFromCover, '
       'waveformSeekBar: $waveformSeekBar, fontScale: $fontScale, '
       'sidebarTabs: ${sidebarTabs.map((t) => t.name).join(',')}, '
-      'trackNumbersInAlbum: $trackNumbersInAlbum)';
+      'trackNumbersInAlbum: $trackNumbersInAlbum, '
+      'songInfoShowUnknown: $songInfoShowUnknown)';
 }

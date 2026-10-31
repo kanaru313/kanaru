@@ -6,6 +6,7 @@ const _waveformSeekBarKey = 'waveformSeekBar';
 const _fontScaleKey = 'fontScale';
 const _hiddenSidebarTabsKey = 'hiddenSidebarTabs';
 const _trackNumbersInAlbumKey = 'trackNumbersInAlbum';
+const _songInfoShowUnknownKey = 'songInfoShowUnknown';
 final Set<SidebarTab> _allTabs = const DisplayPrefs().sidebarTabs;
 const _knownKeys = {
   _colorFromCoverKey,
@@ -13,6 +14,7 @@ const _knownKeys = {
   _fontScaleKey,
   _hiddenSidebarTabsKey,
   _trackNumbersInAlbumKey,
+  _songInfoShowUnknownKey,
 };
 
 /// Reads the `display` object; each key falls back on its own. The second
@@ -37,6 +39,10 @@ const _knownKeys = {
       trackNumbersInAlbum: boolOr(
         map[_trackNumbersInAlbumKey],
         d.trackNumbersInAlbum,
+      ),
+      songInfoShowUnknown: boolOr(
+        map[_songInfoShowUnknownKey],
+        d.songInfoShowUnknown,
       ),
     ),
     {
@@ -83,5 +89,6 @@ Map<String, Object?> encodeDisplayPrefs(
       if (unknownHidden is List) ...unknownHidden,
     ],
     _trackNumbersInAlbumKey: prefs.trackNumbersInAlbum,
+    _songInfoShowUnknownKey: prefs.songInfoShowUnknown,
   };
 }

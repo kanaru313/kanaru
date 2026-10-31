@@ -103,6 +103,11 @@ abstract final class AppIcons {
   static const IconData editTags = Icons.edit_note_outlined;
   static const IconData advanced = Icons.code;
   static const IconData infoOutline = Icons.info_outline;
+  static const IconData visibility = Icons.visibility_outlined;
+  static const IconData visibilityOff = Icons.visibility_off_outlined;
+  static const IconData headphones = Icons.headphones;
+  static const IconData schedule = Icons.schedule;
+  static const IconData previewPlay = Icons.play_circle_outline;
   static const IconData removeFromLibrary = Icons.playlist_remove;
   static const IconData deleteOutline = Icons.delete_outline;
   static const IconData deleteRounded = Icons.delete_rounded;

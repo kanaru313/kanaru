@@ -4081,4 +4081,183 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get songInfoTitle => 'Thông tin bài hát';
+
+  @override
+  String get songInfoShowUnknown => 'Hiện trường không xác định';
+
+  @override
+  String get songInfoHideUnknown => 'Ẩn trường không xác định';
+
+  @override
+  String get songInfoPreview => 'Nghe thử đoạn hay nhất · sắp có';
+
+  @override
+  String songInfoPlays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Tổng lượt nghe: $countString';
+  }
+
+  @override
+  String songInfoFirstPlayed(String date) {
+    return 'Nghe lần đầu: $date';
+  }
+
+  @override
+  String songInfoLastPlayed(String date) {
+    return 'Nghe gần nhất: $date';
+  }
+
+  @override
+  String get songInfoNeverPlayed => 'Chưa nghe lần nào';
+
+  @override
+  String get songInfoGroupTags => 'Thẻ';
+
+  @override
+  String get songInfoGroupAudio => 'Âm thanh';
+
+  @override
+  String get songInfoGroupFile => 'Tệp';
+
+  @override
+  String get songInfoLabelTitle => 'Tiêu đề';
+
+  @override
+  String get songInfoLabelArtist => 'Nghệ sĩ';
+
+  @override
+  String get songInfoLabelAlbum => 'Album';
+
+  @override
+  String get songInfoLabelAlbumArtist => 'Nghệ sĩ album';
+
+  @override
+  String get songInfoLabelGenre => 'Thể loại';
+
+  @override
+  String get songInfoLabelComposer => 'Nhà soạn nhạc';
+
+  @override
+  String get songInfoLabelReleaseDate => 'Ngày phát hành';
+
+  @override
+  String get songInfoLabelTrack => 'Số bài';
+
+  @override
+  String get songInfoLabelDisc => 'Đĩa';
+
+  @override
+  String get songInfoLabelLanguage => 'Ngôn ngữ';
+
+  @override
+  String get songInfoLabelComment => 'Bình luận';
+
+  @override
+  String get songInfoLabelDuration => 'Thời lượng';
+
+  @override
+  String get songInfoLabelFormat => 'Định dạng';
+
+  @override
+  String get songInfoLabelBitrate => 'Tốc độ bit';
+
+  @override
+  String get songInfoLabelSampleRate => 'Tần số lấy mẫu';
+
+  @override
+  String get songInfoLabelBitDepth => 'Độ sâu bit';
+
+  @override
+  String get songInfoLabelChannels => 'Kênh';
+
+  @override
+  String get songInfoLabelPath => 'Đường dẫn';
+
+  @override
+  String get songInfoLabelSize => 'Dung lượng';
+
+  @override
+  String get songInfoLabelModified => 'Ngày sửa';
+
+  @override
+  String get songInfoLabelAdded => 'Ngày thêm';
+
+  @override
+  String get songInfoUnknown => 'Không xác định';
+
+  @override
+  String songInfoCopied(String value) {
+    return 'Đã sao chép: $value';
+  }
+
+  @override
+  String get songInfoCopy => 'Sao chép';
+
+  @override
+  String songInfoYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count năm trước',
+      zero: 'năm nay',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String songInfoChannelsMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kênh',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songInfoMono => 'Mono';
+
+  @override
+  String get songInfoStereo => 'Stereo';
+
+  @override
+  String songInfoKbps(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString kbps';
+  }
+
+  @override
+  String songInfoKhz(String value) {
+    return '$value kHz';
+  }
+
+  @override
+  String songInfoBits(int count) {
+    return '$count bit';
+  }
+
+  @override
+  String songInfoFileSizeMb(String value) {
+    return '$value MB';
+  }
+
+  @override
+  String get songInfoGone => 'Bài hát này không còn trong thư viện';
+
+  @override
+  String get songInfoLoadFailed => 'Không tải được thông tin bài hát';
+
+  @override
+  String songInfoFileSizeGb(String value) {
+    return '$value GB';
+  }
 }

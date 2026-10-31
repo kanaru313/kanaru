@@ -4121,5 +4121,246 @@
         "type": "int"
       }
     }
+  },
+  "songInfoTitle": "Song info",
+  "@songInfoTitle": {
+    "description": "Title of the Song info page"
+  },
+  "songInfoShowUnknown": "Show unknown fields",
+  "@songInfoShowUnknown": {
+    "description": "Tooltip of the eye button that shows fields with no value"
+  },
+  "songInfoHideUnknown": "Hide unknown fields",
+  "@songInfoHideUnknown": {
+    "description": "Tooltip of the eye button that hides fields with no value"
+  },
+  "songInfoPreview": "Play the best part · coming soon",
+  "@songInfoPreview": {
+    "description": "Tooltip of the disabled preview button"
+  },
+  "songInfoPlays": "Total plays: {count}",
+  "@songInfoPlays": {
+    "description": "Play count line of Song info",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "songInfoFirstPlayed": "First listened: {date}",
+  "@songInfoFirstPlayed": {
+    "description": "First play line of Song info",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoLastPlayed": "Last listened: {date}",
+  "@songInfoLastPlayed": {
+    "description": "Last play line of Song info",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoNeverPlayed": "Never played",
+  "@songInfoNeverPlayed": {
+    "description": "Song info line for a song that was never played"
+  },
+  "songInfoGroupTags": "Tags",
+  "@songInfoGroupTags": {
+    "description": "Group heading on Song info"
+  },
+  "songInfoGroupAudio": "Audio",
+  "@songInfoGroupAudio": {
+    "description": "Group heading on Song info"
+  },
+  "songInfoGroupFile": "File",
+  "@songInfoGroupFile": {
+    "description": "Group heading on Song info"
+  },
+  "songInfoLabelTitle": "Title",
+  "@songInfoLabelTitle": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelArtist": "Artist",
+  "@songInfoLabelArtist": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelAlbum": "Album",
+  "@songInfoLabelAlbum": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelAlbumArtist": "Album artist",
+  "@songInfoLabelAlbumArtist": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelGenre": "Genre",
+  "@songInfoLabelGenre": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelComposer": "Composer",
+  "@songInfoLabelComposer": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelReleaseDate": "Release date",
+  "@songInfoLabelReleaseDate": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelTrack": "Track",
+  "@songInfoLabelTrack": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelDisc": "Disc",
+  "@songInfoLabelDisc": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelLanguage": "Language",
+  "@songInfoLabelLanguage": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelComment": "Comment",
+  "@songInfoLabelComment": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelDuration": "Duration",
+  "@songInfoLabelDuration": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelFormat": "Format",
+  "@songInfoLabelFormat": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelBitrate": "Bitrate",
+  "@songInfoLabelBitrate": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelSampleRate": "Sample rate",
+  "@songInfoLabelSampleRate": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelBitDepth": "Bit depth",
+  "@songInfoLabelBitDepth": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelChannels": "Channels",
+  "@songInfoLabelChannels": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelPath": "Path",
+  "@songInfoLabelPath": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelSize": "Size",
+  "@songInfoLabelSize": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelModified": "Modified",
+  "@songInfoLabelModified": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoLabelAdded": "Date added",
+  "@songInfoLabelAdded": {
+    "description": "Field name on Song info (shown before a colon)"
+  },
+  "songInfoUnknown": "Unknown",
+  "@songInfoUnknown": {
+    "description": "Value shown for a field the song has no value for"
+  },
+  "songInfoCopied": "Copied: {value}",
+  "@songInfoCopied": {
+    "description": "Snackbar after a Song info value is copied",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoCopy": "Copy",
+  "@songInfoCopy": {
+    "description": "Tooltip of a copyable Song info value"
+  },
+  "songInfoYearsAgo": "{count, plural, =0{this year} =1{1 year ago} other{{count} years ago}}",
+  "@songInfoYearsAgo": {
+    "description": "Chip next to the release date: how long ago the song came out",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoChannelsMany": "{count, plural, =1{1 channel} other{{count} channels}}",
+  "@songInfoChannelsMany": {
+    "description": "Channel count of a song with neither one nor two channels",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoMono": "Mono",
+  "@songInfoMono": {
+    "description": "One audio channel"
+  },
+  "songInfoStereo": "Stereo",
+  "@songInfoStereo": {
+    "description": "Two audio channels"
+  },
+  "songInfoKbps": "{count} kbps",
+  "@songInfoKbps": {
+    "description": "Bitrate",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "songInfoKhz": "{value} kHz",
+  "@songInfoKhz": {
+    "description": "Sample rate",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoBits": "{count} bit",
+  "@songInfoBits": {
+    "description": "Bit depth",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songInfoFileSizeMb": "{value} MB",
+  "@songInfoFileSizeMb": {
+    "description": "File size from one megabyte up",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "songInfoGone": "This song is no longer in the library",
+  "@songInfoGone": {
+    "description": "Song info message when the song was removed from the library"
+  },
+  "songInfoLoadFailed": "Could not load the song info",
+  "@songInfoLoadFailed": {
+    "description": "Song info message when reading the song fails"
+  },
+  "songInfoFileSizeGb": "{value} GB",
+  "@songInfoFileSizeGb": {
+    "description": "File size from one gigabyte up",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   }
 }

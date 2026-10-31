@@ -10,6 +10,7 @@ import '../widgets/queue_actions_menu.dart';
 import 'song_modal_data.dart';
 import 'song_modal_actions.dart';
 import 'song_modal_advanced_page.dart';
+import 'info/song_info_page.dart';
 import 'song_modal_header.dart';
 import 'song_modal_session.dart';
 
@@ -19,7 +20,10 @@ import 'song_modal_session.dart';
 ContextModalPage songModalActionsPage(SongModalSession session) {
   return ContextModalPage(
     key: 'song-actions',
-    headerBuilder: (context, nav) => SongModalHeader(song: session.song),
+    headerBuilder: (context, nav) => SongModalHeader(
+      song: session.song,
+      onTap: () => nav.push(songInfoPage(session)),
+    ),
     bodyBuilder: (context, nav) => [
       Consumer(
         builder: (context, ref, _) {
@@ -47,6 +51,7 @@ ContextModalPage songModalActionsPage(SongModalSession session) {
                 context.l10n,
                 data,
                 session.handlers(
+                  openInfo: (nav) => nav.push(songInfoPage(session)),
                   openAdvanced: (nav) => nav.push(
                     songModalAdvancedPage(session, hasLibrary: hasLibrary),
                   ),
