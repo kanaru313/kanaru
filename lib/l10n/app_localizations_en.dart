@@ -2484,6 +2484,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTimerLabelQueue => 'Queue';
 
   @override
+  String sleepTimerTracksShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tracks',
+      one: '1 track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerPausesAfterTracks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pauses after $count tracks',
+      one: 'Pauses after 1 track',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get navLanguages => 'Languages';
 
   @override

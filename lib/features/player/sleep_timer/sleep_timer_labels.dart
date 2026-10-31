@@ -7,6 +7,7 @@ String sleepTimerShortLabel(AppLocalizations l10n, SleepTimerState state) =>
     switch (state.mode) {
       null => '',
       SleepTimerMode.minutes => formatDuration(state.remaining),
+      SleepTimerMode.tracks => l10n.sleepTimerTracksShort(state.tracksLeft),
       SleepTimerMode.endOfTrack => l10n.sleepTimerLabelTrack,
       SleepTimerMode.endOfAlbum => l10n.sleepTimerLabelAlbum,
       SleepTimerMode.endOfQueue => l10n.sleepTimerLabelQueue,
@@ -20,6 +21,9 @@ String sleepTimerStatusText(AppLocalizations l10n, SleepTimerState state) =>
         state.countingPaused
             ? l10n.sleepTimerLeftPaused(formatDuration(state.remaining))
             : l10n.sleepTimerLeft(formatDuration(state.remaining)),
+      SleepTimerMode.tracks => l10n.sleepTimerPausesAfterTracks(
+        state.tracksLeft,
+      ),
       SleepTimerMode.endOfTrack => l10n.sleepTimerEndOfTrack,
       SleepTimerMode.endOfAlbum => l10n.sleepTimerEndOfAlbum,
       SleepTimerMode.endOfQueue => l10n.sleepTimerEndOfQueue,

@@ -1253,6 +1253,8 @@
   "sleepTimerLabelTrack": "Bài",
   "sleepTimerLabelAlbum": "Album",
   "sleepTimerLabelQueue": "Hàng đợi",
+  "sleepTimerTracksShort": "{count} bài",
+  "sleepTimerPausesAfterTracks": "Tạm dừng sau {count} bài",
   "navLanguages": "Ngôn ngữ",
   "languagesComingSoonTitle": "Ngôn ngữ sắp có",
   "languagesComingSoonMessage": "Chưa thể duyệt bài hát theo ngôn ngữ.",

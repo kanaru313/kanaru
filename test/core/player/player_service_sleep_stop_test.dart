@@ -229,4 +229,85 @@ void main() {
     state();
     expect(service().stopAfterCurrent, isFalse);
   });
+
+  group('trackEnds', trackEndsTests);
+}
+
+/// `trackEnds` contract, apart from the stop tests above.
+void trackEndsTests() {
+  late FakeAudioBackend backend;
+  late ProviderContainer container;
+  late int ends;
+  late int stops;
+
+  PlayerService service() => container.read(playerServiceProvider.notifier);
+
+  setUp(() async {
+    backend = FakeAudioBackend();
+    container = ProviderContainer(
+      overrides: [
+        audioBackendProvider.overrideWithValue(backend),
+        playbackFadeClockProvider.overrideWithValue(ManualFadeClock().clock),
+      ],
+    );
+    container.listen(playerServiceProvider, (_, _) {});
+    ends = 0;
+    stops = 0;
+    service().trackEnds.listen((_) => ends++);
+    service().sleepStops.listen((_) => stops++);
+    await service().openTracks(_songs);
+    await pumpMicrotasks();
+  });
+  tearDown(() => container.dispose());
+
+  test('fires once for an advance, a completion and a loop', () async {
+    backend.advance();
+    expect(ends, 1);
+    backend.emitCompleted.add(true);
+    expect(ends, 2);
+    await service().setRepeat(RepeatMode.one);
+    backend.emitLooped.add(service().state.queue.current!);
+    expect(ends, 3);
+  });
+
+  test('never fires for skip, jump or a failed track', () async {
+    await service().next();
+    await service().jump(2);
+    await service().previous();
+    expect(ends, 0);
+    backend.fail(_songs[1]);
+    backend.advance();
+    expect(ends, 0);
+  });
+
+  test('a sleep stop is not a track end', () async {
+    backend.emitDuration.add(const Duration(seconds: 100));
+    // With the stop on no next track is handed, so an advance is the engine
+    // moving on to a track handed before the stop.
+    final cases = <String, Future<void> Function()>{
+      'advance': () async => backend.emitAdvanced.add(_songs[1]),
+      'completed': () async => backend.emitCompleted.add(true),
+      'loop': () async {
+        await service().setRepeat(RepeatMode.one);
+        backend.emitLooped.add(service().state.queue.current!);
+      },
+    };
+    var expectedStops = 0;
+    for (final MapEntry(:key, :value) in cases.entries) {
+      service().setStopAfterCurrent(true);
+      await pumpMicrotasks();
+      await value();
+      expect(ends, 0, reason: key);
+      expect(stops, ++expectedStops, reason: key);
+    }
+  });
+
+  test('a rebuild makes a new stream', () async {
+    final before = service().trackEnds;
+    container.invalidate(playerServiceProvider);
+    container.read(playerServiceProvider);
+    expect(service().trackEnds == before, isFalse);
+    backend.advance();
+    expect(ends, 0);
+  });
 }

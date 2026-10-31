@@ -2297,6 +2297,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sleepTimerLabelQueue => 'Hàng đợi';
 
   @override
+  String sleepTimerTracksShort(int count) {
+    return '$count bài';
+  }
+
+  @override
+  String sleepTimerPausesAfterTracks(int count) {
+    return 'Tạm dừng sau $count bài';
+  }
+
+  @override
   String get navLanguages => 'Ngôn ngữ';
 
   @override

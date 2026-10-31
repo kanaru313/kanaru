@@ -2036,6 +2036,16 @@
   "@sleepTimerLabelQueue": {
     "description": "Short label beside the moon button while the timer waits for the end of the queue"
   },
+  "sleepTimerTracksShort": "{count, plural, =1{1 track} other{{count} tracks}}",
+  "@sleepTimerTracksShort": {
+    "description": "Short label beside the moon button while the timer counts tracks",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "sleepTimerPausesAfterTracks": "{count, plural, =1{Pauses after 1 track} other{Pauses after {count} tracks}}",
+  "@sleepTimerPausesAfterTracks": {
+    "description": "Sleep timer status while it waits for some more tracks to end (the current one included)",
+    "placeholders": {"count": {"type": "int"}}
+  },
   "navLanguages": "Languages",
   "@navLanguages": {
     "description": "Sidebar and page title for song languages"

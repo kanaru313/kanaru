@@ -9,6 +9,7 @@ import 'play_queue.dart';
 import 'player_service.dart';
 import 'sleep_timer_album_end.dart';
 import 'sleep_timer_countdown.dart';
+import 'sleep_timer_player_events.dart';
 import 'sleep_timer_state.dart';
 
 export 'sleep_timer_state.dart';
@@ -29,8 +30,8 @@ final sleepTimerProvider = NotifierProvider<SleepTimer, SleepTimerState>(
   SleepTimer.new,
 );
 
-/// Pauses playback later (PLAY-14): after some minutes, or at the end of the
-/// track, the album or the queue. Pausing keeps the queue; the track-based
+/// Pauses playback later (PLAY-14): after some minutes, after some tracks,
+/// or at the end of the track, the album or the queue. Pausing keeps the queue; the track-based
 /// modes leave the next track loaded paused at its start. Session only.
 ///
 /// The minutes mode counts wall time, also while playback is paused (only
@@ -43,32 +44,29 @@ class SleepTimer extends Notifier<SleepTimerState> {
   late PlayerService _player;
   late SleepTimerAlbumEnd _albumEnd;
   late SleepTimerCountdown _countdown;
-  Stream<void>? _stopsSource;
+  final _events = SleepTimerPlayerEvents();
 
   /// The countdown started a sleep fade since it was last armed (start,
   /// added time, resumed count). A fade that then ends early was
   /// interrupted by the user (play/pause, volume, seek, a new track) and is
   /// not started again: the timer pauses at zero without one.
   bool _fadeStarted = false;
-  StreamSubscription<void>? _stops;
 
   @override
   SleepTimerState build() {
     _countdown = SleepTimerCountdown(ref.read(playbackFadeClockProvider));
     _player = ref.read(playerServiceProvider.notifier);
     _albumEnd = SleepTimerAlbumEnd(ref.read(sleepTimerAlbumLookupProvider));
-    _followStops();
+    _followEvents();
     // Every track change or queue edit (and a player rebuild, which makes a
     // new queue) may move where playback has to stop.
     ref.listen(playerServiceProvider.select((s) => s.queue), (_, _) {
-      _followStops();
+      _followEvents();
       _syncStopAfterCurrent();
     });
     ref.onDispose(() {
       _countdown.stop();
-      _stops?.cancel();
-      _stops = null;
-      _stopsSource = null;
+      _events.cancel();
       _albumEnd.dispose();
       // Synchronous, so it never clears a stop a new build set right after.
       _player.releaseStopAfterCurrent();
@@ -92,6 +90,17 @@ class SleepTimer extends Notifier<SleepTimerState> {
     _tick();
   }
 
+  /// Pauses after [count] tracks (1 to 20, the current one included) have
+  /// played to their end. Skipping does not use a track up.
+  void startTracks(int count) {
+    _reset();
+    state = SleepTimerState(
+      mode: SleepTimerMode.tracks,
+      tracksLeft: count.clamp(sleepTimerMinTracks, sleepTimerMaxTracks),
+    );
+    _syncStopAfterCurrent();
+  }
+
   void startEndOfTrack() => _startStopMode(SleepTimerMode.endOfTrack);
   void startEndOfAlbum() => _startStopMode(SleepTimerMode.endOfAlbum);
   void startEndOfQueue() => _startStopMode(SleepTimerMode.endOfQueue);
@@ -113,6 +122,21 @@ class SleepTimer extends Notifier<SleepTimerState> {
       remaining: _wholeSeconds(left),
       countingPaused: true,
     );
+  }
+
+  /// Adds [delta] tracks (or takes them off when negative) in the tracks
+  /// mode, within 1 to 20 left.
+  void addTracks(int delta) {
+    if (state.mode != SleepTimerMode.tracks || delta == 0) return;
+    if (delta < 0 && !state.canRemoveTrack) return;
+    state = SleepTimerState(
+      mode: SleepTimerMode.tracks,
+      tracksLeft: (state.tracksLeft + delta).clamp(
+        sleepTimerMinTracks,
+        sleepTimerMaxTracks,
+      ),
+    );
+    _syncStopAfterCurrent();
   }
 
   /// Holds the minutes countdown; a sleep fade under way is undone.
@@ -161,6 +185,8 @@ class SleepTimer extends Notifier<SleepTimerState> {
     switch (state.mode) {
       case null || SleepTimerMode.minutes:
         return;
+      case SleepTimerMode.tracks:
+        _player.setStopAfterCurrent(state.tracksLeft <= 1);
       case SleepTimerMode.endOfTrack:
         _player.setStopAfterCurrent(true);
       case SleepTimerMode.endOfQueue:
@@ -178,14 +204,21 @@ class SleepTimer extends Notifier<SleepTimerState> {
   static bool _isLast(PlayQueue queue) =>
       !queue.isEmpty && queue.index == queue.order.length - 1;
 
-  /// Listens to the player's stops, again after the player was rebuilt.
-  void _followStops() {
-    final source = _player.sleepStops;
-    // Every `.stream` read is a new object; equal ones share a controller.
-    if (source == _stopsSource) return;
-    _stops?.cancel();
-    _stopsSource = source;
-    _stops = source.listen((_) => _turnOff());
+  void _followEvents() =>
+      _events.follow(_player, onStop: _turnOff, onTrackEnd: _onTrackEnd);
+
+  /// A track ended by itself in the tracks mode: one less to go, or the
+  /// timer is done when the queue ran out first.
+  void _onTrackEnd() {
+    if (state.mode != SleepTimerMode.tracks) return;
+    if (ref.read(playerServiceProvider).stopped) return _turnOff();
+    if (state.tracksLeft > 1) {
+      state = SleepTimerState(
+        mode: SleepTimerMode.tracks,
+        tracksLeft: state.tracksLeft - 1,
+      );
+      _syncStopAfterCurrent();
+    }
   }
 
   /// The player stopped for a track-based mode.

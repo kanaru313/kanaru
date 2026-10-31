@@ -3512,6 +3512,18 @@ abstract class AppLocalizations {
   /// **'Queue'**
   String get sleepTimerLabelQueue;
 
+  /// Short label beside the moon button while the timer counts tracks
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 track} other{{count} tracks}}'**
+  String sleepTimerTracksShort(int count);
+
+  /// Sleep timer status while it waits for some more tracks to end (the current one included)
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Pauses after 1 track} other{Pauses after {count} tracks}}'**
+  String sleepTimerPausesAfterTracks(int count);
+
   /// Sidebar and page title for song languages
   ///
   /// In en, this message translates to:

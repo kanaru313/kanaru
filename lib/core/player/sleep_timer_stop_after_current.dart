@@ -11,11 +11,14 @@ part of 'player_service.dart';
 /// handed before the stop was turned on (its withdrawal was still on the
 /// way), that track rests paused at 0 as soon as the move is reported.
 ///
+/// [trackEnds] counts the tracks the engine finishes by itself.
+///
 /// Each stop clears the flag and is announced once on [sleepStops]. A
 /// provider rebuild turns the flag off and makes a new stream.
 mixin _PlayerSleepStop on Notifier<PlayerState> {
   AudioBackend get _backend;
   bool get _ended;
+  int get _failuresInRow;
   set _wantsPlaying(bool wanted);
   void _settleFade();
   PlayPauseFader get _fades;
@@ -25,6 +28,7 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
 
   bool _stopAfterCurrent = false;
   late StreamController<void> _sleepStops;
+  late StreamController<void> _trackEnds;
 
   /// Playback pauses once the current track ends.
   bool get stopAfterCurrent => _stopAfterCurrent;
@@ -34,6 +38,13 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
   /// flag is already off when a listener hears it. A new stream after each
   /// provider rebuild, so a listener must subscribe again.
   Stream<void> get sleepStops => _sleepStops.stream;
+
+  /// One event per track the engine finished by itself: moved on, ran out
+  /// or looped (repeat one, counted repeat). Not for a failed track, not
+  /// for a track ended by a sleep stop (see [sleepStops]) and never for
+  /// skip, previous, jump, seek or open. Sent synchronously after [state]
+  /// shows what follows. A new stream after each provider rebuild.
+  Stream<void> get trackEnds => _trackEnds.stream;
 
   /// Turns the stop after the current track on or off. The engine's next
   /// track is handed again at once: withdrawn when turned on, given back
@@ -82,6 +93,8 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
     _stopAfterCurrent = false;
     final stops = _sleepStops = StreamController.broadcast(sync: true);
     ref.onDispose(stops.close);
+    final ends = _trackEnds = StreamController.broadcast(sync: true);
+    ref.onDispose(ends.close);
   }
 
   /// Clears the flag and announces the stop. False when the flag was off.
@@ -98,8 +111,18 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
   /// the new track rests at its start.
   void _advanceWithSleepStop(Track track, void Function(Track) follow) {
     final stop = _takeSleepStop();
+    final failed = _failuresInRow > 0;
     follow(track);
-    if (stop) _restAtStart();
+    if (stop) {
+      _restAtStart();
+    } else if (!failed) {
+      _announceTrackEnd();
+    }
+  }
+
+  /// A track ended by the engine's own doing; see [trackEnds].
+  void _announceTrackEnd() {
+    if (!_trackEnds.isClosed) _trackEnds.add(null);
   }
 
   /// Pauses the current track at 0, like [stop] does but without marking
