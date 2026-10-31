@@ -122,7 +122,7 @@ List<List<ContextModalAction>> songModalSections(
           artists: albumArtists,
           open: h.goToArtist,
         ),
-      if (data.hasLocalPath && data.showFolder)
+      if (data.hasLocalPath)
         ContextModalAction(
           id: 'folder',
           icon: AppIcons.folderOutlined,
@@ -164,13 +164,6 @@ List<List<ContextModalAction>> songModalSections(
         icon: AppIcons.editTags,
         label: l10n.songModalEditTags,
         comingSoon: true,
-      ),
-      ContextModalAction(
-        id: 'song-info',
-        icon: AppIcons.infoOutline,
-        label: l10n.songModalSongInfo,
-        opensPage: true,
-        onTap: h.openInfo,
       ),
       ContextModalAction(
         id: 'advanced',

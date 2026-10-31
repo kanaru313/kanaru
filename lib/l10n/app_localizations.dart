@@ -6374,12 +6374,6 @@ abstract class AppLocalizations {
   /// **'Edit tags'**
   String get songModalEditTags;
 
-  /// Song options row that opens the details of the song
-  ///
-  /// In en, this message translates to:
-  /// **'Song info'**
-  String get songModalSongInfo;
-
   /// Song options row that opens a page of less common actions; also its title
   ///
   /// In en, this message translates to:

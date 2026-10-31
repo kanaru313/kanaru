@@ -63,7 +63,7 @@ Future<ProviderContainer> _openInfo(
   );
   await tester.tap(find.text('open'));
   await settleSongModal(tester);
-  await tapModalAction(tester, 'Song info');
+  await openSongInfoPage(tester);
   return container;
 }
 

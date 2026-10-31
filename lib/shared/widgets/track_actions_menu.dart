@@ -17,7 +17,6 @@ class TrackActionsRegion extends ConsumerWidget {
     required this.onQueueAction,
     required this.child,
     this.showAlbum = true,
-    this.showFolder = true,
   });
 
   final TrackListItem song;
@@ -26,9 +25,6 @@ class TrackActionsRegion extends ConsumerWidget {
 
   /// False on a page of the song's own album.
   final bool showAlbum;
-
-  /// False on the page of the song's own folder.
-  final bool showFolder;
 
   // Opens in the gesture handler itself: nothing is awaited first.
   void _open(
@@ -42,7 +38,6 @@ class TrackActionsRegion extends ConsumerWidget {
     song: song,
     onQueueAction: f,
     showAlbum: showAlbum,
-    showFolder: showFolder,
     viaKeyboard: viaKeyboard,
   );
 

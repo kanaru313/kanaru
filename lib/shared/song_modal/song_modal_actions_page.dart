@@ -41,7 +41,6 @@ ContextModalPage songModalActionsPage(SongModalSession session) {
             hasLibrary: hasLibrary,
             canFindLyrics: session.lyricsTarget != null,
             showAlbum: session.showAlbum,
-            showFolder: session.showFolder,
           );
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -51,7 +50,6 @@ ContextModalPage songModalActionsPage(SongModalSession session) {
                 context.l10n,
                 data,
                 session.handlers(
-                  openInfo: (nav) => nav.push(songInfoPage(session)),
                   openAdvanced: (nav) => nav.push(
                     songModalAdvancedPage(session, hasLibrary: hasLibrary),
                   ),
@@ -78,41 +76,56 @@ class _QueueFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final style = Theme.of(context).textTheme.bodyLarge;
+    final color = Theme.of(context).colorScheme.primary;
+    // The InkWell fills its whole half of the footer, so hover and ink cover
+    // it all rather than a blob around the label.
     Widget button(Key key, IconData icon, String label, QueueAction action) =>
         Expanded(
-          child: TextButton.icon(
+          child: InkWell(
             key: key,
-            icon: Icon(icon),
-            label: Text(label, overflow: TextOverflow.ellipsis),
-            onPressed: () {
+            onTap: () {
               nav.close();
               session.onQueueAction(action);
             },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 8,
+                children: [
+                  Icon(icon, size: 20, color: color),
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style: style?.copyWith(color: color),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         const Divider(height: 1),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            spacing: 8,
-            children: [
-              button(
-                const ValueKey('song-modal-play-next'),
-                AppIcons.playlistPlay,
-                l10n.queuePlayNext,
-                QueueAction.playNext,
-              ),
-              button(
-                const ValueKey('song-modal-add-to-queue'),
-                AppIcons.addToQueue,
-                l10n.queueAddToQueue,
-                QueueAction.addToQueue,
-              ),
-            ],
-          ),
+        Row(
+          children: [
+            button(
+              const ValueKey('song-modal-play-next'),
+              AppIcons.playlistPlay,
+              l10n.queuePlayNext,
+              QueueAction.playNext,
+            ),
+            button(
+              const ValueKey('song-modal-add-to-queue'),
+              AppIcons.addToQueue,
+              l10n.queueAddToQueue,
+              QueueAction.addToQueue,
+            ),
+          ],
         ),
       ],
     );

@@ -91,7 +91,6 @@ void main() {
       'Add to playlist…',
       'Add to favorites',
       'Edit tags',
-      'Song info',
       'Advanced',
       'Play next',
       'Add to queue',

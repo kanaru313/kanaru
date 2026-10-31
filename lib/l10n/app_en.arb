@@ -4097,10 +4097,6 @@
   "@songModalEditTags": {
     "description": "Song options row (not available yet) that edits the tags of the file"
   },
-  "songModalSongInfo": "Song info",
-  "@songModalSongInfo": {
-    "description": "Song options row that opens the details of the song"
-  },
   "songModalAdvanced": "Advanced",
   "@songModalAdvanced": {
     "description": "Song options row that opens a page of less common actions; also its title"

@@ -4061,9 +4061,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get songModalEditTags => 'Chỉnh sửa thẻ';
 
   @override
-  String get songModalSongInfo => 'Thông tin bài hát';
-
-  @override
   String get songModalAdvanced => 'Nâng cao';
 
   @override

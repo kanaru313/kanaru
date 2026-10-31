@@ -33,7 +33,6 @@ class SongTile extends ConsumerWidget {
     this.onQueueAction,
     this.number,
     this.showAlbum = true,
-    this.showFolder = true,
     this.leadingAccessory,
     this.trailingAccessory,
     this.detail,
@@ -58,10 +57,6 @@ class SongTile extends ConsumerWidget {
   /// False leaves Go to album out of the song modal (rows on the album's own
   /// page).
   final bool showAlbum;
-
-  /// False leaves Go to folder out of the song modal (rows on the folder's
-  /// own page).
-  final bool showFolder;
 
   /// Drawn before the cover, e.g. a drag handle; replaces [number], so not
   /// both. Nothing is added when null.
@@ -94,7 +89,6 @@ class SongTile extends ConsumerWidget {
     return TrackActionsRegion(
       song: song,
       showAlbum: showAlbum,
-      showFolder: showFolder,
       onQueueAction: onQueue,
       child: SongRowView(
         title: song.title,
@@ -119,7 +113,6 @@ class SongTile extends ConsumerWidget {
                 song: song,
                 onQueueAction: onQueue,
                 showAlbum: showAlbum,
-                showFolder: showFolder,
                 color: playing
                     ? Theme.of(context).colorScheme.onPrimaryContainer
                     : null,

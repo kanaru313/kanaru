@@ -37,7 +37,6 @@ class SongModalSession {
     required this.onQueueAction,
     required this.lyricsTarget,
     this.showAlbum = true,
-    this.showFolder = true,
     this.extraActions = const [],
   });
 
@@ -48,7 +47,6 @@ class SongModalSession {
   /// What Find lyrics online searches for; null leaves that action out.
   final LyricsTarget? lyricsTarget;
   final bool showAlbum;
-  final bool showFolder;
 
   /// Actions of the screen the song is listed on (remove from the queue, ...),
   /// shown before the links.
@@ -65,13 +63,11 @@ class SongModalSession {
   );
 
   /// The callbacks the actions call once the modal is closed; [openAdvanced]
-  /// and [openInfo] push a page and so need the modal's own navigation.
+  /// pushes a page and so needs the modal's own navigation.
   SongModalHandlers handlers({
     void Function(ContextModalNav nav)? openAdvanced,
-    void Function(ContextModalNav nav)? openInfo,
   }) => SongModalHandlers(
     openAdvanced: openAdvanced,
-    openInfo: openInfo,
     goToAlbum: () => _run(const ShowAlbumChoice()),
     goToArtist: (key) => unawaited(runner.openArtist(key, trackId: song.id)),
     goToFolder: () => _run(const ShowFolderChoice()),

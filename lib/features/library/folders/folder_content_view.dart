@@ -120,7 +120,6 @@ class _FolderContentViewState extends ConsumerState<FolderContentView> {
             itemCount: tracks.length,
             itemBuilder: (context, i) => SongTile(
               song: songs[i],
-              showFolder: false,
               onTap: () => playTracks(ref, tracks, i),
               onQueueAction: (action) => enqueueLoaded(ref, context, action, [
                 tracks[i],

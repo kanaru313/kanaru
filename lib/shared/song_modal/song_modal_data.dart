@@ -14,7 +14,6 @@ class SongModalData {
     required this.hasLibrary,
     required this.canFindLyrics,
     this.showAlbum = true,
-    this.showFolder = true,
   });
 
   final TrackListItem song;
@@ -33,16 +32,13 @@ class SongModalData {
   /// False on the page of the song's own album.
   final bool showAlbum;
 
-  /// False on the page of the song's own folder.
-  final bool showFolder;
-
   /// False for a song that is not a file on this machine (a future remote
   /// source): it has no folder to go to.
   bool get hasLocalPath => song.path.isNotEmpty && !song.path.contains('://');
 }
 
 /// What the actions do. Each one runs after the modal has closed, except
-/// [openAdvanced] and [openInfo], which push a page of the modal.
+/// [openAdvanced], which pushes a page of the modal.
 class SongModalHandlers {
   const SongModalHandlers({
     required this.goToAlbum,
@@ -53,7 +49,6 @@ class SongModalHandlers {
     required this.setFavorite,
     required this.findLyrics,
     this.openAdvanced,
-    this.openInfo,
   });
 
   final VoidCallback goToAlbum;
@@ -64,7 +59,6 @@ class SongModalHandlers {
   final ValueChanged<bool> setFavorite;
   final VoidCallback findLyrics;
   final void Function(ContextModalNav nav)? openAdvanced;
-  final void Function(ContextModalNav nav)? openInfo;
 }
 
 /// Closes the modal, then calls [then]: every action that leaves the modal

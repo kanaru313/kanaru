@@ -48,7 +48,6 @@ SongModalData _data({
   bool hasLibrary = true,
   bool canFindLyrics = true,
   bool showAlbum = true,
-  bool showFolder = true,
 }) => SongModalData(
   song: song,
   links: links,
@@ -56,7 +55,6 @@ SongModalData _data({
   hasLibrary: hasLibrary,
   canFindLyrics: canFindLyrics,
   showAlbum: showAlbum,
-  showFolder: showFolder,
 );
 
 TrackLinks _links({
@@ -172,13 +170,6 @@ void main() {
       expect(a.trailing.single.tooltip, 'Show in file manager');
     });
 
-    test('is left out on the folder page', () {
-      expect(
-        _byId(_data(links: _links(), showFolder: false)),
-        isNot(contains('folder')),
-      );
-    });
-
     test('is left out for a song with no local path', () {
       const remote = TrackListItem(
         id: 1,
@@ -233,10 +224,10 @@ void main() {
   });
 
   group('other rows', () {
-    test('Edit tags is coming soon and Song info opens a page', () {
+    test('Edit tags is coming soon and Advanced opens a page', () {
       final all = _byId(_data(links: _links()));
       expect(all['edit-tags']!.comingSoon, isTrue);
-      expect(all['song-info']!.opensPage, isTrue);
+      expect(all, isNot(contains('song-info')));
       expect(all['advanced']!.opensPage, isTrue);
     });
 

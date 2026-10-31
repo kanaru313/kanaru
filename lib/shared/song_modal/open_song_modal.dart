@@ -17,9 +17,8 @@ import 'song_modal_session.dart';
 /// modal opens, and the favorite and links load inside it.
 ///
 /// Queue actions go to [onQueueAction]; the rest is carried out by a
-/// `TrackMenuRunner` after the modal has closed. [showAlbum] and [showFolder]
-/// false leave out Go to album and Go to folder, on the pages of the song's
-/// own album and folder. [extraActions] are the actions of the screen the song
+/// `TrackMenuRunner` after the modal has closed. [showAlbum] false
+/// leaves out Go to album, on the page of the song's own album. [extraActions] are the actions of the screen the song
 /// is listed on; they come first. [viaKeyboard] focuses the first row.
 void openSongModal(
   BuildContext context,
@@ -27,7 +26,6 @@ void openSongModal(
   required TrackListItem song,
   required ValueChanged<QueueAction> onQueueAction,
   bool showAlbum = true,
-  bool showFolder = true,
   bool viaKeyboard = false,
   List<ContextModalAction> extraActions = const [],
 }) {
@@ -37,7 +35,6 @@ void openSongModal(
     onQueueAction: onQueueAction,
     lyricsTarget: menuLyricsTarget(ref, song),
     showAlbum: showAlbum,
-    showFolder: showFolder,
     extraActions: extraActions,
   );
   unawaited(

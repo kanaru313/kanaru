@@ -4289,9 +4289,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songModalEditTags => 'Edit tags';
 
   @override
-  String get songModalSongInfo => 'Song info';
-
-  @override
   String get songModalAdvanced => 'Advanced';
 
   @override

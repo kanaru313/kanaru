@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show ValueKey;
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/song_modal/song_modal_header.dart';
 
 /// Lets the modal's database reads (links, favorite) finish and its
 /// animations end. A plain `pumpAndSettle` cannot wait for real I/O.
@@ -33,3 +34,9 @@ Future<void> tapModalAction(WidgetTester tester, String label) async {
 /// The row of the open modal with action [id].
 Finder modalAction(String id) =>
     find.byKey(ValueKey('context-modal-action-$id'));
+
+/// Opens Song info from the open modal by tapping its header.
+Future<void> openSongInfoPage(WidgetTester tester) async {
+  await tester.tap(find.byType(SongModalHeader));
+  await settleSongModal(tester);
+}

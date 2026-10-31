@@ -15,14 +15,12 @@ class SongMoreButton extends ConsumerWidget {
     required this.song,
     required this.onQueueAction,
     this.showAlbum = true,
-    this.showFolder = true,
     this.color,
   });
 
   final TrackListItem song;
   final ValueChanged<QueueAction> onQueueAction;
   final bool showAlbum;
-  final bool showFolder;
 
   /// Icon color; null keeps the theme's.
   final Color? color;
@@ -43,7 +41,6 @@ class SongMoreButton extends ConsumerWidget {
         song: song,
         onQueueAction: onQueueAction,
         showAlbum: showAlbum,
-        showFolder: showFolder,
       ),
     );
   }
