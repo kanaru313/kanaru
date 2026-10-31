@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/icons/app_icons.dart';
 import 'sleep_timer_draft.dart';
 import 'sleep_timer_number_field.dart';
 
@@ -49,7 +50,7 @@ class SleepTimerNumberPicker extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton.outlined(
-                  icon: const Icon(Icons.remove),
+                  icon: const Icon(AppIcons.remove),
                   tooltip: _tracks
                       ? l10n.sleepTimerRemoveTrack
                       : l10n.sleepTimerSubtract,
@@ -86,7 +87,7 @@ class SleepTimerNumberPicker extends StatelessWidget {
                 ),
                 const SizedBox(width: 18),
                 IconButton.outlined(
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(AppIcons.add),
                   tooltip: _tracks
                       ? l10n.sleepTimerAddTrack
                       : l10n.sleepTimerAdd,
