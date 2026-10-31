@@ -5,8 +5,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_failure_text.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'install_problem_text.dart';
 import 'plugin_store_failures.dart';
 import 'plugin_store_messages.dart';
 import 'plugin_store_providers.dart';
@@ -139,7 +139,7 @@ class StoreMaintenanceActions {
       _messages.installed(record);
       return;
     }
-    final reason = fileOutcomeText(_l10n, outcome) ?? '';
+    final reason = pluginOutcomeText(_l10n, outcome) ?? '';
     final subject = outcome is PluginInstallRejected
         ? _l10n.lyricsStoreInstallFailedFile(name)
         : name;

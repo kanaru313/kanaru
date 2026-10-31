@@ -1,11 +1,10 @@
-import '../../core/lyrics/plugins/lyrics_plugins_controller.dart';
 import '../../core/lyrics/plugins/package/plugin_package_problem.dart';
 import '../../l10n/l10n.dart';
 
-/// Why a plugin package was refused, in the user's language. [detail] (an
-/// entry name, a manifest field, a host or a script file, per kind) is
+/// Why a plugin package was refused, in the user's language. [PluginPackageProblem.detail]
+/// (an entry name, a manifest field, a host or a script file, per kind) is
 /// already cleaned by the package reader.
-String pluginProblemMessage(AppLocalizations l10n, PluginPackageProblem p) {
+String pluginProblemText(AppLocalizations l10n, PluginPackageProblem p) {
   final detail = p.detail;
   final line = p.line;
   return switch (p.kind) {
@@ -35,25 +34,3 @@ String pluginProblemMessage(AppLocalizations l10n, PluginPackageProblem p) {
       l10n.pluginProblemCheckUnavailable,
   };
 }
-
-/// What an install or update outcome tells the user, one line per reason, or
-/// an empty list when it succeeded. Covers a refused package (every kind of
-/// problem), a refused update, an unavailable keyring and a plugin that is
-/// already gone.
-List<String> pluginInstallOutcomeReasons(
-  AppLocalizations l10n,
-  PluginInstallOutcome outcome,
-) => switch (outcome) {
-  PluginInstalled() => const [],
-  PluginInstallRejected(:final problem) => [
-    pluginProblemMessage(l10n, problem),
-  ],
-  PluginInstallRefused(:final reason) => [
-    switch (reason) {
-      PluginUpdateRefusal.notFromRepo => l10n.pluginRefusedNotFromRepo,
-      PluginUpdateRefusal.olderVersion => l10n.pluginRefusedOlderVersion,
-    },
-  ],
-  PluginInstallSecretsUnavailable() => [l10n.pluginInstallSecretsUnavailable],
-  PluginInstallGone() => [l10n.pluginInstallGone],
-};

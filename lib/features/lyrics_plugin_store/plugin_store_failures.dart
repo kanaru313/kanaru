@@ -3,9 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/repo/plugin_catalog.dart';
 import '../../core/lyrics/plugins/repo/repo_operation_results.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_failure_text.dart';
 import 'catalog_mismatch_lines.dart';
 import 'install_problem_dialog.dart';
-import 'install_problem_text.dart';
 import 'plugin_store_messages.dart';
 
 /// What a plugin install or update was about, for the messages.
@@ -59,7 +59,7 @@ class StoreFailures {
       if (again) await retry();
       return;
     }
-    await problem(repoLine, [repoFailureText(_l10n, failed)]);
+    await problem(repoLine, [repoPluginFailureText(_l10n, failed)]);
   }
 
   /// The "could not install" dialog, or a snackbar when the screen is gone.

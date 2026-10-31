@@ -5510,28 +5510,10 @@ abstract class AppLocalizations {
   /// **'Could not uninstall {name}'**
   String pluginUninstallFailed(String name);
 
-  /// No description provided for @pluginInstallFailedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not install'**
-  String get pluginInstallFailedTitle;
-
-  /// Under the title of the dialog that lists why a plugin file was refused
-  ///
-  /// In en, this message translates to:
-  /// **'File {name} is not a valid plugin.'**
-  String pluginInstallFailedFile(String name);
-
-  /// No description provided for @pluginInstallFailedReasons.
-  ///
-  /// In en, this message translates to:
-  /// **'Reasons'**
-  String get pluginInstallFailedReasons;
-
   /// No description provided for @pluginProblemTooLarge.
   ///
   /// In en, this message translates to:
-  /// **'The package, or something inside it, is too large'**
+  /// **'The package, or an entry in it, is too large'**
   String get pluginProblemTooLarge;
 
   /// No description provided for @pluginProblemNotZip.
@@ -5555,31 +5537,31 @@ abstract class AppLocalizations {
   /// No description provided for @pluginProblemMissingManifest.
   ///
   /// In en, this message translates to:
-  /// **'There is no plugin.json at the top of the package'**
+  /// **'plugin.json is missing at the top of the package'**
   String get pluginProblemMissingManifest;
 
   /// Why a plugin package was refused; detail comes from the package
   ///
   /// In en, this message translates to:
-  /// **'plugin.json is not valid at \"{detail}\"'**
+  /// **'plugin.json is invalid at \"{detail}\"'**
   String pluginProblemInvalidManifest(String detail);
 
   /// No description provided for @pluginProblemInvalidManifestPlain.
   ///
   /// In en, this message translates to:
-  /// **'plugin.json is not valid'**
+  /// **'plugin.json is invalid'**
   String get pluginProblemInvalidManifestPlain;
 
   /// No description provided for @pluginProblemNeedsNewerApp.
   ///
   /// In en, this message translates to:
-  /// **'A newer Kanaru is needed: the plugin uses a newer plugin API than this version supports'**
+  /// **'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports'**
   String get pluginProblemNeedsNewerApp;
 
   /// No description provided for @pluginProblemWrongType.
   ///
   /// In en, this message translates to:
-  /// **'plugin.json: the type must be lyrics'**
+  /// **'plugin.json: type must be lyrics'**
   String get pluginProblemWrongType;
 
   /// Why a plugin package was refused; detail comes from the package
@@ -5591,25 +5573,25 @@ abstract class AppLocalizations {
   /// Why a plugin package was refused; detail comes from the package
   ///
   /// In en, this message translates to:
-  /// **'The package has no src/{detail}'**
+  /// **'src/{detail} is missing from the package'**
   String pluginProblemMissingScript(String detail);
 
   /// Why a plugin package was refused; detail comes from the package
   ///
   /// In en, this message translates to:
-  /// **'Script {detail} has an error'**
+  /// **'The script {detail} has an error'**
   String pluginProblemScriptError(String detail);
 
   /// Why a plugin package was refused; detail comes from the package
   ///
   /// In en, this message translates to:
-  /// **'Script {detail} has an error at line {line}'**
+  /// **'The script {detail} has an error on line {line}'**
   String pluginProblemScriptErrorLine(String detail, int line);
 
   /// No description provided for @pluginProblemCheckUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Kanaru could not check the scripts now (the plugin runtime did not load), so it cannot tell whether the package is valid'**
+  /// **'Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid'**
   String get pluginProblemCheckUnavailable;
 
   /// No description provided for @pluginRefusedNotFromRepo.
@@ -6044,90 +6026,6 @@ abstract class AppLocalizations {
   /// **'{name} uses a newer plugin API than this Kanaru supports. Update Kanaru and install it again.'**
   String lyricsStoreNeedsNewerBody(String name);
 
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'The package, or an entry in it, is too large'**
-  String get lyricsStoreProblemTooLarge;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'The file is not a readable zip package'**
-  String get lyricsStoreProblemNotZip;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'The package has an unsafe entry name ({detail})'**
-  String lyricsStoreProblemUnsafeEntry(String detail);
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'The package has too many files'**
-  String get lyricsStoreProblemTooManyEntries;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'plugin.json is missing at the top of the package'**
-  String get lyricsStoreProblemMissingManifest;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'plugin.json is invalid at \"{detail}\"'**
-  String lyricsStoreProblemInvalidManifest(String detail);
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'plugin.json is invalid'**
-  String get lyricsStoreProblemInvalidManifestPlain;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports'**
-  String get lyricsStoreProblemNeedsNewerApp;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'plugin.json: type must be lyrics'**
-  String get lyricsStoreProblemWrongType;
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'hosts: \"{detail}\" is not a public domain name'**
-  String lyricsStoreProblemBadHost(String detail);
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'src/{detail} is missing from the package'**
-  String lyricsStoreProblemMissingScript(String detail);
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'The script {detail} has an error'**
-  String lyricsStoreProblemScriptError(String detail);
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'The script {detail} has an error on line {line}'**
-  String lyricsStoreProblemScriptErrorLine(String detail, int line);
-
-  /// Package problem
-  ///
-  /// In en, this message translates to:
-  /// **'Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid'**
-  String get lyricsStoreProblemCheckUnavailable;
-
   /// Install failure
   ///
   /// In en, this message translates to:
@@ -6139,12 +6037,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The repository no longer lists this plugin. Refresh the list.'**
   String get lyricsStoreFailUnknownEntry;
-
-  /// Install failure
-  ///
-  /// In en, this message translates to:
-  /// **'This plugin was installed from a file so it has no updates. Uninstall it and install the new file.'**
-  String get lyricsStoreFailNotFromRepo;
 
   /// Install failure
   ///
@@ -6169,24 +6061,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The package does not match the list'**
   String get lyricsStoreFailMismatch;
-
-  /// Install failure
-  ///
-  /// In en, this message translates to:
-  /// **'This package is older than the installed one so it is not used.'**
-  String get lyricsStoreFailOlderVersion;
-
-  /// Install failure
-  ///
-  /// In en, this message translates to:
-  /// **'The secrets of the earlier install could not be deleted from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru and try again.'**
-  String get lyricsStoreFailSecretsUnavailable;
-
-  /// Install failure
-  ///
-  /// In en, this message translates to:
-  /// **'This plugin is no longer installed so it cannot be updated.'**
-  String get lyricsStoreFailGone;
 
   /// Install failure
   ///

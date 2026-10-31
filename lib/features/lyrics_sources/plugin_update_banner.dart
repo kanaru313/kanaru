@@ -8,8 +8,8 @@ import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../core/lyrics/plugins/repo/plugin_update_check.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_failure_text.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'plugin_update_failure_reason.dart';
 import 'plugin_updating_ids_provider.dart';
 
 final _log = Logger('lyrics_sources');
@@ -57,7 +57,7 @@ class _PluginUpdateBannerState extends ConsumerState<PluginUpdateBanner> {
         final RepoPluginFailed failed => appSnackBar(
           kind: AppSnackBarKind.error,
           title: l10n.pluginUpdateFailed(name),
-          details: pluginUpdateFailureReason(l10n, failed),
+          details: repoPluginFailureText(l10n, failed),
         ),
       });
     } catch (error, stackTrace) {

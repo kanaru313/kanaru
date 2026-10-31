@@ -3734,19 +3734,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pluginInstallFailedTitle => 'Could not install';
-
-  @override
-  String pluginInstallFailedFile(String name) {
-    return 'File $name is not a valid plugin.';
-  }
-
-  @override
-  String get pluginInstallFailedReasons => 'Reasons';
-
-  @override
   String get pluginProblemTooLarge =>
-      'The package, or something inside it, is too large';
+      'The package, or an entry in it, is too large';
 
   @override
   String get pluginProblemNotZip => 'The file is not a readable zip package';
@@ -3761,22 +3750,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pluginProblemMissingManifest =>
-      'There is no plugin.json at the top of the package';
+      'plugin.json is missing at the top of the package';
 
   @override
   String pluginProblemInvalidManifest(String detail) {
-    return 'plugin.json is not valid at \"$detail\"';
+    return 'plugin.json is invalid at \"$detail\"';
   }
 
   @override
-  String get pluginProblemInvalidManifestPlain => 'plugin.json is not valid';
+  String get pluginProblemInvalidManifestPlain => 'plugin.json is invalid';
 
   @override
   String get pluginProblemNeedsNewerApp =>
-      'A newer Kanaru is needed: the plugin uses a newer plugin API than this version supports';
+      'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports';
 
   @override
-  String get pluginProblemWrongType => 'plugin.json: the type must be lyrics';
+  String get pluginProblemWrongType => 'plugin.json: type must be lyrics';
 
   @override
   String pluginProblemBadHost(String detail) {
@@ -3785,22 +3774,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String pluginProblemMissingScript(String detail) {
-    return 'The package has no src/$detail';
+    return 'src/$detail is missing from the package';
   }
 
   @override
   String pluginProblemScriptError(String detail) {
-    return 'Script $detail has an error';
+    return 'The script $detail has an error';
   }
 
   @override
   String pluginProblemScriptErrorLine(String detail, int line) {
-    return 'Script $detail has an error at line $line';
+    return 'The script $detail has an error on line $line';
   }
 
   @override
   String get pluginProblemCheckUnavailable =>
-      'Kanaru could not check the scripts now (the plugin runtime did not load), so it cannot tell whether the package is valid';
+      'Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid';
 
   @override
   String get pluginRefusedNotFromRepo =>
@@ -4091,76 +4080,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lyricsStoreProblemTooLarge =>
-      'The package, or an entry in it, is too large';
-
-  @override
-  String get lyricsStoreProblemNotZip =>
-      'The file is not a readable zip package';
-
-  @override
-  String lyricsStoreProblemUnsafeEntry(String detail) {
-    return 'The package has an unsafe entry name ($detail)';
-  }
-
-  @override
-  String get lyricsStoreProblemTooManyEntries =>
-      'The package has too many files';
-
-  @override
-  String get lyricsStoreProblemMissingManifest =>
-      'plugin.json is missing at the top of the package';
-
-  @override
-  String lyricsStoreProblemInvalidManifest(String detail) {
-    return 'plugin.json is invalid at \"$detail\"';
-  }
-
-  @override
-  String get lyricsStoreProblemInvalidManifestPlain => 'plugin.json is invalid';
-
-  @override
-  String get lyricsStoreProblemNeedsNewerApp =>
-      'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports';
-
-  @override
-  String get lyricsStoreProblemWrongType => 'plugin.json: type must be lyrics';
-
-  @override
-  String lyricsStoreProblemBadHost(String detail) {
-    return 'hosts: \"$detail\" is not a public domain name';
-  }
-
-  @override
-  String lyricsStoreProblemMissingScript(String detail) {
-    return 'src/$detail is missing from the package';
-  }
-
-  @override
-  String lyricsStoreProblemScriptError(String detail) {
-    return 'The script $detail has an error';
-  }
-
-  @override
-  String lyricsStoreProblemScriptErrorLine(String detail, int line) {
-    return 'The script $detail has an error on line $line';
-  }
-
-  @override
-  String get lyricsStoreProblemCheckUnavailable =>
-      'Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid';
-
-  @override
   String get lyricsStoreFailUnknownRepo =>
       'This repository is no longer in the list';
 
   @override
   String get lyricsStoreFailUnknownEntry =>
       'The repository no longer lists this plugin. Refresh the list.';
-
-  @override
-  String get lyricsStoreFailNotFromRepo =>
-      'This plugin was installed from a file so it has no updates. Uninstall it and install the new file.';
 
   @override
   String get lyricsStoreFailNoNewerVersion => 'There is no newer version';
@@ -4175,18 +4100,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreFailMismatch => 'The package does not match the list';
-
-  @override
-  String get lyricsStoreFailOlderVersion =>
-      'This package is older than the installed one so it is not used.';
-
-  @override
-  String get lyricsStoreFailSecretsUnavailable =>
-      'The secrets of the earlier install could not be deleted from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru and try again.';
-
-  @override
-  String get lyricsStoreFailGone =>
-      'This plugin is no longer installed so it cannot be updated.';
 
   @override
   String get lyricsStoreFailStorage =>

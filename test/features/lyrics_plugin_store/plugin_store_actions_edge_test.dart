@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
-import 'package:kanaru/features/lyrics_plugin_store/install_problem_text.dart';
+import 'package:kanaru/shared/lyrics_plugins/plugin_failure_text.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_actions.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_providers.dart';
@@ -149,7 +149,7 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
       expect(
         find.text(
-          repoFailureText(
+          repoPluginFailureText(
             en,
             const RepoPluginFailed(RepoPluginFailure.download),
           ),

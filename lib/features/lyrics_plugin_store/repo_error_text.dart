@@ -14,12 +14,6 @@ String repoLoadReasonText(AppLocalizations l10n, RepoLoadError error) =>
       RepoFetchErrorKind.blockedAddress => l10n.lyricsStoreLoadBlocked,
     };
 
-/// Why a package download failed, as a short phrase.
-String downloadReasonText(AppLocalizations l10n, RepoLoadError error) =>
-    error.kind == RepoFetchErrorKind.tooLarge
-    ? l10n.lyricsStoreFailPackageTooLarge
-    : repoLoadReasonText(l10n, error);
-
 /// The rule that refused an address, as a short phrase.
 String addressProblemText(
   AppLocalizations l10n,

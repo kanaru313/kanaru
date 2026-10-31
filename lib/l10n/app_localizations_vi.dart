@@ -3514,17 +3514,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get pluginInstallFailedTitle => 'Không cài được';
-
-  @override
-  String pluginInstallFailedFile(String name) {
-    return 'File $name không phải plugin hợp lệ.';
-  }
-
-  @override
-  String get pluginInstallFailedReasons => 'Lý do';
-
-  @override
   String get pluginProblemTooLarge => 'Gói, hoặc một mục trong gói, quá lớn';
 
   @override
@@ -3864,75 +3853,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsStoreProblemTooLarge =>
-      'Gói, hoặc một mục trong gói, quá lớn';
-
-  @override
-  String get lyricsStoreProblemNotZip => 'File không phải gói zip đọc được';
-
-  @override
-  String lyricsStoreProblemUnsafeEntry(String detail) {
-    return 'Gói có tên mục không an toàn ($detail)';
-  }
-
-  @override
-  String get lyricsStoreProblemTooManyEntries => 'Gói có quá nhiều file';
-
-  @override
-  String get lyricsStoreProblemMissingManifest =>
-      'Không thấy plugin.json ở đầu gói';
-
-  @override
-  String lyricsStoreProblemInvalidManifest(String detail) {
-    return 'plugin.json không hợp lệ ở \"$detail\"';
-  }
-
-  @override
-  String get lyricsStoreProblemInvalidManifestPlain =>
-      'plugin.json không hợp lệ';
-
-  @override
-  String get lyricsStoreProblemNeedsNewerApp =>
-      'Cần Kanaru mới hơn: plugin dùng API plugin mới hơn bản này hỗ trợ';
-
-  @override
-  String get lyricsStoreProblemWrongType => 'plugin.json: type phải là lyrics';
-
-  @override
-  String lyricsStoreProblemBadHost(String detail) {
-    return 'hosts: \"$detail\" không phải tên miền công khai';
-  }
-
-  @override
-  String lyricsStoreProblemMissingScript(String detail) {
-    return 'Không thấy src/$detail trong gói';
-  }
-
-  @override
-  String lyricsStoreProblemScriptError(String detail) {
-    return 'Script $detail bị lỗi';
-  }
-
-  @override
-  String lyricsStoreProblemScriptErrorLine(String detail, int line) {
-    return 'Script $detail bị lỗi ở dòng $line';
-  }
-
-  @override
-  String get lyricsStoreProblemCheckUnavailable =>
-      'Kanaru chưa kiểm tra được script lúc này (thư viện chạy plugin không tải được) nên chưa biết gói có hợp lệ không';
-
-  @override
   String get lyricsStoreFailUnknownRepo =>
       'Repository này không còn trong danh sách';
 
   @override
   String get lyricsStoreFailUnknownEntry =>
       'Repository không còn liệt kê plugin này. Hãy làm mới danh sách.';
-
-  @override
-  String get lyricsStoreFailNotFromRepo =>
-      'Plugin này cài từ file nên không có cập nhật. Hãy gỡ rồi cài file mới.';
 
   @override
   String get lyricsStoreFailNoNewerVersion => 'Chưa có phiên bản mới hơn';
@@ -3947,18 +3873,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreFailMismatch => 'Gói không khớp danh sách';
-
-  @override
-  String get lyricsStoreFailOlderVersion =>
-      'Gói này cũ hơn bản đã cài nên không được dùng.';
-
-  @override
-  String get lyricsStoreFailSecretsUnavailable =>
-      'Không xóa được bí mật của lần cài trước trong kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
-
-  @override
-  String get lyricsStoreFailGone =>
-      'Plugin này không còn được cài nên không cập nhật được.';
 
   @override
   String get lyricsStoreFailStorage =>
