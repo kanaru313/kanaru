@@ -8,6 +8,7 @@ import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/plugin_log_paths.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../core/lyrics/plugins/store/lyrics_plugin_dirs.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// The icon of the plugin installed as [record]: its package's `icon.png`, or
 /// null when the data folder is unknown or the folder name is not a legal one.
@@ -73,7 +74,7 @@ class _StoreRowIconState extends ConsumerState<StoreRowIcon> {
     final placeholder = ColoredBox(
       color: colors.secondaryContainer,
       child: Icon(
-        Icons.extension_outlined,
+        AppIcons.extension,
         size: size * 0.55,
         color: colors.onSecondaryContainer,
       ),

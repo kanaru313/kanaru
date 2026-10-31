@@ -7,9 +7,10 @@ import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/plugin_log_paths.dart';
 import '../../core/lyrics/plugins/store/lyrics_plugin_dirs.dart';
 import '../../shared/widgets/cover_art.dart' show coverDecodeWidth;
+import '../../shared/icons/app_icons.dart';
 
 /// The icon of a plugin that has none of its own.
-const pluginDefaultIcon = Icons.extension_outlined;
+const pluginDefaultIcon = AppIcons.extension;
 
 /// The `icon.png` of an installed plugin, or null when the data folder is
 /// unknown or the package folder name is not a legal one.

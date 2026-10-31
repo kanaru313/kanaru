@@ -33,14 +33,14 @@ class PluginStoreMenu extends StatelessWidget {
         PopupMenuItem(
           value: _Choice.installFile,
           child: ListTile(
-            leading: const Icon(Icons.upload_file_outlined),
+            leading: const Icon(AppIcons.installFromFile),
             title: Text(l10n.lyricsStoreMenuInstallFile),
           ),
         ),
         PopupMenuItem(
           value: _Choice.repositories,
           child: ListTile(
-            leading: const Icon(Icons.dns_outlined),
+            leading: const Icon(AppIcons.repository),
             title: Text(l10n.lyricsStoreMenuRepositories(repositoryCount)),
           ),
         ),

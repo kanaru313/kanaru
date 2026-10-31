@@ -20,7 +20,7 @@ class PluginStoreEmpty extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.file_download_outlined,
+              AppIcons.download,
               size: 40,
               color: theme.colorScheme.onSurfaceVariant,
             ),

@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../l10n/l10n.dart';
 import 'lyrics_picker_marquee_label.dart';
 import 'lyrics_picker_result_sources.dart';
+import '../icons/app_icons.dart';
 
 /// Width of the chip, fixed so the query field beside it never moves.
 const double lyricsPickerSourceChipWidth = 200;
@@ -177,7 +178,7 @@ class _LyricsPickerSourceMenuState extends State<LyricsPickerSourceMenu> {
                     ),
                   ),
                   Icon(
-                    Icons.arrow_drop_down,
+                    AppIcons.dropDown,
                     color: filtered ? scheme.onSecondaryContainer : null,
                   ),
                 ],
@@ -236,7 +237,7 @@ class _LyricsPickerSourceMenuState extends State<LyricsPickerSourceMenu> {
         minimumSize: WidgetStatePropertyAll(Size(0, 44)),
       ),
       leadingIcon: current
-          ? const Icon(Icons.check, size: 20)
+          ? const Icon(AppIcons.check, size: 20)
           : const SizedBox(width: 20, height: 20),
       trailingIcon: Text('$count'),
       onPressed: () => widget.onSelected(value),

@@ -8,6 +8,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_providers.dart';
 import 'store_row_icon.dart';
+import '../../shared/icons/app_icons.dart';
 
 /// The page of one plugin a repository offers: who wrote it, its version,
 /// description, repository, the hosts it may reach, and "Cài".
@@ -116,7 +117,7 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.file_download_outlined),
+                            : const Icon(AppIcons.download),
                         label: Text(l10n.lyricsStoreItemInstall),
                         onPressed: pending
                             ? null

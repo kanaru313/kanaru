@@ -122,7 +122,7 @@ class _RepoList extends ConsumerWidget {
                     ListTile(
                       key: ValueKey(repo.url),
                       leading: repo.error == null
-                          ? const Icon(Icons.dns_outlined)
+                          ? const Icon(AppIcons.repository)
                           : Tooltip(
                               message: l10n.lyricsStoreRepoErrorTooltip(
                                 repoLoadReasonText(l10n, repo.error!),

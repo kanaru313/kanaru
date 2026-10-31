@@ -103,7 +103,7 @@ class PluginStoreRow extends ConsumerWidget {
         if (record == null) return null;
         return _button(
           label: l10n.lyricsStoreUpdateTooltip,
-          icon: Icons.arrow_circle_up_outlined,
+          icon: AppIcons.updateAvailable,
           color: colors.primary,
           onPressed: () => PluginStoreActions(context).update(
             installId: record.installId,
@@ -127,7 +127,7 @@ class PluginStoreRow extends ConsumerWidget {
         if (repoUrl == null || entry == null) return null;
         return _button(
           label: l10n.lyricsStoreInstallTooltip,
-          icon: Icons.file_download_outlined,
+          icon: AppIcons.download,
           color: colors.primary,
           onPressed: () => PluginStoreActions(context).install(
             repoUrl: repoUrl,

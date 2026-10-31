@@ -157,4 +157,13 @@ abstract final class AppIcons {
   // Sleep timer.
   static const IconData sleepTimer = Icons.timer_outlined;
   static const IconData sleepTimerActive = Icons.timer;
+
+  // Lyrics sources and the plugin store.
+  static const IconData extension = Icons.extension_outlined;
+  static const IconData download = Icons.file_download_outlined;
+  static const IconData updateAvailable = Icons.arrow_circle_up_outlined;
+  static const IconData installFromFile = Icons.upload_file_outlined;
+  static const IconData repository = Icons.dns_outlined;
+  static const IconData dropDown = Icons.arrow_drop_down;
+  static const IconData check = Icons.check;
 }
