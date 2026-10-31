@@ -4022,10 +4022,10 @@ abstract class AppLocalizations {
   /// **'Service'**
   String get lyricsTranslationServiceHeader;
 
-  /// Footer of the lyrics translation menu when a saved translation shows
+  /// Status on the right of the Retranslate row of the translation menu when a saved translation shows
   ///
   /// In en, this message translates to:
-  /// **'Translation saved'**
+  /// **'Saved'**
   String get lyricsTranslationSaved;
 
   /// Footer of the lyrics translation menu when the shown translation came from the other service; service is Google or DeepL

@@ -2759,7 +2759,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationServiceHeader => 'Service';
 
   @override
-  String get lyricsTranslationSaved => 'Translation saved';
+  String get lyricsTranslationSaved => 'Saved';
 
   @override
   String lyricsTranslationSavedFrom(String service) {

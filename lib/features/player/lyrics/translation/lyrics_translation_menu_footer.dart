@@ -5,6 +5,7 @@ import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/translation_language_name.dart';
+import '../../../../shared/icons/app_icons.dart';
 import '../../../../shared/translation_notice_dialog.dart';
 import '../../../../shared/widgets/menu_row.dart';
 import 'lyrics_translation_labels.dart';
@@ -21,16 +22,59 @@ List<Widget> lyricsTranslationMenuFooter(
   LyricsTranslationController controller,
 ) {
   final l10n = context.l10n;
+  final theme = Theme.of(context);
+  // A saved translation, or one being made, is one short row: the action on
+  // the left and the status on the right.
+  Widget statusRow({required Widget status, required VoidCallback? run}) =>
+      menuRowSpaced(
+        MenuItemButton(
+          style: menuRowStyle(),
+          closeOnActivate: false,
+          leadingIcon: const Icon(AppIcons.refresh),
+          trailingIcon: status,
+          onPressed: run,
+          child: Text(l10n.lyricsTranslationRetranslate),
+        ),
+      );
+  if (state case TranslationReady(fromOtherService: false)) {
+    return [
+      const Divider(height: 1),
+      statusRow(
+        run: controller.retranslate,
+        status: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(AppIcons.success, size: 16, color: theme.colorScheme.primary),
+            const SizedBox(width: 4),
+            Text(
+              l10n.lyricsTranslationSaved,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+  if (state is TranslationLoading) {
+    return [
+      const Divider(height: 1),
+      statusRow(
+        run: null,
+        status: Text(
+          l10n.lyricsTranslationLoading,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    ];
+  }
   final (String? text, String? action, VoidCallback? run) = switch (state) {
-    TranslationReady(:final service, :final fromOtherService) => (
-      fromOtherService
-          ? l10n.lyricsTranslationSavedFrom(translationServiceName(service))
-          : l10n.lyricsTranslationSaved,
-      fromOtherService
-          ? l10n.lyricsTranslationRetranslateWith(
-              translationServiceName(selected),
-            )
-          : l10n.lyricsTranslationRetranslate,
+    TranslationReady(:final service) => (
+      l10n.lyricsTranslationSavedFrom(translationServiceName(service)),
+      l10n.lyricsTranslationRetranslateWith(translationServiceName(selected)),
       controller.retranslate,
     ),
     TranslationSameLanguage(:final info) => (
@@ -41,11 +85,6 @@ List<Widget> lyricsTranslationMenuFooter(
         ),
       ),
       null,
-      null,
-    ),
-    TranslationLoading() => (
-      l10n.lyricsTranslationLoading,
-      l10n.lyricsTranslationRetranslate,
       null,
     ),
     TranslationFailed(:final kind) => (
@@ -71,6 +110,7 @@ List<Widget> lyricsTranslationMenuFooter(
         MenuItemButton(
           style: menuRowStyle(),
           closeOnActivate: false,
+          leadingIcon: const Icon(AppIcons.refresh),
           onPressed: run,
           child: Text(action),
         ),

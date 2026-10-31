@@ -7,6 +7,7 @@ import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_labels.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -100,7 +101,7 @@ void main() {
     ].map((text) => tester.getTopLeft(find.text(text)).dy).toList();
     expect(order, orderedEquals([...order]..sort()));
     expect(find.text('T'), findsOneWidget);
-    expect(find.text('Translation saved'), findsNothing);
+    expect(find.text('Saved'), findsNothing);
     // The service row shows the selected service; the list is in its submenu.
     expect(find.text('Google'), findsOneWidget);
     expect(find.text('DeepL'), findsNothing);
@@ -265,6 +266,42 @@ void main() {
     expect(segmented().selected, {LyricsTranslationDisplay.replace});
   });
 
+  testWidgets('the language submenu scrolls inside a bounded height', (
+    tester,
+  ) async {
+    await pump(tester, TranslationOff(fakeTranslationInfo()));
+    await tester.tap(find.text('Translate to: English'));
+    await tester.pumpAndSettle();
+
+    final scroll = find.ancestor(
+      of: find.text('Japanese'),
+      matching: find.byType(SingleChildScrollView),
+    );
+    expect(scroll, findsWidgets);
+    expect(tester.getSize(scroll.first).height, lessThanOrEqualTo(320));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a saved translation is one row: Retranslate and Saved', (
+    tester,
+  ) async {
+    await pump(tester, ready());
+
+    final row = find.ancestor(
+      of: find.text('Saved'),
+      matching: find.byType(MenuItemButton),
+    );
+    expect(row, findsOneWidget);
+    expect(
+      find.descendant(of: row, matching: find.text('Retranslate')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: row, matching: find.byIcon(AppIcons.refresh)),
+      findsOneWidget,
+    );
+  });
+
   group('the service submenu', () {
     testWidgets('lists both services, checks the selected, a pick closes', (
       tester,
@@ -305,11 +342,11 @@ void main() {
     testWidgets('a saved translation offers Retranslate', (tester) async {
       await pump(tester, ready());
 
-      expect(find.text('Translation saved'), findsOneWidget);
+      expect(find.text('Saved'), findsOneWidget);
       await tester.tap(find.text('Retranslate'));
       await tester.pumpAndSettle();
       expect(fake.retranslateCalls, 1);
-      expect(find.text('Translation saved'), findsOneWidget);
+      expect(find.text('Saved'), findsOneWidget);
     });
 
     testWidgets('a translation from the other service says so', (tester) async {
@@ -395,19 +432,19 @@ void main() {
       followSettings: true,
       settings: const TranslationPrefs(show: true, noticeAcknowledged: _both),
     );
-    expect(find.text('Translation saved'), findsOneWidget);
+    expect(find.text('Saved'), findsOneWidget);
     expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
 
     await tester.tap(find.text('Show translation'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Translation saved'), findsNothing);
+    expect(find.text('Saved'), findsNothing);
     expect(find.text('Show translation'), findsOneWidget);
     expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
 
     await tester.tap(find.text('Show translation'));
     await tester.pumpAndSettle();
-    expect(find.text('Translation saved'), findsOneWidget);
+    expect(find.text('Saved'), findsOneWidget);
     expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
   });
 

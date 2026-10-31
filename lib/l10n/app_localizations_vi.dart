@@ -2567,7 +2567,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationServiceHeader => 'Dịch vụ';
 
   @override
-  String get lyricsTranslationSaved => 'Đã lưu bản dịch';
+  String get lyricsTranslationSaved => 'Đã lưu';
 
   @override
   String lyricsTranslationSavedFrom(String service) {

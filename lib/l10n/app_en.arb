@@ -2370,9 +2370,9 @@
   "@lyricsTranslationServiceHeader": {
     "description": "Heading of the translation service choices in the lyrics translation menu"
   },
-  "lyricsTranslationSaved": "Translation saved",
+  "lyricsTranslationSaved": "Saved",
   "@lyricsTranslationSaved": {
-    "description": "Footer of the lyrics translation menu when a saved translation shows"
+    "description": "Status on the right of the Retranslate row of the translation menu when a saved translation shows"
   },
   "lyricsTranslationSavedFrom": "Saved from {service}",
   "@lyricsTranslationSavedFrom": {

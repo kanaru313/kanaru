@@ -14,6 +14,9 @@ import 'lyrics_translation_labels.dart';
 import 'lyrics_translation_menu_footer.dart';
 import 'lyrics_translation_switch_row.dart';
 
+/// Tallest the language submenu grows before it scrolls.
+const _languageMenuMaxHeight = 320.0;
+
 /// Value of the "Default" item of the language submenu.
 const _defaultLanguage = '';
 
@@ -80,6 +83,13 @@ List<Widget> lyricsTranslationMenuItems(
     menuRowSpaced(
       SubmenuButton(
         style: menuRowStyle(),
+        // Many languages: the list scrolls inside this height instead of
+        // filling the window.
+        menuStyle: const MenuStyle(
+          maximumSize: WidgetStatePropertyAll(
+            Size(double.infinity, _languageMenuMaxHeight),
+          ),
+        ),
         menuChildren: [
           radio<String>(
             value: _defaultLanguage,
