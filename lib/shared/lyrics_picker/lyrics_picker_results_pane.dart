@@ -23,6 +23,7 @@ class LyricsPickerResultsPane extends StatelessWidget {
     this.searchPending = false,
     this.sourceFilter,
     this.onSourceFilter,
+    this.scrollController,
   });
 
   /// A search is about to start by itself (the song has a title), so an
@@ -42,6 +43,9 @@ class LyricsPickerResultsPane extends StatelessWidget {
   /// that returned no results (a new search) counts as `null`.
   final String? sourceFilter;
   final ValueChanged<String?>? onSourceFilter;
+
+  /// Controls the result list, so the owner can scroll it back to the top.
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +127,7 @@ class LyricsPickerResultsPane extends StatelessWidget {
             child: Material(
               type: MaterialType.transparency,
               child: ListView.builder(
+                controller: scrollController,
                 itemCount: shown.length,
                 itemBuilder: (context, row) {
                   final i = shown[row];
