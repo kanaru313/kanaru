@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_dialog_frame.dart';
+import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_sheet_frame.dart';
 
 import 'context_modal_harness.dart';
@@ -63,6 +65,36 @@ void main() {
     expect(find.byType(ContextModalSheetFrame), findsOneWidget);
     expect(find.byType(ContextModalDialogFrame), findsNothing);
     expect(find.text('Sub page'), findsOneWidget);
+  });
+
+  testWidgets('expanded chips survive a resize from dialog to sheet', (
+    tester,
+  ) async {
+    await pumpModalApp(
+      tester,
+      size: const Size(800, 800),
+      extra: [
+        ContextModalAction(
+          id: 'artists',
+          icon: AppIcons.artist,
+          label: 'Artists',
+          chips: ContextModalChips(
+            items: [
+              ContextModalChip(label: 'Alpha', onTap: (_) {}),
+              ContextModalChip(label: 'Beta', onTap: (_) {}),
+            ],
+          ),
+        ),
+      ],
+    );
+    await tester.tap(find.text('Artists'));
+    await tester.pumpAndSettle();
+    expect(find.text('Alpha'), findsOneWidget);
+
+    tester.view.physicalSize = const Size(360, 800);
+    await tester.pumpAndSettle();
+    expect(find.byType(ContextModalSheetFrame), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
   });
 
   testWidgets('reduced motion swaps pages without a slide', (tester) async {
