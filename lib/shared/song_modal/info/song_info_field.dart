@@ -54,7 +54,10 @@ class SongInfoFieldTile extends StatelessWidget {
                 )
               : TextSpan(
                   text: wrapAnywhere(value),
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: colors.onSurface,
+                  ),
                 ),
         ],
       ),

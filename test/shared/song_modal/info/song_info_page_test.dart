@@ -237,4 +237,45 @@ void main() {
 
     expect(copied, 'Somebody');
   });
+
+  testWidgets('label and value differ in weight and color', (tester) async {
+    await _openInfo(tester, () => Stream.value(_details()));
+
+    final field = find.byKey(const ValueKey('song-info-artist'));
+    final rich = tester.widget<RichText>(
+      find.descendant(of: field, matching: find.byType(RichText)).first,
+    );
+    final colors = Theme.of(tester.element(field)).colorScheme;
+    final spans = ((rich.text as TextSpan).children!.single as TextSpan)
+        .children!
+        .cast<TextSpan>();
+    expect(spans[0].text, 'Artist: ');
+    expect(spans[0].style?.fontWeight, isNull);
+    expect(spans[0].style?.color, colors.onSurfaceVariant);
+    expect(spans[1].text, 'Somebody');
+    expect(spans[1].style?.fontWeight, FontWeight.w500);
+    expect(spans[1].style?.color, colors.onSurface);
+  });
+
+  testWidgets('an unknown value is italic in onSurfaceVariant', (tester) async {
+    final container = await _openInfo(tester, () => Stream.value(_details()));
+    await tester.tap(find.byTooltip('Show unknown fields'));
+    await tester.pump();
+    expect(
+      container.read(settingsProvider).display.songInfoShowUnknown,
+      isTrue,
+    );
+
+    final field = find.byKey(const ValueKey('song-info-album'));
+    final rich = tester.widget<RichText>(
+      find.descendant(of: field, matching: find.byType(RichText)).first,
+    );
+    final colors = Theme.of(tester.element(field)).colorScheme;
+    final value = ((rich.text as TextSpan).children!.single as TextSpan)
+        .children!
+        .cast<TextSpan>()[1];
+    expect(value.text, 'Unknown');
+    expect(value.style?.fontStyle, FontStyle.italic);
+    expect(value.style?.color, colors.onSurfaceVariant);
+  });
 }
