@@ -210,13 +210,15 @@ Desktop environments: the bundle is GTK 3 and talks to the compositor through th
 | Kind | Path | Contents |
 |---|---|---|
 | Config | `$XDG_CONFIG_HOME/kanaru` (default `~/.config/kanaru`) | `settings.json`, `playback-session.json` |
-| Data | `$XDG_DATA_HOME/kanaru` (default `~/.local/share/kanaru`) | `library.db` (with `-wal` and `-shm` files while running) |
-| Cache | `$XDG_CACHE_HOME/kanaru` (default `~/.cache/kanaru`) | `covers/512/` thumbnails, `covers/` temporary files, `logs/` |
+| Data | `$XDG_DATA_HOME/kanaru` (default `~/.local/share/kanaru`) | `library.db` (with `-wal` and `-shm` files while running), `search_history.json`, `secrets.json` (only without a Secret Service), `plugins/lyrics/` (lyrics plugin packages), `plugin-logs/` (plugin logs) |
+| Cache | `$XDG_CACHE_HOME/kanaru` (default `~/.cache/kanaru`) | `covers/512/` thumbnails, `covers/` temporary files, `waveforms/`, `logs/` |
 | Logs | `$XDG_CACHE_HOME/kanaru/logs` | `kanaru.log`, `.1` to `.4`, `kanaru.lock`, and `kanaru-<pid>.log` for extra instances |
+
+To run with separate folders, set all three XDG variables to absolute paths (see [development.md](./development.md#run-with-isolated-data)). The keyring and `$TMPDIR` are shared.
 
 Backups: copy the config and data directories while Kanaru is closed. The cache can be deleted at any time; covers are rebuilt on the next scan.
 
-Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, the DeepL key is kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Settings > Lyrics shows the real path of the file in a warning whenever the key is kept there, and "Clear" on the DeepL key row removes the key from the keyring and from the file. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
+Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, the DeepL key and lyrics plugin secrets are kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Settings > Lyrics shows the real path of the file in a warning whenever the key is kept there, and "Clear" on the DeepL key row removes the key from the keyring and from the file. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
 
 ## Reset targets
 
@@ -226,7 +228,7 @@ Quit Kanaru first. `reset-covers` and `reset-all` are `Makefile` rules that run 
 |---|---|---|---|
 | `make reset-covers` | `cache/covers` | everything else | Covers read again on the next scan |
 | `make reset-library` | Library folders, tracks, track artists, cover colors and the search index inside `library.db`; `cache/covers` | Playlists (Favorites included), listen history and play counts, excluded folders, settings, session. Refuses a `library.db` below schema 6 (open a current build once first) | Empty library: settings still record that onboarding is done, so the first-run folder picker does not show; add folders in Settings → Library. Old playlist entries and plays match again by path once the same files are scanned |
-| `make reset-all` | `data`, `config`, `cache`: library, **playlists, listen history**, settings, playback session, covers, logs | nothing | Like a fresh install |
+| `make reset-all` | `data`, `config`, `cache`: library, **playlists, listen history**, settings, playback session, search history, lyrics plugins and plugin logs, `secrets.json`, covers, waveforms, logs. The keyring is not touched | nothing | Like a fresh install |
 | `make logs` | nothing | everything | Follows `kanaru.log` |
 
 `reset-library` lists its tables explicitly: when a table derived from the scan is added, update the SQL. For a throwaway dev schema change that is not worth migrating, use `make reset-all` (it also deletes playlists and listen history; see [development.md](./development.md#code-generation)).

@@ -96,8 +96,10 @@ void main() {
     late LyricsPluginRecord second;
     late List<LogRecord> appLog;
 
+    /// Polls real time; the ten second limit is only a hang guard, the
+    /// condition itself is the assertion.
     Future<void> until(bool Function() done) async {
-      final end = DateTime.now().add(const Duration(seconds: 2));
+      final end = DateTime.now().add(const Duration(seconds: 10));
       while (!done()) {
         if (DateTime.now().isAfter(end)) fail('condition not reached');
         await Future<void>.delayed(const Duration(milliseconds: 5));

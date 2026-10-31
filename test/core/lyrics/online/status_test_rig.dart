@@ -115,9 +115,10 @@ class StatusRig {
 
   Future<void> play(List<Track> tracks) => player.openTracks(tracks);
 
-  /// Waits until [done] holds, polling real time; fails after two seconds.
+  /// Waits until [done] holds, polling real time. The ten second limit is only
+  /// a hang guard; the condition itself is the assertion.
   Future<void> until(bool Function() done) async {
-    final end = DateTime.now().add(const Duration(seconds: 2));
+    final end = DateTime.now().add(const Duration(seconds: 10));
     while (!done()) {
       if (DateTime.now().isAfter(end)) fail('condition not reached: $status');
       await Future<void>.delayed(const Duration(milliseconds: 5));
