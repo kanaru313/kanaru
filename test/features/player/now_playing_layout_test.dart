@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
@@ -6,6 +8,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_tab_header_layout.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_seek_slot.dart';
@@ -244,13 +247,30 @@ void main() {
       expect(queue.right, lessThan(150));
     });
 
+    /// Where the dots of the narrow header sit (within 3 px: the button group
+    /// ends a little after its last button): centered on the window, or,
+    /// when the buttons at the start leave less than a drag strip
+    /// (`nowPlayingTabHeaderMinGap`) before them, moved right to keep it.
+    double expectedDotsCenter(WidgetTester tester, Rect dots, double width) {
+      final buttonsEnd = tester
+          .getRect(inScreen(find.byTooltip('Lyrics translation')))
+          .right;
+      return math.max(
+        width / 2,
+        buttonsEnd + nowPlayingTabHeaderMinGap + dots.width / 2,
+      );
+    }
+
     testWidgets('centers the dots on the whole window', (tester) async {
       for (final width in [600.0, 480.0]) {
         await pumpOpen(tester, Size(width, 700));
         final queue = tester.getRect(inScreen(find.byTooltip('Now playing')));
         final lyrics = tester.getRect(inScreen(find.byTooltip('Lyrics')));
         final dots = queue.expandToInclude(lyrics);
-        expect(dots.center.dx, closeTo(width / 2, 1));
+        expect(
+          dots.center.dx,
+          closeTo(expectedDotsCenter(tester, dots, width), 3),
+        );
         expect(dots.top, lessThan(64));
         // Unmounting schedules the disposal of providers Now Playing
         // watched; let it run before the next app replaces this one.
@@ -266,7 +286,8 @@ void main() {
 
       final queue = tester.getRect(inScreen(find.byTooltip('Now playing')));
       final lyrics = tester.getRect(inScreen(find.byTooltip('Lyrics')));
-      expect(queue.expandToInclude(lyrics).center.dx, closeTo(240, 1));
+      final dots = queue.expandToInclude(lyrics);
+      expect(dots.center.dx, closeTo(expectedDotsCenter(tester, dots, 480), 3));
       expect(tester.takeException(), isNull);
     });
 
