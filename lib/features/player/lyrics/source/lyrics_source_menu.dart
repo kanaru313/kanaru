@@ -9,6 +9,7 @@ import '../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../core/player/local_path_of.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/format_duration.dart';
+import '../../../../shared/icons/app_icons.dart';
 import '../lyrics_action_runner.dart';
 import '../lyrics_provider_name.dart';
 import 'lyrics_source_labels.dart';
@@ -66,6 +67,10 @@ List<Widget> lyricsSourceMenuItems(
         : formatDuration(Duration(milliseconds: pickLength))),
   ];
 
+  // With lyrics off the choices stay, dimmed: pressing one turns them on.
+  Widget choice(Widget item) =>
+      effective == LyricsChoice.off ? Opacity(opacity: 0.4, child: item) : item;
+
   return [
     Focus(
       focusNode: headerFocus,
@@ -73,83 +78,98 @@ List<Widget> lyricsSourceMenuItems(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
         child: Text(
-          lyricsSourceMenuTitle(l10n, source, names),
-          style: Theme.of(context).textTheme.labelMedium
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          l10n.lyricsSourceMenuSection.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     ),
-    lyricsSourceMenuItem(
-      context,
-      focusNode: firstItemFocus,
-      title: l10n.lyricsSourceAutoItem,
-      subtitle: hasPick ? l10n.lyricsSourceForgetPick(autoText) : autoText,
-      checked: effective == LyricsChoice.auto,
-      onPressed: when(canChoose, () => runner.choose(LyricsChoice.auto)),
-    ),
-    const Divider(height: 9),
-    if (source.hasLocal || source.chosen == LyricsChoice.local)
+    choice(
       lyricsSourceMenuItem(
         context,
-        title: l10n.lyricsSourceLocalItem,
-        subtitle: !source.hasLocal
-            ? l10n.lyricsSourceLocalMissing
-            : lyricsSourceLocalSubtitle(l10n, ownSource),
-        checked: effective == LyricsChoice.local,
-        onPressed: when(
-          canChoose && source.hasLocal,
-          () => runner.choose(LyricsChoice.local),
+        focusNode: firstItemFocus,
+        title: l10n.lyricsSourceAutoItem,
+        subtitle: hasPick ? l10n.lyricsSourceForgetPick(autoText) : autoText,
+        checked: effective == LyricsChoice.auto,
+        onPressed: when(canChoose, () => runner.choose(LyricsChoice.auto)),
+      ),
+    ),
+    if (source.hasLocal || source.chosen == LyricsChoice.local)
+      choice(
+        lyricsSourceMenuItem(
+          context,
+          title: l10n.lyricsSourceLocalItem,
+          subtitle: !source.hasLocal
+              ? l10n.lyricsSourceLocalMissing
+              : lyricsSourceLocalSubtitle(l10n, ownSource),
+          checked: effective == LyricsChoice.local,
+          onPressed: when(
+            canChoose && source.hasLocal,
+            () => runner.choose(LyricsChoice.local),
+          ),
         ),
       ),
     if (hasPick)
-      lyricsSourceMenuItem(
-        context,
-        title: l10n.lyricsSourceOnlineItem(
-          lyricsSourceDisplayName(names, pin?.providerId ?? ''),
+      choice(
+        lyricsSourceMenuItem(
+          context,
+          title: lyricsSourceNameText(l10n, names, pin?.providerId ?? ''),
+          tag: l10n.lyricsSourceChosenTag,
+          subtitle: switch (pickSubtitle) {
+            [] => null,
+            [final one] => one,
+            [final kind, final length] => l10n.lyricsSourceOnlineSubtitle(
+              kind,
+              length,
+            ),
+            _ => null,
+          },
+          checked: effective == LyricsChoice.online,
+          onPressed: when(canChoose, () => runner.choose(LyricsChoice.online)),
         ),
-        subtitle: switch (pickSubtitle) {
-          [] => null,
-          [final one] => one,
-          [final kind, final length] => l10n.lyricsSourceOnlineSubtitle(
-            kind,
-            length,
-          ),
-          _ => null,
-        },
-        checked: effective == LyricsChoice.online,
-        onPressed: when(canChoose, () => runner.choose(LyricsChoice.online)),
       ),
+    const Divider(height: 9),
     if (origin != null &&
         !origin.pinned &&
         (!hasPick || pin?.remoteId == origin.remoteId))
       lyricsSourceMenuItem(
         context,
+        icon: AppIcons.lyricsKeep,
         title: l10n.lyricsSourceKeep,
         onPressed: when(canChoose, runner.keep),
-      ),
-    if (origin != null)
-      lyricsSourceMenuItem(
-        context,
-        title: l10n.lyricsMenuNotThese,
-        onPressed: when(canChoose, runner.reject),
       ),
     if (providers.isNotEmpty && canChoose)
       lyricsSourceMenuItem(
         context,
+        icon: AppIcons.search,
         title: l10n.lyricsFindOnline,
         onPressed: runner.findOnline,
       ),
     lyricsSourceMenuItem(
       context,
+      icon: AppIcons.lyricsSave,
       title: l10n.lyricsSourceSave,
       onPressed: when(canChoose && origin != null, runner.save),
     ),
+    if (origin != null)
+      lyricsSourceMenuItem(
+        context,
+        icon: AppIcons.lyricsReject,
+        title: l10n.lyricsMenuNotThese,
+        onPressed: when(canChoose, runner.reject),
+      ),
     const Divider(height: 9),
-    lyricsSourceMenuItem(
+    lyricsSourceSwitchItem(
       context,
-      title: l10n.lyricsSourceTurnOff,
-      checked: effective == LyricsChoice.off,
-      onPressed: when(canChoose, () => runner.choose(LyricsChoice.off)),
+      title: l10n.lyricsSourceSwitch,
+      on: effective != LyricsChoice.off,
+      // Turning it back on goes to Automatic, whatever was chosen before.
+      onChanged: canChoose
+          ? (on) => runner.choose(on ? LyricsChoice.auto : LyricsChoice.off)
+          : null,
     ),
   ];
 }

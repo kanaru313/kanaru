@@ -89,7 +89,7 @@ class _RecordingActions extends OnlineLyricsActions {
 }
 
 /// A mockup state: the resolution and the menu it must show, top to bottom.
-/// `✓` marks the checked row, `(off)` a disabled one.
+/// `✓` marks the checked row (or the switch when on), `(off)` a disabled one.
 typedef _State = ({
   String name,
   LyricsSourceResolution Function() resolution,
@@ -125,9 +125,12 @@ void main() {
           of: row,
           matching: find.byType(RadioMenuButton<bool>),
         );
-        final checked =
-            radio.evaluate().isNotEmpty &&
-            tester.widget<RadioMenuButton<bool>>(radio).groupValue == true;
+        final toggle = find.descendant(of: row, matching: find.byType(Switch));
+        final checked = toggle.evaluate().isNotEmpty
+            ? tester.widget<Switch>(toggle).value
+            : radio.evaluate().isNotEmpty &&
+                  tester.widget<RadioMenuButton<bool>>(radio).groupValue ==
+                      true;
         return '${checked ? '✓ ' : ''}$title'
             '${button.onPressed == null ? ' (off)' : ''}';
       }(),
@@ -243,7 +246,7 @@ void main() {
         'Lyrics in the file',
         'Find lyrics online…',
         'Save current lyrics… (off)',
-        'Turn lyrics off for this song',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -260,11 +263,11 @@ void main() {
       menu: [
         'Automatic',
         'Lyrics in the file',
-        '✓ Fake · chosen version',
-        'Not these lyrics',
+        '✓ Fake',
         'Find lyrics online…',
         'Save current lyrics…',
-        'Turn lyrics off for this song',
+        'Not these lyrics',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -280,10 +283,10 @@ void main() {
       menu: [
         'Automatic',
         '✓ Lyrics in the file',
-        'Fake · chosen version',
+        'Fake',
         'Find lyrics online…',
         'Save current lyrics… (off)',
-        'Turn lyrics off for this song',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -298,11 +301,11 @@ void main() {
       menu: [
         '✓ Automatic',
         'Lyrics in the file (off)',
-        'Fake · chosen version',
-        'Not these lyrics',
+        'Fake',
         'Find lyrics online…',
         'Save current lyrics…',
-        'Turn lyrics off for this song',
+        'Not these lyrics',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -312,10 +315,10 @@ void main() {
       menu: [
         '✓ Automatic',
         'Keep this one',
-        'Not these lyrics',
         'Find lyrics online…',
         'Save current lyrics…',
-        'Turn lyrics off for this song',
+        'Not these lyrics',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -326,7 +329,7 @@ void main() {
         '✓ Automatic',
         'Find lyrics online…',
         'Save current lyrics… (off)',
-        'Turn lyrics off for this song',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -338,7 +341,7 @@ void main() {
         '✓ Automatic',
         'Find lyrics online…',
         'Save current lyrics… (off)',
-        'Turn lyrics off for this song',
+        '✓ Lyrics for this song',
       ],
     ),
     (
@@ -355,7 +358,7 @@ void main() {
         'Lyrics in the file',
         'Find lyrics online…',
         'Save current lyrics… (off)',
-        '✓ Turn lyrics off for this song',
+        'Lyrics for this song',
       ],
     ),
   ];
@@ -408,7 +411,7 @@ void main() {
       expect(findPill, findsOneWidget);
     });
 
-    testWidgets('without lyrics the menu keeps the plain header', (
+    testWidgets('the menu heading is the same with or without lyrics', (
       tester,
     ) async {
       await pump(
@@ -416,15 +419,16 @@ void main() {
         fakeResolution(const LyricsNone(_uri, LyricsNoneReason.noLyrics)),
       );
       await openMenu(tester);
+      expect(find.text('SOURCE'), findsOneWidget);
       expect(find.text('Lyrics for this song'), findsOneWidget);
-      expect(find.textContaining('Lyrics from'), findsNothing);
+      expect(find.byTooltip('Lyrics for this song'), findsOneWidget);
     });
 
-    testWidgets('with lyrics the menu header names the source', (tester) async {
+    testWidgets('with lyrics the tooltip names the source', (tester) async {
       await pump(tester, found(_lyrics(), hasLocal: true));
       await openMenu(tester);
-      expect(find.text('Lyrics from .lrc file'), findsOneWidget);
-      expect(find.text('Lyrics for this song'), findsNothing);
+      expect(find.text('SOURCE'), findsOneWidget);
+      expect(find.byTooltip('Lyrics from .lrc file'), findsOneWidget);
     });
 
     testWidgets('names a known source that is not enabled', (tester) async {
@@ -479,7 +483,7 @@ void main() {
       expect(find.text('NetEase (removed) · Synced'), findsOneWidget);
       await openMenu(tester);
       expect(
-        find.text('Lyrics from NetEase (removed) · Synced'),
+        find.byTooltip('Lyrics from NetEase (removed) · Synced'),
         findsOneWidget,
       );
     });
@@ -510,7 +514,10 @@ void main() {
         ],
       );
       await openMenu(tester);
-      expect(find.text('Lời từ NetEase (đã gỡ) · Đồng bộ'), findsOneWidget);
+      expect(
+        find.byTooltip('Lời từ NetEase (đã gỡ) · Đồng bộ'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('an 80-character plugin name ellipsizes without overflow', (
@@ -556,8 +563,9 @@ void main() {
       );
       expect(find.text('Fake · Đồng bộ'), findsOneWidget);
       await openMenu(tester);
-      expect(find.text('Lời từ Fake · Đồng bộ'), findsOneWidget);
-      expect(find.text('Tắt lời cho bài này'), findsOneWidget);
+      expect(find.byTooltip('Lời từ Fake · Đồng bộ'), findsOneWidget);
+      expect(find.text('Nguồn'.toUpperCase()), findsOneWidget);
+      expect(find.text('Lời cho bài này'), findsOneWidget);
       expect(find.text('Lưu lời đang hiện…'), findsOneWidget);
     });
 
@@ -698,9 +706,9 @@ void main() {
           '✓ Automatic (off)',
           'Lyrics in the file (off)',
           'Keep this one (off)',
-          'Not these lyrics (off)',
           'Save current lyrics… (off)',
-          'Turn lyrics off for this song (off)',
+          'Not these lyrics (off)',
+          '✓ Lyrics for this song (off)',
         ]);
       });
     }
@@ -710,8 +718,8 @@ void main() {
     for (final (title, expected) in [
       ('Automatic', 'choose auto $_uri'),
       ('Lyrics in the file', 'choose local $_uri'),
-      ('Fake · chosen version', 'choose online $_uri'),
-      ('Turn lyrics off for this song', 'choose off $_uri'),
+      ('Fake', 'choose online $_uri'),
+      ('Lyrics for this song', 'choose off $_uri'),
       ('Not these lyrics', 'reject 7 $_uri'),
     ]) {
       testWidgets('$title acts on the song', (tester) async {
@@ -852,6 +860,25 @@ void main() {
       expect(find.text('In the tag'), findsNothing);
     });
 
+    testWidgets('the switch turns lyrics back on with Automatic', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        fakeResolution(
+          const LyricsNone(_uri, LyricsNoneReason.off),
+          chosen: LyricsChoice.off,
+          effective: LyricsChoice.off,
+          hasLocal: true,
+        ),
+        ownLyrics: _lyrics(),
+      );
+      await openMenu(tester);
+      await tester.tap(item('Lyrics for this song'));
+      await tester.pumpAndSettle();
+      expect(log, ['choose auto $_uri']);
+    });
+
     testWidgets('acts on the playing song when the library target is stale', (
       tester,
     ) async {
@@ -866,7 +893,7 @@ void main() {
         ],
       );
       await openMenu(tester);
-      await tester.tap(item('Turn lyrics off for this song'));
+      await tester.tap(item('Lyrics for this song'));
       await tester.pumpAndSettle();
       expect(log, ['choose off /m/other.flac']);
     });

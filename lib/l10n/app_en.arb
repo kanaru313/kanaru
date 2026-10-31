@@ -3102,15 +3102,6 @@
   "@lyricsSourceLocalMissing": {
     "description": "Subtitle of the file item when the song has no own lyrics"
   },
-  "lyricsSourceOnlineItem": "{provider} · chosen version",
-  "@lyricsSourceOnlineItem": {
-    "description": "Lyrics source menu item for the online lyrics picked for the song",
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
-    }
-  },
   "lyricsSourceOnlineSubtitle": "{kind} · {length}",
   "@lyricsSourceOnlineSubtitle": {
     "description": "Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss",
@@ -3123,6 +3114,18 @@
       }
     }
   },
+  "lyricsSourceMenuSection": "Source",
+  "@lyricsSourceMenuSection": {
+    "description": "Heading of the lyrics source menu (shown in capitals)"
+  },
+  "lyricsSourceChosenTag": "Chosen",
+  "@lyricsSourceChosenTag": {
+    "description": "Small tag on the lyrics source menu row of the online version the user picked"
+  },
+  "lyricsSourceSwitch": "Lyrics for this song",
+  "@lyricsSourceSwitch": {
+    "description": "Switch at the end of the lyrics source menu: off hides lyrics for the song, on goes back to Automatic"
+  },
   "lyricsSourceKeep": "Keep this one",
   "@lyricsSourceKeep": {
     "description": "Lyrics source menu item that picks the automatic match for good"
@@ -3130,10 +3133,6 @@
   "lyricsSourceSave": "Save current lyrics…",
   "@lyricsSourceSave": {
     "description": "Lyrics source menu item that opens the save dialog"
-  },
-  "lyricsSourceTurnOff": "Turn lyrics off for this song",
-  "@lyricsSourceTurnOff": {
-    "description": "Lyrics source menu item that hides lyrics for the song"
   },
   "lyricsOffTitle": "Lyrics are off for this song",
   "@lyricsOffTitle": {

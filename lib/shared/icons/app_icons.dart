@@ -120,6 +120,9 @@ abstract final class AppIcons {
   // Lyrics translation button: outlined while off, filled while on.
   static const IconData lyricsTranslateOutlined = Icons.translate_outlined;
   static const IconData lyricsTranslate = Icons.translate;
+  static const IconData lyricsKeep = Icons.bookmark_add_outlined;
+  static const IconData lyricsSave = Icons.save_outlined;
+  static const IconData lyricsReject = Icons.thumb_down_outlined;
   static const IconData windowCustom = Icons.web_asset;
   static const IconData windowSystem = Icons.desktop_windows_outlined;
   static const IconData windowFrameless = Icons.crop_free;

@@ -11,7 +11,7 @@ String? lyricsSourceLocalSubtitle(AppLocalizations l10n, LyricsSource? own) =>
       null => null,
     };
 
-/// One row: a title and an optional subtitle. With [checked] set it is a
+/// One row: a title, an optional [tag] after it and an optional subtitle. With [checked] set it is a
 /// radio row, selected when `true` (the choice in effect); pressing the row
 /// that is already selected still acts, as the choice may carry a stored
 /// version to drop. Without it, a plain action row.
@@ -20,17 +20,44 @@ Widget lyricsSourceMenuItem(
   required String title,
   required VoidCallback? onPressed,
   String? subtitle,
+  String? tag,
+  IconData? icon,
   bool? checked,
   FocusNode? focusNode,
 }) {
   final theme = Theme.of(context);
+  final scheme = theme.colorScheme;
   final label = ConstrainedBox(
     constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(title),
+        if (tag == null)
+          Text(title)
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: Text(title, overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 8),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    tag,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         if (subtitle != null)
           Text(
             subtitle,
@@ -44,12 +71,21 @@ Widget lyricsSourceMenuItem(
   if (checked == null) {
     return MenuItemButton(
       focusNode: focusNode,
+      leadingIcon: icon == null ? null : Icon(icon, size: 20),
       onPressed: onPressed,
       child: label,
     );
   }
   return RadioMenuButton<bool>(
     focusNode: focusNode,
+    // The row in effect is tinted, so it reads at a glance.
+    style: checked
+        ? ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              scheme.primary.withValues(alpha: 0.14),
+            ),
+          )
+        : null,
     value: true,
     groupValue: checked ? true : null,
     toggleable: true,
@@ -57,3 +93,23 @@ Widget lyricsSourceMenuItem(
     child: label,
   );
 }
+
+/// The last row: a switch that says whether the song shows lyrics at all.
+/// [on] is `true` unless the choice is "off".
+Widget lyricsSourceSwitchItem(
+  BuildContext context, {
+  required String title,
+  required bool on,
+  required ValueChanged<bool>? onChanged,
+}) => MenuItemButton(
+  onPressed: onChanged == null ? null : () => onChanged(!on),
+  trailingIcon: IgnorePointer(
+    child: ExcludeFocus(
+      child: Switch(value: on, onChanged: onChanged == null ? null : (_) {}),
+    ),
+  ),
+  child: ConstrainedBox(
+    constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
+    child: Text(title),
+  ),
+);

@@ -3237,23 +3237,24 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsSourceLocalMissing => 'Không tìm thấy lời trong file';
 
   @override
-  String lyricsSourceOnlineItem(String provider) {
-    return '$provider · bản đã chọn';
-  }
-
-  @override
   String lyricsSourceOnlineSubtitle(String kind, String length) {
     return '$kind · $length';
   }
+
+  @override
+  String get lyricsSourceMenuSection => 'Nguồn';
+
+  @override
+  String get lyricsSourceChosenTag => 'Đã chọn';
+
+  @override
+  String get lyricsSourceSwitch => 'Lời cho bài này';
 
   @override
   String get lyricsSourceKeep => 'Giữ bản này';
 
   @override
   String get lyricsSourceSave => 'Lưu lời đang hiện…';
-
-  @override
-  String get lyricsSourceTurnOff => 'Tắt lời cho bài này';
 
   @override
   String get lyricsOffTitle => 'Đã tắt lời cho bài này';

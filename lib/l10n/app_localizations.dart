@@ -5066,17 +5066,29 @@ abstract class AppLocalizations {
   /// **'No lyrics found in the file'**
   String get lyricsSourceLocalMissing;
 
-  /// Lyrics source menu item for the online lyrics picked for the song
-  ///
-  /// In en, this message translates to:
-  /// **'{provider} · chosen version'**
-  String lyricsSourceOnlineItem(String provider);
-
   /// Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss
   ///
   /// In en, this message translates to:
   /// **'{kind} · {length}'**
   String lyricsSourceOnlineSubtitle(String kind, String length);
+
+  /// Heading of the lyrics source menu (shown in capitals)
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get lyricsSourceMenuSection;
+
+  /// Small tag on the lyrics source menu row of the online version the user picked
+  ///
+  /// In en, this message translates to:
+  /// **'Chosen'**
+  String get lyricsSourceChosenTag;
+
+  /// Switch at the end of the lyrics source menu: off hides lyrics for the song, on goes back to Automatic
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics for this song'**
+  String get lyricsSourceSwitch;
 
   /// Lyrics source menu item that picks the automatic match for good
   ///
@@ -5089,12 +5101,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save current lyrics…'**
   String get lyricsSourceSave;
-
-  /// Lyrics source menu item that hides lyrics for the song
-  ///
-  /// In en, this message translates to:
-  /// **'Turn lyrics off for this song'**
-  String get lyricsSourceTurnOff;
 
   /// Lyrics slot text when the user turned lyrics off for the song
   ///

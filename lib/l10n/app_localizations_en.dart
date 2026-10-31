@@ -3442,23 +3442,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourceLocalMissing => 'No lyrics found in the file';
 
   @override
-  String lyricsSourceOnlineItem(String provider) {
-    return '$provider · chosen version';
-  }
-
-  @override
   String lyricsSourceOnlineSubtitle(String kind, String length) {
     return '$kind · $length';
   }
+
+  @override
+  String get lyricsSourceMenuSection => 'Source';
+
+  @override
+  String get lyricsSourceChosenTag => 'Chosen';
+
+  @override
+  String get lyricsSourceSwitch => 'Lyrics for this song';
 
   @override
   String get lyricsSourceKeep => 'Keep this one';
 
   @override
   String get lyricsSourceSave => 'Save current lyrics…';
-
-  @override
-  String get lyricsSourceTurnOff => 'Turn lyrics off for this song';
 
   @override
   String get lyricsOffTitle => 'Lyrics are off for this song';
