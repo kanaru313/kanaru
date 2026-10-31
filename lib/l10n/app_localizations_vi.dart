@@ -4029,4 +4029,56 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get contextModalComingSoonSnack =>
       'Tính năng này chưa có. Sắp ra mắt.';
+
+  @override
+  String get songModalLabel => 'Tùy chọn bài hát';
+
+  @override
+  String get songModalMoreOptions => 'Tùy chọn khác';
+
+  @override
+  String get songModalGoToAlbum => 'Đi tới album';
+
+  @override
+  String get songModalGoToArtist => 'Đi tới nghệ sĩ';
+
+  @override
+  String get songModalGoToAlbumArtist => 'Đi tới nghệ sĩ album';
+
+  @override
+  String get songModalGoToFolder => 'Đi tới thư mục';
+
+  @override
+  String get songModalNoAlbum => 'Không có album';
+
+  @override
+  String get songModalNoArtist => 'Không có nghệ sĩ';
+
+  @override
+  String get songModalUnknownAlbum => 'Album không rõ';
+
+  @override
+  String get songModalEditTags => 'Chỉnh sửa thẻ';
+
+  @override
+  String get songModalSongInfo => 'Thông tin bài hát';
+
+  @override
+  String get songModalAdvanced => 'Nâng cao';
+
+  @override
+  String get songModalRemoveFromLibrary => 'Loại khỏi thư viện';
+
+  @override
+  String get songModalDeleteFile => 'Xoá tệp khỏi ổ đĩa';
+
+  @override
+  String songModalArtistsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nghệ sĩ',
+    );
+    return '$_temp0';
+  }
 }

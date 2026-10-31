@@ -146,6 +146,29 @@ class TrackMenuRunner {
     }
   }
 
+  /// Opens the page of the artist [key] of the song [trackId], as the modal's
+  /// artist rows and chips do. A song gone from the library says so. Does
+  /// nothing without a router above the row.
+  Future<void> openArtist(String key, {required int trackId}) async {
+    try {
+      final router = _router;
+      if (router == null) return;
+      final db = _db;
+      if (db == null) {
+        _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+        return;
+      }
+      if (await db.trackLinks(trackId) == null) {
+        _say(AppSnackBarKind.warning, _l10n.libraryTrackGone);
+        return;
+      }
+      router.go(artistLocation(key));
+    } catch (error, stack) {
+      _log.severe('A song menu action failed', error, stack);
+      _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+    }
+  }
+
   Future<void> _showArtist(
     GoRouter router,
     List<({String key, String name})> artists,

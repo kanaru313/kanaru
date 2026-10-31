@@ -74,6 +74,32 @@ void main() {
     expect([for (final t in onPage) t.id], [id]);
   });
 
+  group('album artists', () {
+    test('an album artist with tracks of their own is linked', () async {
+      final id = await store(artist: 'Ann', albumArtist: 'Bob');
+      await store(artist: 'Bob');
+      final links = await db.trackLinks(id);
+      expect(links!.albumArtists, [(key: 'bob', name: 'Bob')]);
+    });
+
+    test('a name found only as album artist has no page', () async {
+      final id = await store(artist: 'Ann', albumArtist: 'Bob');
+      expect((await db.trackLinks(id))!.albumArtists, isEmpty);
+    });
+
+    test('several album artists keep the tag order', () async {
+      final id = await store(artist: 'Ann', albumArtist: 'Zed; Ann');
+      await store(artist: 'Zed');
+      final links = await db.trackLinks(id);
+      expect([for (final a in links!.albumArtists) a.name], ['Zed', 'Ann']);
+    });
+
+    test('no album artist tag gives none', () async {
+      final id = await store(artist: 'Ann');
+      expect((await db.trackLinks(id))!.albumArtists, isEmpty);
+    });
+  });
+
   group('trackMenuStateOfPath', () {
     test('reads the id and what the song links to', () async {
       final id = await store(artist: 'Ann', album: 'Al');

@@ -1,9 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../format_duration.dart';
+import 'hover_reveal_action.dart';
 import 'library_row.dart';
 import 'song_card.dart';
 import 'song_tile_cover.dart';
+
+/// Opacity of the ⋮ button while its row is neither hovered nor focused.
+const _moreRestOpacity = 0.6;
 
 /// The library song row as a plain view: an optional [number] or [leading]
 /// before the cover, then three lines (title, artist, [detail]), then the
@@ -29,6 +33,7 @@ class SongRowView extends StatelessWidget {
     this.leading,
     this.trailing,
     this.heart,
+    this.more,
     this.badge,
     this.overlay,
     this.semanticsHint,
@@ -65,6 +70,10 @@ class SongRowView extends StatelessWidget {
 
   /// Put under the duration, e.g. a `FavoriteButton`.
   final Widget? heart;
+
+  /// The ⋮ button, after the heart column. Dimmer at rest, full while the
+  /// row is hovered or focused; it stays visible and in the focus order.
+  final Widget? more;
 
   /// Drawn at the top of the trailing column, above the duration, e.g. a
   /// listen count. The caller styles it with `labelSmall`: the column fits the
@@ -113,7 +122,7 @@ class SongRowView extends StatelessWidget {
 
     // The card's Material paints the fill; ink of this InkWell paints over
     // it, so the fill cannot hide hover and splash.
-    Widget row = InkWell(
+    Widget buildRow(bool revealed) => InkWell(
       onTap: onTap,
       customBorder: songCardShape,
       child: LibraryRowLayout(
@@ -150,14 +159,25 @@ class SongRowView extends StatelessWidget {
             libraryRowLine(detail, styles.detail),
           ],
         ),
-        trailing: trailing == null
+        trailing: trailing == null && more == null
             ? trailingColumn
             : Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [trailingColumn, trailing],
+                children: [
+                  trailingColumn,
+                  if (more != null)
+                    Opacity(
+                      opacity: revealed ? 1 : _moreRestOpacity,
+                      child: more,
+                    ),
+                  ?trailing,
+                ],
               ),
       ),
     );
+    Widget row = more == null
+        ? buildRow(true)
+        : HoverRevealAction(builder: (_, revealed) => buildRow(revealed));
     final hint = semanticsHint;
     if (hint != null) row = Semantics(hint: hint, child: row);
     final overlay = this.overlay;

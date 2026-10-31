@@ -4056,5 +4056,70 @@
   "contextModalComingSoonSnack": "This isn't available yet. It's coming soon.",
   "@contextModalComingSoonSnack": {
     "description": "Snackbar after tapping a menu action that is not available yet"
+  },
+  "songModalLabel": "Song options",
+  "@songModalLabel": {
+    "description": "Screen reader name of the song options dialog"
+  },
+  "songModalMoreOptions": "More options",
+  "@songModalMoreOptions": {
+    "description": "Tooltip of the button at the end of a song row that opens the song options"
+  },
+  "songModalGoToAlbum": "Go to album",
+  "@songModalGoToAlbum": {
+    "description": "Song options row that opens the album page"
+  },
+  "songModalGoToArtist": "Go to artist",
+  "@songModalGoToArtist": {
+    "description": "Song options row that opens the artist page"
+  },
+  "songModalGoToAlbumArtist": "Go to album artist",
+  "@songModalGoToAlbumArtist": {
+    "description": "Song options row that opens the page of the album's artist"
+  },
+  "songModalGoToFolder": "Go to folder",
+  "@songModalGoToFolder": {
+    "description": "Song options row that opens the folder page of the song"
+  },
+  "songModalNoAlbum": "No album",
+  "@songModalNoAlbum": {
+    "description": "Quiet line under a disabled Go to album row"
+  },
+  "songModalNoArtist": "No artist",
+  "@songModalNoArtist": {
+    "description": "Quiet line under a disabled Go to artist row"
+  },
+  "songModalUnknownAlbum": "Unknown album",
+  "@songModalUnknownAlbum": {
+    "description": "Album line in the header of the song options when the song has no album"
+  },
+  "songModalEditTags": "Edit tags",
+  "@songModalEditTags": {
+    "description": "Song options row (not available yet) that edits the tags of the file"
+  },
+  "songModalSongInfo": "Song info",
+  "@songModalSongInfo": {
+    "description": "Song options row that opens the details of the song"
+  },
+  "songModalAdvanced": "Advanced",
+  "@songModalAdvanced": {
+    "description": "Song options row that opens a page of less common actions; also its title"
+  },
+  "songModalRemoveFromLibrary": "Remove from library",
+  "@songModalRemoveFromLibrary": {
+    "description": "Advanced song option (not available yet) that takes the song out of the library"
+  },
+  "songModalDeleteFile": "Delete file from disk",
+  "@songModalDeleteFile": {
+    "description": "Advanced song option (not available yet) that deletes the file"
+  },
+  "songModalArtistsCount": "{count, plural, =1{1 artist} other{{count} artists}}",
+  "@songModalArtistsCount": {
+    "description": "Quiet line under the Go to artist row of a song with several artists",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

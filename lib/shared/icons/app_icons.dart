@@ -38,6 +38,8 @@ abstract final class AppIcons {
   static const IconData artist = Icons.person;
   static const IconData artistOutline = Icons.person_outline;
   static const IconData artistRounded = Icons.person_rounded;
+  static const IconData artists = Icons.group_outlined;
+  static const IconData albumArtist = Icons.account_box_outlined;
   static const IconData genre = Icons.category;
   static const IconData genreOutlined = Icons.category_outlined;
   static const IconData folder = Icons.folder;
@@ -98,6 +100,10 @@ abstract final class AppIcons {
   static const IconData closeRounded = Icons.close_rounded;
   static const IconData refresh = Icons.refresh;
   static const IconData edit = Icons.edit_outlined;
+  static const IconData editTags = Icons.edit_note_outlined;
+  static const IconData advanced = Icons.code;
+  static const IconData infoOutline = Icons.info_outline;
+  static const IconData removeFromLibrary = Icons.playlist_remove;
   static const IconData deleteOutline = Icons.delete_outline;
   static const IconData deleteRounded = Icons.delete_rounded;
   static const IconData clearAll = Icons.delete_sweep_rounded;

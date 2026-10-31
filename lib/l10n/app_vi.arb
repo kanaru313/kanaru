@@ -1719,5 +1719,20 @@
   "contextModalClose": "Đóng",
   "contextModalLabel": "Menu",
   "contextModalComingSoon": "Sắp có",
-  "contextModalComingSoonSnack": "Tính năng này chưa có. Sắp ra mắt."
+  "contextModalComingSoonSnack": "Tính năng này chưa có. Sắp ra mắt.",
+  "songModalLabel": "Tùy chọn bài hát",
+  "songModalMoreOptions": "Tùy chọn khác",
+  "songModalGoToAlbum": "Đi tới album",
+  "songModalGoToArtist": "Đi tới nghệ sĩ",
+  "songModalGoToAlbumArtist": "Đi tới nghệ sĩ album",
+  "songModalGoToFolder": "Đi tới thư mục",
+  "songModalNoAlbum": "Không có album",
+  "songModalNoArtist": "Không có nghệ sĩ",
+  "songModalUnknownAlbum": "Album không rõ",
+  "songModalEditTags": "Chỉnh sửa thẻ",
+  "songModalSongInfo": "Thông tin bài hát",
+  "songModalAdvanced": "Nâng cao",
+  "songModalRemoveFromLibrary": "Loại khỏi thư viện",
+  "songModalDeleteFile": "Xoá tệp khỏi ổ đĩa",
+  "songModalArtistsCount": "{count, plural, other{{count} nghệ sĩ}}"
 }

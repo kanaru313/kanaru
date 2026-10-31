@@ -6284,19 +6284,19 @@ abstract class AppLocalizations {
   /// **'Open'**
   String get lyricsStoreItemOpenInstalled;
 
-  /// Back button of a sub-page in the song menu
+  /// Back button of a sub-page in a context menu
   ///
   /// In en, this message translates to:
   /// **'Back'**
   String get contextModalBack;
 
-  /// Closes the song menu; also the label of its dismiss area
+  /// Closes the menu; also the label of its dismiss area
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get contextModalClose;
 
-  /// Screen reader name of the opened menu dialog
+  /// Screen reader name of the opened context menu dialog
   ///
   /// In en, this message translates to:
   /// **'Menu'**
@@ -6313,6 +6313,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This isn\'t available yet. It\'s coming soon.'**
   String get contextModalComingSoonSnack;
+
+  /// Screen reader name of the song options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Song options'**
+  String get songModalLabel;
+
+  /// Tooltip of the button at the end of a song row that opens the song options
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get songModalMoreOptions;
+
+  /// Song options row that opens the album page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to album'**
+  String get songModalGoToAlbum;
+
+  /// Song options row that opens the artist page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to artist'**
+  String get songModalGoToArtist;
+
+  /// Song options row that opens the page of the album's artist
+  ///
+  /// In en, this message translates to:
+  /// **'Go to album artist'**
+  String get songModalGoToAlbumArtist;
+
+  /// Song options row that opens the folder page of the song
+  ///
+  /// In en, this message translates to:
+  /// **'Go to folder'**
+  String get songModalGoToFolder;
+
+  /// Quiet line under a disabled Go to album row
+  ///
+  /// In en, this message translates to:
+  /// **'No album'**
+  String get songModalNoAlbum;
+
+  /// Quiet line under a disabled Go to artist row
+  ///
+  /// In en, this message translates to:
+  /// **'No artist'**
+  String get songModalNoArtist;
+
+  /// Album line in the header of the song options when the song has no album
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown album'**
+  String get songModalUnknownAlbum;
+
+  /// Song options row (not available yet) that edits the tags of the file
+  ///
+  /// In en, this message translates to:
+  /// **'Edit tags'**
+  String get songModalEditTags;
+
+  /// Song options row that opens the details of the song
+  ///
+  /// In en, this message translates to:
+  /// **'Song info'**
+  String get songModalSongInfo;
+
+  /// Song options row that opens a page of less common actions; also its title
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get songModalAdvanced;
+
+  /// Advanced song option (not available yet) that takes the song out of the library
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from library'**
+  String get songModalRemoveFromLibrary;
+
+  /// Advanced song option (not available yet) that deletes the file
+  ///
+  /// In en, this message translates to:
+  /// **'Delete file from disk'**
+  String get songModalDeleteFile;
+
+  /// Quiet line under the Go to artist row of a song with several artists
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 artist} other{{count} artists}}'**
+  String songModalArtistsCount(int count);
 }
 
 class _AppLocalizationsDelegate

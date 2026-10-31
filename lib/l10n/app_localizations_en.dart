@@ -4257,4 +4257,57 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contextModalComingSoonSnack =>
       'This isn\'t available yet. It\'s coming soon.';
+
+  @override
+  String get songModalLabel => 'Song options';
+
+  @override
+  String get songModalMoreOptions => 'More options';
+
+  @override
+  String get songModalGoToAlbum => 'Go to album';
+
+  @override
+  String get songModalGoToArtist => 'Go to artist';
+
+  @override
+  String get songModalGoToAlbumArtist => 'Go to album artist';
+
+  @override
+  String get songModalGoToFolder => 'Go to folder';
+
+  @override
+  String get songModalNoAlbum => 'No album';
+
+  @override
+  String get songModalNoArtist => 'No artist';
+
+  @override
+  String get songModalUnknownAlbum => 'Unknown album';
+
+  @override
+  String get songModalEditTags => 'Edit tags';
+
+  @override
+  String get songModalSongInfo => 'Song info';
+
+  @override
+  String get songModalAdvanced => 'Advanced';
+
+  @override
+  String get songModalRemoveFromLibrary => 'Remove from library';
+
+  @override
+  String get songModalDeleteFile => 'Delete file from disk';
+
+  @override
+  String songModalArtistsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count artists',
+      one: '1 artist',
+    );
+    return '$_temp0';
+  }
 }

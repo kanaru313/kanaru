@@ -80,17 +80,21 @@ void main() {
     expect(queue.current?.title, 'b');
   });
 
-  testWidgets('a right click opens the song menu', (tester) async {
-    final h = LibraryHarness(overrides: [listViewModesOverride]);
-    await openWithTracks(tester, h, tracks, location: '/songs');
-    await toGrid(tester);
+  testWidgets(
+    'a right click opens the song modal and the card has no More options button',
+    (tester) async {
+      final h = LibraryHarness(overrides: [listViewModesOverride]);
+      await openWithTracks(tester, h, tracks, location: '/songs');
+      await toGrid(tester);
 
-    await tester.tap(find.text('a'), buttons: kSecondaryButton);
-    await tester.pumpAndSettle();
+      expect(find.byTooltip('More options'), findsNothing);
+      await tester.tap(find.text('a'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
 
-    expect(find.text('Show album'), findsOneWidget);
-    expect(find.text('Play next'), findsOneWidget);
-  });
+      expect(find.text('Go to album'), findsOneWidget);
+      expect(find.text('Play next'), findsOneWidget);
+    },
+  );
 
   testWidgets('a large library reads only the tiles in view', (tester) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
