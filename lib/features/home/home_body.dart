@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_database.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/library_route_keys.dart';
+import '../../shared/widgets/library_grid/library_grid_card.dart';
 import 'home_added_window_chips.dart';
 import 'home_data_version.dart';
 import 'home_album_card.dart';
@@ -111,6 +112,8 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
         async,
         (_, items, i) => HomeTrackCard(row: items, index: i),
         emptyText: emptyText,
+        height: homeTrackShelfHeight,
+        placeholder: const LibraryGridCardPlaceholder(),
       );
 
   /// The row for [async]: the last rows read (kept while reading again or
@@ -120,13 +123,16 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
     AsyncValue<List<T>> async,
     Widget Function(BuildContext, List<T>, int) card, {
     String? emptyText,
+    double Function(BuildContext)? height,
+    Widget placeholder = const HomeCardPlaceholder(),
   }) {
     final items = async.value;
     if (items == null) {
       if (!async.isLoading) return const SizedBox(height: 8);
       return HomeShelf(
         itemCount: _placeholderCount,
-        itemBuilder: (_, _) => const HomeCardPlaceholder(),
+        height: height,
+        itemBuilder: (_, _) => placeholder,
       );
     }
     if (items.isEmpty) {
@@ -136,6 +142,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
     }
     return HomeShelf(
       itemCount: items.length,
+      height: height,
       itemBuilder: (context, i) => card(context, items, i),
     );
   }

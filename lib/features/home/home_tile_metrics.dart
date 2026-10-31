@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/widgets/library_grid/library_grid_card.dart';
+import '../../shared/widgets/library_grid/song_grid_tile.dart';
+
 /// Padding around the content of a shelf card and the gap between the picture
 /// and the text; separate from the album grid tile's card.
 const homeCardPadding = 8.0;
@@ -30,6 +33,19 @@ double homeShelfTileHeight(BuildContext context) {
       2 +
       homeCardPadding * 2;
 }
+
+/// Space between a shelf cell's edge and a grid card's content: the card's
+/// margin plus its padding.
+const homeGridCardInset = libraryGridCardMargin + libraryGridCardPadding;
+
+/// Cover side of a grid card in a shelf cell. Equals [homeCardPictureSize], so
+/// `HomeShelf.arrowTop` holds for every shelf.
+const homeGridCardCoverSize = homeShelfTileWidth - homeGridCardInset * 2;
+
+/// Height of a shelf of song grid cards at the current text scale.
+double homeTrackShelfHeight(BuildContext context) =>
+    SongGridTile.heightFor(context, homeGridCardCoverSize) +
+    homeGridCardInset * 2;
 
 /// A card whose data is still being read: the picture's square in the
 /// placeholder color, nothing else.
