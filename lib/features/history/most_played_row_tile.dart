@@ -4,7 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/history_rows.dart';
 import '../../core/player/playing_track_path.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/menu_keyboard_region.dart';
+import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_row_view.dart';
 import '../../shared/widgets/song_tile.dart';
 
@@ -13,8 +15,10 @@ import '../../shared/widgets/song_tile.dart';
 /// above the duration. A song no longer in the library shows its file name,
 /// is dimmed and does not play.
 ///
-/// The menu opens on a right click, a long press and the Menu key, through
-/// [onMenu] with the pointer position (the row's start for the key).
+/// A row in the library opens the song modal (right click, long press, Menu
+/// key, Shift+F10 or the ⋮ button) with [modalExtras]. A missing file has no
+/// song modal: its small menu opens through [onMenu] with the pointer position
+/// (the row's start for the key).
 class MostPlayedRowTile extends ConsumerWidget {
   const MostPlayedRowTile({
     super.key,
@@ -22,6 +26,8 @@ class MostPlayedRowTile extends ConsumerWidget {
     required this.row,
     required this.onTap,
     required this.onMenu,
+    required this.onQueueAction,
+    required this.modalExtras,
   });
 
   /// Place in the ranking, from 1; kept while a filter hides other rows.
@@ -33,6 +39,12 @@ class MostPlayedRowTile extends ConsumerWidget {
 
   /// Opens the menu with its corner at the given global position.
   final ValueChanged<Offset> onMenu;
+
+  /// Queue action picked in the song modal of a row in the library.
+  final ValueChanged<QueueAction> onQueueAction;
+
+  /// Song history and the listen count note, built when the modal opens.
+  final SongModalExtrasBuilder modalExtras;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,33 +78,35 @@ class MostPlayedRowTile extends ConsumerWidget {
       ),
     );
 
+    if (track != null) {
+      return SongTile(
+        song: track,
+        onTap: onTap,
+        leadingAccessory: number,
+        badge: badge,
+        onQueueAction: onQueueAction,
+        modalExtras: modalExtras,
+      );
+    }
     // A missing song has no ink well to take focus, so it is a focus stop of
     // its own: the Menu key needs focus inside the region.
-    final Widget content = track == null
-        ? Focus(
-            child: Opacity(
-              opacity: 0.6,
-              child: SongRowView(
-                leading: number,
-                title: row.path.split('/').last,
-                artist: l10n.historyTrackMissing,
-                badge: badge,
-              ),
-            ),
-          )
-        : SongTile(
-            song: track,
-            onTap: onTap,
-            leadingAccessory: number,
-            badge: badge,
-          );
     return MenuKeyboardRegion(
       onOpen: onMenu,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onSecondaryTapUp: (d) => onMenu(d.globalPosition),
         onLongPressStart: (d) => onMenu(d.globalPosition),
-        child: content,
+        child: Focus(
+          child: Opacity(
+            opacity: 0.6,
+            child: SongRowView(
+              leading: number,
+              title: row.path.split('/').last,
+              artist: l10n.historyTrackMissing,
+              badge: badge,
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -87,8 +87,7 @@ void main() {
   ) async {
     final id = await openMix(tester, h);
 
-    await hoverRow(tester, 1);
-    await tester.tap(find.byTooltip('Remove from playlist').at(1));
+    await removeRowViaModal(tester, 1);
     await tester.pump();
     final frames = await framesUntil(tester, id, 3, '4 songs');
 
@@ -123,8 +122,7 @@ void main() {
     expect(gate.count(moveStatement), 1);
     expect(shownTitles(tester), ['Bravo', 'Charlie', 'Alpha', 'Delta']);
 
-    await hoverRow(tester, 1);
-    await tester.tap(find.byTooltip('Remove from playlist').at(1)); // Charlie
+    await removeRowViaModal(tester, 1); // Charlie
     await tester.pump();
     await letDbRun(tester);
     expect(shownTitles(tester), ['Bravo', 'Alpha', 'Delta']);
@@ -155,8 +153,7 @@ void main() {
       await letDbRun(tester);
       expect(failing.held, isTrue, reason: 'the move is held in the database');
 
-      await hoverRow(tester, 1);
-      await tester.tap(find.byTooltip('Remove from playlist').at(1)); // Charlie
+      await removeRowViaModal(tester, 1); // Charlie
       await tester.pump();
       expect(shownTitles(tester), ['Bravo', 'Alpha', 'Delta']);
 
@@ -184,8 +181,7 @@ void main() {
     final id = await openMix(tester, h);
     await breakWrites(tester, h, 'playlist_entries', 'DELETE');
 
-    await hoverRow(tester, 1);
-    await tester.tap(find.byTooltip('Remove from playlist').at(1));
+    await removeRowViaModal(tester, 1);
     await tester.pump();
     await settleDb(tester);
 

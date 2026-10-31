@@ -64,6 +64,7 @@ abstract final class AppIcons {
   static const IconData playlistOutlined = Icons.queue_music_outlined;
   static const IconData queue = Icons.queue_music_rounded;
   static const IconData playlistPlay = Icons.playlist_play;
+  static const IconData playlistRemove = Icons.playlist_remove;
   static const IconData addToQueue = Icons.playlist_add;
   static const IconData newPlaylist = Icons.playlist_add;
   static const IconData playlistAddRounded = Icons.playlist_add_rounded;

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_rows.dart';
 import '../song_modal/open_song_modal.dart';
+import '../song_modal/song_modal_extras.dart';
 import 'menu_keyboard_region.dart';
 import 'queue_actions_menu.dart';
 
@@ -17,6 +18,7 @@ class TrackActionsRegion extends ConsumerWidget {
     required this.onQueueAction,
     required this.child,
     this.showAlbum = true,
+    this.modalExtras,
   });
 
   final TrackListItem song;
@@ -25,6 +27,9 @@ class TrackActionsRegion extends ConsumerWidget {
 
   /// False on a page of the song's own album.
   final bool showAlbum;
+
+  /// Screen actions and note, built when the modal opens.
+  final SongModalExtrasBuilder? modalExtras;
 
   // Opens in the gesture handler itself: nothing is awaited first.
   void _open(
@@ -39,6 +44,7 @@ class TrackActionsRegion extends ConsumerWidget {
     onQueueAction: f,
     showAlbum: showAlbum,
     viaKeyboard: viaKeyboard,
+    extras: modalExtras?.call() ?? const SongModalExtras(),
   );
 
   @override

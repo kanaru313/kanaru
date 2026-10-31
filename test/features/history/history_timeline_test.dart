@@ -5,11 +5,14 @@ import 'package:kanaru/core/database/library_database.dart' show PlaysCompanion;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_day_header.dart';
 import 'package:kanaru/features/history/history_play_row_tile.dart';
+import 'package:kanaru/features/history/history_routes.dart'
+    show historyTrackLocation;
 import 'package:kanaru/features/history/history_timeline_view.dart';
 import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:kanaru/shared/widgets/song_row_view.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int day, [int hour = 9, int minute = 0, int month = 10]) =>
@@ -178,7 +181,19 @@ void main() {
           matching: find.byType(Opacity),
         );
         expect(tester.widget<Opacity>(opacities('gone.flac')).opacity, 0.6);
-        expect(opacities('A'), findsNothing);
+        // The row in the library is not dimmed: no Opacity above its title
+        // (the scope is the tile: the ⋮ button has its own Opacity, not above
+        // the title).
+        expect(
+          find.ancestor(
+            of: find.text('A'),
+            matching: find.descendant(
+              of: find.byType(HistoryPlayRowTile),
+              matching: find.byType(Opacity),
+            ),
+          ),
+          findsNothing,
+        );
       },
     );
   });
@@ -267,9 +282,9 @@ void main() {
         );
 
         await tester.tap(find.text('B'), buttons: kSecondaryButton);
-        await tester.pumpAndSettle();
+        await settleSongModal(tester);
         await tester.tap(find.text('Play next'));
-        await tester.pumpAndSettle();
+        await settleSongModal(tester);
 
         // B is the newest, the first row.
         expect(_queue(h), ['/m/B.flac']);
@@ -285,11 +300,16 @@ void main() {
       );
 
       await tester.tap(find.text('A'), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
+      await settleSongModal(tester);
 
+      expect(find.bySemanticsLabel('Song options'), findsWidgets);
       expect(find.text('Remove from history'), findsOneWidget);
       expect(find.text('Add to queue'), findsOneWidget);
       expect(find.text('Song history'), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
+      // Both extras come before Go to artist.
+      final extra = tester.getTopLeft(modalAction('song-history')).dy;
+      expect(extra, lessThan(tester.getTopLeft(modalAction('artist')).dy));
     });
 
     historyTestWidgets('a long press opens the menu', (tester) async {
@@ -301,12 +321,31 @@ void main() {
       );
 
       await tester.longPress(find.text('A'));
-      await tester.pumpAndSettle();
+      await settleSongModal(tester);
 
       expect(find.text('Remove from history'), findsOneWidget);
+      expect(find.bySemanticsLabel('Song options'), findsWidgets);
     });
 
-    historyTestWidgets('rows have no more button', (tester) async {
+    historyTestWidgets('Song history in the modal opens the history page of '
+        'the song', (tester) async {
+      await openHistory(
+        tester,
+        h,
+        tracks: [song('A')],
+        plays: [('A', _at(23, 9))],
+      );
+      await tester.tap(find.text('A'), buttons: kSecondaryButton);
+      await settleSongModal(tester);
+
+      await tester.tap(find.text('Song history'));
+      await settleSongModal(tester);
+
+      expect(location(h), historyTrackLocation('/m/A.flac'));
+      expect(find.text('Song history'), findsNothing);
+    });
+
+    historyTestWidgets('the more button opens the modal', (tester) async {
       await openHistory(
         tester,
         h,
@@ -314,7 +353,117 @@ void main() {
         plays: [('A', _at(23, 9))],
       );
 
-      expect(find.byTooltip('More'), findsNothing);
+      await tester.tap(find.byTooltip('More options'));
+      await settleSongModal(tester);
+
+      expect(find.text('Remove from history'), findsOneWidget);
+      expect(find.text('Song history'), findsOneWidget);
+    });
+
+    for (final shift in [false, true]) {
+      historyTestWidgets(
+        '${shift ? 'Shift+F10' : 'the Menu key'} opens the modal',
+        (tester) async {
+          await openHistory(
+            tester,
+            h,
+            tracks: [song('A')],
+            plays: [('A', _at(23, 9))],
+          );
+          // The row's own ink well takes focus under the key handler.
+          final ink = find.descendant(
+            of: find.byType(SongRowView),
+            matching: find.byType(InkWell),
+          );
+          final inside = find.descendant(
+            of: find
+                .descendant(of: ink.first, matching: find.byType(Focus))
+                .first,
+            matching: find.byType(Semantics),
+          );
+          Focus.of(tester.element(inside.first)).requestFocus();
+          await tester.pump();
+
+          if (shift) {
+            await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+          }
+          await tester.sendKeyEvent(
+            shift ? LogicalKeyboardKey.f10 : LogicalKeyboardKey.contextMenu,
+          );
+          if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+          await settleSongModal(tester);
+
+          expect(find.text('Remove from history'), findsOneWidget);
+          expect(
+            find.byWidgetPredicate((w) => w is PopupMenuItem),
+            findsNothing,
+          );
+        },
+      );
+    }
+
+    historyTestWidgets('a narrow row with the listen badge and the more button '
+        'does not overflow', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await openHistory(
+        tester,
+        h,
+        tracks: [song('A')],
+        plays: [('A', _at(23, 9)), ('A', _at(23, 10))],
+      );
+
+      expect(find.byTooltip('More options'), findsNWidgets(2));
+      expect(find.text('#2'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    historyTestWidgets('a row gone from the library keeps the small menu and '
+        'no more button', (tester) async {
+      await openHistory(tester, h, plays: [('gone', _at(23, 9))]);
+
+      expect(find.byTooltip('More options'), findsNothing);
+      await tester.tap(find.text('gone.flac'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsWidgets);
+      expect(find.bySemanticsLabel('Song options'), findsNothing);
+    });
+
+    historyTestWidgets('Remove takes the play the modal was opened on, even '
+        'after a newer play arrived', (tester) async {
+      await openHistory(
+        tester,
+        h,
+        tracks: [song('A'), song('B')],
+        plays: [('A', _at(23, 9)), ('B', _at(23, 10))],
+      );
+      await tester.tap(find.text('B'), buttons: kSecondaryButton);
+      await settleSongModal(tester);
+
+      await tester.runAsync(() async {
+        final paths = await h.db.select(h.db.tracks).get();
+        final c = paths.first;
+        await h.db
+            .into(h.db.plays)
+            .insert(
+              PlaysCompanion.insert(
+                path: c.path,
+                playedAt: _at(23, 11).millisecondsSinceEpoch,
+              ),
+            );
+      });
+      await tester.tap(find.text('Remove from history'));
+      await settleSongModal(tester);
+      await settleHistory(tester);
+
+      final plays = await tester.runAsync(() => h.db.select(h.db.plays).get());
+      expect(
+        plays!.map((p) => p.playedAt),
+        isNot(contains(_at(23, 10).millisecondsSinceEpoch)),
+      );
+      expect(plays, hasLength(2));
     });
 
     historyTestWidgets('a song gone from the library cannot be queued', (

@@ -5,6 +5,7 @@ import '../../core/database/library_database.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../core/player/playing_track_path.dart';
+import '../song_modal/song_modal_extras.dart';
 import '../song_modal/song_more_button.dart';
 import 'favorite_button.dart';
 import 'library_row.dart';
@@ -38,6 +39,7 @@ class SongTile extends ConsumerWidget {
     this.detail,
     this.badge,
     this.highlightPlaying = true,
+    this.modalExtras,
   }) : assert(
          number == null || leadingAccessory == null,
          'number and leadingAccessory both fill the slot before the cover',
@@ -79,6 +81,9 @@ class SongTile extends ConsumerWidget {
   /// playing track in a list where the same song repeats.
   final bool highlightPlaying;
 
+  /// Screen actions and note for the song modal, built when it opens.
+  final SongModalExtrasBuilder? modalExtras;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playing =
@@ -90,6 +95,7 @@ class SongTile extends ConsumerWidget {
       song: song,
       showAlbum: showAlbum,
       onQueueAction: onQueue,
+      modalExtras: modalExtras,
       child: SongRowView(
         title: song.title,
         artist: song.artist,
@@ -113,6 +119,7 @@ class SongTile extends ConsumerWidget {
                 song: song,
                 onQueueAction: onQueue,
                 showAlbum: showAlbum,
+                modalExtras: modalExtras,
                 color: playing
                     ? Theme.of(context).colorScheme.onPrimaryContainer
                     : null,

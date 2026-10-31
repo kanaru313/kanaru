@@ -38,6 +38,7 @@ void main() {
     expect(shownTitles(tester), ['a', 'b']);
     expect(find.byIcon(AppIcons.dragHandle), findsNWidgets(2));
     expect(find.byTooltip('Remove from playlist'), findsNothing);
+    await expectRowModalRemove(tester, 0, present: false);
     expect(find.text('1'), findsNothing);
     expect(rowHeart(0), findsOneWidget);
   });

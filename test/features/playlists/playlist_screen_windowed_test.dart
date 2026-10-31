@@ -142,13 +142,7 @@ void main() {
     await scrollToRow(tester, 150);
 
     final row = find.widgetWithText(PlaylistEntryTile, 'S150');
-    await hoverOn(tester, row);
-    await tester.tap(
-      find.descendant(
-        of: row,
-        matching: find.byTooltip('Remove from playlist'),
-      ),
-    );
+    await removeRowOf(tester, row);
     await settleDb(tester);
 
     final titles = shownTitles(tester);

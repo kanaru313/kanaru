@@ -1,11 +1,14 @@
 import 'dart:ui' show PointerDeviceKind;
 
+import 'package:flutter/gestures.dart' show kSecondaryButton;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/playlist_details.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 
@@ -175,3 +178,37 @@ Finder playlistSongCount(String text) => find.descendant(
   of: find.byType(PlaylistDetails),
   matching: find.text(text),
 );
+
+/// Removes row [index] the way a user does: opens its song modal with a right
+/// click and taps Remove from playlist. Leaves the frame right after the tap.
+Future<void> removeRowViaModal(WidgetTester tester, int index) =>
+    removeRowOf(tester, find.byType(PlaylistEntryTile).at(index));
+
+/// Same as [removeRowViaModal] for the row [row].
+Future<void> removeRowOf(WidgetTester tester, Finder row) async {
+  await tester.tap(row, buttons: kSecondaryButton);
+  await settleSongModal(tester);
+  await tester.tap(find.text('Remove from playlist'));
+  await tester.pump();
+}
+
+/// Opens the song modal of row [index], checks whether it holds Remove from
+/// playlist, and closes it with Esc.
+Future<void> expectRowModalRemove(
+  WidgetTester tester,
+  int index, {
+  required bool present,
+}) async {
+  await tester.tap(
+    find.byType(PlaylistEntryTile).at(index),
+    buttons: kSecondaryButton,
+  );
+  await settleSongModal(tester);
+  expect(find.text('Go to artist'), findsOneWidget, reason: 'modal is open');
+  expect(
+    modalAction('remove-from-playlist'),
+    present ? findsOneWidget : findsNothing,
+  );
+  await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+  await settleSongModal(tester);
+}

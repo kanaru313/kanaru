@@ -39,6 +39,7 @@ class SongModalSession {
     required this.lyricsTarget,
     this.showAlbum = true,
     this.extraActions = const [],
+    this.headerNote,
   });
 
   final TrackListItem song;
@@ -56,6 +57,9 @@ class SongModalSession {
   /// Actions of the screen the song is listed on (remove from the queue, ...),
   /// shown before the links.
   final List<ContextModalAction> extraActions;
+
+  /// Quiet line the screen adds under the album in the header; null for none.
+  final String? headerNote;
 
   void _run(TrackMenuChoice choice) => unawaited(
     runner.run(

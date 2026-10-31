@@ -5,6 +5,7 @@ import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/song_modal/open_song_modal.dart';
+import 'package:kanaru/shared/song_modal/song_modal_extras.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
@@ -31,7 +32,7 @@ Future<void> _pump(
               ref,
               song: _song,
               onQueueAction: onQueue ?? (_) {},
-              extraActions: extra,
+              extras: SongModalExtras(actions: extra),
             ),
             child: const Text('open'),
           ),

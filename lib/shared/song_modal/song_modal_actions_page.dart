@@ -22,6 +22,7 @@ ContextModalPage songModalActionsPage(SongModalSession session) {
     key: 'song-actions',
     headerBuilder: (context, nav) => SongModalHeader(
       song: session.song,
+      note: session.headerNote,
       onTap: () => nav.push(songInfoPage(session)),
     ),
     bodyBuilder: (context, nav) => [

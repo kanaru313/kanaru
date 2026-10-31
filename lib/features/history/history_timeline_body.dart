@@ -203,6 +203,8 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
       rowsOf: _cache.rowsOf,
       onTap: playFromRow,
       onMenu: openPlayMenu,
+      onQueueAction: playQueueAction,
+      playExtras: playExtras,
       onDayMenu: openDayMenu,
       olderYear: widget.olderYear,
       onOlderYear: widget.onOlderYear,

@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/song_modal/song_modal_extras.dart';
+import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile_placeholder.dart';
 import 'history_day_header.dart';
 import 'history_line_metrics.dart';
@@ -31,6 +33,8 @@ class HistoryTimelineView extends StatelessWidget {
     required this.rowsOf,
     required this.onTap,
     required this.onMenu,
+    required this.onQueueAction,
+    required this.playExtras,
     required this.onDayMenu,
     this.olderYear,
     this.onOlderYear,
@@ -47,6 +51,12 @@ class HistoryTimelineView extends StatelessWidget {
 
   /// A play's menu was asked for at the given global position.
   final void Function(HistoryPlayRow row, Offset position) onMenu;
+
+  /// Queue action picked in the song modal of a row.
+  final void Function(HistoryPlayRow row, QueueAction action) onQueueAction;
+
+  /// Extras of the song modal of a row, built when it opens.
+  final SongModalExtras Function(HistoryPlayRow row) playExtras;
 
   /// The menu button of a day's bar was pressed at the given global position.
   final void Function(HistoryDayCount day, Offset position) onDayMenu;
@@ -94,6 +104,8 @@ class HistoryTimelineView extends StatelessWidget {
       row: play,
       onTap: () => onTap(play, dayStart),
       onMenu: (position) => onMenu(play, position),
+      onQueueAction: (action) => onQueueAction(play, action),
+      modalExtras: () => playExtras(play),
     );
   }
 

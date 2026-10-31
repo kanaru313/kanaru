@@ -111,6 +111,8 @@ class _HistoryFilterResultsState extends ConsumerState<HistoryFilterResults>
             row: row,
             onTap: () => _play(rows, row),
             onMenu: (position) => unawaited(openPlayMenu(row, position)),
+            onQueueAction: (action) => playQueueAction(row, action),
+            modalExtras: () => playExtras(row),
           );
         },
       );

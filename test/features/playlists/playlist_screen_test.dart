@@ -65,8 +65,7 @@ void main() {
   testWidgets('removing a row keeps the positions dense', (tester) async {
     final id = await openMix(tester, h);
 
-    await hoverRow(tester, 1);
-    await tester.tap(find.byTooltip('Remove from playlist').at(1));
+    await removeRowViaModal(tester, 1);
     await settleDb(tester);
 
     expect(shownTitles(tester), ['Alpha', 'Charlie', 'Delta']);

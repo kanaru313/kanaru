@@ -243,6 +243,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
   }
 
   void _onRemove(PlaylistEntryRow entry) {
+    if (!mounted) return;
     final onRemove = widget.onRemove;
     // Looked up now, not when the row was built: another removal in the same
     // frame has moved the rows.

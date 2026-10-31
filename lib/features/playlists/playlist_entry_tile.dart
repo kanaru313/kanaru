@@ -4,7 +4,9 @@ import '../../core/database/library_rows.dart';
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/hover_reveal_action.dart';
+import '../../shared/song_modal/song_modal_data.dart';
+import '../../shared/song_modal/song_modal_extras.dart';
+import '../../shared/widgets/context_modal/context_modal_route.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile.dart';
 import 'playlist_entry_handle.dart';
@@ -26,7 +28,7 @@ const prototypePlaylistEntry = PlaylistEntryRow(
 );
 
 /// One playlist entry: the library song row with a drag handle before the
-/// cover and a remove button at the end that shows on hover or focus. An
+/// cover. With [onRemove] its song modal has a red Remove from playlist. An
 /// entry whose file is not in the library shows its file name, is dimmed and
 /// does not play ([PlaylistMissingEntryTile]).
 class PlaylistEntryTile extends StatelessWidget {
@@ -49,13 +51,13 @@ class PlaylistEntryTile extends StatelessWidget {
   /// Plays from this row; null on an entry that cannot play.
   final VoidCallback? onTap;
 
-  /// Null leaves the remove button out (a read-only list, or Favorites).
+  /// Null leaves Remove from playlist out (a read-only list, or Favorites).
   final VoidCallback? onRemove;
 
   /// Whether the drag handle shows; the list reorders only by it.
   final bool reorderable;
 
-  /// Picked from the menu of a right click or long press; no menu without it.
+  /// Picked from the song modal; no modal without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
   /// The list is Favorites: a missing entry without a remove button shows a
@@ -74,25 +76,27 @@ class PlaylistEntryTile extends StatelessWidget {
         showFavorite: favorites,
       );
     }
-    Widget song(bool revealed) => SongTile(
+    final remove = onRemove;
+    return SongTile(
       song: track,
       onTap: onTap ?? () {},
       onQueueAction: onQueueAction,
       leadingAccessory: reorderable ? PlaylistEntryHandle(index: index) : null,
-      trailingAccessory: onRemove == null
+      // Built when the modal opens, so the texts come from the row's context
+      // at that moment.
+      modalExtras: remove == null
           ? null
-          : RevealableAction(
-              revealed: revealed,
-              child: IconButton(
-                icon: const Icon(AppIcons.closeRounded),
-                iconSize: 20,
-                tooltip: context.l10n.playlistRemoveEntry,
-                onPressed: onRemove,
-              ),
+          : () => SongModalExtras(
+              actions: [
+                ContextModalAction(
+                  id: 'remove-from-playlist',
+                  icon: AppIcons.playlistRemove,
+                  label: context.l10n.playlistRemoveEntry,
+                  destructive: true,
+                  onTap: songModalCloseThen(remove),
+                ),
+              ],
             ),
     );
-    return onRemove == null
-        ? song(false)
-        : HoverRevealAction(builder: (_, revealed) => song(revealed));
   }
 }

@@ -11,6 +11,7 @@ import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int day, [int hour = 9, int month = 10, int year = 2026]) =>
@@ -224,7 +225,7 @@ void main() {
       await _filterBy(tester, 'lal');
 
       await tester.longPress(find.byType(HistoryPlayRowTile).first);
-      await tester.pumpAndSettle();
+      await settleSongModal(tester);
       expect(find.text('Add to queue'), findsOneWidget);
       await tester.tap(find.text('Remove from history'));
       await settleHistory(tester);
@@ -281,7 +282,7 @@ void main() {
         await _filterBy(tester, 'lal');
 
         await tester.longPress(find.byType(HistoryPlayRowTile).first);
-        await tester.pumpAndSettle();
+        await settleSongModal(tester);
         await tester.tap(find.text('Remove from history'));
         await settleHistory(tester);
         expect(_shownAt(tester), [_at(20)]);
