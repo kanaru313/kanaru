@@ -3295,11 +3295,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsSourcesStore => 'Kho plugin';
 
   @override
-  String get lyricsSourcesStoreSoon => 'Sắp có';
-
-  @override
   String get lyricsSourcesEmptyHint =>
-      'Chưa cài plugin nào. Bạn sẽ thêm được plugin từ Kho plugin.';
+      'Chưa cài plugin nào. Bạn có thể thêm plugin từ Kho plugin.';
 
   @override
   String get lyricsSourceBuiltIn => 'Có sẵn';
@@ -3342,6 +3339,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get pluginGone => 'Plugin này không còn được cài.';
+
+  @override
+  String pluginUpdateAvailable(int version) {
+    return 'Có bản mới v$version';
+  }
+
+  @override
+  String get pluginUpdateAction => 'Cập nhật';
+
+  @override
+  String pluginUpdateFailed(String name) {
+    return 'Không cập nhật được $name';
+  }
 
   @override
   String get pluginInfoTitle => 'Thông tin';

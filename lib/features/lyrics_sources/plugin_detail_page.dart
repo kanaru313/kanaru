@@ -19,6 +19,7 @@ import 'plugin_data_stats_provider.dart';
 import 'plugin_icon.dart';
 import 'plugin_info_section.dart';
 import 'plugin_source_text.dart';
+import 'plugin_update_banner.dart';
 import 'plugin_uninstall_dialog.dart';
 
 final _log = Logger('lyrics_sources');
@@ -160,6 +161,7 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
                   ),
                 ),
               ),
+              PluginUpdateBanner(record: record),
               PluginInfoSection(record: record),
               PluginConfigForm(record: record),
               PluginDataRows(record: record),

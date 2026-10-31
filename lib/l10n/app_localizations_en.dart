@@ -3500,11 +3500,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourcesStore => 'Plugin store';
 
   @override
-  String get lyricsSourcesStoreSoon => 'Coming soon';
-
-  @override
   String get lyricsSourcesEmptyHint =>
-      'No plugins installed yet. You will be able to add some from Plugin store.';
+      'No plugins installed yet. You can add some from Plugin store.';
 
   @override
   String get lyricsSourceBuiltIn => 'Built in';
@@ -3547,6 +3544,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pluginGone => 'This plugin is no longer installed.';
+
+  @override
+  String pluginUpdateAvailable(int version) {
+    return 'New version v$version';
+  }
+
+  @override
+  String get pluginUpdateAction => 'Update';
+
+  @override
+  String pluginUpdateFailed(String name) {
+    return 'Could not update $name';
+  }
 
   @override
   String get pluginInfoTitle => 'Details';

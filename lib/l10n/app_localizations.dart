@@ -5150,16 +5150,10 @@ abstract class AppLocalizations {
   /// **'Plugin store'**
   String get lyricsSourcesStore;
 
-  /// No description provided for @lyricsSourcesStoreSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get lyricsSourcesStoreSoon;
-
   /// No description provided for @lyricsSourcesEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'No plugins installed yet. You will be able to add some from Plugin store.'**
+  /// **'No plugins installed yet. You can add some from Plugin store.'**
   String get lyricsSourcesEmptyHint;
 
   /// No description provided for @lyricsSourceBuiltIn.
@@ -5227,6 +5221,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This plugin is no longer installed.'**
   String get pluginGone;
+
+  /// Banner on the installed plugin page when its repository lists a newer version
+  ///
+  /// In en, this message translates to:
+  /// **'New version v{version}'**
+  String pluginUpdateAvailable(int version);
+
+  /// Button of the update banner on the installed plugin page
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get pluginUpdateAction;
+
+  /// Snackbar title when updating an installed plugin failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update {name}'**
+  String pluginUpdateFailed(String name);
 
   /// No description provided for @pluginInfoTitle.
   ///

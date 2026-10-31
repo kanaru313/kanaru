@@ -3189,8 +3189,7 @@
   "lyricsSourcesRowNoneOn": "Every source is off",
   "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically; Choose lyrics searches every enabled source. Drag the handle to change the order.",
   "lyricsSourcesStore": "Plugin store",
-  "lyricsSourcesStoreSoon": "Coming soon",
-  "lyricsSourcesEmptyHint": "No plugins installed yet. You will be able to add some from Plugin store.",
+  "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from Plugin store.",
   "lyricsSourceBuiltIn": "Built in",
   "lyricsSourceBuiltInHosts": "Built in · {hosts}",
   "@lyricsSourceBuiltInHosts": {
@@ -3234,6 +3233,28 @@
   "lyricsSourcesMenuGuide": "Plugin writing guide",
   "pluginUninstall": "Uninstall plugin",
   "pluginGone": "This plugin is no longer installed.",
+  "pluginUpdateAvailable": "New version v{version}",
+  "@pluginUpdateAvailable": {
+    "description": "Banner on the installed plugin page when its repository lists a newer version",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginUpdateAction": "Update",
+  "@pluginUpdateAction": {
+    "description": "Button of the update banner on the installed plugin page"
+  },
+  "pluginUpdateFailed": "Could not update {name}",
+  "@pluginUpdateFailed": {
+    "description": "Snackbar title when updating an installed plugin failed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "pluginInfoTitle": "Details",
   "pluginInfoSource": "Installed from",
   "pluginInfoHosts": "Can only connect to",

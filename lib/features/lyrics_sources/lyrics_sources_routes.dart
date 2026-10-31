@@ -8,7 +8,14 @@ import 'plugin_detail_page.dart';
 /// installed plugin. Relative paths (go_router rejects a leading `/` on a
 /// nested route); joined they are [lyricsSourcesRoute] and
 /// [lyricsPluginRoutePattern], which a test keeps equal.
-final List<RouteBase> lyricsSourcesRoutes = [
+final List<RouteBase> lyricsSourcesRoutes = lyricsSourcesRoutesWith();
+
+/// [lyricsSourcesRoutes] with [children] nested under the sources page, next
+/// to the plugin page. The app's router passes the plugin store's pages here:
+/// this feature does not know the store.
+List<RouteBase> lyricsSourcesRoutesWith({
+  List<RouteBase> children = const [],
+}) => [
   GoRoute(
     path: lyricsSourcesRoute.substring('/settings/'.length),
     builder: (context, state) => const LyricsSourcesPage(),
@@ -19,6 +26,7 @@ final List<RouteBase> lyricsSourcesRoutes = [
           installId: state.pathParameters[lyricsPluginIdParam]!,
         ),
       ),
+      ...children,
     ],
   ),
 ];

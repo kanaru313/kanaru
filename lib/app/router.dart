@@ -21,6 +21,7 @@ import '../features/library/languages/languages_routes.dart';
 import '../features/library/languages/languages_screen.dart';
 import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
+import '../features/lyrics_plugin_store/lyrics_plugin_store_routes.dart';
 import '../features/lyrics_sources/lyrics_sources_routes.dart';
 import '../features/playlists/favorites_routes.dart';
 import '../features/playlists/favorites_screen.dart';
@@ -115,7 +116,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                         ),
                       ),
                     ],
-                    AppDestination.settings => lyricsSourcesRoutes,
+                    AppDestination.settings => lyricsSourcesRoutesWith(
+                      children: lyricsStoreRoutes,
+                    ),
                     _ => const [],
                   },
                 ),
