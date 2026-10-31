@@ -8,6 +8,7 @@ import '../../core/database/library_rows.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_favorites.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
+import '../queue_host.dart';
 import '../track_menu_actions.dart';
 import '../track_menu_choice.dart';
 import '../widgets/context_modal/context_modal_nav.dart';
@@ -36,6 +37,7 @@ class SongModalSession {
     required this.runner,
     required this.onQueueAction,
     required this.lyricsTarget,
+    this.queueHost,
     this.showAlbum = true,
     this.extraActions = const [],
   });
@@ -43,6 +45,14 @@ class SongModalSession {
   final TrackListItem song;
   final TrackMenuRunner runner;
   final ValueChanged<QueueAction> onQueueAction;
+
+  /// Captured before the modal opened; queue actions run with it because the
+  /// row that opened the modal can be gone when one is picked.
+  final QueueHost? queueHost;
+
+  /// Runs a queue action of the footer or Add to playlist.
+  void queue(QueueAction action) =>
+      QueueHost.run(queueHost, () => onQueueAction(action));
 
   /// What Find lyrics online searches for; null leaves that action out.
   final LyricsTarget? lyricsTarget;
@@ -72,7 +82,7 @@ class SongModalSession {
     goToArtist: (key) => unawaited(runner.openArtist(key, trackId: song.id)),
     goToFolder: () => _run(const ShowFolderChoice()),
     showInFileManager: () => _run(const ShowInFileManagerChoice()),
-    addToPlaylist: () => onQueueAction(QueueAction.addToPlaylist),
+    addToPlaylist: () => queue(QueueAction.addToPlaylist),
     setFavorite: (favorite) => _run(FavoriteChoice(favorite: favorite)),
     findLyrics: () => _run(const FindLyricsChoice()),
   );

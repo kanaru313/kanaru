@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_rows.dart';
 import '../../l10n/l10n.dart';
+import '../queue_host.dart';
 import '../track_menu_actions.dart';
 import '../widgets/context_modal/context_modal_route.dart';
 import '../widgets/queue_actions_menu.dart';
@@ -16,7 +17,8 @@ import 'song_modal_session.dart';
 /// need from [context] (router, messenger, texts) is captured here, before the
 /// modal opens, and the favorite and links load inside it.
 ///
-/// Queue actions go to [onQueueAction]; the rest is carried out by a
+/// Queue actions go to [onQueueAction], run with a [QueueHost] captured here
+/// so they work after the row is gone; the rest is carried out by a
 /// `TrackMenuRunner` after the modal has closed. [showAlbum] false
 /// leaves out Go to album, on the page of the song's own album.
 /// [extraActions] are the actions of the screen the song is listed on; they
@@ -35,6 +37,7 @@ void openSongModal(
     runner: TrackMenuRunner(ref, context),
     onQueueAction: onQueueAction,
     lyricsTarget: menuLyricsTarget(ref, song),
+    queueHost: QueueHost.capture(ref, context),
     showAlbum: showAlbum,
     extraActions: extraActions,
   );

@@ -13,6 +13,7 @@ import '../core/player/playing_track_art.dart' show localPathOf;
 import '../core/player/track.dart';
 import '../l10n/l10n.dart';
 import 'play_tracks.dart';
+import 'queue_host.dart';
 import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
 import 'widgets/app_snack_bar.dart';
@@ -107,12 +108,47 @@ Future<void> enqueueTracks(
   QueueAction action,
   Future<List<Track>> Function() read,
   String label,
+) => _enqueue(
+  ref.read(_enqueueChainProvider),
+  ref.read(playerServiceProvider.notifier),
+  messenger,
+  l10n,
+  action,
+  read,
+  label,
+);
+
+/// [enqueueTracks] for a caller with no live [WidgetRef]: it reads the queue
+/// from [container], which outlives any row.
+Future<void> enqueueTracksIn(
+  ProviderContainer container,
+  ScaffoldMessengerState messenger,
+  AppLocalizations l10n,
+  QueueAction action,
+  Future<List<Track>> Function() read,
+  String label,
+) => _enqueue(
+  container.read(_enqueueChainProvider),
+  container.read(playerServiceProvider.notifier),
+  messenger,
+  l10n,
+  action,
+  read,
+  label,
+);
+
+Future<void> _enqueue(
+  _EnqueueChain chain,
+  PlayerService player,
+  ScaffoldMessengerState messenger,
+  AppLocalizations l10n,
+  QueueAction action,
+  Future<List<Track>> Function() read,
+  String label,
 ) {
   if (action == QueueAction.addToPlaylist) {
     throw ArgumentError.value(action, 'action', 'not a queue action');
   }
-  final chain = ref.read(_enqueueChainProvider);
-  final player = ref.read(playerServiceProvider.notifier);
   Future<void> attempt() async {
     final String text;
     try {
@@ -167,6 +203,13 @@ void enqueueLoaded(
   List<Track> tracks,
   String label,
 ) {
+  // A song modal runs its queue actions with a host captured before it
+  // opened, so the row that opened it may be gone by now.
+  final host = QueueHost.current;
+  if (host != null) {
+    host.enqueueLoaded(action, tracks, label);
+    return;
+  }
   // The menu closes later than it opened: its page may be gone by then.
   if (!context.mounted) return;
   if (action == QueueAction.addToPlaylist) {

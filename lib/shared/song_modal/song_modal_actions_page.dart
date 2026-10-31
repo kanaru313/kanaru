@@ -86,7 +86,7 @@ class _QueueFooter extends StatelessWidget {
             key: key,
             onTap: () {
               nav.close();
-              session.onQueueAction(action);
+              session.queue(action);
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
