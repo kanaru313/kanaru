@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -28,19 +29,33 @@ class SongMoreButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final label = context.l10n.songModalMoreOptions;
-    return IconButton(
-      tooltip: label,
-      icon: const Icon(AppIcons.more),
-      iconSize: 20,
-      color: color,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-      onPressed: () => openSongModal(
-        context,
-        ref,
-        song: song,
-        onQueueAction: onQueueAction,
-        showAlbum: showAlbum,
+    void open({required bool viaKeyboard}) => openSongModal(
+      context,
+      ref,
+      song: song,
+      onQueueAction: onQueueAction,
+      showAlbum: showAlbum,
+      viaKeyboard: viaKeyboard,
+    );
+    // Enter and Space on the focused button open the modal from the keyboard
+    // (focus lands on its first row); a click does not.
+    return CallbackShortcuts(
+      bindings: {
+        for (final key in const [
+          LogicalKeyboardKey.enter,
+          LogicalKeyboardKey.numpadEnter,
+          LogicalKeyboardKey.space,
+        ])
+          SingleActivator(key): () => open(viaKeyboard: true),
+      },
+      child: IconButton(
+        tooltip: label,
+        icon: const Icon(AppIcons.more),
+        iconSize: 20,
+        color: color,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+        onPressed: () => open(viaKeyboard: false),
       ),
     );
   }

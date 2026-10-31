@@ -134,6 +134,41 @@ void main() {
       expect(focusIsOn('Open sub'), isTrue);
     });
 
+    testWidgets('the first Tab with nothing focused lands on the first row', (
+      tester,
+    ) async {
+      await pumpModalApp(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(focusIsOn('Open sub'), isTrue);
+    });
+
+    testWidgets('a mouse click into a sub page and back leaves focus unset', (
+      tester,
+    ) async {
+      await pumpModalApp(tester);
+      await tester.tap(find.text('Open sub'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.text('Open sub'), findsOneWidget);
+      expect(focusIsOn('Open sub'), isFalse);
+      expect(focusIsOn('Leaf action'), isFalse);
+    });
+
+    testWidgets('a pointer press after keyboard use ends keyboard mode', (
+      tester,
+    ) async {
+      await pumpModalApp(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(focusIsOn('Open sub'), isTrue);
+      await tester.tap(find.text('Open sub'));
+      await tester.pumpAndSettle();
+      expect(focusIsOn('Leaf action'), isFalse);
+      expect(focusIsOn('Open sub'), isFalse);
+    });
+
     testWidgets('a mouse click into a sub page focuses no row', (tester) async {
       await pumpModalApp(tester);
       await tester.tap(find.text('Open sub'));

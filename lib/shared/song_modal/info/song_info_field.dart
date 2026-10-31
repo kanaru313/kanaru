@@ -7,10 +7,10 @@ import 'release_date_chips.dart';
 import 'song_info_groups.dart';
 import 'wrap_anywhere.dart';
 
-/// One "Label: value" row, full width. The value wraps from the start of the line and,
-/// when long and unbroken (a path), anywhere. Tapping a known value copies
-/// it as it is stored; an unknown one shows "Unknown" in italics and cannot
-/// be copied.
+/// One "Label: value" row, full width. The value wraps from the start of the
+/// line and, when long and unbroken (a path), anywhere. Tapping a known value
+/// copies it as it is stored; an unknown one shows "Unknown" in italics and
+/// cannot be copied.
 class SongInfoFieldTile extends StatelessWidget {
   const SongInfoFieldTile({super.key, required this.field});
 

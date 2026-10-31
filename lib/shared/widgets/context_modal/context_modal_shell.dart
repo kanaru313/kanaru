@@ -103,12 +103,14 @@ class _ContextModalShellState extends State<ContextModalShell> {
     if (event is! KeyDownEvent || !_navKeys.contains(event.logicalKey)) {
       return KeyEventResult.ignored;
     }
-    _keyboardMode = true;
     final key = event.logicalKey;
     final moves =
         key == LogicalKeyboardKey.tab ||
         key == LogicalKeyboardKey.arrowUp ||
         key == LogicalKeyboardKey.arrowDown;
+    // Enter and Space belong to a text field that has focus.
+    if (!moves && _textFieldHasFocus()) return KeyEventResult.ignored;
+    _keyboardMode = true;
     // Nothing in the modal has focus yet: the first key press lands on the
     // first row instead of moving from nowhere.
     if (moves && _scope.focusedChild == null) {
@@ -116,6 +118,13 @@ class _ContextModalShellState extends State<ContextModalShell> {
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
+  }
+
+  static bool _textFieldHasFocus() {
+    final focus = FocusManager.instance.primaryFocus?.context;
+    return focus != null &&
+        (focus.widget is EditableText ||
+            focus.findAncestorWidgetOfExactType<EditableText>() != null);
   }
 
   /// Keyboard mode keeps a focus target after the page changed; pointer
@@ -220,15 +229,21 @@ class _ContextModalShellState extends State<ContextModalShell> {
         },
         child: Actions(
           actions: {_BackIntent: _BackAction(this)},
-          child: FocusScope(
-            node: _scope,
-            autofocus: true,
-            child: FocusTraversalGroup(
-              child: ContextModalFrameScope(
-                isSheet: isSheet,
-                child: isSheet
-                    ? ContextModalSheetFrame(onClose: _close, child: content)
-                    : ContextModalDialogFrame(child: content),
+          // A pointer press ends keyboard mode: pages then change without
+          // moving focus until a navigation key is used again.
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) => _keyboardMode = false,
+            child: FocusScope(
+              node: _scope,
+              autofocus: true,
+              child: FocusTraversalGroup(
+                child: ContextModalFrameScope(
+                  isSheet: isSheet,
+                  child: isSheet
+                      ? ContextModalSheetFrame(onClose: _close, child: content)
+                      : ContextModalDialogFrame(child: content),
+                ),
               ),
             ),
           ),

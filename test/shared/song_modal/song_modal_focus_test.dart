@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/song_modal/song_more_button.dart';
 import 'package:kanaru/shared/widgets/track_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -37,13 +38,18 @@ Future<void> _pump(WidgetTester tester) async {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: TrackActionsRegion(
-            song: _song,
-            onQueueAction: (_) {},
-            child: const Focus(
-              autofocus: true,
-              child: SizedBox(width: 300, height: 80, child: Text('row')),
-            ),
+          body: Column(
+            children: [
+              TrackActionsRegion(
+                song: _song,
+                onQueueAction: (_) {},
+                child: const Focus(
+                  autofocus: true,
+                  child: SizedBox(width: 300, height: 80, child: Text('row')),
+                ),
+              ),
+              SongMoreButton(song: _song, onQueueAction: (_) {}),
+            ],
           ),
         ),
       ),
@@ -85,5 +91,27 @@ void main() {
     await settleSongModal(tester);
     await tapModalAction(tester, 'Advanced');
     expect(_focusInModal(), isFalse);
+  });
+
+  testWidgets('a mouse click on the more button opens with no focus inside', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await tester.tap(find.byTooltip('More options'));
+    await settleSongModal(tester);
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(_focusInModal(), isFalse);
+  });
+
+  testWidgets('Enter on the focused more button focuses the first row', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await settleSongModal(tester);
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(_focusInModal(), isTrue);
   });
 }

@@ -18,8 +18,9 @@ import 'song_modal_session.dart';
 ///
 /// Queue actions go to [onQueueAction]; the rest is carried out by a
 /// `TrackMenuRunner` after the modal has closed. [showAlbum] false
-/// leaves out Go to album, on the page of the song's own album. [extraActions] are the actions of the screen the song
-/// is listed on; they come first. [viaKeyboard] focuses the first row.
+/// leaves out Go to album, on the page of the song's own album.
+/// [extraActions] are the actions of the screen the song is listed on; they
+/// come first. [viaKeyboard] focuses the first row.
 void openSongModal(
   BuildContext context,
   WidgetRef ref, {
