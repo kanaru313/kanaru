@@ -3275,4 +3275,344 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsAutoNeedsTags =>
       'Bài này thiếu tên bài, ca sĩ hoặc thời lượng nên không tự tìm được; dùng Tìm lời online…';
+
+  @override
+  String get lyricsSourcesTitle => 'Nguồn lời';
+
+  @override
+  String lyricsSourcesRowSubtitle(String names, int count) {
+    return '$names · $count đang bật';
+  }
+
+  @override
+  String get lyricsSourcesRowNoneOn => 'Mọi nguồn đang tắt';
+
+  @override
+  String get lyricsSourcesInfo =>
+      'Kanaru thử các nguồn đang bật theo thứ tự từ trên xuống khi tự động tìm; hộp Chọn lời tìm ở mọi nguồn đang bật. Kéo tay cầm để đổi thứ tự.';
+
+  @override
+  String get lyricsSourcesStore => 'Kho plugin';
+
+  @override
+  String get lyricsSourcesStoreSoon => 'Sắp có';
+
+  @override
+  String get lyricsSourcesEmptyHint =>
+      'Chưa cài plugin nào. Bạn sẽ thêm được plugin từ Kho plugin.';
+
+  @override
+  String get lyricsSourceBuiltIn => 'Có sẵn';
+
+  @override
+  String lyricsSourceBuiltInHosts(String hosts) {
+    return 'Có sẵn · $hosts';
+  }
+
+  @override
+  String get lyricsSourceDragHandle =>
+      'Kéo để đổi thứ tự (bàn phím: Alt + mũi tên lên hoặc xuống)';
+
+  @override
+  String get lyricsSourceUnknownAuthor => 'Không rõ tác giả';
+
+  @override
+  String lyricsSourceAuthor(String author) {
+    return '$author (tự khai)';
+  }
+
+  @override
+  String lyricsSourceFromFile(String name) {
+    return 'File: $name';
+  }
+
+  @override
+  String lyricsSourceFromRepo(String name) {
+    return 'Repo: $name';
+  }
+
+  @override
+  String get lyricsSourcesMenuLogFolder => 'Mở thư mục log';
+
+  @override
+  String get lyricsSourcesMenuGuide => 'Hướng dẫn viết plugin';
+
+  @override
+  String get pluginUninstall => 'Gỡ plugin';
+
+  @override
+  String get pluginGone => 'Plugin này không còn được cài.';
+
+  @override
+  String get pluginInfoTitle => 'Thông tin';
+
+  @override
+  String get pluginInfoSource => 'Nguồn cài';
+
+  @override
+  String get pluginInfoHosts => 'Chỉ được kết nối tới';
+
+  @override
+  String get pluginInfoInstalled => 'Cài lúc';
+
+  @override
+  String pluginInfoInstalledUpdated(String installed, String updated) {
+    return '$installed · cập nhật $updated';
+  }
+
+  @override
+  String get pluginInfoDescription => 'Mô tả';
+
+  @override
+  String get pluginConfigTitle => 'Cài đặt của plugin';
+
+  @override
+  String get pluginSecretNote =>
+      'Bí mật: lưu trong kho khóa hệ thống, không vào cài đặt hay log.';
+
+  @override
+  String get pluginSecretSaved => 'Đã lưu trong kho khóa';
+
+  @override
+  String get pluginSecretFallbackNote =>
+      'Không tìm thấy kho khóa của hệ thống; giá trị bí mật được lưu trong một tệp chỉ bạn đọc được, hoặc chỉ giữ tới khi đóng Kanaru. Đừng chia sẻ hay đồng bộ tệp này.';
+
+  @override
+  String get pluginSecretShow => 'Hiện giá trị';
+
+  @override
+  String get pluginSecretHide => 'Ẩn giá trị';
+
+  @override
+  String get pluginSecretClear => 'Xóa giá trị đã lưu';
+
+  @override
+  String get pluginConfigNumberInvalid => 'Nhập một số';
+
+  @override
+  String get pluginConfigInvalidValue =>
+      'Giá trị này không hợp lệ cho cài đặt này.';
+
+  @override
+  String get pluginConfigTooLarge =>
+      'Cài đặt của plugin quá lớn, không lưu được.';
+
+  @override
+  String get pluginConfigUnknownKey =>
+      'Cài đặt này không còn nữa. Plugin có thể đã bị gỡ hoặc đổi.';
+
+  @override
+  String get pluginConfigSecretStoreFailed =>
+      'Không truy cập được kho khóa của hệ thống. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
+
+  @override
+  String get pluginDataTitle => 'Dữ liệu';
+
+  @override
+  String get pluginStorageTitle => 'Bộ nhớ riêng của plugin';
+
+  @override
+  String pluginStorageUsage(String used, String limit) {
+    return '$used / $limit';
+  }
+
+  @override
+  String get pluginSavedLyricsTitle => 'Lời đã lưu từ nguồn này';
+
+  @override
+  String get pluginSavedLyricsNone => 'Chưa có';
+
+  @override
+  String pluginSavedLyricsSummary(int count, String size) {
+    return '$count bài · $size';
+  }
+
+  @override
+  String get pluginDataClear => 'Xóa';
+
+  @override
+  String get pluginStorageClearTitle => 'Xóa bộ nhớ riêng của plugin?';
+
+  @override
+  String get pluginStorageClearBody =>
+      'Plugin có thể phải đăng nhập hoặc thiết lập lại.';
+
+  @override
+  String get pluginStorageCleared => 'Đã xóa bộ nhớ riêng';
+
+  @override
+  String get pluginSavedLyricsClearTitle => 'Xóa lời đã lưu từ nguồn này?';
+
+  @override
+  String get pluginSavedLyricsClearBody =>
+      'Lời đã lưu từ nguồn này sẽ bị xóa. Lời đã ghim và file .lrc vẫn giữ.';
+
+  @override
+  String get pluginSavedLyricsCleared => 'Đã xóa lời đã lưu';
+
+  @override
+  String get pluginDataFailed => 'Không xóa được dữ liệu';
+
+  @override
+  String pluginUninstallTitle(String name) {
+    return 'Gỡ $name?';
+  }
+
+  @override
+  String get pluginUninstallRemoves => 'Sẽ bị xóa';
+
+  @override
+  String get pluginUninstallKeeps => 'Vẫn giữ';
+
+  @override
+  String get pluginUninstallCode => 'Code của plugin';
+
+  @override
+  String get pluginUninstallSettings => 'Cài đặt của plugin';
+
+  @override
+  String get pluginUninstallSettingsSecret =>
+      'Cài đặt của plugin, kể cả giá trị bí mật trong kho khóa';
+
+  @override
+  String pluginUninstallStorage(String size) {
+    return 'Bộ nhớ riêng ($size)';
+  }
+
+  @override
+  String pluginUninstallKeepLyrics(int count) {
+    return '$count bài lời đã lưu và lời đã ghim từ nguồn này';
+  }
+
+  @override
+  String get pluginUninstallKeepPinned => 'Lời đã ghim từ nguồn này (nếu có)';
+
+  @override
+  String get pluginUninstallKeepLrc => 'File .lrc đã ghi cạnh bài';
+
+  @override
+  String get pluginUninstallConfirm => 'Gỡ';
+
+  @override
+  String pluginUninstalled(String name) {
+    return 'Đã gỡ $name';
+  }
+
+  @override
+  String pluginUninstallFailed(String name) {
+    return 'Không gỡ được $name';
+  }
+
+  @override
+  String get pluginInstallFailedTitle => 'Không cài được';
+
+  @override
+  String pluginInstallFailedFile(String name) {
+    return 'File $name không phải plugin hợp lệ.';
+  }
+
+  @override
+  String get pluginInstallFailedReasons => 'Lý do';
+
+  @override
+  String get pluginProblemTooLarge => 'Gói, hoặc một mục trong gói, quá lớn';
+
+  @override
+  String get pluginProblemNotZip => 'File không phải gói zip đọc được';
+
+  @override
+  String pluginProblemUnsafeEntry(String detail) {
+    return 'Gói có tên mục không an toàn ($detail)';
+  }
+
+  @override
+  String get pluginProblemTooManyEntries => 'Gói có quá nhiều file';
+
+  @override
+  String get pluginProblemMissingManifest => 'Không thấy plugin.json ở đầu gói';
+
+  @override
+  String pluginProblemInvalidManifest(String detail) {
+    return 'plugin.json không hợp lệ ở \"$detail\"';
+  }
+
+  @override
+  String get pluginProblemInvalidManifestPlain => 'plugin.json không hợp lệ';
+
+  @override
+  String get pluginProblemNeedsNewerApp =>
+      'Cần Kanaru mới hơn: plugin dùng API plugin mới hơn bản này hỗ trợ';
+
+  @override
+  String get pluginProblemWrongType => 'plugin.json: type phải là lyrics';
+
+  @override
+  String pluginProblemBadHost(String detail) {
+    return 'hosts: \"$detail\" không phải tên miền công khai';
+  }
+
+  @override
+  String pluginProblemMissingScript(String detail) {
+    return 'Không thấy src/$detail trong gói';
+  }
+
+  @override
+  String pluginProblemScriptError(String detail) {
+    return 'Script $detail bị lỗi';
+  }
+
+  @override
+  String pluginProblemScriptErrorLine(String detail, int line) {
+    return 'Script $detail bị lỗi ở dòng $line';
+  }
+
+  @override
+  String get pluginProblemCheckUnavailable =>
+      'Kanaru chưa kiểm tra được script lúc này (thư viện chạy plugin không tải được) nên chưa biết gói có hợp lệ không';
+
+  @override
+  String get pluginRefusedNotFromRepo =>
+      'Plugin này cài từ file nên không có cập nhật. Hãy gỡ rồi cài file mới.';
+
+  @override
+  String get pluginRefusedOlderVersion =>
+      'Gói này cũ hơn bản đã cài nên không được dùng.';
+
+  @override
+  String get pluginInstallSecretsUnavailable =>
+      'Không xóa được bí mật của lần cài trước trong kho khóa nên chưa cài lại plugin. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.';
+
+  @override
+  String get pluginInstallGone =>
+      'Plugin này không còn được cài nên không cập nhật được.';
+
+  @override
+  String get pluginConfigSaveFailed => 'Không lưu được cài đặt';
+
+  @override
+  String get pluginConfigLoadFailed => 'Không đọc được cài đặt của plugin';
+
+  @override
+  String get pluginSourcesLoadFailed => 'Không đọc được danh sách plugin';
+
+  @override
+  String get pluginRetry => 'Thử lại';
+
+  @override
+  String lyricsSourceNameRemoved(String name) {
+    return '$name (đã gỡ)';
+  }
+
+  @override
+  String lyricsSourceNameWithAuthor(String name, String author) {
+    return '$name · $author';
+  }
+
+  @override
+  String lyricsPickerAllSources(int count) {
+    return 'Mọi nguồn ($count)';
+  }
+
+  @override
+  String get lyricsViewLog => 'Xem log';
 }

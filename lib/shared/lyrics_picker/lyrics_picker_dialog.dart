@@ -12,6 +12,7 @@ import '../format_duration.dart';
 import 'lyrics_failure_message.dart';
 import 'lyrics_picker_preview.dart';
 import 'lyrics_picker_results_pane.dart';
+import 'lyrics_source_name_text.dart';
 
 const _contentWidth = 840.0;
 const _contentHeight = 520.0;
@@ -34,6 +35,9 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
   late final _query = TextEditingController(
     text: lyricsSearchPrefill(widget.target),
   );
+
+  /// Provider id the results are filtered to; `null` shows every source.
+  String? _sourceFilter;
 
   bool get _searchesOnOpen => widget.target.query.title != null;
 
@@ -58,7 +62,30 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     super.dispose();
   }
 
-  void _search() => _controller.search(_query.text);
+  /// Filters the list to [id] (`null`: every source). A selection the filter
+  /// hides moves to the first result that stays, so the preview and Use never
+  /// belong to a row the user cannot see.
+  void _filterBySource(String? id) {
+    setState(() => _sourceFilter = id);
+    if (id == null) return;
+    final results = ref
+        .read(lyricsSearchControllerProvider(widget.target))
+        .results;
+    final selected = ref
+        .read(lyricsSearchControllerProvider(widget.target))
+        .selected;
+    if (selected != null && results[selected].candidate.providerId == id) {
+      return;
+    }
+    final first = results.indexWhere((r) => r.candidate.providerId == id);
+    if (first >= 0) _controller.select(first);
+  }
+
+  void _search() {
+    // A new query starts from every source again.
+    setState(() => _sourceFilter = null);
+    _controller.search(_query.text);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +97,8 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     final duration = query.duration;
     final selection = state.selection;
     final providerNames = {
-      for (final r in registrations) r.id: names[r.id]?.displayName ?? r.id,
+      for (final r in registrations)
+        r.id: lyricsSourceNameText(l10n, names, r.id),
     };
     final fetch = state.selectionFetch;
     final failure = fetch?.phase == BodyFetchPhase.failed
@@ -146,6 +174,8 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                             state: state,
                             searchPending: _searchesOnOpen,
                             providerNames: providerNames,
+                            sourceFilter: _sourceFilter,
+                            onSourceFilter: _filterBySource,
                             onSelect: _controller.select,
                             onRetry: _controller.retry,
                           ),
