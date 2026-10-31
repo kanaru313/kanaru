@@ -76,8 +76,8 @@ final pluginStoreUpdatingProvider = StreamProvider.autoDispose<Set<String>>((
   return out.stream;
 });
 
-/// Installs started from this screen and not finished, by [pendingInstallKey]:
-/// the row shows a spinner and cannot be tapped again.
+/// Installs started from this screen and not finished, by [pendingInstallKey], [pendingUpdateAllKey]
+/// or [pendingUninstallKey]: the row shows a spinner and cannot be tapped again.
 class PluginStorePendingInstalls extends Notifier<Set<String>> {
   @override
   Set<String> build() => const {};
@@ -102,6 +102,9 @@ const pendingUpdateAllKey = 'update-all';
 
 /// The key of the install of plugin [slug] of the repository [repoUrl].
 String pendingInstallKey(String repoUrl, String slug) => '$repoUrl\n$slug';
+
+/// The key of the uninstall of the plugin installed as [installId].
+String pendingUninstallKey(String installId) => 'uninstall\n$installId';
 
 /// Asks for a plugin zip; the path, or null when cancelled. Tests override it.
 typedef PluginZipPicker = Future<String?> Function();

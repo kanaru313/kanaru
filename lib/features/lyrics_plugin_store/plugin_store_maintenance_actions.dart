@@ -96,7 +96,7 @@ class StoreMaintenanceActions {
   /// A second call for the same plugin while one runs does nothing, so a quick
   /// double tap cannot stack two dialogs.
   Future<void> uninstall(LyricsPluginRecord record) async {
-    final key = 'uninstall\n${record.installId}';
+    final key = pendingUninstallKey(record.installId);
     final pending = _container.read(
       pluginStorePendingInstallsProvider.notifier,
     );
