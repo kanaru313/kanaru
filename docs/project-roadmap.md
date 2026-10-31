@@ -1,10 +1,10 @@
 # Project roadmap
 
-Phases follow the README roadmap. Status is what the code does on 2026-10-30 (`main` at `b3caa138` plus the lyrics source PR), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
+Phases follow the README roadmap. Status is what the code does on 2026-10-31 (`main` at `8c2a1506`, with the lyrics plugin PRs #76 to #83 merged), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
 
 Status labels: **Done** (shipped, merged), **Partial** (some of the requirement shipped), **Open** (not started), **Known issue** (shipped, with a documented limit).
 
-Last updated: 2026-10-30.
+Last updated: 2026-10-31.
 
 ## Summary
 
@@ -14,7 +14,7 @@ Last updated: 2026-10-30.
 | 1 Offline local player | Scan, library, Now Playing, queue, search, playlists, packaging | In progress: core library, playback (with ReplayGain), search, playlists (create, rename, delete, add, remove, reorder, Favorites, M3U), History, colors from the cover and the AppImage shipped; Flatpak, `.deb` and the schema collapse open |
 | 2 More platforms | Windows, macOS, Android, iOS | Open |
 | 3 Remote sources | `StorageProvider`, proxy, cache, Subsonic, WebDAV, S3, SFTP, Drive | Open |
-| 4 Juicy | Lyrics, waveform, EQ, stats, scrobbling, cross-device sync | In progress: lyrics (`.lrc`, embedded, online lookup, synced view), translation and the waveform seek bar shipped; EQ, stats, scrobbling and sync open |
+| 4 Juicy | Lyrics, waveform, EQ, stats, scrobbling, cross-device sync | In progress: lyrics (`.lrc`, embedded, online lookup, synced view), the lyrics plugin system, translation and the waveform seek bar shipped; EQ, stats, scrobbling and sync open |
 
 ## Shipped history
 
@@ -49,7 +49,7 @@ PRs merged to `main`, 418 commits from 2026-10-18 to 2026-10-22 (PR merge dates 
 | Gapless and ReplayGain | Partial | PLAY-06, PLAY-07 | Gapless: mpv `gapless-audio=weak` is set; not marked done in features.md. ReplayGain: done in PR #40 (off, track, album, auto; preamp; clipping protection; output device choice in Settings > Advanced). |
 | Dynamic color from album art | Done | UI-03 | "Colors from the cover" switch: the playing cover's seed tints the whole app and Now Playing gets a gradient of its colors. Colors come from one Rust function, are worked out by the scan's cover pass (or at once for the playing track) and stored per cover. |
 | Packaging: AppImage, Flatpak, `.deb` | Partial | PKG-01 to PKG-03 | AppImage done (PR #32, `make appimage`, x86_64). No Flatpak or `.deb` files exist. The AppImage ships a `.desktop` file with audio MIME types (SYS-07). |
-| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v10 with migration steps (v1 to v10). Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
+| Collapse schema history into v1 before first release | **Open** | PKG-08 | Schema is v11 with migration steps (v1 to v11). Required before the first release; see [system-architecture.md](./system-architecture.md#7-library-database-schema). |
 | Check LRCLIB lyrics data license / terms before first release | **Open**, not blocking | LYR-03 | Online lyrics come from lrclib.net. Confirm its data terms before the first release; does not block the online lyrics PR. |
 
 Also shipped in Phase 1 and not listed in the README: responsive shell (UI-05), reduced motion (UI-06), custom title bar choice (UI-07), i18n en and vi (UI-10), single instance on Release and Profile builds (SYS-06), desktop accent color (UI-04), scan progress (IDX-10).
@@ -112,7 +112,7 @@ Partly shipped: the lyrics and translation rows are in progress; the other rows 
 
 | Item | Features | Current state |
 |---|---|---|
-| Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 (LYR-03 done, with open items) | Shipped: `.lrc` and embedded lyrics, the synced view, online lookup (opt-in, manual search, Choose lyrics, pins, saved lyrics and the `.lrc` writer), and the lyrics source button in Now Playing (automatic, file or tag lyrics, the online pick, or off). Open: several online providers, a narrow-window Choose lyrics dialog, the provider plugin runtime, LYR-05 to LYR-06 |
+| Lyrics: `.lrc`, embedded, LRCLIB, synced view | LYR-01 to LYR-04 (LYR-03 done, with open items) | Shipped: `.lrc` and embedded lyrics, the synced view, online lookup (opt-in, manual search, Choose lyrics, pins, saved lyrics and the `.lrc` writer), and the lyrics source button in Now Playing (automatic, file or tag lyrics, the online pick, or off). Lyrics plugin system (#76 to #83): sandboxed JavaScript runtime, install from a zip or a repository, the plugin store, the Lyrics sources page, and several sources in one lookup. Done as described in [lyrics-plugin-api.md](./lyrics-plugin-api.md). Open: a narrow-window Choose lyrics dialog, the plugin follow-ups below, LYR-05 to LYR-06 |
 | Save lyrics into the music tags | LYR-06, META-08 | **Open**. Save lyrics shows "In the music tags" as coming soon. Tag editing (META-08) and remembering the last save target come with it. |
 | Lyrics availability flag at scan | — | **Open**. Record at scan whether each song has lyrics, so lists can show it without reading the file at play time. |
 | Trash for replaced `.lrc` files under Flatpak | PKG-02 | **Open**. A replaced `.lrc` moves to the trash through GIO; a portal-based trash is not built, and no Flatpak build exists yet. |
@@ -125,6 +125,23 @@ Partly shipped: the lyrics and translation rows are in progress; the other rows 
 | Backup and restore | SET-03 | Not started |
 
 Premium candidates for these items are listed in [project-overview-pdr.md](./project-overview-pdr.md#open-questions) and [features.md section 20](./features.md).
+
+### Lyrics plugin system: follow-ups
+
+Shipped in v1 (`apiVersion` 1, lyrics plugins only). These are deliberately out of v1; none changes the v1 contract or the database schema.
+
+| Follow-up | Why later | Status |
+|---|---|---|
+| Plugin signatures (Ed25519 or minisign; identity = key fingerprint) | v1 trusts the repository URL and the zip checks | Open |
+| WebView login (only a `login` permission the host drives; the manifest declares `url` and `cookies`; the host reads the cookies of that host only) | Needs its own analysis; no headless scraping or anti-bot bypass, ever | Open |
+| Developer mode (a test screen with request and log view, install from a folder with reload, or a CLI on the same runtime) | Writers use the zip loop in [lyrics-plugin-api.md](./lyrics-plugin-api.md#writing-a-plugin-the-author-loop) for now | Open |
+| Process isolation for plugin JavaScript (subprocess, seccomp or landlock) | Worth it once there is a large public catalog | Open |
+| LRCLIB as a bundled plugin | Only if the runtime has proved itself; the built-in Dart provider stays until then | Open |
+| Other plugin types (metadata, cover art, ...) | The `type` field already leaves room | Open |
+| New lyrics fields `translation` and `wordSynced` (LYR-07, LYR-09), `srt` and `vtt` formats, optional `lookup`, `languages` hints | Added as optional fields, no `apiVersion` bump | Open |
+| Source choice by song language | Not needed yet | Open |
+| `server` config type (the user types a server address, such as a self-hosted LRCLIB) | Its address follows the repository URL rules | Open |
+| iOS store policy for downloaded code | Not relevant on GNU/Linux | Open |
 
 ## Open decisions
 

@@ -6,7 +6,7 @@ What a lyrics plugin script can rely on. Plugins are JavaScript files in the pac
 
 ### Limits
 
-The values live in `rust/src/plugin_runtime/limits.rs`; a test pins them.
+The runtime values are the constants in `rust/src/plugin_runtime/limits.rs` (`limits.rs` tests the wall-time cap and the stack order). The app-side limits are in the second table below.
 
 | Limit | Value | When hit |
 |---|---|---|
@@ -26,6 +26,19 @@ The values live in `rust/src/plugin_runtime/limits.rs`; a test pins them.
 | Console | 500 characters per line, 50 lines per call | cut / `… N lines dropped` |
 | Worker threads | 4 | extra jobs wait |
 | Queued jobs | 16 | the 17th waiting job is `busy` |
+
+App-side limits (the host, not the runtime):
+
+| Limit | Value | Where |
+|---|---|---|
+| Outer deadline of one run (queue wait included) | 60 s, then cancelled and counted as `network` | `lib/core/lyrics/plugins/plugin_run_deadline.dart` |
+| Zip package | 5 MiB; script 1 MiB; `plugin.json` 64 KiB; icon 64 KiB and at most 256 x 256 px; 50 entries; uncompressed total 5 MiB | `lib/core/lyrics/plugins/package/plugin_package_limits.dart`, `plugin_zip_directory_scan.dart` |
+| Catalog | 1 MiB, 500 entries | `lib/core/database/lyrics_plugin_spec.dart` (bytes), `lib/core/lyrics/plugins/repo/plugin_catalog_parser.dart` (entries) |
+| Repository fetch | connect 10 s, whole fetch 20 s, 3 redirects | `lib/core/lyrics/plugins/repo/repo_http.dart` |
+| Plugin log file | 512 KiB, then `.jsonl.1` replaces the older file | `lib/core/lyrics/plugins/plugin_run_log.dart` |
+| Failure pause per source | at least 60 s (longer for `Retry-After`) | `lib/core/lyrics/online/online_lyrics_backoff.dart` |
+| `RateLimitedError` / `retryAfterSec` | read between 1 s and 15 min | `lib/core/lyrics/online/lyrics_fetch_exception.dart` |
+| Lyric text from a plugin | 1 MiB | `lib/core/lyrics/online/lyrics_candidate_checks.dart` |
 
 A timeout and a cancel use an interrupt the script cannot catch, so `try { while (true) {} } catch (e) {}` still stops. Every call gets a fresh engine; globals do not survive between calls.
 
@@ -149,7 +162,7 @@ The plugin's configuration as the app set it (secrets included): a string, or `n
 
 ### `console` and `Log`
 
-`console.log`, `.info`, `.warn`, `.error`, `.debug` and `Log.log` all write one line: the arguments joined by a space (objects through `JSON.stringify`, falling back to `String()`; an `Error` as `String(error)`). A line is cut at 500 characters. A call keeps at most 50 lines; past that the first 49 are kept and the last entry reads `… N lines dropped`. The lines are returned in `logs`; the app adds them to the plugin's own log file (see [Logs](#logs)). Do not log secrets or query strings.
+`console.log`, `.info`, `.warn`, `.error`, `.debug` and `Log.log` all write one line: the arguments joined by a space (objects through `JSON.stringify`, falling back to `String()`; an `Error` as `String(error)`). A line is cut at 500 characters. A call keeps at most 50 lines; past that the first 49 are kept and the last entry reads `… N lines dropped`. The lines are returned in `logs`; the app adds them to the plugin's own log file (see [Logs](#logs)). Do not log secrets, query strings, or the song's tags (title, artist, album): the host masks only config values, not song text.
 
 ### `Html.parse(text)`
 
@@ -180,7 +193,7 @@ Evaluates the bundled CryptoJS 4.2.0 (MIT) and defines the global `CryptoJS` (AE
 
 ### What is absent
 
-`XMLHttpRequest`, `WebSocket`, `require`, `import`, `setTimeout`/`setInterval`, and file and process APIs.
+`XMLHttpRequest`, `WebSocket`, `require`, `import` and dynamic `import()`, `setTimeout`/`setInterval` (use `sleep`), modules, file APIs (no `fs`), process APIs, and WebView (not in v1; a login flow is a later design, see [project-roadmap.md](./project-roadmap.md)). Cookies are handled by the script, as described above.
 
 ## Lyrics scripts in a lookup
 
@@ -197,7 +210,7 @@ It returns `Response.success(items)`, an array of at most 20 useful items (more 
 
 | Field | Rule |
 |---|---|
-| `id` | string, 1 to 256 characters |
+| `id` | string, 1 to 256 characters. Must be **stable**: the same record keeps the same `id` in every call and version, because pins, rejected matches, saved lyrics and the `lyrics.js` call refer to it |
 | `title`, `artist` | non-empty strings |
 | `album` | optional string |
 | `durationMs` | optional integer above 0 (a whole number written as `200000.0` is accepted); 24 hours or more is ignored |
@@ -224,11 +237,13 @@ The app maps the result of a run to a failure in this order:
 3. `Response.error(message, {kind, retryAfterSec})`: kind `rateLimited` (with `retryAfterSec`), `invalidResponse`, or `server` (the default);
 4. `busy` (every worker busy and the queue full): the source is skipped for this lookup, with no failure and no pause; the app asks again for the next song or after about 30 s. `timeout` is `network`. `memory`, `stack`, `outputTooLarge`, a thrown error, a bad output shape and an `internal` failure of the runtime are `invalidResponse`.
 
-A failure is never stored as "no lyrics": only a successful empty answer is. A failure pauses that source (and only that source) for at least 60 seconds. Besides the 15 s of script time, a run has an outer deadline of 60 s from the call (queue wait included); when it passes the run is cancelled and counts as `network`.
+A failure is never stored as "no lyrics": only a successful empty answer is. A failure pauses that source (and only that source) for at least 60 seconds.
+
+**Caching.** A lyric the host got from a source is stored with that source's id and reused without a new call. A `not found` row for a song is written only when every enabled source gave a successful empty answer (no failed run, no skipped source), so a plugin that fails never causes one. The stored rows are listed in [system-architecture.md](./system-architecture.md#7-library-database-schema). Besides the 15 s of script time, a run has an outer deadline of 60 s from the call (queue wait included); when it passes the run is cancelled and counts as `network`.
 
 ### Logs
 
-A run that failed, or that printed to `console`, adds one line to `<data>/plugin-logs/<installId>.jsonl` (JSON Lines): `{ts, installId, pluginName, version, script, query, kind, message, stack, console, requests}`. `kind` is `ok` (a run that only printed), `network`, `server`, `rateLimited`, `invalidResponse`, `blockedHost` or `notConsented`. `query` is the input of the run, so the file holds song titles and artists: it stays on this device, is never attached to a bug report automatically and is deleted when the plugin is uninstalled. `requests` has `{method, host, path, status, ms}` for each `fetch` (no query string, header or body; `status` is null when no answer came). Every config value of four characters or more is replaced by `***` in `message`, `stack`, `console` and the request paths. A file over 512 KiB moves to `<installId>.jsonl.1` (the older one is replaced), so a plugin keeps at most about 1 MiB. The app log gets one INFO line per failed run with the plugin's name, id, script and kind (and the host of a blocked address), and nothing else.
+A run that failed, or that printed to `console`, adds one line to `<data>/plugin-logs/<installId>.jsonl` (JSON Lines): `{ts, installId, pluginName, version, script, query, kind, message, stack, console, requests}`. `kind` is `ok` (a run that only printed), `network`, `server`, `rateLimited`, `invalidResponse`, `blockedHost` or `notConsented` (a cancelled run is never written). `query` is the input of the run, so the file holds song titles and artists: it stays on this device, is never attached to a bug report automatically and is deleted when the plugin is uninstalled. `requests` has `{method, host, path, status, ms}` for each `fetch` (no query string, header or body; `status` is null when no answer came). Every config value of four characters or more is replaced by `***` in `message`, `stack`, `console` and the request paths. A file over 512 KiB moves to `<installId>.jsonl.1` (the older one is replaced), so a plugin keeps at most about 1 MiB. The app log gets one INFO line per failed run with the plugin's name, id, script and kind (and the host of a blocked address), and nothing else.
 
 ### Cookies and private addresses (version 1)
 
@@ -282,6 +297,12 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 - `select`: `format` is absent or `single`. `options` is 1 to 50 items of `{value, title}`, both required, values unique. Optional `default` must be one of the values.
 - `toggle`: no `format`. Optional `default` is a boolean.
 
+The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, always as a string (`"true"` or `"false"` for a toggle). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
+
+### `apiVersion` policy
+
+`metadata.apiVersion` is the version of the manifest and script contract together. Version `1` is the only one. Adding an optional manifest field or a new host global does not change it; changing or removing a field or a host behavior does. An app that reads a higher version refuses the package with `needsNewerApp`, and the store hides such catalog entries and counts them ("N plugin cần Kanaru mới hơn").
+
 ### Icon
 
 `icon.png` must have the PNG signature, an IHDR chunk, a size of at most 256 x 256 pixels and at most 64 KiB. A bad icon is dropped (the reason is logged, nothing else) and the install goes on; `PluginPackage.icon` is then null.
@@ -289,6 +310,22 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 ### Script check
 
 Every kept `src/*.js` goes through `PluginRuntime.check`; the first syntax error is `scriptError` with file, 1-based line (null when unknown) and the engine message. Files are checked in name order, after the manifest and the script names pass. If the runtime cannot check at all (native library missing) the package is refused as `checkUnavailable`, never accepted unchecked.
+
+## Writing a plugin: the author loop
+
+There is no dev mode in v1: a change goes through a zip and the normal install. The loop:
+
+1. Pack the folder. The zip root must hold `plugin.json`, `icon.png` (optional) and `src/`; zip the files, not the folder above them (a single top folder is stripped, but avoid relying on it):
+
+   ```bash
+   cd netease && zip -r ../netease.zip plugin.json icon.png src
+   ```
+
+   Drop `icon.png` from the command if the plugin has none.
+2. Uninstall the old version first, if one is installed. *Install from file…* always adds a new plugin, and the new one is turned on at once, so two copies would both run.
+3. Open the plugin store (*Lyrics sources* > *Plugin store*), menu ⋮ > *Install from file…*, and pick the zip. A failed check names the file, line and message (`scriptError`) or the manifest field (`invalidManifest`, for example `metadata.name`).
+4. Test it in *Choose lyrics* (*Find lyrics online…* in a song's menu, or the source button in Now Playing). Search with the song's tags, then with a typed text, and open one result's lyrics.
+5. Read the log: *Lyrics sources* > ⋮ > *Open log folder*, then open `<installId>.jsonl` (each line carries `installId`, `pluginName`, `version` and `script`). Every failed run and every run that printed to `console` is there, with the `requests` list. The writing guide in the same menu links to this page.
 
 ## Example: the LRCLIB plugin
 
