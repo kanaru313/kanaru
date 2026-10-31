@@ -20,6 +20,7 @@ class HomeCardGridScreen<T> extends ConsumerWidget {
     required this.emptyIcon,
     required this.pages,
     required this.cardBuilder,
+    required this.cellHeight,
   });
 
   final String title;
@@ -27,6 +28,9 @@ class HomeCardGridScreen<T> extends ConsumerWidget {
   final IconData emptyIcon;
   final NotifierProvider<HomePagedList<T>, HomePagedState<T>> pages;
   final Widget Function(T row) cardBuilder;
+
+  /// Height of a grid cell at the current text scale.
+  final double Function(BuildContext) cellHeight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,7 +59,7 @@ class HomeCardGridScreen<T> extends ConsumerWidget {
               ),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: columns,
-                mainAxisExtent: homeShelfTileHeight(context),
+                mainAxisExtent: cellHeight(context),
               ),
               itemCount: rows.length,
               itemBuilder: (context, i) => Align(

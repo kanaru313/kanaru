@@ -6,7 +6,6 @@ import 'package:kanaru/shared/widgets/detail_page/collage_hero_cover.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/detail_page/play_shuffle_actions.dart';
 import 'package:kanaru/shared/widgets/detail_page/cover_tint_page_background.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/card_shelf.dart';
 import 'package:kanaru/shared/widgets/playlist_cover.dart';
@@ -14,6 +13,8 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 const _tracks = [
   TestTrack('a', genre: 'Rock', album: 'Al', albumArtist: 'X'),

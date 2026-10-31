@@ -4,6 +4,7 @@ import 'package:kanaru/core/database/album_grouping_provider.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/library_scan_prefs.dart';
+import 'package:kanaru/features/home/home_album_card.dart';
 import 'package:kanaru/features/home/home_screen.dart';
 
 import 'home_test_harness.dart';
@@ -64,17 +65,21 @@ void main() {
       tester,
     ) async {
       final h = HomeHarness();
+      final albumTitle = find.descendant(
+        of: find.byType(HomeAlbumCard),
+        matching: find.text('Alpha'),
+      );
       await h.addTrack('/a', artist: 'Ann', album: 'Alpha');
       await play(h, '/a', daysAgo(0));
       await open(tester, h);
 
-      await tester.tap(find.text('Alpha'), buttons: kSecondaryButton);
+      await tester.tap(albumTitle, buttons: kSecondaryButton);
       await tester.pumpAndSettle();
       expect(find.text('Play next'), findsOneWidget);
       await tester.tapAt(const Offset(5, 5));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Alpha'));
+      await tester.tap(albumTitle);
       await tester.pumpAndSettle();
       expect(find.textContaining('at /albums/'), findsOneWidget);
     });

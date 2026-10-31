@@ -1,12 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../browse_test_data.dart';
 import '../library_test_harness.dart';
 import 'language_test_data.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 const _tracks = [
   LangTrack('b', 'eng', album: 'Mixed', albumArtist: 'X'),

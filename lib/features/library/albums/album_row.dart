@@ -3,9 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../shared/widgets/card_shelf.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../widgets/library_grid_card.dart';
-import 'album_grid_tile.dart';
-import 'album_tile_data.dart';
+import '../../../shared/widgets/library_grid/album_grid_tile.dart';
+import '../../../shared/widgets/library_grid/album_tile_data.dart';
+import '../../../shared/widgets/library_grid/library_grid_card.dart';
 
 /// Width of the artwork of a tile in an [SliverAlbumRow].
 const _artworkWidth = 160.0;

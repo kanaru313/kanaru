@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/home/home_tile_metrics.dart';
 import 'package:kanaru/features/home/home_track_card.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -35,8 +36,8 @@ void main() {
                 valueListenable: shown,
                 builder: (_, on, _) => on
                     ? const SizedBox(
-                        width: 200,
-                        height: 260,
+                        width: homeShelfTileWidth,
+                        height: 300,
                         child: HomeTrackCard(row: [_song], index: 0),
                       )
                     : const SizedBox.shrink(),

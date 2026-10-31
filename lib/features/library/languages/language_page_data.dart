@@ -8,8 +8,8 @@ import '../../../core/database/text_keys.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../shared/library_browse_refresh.dart';
 import '../../../shared/sort_compare.dart';
-import '../albums/album_tile_data.dart';
 import 'languages_provider.dart';
+import '../../../shared/widgets/library_grid/album_tile_data.dart';
 
 /// What a language page shows: the fallback name of the language (see
 /// `LanguageSummary.name`), the albums holding at least one of its tracks

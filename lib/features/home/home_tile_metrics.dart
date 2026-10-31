@@ -1,19 +1,22 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Padding around the content of a shelf card and the gap between the picture
-/// and the text; separate from the album grid tile's card.
+import '../../shared/widgets/library_grid/album_grid_tile.dart';
+import '../../shared/widgets/library_grid/library_grid_card.dart';
+import '../../shared/widgets/library_grid/song_grid_tile.dart';
+
+/// Padding around the content of an artist card and the gap between the
+/// picture and the text.
 const homeCardPadding = 8.0;
 const homeCardGap = 8.0;
 
-/// Width of a card on a shelf: 152 px of content plus the padding each side.
+/// Width of a cell on a shelf: 152 px of content plus the padding each side.
 const homeShelfTileWidth = 168.0;
 
-/// Width of the square picture of a card.
+/// Width of the square picture of an artist card.
 const homeCardPictureSize = homeShelfTileWidth - homeCardPadding * 2;
 
-/// Height of a card: the square picture plus two text lines at the current
-/// text scale, so large text never overflows. Home cards are plain
-/// tiles, not the cards of `AlbumGridTile`.
+/// Height of an artist card: the square picture plus two text lines at the
+/// current text scale, so large text never overflows.
 double homeShelfTileHeight(BuildContext context) {
   final theme = Theme.of(context).textTheme;
   final scaler = MediaQuery.textScalerOf(context);
@@ -31,7 +34,25 @@ double homeShelfTileHeight(BuildContext context) {
       homeCardPadding * 2;
 }
 
-/// A card whose data is still being read: the picture's square in the
+/// Space between a shelf cell's edge and a grid card's content: the card's
+/// margin plus its padding.
+const homeGridCardInset = libraryGridCardMargin + libraryGridCardPadding;
+
+/// Cover side of a grid card in a shelf cell. Equals [homeCardPictureSize], so
+/// `HomeShelf.arrowTop` holds for every shelf.
+const homeGridCardCoverSize = homeShelfTileWidth - homeGridCardInset * 2;
+
+/// Height of a shelf of song grid cards at the current text scale.
+double homeTrackShelfHeight(BuildContext context) =>
+    SongGridTile.heightFor(context, homeGridCardCoverSize) +
+    homeGridCardInset * 2;
+
+/// Height of a shelf of album grid cards at the current text scale.
+double homeAlbumShelfHeight(BuildContext context) =>
+    AlbumGridTile.heightFor(context, homeGridCardCoverSize) +
+    homeGridCardInset * 2;
+
+/// An artist card whose data is still being read: the picture's square in the
 /// placeholder color, nothing else.
 class HomeCardPlaceholder extends StatelessWidget {
   const HomeCardPlaceholder({super.key});

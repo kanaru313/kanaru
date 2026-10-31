@@ -3,13 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/library_view_modes.dart';
-import 'package:kanaru/features/library/songs/song_grid_tile.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 import 'list_view_modes_override.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/song_grid_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/library_grid_card.dart';
 
 String _name(int i) => 's${i.toString().padLeft(4, '0')}';
 
@@ -118,6 +120,6 @@ void main() {
 
     expect(find.text(_name(4999)), findsOneWidget);
     expect(find.text(_name(0)), findsNothing);
-    expect(find.byType(SongGridTilePlaceholder), findsNothing);
+    expect(find.byType(LibraryGridCardPlaceholder), findsNothing);
   });
 }

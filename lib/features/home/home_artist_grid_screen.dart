@@ -6,6 +6,7 @@ import '../../shared/icons/app_icons.dart';
 import 'home_artist_card.dart';
 import 'home_card_grid_screen.dart';
 import 'home_paged_providers.dart';
+import 'home_tile_metrics.dart';
 
 /// Every artist played, newest listen first.
 class HomeArtistGridScreen extends StatelessWidget {
@@ -20,6 +21,7 @@ class HomeArtistGridScreen extends StatelessWidget {
       emptyIcon: AppIcons.artistOutline,
       pages: homeRecentArtistsPagesProvider,
       cardBuilder: (artist) => HomeArtistCard(artist: artist),
+      cellHeight: homeShelfTileHeight,
     );
   }
 }

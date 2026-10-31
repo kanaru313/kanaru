@@ -1,6 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/widgets/song_card.dart';
+import '../song_card.dart';
+
+/// Padding around the content of a round or folder tile and the gap between
+/// the picture and the text (also the gap in card tiles).
+const gridTilePadding = 8.0;
+const gridTileGap = 8.0;
 
 /// Space between the edge of a grid cell and its card (half of the 8 px
 /// between two cards).
@@ -21,9 +26,9 @@ const libraryGridTextInset = 8.0;
 const libraryGridCoverRadius = 8.0;
 
 /// A grid cell's card (songs and albums): [libraryGridCardMargin] around, a
-/// [songCardColor] fill, and [child] inside the card's padding. The `Material` is always present,
-/// so the tree does not change when [playing] flips. [onTap] null draws no
-/// ink (the placeholder).
+/// [songCardColor] fill, and [child] inside the card's padding. The
+/// `Material` is always present, so the tree does not change when [playing]
+/// flips. [onTap] null draws no ink (the placeholder).
 class LibraryGridCard extends StatelessWidget {
   const LibraryGridCard({
     super.key,
@@ -55,6 +60,34 @@ class LibraryGridCard extends StatelessWidget {
         child: onTap == null
             ? padded
             : InkWell(onTap: onTap, customBorder: songCardShape, child: padded),
+      ),
+    );
+  }
+}
+
+/// Placeholder of any card grid tile (song or album) still loading: the card
+/// with the cover's square in the placeholder colour, so the grid does not
+/// jump when it loads.
+class LibraryGridCardPlaceholder extends StatelessWidget {
+  const LibraryGridCardPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
+    return LibraryGridCard(
+      child: LayoutBuilder(
+        builder: (context, constraints) => Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox.square(
+            dimension: constraints.maxWidth,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(libraryGridCoverRadius),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

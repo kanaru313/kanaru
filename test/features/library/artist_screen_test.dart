@@ -4,7 +4,6 @@ import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/library/albums/album_artist_link.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
@@ -13,6 +12,8 @@ import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 const _tracks = [
   TestTrack(

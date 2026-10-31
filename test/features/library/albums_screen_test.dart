@@ -1,12 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/library/albums/album_grid_tile.dart';
 import 'package:kanaru/shared/widgets/album_artwork.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
+
+import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
 
 const _tracks = [
   TestTrack('one', artist: 'Zed', album: 'Beta', year: 1999),

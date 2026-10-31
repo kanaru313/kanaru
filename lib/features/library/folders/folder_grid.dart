@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../albums/album_grid_tile.dart';
 import '../widgets/round_grid_tile.dart';
 import 'folder_grid_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
+import '../albums/album_grid.dart';
 
 /// A folder to show in [FolderGrid] or [SliverFolderGrid]: the node, the name
 /// to show for it, and in flat mode the line of folders above it and whether
