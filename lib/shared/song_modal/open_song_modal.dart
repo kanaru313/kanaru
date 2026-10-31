@@ -20,7 +20,7 @@ import 'song_modal_session.dart';
 /// `TrackMenuRunner` after the modal has closed. [showAlbum] and [showFolder]
 /// false leave out Go to album and Go to folder, on the pages of the song's
 /// own album and folder. [extraActions] are the actions of the screen the song
-/// is listed on; they come first.
+/// is listed on; they come first. [viaKeyboard] focuses the first row.
 void openSongModal(
   BuildContext context,
   WidgetRef ref, {
@@ -28,6 +28,7 @@ void openSongModal(
   required ValueChanged<QueueAction> onQueueAction,
   bool showAlbum = true,
   bool showFolder = true,
+  bool viaKeyboard = false,
   List<ContextModalAction> extraActions = const [],
 }) {
   final session = SongModalSession(
@@ -44,6 +45,7 @@ void openSongModal(
       context,
       root: songModalActionsPage(session),
       semanticLabel: context.l10n.songModalLabel,
+      viaKeyboard: viaKeyboard,
     ),
   );
 }

@@ -49,10 +49,18 @@ class _BackAction extends Action<_BackIntent> {
 /// The modal's content: the page stack, key handling and the frame choice.
 /// The stack lives here, above the frame switch, so resizing keeps the page.
 class ContextModalShell extends StatefulWidget {
-  const ContextModalShell({super.key, required this.root, this.semanticLabel});
+  const ContextModalShell({
+    super.key,
+    required this.root,
+    this.semanticLabel,
+    this.viaKeyboard = false,
+  });
 
   final ContextModalPage root;
   final String? semanticLabel;
+
+  /// Opened from the keyboard: focus lands on the first row at once.
+  final bool viaKeyboard;
 
   @override
   State<ContextModalShell> createState() => _ContextModalShellState();
@@ -60,7 +68,14 @@ class ContextModalShell extends StatefulWidget {
 
 class _ContextModalShellState extends State<ContextModalShell> {
   late final List<ContextModalPage> _stack = [widget.root];
-  final _scope = FocusScopeNode(debugLabel: 'ContextModal');
+  late final _scope = FocusScopeNode(
+    debugLabel: 'ContextModal',
+    onKeyEvent: (_, event) => _onKey(event),
+  );
+
+  /// Set when opened from the keyboard or once a navigation key was pressed
+  /// inside; page changes then keep a focus target. A mouse never sets it.
+  late bool _keyboardMode = widget.viaKeyboard;
   bool _forward = true;
   late final ContextModalNav _nav = ContextModalNav(
     push: _push,
@@ -72,18 +87,44 @@ class _ContextModalShellState extends State<ContextModalShell> {
   void initState() {
     super.initState();
     // Opened from the keyboard: land on the first row, so arrows work at once.
-    _focusFirstRow();
+    if (_keyboardMode) _focusFirstRow();
   }
 
-  /// Keyboard users keep a focus target after the page changed; pointer
+  static final _navKeys = {
+    LogicalKeyboardKey.tab,
+    LogicalKeyboardKey.arrowUp,
+    LogicalKeyboardKey.arrowDown,
+    LogicalKeyboardKey.enter,
+    LogicalKeyboardKey.numpadEnter,
+    LogicalKeyboardKey.space,
+  };
+
+  KeyEventResult _onKey(KeyEvent event) {
+    if (event is! KeyDownEvent || !_navKeys.contains(event.logicalKey)) {
+      return KeyEventResult.ignored;
+    }
+    _keyboardMode = true;
+    final key = event.logicalKey;
+    final moves =
+        key == LogicalKeyboardKey.tab ||
+        key == LogicalKeyboardKey.arrowUp ||
+        key == LogicalKeyboardKey.arrowDown;
+    // Nothing in the modal has focus yet: the first key press lands on the
+    // first row instead of moving from nowhere.
+    if (moves && _scope.focusedChild == null) {
+      _scope.nextFocus();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  /// Keyboard mode keeps a focus target after the page changed; pointer
   /// users get none.
   void _focusFirstRow() {
     // Two frames: the first drops focus from the page that is leaving.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted &&
-            FocusManager.instance.highlightMode ==
-                FocusHighlightMode.traditional) {
+        if (mounted && _keyboardMode) {
           FocusManager.instance.primaryFocus?.unfocus();
           _scope.nextFocus();
         }

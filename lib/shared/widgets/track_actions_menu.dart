@@ -34,14 +34,16 @@ class TrackActionsRegion extends ConsumerWidget {
   void _open(
     BuildContext context,
     WidgetRef ref,
-    ValueChanged<QueueAction> f,
-  ) => openSongModal(
+    ValueChanged<QueueAction> f, {
+    bool viaKeyboard = false,
+  }) => openSongModal(
     context,
     ref,
     song: song,
     onQueueAction: f,
     showAlbum: showAlbum,
     showFolder: showFolder,
+    viaKeyboard: viaKeyboard,
   );
 
   @override
@@ -49,7 +51,7 @@ class TrackActionsRegion extends ConsumerWidget {
     final onQueue = onQueueAction;
     if (onQueue == null) return child;
     return MenuKeyboardRegion(
-      onOpen: (_) => _open(context, ref, onQueue),
+      onOpen: (_) => _open(context, ref, onQueue, viaKeyboard: true),
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onSecondaryTapUp: (_) => _open(context, ref, onQueue),

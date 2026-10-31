@@ -13,12 +13,15 @@ export 'context_modal_top_bar.dart';
 
 /// Opens a context modal starting at [root]: a centered dialog in a wide
 /// window, a bottom sheet in a narrow one (switching live on resize).
-/// [semanticLabel] names the dialog for screen readers.
+/// [semanticLabel] names the dialog for screen readers. [viaKeyboard] puts
+/// focus on the first row at once; otherwise no row has focus until a
+/// navigation key is pressed.
 /// Completes with what `nav.close(result)` passed, or null when dismissed.
 Future<T?> showContextModal<T>(
   BuildContext context, {
   required ContextModalPage root,
   String? semanticLabel,
+  bool viaKeyboard = false,
 }) {
   final reduce = MediaQuery.disableAnimationsOf(context);
   return showGeneralDialog<T>(
@@ -45,7 +48,11 @@ Future<T?> showContextModal<T>(
               behavior: HitTestBehavior.opaque,
               onTap: () => Navigator.of(routeContext).maybePop(),
             ),
-            ContextModalShell(root: root, semanticLabel: semanticLabel),
+            ContextModalShell(
+              root: root,
+              semanticLabel: semanticLabel,
+              viaKeyboard: viaKeyboard,
+            ),
           ],
         ),
       ),

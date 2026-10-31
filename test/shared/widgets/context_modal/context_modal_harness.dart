@@ -9,6 +9,7 @@ Future<void> pumpModalApp(
   WidgetTester tester, {
   Size size = const Size(1000, 800),
   bool disableAnimations = false,
+  bool viaKeyboard = false,
   List<ContextModalAction> extra = const [],
 }) async {
   tester.view.physicalSize = size;
@@ -49,7 +50,11 @@ Future<void> pumpModalApp(
       home: Scaffold(
         body: Builder(
           builder: (context) => TextButton(
-            onPressed: () => showContextModal<Object>(context, root: root),
+            onPressed: () => showContextModal<Object>(
+              context,
+              root: root,
+              viaKeyboard: viaKeyboard,
+            ),
             child: const Text('open'),
           ),
         ),
