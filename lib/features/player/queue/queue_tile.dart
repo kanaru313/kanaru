@@ -2,7 +2,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/playlist_library_paths.dart';
+import '../../../core/database/library_track_of_path.dart';
 import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
@@ -80,7 +80,7 @@ class QueueTile extends ConsumerWidget {
     // read it stays off (an added favorite can always be taken out again), so
     // it never offers an add that the press would refuse.
     final canAdd = path != null
-        ? (ref.watch(isLibraryPathProvider(path)).value ?? false)
+        ? (ref.watch(libraryTrackOfPathProvider(path)).value != null)
         : false;
 
     // The row height is fixed, so its text stops growing at a cap instead of
