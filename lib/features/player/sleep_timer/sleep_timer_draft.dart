@@ -4,7 +4,7 @@ import '../../../core/player/sleep_timer.dart';
 enum SleepTimerSetupTab { minutes, tracks, endOf }
 
 /// Minutes the quick choice chips offer.
-const sleepTimerMinutePresets = [15, 30, 45, 60, 90, 120];
+const sleepTimerMinutePresets = [15, 30, 45, 60, 90];
 
 /// Tracks the quick choice chips offer.
 const sleepTimerTrackPresets = [1, 2, 3, 5, 10];
