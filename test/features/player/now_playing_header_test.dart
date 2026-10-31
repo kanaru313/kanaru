@@ -16,7 +16,7 @@ import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pills.dart'
-    show nowPlayingPillLabelRooms;
+    show nowPlayingPillGap, nowPlayingPillLabelRooms;
 import 'package:kanaru/features/player/playback_controls.dart'
     show ShuffleButton;
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
@@ -407,6 +407,17 @@ void main() {
         expect(floating.value, isTrue);
       });
 
+      testWidgets('leaves a gap before the lyrics source pill', (tester) async {
+        await pump(tester, showTranslate: true, overrides: ready());
+
+        expect(find.text('Google · English'), findsOneWidget);
+        expect(
+          tester.getRect(find.byType(LyricsSourceButton)).left -
+              tester.getRect(find.byType(LyricsTranslationButton)).right,
+          nowPlayingPillGap,
+        );
+      });
+
       testWidgets('the pill moves no other header button', (tester) async {
         await pump(tester, showTranslate: true, overrides: scripted());
         final shuffle = tester.getRect(find.byType(ShuffleButton));
@@ -473,11 +484,11 @@ void main() {
       testWidgets('at the tightest edge the pill and sleep label both fit', (
         tester,
       ) async {
-        // Header 760 px wide: each of the two pills gets a label room just
-        // above the 64 px minimum.
+        // Header 768 px wide: after the gap between them, each of the two
+        // pills gets a label room just above the 64 px minimum.
         await pump(
           tester,
-          width: 760 + windowButtons,
+          width: 768 + windowButtons,
           windowButtons: true,
           textScale: 1.5,
           showTranslate: true,
@@ -575,10 +586,10 @@ void main() {
       );
 
       // Both are pills: the room is split in two, from what is left after
-      // both pills replaced a button each.
+      // both pills replaced a button each and the gap between them.
       final both = rooms(1000, pill: true);
       expect(both.source, both.translate);
-      expect(both.source, (1000 - 286 - 248 - 24) / 2);
+      expect(both.source, (1000 - 286 - 248 - 24 - nowPlayingPillGap) / 2);
     });
 
     for (final locale in const [Locale('en'), Locale('vi')]) {

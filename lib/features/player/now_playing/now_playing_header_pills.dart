@@ -27,6 +27,10 @@ const nowPlayingHeaderSeparatorWidth = 25.0;
 /// Width of one round header button.
 const _buttonWidth = 48.0;
 
+/// Air between the translation pill and the lyrics source pill, so the two
+/// tinted pills read as separate buttons.
+const nowPlayingPillGap = 8.0;
+
 /// Room the labels of the two lyrics buttons (translation, then lyrics
 /// source) may take in a header [width] wide: what is left after every other
 /// button, the sleep timer label's reserve and the window buttons' divider,
@@ -34,8 +38,8 @@ const _buttonWidth = 48.0;
 /// and icon. Zero or less means no room for a label.
 ///
 /// The room is split in two only when the translation is a pill
-/// ([translatePill]); otherwise the source pill gets all of it and the
-/// translate button stays an icon.
+/// ([translatePill]), after the [nowPlayingPillGap] between them; otherwise
+/// the source pill gets all of it and the translate button stays an icon.
 @visibleForTesting
 ({double source, double translate}) nowPlayingPillLabelRooms({
   required double width,
@@ -55,7 +59,7 @@ const _buttonWidth = 48.0;
   final free = width - left - right;
   const spare = _buttonWidth - lyricsTranslationPillChrome;
   if (!translatePill) return (source: free + spare, translate: 0);
-  final half = (free + 2 * spare) / 2;
+  final half = (free + 2 * spare - nowPlayingPillGap) / 2;
   return (source: half, translate: half);
 }
 
@@ -104,6 +108,10 @@ class NowPlayingLyricsPills extends ConsumerWidget {
           maxLabelWidth: rooms.translate,
           onMenuChanged: onTranslateMenuChanged,
         ),
+        // Only between two pills: a translation squeezed back to its icon
+        // keeps the round buttons' usual spacing.
+        if (translatePill && rooms.translate >= lyricsTranslationMinLabelWidth)
+          const SizedBox(width: nowPlayingPillGap),
         LyricsSourceButton(
           maxLabelWidth: rooms.source,
           menuOpener: sourceMenuOpener,
