@@ -388,6 +388,7 @@ void main() {
       tester,
     ) async {
       await _openTop(tester, h);
+      final badges = tester.widgetList(find.text('3 listens')).length;
 
       await _rowMenu(tester, 0);
 
@@ -396,8 +397,8 @@ void main() {
       expect(find.text('Add to queue'), findsOneWidget);
       expect(find.text('Song history'), findsOneWidget);
       expect(find.text('Remove from history'), findsNothing);
-      // B was played 3 times: the header says so, as the row badge does.
-      expect(find.text('3 listens'), findsWidgets);
+      // The header has no listen line: only the row badges show the count.
+      expect(find.text('3 listens'), findsNWidgets(badges));
     });
 
     historyTestWidgets('every way to open the row modal works', (tester) async {
