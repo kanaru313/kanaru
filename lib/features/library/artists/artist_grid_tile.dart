@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/artist_summaries.dart';
+import '../../../shared/artist_modal/artist_actions_region.dart';
 import '../../../shared/widgets/artist_avatar.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_browse_body.dart';
@@ -20,17 +21,21 @@ class ArtistGridTile extends StatelessWidget {
   final ArtistSummary artist;
   final VoidCallback onTap;
 
-  /// Picked from the menu of a right click or long press; no menu without it.
+  /// Picked in the artist modal; no modal without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
   @override
-  Widget build(BuildContext context) => RoundGridTile(
-    avatarBuilder: (size) =>
-        ArtistAvatar(artistKey: artist.key, name: artist.name, size: size),
-    title: artist.name,
-    subtitle: context.l10n.albumsSongCount(artist.songCount),
-    onTap: onTap,
+  Widget build(BuildContext context) => ArtistActionsRegion(
+    artist: artist,
     onQueueAction: onQueueAction,
+    child: RoundGridTile(
+      avatarBuilder: (size) =>
+          ArtistAvatar(artistKey: artist.key, name: artist.name, size: size),
+      title: artist.name,
+      subtitle: context.l10n.albumsSongCount(artist.songCount),
+      onTap: onTap,
+      onQueueAction: null,
+    ),
   );
 }
 

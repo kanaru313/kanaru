@@ -4,9 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/album_links_provider.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/album_modal/album_more_button.dart';
-import 'package:kanaru/shared/artist_summaries.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
-import 'package:kanaru/shared/widgets/artist_tile.dart';
 import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -132,29 +130,4 @@ void main() {
       expect(tester.getSize(find.byType(SongCardFrame)).height, without);
     });
   }
-
-  testWidgets('an artist row has no ⋮ button', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: ArtistTile(
-              artist: const ArtistSummary(
-                key: 'a',
-                name: 'Ann',
-                songCount: 2,
-                albumCount: 1,
-              ),
-              onTap: () {},
-              onPlay: () {},
-              onQueueAction: (_) {},
-            ),
-          ),
-        ),
-      ),
-    );
-    expect(find.byTooltip('More options'), findsNothing);
-  });
 }

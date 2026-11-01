@@ -4,13 +4,15 @@ import '../../l10n/l10n.dart';
 import '../artist_summaries.dart';
 import 'artist_avatar.dart';
 import 'library_row.dart';
+import '../artist_modal/artist_actions_region.dart';
+import '../artist_modal/artist_more_button.dart';
 import 'queue_actions_menu.dart';
 import 'song_card.dart';
 
-/// One artist row, drawn as a card like a song row: avatar, then three lines (name, "N albums",
-/// "M songs • total length"), then a play button shown while
-/// the row is hovered or focused; no button without [onPlay]. Every line is
-/// always laid out, so all rows have the height of the list's prototype row.
+/// One artist row, drawn as a card like a song row: avatar, then three lines
+/// (name, "N albums", "M songs • total length"), then a play button shown
+/// while the row is hovered or focused; no button without [onPlay]. Every line
+/// is always laid out, so all rows have the height of the list's prototype row.
 class ArtistTile extends StatelessWidget {
   const ArtistTile({
     super.key,
@@ -26,7 +28,8 @@ class ArtistTile extends StatelessWidget {
   /// Plays every song of the artist; the caller picks the order.
   final VoidCallback? onPlay;
 
-  /// Picked from the menu of a right click or long press; no menu without it.
+  /// Picked in the artist modal (right click, long press or the ⋮ button); no
+  /// modal and no ⋮ button without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
   @override
@@ -50,13 +53,17 @@ class ArtistTile extends StatelessWidget {
       onTap: onTap,
       onPlay: onPlay,
       playTooltip: l10n.artistsPlayArtist,
+      more: onQueueAction == null
+          ? null
+          : ArtistMoreButton(artist: artist, onQueueAction: onQueueAction!),
       // The card takes 16 px; with these 16 the content sits 32 px from the
       // list edge, like the text of a song row.
       horizontalPadding: songCardInset,
       inkBorder: songCardShape,
     );
-    return QueueActionsRegion(
-      onAction: onQueueAction,
+    return ArtistActionsRegion(
+      artist: artist,
+      onQueueAction: onQueueAction,
       child: SongCardFrame(child: tile),
     );
   }

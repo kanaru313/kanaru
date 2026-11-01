@@ -7,7 +7,9 @@ import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/shared/album_modal/album_more_button.dart';
+import 'package:kanaru/shared/artist_modal/artist_more_button.dart';
 import 'package:kanaru/shared/enqueue_tracks.dart';
+import 'package:kanaru/shared/widgets/artist_tile.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,6 +19,7 @@ import 'package:kanaru/shared/library_route_keys.dart';
 import 'browse_test_data.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'library_test_harness.dart';
+import 'list_view_modes_override.dart';
 
 const _tracks = [
   TestTrack('a1', artist: 'Ann', album: 'Alpha', track: 1),
@@ -40,6 +43,16 @@ void main() {
 
   Future<void> pick(WidgetTester tester, LibraryHarness h, String item) async {
     await tester.tap(find.text(item));
+    await settleIo(tester, h);
+  }
+
+  /// Taps the footer button `artist-modal-<id>` of the open artist modal.
+  Future<void> pickInArtistModal(
+    WidgetTester tester,
+    LibraryHarness h,
+    String id,
+  ) async {
+    await tester.tap(find.byKey(ValueKey('artist-modal-$id')));
     await settleIo(tester, h);
   }
 
@@ -194,15 +207,37 @@ void main() {
   });
 
   group('artists', () {
-    testWidgets('a list tile queues the songs of the artist', (tester) async {
+    testWidgets('a grid tile queues the songs of the artist', (tester) async {
       final h = LibraryHarness();
       await openWithTracks(tester, h, _tracks, location: '/artists');
 
       await rightClick(tester, find.text('Ann'));
-      await pick(tester, h, 'Play next');
+      await pickInArtistModal(tester, h, 'play-next');
 
       expect(queue(h), ['a1', 'a2']);
       expect(find.text('Playing: Ann'), findsOneWidget);
+    });
+
+    testWidgets('a list row queues the artist from its modal and ⋮', (
+      tester,
+    ) async {
+      final h = LibraryHarness(overrides: [listViewModesOverride]);
+      await openWithTracks(tester, h, _tracks, location: '/artists');
+      expect(find.byType(ArtistTile), findsNWidgets(3));
+
+      await rightClick(tester, find.text('Ann'));
+      await pickInArtistModal(tester, h, 'add-to-queue');
+      expect(queue(h), ['a1', 'a2']);
+
+      await tester.tap(
+        find.descendant(
+          of: find.widgetWithText(ArtistTile, 'Bob'),
+          matching: find.byType(ArtistMoreButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await pickInArtistModal(tester, h, 'play-next');
+      expect(queue(h), ['a1', 'b1', 'a2']);
     });
 
     testWidgets('queue the songs in the order of the artist page', (
@@ -241,7 +276,7 @@ void main() {
       ], location: '/artists');
 
       await rightClick(tester, find.text('Ann'));
-      await pick(tester, h, 'Add to queue');
+      await pickInArtistModal(tester, h, 'add-to-queue');
 
       const order = ['beta1', 'alpha1', 'alpha2', 'guest', 'loose'];
       expect(queue(h), order);
