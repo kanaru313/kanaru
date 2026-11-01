@@ -18,6 +18,25 @@ extension TrackMenuRunnerLinks on TrackMenuRunner {
     );
   }
 
+  /// The provider container captured when the runner was made; it outlives
+  /// the row.
+  ProviderContainer get container => _container;
+
+  /// Navigates to [location]. Does nothing without a router above the row.
+  void goTo(String location) => _router?.go(location);
+
+  /// Shows [path] in the file manager; says so when that fails.
+  Future<void> showInFileManagerAt(String path) async {
+    try {
+      if (!await _showInFileManager(path)) {
+        _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
+      }
+    } catch (error, stack) {
+      _log.severe('A file manager action failed', error, stack);
+      _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
+    }
+  }
+
   /// Opens the page of the artist [key] of the song [trackId], as the modal's
   /// artist rows and chips do. A song gone from the library says so. Does
   /// nothing without a router above the row.

@@ -167,4 +167,7 @@ abstract final class AppIcons {
   static const IconData repository = Icons.dns_outlined;
   static const IconData dropDown = Icons.arrow_drop_down;
   static const IconData check = Icons.check;
+
+  /// Edit an album's cover art.
+  static const IconData editAlbumArt = Icons.add_photo_alternate_outlined;
 }

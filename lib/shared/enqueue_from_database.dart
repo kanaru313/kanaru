@@ -14,10 +14,20 @@ import '../core/player/track.dart';
 import '../l10n/l10n.dart';
 import 'enqueue_chain.dart';
 import 'play_tracks.dart';
+import 'queue_host.dart';
 import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
 
 final _log = Logger('library');
+
+/// Reads the tracks of album [key] in the order of its page.
+Future<List<Track>> Function(LibraryDatabase db, String? covers) _albumTracks(
+  AlbumKey key,
+) =>
+    (db, covers) async => [
+      for (final t in await db.albumTracks(key))
+        trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+    ];
 
 /// [enqueueTracks] for an album, whose tracks are read from the database
 /// when its turn comes, in the order of its page.
@@ -27,27 +37,12 @@ void enqueueAlbum(
   QueueAction action,
   AlbumKey key,
   String title,
-) => enqueueFromDatabase(
-  ref,
-  context,
-  action,
-  title,
-  (db, covers) async => [
-    for (final t in await db.albumTracks(key))
-      trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
-  ],
-);
+) => enqueueFromDatabase(ref, context, action, title, _albumTracks(key));
 
 /// Replaces the queue with the tracks of album [key], in the order of its
 /// page, and plays from the first; see [playFromDatabase].
-Future<void> playAlbum(WidgetRef ref, AlbumKey key) => playFromDatabase(
-  ref,
-  'Playing an album failed',
-  (db, covers) async => [
-    for (final t in await db.albumTracks(key))
-      trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
-  ],
-);
+Future<void> playAlbum(WidgetRef ref, AlbumKey key) =>
+    playFromDatabase(ref, 'Playing an album failed', _albumTracks(key));
 
 /// Replaces the queue with the tracks crediting [artistKey], album by album
 /// as Home's artist cards queue them, and plays from the first; see
@@ -75,16 +70,72 @@ Future<void> playFromDatabase(
 ) async {
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;
-  final covers = ref.read(coverCacheDirectoryProvider);
   // Read before any await: the row that asked may be gone by then.
-  final player = ref.read(playerServiceProvider.notifier);
-  final picks = pendingQueuePicks(ref);
+  return _playFromDatabase(
+    db,
+    ref.read(coverCacheDirectoryProvider),
+    ref.read(playerServiceProvider.notifier),
+    pendingQueuePicks(ref),
+    failure,
+    read,
+    false,
+  );
+}
+
+/// [playFromDatabase] for a caller with no live [WidgetRef]: everything is
+/// read from [container], which outlives any row. [shuffle] turns shuffle on
+/// and starts from a random track.
+Future<void> playFromDatabaseIn(
+  ProviderContainer container,
+  String failure,
+  Future<List<Track>> Function(LibraryDatabase db, String? covers) read, {
+  bool shuffle = false,
+}) async {
+  final db = container.read(libraryDatabaseProvider);
+  if (db == null) return;
+  return _playFromDatabase(
+    db,
+    container.read(coverCacheDirectoryProvider),
+    container.read(playerServiceProvider.notifier),
+    pendingQueuePicksIn(container),
+    failure,
+    read,
+    shuffle,
+  );
+}
+
+/// [playAlbum] (or its shuffled form) for a caller with no live [WidgetRef],
+/// such as a modal action that runs after the tile is gone.
+Future<void> playAlbumIn(
+  ProviderContainer container,
+  AlbumKey key, {
+  bool shuffle = false,
+}) => playFromDatabaseIn(
+  container,
+  'Playing an album failed',
+  _albumTracks(key),
+  shuffle: shuffle,
+);
+
+Future<void> _playFromDatabase(
+  LibraryDatabase db,
+  String? covers,
+  PlayerService player,
+  Future<void> picks,
+  String failure,
+  Future<List<Track>> Function(LibraryDatabase db, String? covers) read,
+  bool shuffle,
+) async {
   try {
     await picks;
     final changesBefore = player.userQueueChanges;
     final tracks = await read(db, covers);
     if (tracks.isEmpty || player.userQueueChanges != changesBefore) return;
-    await player.openTracks(tracks);
+    if (shuffle) {
+      await player.openShuffled(tracks);
+    } else {
+      await player.openTracks(tracks);
+    }
   } catch (error, stackTrace) {
     _log.severe(failure, error, stackTrace);
   }
@@ -92,8 +143,8 @@ Future<void> playFromDatabase(
 
 /// Queues the tracks [read] returns, naming them [label]; see [enqueueTracks].
 /// [read] gets the open library and the cover cache directory (null when
-/// covers are off). Does nothing, silently, when [context] is unmounted or no
-/// library is open.
+/// covers are off). Inside a [QueueHost] zone the host does the work. Otherwise
+/// does nothing, silently, when [context] is unmounted or no library is open.
 void enqueueFromDatabase(
   WidgetRef ref,
   BuildContext context,
@@ -101,6 +152,13 @@ void enqueueFromDatabase(
   String label,
   Future<List<Track>> Function(LibraryDatabase db, String? covers) read,
 ) {
+  // A modal's queue action runs after its tile is gone: the host then does
+  // the work, before the unmounted context would drop it.
+  final host = QueueHost.current;
+  if (host != null) {
+    host.enqueueFromDatabase(action, label, read);
+    return;
+  }
   if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;

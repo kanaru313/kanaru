@@ -4,6 +4,11 @@ import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
 
 import 'context_modal_harness.dart';
 
+/// The chips strip: a horizontal list.
+final _horizontalStrip = find.byWidgetPredicate(
+  (w) => w is ListView && w.scrollDirection == Axis.horizontal,
+);
+
 void main() {
   testWidgets('shows subtitle and runs trailing buttons without the row', (
     tester,
@@ -185,5 +190,68 @@ void main() {
     );
     expect(out.length, 3);
     expect(out[1], isA<Divider>());
+  });
+
+  testWidgets('chips wrap in the dialog with the wrap option', (tester) async {
+    ContextModalAction artists({required bool wrap}) => ContextModalAction(
+      id: 'artists',
+      icon: Icons.person,
+      label: 'Artists',
+      chips: ContextModalChips(
+        initiallyExpanded: true,
+        wrap: wrap,
+        items: [
+          for (var i = 0; i < 3; i++)
+            ContextModalChip(label: 'Artist number $i', onTap: (_) {}),
+        ],
+      ),
+    );
+    await pumpModalApp(tester, extra: [artists(wrap: true)]);
+    expect(find.byType(Wrap), findsOneWidget);
+    expect(_horizontalStrip, findsNothing);
+  });
+
+  testWidgets('chips stay one strip in the dialog by default', (tester) async {
+    await pumpModalApp(
+      tester,
+      extra: [
+        ContextModalAction(
+          id: 'artists',
+          icon: Icons.person,
+          label: 'Artists',
+          chips: ContextModalChips(
+            initiallyExpanded: true,
+            items: [ContextModalChip(label: 'Artist', onTap: (_) {})],
+          ),
+        ),
+      ],
+    );
+    expect(find.byType(Wrap), findsNothing);
+    expect(_horizontalStrip, findsOneWidget);
+  });
+
+  testWidgets('without dividers groups are 6 px apart', (tester) async {
+    late List<Widget> out;
+    await tester.pumpWidget(
+      Builder(
+        builder: (context) {
+          out = contextModalSections(
+            ContextModalNav(push: (_) {}, pop: () {}, close: ([_]) {}),
+            [
+              [],
+              [ContextModalAction(id: 'a', icon: Icons.info, label: 'A')],
+              [],
+              [ContextModalAction(id: 'b', icon: Icons.info, label: 'B')],
+              [],
+            ],
+            dividers: false,
+          );
+          return const SizedBox();
+        },
+      ),
+    );
+    expect(out.length, 3);
+    expect(out.whereType<Divider>(), isEmpty);
+    expect((out[1] as SizedBox).height, 6);
   });
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/database/library_database.dart' show LibraryDatabase;
+import '../core/database/library_startup.dart' show coverCacheDirectoryProvider;
 import '../core/player/playing_track_art.dart' show localPathOf;
 import '../core/player/track.dart';
 import '../l10n/l10n.dart';
@@ -18,7 +19,7 @@ final _hostKey = Object();
 /// asked is still on screen. The song modal runs its queue actions after it
 /// has closed, when that row can already be gone; [enqueueLoaded] then uses
 /// the host instead of the row's own `WidgetRef` and `BuildContext`, which
-/// are no longer valid. Only [enqueueLoaded] honors a host.
+/// are no longer valid. [enqueueLoaded] and `enqueueFromDatabase` honor a host.
 ///
 /// A caller that itself checks `mounted` before acting (the songs list) still
 /// drops the action when its whole screen is gone; that is accepted.
@@ -44,12 +45,50 @@ class QueueHost {
   /// The host of the queue action running right now, if any.
   static QueueHost? get current => Zone.current[_hostKey] as QueueHost?;
 
-  /// Runs [action] so that [enqueueLoaded] calls made inside it, sync or
+  /// Runs [action] so that [enqueueLoaded] and `enqueueFromDatabase` calls made inside it, sync or
   /// async (work started in its zone), use [host]. A null [host] runs
   /// [action] unchanged.
   static void run(QueueHost? host, void Function() action) {
     if (host == null) return action();
     runZoned(action, zoneValues: {_hostKey: host});
+  }
+
+  /// `enqueueFromDatabase` without the row's `WidgetRef` and `BuildContext`:
+  /// [read] gets the open library and the cover cache directory. Does nothing
+  /// when no library is open.
+  void enqueueFromDatabase(
+    QueueAction action,
+    String label,
+    Future<List<Track>> Function(LibraryDatabase db, String? covers) read,
+  ) {
+    final db = _db;
+    if (db == null) return;
+    final covers = _container.read(coverCacheDirectoryProvider);
+    if (action == QueueAction.addToPlaylist) {
+      unawaited(
+        addTracksToPlaylistWith(
+          db: db,
+          messenger: _messenger,
+          l10n: _l10n,
+          dialogContext: _dialogContext,
+          readPaths: () async => [
+            for (final t in await read(db, covers)) ?localPathOf(t.uri),
+          ],
+          label: label,
+        ),
+      );
+      return;
+    }
+    unawaited(
+      enqueueTracksIn(
+        _container,
+        _messenger,
+        _l10n,
+        action,
+        () => read(db, covers),
+        label,
+      ),
+    );
   }
 
   /// [enqueueLoaded] without the row's `WidgetRef` and `BuildContext`.

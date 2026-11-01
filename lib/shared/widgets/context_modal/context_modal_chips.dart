@@ -6,8 +6,8 @@ import 'context_modal_nav.dart';
 import 'context_modal_spec.dart';
 import 'fade_edge_scroll_view.dart';
 
-/// Height cap of the wrapped chips in a bottom sheet.
-const double _sheetChipsMaxHeight = 116;
+/// Height cap of the wrapped chips.
+const double _wrappedChipsMaxHeight = 116;
 
 /// Left inset that lines the chips up under the row's label.
 const double _chipsInset = 58;
@@ -32,9 +32,9 @@ class ContextModalChipsRow extends StatelessWidget {
         _Chip(label: chip.label, onTap: () => chip.onTap(nav)),
     ];
     final hidden = ScrollConfiguration.of(context).copyWith(scrollbars: false);
-    if (ContextModalFrameScope.isSheetOf(context)) {
+    if (chips.wrap || ContextModalFrameScope.isSheetOf(context)) {
       return ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: _sheetChipsMaxHeight),
+        constraints: const BoxConstraints(maxHeight: _wrappedChipsMaxHeight),
         child: ScrollConfiguration(
           behavior: hidden,
           child: FadeEdgeScrollView(

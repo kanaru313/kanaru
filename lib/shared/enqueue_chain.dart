@@ -46,6 +46,10 @@ final _enqueueChainProvider = Provider<_EnqueueChain>((ref) => _EnqueueChain());
 Future<void> pendingQueuePicks(WidgetRef ref) =>
     ref.read(_enqueueChainProvider).tail;
 
+/// [pendingQueuePicks] for a caller with no live [WidgetRef].
+Future<void> pendingQueuePicksIn(ProviderContainer c) =>
+    c.read(_enqueueChainProvider).tail;
+
 /// Says [text] in a snackbar. While an earlier queue message waits its turn on
 /// the same [messenger], its text is replaced instead: only the latest pick is
 /// worth reading. One already on screen is closed and the new text gets a
