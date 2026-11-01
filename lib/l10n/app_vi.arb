@@ -1820,5 +1820,15 @@
   "songLyricsShowTimestamps": "Hiện mốc thời gian",
   "songLyricsHideTimestamps": "Ẩn mốc thời gian",
   "songLyricsCopy": "Sao chép lời",
-  "songLyricsCopied": "Đã sao chép lời bài hát"
+  "songLyricsCopied": "Đã sao chép lời bài hát",
+  "albumModalLabel": "Tùy chọn album",
+  "albumModalEditAlbumArt": "Sửa ảnh bìa album",
+  "albumModalPlayAll": "Phát tất cả",
+  "albumModalSongsInFolders": "{songs, plural, other{{songs} bài}} trong {folders} thư mục",
+  "albumModalArtistsTitle": "Nghệ sĩ · {title}",
+  "albumModalFoldersTitle": "Thư mục · {title}",
+  "albumModalFoldersIntro": "Các bài của album này được lưu trong {count} thư mục. Chọn một thư mục để mở trong mục Thư mục.",
+  "albumModalKeepsFiles": "Giữ nguyên các tệp",
+  "albumModalDeleteFiles": "Xoá tệp",
+  "albumModalFilesCount": "{count, plural, other{{count} tệp}}"
 }

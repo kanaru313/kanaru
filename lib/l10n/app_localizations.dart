@@ -6919,6 +6919,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lyrics copied'**
   String get songLyricsCopied;
+
+  /// Accessible name of the album options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Album options'**
+  String get albumModalLabel;
+
+  /// Tooltip of the button in the album options header that will change the cover (not available yet)
+  ///
+  /// In en, this message translates to:
+  /// **'Edit album art'**
+  String get albumModalEditAlbumArt;
+
+  /// Album options row that plays the whole album
+  ///
+  /// In en, this message translates to:
+  /// **'Play all'**
+  String get albumModalPlayAll;
+
+  /// Quiet line under the Go to folder row of an album whose songs are in several folders
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{1 song} other{{songs} songs}} in {folders} folders'**
+  String albumModalSongsInFolders(int songs, int folders);
+
+  /// Title of the album options page that lists the album's artists
+  ///
+  /// In en, this message translates to:
+  /// **'Artists · {title}'**
+  String albumModalArtistsTitle(String title);
+
+  /// Title of the album options page that lists the folders of the album's songs
+  ///
+  /// In en, this message translates to:
+  /// **'Folders · {title}'**
+  String albumModalFoldersTitle(String title);
+
+  /// Sentence at the top of the album options page that lists the album's folders
+  ///
+  /// In en, this message translates to:
+  /// **'The songs of this album are saved in {count} folders. Pick one to open it in Folders.'**
+  String albumModalFoldersIntro(int count);
+
+  /// Quiet line under Remove from library in the album's Advanced options
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the files'**
+  String get albumModalKeepsFiles;
+
+  /// Advanced album option (not available yet) that deletes the album's files from disk
+  ///
+  /// In en, this message translates to:
+  /// **'Delete files'**
+  String get albumModalDeleteFiles;
+
+  /// Quiet line under Delete files in the album's Advanced options
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file} other{{count} files}}'**
+  String albumModalFilesCount(int count);
 }
 
 class _AppLocalizationsDelegate
