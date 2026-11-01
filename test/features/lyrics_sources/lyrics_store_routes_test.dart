@@ -70,9 +70,9 @@ void main() {
     );
   });
 
-  testWidgets('the Plugin store button opens the store', (tester) async {
+  testWidgets('the Get more plugins row opens the store', (tester) async {
     final router = await pump(tester);
-    await tester.tap(find.text(en.lyricsSourcesStore));
+    await tester.tap(find.text(en.lyricsSourcesGetMore));
     await tester.pumpAndSettle();
     expect(find.byType(PluginStorePage), findsOneWidget);
     expect(router.state.uri.path, lyricsSourcesStoreRoute);
@@ -89,7 +89,7 @@ void main() {
     final history = container.read(navigationHistoryProvider.notifier);
     String here() => router.state.uri.path;
 
-    await tester.tap(find.text(en.lyricsSourcesStore));
+    await tester.tap(find.text(en.lyricsSourcesGetMore));
     await tester.pumpAndSettle();
     expect(here(), lyricsSourcesStoreRoute);
 
@@ -128,7 +128,7 @@ void main() {
     final history = container.read(navigationHistoryProvider.notifier);
     final before = tester.state(find.byType(LyricsSourcesPage));
 
-    await tester.tap(find.text(en.lyricsSourcesStore));
+    await tester.tap(find.text(en.lyricsSourcesGetMore));
     await tester.pumpAndSettle();
     history.back();
     await tester.pumpAndSettle();
@@ -156,6 +156,27 @@ void main() {
       expect(router.state.uri.path, lyricsStoreRoute);
       expect(tester.state(find.byType(PluginStorePage)), same(before));
       expect(find.byType(LyricsSourcesPage), findsNothing);
+    });
+
+    testWidgets('back from the store lands on the settings root', (
+      tester,
+    ) async {
+      final router = await pump(tester, location: settingsRoute);
+      final container = ProviderContainer(
+        overrides: [routerProvider.overrideWithValue(router)],
+      );
+      addTearDown(container.dispose);
+      final history = container.read(navigationHistoryProvider.notifier);
+      expect(find.text('settings page'), findsOneWidget);
+
+      router.go(lyricsStoreRoute);
+      await tester.pumpAndSettle();
+      expect(find.byType(PluginStorePage), findsOneWidget);
+      history.back();
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, settingsRoute);
+      expect(find.text('settings page'), findsOneWidget);
     });
 
     testWidgets('the store opens at /settings/plugins', (tester) async {

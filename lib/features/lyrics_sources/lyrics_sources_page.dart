@@ -11,6 +11,7 @@ import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/lyrics_source_routes.dart';
 import '../../shared/widgets/page_scaffold.dart';
+import 'get_more_plugins_row.dart';
 import 'lyrics_source_row.dart';
 import 'lyrics_sources_header.dart';
 import 'lyrics_sources_menu.dart';
@@ -123,9 +124,11 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
             padding: const EdgeInsets.only(bottom: 32),
             buildDefaultDragHandles: false,
             header: const LyricsSourcesHeader(),
-            footer: shown.any((e) => e.record != null)
-                ? null
-                : Padding(
+            footer: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!shown.any((e) => e.record != null))
+                  Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       l10n.lyricsSourcesEmptyHint,
@@ -134,6 +137,9 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
                       ),
                     ),
                   ),
+                const GetMorePluginsRow(),
+              ],
+            ),
             itemCount: shown.length,
             onReorderItem: (from, to) => _reorder(shown, from, to),
             itemBuilder: (context, index) {

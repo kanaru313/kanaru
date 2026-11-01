@@ -3450,7 +3450,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Kanaru thử lần lượt các nguồn đang bật, từ trên xuống, khi tự động tìm lời. Chọn lời sẽ tìm ở mọi nguồn đang bật. Bạn có thể kéo tay cầm để đổi thứ tự.';
 
   @override
-  String get lyricsSourcesStore => 'Kho plugin';
+  String get lyricsSourcesGetMore => 'Tải thêm plugin';
+
+  @override
+  String get lyricsSourcesGetMoreHint => 'Tìm thêm nguồn lời trong kho plugin';
 
   @override
   String get lyricsSourcesEmptyHint =>

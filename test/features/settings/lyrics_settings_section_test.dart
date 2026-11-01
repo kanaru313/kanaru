@@ -196,8 +196,8 @@ void main() {
       final l10n = lookupAppLocalizations(const Locale('en'));
       await tester.tap(find.text('LRCLIB, NetEase, Kugou · 3 on'));
       await tester.pumpAndSettle();
-      // The page's Plugin store button is only on the sources page.
-      expect(find.text(l10n.lyricsSourcesStore), findsOneWidget);
+      // The page's Get more plugins row is only on the sources page.
+      expect(find.text(l10n.lyricsSourcesGetMore), findsOneWidget);
     });
   });
 }

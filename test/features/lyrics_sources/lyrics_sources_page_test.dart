@@ -58,20 +58,36 @@ void main() {
       locale: const Locale('vi'),
     );
     expect(find.text('Nguồn lời'), findsOneWidget);
-    expect(find.text('Kho plugin'), findsOneWidget);
-    expect(find.text('hieu05 (tự khai báo) · v3 · File: demo.zip'), findsOneWidget);
+    expect(find.text('Tải thêm plugin'), findsOneWidget);
+    expect(
+      find.text('hieu05 (tự khai báo) · v3 · File: demo.zip'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('the Plugin store button is enabled', (tester) async {
+  testWidgets('the Get more plugins row is enabled', (tester) async {
     await pumpSources(tester, plugins: FakePlugins());
 
-    final button = tester.widget<ButtonStyleButton>(
+    final row = tester.widget<ListTile>(
       find.ancestor(
-        of: find.text(en.lyricsSourcesStore),
-        matching: find.bySubtype<ButtonStyleButton>(),
+        of: find.text(en.lyricsSourcesGetMore),
+        matching: find.byType(ListTile),
       ),
     );
-    expect(button.onPressed, isNotNull);
+    expect(row.onTap, isNotNull);
+  });
+
+  testWidgets('the Get more plugins row shows without plugins', (tester) async {
+    await pumpSources(tester, plugins: FakePlugins());
+    expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
+    expect(find.text(en.lyricsSourcesGetMoreHint), findsOneWidget);
+    expect(find.text(en.lyricsSourcesEmptyHint), findsOneWidget);
+  });
+
+  testWidgets('the Get more plugins row shows with plugins', (tester) async {
+    await pumpSources(tester, records: two, plugins: FakePlugins());
+    expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
+    expect(find.text(en.lyricsSourcesEmptyHint), findsNothing);
   });
 
   testWidgets('an empty plugin list shows LRCLIB and a hint', (tester) async {
@@ -158,8 +174,8 @@ void main() {
 
     await tester.tap(find.text('LRCLIB'));
     await tester.pumpAndSettle();
-    // Still on the list: its store button shows and no plugin page opened.
-    expect(find.text(en.lyricsSourcesStore), findsOneWidget);
+    // Still on the list: its Get more plugins row shows and no plugin page opened.
+    expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
     expect(find.byTooltip(en.pluginUninstall), findsNothing);
 
     await tester.tap(find.text('Alpha'));

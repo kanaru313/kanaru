@@ -5426,11 +5426,17 @@ abstract class AppLocalizations {
   /// **'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.'**
   String get lyricsSourcesInfo;
 
-  /// No description provided for @lyricsSourcesStore.
+  /// Title of the row at the end of the lyrics sources list that opens the plugin store
   ///
   /// In en, this message translates to:
-  /// **'Plugin store'**
-  String get lyricsSourcesStore;
+  /// **'Get more plugins'**
+  String get lyricsSourcesGetMore;
+
+  /// Subtitle of the Get more plugins row on the lyrics sources page
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics sources in the plugin store'**
+  String get lyricsSourcesGetMoreHint;
 
   /// No description provided for @lyricsSourcesEmptyHint.
   ///

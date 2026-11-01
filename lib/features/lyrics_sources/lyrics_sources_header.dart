@@ -1,12 +1,9 @@
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import '../../shared/lyrics_source_routes.dart';
 
-/// Above the source list: how the order works, and the Plugin store button.
-/// The button opens the store; going back returns here.
+/// Above the source list: a note on how the order works.
 class LyricsSourcesHeader extends StatelessWidget {
   const LyricsSourcesHeader({super.key});
 
@@ -44,12 +41,6 @@ class LyricsSourcesHeader extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          FilledButton.tonalIcon(
-            onPressed: () => context.go(lyricsSourcesStoreRoute),
-            icon: const Icon(AppIcons.download),
-            label: Text(l10n.lyricsSourcesStore),
           ),
         ],
       ),

@@ -3350,7 +3350,14 @@
   },
   "lyricsSourcesRowNoneOn": "Every source is off",
   "lyricsSourcesInfo": "Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.",
-  "lyricsSourcesStore": "Plugin store",
+  "lyricsSourcesGetMore": "Get more plugins",
+  "@lyricsSourcesGetMore": {
+    "description": "Title of the row at the end of the lyrics sources list that opens the plugin store"
+  },
+  "lyricsSourcesGetMoreHint": "Find lyrics sources in the plugin store",
+  "@lyricsSourcesGetMoreHint": {
+    "description": "Subtitle of the Get more plugins row on the lyrics sources page"
+  },
   "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from the Plugin store.",
   "lyricsSourceBuiltIn": "Built in",
   "lyricsSourceBuiltInHosts": "Built in · {hosts}",

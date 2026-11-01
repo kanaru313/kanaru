@@ -3685,7 +3685,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Kanaru tries the enabled sources from top to bottom when it looks up lyrics automatically. Choose lyrics searches every enabled source, and you can drag the handle to change the order.';
 
   @override
-  String get lyricsSourcesStore => 'Plugin store';
+  String get lyricsSourcesGetMore => 'Get more plugins';
+
+  @override
+  String get lyricsSourcesGetMoreHint =>
+      'Find lyrics sources in the plugin store';
 
   @override
   String get lyricsSourcesEmptyHint =>

@@ -393,8 +393,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(plugins.uninstalls, [idA]);
-      // Back on the sources list (its Plugin store button), with the note.
-      expect(find.text(en.lyricsSourcesStore), findsOneWidget);
+      // Back on the sources list (its Get more plugins row), with the note.
+      expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
       expect(find.text(en.pluginUninstalled('Alpha')), findsOneWidget);
     });
   });
@@ -410,6 +410,6 @@ void main() {
     expect(find.text(en.pluginGone), findsOneWidget);
     await tester.tap(find.text(en.lyricsSourcesTitle).last);
     await tester.pumpAndSettle();
-    expect(find.text(en.lyricsSourcesStore), findsOneWidget);
+    expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
   });
 }

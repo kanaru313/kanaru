@@ -155,7 +155,7 @@ void main() {
 
       plugins.uninstallGate!.complete();
       await tester.pumpAndSettle();
-      expect(find.text(en.lyricsSourcesStore), findsOneWidget);
+      expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
       expect(find.text(en.pluginUninstalled('Alpha')), findsOneWidget);
     });
 
