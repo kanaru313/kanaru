@@ -11,6 +11,7 @@ import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
+import 'settings_page_opener.dart';
 
 TracksCompanion _track(int rootId, String path) => TracksCompanion.insert(
   rootId: rootId,
@@ -55,6 +56,11 @@ void main() {
     tester.view.physicalSize = const Size(1280, 2400);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
+    await openSettingsPage(
+      tester,
+      'Library',
+      settle: () => settleIo(tester, h),
+    );
   }
 
   Future<List<String>> storedRoots(
@@ -372,6 +378,7 @@ void main() {
     await h.pump(tester);
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
+    await openSettingsPage(tester, 'Library');
 
     expect(
       tester

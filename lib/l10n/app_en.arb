@@ -890,11 +890,86 @@
   "settingsTabLanguages": "Languages",
   "settingsTrackNumbers": "Track numbers in albums",
   "settingsTrackNumbersHint": "Shows each song's number before its cover on an album page.",
+  "settingsPlayback": "Playback",
+  "@settingsPlayback": {
+    "description": "Title of the Playback page in Settings and its tile on the Settings root"
+  },
+  "settingsGroupPlayback": "Playback",
+  "@settingsGroupPlayback": {
+    "description": "Header of the playback options group on the Playback settings page"
+  },
+  "settingsPlugins": "Plugins",
+  "@settingsPlugins": {
+    "description": "Title of the Plugins tile on the Settings root"
+  },
+  "settingsDataStorage": "Data & storage",
+  "@settingsDataStorage": {
+    "description": "Title of the Data and storage page in Settings and its tile"
+  },
+  "settingsAppearanceDescription": "Theme, font, language, sidebar",
+  "@settingsAppearanceDescription": {
+    "description": "Description under the Appearance tile on the Settings root"
+  },
+  "settingsPlaybackDescription": "Transitions, volume, lyrics, translation",
+  "@settingsPlaybackDescription": {
+    "description": "Description under the Playback tile on the Settings root"
+  },
+  "settingsLibraryDescription": "Music folders, scanning, album grouping",
+  "@settingsLibraryDescription": {
+    "description": "Description under the Library tile on the Settings root"
+  },
+  "settingsPluginsDescription": "Get and install plugins from a repository or a file",
+  "@settingsPluginsDescription": {
+    "description": "Description under the Plugins tile on the Settings root"
+  },
+  "settingsDataStorageDescription": "Backup, caches, logs",
+  "@settingsDataStorageDescription": {
+    "description": "Description under the Data and storage tile on the Settings root"
+  },
+  "settingsAboutDescription": "Version, licenses, source code",
+  "@settingsAboutDescription": {
+    "description": "Description under the About tile on the Settings root"
+  },
+  "settingsGroupTheme": "Theme",
+  "@settingsGroupTheme": {
+    "description": "Header of the theme group on the Appearance settings page"
+  },
+  "settingsGroupText": "Text",
+  "@settingsGroupText": {
+    "description": "Header of the text group (font, size, language) on the Appearance settings page"
+  },
+  "settingsGroupLayout": "Layout",
+  "@settingsGroupLayout": {
+    "description": "Header of the layout group on the Appearance settings page"
+  },
+  "settingsGroupFolders": "Folders",
+  "@settingsGroupFolders": {
+    "description": "Header of the folders group on the Library settings page"
+  },
+  "settingsGroupScanning": "Scanning",
+  "@settingsGroupScanning": {
+    "description": "Header of the scanning group on the Library settings page"
+  },
+  "settingsGroupOrganization": "Organization",
+  "@settingsGroupOrganization": {
+    "description": "Header of the organization group (album grouping, separators) on the Library settings page"
+  },
+  "settingsGroupTranslation": "Translation",
+  "@settingsGroupTranslation": {
+    "description": "Header of the translation group on the Playback settings page"
+  },
+  "settingsGroupCaches": "Caches",
+  "@settingsGroupCaches": {
+    "description": "Header of the caches group on the Data and storage settings page"
+  },
+  "settingsGroupLogs": "Logs",
+  "@settingsGroupLogs": {
+    "description": "Header of the logs group on the Data and storage settings page"
+  },
   "settingsLyrics": "Lyrics",
   "@settingsLyrics": {
     "description": "Title of the Lyrics section in Settings"
   },
-  "settingsAdvanced": "Advanced",
   "settingsBackupRestore": "Backup and restore",
   "settingsBackupRestoreRow": "Back up and restore data",
   "settingsBackupRestoreHint": "Export and import your settings, playlists and play counts.",
@@ -2583,11 +2658,11 @@
       }
     }
   },
-  "lyricsTranslationBannerNoKey": "Add your DeepL key in Settings › Lyrics.",
+  "lyricsTranslationBannerNoKey": "Add your DeepL key in Settings › Playback › Translation.",
   "@lyricsTranslationBannerNoKey": {
     "description": "Lyrics translation error banner: DeepL is selected but no key is saved"
   },
-  "lyricsTranslationBannerBadKey": "DeepL rejected the key. Check the key in Settings › Lyrics.",
+  "lyricsTranslationBannerBadKey": "DeepL rejected the key. Check the key in Settings › Playback › Translation.",
   "@lyricsTranslationBannerBadKey": {
     "description": "Lyrics translation error banner: DeepL did not accept the saved key"
   },
@@ -2745,7 +2820,7 @@
   "@onlineLyricsNoticeSourcesBody": {
     "description": "Body of the online lyrics notice dialog; one consent covers every enabled source"
   },
-  "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Lyrics.",
+  "onlineLyricsNoticeAutoHint": "You can turn it off in Settings › Playback › Lyrics.",
   "@onlineLyricsNoticeAutoHint": {
     "description": "Hint under the automatic online lyrics notice saying where to turn it off"
   },

@@ -4,52 +4,44 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/settings/app_font.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Appearance options: motion, colors from the cover, the seek bar style of
-/// Now Playing, the font and the text size. All apply at once.
-class DisplaySettingRows extends ConsumerWidget {
-  const DisplaySettingRows({super.key});
+/// Language names stay in their own language so they can always be found.
+/// A translation missing here is listed by its language code.
+const _nativeNames = {'en': 'English', 'vi': 'Tiếng Việt'};
+
+/// One entry per translation the app ships, so a new one shows up by itself.
+final _languages = [
+  for (final locale in AppLocalizations.supportedLocales)
+    (
+      locale.languageCode,
+      _nativeNames[locale.languageCode] ?? locale.languageCode,
+    ),
+];
+
+/// Language value for "follow the system language".
+const _systemLanguage = '';
+
+/// Appearance › Text: the font, the text size and the language. All apply
+/// at once.
+class AppearanceTextSettingRows extends ConsumerWidget {
+  const AppearanceTextSettingRows({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
+    final languageCode = _languages.any((l) => l.$1 == settings.languageCode)
+        ? settings.languageCode!
+        : _systemLanguage;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SettingRow.single(
-          title: l10n.settingsAnimations,
-          subtitle: l10n.settingsAnimationsHint,
-          control: Switch(
-            value: settings.animations,
-            onChanged: notifier.setAnimations,
-          ),
-        ),
-        SettingRow.single(
-          title: l10n.settingsColorFromCover,
-          subtitle: l10n.settingsColorFromCoverHint,
-          control: Switch(
-            value: settings.display.colorFromCover,
-            onChanged: (on) => notifier.setDisplay(
-              settings.display.copyWith(colorFromCover: on),
-            ),
-          ),
-        ),
-        SettingRow.single(
-          title: l10n.settingsWaveformSeekBar,
-          subtitle: l10n.settingsWaveformSeekBarHint,
-          control: Switch(
-            value: settings.display.waveformSeekBar,
-            onChanged: (on) => notifier.setDisplay(
-              settings.display.copyWith(waveformSeekBar: on),
-            ),
-          ),
-        ),
         SettingRow.single(
           title: l10n.settingsFont,
           subtitle: l10n.settingsFontHint,
@@ -83,6 +75,24 @@ class DisplaySettingRows extends ConsumerWidget {
             onSelected: (scale) => notifier.setDisplay(
               settings.display.copyWith(fontScale: scale),
             ),
+          ),
+        ),
+        SettingRow.single(
+          title: l10n.settingsLanguage,
+          subtitle: l10n.settingsLanguageHint,
+          control: SettingDropdown<String>(
+            leadingIcon: AppIcons.language,
+            options: [
+              SettingOption(
+                value: _systemLanguage,
+                label: l10n.settingsLanguageSystem,
+              ),
+              for (final (code, name) in _languages)
+                SettingOption(value: code, label: name),
+            ],
+            selected: languageCode,
+            onSelected: (code) =>
+                notifier.setLanguage(code == _systemLanguage ? null : code),
           ),
         ),
       ],

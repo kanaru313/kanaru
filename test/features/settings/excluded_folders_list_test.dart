@@ -6,6 +6,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
+import 'settings_page_opener.dart';
 
 final _onboarded = [
   initialSettingsProvider.overrideWithValue(
@@ -33,6 +34,11 @@ void main() {
     tester.view.physicalSize = const Size(1280, 2400);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
+    await openSettingsPage(
+      tester,
+      'Library',
+      settle: () => settleIo(tester, h),
+    );
     return h;
   }
 

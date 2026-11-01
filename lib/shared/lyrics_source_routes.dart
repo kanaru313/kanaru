@@ -2,8 +2,11 @@
 /// router that serves them lives in `lib/app/`.
 library;
 
-/// The list of lyrics sources (LRCLIB and installed plugins).
-const lyricsSourcesRoute = '/settings/lyrics-sources';
+import 'settings_routes.dart';
+
+/// The list of lyrics sources (LRCLIB and installed plugins), a page below
+/// Playback settings so that back from it is a pop.
+const lyricsSourcesRoute = '$settingsPlaybackRoute/lyrics-sources';
 
 /// Name of the path parameter of [lyricsPluginRoutePattern].
 const lyricsPluginIdParam = 'installId';
@@ -18,7 +21,7 @@ const lyricsPluginRoutePattern =
 /// [lyricsSourcesStoreRoute]) so that each hop into it is a push and back is
 /// a pop. Pages below a store base: [lyricsStoreRepositoriesRoute] and
 /// [lyricsStoreItemRoute].
-const lyricsStoreRoute = '/settings/plugins';
+const lyricsStoreRoute = '$settingsRoute/plugins';
 
 /// The plugin store as mounted under the lyrics sources page.
 const lyricsSourcesStoreRoute = '$lyricsSourcesRoute/plugins';

@@ -8,7 +8,8 @@ import 'package:kanaru/features/library/folders/folders_screen.dart';
 import 'package:kanaru/features/library/genres/genres_screen.dart';
 import 'package:kanaru/features/library/songs/songs_screen.dart';
 import 'package:kanaru/features/library/widgets/library_rescan_button.dart';
-import 'package:kanaru/features/settings/settings_screen.dart';
+import 'package:kanaru/features/settings/library_settings_page.dart';
+import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
@@ -19,10 +20,10 @@ import '../../core/indexer/scripted_indexer.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 
-/// A tooltip on the settings page itself; the top bar repeats the scan
+/// A tooltip on the Library settings page itself; the top bar repeats the scan
 /// tooltips of its own rescan button.
 Finder inSettings(String tooltip) => find.descendant(
-  of: find.byType(SettingsScreen),
+  of: find.byType(LibrarySettingsPage),
   matching: find.byTooltip(tooltip),
 );
 
@@ -76,7 +77,7 @@ void main() {
       '/folders': FoldersScreen,
       albumLocation(const AlbumKey('ann', 'x')): AlbumScreen,
       artistLocation('ann'): ArtistScreen,
-      '/settings': SettingsScreen,
+      settingsLibraryRoute: LibrarySettingsPage,
     };
     for (final MapEntry(key: location, value: page) in pages.entries) {
       goTo(tester, h, location);
@@ -237,19 +238,13 @@ void main() {
       tester,
     ) async {
       final h = LibraryHarness();
-      await openScannable(tester, h, '/settings');
+      await openScannable(tester, h, settingsLibraryRoute);
 
       expect(find.text('Library'), findsOneWidget);
-      // Tall: the rescan row sits below the appearance rows.
+      // Tall: the rescan row sits below the folder lists.
       tester.view.physicalSize = const Size(1280, 3000);
       await tester.pumpAndSettle();
       expect(find.text('Rescan library'), findsOneWidget);
-      final appearance = tester.getTopLeft(find.text('Appearance')).dy;
-      expect(
-        appearance,
-        lessThan(tester.getTopLeft(find.text('Library')).dy),
-        reason: 'Appearance comes before Library',
-      );
 
       await tester.tap(rescanLibrary());
       await settleIo(tester, h);
@@ -266,9 +261,9 @@ void main() {
           overrides: [libraryIndexerProvider.overrideWith(() => indexer)],
         );
         await h.pump(tester, hasRoots: true);
-        // Tall: the rescan row sits below the appearance rows.
+        // Tall: the rescan row sits below the library counts.
         tester.view.physicalSize = Size(width, 3000);
-        goTo(tester, h, '/settings');
+        goTo(tester, h, settingsLibraryRoute);
         await tester.pumpAndSettle();
         final button = rescanLibrary();
         final idle = tester.getRect(button);
@@ -335,7 +330,7 @@ void main() {
     ) async {
       final h = LibraryHarness();
       await h.pump(tester);
-      goTo(tester, h, '/settings');
+      goTo(tester, h, settingsLibraryRoute);
       await tester.pumpAndSettle();
 
       expect(find.text('Rescan library'), findsOneWidget);

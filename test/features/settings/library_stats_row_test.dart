@@ -8,6 +8,7 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
+import 'settings_page_opener.dart';
 
 TracksCompanion _track(
   int rootId,
@@ -42,6 +43,11 @@ void main() {
     await h.pump(tester, hasRoots: true);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
+    await openSettingsPage(
+      tester,
+      'Library',
+      settle: () => settleIo(tester, h),
+    );
 
     expect(find.text('In your library'), findsOneWidget);
     expect(
@@ -74,6 +80,11 @@ void main() {
     await h.pump(tester, hasRoots: true);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
+    await openSettingsPage(
+      tester,
+      'Library',
+      settle: () => settleIo(tester, h),
+    );
 
     // Rock and Pop: the tracks with no usable genre are not a genre.
     expect(
@@ -87,6 +98,7 @@ void main() {
     await h.pump(tester);
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
+    await openSettingsPage(tester, 'Library');
 
     expect(find.text('In your library'), findsNothing);
     expect(find.text('Music folders'), findsOneWidget);

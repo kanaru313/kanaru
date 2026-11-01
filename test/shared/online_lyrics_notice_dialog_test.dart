@@ -151,7 +151,7 @@ void main() {
     expect(find.text('Find lyrics online automatically?'), findsOneWidget);
     expect(find.textContaining('sources you have turned on'), findsOneWidget);
     expect(
-      find.text('You can turn it off in Settings › Lyrics.'),
+      find.text('You can turn it off in Settings › Playback › Lyrics.'),
       findsOneWidget,
     );
     await tester.tap(find.text('Turn on'));

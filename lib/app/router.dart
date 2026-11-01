@@ -31,6 +31,7 @@ import '../features/playlists/queue_history_routes.dart';
 import '../features/playlists/queue_history_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/settings/settings_section_routes.dart';
 import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
 import 'shell/branch_transition_container.dart';
@@ -117,8 +118,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                       ),
                     ],
                     AppDestination.settings => [
-                      ...lyricsSourcesRoutesWith(
-                        children: [lyricsSourcesStoreMount()],
+                      ...settingsSectionRoutes(
+                        playbackChildren: lyricsSourcesRoutesWith(
+                          children: [lyricsSourcesStoreMount()],
+                        ),
                       ),
                       lyricsRootStoreMount(),
                     ],

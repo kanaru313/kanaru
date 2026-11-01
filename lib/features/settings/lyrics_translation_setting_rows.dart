@@ -10,7 +10,6 @@ import '../../shared/translation_notice_dialog.dart';
 import 'deepl_key_setting_row.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
-import 'translation_cache_setting_row.dart';
 
 /// A choice of the default language: a language code, or `null` to follow the
 /// app. A record, not a bare `String?`, because the dropdown ignores `null`
@@ -20,7 +19,8 @@ typedef _Target = ({String? code});
 const _followApp = (code: null);
 
 /// Lyrics translation options: the service, the DeepL key (only while DeepL
-/// is chosen), the default target language and the saved translations.
+/// is chosen) and the default target language. The saved translations are in
+/// Data & storage › Caches.
 class LyricsTranslationSettingRows extends ConsumerWidget {
   const LyricsTranslationSettingRows({super.key});
 
@@ -102,7 +102,6 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
             ],
           ),
         ),
-        const TranslationCacheSettingRow(),
       ],
     );
   }

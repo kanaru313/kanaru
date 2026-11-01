@@ -15,7 +15,7 @@ const listenEndSlack = Duration(seconds: 1);
 const listenSeekSlack = Duration(seconds: 1);
 
 /// When a play counts as a listen: after [minutes] of listening or
-/// [percent] of the track, whichever comes first (Settings → Advanced).
+/// [percent] of the track, whichever comes first (Settings → Playback).
 class ListenThreshold {
   const ListenThreshold({required this.minutes, required this.percent});
 

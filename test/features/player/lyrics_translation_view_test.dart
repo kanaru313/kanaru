@@ -199,7 +199,10 @@ void main() {
         TranslationFailureKind.badKey,
       ),
     );
-    expect(find.textContaining('Settings › Lyrics'), findsOneWidget);
+    expect(
+      find.textContaining('Settings › Playback › Translation'),
+      findsOneWidget,
+    );
     expect(find.text('Retry'), findsNothing);
     expect(find.text('Use Google'), findsOneWidget);
   });

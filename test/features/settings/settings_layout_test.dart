@@ -2,12 +2,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/app/router.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/setting_choice.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
+import 'package:kanaru/features/settings/settings_category_tile.dart';
+import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/settings_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -19,7 +23,7 @@ const _wideRowFrom = 560.0;
 void main() {
   // 820 to 940 px windows give 579 to 699 px rows next to the sidebar:
   // wide rows with little room, where the full controls get tight.
-  // Tall enough to build every section: the list is lazy.
+  // Tall enough to show a whole page.
   const sizes = [
     Size(480, 1200),
     Size(760, 1200),
@@ -47,9 +51,20 @@ void main() {
   }
 }
 
-/// Opens Settings in a [size] window in [language] and checks that every
-/// row fits, keeps its control on the title's line, and that all controls
-/// are [settingControlHeight] tall as drawn.
+/// A row that must keep [control] on its label's line, at its right. A row
+/// centres its control on the title and subtitle together, so that block
+/// stands for the label.
+typedef _Line = (String label, Finder control, String subtitle);
+
+/// The control of the row titled [label], found inside that row.
+Finder _inRow(String label, Finder control) => find.descendant(
+  of: find.ancestor(of: find.text(label), matching: find.byType(SettingRow)),
+  matching: control,
+);
+
+/// Opens Settings in a [size] window in [language] and checks the root and
+/// each page: every row fits, keeps its control on the title's line, and
+/// all controls are [settingControlHeight] tall as drawn.
 Future<void> _checkLayout(
   WidgetTester tester,
   String language,
@@ -77,132 +92,229 @@ Future<void> _checkLayout(
   await tester.pumpAndSettle();
   await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
   await tester.pumpAndSettle();
-
   expect(tester.takeException(), isNull);
 
-  // Sections start at the same left edge whatever their rows' width.
-  expect(
-    tester.getTopLeft(find.text(l10n.settingsAbout)).dx,
-    tester.getTopLeft(find.text(l10n.settingsAppearance)).dx,
+  // The root: six tiles that fit the window.
+  final tiles = find.byType(SettingsCategoryTile);
+  expect(tiles, findsNWidgets(6));
+  for (final tile in tiles.evaluate()) {
+    final rect = tester.getRect(find.byWidget(tile.widget));
+    expect(rect.right, lessThanOrEqualTo(size.width));
+  }
+
+  final router = container.read(routerProvider);
+  Future<void> visit(String route) async {
+    router.go(route);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: route);
+    // Sections start at the same left edge whatever their rows' width.
+    final lefts = {
+      for (final e in find.byType(SettingsSection).evaluate())
+        tester.getTopLeft(find.byWidget(e.widget)).dx,
+    };
+    expect(lefts, hasLength(1), reason: route);
+  }
+
+  await visit(settingsAppearanceRoute);
+  final rowWidth = tester.getSize(find.byType(SettingRow).first).width;
+  // Chips wrap inside the window, however narrow.
+  for (final label in [l10n.navFolders, l10n.settingsTabLanguages]) {
+    final chip = tester.getRect(find.text(label).last);
+    expect(chip.right, lessThanOrEqualTo(size.width), reason: label);
+  }
+  await _checkRows(
+    tester,
+    size,
+    [
+      (
+        l10n.settingsTheme,
+        find.byType(SettingChoice<ThemePreference>),
+        l10n.settingsThemeHint,
+      ),
+      (
+        l10n.settingsLanguage,
+        _inRow(l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
+        l10n.settingsLanguageHint,
+      ),
+      (
+        l10n.settingsFont,
+        _inRow(l10n.settingsFont, find.byType(SettingDropdown<String>)),
+        l10n.settingsFontHint,
+      ),
+      (
+        l10n.settingsFontScale,
+        _inRow(l10n.settingsFontScale, find.byType(DropdownMenu<double>)),
+        l10n.settingsFontScaleHint,
+      ),
+      (
+        l10n.settingsTitleBar,
+        find.byType(SettingChoice<TitleBarPreference>),
+        l10n.settingsTitleBarHint,
+      ),
+    ],
+    controls: _appearanceControls,
+    dropdowns: _appearanceDropdowns,
+  );
+  await _checkThemeControl(
+    tester,
+    container,
+    language,
+    size,
+    textScale,
+    rowWidth,
   );
 
+  await visit(settingsPlaybackRoute);
+  await _checkRows(
+    tester,
+    size,
+    [
+      (
+        l10n.listenHistoryRecord,
+        _inRow(l10n.listenHistoryRecord, find.byType(Switch)),
+        l10n.listenHistoryRecordHint,
+      ),
+      (
+        l10n.listenHistoryClear,
+        _inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
+        l10n.settingsClearListenHistoryHint,
+      ),
+      (
+        l10n.settingsTranslationService,
+        find.byType(SettingChoice<LyricsTranslationService>),
+        l10n.settingsTranslationServiceGoogleHint,
+      ),
+      (
+        l10n.settingsTranslationTarget,
+        _inRow(
+          l10n.settingsTranslationTarget,
+          find.byWidgetPredicate((w) => w is DropdownMenu),
+        ),
+        l10n.settingsTranslationTargetHint,
+      ),
+    ],
+    controls: _playbackControls,
+    dropdowns: _playbackDropdowns,
+  );
+
+  await visit(settingsLibraryRoute);
   // The rescan button, apart from the "Add folder" one.
   final rescanButton = find.ancestor(
     of: find.text(l10n.libraryRescan),
     matching: find.byType(FilledButton),
   );
+  await _checkRows(
+    tester,
+    size,
+    [
+      (
+        l10n.settingsFolders,
+        find.byType(FilledButton).first,
+        l10n.settingsFoldersHint,
+      ),
+      (
+        l10n.settingsRescanOnStartup,
+        _inRow(l10n.settingsRescanOnStartup, find.byType(Switch)),
+        l10n.settingsRescanOnStartupHint,
+      ),
+      (
+        l10n.settingsRescanLibrary,
+        rescanButton,
+        l10n.settingsRescanLibraryHint,
+      ),
+      (
+        l10n.settingsRespectNomedia,
+        _inRow(l10n.settingsRespectNomedia, find.byType(Switch)),
+        l10n.settingsRespectNomediaHint,
+      ),
+      (
+        l10n.separatorsArtistsTitle,
+        _inRow(l10n.separatorsArtistsTitle, find.byType(FilledButton)),
+        '${l10n.separatorsArtistsHint}\n${l10n.separatorsSummary(defaultArtistSeparators.length, 1)}',
+      ),
+      (
+        l10n.separatorsGenresTitle,
+        _inRow(l10n.separatorsGenresTitle, find.byType(FilledButton)),
+        '${l10n.separatorsGenresHint}\n${l10n.separatorsSummary(1, 0)}',
+      ),
+      (
+        l10n.settingsMinFileSize,
+        _inRow(l10n.settingsMinFileSize, find.byType(DropdownMenu<int>)),
+        l10n.settingsMinFileSizeHint,
+      ),
+    ],
+    controls: _libraryControls,
+    dropdowns: _libraryDropdowns,
+  );
+  _checkRescanLabel(tester, l10n, rescanButton, textScale);
+  // Chips wrap inside the window, however narrow.
+  for (final label in [l10n.settingsAlbumGroupYear]) {
+    final chip = tester.getRect(find.text(label).last);
+    expect(chip.right, lessThanOrEqualTo(size.width), reason: label);
+  }
+  if (rowWidth < _wideRowFrom) {
+    // In narrow rows the rescan button ends on the dropdowns' right edge.
+    final edge = tester.getRect(find.byType(DropdownMenu<int>).first).right;
+    expect(tester.getRect(rescanButton).right, edge);
+  }
 
-  // The control of the row titled [label], found inside that row.
-  Finder inRow(String label, Finder control) => find.descendant(
-    of: find.ancestor(of: find.text(label), matching: find.byType(SettingRow)),
-    matching: control,
+  await visit(settingsDataRoute);
+  await _checkRows(
+    tester,
+    size,
+    [
+      (
+        l10n.settingsClearCoverCache,
+        _inRow(l10n.settingsClearCoverCache, find.byType(FilledButton)),
+        l10n.settingsClearCoverCacheHint,
+      ),
+      (
+        l10n.settingsTranslationCache,
+        _inRow(l10n.settingsTranslationCache, find.byType(FilledButton)),
+        l10n.translationCacheEmpty,
+      ),
+      (
+        l10n.settingsSavedLyrics,
+        _inRow(l10n.settingsSavedLyrics, find.byType(FilledButton)),
+        l10n.settingsSavedLyricsNone,
+      ),
+      (
+        l10n.settingsOpenLogFolder,
+        _inRow(l10n.settingsOpenLogFolder, find.byType(FilledButton)),
+        l10n.settingsOpenLogFolderHint,
+      ),
+    ],
+    controls: _dataControls,
+    dropdowns: _dataDropdowns,
   );
 
-  // Every control sits on its label's line, at its right.
-  // A row centres its control on the title and subtitle together, so that
-  // block stands for the label.
-  for (final (label, control, subtitle) in [
-    (
-      l10n.settingsFolders,
-      find.byType(FilledButton).first,
-      l10n.settingsFoldersHint,
-    ),
-    (
-      l10n.settingsRescanOnStartup,
-      inRow(l10n.settingsRescanOnStartup, find.byType(Switch)),
-      l10n.settingsRescanOnStartupHint,
-    ),
-    (l10n.settingsRescanLibrary, rescanButton, l10n.settingsRescanLibraryHint),
-    (
-      l10n.listenHistoryRecord,
-      inRow(l10n.listenHistoryRecord, find.byType(Switch)),
-      l10n.listenHistoryRecordHint,
-    ),
-    (
-      l10n.listenHistoryClear,
-      inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
-      l10n.settingsClearListenHistoryHint,
-    ),
-    (
-      l10n.settingsTheme,
-      find.byType(SettingChoice<ThemePreference>),
-      l10n.settingsThemeHint,
-    ),
-    (
-      l10n.settingsLanguage,
-      inRow(l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
-      l10n.settingsLanguageHint,
-    ),
-    (
-      l10n.settingsFont,
-      inRow(l10n.settingsFont, find.byType(SettingDropdown<String>)),
-      l10n.settingsFontHint,
-    ),
-    (
-      l10n.settingsOpenLogFolder,
-      inRow(l10n.settingsOpenLogFolder, find.byType(FilledButton)),
-      l10n.settingsOpenLogFolderHint,
-    ),
-    (
-      l10n.settingsTitleBar,
-      find.byType(SettingChoice<TitleBarPreference>),
-      l10n.settingsTitleBarHint,
-    ),
-    // Rows of scan options that work, then of options not wired yet.
-    (
-      l10n.settingsRespectNomedia,
-      inRow(l10n.settingsRespectNomedia, find.byType(Switch)),
-      l10n.settingsRespectNomediaHint,
-    ),
-    (
-      l10n.separatorsArtistsTitle,
-      inRow(l10n.separatorsArtistsTitle, find.byType(FilledButton)),
-      '${l10n.separatorsArtistsHint}\n${l10n.separatorsSummary(defaultArtistSeparators.length, 1)}',
-    ),
-    (
-      l10n.separatorsGenresTitle,
-      inRow(l10n.separatorsGenresTitle, find.byType(FilledButton)),
-      '${l10n.separatorsGenresHint}\n${l10n.separatorsSummary(1, 0)}',
-    ),
-    (
-      l10n.settingsMinFileSize,
-      inRow(l10n.settingsMinFileSize, find.byType(DropdownMenu<int>)),
-      l10n.settingsMinFileSizeHint,
-    ),
-    (
-      l10n.settingsFontScale,
-      inRow(l10n.settingsFontScale, find.byType(DropdownMenu<double>)),
-      l10n.settingsFontScaleHint,
-    ),
-    (
-      l10n.settingsClearCoverCache,
-      inRow(l10n.settingsClearCoverCache, find.byType(FilledButton)),
-      l10n.settingsClearCoverCacheHint,
-    ),
-    (
-      l10n.settingsTranslationService,
-      find.byType(SettingChoice<LyricsTranslationService>),
-      l10n.settingsTranslationServiceGoogleHint,
-    ),
-    (
-      l10n.settingsTranslationTarget,
-      inRow(
-        l10n.settingsTranslationTarget,
-        find.byWidgetPredicate((w) => w is DropdownMenu),
-      ),
-      l10n.settingsTranslationTargetHint,
-    ),
-    (
-      l10n.settingsTranslationCache,
-      inRow(l10n.settingsTranslationCache, find.byType(FilledButton)),
-      l10n.translationCacheEmpty,
-    ),
-    (
-      l10n.settingsSavedLyrics,
-      inRow(l10n.settingsSavedLyrics, find.byType(FilledButton)),
-      l10n.settingsSavedLyricsNone,
-    ),
-  ]) {
+  await visit(settingsAboutRoute);
+  expect(tester.takeException(), isNull);
+}
+
+// Counts of controls on each page (buttons, choices and dropdowns) and, in
+// narrow rows where choices are dropdowns too, of dropdowns alone, so a control that goes missing or appears twice is caught.
+const _appearanceControls = 5;
+const _appearanceDropdowns = 5;
+const _playbackControls = 12;
+const _playbackDropdowns = 9;
+const _libraryControls = 7;
+const _libraryDropdowns = 2;
+const _dataControls = 5;
+const _dataDropdowns = 0;
+
+/// Checks the rows of the page shown: every control sits on its label's
+/// line at its right, all [controls] are [settingControlHeight] tall as drawn
+/// (a wide row's control is never scaled down), and in narrow rows the
+/// compact selectors share one width with their right edges lined up.
+Future<void> _checkRows(
+  WidgetTester tester,
+  Size size,
+  List<_Line> lines, {
+  required int controls,
+  required int dropdowns,
+}) async {
+  for (final (label, control, subtitle) in lines) {
     // `.last`: the sidebar can list the same word (Languages) before the page.
     final title = tester.getRect(find.text(label).last);
     final text = title.expandToInclude(tester.getRect(find.text(subtitle)));
@@ -215,23 +327,14 @@ Future<void> _checkLayout(
     expect(rect.left, greaterThan(title.right), reason: label);
   }
 
-  // Every control, whatever its kind, has the same height as drawn
-  // (a wide row's control is never scaled down).
-  final controls = [
+  final all = [
     ...find.byType(FilledButton).evaluate(),
     ...find
         .byWidgetPredicate((w) => w is SegmentedButton || w is DropdownMenu)
         .evaluate(),
   ];
-  expect(
-    controls,
-    hasLength(29),
-    reason:
-        'thirteen buttons (two open the separator dialogs, one withdraws the lyrics search permission), five choices and eleven dropdowns: the output device, the font, '
-        'ReplayGain mode, preamp, two scan filters and the translation language are wired, six options '
-        'are not yet',
-  );
-  for (final control in controls) {
+  expect(all, hasLength(controls));
+  for (final control in all) {
     expect(
       tester.getRect(find.byWidget(control.widget)).height,
       moreOrLessEquals(settingControlHeight),
@@ -239,18 +342,42 @@ Future<void> _checkLayout(
     );
   }
 
-  // The rescan label is drawn inside its button on one line, however narrow
-  // the button gets; at normal text size it also fits whole (no ellipsis).
-  // Chips wrap inside the window, however narrow.
-  for (final label in [
-    l10n.settingsAlbumGroupYear,
-    l10n.navFolders,
-    l10n.settingsTabLanguages,
-  ]) {
-    final chip = tester.getRect(find.text(label).last);
-    expect(chip.right, lessThanOrEqualTo(size.width), reason: label);
+  final rowWidth = tester.getSize(find.byType(SettingRow).first).width;
+  final rects = find
+      .byWidgetPredicate((w) => w is DropdownMenu)
+      .evaluate()
+      .map((e) => tester.getRect(find.byWidget(e.widget)))
+      .toList();
+  if (rowWidth >= _wideRowFrom) return;
+  // Narrow rows: every choice is a dropdown too.
+  expect(rects, hasLength(dropdowns));
+  if (rects.isEmpty) return;
+  // The listen threshold row splits the compact width between its time and
+  // share dropdowns; every other row has one.
+  bool shared(Rect r) => rects.where((o) => o.top == r.top).length > 1;
+  final single = rects.where((r) => !shared(r)).toList();
+  final paired = rects.where(shared).toList();
+  for (final rect in single.skip(1)) {
+    expect(rect.width, single.first.width);
+    expect(rect.right, single.first.right);
   }
+  if (paired.isNotEmpty) {
+    expect(paired, hasLength(2));
+    expect(paired.first.width, paired.last.width);
+    expect(paired.first.right, lessThanOrEqualTo(paired.last.left));
+    expect(paired.last.right, single.first.right);
+    expect(paired.first.left, greaterThanOrEqualTo(single.first.left));
+  }
+}
 
+/// The rescan label is drawn inside its button on one line, however narrow
+/// the button gets; at normal text size it also fits whole (no ellipsis).
+void _checkRescanLabel(
+  WidgetTester tester,
+  AppLocalizations l10n,
+  Finder rescanButton,
+  double textScale,
+) {
   final rescan = tester.getRect(rescanButton);
   final rescanLabel = find.descendant(
     of: rescanButton,
@@ -269,8 +396,20 @@ Future<void> _checkLayout(
       reason: 'rescan label cut short',
     );
   }
+}
 
-  final rowWidth = tester.getSize(find.byType(SettingRow).first).width;
+/// The theme control is the full segmented one in a roomy row, the compact
+/// dropdown in a narrow one, never both; choosing Dark and a title bar
+/// works from either.
+Future<void> _checkThemeControl(
+  WidgetTester tester,
+  ProviderContainer container,
+  String language,
+  Size size,
+  double textScale,
+  double rowWidth,
+) async {
+  final l10n = lookupAppLocalizations(Locale(language));
   final wideRows = rowWidth >= _wideRowFrom;
   final theme = find.byType(SettingChoice<ThemePreference>);
   final segmented = find.descendant(
@@ -297,32 +436,6 @@ Future<void> _checkLayout(
       1,
       reason: 'one theme control',
     );
-  }
-
-  // In narrow rows, compact selectors share one width, right edges lined
-  // up, and the rescan button ends on the same edge.
-  if (!wideRows) {
-    final dropdowns = find
-        .byWidgetPredicate((w) => w is DropdownMenu)
-        .evaluate()
-        .map((e) => tester.getRect(find.byWidget(e.widget)))
-        .toList();
-    expect(dropdowns, hasLength(16));
-    // The listen threshold row splits the compact width between its time
-    // and share dropdowns; every other row has one.
-    bool shared(Rect r) => dropdowns.where((o) => o.top == r.top).length > 1;
-    final single = dropdowns.where((r) => !shared(r)).toList();
-    final paired = dropdowns.where(shared).toList();
-    expect(paired, hasLength(2));
-    for (final rect in single.skip(1)) {
-      expect(rect.width, single.first.width);
-      expect(rect.right, single.first.right);
-    }
-    expect(paired.first.width, paired.last.width);
-    expect(paired.first.right, lessThanOrEqualTo(paired.last.left));
-    expect(paired.last.right, single.first.right);
-    expect(paired.first.left, greaterThanOrEqualTo(single.first.left));
-    expect(tester.getRect(rescanButton).right, single.first.right);
   }
   if (size.width > 760 && size.width < 1280) {
     expect(

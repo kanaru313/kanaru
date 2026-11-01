@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/features/library/widgets/library_rescan_button.dart';
-import 'package:kanaru/features/settings/settings_screen.dart';
+import 'package:kanaru/features/settings/library_settings_page.dart';
+import 'package:kanaru/shared/settings_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'browse_test_data.dart';
@@ -41,14 +42,14 @@ void main() {
   testWidgets('settings show the ring and disable rescan', (tester) async {
     final h = LibraryHarness();
     await h.pump(tester, hasRoots: true);
-    goTo(tester, h, '/settings');
+    goTo(tester, h, settingsLibraryRoute);
     await tester.pumpAndSettle();
 
     h.container.read(coverPassProvider.notifier).report(1, 4);
     await tester.pump();
     expect(
       find.descendant(
-        of: find.byType(SettingsScreen),
+        of: find.byType(LibrarySettingsPage),
         matching: find.byTooltip('Making covers… 1 / 4'),
       ),
       findsOneWidget,

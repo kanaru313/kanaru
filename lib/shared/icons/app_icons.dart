@@ -124,6 +124,10 @@ abstract final class AppIcons {
   static const IconData info = Icons.info_rounded;
 
   // Settings and window chrome.
+  static const IconData settingsAppearance = Icons.palette_outlined;
+  static const IconData settingsPlayback = Icons.play_circle_outline;
+  static const IconData settingsData = Icons.storage_outlined;
+  static const IconData settingsAbout = Icons.info_outline;
   static const IconData themeSystem = Icons.brightness_auto_outlined;
   static const IconData themeLight = Icons.light_mode_outlined;
   static const IconData themeDark = Icons.dark_mode_outlined;

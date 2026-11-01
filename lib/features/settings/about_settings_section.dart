@@ -11,6 +11,7 @@ import '../../shared/widgets/app_snack_bar.dart';
 
 const _licenseName = 'GPL-3.0-or-later';
 
+/// The About page's rows: version, license, third-party licenses, source code.
 class AboutSettingsSection extends ConsumerWidget {
   const AboutSettingsSection({super.key});
 
@@ -19,7 +20,8 @@ class AboutSettingsSection extends ConsumerWidget {
     final l10n = context.l10n;
 
     return SettingsSection(
-      title: l10n.settingsAbout,
+      // The page title already says it.
+      title: null,
       children: [
         ListTile(
           title: Text(l10n.appTitle),

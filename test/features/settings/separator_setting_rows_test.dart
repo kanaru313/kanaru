@@ -4,6 +4,7 @@ import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/library_test_harness.dart';
+import 'settings_page_opener.dart';
 
 Finder _rowButton(String title) => find.descendant(
   of: find.ancestor(of: find.text(title), matching: find.byType(SettingRow)),
@@ -23,6 +24,7 @@ Future<LibraryHarness> _open(
   tester.view.physicalSize = const Size(1280, 4000);
   await tester.tap(find.byTooltip('Settings'));
   await tester.pumpAndSettle();
+  await openSettingsPage(tester, 'Library');
   return h;
 }
 

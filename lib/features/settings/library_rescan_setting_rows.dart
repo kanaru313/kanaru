@@ -11,22 +11,15 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/cover_progress_indicator.dart';
 import '../../shared/widgets/scan_progress.dart';
-import 'excluded_folders_list.dart';
-import 'folder_watch_row.dart';
-import 'library_folders_list.dart';
-import 'library_scan_setting_rows.dart';
-import 'library_stats_row.dart';
-import 'scan_stats_rows.dart';
 import 'setting_row.dart';
-import 'settings_section.dart';
 
-/// Library settings: the library's counts and what the scan did, the music
-/// folders, whether to rescan when the app opens or watch the folders, and a
-/// rescan button. The button is disabled while the library is unavailable,
-/// has no music folder yet, or is being scanned or its covers are being made
-/// (it then shows a progress ring). The result is announced by the shell.
-class LibrarySettingsSection extends ConsumerWidget {
-  const LibrarySettingsSection({super.key});
+/// Library › Scanning, first rows: the rescan button and whether to rescan
+/// when the app opens. The button is disabled while the library is
+/// unavailable, has no music folder yet, or is being scanned or its covers
+/// are being made (it then shows a progress ring). The result is announced
+/// by the shell.
+class LibraryRescanSettingRows extends ConsumerWidget {
+  const LibraryRescanSettingRows({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,24 +29,9 @@ class LibrarySettingsSection extends ConsumerWidget {
         ref.watch(libraryHasRootsProvider);
     final covers = ref.watch(coverPassProvider);
 
-    return SettingsSection(
-      title: l10n.settingsLibrary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const LibraryStatsRow(),
-        const ScanStatsRows(),
-        const LibraryFoldersList(),
-        const ExcludedFoldersList(),
-        SettingRow.single(
-          title: l10n.settingsRescanOnStartup,
-          subtitle: l10n.settingsRescanOnStartupHint,
-          control: Switch(
-            value: ref.watch(settingsProvider.select((s) => s.rescanOnStartup)),
-            onChanged: ref.watch(libraryDatabaseProvider) != null
-                ? ref.read(settingsProvider.notifier).setRescanOnStartup
-                : null,
-          ),
-        ),
-        const FolderWatchRow(),
         SettingRow.single(
           title: l10n.settingsRescanLibrary,
           subtitle: l10n.settingsRescanLibraryHint,
@@ -71,7 +49,16 @@ class LibrarySettingsSection extends ConsumerWidget {
             ),
           ),
         ),
-        const LibraryScanSettingRows(),
+        SettingRow.single(
+          title: l10n.settingsRescanOnStartup,
+          subtitle: l10n.settingsRescanOnStartupHint,
+          control: Switch(
+            value: ref.watch(settingsProvider.select((s) => s.rescanOnStartup)),
+            onChanged: ref.watch(libraryDatabaseProvider) != null
+                ? ref.read(settingsProvider.notifier).setRescanOnStartup
+                : null,
+          ),
+        ),
       ],
     );
   }

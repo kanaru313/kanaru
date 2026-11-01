@@ -1433,10 +1433,67 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows each song\'s number before its cover on an album page.';
 
   @override
-  String get settingsLyrics => 'Lyrics';
+  String get settingsPlayback => 'Playback';
 
   @override
-  String get settingsAdvanced => 'Advanced';
+  String get settingsGroupPlayback => 'Playback';
+
+  @override
+  String get settingsPlugins => 'Plugins';
+
+  @override
+  String get settingsDataStorage => 'Data & storage';
+
+  @override
+  String get settingsAppearanceDescription => 'Theme, font, language, sidebar';
+
+  @override
+  String get settingsPlaybackDescription =>
+      'Transitions, volume, lyrics, translation';
+
+  @override
+  String get settingsLibraryDescription =>
+      'Music folders, scanning, album grouping';
+
+  @override
+  String get settingsPluginsDescription =>
+      'Get and install plugins from a repository or a file';
+
+  @override
+  String get settingsDataStorageDescription => 'Backup, caches, logs';
+
+  @override
+  String get settingsAboutDescription => 'Version, licenses, source code';
+
+  @override
+  String get settingsGroupTheme => 'Theme';
+
+  @override
+  String get settingsGroupText => 'Text';
+
+  @override
+  String get settingsGroupLayout => 'Layout';
+
+  @override
+  String get settingsGroupFolders => 'Folders';
+
+  @override
+  String get settingsGroupScanning => 'Scanning';
+
+  @override
+  String get settingsGroupOrganization => 'Organization';
+
+  @override
+  String get settingsGroupTranslation => 'Translation';
+
+  @override
+  String get settingsGroupCaches => 'Caches';
+
+  @override
+  String get settingsGroupLogs => 'Logs';
+
+  @override
+  String get settingsLyrics => 'Lyrics';
 
   @override
   String get settingsBackupRestore => 'Backup and restore';
@@ -2979,11 +3036,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationBannerNoKey =>
-      'Add your DeepL key in Settings › Lyrics.';
+      'Add your DeepL key in Settings › Playback › Translation.';
 
   @override
   String get lyricsTranslationBannerBadKey =>
-      'DeepL rejected the key. Check the key in Settings › Lyrics.';
+      'DeepL rejected the key. Check the key in Settings › Playback › Translation.';
 
   @override
   String translationNoticeTitle(String service) {
@@ -3209,7 +3266,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeAutoHint =>
-      'You can turn it off in Settings › Lyrics.';
+      'You can turn it off in Settings › Playback › Lyrics.';
 
   @override
   String get onlineLyricsNoticeTurnOn => 'Turn on';

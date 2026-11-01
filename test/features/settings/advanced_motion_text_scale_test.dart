@@ -8,6 +8,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dar
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
+import 'settings_page_opener.dart';
 
 late ProviderContainer container;
 
@@ -159,6 +160,7 @@ void main() {
         // Settings, from the top bar.
         await tester.tap(find.byTooltip('Settings'));
         await tester.pumpAndSettle();
+        await openSettingsPage(tester, 'Appearance');
         expect(find.text('Text size'), findsWidgets);
 
         // Now Playing over the shell.

@@ -1377,10 +1377,67 @@ class AppLocalizationsVi extends AppLocalizations {
       'Hiện số thứ tự của từng bài trước ảnh bìa trên trang album.';
 
   @override
-  String get settingsLyrics => 'Lời bài hát';
+  String get settingsPlayback => 'Phát nhạc';
 
   @override
-  String get settingsAdvanced => 'Nâng cao';
+  String get settingsGroupPlayback => 'Phát';
+
+  @override
+  String get settingsPlugins => 'Plugin';
+
+  @override
+  String get settingsDataStorage => 'Dữ liệu & bộ nhớ';
+
+  @override
+  String get settingsAppearanceDescription =>
+      'Chủ đề, font, ngôn ngữ, thanh bên';
+
+  @override
+  String get settingsPlaybackDescription =>
+      'Chuyển bài, âm lượng, lời bài hát, dịch';
+
+  @override
+  String get settingsLibraryDescription => 'Thư mục nhạc, quét, nhóm album';
+
+  @override
+  String get settingsPluginsDescription =>
+      'Tải và cài plugin từ repository hoặc file';
+
+  @override
+  String get settingsDataStorageDescription => 'Sao lưu, bộ nhớ đệm, nhật ký';
+
+  @override
+  String get settingsAboutDescription => 'Phiên bản, giấy phép, mã nguồn';
+
+  @override
+  String get settingsGroupTheme => 'Chủ đề';
+
+  @override
+  String get settingsGroupText => 'Chữ';
+
+  @override
+  String get settingsGroupLayout => 'Bố cục';
+
+  @override
+  String get settingsGroupFolders => 'Thư mục';
+
+  @override
+  String get settingsGroupScanning => 'Quét';
+
+  @override
+  String get settingsGroupOrganization => 'Sắp xếp';
+
+  @override
+  String get settingsGroupTranslation => 'Dịch';
+
+  @override
+  String get settingsGroupCaches => 'Bộ nhớ đệm';
+
+  @override
+  String get settingsGroupLogs => 'Nhật ký';
+
+  @override
+  String get settingsLyrics => 'Lời bài hát';
 
   @override
   String get settingsBackupRestore => 'Sao lưu & khôi phục';
@@ -2755,11 +2812,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationBannerNoKey =>
-      'Hãy thêm khóa DeepL trong Cài đặt › Lời bài hát.';
+      'Hãy thêm khóa DeepL trong Cài đặt › Phát nhạc › Dịch.';
 
   @override
   String get lyricsTranslationBannerBadKey =>
-      'DeepL từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Lời bài hát.';
+      'DeepL từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Phát nhạc › Dịch.';
 
   @override
   String translationNoticeTitle(String service) {
@@ -2977,7 +3034,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeAutoHint =>
-      'Tắt lại được trong Cài đặt › Lời bài hát.';
+      'Tắt lại được trong Cài đặt › Phát nhạc › Lời bài hát.';
 
   @override
   String get onlineLyricsNoticeTurnOn => 'Bật';

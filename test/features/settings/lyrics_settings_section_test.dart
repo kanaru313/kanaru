@@ -8,14 +8,17 @@ import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
+import 'settings_page_opener.dart';
 
 void main() {
   Future<void> openSettings(
     WidgetTester tester, {
+    String page = 'Playback',
     List<Override> overrides = const [],
   }) async {
     // Tall enough to build every section: the list is lazy.
@@ -38,57 +41,79 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
     await tester.pumpAndSettle();
+    await openSettingsPage(tester, page);
   }
 
   double top(WidgetTester tester, String text) =>
       tester.getTopLeft(find.text(text)).dy;
 
-  testWidgets('the sections are in order, Lyrics between Library and Backup', (
+  /// Top of the group headed [title]; the page title may repeat the word.
+  double groupTop(WidgetTester tester, String title) => tester
+      .getTopLeft(
+        find.byWidgetPredicate((w) => w is SettingsSection && w.title == title),
+      )
+      .dy;
+
+  testWidgets('the groups are in order: Playback, Lyrics, Translation', (
     tester,
   ) async {
     await openSettings(tester);
     final l10n = lookupAppLocalizations(const Locale('en'));
     final titles = [
-      l10n.settingsAppearance,
-      l10n.settingsLibrary,
+      l10n.settingsGroupPlayback,
       l10n.settingsLyrics,
-      l10n.settingsBackupRestore,
-      l10n.settingsAdvanced,
-      l10n.settingsAbout,
+      l10n.settingsGroupTranslation,
     ];
-    final tops = [for (final t in titles) top(tester, t)];
+    final tops = [for (final t in titles) groupTop(tester, t)];
     for (var i = 1; i < tops.length; i++) {
       expect(tops[i], greaterThan(tops[i - 1]), reason: titles[i]);
     }
   });
 
-  testWidgets('the lyrics rows are in the Lyrics section, not in Advanced', (
-    tester,
-  ) async {
+  testWidgets('lyrics rows sit under Lyrics, translation rows under '
+      'Translation', (tester) async {
     await openSettings(tester);
     final l10n = lookupAppLocalizations(const Locale('en'));
-    final start = top(tester, l10n.settingsLyrics);
-    final end = top(tester, l10n.settingsBackupRestore);
+    final lyrics = groupTop(tester, l10n.settingsLyrics);
+    final translation = groupTop(tester, l10n.settingsGroupTranslation);
     for (final title in [
+      l10n.lyricsSourcesTitle,
       l10n.settingsPreferEmbeddedLyrics,
       l10n.settingsAutoOnlineLyrics,
       l10n.settingsLyricsConsent,
-      l10n.settingsSavedLyrics,
+    ]) {
+      final y = top(tester, title);
+      expect(y, greaterThan(lyrics), reason: title);
+      expect(y, lessThan(translation), reason: title);
+    }
+    for (final title in [
       l10n.settingsTranslationService,
       l10n.settingsTranslationTarget,
+    ]) {
+      expect(top(tester, title), greaterThan(translation), reason: title);
+    }
+    // The saved lyrics and translations are caches, not on this page.
+    expect(find.text(l10n.settingsSavedLyrics), findsNothing);
+    expect(find.text(l10n.settingsTranslationCache), findsNothing);
+    expect(find.text('Find lyrics online automatically'), findsOneWidget);
+    expect(find.textContaining('(LRCLIB)'), findsNothing);
+  });
+
+  testWidgets('the saved lyrics and translations are under Caches', (
+    tester,
+  ) async {
+    await openSettings(tester, page: 'Data & storage');
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    final caches = groupTop(tester, l10n.settingsGroupCaches);
+    final logs = groupTop(tester, l10n.settingsGroupLogs);
+    for (final title in [
+      l10n.settingsSavedLyrics,
       l10n.settingsTranslationCache,
     ]) {
       final y = top(tester, title);
-      expect(y, greaterThan(start), reason: title);
-      expect(y, lessThan(end), reason: title);
+      expect(y, greaterThan(caches), reason: title);
+      expect(y, lessThan(logs), reason: title);
     }
-    // The lyrics rows come before the translation rows.
-    expect(
-      top(tester, l10n.settingsPreferEmbeddedLyrics),
-      lessThan(top(tester, l10n.settingsTranslationService)),
-    );
-    expect(find.text('Find lyrics online automatically'), findsOneWidget);
-    expect(find.textContaining('(LRCLIB)'), findsNothing);
   });
 
   group('lyrics sources row', () {

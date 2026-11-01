@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../shared/lyrics_source_routes.dart';
+import '../../shared/settings_routes.dart';
 import 'catalog_item_page.dart';
 import 'plugin_store_page.dart';
 import 'repositories_page.dart';
@@ -51,8 +52,8 @@ GoRoute lyricsSourcesStoreMount() => lyricsStoreRoutesAt(
 );
 
 /// The store mounted at the root of Settings (route `plugins` below
-/// `/settings`).
+/// [settingsRoute]).
 GoRoute lyricsRootStoreMount() => lyricsStoreRoutesAt(
   base: lyricsStoreRoute,
-  path: lyricsStoreRoute.substring('/settings/'.length),
+  path: lyricsStoreRoute.substring('$settingsRoute/'.length),
 );

@@ -16,6 +16,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
 import '../library/library_test_harness.dart';
+import 'settings_page_opener.dart';
 
 /// No first-run picker in front of Settings.
 final _onboarded = initialSettingsProvider.overrideWithValue(
@@ -48,6 +49,11 @@ void main() {
     tester.view.physicalSize = const Size(1280, 3000);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
+    await openSettingsPage(
+      tester,
+      'Playback',
+      settle: () => settleIo(tester, h),
+    );
     await tester.ensureVisible(clearButton);
     await tester.pumpAndSettle();
   }
@@ -103,7 +109,7 @@ void main() {
   testWidgets('the switch shows and changes the setting', (tester) async {
     final h = LibraryHarness(overrides: [_onboarded]);
     await openSettings(tester, h);
-    expect(find.text('Advanced'), findsOneWidget);
+    expect(find.text('Playback'), findsWidgets);
     expect(h.container.read(settingsProvider).recordListenHistory, isTrue);
     expect(tester.widget<Switch>(recordSwitch).value, isTrue);
 
@@ -119,6 +125,7 @@ void main() {
     await h.pump(tester);
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
+    await openSettingsPage(tester, 'Playback');
     await tester.ensureVisible(clearButton);
     await tester.pumpAndSettle();
 

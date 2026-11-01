@@ -2204,17 +2204,125 @@ abstract class AppLocalizations {
   /// **'Shows each song\'s number before its cover on an album page.'**
   String get settingsTrackNumbersHint;
 
+  /// Title of the Playback page in Settings and its tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get settingsPlayback;
+
+  /// Header of the playback options group on the Playback settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get settingsGroupPlayback;
+
+  /// Title of the Plugins tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Plugins'**
+  String get settingsPlugins;
+
+  /// Title of the Data and storage page in Settings and its tile
+  ///
+  /// In en, this message translates to:
+  /// **'Data & storage'**
+  String get settingsDataStorage;
+
+  /// Description under the Appearance tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, font, language, sidebar'**
+  String get settingsAppearanceDescription;
+
+  /// Description under the Playback tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Transitions, volume, lyrics, translation'**
+  String get settingsPlaybackDescription;
+
+  /// Description under the Library tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Music folders, scanning, album grouping'**
+  String get settingsLibraryDescription;
+
+  /// Description under the Plugins tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Get and install plugins from a repository or a file'**
+  String get settingsPluginsDescription;
+
+  /// Description under the Data and storage tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Backup, caches, logs'**
+  String get settingsDataStorageDescription;
+
+  /// Description under the About tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Version, licenses, source code'**
+  String get settingsAboutDescription;
+
+  /// Header of the theme group on the Appearance settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsGroupTheme;
+
+  /// Header of the text group (font, size, language) on the Appearance settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get settingsGroupText;
+
+  /// Header of the layout group on the Appearance settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get settingsGroupLayout;
+
+  /// Header of the folders group on the Library settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get settingsGroupFolders;
+
+  /// Header of the scanning group on the Library settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning'**
+  String get settingsGroupScanning;
+
+  /// Header of the organization group (album grouping, separators) on the Library settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Organization'**
+  String get settingsGroupOrganization;
+
+  /// Header of the translation group on the Playback settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get settingsGroupTranslation;
+
+  /// Header of the caches group on the Data and storage settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Caches'**
+  String get settingsGroupCaches;
+
+  /// Header of the logs group on the Data and storage settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get settingsGroupLogs;
+
   /// Title of the Lyrics section in Settings
   ///
   /// In en, this message translates to:
   /// **'Lyrics'**
   String get settingsLyrics;
-
-  /// No description provided for @settingsAdvanced.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get settingsAdvanced;
 
   /// No description provided for @settingsBackupRestore.
   ///
@@ -4319,13 +4427,13 @@ abstract class AppLocalizations {
   /// Lyrics translation error banner: DeepL is selected but no key is saved
   ///
   /// In en, this message translates to:
-  /// **'Add your DeepL key in Settings › Lyrics.'**
+  /// **'Add your DeepL key in Settings › Playback › Translation.'**
   String get lyricsTranslationBannerNoKey;
 
   /// Lyrics translation error banner: DeepL did not accept the saved key
   ///
   /// In en, this message translates to:
-  /// **'DeepL rejected the key. Check the key in Settings › Lyrics.'**
+  /// **'DeepL rejected the key. Check the key in Settings › Playback › Translation.'**
   String get lyricsTranslationBannerBadKey;
 
   /// Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL
@@ -4655,7 +4763,7 @@ abstract class AppLocalizations {
   /// Hint under the automatic online lyrics notice saying where to turn it off
   ///
   /// In en, this message translates to:
-  /// **'You can turn it off in Settings › Lyrics.'**
+  /// **'You can turn it off in Settings › Playback › Lyrics.'**
   String get onlineLyricsNoticeAutoHint;
 
   /// Button of the automatic online lyrics notice that accepts

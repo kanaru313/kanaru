@@ -9,6 +9,7 @@ import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_page.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_routes.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/settings_routes.dart';
 
 import '../lyrics_plugin_store/store_test_harness.dart' as store;
 import 'lyrics_sources_harness.dart';
@@ -48,10 +49,13 @@ void main() {
   );
 
   test('the nested paths join to the shared constants', () {
-    final paths = _joined('/settings', [
-      ...lyricsSourcesRoutesWith(children: [lyricsSourcesStoreMount()]),
-      lyricsRootStoreMount(),
-    ]);
+    final paths = [
+      ..._joined(
+        settingsPlaybackRoute,
+        lyricsSourcesRoutesWith(children: [lyricsSourcesStoreMount()]),
+      ),
+      ..._joined(settingsRoute, [lyricsRootStoreMount()]),
+    ];
     expect(
       paths,
       containsAll([

@@ -34,7 +34,7 @@ all merge into **one library**, with offline caching so it keeps playing when th
 
 ### Lyrics
 
-- 🔌 Lyrics plugins: *Settings › Lyrics › Sources* lists LRCLIB and your installed plugins (order, switches, per-plugin settings and data). Press *Plugin store* there to browse plugins from repositories, install, update or uninstall them, add a repository, or install a `.zip` from a file; a plugin with a newer version shows an *Update* banner on its own page
+- 🔌 Lyrics plugins: *Settings › Playback › Lyrics › Lyrics sources* lists LRCLIB and your installed plugins (order, switches, per-plugin settings and data). Press *Plugin store* there to browse plugins from repositories, install, update or uninstall them, add a repository, or install a `.zip` from a file; a plugin with a newer version shows an *Update* banner on its own page
 - 📝 Lyrics from `.lrc` files next to the song and from the file's tags (embedded lyrics read with lofty), with a synced view that follows the line being sung and seeks on click
 - 🌐 Online lyrics from [LRCLIB](https://lrclib.net), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick is kept in your library. A source button in Now Playing (press `L`) shows where the lyrics come from and lets you choose per song: automatic, the file's own lyrics, your pick, or none. Every result in *Choose lyrics* names its source, and when two or more sources returned results a chip row (*All sources*, then one chip per source) filters them; a source that failed has its own line with *Retry* and, for a plugin that has logged, *View log*. Lyrics saved by a plugin you later uninstall keep working and are credited as "<name> (removed)". *Save current lyrics…* writes a `.lrc` next to the song only when you ask; a file it replaces goes to the trash
 
@@ -134,7 +134,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [ ] Now Playing, mini player, queue, shuffle / repeat: shipped, with queue history on the History page; hero transition open
 - [x] Full-text search over songs, albums and artists: typo correction, search history, field syntax, field picker, shortcuts and in-page filters; search over lyrics still open
 - [x] Playlists (incl. M3U): create, rename, delete, add, remove and reorder, Favorites, M3U import and export, save the queue as a playlist
-- [ ] Gapless, ReplayGain: gapless configured, not verified; ReplayGain done, with output device choice in Settings > Advanced
+- [ ] Gapless, ReplayGain: gapless configured, not verified; ReplayGain done, with output device choice in Settings > Playback
 - [x] Dynamic color from album art
 - [ ] Packaging: AppImage done; Flatpak, `.deb` not started
 - [ ] Before the first release: collapse the database schema history into v1
@@ -157,7 +157,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 **Phase 4 — Juicy**
 
 - [ ] Lyrics: `.lrc`, embedded, LRCLIB — synced lyrics view: `.lrc`, embedded, online lookup with *Choose lyrics*, picks, the per-song source button, *Save current lyrics…*, the synced view and the *Lyrics sources* page (order, switches, per-plugin settings and data, uninstall) are done; the plugin store (browse, install, update, uninstall, repositories) is reachable from the Sources page; open: a narrow-window *Choose lyrics* dialog, manual lyrics entry, time offset
-- [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Lyrics: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language, and the saved translations (count, size, clear)
+- [x] Lyrics translation (Google or DeepL): header button and menu in Now Playing, `T` to toggle; the first use of a service asks before lyrics are sent. Settings > Playback > Translation: service, DeepL API key (kept in the system keyring, checked with DeepL before it is saved, quota shown), default language; the saved translations (count, size, clear) are in Settings > Data & storage > Caches
 - [ ] Waveform seekbar, visualizer, polished transitions
 - [ ] Equalizer, crossfade
 - [x] Sleep timer: a centred dialog from the Now Playing header or the player bar; pause after 1 to 720 minutes, after 1 to 20 tracks, or at the end of the track, album or queue; a pill in the header shows the time left (the fade switch is not built yet)

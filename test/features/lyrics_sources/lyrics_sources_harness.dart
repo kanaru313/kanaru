@@ -164,8 +164,12 @@ Future<GoRouter> pumpSources(
             path: '/settings',
             builder: (context, state) => const Text('settings page'),
             routes: [
-              ...lyricsSourcesRoutesWith(
-                children: withStore ? [lyricsSourcesStoreMount()] : const [],
+              GoRoute(
+                path: 'playback',
+                builder: (context, state) => const Text('playback page'),
+                routes: lyricsSourcesRoutesWith(
+                  children: withStore ? [lyricsSourcesStoreMount()] : const [],
+                ),
               ),
               if (withStore) lyricsRootStoreMount(),
             ],

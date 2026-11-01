@@ -3,28 +3,34 @@ import 'package:kanaru/shared/lyrics_source_routes.dart';
 
 void main() {
   test('the fixed paths', () {
-    expect(lyricsSourcesRoute, '/settings/lyrics-sources');
+    expect(lyricsSourcesRoute, '/settings/playback/lyrics-sources');
     expect(
       lyricsPluginRoutePattern,
-      '/settings/lyrics-sources/plugin/:installId',
+      '/settings/playback/lyrics-sources/plugin/:installId',
     );
     expect(lyricsStoreRoute, '/settings/plugins');
-    expect(lyricsSourcesStoreRoute, '/settings/lyrics-sources/plugins');
+    expect(
+      lyricsSourcesStoreRoute,
+      '/settings/playback/lyrics-sources/plugins',
+    );
     expect(
       lyricsStoreRepositoriesRoute(lyricsStoreRoute),
       '/settings/plugins/repositories',
     );
     expect(
       lyricsStoreRepositoriesRoute(lyricsSourcesStoreRoute),
-      '/settings/lyrics-sources/plugins/repositories',
+      '/settings/playback/lyrics-sources/plugins/repositories',
     );
   });
 
   test('a plugin route holds the install id, encoded', () {
-    expect(lyricsPluginRoute('abc-1'), '/settings/lyrics-sources/plugin/abc-1');
+    expect(
+      lyricsPluginRoute('abc-1'),
+      '/settings/playback/lyrics-sources/plugin/abc-1',
+    );
     expect(
       lyricsPluginRoute('a/b c'),
-      '/settings/lyrics-sources/plugin/a%2Fb%20c',
+      '/settings/playback/lyrics-sources/plugin/a%2Fb%20c',
     );
   });
 

@@ -14,7 +14,7 @@ import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
 
-/// Cover cache options, at the end of the library scan section: a button
+/// Cover cache options, in Data & storage › Caches: a button
 /// that deletes the cover thumbnails after a confirmation, then rescans so
 /// the covers are made again. Off without a library or a cache folder, while
 /// a scan or its cover pass runs, and while a clear runs.
