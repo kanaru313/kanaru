@@ -249,6 +249,49 @@ A run that failed, or that printed to `console`, adds one line to `<data>/plugin
 
 There is no cookie jar. A script that needs a session reads the `set-cookie` header of a response with `res.header('set-cookie')`, keeps what it needs in `localStorage`, and sends a `Cookie` header itself, only to the hosts it declared (a request to any other host is `blockedHost`). Besides the name check, the app checks where the name leads: `fetch` connects only to a globally routable address. The name is resolved once, every address of the answer must be public (a name that resolves to loopback, RFC 1918, link-local, unique-local, CGNAT or any reserved range, or to a mix, is `BlockedHostError` and nothing is sent), and the socket goes to the address that was checked, with TLS verifying the original name, so a second DNS answer cannot redirect it (DNS rebinding). IPv4-mapped (`::ffff:0:0/96`) and NAT64 (`64:ff9b::/96`) addresses count as the IPv4 they carry. `198.18.0.0/15` counts as public because fake-ip proxies (Clash, mihomo, sing-box in TUN mode) answer every lookup from it. Behind a proxy set in the environment the proxy resolves the name, so the app looks the name up locally first (3 s limit) and refuses when that answer is not public; when the local lookup fails (a network that reaches only the proxy) the proxy is used as configured. A name that answers differently to the proxy is not caught. Repository fetches (catalog, zip, icon) are different: they never use an environment proxy and connect directly, so a network that reaches only a proxy (no TUN) cannot add repositories.
 
+## Translate scripts
+
+A translate plugin (`metadata.type` `translate`) has one script, `translate.js`, run once per chunk of lines (`lib/core/lyrics/plugins/translate/`). It has no `search.js` or `lyrics.js`, and a lyrics plugin is never run as a translator.
+
+### `translate.js`
+
+`execute(input)` gets `{lines, to, song}`:
+
+- `lines`: the strings to translate (the chunk; its size follows `translate.maxLines` and `translate.maxChars`);
+- `to`: the target language code (for example `vi`, `zh-Hans`);
+- `song`: `{title, artist, lyrics}` as context (`lyrics` is the song's unique lines joined by `\n`, at most 20 000 characters), or absent when the song is unknown. The script may ignore it.
+
+It returns `Response.success(items)`: an array with exactly one object per input line, in the same order: `{text, detected?}`.
+
+| Field | Rule |
+|---|---|
+| `text` | string, required. Control characters and bidi overrides or isolates (U+202A to U+202E, U+2066 to U+2069) are removed and newlines become one space. At most `4 x` the source line `+ 200` characters, else the answer is an invalid response |
+| `detected` | optional language tag of the source line (`^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$`, for example `en`, `pt-BR`). Anything else is dropped (noted `dropped: detected` in the log, not a failure). A `detected` that names the target language on a line whose text changed is dropped too: models often label the language of their own output, which would mark the song "already in this language" |
+
+A wrong length, a non-array, a non-string `text`, or more than half of the non-blank source lines coming back empty (a safety filter that blanked the answer) is an invalid response. Nothing is stored for a chunk that failed.
+
+### Time, `fetch` and sends
+
+- Wall time of the script is `translate.timeoutSec` (default 15, at most 90). The app waits for a free worker for up to 45 s more.
+- A `fetch` may take as long as the time left of the run; there is no 20 s cap per send as for lyrics. It reaches only the plugin's declared `hosts`, over the same public-only connection as lyrics.
+- The app never re-sends a busy answer (429, 503) for a translate script: the script decides (for example, it tries another key). Every send, retries included, counts toward the **10 sends per run**, so a script that rotates keys should plan for that.
+- The translate consent is asked before every send; a send after the consent is withdrawn is refused (`NotConsentedError` in the script), and an uncaught refusal ends the chunk as `blocked`.
+- One translate run goes at a time in the whole app. A chunk whose song was replaced while it waited is dropped before it sends (nothing is billed). A chunk that has been sent is never cancelled by the caller; uninstalling or updating the plugin still cancels it.
+
+### Errors
+
+The app maps a run to a failure in this order:
+
+1. `cancelled` or `busy`: `server` (a later try may work);
+2. `timeout`, also the app's outer deadline: `network`;
+3. `Response.error(message, {kind})`: `auth` is `noKey` when a secret setting of the plugin is empty and `badKey` otherwise; `quota` is `quotaExceeded`; `rateLimited` and `invalidResponse` map to themselves; `server` (the default) or no kind defers to the first failed `fetch` of the run when there was one (`network`; `blockedHost` and `notConsented` as `blocked`; `rateLimited`; `invalidRequest` and `invalidResponse` as `invalidResponse`; an abandoned send as `server`) and is `server` or `invalidResponse` otherwise;
+4. `memory`, `stack`, an output over the limit, and `internal`: `invalidResponse`;
+5. `ok`: the output is checked as above. Unlike for lyrics, a `fetch` that failed and was caught by the script is ignored when the output is valid (a script may fall back to another key).
+
+### Logs
+
+Same file and rules as [Logs](#logs), with `script` `translate.js`. `query` is only `{to, lines, chars}`: the app never logs the lyrics text; what the script prints to `console` or puts in an error message is logged as given. A secret setting that lists several values (keys separated by spaces, commas or semicolons) is hidden whole and token by token (tokens of eight characters or more), so a line naming one key does not leak it.
+
 ## Plugin package
 
 `lib/core/lyrics/plugins/package/` reads a plugin `.zip` entirely in memory: nothing is written to disk and no script runs. `PluginPackageReader(PluginRuntime).read(bytes)` returns `PluginPackageAccepted(PluginPackage)` or `PluginPackageRejected(PluginPackageProblem)`; a package is accepted whole or not at all. Core holds no UI text: a problem is a `kind` plus `detail` (control characters replaced, cut to 200 code points) (and `line`, `message` for script errors) and the app maps it to a message.

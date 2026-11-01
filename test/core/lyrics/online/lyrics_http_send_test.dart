@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/logging/app_logging.dart';
+import 'package:kanaru/core/lyrics_translation/translation_http.dart'
+    show translationRequestTimeout;
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http_retry.dart';
@@ -33,6 +35,7 @@ void main() {
   LyricsHttp http({
     LyricsSleep sleep = realLyricsSleep,
     Duration overallTimeout = lyricsOverallTimeout,
+    Duration? perSendCap = translationRequestTimeout,
   }) => LyricsHttp.forTesting(
     client: client,
     hosts: const ['127.0.0.1'],
@@ -40,6 +43,7 @@ void main() {
     abandoned: () => abandoned,
     allowed: () => allowed,
     overallTimeout: overallTimeout,
+    perSendCap: perSendCap,
   );
 
   LyricsHttpRequest request({
@@ -309,6 +313,53 @@ void main() {
       throwsA(isA<LyricsRequestAbandoned>()),
     );
     expect(server.requests, isEmpty);
+  });
+
+  group('per-send cap', () {
+    // The cap is scaled down: a slow answer is cut by it when there is one
+    // and arrives when there is none, as long as the deadline allows.
+    setUp(() {
+      server.handler = (_) =>
+          const Reply(200, 'slow', delay: Duration(milliseconds: 700));
+    });
+
+    test('a send over the cap is cut at the cap', () async {
+      await expectLater(
+        http(perSendCap: const Duration(milliseconds: 200))
+            .send(request(deadline: const Duration(seconds: 5))),
+        _kind(LyricsFetchKind.network),
+      );
+    });
+
+    test('without a cap the same send runs to the deadline', () async {
+      final response = await http(perSendCap: null)
+          .send(request(deadline: const Duration(seconds: 5)));
+      expect(response.status, 200);
+    });
+
+    test('without a cap the deadline still ends the send', () async {
+      await expectLater(
+        http(perSendCap: null)
+            .send(request(deadline: const Duration(milliseconds: 200))),
+        _kind(LyricsFetchKind.network),
+      );
+    });
+
+    test(
+      'the translate constructor is strict: plain http is blocked',
+      () async {
+        final strict = LyricsHttp.forPluginTranslate(
+          ['127.0.0.1'],
+          client,
+          overallTimeout: const Duration(seconds: 90),
+        );
+        await expectLater(
+          strict.send(request()),
+          _kind(LyricsFetchKind.blockedHost),
+        );
+        expect(server.requests, isEmpty);
+      },
+    );
   });
 
   test('the socket is closed at the deadline, not at 20 s', () async {

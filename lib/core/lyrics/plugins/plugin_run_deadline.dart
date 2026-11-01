@@ -4,6 +4,12 @@ import '../../plugin_runtime/plugin_runtime.dart';
 /// by lyrics.
 const pluginScriptWallTime = Duration(seconds: 15);
 
+/// Longest wall time a translate script may have, and so the longest one
+/// `fetch` of a translate run may take: translate calls are slow (a model
+/// answers a chunk of lines) and are billed, so they get far more than
+/// lyrics. The runtime caps a request at the same value.
+const pluginTranslateMaxWallTime = Duration(seconds: 90);
+
 /// What a run may wait for a free worker before the caller gives up: four
 /// workers and sixteen queued jobs, each taking up to [pluginScriptWallTime],
 /// would be a minute, so this is a generous slice of it. Longer jobs (such as

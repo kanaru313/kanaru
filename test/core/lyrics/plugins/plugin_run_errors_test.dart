@@ -163,6 +163,19 @@ void main() {
       }
     });
 
+    test('a failed fetch wins over the error kind of the script', () {
+      expect(
+        pluginRunFailure(
+          PluginRunResult(
+            status: PluginRunStatus.scriptError,
+            errorKind: PluginRunErrorKind.auth,
+            fetchFailure: _fetch(PluginFetchFailureKind.network),
+          ),
+        ),
+        _kind(LyricsFetchKind.network),
+      );
+    });
+
     test('invalidRequest is the plugin\'s fault: invalidResponse', () {
       expect(
         pluginRunFailure(
