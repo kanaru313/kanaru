@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         navigatorKey: navigatorKey,
-        theme: buildTheme(null, Brightness.light),
+        theme: buildTheme(null, Brightness.light, fontFamily: 'Inter'),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(disableAnimations: reduceMotion),

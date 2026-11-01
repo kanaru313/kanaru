@@ -17,8 +17,8 @@ void main() {
     expect(appFontFor('').id, defaultFontId);
   });
 
-  test('system has no family', () {
-    expect(appFontFor(systemFontId).family, isNull);
+  test('system is the generic sans-serif family', () {
+    expect(appFontFor(systemFontId).family, 'sans-serif');
   });
 
   test('nunito resolves', () {
@@ -27,7 +27,7 @@ void main() {
 
   test('every bundled font with a family has a license', () {
     for (final f in builtInAppFonts.where(
-      (f) => f.bundled && f.family != null,
+      (f) => f.bundled && f.id != systemFontId,
     )) {
       expect(f.licenseAsset, isNotNull, reason: f.id);
     }

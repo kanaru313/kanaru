@@ -15,8 +15,8 @@ class AppFont {
   /// Proper name of the font; the UI localizes the System entry.
   final String label;
 
-  /// The font family in the theme; null leaves the platform default
-  /// (fontconfig).
+  /// The font family in the theme. System uses the generic 'sans-serif',
+  /// which fontconfig resolves to the user's default font.
   final String? family;
 
   /// Asset holding the license text, shown on the licenses page.
@@ -30,7 +30,9 @@ const systemFontId = 'system';
 const defaultFontId = 'inter';
 
 const builtInAppFonts = <AppFont>[
-  AppFont(id: systemFontId, label: 'System'),
+  // 'sans-serif' (not null): Flutter's default family on Linux is its own
+  // list (DejaVu Sans here), while 'sans-serif' follows the fontconfig default.
+  AppFont(id: systemFontId, label: 'System', family: 'sans-serif'),
   AppFont(
     id: defaultFontId,
     label: 'Inter',

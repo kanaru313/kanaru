@@ -4,12 +4,14 @@ import 'package:material_ui/material_ui.dart';
 
 void main() {
   for (final brightness in Brightness.values) {
-    test('text styles use the bundled Inter font (${brightness.name})', () {
-      final theme = buildTheme(null, brightness);
-      expect(theme.textTheme.bodyMedium!.fontFamily, 'Inter');
-      expect(theme.textTheme.titleLarge!.fontFamily, 'Inter');
-      expect(theme.snackBarTheme.contentTextStyle!.fontFamily, 'Inter');
-    });
+    for (final family in ['Inter', 'Nunito', 'sans-serif']) {
+      test('text styles use $family (${brightness.name})', () {
+        final theme = buildTheme(null, brightness, fontFamily: family);
+        expect(theme.textTheme.bodyMedium!.fontFamily, family);
+        expect(theme.textTheme.titleLarge!.fontFamily, family);
+        expect(theme.snackBarTheme.contentTextStyle!.fontFamily, family);
+      });
+    }
   }
 
   test('a cover seed keeps the font', () {
@@ -17,7 +19,20 @@ void main() {
       null,
       Brightness.dark,
       coverSeed: const Color(0xFFC62828),
+      fontFamily: 'Nunito',
     );
-    expect(theme.textTheme.bodyMedium!.fontFamily, 'Inter');
+    expect(theme.textTheme.bodyMedium!.fontFamily, 'Nunito');
+  });
+
+  test('the theme is cached per font', () {
+    final a = buildTheme(null, Brightness.light, fontFamily: 'Nunito');
+    expect(
+      identical(a, buildTheme(null, Brightness.light, fontFamily: 'Nunito')),
+      isTrue,
+    );
+    expect(
+      identical(a, buildTheme(null, Brightness.light, fontFamily: 'Inter')),
+      isFalse,
+    );
   });
 }

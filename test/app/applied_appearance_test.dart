@@ -98,6 +98,54 @@ void main() {
     expect(app(tester).locale, const Locale('vi'));
   });
 
+  testWidgets('a font change reaches the theme after the pause', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    String? family() => app(tester).theme!.textTheme.bodyMedium!.fontFamily;
+    expect(family(), 'Inter');
+
+    settings().setDisplay(
+      container.read(settingsProvider).display.copyWith(fontId: 'nunito'),
+    );
+    await tester.pump(appearanceApplyDelay - _tick);
+    expect(family(), 'Inter');
+
+    await tester.pump(_tick);
+    expect(family(), 'Nunito');
+  });
+
+  testWidgets('the saved font applies at startup', (tester) async {
+    await pumpApp(
+      tester,
+      initial: const AppSettings(display: DisplayPrefs(fontId: 'system')),
+    );
+
+    expect(app(tester).theme!.textTheme.bodyMedium!.fontFamily, 'sans-serif');
+  });
+
+  testWidgets('a display change that is not the font does not wait', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    final before = app(tester).theme;
+
+    settings().setDisplay(
+      container
+          .read(settingsProvider)
+          .display
+          .copyWith(
+            waveformSeekBar: !container
+                .read(settingsProvider)
+                .display
+                .waveformSeekBar,
+          ),
+    );
+    await tester.pump(appearanceApplyDelay * 2);
+
+    expect(identical(app(tester).theme, before), isTrue);
+  });
+
   testWidgets('settings that are not appearance do not wait', (tester) async {
     await pumpApp(tester);
 

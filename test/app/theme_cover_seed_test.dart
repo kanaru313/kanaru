@@ -30,40 +30,49 @@ class _MutablePalette extends AppCoverPaletteNotifier {
   void show(CoverPalette? palette) => state = palette;
 }
 
+/// [buildTheme] with the app's default font.
+ThemeData _build(
+  ColorScheme? dynamicScheme,
+  Brightness brightness, {
+  Color? coverSeed,
+}) => buildTheme(
+  dynamicScheme,
+  brightness,
+  coverSeed: coverSeed,
+  fontFamily: 'Inter',
+);
+
 void main() {
   group('buildTheme', () {
     test('the same inputs give the same theme object', () {
       expect(
         identical(
-          buildTheme(null, Brightness.light, coverSeed: _red),
-          buildTheme(null, Brightness.light, coverSeed: _red),
+          _build(null, Brightness.light, coverSeed: _red),
+          _build(null, Brightness.light, coverSeed: _red),
         ),
         isTrue,
       );
       final platform = ColorScheme.fromSeed(seedColor: Colors.teal);
       expect(
         identical(
-          buildTheme(platform, Brightness.dark),
-          buildTheme(
-            ColorScheme.fromSeed(seedColor: Colors.teal),
-            Brightness.dark,
-          ),
+          _build(platform, Brightness.dark),
+          _build(ColorScheme.fromSeed(seedColor: Colors.teal), Brightness.dark),
         ),
         isTrue,
       );
     });
 
     test('another seed or brightness gives another theme', () {
-      final base = buildTheme(null, Brightness.light, coverSeed: _red);
+      final base = _build(null, Brightness.light, coverSeed: _red);
       expect(
         identical(
           base,
-          buildTheme(null, Brightness.light, coverSeed: Colors.green),
+          _build(null, Brightness.light, coverSeed: Colors.green),
         ),
         isFalse,
       );
       expect(
-        identical(base, buildTheme(null, Brightness.dark, coverSeed: _red)),
+        identical(base, _build(null, Brightness.dark, coverSeed: _red)),
         isFalse,
       );
     });
@@ -71,7 +80,7 @@ void main() {
     test('the cache drops the least recently used theme', () {
       Color seed(int i) => Color(0xFF100000 + i);
       ThemeData build(int i) =>
-          buildTheme(null, Brightness.light, coverSeed: seed(i));
+          _build(null, Brightness.light, coverSeed: seed(i));
       final themes = [for (var i = 0; i < 8; i++) build(i)];
       final first = themes[0], second = themes[1];
       // Eight kept: the first is still there, and now the most recent.
@@ -93,8 +102,8 @@ void main() {
       final b = ColorScheme.fromSeed(seedColor: Colors.orange);
       expect(
         identical(
-          buildTheme(a, Brightness.light, coverSeed: _red),
-          buildTheme(b, Brightness.light, coverSeed: _red),
+          _build(a, Brightness.light, coverSeed: _red),
+          _build(b, Brightness.light, coverSeed: _red),
         ),
         isTrue,
       );
@@ -103,7 +112,7 @@ void main() {
     for (final brightness in Brightness.values) {
       test('a cover seed sets the $brightness scheme', () {
         expect(
-          buildTheme(null, brightness, coverSeed: _red).colorScheme,
+          _build(null, brightness, coverSeed: _red).colorScheme,
           ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
         );
       });
@@ -114,7 +123,7 @@ void main() {
           brightness: brightness,
         );
         expect(
-          buildTheme(platform, brightness, coverSeed: _red).colorScheme,
+          _build(platform, brightness, coverSeed: _red).colorScheme,
           ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
         );
       });
@@ -124,12 +133,9 @@ void main() {
           seedColor: Colors.teal,
           brightness: brightness,
         );
+        expect(_build(platform, brightness).colorScheme, platform.harmonized());
         expect(
-          buildTheme(platform, brightness).colorScheme,
-          platform.harmonized(),
-        );
-        expect(
-          buildTheme(null, brightness).colorScheme,
+          _build(null, brightness).colorScheme,
           ColorScheme.fromSeed(
             seedColor: kanaruSeedColor,
             brightness: brightness,
@@ -231,7 +237,7 @@ void main() {
       );
       expect(
         app.theme!.colorScheme,
-        buildTheme(null, Brightness.light).colorScheme,
+        _build(null, Brightness.light).colorScheme,
       );
     });
   });

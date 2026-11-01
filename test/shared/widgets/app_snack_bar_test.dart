@@ -5,7 +5,7 @@ import 'package:kanaru/shared/widgets/app_snack_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<ThemeData> _pump(WidgetTester tester, Widget child) async {
-  final theme = buildTheme(null, Brightness.light);
+  final theme = buildTheme(null, Brightness.light, fontFamily: 'Inter');
   await tester.pumpWidget(
     MaterialApp(
       theme: theme,

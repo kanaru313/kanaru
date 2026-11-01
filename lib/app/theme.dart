@@ -17,13 +17,19 @@ ThemeData buildTheme(
   ColorScheme? dynamicScheme,
   Brightness brightness, {
   Color? coverSeed,
+  required String? fontFamily,
 }) {
   // The platform scheme is not used when a cover seed is, so it is not part
   // of the key then (a changed system accent must not duplicate entries).
-  final key = (coverSeed == null ? dynamicScheme : null, brightness, coverSeed);
+  final key = (
+    coverSeed == null ? dynamicScheme : null,
+    brightness,
+    coverSeed,
+    fontFamily,
+  );
   final cached = _themeCache.remove(key);
   if (cached != null) return _themeCache[key] = cached;
-  final theme = _buildTheme(dynamicScheme, brightness, coverSeed);
+  final theme = _buildTheme(dynamicScheme, brightness, coverSeed, fontFamily);
   _themeCache[key] = theme;
   // Insertion order is recency order: drop the least recently used.
   if (_themeCache.length > _themeCacheSize) {
@@ -35,12 +41,13 @@ ThemeData buildTheme(
 /// Themes kept: the current light and dark pair plus a few recent covers.
 const _themeCacheSize = 8;
 
-final _themeCache = <(ColorScheme?, Brightness, Color?), ThemeData>{};
+final _themeCache = <(ColorScheme?, Brightness, Color?, String?), ThemeData>{};
 
 ThemeData _buildTheme(
   ColorScheme? dynamicScheme,
   Brightness brightness,
   Color? coverSeed,
+  String? fontFamily,
 ) {
   final colorScheme = coverSeed != null
       ? ColorScheme.fromSeed(seedColor: coverSeed, brightness: brightness)
@@ -53,9 +60,9 @@ ThemeData _buildTheme(
   final base = ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
-    // Bundled so every machine renders the same text (CJK and emoji still
-    // fall back to the system fonts).
-    fontFamily: 'Inter',
+    // The chosen font; bundled ones render the same on every machine (CJK
+    // and emoji still fall back to the system fonts).
+    fontFamily: fontFamily,
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
         for (final platform in TargetPlatform.values)

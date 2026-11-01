@@ -5,12 +5,13 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   group('snackBarTheme', () {
     final themes = {
-      'light': buildTheme(null, Brightness.light),
-      'dark': buildTheme(null, Brightness.dark),
+      'light': buildTheme(null, Brightness.light, fontFamily: 'Inter'),
+      'dark': buildTheme(null, Brightness.dark, fontFamily: 'Inter'),
       'cover seed': buildTheme(
         null,
         Brightness.light,
         coverSeed: const Color(0xFFC62828),
+        fontFamily: 'Inter',
       ),
     };
 
@@ -39,7 +40,7 @@ void main() {
   });
 
   group('plain SnackBar under the app theme', () {
-    final theme = buildTheme(null, Brightness.light);
+    final theme = buildTheme(null, Brightness.light, fontFamily: 'Inter');
 
     Future<void> show(WidgetTester tester, Size size) async {
       tester.view.physicalSize = size;

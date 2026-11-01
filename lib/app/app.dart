@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/cover_colors/playing_cover_palette_provider.dart';
+import '../core/settings/app_font.dart';
 import '../core/settings/applied_appearance_provider.dart';
 import '../core/settings/settings_provider.dart';
 import '../features/player/player_shortcuts.dart';
@@ -24,7 +25,9 @@ class KanaruApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     // Only what the app shell uses, so changing a library sort does not
     // rebuild MaterialApp; and settled, so quick clicks do not flash it.
-    final (:theme, :languageCode) = ref.watch(appliedAppearanceProvider);
+    final (:theme, :languageCode, :fontId) = ref.watch(
+      appliedAppearanceProvider,
+    );
     // A saved code without a translation falls back to the system locale.
     final savedLocale =
         AppLocalizations.supportedLocales.any(
@@ -34,6 +37,7 @@ class KanaruApp extends ConsumerWidget {
         : null;
     // The playing cover's seed when "colors from the cover" is on and the
     // cover has a usable color; otherwise the system accent.
+    final fontFamily = appFontFor(fontId).family;
     final coverSeed = ref.watch(appCoverPaletteProvider.select((p) => p?.seed));
     // Uses the platform accent color when available (GTK theme on Linux,
     // Material You on Android), otherwise falls back to Kanaru's seed color;
@@ -42,11 +46,17 @@ class KanaruApp extends ConsumerWidget {
       builder: (lightDynamic, darkDynamic) => MaterialApp.router(
         onGenerateTitle: (context) => context.l10n.appTitle,
         debugShowCheckedModeBanner: false,
-        theme: buildTheme(lightDynamic, Brightness.light, coverSeed: coverSeed),
+        theme: buildTheme(
+          lightDynamic,
+          Brightness.light,
+          coverSeed: coverSeed,
+          fontFamily: fontFamily,
+        ),
         darkTheme: buildTheme(
           darkDynamic,
           Brightness.dark,
           coverSeed: coverSeed,
+          fontFamily: fontFamily,
         ),
         // A new cover or a light/dark switch changes the theme at once:
         // animating it lerps ThemeData and rebuilds every Theme.of
