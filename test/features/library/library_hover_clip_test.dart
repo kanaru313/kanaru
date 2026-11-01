@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:kanaru/shared/widgets/artist_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
@@ -82,6 +84,28 @@ void main() {
     final h = LibraryHarness();
     await openWithTracks(tester, h, _tracks, location: '/albums');
     await expectInkClipped(tester, find.byType(AlbumGridTile));
+  });
+
+  testWidgets('album list hover stays inside the card', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/albums');
+    h.container.read(settingsProvider.notifier).setAlbumsView(AlbumsView.list);
+    await tester.pumpAndSettle();
+    final tile = find.byType(AlbumListTile);
+    // The row paints its ink on the card's Material, inside the scroll view.
+    final inkWell = find.descendant(
+      of: tile.first,
+      matching: find.byType(InkWell),
+    );
+    await expectInkClipped(tester, tile, inkHost: inkWell);
+    final ink = Material.of(tester.element(inkWell.first)) as RenderBox;
+    final card = ink.localToGlobal(Offset.zero) & ink.size;
+    final row = tester.getRect(inkWell.first);
+    expect(card.contains(row.topLeft), isTrue);
+    expect(card.contains(row.bottomRight - const Offset(1, 1)), isTrue);
+    final tileRect = tester.getRect(tile.first);
+    expect(card.left - tileRect.left, 16);
+    expect(tileRect.right - card.right, 16);
   });
 
   testWidgets('artist list hover stays inside the list', (tester) async {

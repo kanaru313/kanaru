@@ -119,6 +119,8 @@ class LibraryPlayableRow extends StatefulWidget {
     required this.onTap,
     this.onPlay,
     this.playTooltip,
+    this.horizontalPadding = 32,
+    this.inkBorder,
   });
 
   final Widget leading;
@@ -126,6 +128,13 @@ class LibraryPlayableRow extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback? onPlay;
   final String? playTooltip;
+
+  /// Space left and right of the row's content.
+  final double horizontalPadding;
+
+  /// Shape of the hover and focus ink; null leaves it a plain rectangle. A
+  /// row drawn inside a rounded card passes the card's shape.
+  final ShapeBorder? inkBorder;
 
   @override
   State<LibraryPlayableRow> createState() => _LibraryPlayableRowState();
@@ -142,9 +151,11 @@ class _LibraryPlayableRowState extends State<LibraryPlayableRow> {
     final showPlay = _hovered || _focused;
     return InkWell(
       onTap: widget.onTap,
+      customBorder: widget.inkBorder,
       onHover: (hovered) => setState(() => _hovered = hovered),
       onFocusChange: (focused) => setState(() => _focused = focused),
       child: LibraryRowLayout(
+        horizontalPadding: widget.horizontalPadding,
         leading: widget.leading,
         body: Column(
           mainAxisSize: MainAxisSize.min,
