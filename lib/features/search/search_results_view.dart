@@ -100,6 +100,12 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
                 widget.onOpened();
                 context.go(albumLocation(album.key));
               },
+              // This State stays mounted under the modal, so its ref and
+              // context are live when the action is picked.
+              onQueueAction: (action) {
+                if (mounted) widget.onOpened();
+                enqueueAlbum(ref, context, action, album.key, album.title);
+              },
             ),
           ),
         if (r.artists.isNotEmpty)

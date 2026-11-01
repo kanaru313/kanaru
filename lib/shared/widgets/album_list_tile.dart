@@ -6,8 +6,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_database.dart';
 import '../../l10n/l10n.dart';
 import '../album_artist_label.dart';
+import '../album_modal/album_actions_region.dart';
 import '../enqueue_tracks.dart';
 import 'album_artwork.dart';
+import 'library_grid/album_tile_data.dart';
 import 'library_row.dart';
 import 'queue_actions_menu.dart';
 import 'song_card.dart';
@@ -72,8 +74,9 @@ class AlbumListTile extends ConsumerWidget {
       horizontalPadding: songCardInset,
       inkBorder: songCardShape,
     );
-    return QueueActionsRegion(
-      onAction: onQueueAction,
+    return AlbumActionsRegion(
+      album: AlbumTileData.fromSummary(album),
+      onQueueAction: onQueueAction,
       child: SongCardFrame(child: tile),
     );
   }
