@@ -5,6 +5,8 @@ import 'playlist_favorites.dart';
 import 'playlist_page_shared.dart';
 import 'playlist_rows.dart';
 
+export 'playlist_add_queries.dart';
+export 'playlist_add_writes.dart';
 export 'playlist_writes.dart';
 
 const _summarySql = '''
