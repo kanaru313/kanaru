@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/artist_modal/artist_more_button.dart';
+import '../../../shared/artist_summaries.dart';
 import '../../../shared/widgets/artist_avatar.dart';
 import '../../../shared/widgets/cover_art.dart';
 import '../../../shared/widgets/placeholder_colors.dart';
@@ -17,20 +19,16 @@ import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 class ArtistHeader extends StatelessWidget {
   const ArtistHeader({
     super.key,
-    required this.artistKey,
-    required this.name,
-    required this.albumCount,
+    required this.summary,
     required this.onPlay,
     required this.onShuffle,
-    required this.onQueueAction,
+    required this.onModalQueue,
   });
 
-  final String artistKey;
-  final String name;
-  final int albumCount;
+  final ArtistSummary summary;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
-  final ValueChanged<QueueAction> onQueueAction;
+  final ValueChanged<QueueAction> onModalQueue;
 
   @override
   Widget build(BuildContext context) {
@@ -38,16 +36,15 @@ class ArtistHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
       child: Row(
         children: [
-          ArtistAvatar(artistKey: artistKey, name: name, size: 120),
+          ArtistAvatar(artistKey: summary.key, name: summary.name, size: 120),
           const SizedBox(width: 24),
           Expanded(
             child: _ArtistDetails(
-              name: name,
-              albumCount: albumCount,
+              summary: summary,
               titleStyle: Theme.of(context).textTheme.headlineMedium,
               onPlay: onPlay,
               onShuffle: onShuffle,
-              onQueueAction: onQueueAction,
+              onModalQueue: onModalQueue,
             ),
           ),
         ],
@@ -63,22 +60,20 @@ class ArtistHeader extends StatelessWidget {
 class ArtistSidePane extends ConsumerWidget {
   const ArtistSidePane({
     super.key,
-    required this.artistKey,
-    required this.name,
+    required this.summary,
     required this.coverKey,
-    required this.albumCount,
     required this.onPlay,
     required this.onShuffle,
-    required this.onQueueAction,
+    required this.onModalQueue,
   });
 
-  final String artistKey;
-  final String name;
+  final ArtistSummary summary;
   final String? coverKey;
-  final int albumCount;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
-  final ValueChanged<QueueAction> onQueueAction;
+
+  /// Queues from the artist modal's actions; see [ArtistMoreButton].
+  final ValueChanged<QueueAction> onModalQueue;
 
   /// Gap between the round picture and the pane's top and sides, so the
   /// circle sits clear of the window edge.
@@ -90,7 +85,7 @@ class ArtistSidePane extends ConsumerWidget {
     final theme = Theme.of(context);
     final (background, foreground) = placeholderColors(
       theme.colorScheme,
-      artistKey,
+      summary.key,
     );
     return DetailSidePane(
       fade: false,
@@ -110,7 +105,7 @@ class ArtistSidePane extends ConsumerWidget {
             backgroundColor: background,
             foregroundColor: foreground,
             child: Text(
-              name.characters.firstOrNull?.toUpperCase() ?? '',
+              summary.name.characters.firstOrNull?.toUpperCase() ?? '',
               style: const TextStyle(fontSize: _avatarSize * 0.4),
               textScaler: TextScaler.noScaling,
             ),
@@ -118,13 +113,12 @@ class ArtistSidePane extends ConsumerWidget {
         ),
       ),
       details: _ArtistDetails(
-        name: name,
-        albumCount: albumCount,
+        summary: summary,
         titleStyle: theme.textTheme.headlineSmall,
         actionsAtEnd: true,
         onPlay: onPlay,
         onShuffle: onShuffle,
-        onQueueAction: onQueueAction,
+        onModalQueue: onModalQueue,
       ),
     );
   }
@@ -134,22 +128,20 @@ class ArtistSidePane extends ConsumerWidget {
 /// right end of the column when [actionsAtEnd] is on.
 class _ArtistDetails extends StatelessWidget {
   const _ArtistDetails({
-    required this.name,
-    required this.albumCount,
+    required this.summary,
     required this.titleStyle,
     this.actionsAtEnd = false,
     required this.onPlay,
     required this.onShuffle,
-    required this.onQueueAction,
+    required this.onModalQueue,
   });
 
-  final String name;
-  final int albumCount;
+  final ArtistSummary summary;
   final TextStyle? titleStyle;
   final bool actionsAtEnd;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
-  final ValueChanged<QueueAction> onQueueAction;
+  final ValueChanged<QueueAction> onModalQueue;
 
   @override
   Widget build(BuildContext context) {
@@ -159,14 +151,14 @@ class _ArtistDetails extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          name,
+          summary.name,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: titleStyle?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
-          l10n.artistsAlbumCount(albumCount),
+          l10n.artistsAlbumCount(summary.albumCount),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -180,7 +172,12 @@ class _ArtistDetails extends StatelessWidget {
             playLabel: l10n.artistsPlay,
             onPlay: onPlay,
             onShuffle: onShuffle,
-            onQueueAction: onQueueAction,
+            onQueueAction: null,
+            menu: ArtistMoreButton(
+              artist: summary,
+              onQueueAction: onModalQueue,
+              showArtist: false,
+            ),
           ),
         ),
       ],

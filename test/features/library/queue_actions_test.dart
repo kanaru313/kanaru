@@ -296,9 +296,9 @@ void main() {
       final h = LibraryHarness();
       await openWithTracks(tester, h, _tracks, location: artistLocation('bob'));
 
-      await tester.tap(find.byTooltip('Queue actions'));
+      await tester.tap(find.byType(ArtistMoreButton));
       await tester.pumpAndSettle();
-      await pick(tester, h, 'Add to queue');
+      await pickInArtistModal(tester, h, 'add-to-queue');
 
       expect(queue(h), ['b1']);
       expect(find.text('Playing: Bob'), findsOneWidget);
