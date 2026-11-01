@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/database/library_browse_queries.dart';
 import '../core/database/library_browse_track_links.dart';
 import '../core/database/library_database.dart';
 import '../core/database/library_startup.dart';
 import '../core/database/playlist_favorites.dart';
 import '../core/database/playlist_library_paths.dart';
 import '../core/lyrics/online/lyrics_target.dart';
+import '../core/player/playing_track_art.dart' show localPathOf;
 import '../l10n/l10n.dart';
 import 'icons/app_icons.dart';
 import 'library_route_keys.dart';
@@ -16,6 +18,7 @@ import 'lyrics_picker/lyrics_picker.dart';
 import 'queue_host.dart';
 import 'show_in_file_manager.dart';
 import 'track_menu_choice.dart';
+import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
 import 'widgets/app_snack_bar.dart';
 

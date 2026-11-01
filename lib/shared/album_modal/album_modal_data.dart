@@ -38,6 +38,7 @@ class AlbumModalHandlers {
     required this.playAll,
     required this.shuffle,
     required this.addToPlaylist,
+    required this.addAllToFavorites,
     this.openArtists,
     this.openFolders,
     this.openAdvanced,
@@ -52,6 +53,9 @@ class AlbumModalHandlers {
   final VoidCallback playAll;
   final VoidCallback shuffle;
   final VoidCallback addToPlaylist;
+
+  /// Puts every local song of the album in Favorites, saying how many went in.
+  final VoidCallback addAllToFavorites;
   final void Function(ContextModalNav nav)? openArtists;
   final void Function(ContextModalNav nav)? openFolders;
   final void Function(ContextModalNav nav)? openAdvanced;

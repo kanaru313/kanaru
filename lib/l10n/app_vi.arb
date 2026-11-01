@@ -1823,6 +1823,7 @@
   "songLyricsCopied": "Đã sao chép lời bài hát",
   "albumModalLabel": "Tùy chọn album",
   "albumModalEditAlbumArt": "Sửa ảnh bìa album",
+  "albumModalAddAllToFavorites": "Thêm tất cả vào Yêu thích",
   "albumModalPlayAll": "Phát tất cả",
   "albumModalSongsInFolders": "{songs, plural, other{{songs} bài}} trong {folders} thư mục",
   "albumModalArtistsTitle": "Nghệ sĩ · {title}",

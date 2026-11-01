@@ -6932,6 +6932,12 @@ abstract class AppLocalizations {
   /// **'Edit album art'**
   String get albumModalEditAlbumArt;
 
+  /// Album advanced row that adds every local song of the album to Favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Add all to Favorites'**
+  String get albumModalAddAllToFavorites;
+
   /// Album options row that plays the whole album
   ///
   /// In en, this message translates to:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show ValueChanged;
 
 import '../enqueue_from_database.dart';
@@ -49,5 +51,7 @@ class AlbumModalSession {
     playAll: () => playAlbumIn(runner.container, album.key),
     shuffle: () => playAlbumIn(runner.container, album.key, shuffle: true),
     addToPlaylist: () => queue(QueueAction.addToPlaylist),
+    addAllToFavorites: () =>
+        unawaited(runner.addAlbumToFavorites(album.key, album.title)),
   );
 }

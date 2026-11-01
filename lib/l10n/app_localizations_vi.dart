@@ -4414,6 +4414,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get albumModalEditAlbumArt => 'Sửa ảnh bìa album';
 
   @override
+  String get albumModalAddAllToFavorites => 'Thêm tất cả vào Yêu thích';
+
+  @override
   String get albumModalPlayAll => 'Phát tất cả';
 
   @override

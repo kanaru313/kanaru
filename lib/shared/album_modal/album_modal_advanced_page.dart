@@ -8,9 +8,9 @@ import '../widgets/context_modal/context_modal_route.dart';
 import 'album_modal_data.dart';
 import 'album_modal_session.dart';
 
-/// The Advanced page: Show in file manager, and the actions not available
-/// yet. It watches the album's links itself, which keeps them alive while this
-/// page covers the first one.
+/// The Advanced page: Add all to Favorites, Show in file manager, and the
+/// actions not available yet. It watches the album's links itself, which keeps
+/// them alive while this page covers the first one.
 ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
     ContextModalPage(
       key: 'album-advanced',
@@ -31,6 +31,14 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: contextModalSections(nav, [
+                [
+                  ContextModalAction(
+                    id: 'add-all-to-favorites',
+                    icon: AppIcons.favoriteOutline,
+                    label: l10n.albumModalAddAllToFavorites,
+                    onTap: albumModalCloseThen(handlers.addAllToFavorites),
+                  ),
+                ],
                 [
                   // Folders are empty for an album with no local file.
                   if (links == null || main != null)

@@ -17,6 +17,7 @@ AlbumModalHandlers get _handlers => AlbumModalHandlers(
   playAll: () {},
   shuffle: () {},
   addToPlaylist: () {},
+  addAllToFavorites: () {},
 );
 
 List<List<ContextModalAction>> _sections({

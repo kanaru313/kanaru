@@ -4676,6 +4676,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albumModalEditAlbumArt => 'Edit album art';
 
   @override
+  String get albumModalAddAllToFavorites => 'Add all to Favorites';
+
+  @override
   String get albumModalPlayAll => 'Play all';
 
   @override

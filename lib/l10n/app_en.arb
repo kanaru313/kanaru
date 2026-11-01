@@ -4522,6 +4522,10 @@
   "@albumModalEditAlbumArt": {
     "description": "Tooltip of the button in the album options header that will change the cover (not available yet)"
   },
+  "albumModalAddAllToFavorites": "Add all to Favorites",
+  "@albumModalAddAllToFavorites": {
+    "description": "Album advanced row that adds every local song of the album to Favorites"
+  },
   "albumModalPlayAll": "Play all",
   "@albumModalPlayAll": {
     "description": "Album options row that plays the whole album"
