@@ -10,6 +10,7 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -101,14 +102,16 @@ void main() {
     expect(find.text('Music folder not found: /gone'), findsOneWidget);
   });
 
-  testWidgets('the Settings action opens the settings page', (tester) async {
+  testWidgets('the Settings action opens the Library settings page', (
+    tester,
+  ) async {
     final h = await pumpWith(tester, roots: ['/gone']);
-    expect(location(h), isNot('/settings'));
+    expect(location(h), isNot('/settings/library'));
 
     await tester.tap(find.widgetWithText(SnackBarAction, 'Settings'));
     await tester.pumpAndSettle();
 
-    expect(location(h), '/settings');
+    expect(location(h), settingsLibraryRoute);
   });
 
   testWidgets('moving around does not show it again', (tester) async {

@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_browse_missing_roots.dart';
 import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/settings_routes.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'app_destination.dart';
 
 final _log = Logger('app.missingRoots');
 
@@ -69,7 +69,7 @@ class _MissingRootsNoticeState extends ConsumerState<MissingRootsNotice> {
         duration: const Duration(seconds: 8),
         action: SnackBarAction(
           label: l10n.libraryMissingRootsAction,
-          onPressed: () => router?.go(AppDestination.settings.path),
+          onPressed: () => router?.go(settingsLibraryRoute),
         ),
       ),
     );
