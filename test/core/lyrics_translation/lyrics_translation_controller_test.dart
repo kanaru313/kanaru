@@ -19,11 +19,16 @@ import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/lyrics_translation/translation_song_context.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_translate_spec.dart';
+import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
+import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
 
 const _text = 'alpha\nbeta\ngamma';
@@ -59,7 +64,7 @@ class Rig {
     this.appLang = 'en',
     List<Override> overrides = const [],
     Duration debounce = testDebounce,
-  }) : google = google ?? FakeTranslator(LyricsTranslationService.google) {
+  }) : google = google ?? FakeTranslator(TranslationServiceId.google) {
     container = translationContainer(
       db: db,
       lyrics: lyrics,
@@ -284,7 +289,7 @@ void main() {
 
       final ready = rig.state as TranslationReady;
       expect(ready.fromOtherService, isFalse);
-      expect(ready.service, LyricsTranslationService.google);
+      expect(ready.service, TranslationServiceId.google);
       expect(ready.lines.first, 'tr:alpha');
       expect(rig.google.calls, hasLength(1));
       rig.dispose();
@@ -292,7 +297,7 @@ void main() {
 
     test('unsupported target: Failed without a request', () async {
       final google = FakeTranslator(
-        LyricsTranslationService.google,
+        TranslationServiceId.google,
         unsupported: {'vi'},
       );
       final rig = Rig(
@@ -509,7 +514,7 @@ void main() {
       final key = TranslationJobKey(
         _hashOfText(_text),
         'en',
-        LyricsTranslationService.google,
+        TranslationServiceId.google,
       );
       final target = (rig.state as TranslationNeedsNotice).info.effective;
       await rig.container
@@ -520,9 +525,7 @@ void main() {
       expect(rig.google.calls, isEmpty);
       expect(rig.container.read(translationJobsProvider), isEmpty);
 
-      rig.settings.acknowledgeTranslationNotice(
-        LyricsTranslationService.google,
-      );
+      rig.settings.acknowledgeTranslationNotice(TranslationServiceId.google);
       await rig.untilReady();
       expect(rig.google.calls, hasLength(1));
       rig.dispose();
@@ -625,7 +628,7 @@ void main() {
       synced: false,
       source: LyricsSource.embedded,
     );
-    CachedTranslation row(LyricsTranslationService s, String text) =>
+    CachedTranslation row(TranslationServiceId s, String text) =>
         CachedTranslation(
           service: s,
           targetLang: 'en',
@@ -637,7 +640,7 @@ void main() {
     LyricsTranslationState derive(List<CachedTranslation> rows) =>
         deriveTranslation(
           info: info,
-          service: LyricsTranslationService.google,
+          service: TranslationServiceId.google,
           lyrics: lyrics,
           rows: rows,
           job: saved,
@@ -646,15 +649,186 @@ void main() {
     test('a lagging row stream shows Loading, not an older row', () {
       expect(derive([]), isA<TranslationLoading>());
       expect(
-        derive([row(LyricsTranslationService.google, 'old')]),
+        derive([row(TranslationServiceId.google, 'old')]),
         isA<TranslationLoading>(),
       );
       expect(
         (derive([
-          row(LyricsTranslationService.google, 'new'),
+          row(TranslationServiceId.google, 'new'),
         ]) as TranslationReady).lines,
         ['new'],
       );
+    });
+  });
+
+  group('plugin service and song context', () {
+    final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+
+    Future<void> playTrack(Rig rig, Track track, {String text = _text}) async {
+      rig.lyrics.byPath[track.uri] = (text: text, synced: const []);
+      await rig.container.read(playerServiceProvider.notifier).openTracks([
+        track,
+      ]);
+      await settle();
+    }
+
+    test(
+      'title and artist reach the translator, a file name does not',
+      () async {
+        final rig = Rig(db);
+        await playTrack(
+          rig,
+          const Track(uri: '/m/a.mp3', title: 'Real Title', artist: ' Band '),
+        );
+        await rig.untilReady();
+        expect(
+          rig.google.songs.single,
+          const TranslationSongContext(title: 'Real Title', artist: 'Band'),
+        );
+
+        await rig.controller.retranslate();
+        expect(rig.google.songs.last, rig.google.songs.first);
+        rig.dispose();
+
+        final named = Rig(db);
+        named.google.errors[0] = failure(TranslationFailureKind.server);
+        await playTrack(
+          named,
+          const Track(uri: '/m/b.mp3', title: 'b'),
+          text: _other,
+        );
+        await until(() => named.state is TranslationFailed);
+        await named.controller.retry();
+        await named.untilReady();
+        expect(named.google.songs, hasLength(2));
+        expect(
+          named.google.songs.every((s) => s == const TranslationSongContext()),
+          isTrue,
+        );
+        named.dispose();
+      },
+    );
+
+    test(
+      'a plugin that is gone: Google is used, its notice is asked',
+      () async {
+        final records = [
+          for (final accepted in [true, false])
+            Rig(
+              db,
+              settings: translationSettings(
+                service: plugin,
+                acknowledged: {
+                  plugin,
+                  if (accepted) TranslationServiceId.google,
+                },
+              ),
+              overrides: [
+                translatePluginRecordsProvider.overrideWithValue(
+                  const AsyncValue.data([]),
+                ),
+              ],
+            ),
+        ];
+        await records[0].play('/m/a.mp3', _text);
+        await records[0].untilReady();
+        expect(
+          (records[0].state as TranslationReady).service,
+          TranslationServiceId.google,
+        );
+        expect(records[0].google.calls, hasLength(1));
+
+        await records[1].play('/m/a.mp3', _text);
+        await settle(_idle);
+        expect(records[1].state, isA<TranslationNeedsNotice>());
+        expect(
+          (records[1].state as TranslationNeedsNotice).service,
+          TranslationServiceId.google,
+        );
+        expect(records[1].google.calls, isEmpty);
+        for (final r in records) {
+          r.dispose();
+        }
+      },
+    );
+
+    test('switching to a song without lyrics drops the next chunk', () async {
+      final runner = FakePluginRunner(
+        spec_: const PluginTranslateSpec(languages: ['en'], maxLines: 10),
+      );
+      final rig = Rig(
+        db,
+        settings: translationSettings(
+          service: plugin,
+          acknowledged: {plugin, TranslationServiceId.google},
+        ),
+        overrides: [
+          pluginTranslateRunnerProvider.overrideWithValue(runner),
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.data([translateRecord(plugin.value)]),
+          ),
+        ],
+      );
+      runner.hold = Completer<void>();
+      await rig.play(
+        '/m/a.mp3',
+        [for (var i = 0; i < 25; i++) 'line $i'].join('\n'),
+      );
+      await until(() => runner.calls.isNotEmpty);
+
+      await rig.play('/m/none.mp3', null);
+      runner.hold!.complete();
+      await settle(_idle);
+
+      expect(runner.calls, hasLength(1));
+      rig.dispose();
+    });
+
+    test('plugin list still loading: Loading, nothing sent', () async {
+      final rig = Rig(
+        db,
+        settings: translationSettings(
+          service: plugin,
+          acknowledged: {plugin, TranslationServiceId.google},
+        ),
+        overrides: [
+          translatePluginRecordsProvider.overrideWithValue(
+            const AsyncValue.loading(),
+          ),
+        ],
+      );
+      await rig.play('/m/a.mp3', _text);
+      await settle(_idle);
+      expect(rig.state, isA<TranslationLoading>());
+      expect(rig.google.calls, isEmpty);
+      rig.dispose();
+    });
+
+    test('useGoogle switches the stored service for good', () async {
+      final rig = Rig(
+        db,
+        settings: translationSettings(
+          service: plugin,
+          acknowledged: {plugin, TranslationServiceId.google},
+        ),
+        overrides: [
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.data([translateRecord(plugin.value)]),
+          ),
+        ],
+      );
+      await rig.play('/m/a.mp3', _text);
+      rig.controller.useGoogle();
+      expect(
+        rig.container.read(settingsProvider).translation.service,
+        TranslationServiceId.google,
+      );
+      await rig.untilReady();
+      expect(
+        (rig.state as TranslationReady).service,
+        TranslationServiceId.google,
+      );
+      rig.dispose();
     });
   });
 }

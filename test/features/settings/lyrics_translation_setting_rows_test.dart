@@ -5,7 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'translation_settings_harness.dart';
 
-const _google = LyricsTranslationService.google;
+const _google = TranslationServiceId.google;
 
 void main() {
   const rows = LyricsTranslationSettingRows();

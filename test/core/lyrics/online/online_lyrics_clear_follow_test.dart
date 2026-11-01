@@ -30,7 +30,7 @@ void main() {
     required bool auto,
     Duration tDebounce = const Duration(milliseconds: 30),
   }) async {
-    final google = FakeTranslator(LyricsTranslationService.google);
+    final google = FakeTranslator(TranslationServiceId.google);
     final rig = await createStatusRig(
       autoFetch: auto,
       overrides: [
@@ -46,7 +46,7 @@ void main() {
       ],
     );
     final s = rig.container.read(settingsProvider.notifier);
-    s.acknowledgeTranslationNotice(LyricsTranslationService.google);
+    s.acknowledgeTranslationNotice(TranslationServiceId.google);
     s.setTranslation(
       rig.container.read(settingsProvider).translation.copyWith(show: true),
     );

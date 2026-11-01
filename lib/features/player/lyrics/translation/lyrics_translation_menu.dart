@@ -6,6 +6,7 @@ import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_language.dart';
 import '../../../../core/lyrics_translation/translation_service.dart';
+import '../../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/icons/app_icons.dart';
@@ -49,14 +50,22 @@ List<Widget> lyricsTranslationMenuItems(
   final prefs = ref.watch(settingsProvider.select((s) => s.translation));
   final settings = ref.read(settingsProvider.notifier);
   final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
-  final on = prefs.show && !prefs.needsNotice;
+  // Null while the plugin list loads: nothing can be turned on meanwhile,
+  // but turning off always works (as for the T key).
+  final effective = ref.watch(effectiveTranslationServiceProvider);
+  final on =
+      prefs.show && (effective == null || !needsNoticeFor(prefs, effective));
 
-  void toggle() => on
-      ? settings.toggleLyricsTranslation()
-      : enableTranslationWithNotice(context, ref, prefs.service);
+  void toggle() {
+    if (on) {
+      settings.toggleLyricsTranslation();
+    } else if (effective != null) {
+      enableTranslationWithNotice(context, ref, effective);
+    }
+  }
 
-  Future<void> pickService(LyricsTranslationService service) async {
-    if (prefs.show && !prefs.noticeAcknowledged.contains(service)) {
+  Future<void> pickService(TranslationServiceId service) async {
+    if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
@@ -149,8 +158,8 @@ List<Widget> lyricsTranslationMenuItems(
           ),
         ),
         menuChildren: [
-          for (final service in LyricsTranslationService.values)
-            radio<LyricsTranslationService>(
+          for (final service in const [TranslationServiceId.google])
+            radio<TranslationServiceId>(
               value: service,
               groupValue: prefs.service,
               onChanged: () => pickService(service),

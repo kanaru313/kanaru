@@ -8,6 +8,7 @@ import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -535,7 +536,7 @@ void main() {
     ) async {
       startSettings = const AppSettings(
         translation: TranslationPrefs(
-          noticeAcknowledged: {LyricsTranslationService.google},
+          noticeAcknowledged: {TranslationServiceId.google},
         ),
       );
       extraOverrides = [
@@ -559,7 +560,7 @@ void main() {
     testWidgets('narrow: an open source menu keeps T out', (tester) async {
       startSettings = const AppSettings(
         translation: TranslationPrefs(
-          noticeAcknowledged: {LyricsTranslationService.google},
+          noticeAcknowledged: {TranslationServiceId.google},
         ),
       );
       await pumpScreen(tester, size: const Size(600, 900));
@@ -575,7 +576,7 @@ void main() {
   group('the T key', () {
     const accepted = AppSettings(
       translation: TranslationPrefs(
-        noticeAcknowledged: {LyricsTranslationService.google},
+        noticeAcknowledged: {TranslationServiceId.google},
       ),
     );
 
@@ -613,6 +614,32 @@ void main() {
       expect(translation().noticeAcknowledged, isEmpty);
     });
 
+    testWidgets('an uninstalled plugin: T opens the Google notice', (
+      tester,
+    ) async {
+      final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+      startSettings = AppSettings(
+        translation: TranslationPrefs(
+          show: true,
+          service: plugin,
+          noticeAcknowledged: {plugin},
+        ),
+      );
+      extraOverrides = [
+        translatePluginRecordsProvider.overrideWithValue(
+          const AsyncValue.data([]),
+        ),
+      ];
+      await pumpOverlay(tester);
+
+      await pressT(tester);
+
+      expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(translation().service, plugin);
+    });
+
     testWidgets('Continue accepts and turns it on; later presses are silent', (
       tester,
     ) async {
@@ -623,9 +650,7 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       expect(translation().show, isTrue);
-      expect(translation().noticeAcknowledged, {
-        LyricsTranslationService.google,
-      });
+      expect(translation().noticeAcknowledged, {TranslationServiceId.google});
 
       await pressT(tester);
       await pressT(tester);

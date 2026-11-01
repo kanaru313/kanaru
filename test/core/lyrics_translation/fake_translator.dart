@@ -14,6 +14,7 @@ import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/lyrics_translation/translation_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/lyrics_translation/translation_song_context.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/secrets/secret_store_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -30,13 +31,22 @@ class FakeTranslator implements LyricsTranslator {
   });
 
   @override
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   /// Language reported for every line; `null` reports none.
   String? detected;
 
   /// Target codes this translator refuses.
   final Set<String> unsupported;
+
+  @override
+  TranslationChunkLimits chunkLimits = const TranslationChunkLimits(
+    maxLines: 50,
+    maxChars: 4000,
+  );
+
+  /// The song context of each call, in order.
+  final songs = <TranslationSongContext?>[];
 
   /// The lines of each call, in order.
   final calls = <List<String>>[];
@@ -61,8 +71,9 @@ class FakeTranslator implements LyricsTranslator {
   Future<TranslatedLines> translate(
     List<String> lines,
     TranslationLanguage target, {
-    String? context,
+    TranslationSongContext? song,
   }) async {
+    songs.add(song);
     final index = calls.length;
     calls.add(List.of(lines));
     targets.add(target.code);
@@ -84,10 +95,8 @@ LibraryDatabase memoryDb() => LibraryDatabase(NativeDatabase.memory());
 /// Settings with translation on and the notice accepted for [acknowledged].
 AppSettings translationSettings({
   bool show = true,
-  LyricsTranslationService service = LyricsTranslationService.google,
-  Set<LyricsTranslationService> acknowledged = const {
-    LyricsTranslationService.google,
-  },
+  TranslationServiceId service = TranslationServiceId.google,
+  Set<TranslationServiceId> acknowledged = const {TranslationServiceId.google},
   String? target,
 }) => AppSettings(
   translation: TranslationPrefs(

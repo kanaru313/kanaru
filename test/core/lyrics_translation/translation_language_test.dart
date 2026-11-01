@@ -81,8 +81,18 @@ void main() {
     });
   });
 
-  test('the service name is what settings and the cache store', () {
-    expect(LyricsTranslationService.values, [LyricsTranslationService.google]);
-    expect(LyricsTranslationService.google.name, 'google');
+  test('the service id is what settings and the cache store', () {
+    expect(TranslationServiceId.google.value, 'google');
+    expect(
+      TranslationServiceId.tryParse('google'),
+      TranslationServiceId.google,
+    );
+    expect(
+      TranslationServiceId.tryParse('plugin-abc123def456')!.isPlugin,
+      true,
+    );
+    for (final bad in ['deepl', 'plugin-short', 'Google', '', null, 3]) {
+      expect(TranslationServiceId.tryParse(bad), isNull, reason: '$bad');
+    }
   });
 }

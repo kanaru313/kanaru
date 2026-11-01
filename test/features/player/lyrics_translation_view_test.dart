@@ -18,12 +18,12 @@ import '../../core/lyrics/fake_lyrics_readers.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
-const _google = LyricsTranslationService.google;
+const _google = TranslationServiceId.google;
 const _synced = Track(uri: '/m/synced.flac', title: 'Synced');
 const _plain = Track(uri: '/m/plain.flac', title: 'Plain');
 
 TranslationReady _ready({
-  LyricsTranslationService service = _google,
+  TranslationServiceId service = _google,
   List<String?> lines = const ['Dòng một', 'Dòng hai'],
 }) => TranslationReady(fakeTranslationInfo(), service, 'ja', lines, false);
 

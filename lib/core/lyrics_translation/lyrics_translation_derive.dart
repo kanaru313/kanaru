@@ -39,16 +39,22 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
 /// (the caller then starts one after the debounce).
 ({LyricsTranslationState state, bool needsRequest}) deriveTranslation({
   required TranslationTargetInfo info,
-  required LyricsTranslationService service,
+  required TranslationServiceId service,
+  Set<TranslationServiceId> knownPlugins = const {},
   required Lyrics lyrics,
   required List<CachedTranslation> rows,
   required TranslationJobStatus? job,
 }) {
   final target = info.effective;
-  final picked = pickCached([
-    for (final row in rows)
-      if (isUsableTranslation(row, target)) row,
-  ], service);
+  final picked = pickCached(
+    [
+      for (final row in rows)
+        if (isUsableTranslation(row, target)) row,
+    ],
+    service,
+    knownPlugins: knownPlugins,
+    target: target,
+  );
   TranslationLoading loading() => TranslationLoading(info, service);
   LyricsTranslationState fromRow(CachedTranslation row, bool other) =>
       isSameLanguage(row.sourceLang, target)

@@ -61,14 +61,14 @@ void main() {
     var changes = 0;
     container.listen(settingsProvider, (_, _) => changes++);
 
-    notifier.enableTranslation(LyricsTranslationService.google);
+    notifier.enableTranslation(TranslationServiceId.google);
     await notifier.flush();
 
     expect(changes, 1);
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isTrue);
-    expect(translation.service, LyricsTranslationService.google);
-    expect(translation.noticeAcknowledged, {LyricsTranslationService.google});
+    expect(translation.service, TranslationServiceId.google);
+    expect(translation.noticeAcknowledged, {TranslationServiceId.google});
     final json = stored()['lyricsTranslation']! as Map;
     expect(json['show'], true);
     expect(json['service'], 'google');
@@ -79,7 +79,7 @@ void main() {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
-    notifier.acknowledgeTranslationNotice(LyricsTranslationService.google);
+    notifier.acknowledgeTranslationNotice(TranslationServiceId.google);
 
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isFalse);
@@ -104,7 +104,7 @@ void main() {
     notifier.setTranslation(
       const TranslationPrefs(
         show: true,
-        noticeAcknowledged: {LyricsTranslationService.google},
+        noticeAcknowledged: {TranslationServiceId.google},
       ),
     );
 
@@ -117,7 +117,7 @@ void main() {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
-    notifier.acknowledgeTranslationNotice(LyricsTranslationService.google);
+    notifier.acknowledgeTranslationNotice(TranslationServiceId.google);
     notifier.setTranslation(
       container.read(settingsProvider).translation.withTargetLanguage('vi'),
     );

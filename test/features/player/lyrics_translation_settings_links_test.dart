@@ -41,7 +41,7 @@ void main() {
         initialSettingsProvider.overrideWithValue(
           const AppSettings(
             translation: TranslationPrefs(
-              noticeAcknowledged: {LyricsTranslationService.google},
+              noticeAcknowledged: {TranslationServiceId.google},
             ),
           ),
         ),
@@ -90,7 +90,7 @@ void main() {
     final fake = FakeTranslationController(
       TranslationReady(
         fakeTranslationInfo(),
-        LyricsTranslationService.google,
+        TranslationServiceId.google,
         'ja',
         const [],
         false,
@@ -117,7 +117,7 @@ void main() {
     Widget banner(TranslationFailureKind kind) => LyricsTranslationBanner(
       state: TranslationFailed(
         fakeTranslationInfo(),
-        LyricsTranslationService.google,
+        TranslationServiceId.google,
         kind,
       ),
       appLang: 'en',

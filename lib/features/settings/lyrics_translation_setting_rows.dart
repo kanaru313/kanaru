@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics_translation/translation_language.dart';
 import '../../core/lyrics_translation/translation_service.dart';
+import '../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/translation_language_name.dart';
@@ -26,12 +27,12 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
   Future<void> _pickService(
     BuildContext context,
     WidgetRef ref,
-    LyricsTranslationService service,
+    TranslationServiceId service,
   ) async {
     final prefs = ref.read(settingsProvider).translation;
     // While translation is on, a service never agreed to needs the notice
     // first; Cancel keeps the old service.
-    if (prefs.show && !prefs.noticeAcknowledged.contains(service)) {
+    if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       ref
@@ -56,12 +57,12 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
         SettingRow(
           title: l10n.settingsTranslationService,
           subtitle: l10n.settingsTranslationServiceGoogleHint,
-          control: (compact) => SettingChoice<LyricsTranslationService>(
+          control: (compact) => SettingChoice<TranslationServiceId>(
             compact: compact,
             selected: prefs.service,
             onSelected: (service) => _pickService(context, ref, service),
             options: [
-              for (final service in LyricsTranslationService.values)
+              for (final service in const [TranslationServiceId.google])
                 SettingOption(
                   value: service,
                   label: translationServiceName(service),

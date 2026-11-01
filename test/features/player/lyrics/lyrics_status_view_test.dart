@@ -638,7 +638,7 @@ void main() {
       final fake = FakeTranslationController(
         TranslationReady(
           fakeTranslationInfo(),
-          LyricsTranslationService.google,
+          TranslationServiceId.google,
           'ja',
           const ['Dòng một', 'Dòng hai'],
           false,
@@ -656,7 +656,7 @@ void main() {
         settings: const AppSettings(
           translation: TranslationPrefs(
             show: true,
-            noticeAcknowledged: {LyricsTranslationService.google},
+            noticeAcknowledged: {TranslationServiceId.google},
           ),
         ),
       );

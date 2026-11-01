@@ -10,7 +10,7 @@ import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_pil
 
 import 'fake_translation_controller.dart';
 
-const _google = LyricsTranslationService.google;
+const _google = TranslationServiceId.google;
 final _info = fakeTranslationInfo();
 
 void main() {
@@ -183,7 +183,7 @@ void main() {
   });
 
   group('pill', () {
-    TranslationReady ready([LyricsTranslationService service = _google]) =>
+    TranslationReady ready([TranslationServiceId service = _google]) =>
         TranslationReady(_info, service, 'ja', const [], false);
 
     testWidgets('ready with room: service and language, credit tooltip', (

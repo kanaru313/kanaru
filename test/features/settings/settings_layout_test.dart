@@ -181,7 +181,7 @@ Future<void> _checkLayout(
       ),
       (
         l10n.settingsTranslationService,
-        find.byType(SettingChoice<LyricsTranslationService>),
+        find.byType(SettingChoice<TranslationServiceId>),
         l10n.settingsTranslationServiceGoogleHint,
       ),
       (

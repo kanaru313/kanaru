@@ -5,11 +5,10 @@ import '../core/lyrics_translation/translation_service.dart';
 import '../core/settings/settings_provider.dart';
 import '../l10n/l10n.dart';
 
-/// What [service] is called on screen (brand names, not translated).
-String translationServiceName(LyricsTranslationService service) =>
-    switch (service) {
-      LyricsTranslationService.google => 'Google',
-    };
+/// What [service] is called on screen (brand names, not translated). A
+/// plugin is shown by its id until its name is looked up.
+String translationServiceName(TranslationServiceId service) =>
+    service.isGoogle ? 'Google' : service.value;
 
 /// Makes sure the user accepted sending lyrics to [service]. Returns true at
 /// once when they did before; otherwise asks and returns whether they chose
@@ -21,7 +20,7 @@ String translationServiceName(LyricsTranslationService service) =>
 Future<bool> confirmTranslationNotice(
   BuildContext context,
   WidgetRef ref,
-  LyricsTranslationService service,
+  TranslationServiceId service,
 ) async {
   final accepted = ref
       .read(settingsProvider)
@@ -44,7 +43,7 @@ Future<bool> confirmTranslationNotice(
 Future<void> enableTranslationWithNotice(
   BuildContext context,
   WidgetRef ref,
-  LyricsTranslationService service,
+  TranslationServiceId service,
 ) async {
   final settings = ref.read(settingsProvider.notifier);
   if (!await confirmTranslationNotice(context, ref, service)) return;
@@ -54,7 +53,7 @@ Future<void> enableTranslationWithNotice(
 class _TranslationNoticeDialog extends StatelessWidget {
   const _TranslationNoticeDialog(this.service);
 
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +66,7 @@ class _TranslationNoticeDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.translationNoticeBody(name)),
-          if (service == LyricsTranslationService.google) ...[
+          if (service.isGoogle) ...[
             const SizedBox(height: 12),
             Text(l10n.translationNoticeGoogleUnofficial),
           ],

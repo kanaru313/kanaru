@@ -14,7 +14,7 @@ enum LyricsTranslationDisplay {
 class TranslationPrefs {
   const TranslationPrefs({
     this.show = false,
-    this.service = LyricsTranslationService.google,
+    this.service = TranslationServiceId.google,
     this.targetLanguage,
     this.display = LyricsTranslationDisplay.underLine,
     this.noticeAcknowledged = const {},
@@ -23,7 +23,7 @@ class TranslationPrefs {
   /// Translated lines are shown (and fetched) for the playing song.
   final bool show;
 
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   /// Language the lyrics are translated into, a code of
   /// `translationLanguages`; `null` follows the app's language.
@@ -31,18 +31,19 @@ class TranslationPrefs {
 
   final LyricsTranslationDisplay display;
 
-  /// Services the user accepted "lyrics will be sent to `<service>`" for.
-  /// Switching to another service asks once more.
-  final Set<LyricsTranslationService> noticeAcknowledged;
+  /// Services (`google` or plugin ids) the user accepted "lyrics will be sent
+  /// to `<service>`" for. Switching to another service asks once more.
+  final Set<TranslationServiceId> noticeAcknowledged;
 
-  /// The chosen [service] has not been accepted yet, so nothing may be sent.
+  /// The stored [service] has not been accepted yet. Callers that decide
+  /// about a request ask `needsNoticeFor` with the effective service.
   bool get needsNotice => !noticeAcknowledged.contains(service);
 
   TranslationPrefs copyWith({
     bool? show,
-    LyricsTranslationService? service,
+    TranslationServiceId? service,
     LyricsTranslationDisplay? display,
-    Set<LyricsTranslationService>? noticeAcknowledged,
+    Set<TranslationServiceId>? noticeAcknowledged,
   }) => TranslationPrefs(
     show: show ?? this.show,
     service: service ?? this.service,
@@ -82,7 +83,7 @@ class TranslationPrefs {
 
   @override
   String toString() =>
-      'TranslationPrefs(show: $show, service: ${service.name}, '
+      'TranslationPrefs(show: $show, service: ${service.value}, '
       'targetLanguage: $targetLanguage, display: ${display.name}, '
-      'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.name).toList()})';
+      'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.value).toList()})';
 }

@@ -4,7 +4,7 @@ import 'package:kanaru/core/settings/translation_prefs.dart';
 import 'package:kanaru/core/settings/translation_prefs_codec.dart';
 
 void main() {
-  const both = {LyricsTranslationService.google};
+  const both = {TranslationServiceId.google};
 
   TranslationPrefs decode(Object? json) => decodeTranslationPrefs(json).$1;
 
@@ -19,7 +19,7 @@ void main() {
   test('every field round-trips', () {
     const prefs = TranslationPrefs(
       show: true,
-      service: LyricsTranslationService.google,
+      service: TranslationServiceId.google,
       targetLanguage: 'vi',
       display: LyricsTranslationDisplay.replace,
       noticeAcknowledged: both,
@@ -47,7 +47,7 @@ void main() {
       'display': 'sideways',
     });
 
-    expect(prefs.service, LyricsTranslationService.google);
+    expect(prefs.service, TranslationServiceId.google);
     expect(prefs.display, LyricsTranslationDisplay.underLine);
   });
 
@@ -73,7 +73,7 @@ void main() {
   test('a saved DeepL service loads as Google', () {
     final prefs = decode(<String, Object?>{'service': 'deepl'});
 
-    expect(prefs.service, LyricsTranslationService.google);
+    expect(prefs.service, TranslationServiceId.google);
   });
 
   test('acknowledged services that are not known are kept', () {
@@ -124,7 +124,7 @@ void main() {
   test('prefs with the same acknowledged services are equal', () {
     const a = TranslationPrefs(noticeAcknowledged: both);
     const b = TranslationPrefs(
-      noticeAcknowledged: {LyricsTranslationService.google},
+      noticeAcknowledged: {TranslationServiceId.google},
     );
 
     expect(a, b);
@@ -137,5 +137,63 @@ void main() {
 
     expect(prefs.copyWith(show: true).targetLanguage, 'vi');
     expect(prefs.withTargetLanguage(null).targetLanguage, isNull);
+  });
+
+  group('plugin ids', () {
+    final id = TranslationServiceId.tryParse('plugin-abc123def456')!;
+
+    test('a plugin id is kept as the service and as accepted', () {
+      final prefs = decode(<String, Object?>{
+        'show': true,
+        'service': id.value,
+        'noticeAcknowledged': ['google', id.value],
+      });
+
+      expect(prefs.service, id);
+      expect(prefs.show, isTrue);
+      expect(prefs.noticeAcknowledged, {TranslationServiceId.google, id});
+    });
+
+    test('deepl and malformed ids fall back to google, kept in extra', () {
+      final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{
+        'service': 'deepl',
+        'noticeAcknowledged': ['deepl', 'plugin-x', 'google'],
+      });
+
+      expect(prefs.service, TranslationServiceId.google);
+      expect(prefs.noticeAcknowledged, {TranslationServiceId.google});
+      expect(extra['noticeAcknowledged'], ['deepl', 'plugin-x']);
+      final json = encodeTranslationPrefs(prefs, extra: extra);
+      expect(json['noticeAcknowledged'], ['google', 'deepl', 'plugin-x']);
+    });
+
+    test('show is off when the stored plugin was never accepted', () {
+      final prefs = decode(<String, Object?>{
+        'show': true,
+        'service': id.value,
+        'noticeAcknowledged': ['google'],
+      });
+
+      expect(prefs.show, isFalse);
+    });
+
+    test('at most 64 accepted ids are kept', () {
+      final ids = [
+        for (var i = 0; i < 65; i++) 'plugin-${i.toString().padLeft(12, '0')}',
+      ];
+      final prefs = decode(<String, Object?>{'noticeAcknowledged': ids});
+
+      expect(prefs.noticeAcknowledged, hasLength(64));
+    });
+
+    test('a plugin service round-trips', () {
+      final prefs = TranslationPrefs(
+        show: true,
+        service: id,
+        noticeAcknowledged: {id},
+      );
+
+      expect(decode(encodeTranslationPrefs(prefs)), prefs);
+    });
   });
 }

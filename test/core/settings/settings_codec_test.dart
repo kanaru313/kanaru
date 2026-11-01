@@ -322,9 +322,9 @@ void main() {
     const translated = AppSettings(
       translation: TranslationPrefs(
         show: true,
-        service: LyricsTranslationService.google,
+        service: TranslationServiceId.google,
         targetLanguage: 'vi',
-        noticeAcknowledged: {LyricsTranslationService.google},
+        noticeAcknowledged: {TranslationServiceId.google},
       ),
     );
 

@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
@@ -13,7 +15,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'fake_translation_controller.dart';
 
-const _google = LyricsTranslationService.google;
+const _google = TranslationServiceId.google;
 
 void main() {
   late ProviderContainer container;
@@ -31,6 +33,7 @@ void main() {
     bool followSettings = false,
     Size size = const Size(800, 900),
     Locale locale = const Locale('en'),
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -42,6 +45,7 @@ void main() {
         initialSettingsProvider.overrideWithValue(
           AppSettings(translation: settings),
         ),
+        ...overrides,
       ],
     );
     addTearDown(container.dispose);
@@ -75,7 +79,7 @@ void main() {
   }
 
   Finder serviceRadio(String name) =>
-      find.widgetWithText(RadioMenuButton<LyricsTranslationService>, name);
+      find.widgetWithText(RadioMenuButton<TranslationServiceId>, name);
 
   testWidgets('items come in order and the first three work while off', (
     tester,
@@ -130,6 +134,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(prefs().show, isFalse);
     expect(find.text('Show translation'), findsOneWidget);
+  });
+
+  testWidgets('plugin list unreadable: the switch shows on and turns it off', (
+    tester,
+  ) async {
+    final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+    await pump(
+      tester,
+      TranslationOff(fakeTranslationInfo()),
+      settings: TranslationPrefs(
+        show: true,
+        service: plugin,
+        noticeAcknowledged: {plugin},
+      ),
+      overrides: [
+        translatePluginRecordsProvider.overrideWithValue(
+          const AsyncValue.loading(),
+        ),
+      ],
+    );
+
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+    await tester.tap(find.text('Show translation'));
+    await tester.pumpAndSettle();
+
+    expect(prefs().show, isFalse);
   });
 
   testWidgets('Enter on the open menu flips the switch', (tester) async {
@@ -312,7 +342,7 @@ void main() {
 
       await openServiceSubmenu(tester);
       expect(serviceRadio('Google'), findsOneWidget);
-      final google = tester.widget<RadioMenuButton<LyricsTranslationService>>(
+      final google = tester.widget<RadioMenuButton<TranslationServiceId>>(
         serviceRadio('Google'),
       );
       expect(google.value, google.groupValue);
@@ -476,6 +506,36 @@ void main() {
       expect(find.textContaining('will be sent'), findsNothing);
       expect(prefs().show, isTrue);
     });
+
+    testWidgets(
+      'an uninstalled plugin: the switch asks for the Google notice',
+      (tester) async {
+        final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+        await pump(
+          tester,
+          off,
+          settings: TranslationPrefs(
+            show: true,
+            service: plugin,
+            noticeAcknowledged: {plugin},
+          ),
+          overrides: [
+            translatePluginRecordsProvider.overrideWithValue(
+              const AsyncValue.data([]),
+            ),
+          ],
+        );
+
+        await tester.tap(find.text('Show translation'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+        expect(prefs().service, _google);
+        expect(prefs().noticeAcknowledged, contains(_google));
+      },
+    );
   });
 
   for (final (locale, switchText, language, service) in [

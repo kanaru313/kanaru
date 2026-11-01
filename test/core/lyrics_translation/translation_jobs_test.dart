@@ -13,7 +13,7 @@ import 'package:logging/logging.dart';
 import '../lyrics/fake_lyrics_readers.dart';
 import 'fake_translator.dart';
 
-const _google = LyricsTranslationService.google;
+const _google = TranslationServiceId.google;
 const _lines = ['alpha', 'beta', 'gamma'];
 final _en = translationLanguageFor('en')!;
 const _key = TranslationJobKey('hash', 'en', _google);
@@ -31,7 +31,7 @@ void main() {
 
   void build({
     bool withDb = true,
-    Set<LyricsTranslationService> acknowledged = _both,
+    Set<TranslationServiceId> acknowledged = _both,
     FakeSecretStore? store,
   }) {
     container = translationContainer(

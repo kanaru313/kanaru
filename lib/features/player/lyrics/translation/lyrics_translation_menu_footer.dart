@@ -18,7 +18,7 @@ const _maxWidth = 280.0;
 List<Widget> lyricsTranslationMenuFooter(
   BuildContext context,
   LyricsTranslationState state,
-  LyricsTranslationService selected,
+  TranslationServiceId selected,
   LyricsTranslationController controller,
 ) {
   final l10n = context.l10n;

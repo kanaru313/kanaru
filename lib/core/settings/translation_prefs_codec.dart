@@ -18,7 +18,7 @@ const _knownKeys = {
 
 /// Reads the `lyricsTranslation` object; each key falls back on its own. The
 /// second value holds the keys this version does not know, plus (under
-/// `noticeAcknowledged`) the service names it does not know, so that saving
+/// `noticeAcknowledged`) the service ids it does not know, so that saving
 /// keeps them.
 ///
 /// `show` is read as off when the chosen service was never acknowledged, so a
@@ -26,11 +26,7 @@ const _knownKeys = {
 (TranslationPrefs, Map<String, Object?>) decodeTranslationPrefs(Object? json) {
   final map = objectOrEmpty(json);
   const d = TranslationPrefs();
-  final service = enumOr(
-    LyricsTranslationService.values,
-    map[_serviceKey],
-    d.service,
-  );
+  final service = TranslationServiceId.tryParse(map[_serviceKey]) ?? d.service;
   final (acknowledged, unknownNames) = _decodeAcknowledged(
     map[_noticeAcknowledgedKey],
   );
@@ -56,24 +52,26 @@ const _knownKeys = {
   );
 }
 
-(Set<LyricsTranslationService>, List<Object?>) _decodeAcknowledged(
-  Object? json,
-) {
+/// Most acknowledged services kept; a hand-edited file cannot grow the set.
+const _maxAcknowledged = 64;
+
+(Set<TranslationServiceId>, List<Object?>) _decodeAcknowledged(Object? json) {
   if (json is! List) return (const {}, const []);
-  return (
-    Set.unmodifiable({
-      for (final service in LyricsTranslationService.values)
-        if (json.contains(service.name)) service,
-    }),
-    [
-      for (final name in json)
-        if (!LyricsTranslationService.values.any((s) => s.name == name)) name,
-    ],
-  );
+  final known = <TranslationServiceId>{};
+  final unknown = <Object?>[];
+  for (final item in json) {
+    final id = TranslationServiceId.tryParse(item);
+    if (id == null) {
+      unknown.add(item);
+    } else if (known.length < _maxAcknowledged) {
+      known.add(id);
+    }
+  }
+  return (Set.unmodifiable(known), unknown);
 }
 
 /// The `lyricsTranslation` object, with [extra] (unknown keys and service
-/// names) carried over.
+/// ids) carried over.
 Map<String, Object?> encodeTranslationPrefs(
   TranslationPrefs prefs, {
   Map<String, Object?> extra = const {},
@@ -82,12 +80,11 @@ Map<String, Object?> encodeTranslationPrefs(
   return {
     ...extra,
     _showKey: prefs.show,
-    _serviceKey: prefs.service.name,
+    _serviceKey: prefs.service.value,
     _targetLanguageKey: prefs.targetLanguage,
     _displayKey: prefs.display.name,
     _noticeAcknowledgedKey: [
-      for (final service in LyricsTranslationService.values)
-        if (prefs.noticeAcknowledged.contains(service)) service.name,
+      for (final service in prefs.noticeAcknowledged) service.value,
       if (unknownNames is List) ...unknownNames,
     ],
   };

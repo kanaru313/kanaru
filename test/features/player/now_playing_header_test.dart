@@ -417,7 +417,7 @@ void main() {
           FakeTranslationController(
             TranslationReady(
               fakeTranslationInfo(defaultCode: target),
-              LyricsTranslationService.google,
+              TranslationServiceId.google,
               'ja',
               const [],
               false,
@@ -561,7 +561,7 @@ void main() {
         tester,
       ) async {
         final info = fakeTranslationInfo();
-        const google = LyricsTranslationService.google;
+        const google = TranslationServiceId.google;
         final controller = FakeTranslationController(TranslationOff(info));
         await pump(
           tester,
@@ -717,7 +717,7 @@ void main() {
         FakeTranslationController(
           TranslationReady(
             fakeTranslationInfo(),
-            LyricsTranslationService.google,
+            TranslationServiceId.google,
             'ja',
             const [],
             false,

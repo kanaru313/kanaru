@@ -8,7 +8,7 @@ import 'package:kanaru/shared/translation_notice_dialog.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:material_ui/material_ui.dart';
 
-const _google = LyricsTranslationService.google;
+const _google = TranslationServiceId.google;
 
 void main() {
   late ProviderContainer container;
@@ -20,7 +20,7 @@ void main() {
   Future<void> pump(
     WidgetTester tester,
     Future<void> Function(BuildContext, WidgetRef) action, {
-    Set<LyricsTranslationService> acknowledged = const {},
+    Set<TranslationServiceId> acknowledged = const {},
     Locale locale = const Locale('en'),
     Widget Function(Future<void> Function(BuildContext, WidgetRef))? home,
   }) async {
