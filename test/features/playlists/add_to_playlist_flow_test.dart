@@ -104,10 +104,8 @@ void main() {
       await openMenuOf(tester, find.text('a'));
       await tester.tap(find.text('Add to playlist…'));
       await tester.pumpAndSettle();
-      await tester.tap(inPicker('New playlist…'));
-      await tester.pumpAndSettle();
-      await tester.enterText(nameField, 'Road trip');
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+      await nameNewInPicker(tester, 'Road trip');
+      await tester.tap(pickerAdd);
       await settleDb(tester);
 
       expect(find.text('Added to Road trip: a'), findsOneWidget);
@@ -118,7 +116,9 @@ void main() {
       expect(await titlesIn(tester, rows.single.id), ['a']);
     });
 
-    testWidgets('a repeated path in the batch is stored once', (tester) async {
+    testWidgets('a repeated path in the batch is kept in a new playlist', (
+      tester,
+    ) async {
       await openApp(tester, h, ['a'], location: '/home');
       final twice = await seedPlaylist(tester, h, 'Dup', ['a', 'a']);
       goTo(tester, h, '/playlists/$twice');
@@ -128,20 +128,20 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Add to playlist…'));
       await tester.pumpAndSettle();
-      await tester.tap(inPicker('New playlist…'));
-      await tester.pumpAndSettle();
-      await tester.enterText(nameField, 'Copy');
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+      await nameNewInPicker(tester, 'Copy');
+      await tester.tap(pickerAdd);
       await settleDb(tester);
 
       final rows = await tester.runAsync(
         () => h.db.watchPlaylistSummaries().first,
       );
       final copy = rows!.firstWhere((p) => p.name == 'Copy');
-      expect(await titlesIn(tester, copy.id), ['a']);
+      expect(await titlesIn(tester, copy.id), ['a', 'a']);
     });
 
-    testWidgets('cancelling the name creates nothing', (tester) async {
+    testWidgets('cancelling the name keeps the picker and creates nothing', (
+      tester,
+    ) async {
       await openApp(tester, h, ['a'], location: '/songs');
 
       await openMenuOf(tester, find.text('a'));
@@ -149,7 +149,17 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(inPicker('New playlist…'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog).last,
+          matching: find.text('Cancel'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(picker, findsOneWidget);
+      await tester.tap(
+        find.descendant(of: picker, matching: find.text('Cancel')),
+      );
       await settleDb(tester);
 
       final rows = await tester.runAsync(
@@ -193,6 +203,8 @@ void main() {
       expect(picker, findsOneWidget);
 
       await tester.tap(inPicker('Mix'));
+      await tester.pumpAndSettle();
+      await tester.tap(pickerAdd);
       await settleDb(tester);
 
       expect(tester.takeException(), isNull);
@@ -276,10 +288,8 @@ void main() {
     await openMenuOf(tester, find.text('a'));
     await tester.tap(find.text('Add to playlist…'));
     await tester.pumpAndSettle();
-    await tester.tap(inPicker('New playlist…'));
-    await tester.pumpAndSettle();
-    await tester.enterText(nameField, 'Road trip');
-    await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+    await nameNewInPicker(tester, 'Road trip');
+    await tester.tap(pickerAdd);
     await settleDb(tester);
 
     expect(

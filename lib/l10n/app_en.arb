@@ -63,6 +63,83 @@
   "playlistAddTo": "Add to playlist…",
   "playlistPickerTitle": "Add to playlist",
   "playlistPickerNew": "New playlist…",
+  "playlistPickerSubtitle": "{label} · {songs}",
+  "@playlistPickerSubtitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistPickerSelected": "{count} selected",
+  "@playlistPickerSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistPickerAdd": "Add",
+  "playlistPickerAddMany": "Add to {count} playlists",
+  "@playlistPickerAddMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistPickerHasSome": "has {count} of them",
+  "@playlistPickerHasSome": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistPickerNewBadge": "New",
+  "playlistPickerNewHint": "Created when you press Add",
+  "playlistPickerNameMessage": "It is added to the list, checked, and created when you press Add.",
+  "playlistAddedToMany": "{songs, plural, =1{1 song} other{{songs} songs}} added to {playlists, plural, =1{1 playlist} other{{playlists} playlists}}",
+  "@playlistAddedToMany": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "playlists": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistAddedNewSuffix": " ({count} new)",
+  "@playlistAddedNewSuffix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistAddedSkippedSuffix": ", {count} skipped",
+  "@playlistAddedSkippedSuffix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistAlreadyInMany": "{count, plural, =1{Already in 1 playlist: {name}} other{Already in {count} playlists: {name}}}",
+  "@playlistAlreadyInMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "playlistAdded": "Added to {playlist}: {name}",
   "@playlistAdded": {
     "placeholders": {

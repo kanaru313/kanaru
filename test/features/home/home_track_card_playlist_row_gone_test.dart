@@ -74,6 +74,13 @@ void main() {
     expect(mix, findsOneWidget);
     await tester.tap(mix);
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    await tester.pumpAndSettle();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );

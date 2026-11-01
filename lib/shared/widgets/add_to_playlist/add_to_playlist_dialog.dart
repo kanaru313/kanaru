@@ -1,61 +1,77 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/playlist_providers.dart';
+import '../../../core/database/library_database.dart';
+import '../../../core/database/playlist_add_writes.dart';
 import '../../../core/database/playlist_rows.dart';
-import '../../../l10n/l10n.dart';
-import 'playlist_picker_view.dart';
+import 'playlist_picker_dialog.dart';
 
-/// What the user chose in the "add to playlist" picker.
-sealed class PlaylistPick {
-  const PlaylistPick();
+/// What the picker decided: add [paths] to every playlist of [targets] (with
+/// its mode) and create [newNames], in one write. Or, when reading the paths
+/// failed, [error] and [stack] (rethrown by [showPlaylistPicker]).
+class PlaylistAddPlan {
+  const PlaylistAddPlan({
+    required this.paths,
+    this.targets = const {},
+    this.newNames = const [],
+  }) : error = null,
+       stack = null;
+
+  /// The ticked playlists: those holding some of [paths] (per [overlaps])
+  /// get the missing songs only, the others all of them.
+  PlaylistAddPlan.chosen({
+    required this.paths,
+    required List<PlaylistSummary> ticked,
+    required Map<int, int> overlaps,
+    required this.newNames,
+  }) : targets = {
+         for (final p in ticked)
+           p: (overlaps[p.id] ?? 0) > 0
+               ? PlaylistAddMode.missingOnly
+               : PlaylistAddMode.appendAll,
+       },
+       error = null,
+       stack = null;
+
+  const PlaylistAddPlan.failed(this.error, this.stack)
+    : paths = const [],
+      targets = const {},
+      newNames = const [];
+
+  final List<String> paths;
+  final Map<PlaylistSummary, PlaylistAddMode> targets;
+
+  /// Trimmed names of the playlists to create, in the order they were typed.
+  final List<String> newNames;
+
+  final Object? error;
+  final StackTrace? stack;
 }
 
-/// An existing playlist.
-final class PickedPlaylist extends PlaylistPick {
-  const PickedPlaylist(this.playlist);
-
-  final PlaylistSummary playlist;
+/// The multi-select playlist picker over [context]'s navigator. [paths]
+/// starts being read by the caller; the picker shows how many of them each
+/// playlist already holds. Completes with the plan once Add is pressed and
+/// the paths are read, or null when dismissed or when there is nothing to
+/// add. Throws what [paths] threw. Nothing is written or created here.
+Future<PlaylistAddPlan?> showPlaylistPicker(
+  BuildContext context, {
+  required LibraryDatabase db,
+  required Future<List<String>> paths,
+  required String label,
+  int? excludePlaylistId,
+}) async {
+  final plan = await showDialog<PlaylistAddPlan>(
+    context: context,
+    builder: (_) => PlaylistPickerDialog(
+      db: db,
+      paths: paths,
+      label: label,
+      excludePlaylistId: excludePlaylistId,
+    ),
+  );
+  if (plan == null) return null;
+  final error = plan.error;
+  if (error != null) {
+    Error.throwWithStackTrace(error, plan.stack ?? StackTrace.current);
+  }
+  return plan;
 }
-
-/// "New playlist…": the caller asks for a name and creates it.
-final class PickedNewPlaylist extends PlaylistPick {
-  const PickedNewPlaylist();
-}
-
-/// The playlist picker over [context]'s navigator, listing the playlists
-/// live (newest first). Completes with the choice, or null when dismissed.
-Future<PlaylistPick?> showAddToPlaylistDialog(BuildContext context) =>
-    showDialog<PlaylistPick>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.playlistPickerTitle),
-        content: SizedBox(
-          width: 360,
-          height: 360,
-          child: Consumer(
-            builder: (context, ref, _) => ref
-                .watch(playlistSummariesProvider)
-                .when(
-                  data: (playlists) => PlaylistPickerView(
-                    playlists: playlists,
-                    onCreate: () =>
-                        Navigator.of(context).pop(const PickedNewPlaylist()),
-                    onPick: (playlist) =>
-                        Navigator.of(context).pop(PickedPlaylist(playlist)),
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (_, _) =>
-                      Center(child: Text(context.l10n.libraryUnexpectedError)),
-                ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-          ),
-        ],
-      ),
-    );

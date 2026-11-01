@@ -149,6 +149,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistPickerNew => 'New playlist…';
 
   @override
+  String playlistPickerSubtitle(String label, String songs) {
+    return '$label · $songs';
+  }
+
+  @override
+  String playlistPickerSelected(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get playlistPickerAdd => 'Add';
+
+  @override
+  String playlistPickerAddMany(int count) {
+    return 'Add to $count playlists';
+  }
+
+  @override
+  String playlistPickerHasSome(int count) {
+    return 'has $count of them';
+  }
+
+  @override
+  String get playlistPickerNewBadge => 'New';
+
+  @override
+  String get playlistPickerNewHint => 'Created when you press Add';
+
+  @override
+  String get playlistPickerNameMessage =>
+      'It is added to the list, checked, and created when you press Add.';
+
+  @override
+  String playlistAddedToMany(int songs, int playlists) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      playlists,
+      locale: localeName,
+      other: '$playlists playlists',
+      one: '1 playlist',
+    );
+    return '$_temp0 added to $_temp1';
+  }
+
+  @override
+  String playlistAddedNewSuffix(int count) {
+    return ' ($count new)';
+  }
+
+  @override
+  String playlistAddedSkippedSuffix(int count) {
+    return ', $count skipped';
+  }
+
+  @override
+  String playlistAlreadyInMany(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Already in $count playlists: $name',
+      one: 'Already in 1 playlist: $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String playlistAdded(String name, String playlist) {
     return 'Added to $playlist: $name';
   }

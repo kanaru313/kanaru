@@ -146,6 +146,64 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistPickerNew => 'Playlist mới…';
 
   @override
+  String playlistPickerSubtitle(String label, String songs) {
+    return '$label · $songs';
+  }
+
+  @override
+  String playlistPickerSelected(int count) {
+    return 'Đã chọn $count';
+  }
+
+  @override
+  String get playlistPickerAdd => 'Thêm';
+
+  @override
+  String playlistPickerAddMany(int count) {
+    return 'Thêm vào $count playlist';
+  }
+
+  @override
+  String playlistPickerHasSome(int count) {
+    return 'đã có $count bài trong đó';
+  }
+
+  @override
+  String get playlistPickerNewBadge => 'Mới';
+
+  @override
+  String get playlistPickerNewHint => 'Sẽ được tạo khi bấm Thêm';
+
+  @override
+  String get playlistPickerNameMessage =>
+      'Playlist được thêm vào danh sách, đánh dấu chọn và chỉ được tạo khi bạn bấm Thêm.';
+
+  @override
+  String playlistAddedToMany(int songs, int playlists) {
+    return 'Đã thêm $songs bài vào $playlists playlist';
+  }
+
+  @override
+  String playlistAddedNewSuffix(int count) {
+    return ' ($count mới)';
+  }
+
+  @override
+  String playlistAddedSkippedSuffix(int count) {
+    return ', bỏ qua $count bài';
+  }
+
+  @override
+  String playlistAlreadyInMany(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã có trong $count playlist: $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String playlistAdded(String name, String playlist) {
     return 'Đã thêm vào $playlist: $name';
   }

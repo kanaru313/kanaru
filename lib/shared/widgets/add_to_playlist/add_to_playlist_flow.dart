@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
@@ -5,17 +7,19 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/playlist_favorites.dart';
-import '../../../core/database/playlist_writes.dart';
+import '../../../core/database/playlist_queries.dart';
 import '../../../l10n/l10n.dart';
 import 'add_to_playlist_dialog.dart';
-import 'create_playlist_prompt.dart';
+import 'add_to_playlist_messages.dart';
 import '../app_snack_bar.dart';
 
 final _log = Logger('playlists');
 
-/// Asks which playlist, reads [readPaths], adds the songs the playlist does
-/// not hold yet and says how many were added and how many were already
-/// there, naming [label]. Nothing asks about duplicates.
+/// Asks which playlists (several, or new ones), reads [readPaths], adds the
+/// songs in one transaction and says how many went where, naming [label].
+/// [excludePlaylistId] hides the playlist the songs come from. Nothing asks
+/// about duplicates yet: playlists already holding some get the missing songs
+/// only.
 ///
 /// Everything from the widget tree is captured before the first `await`:
 /// the row that opened the menu can be rebuilt away by a rescan while the
@@ -25,8 +29,9 @@ Future<void> addTracksToPlaylist(
   WidgetRef ref,
   BuildContext context,
   Future<List<String>> Function() readPaths,
-  String label,
-) async {
+  String label, {
+  int? excludePlaylistId,
+}) async {
   if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return;
@@ -38,6 +43,7 @@ Future<void> addTracksToPlaylist(
     dialogContext: Navigator.of(context, rootNavigator: true).context,
     readPaths: readPaths,
     label: label,
+    excludePlaylistId: excludePlaylistId,
   );
 }
 
@@ -52,38 +58,43 @@ Future<void> addTracksToPlaylistWith({
   required BuildContext dialogContext,
   required Future<List<String>> Function() readPaths,
   required String label,
+  int? excludePlaylistId,
 }) async {
   if (!dialogContext.mounted) return;
-  final pick = await showAddToPlaylistDialog(dialogContext);
-  if (pick == null) return;
+  // Read while the picker is open, for its hints. A failure surfaces when
+  // Add awaits the future, so it is handled here only to keep it unreported.
+  final paths = Future<List<String>>.sync(readPaths);
+  unawaited(paths.then((_) {}, onError: (_, _) {}));
 
+  AppSnackBarKind kind;
   String text;
-  AppSnackBarKind kind = AppSnackBarKind.success;
   try {
-    final paths = await readPaths();
-    // The album or artist vanished in a rescan: nothing to add.
-    if (paths.isEmpty) return;
-    switch (pick) {
-      case PickedNewPlaylist():
-        if (!dialogContext.mounted) return;
-        // Repeats inside the batch collapse; the first occurrence stays.
-        final created = await promptAndCreatePlaylist(
-          dialogContext,
-          db,
-          messenger,
-          l10n,
-          paths: paths.toSet().toList(),
-        );
-        if (created == null) return;
-        text = l10n.playlistAdded(label, created.name);
-      case PickedPlaylist(:final playlist):
-        final (:added, :skipped) = await db.addMissingToPlaylist(
-          playlist.id,
-          paths,
-        );
-        kind = _addedKind(added);
-        text = _addedText(l10n, label, playlist.name, added, skipped);
-    }
+    final plan = await showPlaylistPicker(
+      dialogContext,
+      db: db,
+      paths: paths,
+      label: label,
+      excludePlaylistId: excludePlaylistId,
+    );
+    // Dismissed, or the album or artist vanished in a rescan: nothing to add.
+    if (plan == null) return;
+    final outcome = await db.addToPlaylists(
+      paths: plan.paths,
+      targets: {for (final e in plan.targets.entries) e.key.id: e.value},
+      newNames: plan.newNames,
+      now: DateTime.now().millisecondsSinceEpoch,
+    );
+    // Which targets were gone is only known by looking again.
+    final existing = outcome.gone == 0
+        ? null
+        : {for (final p in await db.watchPlaylistSummaries().first) p.id};
+    (kind, text) = playlistAddMessage(
+      l10n,
+      outcome,
+      plan,
+      label,
+      existingIds: existing,
+    );
   } catch (error, stack) {
     _log.severe('Adding to a playlist failed', error, stack);
     kind = AppSnackBarKind.error;
@@ -91,24 +102,6 @@ Future<void> addTracksToPlaylistWith({
   }
   _showPlaylistMessage(messenger, kind, text);
 }
-
-/// How to tell the result of adding: nothing new is only a note.
-AppSnackBarKind _addedKind(int added) =>
-    added == 0 ? AppSnackBarKind.info : AppSnackBarKind.success;
-
-/// The text for [added] songs put in and [skipped] already there in the
-/// playlist named [playlistName]; [label] names what was added.
-String _addedText(
-  AppLocalizations l10n,
-  String label,
-  String playlistName,
-  int added,
-  int skipped,
-) => added == 0
-    ? l10n.playlistAlreadyIn(label, playlistName)
-    : skipped == 0
-    ? l10n.playlistAdded(label, playlistName)
-    : l10n.playlistAddedSkipped(added, skipped, playlistName);
 
 /// Adds the songs [readPaths] returns to the Favorites playlist (created when
 /// missing) in one transaction, skipping those already there, and says how
@@ -132,8 +125,8 @@ Future<void> addTracksToFavoritesWith({
       );
       return db.addMissingToPlaylist(id, paths);
     });
-    kind = _addedKind(added);
-    text = _addedText(l10n, label, l10n.navFavorites, added, skipped);
+    kind = playlistAddedKind(added);
+    text = playlistAddedText(l10n, label, l10n.navFavorites, added, skipped);
   } catch (error, stack) {
     _log.severe('Adding to Favorites failed', error, stack);
     kind = AppSnackBarKind.error;

@@ -146,6 +146,10 @@ void main() {
     expect(Navigator.of(tester.element(dialog)), same(root));
 
     await tester.tap(find.text('Mix'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: dialog, matching: find.byType(FilledButton)),
+    );
     await settleDb(tester);
 
     expect(await storedPaths(tester, h, mix!), [paths['a1'], paths['a2']]);

@@ -332,6 +332,78 @@ abstract class AppLocalizations {
   /// **'New playlist…'**
   String get playlistPickerNew;
 
+  /// No description provided for @playlistPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} · {songs}'**
+  String playlistPickerSubtitle(String label, String songs);
+
+  /// No description provided for @playlistPickerSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String playlistPickerSelected(int count);
+
+  /// No description provided for @playlistPickerAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get playlistPickerAdd;
+
+  /// No description provided for @playlistPickerAddMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to {count} playlists'**
+  String playlistPickerAddMany(int count);
+
+  /// No description provided for @playlistPickerHasSome.
+  ///
+  /// In en, this message translates to:
+  /// **'has {count} of them'**
+  String playlistPickerHasSome(int count);
+
+  /// No description provided for @playlistPickerNewBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get playlistPickerNewBadge;
+
+  /// No description provided for @playlistPickerNewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Created when you press Add'**
+  String get playlistPickerNewHint;
+
+  /// No description provided for @playlistPickerNameMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It is added to the list, checked, and created when you press Add.'**
+  String get playlistPickerNameMessage;
+
+  /// No description provided for @playlistAddedToMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{1 song} other{{songs} songs}} added to {playlists, plural, =1{1 playlist} other{{playlists} playlists}}'**
+  String playlistAddedToMany(int songs, int playlists);
+
+  /// No description provided for @playlistAddedNewSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' ({count} new)'**
+  String playlistAddedNewSuffix(int count);
+
+  /// No description provided for @playlistAddedSkippedSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **', {count} skipped'**
+  String playlistAddedSkippedSuffix(int count);
+
+  /// No description provided for @playlistAlreadyInMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Already in 1 playlist: {name}} other{Already in {count} playlists: {name}}}'**
+  String playlistAlreadyInMany(int count, String name);
+
   /// No description provided for @playlistAdded.
   ///
   /// In en, this message translates to:
