@@ -36,7 +36,6 @@ ContextModalPage artistModalAdvancedPage(ArtistModalSession session) =>
                       id: 'add-all-to-favorites',
                       icon: AppIcons.favoriteOutline,
                       label: l10n.albumModalAddAllToFavorites,
-                      subtitle: l10n.albumsSongCount(artist.songCount),
                       onTap: contextModalCloseThen(handlers.addAllToFavorites),
                     ),
                   ],

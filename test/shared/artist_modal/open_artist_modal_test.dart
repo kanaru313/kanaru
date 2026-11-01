@@ -144,7 +144,7 @@ void main() {
 
     await tapArtistRow(tester, 'Advanced');
     expect(find.text('Add all to Favorites'), findsOneWidget);
-    expect(find.text('12 songs'), findsOneWidget);
+    expect(find.text('12 songs'), findsNothing);
     expect(find.text('/m/Rock'), findsOneWidget);
     expect(find.text('Split or merge artist'), findsOneWidget);
     expect(find.text('Delete files'), findsOneWidget);
