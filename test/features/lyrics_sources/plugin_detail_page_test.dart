@@ -78,6 +78,19 @@ void main() {
     return fake;
   }
 
+  testWidgets('a translate plugin opens without switch or saved lyrics', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      testRecord(idA, name: 'Gem', pluginKind: PluginKind.translate),
+    );
+    expect(find.text('Gem'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
+    expect(find.text(en.pluginSavedLyricsTitle), findsNothing);
+    expect(find.text(en.pluginStorageTitle), findsOneWidget);
+  });
+
   testWidgets('shows the plugin, its hosts and no install id', (tester) async {
     await open(tester, plain);
 

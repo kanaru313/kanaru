@@ -3925,6 +3925,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get pluginUninstallKeepTranslations =>
+      'Saved translations, until you choose Clear saved translations';
+
+  @override
   String get pluginUninstallKeepPinned =>
       'Lyrics pinned from this source, if any';
 
@@ -3977,7 +3981,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports';
 
   @override
-  String get pluginProblemWrongType => 'plugin.json: type must be lyrics';
+  String get pluginProblemWrongType =>
+      'plugin.json: type must be lyrics or translate';
 
   @override
   String pluginProblemBadHost(String detail) {
@@ -4006,6 +4011,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pluginRefusedNotFromRepo =>
       'This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.';
+
+  @override
+  String get pluginRefusedKindChanged =>
+      'This package is a different kind of plugin than the installed one, so it was not used. Uninstall the plugin and install the new one.';
 
   @override
   String get pluginRefusedOlderVersion =>

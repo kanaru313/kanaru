@@ -96,7 +96,9 @@ class PluginScriptRunner {
     PluginCancel cancel,
   ) async {
     final row = await _db.lyricsPluginById(installId);
-    if (row == null || row.removedAt != null) {
+    if (row == null ||
+        row.removedAt != null ||
+        row.kind != PluginKind.lyrics.value) {
       throw const LyricsSourceSkipped();
     }
     final scriptName = script == PluginScript.search
@@ -153,15 +155,18 @@ class PluginScriptRunner {
     final config = setup.config;
     if (cancel.isCancelled) throw const LyricsSourceSkipped();
 
+    final entry = script == PluginScript.search
+        ? setup.package.searchScript
+        : setup.package.lyricsScript;
+    // A package without this script is not a lyrics plugin.
+    if (entry == null) throw const LyricsSourceSkipped();
     final bridge = PluginFetchBridge(http);
     final left = _outerDeadline - clock.elapsed;
     final (:result, :timedOut) = await runWithDeadline(
       _runtime,
       PluginRunRequest(
         files: setup.package.files,
-        entry: script == PluginScript.search
-            ? setup.package.searchScript
-            : setup.package.lyricsScript,
+        entry: entry,
         inputJson: jsonEncode(input),
         config: config,
         storageJson: setup.storageJson,

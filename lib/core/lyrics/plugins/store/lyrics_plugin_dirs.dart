@@ -53,6 +53,7 @@ class LyricsPluginDirs {
         File('${dir.path}/plugin.json'),
         utf8.encode(
           pluginManifestJson(
+            kind: manifest.kind,
             apiVersion: manifest.apiVersion,
             name: manifest.name,
             version: manifest.version,
@@ -61,6 +62,8 @@ class LyricsPluginDirs {
             description: manifest.description,
             searchScript: manifest.searchScript,
             lyricsScript: manifest.lyricsScript,
+            translateScript: manifest.translateScript,
+            translate: manifest.translate,
             config: manifest.config,
           ),
         ),

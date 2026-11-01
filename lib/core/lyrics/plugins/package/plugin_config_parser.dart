@@ -28,6 +28,7 @@ PluginConfigField _field(String key, Object? raw) {
   if (!_configKey.hasMatch(key)) throw _invalid(path);
   if (raw is! Map<String, dynamic>) throw _invalid(path);
   final title = _title(raw['title'], '$path.title');
+  final subtitle = _subtitle(raw['subtitle'], '$path.subtitle');
   final fallback = raw['default'];
   switch (raw['mode']) {
     case 'input':
@@ -40,6 +41,7 @@ PluginConfigField _field(String key, Object? raw) {
       return PluginConfigField(
         key: key,
         title: title,
+        subtitle: subtitle,
         mode: PluginConfigMode.input,
         inputFormat: format,
         defaultValue: _inputDefault(fallback, format, '$path.default'),
@@ -56,6 +58,7 @@ PluginConfigField _field(String key, Object? raw) {
       return PluginConfigField(
         key: key,
         title: title,
+        subtitle: subtitle,
         mode: PluginConfigMode.select,
         options: options,
         defaultValue: fallback,
@@ -68,6 +71,7 @@ PluginConfigField _field(String key, Object? raw) {
       return PluginConfigField(
         key: key,
         title: title,
+        subtitle: subtitle,
         mode: PluginConfigMode.toggle,
         defaultValue: fallback,
       );
@@ -122,4 +126,13 @@ List<PluginConfigOption> _options(Object? value, String field) {
     );
   }
   return List.unmodifiable(options);
+}
+
+/// Optional help text: at most 300 characters, newlines kept.
+String? _subtitle(Object? value, String field) {
+  if (value == null) return null;
+  if (value is! String) throw _invalid(field);
+  final text = cleanPluginText(value, keepNewlines: true);
+  if (text.runes.length > 300) throw _invalid(field);
+  return text.isEmpty ? null : text;
 }

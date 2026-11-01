@@ -31,6 +31,10 @@ enum PluginUpdateRefusal {
 
   /// The package's version is lower than the installed one (equal is fine).
   olderVersion,
+
+  /// The package is another kind (lyrics or translate) than the installed
+  /// plugin; a live plugin keeps its kind.
+  kindChanged,
 }
 
 /// An update was refused for [reason]; nothing changed.

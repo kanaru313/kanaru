@@ -26,13 +26,15 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
 
   /// Whether a preference may be written for [providerId]: always for
   /// `lrclib` (and any non-plugin id), for a plugin only while its record
-  /// exists and is not removed.
+  /// exists, is not removed and is a lyrics plugin.
   Future<bool> _acceptsLyricsSourcePref(String providerId) async {
     if (!isLyricsPluginId(providerId)) return true;
     final row = await (select(
       lyricsPlugins,
     )..where((t) => t.installId.equals(providerId))).getSingleOrNull();
-    return row != null && row.removedAt == null;
+    return row != null &&
+        row.removedAt == null &&
+        row.kind == PluginKind.lyrics.value;
   }
 
   /// Turns a source on or off. A source with no row gets one at the end of

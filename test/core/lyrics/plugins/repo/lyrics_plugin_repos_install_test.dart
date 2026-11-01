@@ -63,6 +63,14 @@ void main() {
       expect(env.store.root.existsSync(), isFalse);
     });
 
+    test('a package of another kind than its entry is a mismatch', () async {
+      env.serveCatalog([entryJson(type: 'translate')]);
+      await env.repos.refreshAll();
+      final result = await env.repos.install(catalogUrl, 'demo');
+      expect(failureOf(result), RepoPluginFailure.catalogMismatch);
+      expect(await recordCount(), 0);
+    });
+
     test('different hosts are a mismatch (extra, missing, other)', () async {
       for (final hosts in [
         ['music.example.com', 'extra.example.com'],

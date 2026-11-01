@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_catalog.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_address_rules.dart';
@@ -69,6 +70,7 @@ void main() {
       dropped: 3,
       entries: [
         PluginCatalogEntry(
+          kind: PluginKind.lyrics,
           slug: 'a',
           name: 'A',
           version: 2,
@@ -80,6 +82,7 @@ void main() {
           author: 'x',
         ),
         PluginCatalogEntry(
+          kind: PluginKind.lyrics,
           slug: 'b',
           name: 'B',
           version: 1,

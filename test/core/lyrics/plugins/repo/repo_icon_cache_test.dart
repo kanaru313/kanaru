@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_catalog.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_address_rules.dart';
@@ -18,6 +19,7 @@ void main() {
   late PluginRepo repo;
 
   PluginCatalogEntry entry(String path) => PluginCatalogEntry(
+    kind: PluginKind.lyrics,
     slug: 's',
     name: 'S',
     version: 1,
@@ -86,6 +88,7 @@ void main() {
     'no icon address or unknown repo kind gives null without a request',
     () async {
       final noIcon = PluginCatalogEntry(
+        kind: PluginKind.lyrics,
         slug: 's',
         name: 'S',
         version: 1,

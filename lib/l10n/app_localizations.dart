@@ -5804,6 +5804,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 saved song} other{{count} saved songs}} and lyrics pinned from this source'**
   String pluginUninstallKeepLyrics(int count);
 
+  /// No description provided for @pluginUninstallKeepTranslations.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved translations, until you choose Clear saved translations'**
+  String get pluginUninstallKeepTranslations;
+
   /// No description provided for @pluginUninstallKeepPinned.
   ///
   /// In en, this message translates to:
@@ -5885,7 +5891,7 @@ abstract class AppLocalizations {
   /// No description provided for @pluginProblemWrongType.
   ///
   /// In en, this message translates to:
-  /// **'plugin.json: type must be lyrics'**
+  /// **'plugin.json: type must be lyrics or translate'**
   String get pluginProblemWrongType;
 
   /// Why a plugin package was refused; detail comes from the package
@@ -5923,6 +5929,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.'**
   String get pluginRefusedNotFromRepo;
+
+  /// No description provided for @pluginRefusedKindChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'This package is a different kind of plugin than the installed one, so it was not used. Uninstall the plugin and install the new one.'**
+  String get pluginRefusedKindChanged;
 
   /// No description provided for @pluginRefusedOlderVersion.
   ///

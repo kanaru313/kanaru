@@ -95,9 +95,9 @@ extension LyricsPluginDataQueries on LibraryDatabase {
   }
 
   /// Deletes this plugin's `online_lyrics` rows (found and not found); pins
-  /// and rejects stay. If the record is a removed one and no row, pin or
-  /// reject names it any more, the record is deleted in the same
-  /// transaction. Returns the rows removed.
+  /// and rejects stay. If the record is a removed one and no row, pin,
+  /// reject or saved translation names it any more, the record is deleted in
+  /// the same transaction. Returns the rows removed.
   Future<int> clearLyricsPluginSavedLyrics(String installId) {
     return transaction(() async {
       final removed = await (delete(
@@ -105,11 +105,7 @@ extension LyricsPluginDataQueries on LibraryDatabase {
       )..where((t) => t.providerId.equals(installId))).go();
       await customUpdate(
         'DELETE FROM lyrics_plugins WHERE install_id = ?1 '
-        'AND removed_at IS NOT NULL '
-        'AND NOT EXISTS (SELECT 1 FROM online_lyrics WHERE provider_id = ?1) '
-        'AND NOT EXISTS (SELECT 1 FROM lyrics_pins WHERE provider_id = ?1) '
-        'AND NOT EXISTS (SELECT 1 FROM online_lyrics_rejects '
-        'WHERE provider_id = ?1)',
+        'AND $removedAndUnreferencedPluginSql',
         variables: [Variable<String>(installId)],
         updates: {lyricsPlugins},
         updateKind: UpdateKind.delete,

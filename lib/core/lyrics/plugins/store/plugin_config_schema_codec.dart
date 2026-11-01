@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import '../../../database/lyrics_plugin_spec.dart';
 import '../package/plugin_config_parser.dart';
 import '../package/plugin_manifest.dart';
 import '../package/plugin_package_problem.dart';
+import '../package/plugin_translate_spec.dart';
 
 /// Writes a config form as JSON in the shape of the manifest's `config`
 /// object, so [decodePluginConfigSchema] and the manifest parser share one
@@ -16,6 +18,7 @@ Map<String, Object?> pluginConfigToJson(List<PluginConfigField> fields) => {
     field.key: {
       'title': field.title,
       'mode': field.mode.name,
+      if (field.subtitle != null) 'subtitle': field.subtitle,
       if (field.mode == PluginConfigMode.input)
         'format': (field.inputFormat ?? PluginInputFormat.text).name,
       if (field.mode == PluginConfigMode.select)
@@ -46,25 +49,33 @@ bool isSecretField(PluginConfigField field) =>
 
 /// The `plugin.json` text of a package written to disk.
 String pluginManifestJson({
+  required PluginKind kind,
   required int apiVersion,
   required String name,
   required int version,
   required List<String> hosts,
   required String author,
   required String description,
-  required String searchScript,
-  required String lyricsScript,
+  String? searchScript,
+  String? lyricsScript,
+  String? translateScript,
+  PluginTranslateSpec? translate,
   required List<PluginConfigField> config,
 }) => const JsonEncoder.withIndent('  ').convert({
   'metadata': {
     'apiVersion': apiVersion,
-    'type': 'lyrics',
+    'type': kind.value,
     'name': name,
     'version': version,
     'hosts': hosts,
     'author': author,
     'description': description,
   },
-  'script': {'search': searchScript, 'lyrics': lyricsScript},
+  'script': {
+    'search': ?searchScript,
+    'lyrics': ?lyricsScript,
+    'translate': ?translateScript,
+  },
+  if (translate != null) 'translate': translate.toJson(),
   if (config.isNotEmpty) 'config': pluginConfigToJson(config),
 });

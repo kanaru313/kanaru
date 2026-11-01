@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/lyrics_plugin_spec.dart'
-    show lyricsPluginDataMaxBytes;
+    show PluginKind, lyricsPluginDataMaxBytes;
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
@@ -98,34 +98,35 @@ class PluginDataRows extends ConsumerWidget {
             child: Text(l10n.pluginDataClear),
           ),
         ),
-        ListTile(
-          title: Text(l10n.pluginSavedLyricsTitle),
-          subtitle: Text(
-            songs == 0
-                ? l10n.pluginSavedLyricsNone
-                : l10n.pluginSavedLyricsSummary(
-                    songs,
-                    pluginSizeText(l10n, stats?.textBytes ?? 0),
-                  ),
-            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+        if (record.kind != PluginKind.translate)
+          ListTile(
+            title: Text(l10n.pluginSavedLyricsTitle),
+            subtitle: Text(
+              songs == 0
+                  ? l10n.pluginSavedLyricsNone
+                  : l10n.pluginSavedLyricsSummary(
+                      songs,
+                      pluginSizeText(l10n, stats?.textBytes ?? 0),
+                    ),
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            trailing: TextButton(
+              onPressed: !canWrite || songs == 0
+                  ? null
+                  : () => _clear(
+                      context,
+                      ref,
+                      title: l10n.pluginSavedLyricsClearTitle,
+                      body: l10n.pluginSavedLyricsClearBody,
+                      done: l10n.pluginSavedLyricsCleared,
+                      run: (c) async {
+                        await c.clearSavedLyrics(record.installId);
+                        return true;
+                      },
+                    ),
+              child: Text(l10n.pluginDataClear),
+            ),
           ),
-          trailing: TextButton(
-            onPressed: !canWrite || songs == 0
-                ? null
-                : () => _clear(
-                    context,
-                    ref,
-                    title: l10n.pluginSavedLyricsClearTitle,
-                    body: l10n.pluginSavedLyricsClearBody,
-                    done: l10n.pluginSavedLyricsCleared,
-                    run: (c) async {
-                      await c.clearSavedLyrics(record.installId);
-                      return true;
-                    },
-                  ),
-            child: Text(l10n.pluginDataClear),
-          ),
-        ),
       ],
     );
   }

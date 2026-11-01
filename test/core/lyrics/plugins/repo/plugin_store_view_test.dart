@@ -19,6 +19,7 @@ PluginCatalogEntry entry(
   String author = '',
   Uri? icon,
 }) => PluginCatalogEntry(
+  kind: PluginKind.lyrics,
   slug: slug,
   name: name ?? slug,
   version: version,
@@ -55,6 +56,7 @@ LyricsPluginRecord record(
   String? author,
   List<String> hosts = const ['host.example.com'],
 }) => LyricsPluginRecord(
+  kind: PluginKind.lyrics,
   installId: id,
   name: name,
   author: author,

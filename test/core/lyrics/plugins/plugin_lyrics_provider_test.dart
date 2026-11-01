@@ -5,16 +5,17 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_queries.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_controller.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http_retry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
-import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_run_deadline.dart';
 import 'package:kanaru/core/plugin_runtime/plugin_runtime.dart';
 
 import '../online/counting_http_client.dart';
 import 'plugin_provider_env.dart';
+import 'store/store_test_env.dart';
 
 void main() {
   late PluginProviderEnv env;
@@ -221,6 +222,18 @@ void main() {
       expect(env.store.runs.runningCount(record.installId), 0);
     });
 
+    test('a translate plugin is skipped and nothing runs', () async {
+      final translate = await env.controller.installPackage(
+        testPackage(kind: PluginKind.translate),
+        const PluginInstallSource.file('t.zip'),
+      );
+      await expectLater(
+        env.providerFor(translate).search(tagQuery, countingHttp()),
+        throwsA(isA<LyricsSourceSkipped>()),
+      );
+      expect(env.runtime.requests, isEmpty);
+    });
+
     test('a blocked plugin is skipped before anything is read', () async {
       env.store.runs.block(record.installId);
       await expectLater(
@@ -386,10 +399,7 @@ void main() {
       final started = Completer<void>();
       env.runtime.handlers['search.js'] = cancelledWhenStopped(started);
       final run = env.providerFor(record).search(tagQuery, countingHttp());
-      final expectation = expectLater(
-        run,
-        throwsA(isA<LyricsSourceSkipped>()),
-      );
+      final expectation = expectLater(run, throwsA(isA<LyricsSourceSkipped>()));
       await started.future;
       await env.controller.uninstall(record.installId);
       await expectation;

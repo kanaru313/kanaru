@@ -12,12 +12,16 @@ import 'package:drift/drift.dart';
 // 2. `removed_at` set means "removed": the plugin is gone (package files,
 //    config, storage, preference, not-found rows) but saved lyrics, pins or
 //    rejects still name its id, so the record stays to give them a name.
+//    Saved translations count too: a `lyric_translations.provider` equal to
+//    the id is a reference, so an uninstalled translate plugin with saved
+//    translations stays as a removed record.
 //    The record is hard-deleted when nothing points to it: at uninstall, by
-//    `clearLyricsPluginSavedLyrics` once the last row is gone, and by "clear
-//    online lyrics". Removing the last pin or reject elsewhere does not
-//    delete it; it stays until one of those. Reinstalling the same repo
-//    plugin revives the record and keeps the id. Preferences are never
-//    written for a missing or removed plugin.
+//    `clearLyricsPluginSavedLyrics` once the last row is gone, by "clear
+//    online lyrics" and by "clear saved translations" (all four use the one
+//    `removedAndUnreferencedPluginSql` predicate). Removing the last pin or
+//    reject elsewhere does not delete it; it stays until one of those.
+//    Reinstalling the same repo plugin revives the record and keeps the id.
+//    Preferences are never written for a missing or removed plugin.
 // 3. `(repo_url, repo_slug)` is unique among records with a `repo_url`; file
 //    installs have none. Removed records count, so a revive finds its record.
 // 4. `package_dir` is the relative directory of the current package. A new
@@ -35,15 +39,21 @@ import 'package:drift/drift.dart';
 //    each at most 64 KiB. No source list or lyrics stream watches the table,
 //    so a config or storage write never rebuilds them. The row goes with the
 //    plugin on uninstall.
-// 8. `lyrics_source_prefs` has one row per source the user changed or
+// 8. `lyrics_source_prefs` has one row per lyrics source the user changed or
 //    ordered, LRCLIB included. No row for `lrclib` means enabled at position
 //    0. A source with no row is enabled and goes after the rows. Rows for
-//    ids with no plugin record are ignored.
+//    ids with no plugin record are ignored. Translate plugins never get a
+//    row.
 // 9. `lyrics_plugin_repos.catalog` is the last good catalog (at most 1 MiB)
 //    and survives a failed fetch; `last_error` is a kind string only.
 //    `last_fetched_at` is the last successful fetch.
 // 10. No foreign keys and no CHECK constraints: readers skip values they do
 //    not know, so a newer build's rows do not break an older one.
+// 11. `kind` is `lyrics` or `translate`, set at first install and never
+//    changed by an update; only a revive of a removed record may write it.
+//    A revive that changes the kind keeps the old saved lyrics, pins and
+//    rejects under the id: they stay named and go only with the global
+//    clear. Lists skip kinds they do not know.
 
 /// One installed (or removed, see invariant 2) lyrics plugin.
 @DataClassName('LyricsPluginRow')
@@ -86,6 +96,10 @@ class LyricsPlugins extends Table {
   IntColumn get installedAt => integer()();
 
   IntColumn get updatedAt => integer()();
+
+  /// `lyrics` or `translate`; see invariant 11. Rows from before the column
+  /// existed read as `lyrics` through the SQL default.
+  TextColumn get kind => text().withDefault(const Constant('lyrics'))();
 
   /// Set while the record is only a name for saved lyrics.
   IntColumn get removedAt => integer().nullable()();

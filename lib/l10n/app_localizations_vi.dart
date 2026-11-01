@@ -3675,6 +3675,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get pluginUninstallKeepTranslations =>
+      'Bản dịch đã lưu, cho đến khi bạn chọn Xóa các bản dịch đã lưu';
+
+  @override
   String get pluginUninstallKeepPinned => 'Lời đã ghim từ nguồn này (nếu có)';
 
   @override
@@ -3723,7 +3727,8 @@ class AppLocalizationsVi extends AppLocalizations {
       'Cần Kanaru mới hơn: plugin dùng API plugin mới hơn bản này hỗ trợ';
 
   @override
-  String get pluginProblemWrongType => 'plugin.json: type phải là lyrics';
+  String get pluginProblemWrongType =>
+      'plugin.json: type phải là lyrics hoặc translate';
 
   @override
   String pluginProblemBadHost(String detail) {
@@ -3752,6 +3757,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get pluginRefusedNotFromRepo =>
       'Plugin này cài từ file nên không có cập nhật. Hãy gỡ rồi cài file mới.';
+
+  @override
+  String get pluginRefusedKindChanged =>
+      'Gói này thuộc loại plugin khác với bản đã cài nên không được dùng. Hãy gỡ plugin rồi cài bản mới.';
 
   @override
   String get pluginRefusedOlderVersion =>

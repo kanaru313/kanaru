@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/lyrics_plugin_spec.dart';
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../core/lyrics/plugins/store/plugin_config_schema_codec.dart';
@@ -63,10 +64,14 @@ class _UninstallDialog extends StatelessWidget {
             _Box(
               title: l10n.pluginUninstallKeeps,
               items: [
-                stats.foundCount > 0
-                    ? l10n.pluginUninstallKeepLyrics(stats.foundCount)
-                    : l10n.pluginUninstallKeepPinned,
-                l10n.pluginUninstallKeepLrc,
+                if (record.kind == PluginKind.translate)
+                  l10n.pluginUninstallKeepTranslations
+                else ...[
+                  stats.foundCount > 0
+                      ? l10n.pluginUninstallKeepLyrics(stats.foundCount)
+                      : l10n.pluginUninstallKeepPinned,
+                  l10n.pluginUninstallKeepLrc,
+                ],
               ],
             ),
           ],

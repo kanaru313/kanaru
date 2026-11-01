@@ -20,7 +20,8 @@ import 'package:drift/drift.dart';
 //    never stored: that is a failed translation, not a result.
 // 4. Retranslating replaces only its own provider's row
 //    (`INSERT ... ON CONFLICT DO UPDATE` on the primary key).
-// 5. `provider` holds only `google` or `deepl`; readers skip unknown values.
+// 5. `provider` holds `google`, `deepl` or a translate plugin install id
+//    (`plugin-...`); readers skip unknown values.
 // 6. `lyric_translation_prefs` is a user choice: clearing translations does
 //    not touch it.
 // 7. Unbounded by design (a few KB per song); settings shows count and size.

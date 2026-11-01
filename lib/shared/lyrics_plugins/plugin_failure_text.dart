@@ -10,6 +10,7 @@ import 'plugin_problem_text.dart';
 String _refusalText(AppLocalizations l10n, PluginUpdateRefusal reason) =>
     switch (reason) {
       PluginUpdateRefusal.notFromRepo => l10n.pluginRefusedNotFromRepo,
+      PluginUpdateRefusal.kindChanged => l10n.pluginRefusedKindChanged,
       PluginUpdateRefusal.olderVersion => l10n.pluginRefusedOlderVersion,
     };
 

@@ -160,4 +160,39 @@ void main() {
       );
     }
   });
+
+  Map<String, dynamic> translateManifest() => {
+    'metadata': {
+      'apiVersion': 1,
+      'type': 'translate',
+      'name': 'T',
+      'version': 1,
+      'hosts': ['api.example.com'],
+    },
+    'script': {'translate': 'translate.js'},
+    'translate': {
+      'languages': ['vi'],
+    },
+  };
+
+  test('accepts a translate package', () async {
+    final runtime = FakePluginRuntime();
+    final package = await accept(
+      validZip(
+        manifest: translateManifest(),
+        extra: {'src/translate.js': '// t'},
+      ),
+      runtime: runtime,
+    );
+    expect(package.manifest.translateScript, 'translate.js');
+  });
+
+  test('a translate package without its script is missingScript', () async {
+    final result = await PluginPackageReader(FakePluginRuntime())
+        .read(validZip(manifest: translateManifest()));
+    expect(result, isA<PluginPackageRejected>());
+    final problem = (result as PluginPackageRejected).problem;
+    expect(problem.kind, PluginPackageProblemKind.missingScript);
+    expect(problem.detail, 'translate.js');
+  });
 }

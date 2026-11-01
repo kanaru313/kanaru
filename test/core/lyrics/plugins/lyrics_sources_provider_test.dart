@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show UpdateKind, Variable;
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -21,6 +24,7 @@ LyricsPluginRecord _record(
   int installedAt, {
   bool removed = false,
 }) => LyricsPluginRecord(
+  kind: PluginKind.lyrics,
   installId: id,
   name: 'Plugin $id',
   version: 1,
@@ -246,5 +250,158 @@ void main() {
       container.read(lyricsSourceNamesProvider).containsKey(record.installId),
       isTrue,
     );
+  });
+
+  group('translate plugins', () {
+    LyricsPluginRecord translateRecord(String id, {bool removed = false}) =>
+        LyricsPluginRecord(
+          kind: PluginKind.translate,
+          installId: id,
+          name: 'T $id',
+          version: 1,
+          apiVersion: 1,
+          hosts: const [],
+          config: const [],
+          packageDir: '$id/v1-1',
+          sourceKind: LyricsPluginSourceKind.file,
+          sourceName: 'x.zip',
+          installedAt: 5,
+          updatedAt: 5,
+          removedAt: removed ? 1 : null,
+        );
+
+    test('are in no source list', () {
+      final entries = orderLyricsSources([
+        _record('plugin-aaaaaaaaaaaa', 10),
+        translateRecord('plugin-tttttttttttt'),
+      ], const []);
+      expect(
+        [for (final e in entries) e.id],
+        ['lrclib', 'plugin-aaaaaaaaaaaa'],
+      );
+    });
+
+    test('a record of an unknown kind is in no list', () {
+      final entries = orderLyricsSources([
+        LyricsPluginRecord.fromRow(
+          LyricsPluginRow(
+            installId: 'plugin-uuuuuuuuuuuu',
+            kind: 'theme',
+            name: 'U',
+            version: 1,
+            apiVersion: 1,
+            hosts: '[]',
+            configSchema: '{}',
+            packageDir: 'plugin-uuuuuuuuuuuu/v1-1',
+            sourceKind: 'file',
+            sourceName: 'u.zip',
+            installedAt: 1,
+            updatedAt: 1,
+          ),
+        ),
+      ], const []);
+      expect([for (final e in entries) e.id], ['lrclib']);
+    });
+
+    Future<void> insert(
+      PluginProviderEnv env,
+      String id,
+      PluginKind kind,
+    ) async {
+      await env.db.insertLyricsPlugin(
+        id,
+        LyricsPluginSpec(
+          kind: kind,
+          name: 'N $id',
+          version: 1,
+          apiVersion: 1,
+          hosts: const [],
+          configSchema: '{}',
+          packageDir: '$id/v1-1',
+          sourceName: 'x.zip',
+        ),
+        now: 1,
+      );
+    }
+
+    test(
+      'live translate records only, in translatePluginRecordsProvider',
+      () async {
+        final env = await PluginProviderEnv.create();
+        addTearDown(env.dispose);
+        await insert(env, 'plugin-tttttttttttt', PluginKind.translate);
+        await insert(env, 'plugin-rrrrrrrrrrrr', PluginKind.translate);
+        await insert(env, 'plugin-llllllllllll', PluginKind.lyrics);
+        await env.db.customStatement(
+          "UPDATE lyrics_plugins SET removed_at = 9 "
+          "WHERE install_id = 'plugin-rrrrrrrrrrrr'",
+        );
+        final container = ProviderContainer(
+          overrides: [libraryDatabaseProvider.overrideWithValue(env.db)],
+        );
+        addTearDown(container.dispose);
+        container.listen(translatePluginRecordsProvider, (_, _) {});
+        await container.read(lyricsSourcesInputProvider.future);
+
+        final translate = container.read(translatePluginRecordsProvider);
+        expect(
+          [for (final r in translate.requireValue) r.installId],
+          ['plugin-tttttttttttt'],
+        );
+        expect(
+          [for (final e in container.read(lyricsSourcesProvider)) e.id],
+          ['lrclib', 'plugin-llllllllllll'],
+        );
+        expect(
+          container.read(lyricsPluginRecordsProvider).length,
+          3,
+          reason: 'the record list keeps every kind and removed ones',
+        );
+      },
+    );
+
+    test('loading, error and no database are not "no plugins"', () async {
+      final loading = Completer<LyricsSourcesInput>();
+      final loadingContainer = ProviderContainer(
+        overrides: [
+          libraryDatabaseProvider.overrideWithValue(
+            LibraryDatabase(NativeDatabase.memory()),
+          ),
+          lyricsSourcesInputProvider.overrideWith(
+            (ref) => Stream.fromFuture(loading.future),
+          ),
+        ],
+      );
+      addTearDown(loadingContainer.dispose);
+      expect(
+        loadingContainer.read(translatePluginRecordsProvider).isLoading,
+        isTrue,
+      );
+
+      final failing = ProviderContainer(
+        overrides: [
+          libraryDatabaseProvider.overrideWithValue(
+            LibraryDatabase(NativeDatabase.memory()),
+          ),
+          lyricsSourcesInputProvider.overrideWith(
+            (ref) => Stream<LyricsSourcesInput>.error(StateError('boom')),
+          ),
+        ],
+      );
+      addTearDown(failing.dispose);
+      failing.listen(lyricsSourcesInputProvider, (_, _) {});
+      await Future<void>.delayed(Duration.zero);
+      expect(failing.read(translatePluginRecordsProvider).hasError, isTrue);
+
+      final noDb = ProviderContainer(
+        overrides: [libraryDatabaseProvider.overrideWithValue(null)],
+      );
+      addTearDown(noDb.dispose);
+      noDb.listen(lyricsSourcesInputProvider, (_, _) {});
+      await noDb.read(lyricsSourcesInputProvider.future);
+      final state = noDb.read(translatePluginRecordsProvider);
+      expect(state.hasError, isTrue);
+      expect(state.hasValue, isFalse);
+    });
   });
 }

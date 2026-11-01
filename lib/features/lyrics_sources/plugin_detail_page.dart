@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/lyrics_plugin_spec.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
@@ -106,7 +107,19 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
         .watch(lyricsSourcesProvider)
         .where((e) => e.id == _id && e.record != null)
         .firstOrNull;
-    if (entry == null) {
+    // A translate plugin is in no source list: find it among the live records.
+    final record =
+        entry?.record ??
+        ref
+            .watch(lyricsPluginRecordsProvider)
+            .where(
+              (r) =>
+                  r.installId == _id &&
+                  !r.isRemoved &&
+                  r.kind == PluginKind.translate,
+            )
+            .firstOrNull;
+    if (record == null) {
       return PageScaffold(
         title: l10n.lyricsSourcesTitle,
         body: _uninstalling
@@ -119,7 +132,6 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
             : (loaded ? const PluginDetailGone() : const SizedBox.shrink()),
       );
     }
-    final record = entry.record!;
     final controller = ref.watch(lyricsPluginsControllerProvider);
     return PageScaffold(
       title: l10n.pluginDetailsTitle,
@@ -151,16 +163,20 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 subtitle: Text(pluginByline(l10n, record)),
-                trailing: Semantics(
-                  label: record.name,
-                  child: Switch(
-                    value: entry.enabled,
-                    onChanged: controller == null
-                        ? null
-                        : (on) =>
-                              unawaited(setLyricsSourceOn(controller, _id, on)),
-                  ),
-                ),
+                // Only a lyrics source can be switched off.
+                trailing: entry == null
+                    ? null
+                    : Semantics(
+                        label: record.name,
+                        child: Switch(
+                          value: entry.enabled,
+                          onChanged: controller == null
+                              ? null
+                              : (on) => unawaited(
+                                  setLyricsSourceOn(controller, _id, on),
+                                ),
+                        ),
+                      ),
               ),
               PluginUpdateBanner(record: record),
               PluginInfoSection(record: record),

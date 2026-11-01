@@ -30,6 +30,7 @@ PluginCatalogEntry entryOf(
   String author = 'someone',
   String description = '',
 }) => PluginCatalogEntry(
+  kind: PluginKind.lyrics,
   slug: slug,
   name: name ?? slug,
   version: version,
@@ -64,6 +65,7 @@ LyricsPluginRecord recordOf(
   String sourceName = 'demo.zip',
   String? author,
 }) => LyricsPluginRecord(
+  kind: PluginKind.lyrics,
   installId: id,
   name: name,
   author: author,

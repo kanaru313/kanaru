@@ -119,6 +119,7 @@ void main() {
   group('lyrics sources row', () {
     LyricsPluginRecord record(String id, String name, int at) =>
         LyricsPluginRecord(
+          kind: PluginKind.lyrics,
           installId: id,
           name: name,
           version: 1,

@@ -34,7 +34,9 @@ LyricsPluginRecord testRecord(
   String? repoUrl,
   String? description,
   int installedAt = 1000,
+  PluginKind pluginKind = PluginKind.lyrics,
 }) => LyricsPluginRecord(
+  kind: pluginKind,
   installId: id,
   name: name,
   author: author,

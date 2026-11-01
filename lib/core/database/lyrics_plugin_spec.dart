@@ -15,6 +15,21 @@ const lyricsPluginCatalogMaxBytes = 1024 * 1024;
 bool isLyricsPluginId(String providerId) =>
     providerId.startsWith(lyricsPluginIdPrefix);
 
+/// SQL condition on `lyrics_plugins` (unaliased) for a removed record that
+/// nothing names any more: no found lyrics, pin, reject or saved translation
+/// points to its id. Every delete of removed records uses this one text, so
+/// they cannot disagree (invariant 2).
+const removedAndUnreferencedPluginSql =
+    'removed_at IS NOT NULL '
+    'AND NOT EXISTS (SELECT 1 FROM online_lyrics '
+    'WHERE provider_id = lyrics_plugins.install_id) '
+    'AND NOT EXISTS (SELECT 1 FROM lyrics_pins '
+    'WHERE provider_id = lyrics_plugins.install_id) '
+    'AND NOT EXISTS (SELECT 1 FROM online_lyrics_rejects '
+    'WHERE provider_id = lyrics_plugins.install_id) '
+    'AND NOT EXISTS (SELECT 1 FROM lyric_translations '
+    'WHERE provider = lyrics_plugins.install_id)';
+
 /// Where a plugin was installed from (`lyrics_plugins.source_kind`).
 enum LyricsPluginSourceKind {
   file('file'),
@@ -26,10 +41,30 @@ enum LyricsPluginSourceKind {
   final String value;
 }
 
+/// What a plugin does (`lyrics_plugins.kind`).
+enum PluginKind {
+  lyrics('lyrics'),
+  translate('translate');
+
+  const PluginKind(this.value);
+
+  /// The text stored in the column.
+  final String value;
+
+  /// The kind stored as [text]; null for text this build does not know.
+  static PluginKind? fromValue(String text) {
+    for (final kind in values) {
+      if (kind.value == text) return kind;
+    }
+    return null;
+  }
+}
+
 /// What a package says about itself; the columns an install, a revive and a
 /// package switch write together.
 class LyricsPluginSpec {
   const LyricsPluginSpec({
+    required this.kind,
     required this.name,
     this.author,
     this.description,
@@ -44,6 +79,9 @@ class LyricsPluginSpec {
     this.repoSlug,
   });
 
+  /// Written by an insert and a revive only; a package switch keeps the
+  /// stored kind.
+  final PluginKind kind;
   final String name;
   final String? author;
   final String? description;
@@ -83,8 +121,8 @@ enum LyricsPluginUninstall {
   /// The record is already marked removed; nothing was changed.
   alreadyRemoved,
 
-  /// Saved lyrics, a pin or a reject still name the plugin: the record stays,
-  /// marked removed.
+  /// Saved lyrics, a pin, a reject or a saved translation still name the
+  /// plugin: the record stays, marked removed.
   markedRemoved,
 
   /// Nothing points to the plugin: the record is gone.

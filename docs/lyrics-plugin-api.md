@@ -282,13 +282,15 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | Field | Rule |
 |---|---|
 | `metadata.apiVersion` | int. `1` is supported; greater: `needsNewerApp`; anything else: `invalidManifest` |
-| `metadata.type` | must be `"lyrics"`, else `wrongType` |
+| `metadata.type` | `"lyrics"` or `"translate"`, else `wrongType` (type must be lyrics or translate). The kind is fixed for a live plugin: an update with another type is refused (`kindChanged`) |
 | `metadata.name` | 1 to 80 code points after control, format (bidi, zero-width, BOM) and line-separator characters are removed and the text is trimmed |
 | `metadata.version` | int, 1 to 2147483647 |
 | `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher does that at connect time, see "Cookies and private addresses"), else `badHost` with the host |
 | `metadata.author` | optional, at most 80 characters |
 | `metadata.description` | optional, at most 500 characters (newlines kept) |
-| `script.search`, `script.lyrics` | file names matching the name pattern above; a name not in `src/` is `missingScript` |
+| `script.search`, `script.lyrics` | lyrics plugin: both required; file names matching the name pattern above; a name not in `src/` is `missingScript` |
+| `script.translate` | translate plugin: required (and the only script entry); same rules |
+| `translate` | translate plugin: required object. `languages`: 1 to 200 strings; codes must match the app's table exactly (for example `vi`, `zh-Hans`); others, and repeats, are dropped, none left is `invalidManifest` (`translate.languages`). `maxLines` int 10 to 200 (default 50), `maxChars` int 1000 to 20000 (default 4000), `timeoutSec` int 1 to 600 (default 15), clamped to 90 by the app, not refused |
 | `config` | optional object, at most 20 fields, kept in order |
 
 Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`:
@@ -296,6 +298,8 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 - `input`: `format` is `text` (default), `number` or `secret`. Optional `default`: a string; for `number` also a finite JSON number or a plain decimal string (`-2.5`, `1e3`; no `NaN`, `Infinity` or hex), stored as text because scripts read config as strings).
 - `select`: `format` is absent or `single`. `options` is 1 to 50 items of `{value, title}`, both required, values unique. Optional `default` must be one of the values.
 - `toggle`: no `format`. Optional `default` is a boolean.
+
+Every field may also carry `subtitle`: optional help text under the title, at most 300 characters, newlines kept.
 
 The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, always as a string (`"true"` or `"false"` for a toggle). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
 
@@ -396,7 +400,7 @@ A repository is one URL the user types; it serves a catalog (JSON) that lists pl
 ```
 
 - At most 1 MiB and 500 entries (more entries: `invalidCatalog`; over the size: `tooLarge`). `metadata.name` is required (1 to 80 characters).
-- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics`. `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
+- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics` or `translate` (the package must declare the same type, else `catalogMismatch`). `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
 - An entry that breaks a rule is dropped and counted. A non-empty `data` with no usable entry is `invalidCatalog`; an empty `data` is a valid empty catalog.
 - `path` and `icon` may be relative; they are resolved against the address the catalog was served from (after redirects) and checked against the address rules below. A bad `path` drops the entry, a bad `icon` only the icon. A fetched icon must pass the package icon rules (PNG, at most 256 x 256, at most 64 KiB) or it is dropped.
 - The catalog is only a preview: the plugin's own `plugin.json` is the truth, and must agree with the entry's `version` and `hosts`.

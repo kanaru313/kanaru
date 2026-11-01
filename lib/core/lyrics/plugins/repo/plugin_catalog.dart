@@ -1,3 +1,4 @@
+import '../../../database/lyrics_plugin_spec.dart';
 import 'repo_address_rules.dart';
 
 export 'plugin_catalog_parser.dart';
@@ -8,6 +9,7 @@ export 'plugin_catalog_parser.dart';
 class PluginCatalogEntry {
   const PluginCatalogEntry({
     required this.slug,
+    required this.kind,
     required this.name,
     required this.version,
     required this.apiVersion,
@@ -20,6 +22,9 @@ class PluginCatalogEntry {
 
   /// `^[a-z0-9_-]{1,64}$`, unique within the catalog.
   final String slug;
+
+  /// `lyrics` or `translate`; the package must declare the same.
+  final PluginKind kind;
   final String name;
   final int version;
 

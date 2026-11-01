@@ -3553,6 +3553,7 @@
       }
     }
   },
+  "pluginUninstallKeepTranslations": "Saved translations, until you choose Clear saved translations",
   "pluginUninstallKeepPinned": "Lyrics pinned from this source, if any",
   "pluginUninstallKeepLrc": "The .lrc files already written next to songs",
   "pluginUninstallConfirm": "Uninstall",
@@ -3598,7 +3599,7 @@
   },
   "pluginProblemInvalidManifestPlain": "plugin.json is invalid",
   "pluginProblemNeedsNewerApp": "Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports",
-  "pluginProblemWrongType": "plugin.json: type must be lyrics",
+  "pluginProblemWrongType": "plugin.json: type must be lyrics or translate",
   "pluginProblemBadHost": "hosts: \"{detail}\" is not a public domain name",
   "@pluginProblemBadHost": {
     "description": "Why a plugin package was refused; detail comes from the package",
@@ -3640,6 +3641,7 @@
   },
   "pluginProblemCheckUnavailable": "Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid",
   "pluginRefusedNotFromRepo": "This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.",
+  "pluginRefusedKindChanged": "This package is a different kind of plugin than the installed one, so it was not used. Uninstall the plugin and install the new one.",
   "pluginRefusedOlderVersion": "This package is older than the installed version, so it was not used.",
   "pluginInstallSecretsUnavailable": "The secrets of the earlier install could not be removed from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru, then try again.",
   "pluginInstallGone": "This plugin is no longer installed, so it cannot be updated.",
