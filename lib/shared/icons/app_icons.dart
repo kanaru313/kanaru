@@ -39,6 +39,7 @@ abstract final class AppIcons {
   static const IconData artistOutline = Icons.person_outline;
   static const IconData artistRounded = Icons.person_rounded;
   static const IconData artists = Icons.group_outlined;
+  static const IconData splitArtist = Icons.call_split_rounded;
   static const IconData albumArtist = Icons.account_box_outlined;
   static const IconData genre = Icons.category;
   static const IconData genreOutlined = Icons.category_outlined;

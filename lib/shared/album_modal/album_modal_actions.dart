@@ -1,6 +1,6 @@
-import '../../core/database/library_browse_album_links.dart';
 import '../../l10n/app_localizations.dart';
 import '../album_artist_label.dart';
+import '../folder_links/folder_link_row.dart';
 import '../icons/app_icons.dart';
 import '../widgets/context_modal/context_modal_spec.dart';
 import 'album_modal_data.dart';
@@ -35,10 +35,10 @@ ContextModalAction _artistRow(
       icon: AppIcons.artistOutline,
       label: l10n.songModalGoToArtist,
       subtitle: artist.name,
-      onTap: albumModalCloseThen(() => h.goToArtist(artist.key)),
+      onTap: contextModalCloseThen(() => h.goToArtist(artist.key)),
     );
   }
-  if (artists.length >= albumArtistsOpenBelow) {
+  if (artists.length >= contextModalLinksPageFrom) {
     return ContextModalAction(
       id: 'artists',
       icon: AppIcons.artists,
@@ -60,60 +60,10 @@ ContextModalAction _artistRow(
         for (final artist in artists)
           ContextModalChip(
             label: artist.name,
-            onTap: albumModalCloseThen(() => h.goToArtist(artist.key)),
+            onTap: contextModalCloseThen(() => h.goToArtist(artist.key)),
           ),
       ],
     ),
-  );
-}
-
-/// The Go to folder row; null when the album has no local folder.
-ContextModalAction? _folderRow(
-  AppLocalizations l10n,
-  AlbumModalData data,
-  AlbumModalHandlers h,
-) {
-  final folders = data.links?.folders;
-  if (folders == null) {
-    return ContextModalAction(
-      id: 'folder',
-      icon: AppIcons.folderOutlined,
-      label: l10n.songModalGoToFolder,
-      enabled: false,
-    );
-  }
-  if (folders.isEmpty) return null;
-  if (folders.length == 1) {
-    final AlbumFolder folder = folders.single;
-    return ContextModalAction(
-      id: 'folder',
-      icon: AppIcons.folderOutlined,
-      label: l10n.songModalGoToFolder,
-      subtitle: folderName(folder.path),
-      onTap: albumModalCloseThen(() => h.goToFolder(folder.path)),
-      trailing: [
-        ContextModalTrailing(
-          icon: AppIcons.openExternal,
-          tooltip: l10n.libraryShowInFileManager,
-          onTap: albumModalCloseThen(
-            () => h.showInFileManager(folder.samplePath),
-          ),
-        ),
-      ],
-    );
-  }
-  return ContextModalAction(
-    id: 'folders',
-    icon: AppIcons.folderOutlined,
-    label: l10n.songModalGoToFolder,
-    // Counts the songs in local folders; with remote tracks it can be lower
-    // than the song count in the header.
-    subtitle: l10n.albumModalSongsInFolders(
-      folders.fold(0, (sum, f) => sum + f.songCount),
-      folders.length,
-    ),
-    opensPage: true,
-    onTap: h.openFolders,
   );
 }
 
@@ -124,7 +74,13 @@ List<List<ContextModalAction>> albumModalSections(
   AlbumModalData data,
   AlbumModalHandlers h,
 ) {
-  final folder = _folderRow(l10n, data, h);
+  final folder = folderLinkRow(
+    l10n,
+    data.links?.folders,
+    goToFolder: h.goToFolder,
+    showInFileManager: h.showInFileManager,
+    openFolders: h.openFolders,
+  );
   return [
     [
       if (data.showAlbum)
@@ -133,7 +89,7 @@ List<List<ContextModalAction>> albumModalSections(
           icon: AppIcons.albumOutlined,
           label: l10n.songModalGoToAlbum,
           subtitle: data.album.title,
-          onTap: albumModalCloseThen(h.goToAlbum),
+          onTap: contextModalCloseThen(h.goToAlbum),
         ),
       _artistRow(l10n, data, h),
       ?folder,
@@ -143,19 +99,19 @@ List<List<ContextModalAction>> albumModalSections(
         id: 'play-all',
         icon: AppIcons.play,
         label: l10n.albumModalPlayAll,
-        onTap: albumModalCloseThen(h.playAll),
+        onTap: contextModalCloseThen(h.playAll),
       ),
       ContextModalAction(
         id: 'shuffle',
         icon: AppIcons.shuffle,
         label: l10n.libraryShuffle,
-        onTap: albumModalCloseThen(h.shuffle),
+        onTap: contextModalCloseThen(h.shuffle),
       ),
       ContextModalAction(
         id: 'add-to-playlist',
         icon: AppIcons.addToPlaylist,
         label: l10n.playlistAddTo,
-        onTap: albumModalCloseThen(h.addToPlaylist),
+        onTap: contextModalCloseThen(h.addToPlaylist),
       ),
       ContextModalAction(
         id: 'edit-tags',

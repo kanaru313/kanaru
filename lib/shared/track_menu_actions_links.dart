@@ -25,18 +25,30 @@ extension TrackMenuRunnerLinks on TrackMenuRunner {
   /// Puts the local songs of album [key], in the order of its page, in
   /// Favorites and says how many went in, naming [title]. Uses only what the
   /// runner captured, so it works once the row is gone.
-  Future<void> addAlbumToFavorites(AlbumKey key, String title) async {
+  Future<void> addAlbumToFavorites(AlbumKey key, String title) =>
+      addPathsToFavorites(
+        (db) async => [
+          // Library tracks carry their file path as uri.
+          for (final t in await db.albumTracks(key)) ?localPathOf(t.path),
+        ],
+        title,
+      );
+
+  /// Puts the local file paths [readPaths] returns in Favorites and says how
+  /// many went in, naming [label]. Uses only what the runner captured, so it
+  /// works once the row is gone; does nothing without a library.
+  Future<void> addPathsToFavorites(
+    Future<List<String>> Function(LibraryDatabase db) readPaths,
+    String label,
+  ) async {
     final db = _db;
     if (db == null) return;
     await addTracksToFavoritesWith(
       db: db,
       messenger: _messenger,
       l10n: _l10n,
-      // Library tracks carry their file path as uri.
-      readPaths: () async => [
-        for (final t in await db.albumTracks(key)) ?localPathOf(t.path),
-      ],
-      label: title,
+      readPaths: () => readPaths(db),
+      label: label,
     );
   }
 

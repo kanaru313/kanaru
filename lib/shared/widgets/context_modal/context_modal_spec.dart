@@ -2,6 +2,19 @@ import 'package:flutter/widgets.dart';
 
 import 'context_modal_nav.dart';
 
+/// A link row for artists with this many targets or more opens a page of
+/// them; fewer show their chips open. (The folder row opens a page from two
+/// folders.)
+const contextModalLinksPageFrom = 4;
+
+/// Closes the modal, then calls [then]: every action that leaves the modal
+/// goes through here.
+void Function(ContextModalNav) contextModalCloseThen(VoidCallback then) =>
+    (nav) {
+      nav.close();
+      then();
+    };
+
 /// A small icon button at the end of an action row (for example "show in
 /// folder" next to a path).
 class ContextModalTrailing {
@@ -47,6 +60,7 @@ class ContextModalAction {
     required this.id,
     required this.icon,
     required this.label,
+    this.leading,
     this.subtitle,
     this.enabled = true,
     this.destructive = false,
@@ -62,6 +76,11 @@ class ContextModalAction {
   final String id;
   final IconData icon;
   final String label;
+
+  /// Drawn in place of [icon] (for example a cover). It is merged into an
+  /// `IconTheme` with the row's icon color, so a destructive row stays red.
+  /// [icon] is drawn only when there is no [leading].
+  final Widget? leading;
 
   /// One quiet line under the label, ellipsized.
   final String? subtitle;

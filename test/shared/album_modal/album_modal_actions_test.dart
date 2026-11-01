@@ -3,6 +3,7 @@ import 'package:kanaru/core/database/library_browse_album_links.dart';
 import 'package:kanaru/l10n/app_localizations_en.dart';
 import 'package:kanaru/shared/album_modal/album_modal_actions.dart';
 import 'package:kanaru/shared/album_modal/album_modal_data.dart';
+import 'package:kanaru/shared/folder_links/folder_paths.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_spec.dart';
 
 import 'album_modal_test_support.dart';

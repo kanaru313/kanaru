@@ -111,6 +111,54 @@ void main() {
     expect(tester.widget<Text>(find.text('Danger')).style?.color, colors.error);
   });
 
+  testWidgets('leading replaces the icon and takes the row icon color', (
+    tester,
+  ) async {
+    await pumpModalApp(
+      tester,
+      extra: [
+        ContextModalAction(
+          id: 'cover',
+          icon: Icons.album,
+          label: 'With cover',
+          leading: const Icon(Icons.audiotrack, key: Key('lead')),
+          onTap: (_) {},
+        ),
+      ],
+    );
+    expect(find.byKey(const Key('lead')), findsOneWidget);
+    expect(find.byIcon(Icons.album), findsNothing);
+    final colors = Theme.of(tester.element(find.text('With cover')))
+        .colorScheme;
+    expect(
+      IconTheme.of(tester.element(find.byKey(const Key('lead')))).color,
+      colors.onSurfaceVariant,
+    );
+  });
+
+  testWidgets('a destructive row keeps its color on a leading widget', (
+    tester,
+  ) async {
+    await pumpModalApp(
+      tester,
+      extra: [
+        ContextModalAction(
+          id: 'danger',
+          icon: Icons.delete,
+          label: 'Danger',
+          destructive: true,
+          leading: const Icon(Icons.audiotrack, key: Key('lead')),
+          onTap: (_) {},
+        ),
+      ],
+    );
+    final colors = Theme.of(tester.element(find.text('Danger'))).colorScheme;
+    expect(
+      IconTheme.of(tester.element(find.byKey(const Key('lead')))).color,
+      colors.error,
+    );
+  });
+
   testWidgets('chips expand and collapse, and a chip runs its callback', (
     tester,
   ) async {
