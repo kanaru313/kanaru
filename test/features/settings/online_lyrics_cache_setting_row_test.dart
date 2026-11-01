@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/features/settings/online_lyrics_cache_setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/stats/gated_query_interceptor.dart';
 import 'online_lyrics_switch_harness.dart';
 import 'translation_settings_harness.dart' show pumpIo;
 
@@ -207,6 +209,78 @@ void main() {
       expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
     },
   );
+
+  Future<void> startClear(WidgetTester tester) async {
+    await tester.tap(clearButton);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, 'Clear'),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  Future<(LyricsRowsHarness, GatedQueryInterceptor)> seeded(
+    WidgetTester tester,
+  ) async {
+    final gate = GatedQueryInterceptor();
+    final db = LibraryDatabase(NativeDatabase.memory().interceptWith(gate));
+    addTearDown(db.close);
+    final r = await LyricsRowsHarness.create(
+      tester,
+      const OnlineLyricsCacheSettingRow(),
+      database: db,
+    );
+    await seed(tester, r);
+    await pumpIo(
+      tester,
+      done: () => tester.widget<FilledButton>(clearButton).onPressed != null,
+    );
+    return (r, gate);
+  }
+
+  testWidgets('a clear in flight keeps the rebuilt row busy', (tester) async {
+    final (r, gate) = await seeded(tester);
+    final release = gate.holdNext('DELETE FROM');
+
+    await startClear(tester);
+    await pumpIo(tester, rounds: 2);
+    expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+    // The row is disposed and built again while the delete is held.
+    r.visible.value = false;
+    await tester.pump();
+    expect(clearButton, findsNothing);
+    r.visible.value = true;
+    await tester.pump();
+    expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+    release();
+    await pumpIo(
+      tester,
+      done: () => find.text('Saved lyrics cleared').evaluate().isNotEmpty,
+    );
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(await tableSizes(tester, r.h.db), [0, 0, 0]);
+  });
+
+  testWidgets('a failed clear is announced and the button comes back', (
+    tester,
+  ) async {
+    final (_, gate) = await seeded(tester);
+    gate.failNext('DELETE FROM');
+
+    await startClear(tester);
+    await pumpIo(
+      tester,
+      done: () => find.byType(SnackBar).evaluate().isNotEmpty,
+    );
+
+    expect(find.text('Could not clear saved lyrics'), findsOneWidget);
+    expect(tester.widget<FilledButton>(clearButton).onPressed, isNotNull);
+  });
 
   testWidgets('without a library the button is off', (tester) async {
     await LyricsRowsHarness.create(

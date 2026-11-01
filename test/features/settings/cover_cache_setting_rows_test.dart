@@ -20,8 +20,11 @@ void main() {
   late ScriptedIndexer indexer;
   late ProviderContainer container;
   LibraryDatabase? db;
+  // Whether the row is in the tree; the app around it stays, as in the app.
+  final visible = ValueNotifier(true);
 
   setUp(() {
+    visible.value = true;
     cache = Directory.systemTemp.createTempSync('kanaru-cover-row');
     covers = '${cache.path}/covers/512';
     thumbnail = File('$covers/aa/${'a' * 64}.jpg')
@@ -35,6 +38,8 @@ void main() {
   tearDown(() async {
     await db?.close();
     db = null;
+    // A test may have made a folder unreadable.
+    Process.runSync('chmod', ['-R', 'u+rwx', cache.path]);
     cache.deleteSync(recursive: true);
   });
 
@@ -55,11 +60,17 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(
+        child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: Locale('en'),
-          home: Scaffold(body: CoverCacheSettingRows()),
+          home: Scaffold(
+            body: ValueListenableBuilder<bool>(
+              valueListenable: visible,
+              builder: (_, show, _) =>
+                  show ? const CoverCacheSettingRows() : const SizedBox(),
+            ),
+          ),
         ),
       ),
     );
@@ -125,6 +136,63 @@ void main() {
 
     container.read(coverPassProvider.notifier).finish();
     await tester.pump();
+    expect(enabled(tester), isTrue);
+  });
+
+  Future<void> startClear(WidgetTester tester) async {
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, 'Clear'),
+      ),
+    );
+    // Only the test clock runs: the delete's isolate has not reported back.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
+  Future<void> finishIo(WidgetTester tester) async {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a clear in flight keeps the rebuilt row busy', (tester) async {
+    await pump(tester);
+    await startClear(tester);
+    expect(enabled(tester), isFalse);
+
+    // The row is disposed and built again while the delete runs.
+    visible.value = false;
+    await tester.pump();
+    expect(button, findsNothing);
+    visible.value = true;
+    await tester.pump();
+    expect(enabled(tester), isFalse);
+
+    await finishIo(tester);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Deleted 1 cover. A rescan makes them again.'), findsOne);
+    expect(thumbnail.existsSync(), isFalse);
+    expect(indexer.scans, 1);
+    expect(enabled(tester), isTrue);
+  });
+
+  testWidgets('a failed clear is announced and the button comes back', (
+    tester,
+  ) async {
+    await pump(tester);
+    // A covers folder that cannot be listed makes the delete throw.
+    Process.runSync('chmod', ['000', '${cache.path}/covers']);
+
+    await startClear(tester);
+    await finishIo(tester);
+
+    expect(find.text('Could not clear the cover cache'), findsOneWidget);
+    expect(indexer.scans, 0);
     expect(enabled(tester), isTrue);
   });
 

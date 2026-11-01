@@ -8,6 +8,7 @@ import '../../core/indexer/indexer_providers.dart';
 import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
+import 'settings_busy_tasks.dart';
 import 'settings_confirm_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
@@ -26,12 +27,10 @@ class CoverCacheSettingRows extends ConsumerStatefulWidget {
 }
 
 class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
-  bool _clearing = false;
-
   /// Whether the button may run now: also checked again once the dialog
   /// closes, since a scan may have started while it was open.
   bool _canClear() =>
-      !_clearing &&
+      !ref.read(settingsBusyTasksProvider).contains(SettingsTask.coverCache) &&
       ref.read(libraryDatabaseProvider) != null &&
       ref.read(coverCacheDirectoryProvider) != null &&
       ref.read(libraryIndexerProvider) is! IndexerScanning &&
@@ -44,6 +43,7 @@ class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
     final indexer = ref.read(libraryIndexerProvider.notifier);
+    final busy = ref.read(settingsBusyTasksProvider.notifier);
     final directory = ref.read(coverCacheDirectoryProvider)!;
     final confirmed = await confirmDestructive(
       context,
@@ -52,14 +52,15 @@ class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
       confirmLabel: l10n.settingsClearCoverCacheButton,
     );
     if (!confirmed || !mounted || !_canClear()) return;
-    setState(() => _clearing = true);
+    if (!busy.start(SettingsTask.coverCache)) return;
     int? deleted;
     try {
       deleted = await clearCoverCache(directory, before: DateTime.now());
     } catch (error, stackTrace) {
       _log.warning('Clearing the cover cache failed', error, stackTrace);
+    } finally {
+      busy.finish(SettingsTask.coverCache);
     }
-    if (mounted) setState(() => _clearing = false);
     if (deleted == null) {
       messenger.showSnackBar(
         appSnackBar(
@@ -88,7 +89,11 @@ class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final canClear =
-        !_clearing &&
+        !ref.watch(
+          settingsBusyTasksProvider.select(
+            (s) => s.contains(SettingsTask.coverCache),
+          ),
+        ) &&
         ref.watch(libraryDatabaseProvider) != null &&
         ref.watch(coverCacheDirectoryProvider) != null &&
         ref.watch(

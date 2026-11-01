@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart' show ApplyInterceptor;
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/lyric_translation_queries.dart';
@@ -6,6 +8,7 @@ import 'package:kanaru/features/settings/translation_cache_setting_row.dart';
 import 'package:kanaru/l10n/app_localizations_en.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/stats/gated_query_interceptor.dart';
 import 'translation_settings_harness.dart';
 
 void main() {
@@ -119,6 +122,78 @@ void main() {
     expect(await prefRows(tester, h), 1);
     expect(find.text('No saved translations'), findsOneWidget);
     expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+  });
+
+  Future<void> startClear(WidgetTester tester) async {
+    await tester.tap(clearButton);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, 'Clear'),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a clear in flight keeps the rebuilt row busy', (tester) async {
+    final gate = GatedQueryInterceptor();
+    final h = TranslationSettingsHarness(
+      database: LibraryDatabase(NativeDatabase.memory().interceptWith(gate)),
+    );
+    await h.pump(tester, row);
+    await seed(tester, h, ['h1']);
+    await pumpIo(
+      tester,
+      done: () => tester.widget<FilledButton>(clearButton).onPressed != null,
+    );
+    final release = gate.holdNext('DELETE FROM');
+
+    await startClear(tester);
+    await pumpIo(tester, rounds: 2);
+    expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+    // The row is disposed and built again while the delete is held.
+    h.visible.value = false;
+    await tester.pump();
+    expect(clearButton, findsNothing);
+    h.visible.value = true;
+    await tester.pump();
+    expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+    release();
+    await pumpIo(
+      tester,
+      done: () =>
+          find.text('Cleared 1 saved translation').evaluate().isNotEmpty,
+    );
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(await rows(tester, h), 0);
+  });
+
+  testWidgets('a failed clear is announced and the button comes back', (
+    tester,
+  ) async {
+    final gate = GatedQueryInterceptor();
+    final h = TranslationSettingsHarness(
+      database: LibraryDatabase(NativeDatabase.memory().interceptWith(gate)),
+    );
+    await h.pump(tester, row);
+    await seed(tester, h, ['h1']);
+    await pumpIo(
+      tester,
+      done: () => tester.widget<FilledButton>(clearButton).onPressed != null,
+    );
+    gate.failNext('DELETE FROM');
+
+    await startClear(tester);
+    await pumpIo(
+      tester,
+      done: () => find.byType(SnackBar).evaluate().isNotEmpty,
+    );
+
+    expect(find.text('Could not clear saved translations'), findsOneWidget);
+    expect(tester.widget<FilledButton>(clearButton).onPressed, isNotNull);
   });
 
   testWidgets('without a library the button is off', (tester) async {

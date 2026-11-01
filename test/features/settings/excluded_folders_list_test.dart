@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/excluded_folder_queries.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -48,6 +50,28 @@ void main() {
 
     expect(find.text(live), findsOneWidget);
     expect(await stored(tester, h), [live]);
+  });
+
+  testWidgets('an edit in flight keeps the rebuilt page busy', (tester) async {
+    final pick = Completer<String?>();
+    final h = LibraryHarness(overrides: _onboarded, picker: () => pick.future);
+    final music = h.folder('music');
+    await openSettings(tester, music: music, harness: h);
+    final add = find.ancestor(
+      of: find.text('Exclude folder'),
+      matching: find.byType(FilledButton),
+    );
+
+    await tester.tap(add);
+    await tester.pump();
+    expect(tester.widget<FilledButton>(add).onPressed, isNull);
+
+    await h.remount(tester);
+    expect(tester.widget<FilledButton>(add).onPressed, isNull);
+
+    pick.complete(null);
+    await settleIo(tester, h);
+    expect(tester.widget<FilledButton>(add).onPressed, isNotNull);
   });
 
   testWidgets('says why a folder was refused', (tester) async {

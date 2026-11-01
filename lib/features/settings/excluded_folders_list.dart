@@ -15,6 +15,7 @@ import '../../shared/root_rejection_message.dart';
 import 'excluded_folders_row.dart';
 import 'library_folders_provider.dart';
 import 'setting_row.dart';
+import 'settings_busy_tasks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
@@ -30,43 +31,52 @@ class ExcludedFoldersList extends ConsumerStatefulWidget {
 }
 
 class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
-  bool _busy = false;
-
-  void _showMessage(AppSnackBarKind kind, String text) {
-    ScaffoldMessenger.of(context)
+  void _showMessage(
+    ScaffoldMessengerState messenger,
+    AppSnackBarKind kind,
+    String text,
+  ) {
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(appSnackBar(kind: kind, title: text));
   }
 
   /// Runs [action] unless another one runs; a failure becomes a message.
-  Future<void> _guarded(Future<void> Function() action) async {
-    if (_busy) return;
-    setState(() => _busy = true);
+  /// The busy flag and the messenger outlive this row, so leaving the page
+  /// mid-action neither re-enables the buttons nor drops the message.
+  Future<void> _guarded(
+    Future<void> Function(ScaffoldMessengerState messenger) action,
+  ) async {
+    final busy = ref.read(settingsBusyTasksProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
     final unexpected = context.l10n.libraryUnexpectedError;
+    if (!busy.start(SettingsTask.excludedFolders)) return;
     try {
-      await action();
+      await action(messenger);
     } catch (error, stackTrace) {
       _log.severe('Changing an excluded folder failed', error, stackTrace);
-      if (mounted) _showMessage(AppSnackBarKind.error, unexpected);
+      _showMessage(messenger, AppSnackBarKind.error, unexpected);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      busy.finish(SettingsTask.excludedFolders);
     }
   }
 
-  Future<void> _add() => _guarded(() async {
+  Future<void> _add() => _guarded((messenger) async {
     final l10n = context.l10n;
+    final controller = ref.read(excludedFoldersControllerProvider);
     final path = await ref.read(directoryPickerProvider)();
     if (path == null || !mounted) return;
-    final result = await ref.read(excludedFoldersControllerProvider).add(path);
-    if (!mounted) return;
+    final result = await controller.add(path);
     final rejection = result.rejection;
+    final conflict = result.conflict;
     if (rejection != null) {
       _showMessage(
+        messenger,
         AppSnackBarKind.warning,
         rootRejectionMessage(l10n, path, rejection),
       );
-    } else if (result.conflict != null) {
-      _showMessage(AppSnackBarKind.warning, switch (result.conflict!) {
+    } else if (conflict != null) {
+      _showMessage(messenger, AppSnackBarKind.warning, switch (conflict) {
         ExclusionConflict.sameAsRoot => l10n.excludedFoldersSameAsRoot,
         ExclusionConflict.outsideLibrary => l10n.excludedFoldersOutsideLibrary,
         ExclusionConflict.alreadyExcluded =>
@@ -75,11 +85,12 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
     }
   });
 
-  Future<void> _remove(int id, String path) => _guarded(() async {
+  Future<void> _remove(int id, String path) => _guarded((messenger) async {
     final l10n = context.l10n;
     final ok = await ref.read(excludedFoldersControllerProvider).remove(id);
-    if (!ok && mounted) {
+    if (!ok) {
       _showMessage(
+        messenger,
         AppSnackBarKind.error,
         l10n.settingsRemoveFolderFailed(path),
       );
@@ -95,7 +106,12 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
           in ref.watch(libraryRootsProvider).value ?? <LibraryRoot>[])
         root.path,
     ];
-    final enabled = ref.watch(libraryDatabaseProvider) != null && !_busy;
+    final busy = ref.watch(
+      settingsBusyTasksProvider.select(
+        (s) => s.contains(SettingsTask.excludedFolders),
+      ),
+    );
+    final enabled = ref.watch(libraryDatabaseProvider) != null && !busy;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

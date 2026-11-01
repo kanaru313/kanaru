@@ -5,6 +5,7 @@ import '../../core/settings/settings_provider.dart';
 import '../../core/stats/listen_recorder_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
+import 'settings_busy_tasks.dart';
 import 'settings_confirm_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
@@ -22,14 +23,18 @@ class ListenHistorySettingRows extends ConsumerStatefulWidget {
 
 class _ListenHistorySettingRowsState
     extends ConsumerState<ListenHistorySettingRows> {
-  bool _clearing = false;
-
   Future<void> _clear() async {
     final recorder = ref.read(listenRecorderProvider);
-    if (recorder == null || _clearing) return;
+    if (recorder == null ||
+        ref
+            .read(settingsBusyTasksProvider)
+            .contains(SettingsTask.listenHistory)) {
+      return;
+    }
     // Taken before any await: leaving Settings during a long clear must
     // neither throw nor lose the result.
     final messenger = ScaffoldMessenger.of(context);
+    final busy = ref.read(settingsBusyTasksProvider.notifier);
     final l10n = context.l10n;
     final confirmed = await confirmDestructive(
       context,
@@ -38,9 +43,13 @@ class _ListenHistorySettingRowsState
       confirmLabel: l10n.listenHistoryClearButton,
     );
     if (!confirmed || !mounted) return;
-    setState(() => _clearing = true);
-    final removed = await recorder.clearHistory();
-    if (mounted) setState(() => _clearing = false);
+    if (!busy.start(SettingsTask.listenHistory)) return;
+    int? removed;
+    try {
+      removed = await recorder.clearHistory();
+    } finally {
+      busy.finish(SettingsTask.listenHistory);
+    }
     messenger.showSnackBar(
       appSnackBar(
         kind: removed == null ? AppSnackBarKind.error : AppSnackBarKind.success,
@@ -54,7 +63,13 @@ class _ListenHistorySettingRowsState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final canClear = ref.watch(listenRecorderProvider) != null && !_clearing;
+    final canClear =
+        ref.watch(listenRecorderProvider) != null &&
+        !ref.watch(
+          settingsBusyTasksProvider.select(
+            (s) => s.contains(SettingsTask.listenHistory),
+          ),
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

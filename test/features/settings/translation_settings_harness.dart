@@ -28,7 +28,9 @@ class TranslationSettingsHarness {
     this.persistent = true,
     this.modeWasFixed = false,
     FakeSecretStore? store,
-  }) : store = store ?? FakeSecretStore();
+    LibraryDatabase? database,
+  }) : store = store ?? FakeSecretStore(),
+       db = database ?? LibraryDatabase(NativeDatabase.memory());
 
   final AppSettings settings;
   final bool hasDatabase;
@@ -36,7 +38,10 @@ class TranslationSettingsHarness {
   final bool persistent;
   final bool modeWasFixed;
   final FakeSecretStore store;
-  final db = LibraryDatabase(NativeDatabase.memory());
+  final LibraryDatabase db;
+
+  /// Whether the row is in the tree; the app around it stays, as in the app.
+  final visible = ValueNotifier(true);
   late final LoopbackServer server;
   late final ProviderContainer container;
 
@@ -100,7 +105,13 @@ class TranslationSettingsHarness {
             ...GlobalMaterialLocalizations.delegates,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: SingleChildScrollView(child: child)),
+          home: Scaffold(
+            body: ValueListenableBuilder<bool>(
+              valueListenable: visible,
+              builder: (_, show, _) =>
+                  show ? SingleChildScrollView(child: child) : const SizedBox(),
+            ),
+          ),
         ),
       ),
     );

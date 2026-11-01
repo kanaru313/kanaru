@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/indexer/library_roots_controller.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
@@ -200,6 +203,51 @@ void main() {
     expect(h.container.read(settingsProvider).libraryOnboarded, isTrue);
   });
 
+  testWidgets('a folder added as the page is left is still scanned', (
+    tester,
+  ) async {
+    final gate = Completer<void>();
+    final h = LibraryHarness(
+      overrides: _onboarded,
+      rootsControllerBuilder: (ref) => _GatedRootsController(ref, gate.future),
+    );
+    final music = h.folder('music');
+    h.touch(music, 'one.mp3');
+    await openSettings(tester, h);
+    h.picks.add(music);
+
+    await tester.tap(find.text('Add folder'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump();
+    await h.remount(tester);
+    // The page is built anew while the add is held: it shows itself busy.
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.ancestor(
+              of: find.text('Add folder'),
+              matching: find.byType(FilledButton),
+            ),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    gate.complete();
+    // The gated controller is not counted by settleIo: wait for the scan.
+    for (var i = 0; i < 100; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await settleIo(tester, h);
+      if ((await storedTracks(tester, h)).isNotEmpty) break;
+    }
+
+    expect(await storedTracks(tester, h), hasLength(1));
+  });
+
   testWidgets('a folder inside an existing one is refused with a message', (
     tester,
   ) async {
@@ -355,5 +403,18 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+  }
+}
+
+/// Holds every folder addition until [gate] completes.
+class _GatedRootsController extends LibraryRootsController {
+  _GatedRootsController(super.ref, this.gate);
+
+  final Future<void> gate;
+
+  @override
+  Future<AddRootsResult> addRoots(List<String> paths) async {
+    await gate;
+    return super.addRoots(paths);
   }
 }

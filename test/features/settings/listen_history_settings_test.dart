@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' show ApplyInterceptor, driftRuntimeOptions;
 import 'package:drift/native.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/app/shell/app_destination.dart';
@@ -8,7 +9,9 @@ import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/stats/listen_recorder.dart';
 import 'package:kanaru/core/stats/listen_recorder_provider.dart';
+import 'package:kanaru/features/settings/listen_history_setting_rows.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
@@ -211,6 +214,72 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('Listen history cleared'), findsOneWidget);
+    });
+
+    testWidgets('a clear in flight keeps the rebuilt row busy', (tester) async {
+      harness();
+      final recorder = ListenRecorder(
+        other,
+        enabled: false,
+        clock: (now: DateTime.now, elapsed: () => Duration.zero),
+      );
+      addTearDown(recorder.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          _onboarded,
+          listenRecorderProvider.overrideWith((ref) => recorder),
+        ],
+      );
+      addTearDown(container.dispose);
+      final visible = ValueNotifier(true);
+      tester.view.physicalSize = const Size(1280, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ValueListenableBuilder<bool>(
+                valueListenable: visible,
+                builder: (_, show, _) =>
+                    show ? const ListenHistorySettingRows() : const SizedBox(),
+              ),
+            ),
+          ),
+        ),
+      );
+      final release = gate.holdNext('DELETE FROM');
+
+      await confirmClear(tester);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+      expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+      // The row is disposed and built again while the delete is held.
+      visible.value = false;
+      await tester.pump();
+      expect(clearButton, findsNothing);
+      visible.value = true;
+      await tester.pump();
+      expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+      release();
+      for (var i = 0; i < 100; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+        if (find.byType(SnackBar).evaluate().isNotEmpty) break;
+      }
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.textContaining('Listen history cleared'), findsOneWidget);
+      expect(tester.widget<FilledButton>(clearButton).onPressed, isNotNull);
     });
   });
 }

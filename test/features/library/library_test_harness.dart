@@ -32,6 +32,7 @@ class LibraryHarness {
     this.overrides = const [],
     this.picker,
     this.rootsController,
+    this.rootsControllerBuilder,
     this.refreshInterval = Duration.zero,
     this.coverCacheDirectory,
     this.interceptor,
@@ -56,6 +57,9 @@ class LibraryHarness {
   /// Replaces the roots controller (which otherwise counts its additions in
   /// flight for [settleIo]).
   final LibraryRootsController? rootsController;
+
+  /// Like [rootsController], for a controller that needs the provider ref.
+  final LibraryRootsController Function(Ref ref)? rootsControllerBuilder;
 
   /// Answers whether a root is still a folder; roots in tests are made-up
   /// paths, so by default every one is.
@@ -91,6 +95,22 @@ class LibraryHarness {
   void touch(String folderPath, String name) =>
       File('$folderPath/$name').writeAsStringSync('x');
 
+  /// Takes the whole app out of the tree and builds it again over the same
+  /// container, so every page's widgets are disposed and made anew while the
+  /// providers, the router location and running work stay.
+  Future<void> remount(WidgetTester tester) async {
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const SizedBox()),
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const KanaruApp(locale: Locale('en')),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<void> pump(WidgetTester tester, {bool hasRoots = false}) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1;
@@ -114,7 +134,10 @@ class LibraryHarness {
           }
         }),
         libraryRootsControllerProvider.overrideWith(
-          (ref) => rootsController ?? _CountingRootsController(ref, this),
+          (ref) =>
+              rootsController ??
+              rootsControllerBuilder?.call(ref) ??
+              _CountingRootsController(ref, this),
         ),
         suggestedMusicFolderProvider.overrideWith((ref) => suggestion),
         libraryBrowseRefreshIntervalProvider.overrideWithValue(refreshInterval),

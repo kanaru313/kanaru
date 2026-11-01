@@ -9,6 +9,7 @@ import '../../core/lyrics/online/online_lyrics_streams.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'setting_row.dart';
+import 'settings_busy_tasks.dart';
 import 'settings_confirm_dialog.dart';
 import 'settings_number_presets.dart';
 
@@ -29,16 +30,20 @@ class OnlineLyricsCacheSettingRow extends ConsumerStatefulWidget {
 
 class _OnlineLyricsCacheSettingRowState
     extends ConsumerState<OnlineLyricsCacheSettingRow> {
-  bool _clearing = false;
-
   Future<void> _clear() async {
     final db = ref.read(libraryDatabaseProvider);
-    if (db == null || _clearing) return;
+    if (db == null ||
+        ref
+            .read(settingsBusyTasksProvider)
+            .contains(SettingsTask.onlineLyricsCache)) {
+      return;
+    }
     // Taken before any await: leaving Settings during the clear must neither
     // throw nor lose the result, nor skip forgetting the remembered failures.
     final messenger = ScaffoldMessenger.of(context);
     final backoff = ref.read(onlineLyricsBackoffProvider.notifier);
     final lookups = ref.read(onlineLyricsLookupsProvider.notifier);
+    final busy = ref.read(settingsBusyTasksProvider.notifier);
     final l10n = context.l10n;
     final confirmed = await confirmDestructive(
       context,
@@ -47,19 +52,20 @@ class _OnlineLyricsCacheSettingRowState
       confirmLabel: l10n.settingsSavedLyricsClear,
     );
     if (!confirmed || !mounted) return;
-    setState(() => _clearing = true);
+    if (!busy.start(SettingsTask.onlineLyricsCache)) return;
     var ok = true;
     try {
       await db.clearOnlineLyrics();
     } catch (error, stackTrace) {
       ok = false;
       _log.warning('Clearing saved online lyrics failed', error, stackTrace);
+    } finally {
+      busy.finish(SettingsTask.onlineLyricsCache);
     }
     if (ok) {
       backoff.clear();
       lookups.forgetFailures();
     }
-    if (mounted) setState(() => _clearing = false);
     messenger.showSnackBar(
       appSnackBar(
         kind: ok ? AppSnackBarKind.success : AppSnackBarKind.error,
@@ -88,7 +94,13 @@ class _OnlineLyricsCacheSettingRowState
     // rejects, so a stored row always gives a segment and enables Clear.
     final empty = segments.isEmpty;
     final canClear =
-        !_clearing && !empty && ref.watch(libraryDatabaseProvider) != null;
+        !ref.watch(
+          settingsBusyTasksProvider.select(
+            (s) => s.contains(SettingsTask.onlineLyricsCache),
+          ),
+        ) &&
+        !empty &&
+        ref.watch(libraryDatabaseProvider) != null;
     return SettingRow.single(
       title: l10n.settingsSavedLyrics,
       subtitle: empty ? l10n.settingsSavedLyricsNone : segments.join(' · '),

@@ -16,6 +16,7 @@ import 'library_folder_dialogs.dart';
 import 'library_folder_row.dart';
 import 'library_folders_provider.dart';
 import 'setting_row.dart';
+import 'settings_busy_tasks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
@@ -31,52 +32,60 @@ class LibraryFoldersList extends ConsumerStatefulWidget {
 }
 
 class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
-  bool _busy = false;
-
-  void _showMessage(AppSnackBarKind kind, String text) {
-    ScaffoldMessenger.of(context)
+  void _showMessage(
+    ScaffoldMessengerState messenger,
+    AppSnackBarKind kind,
+    String text,
+  ) {
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(appSnackBar(kind: kind, title: text));
   }
 
   /// Runs [action] unless another one runs; a failure becomes a message.
-  Future<void> _guarded(Future<void> Function() action) async {
-    if (_busy) return;
-    setState(() => _busy = true);
+  /// The busy flag and the messenger outlive this row, so leaving the page
+  /// mid-action neither re-enables the buttons nor drops the message.
+  Future<void> _guarded(
+    Future<void> Function(ScaffoldMessengerState messenger) action,
+  ) async {
+    final busy = ref.read(settingsBusyTasksProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
     final unexpected = context.l10n.libraryUnexpectedError;
+    if (!busy.start(SettingsTask.libraryFolders)) return;
     try {
-      await action();
+      await action(messenger);
     } catch (error, stackTrace) {
       _log.severe('Changing a library folder failed', error, stackTrace);
-      if (mounted) _showMessage(AppSnackBarKind.error, unexpected);
+      _showMessage(messenger, AppSnackBarKind.error, unexpected);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      busy.finish(SettingsTask.libraryFolders);
     }
   }
 
-  // Failures of the scan land in the indexer state, never in the zone.
-  void _scan() => unawaited(ref.read(libraryIndexerProvider.notifier).scan());
-
-  Future<void> _add() => _guarded(() async {
+  Future<void> _add() => _guarded((messenger) async {
     final l10n = context.l10n;
+    // Read before the picker: the row may be gone when it returns, and the
+    // folder added then must still be scanned.
+    final roots = ref.read(libraryRootsControllerProvider);
+    final indexer = ref.read(libraryIndexerProvider.notifier);
     final path = await ref.read(directoryPickerProvider)();
     if (path == null || !mounted) return;
-    final result = await ref.read(libraryRootsControllerProvider).addRoots([
-      path,
-    ]);
-    if (!mounted) return;
+    final result = await roots.addRoots([path]);
     if (result.added.isEmpty) {
       _showMessage(
+        messenger,
         AppSnackBarKind.warning,
         rootRejectionsMessage(l10n, result.rejected),
       );
       return;
     }
-    _scan();
+    // Failures of the scan land in the indexer state, never in the zone.
+    unawaited(indexer.scan());
   });
 
-  Future<void> _remove(LibraryRoot root) => _guarded(() async {
+  Future<void> _remove(LibraryRoot root) => _guarded((messenger) async {
     final l10n = context.l10n;
+    final controller = ref.read(libraryRootsControllerProvider);
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
     final songs = await db.trackCountOfRoot(root.id);
@@ -87,11 +96,10 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
       songCount: songs,
     );
     if (!confirmed || !mounted) return;
-    final result = await ref
-        .read(libraryRootsControllerProvider)
-        .removeRoot(root.id);
-    if (!result.ok && mounted) {
+    final result = await controller.removeRoot(root.id);
+    if (!result.ok) {
       _showMessage(
+        messenger,
         AppSnackBarKind.error,
         l10n.settingsRemoveFolderFailed(root.path),
       );
@@ -102,7 +110,12 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final roots = ref.watch(libraryRootsProvider).value ?? const [];
-    final enabled = ref.watch(libraryDatabaseProvider) != null && !_busy;
+    final busy = ref.watch(
+      settingsBusyTasksProvider.select(
+        (s) => s.contains(SettingsTask.libraryFolders),
+      ),
+    );
+    final enabled = ref.watch(libraryDatabaseProvider) != null && !busy;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

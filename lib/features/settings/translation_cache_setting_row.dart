@@ -9,6 +9,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
+import 'settings_busy_tasks.dart';
 import 'settings_confirm_dialog.dart';
 
 final _log = Logger('settings');
@@ -27,14 +28,18 @@ class TranslationCacheSettingRow extends ConsumerStatefulWidget {
 
 class _TranslationCacheSettingRowState
     extends ConsumerState<TranslationCacheSettingRow> {
-  bool _clearing = false;
-
   Future<void> _clear() async {
     final db = ref.read(libraryDatabaseProvider);
-    if (db == null || _clearing) return;
+    if (db == null ||
+        ref
+            .read(settingsBusyTasksProvider)
+            .contains(SettingsTask.translationCache)) {
+      return;
+    }
     // Taken before any await: leaving Settings during the clear must neither
     // throw nor lose the result.
     final messenger = ScaffoldMessenger.of(context);
+    final busy = ref.read(settingsBusyTasksProvider.notifier);
     final l10n = context.l10n;
     final confirmed = await confirmDestructive(
       context,
@@ -43,14 +48,15 @@ class _TranslationCacheSettingRowState
       confirmLabel: l10n.settingsClear,
     );
     if (!confirmed || !mounted) return;
-    setState(() => _clearing = true);
+    if (!busy.start(SettingsTask.translationCache)) return;
     int? removed;
     try {
       removed = await db.clearLyricTranslations();
     } catch (error, stackTrace) {
       _log.warning('Clearing saved translations failed', error, stackTrace);
+    } finally {
+      busy.finish(SettingsTask.translationCache);
     }
-    if (mounted) setState(() => _clearing = false);
     messenger.showSnackBar(
       appSnackBar(
         kind: removed == null ? AppSnackBarKind.error : AppSnackBarKind.success,
@@ -67,7 +73,11 @@ class _TranslationCacheSettingRowState
     final stats =
         ref.watch(translationCacheStatsProvider).value ?? (count: 0, bytes: 0);
     final canClear =
-        !_clearing &&
+        !ref.watch(
+          settingsBusyTasksProvider.select(
+            (s) => s.contains(SettingsTask.translationCache),
+          ),
+        ) &&
         stats.count > 0 &&
         ref.watch(libraryDatabaseProvider) != null;
     return SettingRow.single(
