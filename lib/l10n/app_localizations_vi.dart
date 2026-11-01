@@ -1074,6 +1074,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsLicense => 'Giấy phép';
 
   @override
+  String get settingsOpenSourceLicenses => 'Giấy phép mã nguồn mở';
+
+  @override
   String get settingsSourceCode => 'Mã nguồn';
 
   @override

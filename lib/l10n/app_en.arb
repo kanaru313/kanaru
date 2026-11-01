@@ -730,6 +730,7 @@
   "settingsAbout": "About",
   "settingsVersion": "Version",
   "settingsLicense": "License",
+  "settingsOpenSourceLicenses": "Open-source licenses",
   "settingsSourceCode": "Source code",
   "settingsOpenFailed": "Couldn't open {target}",
   "@settingsOpenFailed": {

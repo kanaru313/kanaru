@@ -30,6 +30,15 @@ class AboutSettingsSection extends ConsumerWidget {
           subtitle: const Text(_licenseName),
         ),
         ListTile(
+          title: Text(l10n.settingsOpenSourceLicenses),
+          trailing: const Icon(AppIcons.chevronRight),
+          onTap: () => showLicensePage(
+            context: context,
+            applicationName: l10n.appTitle,
+            applicationVersion: kanaruVersion,
+          ),
+        ),
+        ListTile(
           title: Text(l10n.settingsSourceCode),
           subtitle: const Text(kanaruRepositoryUrl),
           trailing: const Icon(AppIcons.openExternal),

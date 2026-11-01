@@ -303,6 +303,7 @@
   "settingsAbout": "Giới thiệu",
   "settingsVersion": "Phiên bản",
   "settingsLicense": "Giấy phép",
+  "settingsOpenSourceLicenses": "Giấy phép mã nguồn mở",
   "settingsSourceCode": "Mã nguồn",
   "settingsOpenFailed": "Không mở được {target}",
   "settingsLibraryStats": "Trong thư viện",

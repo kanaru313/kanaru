@@ -69,6 +69,18 @@ void main() {
     expect(find.text('GPL-3.0-or-later'), findsOneWidget);
   });
 
+  testWidgets('Open-source licenses opens the licenses page', (tester) async {
+    await pumpSettings(tester);
+
+    final tile = find.text('Open-source licenses');
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LicensePage), findsOneWidget);
+  });
+
   testWidgets('sections come in order and every row has a hint', (
     tester,
   ) async {

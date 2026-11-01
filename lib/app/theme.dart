@@ -53,6 +53,9 @@ ThemeData _buildTheme(
   final base = ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
+    // Bundled so every machine renders the same text (CJK and emoji still
+    // fall back to the system fonts).
+    fontFamily: 'Inter',
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
         for (final platform in TargetPlatform.values)
