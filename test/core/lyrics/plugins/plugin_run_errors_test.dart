@@ -108,6 +108,27 @@ void main() {
       );
     });
 
+    test('quota is a rate limit with its wait, auth is a server failure', () {
+      expect(
+        pluginRunFailure(error(PluginRunErrorKind.quota, retry: 90)),
+        isA<LyricsFetchException>()
+            .having((e) => e.kind, 'kind', LyricsFetchKind.rateLimited)
+            .having(
+              (e) => e.retryAfter,
+              'retryAfter',
+              const Duration(seconds: 90),
+            ),
+      );
+      expect(
+        pluginRunFailure(error(PluginRunErrorKind.auth)),
+        isA<LyricsFetchException>().having(
+          (e) => e.kind,
+          'kind',
+          LyricsFetchKind.server,
+        ),
+      );
+    });
+
     test('rateLimited clamps the wait to 1 s .. 15 min, none stays none', () {
       Duration? wait(int? sec) =>
           (pluginRunFailure(error(PluginRunErrorKind.rateLimited, retry: sec))!

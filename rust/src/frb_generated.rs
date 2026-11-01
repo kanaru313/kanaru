@@ -1112,6 +1112,8 @@ impl SseDecode for crate::api::plugin_runtime::PluginErrorKind {
             1 => crate::api::plugin_runtime::PluginErrorKind::RateLimited,
             2 => crate::api::plugin_runtime::PluginErrorKind::InvalidResponse,
             3 => crate::api::plugin_runtime::PluginErrorKind::Server,
+            4 => crate::api::plugin_runtime::PluginErrorKind::Auth,
+            5 => crate::api::plugin_runtime::PluginErrorKind::Quota,
             _ => unreachable!("Invalid variant for PluginErrorKind: {}", inner),
         };
     }
@@ -1643,6 +1645,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::plugin_runtime::PluginErrorKi
             Self::RateLimited => 1.into_dart(),
             Self::InvalidResponse => 2.into_dart(),
             Self::Server => 3.into_dart(),
+            Self::Auth => 4.into_dart(),
+            Self::Quota => 5.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -2346,6 +2350,8 @@ impl SseEncode for crate::api::plugin_runtime::PluginErrorKind {
                 crate::api::plugin_runtime::PluginErrorKind::RateLimited => 1,
                 crate::api::plugin_runtime::PluginErrorKind::InvalidResponse => 2,
                 crate::api::plugin_runtime::PluginErrorKind::Server => 3,
+                crate::api::plugin_runtime::PluginErrorKind::Auth => 4,
+                crate::api::plugin_runtime::PluginErrorKind::Quota => 5,
                 _ => {
                     unimplemented!("");
                 }

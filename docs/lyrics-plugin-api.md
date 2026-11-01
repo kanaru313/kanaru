@@ -12,7 +12,7 @@ The runtime values are the constants in `rust/src/plugin_runtime/limits.rs` (`li
 |---|---|---|
 | Heap | 32 MiB, counted by a Rust allocator (`memory.rs`) that sets a flag when it refuses an allocation, so `memory` is reported even when the engine could not build the error object | status `memory` |
 | JS stack | 1 MiB (the thread has 8 MiB, so the engine fails first, also inside `JSON.parse` and `String(nested array)`) | status `stack` |
-| Wall time per call | 15 s, counted from the moment a worker starts the job (includes `load()`); time waiting in the queue is not counted, so the host keeps its own outer deadline | status `timeout` |
+| Wall time per call | 15 s by default (the host may ask for up to 90 s for a job; lyrics runs always use 15 s), counted from the moment a worker starts the job (includes `load()`); time waiting in the queue is not counted, so the host keeps its own outer deadline | status `timeout` |
 | Output | 2 MiB of JSON text (UTF-8 bytes) | status `outputTooLarge` |
 | Thrown-error text in `js_error` | message 1000 characters, stack 16 KiB (cut, not rejected) | cut |
 | `fetch` request body | 256 KiB | `InvalidRequestError` |
@@ -53,7 +53,7 @@ After the entry file ran, the host calls the global `execute(input)` once. `inpu
 | `Response.success(data)` | status `ok`, `output_json` = `JSON.stringify(data)` (`null` for `undefined`) |
 | `Response.error(message, {kind, retryAfterSec})` | status `scriptError`, `error_message` = `message` (cut at 1000 characters), `error_kind` = `kind`, `retry_after_sec` = `retryAfterSec` |
 
-`kind` is `rateLimited`, `invalidResponse` or `server`; anything else, or no `kind`, is `server`. `retryAfterSec` counts only as a finite number of 0 or more (rounded down).
+`kind` is `rateLimited`, `invalidResponse`, `auth`, `quota` or `server`; anything else, or no `kind`, is `server`. `retryAfterSec` counts only as a finite number of 0 or more (rounded down).
 
 Returning anything else (a Promise, `undefined`, a plain object that merely looks like a response) is status `scriptError` with `error_kind` `invalidResponse` and the message `execute must return Response.success or Response.error`. A missing `execute` is `scriptError` too. `Response` is read-only and a response cannot be forged: the helpers keep their own copies of the built-ins they use.
 
@@ -104,7 +104,7 @@ Other statuses:
 - `PluginFetcher` answers a `PluginFetchCall` (`method`, `Uri url`, `headers`, `Uint8List body`, `deadline` as a `Duration`, `maxSends`) with a `PluginFetchAnswer` (`outcome`, `status`, final `url`, `headers`, `bytes`, `retryAfterSec`, `sends`). A fetcher that throws is answered as `network` (sends 0; Rust counts at least 1 for a network failure), and an `ok` answer without a final URL gets the call's URL, and a URL that is not a valid `Uri` is answered `invalidRequest` without calling the fetcher, so a bug in the app never crashes a job. A fetcher that is slower than the deadline is cut by the runtime (`timeout`). Numbers in an answer are clamped to the ranges the bridge encodes.
 - `PluginCancel.cancel()` calls `cancel_plugin_job` for a running job. A token cancelled before the run still goes through Rust: the job is begun, cancelled (which frees its id) and run, so the result is `cancelled` and no script code runs. A token stays cancelled and can serve several runs.
 - `check(fileName, code)` returns `PluginScriptProblem?` (`message`, `line` or null when unknown). Unlike `run` it throws when the library cannot load or the bridge fails: null would claim an unchecked script is valid.
-- A `timeout` of zero or under 1 ms is sent as 1 ms (Rust reads 0 as the 15 s maximum). `PluginFetchAnswer.sends` defaults to 0; `blockedHost` and `notConsented` answers use up no sends (the first failure is still kept as `fetch_failure`).
+- A `timeout` of zero or under 1 ms is sent as 1 ms (Rust reads 0 as the 15 s default; more than 90 s is cut to 90 s). `PluginFetchAnswer.sends` defaults to 0; `blockedHost` and `notConsented` answers use up no sends (the first failure is still kept as `fetch_failure`).
 - The `native`-tagged test (`test/core/plugin_runtime/rust_plugin_runtime_native_test.dart`) runs only after `cargo build --manifest-path rust/Cargo.toml`; it skips with a message when the debug library is missing or cannot be loaded (for example a stale build).
 - The runtime logs only the type of an error, never a URL, header or configuration value.
 
@@ -118,7 +118,7 @@ Besides `Response` and `load`, a script has these globals. They are ordinary glo
 
 ### `fetch(url, options?)`
 
-`options`: `method` (`GET` default, or `POST`, any case; anything else throws `TypeError`), `headers` (object), `body` (string, sent as UTF-8; or an object, sent as JSON with `content-type: application/json` unless a content-type header is given), `queries` (object, appended to the URL percent-encoded; `undefined` and `null` values are skipped), `timeout` (ms, cut to what is left of the call's 15 s; a bad value is ignored). The request body is at most 256 KiB; a larger one throws `InvalidRequestError` without crossing to the app. The app does the authoritative checks (host allowlist, consent, header and body rules) and returns an outcome.
+`options`: `method` (`GET` default, or `POST`, any case; anything else throws `TypeError`), `headers` (object), `body` (string, sent as UTF-8; or an object, sent as JSON with `content-type: application/json` unless a content-type header is given), `queries` (object, appended to the URL percent-encoded; `undefined` and `null` values are skipped), `timeout` (ms, cut to what is left of the call's wall time (15 s by default); a bad value is ignored). The request body is at most 256 KiB; a larger one throws `InvalidRequestError` without crossing to the app. The app does the authoritative checks (host allowlist, consent, header and body rules) and returns an outcome.
 
 On success `fetch` returns a frozen object `{status, ok (200-299), url (after redirects), headers (lower-case names; repeated names joined with ", "), header(name) (case-insensitive, null when absent), text(charset?), json(), base64()}`. An HTTP error status such as 404 is still a successful `fetch`.
 
@@ -150,7 +150,7 @@ Error messages made by the runtime are fixed texts: they never contain the URL, 
 
 ### `sleep(ms)`
 
-Blocks the script thread for `ms` (negative or not a number counts as 0). The time counts toward the call's 15 s: a sleep longer than what is left runs until the deadline and the call ends `timeout`. A cancel interrupts it.
+Blocks the script thread for `ms` (negative or not a number counts as 0). The time counts toward the call's wall time (15 s by default): a sleep longer than what is left runs until the deadline and the call ends `timeout`. A cancel interrupts it.
 
 ### `localConfig.getItem(key)`
 
@@ -234,7 +234,7 @@ The app maps the result of a run to a failure in this order:
 
 1. `cancelled`: nothing is recorded. If the plugin was uninstalled or updated during the run, the source is only skipped for this lookup (like `busy`) and the other sources go on; if the lookup was abandoned, the whole lookup ends;
 2. a failed `fetch` of the run, even if the script caught it and returned data: `NetworkError` is `network`, `BlockedHostError` `blockedHost`, `NotConsentedError` `notConsented`, `RateLimitedError` `rateLimited` (with `retryAfterSec` read like a `Retry-After` header, 1 s to 15 min), `InvalidRequestError`, `InvalidResponseError` and `TooManyRequestsError` `invalidResponse`;
-3. `Response.error(message, {kind, retryAfterSec})`: kind `rateLimited` (with `retryAfterSec`), `invalidResponse`, or `server` (the default);
+3. `Response.error(message, {kind, retryAfterSec})`: kind `rateLimited` or `quota` (both with `retryAfterSec`; lyrics treats `quota` as `rateLimited`), `invalidResponse`, `auth` (lyrics: `server`), or `server` (the default);
 4. `busy` (every worker busy and the queue full): the source is skipped for this lookup, with no failure and no pause; the app asks again for the next song or after about 30 s. `timeout` is `network`. `memory`, `stack`, `outputTooLarge`, a thrown error, a bad output shape and an `internal` failure of the runtime are `invalidResponse`.
 
 A failure is never stored as "no lyrics": only a successful empty answer is. A failure pauses that source (and only that source) for at least 60 seconds.

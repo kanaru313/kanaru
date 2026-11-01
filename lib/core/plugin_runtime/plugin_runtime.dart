@@ -33,8 +33,8 @@ class PluginRunRequest {
   /// JSON text that becomes the argument of the script's `execute(input)`.
   final String inputJson;
 
-  /// Wall-time limit; null means the runtime's own maximum. A smaller value
-  /// is meant for tests. The clock starts when a worker begins the run, so
+  /// Wall-time limit; null means the default 15 s; at most 90 s (longer
+  /// values are cut to 90 s). The clock starts when a worker begins the run, so
   /// the caller keeps its own outer deadline.
   final Duration? timeout;
 

@@ -37,6 +37,13 @@ enum PluginRunErrorKind {
   rateLimited,
   invalidResponse,
 
+  /// The source refused the credentials.
+  auth,
+
+  /// The account's quota is used up; [PluginRunResult.retryAfterSec] may
+  /// say when.
+  quota,
+
   /// Any other failure.
   server,
 }

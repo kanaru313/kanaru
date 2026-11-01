@@ -80,12 +80,12 @@ Exception _fromFetchFailure(PluginFetchFailure failure) =>
 
 Exception _fromScriptError(PluginRunResult result) =>
     switch (result.errorKind) {
-      PluginRunErrorKind.rateLimited => _rateLimited(result.retryAfterSec),
+      PluginRunErrorKind.rateLimited ||
+      PluginRunErrorKind.quota => _rateLimited(result.retryAfterSec),
       PluginRunErrorKind.invalidResponse || PluginRunErrorKind.none =>
         const LyricsFetchException(LyricsFetchKind.invalidResponse),
-      PluginRunErrorKind.server => const LyricsFetchException(
-        LyricsFetchKind.server,
-      ),
+      PluginRunErrorKind.server || PluginRunErrorKind.auth =>
+        const LyricsFetchException(LyricsFetchKind.server),
     };
 
 // The wait is read like a `Retry-After` header: whole seconds, clamped to

@@ -97,8 +97,8 @@ native.PluginScriptRequest nativeRequestFrom(
   ],
   entry: request.entry,
   inputJson: request.inputJson,
-  // 0 means "runtime maximum" to Rust, so a zero or sub-millisecond timeout
-  // becomes the shortest real one.
+  // 0 means the runtime default (15 s) to Rust, so a zero or sub-millisecond
+  // timeout becomes the shortest real one.
   timeoutMs: request.timeout == null
       ? 0
       : _clamp(max(1, request.timeout!.inMilliseconds), _maxU32),
@@ -133,6 +133,8 @@ PluginRunResult runResultFromNative(native.PluginScriptResult result) {
       native.PluginErrorKind.rateLimited => PluginRunErrorKind.rateLimited,
       native.PluginErrorKind.invalidResponse =>
         PluginRunErrorKind.invalidResponse,
+      native.PluginErrorKind.auth => PluginRunErrorKind.auth,
+      native.PluginErrorKind.quota => PluginRunErrorKind.quota,
       native.PluginErrorKind.server => PluginRunErrorKind.server,
     },
     retryAfterSec: result.retryAfterSec,

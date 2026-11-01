@@ -19,7 +19,7 @@ use std::time::{Duration, Instant};
 
 use flutter_rust_bridge::DartFnFuture;
 
-use super::limits::CANCEL_POLL;
+use super::limits::{CANCEL_POLL, MAX_WALL_TIME};
 use crate::api::plugin_runtime::{PluginFetchOutcome, PluginFetchRequest, PluginFetchResponse};
 
 /// Answers one fetch request. Called on the JS worker thread; must return
@@ -47,9 +47,11 @@ pub fn no_network() -> Answerer {
 
 /// Most abandoned futures the drain thread waits on at once.
 pub const MAX_LATE: usize = 256;
-/// Longest the drain thread waits for one abandoned future (Dart's overall
-/// timeout is 30 s, so a reply after this is not expected).
+/// Longest the drain thread waits for one abandoned future. A fetch deadline
+/// is at most the job's remaining wall time, so at most `MAX_WALL_TIME`
+/// (90 s), which is below this, and a reply after this is not expected.
 pub const MAX_LATE_AGE: Duration = Duration::from_secs(120);
+const _: () = assert!(MAX_LATE_AGE.as_secs() > MAX_WALL_TIME.as_secs());
 const LATE_POLL: Duration = Duration::from_millis(50);
 
 type Pending = DartFnFuture<PluginFetchResponse>;

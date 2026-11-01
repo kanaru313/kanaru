@@ -63,7 +63,8 @@ fn constants_match_the_documented_limits() {
     assert_eq!(limits::MEMORY_LIMIT_BYTES, 32 * 1024 * 1024);
     assert_eq!(limits::SCRIPT_STACK_BYTES, 1024 * 1024);
     assert_eq!(limits::THREAD_STACK_BYTES, 8 * 1024 * 1024);
-    assert_eq!(limits::WALL_TIME, Duration::from_secs(15));
+    assert_eq!(limits::DEFAULT_WALL_TIME, Duration::from_secs(15));
+    assert_eq!(limits::MAX_WALL_TIME, Duration::from_secs(90));
     assert_eq!(limits::MAX_OUTPUT_BYTES, 2 * 1024 * 1024);
     assert_eq!(limits::MAX_FETCH_REQUEST_BODY_BYTES, 256 * 1024);
     assert_eq!(limits::MAX_FETCH_SENDS, 10);

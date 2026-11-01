@@ -32,10 +32,10 @@ pub struct PluginScriptRequest {
     pub entry: String,
     /// JSON text that becomes the argument of the global `execute(input)`.
     pub input_json: String,
-    /// Wall-time limit in milliseconds. 0 or more than 15 000 means 15 000;
-    /// a smaller value is only meant for tests. The clock starts when a
-    /// worker begins the job: time spent waiting in the queue is not counted,
-    /// so the caller should keep its own outer deadline.
+    /// Wall-time limit in milliseconds. 0 means 15 000; more than 90 000
+    /// means 90 000. Lyrics runs pass 0. The clock starts when a worker
+    /// begins the job: time spent waiting in the queue is not counted, so
+    /// the caller should keep its own outer deadline.
     pub timeout_ms: u32,
     /// The plugin's configuration, readable by the script as
     /// `localConfig.getItem(key)`. Secrets included; the runtime never puts
@@ -55,7 +55,7 @@ pub struct PluginFetchRequest {
     pub url: String,
     pub headers: Vec<(String, String)>,
     pub body: Vec<u8>,
-    /// What is left of the call's 15 s (or the script's smaller `timeout`).
+    /// What is left of the call's wall time (15 s by default, at most 90 s).
     /// Dart uses the smaller of this and 30 s as the overall timeout.
     pub deadline_ms: u32,
     /// HTTP sends still allowed for this call (10 minus the sends used so
@@ -111,7 +111,7 @@ pub enum PluginScriptStatus {
     /// not a `Response`, bad `load()`), or returned `Response.error`. See
     /// `error_kind`, `error_message` and `js_error`.
     ScriptError,
-    /// The 15 s wall-time limit passed.
+    /// The wall-time limit passed (15 s by default, at most 90 s).
     Timeout,
     /// The 32 MiB heap limit was hit.
     Memory,
@@ -141,6 +141,10 @@ pub enum PluginErrorKind {
     InvalidResponse,
     /// Default kind of `Response.error`.
     Server,
+    /// The source refused the credentials (bad or missing key).
+    Auth,
+    /// The account's quota is used up; see `retry_after_sec`.
+    Quota,
 }
 
 /// A JavaScript exception: its message and stack (file names and line numbers kept).
