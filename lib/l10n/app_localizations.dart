@@ -398,6 +398,90 @@ abstract class AppLocalizations {
   /// **', {count} skipped'**
   String playlistAddedSkippedSuffix(int count);
 
+  /// No description provided for @playlistAddedRemovedSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{, 1 old copy removed} other{, {count} old copies removed}}'**
+  String playlistAddedRemovedSuffix(int count);
+
+  /// No description provided for @alreadyInPlaylistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in playlist'**
+  String get alreadyInPlaylistTitle;
+
+  /// No description provided for @alreadyInPlaylistOne.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}'**
+  String alreadyInPlaylistOne(int songs);
+
+  /// No description provided for @alreadyInPlaylistMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{This song is already in {count} of the playlists. Your choice applies to all of them.} other{Some of the {songs} songs are already in {count} of the playlists. Your choice applies to all of them.}}'**
+  String alreadyInPlaylistMany(int songs, int count);
+
+  /// No description provided for @alreadyInPlaylistRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{held} of {songs}'**
+  String alreadyInPlaylistRow(int held, int songs);
+
+  /// No description provided for @alreadyInPlaylistReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Add all and remove the old copies'**
+  String get alreadyInPlaylistReplace;
+
+  /// No description provided for @alreadyInPlaylistReplaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The repeated songs move to the end'**
+  String get alreadyInPlaylistReplaceHint;
+
+  /// No description provided for @alreadyInPlaylistMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add only missing songs'**
+  String get alreadyInPlaylistMissing;
+
+  /// No description provided for @alreadyInPlaylistMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Skips the 1 already there} other{Skips the {count} already there}}'**
+  String alreadyInPlaylistMissingHint(int count);
+
+  /// No description provided for @alreadyInPlaylistMissingNothingOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new for this playlist'**
+  String get alreadyInPlaylistMissingNothingOne;
+
+  /// No description provided for @alreadyInPlaylistMissingNothingMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new for these playlists'**
+  String get alreadyInPlaylistMissingNothingMany;
+
+  /// No description provided for @alreadyInPlaylistAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Add all'**
+  String get alreadyInPlaylistAll;
+
+  /// No description provided for @alreadyInPlaylistAllHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song will be there more than once} other{{count} songs will be there more than once}}'**
+  String alreadyInPlaylistAllHint(int count);
+
+  /// No description provided for @alreadyInPlaylistConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get alreadyInPlaylistConfirm;
+
   /// No description provided for @playlistAlreadyInMany.
   ///
   /// In en, this message translates to:

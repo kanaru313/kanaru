@@ -16,18 +16,17 @@ class PlaylistAddPlan {
   }) : error = null,
        stack = null;
 
-  /// The ticked playlists: those holding some of [paths] (per [overlaps])
-  /// get the missing songs only, the others all of them.
+  /// The ticked playlists: those whose id is in [affected] get [mode], the
+  /// others all of the songs.
   PlaylistAddPlan.chosen({
     required this.paths,
     required List<PlaylistSummary> ticked,
-    required Map<int, int> overlaps,
+    required Set<int> affected,
+    required PlaylistAddMode mode,
     required this.newNames,
   }) : targets = {
          for (final p in ticked)
-           p: (overlaps[p.id] ?? 0) > 0
-               ? PlaylistAddMode.missingOnly
-               : PlaylistAddMode.appendAll,
+           p: affected.contains(p.id) ? mode : PlaylistAddMode.appendAll,
        },
        error = null,
        stack = null;

@@ -14,12 +14,15 @@ String playlistAddedText(
   String label,
   String playlistName,
   int added,
-  int skipped,
-) => added == 0
-    ? l10n.playlistAlreadyIn(label, playlistName)
-    : skipped == 0
-    ? l10n.playlistAdded(label, playlistName)
-    : l10n.playlistAddedSkipped(added, skipped, playlistName);
+  int skipped, [
+  int removed = 0,
+]) =>
+    (added == 0
+        ? l10n.playlistAlreadyIn(label, playlistName)
+        : skipped == 0
+        ? l10n.playlistAdded(label, playlistName)
+        : l10n.playlistAddedSkipped(added, skipped, playlistName)) +
+    (removed > 0 ? l10n.playlistAddedRemovedSuffix(removed) : '');
 
 /// The one snackbar for [outcome] of writing [plan]; [label] names what was
 /// added. A single target keeps the per-playlist wording, several get totals.
@@ -45,7 +48,14 @@ String playlistAddedText(
     final added = outcome.added;
     return (
       playlistAddedKind(added),
-      playlistAddedText(l10n, label, names.first, added, outcome.skipped),
+      playlistAddedText(
+        l10n,
+        label,
+        names.first,
+        added,
+        outcome.skipped,
+        outcome.removed,
+      ),
     );
   }
   if (outcome.added == 0) {
@@ -60,6 +70,9 @@ String playlistAddedText(
       (created > 0 ? l10n.playlistAddedNewSuffix(created) : '') +
       (outcome.skipped > 0
           ? l10n.playlistAddedSkippedSuffix(outcome.skipped)
+          : '') +
+      (outcome.removed > 0
+          ? l10n.playlistAddedRemovedSuffix(outcome.removed)
           : '');
   return (AppSnackBarKind.success, text);
 }

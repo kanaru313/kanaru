@@ -209,6 +209,95 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String playlistAddedRemovedSuffix(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: ', $count old copies removed',
+      one: ', 1 old copy removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get alreadyInPlaylistTitle => 'Already in playlist';
+
+  @override
+  String alreadyInPlaylistOne(int songs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: 'Some of the $songs songs are already in this playlist.',
+      one: 'This song is already in this playlist.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistMany(int songs, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other:
+          'Some of the $songs songs are already in $count of the playlists. Your choice applies to all of them.',
+      one:
+          'This song is already in $count of the playlists. Your choice applies to all of them.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistRow(int held, int songs) {
+    return '$held of $songs';
+  }
+
+  @override
+  String get alreadyInPlaylistReplace => 'Add all and remove the old copies';
+
+  @override
+  String get alreadyInPlaylistReplaceHint =>
+      'The repeated songs move to the end';
+
+  @override
+  String get alreadyInPlaylistMissing => 'Add only missing songs';
+
+  @override
+  String alreadyInPlaylistMissingHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Skips the $count already there',
+      one: 'Skips the 1 already there',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get alreadyInPlaylistMissingNothingOne =>
+      'Nothing new for this playlist';
+
+  @override
+  String get alreadyInPlaylistMissingNothingMany =>
+      'Nothing new for these playlists';
+
+  @override
+  String get alreadyInPlaylistAll => 'Add all';
+
+  @override
+  String alreadyInPlaylistAllHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs will be there more than once',
+      one: '1 song will be there more than once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get alreadyInPlaylistConfirm => 'Confirm';
+
+  @override
   String playlistAlreadyInMany(int count, String name) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

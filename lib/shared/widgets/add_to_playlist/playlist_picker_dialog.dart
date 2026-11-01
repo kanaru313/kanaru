@@ -8,6 +8,7 @@ import '../../../core/database/playlist_rows.dart';
 import '../../../l10n/l10n.dart';
 import 'add_to_playlist_dialog.dart';
 import 'playlist_name_dialog.dart';
+import 'playlist_picker_add_step.dart';
 import 'playlist_picker_footer.dart';
 import 'playlist_picker_view.dart';
 
@@ -77,6 +78,11 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
       if (p.id != widget.excludePlaylistId && _ticked.contains(p.id)) p,
   ];
 
+  List<String> get _newNames => [
+    for (final p in _pending.reversed)
+      if (p.on) p.name,
+  ];
+
   int get _selected => _liveTicked.length + _pending.where((p) => p.on).length;
 
   bool get _current => mounted && ModalRoute.of(context)!.isCurrent;
@@ -109,7 +115,8 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
     });
   }
 
-  /// Reads the paths, then closes with the plan; inert meanwhile.
+  /// Reads the paths, asks about songs already there, then closes with the
+  /// plan; inert meanwhile.
   Future<void> _add() async {
     if (_busy || _selected == 0) return;
     setState(() => _busy = true);
@@ -118,29 +125,20 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
       final paths = await widget.paths;
       if (!_current) return _idle();
       if (paths.isEmpty) return navigator.pop();
-      final targets = _liveTicked;
-      final overlaps = await widget.db.playlistOverlapCounts(
-        paths,
-        playlistIds: [for (final p in targets) p.id],
+      final plan = await planPickerAdd(
+        db: widget.db,
+        paths: paths,
+        liveTicked: () => _liveTicked,
+        newNames: () => _newNames,
+        isCurrent: () => _current,
+        pickerContext: () => context,
       );
-      if (!_current) return _idle();
-      navigator.pop(
-        PlaylistAddPlan.chosen(
-          paths: paths,
-          ticked: targets,
-          overlaps: overlaps,
-          newNames: [
-            for (final p in _pending.reversed)
-              if (p.on) p.name,
-          ],
-        ),
-      );
+      // Cancelled, covered, or all chosen playlists gone: stay open.
+      if (plan == null || !_current) return _idle();
+      navigator.pop(plan);
     } catch (error, stack) {
-      if (_current) {
-        navigator.pop(PlaylistAddPlan.failed(error, stack));
-      } else {
-        _idle();
-      }
+      if (!_current) return _idle();
+      navigator.pop(PlaylistAddPlan.failed(error, stack));
     }
   }
 

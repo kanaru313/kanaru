@@ -194,6 +194,77 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String playlistAddedRemovedSuffix(int count) {
+    return ', đã xoá $count bản cũ';
+  }
+
+  @override
+  String get alreadyInPlaylistTitle => 'Đã có trong playlist';
+
+  @override
+  String alreadyInPlaylistOne(int songs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: 'Một số trong $songs bài đã có trong playlist này.',
+      one: 'Bài này đã có trong playlist.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistMany(int songs, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other:
+          'Một số trong $songs bài đã có trong $count playlist. Lựa chọn của bạn áp dụng cho tất cả.',
+      one:
+          'Bài này đã có trong $count playlist. Lựa chọn của bạn áp dụng cho tất cả.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistRow(int held, int songs) {
+    return '$held/$songs bài';
+  }
+
+  @override
+  String get alreadyInPlaylistReplace => 'Thêm tất cả và xoá các bản cũ';
+
+  @override
+  String get alreadyInPlaylistReplaceHint =>
+      'Các bài trùng được chuyển xuống cuối';
+
+  @override
+  String get alreadyInPlaylistMissing => 'Chỉ thêm các bài còn thiếu';
+
+  @override
+  String alreadyInPlaylistMissingHint(int count) {
+    return 'Bỏ qua $count bài đã có';
+  }
+
+  @override
+  String get alreadyInPlaylistMissingNothingOne =>
+      'Không có bài mới cho playlist này';
+
+  @override
+  String get alreadyInPlaylistMissingNothingMany =>
+      'Không có bài mới cho các playlist này';
+
+  @override
+  String get alreadyInPlaylistAll => 'Thêm tất cả';
+
+  @override
+  String alreadyInPlaylistAllHint(int count) {
+    return '$count bài sẽ xuất hiện nhiều hơn một lần';
+  }
+
+  @override
+  String get alreadyInPlaylistConfirm => 'Xác nhận';
+
+  @override
   String playlistAlreadyInMany(int count, String name) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

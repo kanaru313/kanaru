@@ -129,6 +129,68 @@
       }
     }
   },
+  "playlistAddedRemovedSuffix": "{count, plural, =1{, 1 old copy removed} other{, {count} old copies removed}}",
+  "@playlistAddedRemovedSuffix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistTitle": "Already in playlist",
+  "alreadyInPlaylistOne": "{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}",
+  "@alreadyInPlaylistOne": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistMany": "{songs, plural, =1{This song is already in {count} of the playlists. Your choice applies to all of them.} other{Some of the {songs} songs are already in {count} of the playlists. Your choice applies to all of them.}}",
+  "@alreadyInPlaylistMany": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistRow": "{held} of {songs}",
+  "@alreadyInPlaylistRow": {
+    "placeholders": {
+      "held": {
+        "type": "int"
+      },
+      "songs": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistReplace": "Add all and remove the old copies",
+  "alreadyInPlaylistReplaceHint": "The repeated songs move to the end",
+  "alreadyInPlaylistMissing": "Add only missing songs",
+  "alreadyInPlaylistMissingHint": "{count, plural, =1{Skips the 1 already there} other{Skips the {count} already there}}",
+  "@alreadyInPlaylistMissingHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistMissingNothingOne": "Nothing new for this playlist",
+  "alreadyInPlaylistMissingNothingMany": "Nothing new for these playlists",
+  "alreadyInPlaylistAll": "Add all",
+  "alreadyInPlaylistAllHint": "{count, plural, =1{1 song will be there more than once} other{{count} songs will be there more than once}}",
+  "@alreadyInPlaylistAllHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistConfirm": "Confirm",
   "playlistAlreadyInMany": "{count, plural, =1{Already in 1 playlist: {name}} other{Already in {count} playlists: {name}}}",
   "@playlistAlreadyInMany": {
     "placeholders": {

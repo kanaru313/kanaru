@@ -94,4 +94,21 @@ void main() {
     );
     expect(text, 'Added to Fresh: Album');
   });
+
+  test('old copies removed are told after the totals and the single text', () {
+    final (_, many) = playlistAddMessage(
+      l10n,
+      const PlaylistAddOutcome(added: 4, removed: 3, targetCount: 2),
+      _plan([mix, gym]),
+      'Album',
+    );
+    expect(many, '2 songs added to 2 playlists, 3 old copies removed');
+    final (_, one) = playlistAddMessage(
+      l10n,
+      const PlaylistAddOutcome(added: 2, removed: 1, targetCount: 1),
+      _plan([mix]),
+      'Album',
+    );
+    expect(one, 'Added to Mix: Album, 1 old copy removed');
+  });
 }

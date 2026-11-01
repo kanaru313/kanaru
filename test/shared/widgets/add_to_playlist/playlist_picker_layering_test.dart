@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/playlist_writes.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'picker_test_host.dart';
@@ -99,26 +102,29 @@ void main() {
     expect(await host.pathsIn(tester, 'Half'), ['/m/2', '/x']);
   });
 
-  testWidgets('a playlist already holding a song gets only the missing one', (
+  testWidgets('Add stays open and idle when the ticked playlist vanishes', (
     tester,
   ) async {
+    final paths = Completer<List<String>>();
     final host = await pumpPickerHost(
       tester,
       seed: {
         'Half': const ['/m/2'],
-        'Empty': const [],
       },
+      configure: (h) => h.readPaths = () => paths.future,
     );
     await openPicker(tester);
-
     await tick(tester, 'Half');
-    await tick(tester, 'Empty');
     await tester.tap(addButton);
+    await tester.pump();
+    final id = await host.idOf(tester, 'Half');
+    await tester.runAsync(() => host.db.deletePlaylist(id));
+    paths.complete(['/m/1', '/m/2']);
     await settle(tester);
 
-    expect(await host.pathsIn(tester, 'Half'), ['/m/2', '/m/1']);
-    expect(await host.pathsIn(tester, 'Empty'), ['/m/1', '/m/2']);
-    expect(find.textContaining('2 songs added to 2 playlists'), findsOneWidget);
-    expect(find.textContaining('1 skipped'), findsOneWidget);
+    expect(picker, findsOneWidget);
+    expect(inPicker(find.byType(CircularProgressIndicator)), findsNothing);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(await host.playlistNames(tester), isEmpty);
   });
 }
