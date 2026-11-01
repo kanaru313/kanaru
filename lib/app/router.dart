@@ -116,9 +116,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                         ),
                       ),
                     ],
-                    AppDestination.settings => lyricsSourcesRoutesWith(
-                      children: lyricsStoreRoutes,
-                    ),
+                    AppDestination.settings => [
+                      ...lyricsSourcesRoutesWith(
+                        children: [lyricsSourcesStoreMount()],
+                      ),
+                      lyricsRootStoreMount(),
+                    ],
                     _ => const [],
                   },
                 ),

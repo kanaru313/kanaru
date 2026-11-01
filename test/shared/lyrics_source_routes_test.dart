@@ -8,10 +8,15 @@ void main() {
       lyricsPluginRoutePattern,
       '/settings/lyrics-sources/plugin/:installId',
     );
-    expect(lyricsStoreRoute, '/settings/lyrics-sources/store');
+    expect(lyricsStoreRoute, '/settings/plugins');
+    expect(lyricsSourcesStoreRoute, '/settings/lyrics-sources/plugins');
     expect(
-      lyricsStoreRepositoriesRoute,
-      '/settings/lyrics-sources/store/repositories',
+      lyricsStoreRepositoriesRoute(lyricsStoreRoute),
+      '/settings/plugins/repositories',
+    );
+    expect(
+      lyricsStoreRepositoriesRoute(lyricsSourcesStoreRoute),
+      '/settings/lyrics-sources/plugins/repositories',
     );
   });
 
@@ -25,12 +30,13 @@ void main() {
 
   test('a store item route encodes the repository and the slug', () {
     final route = lyricsStoreItemRoute(
+      base: lyricsStoreRoute,
       repoUrl: 'https://example.org/repo?x=1&y=2',
       slug: 'my plugin',
     );
-    expect(route, startsWith('/settings/lyrics-sources/store/item?'));
+    expect(route, startsWith('/settings/plugins/item?'));
     final uri = Uri.parse(route);
-    expect(uri.path, '/settings/lyrics-sources/store/item');
+    expect(uri.path, '/settings/plugins/item');
     expect(uri.queryParameters, {
       'repo': 'https://example.org/repo?x=1&y=2',
       'slug': 'my plugin',

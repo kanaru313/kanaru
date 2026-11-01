@@ -135,9 +135,10 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   }
 }
 
-/// Opens the sources routes (with the plugin store's pages when [withStore]),
-/// nested under a `/settings` page like the app's
-/// router, inside a shell with a [Scaffold] (snackbars need one).
+/// Opens the sources routes nested under a `/settings` page like the app's
+/// router. [withStore] mounts the plugin store twice, as the router does:
+/// under the sources page and at `/settings/plugins`. Runs inside a shell
+/// with a [Scaffold] (snackbars need one).
 Future<GoRouter> pumpSources(
   WidgetTester tester, {
   List<LyricsPluginRecord> records = const [],
@@ -162,9 +163,12 @@ Future<GoRouter> pumpSources(
           GoRoute(
             path: '/settings',
             builder: (context, state) => const Text('settings page'),
-            routes: lyricsSourcesRoutesWith(
-              children: withStore ? lyricsStoreRoutes : const [],
-            ),
+            routes: [
+              ...lyricsSourcesRoutesWith(
+                children: withStore ? [lyricsSourcesStoreMount()] : const [],
+              ),
+              if (withStore) lyricsRootStoreMount(),
+            ],
           ),
         ],
       ),

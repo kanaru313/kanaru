@@ -48,18 +48,20 @@ void main() {
   );
 
   test('the nested paths join to the shared constants', () {
-    final paths = _joined(
-      '/settings',
-      lyricsSourcesRoutesWith(children: lyricsStoreRoutes),
-    );
+    final paths = _joined('/settings', [
+      ...lyricsSourcesRoutesWith(children: [lyricsSourcesStoreMount()]),
+      lyricsRootStoreMount(),
+    ]);
     expect(
       paths,
       containsAll([
         lyricsSourcesRoute,
         lyricsPluginRoutePattern,
-        lyricsStoreRoute,
-        lyricsStoreRepositoriesRoute,
-        lyricsStoreItemRoutePattern,
+        for (final base in [lyricsStoreRoute, lyricsSourcesStoreRoute]) ...[
+          base,
+          lyricsStoreRepositoriesRoute(base),
+          lyricsStoreItemRoutePatternAt(base),
+        ],
       ]),
     );
   });
@@ -69,7 +71,7 @@ void main() {
     await tester.tap(find.text(en.lyricsSourcesStore));
     await tester.pumpAndSettle();
     expect(find.byType(PluginStorePage), findsOneWidget);
-    expect(router.state.uri.path, lyricsStoreRoute);
+    expect(router.state.uri.path, lyricsSourcesStoreRoute);
   });
 
   testWidgets('shell back walks Sources, Store, Item and Repositories', (
@@ -85,36 +87,111 @@ void main() {
 
     await tester.tap(find.text(en.lyricsSourcesStore));
     await tester.pumpAndSettle();
-    expect(here(), lyricsStoreRoute);
+    expect(here(), lyricsSourcesStoreRoute);
 
     await tester.tap(find.text('Plain'));
     await tester.pumpAndSettle();
-    expect(here(), lyricsStoreItemRoutePattern);
+    expect(here(), lyricsStoreItemRoutePatternAt(lyricsSourcesStoreRoute));
 
     history.back();
     await tester.pumpAndSettle();
-    expect(here(), lyricsStoreRoute);
+    expect(here(), lyricsSourcesStoreRoute);
     expect(find.byType(PluginStorePage), findsOneWidget);
 
     await tester.tap(find.byTooltip('Show menu'));
     await tester.pumpAndSettle();
     await tester.tap(find.text(en.lyricsStoreMenuRepositories(1)));
     await tester.pumpAndSettle();
-    expect(here(), lyricsStoreRepositoriesRoute);
+    expect(here(), lyricsStoreRepositoriesRoute(lyricsSourcesStoreRoute));
 
     history.back();
     await tester.pumpAndSettle();
-    expect(here(), lyricsStoreRoute);
+    expect(here(), lyricsSourcesStoreRoute);
     history.back();
     await tester.pumpAndSettle();
     expect(here(), lyricsSourcesRoute);
     expect(find.byType(LyricsSourcesPage), findsOneWidget);
   });
 
+  testWidgets('back from the store pops to the same sources page', (
+    tester,
+  ) async {
+    final router = await pump(tester);
+    final container = ProviderContainer(
+      overrides: [routerProvider.overrideWithValue(router)],
+    );
+    addTearDown(container.dispose);
+    final history = container.read(navigationHistoryProvider.notifier);
+    final before = tester.state(find.byType(LyricsSourcesPage));
+
+    await tester.tap(find.text(en.lyricsSourcesStore));
+    await tester.pumpAndSettle();
+    history.back();
+    await tester.pumpAndSettle();
+
+    expect(tester.state(find.byType(LyricsSourcesPage)), same(before));
+  });
+
+  group('root mount', () {
+    testWidgets('back from an item pops to the same store page', (
+      tester,
+    ) async {
+      final router = await pump(tester, location: lyricsStoreRoute);
+      final container = ProviderContainer(
+        overrides: [routerProvider.overrideWithValue(router)],
+      );
+      addTearDown(container.dispose);
+      final history = container.read(navigationHistoryProvider.notifier);
+      final before = tester.state(find.byType(PluginStorePage));
+
+      await tester.tap(find.text('Plain'));
+      await tester.pumpAndSettle();
+      history.back();
+      await tester.pumpAndSettle();
+
+      expect(router.state.uri.path, lyricsStoreRoute);
+      expect(tester.state(find.byType(PluginStorePage)), same(before));
+      expect(find.byType(LyricsSourcesPage), findsNothing);
+    });
+
+    testWidgets('the store opens at /settings/plugins', (tester) async {
+      final router = await pump(tester, location: lyricsStoreRoute);
+      expect(find.byType(PluginStorePage), findsOneWidget);
+      expect(router.state.uri.path, lyricsStoreRoute);
+    });
+
+    testWidgets('item and repositories stay under the root mount', (
+      tester,
+    ) async {
+      final router = await pump(tester, location: lyricsStoreRoute);
+      await tester.tap(find.text('Plain'));
+      await tester.pumpAndSettle();
+      expect(
+        router.state.uri.path,
+        lyricsStoreItemRoutePatternAt(lyricsStoreRoute),
+      );
+      expect(find.text('Kho A'), findsOneWidget);
+
+      router.go(lyricsStoreRoute);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Show menu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(en.lyricsStoreMenuRepositories(1)));
+      await tester.pumpAndSettle();
+      expect(
+        router.state.uri.path,
+        lyricsStoreRepositoriesRoute(lyricsStoreRoute),
+      );
+    });
+  });
+
   testWidgets('the repositories route shows the repository list', (
     tester,
   ) async {
-    await pump(tester, location: lyricsStoreRepositoriesRoute);
+    await pump(
+      tester,
+      location: lyricsStoreRepositoriesRoute(lyricsSourcesStoreRoute),
+    );
     expect(find.text(en.lyricsStoreReposTitle), findsWidgets);
     expect(find.text('Kho A'), findsOneWidget);
   });
@@ -124,7 +201,11 @@ void main() {
   ) async {
     await pump(
       tester,
-      location: lyricsStoreItemRoute(repoUrl: store.repoA, slug: 'plain'),
+      location: lyricsStoreItemRoute(
+        base: lyricsSourcesStoreRoute,
+        repoUrl: store.repoA,
+        slug: 'plain',
+      ),
     );
     expect(find.text('Plain'), findsWidgets);
     expect(find.text('Kho A'), findsOneWidget);
@@ -133,7 +214,10 @@ void main() {
   testWidgets('an item route without its query shows not found', (
     tester,
   ) async {
-    await pump(tester, location: lyricsStoreItemRoutePattern);
+    await pump(
+      tester,
+      location: lyricsStoreItemRoutePatternAt(lyricsSourcesStoreRoute),
+    );
     expect(tester.takeException(), isNull);
     expect(find.text(en.lyricsStoreItemNotFound), findsOneWidget);
   });
@@ -144,7 +228,7 @@ void main() {
     await pump(
       tester,
       location:
-          '$lyricsStoreItemRoutePattern?$lyricsStoreItemRepoParam=${Uri.encodeQueryComponent(store.repoA)}',
+          '${lyricsStoreItemRoutePatternAt(lyricsSourcesStoreRoute)}?$lyricsStoreItemRepoParam=${Uri.encodeQueryComponent(store.repoA)}',
     );
     expect(tester.takeException(), isNull);
     expect(find.text(en.lyricsStoreItemNotFound), findsOneWidget);
@@ -155,7 +239,8 @@ void main() {
   ) async {
     await pump(
       tester,
-      location: '$lyricsStoreItemRoutePattern?$lyricsStoreItemSlugParam=plain',
+      location:
+          '${lyricsStoreItemRoutePatternAt(lyricsSourcesStoreRoute)}?$lyricsStoreItemSlugParam=plain',
     );
     expect(tester.takeException(), isNull);
     expect(find.text(en.lyricsStoreItemNotFound), findsOneWidget);
@@ -166,7 +251,11 @@ void main() {
   ) async {
     await pump(
       tester,
-      location: lyricsStoreItemRoute(repoUrl: store.repoA, slug: 'nope'),
+      location: lyricsStoreItemRoute(
+        base: lyricsSourcesStoreRoute,
+        repoUrl: store.repoA,
+        slug: 'nope',
+      ),
     );
     expect(find.text(en.lyricsStoreItemNotFound), findsOneWidget);
   });

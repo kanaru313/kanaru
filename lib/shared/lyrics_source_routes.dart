@@ -12,31 +12,50 @@ const lyricsPluginIdParam = 'installId';
 const lyricsPluginRoutePattern =
     '$lyricsSourcesRoute/plugin/:$lyricsPluginIdParam';
 
-/// The plugin store.
-const lyricsStoreRoute = '$lyricsSourcesRoute/store';
+/// The plugin store as mounted at the root of Settings.
+///
+/// The store is mounted twice (here and under the sources page, see
+/// [lyricsSourcesStoreRoute]) so that each hop into it is a push and back is
+/// a pop. Pages below a store base: [lyricsStoreRepositoriesRoute] and
+/// [lyricsStoreItemRoute].
+const lyricsStoreRoute = '/settings/plugins';
 
-/// The list of plugin repositories.
-const lyricsStoreRepositoriesRoute = '$lyricsStoreRoute/repositories';
+/// The plugin store as mounted under the lyrics sources page.
+const lyricsSourcesStoreRoute = '$lyricsSourcesRoute/plugins';
 
-/// The route pattern of one store item (it takes the `repo` and `slug`
-/// query parameters).
-const lyricsStoreItemRoutePattern = '$lyricsStoreRoute/item';
+/// Path segment of the repositories page below a store base.
+const lyricsStoreRepositoriesSegment = 'repositories';
 
-/// Query parameter names of [lyricsStoreItemRoutePattern].
+/// Path segment of a store item page below a store base.
+const lyricsStoreItemSegment = 'item';
+
+/// Query parameter names of a store item route.
 const lyricsStoreItemRepoParam = 'repo';
 const lyricsStoreItemSlugParam = 'slug';
+
+/// The list of plugin repositories of the store mounted at [base].
+String lyricsStoreRepositoriesRoute(String base) =>
+    '$base/$lyricsStoreRepositoriesSegment';
+
+/// The route pattern of a store item of the store mounted at [base] (it takes
+/// the `repo` and `slug` query parameters).
+String lyricsStoreItemRoutePatternAt(String base) =>
+    '$base/$lyricsStoreItemSegment';
 
 /// The detail screen of the plugin installed as [installId].
 String lyricsPluginRoute(String installId) =>
     '$lyricsSourcesRoute/plugin/${Uri.encodeComponent(installId)}';
 
-/// The store page of the item [slug] of the repository at [repoUrl]; both
-/// are encoded, so any character is safe.
-String lyricsStoreItemRoute({required String repoUrl, required String slug}) =>
-    Uri(
-      path: lyricsStoreItemRoutePattern,
-      queryParameters: {
-        lyricsStoreItemRepoParam: repoUrl,
-        lyricsStoreItemSlugParam: slug,
-      },
-    ).toString();
+/// The store page of the item [slug] of the repository at [repoUrl], in the
+/// store mounted at [base]; both are encoded, so any character is safe.
+String lyricsStoreItemRoute({
+  required String base,
+  required String repoUrl,
+  required String slug,
+}) => Uri(
+  path: lyricsStoreItemRoutePatternAt(base),
+  queryParameters: {
+    lyricsStoreItemRepoParam: repoUrl,
+    lyricsStoreItemSlugParam: slug,
+  },
+).toString();
