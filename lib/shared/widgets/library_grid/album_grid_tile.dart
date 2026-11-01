@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../album_artist_label.dart';
 import '../../fixed_line_strut.dart';
+import '../../album_modal/album_actions_region.dart';
 import '../album_artwork.dart';
 import '../queue_actions_menu.dart';
 import 'album_tile_data.dart';
@@ -102,6 +103,10 @@ class AlbumGridTile extends StatelessWidget {
         ),
       ),
     );
-    return QueueActionsRegion(onAction: onQueueAction, child: tile);
+    return AlbumActionsRegion(
+      album: data,
+      onQueueAction: onQueueAction,
+      child: tile,
+    );
   }
 }

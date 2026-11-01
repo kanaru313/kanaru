@@ -4738,4 +4738,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get songLyricsCopied => 'Lyrics copied';
+
+  @override
+  String get albumModalLabel => 'Album options';
+
+  @override
+  String get albumModalEditAlbumArt => 'Edit album art';
+
+  @override
+  String get albumModalAddAllToFavorites => 'Add all to Favorites';
+
+  @override
+  String get albumModalPlayAll => 'Play all';
+
+  @override
+  String albumModalSongsInFolders(int songs, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    return '$_temp0 in $folders folders';
+  }
+
+  @override
+  String albumModalArtistsTitle(String title) {
+    return 'Artists · $title';
+  }
+
+  @override
+  String albumModalFoldersTitle(String title) {
+    return 'Folders · $title';
+  }
+
+  @override
+  String albumModalFoldersIntro(int count) {
+    return 'The songs of this album are saved in $count folders. Pick one to open it in Folders.';
+  }
+
+  @override
+  String get albumModalKeepsFiles => 'Keeps the files';
+
+  @override
+  String get albumModalDeleteFiles => 'Delete files';
+
+  @override
+  String albumModalFilesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files',
+      one: '1 file',
+    );
+    return '$_temp0';
+  }
 }

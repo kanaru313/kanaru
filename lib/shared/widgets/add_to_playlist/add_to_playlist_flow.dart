@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/playlist_favorites.dart';
 import '../../../core/database/playlist_writes.dart';
 import '../../../l10n/l10n.dart';
 import 'add_to_playlist_dialog.dart';
@@ -80,21 +81,75 @@ Future<void> addTracksToPlaylistWith({
           playlist.id,
           paths,
         );
-        if (added == 0) kind = AppSnackBarKind.info;
-        text = added == 0
-            ? l10n.playlistAlreadyIn(label, playlist.name)
-            : skipped == 0
-            ? l10n.playlistAdded(label, playlist.name)
-            : l10n.playlistAddedSkipped(added, skipped, playlist.name);
+        kind = _addedKind(added);
+        text = _addedText(l10n, label, playlist.name, added, skipped);
     }
   } catch (error, stack) {
     _log.severe('Adding to a playlist failed', error, stack);
     kind = AppSnackBarKind.error;
     text = l10n.playlistSaveFailed;
   }
-  // The songs are saved: failing to say so is no saving failure. An older
-  // message (a queue pick, an earlier add) gives way instead of holding this
-  // one back.
+  _showPlaylistMessage(messenger, kind, text);
+}
+
+/// How to tell the result of adding: nothing new is only a note.
+AppSnackBarKind _addedKind(int added) =>
+    added == 0 ? AppSnackBarKind.info : AppSnackBarKind.success;
+
+/// The text for [added] songs put in and [skipped] already there in the
+/// playlist named [playlistName]; [label] names what was added.
+String _addedText(
+  AppLocalizations l10n,
+  String label,
+  String playlistName,
+  int added,
+  int skipped,
+) => added == 0
+    ? l10n.playlistAlreadyIn(label, playlistName)
+    : skipped == 0
+    ? l10n.playlistAdded(label, playlistName)
+    : l10n.playlistAddedSkipped(added, skipped, playlistName);
+
+/// Adds the songs [readPaths] returns to the Favorites playlist (created when
+/// missing) in one transaction, skipping those already there, and says how
+/// many went in, naming [label]. Nothing is shown for an empty list. Failures
+/// are logged and reported in a snackbar, never thrown.
+Future<void> addTracksToFavoritesWith({
+  required LibraryDatabase db,
+  required ScaffoldMessengerState? messenger,
+  required AppLocalizations l10n,
+  required Future<List<String>> Function() readPaths,
+  required String label,
+}) async {
+  String text;
+  AppSnackBarKind kind;
+  try {
+    final paths = await readPaths();
+    if (paths.isEmpty) return;
+    final (:added, :skipped) = await db.transaction(() async {
+      final id = await db.ensureFavoritesPlaylist(
+        now: DateTime.now().millisecondsSinceEpoch,
+      );
+      return db.addMissingToPlaylist(id, paths);
+    });
+    kind = _addedKind(added);
+    text = _addedText(l10n, label, l10n.navFavorites, added, skipped);
+  } catch (error, stack) {
+    _log.severe('Adding to Favorites failed', error, stack);
+    kind = AppSnackBarKind.error;
+    text = l10n.playlistSaveFailed;
+  }
+  _showPlaylistMessage(messenger, kind, text);
+}
+
+/// Shows [text] in [messenger]. The songs are saved: failing to say so is no
+/// saving failure. An older message (a queue pick, an earlier add) gives way
+/// instead of holding this one back.
+void _showPlaylistMessage(
+  ScaffoldMessengerState? messenger,
+  AppSnackBarKind kind,
+  String text,
+) {
   try {
     messenger
       ?..clearSnackBars()

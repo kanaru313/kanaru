@@ -4,18 +4,26 @@ import 'context_modal_action_tile.dart';
 import 'context_modal_nav.dart';
 import 'context_modal_spec.dart';
 
-/// Turns groups of actions into page body widgets, a divider between
-/// non-empty groups. Callers prepend their own groups (queue, playlist
-/// context) by putting them first.
+/// Gap between groups when [contextModalSections] draws no dividers: 6 px.
+const double contextModalGroupGap = 6;
+
+/// Turns groups of actions into page body widgets, a divider (or, with
+/// `dividers: false`, a 6 px gap) between non-empty groups. Callers prepend their own groups (queue,
+/// playlist context) by putting them first.
 List<Widget> contextModalSections(
   ContextModalNav nav,
-  List<List<ContextModalAction>> sections,
-) {
+  List<List<ContextModalAction>> sections, {
+  bool dividers = true,
+}) {
   final out = <Widget>[];
   for (final section in sections) {
     if (section.isEmpty) continue;
     if (out.isNotEmpty) {
-      out.add(const Divider(height: 9, thickness: 1, indent: 0));
+      out.add(
+        dividers
+            ? const Divider(height: 9, thickness: 1, indent: 0)
+            : const SizedBox(height: contextModalGroupGap),
+      );
     }
     for (final action in section) {
       out.add(

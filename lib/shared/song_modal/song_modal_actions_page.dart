@@ -4,9 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/database/track_links_provider.dart';
 import '../../l10n/l10n.dart';
-import '../icons/app_icons.dart';
 import '../widgets/context_modal/context_modal_route.dart';
-import '../widgets/queue_actions_menu.dart';
+import '../widgets/queue_modal_footer.dart';
 import 'song_modal_data.dart';
 import 'song_modal_actions.dart';
 import 'song_modal_advanced_page.dart';
@@ -62,73 +61,10 @@ ContextModalPage songModalActionsPage(SongModalSession session) {
         },
       ),
     ],
-    footerBuilder: (context, nav) => _QueueFooter(session: session, nav: nav),
+    footerBuilder: (context, nav) => QueueModalFooter(
+      nav: nav,
+      onAction: session.queue,
+      keyPrefix: 'song-modal',
+    ),
   );
-}
-
-/// Play next and Add to queue: each closes the modal, then hands its action
-/// to the screen.
-class _QueueFooter extends StatelessWidget {
-  const _QueueFooter({required this.session, required this.nav});
-
-  final SongModalSession session;
-  final ContextModalNav nav;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final style = Theme.of(context).textTheme.bodyLarge;
-    final color = Theme.of(context).colorScheme.primary;
-    // The InkWell fills its whole half of the footer, so hover and ink cover
-    // it all rather than a blob around the label.
-    Widget button(Key key, IconData icon, String label, QueueAction action) =>
-        Expanded(
-          child: InkWell(
-            key: key,
-            onTap: () {
-              nav.close();
-              session.queue(action);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 8,
-                children: [
-                  Icon(icon, size: 20, color: color),
-                  Flexible(
-                    child: Text(
-                      label,
-                      overflow: TextOverflow.ellipsis,
-                      style: style?.copyWith(color: color),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Divider(height: 1),
-        Row(
-          children: [
-            button(
-              const ValueKey('song-modal-play-next'),
-              AppIcons.playlistPlay,
-              l10n.queuePlayNext,
-              QueueAction.playNext,
-            ),
-            button(
-              const ValueKey('song-modal-add-to-queue'),
-              AppIcons.addToQueue,
-              l10n.queueAddToQueue,
-              QueueAction.addToQueue,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 }

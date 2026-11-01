@@ -29,10 +29,15 @@ class ContextModalChips {
   const ContextModalChips({
     required this.items,
     this.initiallyExpanded = false,
+    this.wrap = false,
   });
 
   final List<ContextModalChip> items;
   final bool initiallyExpanded;
+
+  /// Wraps the chips onto lines in the dialog too, instead of one
+  /// horizontal strip (a sheet always wraps).
+  final bool wrap;
 }
 
 /// What one row of a modal page shows and does. Plain data: the framework

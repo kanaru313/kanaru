@@ -4475,4 +4475,57 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get songLyricsCopied => 'Đã sao chép lời bài hát';
+
+  @override
+  String get albumModalLabel => 'Tùy chọn album';
+
+  @override
+  String get albumModalEditAlbumArt => 'Sửa ảnh bìa album';
+
+  @override
+  String get albumModalAddAllToFavorites => 'Thêm tất cả vào Yêu thích';
+
+  @override
+  String get albumModalPlayAll => 'Phát tất cả';
+
+  @override
+  String albumModalSongsInFolders(int songs, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs bài',
+    );
+    return '$_temp0 trong $folders thư mục';
+  }
+
+  @override
+  String albumModalArtistsTitle(String title) {
+    return 'Nghệ sĩ · $title';
+  }
+
+  @override
+  String albumModalFoldersTitle(String title) {
+    return 'Thư mục · $title';
+  }
+
+  @override
+  String albumModalFoldersIntro(int count) {
+    return 'Các bài của album này được lưu trong $count thư mục. Chọn một thư mục để mở trong mục Thư mục.';
+  }
+
+  @override
+  String get albumModalKeepsFiles => 'Giữ nguyên các tệp';
+
+  @override
+  String get albumModalDeleteFiles => 'Xoá tệp';
+
+  @override
+  String albumModalFilesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tệp',
+    );
+    return '$_temp0';
+  }
 }

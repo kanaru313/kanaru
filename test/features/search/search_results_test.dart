@@ -367,6 +367,22 @@ void main() {
       expect(history(h), ['son tung']);
     });
 
+    testWidgets('the album modal queues the album and remembers the query', (
+      tester,
+    ) async {
+      final h = LibraryHarness();
+      await openSearch(tester, h, 'son tung');
+      expect(history(h), isEmpty);
+
+      await tester.tap(_albumRow('Sky Tour'), buttons: kSecondaryMouseButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Play next'));
+      await tester.pumpAndSettle();
+
+      expect(h.container.read(playerServiceProvider).queue.tracks, isNotEmpty);
+      expect(history(h), ['son tung']);
+    });
+
     testWidgets('opening an album or an artist remembers the query', (
       tester,
     ) async {

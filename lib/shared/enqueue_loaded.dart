@@ -15,9 +15,9 @@ import 'widgets/queue_actions_menu.dart';
 ///
 /// A current [QueueHost] (the song modal runs its queue actions with one)
 /// overrides [ref] and [context]: the action then uses what the host captured
-/// before the modal opened, so it still works after the row is gone. Only this
-/// function honors the host; the other enqueue functions use their own
-/// [ref] and [context].
+/// before the modal opened, so it still works after the row is gone. This function and
+/// `enqueueFromDatabase` honor the host; the other enqueue functions use their
+/// own [ref] and [context].
 void enqueueLoaded(
   WidgetRef ref,
   BuildContext context,

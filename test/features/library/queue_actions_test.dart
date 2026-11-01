@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/shared/album_modal/album_more_button.dart';
 import 'package:kanaru/shared/enqueue_tracks.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:kanaru/l10n/l10n.dart';
@@ -155,9 +156,10 @@ void main() {
       final h = LibraryHarness();
       await openWithTracks(tester, h, _tracks, location: albumLocation(_alpha));
 
-      await tester.tap(find.byTooltip('Queue actions'));
+      await tester.tap(find.byType(AlbumMoreButton));
       await tester.pumpAndSettle();
-      await pick(tester, h, 'Play next');
+      await tester.tap(find.byKey(const ValueKey('album-modal-play-next')));
+      await settleIo(tester, h);
 
       expect(queue(h), ['a1', 'a2']);
       expect(find.text('Playing: Alpha'), findsOneWidget);

@@ -4607,5 +4607,77 @@
   "songLyricsCopied": "Lyrics copied",
   "@songLyricsCopied": {
     "description": "Snackbar after the lyrics were copied"
+  },
+  "albumModalLabel": "Album options",
+  "@albumModalLabel": {
+    "description": "Accessible name of the album options dialog"
+  },
+  "albumModalEditAlbumArt": "Edit album art",
+  "@albumModalEditAlbumArt": {
+    "description": "Tooltip of the button in the album options header that will change the cover (not available yet)"
+  },
+  "albumModalAddAllToFavorites": "Add all to Favorites",
+  "@albumModalAddAllToFavorites": {
+    "description": "Album advanced row that adds every local song of the album to Favorites"
+  },
+  "albumModalPlayAll": "Play all",
+  "@albumModalPlayAll": {
+    "description": "Album options row that plays the whole album"
+  },
+  "albumModalSongsInFolders": "{songs, plural, =1{1 song} other{{songs} songs}} in {folders} folders",
+  "@albumModalSongsInFolders": {
+    "description": "Quiet line under the Go to folder row of an album whose songs are in several folders",
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "folders": {
+        "type": "int"
+      }
+    }
+  },
+  "albumModalArtistsTitle": "Artists · {title}",
+  "@albumModalArtistsTitle": {
+    "description": "Title of the album options page that lists the album's artists",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "albumModalFoldersTitle": "Folders · {title}",
+  "@albumModalFoldersTitle": {
+    "description": "Title of the album options page that lists the folders of the album's songs",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "albumModalFoldersIntro": "The songs of this album are saved in {count} folders. Pick one to open it in Folders.",
+  "@albumModalFoldersIntro": {
+    "description": "Sentence at the top of the album options page that lists the album's folders",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumModalKeepsFiles": "Keeps the files",
+  "@albumModalKeepsFiles": {
+    "description": "Quiet line under Remove from library in the album's Advanced options"
+  },
+  "albumModalDeleteFiles": "Delete files",
+  "@albumModalDeleteFiles": {
+    "description": "Advanced album option (not available yet) that deletes the album's files from disk"
+  },
+  "albumModalFilesCount": "{count, plural, =1{1 file} other{{count} files}}",
+  "@albumModalFilesCount": {
+    "description": "Quiet line under Delete files in the album's Advanced options",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

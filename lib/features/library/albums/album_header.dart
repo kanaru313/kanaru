@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_database.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/album_artist_label.dart';
+import '../../../shared/album_modal/album_more_button.dart';
+import '../../../shared/widgets/library_grid/album_tile_data.dart';
 import '../../../shared/widgets/album_artwork.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
@@ -125,7 +127,12 @@ class AlbumHeaderDetails extends StatelessWidget {
             playLabel: l10n.albumsPlay,
             onPlay: onPlay,
             onShuffle: onShuffle,
-            onQueueAction: onQueueAction,
+            onQueueAction: null,
+            menu: AlbumMoreButton(
+              album: AlbumTileData.fromSummary(album),
+              onQueueAction: onQueueAction,
+              showAlbum: false,
+            ),
           ),
         ),
       ],
