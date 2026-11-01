@@ -61,11 +61,17 @@ class PlaylistEntryRow {
     required this.entryId,
     required this.path,
     this.track,
+    this.repeat = false,
   });
 
   final int entryId;
   final String path;
   final TrackListItem? track;
+
+  /// True when an earlier entry of the same playlist has the same [path]; only
+  /// the first copy of the playing song is marked. False where the read does
+  /// not compute it.
+  final bool repeat;
 }
 
 /// Everything the playlist page shows, read in one transaction.

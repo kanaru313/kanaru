@@ -142,6 +142,20 @@ void main() {
       expect(rows[0].entry.track?.title, 'N2');
     });
 
+    test('flags a later copy of a path, across windows', () async {
+      final dup = await db.createPlaylist(
+        'Dup',
+        now: 2,
+        paths: ['/m/n0', '/m/n1', '/m/n0', '/m/n2'],
+      );
+
+      final first = await db.playlistEntriesAt(dup, 0, 2);
+      final second = await db.playlistEntriesAt(dup, 2, 2);
+
+      expect([for (final r in first) r.entry.repeat], [false, false]);
+      expect([for (final r in second) r.entry.repeat], [true, false]);
+    });
+
     test('an entry without a library track has a null track', () async {
       final rows = await db.playlistEntriesAt(id, 3, 1);
 

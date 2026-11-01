@@ -79,6 +79,8 @@ class PlaylistEntryTile extends StatelessWidget {
     final remove = onRemove;
     return SongTile(
       song: track,
+      // Only the first copy of the playing song is marked.
+      highlightPlaying: !entry.repeat,
       onTap: onTap ?? () {},
       onQueueAction: onQueueAction,
       leadingAccessory: reorderable ? PlaylistEntryHandle(index: index) : null,

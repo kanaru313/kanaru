@@ -49,7 +49,11 @@ extension PlaylistPageQueries on LibraryDatabase {
     final rows = await customSelect(
       '''
 SELECT e.id AS entry_id, e.position, e.path, t.id AS track_id, t.title,
-  t.artist, t.album, t.year, t.duration_ms, t.cover_key
+  t.artist, t.album, t.year, t.duration_ms, t.cover_key,
+  EXISTS (SELECT 1 FROM playlist_entries x
+          WHERE x.path = e.path AND x.playlist_id = e.playlist_id
+            AND (x.position < e.position
+              OR (x.position = e.position AND x.id < e.id))) AS repeat
 FROM playlist_entries e
 LEFT JOIN tracks t ON t.path = e.path
 WHERE e.playlist_id = ?1 AND e.position >= ?2 AND e.position < ?3
@@ -65,7 +69,7 @@ ORDER BY e.position, e.id''',
       for (final row in rows)
         PlaylistPositionedEntry(
           row.read<int>('position'),
-          playlistEntryFromRow(row),
+          playlistEntryFromRow(row, repeat: row.read<bool>('repeat')),
         ),
     ];
   }

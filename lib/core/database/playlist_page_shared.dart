@@ -33,12 +33,15 @@ LIMIT $playlistCollageScanLimit''',
 /// The entry in [row], which holds `entry_id`, `path` and the left-joined
 /// track columns (`track_id`, `title`, `artist`, `album`, `year`,
 /// `duration_ms`, `cover_key`); the track is null when `track_id` is.
-PlaylistEntryRow playlistEntryFromRow(QueryRow row) {
+///
+/// [repeat] is the `repeat` column of the reads that select it.
+PlaylistEntryRow playlistEntryFromRow(QueryRow row, {bool repeat = false}) {
   final trackId = row.readNullable<int>('track_id');
   final path = row.read<String>('path');
   return PlaylistEntryRow(
     entryId: row.read<int>('entry_id'),
     path: path,
+    repeat: repeat,
     track: trackId == null
         ? null
         : TrackListItem(
