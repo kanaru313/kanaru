@@ -5,8 +5,9 @@ import '../artist_summaries.dart';
 import 'artist_avatar.dart';
 import 'library_row.dart';
 import 'queue_actions_menu.dart';
+import 'song_card.dart';
 
-/// One artist row: avatar, then three lines (name, "N albums",
+/// One artist row, drawn as a card like a song row: avatar, then three lines (name, "N albums",
 /// "M songs • total length"), then a play button shown while
 /// the row is hovered or focused; no button without [onPlay]. Every line is
 /// always laid out, so all rows have the height of the list's prototype row.
@@ -49,7 +50,14 @@ class ArtistTile extends StatelessWidget {
       onTap: onTap,
       onPlay: onPlay,
       playTooltip: l10n.artistsPlayArtist,
+      // The card takes 16 px; with these 16 the content sits 32 px from the
+      // list edge, like the text of a song row.
+      horizontalPadding: songCardInset,
+      inkBorder: songCardShape,
     );
-    return QueueActionsRegion(onAction: onQueueAction, child: tile);
+    return QueueActionsRegion(
+      onAction: onQueueAction,
+      child: SongCardFrame(child: tile),
+    );
   }
 }
