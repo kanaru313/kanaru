@@ -894,15 +894,6 @@
       }
     }
   },
-  "playlistM3uImportReportDuplicates": "Đã gộp {count} dòng trùng.",
-  "@playlistM3uImportReportDuplicates": {
-    "description": "M3U import report: lines naming a file already imported",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "playlistM3uImportReportUnresolved": "{count} dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:",
   "@playlistM3uImportReportUnresolved": {
     "description": "M3U import report: heading of the lines that could not be used",
@@ -1026,7 +1017,7 @@
       }
     }
   },
-  "queueSavedSkipped": "Đã lưu {count} bài vào {name}, bỏ {skipped} bài (không có trong thư viện hoặc trùng)",
+  "queueSavedSkipped": "Đã lưu {count} bài vào {name}, bỏ {skipped} bài (không có trong thư viện)",
   "@queueSavedSkipped": {
     "description": "Snackbar after saving the queue when some queue songs were not saved",
     "placeholders": {

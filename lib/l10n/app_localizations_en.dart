@@ -1994,17 +1994,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String playlistM3uImportReportDuplicates(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count repeated lines were merged.',
-      one: '1 repeated line was merged.',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String playlistM3uImportReportUnresolved(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2121,8 +2110,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp1 = intl.Intl.pluralLogic(
       skipped,
       locale: localeName,
-      other: '$skipped left out (not in your library or repeated)',
-      one: '1 left out (not in your library or repeated)',
+      other: '$skipped left out (not in your library)',
+      one: '1 left out (not in your library)',
     );
     return '$_temp0, $_temp1';
   }

@@ -122,15 +122,15 @@ void main() {
 
       final list = await playlists(tester);
       expect(list.single.name, 'Road trip');
-      expect(await storedPaths(tester, h, list.single.id), [a, b, c]);
+      expect(await storedPaths(tester, h, list.single.id), [a, b, c, a]);
       expect(location(h), '/playlists/${list.single.id}');
       expect(find.text('Playlist imported'), findsOneWidget);
-      expect(find.textContaining('Added 3 of 5 lines'), findsOneWidget);
+      expect(find.textContaining('Added 4 of 5 lines'), findsOneWidget);
       expect(
         find.textContaining('1 song is not in your library'),
         findsOneWidget,
       );
-      expect(find.text('1 repeated line was merged.'), findsOneWidget);
+      expect(find.textContaining('repeated'), findsNothing);
       expect(find.text('Line 4: ../music/missing.flac'), findsOneWidget);
     });
 
@@ -143,6 +143,22 @@ void main() {
 
       expect(find.text('Playlist imported'), findsNothing);
       expect(find.text('Imported 1 song into Mix'), findsOneWidget);
+    });
+
+    testWidgets('repeated library songs are kept and not counted as missing', (
+      tester,
+    ) async {
+      final a = await file(tester, 'music/a.flac');
+      picked = await file(tester, 'lists/Mix.m3u', '$a\n$a\n$a\n');
+      await open(tester, [a]);
+
+      await tapImport(tester);
+
+      final list = await playlists(tester);
+      expect(await storedPaths(tester, h, list.single.id), [a, a, a]);
+      expect(find.text('Playlist imported'), findsNothing);
+      expect(find.text('Imported 3 songs into Mix'), findsOneWidget);
+      expect(find.byIcon(AppIcons.success), findsOneWidget);
     });
 
     testWidgets('songs not in the library give a warning with details', (

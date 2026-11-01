@@ -10,7 +10,6 @@ void main() {
   ) async {
     final result = M3uImportResult(
       paths: const ['/m/a.flac'],
-      duplicates: 0,
       unresolved: [
         for (var i = 0; i < 10000; i++) (line: i + 2, text: 'x$i.mp3'),
       ],

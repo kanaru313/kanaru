@@ -14,17 +14,16 @@ import '../../../shared/widgets/app_snack_bar.dart';
 final _log = Logger('playlists');
 
 /// The paths of [tracks] to save as a playlist: in queue order, only local
-/// files in [inLibrary], each once (first occurrence). [skipped] counts the
-/// tracks left out (not in the library, or repeats).
+/// files in [inLibrary], repeats kept. [skipped] counts the tracks left out
+/// (not in the library).
 ({List<String> paths, int skipped}) queuePlaylistPaths(
   List<Track> tracks,
   Set<String> inLibrary,
 ) {
   final paths = <String>[];
-  final seen = <String>{};
   for (final track in tracks) {
     final path = localPathOf(track.uri);
-    if (path != null && inLibrary.contains(path) && seen.add(path)) {
+    if (path != null && inLibrary.contains(path)) {
       paths.add(path);
     }
   }

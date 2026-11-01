@@ -1913,11 +1913,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String playlistM3uImportReportDuplicates(int count) {
-    return 'Đã gộp $count dòng trùng.';
-  }
-
-  @override
   String playlistM3uImportReportUnresolved(int count) {
     return '$count dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:';
   }
@@ -1994,7 +1989,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String queueSavedSkipped(int count, int skipped, String name) {
-    return 'Đã lưu $count bài vào $name, bỏ $skipped bài (không có trong thư viện hoặc trùng)';
+    return 'Đã lưu $count bài vào $name, bỏ $skipped bài (không có trong thư viện)';
   }
 
   @override

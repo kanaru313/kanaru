@@ -3032,12 +3032,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 song is not in your library yet: it shows once its folder is added.} other{{count} songs are not in your library yet: they show once their folder is added.}}'**
   String playlistM3uImportReportNotInLibrary(int count);
 
-  /// M3U import report: lines naming a file already imported
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 repeated line was merged.} other{{count} repeated lines were merged.}}'**
-  String playlistM3uImportReportDuplicates(int count);
-
   /// M3U import report: heading of the lines that could not be used
   ///
   /// In en, this message translates to:
@@ -3143,7 +3137,7 @@ abstract class AppLocalizations {
   /// Snackbar after saving the queue when some queue songs were not saved
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library or repeated)} other{{skipped} left out (not in your library or repeated)}}'**
+  /// **'{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library)} other{{skipped} left out (not in your library)}}'**
   String queueSavedSkipped(int count, int skipped, String name);
 
   /// Snackbar when no queue song can be saved in a playlist

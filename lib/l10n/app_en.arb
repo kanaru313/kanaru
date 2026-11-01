@@ -1484,15 +1484,6 @@
       }
     }
   },
-  "playlistM3uImportReportDuplicates": "{count, plural, =1{1 repeated line was merged.} other{{count} repeated lines were merged.}}",
-  "@playlistM3uImportReportDuplicates": {
-    "description": "M3U import report: lines naming a file already imported",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "playlistM3uImportReportUnresolved": "{count, plural, =1{1 line is not a local music file or was not found:} other{{count} lines are not local music files or were not found:}}",
   "@playlistM3uImportReportUnresolved": {
     "description": "M3U import report: heading of the lines that could not be used",
@@ -1616,7 +1607,7 @@
       }
     }
   },
-  "queueSavedSkipped": "{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library or repeated)} other{{skipped} left out (not in your library or repeated)}}",
+  "queueSavedSkipped": "{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library)} other{{skipped} left out (not in your library)}}",
   "@queueSavedSkipped": {
     "description": "Snackbar after saving the queue when some queue songs were not saved",
     "placeholders": {

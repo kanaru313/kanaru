@@ -8,17 +8,13 @@ import 'm3u_read.dart';
 class M3uImportResult {
   const M3uImportResult({
     required this.paths,
-    required this.duplicates,
     required this.unresolved,
     required this.total,
     required this.truncated,
   });
 
-  /// Canonical paths of local audio files, in file order, each once.
+  /// Canonical paths of local audio files, in file order, repeats kept.
   final List<String> paths;
-
-  /// Lines that named a file already in [paths].
-  final int duplicates;
 
   /// Lines that are not an existing local audio file (missing, a URL, not
   /// audio, too long), with their line number in the file.
@@ -71,9 +67,7 @@ Future<M3uImportResult> importM3uFile(
   final folder = slash <= 0 ? '/' : path.substring(0, slash);
 
   final paths = <String>[];
-  final seen = <String>{};
   final unresolved = <({int line, String text})>[];
-  var duplicates = 0;
   final lines = parsed.lines;
   // Lines are resolved a batch at a time: each one waits on file system
   // calls that dart:io runs on other threads, so a batch overlaps them.
@@ -90,17 +84,14 @@ Future<M3uImportResult> importM3uFile(
       final path = resolved[i];
       if (path == null) {
         unresolved.add((line: batch[i].line, text: batch[i].text));
-      } else if (seen.add(path)) {
-        paths.add(path);
       } else {
-        duplicates++;
+        paths.add(path);
       }
     }
   }
   if (cancelled?.call() ?? false) throw const M3uImportCancelled();
   return M3uImportResult(
     paths: paths,
-    duplicates: duplicates,
     unresolved: unresolved,
     total: parsed.lines.length,
     truncated: parsed.truncated,
