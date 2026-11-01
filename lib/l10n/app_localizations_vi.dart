@@ -4528,4 +4528,48 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get artistModalLabel => 'Tùy chọn nghệ sĩ';
+
+  @override
+  String get artistModalSetPicture => 'Đặt ảnh nghệ sĩ';
+
+  @override
+  String artistModalAppearsOnCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'xuất hiện trong $count',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String artistModalAlbumsTitle(String name) {
+    return 'Album · $name';
+  }
+
+  @override
+  String artistModalFoldersTitle(String name) {
+    return 'Thư mục · $name';
+  }
+
+  @override
+  String artistModalFoldersIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Các bài của nghệ sĩ này được lưu trong $count thư mục. Chọn một thư mục để mở trong mục Thư mục.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get artistModalSplitMerge => 'Tách hoặc gộp nghệ sĩ';
+
+  @override
+  String get artistModalSplitMergeHint =>
+      'Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết';
 }

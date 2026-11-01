@@ -4793,4 +4793,48 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get artistModalLabel => 'Artist options';
+
+  @override
+  String get artistModalSetPicture => 'Set artist picture';
+
+  @override
+  String artistModalAppearsOnCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'appears on $count',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String artistModalAlbumsTitle(String name) {
+    return 'Albums · $name';
+  }
+
+  @override
+  String artistModalFoldersTitle(String name) {
+    return 'Folders · $name';
+  }
+
+  @override
+  String artistModalFoldersIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The songs of this artist are saved in $count folders. Pick one to open it in Folders.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get artistModalSplitMerge => 'Split or merge artist';
+
+  @override
+  String get artistModalSplitMergeHint =>
+      'Treat a name as two artists, or join spellings';
 }
