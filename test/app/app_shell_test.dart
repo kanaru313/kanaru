@@ -9,6 +9,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_screen.dart';
 import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/features/playlists/favorites_screen.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
@@ -65,7 +66,7 @@ void main() {
     await pumpApp(tester, wide);
 
     expect(find.byType(Sidebar), findsOneWidget);
-    expect(find.byIcon(Icons.menu), findsNothing);
+    expect(find.byIcon(AppIcons.menu), findsNothing);
   });
 
   testWidgets('moves the sidebar into a drawer on narrow windows', (
@@ -74,7 +75,7 @@ void main() {
     await pumpApp(tester, narrow);
     expect(find.byType(Sidebar), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.menu));
+    await tester.tap(find.byIcon(AppIcons.menu));
     await tester.pumpAndSettle();
     expect(find.byType(Sidebar), findsOneWidget);
 
@@ -166,7 +167,9 @@ void main() {
             .widget<IconButton>(
               find.ancestor(
                 of: find.byIcon(
-                  tooltip == 'Back' ? Icons.chevron_left : Icons.chevron_right,
+                  tooltip == 'Back'
+                      ? AppIcons.chevronLeft
+                      : AppIcons.chevronRight,
                 ),
                 matching: find.byType(IconButton),
               ),
@@ -189,7 +192,7 @@ void main() {
 
     final back = tester.widget<IconButton>(
       find.ancestor(
-        of: find.byIcon(Icons.chevron_left),
+        of: find.byIcon(AppIcons.chevronLeft),
         matching: find.byType(IconButton),
       ),
     );

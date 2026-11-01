@@ -55,6 +55,7 @@ dependencies:
   sqlite3: ^3.7.1
   table_calendar: ^3.3.0
   window_manager: ^0.5.2
+  fluentui_system_icons: ^1.1.273
 
 dev_dependencies:
   flutter_test:

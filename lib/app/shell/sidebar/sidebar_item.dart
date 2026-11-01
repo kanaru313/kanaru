@@ -31,6 +31,7 @@ class SidebarItem extends StatelessWidget {
     final enabled = onTap != null;
     final iconWidget = Icon(
       selected ? selectedIcon : icon,
+      fill: selected ? 1.0 : 0.0,
       size: 22,
       color: selected
           ? colors.primary

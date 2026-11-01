@@ -9,6 +9,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/languages/languages_screen.dart';
 import 'package:kanaru/features/settings/interface_setting_rows.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
@@ -154,7 +155,7 @@ void main() {
 
   testWidgets('the drawer hides them too', (tester) async {
     await _pump(tester, narrow, _twoHidden);
-    await tester.tap(find.byIcon(Icons.menu));
+    await tester.tap(find.byIcon(AppIcons.menu));
     await tester.pumpAndSettle();
     _expectTwoHidden();
   });

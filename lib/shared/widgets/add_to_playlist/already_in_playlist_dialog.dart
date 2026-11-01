@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/playlist_add_writes.dart';
 import '../../../l10n/l10n.dart';
+import '../../icons/app_icons.dart';
 
 /// A target playlist that already holds [held] of the songs being added.
 typedef AffectedPlaylist = ({String name, int held});
@@ -71,13 +72,13 @@ class _AlreadyInPlaylistDialogState extends State<_AlreadyInPlaylistDialog> {
                   children: [
                     _option(
                       PlaylistAddMode.replaceOld,
-                      Icons.move_down,
+                      AppIcons.moveDown,
                       l10n.alreadyInPlaylistReplace,
                       l10n.alreadyInPlaylistReplaceHint,
                     ),
                     _option(
                       PlaylistAddMode.missingOnly,
-                      Icons.playlist_add_check,
+                      AppIcons.playlistAddCheck,
                       l10n.alreadyInPlaylistMissing,
                       nothingNew
                           ? (many
@@ -87,7 +88,7 @@ class _AlreadyInPlaylistDialogState extends State<_AlreadyInPlaylistDialog> {
                     ),
                     _option(
                       PlaylistAddMode.appendAll,
-                      Icons.library_add,
+                      AppIcons.addToPlaylist,
                       l10n.alreadyInPlaylistAll,
                       l10n.alreadyInPlaylistAllHint(held),
                     ),

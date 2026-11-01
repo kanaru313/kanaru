@@ -194,11 +194,11 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
       isSelected: favorite,
       icon: ScaleTransition(
         scale: _scale,
-        child: Icon(AppIcons.favoriteBorderRounded, color: widget.color),
+        child: Icon(AppIcons.favoriteBorderRounded, color: widget.color, fill: 0.0),
       ),
       selectedIcon: ScaleTransition(
         scale: _scale,
-        child: const Icon(AppIcons.favoriteRounded),
+        child: const Icon(AppIcons.favoriteRounded, fill: 1.0),
       ),
       iconSize: widget.iconSize,
       padding: widget.compact ? EdgeInsets.zero : null,
