@@ -7,6 +7,7 @@ const _fontScaleKey = 'fontScale';
 const _hiddenSidebarTabsKey = 'hiddenSidebarTabs';
 const _trackNumbersInAlbumKey = 'trackNumbersInAlbum';
 const _songInfoShowUnknownKey = 'songInfoShowUnknown';
+const _fontKey = 'font';
 final Set<SidebarTab> _allTabs = const DisplayPrefs().sidebarTabs;
 const _knownKeys = {
   _colorFromCoverKey,
@@ -15,6 +16,7 @@ const _knownKeys = {
   _hiddenSidebarTabsKey,
   _trackNumbersInAlbumKey,
   _songInfoShowUnknownKey,
+  _fontKey,
 };
 
 /// Reads the `display` object; each key falls back on its own. The second
@@ -44,6 +46,8 @@ const _knownKeys = {
         map[_songInfoShowUnknownKey],
         d.songInfoShowUnknown,
       ),
+      // Not checked against the registry: an id from a newer build stays.
+      fontId: nonEmptyStringOrNull(map[_fontKey]) ?? d.fontId,
     ),
     {
       ...unknownEntries(map, _knownKeys),
@@ -90,5 +94,6 @@ Map<String, Object?> encodeDisplayPrefs(
     ],
     _trackNumbersInAlbumKey: prefs.trackNumbersInAlbum,
     _songInfoShowUnknownKey: prefs.songInfoShowUnknown,
+    _fontKey: prefs.fontId,
   };
 }

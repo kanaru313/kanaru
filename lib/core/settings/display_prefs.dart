@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart' show setEquals;
 
+import 'app_font.dart' show defaultFontId;
+
 /// A destination of the sidebar that can be hidden. Declared here so that
 /// `core` does not import the app shell.
 enum SidebarTab { songs, albums, artists, folders, genres, languages }
@@ -20,7 +22,7 @@ const maxFontScale = 1.5;
 /// How the app looks beyond the theme. The defaults are what the app shows
 /// today. Read: [colorFromCover] (the cover palette and the scan),
 /// [waveformSeekBar] (`NowPlayingSeekSlot`),
-/// [fontScale] (the app's builder, `lib/app/app.dart`) and
+/// [fontScale] (the app's builder, `lib/app/app.dart`), [fontId] (the theme) and
 /// [trackNumbersInAlbum] (album pages), [sidebarTabs] (the sidebar) and
 /// [songInfoShowUnknown] (the Song info page).
 class DisplayPrefs {
@@ -31,6 +33,7 @@ class DisplayPrefs {
     this.sidebarTabs = _allTabs,
     this.trackNumbersInAlbum = true,
     this.songInfoShowUnknown = false,
+    this.fontId = defaultFontId,
   });
 
   /// Tint the app with colors taken from the cover being played.
@@ -57,6 +60,11 @@ class DisplayPrefs {
   /// leaves them out.
   final bool songInfoShowUnknown;
 
+  /// Id of the font used for all text, see `appFontFor`. Kept as stored: an
+  /// id this build does not know (a newer build's font) shows as Inter but
+  /// is not rewritten.
+  final String fontId;
+
   DisplayPrefs copyWith({
     bool? colorFromCover,
     bool? waveformSeekBar,
@@ -64,6 +72,7 @@ class DisplayPrefs {
     Set<SidebarTab>? sidebarTabs,
     bool? trackNumbersInAlbum,
     bool? songInfoShowUnknown,
+    String? fontId,
   }) => DisplayPrefs(
     colorFromCover: colorFromCover ?? this.colorFromCover,
     waveformSeekBar: waveformSeekBar ?? this.waveformSeekBar,
@@ -73,6 +82,7 @@ class DisplayPrefs {
         : Set.unmodifiable(sidebarTabs),
     trackNumbersInAlbum: trackNumbersInAlbum ?? this.trackNumbersInAlbum,
     songInfoShowUnknown: songInfoShowUnknown ?? this.songInfoShowUnknown,
+    fontId: fontId ?? this.fontId,
   );
 
   @override
@@ -83,7 +93,8 @@ class DisplayPrefs {
       other.fontScale == fontScale &&
       setEquals(other.sidebarTabs, sidebarTabs) &&
       other.trackNumbersInAlbum == trackNumbersInAlbum &&
-      other.songInfoShowUnknown == songInfoShowUnknown;
+      other.songInfoShowUnknown == songInfoShowUnknown &&
+      other.fontId == fontId;
 
   @override
   int get hashCode => Object.hash(
@@ -93,6 +104,7 @@ class DisplayPrefs {
     Object.hashAllUnordered(sidebarTabs),
     trackNumbersInAlbum,
     songInfoShowUnknown,
+    fontId,
   );
 
   @override
@@ -101,5 +113,5 @@ class DisplayPrefs {
       'waveformSeekBar: $waveformSeekBar, fontScale: $fontScale, '
       'sidebarTabs: ${sidebarTabs.map((t) => t.name).join(',')}, '
       'trackNumbersInAlbum: $trackNumbersInAlbum, '
-      'songInfoShowUnknown: $songInfoShowUnknown)';
+      'songInfoShowUnknown: $songInfoShowUnknown, fontId: $fontId)';
 }

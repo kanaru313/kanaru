@@ -16,6 +16,7 @@ void main() {
     expect(d.sidebarTabs, SidebarTab.values.toSet());
     expect(d.trackNumbersInAlbum, isTrue);
     expect(d.songInfoShowUnknown, isFalse);
+    expect(d.fontId, 'inter');
   });
 
   test('values round-trip, tabs in enum order', () {
@@ -25,6 +26,7 @@ void main() {
       sidebarTabs: {SidebarTab.genres, SidebarTab.songs},
       trackNumbersInAlbum: false,
       songInfoShowUnknown: true,
+      fontId: 'nunito',
     );
 
     final json = encodeDisplayPrefs(prefs);
@@ -147,5 +149,28 @@ void main() {
 
     expect(extra, {'density': 'tight'});
     expect(encodeDisplayPrefs(prefs, extra: extra)['density'], 'tight');
+  });
+
+  group('font', () {
+    String font(Object? v) => decodeDisplayPrefs({'font': v}).$1.fontId;
+
+    test('missing, wrong type or empty give inter', () {
+      expect(decodeDisplayPrefs(<String, Object?>{}).$1.fontId, 'inter');
+      expect(font(42), 'inter');
+      expect(font(''), 'inter');
+    });
+
+    test('a known id and an unknown id are kept and round-trip', () {
+      for (final id in ['nunito', 'system', 'futurefont']) {
+        final prefs = decodeDisplayPrefs({'font': id});
+        expect(prefs.$1.fontId, id);
+        expect(prefs.$2, isEmpty);
+        expect(encodeDisplayPrefs(prefs.$1, extra: prefs.$2)['font'], id);
+      }
+    });
+
+    test('encode always writes font', () {
+      expect(encodeDisplayPrefs(const DisplayPrefs())['font'], 'inter');
+    });
   });
 }
