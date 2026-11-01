@@ -5,6 +5,7 @@ import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/album_modal/album_more_button.dart';
 import 'package:kanaru/shared/enqueue_tracks.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
@@ -66,7 +67,8 @@ void main() {
         _tracks,
         location: albumLocation(const AlbumKey('ann', 'alpha')),
       );
-      await headerMenu(tester);
+      await tester.tap(find.byType(AlbumMoreButton));
+      await tester.pumpAndSettle();
       await expectItem(tester);
       await openMenuOf(tester, find.text('a2'));
       await expectItem(tester);
