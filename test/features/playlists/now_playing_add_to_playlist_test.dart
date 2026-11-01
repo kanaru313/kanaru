@@ -41,6 +41,8 @@ void main() {
     await tester.tap(button);
     await tester.pumpAndSettle();
     await tester.tap(inPicker('Mix'));
+    await tester.pumpAndSettle();
+    await tester.tap(pickerAdd);
     await settleDb(tester);
 
     expect(find.text('Added to Mix: a'), findsOneWidget);
@@ -130,6 +132,8 @@ void main() {
 
     expect(picker, findsOneWidget);
     await tester.tap(inPicker('Mix'));
+    await tester.pumpAndSettle();
+    await tester.tap(pickerAdd);
     await settleDb(tester);
     expect(find.text('Added to Mix: a'), findsOneWidget);
     expect(find.text('Already in Mix: a'), findsNothing);

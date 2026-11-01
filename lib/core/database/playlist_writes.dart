@@ -3,24 +3,24 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
-import 'playlist_favorites.dart';
+import 'playlist_write_helpers.dart';
 
 /// Playlist writes. Each one is a single transaction, so positions stay
 /// `0..n-1` and watchers see the final state only.
 extension PlaylistWrites on LibraryDatabase {
-  /// Creates a playlist named [name] (trimmed) holding [paths] in order and
-  /// returns its id. [now] is epoch milliseconds. An empty name throws
-  /// [ArgumentError].
+  /// Creates a playlist named [name] (trimmed) holding [paths] as given (repeats
+  /// included) in order and returns its id. [now] is epoch milliseconds. An
+  /// empty name throws [ArgumentError].
   Future<int> createPlaylist(
     String name, {
     required int now,
     List<String> paths = const [],
   }) async {
-    final trimmed = _validName(name);
+    final trimmed = validPlaylistName(name);
     return await transaction(() async {
       final id = await into(playlists)
           .insert(PlaylistsCompanion.insert(name: trimmed, createdAt: now));
-      await _append(id, paths, start: 0);
+      await appendPlaylistPaths(id, paths, start: 0);
       return id;
     });
   }
@@ -28,8 +28,8 @@ extension PlaylistWrites on LibraryDatabase {
   /// Renames playlist [id]; does nothing when it is gone or is the Favorites
   /// playlist, which is never renamed. An empty name throws [ArgumentError].
   Future<void> renamePlaylist(int id, String name) async {
-    final trimmed = _validName(name);
-    await (update(playlists)..where((p) => _userNamed(p, id))).write(
+    final trimmed = validPlaylistName(name);
+    await (update(playlists)..where((p) => userNamedPlaylist(p, id))).write(
       PlaylistsCompanion(name: Value(trimmed)),
     );
   }
@@ -37,7 +37,7 @@ extension PlaylistWrites on LibraryDatabase {
   /// Deletes playlist [id]; its entries go with it (cascade). Never deletes
   /// the Favorites playlist (a no-op, like a playlist that is gone).
   Future<void> deletePlaylist(int id) =>
-      (delete(playlists)..where((p) => _userNamed(p, id))).go();
+      (delete(playlists)..where((p) => userNamedPlaylist(p, id))).go();
 
   /// Appends to playlist [id] the paths of [paths] it does not hold yet, in
   /// order, first occurrence only, and returns how many were added and how
@@ -70,13 +70,11 @@ extension PlaylistWrites on LibraryDatabase {
           if (!present.contains(path)) path,
       ];
       if (fresh.isNotEmpty) {
-        final count = playlistEntries.id.count();
-        final row =
-            await (selectOnly(playlistEntries)
-                  ..addColumns([count])
-                  ..where(playlistEntries.playlistId.equals(id)))
-                .getSingle();
-        await _append(id, fresh, start: row.read(count) ?? 0);
+        await appendPlaylistPaths(
+          id,
+          fresh,
+          start: await playlistEntryCount(id),
+        );
       }
       return (added: fresh.length, skipped: present.length);
     });
@@ -92,16 +90,7 @@ extension PlaylistWrites on LibraryDatabase {
       )..where((e) => e.playlistId.equals(id) & e.id.isIn(entryIds))).go();
       // Nothing deleted: no gap to close, and no reason to wake watchers.
       if (deleted == 0) return;
-      await customUpdate(
-        '''
-UPDATE playlist_entries AS e SET position = r.rn
-FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY position, id) - 1 AS rn
-      FROM playlist_entries WHERE playlist_id = ?1) AS r
-WHERE e.id = r.id AND e.position != r.rn''',
-        variables: [Variable.withInt(id)],
-        updates: {playlistEntries},
-        updateKind: UpdateKind.update,
-      );
+      await renumberPlaylist(id);
     });
   }
 
@@ -149,31 +138,4 @@ WHERE e.id = r.id AND e.position != r.rn''',
       );
     });
   }
-
-  Future<void> _append(int id, List<String> paths, {required int start}) async {
-    if (paths.isEmpty) return;
-    await batch((b) {
-      b.insertAll(playlistEntries, [
-        for (var i = 0; i < paths.length; i++)
-          PlaylistEntriesCompanion.insert(
-            playlistId: id,
-            path: paths[i],
-            position: start + i,
-          ),
-      ]);
-    });
-  }
-}
-
-/// Playlist [id] unless it is Favorites. `isNotValue` is SQL `IS NOT`, true
-/// for the NULL kind of an ordinary playlist.
-Expression<bool> _userNamed($PlaylistsTable p, int id) =>
-    p.id.equals(id) & p.kind.isNotValue(favoritesKind);
-
-String _validName(String name) {
-  final trimmed = name.trim();
-  if (trimmed.isEmpty) {
-    throw ArgumentError.value(name, 'name', 'must not be blank');
-  }
-  return trimmed;
 }

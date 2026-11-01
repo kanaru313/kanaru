@@ -112,6 +112,22 @@ void main() {
       },
     );
 
+    test('save as playlist keeps repeats', () async {
+      final paths = ['/m/a.flac', '/m/b.flac', '/m/a.flac'];
+      await db.recordQueueSnapshot(paths, now: 10);
+      final snapshot = (await db.queueSnapshots()).single;
+
+      final playlist = await db.createPlaylist(
+        'Saved',
+        now: 11,
+        paths: await db.queueSnapshotPaths(snapshot.id),
+      );
+
+      expect([
+        for (final e in (await db.playlistPage(playlist))!.entries) e.path,
+      ], paths);
+    });
+
     test('never touches ordinary playlists or Favorites', () async {
       final playlist = await db.createPlaylist(
         'Mine',

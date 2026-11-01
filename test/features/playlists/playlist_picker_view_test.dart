@@ -11,8 +11,12 @@ void main() {
   Future<void> pump(
     WidgetTester tester,
     List<PlaylistSummary> playlists, {
+    Set<int> ticked = const {},
+    List<PendingPlaylist> pending = const [],
+    Map<int, int> overlaps = const {},
     VoidCallback? onCreate,
-    ValueChanged<PlaylistSummary>? onPick,
+    ValueChanged<PlaylistSummary>? onToggle,
+    ValueChanged<int>? onTogglePending,
   }) => tester.pumpWidget(
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -20,42 +24,66 @@ void main() {
       home: Scaffold(
         body: PlaylistPickerView(
           playlists: playlists,
+          ticked: ticked,
+          pending: pending,
+          overlaps: overlaps,
           onCreate: onCreate ?? () {},
-          onPick: onPick ?? (_) {},
+          onToggle: onToggle ?? (_) {},
+          onTogglePending: onTogglePending ?? (_) {},
+          onSubmit: () {},
         ),
       ),
     ),
   );
 
-  testWidgets('lists the new row, then playlists in the given order', (
+  testWidgets('lists the new row, pending rows, then playlists in order', (
     tester,
   ) async {
-    await pump(tester, [playlist(2, 'Gym', 3), playlist(1, 'Chill', 1)]);
+    await pump(
+      tester,
+      [playlist(2, 'Gym', 3), playlist(1, 'Chill', 1)],
+      pending: [(name: 'Fresh', on: true)],
+    );
 
-    expect(find.text('New playlist…'), findsOneWidget);
     expect(find.text('3 songs'), findsOneWidget);
     expect(find.text('1 song'), findsOneWidget);
-    expect(find.text('No playlists yet'), findsNothing);
-    expect(
-      tester.getTopLeft(find.text('Gym')).dy,
-      lessThan(tester.getTopLeft(find.text('Chill')).dy),
-    );
-    expect(
-      tester.getTopLeft(find.text('New playlist…')).dy,
-      lessThan(tester.getTopLeft(find.text('Gym')).dy),
-    );
+    expect(find.text('Created when you press Add'), findsOneWidget);
+    expect(find.text('New'), findsOneWidget);
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    expect(top('New playlist…'), lessThan(top('Fresh')));
+    expect(top('Fresh'), lessThan(top('Gym')));
+    expect(top('Gym'), lessThan(top('Chill')));
   });
 
-  testWidgets('tapping a playlist or the new row calls back', (tester) async {
-    final picked = <PlaylistSummary>[];
+  testWidgets('tapping rows calls back; ticks and overlaps are shown', (
+    tester,
+  ) async {
+    final toggled = <PlaylistSummary>[];
+    final pendingToggled = <int>[];
     var created = 0;
     final gym = playlist(2, 'Gym', 3);
-    await pump(tester, [gym], onCreate: () => created++, onPick: picked.add);
+    await pump(
+      tester,
+      [gym],
+      ticked: {2},
+      overlaps: {2: 2},
+      pending: [(name: 'Fresh', on: false)],
+      onCreate: () => created++,
+      onToggle: toggled.add,
+      onTogglePending: pendingToggled.add,
+    );
 
+    expect(find.text('3 songs · has 2 of them'), findsOneWidget);
+    final boxes = tester
+        .widgetList<CheckboxListTile>(find.byType(CheckboxListTile))
+        .map((t) => t.value);
+    expect(boxes, [false, true]);
     await tester.tap(find.text('Gym'));
+    await tester.tap(find.text('Fresh'));
     await tester.tap(find.text('New playlist…'));
 
-    expect(picked, [gym]);
+    expect(toggled, [gym]);
+    expect(pendingToggled, [0]);
     expect(created, 1);
   });
 
@@ -66,6 +94,6 @@ void main() {
 
     expect(find.text('New playlist…'), findsOneWidget);
     expect(find.text('No playlists yet'), findsOneWidget);
-    expect(find.byIcon(Icons.queue_music), findsNothing);
+    expect(find.byType(CheckboxListTile), findsNothing);
   });
 }

@@ -332,6 +332,162 @@ abstract class AppLocalizations {
   /// **'New playlist…'**
   String get playlistPickerNew;
 
+  /// No description provided for @playlistPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} · {songs}'**
+  String playlistPickerSubtitle(String label, String songs);
+
+  /// No description provided for @playlistPickerSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String playlistPickerSelected(int count);
+
+  /// No description provided for @playlistPickerAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get playlistPickerAdd;
+
+  /// No description provided for @playlistPickerAddMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to {count} playlists'**
+  String playlistPickerAddMany(int count);
+
+  /// No description provided for @playlistPickerHasSome.
+  ///
+  /// In en, this message translates to:
+  /// **'has {count} of them'**
+  String playlistPickerHasSome(int count);
+
+  /// No description provided for @playlistPickerNewBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get playlistPickerNewBadge;
+
+  /// No description provided for @playlistPickerNewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Created when you press Add'**
+  String get playlistPickerNewHint;
+
+  /// No description provided for @playlistPickerNameMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It is added to the list, checked, and created when you press Add.'**
+  String get playlistPickerNameMessage;
+
+  /// No description provided for @playlistAddedToMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{1 song} other{{songs} songs}} added to {playlists, plural, =1{1 playlist} other{{playlists} playlists}}'**
+  String playlistAddedToMany(int songs, int playlists);
+
+  /// No description provided for @playlistAddedNewSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' ({count} new)'**
+  String playlistAddedNewSuffix(int count);
+
+  /// No description provided for @playlistAddedSkippedSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **', {count} skipped'**
+  String playlistAddedSkippedSuffix(int count);
+
+  /// No description provided for @playlistAddedRemovedSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{, 1 old copy removed} other{, {count} old copies removed}}'**
+  String playlistAddedRemovedSuffix(int count);
+
+  /// No description provided for @alreadyInPlaylistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in playlist'**
+  String get alreadyInPlaylistTitle;
+
+  /// No description provided for @alreadyInPlaylistOne.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}'**
+  String alreadyInPlaylistOne(int songs);
+
+  /// No description provided for @alreadyInPlaylistMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{songs, plural, =1{This song is already in {count} of the playlists. Your choice applies to all of them.} other{Some of the {songs} songs are already in {count} of the playlists. Your choice applies to all of them.}}'**
+  String alreadyInPlaylistMany(int songs, int count);
+
+  /// No description provided for @alreadyInPlaylistRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{held} of {songs}'**
+  String alreadyInPlaylistRow(int held, int songs);
+
+  /// No description provided for @alreadyInPlaylistReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Add all and remove the old copies'**
+  String get alreadyInPlaylistReplace;
+
+  /// No description provided for @alreadyInPlaylistReplaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The repeated songs move to the end'**
+  String get alreadyInPlaylistReplaceHint;
+
+  /// No description provided for @alreadyInPlaylistMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add only missing songs'**
+  String get alreadyInPlaylistMissing;
+
+  /// No description provided for @alreadyInPlaylistMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Skips the 1 already there} other{Skips the {count} already there}}'**
+  String alreadyInPlaylistMissingHint(int count);
+
+  /// No description provided for @alreadyInPlaylistMissingNothingOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new for this playlist'**
+  String get alreadyInPlaylistMissingNothingOne;
+
+  /// No description provided for @alreadyInPlaylistMissingNothingMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new for these playlists'**
+  String get alreadyInPlaylistMissingNothingMany;
+
+  /// No description provided for @alreadyInPlaylistAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Add all'**
+  String get alreadyInPlaylistAll;
+
+  /// No description provided for @alreadyInPlaylistAllHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song will be there more than once} other{{count} songs will be there more than once}}'**
+  String alreadyInPlaylistAllHint(int count);
+
+  /// No description provided for @alreadyInPlaylistConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get alreadyInPlaylistConfirm;
+
+  /// No description provided for @playlistAlreadyInMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Already in 1 playlist: {name}} other{Already in {count} playlists: {name}}}'**
+  String playlistAlreadyInMany(int count, String name);
+
   /// No description provided for @playlistAdded.
   ///
   /// In en, this message translates to:
@@ -3032,12 +3188,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 song is not in your library yet: it shows once its folder is added.} other{{count} songs are not in your library yet: they show once their folder is added.}}'**
   String playlistM3uImportReportNotInLibrary(int count);
 
-  /// M3U import report: lines naming a file already imported
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 repeated line was merged.} other{{count} repeated lines were merged.}}'**
-  String playlistM3uImportReportDuplicates(int count);
-
   /// M3U import report: heading of the lines that could not be used
   ///
   /// In en, this message translates to:
@@ -3143,7 +3293,7 @@ abstract class AppLocalizations {
   /// Snackbar after saving the queue when some queue songs were not saved
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library or repeated)} other{{skipped} left out (not in your library or repeated)}}'**
+  /// **'{count, plural, =1{Saved 1 song to {name}} other{Saved {count} songs to {name}}}, {skipped, plural, =1{1 left out (not in your library)} other{{skipped} left out (not in your library)}}'**
   String queueSavedSkipped(int count, int skipped, String name);
 
   /// Snackbar when no queue song can be saved in a playlist

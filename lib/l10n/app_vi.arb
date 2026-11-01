@@ -39,6 +39,32 @@
   "playlistAddTo": "Thêm vào playlist…",
   "playlistPickerTitle": "Thêm vào playlist",
   "playlistPickerNew": "Playlist mới…",
+  "playlistPickerSubtitle": "{label} · {songs}",
+  "playlistPickerSelected": "Đã chọn {count}",
+  "playlistPickerAdd": "Thêm",
+  "playlistPickerAddMany": "Thêm vào {count} playlist",
+  "playlistPickerHasSome": "đã có {count} bài trong đó",
+  "playlistPickerNewBadge": "Mới",
+  "playlistPickerNewHint": "Sẽ được tạo khi bấm Thêm",
+  "playlistPickerNameMessage": "Playlist được thêm vào danh sách, đánh dấu chọn và chỉ được tạo khi bạn bấm Thêm.",
+  "playlistAddedToMany": "Đã thêm {songs} bài vào {playlists} playlist",
+  "playlistAddedNewSuffix": " ({count} mới)",
+  "playlistAddedSkippedSuffix": ", bỏ qua {count} bài",
+  "playlistAddedRemovedSuffix": ", đã xoá {count} bản cũ",
+  "alreadyInPlaylistTitle": "Đã có trong playlist",
+  "alreadyInPlaylistOne": "{songs, plural, =1{Bài này đã có trong playlist.} other{Một số trong {songs} bài đã có trong playlist này.}}",
+  "alreadyInPlaylistMany": "{songs, plural, =1{Bài này đã có trong {count} playlist. Lựa chọn của bạn áp dụng cho tất cả.} other{Một số trong {songs} bài đã có trong {count} playlist. Lựa chọn của bạn áp dụng cho tất cả.}}",
+  "alreadyInPlaylistRow": "{held}/{songs} bài",
+  "alreadyInPlaylistReplace": "Thêm tất cả và xoá các bản cũ",
+  "alreadyInPlaylistReplaceHint": "Các bài trùng được chuyển xuống cuối",
+  "alreadyInPlaylistMissing": "Chỉ thêm các bài còn thiếu",
+  "alreadyInPlaylistMissingHint": "Bỏ qua {count} bài đã có",
+  "alreadyInPlaylistMissingNothingOne": "Không có bài mới cho playlist này",
+  "alreadyInPlaylistMissingNothingMany": "Không có bài mới cho các playlist này",
+  "alreadyInPlaylistAll": "Thêm tất cả",
+  "alreadyInPlaylistAllHint": "{count} bài sẽ xuất hiện nhiều hơn một lần",
+  "alreadyInPlaylistConfirm": "Xác nhận",
+  "playlistAlreadyInMany": "{count, plural, other{Đã có trong {count} playlist: {name}}}",
   "playlistAdded": "Đã thêm vào {playlist}: {name}",
   "playlistAddedSkipped": "{added, plural, other{Đã thêm {added} bài vào {playlist}}}, {skipped, plural, other{{skipped} bài đã có sẵn}}",
   "playlistAlreadyIn": "Đã có trong {playlist}: {name}",
@@ -894,15 +920,6 @@
       }
     }
   },
-  "playlistM3uImportReportDuplicates": "Đã gộp {count} dòng trùng.",
-  "@playlistM3uImportReportDuplicates": {
-    "description": "M3U import report: lines naming a file already imported",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "playlistM3uImportReportUnresolved": "{count} dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:",
   "@playlistM3uImportReportUnresolved": {
     "description": "M3U import report: heading of the lines that could not be used",
@@ -1026,7 +1043,7 @@
       }
     }
   },
-  "queueSavedSkipped": "Đã lưu {count} bài vào {name}, bỏ {skipped} bài (không có trong thư viện hoặc trùng)",
+  "queueSavedSkipped": "Đã lưu {count} bài vào {name}, bỏ {skipped} bài (không có trong thư viện)",
   "@queueSavedSkipped": {
     "description": "Snackbar after saving the queue when some queue songs were not saved",
     "placeholders": {

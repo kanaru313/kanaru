@@ -146,6 +146,135 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistPickerNew => 'Playlist mới…';
 
   @override
+  String playlistPickerSubtitle(String label, String songs) {
+    return '$label · $songs';
+  }
+
+  @override
+  String playlistPickerSelected(int count) {
+    return 'Đã chọn $count';
+  }
+
+  @override
+  String get playlistPickerAdd => 'Thêm';
+
+  @override
+  String playlistPickerAddMany(int count) {
+    return 'Thêm vào $count playlist';
+  }
+
+  @override
+  String playlistPickerHasSome(int count) {
+    return 'đã có $count bài trong đó';
+  }
+
+  @override
+  String get playlistPickerNewBadge => 'Mới';
+
+  @override
+  String get playlistPickerNewHint => 'Sẽ được tạo khi bấm Thêm';
+
+  @override
+  String get playlistPickerNameMessage =>
+      'Playlist được thêm vào danh sách, đánh dấu chọn và chỉ được tạo khi bạn bấm Thêm.';
+
+  @override
+  String playlistAddedToMany(int songs, int playlists) {
+    return 'Đã thêm $songs bài vào $playlists playlist';
+  }
+
+  @override
+  String playlistAddedNewSuffix(int count) {
+    return ' ($count mới)';
+  }
+
+  @override
+  String playlistAddedSkippedSuffix(int count) {
+    return ', bỏ qua $count bài';
+  }
+
+  @override
+  String playlistAddedRemovedSuffix(int count) {
+    return ', đã xoá $count bản cũ';
+  }
+
+  @override
+  String get alreadyInPlaylistTitle => 'Đã có trong playlist';
+
+  @override
+  String alreadyInPlaylistOne(int songs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: 'Một số trong $songs bài đã có trong playlist này.',
+      one: 'Bài này đã có trong playlist.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistMany(int songs, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other:
+          'Một số trong $songs bài đã có trong $count playlist. Lựa chọn của bạn áp dụng cho tất cả.',
+      one:
+          'Bài này đã có trong $count playlist. Lựa chọn của bạn áp dụng cho tất cả.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistRow(int held, int songs) {
+    return '$held/$songs bài';
+  }
+
+  @override
+  String get alreadyInPlaylistReplace => 'Thêm tất cả và xoá các bản cũ';
+
+  @override
+  String get alreadyInPlaylistReplaceHint =>
+      'Các bài trùng được chuyển xuống cuối';
+
+  @override
+  String get alreadyInPlaylistMissing => 'Chỉ thêm các bài còn thiếu';
+
+  @override
+  String alreadyInPlaylistMissingHint(int count) {
+    return 'Bỏ qua $count bài đã có';
+  }
+
+  @override
+  String get alreadyInPlaylistMissingNothingOne =>
+      'Không có bài mới cho playlist này';
+
+  @override
+  String get alreadyInPlaylistMissingNothingMany =>
+      'Không có bài mới cho các playlist này';
+
+  @override
+  String get alreadyInPlaylistAll => 'Thêm tất cả';
+
+  @override
+  String alreadyInPlaylistAllHint(int count) {
+    return '$count bài sẽ xuất hiện nhiều hơn một lần';
+  }
+
+  @override
+  String get alreadyInPlaylistConfirm => 'Xác nhận';
+
+  @override
+  String playlistAlreadyInMany(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã có trong $count playlist: $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String playlistAdded(String name, String playlist) {
     return 'Đã thêm vào $playlist: $name';
   }
@@ -1913,11 +2042,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String playlistM3uImportReportDuplicates(int count) {
-    return 'Đã gộp $count dòng trùng.';
-  }
-
-  @override
   String playlistM3uImportReportUnresolved(int count) {
     return '$count dòng không phải tệp nhạc cục bộ hoặc không tìm thấy:';
   }
@@ -1994,7 +2118,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String queueSavedSkipped(int count, int skipped, String name) {
-    return 'Đã lưu $count bài vào $name, bỏ $skipped bài (không có trong thư viện hoặc trùng)';
+    return 'Đã lưu $count bài vào $name, bỏ $skipped bài (không có trong thư viện)';
   }
 
   @override

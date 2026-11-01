@@ -78,6 +78,18 @@ void main() {
     expect(matches.entries.map((m) => m.entry.entryId).toSet(), hasLength(3));
   });
 
+  test(
+    'flags the later copy of a song in the playlist, not the list',
+    () async {
+      final id = await mix(['b', 'c', 'a', 'c']);
+
+      final matches = await db.playlistEntriesMatching(id, ['cielo']);
+
+      expect(matches.entries.map((m) => m.position), [1, 3]);
+      expect(matches.entries.map((m) => m.entry.repeat), [false, true]);
+    },
+  );
+
   test('an entry whose file is not in the library never matches', () async {
     final id = await mix(['gone', 'a']);
 

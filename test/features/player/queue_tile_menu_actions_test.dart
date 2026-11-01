@@ -99,6 +99,8 @@ void main() {
     await openQueueMenu(tester, 'b');
     await pick(tester, 'Add to playlist…');
     await tester.tap(inPicker('Mix'));
+    await tester.pumpAndSettle();
+    await tester.tap(pickerAdd);
     await settleDb(tester);
 
     expect(await storedPaths(tester, h, id), [p['b']]);

@@ -31,8 +31,41 @@ void main() {
     return [for (final e in page!.entries) e.track?.title ?? e.path];
   }
 
+  /// Like [addVia], but for a playlist that already holds the songs: waits
+  /// for the question (the busy picker never settles), picks [option] and
+  /// confirms.
+  Future<void> addViaChoosing(
+    WidgetTester tester,
+    Finder row,
+    String playlist,
+    String option,
+  ) async {
+    await openMenuOf(tester, row);
+    await tester.tap(find.text('Add to playlist…'));
+    await tester.pumpAndSettle();
+    await tester.tap(inPicker(playlist));
+    await tester.pumpAndSettle();
+    await tester.tap(pickerAdd);
+    final question = find.text('Already in playlist');
+    for (var i = 0; i < 50 && question.evaluate().isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    expect(question, findsWidgets, reason: 'the question never appeared');
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(question, findsOneWidget);
+    await tester.tap(find.text(option));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await settleDb(tester);
+  }
+
   group('existing playlist', () {
-    testWidgets('adds a song, then says it is already there', (tester) async {
+    testWidgets('adds a song, then asks about it when it is already there', (
+      tester,
+    ) async {
       await openApp(tester, h, ['a', 'b'], location: '/songs');
       final id = await seedPlaylist(tester, h, 'Mix', const []);
       await settleDb(tester);
@@ -44,14 +77,19 @@ void main() {
       expect(await titlesIn(tester, id), ['a']);
       await clearMessage(tester);
 
-      await addVia(tester, h, find.text('a'), 'Mix');
+      await addViaChoosing(
+        tester,
+        find.text('a'),
+        'Mix',
+        'Add only missing songs',
+      );
 
-      expect(picker, findsNothing, reason: 'no duplicate dialog either');
+      expect(picker, findsNothing);
       expect(find.text('Already in Mix: a'), findsOneWidget);
       expect(await titlesIn(tester, id), ['a']);
     });
 
-    testWidgets('an album with one song already there adds the rest', (
+    testWidgets('an album with one song already there: only the rest', (
       tester,
     ) async {
       await openApp(tester, h, [], location: '/home');
@@ -60,7 +98,12 @@ void main() {
       goTo(tester, h, '/albums');
       await settleDb(tester);
 
-      await addVia(tester, h, find.text('Alpha'), 'Mix');
+      await addViaChoosing(
+        tester,
+        find.text('Alpha'),
+        'Mix',
+        'Add only missing songs',
+      );
 
       expect(picker, findsNothing);
       expect(
@@ -70,28 +113,45 @@ void main() {
       expect(await titlesIn(tester, id), ['a2', 'a1', 'a3']);
     });
 
-    testWidgets('an album that is all there writes nothing', (tester) async {
+    testWidgets('an album that is all there: missing only writes nothing', (
+      tester,
+    ) async {
       await openApp(tester, h, [], location: '/home');
       await insertTracks(tester, h, _album);
       final id = await seedPlaylist(tester, h, 'Mix', ['a1', 'a2', 'a3']);
       goTo(tester, h, '/albums');
       await settleDb(tester);
 
-      await addVia(tester, h, find.text('Alpha'), 'Mix');
+      await addViaChoosing(
+        tester,
+        find.text('Alpha'),
+        'Mix',
+        'Add only missing songs',
+      );
 
       expect(find.text('Already in Mix: Alpha'), findsOneWidget);
       expect(await titlesIn(tester, id), ['a1', 'a2', 'a3']);
     });
 
-    testWidgets('copies already stored twice are left alone', (tester) async {
+    testWidgets('copies already stored twice: replacing leaves one', (
+      tester,
+    ) async {
       await openApp(tester, h, ['a'], location: '/songs');
       final id = await seedPlaylist(tester, h, 'Twice', ['a', 'a']);
       await settleDb(tester);
 
-      await addVia(tester, h, find.text('a'), 'Twice');
+      await addViaChoosing(
+        tester,
+        find.text('a'),
+        'Twice',
+        'Add all and remove the old copies',
+      );
 
-      expect(find.text('Already in Twice: a'), findsOneWidget);
-      expect(await titlesIn(tester, id), ['a', 'a']);
+      expect(
+        find.text('Added to Twice: a, 2 old copies removed'),
+        findsOneWidget,
+      );
+      expect(await titlesIn(tester, id), ['a']);
     });
   });
 
@@ -104,10 +164,8 @@ void main() {
       await openMenuOf(tester, find.text('a'));
       await tester.tap(find.text('Add to playlist…'));
       await tester.pumpAndSettle();
-      await tester.tap(inPicker('New playlist…'));
-      await tester.pumpAndSettle();
-      await tester.enterText(nameField, 'Road trip');
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+      await nameNewInPicker(tester, 'Road trip');
+      await tester.tap(pickerAdd);
       await settleDb(tester);
 
       expect(find.text('Added to Road trip: a'), findsOneWidget);
@@ -118,7 +176,9 @@ void main() {
       expect(await titlesIn(tester, rows.single.id), ['a']);
     });
 
-    testWidgets('a repeated path in the batch is stored once', (tester) async {
+    testWidgets('a repeated path in the batch is kept in a new playlist', (
+      tester,
+    ) async {
       await openApp(tester, h, ['a'], location: '/home');
       final twice = await seedPlaylist(tester, h, 'Dup', ['a', 'a']);
       goTo(tester, h, '/playlists/$twice');
@@ -128,20 +188,20 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Add to playlist…'));
       await tester.pumpAndSettle();
-      await tester.tap(inPicker('New playlist…'));
-      await tester.pumpAndSettle();
-      await tester.enterText(nameField, 'Copy');
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+      await nameNewInPicker(tester, 'Copy');
+      await tester.tap(pickerAdd);
       await settleDb(tester);
 
       final rows = await tester.runAsync(
         () => h.db.watchPlaylistSummaries().first,
       );
       final copy = rows!.firstWhere((p) => p.name == 'Copy');
-      expect(await titlesIn(tester, copy.id), ['a']);
+      expect(await titlesIn(tester, copy.id), ['a', 'a']);
     });
 
-    testWidgets('cancelling the name creates nothing', (tester) async {
+    testWidgets('cancelling the name keeps the picker and creates nothing', (
+      tester,
+    ) async {
       await openApp(tester, h, ['a'], location: '/songs');
 
       await openMenuOf(tester, find.text('a'));
@@ -149,7 +209,17 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(inPicker('New playlist…'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog).last,
+          matching: find.text('Cancel'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(picker, findsOneWidget);
+      await tester.tap(
+        find.descendant(of: picker, matching: find.text('Cancel')),
+      );
       await settleDb(tester);
 
       final rows = await tester.runAsync(
@@ -193,6 +263,8 @@ void main() {
       expect(picker, findsOneWidget);
 
       await tester.tap(inPicker('Mix'));
+      await tester.pumpAndSettle();
+      await tester.tap(pickerAdd);
       await settleDb(tester);
 
       expect(tester.takeException(), isNull);
@@ -276,10 +348,8 @@ void main() {
     await openMenuOf(tester, find.text('a'));
     await tester.tap(find.text('Add to playlist…'));
     await tester.pumpAndSettle();
-    await tester.tap(inPicker('New playlist…'));
-    await tester.pumpAndSettle();
-    await tester.enterText(nameField, 'Road trip');
-    await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+    await nameNewInPicker(tester, 'Road trip');
+    await tester.tap(pickerAdd);
     await settleDb(tester);
 
     expect(

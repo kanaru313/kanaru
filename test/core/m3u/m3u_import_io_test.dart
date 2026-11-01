@@ -59,11 +59,12 @@ file://${p('music/sub/b')}%00.mp3
       expect(result.paths, [
         p('music/a.flac'),
         p('music/sub/b.mp3'),
+        // file:// b.mp3 and ../link/a.flac repeat files already listed.
+        p('music/sub/b.mp3'),
+        p('music/a.flac'),
         // A symlinked file keeps its own name, as the indexer stores it.
         p('music/c.flac'),
       ]);
-      // file:// b.mp3 and ../link/a.flac name files already imported.
-      expect(result.duplicates, 2);
       expect([for (final u in result.unresolved) u.line], [6, 7, 8, 9, 12, 13]);
       expect(result.total, 11);
       expect(result.truncated, isFalse);

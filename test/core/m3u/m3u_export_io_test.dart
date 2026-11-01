@@ -137,11 +137,10 @@ void main() {
 
       expect(result.paths, [for (final n in names) p(n)]);
       expect(result.unresolved, isEmpty);
-      expect(result.duplicates, 0);
     });
   }
 
-  test('a round trip merges repeats and reports missing files', () async {
+  test('a round trip keeps repeats and reports missing files', () async {
     final target = p('lists/round.m3u8');
     await exportM3uFile(
       target,
@@ -151,8 +150,7 @@ void main() {
 
     final result = await importM3uFile(target);
 
-    expect(result.paths, [p('music/a.flac')]);
-    expect(result.duplicates, 1);
+    expect(result.paths, [p('music/a.flac'), p('music/a.flac')]);
     expect(result.unresolved.single.text, '../music/gone.flac');
   });
 }

@@ -113,8 +113,8 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   final int id;
   final int notInLibrary;
   try {
-    notInLibrary =
-        result.paths.length - (await db.libraryPathsAmong(result.paths)).length;
+    final inLibrary = await db.libraryPathsAmong(result.paths);
+    notInLibrary = result.paths.where((p) => !inLibrary.contains(p)).length;
     id = await db.createPlaylist(
       name,
       now: DateTime.now().millisecondsSinceEpoch,
@@ -127,9 +127,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
     return;
   }
   router.go(playlistLocation(id));
-  if (result.unresolved.isNotEmpty ||
-      result.duplicates > 0 ||
-      result.truncated) {
+  if (result.unresolved.isNotEmpty || result.truncated) {
     await report(added: result.paths.length, notInLibrary: notInLibrary);
     return;
   }

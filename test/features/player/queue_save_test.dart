@@ -11,7 +11,7 @@ import '../library/library_test_harness.dart';
 import '../playlists/playlist_test_data.dart';
 
 void main() {
-  test('keeps library songs in queue order, each once', () {
+  test('keeps library songs in queue order, repeats kept', () {
     final picked = queuePlaylistPaths(
       const [
         Track(uri: '/m/a.flac', title: 'a'),
@@ -23,8 +23,8 @@ void main() {
       {'/m/a.flac', '/m/c.flac'},
     );
 
-    expect(picked.paths, ['/m/a.flac', '/m/c.flac']);
-    expect(picked.skipped, 3);
+    expect(picked.paths, ['/m/a.flac', '/m/a.flac', '/m/c.flac']);
+    expect(picked.skipped, 2);
   });
 
   /// Opens the header's overflow menu and picks "Save queue as playlist".
@@ -82,9 +82,9 @@ void main() {
       await tester.tap(find.text('Create'));
       await settleDb(tester);
 
-      expect(await savedPaths(tester), [p['c'], p['a']]);
-      expect(find.textContaining('Saved 2 songs to Queue '), findsOneWidget);
-      expect(find.textContaining('2 left out'), findsOneWidget);
+      expect(await savedPaths(tester), [p['c'], p['a'], p['c']]);
+      expect(find.textContaining('Saved 3 songs to Queue '), findsOneWidget);
+      expect(find.textContaining('1 left out'), findsOneWidget);
     });
 
     testWidgets('a queue with no library song says so', (tester) async {

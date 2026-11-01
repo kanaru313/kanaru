@@ -5,19 +5,22 @@ import '../../../l10n/l10n.dart';
 /// Longest playlist name the dialog accepts.
 const playlistNameMaxLength = 200;
 
-/// Asks for a playlist name. Completes with the trimmed name, or null when
+/// Asks for a playlist name, with an optional [message] above the field.
+/// Completes with the trimmed name, or null when
 /// the user cancels (button, Esc or a tap outside).
 Future<String?> showPlaylistNameDialog(
   BuildContext context, {
   required String title,
   required String confirmLabel,
   String? initialName,
+  String? message,
 }) => showDialog<String>(
   context: context,
   builder: (context) => _PlaylistNameDialog(
     title: title,
     confirmLabel: confirmLabel,
     initialName: initialName,
+    message: message,
   ),
 );
 
@@ -26,11 +29,13 @@ class _PlaylistNameDialog extends StatefulWidget {
     required this.title,
     required this.confirmLabel,
     this.initialName,
+    this.message,
   });
 
   final String title;
   final String confirmLabel;
   final String? initialName;
+  final String? message;
 
   @override
   State<_PlaylistNameDialog> createState() => _PlaylistNameDialogState();
@@ -66,15 +71,25 @@ class _PlaylistNameDialogState extends State<_PlaylistNameDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.title),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        maxLength: playlistNameMaxLength,
-        decoration: InputDecoration(
-          labelText: context.l10n.playlistNameLabel,
-          counterText: '',
-        ),
-        onSubmitted: (_) => _submit(),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.message != null) ...[
+            Text(widget.message!),
+            const SizedBox(height: 12),
+          ],
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            maxLength: playlistNameMaxLength,
+            decoration: InputDecoration(
+              labelText: context.l10n.playlistNameLabel,
+              counterText: '',
+            ),
+            onSubmitted: (_) => _submit(),
+          ),
+        ],
       ),
       actions: [
         TextButton(

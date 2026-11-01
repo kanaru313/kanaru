@@ -11,8 +11,8 @@ const m3uReportMaxLines = 100;
 const m3uReportMaxLineLength = 300;
 
 /// Shows what an M3U import did: how many songs were added, how many are not
-/// in the library yet, how many duplicate lines were merged, and the lines
-/// that were not found. [added] is 0 when nothing was imported.
+/// in the library yet, and the lines that were not found. [added] is 0 when
+/// nothing was imported.
 Future<void> showM3uImportReport(
   BuildContext context, {
   required M3uImportResult result,
@@ -39,8 +39,6 @@ Future<void> showM3uImportReport(
               ),
               if (notInLibrary > 0)
                 Text(l10n.playlistM3uImportReportNotInLibrary(notInLibrary)),
-              if (result.duplicates > 0)
-                Text(l10n.playlistM3uImportReportDuplicates(result.duplicates)),
               if (lines.isNotEmpty)
                 Text(l10n.playlistM3uImportReportUnresolved(lines.length)),
               if (result.truncated)
