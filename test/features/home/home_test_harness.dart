@@ -40,6 +40,8 @@ class HomeHarness {
     String path, {
     String? artist,
     String? album,
+    String? albumArtist,
+    int? year,
     int? addedAt,
   }) async {
     if (_rootId == 0) {
@@ -55,6 +57,8 @@ class HomeHarness {
         title: 'T $path',
         artist: Value(artist),
         album: Value(album),
+        albumArtist: Value(albumArtist),
+        year: Value(year),
         addedAt: addedAt ?? now.millisecondsSinceEpoch,
         updatedAt: 1,
       ),

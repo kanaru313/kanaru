@@ -123,7 +123,7 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
                 widget.onOpened();
                 context.go(artistLocation(artist.key));
               },
-              onPlay: () => unawaited(playArtistTracks(ref, artist.key)),
+              onPlay: () => unawaited(playArtist(ref, artist.key)),
               onQueueAction: (action) {
                 if (mounted) widget.onOpened();
                 enqueueArtist(ref, context, action, artist.key, artist.name);
