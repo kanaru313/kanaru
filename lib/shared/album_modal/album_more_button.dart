@@ -1,9 +1,7 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../l10n/l10n.dart';
-import '../icons/app_icons.dart';
+import '../widgets/context_modal_more_button.dart';
 import '../widgets/library_grid/album_tile_data.dart';
 import '../widgets/queue_actions_menu.dart';
 import 'open_album_modal.dart';
@@ -36,26 +34,6 @@ class AlbumMoreButton extends ConsumerWidget {
       showAlbum: showAlbum,
       viaKeyboard: viaKeyboard,
     );
-    // Enter and Space on the focused button open the modal from the keyboard
-    // (focus lands on its first row); a click does not.
-    return CallbackShortcuts(
-      bindings: {
-        for (final key in const [
-          LogicalKeyboardKey.enter,
-          LogicalKeyboardKey.numpadEnter,
-          LogicalKeyboardKey.space,
-        ])
-          SingleActivator(key): () => open(viaKeyboard: true),
-      },
-      child: IconButton(
-        tooltip: context.l10n.songModalMoreOptions,
-        icon: const Icon(AppIcons.more),
-        iconSize: 20,
-        color: color,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-        onPressed: () => open(viaKeyboard: false),
-      ),
-    );
+    return ContextModalMoreButton(onOpen: open, color: color);
   }
 }

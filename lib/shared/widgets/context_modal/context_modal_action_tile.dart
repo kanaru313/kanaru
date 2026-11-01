@@ -71,7 +71,13 @@ class _ContextModalActionTileState extends State<ContextModalActionTile> {
           padding: const EdgeInsets.fromLTRB(20, 6, 10, 6),
           child: Row(
             children: [
-              Icon(_action.icon, color: iconColor),
+              if (_action.leading case final leading?)
+                IconTheme.merge(
+                  data: IconThemeData(color: iconColor),
+                  child: leading,
+                )
+              else
+                Icon(_action.icon, color: iconColor),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

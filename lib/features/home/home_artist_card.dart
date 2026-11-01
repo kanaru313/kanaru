@@ -2,15 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_browse_queries.dart';
 import '../../core/database/library_database.dart' show ArtistCredit;
-import '../../core/indexer/cover_paths.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/enqueue_tracks.dart';
+import '../../shared/artist_modal/artist_actions_region.dart';
+import '../../shared/artist_page/enqueue_artist.dart';
+import '../../shared/artist_summaries.dart';
 import '../../shared/library_route_keys.dart';
-import '../../shared/play_tracks.dart';
 import '../../shared/widgets/artist_avatar.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 import 'home_tile_metrics.dart';
 import '../../shared/fixed_line_strut.dart';
 
@@ -65,17 +63,16 @@ class HomeArtistCard extends ConsumerWidget {
         ),
       ),
     );
-    return QueueActionsRegion(
-      onAction: (action) => enqueueFromDatabase(
-        ref,
-        context,
-        action,
-        artist.name,
-        (db, covers) async => [
-          for (final t in await db.artistTracks(artist.key))
-            trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
-        ],
+    return ArtistActionsRegion(
+      artist: ArtistSummary(
+        key: artist.key,
+        name: artist.name,
+        songCount: artist.trackCount,
+        albumCount: artist.albumCount,
+        durationMs: artist.durationMs,
       ),
+      onQueueAction: (action) =>
+          enqueueArtist(ref, context, action, artist.key, artist.name),
       child: tile,
     );
   }

@@ -7,7 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../shared/library_browse_refresh.dart';
-import 'album_sort.dart';
+import '../../../shared/album_sort.dart';
 
 /// Every album, reloaded at most every
 /// [libraryBrowseRefreshIntervalProvider] while the library changes. Empty

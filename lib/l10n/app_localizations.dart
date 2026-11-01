@@ -7117,6 +7117,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 file} other{{count} files}}'**
   String albumModalFilesCount(int count);
+
+  /// Accessible name of the artist options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Artist options'**
+  String get artistModalLabel;
+
+  /// Tooltip of the button in the artist options header that will change the picture (not available yet)
+  ///
+  /// In en, this message translates to:
+  /// **'Set artist picture'**
+  String get artistModalSetPicture;
+
+  /// Quiet line under the Go to album row of an artist, after the number of own albums: how many other albums the artist appears on
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{appears on {count}}}'**
+  String artistModalAppearsOnCount(int count);
+
+  /// Title of the artist options page that lists the artist's albums
+  ///
+  /// In en, this message translates to:
+  /// **'Albums · {name}'**
+  String artistModalAlbumsTitle(String name);
+
+  /// Title of the artist options page that lists the folders of the artist's songs
+  ///
+  /// In en, this message translates to:
+  /// **'Folders · {name}'**
+  String artistModalFoldersTitle(String name);
+
+  /// Sentence at the top of the artist options page that lists the artist's folders
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{The songs of this artist are saved in {count} folders. Pick one to open it in Folders.}}'**
+  String artistModalFoldersIntro(int count);
+
+  /// Advanced artist option (not available yet) that changes how names are grouped into artists
+  ///
+  /// In en, this message translates to:
+  /// **'Split or merge artist'**
+  String get artistModalSplitMerge;
+
+  /// Quiet line under Split or merge artist
+  ///
+  /// In en, this message translates to:
+  /// **'Treat a name as two artists, or join spellings'**
+  String get artistModalSplitMergeHint;
 }
 
 class _AppLocalizationsDelegate

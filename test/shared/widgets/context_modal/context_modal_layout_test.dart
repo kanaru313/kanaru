@@ -55,6 +55,29 @@ void main() {
     expect(h, 300 - 48);
   });
 
+  testWidgets('sheet height stays within 85 % of the window', (tester) async {
+    await pumpModalApp(
+      tester,
+      size: const Size(360, 800),
+      extra: [
+        for (var i = 0; i < 40; i++)
+          ContextModalAction(id: 'a$i', icon: Icons.info, label: 'Row $i'),
+      ],
+    );
+    final h = tester
+        .getSize(
+          find
+              .descendant(
+                of: find.byType(ContextModalSheetFrame),
+                matching: find.byType(Material),
+              )
+              .first,
+        )
+        .height;
+    expect(h, lessThanOrEqualTo(800 * 0.85));
+    expect(h, greaterThan(400));
+  });
+
   testWidgets('sheet is full width and a handle drag past 25% closes it', (
     tester,
   ) async {

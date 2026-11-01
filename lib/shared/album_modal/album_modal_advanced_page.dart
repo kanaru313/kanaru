@@ -5,7 +5,6 @@ import '../../core/database/album_links_provider.dart';
 import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
 import '../widgets/context_modal/context_modal_route.dart';
-import 'album_modal_data.dart';
 import 'album_modal_session.dart';
 
 /// The Advanced page: Add all to Favorites, Show in file manager, and the
@@ -36,7 +35,7 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
                     id: 'add-all-to-favorites',
                     icon: AppIcons.favoriteOutline,
                     label: l10n.albumModalAddAllToFavorites,
-                    onTap: albumModalCloseThen(handlers.addAllToFavorites),
+                    onTap: contextModalCloseThen(handlers.addAllToFavorites),
                   ),
                 ],
                 [
@@ -49,7 +48,7 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
                       enabled: main != null,
                       onTap: main == null
                           ? null
-                          : albumModalCloseThen(
+                          : contextModalCloseThen(
                               () => handlers.showInFileManager(main.samplePath),
                             ),
                     ),

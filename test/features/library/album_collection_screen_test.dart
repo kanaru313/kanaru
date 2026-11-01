@@ -4,7 +4,7 @@ import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/library/artists/artist_page_data.dart';
-import 'package:kanaru/features/library/artists/artist_page_sections.dart';
+import 'package:kanaru/shared/artist_page/artist_page_sections.dart';
 import 'package:kanaru/shared/in_page_filter_registry.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';

@@ -7,7 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/settings/library_sort.dart';
 import '../../../core/database/throttled_tracks_query.dart';
 import '../../../shared/library_browse_refresh.dart';
-import '../albums/album_sort.dart';
+import '../../../shared/album_sort.dart';
 import 'genres_provider.dart';
 
 /// The order of the albums of a genre page: by title, then album key, as the

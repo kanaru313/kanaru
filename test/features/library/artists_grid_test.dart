@@ -72,24 +72,27 @@ void main() {
     expect(location(h), artistLocation('bob'));
   });
 
-  testWidgets('right click offers Play next for the artist', (tester) async {
-    final h = LibraryHarness(overrides: [listViewModesOverride]);
-    await openWithTracks(tester, h, _tracks, location: '/artists');
-    await toGrid(tester);
+  testWidgets(
+    'right click opens the artist modal; Play next queues the artist',
+    (tester) async {
+      final h = LibraryHarness(overrides: [listViewModesOverride]);
+      await openWithTracks(tester, h, _tracks, location: '/artists');
+      await toGrid(tester);
 
-    await tester.tap(find.text('Ann'), buttons: kSecondaryButton);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Play next'));
-    await settleIo(tester, h);
+      await tester.tap(find.text('Ann'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('artist-modal-play-next')));
+      await settleIo(tester, h);
 
-    expect(
-      [
-        for (final t in h.container.read(playerServiceProvider).queue.tracks)
-          t.title,
-      ],
-      ['a1', 'a2'],
-    );
-  });
+      expect(
+        [
+          for (final t in h.container.read(playerServiceProvider).queue.tracks)
+            t.title,
+        ],
+        ['a1', 'a2'],
+      );
+    },
+  );
 
   testWidgets('large text does not overflow the tiles', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;

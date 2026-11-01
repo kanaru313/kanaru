@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/settings/library_sort.dart';
-import 'package:kanaru/features/library/albums/album_sort.dart';
+import 'package:kanaru/shared/album_sort.dart';
 
 AlbumSummary album(
   String title, {

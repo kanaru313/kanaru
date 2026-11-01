@@ -20,7 +20,7 @@ import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
 import 'artist_grid_tile.dart';
 import 'artists_provider.dart';
-import 'enqueue_artist.dart';
+import '../../../shared/artist_page/enqueue_artist.dart';
 
 final _log = Logger('library');
 

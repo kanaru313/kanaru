@@ -6,6 +6,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/album_modal/album_more_button.dart';
+import 'package:kanaru/shared/artist_modal/artist_more_button.dart';
 import 'package:kanaru/shared/enqueue_tracks.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
@@ -81,7 +82,8 @@ void main() {
 
       goTo(tester, h, artistLocation('ann'));
       await tester.pumpAndSettle();
-      await headerMenu(tester);
+      await tester.tap(find.byType(ArtistMoreButton));
+      await tester.pumpAndSettle();
       await expectItem(tester);
       await openMenuOf(tester, find.text('a2'));
       await expectItem(tester);

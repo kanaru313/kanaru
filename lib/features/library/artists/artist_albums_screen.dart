@@ -7,7 +7,7 @@ import '../albums/album_collection_screen.dart';
 import '../library_detail_body.dart';
 import 'artist_not_found.dart';
 import 'artist_page_data.dart';
-import 'artist_page_sections.dart';
+import '../../../shared/artist_page/artist_page_sections.dart';
 
 /// The two album lists of an artist page.
 enum ArtistAlbumSection { albums, appearsOn }

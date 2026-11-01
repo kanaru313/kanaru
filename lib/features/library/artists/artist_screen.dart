@@ -7,6 +7,8 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
+import '../../../shared/artist_page/enqueue_artist.dart';
+import '../../../shared/artist_summaries.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
@@ -24,7 +26,7 @@ import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'artist_header.dart';
 import 'artist_not_found.dart';
 import 'artist_page_data.dart';
-import 'artist_page_sections.dart';
+import '../../../shared/artist_page/artist_page_sections.dart';
 
 /// One artist: header, then their albums and the albums they appear on,
 /// each as one line scrolling sideways, then their songs. A wide window
@@ -109,8 +111,17 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
     // Play and Shuffle in the header always take every song.
     void onPlay() => playTracks(ref, queueOf(songs), 0);
     void onShuffle() => shuffleTracks(ref, queueOf(songs));
-    void onQueueAction(QueueAction action) =>
-        enqueueLoaded(ref, context, action, queueOf(songs), sections.name);
+    // The modal's actions read the database, like its Play all, so they
+    // all see one snapshot.
+    void onModalQueue(QueueAction action) =>
+        enqueueArtist(ref, context, action, artistKey, sections.name);
+    final summary = ArtistSummary(
+      key: artistKey,
+      name: sections.name,
+      songCount: songs.length,
+      albumCount: sections.albumCount,
+      durationMs: sections.durationMs,
+    );
 
     return CoverTintPageBackground(
       coverKey: sections.coverKey,
@@ -127,12 +138,10 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
                   if (!wide)
                     SliverToBoxAdapter(
                       child: ArtistHeader(
-                        artistKey: artistKey,
-                        name: sections.name,
-                        albumCount: sections.albumCount,
+                        summary: summary,
                         onPlay: onPlay,
                         onShuffle: onShuffle,
-                        onQueueAction: onQueueAction,
+                        onModalQueue: onModalQueue,
                       ),
                     ),
                   if (!filtering && sections.albums.isNotEmpty) ...[
@@ -182,13 +191,11 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ArtistSidePane(
-                artistKey: artistKey,
-                name: sections.name,
+                summary: summary,
                 coverKey: sections.coverKey,
-                albumCount: sections.albumCount,
                 onPlay: onPlay,
                 onShuffle: onShuffle,
-                onQueueAction: onQueueAction,
+                onModalQueue: onModalQueue,
               ),
               Expanded(child: content),
             ],

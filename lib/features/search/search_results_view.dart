@@ -9,6 +9,7 @@ import '../../core/database/library_startup.dart'
     show coverCacheDirectoryProvider;
 import '../../core/player/track.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/artist_page/enqueue_artist.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/library_route_keys.dart';
 import '../../shared/play_tracks.dart';
@@ -122,7 +123,11 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
                 widget.onOpened();
                 context.go(artistLocation(artist.key));
               },
-              onPlay: () => unawaited(playArtistTracks(ref, artist.key)),
+              onPlay: () => unawaited(playArtist(ref, artist.key)),
+              onQueueAction: (action) {
+                if (mounted) widget.onOpened();
+                enqueueArtist(ref, context, action, artist.key, artist.name);
+              },
             ),
           ),
         const SliverPadding(padding: EdgeInsets.only(bottom: 16)),

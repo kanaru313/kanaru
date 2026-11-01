@@ -42,7 +42,7 @@ void main() {
     final scrollable = find
         .ancestor(of: tile.first, matching: find.byType(Scrollable))
         .first;
-    // Scroll about 40px (60px drag minus touch slop): every tile type (artist rows are 80px) ends up cut by the
+    // Scroll about 40px (60px drag minus touch slop): every tile type ends up cut by the
     // viewport edge, while a longer drag would scroll a whole row away.
     await tester.drag(scrollable, const Offset(0, -60));
     await tester.pumpAndSettle();
@@ -108,10 +108,24 @@ void main() {
     expect(tileRect.right - card.right, 16);
   });
 
-  testWidgets('artist list hover stays inside the list', (tester) async {
+  testWidgets('artist list hover stays inside the card', (tester) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/artists');
-    await expectInkClipped(tester, find.byType(ArtistTile));
+    final tile = find.byType(ArtistTile);
+    // The row paints its ink on the card's Material, inside the scroll view.
+    final inkWell = find.descendant(
+      of: tile.first,
+      matching: find.byType(InkWell),
+    );
+    await expectInkClipped(tester, tile, inkHost: inkWell);
+    final ink = Material.of(tester.element(inkWell.first)) as RenderBox;
+    final card = ink.localToGlobal(Offset.zero) & ink.size;
+    final row = tester.getRect(inkWell.first);
+    expect(card.contains(row.topLeft), isTrue);
+    expect(card.contains(row.bottomRight - const Offset(1, 1)), isTrue);
+    final tileRect = tester.getRect(tile.first);
+    expect(card.left - tileRect.left, 16);
+    expect(tileRect.right - card.right, 16);
   });
 
   testWidgets('song list hover stays inside the list', (tester) async {

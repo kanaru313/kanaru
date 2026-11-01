@@ -1853,5 +1853,13 @@
   "albumModalFoldersIntro": "Các bài của album này được lưu trong {count} thư mục. Chọn một thư mục để mở trong mục Thư mục.",
   "albumModalKeepsFiles": "Giữ nguyên các tệp",
   "albumModalDeleteFiles": "Xoá tệp",
-  "albumModalFilesCount": "{count, plural, other{{count} tệp}}"
+  "albumModalFilesCount": "{count, plural, other{{count} tệp}}",
+  "artistModalLabel": "Tùy chọn nghệ sĩ",
+  "artistModalSetPicture": "Đặt ảnh nghệ sĩ",
+  "artistModalAppearsOnCount": "{count, plural, other{xuất hiện trong {count}}}",
+  "artistModalAlbumsTitle": "Album · {name}",
+  "artistModalFoldersTitle": "Thư mục · {name}",
+  "artistModalFoldersIntro": "{count, plural, other{Các bài của nghệ sĩ này được lưu trong {count} thư mục. Chọn một thư mục để mở trong mục Thư mục.}}",
+  "artistModalSplitMerge": "Tách hoặc gộp nghệ sĩ",
+  "artistModalSplitMergeHint": "Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết"
 }

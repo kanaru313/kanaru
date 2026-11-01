@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../widgets/library_grid/album_tile_data.dart';
-import '../widgets/menu_keyboard_region.dart';
+import '../widgets/context_modal_region.dart';
+import '../widgets/menu_keyboard_region.dart' show MenuKeyboardRegion;
 import '../widgets/queue_actions_menu.dart';
 import 'open_album_modal.dart';
 
@@ -26,33 +27,21 @@ class AlbumActionsRegion extends ConsumerWidget {
   /// False on the page of the album itself.
   final bool showAlbum;
 
-  // Opens in the gesture handler itself: nothing is awaited first.
-  void _open(
-    BuildContext context,
-    WidgetRef ref,
-    ValueChanged<QueueAction> f, {
-    bool viaKeyboard = false,
-  }) => openAlbumModal(
-    context,
-    ref,
-    album: album,
-    onQueueAction: f,
-    showAlbum: showAlbum,
-    viaKeyboard: viaKeyboard,
-  );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onQueue = onQueueAction;
-    if (onQueue == null) return child;
-    return MenuKeyboardRegion(
-      onOpen: (_) => _open(context, ref, onQueue, viaKeyboard: true),
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onSecondaryTapUp: (_) => _open(context, ref, onQueue),
-        onLongPressStart: (_) => _open(context, ref, onQueue),
-        child: child,
-      ),
+    return ContextModalRegion(
+      onOpen: onQueue == null
+          ? null
+          : ({required bool viaKeyboard}) => openAlbumModal(
+              context,
+              ref,
+              album: album,
+              onQueueAction: onQueue,
+              showAlbum: showAlbum,
+              viaKeyboard: viaKeyboard,
+            ),
+      child: child,
     );
   }
 }

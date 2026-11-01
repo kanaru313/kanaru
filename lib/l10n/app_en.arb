@@ -4679,5 +4679,57 @@
         "type": "int"
       }
     }
+  },
+  "artistModalLabel": "Artist options",
+  "@artistModalLabel": {
+    "description": "Accessible name of the artist options dialog"
+  },
+  "artistModalSetPicture": "Set artist picture",
+  "@artistModalSetPicture": {
+    "description": "Tooltip of the button in the artist options header that will change the picture (not available yet)"
+  },
+  "artistModalAppearsOnCount": "{count, plural, other{appears on {count}}}",
+  "@artistModalAppearsOnCount": {
+    "description": "Quiet line under the Go to album row of an artist, after the number of own albums: how many other albums the artist appears on",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "artistModalAlbumsTitle": "Albums · {name}",
+  "@artistModalAlbumsTitle": {
+    "description": "Title of the artist options page that lists the artist's albums",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "artistModalFoldersTitle": "Folders · {name}",
+  "@artistModalFoldersTitle": {
+    "description": "Title of the artist options page that lists the folders of the artist's songs",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "artistModalFoldersIntro": "{count, plural, other{The songs of this artist are saved in {count} folders. Pick one to open it in Folders.}}",
+  "@artistModalFoldersIntro": {
+    "description": "Sentence at the top of the artist options page that lists the artist's folders",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "artistModalSplitMerge": "Split or merge artist",
+  "@artistModalSplitMerge": {
+    "description": "Advanced artist option (not available yet) that changes how names are grouped into artists"
+  },
+  "artistModalSplitMergeHint": "Treat a name as two artists, or join spellings",
+  "@artistModalSplitMergeHint": {
+    "description": "Quiet line under Split or merge artist"
   }
 }

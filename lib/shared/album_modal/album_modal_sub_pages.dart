@@ -5,10 +5,9 @@ import '../../core/database/album_links_provider.dart';
 
 import '../../core/database/library_browse_album_links.dart';
 import '../../l10n/l10n.dart';
+import '../folder_links/folder_links_page.dart';
 import '../icons/app_icons.dart';
 import '../widgets/context_modal/context_modal_route.dart';
-import '../widgets/library_row.dart';
-import 'album_modal_data.dart';
 import 'album_modal_session.dart';
 
 /// Page of an album with [artists] (four or more): one row per artist.
@@ -19,12 +18,14 @@ ContextModalPage albumModalArtistsPage(
   final handlers = session.handlers();
   return ContextModalPage(
     key: 'album-artists',
-    headerBuilder: (context, nav) => ContextModalTopBar(
-      title: context.l10n.albumModalArtistsTitle(session.album.title),
-      onBack: nav.pop,
+    headerBuilder: (context, nav) => _KeepLinks(
+      session,
+      child: ContextModalTopBar(
+        title: context.l10n.albumModalArtistsTitle(session.album.title),
+        onBack: nav.pop,
+      ),
     ),
     bodyBuilder: (context, nav) => [
-      _KeepLinks(session),
       ...contextModalSections(nav, [
         [
           for (final artist in artists)
@@ -32,7 +33,9 @@ ContextModalPage albumModalArtistsPage(
               id: 'artist-${artist.key}',
               icon: AppIcons.artistOutline,
               label: artist.name,
-              onTap: albumModalCloseThen(() => handlers.goToArtist(artist.key)),
+              onTap: contextModalCloseThen(
+                () => handlers.goToArtist(artist.key),
+              ),
             ),
         ],
       ], dividers: false),
@@ -41,16 +44,18 @@ ContextModalPage albumModalArtistsPage(
 }
 
 /// Watches the album's links so they stay alive while a sub page covers the
-/// first page; draws nothing.
+/// first page; draws [child]. Sits in the page header, which (unlike a body
+/// child) is not disposed when the body scrolls.
 class _KeepLinks extends ConsumerWidget {
-  const _KeepLinks(this.session);
+  const _KeepLinks(this.session, {required this.child});
 
   final AlbumModalSession session;
+  final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(albumModalLinksProvider(session.album.key));
-    return const SizedBox.shrink();
+    return child;
   }
 }
 
@@ -61,53 +66,13 @@ ContextModalPage albumModalFoldersPage(
   List<AlbumFolder> folders,
 ) {
   final handlers = session.handlers();
-  return ContextModalPage(
+  return folderLinksPage(
     key: 'album-folders',
-    headerBuilder: (context, nav) => ContextModalTopBar(
-      title: context.l10n.albumModalFoldersTitle(session.album.title),
-      onBack: nav.pop,
-    ),
-    bodyBuilder: (context, nav) {
-      final l10n = context.l10n;
-      final theme = Theme.of(context);
-      return [
-        _KeepLinks(session),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-          child: Text(
-            l10n.albumModalFoldersIntro(folders.length),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        ...contextModalSections(nav, [
-          [
-            for (final folder in folders)
-              ContextModalAction(
-                id: 'folder-${folder.path}',
-                icon: AppIcons.folderOutlined,
-                label: folderName(folder.path),
-                subtitle: joinRowDetails([
-                  l10n.albumsSongCount(folder.songCount),
-                  parentPath(folder.path),
-                ]),
-                onTap: albumModalCloseThen(
-                  () => handlers.goToFolder(folder.path),
-                ),
-                trailing: [
-                  ContextModalTrailing(
-                    icon: AppIcons.openExternal,
-                    tooltip: l10n.libraryShowInFileManager,
-                    onTap: albumModalCloseThen(
-                      () => handlers.showInFileManager(folder.samplePath),
-                    ),
-                  ),
-                ],
-              ),
-          ],
-        ], dividers: false),
-      ];
-    },
+    title: (l10n) => l10n.albumModalFoldersTitle(session.album.title),
+    intro: (l10n) => l10n.albumModalFoldersIntro(folders.length),
+    folders: folders,
+    goToFolder: handlers.goToFolder,
+    showInFileManager: handlers.showInFileManager,
+    keepAlive: (bar) => _KeepLinks(session, child: bar),
   );
 }
