@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/settings_routes.dart';
 import '../router.dart';
 import 'app_destination.dart';
 
@@ -30,12 +31,11 @@ class NavigationHistory extends Notifier<NavigationHistoryState> {
     return NavigationHistoryState([_currentLocation()], 0);
   }
 
-  String _currentLocation() => ref
-      .read(routerProvider)
-      .routerDelegate
-      .currentConfiguration
-      .uri
-      .toString();
+  /// Without a Settings `focus` link parameter: it is used once, so back and
+  /// forward never carry it.
+  String _currentLocation() => withoutSettingsFocus(
+    ref.read(routerProvider).routerDelegate.currentConfiguration.uri.toString(),
+  );
 
   /// Index [back] or [forward] is moving to while the router has not reported
   /// where it landed yet.

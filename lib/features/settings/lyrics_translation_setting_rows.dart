@@ -5,11 +5,13 @@ import '../../core/lyrics_translation/translation_language.dart';
 import '../../core/lyrics_translation/translation_service.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/settings_routes.dart';
 import '../../shared/translation_language_name.dart';
 import '../../shared/translation_notice_dialog.dart';
 import 'deepl_key_setting_row.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
+import 'settings_focus.dart';
 
 /// A choice of the default language: a language code, or `null` to follow the
 /// app. A record, not a bare `String?`, because the dropdown ignores `null`
@@ -73,7 +75,10 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
           ),
         ),
         if (prefs.service == LyricsTranslationService.deepl)
-          const DeepLKeySettingRow(),
+          const SettingsFocusTarget(
+            anchor: SettingsAnchor.deepLKey,
+            child: DeepLKeySettingRow(),
+          ),
         SettingRow.single(
           title: l10n.settingsTranslationTarget,
           subtitle: l10n.settingsTranslationTargetHint,

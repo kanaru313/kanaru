@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/settings_routes.dart';
 import 'appearance_layout_setting_rows.dart';
 import 'appearance_text_setting_rows.dart';
 import 'appearance_theme_setting_rows.dart';
@@ -10,7 +11,10 @@ import 'settings_section.dart';
 
 /// Settings › Appearance: Theme, Text and Layout.
 class AppearanceSettingsPage extends StatelessWidget {
-  const AppearanceSettingsPage({super.key});
+  const AppearanceSettingsPage({super.key, this.focus});
+
+  /// The group or row a link asked for.
+  final SettingsAnchor? focus;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +22,7 @@ class AppearanceSettingsPage extends StatelessWidget {
 
     return SettingsPageScaffold(
       title: l10n.settingsAppearance,
+      focus: focus,
       children: [
         SettingsSection(
           title: l10n.settingsGroupTheme,

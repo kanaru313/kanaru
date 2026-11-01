@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
+import '../../shared/settings_routes.dart';
 import 'backup_settings_section.dart';
 import 'cover_cache_setting_rows.dart';
 import 'log_folder_setting_row.dart';
@@ -11,7 +12,10 @@ import 'translation_cache_setting_row.dart';
 
 /// Settings › Data & storage: Backup and restore, Caches and Logs.
 class DataStorageSettingsPage extends StatelessWidget {
-  const DataStorageSettingsPage({super.key});
+  const DataStorageSettingsPage({super.key, this.focus});
+
+  /// The group or row a link asked for.
+  final SettingsAnchor? focus;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +23,7 @@ class DataStorageSettingsPage extends StatelessWidget {
 
     return SettingsPageScaffold(
       title: l10n.settingsDataStorage,
+      focus: focus,
       children: [
         const BackupSettingsSection(),
         SettingsSection(

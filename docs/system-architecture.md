@@ -134,7 +134,7 @@ sequenceDiagram
     A->>C: after the first frame, runLibraryStartupTasks
     Note over C: marks a library with roots as onboarded, quiet scan if enabled
     A->>A: after the first frame, the shell checks every root with isDirectory
-    Note over A: once per launch; a snackbar with a Settings action (opens Settings › Library) names missing folders
+    Note over A: once per launch; a snackbar with a Settings action (opens Settings › Library › Folders, pulsing) names missing folders
     A->>C: container.listen(folderWatcherProvider)
     Note over C: folder watcher follows the Watch folders setting, kept for the session
     A->>C: then startOpenFiles (Linux)

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
@@ -7,9 +8,12 @@ import '../../../../core/lyrics_translation/translation_language.dart';
 import '../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/icons/app_icons.dart';
+import '../../../../shared/settings_routes.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/translation_notice_dialog.dart';
 import '../../../../shared/widgets/menu_row.dart';
+import '../../now_playing/now_playing_open_provider.dart';
 import 'lyrics_translation_labels.dart';
 import 'lyrics_translation_menu_footer.dart';
 import 'lyrics_translation_switch_row.dart';
@@ -57,6 +61,16 @@ List<Widget> lyricsTranslationMenuItems(
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
     }
+  }
+
+  // The router and container are taken now: Now Playing closes, and with it
+  // the tree this menu hangs from.
+  final router = GoRouter.maybeOf(context);
+  // Read on press only: building it starts the player service.
+  final container = ProviderScope.containerOf(context);
+  void openSettings() {
+    container.read(nowPlayingOpenProvider.notifier).close();
+    router?.go(settingsFocusLocation(SettingsAnchor.playbackTranslation));
   }
 
   // A radio row of a submenu; the one in effect is tinted like the lyrics
@@ -169,5 +183,12 @@ List<Widget> lyricsTranslationMenuItems(
       ),
     ),
     ...lyricsTranslationMenuFooter(context, state, prefs.service, controller),
+    const Divider(height: 9),
+    MenuItemButton(
+      style: menuRowStyle(),
+      leadingIcon: const Icon(AppIcons.settingsOutlined),
+      onPressed: openSettings,
+      child: Text(l10n.lyricsTranslationMenuSettings),
+    ),
   ];
 }

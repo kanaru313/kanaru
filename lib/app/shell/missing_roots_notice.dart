@@ -69,7 +69,8 @@ class _MissingRootsNoticeState extends ConsumerState<MissingRootsNotice> {
         duration: const Duration(seconds: 8),
         action: SnackBarAction(
           label: l10n.libraryMissingRootsAction,
-          onPressed: () => router?.go(settingsLibraryRoute),
+          onPressed: () =>
+              router?.go(settingsFocusLocation(SettingsAnchor.libraryFolders)),
         ),
       ),
     );

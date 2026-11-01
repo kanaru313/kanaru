@@ -262,6 +262,44 @@ void main() {
     expect(history.entries.last, '/settings');
   });
 
+  testWidgets('records a Settings link without its focus parameter', (
+    tester,
+  ) async {
+    final container = await pumpRouter(tester);
+    final router = container.read(routerProvider);
+
+    router.go('/settings?focus=folders');
+    await tester.pump();
+    router.go('/songs');
+    await tester.pump();
+    container.read(navigationHistoryProvider.notifier).back();
+    await tester.pump();
+
+    final history = container.read(navigationHistoryProvider);
+    expect(history.entries, ['/home', '/settings', '/songs']);
+    expect(
+      router.routerDelegate.currentConfiguration.uri.toString(),
+      '/settings',
+    );
+  });
+
+  testWidgets('removing the focus parameter afterwards adds no entry', (
+    tester,
+  ) async {
+    final container = await pumpRouter(tester);
+    final router = container.read(routerProvider);
+
+    router.go('/settings?focus=folders');
+    await tester.pump();
+    router.go('/settings');
+    await tester.pump();
+
+    expect(container.read(navigationHistoryProvider).entries, [
+      '/home',
+      '/settings',
+    ]);
+  });
+
   test('routerProvider disposes its router with the container', () {
     final container = ProviderContainer();
     final router = container.read(routerProvider);

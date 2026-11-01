@@ -10,6 +10,8 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/features/settings/library_folders_list.dart';
+import 'package:kanaru/features/settings/settings_focus.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:material_ui/material_ui.dart';
@@ -102,16 +104,31 @@ void main() {
     expect(find.text('Music folder not found: /gone'), findsOneWidget);
   });
 
-  testWidgets('the Settings action opens the Library settings page', (
+  testWidgets('the Settings action opens Library with Folders pulsing', (
     tester,
   ) async {
     final h = await pumpWith(tester, roots: ['/gone']);
     expect(location(h), isNot('/settings/library'));
 
     await tester.tap(find.widgetWithText(SnackBarAction, 'Settings'));
-    await tester.pumpAndSettle();
+    // Stepped, not settled: settling would run the whole pulse.
+    await tester.pump();
+    await tester.pump();
 
     expect(location(h), settingsLibraryRoute);
+    await tester.pump(settingsFocusSettleDelay);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    final folders = find.ancestor(
+      of: find.byType(LibraryFoldersList),
+      matching: find.byType(SettingsFocusTarget),
+    );
+    expect(folders, findsOneWidget);
+    final tint = tester.widget<Material>(
+      find.descendant(of: folders, matching: find.byType(Material)).first,
+    );
+    expect(tint.type, MaterialType.canvas);
+    await tester.pump(const Duration(seconds: 3));
   });
 
   testWidgets('moving around does not show it again', (tester) async {

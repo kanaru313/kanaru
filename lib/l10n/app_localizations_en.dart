@@ -3269,6 +3269,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can turn it off in Settings › Playback › Lyrics.';
 
   @override
+  String get lyricsTranslationMenuSettings => 'Translation settings';
+
+  @override
+  String get lyricsTranslationBannerOpenKey => 'DeepL key settings';
+
+  @override
+  String get onlineLyricsNoticeOpenSettings => 'Open lyrics settings';
+
+  @override
   String get onlineLyricsNoticeTurnOn => 'Turn on';
 
   @override

@@ -2824,6 +2824,18 @@
   "@onlineLyricsNoticeAutoHint": {
     "description": "Hint under the automatic online lyrics notice saying where to turn it off"
   },
+  "lyricsTranslationMenuSettings": "Translation settings",
+  "@lyricsTranslationMenuSettings": {
+    "description": "Item at the end of the lyrics translation menu that opens Settings at the translation group"
+  },
+  "lyricsTranslationBannerOpenKey": "DeepL key settings",
+  "@lyricsTranslationBannerOpenKey": {
+    "description": "Button on the DeepL key error banner that opens Settings at the DeepL key"
+  },
+  "onlineLyricsNoticeOpenSettings": "Open lyrics settings",
+  "@onlineLyricsNoticeOpenSettings": {
+    "description": "Link in the automatic online lyrics notice that opens Settings at the lyrics group"
+  },
   "onlineLyricsNoticeTurnOn": "Turn on",
   "@onlineLyricsNoticeTurnOn": {
     "description": "Button of the automatic online lyrics notice that accepts"

@@ -18,25 +18,29 @@ List<RouteBase> settingsSectionRoutes({
 }) => [
   GoRoute(
     path: _relative(settingsAppearanceRoute),
-    builder: (context, state) => const AppearanceSettingsPage(),
+    builder: (context, state) => AppearanceSettingsPage(focus: _focusOf(state)),
   ),
   GoRoute(
     path: _relative(settingsPlaybackRoute),
-    builder: (context, state) => const PlaybackSettingsPage(),
+    builder: (context, state) => PlaybackSettingsPage(focus: _focusOf(state)),
     routes: playbackChildren,
   ),
   GoRoute(
     path: _relative(settingsLibraryRoute),
-    builder: (context, state) => const LibrarySettingsPage(),
+    builder: (context, state) => LibrarySettingsPage(focus: _focusOf(state)),
   ),
   GoRoute(
     path: _relative(settingsDataRoute),
-    builder: (context, state) => const DataStorageSettingsPage(),
+    builder: (context, state) =>
+        DataStorageSettingsPage(focus: _focusOf(state)),
   ),
   GoRoute(
     path: _relative(settingsAboutRoute),
-    builder: (context, state) => const AboutSettingsPage(),
+    builder: (context, state) => AboutSettingsPage(focus: _focusOf(state)),
   ),
 ];
+
+SettingsAnchor? _focusOf(GoRouterState state) =>
+    SettingsAnchor.byId(state.uri.queryParameters[settingsFocusParam]);
 
 String _relative(String route) => route.substring('$settingsRoute/'.length);

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,7 +13,9 @@ import '../../../core/player/player_service.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/lyrics_picker/lyrics_picker.dart';
 import '../../../shared/online_lyrics_notice_dialog.dart';
+import '../../../shared/settings_routes.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
+import '../now_playing/now_playing_open_provider.dart';
 import 'lyrics_save_flow.dart';
 
 final _log = Logger('lyrics_view');
@@ -152,10 +155,16 @@ class LyricsActionRunner {
   /// song that cannot be looked up automatically (no title, artist or
   /// length) is told so, since turning it on will not find anything for it.
   Future<void> enableAutomatic() => guarded(() async {
+    // Taken before the dialog opens, from the root navigator's context.
+    final router = GoRouter.maybeOf(navigator.context);
     final on = await confirmOnlineLyricsNotice(
       navigator,
       container,
       auto: true,
+      onOpenSettings: () {
+        container.read(nowPlayingOpenProvider.notifier).close();
+        router?.go(settingsFocusLocation(SettingsAnchor.playbackLyrics));
+      },
     );
     final target = this.target;
     if (!on || target == null || target.isAutoSearchable) return;

@@ -4766,6 +4766,24 @@ abstract class AppLocalizations {
   /// **'You can turn it off in Settings › Playback › Lyrics.'**
   String get onlineLyricsNoticeAutoHint;
 
+  /// Item at the end of the lyrics translation menu that opens Settings at the translation group
+  ///
+  /// In en, this message translates to:
+  /// **'Translation settings'**
+  String get lyricsTranslationMenuSettings;
+
+  /// Button on the DeepL key error banner that opens Settings at the DeepL key
+  ///
+  /// In en, this message translates to:
+  /// **'DeepL key settings'**
+  String get lyricsTranslationBannerOpenKey;
+
+  /// Link in the automatic online lyrics notice that opens Settings at the lyrics group
+  ///
+  /// In en, this message translates to:
+  /// **'Open lyrics settings'**
+  String get onlineLyricsNoticeOpenSettings;
+
   /// Button of the automatic online lyrics notice that accepts
   ///
   /// In en, this message translates to:

@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_failure.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/settings_routes.dart';
 import '../../../../shared/translation_notice_dialog.dart';
+import '../../now_playing/now_playing_open_provider.dart';
 import 'lyrics_translation_labels.dart';
 
 /// Widest the banner grows.
@@ -46,6 +49,12 @@ class LyricsTranslationBanner extends ConsumerWidget {
     }
   }
 
+  void _openKeySettings(BuildContext context, WidgetRef ref) {
+    final router = GoRouter.maybeOf(context);
+    ref.read(nowPlayingOpenProvider.notifier).close();
+    router?.go(settingsFocusLocation(SettingsAnchor.deepLKey));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -82,6 +91,11 @@ class LyricsTranslationBanner extends ConsumerWidget {
                     alignment: AlignmentDirectional.centerEnd,
                     child: Wrap(
                       children: [
+                        if (_isKeyError(kind))
+                          TextButton(
+                            onPressed: () => _openKeySettings(context, ref),
+                            child: Text(l10n.lyricsTranslationBannerOpenKey),
+                          ),
                         TextButton(
                           onPressed: () => _useOther(context, ref),
                           child: Text(

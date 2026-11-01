@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   late ProviderContainer container;
   bool? answer;
+  final events = <String>[];
 
   OnlineLyricsPrefs currentPrefs() =>
       container.read(settingsProvider).onlineLyrics;
@@ -19,8 +20,10 @@ void main() {
     OnlineLyricsPrefs prefs = const OnlineLyricsPrefs(),
     Locale locale = const Locale('en'),
     bool unmountCaller = false,
+    bool withSettingsLink = false,
   }) async {
     answer = null;
+    events.clear();
     container = ProviderContainer(
       overrides: [
         initialSettingsProvider.overrideWithValue(
@@ -48,9 +51,13 @@ void main() {
                       navigator,
                       container,
                       auto: auto,
+                      onOpenSettings: withSettingsLink
+                          ? () => events.add('settings')
+                          : null,
                     );
                     if (unmountCaller) showCaller.value = false;
                     answer = await future;
+                    events.add('answered');
                   },
                   child: const Text('go'),
                 )
@@ -181,5 +188,52 @@ void main() {
 
     expect(find.text('Tự động tìm lời online?'), findsOneWidget);
     expect(find.text('Bật'), findsOneWidget);
+  });
+
+  group('settings link', () {
+    const link = 'Open lyrics settings';
+
+    testWidgets('shows only for the automatic notice with a callback', (
+      tester,
+    ) async {
+      await pump(tester, auto: true, withSettingsLink: true);
+      expect(find.text(link), findsOneWidget);
+    });
+
+    testWidgets('is absent without a callback', (tester) async {
+      await pump(tester, auto: true);
+      expect(find.text(link), findsNothing);
+    });
+
+    testWidgets('is absent from the manual notice', (tester) async {
+      await pump(tester, withSettingsLink: true);
+      expect(find.text(link), findsNothing);
+    });
+
+    testWidgets('answers false, runs the callback once, keeps consent', (
+      tester,
+    ) async {
+      await pump(tester, auto: true, withSettingsLink: true);
+      final before = currentPrefs();
+
+      await tester.tap(find.text(link));
+      await tester.pumpAndSettle();
+
+      expect(answer, isFalse);
+      // Once the dialog is gone, before the caller gets its answer.
+      expect(events, ['settings', 'answered']);
+      expect(currentPrefs(), before);
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    testWidgets('Cancel never runs the callback', (tester) async {
+      await pump(tester, auto: true, withSettingsLink: true);
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(answer, isFalse);
+      expect(events, ['answered']);
+    });
   });
 }

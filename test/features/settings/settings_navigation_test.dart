@@ -38,6 +38,7 @@ import 'package:kanaru/features/settings/playback_settings_page.dart';
 import 'package:kanaru/features/settings/scan_stats_rows.dart';
 import 'package:kanaru/features/settings/separator_setting_rows.dart';
 import 'package:kanaru/features/settings/settings_category_tile.dart';
+import 'package:kanaru/features/settings/settings_focus.dart';
 import 'package:kanaru/features/settings/translation_cache_setting_row.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
@@ -291,5 +292,97 @@ void main() {
       find.widgetWithText(SettingsCategoryTile, l10n.settingsPlugins),
       findsOneWidget,
     );
+  });
+
+  group('links with a focus', () {
+    final link = settingsFocusLocation(SettingsAnchor.playbackTranslation);
+
+    bool translationPulsing(WidgetTester tester) {
+      final target = find.byWidgetPredicate(
+        (w) =>
+            w is SettingsFocusTarget &&
+            w.anchor == SettingsAnchor.playbackTranslation,
+      );
+      return tester
+              .widget<Material>(
+                find
+                    .descendant(of: target, matching: find.byType(Material))
+                    .first,
+              )
+              .type ==
+          MaterialType.canvas;
+    }
+
+    Future<void> afterSettleDelay(WidgetTester tester) async {
+      await tester.pump(settingsFocusSettleDelay);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    Future<void> finishPulse(WidgetTester tester) =>
+        tester.pump(const Duration(seconds: 3));
+
+    testWidgets('open Playback with the group pulsing, then a plain URL', (
+      tester,
+    ) async {
+      await _pumpRoot(tester);
+
+      container.read(routerProvider).go(link);
+      await tester.pump();
+      await tester.pump();
+
+      expect(_location(), settingsPlaybackRoute);
+      expect(
+        container
+            .read(routerProvider)
+            .routeInformationProvider
+            .value
+            .uri
+            .toString(),
+        settingsPlaybackRoute,
+      );
+      await afterSettleDelay(tester);
+      expect(translationPulsing(tester), isTrue);
+      await finishPulse(tester);
+    });
+
+    testWidgets('going away and back never pulses again', (tester) async {
+      await _pumpRoot(tester);
+      container.read(routerProvider).go(link);
+      await tester.pump();
+      await afterSettleDelay(tester);
+      await finishPulse(tester);
+
+      container.read(routerProvider).go('/songs');
+      await tester.pumpAndSettle();
+      await _back(tester);
+      await afterSettleDelay(tester);
+
+      expect(_location(), settingsPlaybackRoute);
+      expect(translationPulsing(tester), isFalse);
+      expect(
+        container.read(navigationHistoryProvider).entries,
+        everyElement(isNot(contains('focus'))),
+      );
+    });
+
+    testWidgets('the same link twice pulses twice, also on the open page', (
+      tester,
+    ) async {
+      await _pumpRoot(tester);
+      container.read(routerProvider).go(link);
+      await tester.pump();
+      await afterSettleDelay(tester);
+      expect(translationPulsing(tester), isTrue);
+      await finishPulse(tester);
+      expect(translationPulsing(tester), isFalse);
+
+      container.read(routerProvider).go(link);
+      await tester.pump();
+      await afterSettleDelay(tester);
+
+      expect(translationPulsing(tester), isTrue);
+      await finishPulse(tester);
+    });
   });
 }

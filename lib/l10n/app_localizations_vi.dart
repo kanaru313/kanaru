@@ -3037,6 +3037,15 @@ class AppLocalizationsVi extends AppLocalizations {
       'Tắt lại được trong Cài đặt › Phát nhạc › Lời bài hát.';
 
   @override
+  String get lyricsTranslationMenuSettings => 'Cài đặt dịch';
+
+  @override
+  String get lyricsTranslationBannerOpenKey => 'Cài đặt khóa DeepL';
+
+  @override
+  String get onlineLyricsNoticeOpenSettings => 'Mở cài đặt lời bài hát';
+
+  @override
   String get onlineLyricsNoticeTurnOn => 'Bật';
 
   @override

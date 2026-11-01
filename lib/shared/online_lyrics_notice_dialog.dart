@@ -16,6 +16,11 @@ import '../l10n/l10n.dart';
 /// without a dialog.
 /// Otherwise Continue accepts only the manual search.
 ///
+/// With [auto] and [onOpenSettings], the dialog also offers a link to the
+/// lyrics settings. It counts as declining (the answer is false and nothing
+/// is written); [onOpenSettings] runs once the dialog is gone, if
+/// [navigator] is still mounted.
+///
 /// The dialog opens on [navigator]'s context. The settings are taken from
 /// [container] before it opens, so the caller (a menu row, say) may leave
 /// the tree while the dialog is open and Continue still applies. Takes no
@@ -24,6 +29,7 @@ Future<bool> confirmOnlineLyricsNotice(
   NavigatorState navigator,
   ProviderContainer container, {
   required bool auto,
+  VoidCallback? onOpenSettings,
 }) async {
   final settings = container.read(settingsProvider.notifier);
   final prefs = container.read(settingsProvider).onlineLyrics;
@@ -35,19 +41,33 @@ Future<bool> confirmOnlineLyricsNotice(
     if (auto) settings.enableAutoOnlineLyrics();
     return true;
   }
-  final answer = await showDialog<bool>(
+  final answer = await showDialog<_NoticeAnswer>(
     context: navigator.context,
-    builder: (context) => _OnlineLyricsNoticeDialog(auto: auto),
+    builder: (context) => _OnlineLyricsNoticeDialog(
+      auto: auto,
+      hasSettingsLink: auto && onOpenSettings != null,
+    ),
   );
-  if (answer != true) return false;
+  if (answer == _NoticeAnswer.openSettings) {
+    if (navigator.mounted) onOpenSettings?.call();
+    return false;
+  }
+  // Cancel, the barrier and anything else decline.
+  if (answer != _NoticeAnswer.accept) return false;
   settings.acknowledgeOnlineLyricsNotice(auto: auto);
   return true;
 }
 
+enum _NoticeAnswer { accept, decline, openSettings }
+
 class _OnlineLyricsNoticeDialog extends StatelessWidget {
-  const _OnlineLyricsNoticeDialog({required this.auto});
+  const _OnlineLyricsNoticeDialog({
+    required this.auto,
+    required this.hasSettingsLink,
+  });
 
   final bool auto;
+  final bool hasSettingsLink;
 
   @override
   Widget build(BuildContext context) {
@@ -66,17 +86,29 @@ class _OnlineLyricsNoticeDialog extends StatelessWidget {
           if (auto) ...[
             const SizedBox(height: 12),
             Text(l10n.onlineLyricsNoticeAutoHint),
+            if (hasSettingsLink)
+              TextButton(
+                // Flush with the hint above, with a full-height tap target.
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 40),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                ),
+                onPressed: () =>
+                    Navigator.of(context).pop(_NoticeAnswer.openSettings),
+                child: Text(l10n.onlineLyricsNoticeOpenSettings),
+              ),
           ],
         ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () => Navigator.of(context).pop(_NoticeAnswer.decline),
           child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
         FilledButton(
           autofocus: true,
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () => Navigator.of(context).pop(_NoticeAnswer.accept),
           child: Text(
             auto
                 ? l10n.onlineLyricsNoticeTurnOn
