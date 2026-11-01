@@ -8,7 +8,6 @@ import 'package:kanaru/app/router.dart';
 import 'package:kanaru/app/shell/navigation_history.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
-import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/about_settings_section.dart';
@@ -17,7 +16,6 @@ import 'package:kanaru/features/settings/appearance_text_setting_rows.dart';
 import 'package:kanaru/features/settings/appearance_theme_setting_rows.dart';
 import 'package:kanaru/features/settings/backup_settings_section.dart';
 import 'package:kanaru/features/settings/cover_cache_setting_rows.dart';
-import 'package:kanaru/features/settings/deepl_key_setting_row.dart';
 import 'package:kanaru/features/settings/excluded_folders_list.dart';
 import 'package:kanaru/features/settings/folder_watch_row.dart';
 import 'package:kanaru/features/settings/interface_setting_rows.dart';
@@ -202,24 +200,6 @@ void main() {
     for (final MapEntry(key: type, value: count) in counts.entries) {
       expect(count, 1, reason: '$type');
     }
-  });
-
-  testWidgets('the DeepL key row sits on Playback while DeepL is chosen', (
-    tester,
-  ) async {
-    await _pumpRoot(
-      tester,
-      settings: const AppSettings(
-        languageCode: 'en',
-        translation: TranslationPrefs(service: LyricsTranslationService.deepl),
-      ),
-    );
-
-    final counts = await _countRows(tester, [DeepLKeySettingRow]);
-    expect(counts[DeepLKeySettingRow], 1);
-    container.read(routerProvider).go(settingsPlaybackRoute);
-    await tester.pumpAndSettle();
-    expect(find.byType(DeepLKeySettingRow), findsOneWidget);
   });
 
   testWidgets('back from the sources page keeps the Playback page and its '

@@ -29,15 +29,6 @@ void main() {
       final keys = SettingsAnchor.values.map((a) => '${a.page}#${a.id}');
       expect(keys.toSet(), hasLength(SettingsAnchor.values.length));
     });
-
-    test('only the DeepL key row has a fallback: the Translation group', () {
-      expect(
-        SettingsAnchor.deepLKey.fallback,
-        SettingsAnchor.playbackTranslation,
-      );
-      expect(SettingsAnchor.playbackTranslation.fallback, isNull);
-      expect(SettingsAnchor.libraryFolders.fallback, isNull);
-    });
   });
 
   test('settingsFocusLocation names the page and the anchor', () {

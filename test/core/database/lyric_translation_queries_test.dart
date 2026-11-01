@@ -24,11 +24,11 @@ void main() {
 
   test('save replaces only the row with the same key', () async {
     await db.saveLyricTranslation(_row('google', json: '{"a":"1"}'));
-    await db.saveLyricTranslation(_row('deepl', json: '{"a":"2"}'));
-    await db.saveLyricTranslation(_row('deepl', json: '{"a":"3"}'));
+    await db.saveLyricTranslation(_row('plugin-a', json: '{"a":"2"}'));
+    await db.saveLyricTranslation(_row('plugin-a', json: '{"a":"3"}'));
     final rows = await db.watchLyricTranslations('h1', 'vi').first;
     final byProvider = {for (final r in rows) r.provider: r.linesJson};
-    expect(byProvider, {'google': '{"a":"1"}', 'deepl': '{"a":"3"}'});
+    expect(byProvider, {'google': '{"a":"1"}', 'plugin-a': '{"a":"3"}'});
   });
 
   test('watch filters by hash and language and emits after a save', () async {
@@ -63,7 +63,7 @@ void main() {
   test('stats count rows and sum UTF-8 bytes', () async {
     const text = '{"a":"Xin chào"}';
     await db.saveLyricTranslation(_row('google', json: text));
-    await db.saveLyricTranslation(_row('deepl', json: '{}'));
+    await db.saveLyricTranslation(_row('plugin-a', json: '{}'));
     final stats = await db.watchLyricTranslationStats().first;
     expect(stats.count, 2);
     expect(stats.bytes, text.runes.length + 1 + 2); // "à" is 2 bytes
@@ -91,7 +91,7 @@ void main() {
 
   test('clear returns the count and leaves song targets', () async {
     await db.saveLyricTranslation(_row('google'));
-    await db.saveLyricTranslation(_row('deepl'));
+    await db.saveLyricTranslation(_row('plugin-a'));
     await db.setSongTranslationTarget('h1', 'vi');
     expect(await db.clearLyricTranslations(), 2);
     expect(await db.watchLyricTranslations('h1', 'vi').first, isEmpty);

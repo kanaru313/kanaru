@@ -61,18 +61,18 @@ void main() {
     var changes = 0;
     container.listen(settingsProvider, (_, _) => changes++);
 
-    notifier.enableTranslation(LyricsTranslationService.deepl);
+    notifier.enableTranslation(LyricsTranslationService.google);
     await notifier.flush();
 
     expect(changes, 1);
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isTrue);
-    expect(translation.service, LyricsTranslationService.deepl);
-    expect(translation.noticeAcknowledged, {LyricsTranslationService.deepl});
+    expect(translation.service, LyricsTranslationService.google);
+    expect(translation.noticeAcknowledged, {LyricsTranslationService.google});
     final json = stored()['lyricsTranslation']! as Map;
     expect(json['show'], true);
-    expect(json['service'], 'deepl');
-    expect(json['noticeAcknowledged'], ['deepl']);
+    expect(json['service'], 'google');
+    expect(json['noticeAcknowledged'], ['google']);
   });
 
   test('acknowledging only records the notice', () async {
@@ -94,15 +94,6 @@ void main() {
     expect(container.read(settingsProvider).translation.show, isFalse);
 
     notifier.toggleLyricsTranslation();
-    expect(container.read(settingsProvider).translation.show, isFalse);
-
-    notifier.acknowledgeTranslationNotice(LyricsTranslationService.deepl);
-    notifier.setTranslation(
-      container
-          .read(settingsProvider)
-          .translation
-          .copyWith(show: true, service: LyricsTranslationService.google),
-    );
     expect(container.read(settingsProvider).translation.show, isFalse);
   });
 

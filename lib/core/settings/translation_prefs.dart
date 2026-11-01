@@ -9,8 +9,8 @@ enum LyricsTranslationDisplay {
   replace,
 }
 
-/// Options of the lyrics translation. Never holds a credential: the DeepL key
-/// lives in the secret store.
+/// Options of the lyrics translation. Never holds a credential: keys live in
+/// the secret store.
 class TranslationPrefs {
   const TranslationPrefs({
     this.show = false,

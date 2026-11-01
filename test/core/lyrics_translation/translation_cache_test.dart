@@ -22,8 +22,8 @@ CachedTranslation _cached(LyricsTranslationService s) => CachedTranslation(
 void main() {
   group('decodeTranslationRow', () {
     test('decodes a valid row', () {
-      final c = decodeTranslationRow(_row('deepl', '{"hi":"chào"}'))!;
-      expect(c.service, LyricsTranslationService.deepl);
+      final c = decodeTranslationRow(_row('google', '{"hi":"chào"}'))!;
+      expect(c.service, LyricsTranslationService.google);
       expect(c.targetLang, 'vi');
       expect(c.sourceLang, 'en');
       expect(c.lines, {'hi': 'chào'});
@@ -40,6 +40,10 @@ void main() {
 
     test('unknown provider gives null', () {
       expect(decodeTranslationRow(_row('bing', '{}')), isNull);
+    });
+
+    test('a row saved by the removed DeepL client gives null', () {
+      expect(decodeTranslationRow(_row('deepl', '{"hi":"chào"}')), isNull);
     });
   });
 
@@ -58,18 +62,11 @@ void main() {
 
   group('pickCached', () {
     final google = _cached(LyricsTranslationService.google);
-    final deepl = _cached(LyricsTranslationService.deepl);
 
     test('prefers the current service', () {
-      final r = pickCached([google, deepl], LyricsTranslationService.deepl);
-      expect(r.current, same(deepl));
-      expect(r.other, same(google));
-    });
-
-    test('falls back to the other service', () {
-      final r = pickCached([google], LyricsTranslationService.deepl);
-      expect(r.current, isNull);
-      expect(r.other, same(google));
+      final r = pickCached([google], LyricsTranslationService.google);
+      expect(r.current, same(google));
+      expect(r.other, isNull);
     });
 
     test('empty list gives nothing', () {

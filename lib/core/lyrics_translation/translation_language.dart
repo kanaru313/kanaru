@@ -2,67 +2,57 @@
 ///
 /// [code] is the app's own code: ISO 639-1 lowercase, plus `zh-Hans` and
 /// `zh-Hant`. [nameKey] is the key `languageDisplayName` turns into a label.
-/// [googleCode] and [deeplCode] are what each service's API expects;
-/// [deeplCode] is `null` when DeepL cannot translate into the language.
+/// [googleCode] is what Google's API expects.
 class TranslationLanguage {
-  const TranslationLanguage(
-    this.code,
-    this.nameKey,
-    this.googleCode, [
-    this.deeplCode,
-  ]);
+  const TranslationLanguage(this.code, this.nameKey, this.googleCode);
 
   final String code;
   final String nameKey;
   final String googleCode;
-  final String? deeplCode;
 }
 
-// DeepL codes checked on 2026-10-27 against the table on the DeepL
-// supported-languages page (developers.deepl.com). [deeplCode] stays nullable
-// for languages DeepL may not offer, now or if its list changes.
 const translationLanguages = <TranslationLanguage>[
-  TranslationLanguage('vi', 'vie', 'vi', 'VI'),
-  TranslationLanguage('en', 'eng', 'en', 'EN-US'),
-  TranslationLanguage('ja', 'jpn', 'ja', 'JA'),
-  TranslationLanguage('ko', 'kor', 'ko', 'KO'),
-  TranslationLanguage('zh-Hans', 'zh-Hans', 'zh-CN', 'ZH-HANS'),
-  TranslationLanguage('zh-Hant', 'zh-Hant', 'zh-TW', 'ZH-HANT'),
-  TranslationLanguage('fr', 'fra', 'fr', 'FR'),
-  TranslationLanguage('de', 'deu', 'de', 'DE'),
-  TranslationLanguage('es', 'spa', 'es', 'ES'),
-  TranslationLanguage('it', 'ita', 'it', 'IT'),
-  TranslationLanguage('ru', 'rus', 'ru', 'RU'),
-  TranslationLanguage('pt', 'por', 'pt', 'PT-BR'),
-  TranslationLanguage('th', 'tha', 'th', 'TH'),
-  TranslationLanguage('id', 'ind', 'id', 'ID'),
-  TranslationLanguage('hi', 'hin', 'hi', 'HI'),
-  TranslationLanguage('ar', 'ara', 'ar', 'AR'),
-  TranslationLanguage('nl', 'nld', 'nl', 'NL'),
-  TranslationLanguage('sv', 'swe', 'sv', 'SV'),
-  TranslationLanguage('pl', 'pol', 'pl', 'PL'),
-  TranslationLanguage('tr', 'tur', 'tr', 'TR'),
-  TranslationLanguage('uk', 'ukr', 'uk', 'UK'),
-  TranslationLanguage('cs', 'ces', 'cs', 'CS'),
-  TranslationLanguage('el', 'ell', 'el', 'EL'),
-  TranslationLanguage('fa', 'fas', 'fa', 'FA'),
-  TranslationLanguage('ro', 'ron', 'ro', 'RO'),
-  TranslationLanguage('ms', 'msa', 'ms', 'MS'),
-  TranslationLanguage('he', 'heb', 'he', 'HE'),
-  TranslationLanguage('fi', 'fin', 'fi', 'FI'),
-  TranslationLanguage('da', 'dan', 'da', 'DA'),
-  TranslationLanguage('no', 'nor', 'no', 'NB'),
-  TranslationLanguage('hu', 'hun', 'hu', 'HU'),
-  TranslationLanguage('cy', 'cym', 'cy', 'CY'),
-  TranslationLanguage('sk', 'slk', 'sk', 'SK'),
-  TranslationLanguage('sq', 'sqi', 'sq', 'SQ'),
-  TranslationLanguage('hy', 'hye', 'hy', 'HY'),
-  TranslationLanguage('eu', 'eus', 'eu', 'EU'),
-  TranslationLanguage('my', 'mya', 'my', 'MY'),
-  TranslationLanguage('ka', 'kat', 'ka', 'KA'),
-  TranslationLanguage('is', 'isl', 'is', 'IS'),
-  TranslationLanguage('mk', 'mkd', 'mk', 'MK'),
-  TranslationLanguage('mi', 'mri', 'mi', 'MI'),
+  TranslationLanguage('vi', 'vie', 'vi'),
+  TranslationLanguage('en', 'eng', 'en'),
+  TranslationLanguage('ja', 'jpn', 'ja'),
+  TranslationLanguage('ko', 'kor', 'ko'),
+  TranslationLanguage('zh-Hans', 'zh-Hans', 'zh-CN'),
+  TranslationLanguage('zh-Hant', 'zh-Hant', 'zh-TW'),
+  TranslationLanguage('fr', 'fra', 'fr'),
+  TranslationLanguage('de', 'deu', 'de'),
+  TranslationLanguage('es', 'spa', 'es'),
+  TranslationLanguage('it', 'ita', 'it'),
+  TranslationLanguage('ru', 'rus', 'ru'),
+  TranslationLanguage('pt', 'por', 'pt'),
+  TranslationLanguage('th', 'tha', 'th'),
+  TranslationLanguage('id', 'ind', 'id'),
+  TranslationLanguage('hi', 'hin', 'hi'),
+  TranslationLanguage('ar', 'ara', 'ar'),
+  TranslationLanguage('nl', 'nld', 'nl'),
+  TranslationLanguage('sv', 'swe', 'sv'),
+  TranslationLanguage('pl', 'pol', 'pl'),
+  TranslationLanguage('tr', 'tur', 'tr'),
+  TranslationLanguage('uk', 'ukr', 'uk'),
+  TranslationLanguage('cs', 'ces', 'cs'),
+  TranslationLanguage('el', 'ell', 'el'),
+  TranslationLanguage('fa', 'fas', 'fa'),
+  TranslationLanguage('ro', 'ron', 'ro'),
+  TranslationLanguage('ms', 'msa', 'ms'),
+  TranslationLanguage('he', 'heb', 'he'),
+  TranslationLanguage('fi', 'fin', 'fi'),
+  TranslationLanguage('da', 'dan', 'da'),
+  TranslationLanguage('no', 'nor', 'no'),
+  TranslationLanguage('hu', 'hun', 'hu'),
+  TranslationLanguage('cy', 'cym', 'cy'),
+  TranslationLanguage('sk', 'slk', 'sk'),
+  TranslationLanguage('sq', 'sqi', 'sq'),
+  TranslationLanguage('hy', 'hye', 'hy'),
+  TranslationLanguage('eu', 'eus', 'eu'),
+  TranslationLanguage('my', 'mya', 'my'),
+  TranslationLanguage('ka', 'kat', 'ka'),
+  TranslationLanguage('is', 'isl', 'is'),
+  TranslationLanguage('mk', 'mkd', 'mk'),
+  TranslationLanguage('mi', 'mri', 'mi'),
 ];
 
 /// The entry of [translationLanguages] whose code is [code], or `null`.
@@ -75,7 +65,7 @@ TranslationLanguage? translationLanguageFor(String code) {
 
 /// [code] lower-cased and cut at the first `-` or `_`: `zh_TW` is `zh`.
 /// Alternative codes are folded into the one the table uses: Google's old
-/// `iw` is `he`, and DeepL's `NB` and `NN` are `no`.
+/// `iw` is `he`, and `nb` and `nn` are `no`.
 String baseLanguageOf(String code) {
   final lower = code.toLowerCase();
   final cut = lower.indexOf(RegExp('[-_]'));

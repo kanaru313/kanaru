@@ -8,7 +8,6 @@ import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
-import 'package:kanaru/core/lyrics_translation/deepl_key_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translator.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
@@ -104,7 +103,6 @@ ProviderContainer translationContainer({
   required LibraryDatabase? db,
   required FakeEmbeddedLyricsReader lyrics,
   FakeTranslator? google,
-  FakeTranslator? deepl,
   AppSettings? settings,
   SecretStore? store,
   List<Override> overrides = const [],
@@ -120,7 +118,6 @@ ProviderContainer translationContainer({
         settings ?? translationSettings(),
       ),
       if (google != null) googleTranslatorProvider.overrideWithValue(google),
-      if (deepl != null) deeplTranslatorProvider.overrideWithValue(deepl),
       secretStoreProvider.overrideWith(
         (ref) async => ResolvedSecretStore(
           store ?? MemorySecretStore(),

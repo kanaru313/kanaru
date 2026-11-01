@@ -1,4 +1,4 @@
-/// Where a credential (such as the DeepL key) is kept. Credentials never go
+/// Where a credential (such as a service API key) is kept. Credentials never go
 /// to `settings.json`, the logs or the library database.
 abstract interface class SecretStore {
   /// The value stored under [key], or `null` when there is none.
@@ -9,9 +9,6 @@ abstract interface class SecretStore {
   /// Removes [key]; removing a missing key is not an error.
   Future<void> delete(String key);
 }
-
-/// Name under which the DeepL API key is stored.
-const deeplApiKeySecret = 'deepl_api_key';
 
 enum SecretStoreFailure {
   /// No keyring can be used (absent, not answering, or a plugin error).

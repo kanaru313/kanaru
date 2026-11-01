@@ -9,7 +9,6 @@ import '../l10n/l10n.dart';
 String translationServiceName(LyricsTranslationService service) =>
     switch (service) {
       LyricsTranslationService.google => 'Google',
-      LyricsTranslationService.deepl => 'DeepL',
     };
 
 /// Makes sure the user accepted sending lyrics to [service]. Returns true at

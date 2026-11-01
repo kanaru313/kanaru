@@ -9,7 +9,6 @@ import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:material_ui/material_ui.dart';
 
 const _google = LyricsTranslationService.google;
-const _deepl = LyricsTranslationService.deepl;
 
 void main() {
   late ProviderContainer container;
@@ -113,16 +112,6 @@ void main() {
     expect(answer, isFalse);
   });
 
-  testWidgets('DeepL has no unofficial line', (tester) async {
-    await pump(
-      tester,
-      (c, r) async => answer = await confirmTranslationNotice(c, r, _deepl),
-    );
-
-    expect(find.text('Lyrics will be sent to DeepL'), findsOneWidget);
-    expect(find.textContaining('unofficial'), findsNothing);
-  });
-
   testWidgets('the dialog is in Vietnamese for the vi locale', (tester) async {
     await pump(tester, confirm, locale: const Locale('vi'));
 
@@ -132,7 +121,7 @@ void main() {
 
   group('enabling with the notice', () {
     Future<void> enable(BuildContext c, WidgetRef r) =>
-        enableTranslationWithNotice(c, r, _deepl);
+        enableTranslationWithNotice(c, r, _google);
 
     testWidgets('Continue selects the service, accepts it and shows', (
       tester,
@@ -143,8 +132,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(prefs().show, isTrue);
-      expect(prefs().service, _deepl);
-      expect(prefs().noticeAcknowledged, {_deepl});
+      expect(prefs().service, _google);
+      expect(prefs().noticeAcknowledged, {_google});
     });
 
     testWidgets('Cancel leaves the settings as they were', (tester) async {
@@ -159,11 +148,11 @@ void main() {
     });
 
     testWidgets('an accepted service turns on at once', (tester) async {
-      await pump(tester, enable, acknowledged: {_deepl});
+      await pump(tester, enable, acknowledged: {_google});
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(prefs().show, isTrue);
-      expect(prefs().service, _deepl);
+      expect(prefs().service, _google);
     });
   });
 
@@ -174,7 +163,7 @@ void main() {
     addTearDown(shown.dispose);
     await pump(
       tester,
-      (c, r) => enableTranslationWithNotice(c, r, _deepl),
+      (c, r) => enableTranslationWithNotice(c, r, _google),
       home: (action) => ValueListenableBuilder<bool>(
         valueListenable: shown,
         builder: (context, visible, _) => visible
@@ -196,8 +185,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(prefs().show, isTrue);
-    expect(prefs().service, _deepl);
-    expect(prefs().noticeAcknowledged, {_deepl});
+    expect(prefs().service, _google);
+    expect(prefs().noticeAcknowledged, {_google});
   });
 
   group('language names', () {

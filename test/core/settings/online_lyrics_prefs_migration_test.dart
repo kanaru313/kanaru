@@ -46,7 +46,7 @@ void main() {
   test('legacy strings without @ and other types are ignored', () {
     final (prefs, _) = decode({
       'autoFetch': true,
-      'noticeAcknowledged': ['lrclib', 'deepl', 7, null],
+      'noticeAcknowledged': ['lrclib', 'bing', 7, null],
     });
 
     expect(prefs, const OnlineLyricsPrefs());

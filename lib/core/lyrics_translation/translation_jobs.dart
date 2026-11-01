@@ -7,7 +7,6 @@ import '../database/library_startup.dart';
 import '../database/lyric_translation_queries.dart';
 import '../secrets/secret_store.dart';
 import '../settings/settings_provider.dart';
-import 'deepl_key_provider.dart';
 import 'lyrics_translation_derive.dart';
 import 'lyrics_translator.dart';
 import 'translation_cache.dart';
@@ -118,8 +117,7 @@ class TranslationJobs
         return;
       }
       if (!ref.mounted) return;
-      final translator = await _translatorFor(key.service);
-      if (translator == null) return;
+      final translator = _translatorFor(key.service);
       checkJobLimits(uniqueLines, target, translator);
       if (force) _partial.remove(key);
       final partial = _partial.putIfAbsent(key, JobPartial.new);
@@ -176,21 +174,10 @@ class TranslationJobs
         );
   }
 
-  /// `null` when the container went away while the key loaded.
-  Future<LyricsTranslator?> _translatorFor(
-    LyricsTranslationService service,
-  ) async {
-    if (service == LyricsTranslationService.google) {
-      return ref.read(googleTranslatorProvider);
-    }
-    await ref.read(deeplApiKeyProvider.future);
-    if (!ref.mounted) return null;
-    final translator = ref.read(deeplTranslatorProvider);
-    if (translator == null) {
-      throw const TranslationException(TranslationFailureKind.noKey);
-    }
-    return translator;
-  }
+  LyricsTranslator _translatorFor(LyricsTranslationService service) =>
+      switch (service) {
+        LyricsTranslationService.google => ref.read(googleTranslatorProvider),
+      };
 
   void _set(TranslationJobKey key, TranslationJobStatus status) {
     if (ref.mounted) state = {...state, key: status};

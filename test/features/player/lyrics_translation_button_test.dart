@@ -213,16 +213,6 @@ void main() {
       expect(icon.color, isNot(scheme.primary));
     });
 
-    testWidgets('names the service of the row on screen', (tester) async {
-      await pump(
-        tester,
-        ready(LyricsTranslationService.deepl),
-        maxLabelWidth: 120,
-      );
-
-      expect(find.text('DeepL · English'), findsOneWidget);
-    });
-
     testWidgets('pressing the pill opens the menu', (tester) async {
       await pump(tester, ready(), maxLabelWidth: 120);
 

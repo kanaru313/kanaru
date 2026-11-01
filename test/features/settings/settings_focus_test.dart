@@ -224,20 +224,6 @@ void main() {
     expect(_offset(tester), 0);
   });
 
-  testWidgets('a missing row falls back to its group', (tester) async {
-    await _setUp(tester);
-    await tester.pumpWidget(_app(_page(SettingsAnchor.deepLKey)));
-    await tester.pump();
-    await _wait(tester, const Duration(milliseconds: 400));
-    expect(_offset(tester), greaterThan(0));
-    await _wait(
-      tester,
-      settingsFocusSettleDelay + const Duration(milliseconds: 400),
-    );
-    expect(_pulsing(tester), isTrue);
-    await _wait(tester, _finish);
-  });
-
   testWidgets('leaving mid-pulse leaves no timer behind', (tester) async {
     await _setUp(tester);
     await tester.pumpWidget(_app(_page(SettingsAnchor.playbackTranslation)));

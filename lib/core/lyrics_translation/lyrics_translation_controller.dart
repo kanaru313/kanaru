@@ -8,16 +8,13 @@ import '../lyrics/lyrics.dart';
 import '../lyrics/playing_track_lyrics_provider.dart';
 import '../player/player_service.dart';
 import '../settings/settings_provider.dart';
-import 'deepl_key_provider.dart';
 import 'lyrics_content_hash.dart';
 import 'lyrics_translation_derive.dart';
 import 'lyrics_translation_state.dart';
-import 'translation_failure.dart';
 import 'translation_jobs.dart';
 import 'translation_language.dart';
 import 'translation_lines.dart';
 import 'translation_providers.dart';
-import 'translation_service.dart';
 
 /// How long the same lyrics stay on screen before a request is made, so
 /// skipping through songs does not translate each one. Tests shorten it.
@@ -91,9 +88,6 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     _lyrics = lyrics;
     _target = info.effective;
     if (!rows.hasValue) return TranslationLoading(info, service);
-    final deeplKey = service == LyricsTranslationService.deepl
-        ? ref.watch(deeplApiKeyProvider)
-        : null;
     final job = ref.watch(translationJobsProvider.select((m) => m[key]));
 
     final derived = deriveTranslation(
@@ -102,7 +96,6 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
       lyrics: lyrics,
       rows: rows.requireValue,
       job: job,
-      deeplKey: deeplKey,
     );
     if (derived.needsRequest) _armRequest(key, lyrics, info.effective);
     return derived.state;
@@ -138,32 +131,8 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
   Future<void> retry() async {
     final (key, lyrics, target) = (_key, _lyrics, _target);
     if (key == null || lyrics == null || target == null) return;
-    final failed = state;
-    final keyStoreFailed =
-        failed is TranslationFailed &&
-        (failed.kind == TranslationFailureKind.keyStoreLocked ||
-            failed.kind == TranslationFailureKind.keyStoreUnavailable);
-    // A locked keyring may be unlocked by now: read the key again.
-    if (key.service == LyricsTranslationService.deepl &&
-        (keyStoreFailed || ref.read(deeplApiKeyProvider).hasError)) {
-      ref.invalidate(deeplApiKeyProvider);
-    }
     final jobs = ref.read(translationJobsProvider.notifier)..clearFailure(key);
     await jobs.run(key, uniqueLineTexts(lyrics), target);
-  }
-
-  /// Switches to the other service. Returns true when it was switched. When
-  /// the other service's notice was not accepted yet, nothing changes and
-  /// this returns false: the caller shows the notice and, after Continue,
-  /// calls `SettingsNotifier.enableTranslation` with that service.
-  bool useOtherService() {
-    final prefs = ref.read(settingsProvider).translation;
-    final other = prefs.service.other;
-    if (!prefs.noticeAcknowledged.contains(other)) return false;
-    ref
-        .read(settingsProvider.notifier)
-        .setTranslation(prefs.copyWith(service: other));
-    return true;
   }
 
   /// Sets the language for this song only; null goes back to the default.

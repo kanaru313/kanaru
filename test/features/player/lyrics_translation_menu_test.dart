@@ -14,8 +14,6 @@ import 'package:material_ui/material_ui.dart';
 import 'fake_translation_controller.dart';
 
 const _google = LyricsTranslationService.google;
-const _deepl = LyricsTranslationService.deepl;
-const _both = {_google, _deepl};
 
 void main() {
   late ProviderContainer container;
@@ -28,7 +26,7 @@ void main() {
     WidgetTester tester,
     LyricsTranslationState state, {
     TranslationPrefs settings = const TranslationPrefs(
-      noticeAcknowledged: _both,
+      noticeAcknowledged: {_google},
     ),
     bool followSettings = false,
     Size size = const Size(800, 900),
@@ -64,7 +62,7 @@ void main() {
   TranslationReady ready({bool other = false, String? override}) =>
       TranslationReady(
         fakeTranslationInfo(songOverride: override),
-        other ? _google : _deepl,
+        _google,
         'ja',
         const [],
         other,
@@ -78,13 +76,6 @@ void main() {
 
   Finder serviceRadio(String name) =>
       find.widgetWithText(RadioMenuButton<LyricsTranslationService>, name);
-
-  /// Picks [name] in the Service submenu of the open menu.
-  Future<void> pickService(WidgetTester tester, String name) async {
-    await openServiceSubmenu(tester);
-    await tester.tap(serviceRadio(name));
-    await tester.pumpAndSettle();
-  }
 
   testWidgets('items come in order and the first three work while off', (
     tester,
@@ -104,7 +95,6 @@ void main() {
     expect(find.text('Saved'), findsNothing);
     // The service row shows the selected service; the list is in its submenu.
     expect(find.text('Google'), findsOneWidget);
-    expect(find.text('DeepL'), findsNothing);
     for (final text in ['Translate to: English', 'Service']) {
       expect(
         find.ancestor(
@@ -317,38 +307,22 @@ void main() {
   });
 
   group('the service submenu', () {
-    testWidgets('lists both services, checks the selected, a pick closes', (
-      tester,
-    ) async {
+    testWidgets('lists Google, checks it, a pick closes', (tester) async {
       await pump(tester, TranslationOff(fakeTranslationInfo()));
 
       await openServiceSubmenu(tester);
       expect(serviceRadio('Google'), findsOneWidget);
-      expect(serviceRadio('DeepL'), findsOneWidget);
       final google = tester.widget<RadioMenuButton<LyricsTranslationService>>(
         serviceRadio('Google'),
       );
       expect(google.value, google.groupValue);
 
-      await tester.tap(serviceRadio('DeepL'));
+      await tester.tap(serviceRadio('Google'));
       await tester.pumpAndSettle();
-      expect(prefs().service, _deepl);
+      expect(prefs().service, _google);
       expect(prefs().show, isFalse);
       expect(fake.songTargets, isEmpty);
       expect(find.text('Show translation'), findsNothing);
-
-      await tester.tap(find.byType(IconButton));
-      await tester.pumpAndSettle();
-      expect(
-        find.descendant(
-          of: find.ancestor(
-            of: find.text('Service'),
-            matching: find.byType(SubmenuButton),
-          ),
-          matching: find.text('DeepL'),
-        ),
-        findsOneWidget,
-      );
     });
   });
 
@@ -410,13 +384,13 @@ void main() {
         tester,
         TranslationFailed(
           fakeTranslationInfo(),
-          _deepl,
+          _google,
           TranslationFailureKind.badKey,
         ),
       );
 
       expect(
-        find.text('DeepL rejected the API key. Check it in Settings.'),
+        find.text('The service rejected the API key. Check it in Settings.'),
         findsOneWidget,
       );
       await tester.tap(find.text('Retry'));
@@ -444,7 +418,10 @@ void main() {
       tester,
       ready(),
       followSettings: true,
-      settings: const TranslationPrefs(show: true, noticeAcknowledged: _both),
+      settings: const TranslationPrefs(
+        show: true,
+        noticeAcknowledged: {_google},
+      ),
     );
     expect(find.text('Saved'), findsOneWidget);
     expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
@@ -498,47 +475,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('will be sent'), findsNothing);
       expect(prefs().show, isTrue);
-    });
-
-    testWidgets('switching to DeepL while on asks once; Cancel keeps Google', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        ready(),
-        settings: const TranslationPrefs(
-          show: true,
-          noticeAcknowledged: {_google},
-        ),
-      );
-
-      await pickService(tester, 'DeepL');
-      expect(find.text('Lyrics will be sent to DeepL'), findsOneWidget);
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(prefs().service, _google);
-      expect(prefs().show, isTrue);
-      expect(prefs().noticeAcknowledged, {_google});
-
-      await tester.tap(find.byType(IconButton));
-      await tester.pumpAndSettle();
-      await pickService(tester, 'DeepL');
-      await tester.tap(find.text('Continue'));
-      await tester.pumpAndSettle();
-      expect(prefs().service, _deepl);
-      expect(prefs().noticeAcknowledged, _both);
-      expect(prefs().show, isTrue);
-    });
-
-    testWidgets('choosing a service while off asks nothing', (tester) async {
-      await pump(tester, off, settings: const TranslationPrefs());
-
-      await pickService(tester, 'DeepL');
-
-      expect(find.textContaining('will be sent'), findsNothing);
-      expect(prefs().service, _deepl);
-      expect(prefs().show, isFalse);
-      expect(prefs().noticeAcknowledged, isEmpty);
     });
   });
 

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import 'keyring_secret_store.dart';
+import 'legacy_secret_cleanup.dart';
 import 'secret_file_store.dart';
 import 'secret_service_probe.dart';
 import 'secret_store.dart';
@@ -195,7 +196,8 @@ final secretStoreSetupProvider = Provider<SecretStoreSetup>(
 
 /// The secret store, picked on first use: nothing at startup touches the
 /// keyring. Failing to pick is retried only when the caller asks again.
-final secretStoreProvider = FutureProvider<ResolvedSecretStore>(
-  (ref) => ref.watch(secretStoreSetupProvider).resolve(),
-  retry: (_, _) => null,
-);
+final secretStoreProvider = FutureProvider<ResolvedSecretStore>((ref) async {
+  final store = await ref.watch(secretStoreSetupProvider).resolve();
+  removeLegacySecretsOnce(store);
+  return store;
+}, retry: (_, _) => null);

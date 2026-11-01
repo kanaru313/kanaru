@@ -7,14 +7,13 @@ import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_failure.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/settings_routes.dart';
-import '../../../../shared/translation_notice_dialog.dart';
 import '../../now_playing/now_playing_open_provider.dart';
 import 'lyrics_translation_labels.dart';
 
 /// Widest the banner grows.
 const _bannerMaxWidth = 520.0;
 
-/// Whether the failure is about the DeepL key, which Retry cannot fix.
+/// Whether the failure is about the service key, which Retry cannot fix.
 bool _isKeyError(TranslationFailureKind kind) =>
     kind == TranslationFailureKind.noKey ||
     kind == TranslationFailureKind.badKey;
@@ -27,7 +26,7 @@ bool _canRetry(TranslationFailureKind kind) =>
     kind != TranslationFailureKind.unsupportedLanguage;
 
 /// Small banner at the top of the lyrics after a failed translation: why, and
-/// the ways out: use the other service and, where it can help, retry. The
+/// the way out: open the settings or, where it can help, retry. The
 /// lyrics keep playing and scrolling under it.
 class LyricsTranslationBanner extends ConsumerWidget {
   const LyricsTranslationBanner({
@@ -41,18 +40,10 @@ class LyricsTranslationBanner extends ConsumerWidget {
   /// Picks the controller (the app's language code).
   final String appLang;
 
-  Future<void> _useOther(BuildContext context, WidgetRef ref) async {
-    final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
-    // False: the other service's notice is not accepted yet; ask first.
-    if (!controller.useOtherService()) {
-      await enableTranslationWithNotice(context, ref, state.service.other);
-    }
-  }
-
   void _openKeySettings(BuildContext context, WidgetRef ref) {
     final router = GoRouter.maybeOf(context);
     ref.read(nowPlayingOpenProvider.notifier).close();
-    router?.go(settingsFocusLocation(SettingsAnchor.deepLKey));
+    router?.go(settingsFocusLocation(SettingsAnchor.playbackTranslation));
   }
 
   @override
@@ -96,14 +87,6 @@ class LyricsTranslationBanner extends ConsumerWidget {
                             onPressed: () => _openKeySettings(context, ref),
                             child: Text(l10n.lyricsTranslationBannerOpenKey),
                           ),
-                        TextButton(
-                          onPressed: () => _useOther(context, ref),
-                          child: Text(
-                            l10n.lyricsTranslationUseService(
-                              translationServiceName(state.service.other),
-                            ),
-                          ),
-                        ),
                         if (_canRetry(kind))
                           TextButton(
                             onPressed: controller.retry,

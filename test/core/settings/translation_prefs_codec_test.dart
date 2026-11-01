@@ -4,10 +4,7 @@ import 'package:kanaru/core/settings/translation_prefs.dart';
 import 'package:kanaru/core/settings/translation_prefs_codec.dart';
 
 void main() {
-  const both = {
-    LyricsTranslationService.google,
-    LyricsTranslationService.deepl,
-  };
+  const both = {LyricsTranslationService.google};
 
   TranslationPrefs decode(Object? json) => decodeTranslationPrefs(json).$1;
 
@@ -22,7 +19,7 @@ void main() {
   test('every field round-trips', () {
     const prefs = TranslationPrefs(
       show: true,
-      service: LyricsTranslationService.deepl,
+      service: LyricsTranslationService.google,
       targetLanguage: 'vi',
       display: LyricsTranslationDisplay.replace,
       noticeAcknowledged: both,
@@ -30,10 +27,10 @@ void main() {
 
     final json = encodeTranslationPrefs(prefs);
 
-    expect(json['service'], 'deepl');
+    expect(json['service'], 'google');
     expect(json['display'], 'replace');
     expect(json['targetLanguage'], 'vi');
-    expect(json['noticeAcknowledged'], ['google', 'deepl']);
+    expect(json['noticeAcknowledged'], ['google']);
     expect(decode(json), prefs);
   });
 
@@ -66,13 +63,17 @@ void main() {
   test('unknown keys are returned and written back', () {
     final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{
       'future': 1,
-      'service': 'deepl',
     });
     final json = encodeTranslationPrefs(prefs, extra: extra);
 
     expect(extra, {'future': 1});
     expect(json['future'], 1);
-    expect(json['service'], 'deepl');
+  });
+
+  test('a saved DeepL service loads as Google', () {
+    final prefs = decode(<String, Object?>{'service': 'deepl'});
+
+    expect(prefs.service, LyricsTranslationService.google);
   });
 
   test('acknowledged services that are not known are kept', () {
@@ -81,7 +82,7 @@ void main() {
     });
     final json = encodeTranslationPrefs(prefs, extra: extra);
 
-    expect(prefs.noticeAcknowledged, {LyricsTranslationService.deepl});
+    expect(prefs.noticeAcknowledged, isEmpty);
     expect(json['noticeAcknowledged'], ['deepl', 'bing', 7]);
   });
 
@@ -99,9 +100,17 @@ void main() {
       decode(<String, Object?>{
         'show': true,
         'service': 'deepl',
-        'noticeAcknowledged': ['google'],
+        'noticeAcknowledged': ['deepl'],
       }).show,
       isFalse,
+    );
+    expect(
+      decode(<String, Object?>{
+        'show': true,
+        'service': 'deepl',
+        'noticeAcknowledged': ['google'],
+      }).show,
+      isTrue,
     );
     expect(
       decode(<String, Object?>{
@@ -115,10 +124,7 @@ void main() {
   test('prefs with the same acknowledged services are equal', () {
     const a = TranslationPrefs(noticeAcknowledged: both);
     const b = TranslationPrefs(
-      noticeAcknowledged: {
-        LyricsTranslationService.deepl,
-        LyricsTranslationService.google,
-      },
+      noticeAcknowledged: {LyricsTranslationService.google},
     );
 
     expect(a, b);
