@@ -61,7 +61,7 @@ class DisplayPrefs {
   final bool songInfoShowUnknown;
 
   /// Id of the font used for all text, see `appFontFor`. Kept as stored: an
-  /// id this build does not know (a newer build's font) shows as Inter but
+  /// id this build does not know (a newer build's font) shows as the default font (Nunito) but
   /// is not rewritten.
   final String fontId;
 

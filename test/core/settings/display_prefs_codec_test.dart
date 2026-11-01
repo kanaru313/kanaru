@@ -16,7 +16,7 @@ void main() {
     expect(d.sidebarTabs, SidebarTab.values.toSet());
     expect(d.trackNumbersInAlbum, isTrue);
     expect(d.songInfoShowUnknown, isFalse);
-    expect(d.fontId, 'inter');
+    expect(d.fontId, 'nunito');
   });
 
   test('values round-trip, tabs in enum order', () {
@@ -154,10 +154,10 @@ void main() {
   group('font', () {
     String font(Object? v) => decodeDisplayPrefs({'font': v}).$1.fontId;
 
-    test('missing, wrong type or empty give inter', () {
-      expect(decodeDisplayPrefs(<String, Object?>{}).$1.fontId, 'inter');
-      expect(font(42), 'inter');
-      expect(font(''), 'inter');
+    test('missing, wrong type or empty give nunito', () {
+      expect(decodeDisplayPrefs(<String, Object?>{}).$1.fontId, 'nunito');
+      expect(font(42), 'nunito');
+      expect(font(''), 'nunito');
     });
 
     test('a known id and an unknown id are kept and round-trip', () {
@@ -170,7 +170,7 @@ void main() {
     });
 
     test('encode always writes font', () {
-      expect(encodeDisplayPrefs(const DisplayPrefs())['font'], 'inter');
+      expect(encodeDisplayPrefs(const DisplayPrefs())['font'], 'nunito');
     });
   });
 }

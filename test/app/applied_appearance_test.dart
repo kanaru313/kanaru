@@ -103,16 +103,16 @@ void main() {
   ) async {
     await pumpApp(tester);
     String? family() => app(tester).theme!.textTheme.bodyMedium!.fontFamily;
-    expect(family(), 'Inter');
+    expect(family(), 'Nunito');
 
     settings().setDisplay(
-      container.read(settingsProvider).display.copyWith(fontId: 'nunito'),
+      container.read(settingsProvider).display.copyWith(fontId: 'inter'),
     );
     await tester.pump(appearanceApplyDelay - _tick);
-    expect(family(), 'Inter');
+    expect(family(), 'Nunito');
 
     await tester.pump(_tick);
-    expect(family(), 'Nunito');
+    expect(family(), 'Inter');
   });
 
   testWidgets('the saved font applies at startup', (tester) async {

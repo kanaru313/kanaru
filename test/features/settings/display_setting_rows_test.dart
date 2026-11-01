@@ -135,14 +135,14 @@ void main() {
     Finder field() =>
         find.descendant(of: row('Font'), matching: find.byType(TextField));
 
-    testWidgets('sits above the text size row and shows Inter', (tester) async {
+    testWidgets('sits above the text size row and shows Nunito', (tester) async {
       await pump(tester);
       final titles = tester
           .widgetList<SettingRow>(find.byType(SettingRow))
           .map((r) => r.title)
           .toList();
       expect(titles.indexOf('Font'), titles.indexOf('Text size') - 1);
-      expect(tester.widget<TextField>(field()).controller?.text, 'Inter');
+      expect(tester.widget<TextField>(field()).controller?.text, 'Nunito');
     });
 
     testWidgets('options render in their own font; picking saves it', (
@@ -170,15 +170,15 @@ void main() {
       expect(family('Inter'), 'Inter');
       expect(family('Nunito'), 'Nunito');
 
-      await tester.tap(find.widgetWithText(MenuItemButton, 'Nunito').last);
+      await tester.tap(find.widgetWithText(MenuItemButton, 'Inter').last);
       await tester.pumpAndSettle();
-      expect(container.read(settingsProvider).display.fontId, 'nunito');
+      expect(container.read(settingsProvider).display.fontId, 'inter');
     });
 
-    testWidgets('an unknown stored id shows Inter', (tester) async {
+    testWidgets('an unknown stored id shows Nunito', (tester) async {
       await pump(tester, fontId: 'futurefont');
       expect(tester.takeException(), isNull);
-      expect(tester.widget<TextField>(field()).controller?.text, 'Inter');
+      expect(tester.widget<TextField>(field()).controller?.text, 'Nunito');
     });
 
     testWidgets('the System entry is localized', (tester) async {

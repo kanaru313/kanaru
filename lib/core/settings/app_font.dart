@@ -27,27 +27,27 @@ class AppFont {
 }
 
 const systemFontId = 'system';
-const defaultFontId = 'inter';
+const defaultFontId = 'nunito';
 
 const builtInAppFonts = <AppFont>[
   // 'sans-serif' (not null): Flutter's default family on Linux is its own
   // list (DejaVu Sans here), while 'sans-serif' follows the fontconfig default.
   AppFont(id: systemFontId, label: 'System', family: 'sans-serif'),
   AppFont(
-    id: defaultFontId,
+    id: 'inter',
     label: 'Inter',
     family: 'Inter',
     licenseAsset: 'assets/fonts/OFL.txt',
   ),
   AppFont(
-    id: 'nunito',
+    id: defaultFontId,
     label: 'Nunito',
     family: 'Nunito',
     licenseAsset: 'assets/fonts/Nunito-OFL.txt',
   ),
 ];
 
-/// The font with [id]; an unknown id gives Inter.
+/// The font with [id]; an unknown id gives the default font (Nunito).
 AppFont appFontFor(String id) => builtInAppFonts.firstWhere(
   (f) => f.id == id,
   orElse: () => builtInAppFonts.firstWhere((f) => f.id == defaultFontId),

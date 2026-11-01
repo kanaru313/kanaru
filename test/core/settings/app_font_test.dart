@@ -9,10 +9,11 @@ void main() {
 
   test('exactly one entry is the default', () {
     expect(builtInAppFonts.where((f) => f.id == defaultFontId), hasLength(1));
-    expect(appFontFor(defaultFontId).family, 'Inter');
+    expect(appFontFor(defaultFontId).family, 'Nunito');
+    expect(defaultFontId, 'nunito');
   });
 
-  test('an unknown id gives Inter', () {
+  test('an unknown id gives the default font', () {
     expect(appFontFor('nope').id, defaultFontId);
     expect(appFontFor('').id, defaultFontId);
   });
