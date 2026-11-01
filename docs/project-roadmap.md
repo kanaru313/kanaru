@@ -1,6 +1,6 @@
 # Project roadmap
 
-Phases follow the README roadmap. Status is what the code does on 2026-11-01 (the lyrics plugin PRs #76 to #83 and the translate plugin work merged), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
+Phases follow the README roadmap. Status is what the code does on 2026-11-01 (`main` at `613ac08e`, with the lyrics plugin PRs #76 to #83 and the translate plugin PR #100 merged), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
 
 Status labels: **Done** (shipped, merged), **Partial** (some of the requirement shipped), **Open** (not started), **Known issue** (shipped, with a documented limit).
 
