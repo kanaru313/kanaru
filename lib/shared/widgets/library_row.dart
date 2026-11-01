@@ -10,6 +10,10 @@ import '../icons/app_icons.dart';
 /// artists).
 const libraryRowCoverSize = 64.0;
 
+/// Opacity of the ⋮ button of a [LibraryPlayableRow] while the row is
+/// neither hovered nor focused; the same as in a song row.
+const _moreRestOpacity = 0.6;
+
 /// Smallest height of a library list row: the cover plus 8 px above and
 /// below. The three text lines fill exactly the cover's height.
 const libraryRowMinHeight = libraryRowCoverSize + 16;
@@ -110,7 +114,9 @@ class LibraryRowLayout extends StatelessWidget {
 /// A tappable library row of [leading] and three [lines] (the first one the
 /// title), with a play button at its end while the row is hovered or
 /// focused; no button when [onPlay] is null. The button always takes its
-/// place, so the texts keep their width when it shows.
+/// place, so the texts keep their width when it shows. A [more] widget (the ⋮
+/// button) sits after the play button, always shown but dim at rest, and
+/// takes a tab stop of its own.
 class LibraryPlayableRow extends StatefulWidget {
   const LibraryPlayableRow({
     super.key,
@@ -119,6 +125,7 @@ class LibraryPlayableRow extends StatefulWidget {
     required this.onTap,
     this.onPlay,
     this.playTooltip,
+    this.more,
     this.horizontalPadding = 32,
     this.inkBorder,
   });
@@ -128,6 +135,9 @@ class LibraryPlayableRow extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback? onPlay;
   final String? playTooltip;
+
+  /// The ⋮ button, or null for none.
+  final Widget? more;
 
   /// Space left and right of the row's content.
   final double horizontalPadding;
@@ -143,12 +153,33 @@ class LibraryPlayableRow extends StatefulWidget {
 class _LibraryPlayableRowState extends State<LibraryPlayableRow> {
   bool _hovered = false;
   bool _focused = false;
+  bool _moreFocused = false;
 
   @override
   Widget build(BuildContext context) {
     final styles = libraryRowStyles(Theme.of(context));
     final onPlay = widget.onPlay;
-    final showPlay = _hovered || _focused;
+    final more = widget.more;
+    final showPlay = _hovered || _focused || _moreFocused;
+    // Out of the focus order: Enter on the row opens it, and the button
+    // would hide again as focus left the row for it.
+    Widget playButton(VoidCallback onPlay, bool show) => ExcludeFocus(
+      child: ExcludeSemantics(
+        excluding: !show,
+        child: IgnorePointer(
+          ignoring: !show,
+          child: AnimatedOpacity(
+            opacity: show ? 1 : 0,
+            duration: const Duration(milliseconds: 150),
+            child: IconButton.filledTonal(
+              icon: const Icon(AppIcons.playRounded),
+              tooltip: widget.playTooltip,
+              onPressed: onPlay,
+            ),
+          ),
+        ),
+      ),
+    );
     return InkWell(
       onTap: widget.onTap,
       customBorder: widget.inkBorder,
@@ -165,26 +196,24 @@ class _LibraryPlayableRowState extends State<LibraryPlayableRow> {
               libraryRowLine(line, i == 0 ? styles.title : styles.detail),
           ],
         ),
-        // Out of the focus order: Enter on the row opens it, and the button
-        // would hide again as focus left the row for it.
-        trailing: onPlay == null
+        trailing: onPlay == null && more == null
             ? null
-            : ExcludeFocus(
-                child: ExcludeSemantics(
-                  excluding: !showPlay,
-                  child: IgnorePointer(
-                    ignoring: !showPlay,
-                    child: AnimatedOpacity(
-                      opacity: showPlay ? 1 : 0,
-                      duration: const Duration(milliseconds: 150),
-                      child: IconButton.filledTonal(
-                        icon: const Icon(AppIcons.playRounded),
-                        tooltip: widget.playTooltip,
-                        onPressed: onPlay,
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onPlay != null) playButton(onPlay, showPlay),
+                  if (more != null)
+                    // Reports focus on the button, without a tab stop.
+                    Focus(
+                      canRequestFocus: false,
+                      skipTraversal: true,
+                      onFocusChange: (f) => setState(() => _moreFocused = f),
+                      child: Opacity(
+                        opacity: showPlay ? 1 : _moreRestOpacity,
+                        child: more,
                       ),
                     ),
-                  ),
-                ),
+                ],
               ),
       ),
     );
