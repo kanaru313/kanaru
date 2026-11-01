@@ -24,7 +24,7 @@ import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'artist_header.dart';
 import 'artist_not_found.dart';
 import 'artist_page_data.dart';
-import 'artist_page_sections.dart';
+import '../../../shared/artist_page/artist_page_sections.dart';
 
 /// One artist: header, then their albums and the albums they appear on,
 /// each as one line scrolling sideways, then their songs. A wide window

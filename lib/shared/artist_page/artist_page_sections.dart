@@ -1,8 +1,8 @@
-import '../../../core/database/artist_names.dart';
-import '../../../core/database/library_database.dart';
-import '../../../core/settings/library_sort.dart';
-import '../albums/album_sort.dart';
-import '../../../shared/artist_summaries.dart' show preferredSpelling;
+import '../../core/database/artist_names.dart';
+import '../../core/database/library_database.dart';
+import '../../core/settings/library_sort.dart';
+import '../album_sort.dart';
+import '../artist_summaries.dart' show preferredSpelling;
 
 /// The order of both album sections of an artist page: by year, unknown last,
 /// then as the Albums tab breaks ties (title, then album key).

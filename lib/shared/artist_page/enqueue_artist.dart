@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_database.dart' show BrowseTrack;
-import '../../../core/indexer/cover_paths.dart';
-import '../../../shared/enqueue_tracks.dart';
-import '../../../shared/play_tracks.dart';
-import '../../../shared/widgets/queue_actions_menu.dart';
-import 'artist_page_data.dart';
+import '../../core/database/library_database.dart' show BrowseTrack;
+import '../../core/indexer/cover_paths.dart';
+import '../enqueue_tracks.dart';
+import '../play_tracks.dart';
+import '../widgets/queue_actions_menu.dart';
+import 'read_artist_sections.dart';
 
 /// [enqueueTracks] for an artist: the songs of their page, in its order.
 void enqueueArtist(

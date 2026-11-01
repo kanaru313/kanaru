@@ -17,7 +17,7 @@ import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../widgets/library_sort_controls.dart';
 import 'album_list_view.dart';
-import 'album_sort.dart';
+import '../../../shared/album_sort.dart';
 import 'albums_view_toggle.dart';
 import 'album_grid.dart';
 
