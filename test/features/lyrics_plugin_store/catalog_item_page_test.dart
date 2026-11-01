@@ -1,3 +1,4 @@
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart' show Locale, Widget;
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
@@ -7,9 +8,16 @@ import 'store_test_harness.dart';
 
 class _Opened {
   final ids = <String>[];
+  final kinds = <PluginKind?>[];
 
-  Widget page({String slug = 'plain'}) =>
-      CatalogItemPage(repoUrl: repoA, slug: slug, onOpenInstalled: ids.add);
+  Widget page({String slug = 'plain'}) => CatalogItemPage(
+    repoUrl: repoA,
+    slug: slug,
+    onOpenInstalled: (id, kind) {
+      ids.add(id);
+      kinds.add(kind);
+    },
+  );
 }
 
 void main() {
@@ -101,6 +109,34 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pump();
     expect(opened.ids, ['plugin-plain']);
+    expect(opened.kinds, [PluginKind.lyrics]);
+  });
+
+  testWidgets('Open passes the kind of a translate plugin', (tester) async {
+    final opened = _Opened();
+    await pumpStore(
+      tester,
+      opened.page(slug: 'tr'),
+      repos: [
+        repoOf(
+          repoA,
+          'Kho A',
+          entries: [entryOf('tr', name: 'Tr', kind: PluginKind.translate)],
+        ),
+      ],
+      records: [
+        recordOf(
+          'plugin-tr',
+          repoUrl: repoA,
+          repoSlug: 'tr',
+          kind: PluginKind.translate,
+        ),
+      ],
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pump();
+    expect(opened.ids, ['plugin-tr']);
+    expect(opened.kinds, [PluginKind.translate]);
   });
 
   testWidgets('an unknown item says it is not in the repository', (

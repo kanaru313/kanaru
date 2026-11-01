@@ -15,6 +15,7 @@ class PluginStoreInput {
     required this.repos,
     this.search = '',
     this.filter = const StoreSourceFilter.all(),
+    this.kind = PluginKind.lyrics,
     this.available = true,
   });
 
@@ -28,6 +29,10 @@ class PluginStoreInput {
   final List<PluginRepo> repos;
   final String search;
   final StoreSourceFilter filter;
+
+  /// Only plugins of this kind are listed. A record of a kind this build does
+  /// not know is listed under neither.
+  final PluginKind kind;
 }
 
 /// The store list, ready to show. Empty sections are empty lists; the UI
@@ -93,6 +98,7 @@ PluginStoreView buildPluginStoreView(PluginStoreInput input) {
   final updates = <StoreRow>[];
   final installed = <StoreRow>[];
   for (final record in live) {
+    if (record.kind != input.kind) continue;
     final update = availableUpdate(record, repos);
     final repo = repos[record.repoUrl];
     final row = StoreRow(
@@ -116,6 +122,7 @@ PluginStoreView buildPluginStoreView(PluginStoreInput input) {
   for (final repo in input.repos) {
     if (!_inFilter(input.filter, repo.url)) continue;
     for (final entry in repo.catalog?.entries ?? const <PluginCatalogEntry>[]) {
+      if (entry.kind != input.kind) continue;
       if (installedKeys.contains(_key(repo.url, entry.slug))) continue;
       final row = StoreRow(
         name: entry.name,

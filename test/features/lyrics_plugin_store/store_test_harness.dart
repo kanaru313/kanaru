@@ -29,8 +29,9 @@ PluginCatalogEntry entryOf(
   List<String> hosts = const ['music.example.com'],
   String author = 'someone',
   String description = '',
+  PluginKind kind = PluginKind.lyrics,
 }) => PluginCatalogEntry(
-  kind: PluginKind.lyrics,
+  kind: kind,
   slug: slug,
   name: name ?? slug,
   version: version,
@@ -64,8 +65,9 @@ LyricsPluginRecord recordOf(
   String? repoSlug,
   String sourceName = 'demo.zip',
   String? author,
+  PluginKind kind = PluginKind.lyrics,
 }) => LyricsPluginRecord(
-  kind: PluginKind.lyrics,
+  kind: kind,
   installId: id,
   name: name,
   author: author,

@@ -9,7 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'store_test_harness.dart';
 
 Widget _page() => PluginStorePage(
-  onOpenInstalled: (_) {},
+  onOpenInstalled: (_, _) {},
   onOpenCatalogItem: (_, _) {},
   onOpenRepositories: () {},
 );

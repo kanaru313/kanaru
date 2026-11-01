@@ -5846,6 +5846,18 @@ abstract class AppLocalizations {
   /// **'All'**
   String get lyricsStoreChipAll;
 
+  /// Store kind chip that lists lyrics plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get lyricsStoreKindLyrics;
+
+  /// Store kind chip that lists translation plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get lyricsStoreKindTranslate;
+
   /// Source chip and row subtitle of a plugin installed from a zip file
   ///
   /// In en, this message translates to:

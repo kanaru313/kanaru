@@ -1642,6 +1642,8 @@
   "lyricsStoreTitle": "Kho plugin",
   "lyricsStoreSearchHint": "Tìm theo tên, tác giả, repo, host",
   "lyricsStoreChipAll": "Tất cả",
+  "lyricsStoreKindLyrics": "Lời bài hát",
+  "lyricsStoreKindTranslate": "Dịch",
   "lyricsStoreFromFile": "Từ file",
   "lyricsStoreSectionUpdates": "Cập nhật ({count})",
   "lyricsStoreSectionInstalled": "Đã cài ({count})",

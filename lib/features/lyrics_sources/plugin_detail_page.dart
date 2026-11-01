@@ -11,16 +11,18 @@ import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import '../../shared/lyrics_plugins/plugin_uninstall_dialog.dart';
 import '../../shared/lyrics_source_routes.dart';
+import '../../shared/settings_routes.dart';
+import '../../shared/translation_plugin_routes.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_config_form.dart';
 import 'plugin_config_save.dart';
 import 'plugin_data_rows.dart';
 import 'plugin_detail_states.dart';
-import 'plugin_icon.dart';
 import 'plugin_info_section.dart';
 import 'plugin_update_banner.dart';
 
@@ -82,8 +84,16 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
     if (mounted) setState(() => _uninstalling = false);
     // The user may have gone elsewhere while the files were deleted.
     final here = router.routeInformationProvider.value.uri.path;
-    if (here == Uri.parse(lyricsPluginRoute(_id)).path) {
-      router.go(lyricsSourcesRoute);
+    final isTranslate = record.kind == PluginKind.translate;
+    final pagePath = Uri.parse(
+      isTranslate ? translationPluginRoute(_id) : lyricsPluginRoute(_id),
+    ).path;
+    if (here == pagePath) {
+      router.go(
+        isTranslate
+            ? settingsFocusLocation(SettingsAnchor.playbackTranslation)
+            : lyricsSourcesRoute,
+      );
     }
     // Already gone before we got there: nothing was removed by this click.
     if (outcome == LyricsPluginUninstall.missing ||

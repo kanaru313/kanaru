@@ -7,9 +7,11 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../core/lyrics/plugins/store/plugin_config_values.dart';
+import '../../core/lyrics_translation/translation_jobs.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'plugin_config_save.dart';
+import 'plugin_config_subtitle.dart';
 
 /// An `input` field of a plugin's form: text, number (number keyboard, checked
 /// before saving) or secret (hidden, with a reveal toggle). It saves when the
@@ -63,6 +65,7 @@ class _State extends ConsumerState<PluginConfigTextField> {
   // Kept for the save at teardown, when the context can no longer be asked.
   LyricsPluginsController? _plugins;
   AppLocalizations? _l10n;
+  TranslationJobs? _jobs;
 
   bool get _isSecret => widget.field.inputFormat == PluginInputFormat.secret;
   bool get _isNumber => widget.field.inputFormat == PluginInputFormat.number;
@@ -72,6 +75,7 @@ class _State extends ConsumerState<PluginConfigTextField> {
     super.didChangeDependencies();
     _plugins = ref.read(lyricsPluginsControllerProvider);
     _l10n = context.l10n;
+    _jobs = ref.read(translationJobsProvider.notifier);
   }
 
   /// Whether the box holds text nobody is saving yet and that may be saved.
@@ -89,6 +93,7 @@ class _State extends ConsumerState<PluginConfigTextField> {
     final text = _text.text;
     final plugins = _plugins;
     final l10n = _l10n;
+    final jobs = _jobs;
     if (_worthSaving(text) && plugins != null && l10n != null) {
       unawaited(
         savePluginConfigValueWith(
@@ -100,6 +105,9 @@ class _State extends ConsumerState<PluginConfigTextField> {
           installId: widget.installId,
           key: widget.field.key,
           value: text,
+          onSaved: jobs == null
+              ? null
+              : () => forgetTranslationFailures(jobs, widget.installId),
         ),
       );
     }
@@ -179,63 +187,73 @@ class _State extends ConsumerState<PluginConfigTextField> {
               ? l10n.pluginSecretFallbackNote
               : (_hasSecret ? l10n.pluginSecretSaved : l10n.pluginSecretNote))
         : null;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: TextField(
-        controller: _text,
-        focusNode: _focus,
-        obscureText: _isSecret && !_revealed,
-        autocorrect: !_isSecret,
-        enableSuggestions: !_isSecret,
-        keyboardType: _isNumber
-            ? const TextInputType.numberWithOptions(decimal: true, signed: true)
-            : TextInputType.text,
-        inputFormatters: [
-          if (_isNumber)
-            FilteringTextInputFormatter.allow(RegExp(r'[-+0-9.eE]')),
-        ],
-        onSubmitted: (_) => _commit(),
-        decoration: InputDecoration(
-          labelText: widget.field.title,
-          border: const OutlineInputBorder(),
-          errorText: _error,
-          helperText: helper,
-          helperMaxLines: 3,
-          helperStyle: widget.usingFallback && _isSecret
-              ? TextStyle(color: theme.colorScheme.tertiary)
-              : null,
-          // A cleared box means the manifest's default applies.
-          hintText: _isSecret
-              ? (_hasSecret ? '••••••••' : null)
-              : (widget.field.defaultValue is String
-                    ? widget.field.defaultValue as String
-                    : null),
-          suffixIcon: !_isSecret
-              ? null
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_hasSecret)
-                      IconButton(
-                        tooltip: l10n.pluginSecretClear,
-                        icon: const Icon(AppIcons.closeRounded),
-                        onPressed: _clearSecret,
-                      ),
-                    IconButton(
-                      tooltip: _revealed
-                          ? l10n.pluginSecretHide
-                          : l10n.pluginSecretShow,
-                      icon: Icon(
-                        _revealed
-                            ? AppIcons.visibilityOff
-                            : AppIcons.visibility,
-                      ),
-                      onPressed: () => setState(() => _revealed = !_revealed),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PluginConfigSubtitle(widget.field.subtitle),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextField(
+            controller: _text,
+            focusNode: _focus,
+            obscureText: _isSecret && !_revealed,
+            autocorrect: !_isSecret,
+            enableSuggestions: !_isSecret,
+            keyboardType: _isNumber
+                ? const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  )
+                : TextInputType.text,
+            inputFormatters: [
+              if (_isNumber)
+                FilteringTextInputFormatter.allow(RegExp(r'[-+0-9.eE]')),
+            ],
+            onSubmitted: (_) => _commit(),
+            decoration: InputDecoration(
+              labelText: widget.field.title,
+              border: const OutlineInputBorder(),
+              errorText: _error,
+              helperText: helper,
+              helperMaxLines: 3,
+              helperStyle: widget.usingFallback && _isSecret
+                  ? TextStyle(color: theme.colorScheme.tertiary)
+                  : null,
+              // A cleared box means the manifest's default applies.
+              hintText: _isSecret
+                  ? (_hasSecret ? '••••••••' : null)
+                  : (widget.field.defaultValue is String
+                        ? widget.field.defaultValue as String
+                        : null),
+              suffixIcon: !_isSecret
+                  ? null
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_hasSecret)
+                          IconButton(
+                            tooltip: l10n.pluginSecretClear,
+                            icon: const Icon(AppIcons.closeRounded),
+                            onPressed: _clearSecret,
+                          ),
+                        IconButton(
+                          tooltip: _revealed
+                              ? l10n.pluginSecretHide
+                              : l10n.pluginSecretShow,
+                          icon: Icon(
+                            _revealed
+                                ? AppIcons.visibilityOff
+                                : AppIcons.visibility,
+                          ),
+                          onPressed: () =>
+                              setState(() => _revealed = !_revealed),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

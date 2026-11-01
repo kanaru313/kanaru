@@ -3628,6 +3628,14 @@
   "@lyricsStoreChipAll": {
     "description": "Source chip that shows every plugin"
   },
+  "lyricsStoreKindLyrics": "Lyrics",
+  "@lyricsStoreKindLyrics": {
+    "description": "Store kind chip that lists lyrics plugins"
+  },
+  "lyricsStoreKindTranslate": "Translate",
+  "@lyricsStoreKindTranslate": {
+    "description": "Store kind chip that lists translation plugins"
+  },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {
     "description": "Source chip and row subtitle of a plugin installed from a zip file"

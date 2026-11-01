@@ -3952,6 +3952,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsStoreChipAll => 'All';
 
   @override
+  String get lyricsStoreKindLyrics => 'Lyrics';
+
+  @override
+  String get lyricsStoreKindTranslate => 'Translate';
+
+  @override
   String get lyricsStoreFromFile => 'From file';
 
   @override

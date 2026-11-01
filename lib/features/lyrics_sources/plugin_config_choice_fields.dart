@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import 'plugin_config_save.dart';
+import 'plugin_config_subtitle.dart';
 
 /// A `select` field: a dropdown of the manifest's options. It saves at once;
 /// when the save fails the old choice comes back.
@@ -46,29 +47,35 @@ class _SelectState extends ConsumerState<PluginConfigSelectField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: widget.field.title,
-          border: const OutlineInputBorder(),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: _value,
-            isExpanded: true,
-            isDense: true,
-            items: [
-              for (final option in widget.field.options)
-                DropdownMenuItem(
-                  value: option.value,
-                  child: Text(option.title),
-                ),
-            ],
-            onChanged: _choose,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PluginConfigSubtitle(widget.field.subtitle),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: widget.field.title,
+              border: const OutlineInputBorder(),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _value,
+                isExpanded: true,
+                isDense: true,
+                items: [
+                  for (final option in widget.field.options)
+                    DropdownMenuItem(
+                      value: option.value,
+                      child: Text(option.title),
+                    ),
+                ],
+                onChanged: _choose,
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -112,6 +119,9 @@ class _ToggleState extends ConsumerState<PluginConfigToggleField> {
     return SwitchListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       title: Text(widget.field.title),
+      subtitle: widget.field.subtitle == null
+          ? null
+          : Text(widget.field.subtitle!),
       value: _value,
       onChanged: _set,
     );

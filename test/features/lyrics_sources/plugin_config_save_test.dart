@@ -1,4 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:logging/logging.dart';
@@ -54,4 +57,44 @@ void main() {
     expect(saved, isTrue);
     expect(logs, isEmpty);
   });
+
+  test('onSaved runs only when the value was saved', () async {
+    var calls = 0;
+    for (final result in [
+      PluginConfigWrite.written,
+      PluginConfigWrite.invalidValue,
+    ]) {
+      await savePluginConfigValueWith(
+        controller: FakePlugins()..configResult = result,
+        messenger: null,
+        l10n: en,
+        installId: idA,
+        key: 'name',
+        value: 'x',
+        onSaved: () => calls++,
+      );
+    }
+    expect(calls, 1);
+  });
+
+  test('a saved translate setting clears that service failures', () {
+    final jobs = _RecordingJobs();
+    final container = ProviderContainer(
+      overrides: [translationJobsProvider.overrideWith(() => jobs)],
+    );
+    addTearDown(container.dispose);
+    final notifier = container.read(translationJobsProvider.notifier);
+
+    forgetTranslationFailures(notifier, idA);
+    forgetTranslationFailures(notifier, 'not an id');
+
+    expect(jobs.cleared.map((s) => s.value), [idA]);
+  });
+}
+
+class _RecordingJobs extends TranslationJobs {
+  final cleared = <TranslationServiceId>[];
+
+  @override
+  void clearFailures(TranslationServiceId service) => cleared.add(service);
 }

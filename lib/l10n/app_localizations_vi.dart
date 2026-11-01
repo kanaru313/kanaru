@@ -3699,6 +3699,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsStoreChipAll => 'Tất cả';
 
   @override
+  String get lyricsStoreKindLyrics => 'Lời bài hát';
+
+  @override
+  String get lyricsStoreKindTranslate => 'Dịch';
+
+  @override
   String get lyricsStoreFromFile => 'Từ file';
 
   @override

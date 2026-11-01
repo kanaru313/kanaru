@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../shared/lyrics_source_routes.dart';
 import '../../shared/settings_routes.dart';
+import '../../shared/translation_plugin_routes.dart';
 import 'lyrics_sources_page.dart';
 import 'plugin_detail_page.dart';
 
@@ -29,5 +30,17 @@ List<RouteBase> lyricsSourcesRoutesWith({
       ),
       ...children,
     ],
+  ),
+];
+
+/// The page of one installed translate plugin, below `/settings/playback`.
+/// Relative path; joined it is [translationPluginRoutePattern].
+List<RouteBase> translationPluginRoutes() => [
+  GoRoute(
+    path: translationPluginRoutePattern.substring(
+      '$settingsPlaybackRoute/'.length,
+    ),
+    builder: (context, state) =>
+        PluginDetailPage(installId: state.pathParameters[lyricsPluginIdParam]!),
   ),
 ];
