@@ -33,7 +33,9 @@ class SettingChoice<T> extends StatelessWidget {
 
   final List<SettingOption<T>> options;
   final T selected;
-  final ValueChanged<T> onSelected;
+
+  /// `null` disables the control.
+  final ValueChanged<T>? onSelected;
   final bool compact;
 
   @override
@@ -42,7 +44,8 @@ class SettingChoice<T> extends StatelessWidget {
       return SettingDropdown<T>(
         options: options,
         selected: selected,
-        onSelected: onSelected,
+        onSelected: onSelected ?? (_) {},
+        enabled: onSelected != null,
         leadingIcon: options.firstWhere((o) => o.value == selected).icon,
       );
     }
@@ -58,7 +61,9 @@ class SettingChoice<T> extends StatelessWidget {
           ),
       ],
       selected: {selected},
-      onSelectionChanged: (s) => onSelected(s.single),
+      onSelectionChanged: onSelected == null
+          ? null
+          : (s) => onSelected!(s.single),
     );
   }
 }

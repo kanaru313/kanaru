@@ -3028,11 +3028,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lyricsTranslationUseService(String service) {
-    return 'Use $service';
-  }
-
-  @override
   String get lyricsTranslationBannerNoKey =>
       'Add your API key in Settings › Playback › Translation.';
 
@@ -4728,4 +4723,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get artistModalSplitMergeHint =>
       'Treat a name as two artists, or join spellings';
+
+  @override
+  String translationNoticePluginTitle(String service) {
+    return 'Lyrics will be sent to the plugin $service';
+  }
+
+  @override
+  String get translationNoticePluginBody =>
+      'The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.';
+
+  @override
+  String translationServicePluginSuffix(String name) {
+    return '$name (plugin)';
+  }
+
+  @override
+  String translationServiceRemovedSuffix(String name) {
+    return '$name (removed)';
+  }
+
+  @override
+  String get settingsTranslationGetServices => 'Get translation services';
+
+  @override
+  String get settingsTranslationGetServicesHint =>
+      'Find translation plugins in the plugin store';
+
+  @override
+  String get lyricsTranslationBannerOpenPlugin => 'Open settings';
+
+  @override
+  String get lyricsTranslationBannerUseGoogle => 'Translate with Google';
+
+  @override
+  String get settingsTranslationServicePluginHint =>
+      'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
 }

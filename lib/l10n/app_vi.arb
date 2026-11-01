@@ -1404,7 +1404,6 @@
   "lyricsTranslationFailKeyStoreUnavailable": "Không dùng được kho khóa nên không đọc được khóa API.",
   "lyricsTranslationAttribution": "Dịch bởi {service} · {language}",
   "lyricsTranslationButtonLabel": "{service} · {language}",
-  "lyricsTranslationUseService": "Dùng {service}",
   "lyricsTranslationBannerNoKey": "Hãy thêm khóa API trong Cài đặt › Phát nhạc › Dịch.",
   "lyricsTranslationBannerBadKey": "Dịch vụ từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Phát nhạc › Dịch.",
   "translationNoticeTitle": "Lời bài hát sẽ được gửi tới {service}",
@@ -1834,5 +1833,14 @@
   "artistModalFoldersTitle": "Thư mục · {name}",
   "artistModalFoldersIntro": "{count, plural, other{Các bài của nghệ sĩ này được lưu trong {count} thư mục. Chọn một thư mục để mở trong mục Thư mục.}}",
   "artistModalSplitMerge": "Tách hoặc gộp nghệ sĩ",
-  "artistModalSplitMergeHint": "Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết"
+  "artistModalSplitMergeHint": "Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết",
+  "translationNoticePluginTitle": "Lời bài hát sẽ được gửi tới plugin {service}",
+  "translationNoticePluginBody": "Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ này. Kanaru không kiểm soát cách dịch vụ dùng chúng.",
+  "translationServicePluginSuffix": "{name} (plugin)",
+  "translationServiceRemovedSuffix": "{name} (đã gỡ)",
+  "settingsTranslationGetServices": "Tìm dịch vụ dịch",
+  "settingsTranslationGetServicesHint": "Tìm plugin dịch trong kho plugin",
+  "lyricsTranslationBannerOpenPlugin": "Mở cài đặt",
+  "lyricsTranslationBannerUseGoogle": "Dịch bằng Google",
+  "settingsTranslationServicePluginHint": "Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch."
 }

@@ -3,13 +3,17 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics_translation/translation_language.dart';
 import '../../core/lyrics_translation/translation_service.dart';
+import '../../core/lyrics_translation/translation_service_choices.dart';
+import '../../core/lyrics_translation/translation_service_names.dart';
 import '../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/translation_language_name.dart';
 import '../../shared/translation_notice_dialog.dart';
+import '../../shared/translation_service_name.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
+import 'translation_plugin_rows.dart';
 
 /// A choice of the default language: a language code, or `null` to follow the
 /// app. A record, not a bare `String?`, because the dropdown ignores `null`
@@ -50,26 +54,36 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
         translationLanguageFor('en')!;
     final target = prefs.targetLanguage;
     final known = target != null && translationLanguageFor(target) != null;
+    // Google and the live translate plugins; disabled while they are not
+    // known, so a stored plugin choice is never overwritten blind.
+    final plugins = ref.watch(translationPluginInfosProvider);
+    final choices = ref.watch(translationServiceChoicesProvider);
+    final services = choices.services;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SettingRow(
           title: l10n.settingsTranslationService,
-          subtitle: l10n.settingsTranslationServiceGoogleHint,
+          subtitle: choices.selected.isGoogle
+              ? l10n.settingsTranslationServiceGoogleHint
+              : l10n.settingsTranslationServicePluginHint,
           control: (compact) => SettingChoice<TranslationServiceId>(
-            compact: compact,
-            selected: prefs.service,
-            onSelected: (service) => _pickService(context, ref, service),
+            compact: compact || services.length > 2,
+            selected: choices.selected,
+            onSelected: choices.ready
+                ? (service) => _pickService(context, ref, service)
+                : null,
             options: [
-              for (final service in const [TranslationServiceId.google])
+              for (final service in services)
                 SettingOption(
                   value: service,
-                  label: translationServiceName(service),
+                  label: translationServiceName(l10n, plugins, service),
                 ),
             ],
           ),
         ),
+        const TranslationPluginRows(),
         SettingRow.single(
           title: l10n.settingsTranslationTarget,
           subtitle: l10n.settingsTranslationTargetHint,

@@ -6,6 +6,8 @@ import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_language.dart';
 import '../../../../core/lyrics_translation/translation_service.dart';
+import '../../../../core/lyrics_translation/translation_service_choices.dart';
+import '../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
@@ -13,6 +15,7 @@ import '../../../../shared/icons/app_icons.dart';
 import '../../../../shared/settings_routes.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/translation_notice_dialog.dart';
+import '../../../../shared/translation_service_name.dart';
 import '../../../../shared/widgets/menu_row.dart';
 import '../../now_playing/now_playing_open_provider.dart';
 import 'lyrics_translation_labels.dart';
@@ -64,6 +67,15 @@ List<Widget> lyricsTranslationMenuItems(
     }
   }
 
+  // Google and the live translate plugins; names only. A stored plugin that
+  // is gone is not shown as picked: the one that really runs is.
+  final plugins = ref.watch(translationPluginInfosProvider);
+  String serviceName(TranslationServiceId id) =>
+      translationServiceName(l10n, plugins, id);
+  final choices = ref.watch(translationServiceChoicesProvider);
+  final services = choices.services;
+  final shown = choices.selected;
+
   Future<void> pickService(TranslationServiceId service) async {
     if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
@@ -88,7 +100,7 @@ List<Widget> lyricsTranslationMenuItems(
   Widget radio<T>({
     required T value,
     required T groupValue,
-    required VoidCallback onChanged,
+    required VoidCallback? onChanged,
     required String label,
   }) => RadioMenuButton<T>(
     style: menuRowStyle(
@@ -96,7 +108,7 @@ List<Widget> lyricsTranslationMenuItems(
     ),
     value: value,
     groupValue: groupValue,
-    onChanged: (_) => onChanged(),
+    onChanged: onChanged == null ? null : (_) => onChanged(),
     child: ConstrainedBox(
       constraints: const BoxConstraints(minWidth: _optionMinWidth),
       child: Text(label),
@@ -151,19 +163,19 @@ List<Widget> lyricsTranslationMenuItems(
         trailingIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: Text(
-            translationServiceName(prefs.service),
+            serviceName(shown),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
         menuChildren: [
-          for (final service in const [TranslationServiceId.google])
+          for (final service in services)
             radio<TranslationServiceId>(
               value: service,
-              groupValue: prefs.service,
-              onChanged: () => pickService(service),
-              label: translationServiceName(service),
+              groupValue: shown,
+              onChanged: choices.ready ? () => pickService(service) : null,
+              label: serviceName(service),
             ),
         ],
         child: Text(l10n.lyricsTranslationServiceHeader),
@@ -191,7 +203,13 @@ List<Widget> lyricsTranslationMenuItems(
             settings.setTranslation(prefs.copyWith(display: s.single)),
       ),
     ),
-    ...lyricsTranslationMenuFooter(context, state, prefs.service, controller),
+    ...lyricsTranslationMenuFooter(
+      context,
+      state,
+      shown,
+      controller,
+      serviceName,
+    ),
     const Divider(height: 9),
     MenuItemButton(
       style: menuRowStyle(),

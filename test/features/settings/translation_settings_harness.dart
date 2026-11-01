@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
@@ -43,11 +44,13 @@ class TranslationSettingsHarness {
     WidgetTester tester,
     Widget child, {
     Locale locale = const Locale('en'),
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = const Size(1280, 1600);
     tester.view.devicePixelRatio = 1;
     container = ProviderContainer(
       overrides: [
+        ...overrides,
         initialSettingsProvider.overrideWithValue(settings),
         libraryDatabaseProvider.overrideWithValue(hasDatabase ? db : null),
         secretStoreProvider.overrideWith(

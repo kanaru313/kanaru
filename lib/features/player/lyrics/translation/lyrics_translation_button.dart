@@ -3,9 +3,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
+import '../../../../core/lyrics_translation/translation_service.dart';
+import '../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/icons/app_icons.dart';
+import '../../../../shared/translation_service_name.dart';
 import '../../playback_controls.dart';
 import 'lyrics_translation_labels.dart';
 import 'lyrics_translation_menu.dart';
@@ -74,6 +77,9 @@ class _LyricsTranslationButtonState
     final state = ref.watch(lyricsTranslationProvider(appLang));
     // Watched so a changed setting rebuilds the open menu.
     ref.watch(settingsProvider.select((s) => s.translation));
+    final plugins = ref.watch(translationPluginInfosProvider);
+    String serviceName(TranslationServiceId id) =>
+        translationServiceName(l10n, plugins, id);
     final active = translationIsActive(state);
     final usable = widget.enabled && state is! TranslationUnavailable;
     if (!usable && _open) {
@@ -111,6 +117,7 @@ class _LyricsTranslationButtonState
             room >= lyricsTranslationMinLabelWidth) {
           return LyricsTranslationPill(
             state: state,
+            serviceName: serviceName(state.service),
             maxLabelWidth: room,
             onPressed: usable ? toggle : null,
           );
@@ -129,7 +136,7 @@ class _LyricsTranslationButtonState
                       foregroundColor: scheme.primary,
                     )
                   : null,
-              tooltip: translationButtonTooltip(l10n, state),
+              tooltip: translationButtonTooltip(l10n, state, serviceName),
               onPressed: usable ? toggle : null,
             ),
             if (state is TranslationLoading)

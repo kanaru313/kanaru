@@ -2649,15 +2649,6 @@
       }
     }
   },
-  "lyricsTranslationUseService": "Use {service}",
-  "@lyricsTranslationUseService": {
-    "description": "Button of the lyrics translation error banner that switches to the other service; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
   "lyricsTranslationBannerNoKey": "Add your API key in Settings › Playback › Translation.",
   "@lyricsTranslationBannerNoKey": {
     "description": "Lyrics translation error banner: the service needs a key and none is saved"
@@ -4680,5 +4671,56 @@
   "artistModalSplitMergeHint": "Treat a name as two artists, or join spellings",
   "@artistModalSplitMergeHint": {
     "description": "Quiet line under Split or merge artist"
+  },
+  "translationNoticePluginTitle": "Lyrics will be sent to the plugin {service}",
+  "@translationNoticePluginTitle": {
+    "description": "Title of the dialog asking to send lyrics to a translation plugin; service is the plugin's name",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "translationNoticePluginBody": "The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.",
+  "@translationNoticePluginBody": {
+    "description": "Body of the translation notice dialog for a plugin; the hosts are listed under it"
+  },
+  "translationServicePluginSuffix": "{name} (plugin)",
+  "@translationServicePluginSuffix": {
+    "description": "Name of a translation plugin that has the name of a built-in service, so it is not mistaken for it",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "translationServiceRemovedSuffix": "{name} (removed)",
+  "@translationServiceRemovedSuffix": {
+    "description": "Name of an uninstalled translation plugin whose saved translation is still shown",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTranslationGetServices": "Get translation services",
+  "@settingsTranslationGetServices": {
+    "description": "Row in the translation settings that opens the plugin store on translation plugins"
+  },
+  "settingsTranslationGetServicesHint": "Find translation plugins in the plugin store",
+  "@settingsTranslationGetServicesHint": {
+    "description": "Subtitle of the row that opens the plugin store from the translation settings"
+  },
+  "lyricsTranslationBannerOpenPlugin": "Open settings",
+  "@lyricsTranslationBannerOpenPlugin": {
+    "description": "Button on the error banner of a translation plugin that opens the plugin's page"
+  },
+  "lyricsTranslationBannerUseGoogle": "Translate with Google",
+  "@lyricsTranslationBannerUseGoogle": {
+    "description": "Button on the error banner of a translation plugin that switches to Google"
+  },
+  "settingsTranslationServicePluginHint": "The lyrics, song title and artist are sent to the plugin's hosts when translation is on.",
+  "@settingsTranslationServicePluginHint": {
+    "description": "Subtitle of the translation service row when a translate plugin is the selected service"
   }
 }

@@ -4418,12 +4418,6 @@ abstract class AppLocalizations {
   /// **'{service} · {language}'**
   String lyricsTranslationButtonLabel(String service, String language);
 
-  /// Button of the lyrics translation error banner that switches to the other service; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'Use {service}'**
-  String lyricsTranslationUseService(String service);
-
   /// Lyrics translation error banner: the service needs a key and none is saved
   ///
   /// In en, this message translates to:
@@ -7003,6 +6997,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Treat a name as two artists, or join spellings'**
   String get artistModalSplitMergeHint;
+
+  /// Title of the dialog asking to send lyrics to a translation plugin; service is the plugin's name
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics will be sent to the plugin {service}'**
+  String translationNoticePluginTitle(String service);
+
+  /// Body of the translation notice dialog for a plugin; the hosts are listed under it
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.'**
+  String get translationNoticePluginBody;
+
+  /// Name of a translation plugin that has the name of a built-in service, so it is not mistaken for it
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (plugin)'**
+  String translationServicePluginSuffix(String name);
+
+  /// Name of an uninstalled translation plugin whose saved translation is still shown
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (removed)'**
+  String translationServiceRemovedSuffix(String name);
+
+  /// Row in the translation settings that opens the plugin store on translation plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Get translation services'**
+  String get settingsTranslationGetServices;
+
+  /// Subtitle of the row that opens the plugin store from the translation settings
+  ///
+  /// In en, this message translates to:
+  /// **'Find translation plugins in the plugin store'**
+  String get settingsTranslationGetServicesHint;
+
+  /// Button on the error banner of a translation plugin that opens the plugin's page
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get lyricsTranslationBannerOpenPlugin;
+
+  /// Button on the error banner of a translation plugin that switches to Google
+  ///
+  /// In en, this message translates to:
+  /// **'Translate with Google'**
+  String get lyricsTranslationBannerUseGoogle;
+
+  /// Subtitle of the translation service row when a translate plugin is the selected service
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.'**
+  String get settingsTranslationServicePluginHint;
 }
 
 class _AppLocalizationsDelegate

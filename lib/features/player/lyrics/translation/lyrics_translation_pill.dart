@@ -4,8 +4,6 @@ import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/icons/app_icons.dart';
 import '../../../../shared/translation_language_name.dart';
-import '../../../../shared/translation_notice_dialog.dart'
-    show translationServiceName;
 import '../../now_playing/now_playing_header_pill.dart';
 import 'lyrics_translation_labels.dart';
 
@@ -23,12 +21,16 @@ class LyricsTranslationPill extends StatelessWidget {
   const LyricsTranslationPill({
     super.key,
     required this.state,
+    required this.serviceName,
     required this.maxLabelWidth,
     required this.onPressed,
   });
 
   /// The state the pill shows; its credit is the label.
   final TranslationReady state;
+
+  /// What the service of [state] is called.
+  final String serviceName;
 
   /// Most room the label may take.
   final double maxLabelWidth;
@@ -41,10 +43,10 @@ class LyricsTranslationPill extends StatelessWidget {
     return NowPlayingHeaderPill(
       icon: AppIcons.lyricsTranslate,
       label: l10n.lyricsTranslationButtonLabel(
-        translationServiceName(state.service),
+        serviceName,
         translationLanguageName(l10n, state.info.effective),
       ),
-      tooltip: translationButtonTooltip(l10n, state),
+      tooltip: translationButtonTooltip(l10n, state, (_) => serviceName),
       maxLabelWidth: maxLabelWidth,
       onPressed: onPressed,
     );

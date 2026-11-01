@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -7,6 +9,8 @@ import 'package:kanaru/shared/translation_language_name.dart';
 import 'package:kanaru/shared/translation_notice_dialog.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../core/lyrics_translation/fake_plugin_runner.dart';
 
 const _google = TranslationServiceId.google;
 
@@ -23,10 +27,12 @@ void main() {
     Set<TranslationServiceId> acknowledged = const {},
     Locale locale = const Locale('en'),
     Widget Function(Future<void> Function(BuildContext, WidgetRef))? home,
+    List<Override> overrides = const [],
   }) async {
     answer = null;
     container = ProviderContainer(
       overrides: [
+        ...overrides,
         initialSettingsProvider.overrideWithValue(
           AppSettings(
             translation: TranslationPrefs(noticeAcknowledged: acknowledged),
@@ -62,6 +68,58 @@ void main() {
 
   Future<void> confirm(BuildContext c, WidgetRef r) async =>
       answer = await confirmTranslationNotice(c, r, _google);
+
+  group('a plugin service', () {
+    const id = 'plugin-abc123def456';
+    final plugin = TranslationServiceId.tryParse(id)!;
+    Future<void> confirmPlugin(BuildContext c, WidgetRef r) async =>
+        answer = await confirmTranslationNotice(c, r, plugin);
+
+    List<Override> records(String name) => [
+      lyricsPluginRecordsProvider.overrideWithValue([
+        translateRecord(
+          id,
+          name: name,
+          hosts: const ['a.example', 'b.example'],
+        ),
+      ]),
+    ];
+
+    testWidgets('names the plugin and lists its hosts', (tester) async {
+      await pump(tester, confirmPlugin, overrides: records('Gemini'));
+
+      expect(
+        find.text('Lyrics will be sent to the plugin Gemini'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('song title and artist'), findsOneWidget);
+      expect(find.textContaining('does not control'), findsOneWidget);
+      expect(find.text('a.example'), findsOneWidget);
+      expect(find.text('b.example'), findsOneWidget);
+      expect(find.textContaining('unofficial'), findsNothing);
+    });
+
+    testWidgets('a plugin named Google is not shown as Google', (tester) async {
+      await pump(tester, confirmPlugin, overrides: records('Google'));
+
+      expect(
+        find.text('Lyrics will be sent to the plugin Google (plugin)'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('unofficial'), findsNothing);
+    });
+
+    testWidgets('accepting Google does not accept the plugin', (tester) async {
+      await pump(
+        tester,
+        confirmPlugin,
+        acknowledged: {_google},
+        overrides: records('Gemini'),
+      );
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+    });
+  });
 
   testWidgets('an accepted service answers true without a dialog', (
     tester,

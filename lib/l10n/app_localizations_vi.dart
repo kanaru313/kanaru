@@ -2804,11 +2804,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsTranslationUseService(String service) {
-    return 'Dùng $service';
-  }
-
-  @override
   String get lyricsTranslationBannerNoKey =>
       'Hãy thêm khóa API trong Cài đặt › Phát nhạc › Dịch.';
 
@@ -4464,4 +4459,40 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get artistModalSplitMergeHint =>
       'Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết';
+
+  @override
+  String translationNoticePluginTitle(String service) {
+    return 'Lời bài hát sẽ được gửi tới plugin $service';
+  }
+
+  @override
+  String get translationNoticePluginBody =>
+      'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ này. Kanaru không kiểm soát cách dịch vụ dùng chúng.';
+
+  @override
+  String translationServicePluginSuffix(String name) {
+    return '$name (plugin)';
+  }
+
+  @override
+  String translationServiceRemovedSuffix(String name) {
+    return '$name (đã gỡ)';
+  }
+
+  @override
+  String get settingsTranslationGetServices => 'Tìm dịch vụ dịch';
+
+  @override
+  String get settingsTranslationGetServicesHint =>
+      'Tìm plugin dịch trong kho plugin';
+
+  @override
+  String get lyricsTranslationBannerOpenPlugin => 'Mở cài đặt';
+
+  @override
+  String get lyricsTranslationBannerUseGoogle => 'Dịch bằng Google';
+
+  @override
+  String get settingsTranslationServicePluginHint =>
+      'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
 }
