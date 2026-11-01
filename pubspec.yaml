@@ -84,6 +84,7 @@ flutter:
   # Inter 4.1 static (SIL OFL 1.1). Only the weights the UI asks for; no italic.
   assets:
     - assets/fonts/OFL.txt
+    - assets/fonts/Nunito-OFL.txt
 
   fonts:
     - family: Inter
@@ -92,6 +93,13 @@ flutter:
         - asset: assets/fonts/Inter-Medium.ttf
           weight: 500
         - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Nunito-Bold.ttf
           weight: 700
 
   # To add assets to your application, add an assets section, like this:
