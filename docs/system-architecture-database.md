@@ -25,7 +25,7 @@ Lyrics plugin tables (schema 11; `lyrics_plugin_tables.dart`, queries in `lyrics
 
 | Table | Holds |
 |---|---|
-| `lyrics_plugins` | One record per installed plugin: `install_id` (the source id, `plugin-...`), name, author, description, `version`, `api_version`, `hosts` and `config_schema` (JSON text), `package_dir` (relative directory of the current package), install source (`source_kind` `file` or `repo`, `source_name`, `repo_url`, `repo_slug`), `installed_at`, `updated_at`, `removed_at`. Partial unique index on `(repo_url, repo_slug)` where `repo_url IS NOT NULL`. The source list watches it. |
+| `lyrics_plugins` | One record per installed plugin: `install_id` (the source id, `plugin-...`), `kind` (`lyrics` or `translate`, schema 13; see the paragraph above), name, author, description, `version`, `api_version`, `hosts` and `config_schema` (JSON text), `package_dir` (relative directory of the current package), install source (`source_kind` `file` or `repo`, `source_name`, `repo_url`, `repo_slug`), `installed_at`, `updated_at`, `removed_at`. Partial unique index on `(repo_url, repo_slug)` where `repo_url IS NOT NULL`. The source list watches it. |
 | `lyrics_source_prefs` | `provider_id`, `enabled`, `position` for LRCLIB and plugins. No `lrclib` row means enabled, position 0. |
 | `lyrics_plugin_repos` | Repositories the user added: `url`, name, author, `added_at`, `last_fetched_at` (last success), `last_error` (kind string), `catalog` (last good catalog JSON, at most 1 MiB). |
 | `lyrics_plugin_data` | One row per live plugin: `config_values` (non-secret) and `storage` (localStorage), JSON objects, each at most 64 KiB. Not watched by the source list, so a config or storage write never rebuilds the lyrics streams. |

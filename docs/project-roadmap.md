@@ -1,10 +1,10 @@
 # Project roadmap
 
-Phases follow the README roadmap. Status is what the code does on 2026-10-31 (`main` at `8c2a1506`, with the lyrics plugin PRs #76 to #83 merged), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
+Phases follow the README roadmap. Status is what the code does on 2026-11-01 (the lyrics plugin PRs #76 to #83 and the translate plugin work merged), checked against [features.md](./features.md) and the merged PRs. Feature IDs point to the requirement; the status column says what is real.
 
 Status labels: **Done** (shipped, merged), **Partial** (some of the requirement shipped), **Open** (not started), **Known issue** (shipped, with a documented limit).
 
-Last updated: 2026-10-31.
+Last updated: 2026-11-01.
 
 ## Summary
 
@@ -117,7 +117,7 @@ Partly shipped: the lyrics and translation rows are in progress; the other rows 
 | Lyrics availability flag at scan | — | **Open**. Record at scan whether each song has lyrics, so lists can show it without reading the file at play time. |
 | Trash for replaced `.lrc` files under Flatpak | PKG-02 | **Open**. A replaced `.lrc` moves to the trash through GIO; a portal-based trash is not built, and no Flatpak build exists yet. |
 | Distinct empty state for rejected lyrics | LYR-03 | **Open**. After "Not these lyrics", the song shows the generic no-lyrics state; rejected matches have no message of their own. |
-| Lyrics translation (Google; more services as plugins) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Playback > Translation rows (service, default language) and the saved translations under Data & storage > Caches |
+| Lyrics translation (Google built in; more services as translate plugins) | LYR-07 | Shipped: Now Playing button and menu, `T` key, saved translations, and Settings > Playback > Translation rows (service, default language) and the saved translations under Data & storage > Caches. Translate plugins shipped: a plugin with `metadata.type` `translate` is installed from the store's Translate chip and chosen as the service, with its own page and a notice that lists its hosts |
 | Waveform seekbar, visualizer, transitions | NP-05, NP-06 | Waveform seek bar built in the wide Now Playing modes (NP-05); visualizer and transitions not started |
 | Equalizer, crossfade, sleep timer, volume boost, speed and pitch | PLAY-05, PLAY-08, PLAY-09, PLAY-14, PLAY-15 | Sleep timer shipped (PLAY-14: minutes, tracks, end of track, album or queue, and the centred dialog); its fade switch is not built. The others not started |
 | Listening stats, scrobbling (Last.fm, ListenBrainz, Discord) | STAT-03, EXT-01 to EXT-03 | Listen recording (STAT-01, STAT-10) and the history UI (STAT-06 to STAT-08) are built; STAT-02 and STAT-11 are Phase 1 and not built |
@@ -128,7 +128,7 @@ Premium candidates for these items are listed in [project-overview-pdr.md](./pro
 
 ### Lyrics plugin system: follow-ups
 
-Shipped in v1 (`apiVersion` 1, lyrics plugins only). These are deliberately out of v1; none changes the v1 contract or the database schema.
+Shipped in v1 (`apiVersion` 1; lyrics plugins, and translate plugins from schema 13). These are deliberately out of v1; none changes the v1 contract or the database schema.
 
 | Follow-up | Why later | Status |
 |---|---|---|
@@ -147,6 +147,7 @@ Shipped in v1 (`apiVersion` 1, lyrics plugins only). These are deliberately out 
 | Show a plugin's hosts before an update from the Sources banner | The v1 banner shows the reason only; host changes need a richer prompt | Open |
 | Refetch a plugin's saved lyrics when its version changes | v1 keeps saved lyrics until the song is looked up again | Open |
 | Isolated runs use a file secret store instead of the shared keyring | Isolated dev runs share the real keyring, so plugin secrets are read and overwritten, and the leftover DeepL key is deleted; documented in the dev guide for now | Open |
+| DeepL and Gemini as translate plugins | Plugins repo task (`kanaru313/kanaru-plugins`), not app work; the built-in DeepL client was removed, so the app has no DeepL code | Open |
 | Split `docs/features.md` (119 KB) | Single file is hard to navigate and review; split by topic when next edited | Open |
 
 ## Open decisions

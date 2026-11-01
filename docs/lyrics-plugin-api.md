@@ -1,6 +1,20 @@
 # Lyrics plugin API
 
-What a lyrics plugin script can rely on. Plugins are JavaScript files in the package's `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Architecture: [system-architecture.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
+What a plugin script can rely on. A plugin is a package of JavaScript files in its `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Two kinds exist: a **lyrics** plugin (`search.js` and `lyrics.js`, see [Lyrics scripts](#lyrics-scripts-in-a-lookup)) and a **translate** plugin (`translate.js`, see [Translate scripts](#translate-scripts)). Sections marked *lyrics* or *translate* apply to that kind only; the rest applies to both. Architecture: [system-architecture-lyrics-plugins.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
+
+## Data and consent
+
+What a script receives, and where it can send it:
+
+| Kind | The script receives | Where its `fetch` may go |
+|---|---|---|
+| lyrics, `search.js` | title, artist, album and duration of the song, or the text the user typed (manual search) | the plugin's declared `hosts`, only those |
+| lyrics, `lyrics.js` | the id of the search result | the same `hosts` |
+| translate, `translate.js` | the lines to translate, the target language code and `song` `{title, artist, lyrics}` (the lyrics are the song's unique lines, at most 20 000 characters; `song` is absent when the song is unknown) | the same `hosts` |
+
+- The runtime knows no hosts or consent. The app checks each `fetch` against the declared `hosts` (and the address rules in [Address rules](#address-rules)) before it sends anything. The script decides what it puts in a request, so a plugin that gets song data can send it on to its hosts. Install a plugin only if you trust its author with that.
+- **Lyrics** plugins use the one online-lyrics consent that covers every online lyrics source (`manualConsent` for manual search, `autoConsent` for automatic lookup). Installing a plugin shows no extra prompt, and an update shows none either.
+- **Translate** plugins use the translation notice, which is accepted once per plugin id (`noticeAcknowledged` in settings). The notice lists the plugin's hosts. The app checks that the notice was accepted before every send, so withdrawing it stops the next send. An update that adds hosts does not show the notice again: this is an accepted risk, because the update is the author's change to a plugin the user already accepted. Uninstalling the plugin drops the acceptance, so installing it again asks again.
 
 ## Runtime and limits
 
@@ -12,7 +26,7 @@ The runtime values are the constants in `rust/src/plugin_runtime/limits.rs` (`li
 |---|---|---|
 | Heap | 32 MiB, counted by a Rust allocator (`memory.rs`) that sets a flag when it refuses an allocation, so `memory` is reported even when the engine could not build the error object | status `memory` |
 | JS stack | 1 MiB (the thread has 8 MiB, so the engine fails first, also inside `JSON.parse` and `String(nested array)`) | status `stack` |
-| Wall time per call | 15 s by default (the host may ask for up to 90 s for a job; lyrics runs always use 15 s), counted from the moment a worker starts the job (includes `load()`); time waiting in the queue is not counted, so the host keeps its own outer deadline | status `timeout` |
+| Wall time per call | Lyrics run: 15 s, fixed. Translate run: the plugin's `translate.timeoutSec` (default 15, at most 90 s; see [Time, fetch and sends](#time-fetch-and-sends)). Each `fetch` may take what is left of the call. Counted from the moment a worker starts the job (includes `load()`); time waiting in the queue is not counted, so the host keeps its own outer deadline | status `timeout` |
 | Output | 2 MiB of JSON text (UTF-8 bytes) | status `outputTooLarge` |
 | Thrown-error text in `js_error` | message 1000 characters, stack 16 KiB (cut, not rejected) | cut |
 | `fetch` request body | 256 KiB | `InvalidRequestError` |
@@ -275,7 +289,7 @@ A wrong length, a non-array, a non-string `text`, or more than half of the non-b
 - Wall time of the script is `translate.timeoutSec` (default 15, at most 90). The app waits for a free worker for up to 45 s more.
 - A `fetch` may take as long as the time left of the run; there is no 20 s cap per send as for lyrics. It reaches only the plugin's declared `hosts`, over the same public-only connection as lyrics.
 - The app never re-sends a busy answer (429, 503) for a translate script: the script decides (for example, it tries another key). Every send, retries included, counts toward the **10 sends per run**, so a script that rotates keys should plan for that.
-- The translate consent is asked before every send; a send after the consent is withdrawn is refused (`NotConsentedError` in the script), and an uncaught refusal ends the chunk as `blocked`.
+- The translate consent (the accepted notice, see [Data and consent](#data-and-consent)) is checked before every send, not asked again; a send after it is withdrawn is refused (`NotConsentedError` in the script), and an uncaught refusal ends the chunk as `blocked`.
 - One translate run goes at a time in the whole app. A chunk whose song was replaced while it waited is dropped before it sends (nothing is billed). A chunk that has been sent is never cancelled by the caller; uninstalling or updating the plugin still cancels it.
 
 ### Errors

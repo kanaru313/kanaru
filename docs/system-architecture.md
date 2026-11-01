@@ -9,7 +9,7 @@ Related: [codebase-summary.md](./codebase-summary.md) (where things live), [code
 1. [Layers](#1-layers)
 2. [Startup sequence](#2-startup-sequence)
 3. [Library scan pipeline](./system-architecture-library.md)
-4. [Playback](./system-architecture-playback.md), with [Lyrics](./system-architecture-lyrics.md) and [Lyrics plugins](./system-architecture-lyrics-plugins.md)
+4. [Playback](./system-architecture-playback.md), with [Lyrics](./system-architecture-lyrics.md) and [Lyrics plugins](./system-architecture-lyrics-plugins.md) (lyrics sources and translate services)
 5. [System media controls (MPRIS)](#5-system-media-controls-mpris)
 6. [Storage locations](#6-storage-locations)
 7. [Library database schema](./system-architecture-database.md), with [User data](./system-architecture-user-data.md)
