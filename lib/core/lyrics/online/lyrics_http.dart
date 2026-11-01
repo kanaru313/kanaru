@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../app_identity.dart';
 import '../../logging/app_logging.dart';
+import '../../lyrics_translation/translation_http.dart'
+    show translationRequestTimeout;
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_http_request.dart';
 import 'lyrics_http_retry.dart';
@@ -60,6 +62,31 @@ class LyricsHttp {
          overallTimeout: lyricsOverallTimeout,
        );
 
+  /// For a translate plugin: the strict rules of the main constructor over
+  /// the plugin's own [hosts], no retry of a busy answer (the script decides,
+  /// and every send counts toward its budget) and no cap per send: a send is
+  /// bound only by the time left of the call, which is the `deadline` the
+  /// runtime reports for each `fetch` and at most [overallTimeout] (the
+  /// longest wall time a translate script may have).
+  /// [allowed] is the translate consent, asked before every send.
+  LyricsHttp.forPluginTranslate(
+    Iterable<String> hosts,
+    HttpClient client, {
+    required Duration overallTimeout,
+    bool Function()? allowed,
+    LyricsSleep sleep = realLyricsSleep,
+  }) : this._(
+         client,
+         hosts,
+         strict: true,
+         sleep: sleep,
+         abandoned: null,
+         allowed: allowed,
+         maxRetries: 0,
+         overallTimeout: overallTimeout,
+         perSendCap: null,
+       );
+
   /// For tests: allows `http`, a port and any host in [hosts], so a loopback
   /// server can stand in for the service.
   @visibleForTesting
@@ -71,6 +98,7 @@ class LyricsHttp {
     bool Function()? allowed,
     int maxRetries = maxShortRetries,
     Duration overallTimeout = lyricsOverallTimeout,
+    Duration? perSendCap = translationRequestTimeout,
   }) : this._(
          client,
          hosts,
@@ -80,6 +108,7 @@ class LyricsHttp {
          allowed: allowed,
          maxRetries: maxRetries,
          overallTimeout: overallTimeout,
+         perSendCap: perSendCap,
        );
 
   LyricsHttp._(
@@ -91,6 +120,7 @@ class LyricsHttp {
     required bool Function()? allowed,
     required int maxRetries,
     required this._overallTimeout,
+    Duration? perSendCap = translationRequestTimeout,
   }) : _hosts = Set.unmodifiable(hosts),
        _loop = LyricsSendLoop(
          client: client,
@@ -98,6 +128,7 @@ class LyricsHttp {
          abandoned: abandoned,
          allowed: allowed,
          maxRetries: maxRetries,
+         perSendCap: perSendCap,
        );
 
   final Set<String> _hosts;

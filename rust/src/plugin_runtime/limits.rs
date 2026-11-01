@@ -14,8 +14,10 @@ pub const MEMORY_LIMIT_BYTES: usize = 32 * 1024 * 1024;
 /// Script stack cap; far below the thread stack so QuickJS fails first, even
 /// inside native recursion (`JSON.parse`, `String(nested array)`).
 pub const SCRIPT_STACK_BYTES: usize = 1024 * 1024;
-/// Wall time of one call.
-pub const WALL_TIME: Duration = Duration::from_secs(15);
+/// Wall time of a call that asks for none (lyrics runs).
+pub const DEFAULT_WALL_TIME: Duration = Duration::from_secs(15);
+/// Longest wall time a caller may ask for.
+pub const MAX_WALL_TIME: Duration = Duration::from_secs(90);
 /// Largest `output_json`.
 pub const MAX_OUTPUT_BYTES: usize = 2 * 1024 * 1024;
 /// Longest `Response.error` message and thrown-error message kept, in characters.
@@ -57,13 +59,13 @@ pub const MAX_LOG_LINES: usize = 50;
 /// Longest console line kept, in characters.
 pub const MAX_LOG_LINE_CHARS: usize = 500;
 
-/// The wall time of a call: the request's value capped by [`WALL_TIME`];
-/// 0 means the full [`WALL_TIME`].
+/// The wall time of a call: the request's value capped by [`MAX_WALL_TIME`];
+/// 0 means [`DEFAULT_WALL_TIME`].
 pub fn effective_wall_time(requested_ms: u32) -> Duration {
     if requested_ms == 0 {
-        return WALL_TIME;
+        return DEFAULT_WALL_TIME;
     }
-    Duration::from_millis(u64::from(requested_ms)).min(WALL_TIME)
+    Duration::from_millis(u64::from(requested_ms)).min(MAX_WALL_TIME)
 }
 
 #[cfg(test)]
@@ -72,9 +74,12 @@ mod tests {
 
     #[test]
     fn wall_time_is_capped_and_defaults() {
-        assert_eq!(effective_wall_time(0), WALL_TIME);
+        assert_eq!(effective_wall_time(0), Duration::from_secs(15));
         assert_eq!(effective_wall_time(200), Duration::from_millis(200));
-        assert_eq!(effective_wall_time(u32::MAX), WALL_TIME);
+        assert_eq!(effective_wall_time(15_000), Duration::from_secs(15));
+        assert_eq!(effective_wall_time(60_000), Duration::from_secs(60));
+        assert_eq!(effective_wall_time(90_000), Duration::from_secs(90));
+        assert_eq!(effective_wall_time(u32::MAX), Duration::from_secs(90));
     }
 
     #[test]

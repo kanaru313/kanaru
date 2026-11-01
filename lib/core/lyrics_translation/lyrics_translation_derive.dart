@@ -1,5 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../lyrics/lyrics.dart';
 import '../secrets/secret_store.dart';
 import 'lyrics_translation_state.dart';
@@ -38,21 +36,25 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
 }
 
 /// What to show for the inputs, and whether a request must be made for it
-/// (the caller then starts one after the debounce). [deeplKey] is the stored
-/// key when [service] is DeepL, else `null`.
+/// (the caller then starts one after the debounce).
 ({LyricsTranslationState state, bool needsRequest}) deriveTranslation({
   required TranslationTargetInfo info,
-  required LyricsTranslationService service,
+  required TranslationServiceId service,
+  Set<TranslationServiceId> knownPlugins = const {},
   required Lyrics lyrics,
   required List<CachedTranslation> rows,
   required TranslationJobStatus? job,
-  required AsyncValue<String?>? deeplKey,
 }) {
   final target = info.effective;
-  final picked = pickCached([
-    for (final row in rows)
-      if (isUsableTranslation(row, target)) row,
-  ], service);
+  final picked = pickCached(
+    [
+      for (final row in rows)
+        if (isUsableTranslation(row, target)) row,
+    ],
+    service,
+    knownPlugins: knownPlugins,
+    target: target,
+  );
   TranslationLoading loading() => TranslationLoading(info, service);
   LyricsTranslationState fromRow(CachedTranslation row, bool other) =>
       isSameLanguage(row.sourceLang, target)
@@ -89,19 +91,5 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
   }
   final other = picked.other;
   if (other != null) return (state: fromRow(other, true), needsRequest: false);
-  if (deeplKey != null) {
-    if (deeplKey.isLoading) return (state: loading(), needsRequest: false);
-    final kind = deeplKey.hasError
-        ? failureKindOfSecretError(deeplKey.error!)
-        : deeplKey.value == null
-        ? TranslationFailureKind.noKey
-        : null;
-    if (kind != null) {
-      return (
-        state: TranslationFailed(info, service, kind),
-        needsRequest: false,
-      );
-    }
-  }
   return (state: loading(), needsRequest: true);
 }

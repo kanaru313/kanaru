@@ -1,14 +1,19 @@
 import '../../database/library_database.dart';
 import '../../database/lyrics_plugin_queries.dart';
+import '../../secrets/secret_store.dart';
 import 'plugin_package_loader.dart';
 import 'store/lyrics_plugin_dirs.dart';
 
 /// The settings or the stored map of a plugin could not be read (a database
 /// or secret store failure). [reason] holds no value, so it is safe to log.
 class PluginRunSetupException implements Exception {
-  const PluginRunSetupException(this.reason);
+  const PluginRunSetupException(this.reason, {this.secret});
 
   final String reason;
+
+  /// Why the secret store failed, when it did (the kind only, never a
+  /// value).
+  final SecretStoreFailure? secret;
 
   @override
   String toString() => 'PluginRunSetupException($reason)';
@@ -47,6 +52,11 @@ Future<PluginRunSetup> loadPluginRunSetup({
     final config = await loadConfig(record.installId);
     final data = await db.lyricsPluginDataFor(record.installId);
     return PluginRunSetup(package, config, data?.storage ?? '');
+  } on SecretStoreException catch (e) {
+    throw PluginRunSetupException(
+      'settings or storage could not be read',
+      secret: e.kind,
+    );
   } on Object {
     // The error text may carry a value; only the fact is kept.
     throw const PluginRunSetupException(

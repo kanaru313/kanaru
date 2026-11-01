@@ -322,9 +322,9 @@ void main() {
     const translated = AppSettings(
       translation: TranslationPrefs(
         show: true,
-        service: LyricsTranslationService.deepl,
+        service: TranslationServiceId.google,
         targetLanguage: 'vi',
-        noticeAcknowledged: {LyricsTranslationService.deepl},
+        noticeAcknowledged: {TranslationServiceId.google},
       ),
     );
 
@@ -332,7 +332,7 @@ void main() {
       final json = encodeSettings(translated);
       final decoded = decodeSettings(json);
 
-      expect((json['lyricsTranslation']! as Map)['service'], 'deepl');
+      expect((json['lyricsTranslation']! as Map)['service'], 'google');
       expect(decoded.settings, translated);
       expect(decoded.unknownKeys, isEmpty);
     });

@@ -64,6 +64,12 @@ enum PluginErrorKind {
 
   /// Default kind of `Response.error`.
   server,
+
+  /// The source refused the credentials (bad or missing key).
+  auth,
+
+  /// The account's quota is used up; see `retry_after_sec`.
+  quota,
 }
 
 /// The first failing `fetch` of a call, kept even when the script caught the error.
@@ -143,7 +149,7 @@ class PluginFetchRequest {
   final List<(String, String)> headers;
   final Uint8List body;
 
-  /// What is left of the call's 15 s (or the script's smaller `timeout`).
+  /// What is left of the call's wall time (15 s by default, at most 90 s).
   /// Dart uses the smaller of this and 30 s as the overall timeout.
   final int deadlineMs;
 
@@ -292,10 +298,10 @@ class PluginScriptRequest {
   /// JSON text that becomes the argument of the global `execute(input)`.
   final String inputJson;
 
-  /// Wall-time limit in milliseconds. 0 or more than 15 000 means 15 000;
-  /// a smaller value is only meant for tests. The clock starts when a
-  /// worker begins the job: time spent waiting in the queue is not counted,
-  /// so the caller should keep its own outer deadline.
+  /// Wall-time limit in milliseconds. 0 means 15 000; more than 90 000
+  /// means 90 000. Lyrics runs pass 0. The clock starts when a worker
+  /// begins the job: time spent waiting in the queue is not counted, so
+  /// the caller should keep its own outer deadline.
   final int timeoutMs;
 
   /// The plugin's configuration, readable by the script as
@@ -427,7 +433,7 @@ enum PluginScriptStatus {
   /// `error_kind`, `error_message` and `js_error`.
   scriptError,
 
-  /// The 15 s wall-time limit passed.
+  /// The wall-time limit passed (15 s by default, at most 90 s).
   timeout,
 
   /// The 32 MiB heap limit was hit.

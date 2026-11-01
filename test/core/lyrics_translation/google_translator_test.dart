@@ -51,7 +51,7 @@ void main() {
 
   test('reports its service and supports every language', () async {
     server = await LoopbackServer.start(_echo);
-    expect(translator().service, LyricsTranslationService.google);
+    expect(translator().service, TranslationServiceId.google);
     expect(translator().supports(translationLanguageFor('hi')!), isTrue);
   });
 

@@ -160,6 +160,25 @@ void main() {
     });
   });
 
+  group('multi-value secrets', () {
+    test('each key of a list is hidden on its own', () {
+      final hide = configValueHider({'apiKeys': 'a1b2c3d4e5,f6g7h8i9j0'});
+      expect(hide('key a1b2c3d4e5 failed'), 'key *** failed');
+      expect(hide('key f6g7h8i9j0 failed'), 'key *** failed');
+      expect(hide('a1b2c3d4e5,f6g7h8i9j0'), '***');
+    });
+
+    test('space and semicolon separated keys are hidden too', () {
+      final hide = configValueHider({'k': 'aaaaaaaa1 ; bbbbbbbb2\nccccccccc3'});
+      expect(hide('x aaaaaaaa1 x bbbbbbbb2 x ccccccccc3'), 'x *** x *** x ***');
+    });
+
+    test('short tokens of a list stay readable', () {
+      final hide = configValueHider({'k': 'shorty,longerkey99'});
+      expect(hide('shorty longerkey99'), 'shorty ***');
+    });
+  });
+
   group('rotation', () {
     test('the file moves to .1 before it passes the limit', () async {
       final log = PluginRunLog(dir, maxBytes: 1000);

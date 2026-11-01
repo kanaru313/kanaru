@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:file_selector/file_selector.dart' as picker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/database/lyrics_plugin_spec.dart' show PluginKind;
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 
 /// The search text of the store page. Reset when the page closes.
@@ -31,14 +32,37 @@ final pluginStoreFilterProvider =
       PluginStoreFilter.new,
     );
 
+/// The kind chip (Lyrics or Translate) the user picked on the store page;
+/// null until then, when the kind the mount starts on applies. Reset when the
+/// page closes.
+class PluginStoreKind extends Notifier<PluginKind?> {
+  PluginStoreKind(this.initialKind);
+
+  /// The kind of the mount this pick belongs to; it keeps the picks of two
+  /// mounts apart.
+  final PluginKind initialKind;
+
+  @override
+  PluginKind? build() => null;
+
+  void set(PluginKind value) => state = value;
+}
+
+final pluginStoreKindProvider = NotifierProvider.autoDispose
+    .family<PluginStoreKind, PluginKind?, PluginKind>(PluginStoreKind.new);
+
 /// The store list: records and repositories with the search text and the
 /// chosen chip applied. A chip whose repository was removed (or whose
 /// plugins from files are gone) counts as "all".
-final pluginStoreViewProvider =
-    Provider.autoDispose<AsyncValue<PluginStoreView>>((ref) {
+///
+/// The argument is the kind the page starts on, used until a chip is picked.
+final pluginStoreViewProvider = Provider.autoDispose
+    .family<AsyncValue<PluginStoreView>, PluginKind>((ref, initialKind) {
       final raw = ref.watch(pluginStoreRawInputProvider);
       final search = ref.watch(pluginStoreSearchProvider);
       final chosen = ref.watch(pluginStoreFilterProvider);
+      final kind =
+          ref.watch(pluginStoreKindProvider(initialKind)) ?? initialKind;
       return raw.whenData((input) {
         final known =
             chosen.isAll ||
@@ -51,6 +75,7 @@ final pluginStoreViewProvider =
             records: input.records,
             repos: input.repos,
             search: search,
+            kind: kind,
             filter: known ? chosen : const StoreSourceFilter.all(),
             available: input.available,
           ),

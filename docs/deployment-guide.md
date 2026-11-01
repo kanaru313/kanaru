@@ -188,7 +188,7 @@ License texts are in `usr/share/licenses/` inside the AppImage, with the Kanaru 
 | GSettings schemas (GTK) | System | System | Needed by GTK file pickers (folder picker). Distros ship them with GTK 3 |
 | glibc | Build host | 2.35 or newer | |
 | D-Bus session bus | Optional | Optional | Needed for MPRIS. The app runs without it, with no media controls |
-| Secret Service (libsecret) | Runtime library | Runtime library | `flutter_secure_storage` links libsecret into the binary, so the library is needed to start. A running Secret Service (GNOME Keyring, KWallet, KeePassXC) stores the DeepL key; without one (or without a session bus) the key goes to a `0600` `secrets.json` in the data directory, with a warning in settings (PRIV-04) |
+| Secret Service (libsecret) | Runtime library | Runtime library | `flutter_secure_storage` links libsecret into the binary, so the library is needed to start. A running Secret Service (GNOME Keyring, KWallet, KeePassXC) stores plugin secrets; without one (or without a session bus) they go to a `0600` `secrets.json` in the data directory, with a warning in settings (PRIV-04) |
 
 `libsecret` is linked (build needs `libsecret-1`, `libgcrypt` and `libgpg-error` headers). `jsoncpp` is not linked. The AppImage and package dependency lists must include libsecret (`assemble-appdir.sh` check is a follow-up).
 
@@ -218,7 +218,7 @@ To run with separate folders, set all three XDG variables to absolute paths (see
 
 Backups: copy the config and data directories while Kanaru is closed. The cache can be deleted at any time; covers are rebuilt on the next scan.
 
-Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, the DeepL key and lyrics plugin secrets are kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Settings > Playback > Translation shows the real path of the file in a warning whenever the key is kept there, and "Clear" on the DeepL key row removes the key from the keyring and from the file. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
+Secrets are never written to these files; they go to the system keyring. Only without a Secret Service, lyrics plugin secrets are kept in `secrets.json` in the data directory (mode `0600`). Never attach `secrets.json` to a bug report. Log lines are redacted for passwords, tokens and URL credentials on a best-effort basis.
 
 ## Reset targets
 

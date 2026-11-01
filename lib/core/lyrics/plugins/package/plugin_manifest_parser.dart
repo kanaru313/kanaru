@@ -1,11 +1,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:logging/logging.dart';
+
+import '../../../database/lyrics_plugin_spec.dart';
 import '../../online/lyrics_provider_registry.dart';
 import 'plugin_config_parser.dart';
 import 'plugin_manifest.dart';
 import 'plugin_package_problem.dart';
 import 'plugin_text_clean.dart';
+import 'plugin_translate_spec.dart';
+
+final _log = Logger('plugin_package');
 
 /// The newest `metadata.apiVersion` this app understands.
 const supportedPluginApiVersion = 1;
@@ -45,7 +51,12 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
       detail: '$apiVersion',
     );
   }
-  if (metadata['type'] != 'lyrics') {
+  final kind = switch (metadata['type']) {
+    'lyrics' => PluginKind.lyrics,
+    'translate' => PluginKind.translate,
+    _ => null,
+  };
+  if (kind == null) {
     throw PluginPackageProblem(
       PluginPackageProblemKind.wrongType,
       detail: metadata['type'] is String ? metadata['type'] as String : '',
@@ -74,15 +85,40 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
 
   final script = json['script'];
   if (script is! Map<String, dynamic>) throw _invalid('script');
+  PluginTranslateSpec? translate;
+  if (kind == PluginKind.translate) {
+    try {
+      final parsed = parsePluginTranslateSpec(json['translate']);
+      translate = parsed.spec;
+      if (parsed.droppedLanguages > 0) {
+        _log.info(
+          'translate plugin lists ${parsed.droppedLanguages} unsupported '
+          'or repeated language codes; they are ignored',
+        );
+      }
+    } on PluginTranslateSpecError catch (error) {
+      throw _invalid(error.field);
+    }
+  }
+  final isLyrics = kind == PluginKind.lyrics;
   return PluginManifest(
+    kind: kind,
+    translate: translate,
     apiVersion: apiVersion,
     name: name,
     version: version,
     hosts: hosts,
     author: author,
     description: description,
-    searchScript: _scriptRef(script['search'], 'script.search'),
-    lyricsScript: _scriptRef(script['lyrics'], 'script.lyrics'),
+    searchScript: isLyrics
+        ? _scriptRef(script['search'], 'script.search')
+        : null,
+    lyricsScript: isLyrics
+        ? _scriptRef(script['lyrics'], 'script.lyrics')
+        : null,
+    translateScript: isLyrics
+        ? null
+        : _scriptRef(script['translate'], 'script.translate'),
     config: parsePluginConfig(json['config']),
   );
 }

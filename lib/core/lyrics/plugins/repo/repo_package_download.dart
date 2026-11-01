@@ -72,10 +72,11 @@ Future<RepoPackageOutcome> downloadRepoPackage(
   return (package: package, failed: null);
 }
 
-/// `version` equal and `hosts` equal as sets: what the user was shown in the
-/// store is what the package declares.
+/// `kind` and `version` equal and `hosts` equal as sets: what the user was
+/// shown in the store is what the package declares.
 bool _matches(PluginCatalogEntry entry, PluginManifest manifest) {
   final same =
+      manifest.kind == entry.kind &&
       manifest.version == entry.version &&
       manifest.hosts.toSet().length == entry.hosts.toSet().length &&
       manifest.hosts.toSet().containsAll(entry.hosts);

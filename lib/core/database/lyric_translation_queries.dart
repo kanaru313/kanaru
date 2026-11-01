@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import 'library_database.dart';
+import 'lyrics_plugin_spec.dart';
 
 /// Queries on the cached lyrics translations; see the invariants in
 /// `lyric_translation_tables.dart`.
@@ -58,6 +59,17 @@ extension LyricTranslationQueries on LibraryDatabase {
   }
 
   /// Deletes every cached translation (not the per-song targets) and returns
-  /// how many rows went.
-  Future<int> clearLyricTranslations() => delete(lyricTranslations).go();
+  /// how many rows went. Then deletes the removed plugin records nothing
+  /// names any more (saved lyrics, pins and rejects still count).
+  Future<int> clearLyricTranslations() {
+    return transaction(() async {
+      final removed = await delete(lyricTranslations).go();
+      await customUpdate(
+        'DELETE FROM lyrics_plugins WHERE $removedAndUnreferencedPluginSql',
+        updates: {lyricsPlugins},
+        updateKind: UpdateKind.delete,
+      );
+      return removed;
+    });
+  }
 }

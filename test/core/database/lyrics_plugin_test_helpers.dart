@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/lyrics_plugin_queries.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 
 LyricsPluginSpec pluginSpec({
+  PluginKind kind = PluginKind.lyrics,
   String name = 'Demo',
   int version = 1,
   String packageDir = 'plugin-a/v1-100',
@@ -12,6 +14,7 @@ LyricsPluginSpec pluginSpec({
   String? repoUrl,
   String? repoSlug,
 }) => LyricsPluginSpec(
+  kind: kind,
   name: name,
   version: version,
   apiVersion: 1,
@@ -89,3 +92,10 @@ Future<void> seedPluginReferences(
     );
   }
 }
+
+/// A saved translation made by [provider].
+Future<void> insertTranslation(LibraryDatabase db, String provider) =>
+    db.customStatement(
+      'INSERT INTO lyric_translations (content_hash, provider, target_lang, '
+      "lines_json, created_at) VALUES ('h', '$provider', 'vi', '{}', 1)",
+    );

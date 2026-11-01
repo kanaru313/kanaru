@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/plugin_log_paths.dart';
 import '../../core/lyrics/plugins/store/lyrics_plugin_dirs.dart';
-import '../../shared/widgets/cover_art.dart' show coverDecodeWidth;
-import '../../shared/icons/app_icons.dart';
+import '../widgets/cover_art.dart' show coverDecodeWidth;
+import '../icons/app_icons.dart';
 
 /// The icon of a plugin that has none of its own.
 const pluginDefaultIcon = AppIcons.extension;

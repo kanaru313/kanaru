@@ -13,6 +13,7 @@ import 'app/shell/window/desktop_window.dart';
 import 'core/database/library_startup.dart';
 import 'core/indexer/library_startup_tasks.dart';
 import 'core/logging/app_logging.dart';
+import 'core/lyrics_translation/translation_service_resolution.dart';
 import 'core/media_controls/media_controls_provider.dart';
 import 'core/media_controls/mpris/mpris_media_controls.dart';
 import 'core/open_files/open_files_provider.dart';
@@ -124,6 +125,9 @@ Future<void> main() async {
   // Records listens (STAT-01) for the whole session; nothing in the UI keeps
   // it alive.
   container.listen(listenRecorderProvider, (_, _) {});
+  // Drops a translate plugin that was uninstalled from the translation
+  // settings once the plugin list is read; nothing in the UI reads it.
+  container.listen(translationServiceSweepProvider, (_, _) {});
 
   runApp(
     UncontrolledProviderScope(container: container, child: const KanaruApp()),

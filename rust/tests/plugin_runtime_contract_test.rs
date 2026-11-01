@@ -686,7 +686,7 @@ fn fresh_runtime_and_context_per_call_is_cheap() {
             [("search.js".to_owned(), OK_SCRIPT.to_owned())],
             "search.js".to_owned(),
             "{}".to_owned(),
-            limits::WALL_TIME,
+            limits::DEFAULT_WALL_TIME,
             Arc::new(AtomicBool::new(false)),
         )
         .unwrap()

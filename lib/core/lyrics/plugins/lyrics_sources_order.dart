@@ -21,7 +21,7 @@ class LyricsSourceEntry {
 }
 
 /// The sources that exist, in the user's order, from the plugin [records]
-/// (removed ones are not sources) and the saved [prefs].
+/// (removed ones and other kinds are not sources) and the saved [prefs].
 ///
 /// A source with no preference row is on. `lrclib` without a row sits at
 /// position 0; a plugin without a row goes after every saved position, in
@@ -49,7 +49,8 @@ List<LyricsSourceEntry> orderLyricsSources(
   final entries = [
     entryOf(lrclibSourceId, null, () => 0),
     for (final record in records)
-      if (!record.isRemoved) entryOf(record.installId, record, () => next++),
+      if (!record.isRemoved && record.kind == PluginKind.lyrics)
+        entryOf(record.installId, record, () => next++),
   ];
   return entries..sort((a, b) {
     final byPosition = a.position.compareTo(b.position);

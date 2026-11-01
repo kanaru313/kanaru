@@ -123,7 +123,7 @@ String encodeStoredCatalog(PluginCatalog catalog, RepoAddressKind kind) =>
             'name': e.name,
             'version': e.version,
             'apiVersion': e.apiVersion,
-            'type': 'lyrics',
+            'type': e.kind.value,
             'hosts': e.hosts,
             'path': e.path.toString(),
             if (e.icon != null) 'icon': e.icon.toString(),

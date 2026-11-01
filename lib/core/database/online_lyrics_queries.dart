@@ -139,8 +139,8 @@ extension OnlineLyricsQueries on LibraryDatabase {
   }
 
   /// Empties all three tables in one transaction and returns the rows
-  /// removed. Also deletes every removed plugin record (nothing points to
-  /// them once the three tables are empty; they are not counted). Never
+  /// removed. Also deletes the removed plugin records no saved translation
+  /// still names (they are not counted). Never
   /// touches `.lrc` files.
   Future<int> clearOnlineLyrics() {
     return transaction(() async {
@@ -148,7 +148,11 @@ extension OnlineLyricsQueries on LibraryDatabase {
       removed += await delete(onlineLyrics).go();
       removed += await delete(lyricsPins).go();
       removed += await delete(onlineLyricsRejects).go();
-      await (delete(lyricsPlugins)..where((t) => t.removedAt.isNotNull())).go();
+      await customUpdate(
+        'DELETE FROM lyrics_plugins WHERE $removedAndUnreferencedPluginSql',
+        updates: {lyricsPlugins},
+        updateKind: UpdateKind.delete,
+      );
       return removed;
     });
   }

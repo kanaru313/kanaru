@@ -42,7 +42,7 @@ void main() {
         initialSettingsProvider.overrideWithValue(
           const AppSettings(
             translation: TranslationPrefs(
-              noticeAcknowledged: {LyricsTranslationService.google},
+              noticeAcknowledged: {TranslationServiceId.google},
             ),
           ),
         ),

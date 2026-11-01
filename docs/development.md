@@ -216,7 +216,7 @@ Use this to try a build, a first run or a scan without touching your real settin
 | Config | `$XDG_CONFIG_HOME/kanaru` | `settings.json`, `playback-session.json` |
 | Data | `$XDG_DATA_HOME/kanaru` | `library.db`, `search_history.json`, `secrets.json` (only without Secret Service), lyrics plugin files and plugin logs |
 | Cache | `$XDG_CACHE_HOME/kanaru` | logs, cover thumbnails, waveforms |
-| Keyring | system Secret Service | DeepL key, plugin secrets. Global: never isolated |
+| Keyring | system Secret Service | Plugin secrets. Global: never isolated |
 | Temp | `$TMPDIR` (a `nix-shell.*` folder in the dev shell) or `/tmp` | `media_kit` playlist and helper files |
 
 Paths and file names are listed in [Data locations](deployment-guide.md#data-locations).
@@ -239,7 +239,7 @@ To clean up, quit Kanaru, then run `command rm -rf "${ROOT:?}"` (`rm` may be an 
 Rules for isolated runs:
 
 - **Always set all three variables.** With only `XDG_DATA_HOME`, the run reads and overwrites your real settings and playback session, and uses your real cover cache. A library scan, removing a library folder, or Clear cover cache then deletes real cover thumbnails that the throwaway library does not use.
-- **Do not set or clear the DeepL key.** The keyring is shared with your real Kanaru. Plugin secrets set here stay in the keyring after cleanup. Do not copy a real `secrets.json` into the root: its key is moved into the shared keyring.
+- **Do not set or clear keys in the keyring.** It is shared with your real Kanaru. The first time the secret store is used in a process, Kanaru deletes the old built-in DeepL key (`deepl_api_key`) from the keyring and the fallback file (best effort; remove with the pre-release migration collapse), so an isolated run still deletes it from the real keyring. Plugin secrets set here stay in the keyring after cleanup. Do not copy a real `secrets.json` into the root: its key is moved into the shared keyring.
 - **Do not use Save lyrics.** It writes `.lrc` files next to your real music. When it replaces one, the old file goes to `$XDG_DATA_HOME/Trash` (inside the root when `/tmp` is on the same disk as the song), and removing the root deletes it for good.
 
 ### Logs
@@ -291,7 +291,7 @@ Timings are printed to the console. They depend on the machine and the repo keep
 | `libmpv.so: cannot open shared object file` at runtime | Install the mpv runtime package (`mpv` / `libmpv2`). On Nix, run inside the dev shell. |
 | App aborts with `No GSettings schemas are installed on the system` when opening files | GTK's file chooser needs compiled schemas. Distros ship them with GTK 3; on Nix, run inside the dev shell, which adds them to `XDG_DATA_DIRS`. |
 | No sound, or mpv errors about locale | Make sure your locale is valid (`locale` shows no errors). `media_kit` sets `LC_NUMERIC` itself. |
-| `flutter_secure_storage` fails to read or write | A Secret Service provider must be running (GNOME Keyring, KWallet ≥ 5.97, or KeePassXC with Secret Service enabled). Without one, Kanaru keeps the DeepL key in a `0600` `secrets.json` in the data directory. |
+| `flutter_secure_storage` fails to read or write | A Secret Service provider must be running (GNOME Keyring, KWallet ≥ 5.97, or KeePassXC with Secret Service enabled). Without one, Kanaru keeps plugin secrets in a `0600` `secrets.json` in the data directory. |
 | `Unable to find libclang` during Rust codegen | Install `libclang-dev` / `clang-devel` and set `LIBCLANG_PATH`. |
 
 ## End-user runtime dependencies

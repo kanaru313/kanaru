@@ -17,7 +17,6 @@ const settingsFocusParam = 'focus';
 /// Places a link can open in Settings: a group or one row, on [page].
 enum SettingsAnchor {
   playbackTranslation('translation', settingsPlaybackRoute),
-  deepLKey('deepl-key', settingsPlaybackRoute),
   playbackLyrics('lyrics', settingsPlaybackRoute),
   libraryFolders('folders', settingsLibraryRoute);
 
@@ -28,13 +27,6 @@ enum SettingsAnchor {
 
   /// Route of the page holding the anchor.
   final String page;
-
-  /// What to use when this anchor is not built, e.g. the DeepL key row while
-  /// the service is Google; `null` when there is nothing broader.
-  SettingsAnchor? get fallback => switch (this) {
-    deepLKey => playbackTranslation,
-    _ => null,
-  };
 
   /// The anchor named [id], or `null` when [id] is null or unknown.
   static SettingsAnchor? byId(String? id) {

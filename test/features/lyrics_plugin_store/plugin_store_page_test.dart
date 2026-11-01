@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_fetch_exception.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
@@ -8,11 +9,16 @@ import 'store_test_harness.dart';
 
 class _Taps {
   final installed = <String>[];
+  final installedKinds = <PluginKind?>[];
   final items = <(String, String)>[];
   int repositories = 0;
 
-  Widget page() => PluginStorePage(
-    onOpenInstalled: installed.add,
+  Widget page({PluginKind initialKind = PluginKind.lyrics}) => PluginStorePage(
+    initialKind: initialKind,
+    onOpenInstalled: (id, kind) {
+      installed.add(id);
+      installedKinds.add(kind);
+    },
     onOpenCatalogItem: (repo, slug) => items.add((repo, slug)),
     onOpenRepositories: () => repositories++,
   );
@@ -101,15 +107,17 @@ void main() {
     expect(find.text('Installed (1)'), findsOneWidget);
   });
 
-  testWidgets('chips show only with two or more sources', (tester) async {
+  testWidgets('source chips show only with two or more sources', (
+    tester,
+  ) async {
     await pumpStore(tester, _Taps().page(), repos: [repo], records: records);
-    // One repository plus a file plugin: two sources.
-    expect(find.byType(ChoiceChip), findsNWidgets(3));
+    // One repository plus a file plugin: two sources, and the two kind chips.
+    expect(find.byType(ChoiceChip), findsNWidgets(5));
   });
 
-  testWidgets('no chips with a single source', (tester) async {
+  testWidgets('no source chips with a single source', (tester) async {
     await pumpStore(tester, _Taps().page(), repos: [repo]);
-    expect(find.byType(ChoiceChip), findsNothing);
+    expect(find.byType(ChoiceChip), findsNWidgets(2));
   });
 
   testWidgets('a chip narrows the list to its source', (tester) async {
@@ -239,6 +247,7 @@ void main() {
     await tester.tap(find.text('Fresh'));
     await tester.tap(find.text('Plain'));
     expect(taps.installed, ['plugin-fresh']);
+    expect(taps.installedKinds, [PluginKind.lyrics]);
     expect(taps.items, [(repoA, 'plain')]);
   });
 
@@ -293,6 +302,69 @@ void main() {
         ),
       );
       expect(item.enabled, isFalse);
+    });
+  });
+
+  group('kind chips', () {
+    final mixedRepo = repoOf(
+      repoA,
+      'Kho A',
+      entries: [
+        entryOf('lyr', name: 'LyrNew'),
+        entryOf('tr', name: 'TrNew', kind: PluginKind.translate),
+      ],
+    );
+    final mixedRecords = [
+      recordOf('plugin-lyr-file', name: 'LyrFile'),
+      recordOf('plugin-tr-file', name: 'TrFile', kind: PluginKind.translate),
+    ];
+
+    testWidgets('start on the kind of the mount and switch on tap', (
+      tester,
+    ) async {
+      await pumpStore(
+        tester,
+        _Taps().page(initialKind: PluginKind.translate),
+        repos: [mixedRepo],
+        records: mixedRecords,
+      );
+      expect(find.text('Lyrics'), findsOneWidget);
+      expect(find.text('Translate'), findsOneWidget);
+      expect(find.text('TrNew'), findsOneWidget);
+      expect(find.text('TrFile'), findsOneWidget);
+      expect(find.text('LyrNew'), findsNothing);
+      expect(find.text('LyrFile'), findsNothing);
+
+      await tester.tap(find.text('Lyrics'));
+      await tester.pumpAndSettle();
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('LyrFile'), findsOneWidget);
+      expect(find.text('TrNew'), findsNothing);
+    });
+
+    testWidgets('lyrics is the default kind', (tester) async {
+      await pumpStore(
+        tester,
+        _Taps().page(),
+        repos: [mixedRepo],
+        records: mixedRecords,
+      );
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsNothing);
+    });
+
+    testWidgets('the chips are Vietnamese in the Vietnamese locale', (
+      tester,
+    ) async {
+      await pumpStore(
+        tester,
+        _Taps().page(),
+        locale: const Locale('vi'),
+        repos: [mixedRepo],
+        records: mixedRecords,
+      );
+      expect(find.text(vi.lyricsStoreKindLyrics), findsOneWidget);
+      expect(find.text(vi.lyricsStoreKindTranslate), findsOneWidget);
     });
   });
 }

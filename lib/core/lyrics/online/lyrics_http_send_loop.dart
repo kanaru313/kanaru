@@ -21,6 +21,7 @@ class LyricsSendLoop {
     required this.abandoned,
     required this.allowed,
     required this.maxRetries,
+    this.perSendCap = translationRequestTimeout,
   });
 
   final HttpClient client;
@@ -28,6 +29,10 @@ class LyricsSendLoop {
   final bool Function()? abandoned;
   final bool Function()? allowed;
   final int maxRetries;
+
+  /// Longest one send may take; null for no cap of its own, so a send is
+  /// bound only by the time left of the call (`boundRequests`).
+  final Duration? perSendCap;
 
   /// Sends the request and again after a short busy answer, within [timeout]
   /// for all sends and waits. Before every send `abandoned` is asked
@@ -140,7 +145,9 @@ class LyricsSendLoop {
       return await sendTranslationRequest(
         client,
         connectTimeout: _shorter(translationConnectTimeout, limit),
-        requestTimeout: _shorter(translationRequestTimeout, limit),
+        requestTimeout: perSendCap == null
+            ? (limit ?? translationRequestTimeout)
+            : _shorter(perSendCap!, limit),
         method: method,
         uri: uri,
         headers: headers,

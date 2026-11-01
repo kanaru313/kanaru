@@ -6,7 +6,6 @@ import '../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/icons/app_icons.dart';
-import '../../../../shared/translation_notice_dialog.dart';
 import '../../../../shared/widgets/menu_row.dart';
 import 'lyrics_translation_labels.dart';
 
@@ -18,8 +17,9 @@ const _maxWidth = 280.0;
 List<Widget> lyricsTranslationMenuFooter(
   BuildContext context,
   LyricsTranslationState state,
-  LyricsTranslationService selected,
+  TranslationServiceId selected,
   LyricsTranslationController controller,
+  String Function(TranslationServiceId) serviceName,
 ) {
   final l10n = context.l10n;
   final theme = Theme.of(context);
@@ -73,8 +73,8 @@ List<Widget> lyricsTranslationMenuFooter(
   }
   final (String? text, String? action, VoidCallback? run) = switch (state) {
     TranslationReady(:final service) => (
-      l10n.lyricsTranslationSavedFrom(translationServiceName(service)),
-      l10n.lyricsTranslationRetranslateWith(translationServiceName(selected)),
+      l10n.lyricsTranslationSavedFrom(serviceName(service)),
+      l10n.lyricsTranslationRetranslateWith(serviceName(selected)),
       controller.retranslate,
     ),
     TranslationSameLanguage(:final info) => (

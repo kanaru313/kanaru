@@ -1,6 +1,20 @@
 # Lyrics plugin API
 
-What a lyrics plugin script can rely on. Plugins are JavaScript files in the package's `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Architecture: [system-architecture.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
+What a plugin script can rely on. A plugin is a package of JavaScript files in its `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Two kinds exist: a **lyrics** plugin (`search.js` and `lyrics.js`, see [Lyrics scripts](#lyrics-scripts-in-a-lookup)) and a **translate** plugin (`translate.js`, see [Translate scripts](#translate-scripts)). Sections marked *lyrics* or *translate* apply to that kind only; the rest applies to both. Architecture: [system-architecture-lyrics-plugins.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
+
+## Data and consent
+
+What a script receives, and where it can send it:
+
+| Kind | The script receives | Where its `fetch` may go |
+|---|---|---|
+| lyrics, `search.js` | title, artist, album and duration of the song, or the text the user typed (manual search) | the plugin's declared `hosts`, only those |
+| lyrics, `lyrics.js` | the id of the search result | the same `hosts` |
+| translate, `translate.js` | the lines to translate, the target language code and `song` `{title, artist, lyrics}` (the lyrics are the song's unique lines, at most 20 000 characters; `song` is absent when the song is unknown) | the same `hosts` |
+
+- The runtime knows no hosts or consent. The app checks each `fetch` against the declared `hosts` (and the address rules in [Address rules](#address-rules)) before it sends anything. The script decides what it puts in a request, so a plugin that gets song data can send it on to its hosts. Install a plugin only if you trust its author with that.
+- **Lyrics** plugins use the one online-lyrics consent that covers every online lyrics source (`manualConsent` for manual search, `autoConsent` for automatic lookup). Installing a plugin shows no extra prompt, and an update shows none either.
+- **Translate** plugins use the translation notice, which is accepted once per plugin id (`noticeAcknowledged` in settings). The notice lists the plugin's hosts. The app checks that the notice was accepted before every send, so withdrawing it stops the next send. An update that adds hosts does not show the notice again: this is an accepted risk, because the update is the author's change to a plugin the user already accepted. Uninstalling the plugin drops the acceptance, so installing it again asks again.
 
 ## Runtime and limits
 
@@ -12,7 +26,7 @@ The runtime values are the constants in `rust/src/plugin_runtime/limits.rs` (`li
 |---|---|---|
 | Heap | 32 MiB, counted by a Rust allocator (`memory.rs`) that sets a flag when it refuses an allocation, so `memory` is reported even when the engine could not build the error object | status `memory` |
 | JS stack | 1 MiB (the thread has 8 MiB, so the engine fails first, also inside `JSON.parse` and `String(nested array)`) | status `stack` |
-| Wall time per call | 15 s, counted from the moment a worker starts the job (includes `load()`); time waiting in the queue is not counted, so the host keeps its own outer deadline | status `timeout` |
+| Wall time per call | Lyrics run: 15 s, fixed. Translate run: the plugin's `translate.timeoutSec` (default 15, at most 90 s; see [Time, fetch and sends](#time-fetch-and-sends)). Each `fetch` may take what is left of the call. Counted from the moment a worker starts the job (includes `load()`); time waiting in the queue is not counted, so the host keeps its own outer deadline | status `timeout` |
 | Output | 2 MiB of JSON text (UTF-8 bytes) | status `outputTooLarge` |
 | Thrown-error text in `js_error` | message 1000 characters, stack 16 KiB (cut, not rejected) | cut |
 | `fetch` request body | 256 KiB | `InvalidRequestError` |
@@ -53,7 +67,7 @@ After the entry file ran, the host calls the global `execute(input)` once. `inpu
 | `Response.success(data)` | status `ok`, `output_json` = `JSON.stringify(data)` (`null` for `undefined`) |
 | `Response.error(message, {kind, retryAfterSec})` | status `scriptError`, `error_message` = `message` (cut at 1000 characters), `error_kind` = `kind`, `retry_after_sec` = `retryAfterSec` |
 
-`kind` is `rateLimited`, `invalidResponse` or `server`; anything else, or no `kind`, is `server`. `retryAfterSec` counts only as a finite number of 0 or more (rounded down).
+`kind` is `rateLimited`, `invalidResponse`, `auth`, `quota` or `server`; anything else, or no `kind`, is `server`. `retryAfterSec` counts only as a finite number of 0 or more (rounded down).
 
 Returning anything else (a Promise, `undefined`, a plain object that merely looks like a response) is status `scriptError` with `error_kind` `invalidResponse` and the message `execute must return Response.success or Response.error`. A missing `execute` is `scriptError` too. `Response` is read-only and a response cannot be forged: the helpers keep their own copies of the built-ins they use.
 
@@ -104,7 +118,7 @@ Other statuses:
 - `PluginFetcher` answers a `PluginFetchCall` (`method`, `Uri url`, `headers`, `Uint8List body`, `deadline` as a `Duration`, `maxSends`) with a `PluginFetchAnswer` (`outcome`, `status`, final `url`, `headers`, `bytes`, `retryAfterSec`, `sends`). A fetcher that throws is answered as `network` (sends 0; Rust counts at least 1 for a network failure), and an `ok` answer without a final URL gets the call's URL, and a URL that is not a valid `Uri` is answered `invalidRequest` without calling the fetcher, so a bug in the app never crashes a job. A fetcher that is slower than the deadline is cut by the runtime (`timeout`). Numbers in an answer are clamped to the ranges the bridge encodes.
 - `PluginCancel.cancel()` calls `cancel_plugin_job` for a running job. A token cancelled before the run still goes through Rust: the job is begun, cancelled (which frees its id) and run, so the result is `cancelled` and no script code runs. A token stays cancelled and can serve several runs.
 - `check(fileName, code)` returns `PluginScriptProblem?` (`message`, `line` or null when unknown). Unlike `run` it throws when the library cannot load or the bridge fails: null would claim an unchecked script is valid.
-- A `timeout` of zero or under 1 ms is sent as 1 ms (Rust reads 0 as the 15 s maximum). `PluginFetchAnswer.sends` defaults to 0; `blockedHost` and `notConsented` answers use up no sends (the first failure is still kept as `fetch_failure`).
+- A `timeout` of zero or under 1 ms is sent as 1 ms (Rust reads 0 as the 15 s default; more than 90 s is cut to 90 s). `PluginFetchAnswer.sends` defaults to 0; `blockedHost` and `notConsented` answers use up no sends (the first failure is still kept as `fetch_failure`).
 - The `native`-tagged test (`test/core/plugin_runtime/rust_plugin_runtime_native_test.dart`) runs only after `cargo build --manifest-path rust/Cargo.toml`; it skips with a message when the debug library is missing or cannot be loaded (for example a stale build).
 - The runtime logs only the type of an error, never a URL, header or configuration value.
 
@@ -118,7 +132,7 @@ Besides `Response` and `load`, a script has these globals. They are ordinary glo
 
 ### `fetch(url, options?)`
 
-`options`: `method` (`GET` default, or `POST`, any case; anything else throws `TypeError`), `headers` (object), `body` (string, sent as UTF-8; or an object, sent as JSON with `content-type: application/json` unless a content-type header is given), `queries` (object, appended to the URL percent-encoded; `undefined` and `null` values are skipped), `timeout` (ms, cut to what is left of the call's 15 s; a bad value is ignored). The request body is at most 256 KiB; a larger one throws `InvalidRequestError` without crossing to the app. The app does the authoritative checks (host allowlist, consent, header and body rules) and returns an outcome.
+`options`: `method` (`GET` default, or `POST`, any case; anything else throws `TypeError`), `headers` (object), `body` (string, sent as UTF-8; or an object, sent as JSON with `content-type: application/json` unless a content-type header is given), `queries` (object, appended to the URL percent-encoded; `undefined` and `null` values are skipped), `timeout` (ms, cut to what is left of the call's wall time (15 s by default); a bad value is ignored). The request body is at most 256 KiB; a larger one throws `InvalidRequestError` without crossing to the app. The app does the authoritative checks (host allowlist, consent, header and body rules) and returns an outcome.
 
 On success `fetch` returns a frozen object `{status, ok (200-299), url (after redirects), headers (lower-case names; repeated names joined with ", "), header(name) (case-insensitive, null when absent), text(charset?), json(), base64()}`. An HTTP error status such as 404 is still a successful `fetch`.
 
@@ -150,7 +164,7 @@ Error messages made by the runtime are fixed texts: they never contain the URL, 
 
 ### `sleep(ms)`
 
-Blocks the script thread for `ms` (negative or not a number counts as 0). The time counts toward the call's 15 s: a sleep longer than what is left runs until the deadline and the call ends `timeout`. A cancel interrupts it.
+Blocks the script thread for `ms` (negative or not a number counts as 0). The time counts toward the call's wall time (15 s by default): a sleep longer than what is left runs until the deadline and the call ends `timeout`. A cancel interrupts it.
 
 ### `localConfig.getItem(key)`
 
@@ -234,7 +248,7 @@ The app maps the result of a run to a failure in this order:
 
 1. `cancelled`: nothing is recorded. If the plugin was uninstalled or updated during the run, the source is only skipped for this lookup (like `busy`) and the other sources go on; if the lookup was abandoned, the whole lookup ends;
 2. a failed `fetch` of the run, even if the script caught it and returned data: `NetworkError` is `network`, `BlockedHostError` `blockedHost`, `NotConsentedError` `notConsented`, `RateLimitedError` `rateLimited` (with `retryAfterSec` read like a `Retry-After` header, 1 s to 15 min), `InvalidRequestError`, `InvalidResponseError` and `TooManyRequestsError` `invalidResponse`;
-3. `Response.error(message, {kind, retryAfterSec})`: kind `rateLimited` (with `retryAfterSec`), `invalidResponse`, or `server` (the default);
+3. `Response.error(message, {kind, retryAfterSec})`: kind `rateLimited` or `quota` (both with `retryAfterSec`; lyrics treats `quota` as `rateLimited`), `invalidResponse`, `auth` (lyrics: `server`), or `server` (the default);
 4. `busy` (every worker busy and the queue full): the source is skipped for this lookup, with no failure and no pause; the app asks again for the next song or after about 30 s. `timeout` is `network`. `memory`, `stack`, `outputTooLarge`, a thrown error, a bad output shape and an `internal` failure of the runtime are `invalidResponse`.
 
 A failure is never stored as "no lyrics": only a successful empty answer is. A failure pauses that source (and only that source) for at least 60 seconds.
@@ -248,6 +262,49 @@ A run that failed, or that printed to `console`, adds one line to `<data>/plugin
 ### Cookies and private addresses (version 1)
 
 There is no cookie jar. A script that needs a session reads the `set-cookie` header of a response with `res.header('set-cookie')`, keeps what it needs in `localStorage`, and sends a `Cookie` header itself, only to the hosts it declared (a request to any other host is `blockedHost`). Besides the name check, the app checks where the name leads: `fetch` connects only to a globally routable address. The name is resolved once, every address of the answer must be public (a name that resolves to loopback, RFC 1918, link-local, unique-local, CGNAT or any reserved range, or to a mix, is `BlockedHostError` and nothing is sent), and the socket goes to the address that was checked, with TLS verifying the original name, so a second DNS answer cannot redirect it (DNS rebinding). IPv4-mapped (`::ffff:0:0/96`) and NAT64 (`64:ff9b::/96`) addresses count as the IPv4 they carry. `198.18.0.0/15` counts as public because fake-ip proxies (Clash, mihomo, sing-box in TUN mode) answer every lookup from it. Behind a proxy set in the environment the proxy resolves the name, so the app looks the name up locally first (3 s limit) and refuses when that answer is not public; when the local lookup fails (a network that reaches only the proxy) the proxy is used as configured. A name that answers differently to the proxy is not caught. Repository fetches (catalog, zip, icon) are different: they never use an environment proxy and connect directly, so a network that reaches only a proxy (no TUN) cannot add repositories.
+
+## Translate scripts
+
+A translate plugin (`metadata.type` `translate`) has one script, `translate.js`, run once per chunk of lines (`lib/core/lyrics/plugins/translate/`). It has no `search.js` or `lyrics.js`, and a lyrics plugin is never run as a translator.
+
+### `translate.js`
+
+`execute(input)` gets `{lines, to, song}`:
+
+- `lines`: the strings to translate (the chunk; its size follows `translate.maxLines` and `translate.maxChars`);
+- `to`: the target language code (for example `vi`, `zh-Hans`);
+- `song`: `{title, artist, lyrics}` as context (`lyrics` is the song's unique lines joined by `\n`, at most 20 000 characters), or absent when the song is unknown. The script may ignore it.
+
+It returns `Response.success(items)`: an array with exactly one object per input line, in the same order: `{text, detected?}`.
+
+| Field | Rule |
+|---|---|
+| `text` | string, required. Control characters and bidi overrides or isolates (U+202A to U+202E, U+2066 to U+2069) are removed and newlines become one space. At most `4 x` the source line `+ 200` characters, else the answer is an invalid response |
+| `detected` | optional language tag of the source line (`^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$`, for example `en`, `pt-BR`). Anything else is dropped (noted `dropped: detected` in the log, not a failure). A `detected` that names the target language on a line whose text changed is dropped too: models often label the language of their own output, which would mark the song "already in this language" |
+
+A wrong length, a non-array, a non-string `text`, or more than half of the non-blank source lines coming back empty (a safety filter that blanked the answer) is an invalid response. Nothing is stored for a chunk that failed.
+
+### Time, `fetch` and sends
+
+- Wall time of the script is `translate.timeoutSec` (default 15, at most 90). The app waits for a free worker for up to 45 s more.
+- A `fetch` may take as long as the time left of the run; there is no 20 s cap per send as for lyrics. It reaches only the plugin's declared `hosts`, over the same public-only connection as lyrics.
+- The app never re-sends a busy answer (429, 503) for a translate script: the script decides (for example, it tries another key). Every send, retries included, counts toward the **10 sends per run**, so a script that rotates keys should plan for that.
+- The translate consent (the accepted notice, see [Data and consent](#data-and-consent)) is checked before every send, not asked again; a send after it is withdrawn is refused (`NotConsentedError` in the script), and an uncaught refusal ends the chunk as `blocked`.
+- One translate run goes at a time in the whole app. A chunk whose song was replaced while it waited is dropped before it sends (nothing is billed). A chunk that has been sent is never cancelled by the caller; uninstalling or updating the plugin still cancels it.
+
+### Errors
+
+The app maps a run to a failure in this order:
+
+1. `cancelled` or `busy`: `server` (a later try may work);
+2. `timeout`, also the app's outer deadline: `network`;
+3. `Response.error(message, {kind})`: `auth` is `noKey` when a secret setting of the plugin is empty and `badKey` otherwise; `quota` is `quotaExceeded`; `rateLimited` and `invalidResponse` map to themselves; `server` (the default) or no kind defers to the first failed `fetch` of the run when there was one (`network`; `blockedHost` and `notConsented` as `blocked`; `rateLimited`; `invalidRequest` and `invalidResponse` as `invalidResponse`; an abandoned send as `server`) and is `server` or `invalidResponse` otherwise;
+4. `memory`, `stack`, an output over the limit, and `internal`: `invalidResponse`;
+5. `ok`: the output is checked as above. Unlike for lyrics, a `fetch` that failed and was caught by the script is ignored when the output is valid (a script may fall back to another key).
+
+### Logs
+
+Same file and rules as [Logs](#logs), with `script` `translate.js`. `query` is only `{to, lines, chars}`: the app never logs the lyrics text; what the script prints to `console` or puts in an error message is logged as given. A secret setting that lists several values (keys separated by spaces, commas or semicolons) is hidden whole and token by token (tokens of eight characters or more), so a line naming one key does not leak it.
 
 ## Plugin package
 
@@ -282,13 +339,15 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | Field | Rule |
 |---|---|
 | `metadata.apiVersion` | int. `1` is supported; greater: `needsNewerApp`; anything else: `invalidManifest` |
-| `metadata.type` | must be `"lyrics"`, else `wrongType` |
+| `metadata.type` | `"lyrics"` or `"translate"`, else `wrongType` (type must be lyrics or translate). The kind is fixed for a live plugin: an update with another type is refused (`kindChanged`) |
 | `metadata.name` | 1 to 80 code points after control, format (bidi, zero-width, BOM) and line-separator characters are removed and the text is trimmed |
 | `metadata.version` | int, 1 to 2147483647 |
 | `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher does that at connect time, see "Cookies and private addresses"), else `badHost` with the host |
 | `metadata.author` | optional, at most 80 characters |
 | `metadata.description` | optional, at most 500 characters (newlines kept) |
-| `script.search`, `script.lyrics` | file names matching the name pattern above; a name not in `src/` is `missingScript` |
+| `script.search`, `script.lyrics` | lyrics plugin: both required; file names matching the name pattern above; a name not in `src/` is `missingScript` |
+| `script.translate` | translate plugin: required (and the only script entry); same rules |
+| `translate` | translate plugin: required object. `languages`: 1 to 200 strings; codes must match the app's table exactly (for example `vi`, `zh-Hans`); others, and repeats, are dropped, none left is `invalidManifest` (`translate.languages`). `maxLines` int 10 to 200 (default 50), `maxChars` int 1000 to 20000 (default 4000), `timeoutSec` int 1 to 600 (default 15), clamped to 90 by the app, not refused |
 | `config` | optional object, at most 20 fields, kept in order |
 
 Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`:
@@ -296,6 +355,8 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 - `input`: `format` is `text` (default), `number` or `secret`. Optional `default`: a string; for `number` also a finite JSON number or a plain decimal string (`-2.5`, `1e3`; no `NaN`, `Infinity` or hex), stored as text because scripts read config as strings).
 - `select`: `format` is absent or `single`. `options` is 1 to 50 items of `{value, title}`, both required, values unique. Optional `default` must be one of the values.
 - `toggle`: no `format`. Optional `default` is a boolean.
+
+Every field may also carry `subtitle`: optional help text under the title, at most 300 characters, newlines kept.
 
 The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, always as a string (`"true"` or `"false"` for a toggle). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
 
@@ -396,7 +457,7 @@ A repository is one URL the user types; it serves a catalog (JSON) that lists pl
 ```
 
 - At most 1 MiB and 500 entries (more entries: `invalidCatalog`; over the size: `tooLarge`). `metadata.name` is required (1 to 80 characters).
-- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics`. `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
+- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics` or `translate` (the package must declare the same type, else `catalogMismatch`). `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
 - An entry that breaks a rule is dropped and counted. A non-empty `data` with no usable entry is `invalidCatalog`; an empty `data` is a valid empty catalog.
 - `path` and `icon` may be relative; they are resolved against the address the catalog was served from (after redirects) and checked against the address rules below. A bad `path` drops the entry, a bad `icon` only the icon. A fetched icon must pass the package icon rules (PNG, at most 256 x 256, at most 64 KiB) or it is dropped.
 - The catalog is only a preview: the plugin's own `plugin.json` is the truth, and must agree with the entry's `version` and `hosts`.

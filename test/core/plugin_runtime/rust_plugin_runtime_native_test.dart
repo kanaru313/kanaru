@@ -265,6 +265,29 @@ void main() {
         expect(result.jsError, isNull);
       });
 
+      nativeTest('quota and auth error kinds come back', () async {
+        final quota = await _runtime.run(
+          _request(
+            'function execute() { return Response.error("used up", '
+            '{kind: "quota", retryAfterSec: 30}); }',
+            storageJson: '',
+          ),
+          fetch: _noFetch,
+        );
+        expect(quota.status, PluginRunStatus.scriptError);
+        expect(quota.errorKind, PluginRunErrorKind.quota);
+        expect(quota.retryAfterSec, 30);
+        final auth = await _runtime.run(
+          _request(
+            'function execute() { return Response.error("bad key", '
+            '{kind: "auth"}); }',
+            storageJson: '',
+          ),
+          fetch: _noFetch,
+        );
+        expect(auth.errorKind, PluginRunErrorKind.auth);
+      });
+
       nativeTest('changed storage comes back after ok', () async {
         final result = await _runtime.run(
           _request(

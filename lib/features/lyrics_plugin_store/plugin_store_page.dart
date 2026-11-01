@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/lyrics_plugin_spec.dart' show PluginKind;
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
@@ -11,6 +12,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_banner.dart';
 import 'plugin_store_empty.dart';
+import 'plugin_store_kind_chips.dart';
 import 'plugin_store_menu.dart';
 import 'plugin_store_providers.dart';
 import 'plugin_store_sections.dart';
@@ -28,16 +30,20 @@ class PluginStorePage extends ConsumerStatefulWidget {
     required this.onOpenInstalled,
     required this.onOpenCatalogItem,
     required this.onOpenRepositories,
+    this.initialKind = PluginKind.lyrics,
   });
 
   /// A row of an installed plugin was tapped.
-  final void Function(String installId) onOpenInstalled;
+  final void Function(String installId, PluginKind? kind) onOpenInstalled;
 
   /// A row of a plugin that is not installed was tapped.
   final void Function(String repoUrl, String slug) onOpenCatalogItem;
 
   /// "Repository (N)" was chosen in the menu.
   final VoidCallback onOpenRepositories;
+
+  /// The kind chip selected when the page opens.
+  final PluginKind initialKind;
 
   @override
   ConsumerState<PluginStorePage> createState() => _PluginStorePageState();
@@ -64,7 +70,7 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final view = ref.watch(pluginStoreViewProvider);
+    final view = ref.watch(pluginStoreViewProvider(widget.initialKind));
     final data = view.value;
     return PageScaffold(
       title: l10n.lyricsStoreTitle,
@@ -106,6 +112,7 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
                 children: [
                   PluginStoreBanner(failing: view.failingRepos),
                   _SearchField(controller: _search),
+                  PluginStoreKindChips(initialKind: widget.initialKind),
                   PluginStoreSourceChips(view: view),
                   PluginStoreSections(
                     view: view,

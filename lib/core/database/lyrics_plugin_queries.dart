@@ -47,6 +47,7 @@ extension LyricsPluginQueries on LibraryDatabase {
       await into(lyricsPlugins).insert(
         LyricsPluginsCompanion.insert(
           installId: installId,
+          kind: Value(spec.kind.value),
           name: spec.name,
           author: Value(spec.author),
           description: Value(spec.description),
@@ -90,7 +91,8 @@ extension LyricsPluginQueries on LibraryDatabase {
         'version = ?4, api_version = ?5, hosts = ?6, config_schema = ?7, '
         'package_dir = ?8, source_kind = ?9, source_name = ?10, '
         'repo_url = ?11, repo_slug = ?12, installed_at = ?13, '
-        'updated_at = MAX(?13, updated_at + 1), removed_at = NULL '
+        'updated_at = MAX(?13, updated_at + 1), removed_at = NULL, '
+        'kind = ?15 '
         'WHERE install_id = ?14 AND removed_at IS NOT NULL',
         variables: [
           Variable<String>(spec.name),
@@ -107,6 +109,7 @@ extension LyricsPluginQueries on LibraryDatabase {
           Variable<String>(spec.repoSlug),
           Variable<int>(now),
           Variable<String>(installId),
+          Variable<String>(spec.kind.value),
         ],
         updates: {lyricsPlugins},
         updateKind: UpdateKind.update,
@@ -123,7 +126,8 @@ extension LyricsPluginQueries on LibraryDatabase {
     });
   }
 
-  /// Points a live record at a new package version: `package_dir`,
+  /// Points a live record at a new package version (the kind is never
+  /// written, so an update cannot change it): `package_dir`,
   /// `version`, `api_version`, `hosts`, `config_schema`, the descriptive
   /// fields and `updated_at` change in one statement, so a reader sees all
   /// old or all new. Config values, storage, preferences and the install
@@ -162,13 +166,13 @@ extension LyricsPluginQueries on LibraryDatabase {
     });
   }
 
-  /// Removes a live plugin in one transaction: its not-found rows, data row and
-  /// preference row go; the record is deleted when no found row, pin or
-  /// reject names its id, else it is marked removed at [now]. Returns what
-  /// happened and the record's `config_schema` before the change (null when
-  /// missing or already removed, so secrets are deleted once) so the caller
-  /// can delete its secrets. If any step fails, no
-  /// table changes.
+  /// Removes a live plugin in one transaction: its not-found rows, data row
+  /// and preference row go; the record is deleted when no found row, pin,
+  /// reject or saved translation names its id, else it is marked removed at
+  /// [now]. Returns what happened and the record's `config_schema` before
+  /// the change (null when missing or already removed, so secrets are
+  /// deleted once) so the caller can delete its secrets. If any step fails,
+  /// no table changes.
   Future<({LyricsPluginUninstall outcome, String? configSchema})>
   uninstallLyricsPlugin(String installId, {required int now}) {
     return transaction(() async {
@@ -184,7 +188,8 @@ extension LyricsPluginQueries on LibraryDatabase {
         );
       }
       await customUpdate(
-        "DELETE FROM online_lyrics WHERE provider_id = ? AND status = 'not_found'",
+        'DELETE FROM online_lyrics WHERE provider_id = ? '
+        "AND status = 'not_found'",
         variables: [Variable<String>(installId)],
         updates: {onlineLyrics},
         updateKind: UpdateKind.delete,
@@ -195,28 +200,21 @@ extension LyricsPluginQueries on LibraryDatabase {
       await (delete(
         lyricsSourcePrefs,
       )..where((t) => t.providerId.equals(installId))).go();
-      final referenced = await customSelect(
-        'SELECT EXISTS(SELECT 1 FROM online_lyrics WHERE provider_id = ?1) '
-        'OR EXISTS(SELECT 1 FROM lyrics_pins WHERE provider_id = ?1) '
-        'OR EXISTS(SELECT 1 FROM online_lyrics_rejects '
-        'WHERE provider_id = ?1) AS referenced',
+      // Mark removed first, then let the shared predicate decide whether
+      // anything still names the id.
+      await (update(lyricsPlugins)..where((t) => t.installId.equals(installId)))
+          .write(LyricsPluginsCompanion(removedAt: Value(now)));
+      final deleted = await customUpdate(
+        'DELETE FROM lyrics_plugins WHERE install_id = ?1 '
+        'AND $removedAndUnreferencedPluginSql',
         variables: [Variable<String>(installId)],
-        readsFrom: {onlineLyrics, lyricsPins, onlineLyricsRejects},
-      ).getSingle();
-      if (referenced.read<bool>('referenced')) {
-        await (update(lyricsPlugins)
-              ..where((t) => t.installId.equals(installId)))
-            .write(LyricsPluginsCompanion(removedAt: Value(now)));
-        return (
-          outcome: LyricsPluginUninstall.markedRemoved,
-          configSchema: record.configSchema,
-        );
-      }
-      await (delete(
-        lyricsPlugins,
-      )..where((t) => t.installId.equals(installId))).go();
+        updates: {lyricsPlugins},
+        updateKind: UpdateKind.delete,
+      );
       return (
-        outcome: LyricsPluginUninstall.deleted,
+        outcome: deleted == 0
+            ? LyricsPluginUninstall.markedRemoved
+            : LyricsPluginUninstall.deleted,
         configSchema: record.configSchema,
       );
     });

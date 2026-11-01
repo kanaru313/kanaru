@@ -1,11 +1,19 @@
 import '../../plugin_runtime/plugin_runtime.dart';
 
-/// Longest a script may run once a worker has it (the runtime's own limit).
+/// Longest a script may run once a worker has it: the runtime default, used
+/// by lyrics.
 const pluginScriptWallTime = Duration(seconds: 15);
+
+/// Longest wall time a translate script may have, and so the longest one
+/// `fetch` of a translate run may take: translate calls are slow (a model
+/// answers a chunk of lines) and are billed, so they get far more than
+/// lyrics. The runtime caps a request at the same value.
+const pluginTranslateMaxWallTime = Duration(seconds: 90);
 
 /// What a run may wait for a free worker before the caller gives up: four
 /// workers and sixteen queued jobs, each taking up to [pluginScriptWallTime],
-/// would be a minute, so this is a generous slice of it. The runtime's clock
+/// would be a minute, so this is a generous slice of it. Longer jobs (such as
+/// translate runs, limited separately) may share the pool. The runtime's clock
 /// starts only when a worker picks the job up; the outer clock starts when
 /// the run is asked for.
 const pluginRunQueueAllowance = Duration(seconds: 45);

@@ -181,7 +181,7 @@ void main() {
             FakeTranslationController(
               TranslationReady(
                 fakeTranslationInfo(),
-                LyricsTranslationService.google,
+                TranslationServiceId.google,
                 'ja',
                 const [],
                 false,

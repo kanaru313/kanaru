@@ -11,6 +11,7 @@ import 'store/plugin_config_schema_codec.dart';
 class LyricsPluginRecord {
   const LyricsPluginRecord({
     required this.installId,
+    required this.kind,
     required this.name,
     this.author,
     this.description,
@@ -30,6 +31,7 @@ class LyricsPluginRecord {
 
   factory LyricsPluginRecord.fromRow(LyricsPluginRow row) => LyricsPluginRecord(
     installId: row.installId,
+    kind: PluginKind.fromValue(row.kind),
     name: row.name,
     author: row.author,
     description: row.description,
@@ -50,6 +52,10 @@ class LyricsPluginRecord {
   );
 
   final String installId;
+
+  /// Null when the stored kind is one this build does not know (a newer
+  /// build wrote it); such records are in no list.
+  final PluginKind? kind;
   final String name;
   final String? author;
   final String? description;

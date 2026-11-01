@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/lyrics_plugin_spec.dart' show PluginKind;
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
@@ -26,7 +27,7 @@ class CatalogItemPage extends ConsumerStatefulWidget {
 
   final String repoUrl;
   final String slug;
-  final void Function(String installId) onOpenInstalled;
+  final void Function(String installId, PluginKind? kind) onOpenInstalled;
 
   @override
   ConsumerState<CatalogItemPage> createState() => _CatalogItemPageState();
@@ -103,8 +104,10 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
                           Chip(label: Text(l10n.lyricsStoreItemInstalled)),
                           const SizedBox(width: 8),
                           FilledButton(
-                            onPressed: () =>
-                                widget.onOpenInstalled(installed.installId),
+                            onPressed: () => widget.onOpenInstalled(
+                              installed.installId,
+                              installed.kind,
+                            ),
                             child: Text(l10n.lyricsStoreItemOpenInstalled),
                           ),
                         ],

@@ -3,9 +3,11 @@ import 'dart:typed_data';
 
 import 'package:drift/native.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_controller.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_reader.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_translate_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_run_registry.dart';
 import 'package:kanaru/core/plugin_runtime/plugin_runtime.dart';
 import 'package:kanaru/core/secrets/secret_store_provider.dart';
@@ -68,18 +70,28 @@ PluginPackage testPackage({
   List<PluginConfigField> config = const [],
   Map<String, String>? files,
   List<int>? icon,
+  PluginKind kind = PluginKind.lyrics,
 }) => PluginPackage(
   manifest: PluginManifest(
+    kind: kind,
     apiVersion: 1,
     name: name,
     version: version,
     hosts: const ['api.example.com'],
-    searchScript: 'search.js',
-    lyricsScript: 'lyrics.js',
+    searchScript: kind == PluginKind.lyrics ? 'search.js' : null,
+    lyricsScript: kind == PluginKind.lyrics ? 'lyrics.js' : null,
+    translateScript: kind == PluginKind.translate ? 'translate.js' : null,
+    translate: kind == PluginKind.translate
+        ? const PluginTranslateSpec(languages: ['vi', 'en'])
+        : null,
     author: 'someone',
     config: config,
   ),
-  files: files ?? {'search.js': '// search', 'lyrics.js': '// lyrics'},
+  files:
+      files ??
+      (kind == PluginKind.translate
+          ? {'translate.js': '// translate'}
+          : {'search.js': '// search', 'lyrics.js': '// lyrics'}),
   icon: icon == null ? null : Uint8List.fromList(icon),
 );
 

@@ -6,6 +6,7 @@ import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/translation_plugin_routes.dart';
 
 import 'lyrics_sources_harness.dart';
 
@@ -66,6 +67,7 @@ void main() {
     LyricsPluginRecord record, {
     FakePlugins? plugins,
     PluginDataStats stats = (storageBytes: 0, foundCount: 0, textBytes: 0),
+    String? location,
   }) async {
     final fake = plugins ?? FakePlugins();
     await pumpSources(
@@ -73,10 +75,111 @@ void main() {
       records: [record],
       plugins: fake,
       stats: stats,
-      location: lyricsPluginRoute(record.installId),
+      location: location ?? lyricsPluginRoute(record.installId),
     );
     return fake;
   }
+
+  testWidgets('a translate plugin opens without switch or saved lyrics', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      testRecord(idA, name: 'Gem', pluginKind: PluginKind.translate),
+    );
+    expect(find.text('Gem'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
+    expect(find.text(en.pluginSavedLyricsTitle), findsNothing);
+    expect(find.text(en.pluginStorageTitle), findsOneWidget);
+  });
+
+  group('a translate plugin at its own route', () {
+    final translate = testRecord(
+      idA,
+      name: 'Gem',
+      pluginKind: PluginKind.translate,
+      config: const [
+        PluginConfigField(
+          key: 'apiKey',
+          title: 'API key',
+          subtitle: 'Create one in the console.',
+          mode: PluginConfigMode.input,
+          inputFormat: PluginInputFormat.secret,
+        ),
+        PluginConfigField(
+          key: 'model',
+          title: 'Model',
+          subtitle: 'Which model answers.',
+          mode: PluginConfigMode.select,
+          options: [PluginConfigOption(value: 'a', title: 'Model A')],
+          defaultValue: 'a',
+        ),
+        PluginConfigField(
+          key: 'fast',
+          title: 'Fast mode',
+          subtitle: 'Trades quality for speed.',
+          mode: PluginConfigMode.toggle,
+          defaultValue: false,
+        ),
+      ],
+    );
+
+    Future<FakePlugins> openTranslate(
+      WidgetTester tester, {
+      PluginDataStats stats = (storageBytes: 0, foundCount: 0, textBytes: 0),
+    }) => open(
+      tester,
+      translate,
+      plugins: FakePlugins(),
+      stats: stats,
+      location: translationPluginRoute(idA),
+    );
+
+    testWidgets('opens with no switch and shows every field subtitle', (
+      tester,
+    ) async {
+      await openTranslate(tester);
+      expect(find.text('Gem'), findsOneWidget);
+      // The only switch is the Fast mode field; the header has none.
+      expect(find.byType(Switch), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.widgetWithText(SwitchListTile, 'Fast mode'),
+          matching: find.byType(Switch),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Create one in the console.'), findsOneWidget);
+      expect(find.text('Which model answers.'), findsOneWidget);
+      expect(find.text('Trades quality for speed.'), findsOneWidget);
+    });
+
+    testWidgets('uninstalling returns to Settings > Playback', (tester) async {
+      final plugins = await openTranslate(tester);
+      await tester.tap(find.byTooltip(en.pluginUninstall));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(en.pluginUninstallConfirm));
+      await tester.pumpAndSettle();
+
+      expect(plugins.uninstalls, [idA]);
+      expect(find.text('playback page'), findsOneWidget);
+      expect(find.text(en.lyricsSourcesGetMore), findsNothing);
+    });
+
+    testWidgets('the uninstall dialog says saved translations stay', (
+      tester,
+    ) async {
+      await openTranslate(tester);
+      await tester.tap(find.byTooltip(en.pluginUninstall));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining(en.pluginUninstallKeepTranslations),
+        findsOneWidget,
+      );
+      expect(find.textContaining(en.pluginUninstallKeepLrc), findsNothing);
+    });
+  });
 
   testWidgets('shows the plugin, its hosts and no install id', (tester) async {
     await open(tester, plain);

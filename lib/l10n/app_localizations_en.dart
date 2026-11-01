@@ -2972,16 +2972,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not reach the service. Check your connection.';
 
   @override
-  String get lyricsTranslationFailNoKey =>
-      'Add your DeepL API key in Settings.';
+  String get lyricsTranslationFailNoKey => 'Add your API key in Settings.';
 
   @override
   String get lyricsTranslationFailBadKey =>
-      'DeepL rejected the API key. Check it in Settings.';
+      'The service rejected the API key. Check it in Settings.';
 
   @override
-  String get lyricsTranslationFailQuota =>
-      'The monthly character quota is used up.';
+  String get lyricsTranslationFailQuota => 'The service\'s quota is used up.';
 
   @override
   String get lyricsTranslationFailRateLimited =>
@@ -3013,11 +3011,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationFailKeyStoreLocked =>
-      'The key store is locked. Unlock it to use your DeepL key.';
+      'The key store is locked. Unlock it to use your API key.';
 
   @override
   String get lyricsTranslationFailKeyStoreUnavailable =>
-      'The key store is not available, so the DeepL key cannot be read.';
+      'The key store is not available, so the API key cannot be read.';
 
   @override
   String lyricsTranslationAttribution(String service, String language) {
@@ -3030,17 +3028,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lyricsTranslationUseService(String service) {
-    return 'Use $service';
-  }
-
-  @override
   String get lyricsTranslationBannerNoKey =>
-      'Add your DeepL key in Settings › Playback › Translation.';
+      'Add your API key in Settings › Playback › Translation.';
 
   @override
   String get lyricsTranslationBannerBadKey =>
-      'DeepL rejected the key. Check the key in Settings › Playback › Translation.';
+      'The service rejected the key. Check the key in Settings › Playback › Translation.';
 
   @override
   String translationNoticeTitle(String service) {
@@ -3073,10 +3066,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.';
 
   @override
-  String get settingsTranslationServiceDeeplHint =>
-      'Needs your own DeepL API key. Lyrics text is sent to DeepL when translation is on.';
-
-  @override
   String get settingsTranslationTarget => 'Default translation language';
 
   @override
@@ -3087,124 +3076,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsTranslationTargetFollow(String language) {
     return 'Follow app language ($language)';
   }
-
-  @override
-  String get deeplKeyTitle => 'DeepL API key';
-
-  @override
-  String get deeplKeyNone => 'No key saved';
-
-  @override
-  String get deeplKeyAdd => 'Add key';
-
-  @override
-  String get deeplKeyEdit => 'Edit';
-
-  @override
-  String get deeplKeyClear => 'Clear';
-
-  @override
-  String get deeplKeyPlanFree => 'Free';
-
-  @override
-  String get deeplKeyPlanPro => 'Pro';
-
-  @override
-  String deeplKeyUsage(int used, int limit) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String usedString = usedNumberFormat.format(used);
-    final intl.NumberFormat limitNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String limitString = limitNumberFormat.format(limit);
-
-    return 'Used $usedString of $limitString characters';
-  }
-
-  @override
-  String deeplKeyUsageNoLimit(int used) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String usedString = usedNumberFormat.format(used);
-
-    return 'Used $usedString characters';
-  }
-
-  @override
-  String get deeplKeyUsageHint =>
-      'Usage is read from DeepL when you press refresh.';
-
-  @override
-  String get deeplKeyRefresh => 'Refresh usage';
-
-  @override
-  String get deeplKeyClearTitle => 'Remove the DeepL key?';
-
-  @override
-  String get deeplKeyClearBody =>
-      'The key is deleted from this computer. Lyrics cannot be translated with DeepL until you add a key again.';
-
-  @override
-  String get deeplKeyClearFailed => 'Could not remove the key';
-
-  @override
-  String get deeplKeyDialogTitleAdd => 'Add DeepL API key';
-
-  @override
-  String get deeplKeyDialogTitleEdit => 'Replace DeepL API key';
-
-  @override
-  String get deeplKeyDialogHint =>
-      'Paste the key from your DeepL account. DeepL checks it before it is saved.';
-
-  @override
-  String get deeplKeyFieldLabel => 'API key';
-
-  @override
-  String get deeplKeySave => 'Save';
-
-  @override
-  String get deeplKeyBadKey =>
-      'DeepL did not accept this key. Check it and try again.';
-
-  @override
-  String get deeplKeySaveFailed => 'Could not save the key.';
-
-  @override
-  String get deeplKeyReadFailed => 'Could not read the key.';
-
-  @override
-  String get deeplKeyKeyringLocked =>
-      'Keyring is locked; unlock it, then retry';
-
-  @override
-  String get deeplKeyKeyringNoDefault =>
-      'No default keyring found; create one (for example in Seahorse or KWallet), then retry';
-
-  @override
-  String get deeplKeyKeyringTimeout => 'The keyring is not responding';
-
-  @override
-  String get deeplKeyKeyringUnavailable =>
-      'The keyring cannot be used right now';
-
-  @override
-  String get deeplKeyFileFailed => 'The key file could not be read or written';
-
-  @override
-  String deeplKeyFallbackFile(String path) {
-    return 'No system keyring found; the key is stored in a file only you can read ($path). Do not share or sync this file.';
-  }
-
-  @override
-  String get deeplKeyFallbackMemory =>
-      'No system keyring found; the key is kept until Kanaru closes.';
-
-  @override
-  String get deeplKeyFallbackFixed =>
-      'The key file was readable by others; its permissions were fixed. Consider replacing the key.';
 
   @override
   String get settingsTranslationCache => 'Saved translations';
@@ -3272,7 +3143,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationMenuSettings => 'Translation settings';
 
   @override
-  String get lyricsTranslationBannerOpenKey => 'DeepL key settings';
+  String get lyricsTranslationBannerOpenKey => 'Open the service\'s settings';
 
   @override
   String get onlineLyricsNoticeOpenSettings => 'Open lyrics settings';
@@ -3925,6 +3796,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get pluginUninstallKeepTranslations =>
+      'Saved translations, until you choose Clear saved translations';
+
+  @override
   String get pluginUninstallKeepPinned =>
       'Lyrics pinned from this source, if any';
 
@@ -3977,7 +3852,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports';
 
   @override
-  String get pluginProblemWrongType => 'plugin.json: type must be lyrics';
+  String get pluginProblemWrongType =>
+      'plugin.json: type must be lyrics or translate';
 
   @override
   String pluginProblemBadHost(String detail) {
@@ -4006,6 +3882,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pluginRefusedNotFromRepo =>
       'This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.';
+
+  @override
+  String get pluginRefusedKindChanged =>
+      'This package is a different kind of plugin than the installed one, so it was not used. Uninstall the plugin and install the new one.';
 
   @override
   String get pluginRefusedOlderVersion =>
@@ -4065,6 +3945,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreChipAll => 'All';
+
+  @override
+  String get lyricsStoreKindLyrics => 'Lyrics';
+
+  @override
+  String get lyricsStoreKindTranslate => 'Translate';
 
   @override
   String get lyricsStoreFromFile => 'From file';
@@ -4837,4 +4723,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get artistModalSplitMergeHint =>
       'Treat a name as two artists, or join spellings';
+
+  @override
+  String translationNoticePluginTitle(String service) {
+    return 'Lyrics will be sent to the plugin $service';
+  }
+
+  @override
+  String get translationNoticePluginBody =>
+      'The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.';
+
+  @override
+  String translationServicePluginSuffix(String name) {
+    return '$name (plugin)';
+  }
+
+  @override
+  String translationServiceRemovedSuffix(String name) {
+    return '$name (removed)';
+  }
+
+  @override
+  String get settingsTranslationGetServices => 'Get translation services';
+
+  @override
+  String get settingsTranslationGetServicesHint =>
+      'Find translation plugins in the plugin store';
+
+  @override
+  String get lyricsTranslationBannerOpenPlugin => 'Open settings';
+
+  @override
+  String get lyricsTranslationBannerUseGoogle => 'Translate with Google';
+
+  @override
+  String get settingsTranslationServicePluginHint =>
+      'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
 }

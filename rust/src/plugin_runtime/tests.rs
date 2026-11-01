@@ -65,6 +65,27 @@ fn assert_logged(r: &PluginScriptResult) {
 }
 
 #[test]
+fn response_error_auth_and_quota_kinds() {
+    let r = run_script(
+        "function execute(i){ return Response.error('bad key', {kind: 'auth'}); }",
+        0,
+    );
+    assert_eq!(r.status, S::ScriptError);
+    assert_eq!(r.error_kind, PluginErrorKind::Auth);
+    let r = run_script(
+        "function execute(i){ return Response.error('used up', {kind: 'quota', retryAfterSec: 30}); }",
+        0,
+    );
+    assert_eq!(r.error_kind, PluginErrorKind::Quota);
+    assert_eq!(r.retry_after_sec, Some(30));
+    let r = run_script(
+        "function execute(i){ return Response.error('x', {kind: 'nope'}); }",
+        0,
+    );
+    assert_eq!(r.error_kind, PluginErrorKind::Server);
+}
+
+#[test]
 fn logs_survive_a_success() {
     let r = run_script(&script_with_log("return Response.success([1]);"), 0);
     assert_eq!(r.status, S::Ok, "{r:?}");

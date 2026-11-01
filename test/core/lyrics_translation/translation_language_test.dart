@@ -9,22 +9,14 @@ void main() {
     for (final language in translationLanguages) {
       expect(language.googleCode, isNotEmpty, reason: language.code);
       expect(language.nameKey, isNotEmpty, reason: language.code);
-      expect(language.deeplCode, anyOf(isNull, isNotEmpty));
     }
   });
 
-  test('both app languages are supported by both services', () {
+  test('both app languages are supported', () {
     for (final code in ['vi', 'en']) {
       final language = translationLanguageFor(code);
       expect(language, isNotNull, reason: code);
       expect(language!.googleCode, isNotEmpty);
-      expect(language.deeplCode, isNotNull);
-    }
-  });
-
-  test('languages DeepL supports have a code', () {
-    for (final code in ['hi', 'ms', 'fa']) {
-      expect(translationLanguageFor(code)!.deeplCode, code.toUpperCase());
     }
   });
 
@@ -33,10 +25,7 @@ void main() {
     expect(translationLanguageFor('xx'), isNull);
   });
 
-  test('maps the special codes of each service', () {
-    expect(translationLanguageFor('en')!.deeplCode, 'EN-US');
-    expect(translationLanguageFor('pt')!.deeplCode, 'PT-BR');
-    expect(translationLanguageFor('no')!.deeplCode, 'NB');
+  test('maps the special Google codes', () {
     expect(translationLanguageFor('he')!.googleCode, 'he');
     expect(translationLanguageFor('zh-Hans')!.googleCode, 'zh-CN');
     expect(translationLanguageFor('zh-Hant')!.googleCode, 'zh-TW');
@@ -92,15 +81,18 @@ void main() {
     });
   });
 
-  test('a service names its other service', () {
+  test('the service id is what settings and the cache store', () {
+    expect(TranslationServiceId.google.value, 'google');
     expect(
-      LyricsTranslationService.google.other,
-      LyricsTranslationService.deepl,
+      TranslationServiceId.tryParse('google'),
+      TranslationServiceId.google,
     );
     expect(
-      LyricsTranslationService.deepl.other,
-      LyricsTranslationService.google,
+      TranslationServiceId.tryParse('plugin-abc123def456')!.isPlugin,
+      true,
     );
-    expect(LyricsTranslationService.deepl.name, 'deepl');
+    for (final bad in ['deepl', 'plugin-short', 'Google', '', null, 3]) {
+      expect(TranslationServiceId.tryParse(bad), isNull, reason: '$bad');
+    }
   });
 }

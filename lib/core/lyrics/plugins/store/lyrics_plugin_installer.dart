@@ -65,9 +65,10 @@ class LyricsPluginInstaller {
 
   /// Installs [package] as a new plugin: enabled, last in the order. A repo
   /// plugin whose (url, slug) has a removed record revives it under the same
-  /// id (old secrets are deleted, config and storage start empty; saved
-  /// lyrics, pins and rejects show again). One whose record is live is
-  /// updated instead. A database failure removes the new folder and rethrows.
+  /// id, even when its kind changed (old secrets are deleted, config and
+  /// storage start empty; saved lyrics, pins and rejects show again). One
+  /// whose record is live is updated instead. A database failure removes
+  /// the new folder and rethrows.
   /// Throws [PluginSecretsUnavailableException] when a revive cannot delete
   /// the old secrets (nothing else changed), and
   /// [PluginUpdateRefusedException] as [update] does.
@@ -116,7 +117,8 @@ class LyricsPluginInstaller {
       await _dirs.deletePackageDir(relative);
       rethrow;
     }
-    await _enable(installId);
+    // A translate plugin is in no source list, so it gets no preference row.
+    if (package.manifest.kind == PluginKind.lyrics) await _enable(installId);
     return LyricsPluginRecord.fromRow((await _db.lyricsPluginById(installId))!);
   }
 
@@ -136,6 +138,10 @@ class LyricsPluginInstaller {
     final old = LyricsPluginRecord.fromRow(row);
     if (old.sourceKind != LyricsPluginSourceKind.repo) {
       throw const PluginUpdateRefusedException(PluginUpdateRefusal.notFromRepo);
+    }
+    // Before any secret is touched or any run blocked.
+    if (old.kind != package.manifest.kind) {
+      throw const PluginUpdateRefusedException(PluginUpdateRefusal.kindChanged);
     }
     if (package.manifest.version < old.version) {
       throw const PluginUpdateRefusedException(
@@ -201,6 +207,7 @@ class LyricsPluginInstaller {
   ) {
     final manifest = package.manifest;
     return LyricsPluginSpec(
+      kind: manifest.kind,
       name: manifest.name,
       author: manifest.author.isEmpty ? null : manifest.author,
       description: manifest.description.isEmpty ? null : manifest.description,

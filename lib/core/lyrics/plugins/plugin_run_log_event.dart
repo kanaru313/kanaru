@@ -10,6 +10,9 @@ const pluginRunAbandonedKind = 'abandoned';
 /// words in a message.
 const _minMaskedLength = 4;
 
+/// Shortest token of a multi-value secret that is hidden on its own.
+const _minMaskedTokenLength = 8;
+
 /// One line of a plugin's log file. `query` is the run input (song data
 /// included; the file stays on this device and is never attached to a bug
 /// report by itself). Config values must not be in any field except through
@@ -73,15 +76,24 @@ class PluginRunLogEvent {
 /// A function that replaces every [config] value of at least four characters
 /// in a text with `***`. A value is also hidden in the forms a script or a
 /// URL gives it: the percent-encoded component and the percent-encoded whole
-/// address. Longer values go first, so overlapping secrets are hidden whole.
+/// address. A value that lists several secrets (keys split by spaces, commas
+/// or semicolons) also hides each token of at least eight characters, so a
+/// line naming one key does not leak it. Longer values go first, so
+/// overlapping secrets are hidden whole.
 String Function(String) configValueHider(Map<String, String> config) {
-  final secrets = <String>{
+  final values = <String>{
     for (final value in config.values)
-      if (value.length >= _minMaskedLength) ...[
-        value,
-        Uri.encodeComponent(value),
-        Uri.encodeFull(value),
-      ],
+      if (value.length >= _minMaskedLength) value,
+    for (final value in config.values)
+      for (final token in value.split(RegExp(r'[\s,;]+')))
+        if (token.length >= _minMaskedTokenLength) token,
+  };
+  final secrets = <String>{
+    for (final value in values) ...[
+      value,
+      Uri.encodeComponent(value),
+      Uri.encodeFull(value),
+    ],
   }.toList()..sort((a, b) => b.length.compareTo(a.length));
   return (text) =>
       secrets.fold(text, (masked, secret) => masked.replaceAll(secret, '***'));

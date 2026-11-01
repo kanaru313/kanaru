@@ -8,23 +8,20 @@ import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
-import 'package:kanaru/core/secrets/secret_store.dart';
 import 'package:logging/logging.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
 import 'fake_translator.dart';
 
-const _google = LyricsTranslationService.google;
-const _deepl = LyricsTranslationService.deepl;
+const _google = TranslationServiceId.google;
 const _lines = ['alpha', 'beta', 'gamma'];
 final _en = translationLanguageFor('en')!;
 const _key = TranslationJobKey('hash', 'en', _google);
-const _both = {_google, _deepl};
+const _both = {_google};
 
 void main() {
   late LibraryDatabase db;
   late FakeTranslator google;
-  late FakeTranslator deepl;
   late ProviderContainer container;
 
   TranslationJobs jobs() => container.read(translationJobsProvider.notifier);
@@ -34,15 +31,13 @@ void main() {
 
   void build({
     bool withDb = true,
-    bool withDeepl = true,
-    Set<LyricsTranslationService> acknowledged = _both,
+    Set<TranslationServiceId> acknowledged = _both,
     FakeSecretStore? store,
   }) {
     container = translationContainer(
       db: withDb ? db : null,
       lyrics: FakeEmbeddedLyricsReader(),
       google: google,
-      deepl: withDeepl ? deepl : null,
       settings: translationSettings(acknowledged: acknowledged),
       store: store,
     );
@@ -55,7 +50,6 @@ void main() {
   setUp(() {
     db = memoryDb();
     google = FakeTranslator(_google);
-    deepl = FakeTranslator(_deepl);
   });
   tearDown(() async {
     container.dispose();
@@ -69,16 +63,6 @@ void main() {
     expect(google.calls, isEmpty);
     expect(status(), isEmpty);
     expect(await rows(), isEmpty);
-  });
-
-  test('only the accepted service runs', () async {
-    build(acknowledged: {_google});
-    await jobs().run(
-      const TranslationJobKey('hash', 'en', _deepl),
-      _lines,
-      _en,
-    );
-    expect(deepl.calls, isEmpty);
   });
 
   test('without a database nothing happens', () async {
@@ -191,35 +175,6 @@ void main() {
     expect(records.join(), isNot(contains('top-secret')));
   });
 
-  test('DeepL: no key, locked and broken stores', () async {
-    const deeplKey = TranslationJobKey('hash', 'en', _deepl);
-    build(withDeepl: false);
-    await jobs().run(deeplKey, _lines, _en);
-    expect(status()[deeplKey]!.failure, TranslationFailureKind.noKey);
-    container.dispose();
-
-    for (final (kind, expected) in [
-      (SecretStoreFailure.locked, TranslationFailureKind.keyStoreLocked),
-      (
-        SecretStoreFailure.noDefaultCollection,
-        TranslationFailureKind.keyStoreUnavailable,
-      ),
-      (
-        SecretStoreFailure.unavailable,
-        TranslationFailureKind.keyStoreUnavailable,
-      ),
-      (SecretStoreFailure.timeout, TranslationFailureKind.keyStoreUnavailable),
-      (SecretStoreFailure.io, TranslationFailureKind.keyStoreUnavailable),
-    ]) {
-      build(store: FakeSecretStore()..readError = SecretStoreException(kind));
-      await jobs().run(deeplKey, _lines, _en);
-      expect(status()[deeplKey]!.failure, expected, reason: kind.name);
-      expect(deepl.calls, isEmpty);
-      container.dispose();
-    }
-    build();
-  });
-
   test('google never reads the secret store', () async {
     final store = FakeSecretStore();
     build(store: store);
@@ -227,17 +182,14 @@ void main() {
     expect(store.reads, 0);
   });
 
-  test('clearFailures forgets one service only', () async {
+  test('clearFailures forgets the failures of a service', () async {
     build();
-    const deeplKey = TranslationJobKey('hash', 'en', _deepl);
     google.errors[0] = failure(TranslationFailureKind.server);
-    deepl.errors[0] = failure(TranslationFailureKind.badKey);
     await jobs().run(_key, _lines, _en);
-    await jobs().run(deeplKey, _lines, _en);
-    expect(status(), hasLength(2));
+    expect(status(), hasLength(1));
 
-    jobs().clearFailures(_deepl);
-    expect(status().keys, [_key]);
+    jobs().clearFailures(_google);
+    expect(status(), isEmpty);
   });
 
   test('a job does not run while translation is off', () async {

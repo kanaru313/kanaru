@@ -1,3 +1,6 @@
+import '../../../database/lyrics_plugin_spec.dart';
+import 'plugin_translate_spec.dart';
+
 /// How a config field is edited.
 enum PluginConfigMode { input, select, toggle }
 
@@ -18,6 +21,7 @@ class PluginConfigField {
     required this.key,
     required this.title,
     required this.mode,
+    this.subtitle,
     this.inputFormat,
     this.options = const [],
     this.defaultValue,
@@ -27,6 +31,9 @@ class PluginConfigField {
   final String key;
   final String title;
   final PluginConfigMode mode;
+
+  /// Optional help text under the title; may hold newlines.
+  final String? subtitle;
 
   /// Set for `input` fields only.
   final PluginInputFormat? inputFormat;
@@ -39,20 +46,24 @@ class PluginConfigField {
   final Object? defaultValue;
 }
 
-/// A checked `plugin.json`. The type is always `lyrics`, so it is not kept.
+/// A checked `plugin.json`.
 class PluginManifest {
   const PluginManifest({
+    required this.kind,
     required this.apiVersion,
     required this.name,
     required this.version,
     required this.hosts,
-    required this.searchScript,
-    required this.lyricsScript,
+    this.searchScript,
+    this.lyricsScript,
+    this.translateScript,
+    this.translate,
     this.author = '',
     this.description = '',
     this.config = const [],
   });
 
+  final PluginKind kind;
   final int apiVersion;
   final String name;
   final int version;
@@ -60,10 +71,22 @@ class PluginManifest {
   /// Lower-case, deduplicated, each passed `lyricsHostProblem`.
   final List<String> hosts;
 
-  /// File names inside `src/`.
-  final String searchScript;
-  final String lyricsScript;
+  /// File names inside `src/`: `search` and `lyrics` for a lyrics plugin,
+  /// `translate` for a translate plugin; the others are null.
+  final String? searchScript;
+  final String? lyricsScript;
+  final String? translateScript;
+
+  /// The `translate` block; set exactly for a translate plugin.
+  final PluginTranslateSpec? translate;
   final String author;
   final String description;
   final List<PluginConfigField> config;
+
+  /// The entry script names of this kind, all non-null.
+  List<String> get entryScripts => [
+    ?searchScript,
+    ?lyricsScript,
+    ?translateScript,
+  ];
 }

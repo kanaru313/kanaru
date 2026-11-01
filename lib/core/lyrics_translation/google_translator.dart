@@ -9,6 +9,7 @@ import 'translation_http.dart';
 import 'translation_language.dart';
 import 'translation_lines.dart';
 import 'translation_service.dart';
+import 'translation_song_context.dart';
 
 final _log = Logger('translation');
 
@@ -36,17 +37,23 @@ class GoogleTranslator implements LyricsTranslator {
   final Duration requestTimeout;
 
   @override
-  LyricsTranslationService get service => LyricsTranslationService.google;
+  TranslationServiceId get service => TranslationServiceId.google;
+
+  @override
+  TranslationChunkLimits get chunkLimits => const TranslationChunkLimits(
+    maxLines: _maxItemsPerRequest,
+    maxChars: _maxCharsPerRequest,
+  );
 
   @override
   bool supports(TranslationLanguage language) => true;
 
-  /// [context] is ignored: this endpoint has no way to take it.
+  /// [song] is ignored: this endpoint has no way to take it.
   @override
   Future<TranslatedLines> translate(
     List<String> lines,
     TranslationLanguage target, {
-    String? context,
+    TranslationSongContext? song,
   }) async {
     final texts = <String>[];
     final detected = <String?>[];

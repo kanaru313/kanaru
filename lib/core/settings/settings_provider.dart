@@ -119,19 +119,18 @@ class SettingsNotifier extends Notifier<AppSettings> {
       setTranslation(state.translation.copyWith(show: !state.translation.show));
 
   /// Records that the user accepted sending lyrics to [service].
-  void acknowledgeTranslationNotice(LyricsTranslationService service) =>
-      _update(
-        state.copyWith(
-          translation: state.translation.copyWith(
-            noticeAcknowledged: _withAcknowledged(service),
-          ),
-        ),
-      );
+  void acknowledgeTranslationNotice(TranslationServiceId service) => _update(
+    state.copyWith(
+      translation: state.translation.copyWith(
+        noticeAcknowledged: _withAcknowledged(service),
+      ),
+    ),
+  );
 
   /// Selects [service], records that its notice was accepted and turns
   /// translation on, in one write. Call it only after the user accepted the
   /// notice for [service].
-  void enableTranslation(LyricsTranslationService service) => _update(
+  void enableTranslation(TranslationServiceId service) => _update(
     state.copyWith(
       translation: state.translation.copyWith(
         show: true,
@@ -141,9 +140,43 @@ class SettingsNotifier extends Notifier<AppSettings> {
     ),
   );
 
-  Set<LyricsTranslationService> _withAcknowledged(
-    LyricsTranslationService service,
-  ) => Set.unmodifiable({...state.translation.noticeAcknowledged, service});
+  /// Forgets translate plugins that are no longer installed: a stored
+  /// service that is a plugin id outside [livePlugins] becomes Google, and
+  /// such ids leave `noticeAcknowledged` (a plugin installed again asks the
+  /// notice again). One write, and none when nothing changes. `show` stays on
+  /// only if Google was accepted. Call it only with the ids of records that
+  /// were read from the database.
+  void dropUninstalledTranslationServices(
+    Set<TranslationServiceId> livePlugins,
+  ) {
+    final current = state.translation;
+    bool dead(TranslationServiceId id) =>
+        id.isPlugin && !livePlugins.contains(id);
+    final service = dead(current.service)
+        ? TranslationServiceId.google
+        : current.service;
+    final acknowledged = {
+      for (final id in current.noticeAcknowledged)
+        if (!dead(id)) id,
+    };
+    if (service == current.service &&
+        acknowledged.length == current.noticeAcknowledged.length) {
+      return;
+    }
+    _update(
+      state.copyWith(
+        translation: _acknowledgedOnly(
+          current.copyWith(
+            service: service,
+            noticeAcknowledged: Set.unmodifiable(acknowledged),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Set<TranslationServiceId> _withAcknowledged(TranslationServiceId service) =>
+      Set.unmodifiable({...state.translation.noticeAcknowledged, service});
 
   static TranslationPrefs _acknowledgedOnly(TranslationPrefs prefs) =>
       prefs.show && prefs.needsNotice ? prefs.copyWith(show: false) : prefs;

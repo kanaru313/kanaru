@@ -3,6 +3,8 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
+import '../../core/lyrics_translation/translation_jobs.dart';
+import '../../core/lyrics_translation/translation_service.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
@@ -31,6 +33,10 @@ Future<bool> savePluginConfigValue(
   Object? value,
 ) => savePluginConfigValueWith(
   controller: ref.read(lyricsPluginsControllerProvider),
+  onSaved: () => forgetTranslationFailures(
+    ref.read(translationJobsProvider.notifier),
+    installId,
+  ),
   // Taken before the await: leaving the page meanwhile must not throw.
   messenger: ScaffoldMessenger.maybeOf(context),
   l10n: context.l10n,
@@ -38,6 +44,14 @@ Future<bool> savePluginConfigValue(
   key: key,
   value: value,
 );
+
+/// A changed key or setting may fix what failed: the translations that failed
+/// for this plugin are tried again from scratch. A lyrics plugin has none.
+void forgetTranslationFailures(TranslationJobs jobs, String installId) {
+  final id = TranslationServiceId.tryParse(installId);
+  if (id == null) return;
+  jobs.clearFailures(id);
+}
 
 /// Like [savePluginConfigValue] with everything it needs already in hand, so
 /// a field being torn down can still save its last edit.
@@ -48,6 +62,7 @@ Future<bool> savePluginConfigValueWith({
   required String installId,
   required String key,
   required Object? value,
+  void Function()? onSaved,
 }) async {
   if (controller == null) return false;
   String? message;
@@ -60,7 +75,10 @@ Future<bool> savePluginConfigValueWith({
     _log.warning('Saving a plugin setting failed', error, stackTrace);
     message = l10n.pluginConfigSaveFailed;
   }
-  if (message == null) return true;
+  if (message == null) {
+    onSaved?.call();
+    return true;
+  }
   if (messenger == null) {
     // Torn down with nowhere to tell the user: keep a trace.
     _log.warning('A plugin setting was not saved and nothing could show it');

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest_parser.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_problem.dart';
@@ -477,6 +478,122 @@ void main() {
         );
         expect(m.config.single.defaultValue, good);
       }
+    });
+  });
+
+  group('translate plugins', () {
+    Map<String, dynamic> translateManifest([
+      void Function(Map<String, dynamic> json)? change,
+    ]) {
+      final json = <String, dynamic>{
+        'metadata': {
+          'apiVersion': 1,
+          'type': 'translate',
+          'name': 'Gemini Translate',
+          'version': 1,
+          'hosts': ['generativelanguage.googleapis.com'],
+        },
+        'script': {'translate': 'translate.js'},
+        'translate': {
+          'languages': ['vi', 'en', 'zz'],
+          'maxLines': 60,
+          'maxChars': 6000,
+          'timeoutSec': 60,
+        },
+        'config': {
+          'apiKeys': {
+            'title': 'Keys',
+            'subtitle': 'one\nper line',
+            'mode': 'input',
+            'format': 'secret',
+          },
+        },
+      };
+      change?.call(json);
+      return json;
+    }
+
+    test('a translate manifest is accepted', () {
+      final manifest = parse(translateManifest());
+      expect(manifest.kind, PluginKind.translate);
+      expect(manifest.translateScript, 'translate.js');
+      expect(manifest.searchScript, isNull);
+      expect(manifest.lyricsScript, isNull);
+      expect(manifest.entryScripts, ['translate.js']);
+      expect(manifest.translate!.languages, ['vi', 'en']);
+      expect(manifest.translate!.maxLines, 60);
+      expect(manifest.config.single.subtitle, 'one\nper line');
+    });
+
+    test('a lyrics manifest still has no translate block', () {
+      final manifest = parse(validManifest());
+      expect(manifest.kind, PluginKind.lyrics);
+      expect(manifest.translate, isNull);
+      expect(manifest.entryScripts, ['search.js', 'lyrics.js']);
+    });
+
+    test('missing script.translate is invalidManifest', () {
+      expectProblem(
+        translateManifest((j) => j['script'] = {'search': 'a.js'}),
+        PluginPackageProblemKind.invalidManifest,
+        'script.translate',
+      );
+    });
+
+    test('empty or unknown-only languages are refused', () {
+      for (final languages in [
+        <String>[],
+        ['zz'],
+      ]) {
+        expectProblem(
+          translateManifest(
+            (j) => (j['translate'] as Map)['languages'] = languages,
+          ),
+          PluginPackageProblemKind.invalidManifest,
+          'translate.languages',
+        );
+      }
+    });
+
+    test('a missing translate block is refused', () {
+      expectProblem(
+        translateManifest((j) => j.remove('translate')),
+        PluginPackageProblemKind.invalidManifest,
+        'translate',
+      );
+    });
+
+    test('timeoutSec 200 is clamped to 90', () {
+      final manifest = parse(
+        translateManifest((j) => (j['translate'] as Map)['timeoutSec'] = 200),
+      );
+      expect(manifest.translate!.timeoutSec, 90);
+    });
+
+    test('a bad maxLines is refused', () {
+      expectProblem(
+        translateManifest((j) => (j['translate'] as Map)['maxLines'] = 5),
+        PluginPackageProblemKind.invalidManifest,
+        'translate.maxLines',
+      );
+    });
+
+    test('an overlong subtitle is refused', () {
+      expectProblem(
+        translateManifest(
+          (j) => (j['config'] as Map)['apiKeys']['subtitle'] = 'x' * 301,
+        ),
+        PluginPackageProblemKind.invalidManifest,
+        'config.apiKeys.subtitle',
+      );
+    });
+
+    test('lyrics type with a translate script only is refused', () {
+      expectProblem(
+        translateManifest((j) => (j['metadata'] as Map)['type'] = 'lyrics'),
+        PluginPackageProblemKind.invalidManifest,
+        'script.search',
+      );
     });
   });
 }

@@ -4292,7 +4292,7 @@ abstract class AppLocalizations {
   /// **'Saved'**
   String get lyricsTranslationSaved;
 
-  /// Footer of the lyrics translation menu when the shown translation came from the other service; service is Google or DeepL
+  /// Footer of the lyrics translation menu when the shown translation came from the other service; service is a translation service name
   ///
   /// In en, this message translates to:
   /// **'Saved from {service}'**
@@ -4304,7 +4304,7 @@ abstract class AppLocalizations {
   /// **'Retranslate'**
   String get lyricsTranslationRetranslate;
 
-  /// Button in the lyrics translation menu that translates again with the selected service; service is Google or DeepL
+  /// Button in the lyrics translation menu that translates again with the selected service; service is a translation service name
   ///
   /// In en, this message translates to:
   /// **'Retranslate with {service}'**
@@ -4334,22 +4334,22 @@ abstract class AppLocalizations {
   /// **'Could not reach the service. Check your connection.'**
   String get lyricsTranslationFailNetwork;
 
-  /// Why a translation failed: DeepL selected without a key
+  /// Why a translation failed: the service needs a key and none is saved
   ///
   /// In en, this message translates to:
-  /// **'Add your DeepL API key in Settings.'**
+  /// **'Add your API key in Settings.'**
   String get lyricsTranslationFailNoKey;
 
-  /// Why a translation failed: wrong DeepL key
+  /// Why a translation failed: the service rejected the key
   ///
   /// In en, this message translates to:
-  /// **'DeepL rejected the API key. Check it in Settings.'**
+  /// **'The service rejected the API key. Check it in Settings.'**
   String get lyricsTranslationFailBadKey;
 
-  /// Why a translation failed: DeepL quota used up
+  /// Why a translation failed: service quota used up
   ///
   /// In en, this message translates to:
-  /// **'The monthly character quota is used up.'**
+  /// **'The service\'s quota is used up.'**
   String get lyricsTranslationFailQuota;
 
   /// Why a translation failed: rate limited
@@ -4397,52 +4397,46 @@ abstract class AppLocalizations {
   /// Why a translation failed: the system key store is locked
   ///
   /// In en, this message translates to:
-  /// **'The key store is locked. Unlock it to use your DeepL key.'**
+  /// **'The key store is locked. Unlock it to use your API key.'**
   String get lyricsTranslationFailKeyStoreLocked;
 
   /// Why a translation failed: no system key store
   ///
   /// In en, this message translates to:
-  /// **'The key store is not available, so the DeepL key cannot be read.'**
+  /// **'The key store is not available, so the API key cannot be read.'**
   String get lyricsTranslationFailKeyStoreUnavailable;
 
-  /// Tooltip of the translate button while translated lyrics show: who translated them. service is Google or DeepL, language the language name
+  /// Tooltip of the translate button while translated lyrics show: who translated them. service is a translation service name, language the language name
   ///
   /// In en, this message translates to:
   /// **'Translated by {service} · {language}'**
   String lyricsTranslationAttribution(String service, String language);
 
-  /// Text of the translate button in the header while translated lyrics show. service is Google or DeepL, language the language name
+  /// Text of the translate button in the header while translated lyrics show. service is a translation service name, language the language name
   ///
   /// In en, this message translates to:
   /// **'{service} · {language}'**
   String lyricsTranslationButtonLabel(String service, String language);
 
-  /// Button of the lyrics translation error banner that switches to the other service; service is Google or DeepL
+  /// Lyrics translation error banner: the service needs a key and none is saved
   ///
   /// In en, this message translates to:
-  /// **'Use {service}'**
-  String lyricsTranslationUseService(String service);
-
-  /// Lyrics translation error banner: DeepL is selected but no key is saved
-  ///
-  /// In en, this message translates to:
-  /// **'Add your DeepL key in Settings › Playback › Translation.'**
+  /// **'Add your API key in Settings › Playback › Translation.'**
   String get lyricsTranslationBannerNoKey;
 
-  /// Lyrics translation error banner: DeepL did not accept the saved key
+  /// Lyrics translation error banner: the service did not accept the saved key
   ///
   /// In en, this message translates to:
-  /// **'DeepL rejected the key. Check the key in Settings › Playback › Translation.'**
+  /// **'The service rejected the key. Check the key in Settings › Playback › Translation.'**
   String get lyricsTranslationBannerBadKey;
 
-  /// Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL
+  /// Title of the dialog asking to send lyrics to a translation service; service is a translation service name
   ///
   /// In en, this message translates to:
   /// **'Lyrics will be sent to {service}'**
   String translationNoticeTitle(String service);
 
-  /// Body of the translation notice dialog; service is Google or DeepL
+  /// Body of the translation notice dialog; service is a translation service name
   ///
   /// In en, this message translates to:
   /// **'The text of this song\'s lyrics is sent to {service} to be translated. Nothing else is sent.'**
@@ -4484,12 +4478,6 @@ abstract class AppLocalizations {
   /// **'Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.'**
   String get settingsTranslationServiceGoogleHint;
 
-  /// No description provided for @settingsTranslationServiceDeeplHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Needs your own DeepL API key. Lyrics text is sent to DeepL when translation is on.'**
-  String get settingsTranslationServiceDeeplHint;
-
   /// No description provided for @settingsTranslationTarget.
   ///
   /// In en, this message translates to:
@@ -4507,186 +4495,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Follow app language ({language})'**
   String settingsTranslationTargetFollow(String language);
-
-  /// No description provided for @deeplKeyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'DeepL API key'**
-  String get deeplKeyTitle;
-
-  /// No description provided for @deeplKeyNone.
-  ///
-  /// In en, this message translates to:
-  /// **'No key saved'**
-  String get deeplKeyNone;
-
-  /// No description provided for @deeplKeyAdd.
-  ///
-  /// In en, this message translates to:
-  /// **'Add key'**
-  String get deeplKeyAdd;
-
-  /// No description provided for @deeplKeyEdit.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get deeplKeyEdit;
-
-  /// No description provided for @deeplKeyClear.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get deeplKeyClear;
-
-  /// No description provided for @deeplKeyPlanFree.
-  ///
-  /// In en, this message translates to:
-  /// **'Free'**
-  String get deeplKeyPlanFree;
-
-  /// No description provided for @deeplKeyPlanPro.
-  ///
-  /// In en, this message translates to:
-  /// **'Pro'**
-  String get deeplKeyPlanPro;
-
-  /// DeepL quota this month; used and limit are formatted numbers
-  ///
-  /// In en, this message translates to:
-  /// **'Used {used} of {limit} characters'**
-  String deeplKeyUsage(int used, int limit);
-
-  /// DeepL usage of a plan without a character limit
-  ///
-  /// In en, this message translates to:
-  /// **'Used {used} characters'**
-  String deeplKeyUsageNoLimit(int used);
-
-  /// No description provided for @deeplKeyUsageHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Usage is read from DeepL when you press refresh.'**
-  String get deeplKeyUsageHint;
-
-  /// No description provided for @deeplKeyRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh usage'**
-  String get deeplKeyRefresh;
-
-  /// No description provided for @deeplKeyClearTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove the DeepL key?'**
-  String get deeplKeyClearTitle;
-
-  /// No description provided for @deeplKeyClearBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The key is deleted from this computer. Lyrics cannot be translated with DeepL until you add a key again.'**
-  String get deeplKeyClearBody;
-
-  /// No description provided for @deeplKeyClearFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not remove the key'**
-  String get deeplKeyClearFailed;
-
-  /// No description provided for @deeplKeyDialogTitleAdd.
-  ///
-  /// In en, this message translates to:
-  /// **'Add DeepL API key'**
-  String get deeplKeyDialogTitleAdd;
-
-  /// No description provided for @deeplKeyDialogTitleEdit.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace DeepL API key'**
-  String get deeplKeyDialogTitleEdit;
-
-  /// No description provided for @deeplKeyDialogHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste the key from your DeepL account. DeepL checks it before it is saved.'**
-  String get deeplKeyDialogHint;
-
-  /// No description provided for @deeplKeyFieldLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'API key'**
-  String get deeplKeyFieldLabel;
-
-  /// No description provided for @deeplKeySave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get deeplKeySave;
-
-  /// No description provided for @deeplKeyBadKey.
-  ///
-  /// In en, this message translates to:
-  /// **'DeepL did not accept this key. Check it and try again.'**
-  String get deeplKeyBadKey;
-
-  /// No description provided for @deeplKeySaveFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save the key.'**
-  String get deeplKeySaveFailed;
-
-  /// No description provided for @deeplKeyReadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not read the key.'**
-  String get deeplKeyReadFailed;
-
-  /// No description provided for @deeplKeyKeyringLocked.
-  ///
-  /// In en, this message translates to:
-  /// **'Keyring is locked; unlock it, then retry'**
-  String get deeplKeyKeyringLocked;
-
-  /// No description provided for @deeplKeyKeyringNoDefault.
-  ///
-  /// In en, this message translates to:
-  /// **'No default keyring found; create one (for example in Seahorse or KWallet), then retry'**
-  String get deeplKeyKeyringNoDefault;
-
-  /// No description provided for @deeplKeyKeyringTimeout.
-  ///
-  /// In en, this message translates to:
-  /// **'The keyring is not responding'**
-  String get deeplKeyKeyringTimeout;
-
-  /// No description provided for @deeplKeyKeyringUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'The keyring cannot be used right now'**
-  String get deeplKeyKeyringUnavailable;
-
-  /// No description provided for @deeplKeyFileFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The key file could not be read or written'**
-  String get deeplKeyFileFailed;
-
-  /// Warning under the DeepL key row when no system keyring exists; path is the secrets file
-  ///
-  /// In en, this message translates to:
-  /// **'No system keyring found; the key is stored in a file only you can read ({path}). Do not share or sync this file.'**
-  String deeplKeyFallbackFile(String path);
-
-  /// No description provided for @deeplKeyFallbackMemory.
-  ///
-  /// In en, this message translates to:
-  /// **'No system keyring found; the key is kept until Kanaru closes.'**
-  String get deeplKeyFallbackMemory;
-
-  /// No description provided for @deeplKeyFallbackFixed.
-  ///
-  /// In en, this message translates to:
-  /// **'The key file was readable by others; its permissions were fixed. Consider replacing the key.'**
-  String get deeplKeyFallbackFixed;
 
   /// No description provided for @settingsTranslationCache.
   ///
@@ -4772,10 +4580,10 @@ abstract class AppLocalizations {
   /// **'Translation settings'**
   String get lyricsTranslationMenuSettings;
 
-  /// Button on the DeepL key error banner that opens Settings at the DeepL key
+  /// Button on the key error banner that opens the translation settings
   ///
   /// In en, this message translates to:
-  /// **'DeepL key settings'**
+  /// **'Open the service\'s settings'**
   String get lyricsTranslationBannerOpenKey;
 
   /// Link in the automatic online lyrics notice that opens Settings at the lyrics group
@@ -5804,6 +5612,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 saved song} other{{count} saved songs}} and lyrics pinned from this source'**
   String pluginUninstallKeepLyrics(int count);
 
+  /// No description provided for @pluginUninstallKeepTranslations.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved translations, until you choose Clear saved translations'**
+  String get pluginUninstallKeepTranslations;
+
   /// No description provided for @pluginUninstallKeepPinned.
   ///
   /// In en, this message translates to:
@@ -5885,7 +5699,7 @@ abstract class AppLocalizations {
   /// No description provided for @pluginProblemWrongType.
   ///
   /// In en, this message translates to:
-  /// **'plugin.json: type must be lyrics'**
+  /// **'plugin.json: type must be lyrics or translate'**
   String get pluginProblemWrongType;
 
   /// Why a plugin package was refused; detail comes from the package
@@ -5923,6 +5737,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.'**
   String get pluginRefusedNotFromRepo;
+
+  /// No description provided for @pluginRefusedKindChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'This package is a different kind of plugin than the installed one, so it was not used. Uninstall the plugin and install the new one.'**
+  String get pluginRefusedKindChanged;
 
   /// No description provided for @pluginRefusedOlderVersion.
   ///
@@ -6019,6 +5839,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All'**
   String get lyricsStoreChipAll;
+
+  /// Store kind chip that lists lyrics plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get lyricsStoreKindLyrics;
+
+  /// Store kind chip that lists translation plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get lyricsStoreKindTranslate;
 
   /// Source chip and row subtitle of a plugin installed from a zip file
   ///
@@ -7165,6 +6997,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Treat a name as two artists, or join spellings'**
   String get artistModalSplitMergeHint;
+
+  /// Title of the dialog asking to send lyrics to a translation plugin; service is the plugin's name
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics will be sent to the plugin {service}'**
+  String translationNoticePluginTitle(String service);
+
+  /// Body of the translation notice dialog for a plugin; the hosts are listed under it
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.'**
+  String get translationNoticePluginBody;
+
+  /// Name of a translation plugin that has the name of a built-in service, so it is not mistaken for it
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (plugin)'**
+  String translationServicePluginSuffix(String name);
+
+  /// Name of an uninstalled translation plugin whose saved translation is still shown
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (removed)'**
+  String translationServiceRemovedSuffix(String name);
+
+  /// Row in the translation settings that opens the plugin store on translation plugins
+  ///
+  /// In en, this message translates to:
+  /// **'Get translation services'**
+  String get settingsTranslationGetServices;
+
+  /// Subtitle of the row that opens the plugin store from the translation settings
+  ///
+  /// In en, this message translates to:
+  /// **'Find translation plugins in the plugin store'**
+  String get settingsTranslationGetServicesHint;
+
+  /// Button on the error banner of a translation plugin that opens the plugin's page
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get lyricsTranslationBannerOpenPlugin;
+
+  /// Button on the error banner of a translation plugin that switches to Google
+  ///
+  /// In en, this message translates to:
+  /// **'Translate with Google'**
+  String get lyricsTranslationBannerUseGoogle;
+
+  /// Subtitle of the translation service row when a translate plugin is the selected service
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.'**
+  String get settingsTranslationServicePluginHint;
 }
 
 class _AppLocalizationsDelegate

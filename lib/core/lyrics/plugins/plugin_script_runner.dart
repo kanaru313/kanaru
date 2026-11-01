@@ -1,20 +1,16 @@
-import 'dart:async';
-import 'dart:convert';
-
 import '../../database/library_database.dart';
 import '../../database/lyrics_plugin_queries.dart';
 import '../../plugin_runtime/plugin_runtime.dart';
 import '../online/lyrics_fetch_exception.dart';
 import '../online/lyrics_http.dart';
 import '../online/lyrics_http_retry.dart' show LyricsRequestAbandoned;
+import 'plugin_failure_log.dart';
 import 'plugin_fetch_bridge.dart';
 import 'plugin_output_reader.dart';
 import 'plugin_package_loader.dart';
+import 'plugin_run_core.dart';
 import 'plugin_run_deadline.dart';
 import 'plugin_run_errors.dart';
-import 'plugin_run_setup.dart';
-import 'plugin_storage_writeback.dart';
-import 'plugin_failure_log.dart';
 import 'plugin_run_log.dart';
 import 'plugin_run_registry.dart';
 import 'store/lyrics_plugin_dirs.dart';
@@ -42,26 +38,32 @@ enum PluginScript { search, lyrics }
 ///   A cancelled or skipped run writes neither.
 class PluginScriptRunner {
   PluginScriptRunner({
-    required this._db,
-    required this._runtime,
-    required this._runs,
+    required LibraryDatabase db,
+    required PluginRuntime runtime,
+    required PluginRunRegistry runs,
     required this._runLog,
-    required this._dirs,
-    required this._loadConfig,
+    required LyricsPluginDirs dirs,
+    required Future<Map<String, String>> Function(String installId) loadConfig,
     PluginPackageLoader? packages,
-    this._outerDeadline = pluginRunOuterDeadline,
+    Duration outerDeadline = pluginRunOuterDeadline,
     DateTime Function()? clock,
-  }) : _packages = packages ?? PluginPackageLoader(),
+  }) : _core = PluginRunCore(
+         db: db,
+         runtime: runtime,
+         runs: runs,
+         dirs: dirs,
+         loadConfig: loadConfig,
+         packages: packages,
+         outerDeadline: outerDeadline,
+       ),
        _clock = clock ?? DateTime.now;
 
-  final LibraryDatabase _db;
-  final PluginRuntime _runtime;
-  final PluginRunRegistry _runs;
+  final PluginRunCore _core;
   final PluginRunLog _runLog;
-  final LyricsPluginDirs _dirs;
-  final Future<Map<String, String>> Function(String installId) _loadConfig;
-  final PluginPackageLoader _packages;
-  final Duration _outerDeadline;
+
+  /// The run core, so the translate runner shares its package cache.
+  PluginRunCore get core => _core;
+
   final DateTime Function() _clock;
 
   /// Runs [script] of [installId] with [input] (a JSON-encodable value, also
@@ -77,28 +79,17 @@ class PluginScriptRunner {
     required LyricsHttp http,
     required T Function(String outputJson, List<String> notes) read,
   }) async {
-    final cancel = PluginCancel();
-    final unregister = _runs.register(installId, cancel);
-    if (unregister == null) throw const LyricsSourceSkipped();
-    try {
-      return await _run(installId, script, input, http, read, cancel);
-    } finally {
-      unregister();
-    }
-  }
-
-  Future<T> _run<T>(
-    String installId,
-    PluginScript script,
-    Object? input,
-    LyricsHttp http,
-    T Function(String, List<String>) read,
-    PluginCancel cancel,
-  ) async {
-    final row = await _db.lyricsPluginById(installId);
-    if (row == null || row.removedAt != null) {
-      throw const LyricsSourceSkipped();
-    }
+    final outcome = await _core.run(
+      installId: installId,
+      kind: PluginKind.lyrics,
+      entry: (package) => script == PluginScript.search
+          ? package.searchScript
+          : package.lyricsScript,
+      input: input,
+      http: (_) => http,
+    );
+    final row = outcome.row;
+    if (row == null) throw const LyricsSourceSkipped();
     final scriptName = script == PluginScript.search
         ? 'search.js'
         : 'lyrics.js';
@@ -122,60 +113,25 @@ class PluginScriptRunner {
       requests: requests,
     );
 
-    // The outer clock covers the loading as well as the run.
-    final clock = Stopwatch()..start();
-    final PluginRunSetup setup;
-    try {
-      setup = await loadPluginRunSetup(
-        db: _db,
-        packages: _packages,
-        dirs: _dirs,
-        loadConfig: _loadConfig,
-        record: row,
-      ).timeout(_outerDeadline);
-    } on PluginPackageUnreadable catch (e) {
-      // Stopped by an update or uninstall while loading: log nothing.
-      if (cancel.isCancelled) throw const LyricsSourceSkipped();
-      throw _failedBeforeRun(event('invalidResponse', e.reason));
-    } on PluginRunSetupException catch (e) {
-      // Stopped by an update or uninstall while loading: log nothing.
-      if (cancel.isCancelled) throw const LyricsSourceSkipped();
-      // Treated like any unreadable input of the plugin: invalid response.
-      throw _failedBeforeRun(event('invalidResponse', e.reason));
-    } on TimeoutException {
-      // Stopped by an update or uninstall while loading: log nothing.
-      if (cancel.isCancelled) throw const LyricsSourceSkipped();
-      throw _failedBeforeRun(
-        event('network', 'loading the plugin took too long'),
-        LyricsFetchKind.network,
+    if (outcome.state == PluginRunState.setupFailed) {
+      // A setup timeout is a network failure; anything else is treated like
+      // an unreadable input of the plugin.
+      final timedOut = outcome.timedOut;
+      recordPluginRun(
+        _runLog,
+        timedOut
+            ? event('network', outcome.reason)
+            : event('invalidResponse', outcome.reason),
+        const {},
+        failed: true,
+      );
+      throw LyricsFetchException(
+        timedOut ? LyricsFetchKind.network : LyricsFetchKind.invalidResponse,
       );
     }
-    final config = setup.config;
-    if (cancel.isCancelled) throw const LyricsSourceSkipped();
 
-    final bridge = PluginFetchBridge(http);
-    final left = _outerDeadline - clock.elapsed;
-    final (:result, :timedOut) = await runWithDeadline(
-      _runtime,
-      PluginRunRequest(
-        files: setup.package.files,
-        entry: script == PluginScript.search
-            ? setup.package.searchScript
-            : setup.package.lyricsScript,
-        inputJson: jsonEncode(input),
-        config: config,
-        storageJson: setup.storageJson,
-      ),
-      fetch: bridge.call,
-      cancel: cancel,
-      deadline: left.isNegative ? Duration.zero : left,
-    );
-    // Cancelled from outside (an uninstall or update): nothing is written.
-    final stopped = cancel.isCancelled && !timedOut;
-    if (!stopped && result.storage != null) {
-      await savePluginStorage(_db, installId, result.storage!, row.updatedAt);
-    }
-
+    final result = outcome.result!;
+    final config = outcome.config;
     final notes = <String>[];
     T? value;
     var outputProblem = '';
@@ -191,7 +147,7 @@ class PluginScriptRunner {
     // Stopped by an update or uninstall, not by the caller (a caller that
     // left arrives as an abandoned fetch): the source is only skipped, so the
     // caller's operation goes on with the other sources.
-    if (stopped) throw const LyricsSourceSkipped();
+    if (outcome.stopped) throw const LyricsSourceSkipped();
     if (failure is! LyricsRequestAbandoned && failure is! LyricsSourceSkipped) {
       final ok = failure == null;
       recordPluginRun(
@@ -205,7 +161,7 @@ class PluginScriptRunner {
                     : (result.jsError?.message ?? result.errorMessage)),
           stack: result.jsError?.stack,
           console: [...result.logs, for (final n in notes) 'dropped: $n'],
-          requests: bridge.requests,
+          requests: outcome.requests,
         ),
         config,
         failed: !ok,
@@ -213,13 +169,5 @@ class PluginScriptRunner {
     }
     if (failure != null) throw failure;
     return value as T;
-  }
-
-  LyricsFetchException _failedBeforeRun(
-    PluginRunLogEvent event, [
-    LyricsFetchKind kind = LyricsFetchKind.invalidResponse,
-  ]) {
-    recordPluginRun(_runLog, event, const {}, failed: true);
-    return LyricsFetchException(kind);
   }
 }

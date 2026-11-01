@@ -35,7 +35,7 @@ class PluginPackageReader {
     final contents = readPluginZip(zipBytes);
     final manifest = parsePluginManifest(contents.manifest);
     final files = _decodeScripts(contents.scripts);
-    for (final name in [manifest.searchScript, manifest.lyricsScript]) {
+    for (final name in manifest.entryScripts) {
       if (!files.containsKey(name)) {
         throw PluginPackageProblem(
           PluginPackageProblemKind.missingScript,

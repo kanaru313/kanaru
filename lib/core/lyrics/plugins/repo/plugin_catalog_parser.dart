@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../../../database/lyrics_plugin_spec.dart';
 import '../../online/lyrics_provider_registry.dart';
 import '../package/plugin_text_clean.dart';
 import 'plugin_catalog.dart';
@@ -75,7 +76,12 @@ PluginCatalogEntry? _entry(
 ) {
   final slug = json['slug'];
   if (slug is! String || !_slug.hasMatch(slug)) return null;
-  if (json['type'] != 'lyrics') return null;
+  final kind = switch (json['type']) {
+    'lyrics' => PluginKind.lyrics,
+    'translate' => PluginKind.translate,
+    _ => null,
+  };
+  if (kind == null) return null;
   final name = _text(json['name'], min: 1, max: 80);
   final version = json['version'];
   final apiVersion = json['apiVersion'];
@@ -97,6 +103,7 @@ PluginCatalogEntry? _entry(
   final icon = iconField == null ? null : _reference(iconField, origin);
   return PluginCatalogEntry(
     slug: slug,
+    kind: kind,
     name: name,
     version: version,
     apiVersion: apiVersion,

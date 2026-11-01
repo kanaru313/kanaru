@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/app/shell/navigation_history.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import 'package:kanaru/features/lyrics_plugin_store/lyrics_plugin_store_routes.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
@@ -10,6 +11,7 @@ import 'package:kanaru/features/lyrics_sources/lyrics_sources_page.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_routes.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
 import 'package:kanaru/shared/settings_routes.dart';
+import 'package:kanaru/shared/translation_plugin_routes.dart';
 
 import '../lyrics_plugin_store/store_test_harness.dart' as store;
 import 'lyrics_sources_harness.dart';
@@ -55,6 +57,10 @@ void main() {
         lyricsSourcesRoutesWith(children: [lyricsSourcesStoreMount()]),
       ),
       ..._joined(settingsRoute, [lyricsRootStoreMount()]),
+      ..._joined(settingsPlaybackRoute, [
+        ...translationPluginRoutes(),
+        translationStoreMount(),
+      ]),
     ];
     expect(
       paths,
@@ -66,6 +72,10 @@ void main() {
           lyricsStoreRepositoriesRoute(base),
           lyricsStoreItemRoutePatternAt(base),
         ],
+        translationPluginsRoute,
+        translationPluginRoutePattern,
+        lyricsStoreRepositoriesRoute(translationPluginsRoute),
+        lyricsStoreItemRoutePatternAt(translationPluginsRoute),
       ]),
     );
   });
@@ -283,5 +293,141 @@ void main() {
       ),
     );
     expect(find.text(en.lyricsStoreItemNotFound), findsOneWidget);
+  });
+
+  group('kind per mount', () {
+    final tr = store.entryOf('tr', name: 'TrNew', kind: PluginKind.translate);
+    final lyr = store.entryOf('lyr', name: 'LyrNew');
+    final mixed = store.repoOf(store.repoA, 'Kho A', entries: [lyr, tr]);
+    final records = [
+      testRecord(idA, name: 'LyrFile'),
+      testRecord(idB, name: 'TrFile', pluginKind: PluginKind.translate),
+    ];
+
+    Future<GoRouter> pumpMixed(
+      WidgetTester tester,
+      String location,
+    ) => pumpSources(
+      tester,
+      records: records,
+      plugins: FakePlugins(),
+      withStore: true,
+      location: location,
+      overrides: [
+        pluginStoreRawInputProvider.overrideWith(
+          (ref) => AsyncData(
+            PluginStoreInput(records: records, repos: [mixed], available: true),
+          ),
+        ),
+        lyricsPluginReposProvider.overrideWith((ref) => Stream.value([mixed])),
+        lyricsPluginReposControllerProvider.overrideWithValue(
+          store.FakeRepos()..catalog = [mixed],
+        ),
+      ],
+    );
+
+    testWidgets('the lyrics mounts start on Lyrics', (tester) async {
+      for (final base in [lyricsStoreRoute, lyricsSourcesStoreRoute]) {
+        await pumpMixed(tester, base);
+        expect(find.text('LyrNew'), findsOneWidget, reason: base);
+        expect(find.text('TrNew'), findsNothing, reason: base);
+      }
+    });
+
+    testWidgets('the translation mount starts on Translate', (tester) async {
+      await pumpMixed(tester, translationPluginsRoute);
+      expect(find.text('TrNew'), findsOneWidget);
+      expect(find.text('TrFile'), findsOneWidget);
+      expect(find.text('LyrNew'), findsNothing);
+    });
+
+    testWidgets('an installed row opens the page of its kind', (tester) async {
+      final router = await pumpMixed(tester, translationPluginsRoute);
+      await tester.tap(find.text('TrFile'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, translationPluginRoute(idB));
+
+      router.go(lyricsSourcesStoreRoute);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('LyrFile'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, lyricsPluginRoute(idA));
+    });
+
+    testWidgets('Open on a catalog item page goes to the page of its kind', (
+      tester,
+    ) async {
+      final installedTr = store.recordOf(
+        idB,
+        name: 'TrNew',
+        repoUrl: store.repoA,
+        repoSlug: 'tr',
+        kind: PluginKind.translate,
+      );
+      final repoRecords = [installedTr];
+      final router = await pumpSources(
+        tester,
+        records: repoRecords,
+        plugins: FakePlugins(),
+        withStore: true,
+        location: lyricsStoreItemRoute(
+          base: translationPluginsRoute,
+          repoUrl: store.repoA,
+          slug: 'tr',
+        ),
+        overrides: [
+          pluginStoreRawInputProvider.overrideWith(
+            (ref) => AsyncData(
+              PluginStoreInput(
+                records: repoRecords,
+                repos: [mixed],
+                available: true,
+              ),
+            ),
+          ),
+          lyricsPluginReposProvider.overrideWith(
+            (ref) => Stream.value([mixed]),
+          ),
+          lyricsPluginReposControllerProvider.overrideWithValue(
+            store.FakeRepos()..catalog = [mixed],
+          ),
+        ],
+      );
+      await tester.tap(find.text(en.lyricsStoreItemOpenInstalled));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, translationPluginRoute(idB));
+    });
+
+    testWidgets('the chip picked in one mount does not leak into another', (
+      tester,
+    ) async {
+      final router = await pumpMixed(tester, lyricsSourcesStoreRoute);
+      await tester.tap(find.text(en.lyricsStoreKindTranslate));
+      await tester.pumpAndSettle();
+      expect(find.text('TrNew'), findsOneWidget);
+
+      router.go(translationPluginsRoute);
+      await tester.pumpAndSettle();
+      expect(find.text('TrNew'), findsOneWidget);
+      expect(find.text('LyrNew'), findsNothing);
+
+      await tester.tap(find.text(en.lyricsStoreKindLyrics));
+      await tester.pumpAndSettle();
+      router.go(lyricsSourcesStoreRoute);
+      await tester.pumpAndSettle();
+      expect(find.text('LyrNew'), findsOneWidget);
+    });
+
+    testWidgets('an item opened from the translation mount stays in it', (
+      tester,
+    ) async {
+      final router = await pumpMixed(tester, translationPluginsRoute);
+      await tester.tap(find.text('TrNew'));
+      await tester.pumpAndSettle();
+      expect(
+        router.state.uri.path,
+        lyricsStoreItemRoutePatternAt(translationPluginsRoute),
+      );
+    });
   });
 }

@@ -18,14 +18,12 @@ import '../../core/lyrics/fake_lyrics_readers.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
-const _google = LyricsTranslationService.google;
-const _deepl = LyricsTranslationService.deepl;
-const _both = {_google, _deepl};
+const _google = TranslationServiceId.google;
 const _synced = Track(uri: '/m/synced.flac', title: 'Synced');
 const _plain = Track(uri: '/m/plain.flac', title: 'Plain');
 
 TranslationReady _ready({
-  LyricsTranslationService service = _google,
+  TranslationServiceId service = _google,
   List<String?> lines = const ['Dòng một', 'Dòng hai'],
 }) => TranslationReady(fakeTranslationInfo(), service, 'ja', lines, false);
 
@@ -33,15 +31,13 @@ void main() {
   late ProviderContainer container;
   late FakeTranslationController fake;
 
-  TranslationPrefs prefs() => container.read(settingsProvider).translation;
-
   Future<void> pump(
     WidgetTester tester,
     LyricsTranslationState state, {
     Track track = _synced,
     TranslationPrefs settings = const TranslationPrefs(
       show: true,
-      noticeAcknowledged: _both,
+      noticeAcknowledged: {_google},
     ),
     bool reduceMotion = false,
   }) async {
@@ -104,7 +100,7 @@ void main() {
       settings: const TranslationPrefs(
         show: true,
         display: LyricsTranslationDisplay.replace,
-        noticeAcknowledged: _both,
+        noticeAcknowledged: {_google},
       ),
     );
     final big = tester.widget<Text>(find.text('Dòng một'));
@@ -144,7 +140,7 @@ void main() {
     expect(tester.hasRunningAnimations, isFalse);
   });
 
-  testWidgets('quota failure: reason, Use DeepL and Retry', (tester) async {
+  testWidgets('quota failure: reason and Retry', (tester) async {
     await pump(
       tester,
       TranslationFailed(
@@ -153,41 +149,12 @@ void main() {
         TranslationFailureKind.quotaExceeded,
       ),
     );
-    expect(
-      find.text('The monthly character quota is used up.'),
-      findsOneWidget,
-    );
+    expect(find.text("The service's quota is used up."), findsOneWidget);
     // The lyrics stay under the banner.
     expect(find.text('First words'), findsOneWidget);
     await tester.tap(find.text('Retry'));
     expect(fake.retryCalls, 1);
-    await tester.tap(find.text('Use DeepL'));
-    await tester.pump();
-    expect(prefs().service, _deepl);
-  });
-
-  testWidgets('Use <other> asks for the notice when it was not accepted', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      TranslationFailed(
-        fakeTranslationInfo(),
-        _google,
-        TranslationFailureKind.blocked,
-      ),
-      settings: const TranslationPrefs(
-        show: true,
-        noticeAcknowledged: {_google},
-      ),
-    );
-    await tester.tap(find.text('Use DeepL'));
-    await tester.pumpAndSettle();
-    expect(find.text('Lyrics will be sent to DeepL'), findsOneWidget);
-    expect(prefs().service, _google);
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
-    expect(prefs().service, _deepl);
+    expect(find.textContaining('Use '), findsNothing);
   });
 
   testWidgets('key failure: points to Settings, no Retry', (tester) async {
@@ -195,7 +162,7 @@ void main() {
       tester,
       TranslationFailed(
         fakeTranslationInfo(),
-        _deepl,
+        _google,
         TranslationFailureKind.badKey,
       ),
     );
@@ -204,10 +171,10 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Retry'), findsNothing);
-    expect(find.text('Use Google'), findsOneWidget);
+    expect(find.textContaining('Use '), findsNothing);
   });
 
-  testWidgets('too long: only the other service', (tester) async {
+  testWidgets('too long: no Retry', (tester) async {
     await pump(
       tester,
       TranslationFailed(
@@ -217,7 +184,6 @@ void main() {
       ),
     );
     expect(find.text('Retry'), findsNothing);
-    expect(find.text('Use DeepL'), findsOneWidget);
   });
 
   testWidgets('same language: no translation lines and no note', (

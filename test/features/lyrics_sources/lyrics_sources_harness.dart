@@ -34,7 +34,9 @@ LyricsPluginRecord testRecord(
   String? repoUrl,
   String? description,
   int installedAt = 1000,
+  PluginKind pluginKind = PluginKind.lyrics,
 }) => LyricsPluginRecord(
+  kind: pluginKind,
   installId: id,
   name: name,
   author: author,
@@ -167,9 +169,15 @@ Future<GoRouter> pumpSources(
               GoRoute(
                 path: 'playback',
                 builder: (context, state) => const Text('playback page'),
-                routes: lyricsSourcesRoutesWith(
-                  children: withStore ? [lyricsSourcesStoreMount()] : const [],
-                ),
+                routes: [
+                  ...lyricsSourcesRoutesWith(
+                    children: withStore
+                        ? [lyricsSourcesStoreMount()]
+                        : const [],
+                  ),
+                  ...translationPluginRoutes(),
+                  if (withStore) translationStoreMount(),
+                ],
               ),
               if (withStore) lyricsRootStoreMount(),
             ],

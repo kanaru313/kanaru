@@ -24,13 +24,8 @@ const _troughAlpha = 0.55;
 class SettingsFocusRegistry {
   final Map<SettingsAnchor, SettingsFocusTargetState> _targets = {};
 
-  /// The target of [anchor], or of its fallback when [anchor] is not built.
-  SettingsFocusTargetState? find(SettingsAnchor anchor) {
-    final target = _targets[anchor];
-    if (target != null) return target;
-    final fallback = anchor.fallback;
-    return fallback == null ? null : find(fallback);
-  }
+  /// The target of [anchor], or `null` when it is not built.
+  SettingsFocusTargetState? find(SettingsAnchor anchor) => _targets[anchor];
 }
 
 /// Provides a [SettingsFocusRegistry] to the targets below it.

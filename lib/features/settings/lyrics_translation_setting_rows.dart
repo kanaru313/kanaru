@@ -3,15 +3,17 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics_translation/translation_language.dart';
 import '../../core/lyrics_translation/translation_service.dart';
+import '../../core/lyrics_translation/translation_service_choices.dart';
+import '../../core/lyrics_translation/translation_service_names.dart';
+import '../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/settings_routes.dart';
 import '../../shared/translation_language_name.dart';
 import '../../shared/translation_notice_dialog.dart';
-import 'deepl_key_setting_row.dart';
+import '../../shared/translation_service_name.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
-import 'settings_focus.dart';
+import 'translation_plugin_rows.dart';
 
 /// A choice of the default language: a language code, or `null` to follow the
 /// app. A record, not a bare `String?`, because the dropdown ignores `null`
@@ -20,8 +22,8 @@ typedef _Target = ({String? code});
 
 const _followApp = (code: null);
 
-/// Lyrics translation options: the service, the DeepL key (only while DeepL
-/// is chosen) and the default target language. The saved translations are in
+/// Lyrics translation options: the service and the default target
+/// language. The saved translations are in
 /// Data & storage › Caches.
 class LyricsTranslationSettingRows extends ConsumerWidget {
   const LyricsTranslationSettingRows({super.key});
@@ -29,12 +31,12 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
   Future<void> _pickService(
     BuildContext context,
     WidgetRef ref,
-    LyricsTranslationService service,
+    TranslationServiceId service,
   ) async {
     final prefs = ref.read(settingsProvider).translation;
     // While translation is on, a service never agreed to needs the notice
     // first; Cancel keeps the old service.
-    if (prefs.show && !prefs.noticeAcknowledged.contains(service)) {
+    if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       ref
@@ -52,33 +54,36 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
         translationLanguageFor('en')!;
     final target = prefs.targetLanguage;
     final known = target != null && translationLanguageFor(target) != null;
+    // Google and the live translate plugins; disabled while they are not
+    // known, so a stored plugin choice is never overwritten blind.
+    final plugins = ref.watch(translationPluginInfosProvider);
+    final choices = ref.watch(translationServiceChoicesProvider);
+    final services = choices.services;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SettingRow(
           title: l10n.settingsTranslationService,
-          subtitle: prefs.service == LyricsTranslationService.google
+          subtitle: choices.selected.isGoogle
               ? l10n.settingsTranslationServiceGoogleHint
-              : l10n.settingsTranslationServiceDeeplHint,
-          control: (compact) => SettingChoice<LyricsTranslationService>(
-            compact: compact,
-            selected: prefs.service,
-            onSelected: (service) => _pickService(context, ref, service),
+              : l10n.settingsTranslationServicePluginHint,
+          control: (compact) => SettingChoice<TranslationServiceId>(
+            compact: compact || services.length > 2,
+            selected: choices.selected,
+            onSelected: choices.ready
+                ? (service) => _pickService(context, ref, service)
+                : null,
             options: [
-              for (final service in LyricsTranslationService.values)
+              for (final service in services)
                 SettingOption(
                   value: service,
-                  label: translationServiceName(service),
+                  label: translationServiceName(l10n, plugins, service),
                 ),
             ],
           ),
         ),
-        if (prefs.service == LyricsTranslationService.deepl)
-          const SettingsFocusTarget(
-            anchor: SettingsAnchor.deepLKey,
-            child: DeepLKeySettingRow(),
-          ),
+        const TranslationPluginRows(),
         SettingRow.single(
           title: l10n.settingsTranslationTarget,
           subtitle: l10n.settingsTranslationTargetHint,

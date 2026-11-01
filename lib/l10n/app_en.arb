@@ -2536,7 +2536,7 @@
   },
   "lyricsTranslationSavedFrom": "Saved from {service}",
   "@lyricsTranslationSavedFrom": {
-    "description": "Footer of the lyrics translation menu when the shown translation came from the other service; service is Google or DeepL",
+    "description": "Footer of the lyrics translation menu when the shown translation came from the other service; service is a translation service name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -2549,7 +2549,7 @@
   },
   "lyricsTranslationRetranslateWith": "Retranslate with {service}",
   "@lyricsTranslationRetranslateWith": {
-    "description": "Button in the lyrics translation menu that translates again with the selected service; service is Google or DeepL",
+    "description": "Button in the lyrics translation menu that translates again with the selected service; service is a translation service name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -2577,17 +2577,17 @@
   "@lyricsTranslationFailNetwork": {
     "description": "Why a translation failed: no network"
   },
-  "lyricsTranslationFailNoKey": "Add your DeepL API key in Settings.",
+  "lyricsTranslationFailNoKey": "Add your API key in Settings.",
   "@lyricsTranslationFailNoKey": {
-    "description": "Why a translation failed: DeepL selected without a key"
+    "description": "Why a translation failed: the service needs a key and none is saved"
   },
-  "lyricsTranslationFailBadKey": "DeepL rejected the API key. Check it in Settings.",
+  "lyricsTranslationFailBadKey": "The service rejected the API key. Check it in Settings.",
   "@lyricsTranslationFailBadKey": {
-    "description": "Why a translation failed: wrong DeepL key"
+    "description": "Why a translation failed: the service rejected the key"
   },
-  "lyricsTranslationFailQuota": "The monthly character quota is used up.",
+  "lyricsTranslationFailQuota": "The service's quota is used up.",
   "@lyricsTranslationFailQuota": {
-    "description": "Why a translation failed: DeepL quota used up"
+    "description": "Why a translation failed: service quota used up"
   },
   "lyricsTranslationFailRateLimited": "Too many requests. Try again in a moment.",
   "@lyricsTranslationFailRateLimited": {
@@ -2617,17 +2617,17 @@
   "@lyricsTranslationFailEmptyResult": {
     "description": "Why a translation failed: empty answer"
   },
-  "lyricsTranslationFailKeyStoreLocked": "The key store is locked. Unlock it to use your DeepL key.",
+  "lyricsTranslationFailKeyStoreLocked": "The key store is locked. Unlock it to use your API key.",
   "@lyricsTranslationFailKeyStoreLocked": {
     "description": "Why a translation failed: the system key store is locked"
   },
-  "lyricsTranslationFailKeyStoreUnavailable": "The key store is not available, so the DeepL key cannot be read.",
+  "lyricsTranslationFailKeyStoreUnavailable": "The key store is not available, so the API key cannot be read.",
   "@lyricsTranslationFailKeyStoreUnavailable": {
     "description": "Why a translation failed: no system key store"
   },
   "lyricsTranslationAttribution": "Translated by {service} · {language}",
   "@lyricsTranslationAttribution": {
-    "description": "Tooltip of the translate button while translated lyrics show: who translated them. service is Google or DeepL, language the language name",
+    "description": "Tooltip of the translate button while translated lyrics show: who translated them. service is a translation service name, language the language name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -2639,7 +2639,7 @@
   },
   "lyricsTranslationButtonLabel": "{service} · {language}",
   "@lyricsTranslationButtonLabel": {
-    "description": "Text of the translate button in the header while translated lyrics show. service is Google or DeepL, language the language name",
+    "description": "Text of the translate button in the header while translated lyrics show. service is a translation service name, language the language name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -2649,26 +2649,17 @@
       }
     }
   },
-  "lyricsTranslationUseService": "Use {service}",
-  "@lyricsTranslationUseService": {
-    "description": "Button of the lyrics translation error banner that switches to the other service; service is Google or DeepL",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsTranslationBannerNoKey": "Add your DeepL key in Settings › Playback › Translation.",
+  "lyricsTranslationBannerNoKey": "Add your API key in Settings › Playback › Translation.",
   "@lyricsTranslationBannerNoKey": {
-    "description": "Lyrics translation error banner: DeepL is selected but no key is saved"
+    "description": "Lyrics translation error banner: the service needs a key and none is saved"
   },
-  "lyricsTranslationBannerBadKey": "DeepL rejected the key. Check the key in Settings › Playback › Translation.",
+  "lyricsTranslationBannerBadKey": "The service rejected the key. Check the key in Settings › Playback › Translation.",
   "@lyricsTranslationBannerBadKey": {
-    "description": "Lyrics translation error banner: DeepL did not accept the saved key"
+    "description": "Lyrics translation error banner: the service did not accept the saved key"
   },
   "translationNoticeTitle": "Lyrics will be sent to {service}",
   "@translationNoticeTitle": {
-    "description": "Title of the dialog asking to send lyrics to a translation service; service is Google or DeepL",
+    "description": "Title of the dialog asking to send lyrics to a translation service; service is a translation service name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -2677,7 +2668,7 @@
   },
   "translationNoticeBody": "The text of this song's lyrics is sent to {service} to be translated. Nothing else is sent.",
   "@translationNoticeBody": {
-    "description": "Body of the translation notice dialog; service is Google or DeepL",
+    "description": "Body of the translation notice dialog; service is a translation service name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -2702,7 +2693,6 @@
   },
   "settingsTranslationService": "Translation service",
   "settingsTranslationServiceGoogleHint": "Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.",
-  "settingsTranslationServiceDeeplHint": "Needs your own DeepL API key. Lyrics text is sent to DeepL when translation is on.",
   "settingsTranslationTarget": "Default translation language",
   "settingsTranslationTargetHint": "Used for songs that have no language of their own.",
   "settingsTranslationTargetFollow": "Follow app language ({language})",
@@ -2714,66 +2704,6 @@
       }
     }
   },
-  "deeplKeyTitle": "DeepL API key",
-  "deeplKeyNone": "No key saved",
-  "deeplKeyAdd": "Add key",
-  "deeplKeyEdit": "Edit",
-  "deeplKeyClear": "Clear",
-  "deeplKeyPlanFree": "Free",
-  "deeplKeyPlanPro": "Pro",
-  "deeplKeyUsage": "Used {used} of {limit} characters",
-  "@deeplKeyUsage": {
-    "description": "DeepL quota this month; used and limit are formatted numbers",
-    "placeholders": {
-      "used": {
-        "type": "int",
-        "format": "decimalPattern"
-      },
-      "limit": {
-        "type": "int",
-        "format": "decimalPattern"
-      }
-    }
-  },
-  "deeplKeyUsageNoLimit": "Used {used} characters",
-  "@deeplKeyUsageNoLimit": {
-    "description": "DeepL usage of a plan without a character limit",
-    "placeholders": {
-      "used": {
-        "type": "int",
-        "format": "decimalPattern"
-      }
-    }
-  },
-  "deeplKeyUsageHint": "Usage is read from DeepL when you press refresh.",
-  "deeplKeyRefresh": "Refresh usage",
-  "deeplKeyClearTitle": "Remove the DeepL key?",
-  "deeplKeyClearBody": "The key is deleted from this computer. Lyrics cannot be translated with DeepL until you add a key again.",
-  "deeplKeyClearFailed": "Could not remove the key",
-  "deeplKeyDialogTitleAdd": "Add DeepL API key",
-  "deeplKeyDialogTitleEdit": "Replace DeepL API key",
-  "deeplKeyDialogHint": "Paste the key from your DeepL account. DeepL checks it before it is saved.",
-  "deeplKeyFieldLabel": "API key",
-  "deeplKeySave": "Save",
-  "deeplKeyBadKey": "DeepL did not accept this key. Check it and try again.",
-  "deeplKeySaveFailed": "Could not save the key.",
-  "deeplKeyReadFailed": "Could not read the key.",
-  "deeplKeyKeyringLocked": "Keyring is locked; unlock it, then retry",
-  "deeplKeyKeyringNoDefault": "No default keyring found; create one (for example in Seahorse or KWallet), then retry",
-  "deeplKeyKeyringTimeout": "The keyring is not responding",
-  "deeplKeyKeyringUnavailable": "The keyring cannot be used right now",
-  "deeplKeyFileFailed": "The key file could not be read or written",
-  "deeplKeyFallbackFile": "No system keyring found; the key is stored in a file only you can read ({path}). Do not share or sync this file.",
-  "@deeplKeyFallbackFile": {
-    "description": "Warning under the DeepL key row when no system keyring exists; path is the secrets file",
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "deeplKeyFallbackMemory": "No system keyring found; the key is kept until Kanaru closes.",
-  "deeplKeyFallbackFixed": "The key file was readable by others; its permissions were fixed. Consider replacing the key.",
   "settingsTranslationCache": "Saved translations",
   "translationCacheSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size}",
   "@translationCacheSummary": {
@@ -2828,9 +2758,9 @@
   "@lyricsTranslationMenuSettings": {
     "description": "Item at the end of the lyrics translation menu that opens Settings at the translation group"
   },
-  "lyricsTranslationBannerOpenKey": "DeepL key settings",
+  "lyricsTranslationBannerOpenKey": "Open the service's settings",
   "@lyricsTranslationBannerOpenKey": {
-    "description": "Button on the DeepL key error banner that opens Settings at the DeepL key"
+    "description": "Button on the key error banner that opens the translation settings"
   },
   "onlineLyricsNoticeOpenSettings": "Open lyrics settings",
   "@onlineLyricsNoticeOpenSettings": {
@@ -3553,6 +3483,7 @@
       }
     }
   },
+  "pluginUninstallKeepTranslations": "Saved translations, until you choose Clear saved translations",
   "pluginUninstallKeepPinned": "Lyrics pinned from this source, if any",
   "pluginUninstallKeepLrc": "The .lrc files already written next to songs",
   "pluginUninstallConfirm": "Uninstall",
@@ -3598,7 +3529,7 @@
   },
   "pluginProblemInvalidManifestPlain": "plugin.json is invalid",
   "pluginProblemNeedsNewerApp": "Needs a newer Kanaru: the plugin uses a newer plugin API than this version supports",
-  "pluginProblemWrongType": "plugin.json: type must be lyrics",
+  "pluginProblemWrongType": "plugin.json: type must be lyrics or translate",
   "pluginProblemBadHost": "hosts: \"{detail}\" is not a public domain name",
   "@pluginProblemBadHost": {
     "description": "Why a plugin package was refused; detail comes from the package",
@@ -3640,6 +3571,7 @@
   },
   "pluginProblemCheckUnavailable": "Kanaru cannot check the scripts right now (the plugin runtime library did not load), so it cannot tell whether the package is valid",
   "pluginRefusedNotFromRepo": "This plugin was installed from a file, so it has no updates. Uninstall it and install the new file.",
+  "pluginRefusedKindChanged": "This package is a different kind of plugin than the installed one, so it was not used. Uninstall the plugin and install the new one.",
   "pluginRefusedOlderVersion": "This package is older than the installed version, so it was not used.",
   "pluginInstallSecretsUnavailable": "The secrets of the earlier install could not be removed from the keyring, so the plugin was not installed again. Unlock the keyring or restart Kanaru, then try again.",
   "pluginInstallGone": "This plugin is no longer installed, so it cannot be updated.",
@@ -3686,6 +3618,14 @@
   "lyricsStoreChipAll": "All",
   "@lyricsStoreChipAll": {
     "description": "Source chip that shows every plugin"
+  },
+  "lyricsStoreKindLyrics": "Lyrics",
+  "@lyricsStoreKindLyrics": {
+    "description": "Store kind chip that lists lyrics plugins"
+  },
+  "lyricsStoreKindTranslate": "Translate",
+  "@lyricsStoreKindTranslate": {
+    "description": "Store kind chip that lists translation plugins"
   },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {
@@ -4731,5 +4671,56 @@
   "artistModalSplitMergeHint": "Treat a name as two artists, or join spellings",
   "@artistModalSplitMergeHint": {
     "description": "Quiet line under Split or merge artist"
+  },
+  "translationNoticePluginTitle": "Lyrics will be sent to the plugin {service}",
+  "@translationNoticePluginTitle": {
+    "description": "Title of the dialog asking to send lyrics to a translation plugin; service is the plugin's name",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "translationNoticePluginBody": "The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.",
+  "@translationNoticePluginBody": {
+    "description": "Body of the translation notice dialog for a plugin; the hosts are listed under it"
+  },
+  "translationServicePluginSuffix": "{name} (plugin)",
+  "@translationServicePluginSuffix": {
+    "description": "Name of a translation plugin that has the name of a built-in service, so it is not mistaken for it",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "translationServiceRemovedSuffix": "{name} (removed)",
+  "@translationServiceRemovedSuffix": {
+    "description": "Name of an uninstalled translation plugin whose saved translation is still shown",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTranslationGetServices": "Get translation services",
+  "@settingsTranslationGetServices": {
+    "description": "Row in the translation settings that opens the plugin store on translation plugins"
+  },
+  "settingsTranslationGetServicesHint": "Find translation plugins in the plugin store",
+  "@settingsTranslationGetServicesHint": {
+    "description": "Subtitle of the row that opens the plugin store from the translation settings"
+  },
+  "lyricsTranslationBannerOpenPlugin": "Open settings",
+  "@lyricsTranslationBannerOpenPlugin": {
+    "description": "Button on the error banner of a translation plugin that opens the plugin's page"
+  },
+  "lyricsTranslationBannerUseGoogle": "Translate with Google",
+  "@lyricsTranslationBannerUseGoogle": {
+    "description": "Button on the error banner of a translation plugin that switches to Google"
+  },
+  "settingsTranslationServicePluginHint": "The lyrics, song title and artist are sent to the plugin's hosts when translation is on.",
+  "@settingsTranslationServicePluginHint": {
+    "description": "Subtitle of the translation service row when a translate plugin is the selected service"
   }
 }

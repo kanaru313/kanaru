@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import '../../database/lyrics_plugin_spec.dart';
 import '../../plugin_runtime/plugin_runtime.dart';
 import 'package/plugin_manifest_parser.dart';
 import 'package/plugin_package_limits.dart';
 import 'package/plugin_package_problem.dart';
+import 'package/plugin_translate_spec.dart';
 
 /// The package of a plugin could not be read at run time (the folder is
 /// missing, a file is unreadable or too large, the manifest is not valid).
@@ -23,16 +25,25 @@ class PluginPackageUnreadable implements Exception {
 class LoadedPluginPackage {
   const LoadedPluginPackage({
     required this.files,
-    required this.searchScript,
-    required this.lyricsScript,
+    required this.kind,
+    this.searchScript,
+    this.lyricsScript,
+    this.translateScript,
+    this.translate,
   });
+
+  final PluginKind kind;
 
   /// Every file of `src/`; a script's `load()` reaches only these.
   final List<PluginSourceFile> files;
 
   /// Names of the entry files, from the manifest.
-  final String searchScript;
-  final String lyricsScript;
+  final String? searchScript;
+  final String? lyricsScript;
+  final String? translateScript;
+
+  /// The `translate` block, for a translate plugin.
+  final PluginTranslateSpec? translate;
 }
 
 /// Reads package folders and keeps what it read, by folder. A folder is
@@ -94,15 +105,18 @@ class PluginPackageLoader {
           ),
         );
       }
-      for (final script in [manifest.searchScript, manifest.lyricsScript]) {
+      for (final script in manifest.entryScripts) {
         if (!files.any((f) => f.name == script)) {
           throw const PluginPackageUnreadable('a script file is missing');
         }
       }
       return LoadedPluginPackage(
         files: List.unmodifiable(files),
+        kind: manifest.kind,
         searchScript: manifest.searchScript,
         lyricsScript: manifest.lyricsScript,
+        translateScript: manifest.translateScript,
+        translate: manifest.translate,
       );
     } on PluginPackageUnreadable {
       rethrow;

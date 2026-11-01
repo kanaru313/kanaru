@@ -96,3 +96,31 @@ final lyricsSourcesProvider = Provider<List<LyricsSourceEntry>>((ref) {
 final lyricsPluginRecordsProvider = Provider<List<LyricsPluginRecord>>(
   (ref) => ref.watch(lyricsSourcesInputProvider).value?.records ?? const [],
 );
+
+/// The live (not removed) translate plugins. Unlike
+/// [lyricsPluginRecordsProvider], loading, a failed read and a missing
+/// database are told apart from "no plugins": callers send nothing to any
+/// service until this has data.
+///
+/// - loading: the list is not read yet;
+/// - error: the read failed, or there is no library database (the input then
+///   holds nothing, which must not read as "no plugins");
+/// - data: the records, in install order.
+final translatePluginRecordsProvider =
+    Provider<AsyncValue<List<LyricsPluginRecord>>>((ref) {
+      if (ref.watch(libraryDatabaseProvider) == null) {
+        return AsyncValue.error(
+          StateError('library database unavailable'),
+          StackTrace.empty,
+        );
+      }
+      return ref
+          .watch(lyricsSourcesInputProvider)
+          .whenData(
+            (input) => List.unmodifiable([
+              for (final record in input.records)
+                if (!record.isRemoved && record.kind == PluginKind.translate)
+                  record,
+            ]),
+          );
+    });

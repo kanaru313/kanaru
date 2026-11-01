@@ -2750,16 +2750,14 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không kết nối được tới dịch vụ. Kiểm tra mạng của bạn.';
 
   @override
-  String get lyricsTranslationFailNoKey =>
-      'Hãy thêm khóa API DeepL trong Cài đặt.';
+  String get lyricsTranslationFailNoKey => 'Hãy thêm khóa API trong Cài đặt.';
 
   @override
   String get lyricsTranslationFailBadKey =>
-      'DeepL từ chối khóa API. Hãy kiểm tra lại trong Cài đặt.';
+      'Dịch vụ từ chối khóa API. Hãy kiểm tra lại trong Cài đặt.';
 
   @override
-  String get lyricsTranslationFailQuota =>
-      'Đã hết hạn mức ký tự của tháng này.';
+  String get lyricsTranslationFailQuota => 'Đã hết hạn mức của dịch vụ.';
 
   @override
   String get lyricsTranslationFailRateLimited =>
@@ -2789,11 +2787,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationFailKeyStoreLocked =>
-      'Kho khóa đang bị khóa. Hãy mở khóa để dùng khóa DeepL.';
+      'Kho khóa đang bị khóa. Hãy mở khóa để dùng khóa API.';
 
   @override
   String get lyricsTranslationFailKeyStoreUnavailable =>
-      'Không dùng được kho khóa nên không đọc được khóa DeepL.';
+      'Không dùng được kho khóa nên không đọc được khóa API.';
 
   @override
   String lyricsTranslationAttribution(String service, String language) {
@@ -2806,17 +2804,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsTranslationUseService(String service) {
-    return 'Dùng $service';
-  }
-
-  @override
   String get lyricsTranslationBannerNoKey =>
-      'Hãy thêm khóa DeepL trong Cài đặt › Phát nhạc › Dịch.';
+      'Hãy thêm khóa API trong Cài đặt › Phát nhạc › Dịch.';
 
   @override
   String get lyricsTranslationBannerBadKey =>
-      'DeepL từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Phát nhạc › Dịch.';
+      'Dịch vụ từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Phát nhạc › Dịch.';
 
   @override
   String translationNoticeTitle(String service) {
@@ -2849,10 +2842,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Dịch vụ miễn phí, không chính thức; có thể ngừng hoạt động. Lời bài hát được gửi tới dịch vụ này khi bật dịch.';
 
   @override
-  String get settingsTranslationServiceDeeplHint =>
-      'Cần khóa API DeepL của bạn. Lời bài hát được gửi tới DeepL khi bật dịch.';
-
-  @override
   String get settingsTranslationTarget => 'Ngôn ngữ dịch mặc định';
 
   @override
@@ -2863,123 +2852,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String settingsTranslationTargetFollow(String language) {
     return 'Theo ngôn ngữ ứng dụng ($language)';
   }
-
-  @override
-  String get deeplKeyTitle => 'Khóa API DeepL';
-
-  @override
-  String get deeplKeyNone => 'Chưa lưu khóa';
-
-  @override
-  String get deeplKeyAdd => 'Thêm khóa';
-
-  @override
-  String get deeplKeyEdit => 'Sửa';
-
-  @override
-  String get deeplKeyClear => 'Xóa';
-
-  @override
-  String get deeplKeyPlanFree => 'Miễn phí';
-
-  @override
-  String get deeplKeyPlanPro => 'Pro';
-
-  @override
-  String deeplKeyUsage(int used, int limit) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String usedString = usedNumberFormat.format(used);
-    final intl.NumberFormat limitNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String limitString = limitNumberFormat.format(limit);
-
-    return 'Đã dùng $usedString / $limitString ký tự';
-  }
-
-  @override
-  String deeplKeyUsageNoLimit(int used) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String usedString = usedNumberFormat.format(used);
-
-    return 'Đã dùng $usedString ký tự';
-  }
-
-  @override
-  String get deeplKeyUsageHint =>
-      'Mức dùng được lấy từ DeepL khi bạn bấm làm mới.';
-
-  @override
-  String get deeplKeyRefresh => 'Làm mới mức dùng';
-
-  @override
-  String get deeplKeyClearTitle => 'Xóa khóa DeepL?';
-
-  @override
-  String get deeplKeyClearBody =>
-      'Khóa sẽ bị xóa khỏi máy này. Bạn không dịch được lời bằng DeepL cho tới khi thêm khóa mới.';
-
-  @override
-  String get deeplKeyClearFailed => 'Không xóa được khóa';
-
-  @override
-  String get deeplKeyDialogTitleAdd => 'Thêm khóa API DeepL';
-
-  @override
-  String get deeplKeyDialogTitleEdit => 'Đổi khóa API DeepL';
-
-  @override
-  String get deeplKeyDialogHint =>
-      'Dán khóa từ tài khoản DeepL của bạn. DeepL sẽ kiểm tra khóa trước khi lưu.';
-
-  @override
-  String get deeplKeyFieldLabel => 'Khóa API';
-
-  @override
-  String get deeplKeySave => 'Lưu';
-
-  @override
-  String get deeplKeyBadKey =>
-      'DeepL không chấp nhận khóa này. Hãy kiểm tra rồi thử lại.';
-
-  @override
-  String get deeplKeySaveFailed => 'Không lưu được khóa.';
-
-  @override
-  String get deeplKeyReadFailed => 'Không đọc được khóa.';
-
-  @override
-  String get deeplKeyKeyringLocked =>
-      'Kho khóa đang bị khóa; hãy mở khóa rồi thử lại';
-
-  @override
-  String get deeplKeyKeyringNoDefault =>
-      'Chưa có kho khóa mặc định; hãy tạo một kho (ví dụ trong Seahorse hoặc KWallet) rồi thử lại';
-
-  @override
-  String get deeplKeyKeyringTimeout => 'Kho khóa không phản hồi';
-
-  @override
-  String get deeplKeyKeyringUnavailable => 'Hiện không dùng được kho khóa';
-
-  @override
-  String get deeplKeyFileFailed => 'Không đọc hoặc ghi được tệp khóa';
-
-  @override
-  String deeplKeyFallbackFile(String path) {
-    return 'Không tìm thấy kho khóa của hệ thống; khóa được lưu trong một tệp chỉ bạn đọc được ($path). Đừng chia sẻ hay đồng bộ tệp này.';
-  }
-
-  @override
-  String get deeplKeyFallbackMemory =>
-      'Không tìm thấy kho khóa của hệ thống; khóa chỉ được giữ tới khi đóng Kanaru.';
-
-  @override
-  String get deeplKeyFallbackFixed =>
-      'Tệp khóa từng cho người khác đọc; quyền truy cập đã được sửa. Nên cân nhắc đổi khóa.';
 
   @override
   String get settingsTranslationCache => 'Bản dịch đã lưu';
@@ -3040,7 +2912,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationMenuSettings => 'Cài đặt dịch';
 
   @override
-  String get lyricsTranslationBannerOpenKey => 'Cài đặt khóa DeepL';
+  String get lyricsTranslationBannerOpenKey => 'Mở cài đặt của dịch vụ';
 
   @override
   String get onlineLyricsNoticeOpenSettings => 'Mở cài đặt lời bài hát';
@@ -3675,6 +3547,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get pluginUninstallKeepTranslations =>
+      'Bản dịch đã lưu, cho đến khi bạn chọn Xóa các bản dịch đã lưu';
+
+  @override
   String get pluginUninstallKeepPinned => 'Lời đã ghim từ nguồn này (nếu có)';
 
   @override
@@ -3723,7 +3599,8 @@ class AppLocalizationsVi extends AppLocalizations {
       'Cần Kanaru mới hơn: plugin dùng API plugin mới hơn bản này hỗ trợ';
 
   @override
-  String get pluginProblemWrongType => 'plugin.json: type phải là lyrics';
+  String get pluginProblemWrongType =>
+      'plugin.json: type phải là lyrics hoặc translate';
 
   @override
   String pluginProblemBadHost(String detail) {
@@ -3752,6 +3629,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get pluginRefusedNotFromRepo =>
       'Plugin này cài từ file nên không có cập nhật. Hãy gỡ rồi cài file mới.';
+
+  @override
+  String get pluginRefusedKindChanged =>
+      'Gói này thuộc loại plugin khác với bản đã cài nên không được dùng. Hãy gỡ plugin rồi cài bản mới.';
 
   @override
   String get pluginRefusedOlderVersion =>
@@ -3811,6 +3692,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreChipAll => 'Tất cả';
+
+  @override
+  String get lyricsStoreKindLyrics => 'Lời bài hát';
+
+  @override
+  String get lyricsStoreKindTranslate => 'Dịch';
 
   @override
   String get lyricsStoreFromFile => 'Từ file';
@@ -4572,4 +4459,40 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get artistModalSplitMergeHint =>
       'Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết';
+
+  @override
+  String translationNoticePluginTitle(String service) {
+    return 'Lời bài hát sẽ được gửi tới plugin $service';
+  }
+
+  @override
+  String get translationNoticePluginBody =>
+      'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ này. Kanaru không kiểm soát cách dịch vụ dùng chúng.';
+
+  @override
+  String translationServicePluginSuffix(String name) {
+    return '$name (plugin)';
+  }
+
+  @override
+  String translationServiceRemovedSuffix(String name) {
+    return '$name (đã gỡ)';
+  }
+
+  @override
+  String get settingsTranslationGetServices => 'Tìm dịch vụ dịch';
+
+  @override
+  String get settingsTranslationGetServicesHint =>
+      'Tìm plugin dịch trong kho plugin';
+
+  @override
+  String get lyricsTranslationBannerOpenPlugin => 'Mở cài đặt';
+
+  @override
+  String get lyricsTranslationBannerUseGoogle => 'Dịch bằng Google';
+
+  @override
+  String get settingsTranslationServicePluginHint =>
+      'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
 }

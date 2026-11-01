@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/lyrics_plugin_spec.dart' show PluginKind;
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
 import 'plugin_store_actions.dart';
@@ -18,7 +19,7 @@ class PluginStoreSections extends StatelessWidget {
   });
 
   final PluginStoreView view;
-  final void Function(String installId) onOpenInstalled;
+  final void Function(String installId, PluginKind? kind) onOpenInstalled;
   final void Function(String repoUrl, String slug) onOpenCatalogItem;
 
   @override
@@ -46,7 +47,7 @@ class PluginStoreSections extends StatelessWidget {
               final record = row.record;
               final slug = row.entry?.slug;
               if (record != null) {
-                onOpenInstalled(record.installId);
+                onOpenInstalled(record.installId, record.kind);
               } else if (row.repoUrl != null && slug != null) {
                 onOpenCatalogItem(row.repoUrl!, slug);
               }

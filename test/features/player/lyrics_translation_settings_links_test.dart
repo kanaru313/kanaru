@@ -41,10 +41,7 @@ void main() {
         initialSettingsProvider.overrideWithValue(
           const AppSettings(
             translation: TranslationPrefs(
-              noticeAcknowledged: {
-                LyricsTranslationService.google,
-                LyricsTranslationService.deepl,
-              },
+              noticeAcknowledged: {TranslationServiceId.google},
             ),
           ),
         ),
@@ -93,7 +90,7 @@ void main() {
     final fake = FakeTranslationController(
       TranslationReady(
         fakeTranslationInfo(),
-        LyricsTranslationService.deepl,
+        TranslationServiceId.google,
         'ja',
         const [],
         false,
@@ -116,11 +113,11 @@ void main() {
     expect(location(), '$settingsPlaybackRoute?focus=translation');
   });
 
-  group('DeepL key banner', () {
+  group('key banner', () {
     Widget banner(TranslationFailureKind kind) => LyricsTranslationBanner(
       state: TranslationFailed(
         fakeTranslationInfo(),
-        LyricsTranslationService.deepl,
+        TranslationServiceId.google,
         kind,
       ),
       appLang: 'en',
@@ -130,21 +127,21 @@ void main() {
       TranslationFailureKind.noKey,
       TranslationFailureKind.badKey,
     ]) {
-      testWidgets('$kind opens Settings at the key', (tester) async {
+      testWidgets('$kind opens the translation settings', (tester) async {
         await pump(tester, banner(kind));
 
-        await tester.tap(find.text('DeepL key settings'));
+        await tester.tap(find.text("Open the service's settings"));
         await tester.pumpAndSettle();
 
         expect(container.read(nowPlayingOpenProvider), isFalse);
-        expect(location(), '$settingsPlaybackRoute?focus=deepl-key');
+        expect(location(), '$settingsPlaybackRoute?focus=translation');
       });
     }
 
     testWidgets('other failures have no such button', (tester) async {
       await pump(tester, banner(TranslationFailureKind.tooLong));
 
-      expect(find.text('DeepL key settings'), findsNothing);
+      expect(find.text("Open the service's settings"), findsNothing);
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 1));
     });

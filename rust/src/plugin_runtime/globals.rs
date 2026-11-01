@@ -44,7 +44,8 @@ const PRELUDE: &str = r#"
       var kind = 'server', retry = null;
       if (options !== null && typeof options === 'object') {
         var k = options.kind;
-        if (k === 'rateLimited' || k === 'invalidResponse' || k === 'server') kind = k;
+        if (k === 'rateLimited' || k === 'invalidResponse' || k === 'server' ||
+            k === 'auth' || k === 'quota') kind = k;
         var r = options.retryAfterSec;
         if (typeof r === 'number' && isFinite_(r) && r >= 0) retry = min(floor(r), 4294967295);
       }
@@ -324,6 +325,8 @@ fn read_response<'js>(
         kind: match kind.as_str() {
             "rateLimited" => PluginErrorKind::RateLimited,
             "invalidResponse" => PluginErrorKind::InvalidResponse,
+            "auth" => PluginErrorKind::Auth,
+            "quota" => PluginErrorKind::Quota,
             _ => PluginErrorKind::Server,
         },
         retry_after_sec: retry.map(|r| r.min(f64::from(u32::MAX)) as u32),

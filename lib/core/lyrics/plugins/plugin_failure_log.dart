@@ -7,6 +7,8 @@ import 'plugin_run_log.dart';
 
 final _log = Logger('lyrics_plugin');
 
+const _translateBlockedKind = 'blocked';
+
 /// The one INFO line of the app log for a failed run: plugin name,
 /// `installId`, script, failure kind, and the host (only) of an address that
 /// was blocked. No song data, path, console line or stack.
@@ -16,10 +18,11 @@ String pluginFailureLogLine({
   required String script,
   required String kind,
   String? blockedHost,
+  String label = 'Lyrics plugin',
 }) {
   final name = pluginName.replaceAll(RegExp(r'[\u0000-\u001F\u007F]'), ' ');
   final host = blockedHost == null ? '' : ' host=$blockedHost';
-  return 'Lyrics plugin "$name" ($installId) $script failed: $kind$host';
+  return '$label "$name" ($installId) $script failed: $kind$host';
 }
 
 /// Writes [pluginFailureLogLine] to the app log at INFO.
@@ -29,6 +32,7 @@ void logPluginFailure({
   required String script,
   required String kind,
   String? blockedHost,
+  String label = 'Lyrics plugin',
 }) => _log.info(
   pluginFailureLogLine(
     pluginName: pluginName,
@@ -36,6 +40,7 @@ void logPluginFailure({
     script: script,
     kind: kind,
     blockedHost: blockedHost,
+    label: label,
   ),
 );
 
@@ -48,10 +53,14 @@ void recordPluginRun(
   PluginRunLogEvent event,
   Map<String, String> config, {
   required bool failed,
+  String appLogLabel = 'Lyrics plugin',
 }) {
   unawaited(log.write(event, config: config));
   if (!failed) return;
-  final blocked = event.kind == LyricsFetchKind.blockedHost.name
+  // Lyrics name this kind `blockedHost`, translate `blocked`.
+  final blocked =
+      (event.kind == LyricsFetchKind.blockedHost.name ||
+          event.kind == _translateBlockedKind)
       ? event.requests.where((r) => r.blocked).firstOrNull?.host
       : null;
   logPluginFailure(
@@ -60,5 +69,6 @@ void recordPluginRun(
     script: event.script,
     kind: event.kind,
     blockedHost: blocked == null ? null : configValueHider(config)(blocked),
+    label: appLogLabel,
   );
 }

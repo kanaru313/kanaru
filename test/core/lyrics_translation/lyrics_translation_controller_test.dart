@@ -8,7 +8,6 @@ import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/lyric_translation_queries.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
-import 'package:kanaru/core/lyrics_translation/deepl_key_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_content_hash.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_derive.dart';
 import 'package:kanaru/core/lyrics_translation/translation_cache.dart';
@@ -20,20 +19,21 @@ import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/lyrics_translation/translation_song_context.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_translate_spec.dart';
+import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/core/secrets/secret_store.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
+import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
-import 'loopback_server.dart';
 
 const _text = 'alpha\nbeta\ngamma';
 const _other = 'delta\nepsilon';
 const _idle = Duration(milliseconds: 700); // well past the debounce
-const _both = {LyricsTranslationService.google, LyricsTranslationService.deepl};
-const _deeplOnly = {LyricsTranslationService.deepl};
 
 String _hashOfText(String text) => lyricsContentHash(
   Lyrics(
@@ -59,18 +59,16 @@ class Rig {
   Rig(
     this.db, {
     FakeTranslator? google,
-    this.deepl,
     AppSettings? settings,
     FakeSecretStore? store,
     this.appLang = 'en',
     List<Override> overrides = const [],
     Duration debounce = testDebounce,
-  }) : google = google ?? FakeTranslator(LyricsTranslationService.google) {
+  }) : google = google ?? FakeTranslator(TranslationServiceId.google) {
     container = translationContainer(
       db: db,
       lyrics: lyrics,
       google: this.google,
-      deepl: deepl,
       settings: settings,
       store: store,
       overrides: overrides,
@@ -84,7 +82,6 @@ class Rig {
 
   final LibraryDatabase? db;
   final FakeTranslator google;
-  final FakeTranslator? deepl;
   final String appLang;
   final lyrics = FakeEmbeddedLyricsReader();
 
@@ -135,15 +132,6 @@ Future<void> _seed(
 );
 
 List<String?> _lines(LyricsTranslationState s) => (s as TranslationReady).lines;
-
-FakeSecretStore _storeWithKey() =>
-    FakeSecretStore()..values[deeplApiKeySecret] = 'k' * 36;
-
-AppSettings _deeplSettings({String? target}) => translationSettings(
-  service: LyricsTranslationService.deepl,
-  acknowledged: _deeplOnly,
-  target: target,
-);
 
 void main() {
   late LibraryDatabase db;
@@ -293,119 +281,29 @@ void main() {
   });
 
   group('services', () {
-    test(
-      'other service row only: Ready(fromOtherService); retranslate',
-      () async {
-        final deepl = FakeTranslator(LyricsTranslationService.deepl);
-        final rig = Rig(
-          db,
-          deepl: deepl,
-          settings: translationSettings(acknowledged: _both),
-        );
-        await _seed(db, _text, 'deepl', '{"alpha":"from deepl"}');
-        await rig.play('/m/a.mp3', _text);
-        await rig.untilReady();
-        await settle(_idle);
-
-        final ready = rig.state as TranslationReady;
-        expect(ready.fromOtherService, isTrue);
-        expect(ready.service, LyricsTranslationService.deepl);
-        expect(ready.lines.first, 'from deepl');
-        expect(rig.google.calls, isEmpty);
-
-        await rig.controller.retranslate();
-        await until(
-          () =>
-              rig.state is TranslationReady &&
-              !(rig.state as TranslationReady).fromOtherService,
-        );
-        expect(rig.google.calls, hasLength(1));
-        expect(deepl.calls, isEmpty);
-        final rows = await rig.rows(_text);
-        expect(rows.map((r) => r.provider).toSet(), {'google', 'deepl'});
-        expect(
-          rows.firstWhere((r) => r.provider == 'deepl').linesJson,
-          '{"alpha":"from deepl"}',
-        );
-        rig.dispose();
-      },
-    );
-
-    test('key still loading: Loading, no call; Ready once loaded', () async {
-      final store = _storeWithKey()..readGate = Completer<void>();
-      final deepl = FakeTranslator(LyricsTranslationService.deepl);
-      final rig = Rig(
-        db,
-        deepl: deepl,
-        settings: _deeplSettings(),
-        store: store,
-      );
+    test('a row saved by the removed DeepL client is ignored', () async {
+      final rig = Rig(db);
+      await _seed(db, _text, 'deepl', '{"alpha":"from deepl"}');
       await rig.play('/m/a.mp3', _text);
-      await settle(_idle);
-      expect(rig.state, isA<TranslationLoading>());
-      expect(deepl.calls, isEmpty);
-
-      store.readGate!.complete();
       await rig.untilReady();
-      expect(deepl.calls, hasLength(1));
-      expect(store.reads, 1);
-      rig.dispose();
-    });
 
-    test('no key: Failed(noKey), nothing sent', () async {
-      final server = await LoopbackServer.start((_) => const Reply(200, '{}'));
-      addTearDown(server.close);
-      final rig = Rig(
-        db,
-        settings: _deeplSettings(),
-        overrides: [deeplBaseUriProvider.overrideWithValue(server.baseUri)],
-      );
-      await rig.play('/m/a.mp3', _text);
-      await until(() => rig.state is TranslationFailed);
-      await settle(_idle);
-      expect(
-        (rig.state as TranslationFailed).kind,
-        TranslationFailureKind.noKey,
-      );
-      expect(server.requests, isEmpty);
-      expect(rig.google.calls, isEmpty);
-      // No translator exists without a key, so no request can be made.
-      expect(rig.container.read(deeplTranslatorProvider), isNull);
+      final ready = rig.state as TranslationReady;
+      expect(ready.fromOtherService, isFalse);
+      expect(ready.service, TranslationServiceId.google);
+      expect(ready.lines.first, 'tr:alpha');
+      expect(rig.google.calls, hasLength(1));
       rig.dispose();
-    });
-
-    test('a locked or broken key store is reported, not retried', () async {
-      for (final (error, kind) in [
-        (
-          const SecretStoreException(SecretStoreFailure.locked),
-          TranslationFailureKind.keyStoreLocked,
-        ),
-        (
-          const SecretStoreException(SecretStoreFailure.io),
-          TranslationFailureKind.keyStoreUnavailable,
-        ),
-      ]) {
-        final store = FakeSecretStore()..readError = error;
-        final rig = Rig(db, settings: _deeplSettings(), store: store);
-        await rig.play('/m/a.mp3', _text);
-        await until(() => rig.state is TranslationFailed);
-        await settle(_idle);
-        expect((rig.state as TranslationFailed).kind, kind);
-        expect(store.reads, 1);
-        rig.dispose();
-      }
     });
 
     test('unsupported target: Failed without a request', () async {
-      final deepl = FakeTranslator(
-        LyricsTranslationService.deepl,
+      final google = FakeTranslator(
+        TranslationServiceId.google,
         unsupported: {'vi'},
       );
       final rig = Rig(
         db,
-        deepl: deepl,
-        settings: _deeplSettings(target: 'vi'),
-        store: _storeWithKey(),
+        google: google,
+        settings: translationSettings(target: 'vi'),
       );
       await rig.play('/m/a.mp3', _text);
       await until(() => rig.state is TranslationFailed);
@@ -413,7 +311,7 @@ void main() {
         (rig.state as TranslationFailed).kind,
         TranslationFailureKind.unsupportedLanguage,
       );
-      expect(deepl.calls, isEmpty);
+      expect(google.calls, isEmpty);
       rig.dispose();
     });
   });
@@ -530,45 +428,28 @@ void main() {
   });
 
   group('failures', () {
-    test(
-      'failure is remembered; retry and the other service call again',
-      () async {
-        final deepl = FakeTranslator(LyricsTranslationService.deepl);
-        final rig = Rig(
-          db,
-          deepl: deepl,
-          settings: translationSettings(acknowledged: _both),
-          store: _storeWithKey(),
-        );
-        rig.google.errors[0] = failure(TranslationFailureKind.quotaExceeded);
-        await rig.play('/m/a.mp3', _text);
-        await until(() => rig.state is TranslationFailed);
-        expect(
-          (rig.state as TranslationFailed).kind,
-          TranslationFailureKind.quotaExceeded,
-        );
+    test('failure is remembered; retry calls again', () async {
+      final rig = Rig(db);
+      rig.google.errors[0] = failure(TranslationFailureKind.quotaExceeded);
+      await rig.play('/m/a.mp3', _text);
+      await until(() => rig.state is TranslationFailed);
+      expect(
+        (rig.state as TranslationFailed).kind,
+        TranslationFailureKind.quotaExceeded,
+      );
 
-        final prefs = rig.container.read(settingsProvider).translation;
-        rig.settings.setTranslation(
-          prefs.copyWith(display: LyricsTranslationDisplay.replace),
-        );
-        await settle(_idle);
-        expect(rig.google.calls, hasLength(1));
+      final prefs = rig.container.read(settingsProvider).translation;
+      rig.settings.setTranslation(
+        prefs.copyWith(display: LyricsTranslationDisplay.replace),
+      );
+      await settle(_idle);
+      expect(rig.google.calls, hasLength(1));
 
-        await rig.controller.retry();
-        await rig.untilReady();
-        expect(rig.google.calls, hasLength(2));
-
-        // A second song fails, then the other service takes over.
-        rig.google.errors[2] = failure(TranslationFailureKind.blocked);
-        await rig.play('/m/b.mp3', _other);
-        await until(() => rig.state is TranslationFailed);
-        expect(rig.controller.useOtherService(), isTrue);
-        await until(() => deepl.calls.isNotEmpty);
-        expect(rig.google.calls, hasLength(3));
-        rig.dispose();
-      },
-    );
+      await rig.controller.retry();
+      await rig.untilReady();
+      expect(rig.google.calls, hasLength(2));
+      rig.dispose();
+    });
 
     test('chunk 2 of 3 fails: retry sends only the rest', () async {
       final lines = [
@@ -633,7 +514,7 @@ void main() {
       final key = TranslationJobKey(
         _hashOfText(_text),
         'en',
-        LyricsTranslationService.google,
+        TranslationServiceId.google,
       );
       final target = (rig.state as TranslationNeedsNotice).info.effective;
       await rig.container
@@ -644,68 +525,14 @@ void main() {
       expect(rig.google.calls, isEmpty);
       expect(rig.container.read(translationJobsProvider), isEmpty);
 
-      rig.settings.acknowledgeTranslationNotice(
-        LyricsTranslationService.google,
-      );
+      rig.settings.acknowledgeTranslationNotice(TranslationServiceId.google);
       await rig.untilReady();
       expect(rig.google.calls, hasLength(1));
       rig.dispose();
     });
-
-    test(
-      'useOtherService to an unaccepted service asks for the notice',
-      () async {
-        final deepl = FakeTranslator(LyricsTranslationService.deepl);
-        final rig = Rig(db, deepl: deepl, store: _storeWithKey());
-        await rig.play('/m/a.mp3', _text);
-        await rig.untilReady();
-
-        expect(rig.controller.useOtherService(), isFalse);
-        await settle(_idle);
-        final prefs = rig.container.read(settingsProvider).translation;
-        expect(prefs.service, LyricsTranslationService.google);
-        expect(prefs.show, isTrue);
-        expect(deepl.calls, isEmpty);
-
-        // The accepted notice switches the service; the saved google row shows
-        // meanwhile, and only Retranslate asks DeepL.
-        rig.settings.enableTranslation(LyricsTranslationService.deepl);
-        await until(
-          () =>
-              rig.state is TranslationReady &&
-              (rig.state as TranslationReady).fromOtherService,
-        );
-        await settle(_idle);
-        expect(deepl.calls, isEmpty);
-        await rig.controller.retranslate();
-        expect(deepl.calls, hasLength(1));
-        rig.dispose();
-      },
-    );
   });
 
   group('review fixes', () {
-    test('retry after a locked key store reads the key again', () async {
-      final store = _storeWithKey()
-        ..readError = const SecretStoreException(SecretStoreFailure.locked);
-      final deepl = FakeTranslator(LyricsTranslationService.deepl);
-      final rig = Rig(
-        db,
-        deepl: deepl,
-        settings: _deeplSettings(),
-        store: store,
-      );
-      await rig.play('/m/a.mp3', _text);
-      await until(() => rig.state is TranslationFailed);
-      expect(deepl.calls, isEmpty);
-
-      store.readError = null; // unlocked
-      await rig.controller.retry();
-      await rig.untilReady();
-      expect(deepl.calls, hasLength(1));
-      rig.dispose();
-    });
-
     test(
       'retranslate shows Loading, then the new row, never the old',
       () async {
@@ -729,30 +556,6 @@ void main() {
         rig.dispose();
       },
     );
-
-    test('saving a valid key goes on without pressing retry', () async {
-      final server = await LoopbackServer.start(
-        (_) => const Reply(200, '{"character_count":1,"character_limit":9}'),
-      );
-      addTearDown(server.close);
-      final deepl = FakeTranslator(LyricsTranslationService.deepl);
-      final rig = Rig(
-        db,
-        deepl: deepl,
-        settings: _deeplSettings(),
-        overrides: [deeplBaseUriProvider.overrideWithValue(server.baseUri)],
-      );
-      await rig.play('/m/a.mp3', _text);
-      await until(() => rig.state is TranslationFailed);
-      expect(deepl.calls, isEmpty);
-
-      await rig.container
-          .read(deeplApiKeyProvider.notifier)
-          .save('abcdefghijabcdefghijabcdefghij:fx');
-      await rig.untilReady();
-      expect(deepl.calls, hasLength(1));
-      rig.dispose();
-    });
 
     test(
       'retranslate and retry do nothing while off or target loads',
@@ -825,7 +628,7 @@ void main() {
       synced: false,
       source: LyricsSource.embedded,
     );
-    CachedTranslation row(LyricsTranslationService s, String text) =>
+    CachedTranslation row(TranslationServiceId s, String text) =>
         CachedTranslation(
           service: s,
           targetLang: 'en',
@@ -837,29 +640,195 @@ void main() {
     LyricsTranslationState derive(List<CachedTranslation> rows) =>
         deriveTranslation(
           info: info,
-          service: LyricsTranslationService.google,
+          service: TranslationServiceId.google,
           lyrics: lyrics,
           rows: rows,
           job: saved,
-          deeplKey: null,
         ).state;
 
     test('a lagging row stream shows Loading, not an older row', () {
       expect(derive([]), isA<TranslationLoading>());
       expect(
-        derive([row(LyricsTranslationService.deepl, 'x')]),
-        isA<TranslationLoading>(),
-      );
-      expect(
-        derive([row(LyricsTranslationService.google, 'old')]),
+        derive([row(TranslationServiceId.google, 'old')]),
         isA<TranslationLoading>(),
       );
       expect(
         (derive([
-          row(LyricsTranslationService.google, 'new'),
+          row(TranslationServiceId.google, 'new'),
         ]) as TranslationReady).lines,
         ['new'],
       );
+    });
+  });
+
+  group('plugin service and song context', () {
+    final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+
+    Future<void> playTrack(Rig rig, Track track, {String text = _text}) async {
+      rig.lyrics.byPath[track.uri] = (text: text, synced: const []);
+      await rig.container.read(playerServiceProvider.notifier).openTracks([
+        track,
+      ]);
+      await settle();
+    }
+
+    test(
+      'title and artist reach the translator, a file name does not',
+      () async {
+        final rig = Rig(db);
+        await playTrack(
+          rig,
+          const Track(uri: '/m/a.mp3', title: 'Real Title', artist: ' Band '),
+        );
+        await rig.untilReady();
+        expect(
+          rig.google.songs.single,
+          const TranslationSongContext(title: 'Real Title', artist: 'Band'),
+        );
+
+        await rig.controller.retranslate();
+        expect(rig.google.songs.last, rig.google.songs.first);
+        rig.dispose();
+
+        final named = Rig(db);
+        named.google.errors[0] = failure(TranslationFailureKind.server);
+        await playTrack(
+          named,
+          const Track(uri: '/m/b.mp3', title: 'b'),
+          text: _other,
+        );
+        await until(() => named.state is TranslationFailed);
+        await named.controller.retry();
+        await named.untilReady();
+        expect(named.google.songs, hasLength(2));
+        expect(
+          named.google.songs.every((s) => s == const TranslationSongContext()),
+          isTrue,
+        );
+        named.dispose();
+      },
+    );
+
+    test(
+      'a plugin that is gone: Google is used, its notice is asked',
+      () async {
+        final records = [
+          for (final accepted in [true, false])
+            Rig(
+              db,
+              settings: translationSettings(
+                service: plugin,
+                acknowledged: {
+                  plugin,
+                  if (accepted) TranslationServiceId.google,
+                },
+              ),
+              overrides: [
+                translatePluginRecordsProvider.overrideWithValue(
+                  const AsyncValue.data([]),
+                ),
+              ],
+            ),
+        ];
+        await records[0].play('/m/a.mp3', _text);
+        await records[0].untilReady();
+        expect(
+          (records[0].state as TranslationReady).service,
+          TranslationServiceId.google,
+        );
+        expect(records[0].google.calls, hasLength(1));
+
+        await records[1].play('/m/a.mp3', _text);
+        await settle(_idle);
+        expect(records[1].state, isA<TranslationNeedsNotice>());
+        expect(
+          (records[1].state as TranslationNeedsNotice).service,
+          TranslationServiceId.google,
+        );
+        expect(records[1].google.calls, isEmpty);
+        for (final r in records) {
+          r.dispose();
+        }
+      },
+    );
+
+    test('switching to a song without lyrics drops the next chunk', () async {
+      final runner = FakePluginRunner(
+        spec_: const PluginTranslateSpec(languages: ['en'], maxLines: 10),
+      );
+      final rig = Rig(
+        db,
+        settings: translationSettings(
+          service: plugin,
+          acknowledged: {plugin, TranslationServiceId.google},
+        ),
+        overrides: [
+          pluginTranslateRunnerProvider.overrideWithValue(runner),
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.data([translateRecord(plugin.value)]),
+          ),
+        ],
+      );
+      runner.hold = Completer<void>();
+      await rig.play(
+        '/m/a.mp3',
+        [for (var i = 0; i < 25; i++) 'line $i'].join('\n'),
+      );
+      await until(() => runner.calls.isNotEmpty);
+
+      await rig.play('/m/none.mp3', null);
+      runner.hold!.complete();
+      await settle(_idle);
+
+      expect(runner.calls, hasLength(1));
+      rig.dispose();
+    });
+
+    test('plugin list still loading: Loading, nothing sent', () async {
+      final rig = Rig(
+        db,
+        settings: translationSettings(
+          service: plugin,
+          acknowledged: {plugin, TranslationServiceId.google},
+        ),
+        overrides: [
+          translatePluginRecordsProvider.overrideWithValue(
+            const AsyncValue.loading(),
+          ),
+        ],
+      );
+      await rig.play('/m/a.mp3', _text);
+      await settle(_idle);
+      expect(rig.state, isA<TranslationLoading>());
+      expect(rig.google.calls, isEmpty);
+      rig.dispose();
+    });
+
+    test('useGoogle switches the stored service for good', () async {
+      final rig = Rig(
+        db,
+        settings: translationSettings(
+          service: plugin,
+          acknowledged: {plugin, TranslationServiceId.google},
+        ),
+        overrides: [
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.data([translateRecord(plugin.value)]),
+          ),
+        ],
+      );
+      await rig.play('/m/a.mp3', _text);
+      rig.controller.useGoogle();
+      expect(
+        rig.container.read(settingsProvider).translation.service,
+        TranslationServiceId.google,
+      );
+      await rig.untilReady();
+      expect(
+        (rig.state as TranslationReady).service,
+        TranslationServiceId.google,
+      );
+      rig.dispose();
     });
   });
 }

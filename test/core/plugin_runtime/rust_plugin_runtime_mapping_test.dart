@@ -129,6 +129,8 @@ void main() {
         native.PluginErrorKind.rateLimited: PluginRunErrorKind.rateLimited,
         native.PluginErrorKind.invalidResponse:
             PluginRunErrorKind.invalidResponse,
+        native.PluginErrorKind.auth: PluginRunErrorKind.auth,
+        native.PluginErrorKind.quota: PluginRunErrorKind.quota,
         native.PluginErrorKind.server: PluginRunErrorKind.server,
       };
       expect(kinds.length, native.PluginErrorKind.values.length);
@@ -235,7 +237,20 @@ void main() {
       }
     });
 
-    test('no timeout means 0 (the runtime maximum)', () {
+    test('a 60 s timeout is passed on as 60000 ms', () {
+      final request = nativeRequestFrom(
+        const PluginRunRequest(
+          files: [],
+          entry: 'a.js',
+          inputJson: 'null',
+          timeout: Duration(seconds: 60),
+        ),
+        1,
+      );
+      expect(request.timeoutMs, 60000);
+    });
+
+    test('no timeout means 0 (the runtime default of 15 s)', () {
       final request = nativeRequestFrom(
         const PluginRunRequest(files: [], entry: 'a.js', inputJson: 'null'),
         1,

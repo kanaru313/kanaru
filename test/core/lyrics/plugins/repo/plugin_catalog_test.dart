@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_catalog.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_address_rules.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_fetch_exception.dart';
@@ -200,6 +201,17 @@ void main() {
         ]),
       );
       expect(catalog.entries.single.name, 'First');
+      expect(catalog.dropped, 1);
+    });
+
+    test('type translate is kept and an unknown type is dropped', () {
+      final catalog = parse(
+        _catalog([
+          _entry({'type': 'translate'}),
+          _entry({'slug': 'other', 'type': 'x'}),
+        ]),
+      );
+      expect(catalog.entries.single.kind, PluginKind.translate);
       expect(catalog.dropped, 1);
     });
 

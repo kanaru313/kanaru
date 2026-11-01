@@ -3,21 +3,24 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/library_startup.dart';
+import '../database/lyrics_plugin_spec.dart';
 import '../database/lyric_translation_queries.dart';
 import '../lyrics/lyrics.dart';
+import '../lyrics/online/lyrics_target.dart';
+import '../lyrics/plugins/lyrics_sources_provider.dart';
 import '../lyrics/playing_track_lyrics_provider.dart';
 import '../player/player_service.dart';
 import '../settings/settings_provider.dart';
-import 'deepl_key_provider.dart';
 import 'lyrics_content_hash.dart';
 import 'lyrics_translation_derive.dart';
 import 'lyrics_translation_state.dart';
-import 'translation_failure.dart';
 import 'translation_jobs.dart';
 import 'translation_language.dart';
 import 'translation_lines.dart';
 import 'translation_providers.dart';
 import 'translation_service.dart';
+import 'translation_service_resolution.dart';
+import 'translation_song_context.dart';
 
 /// How long the same lyrics stay on screen before a request is made, so
 /// skipping through songs does not translate each one. Tests shorten it.
@@ -48,6 +51,9 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
   @override
   LyricsTranslationState build() {
     _key = _lyrics = _target = _info = null;
+    // Nothing is wanted until a full path below says so; a chunk of the
+    // previous song still waiting for its turn is then dropped unsent.
+    ref.read(translationJobsProvider.notifier).setCurrent(null);
     final uri = ref.watch(
       playerServiceProvider.select((s) => s.queue.current?.uri),
     );
@@ -59,7 +65,7 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     final lyrics = playing.lyrics;
     final hash = _hashOf(lyrics);
     final prefs = ref.watch(settingsProvider.select((s) => s.translation));
-    final service = prefs.service;
+    final chosen = ref.watch(effectiveTranslationServiceProvider);
     final defaultTarget =
         translationLanguageFor(prefs.targetLanguage ?? appLang) ??
         translationLanguageFor('en')!;
@@ -78,7 +84,18 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     _info = info;
 
     if (!prefs.show) return TranslationOff(info);
-    if (prefs.needsNotice) return TranslationNeedsNotice(info, service);
+    if (chosen == null) {
+      // The plugin list is not read yet (wait) or could not be read (the
+      // chosen plugin may exist): either way nothing is sent, and the choice
+      // is not replaced by Google.
+      return ref.watch(translatePluginRecordsProvider).hasError
+          ? const TranslationUnavailable()
+          : TranslationLoading(info, prefs.service);
+    }
+    final service = chosen;
+    if (needsNoticeFor(prefs, service)) {
+      return TranslationNeedsNotice(info, service);
+    }
     if (!targetKnown) return TranslationLoading(info, service);
     final key = TranslationJobKey(hash, info.effective.code, service);
 
@@ -88,12 +105,10 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     if (rows.hasError) return const TranslationUnavailable();
     // From here on a request is possible, so the actions may act.
     _key = key;
+    ref.read(translationJobsProvider.notifier).setCurrent(key);
     _lyrics = lyrics;
     _target = info.effective;
     if (!rows.hasValue) return TranslationLoading(info, service);
-    final deeplKey = service == LyricsTranslationService.deepl
-        ? ref.watch(deeplApiKeyProvider)
-        : null;
     final job = ref.watch(translationJobsProvider.select((m) => m[key]));
 
     final derived = deriveTranslation(
@@ -101,8 +116,12 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
       service: service,
       lyrics: lyrics,
       rows: rows.requireValue,
+      knownPlugins: {
+        for (final r in ref.watch(lyricsPluginRecordsProvider))
+          if (r.kind == PluginKind.translate)
+            ?TranslationServiceId.tryParse(r.installId),
+      },
       job: job,
-      deeplKey: deeplKey,
     );
     if (derived.needsRequest) _armRequest(key, lyrics, info.effective);
     return derived.state;
@@ -119,7 +138,9 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     final jobs = ref.read(translationJobsProvider.notifier);
     final timer = Timer(
       ref.read(translationDebounceProvider),
-      () => unawaited(jobs.run(key, uniqueLineTexts(lyrics), target)),
+      () => unawaited(
+        jobs.run(key, uniqueLineTexts(lyrics), target, song: _songContext()),
+      ),
     );
     ref.onDispose(timer.cancel);
   }
@@ -130,7 +151,13 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     if (key == null || lyrics == null || target == null) return;
     await ref
         .read(translationJobsProvider.notifier)
-        .run(key, uniqueLineTexts(lyrics), target, force: true);
+        .run(
+          key,
+          uniqueLineTexts(lyrics),
+          target,
+          force: true,
+          song: _songContext(),
+        );
   }
 
   /// Forgets the remembered failure and tries again; chunks translated before
@@ -138,32 +165,30 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
   Future<void> retry() async {
     final (key, lyrics, target) = (_key, _lyrics, _target);
     if (key == null || lyrics == null || target == null) return;
-    final failed = state;
-    final keyStoreFailed =
-        failed is TranslationFailed &&
-        (failed.kind == TranslationFailureKind.keyStoreLocked ||
-            failed.kind == TranslationFailureKind.keyStoreUnavailable);
-    // A locked keyring may be unlocked by now: read the key again.
-    if (key.service == LyricsTranslationService.deepl &&
-        (keyStoreFailed || ref.read(deeplApiKeyProvider).hasError)) {
-      ref.invalidate(deeplApiKeyProvider);
-    }
     final jobs = ref.read(translationJobsProvider.notifier)..clearFailure(key);
-    await jobs.run(key, uniqueLineTexts(lyrics), target);
+    await jobs.run(key, uniqueLineTexts(lyrics), target, song: _songContext());
   }
 
-  /// Switches to the other service. Returns true when it was switched. When
-  /// the other service's notice was not accepted yet, nothing changes and
-  /// this returns false: the caller shows the notice and, after Continue,
-  /// calls `SettingsNotifier.enableTranslation` with that service.
-  bool useOtherService() {
+  /// Switches to Google for good (the banner's fallback when a plugin fails):
+  /// the stored service changes, with the notice first when Google was not
+  /// accepted yet, which is the caller's job. Does nothing when Google is
+  /// the service already.
+  void useGoogle() {
+    final settings = ref.read(settingsProvider.notifier);
     final prefs = ref.read(settingsProvider).translation;
-    final other = prefs.service.other;
-    if (!prefs.noticeAcknowledged.contains(other)) return false;
-    ref
-        .read(settingsProvider.notifier)
-        .setTranslation(prefs.copyWith(service: other));
-    return true;
+    if (prefs.service.isGoogle) return;
+    settings.setTranslation(
+      prefs.copyWith(service: TranslationServiceId.google),
+    );
+  }
+
+  /// Title and artist of the playing track, read when a request is made. A
+  /// title that is only the file name is dropped, as for the lyrics lookup.
+  TranslationSongContext? _songContext() {
+    final track = ref.read(playerServiceProvider).queue.current;
+    if (track == null) return null;
+    final query = LyricsTarget.fromTrack(track).query;
+    return TranslationSongContext(title: query.title, artist: query.artist);
   }
 
   /// Sets the language for this song only; null goes back to the default.

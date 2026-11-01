@@ -2,15 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/lyrics_translation/translation_service.dart';
+import '../core/lyrics_translation/translation_service_names.dart';
 import '../core/settings/settings_provider.dart';
 import '../l10n/l10n.dart';
-
-/// What [service] is called on screen (brand names, not translated).
-String translationServiceName(LyricsTranslationService service) =>
-    switch (service) {
-      LyricsTranslationService.google => 'Google',
-      LyricsTranslationService.deepl => 'DeepL',
-    };
+import 'translation_service_name.dart';
 
 /// Makes sure the user accepted sending lyrics to [service]. Returns true at
 /// once when they did before; otherwise asks and returns whether they chose
@@ -22,7 +17,7 @@ String translationServiceName(LyricsTranslationService service) =>
 Future<bool> confirmTranslationNotice(
   BuildContext context,
   WidgetRef ref,
-  LyricsTranslationService service,
+  TranslationServiceId service,
 ) async {
   final accepted = ref
       .read(settingsProvider)
@@ -45,34 +40,50 @@ Future<bool> confirmTranslationNotice(
 Future<void> enableTranslationWithNotice(
   BuildContext context,
   WidgetRef ref,
-  LyricsTranslationService service,
+  TranslationServiceId service,
 ) async {
   final settings = ref.read(settingsProvider.notifier);
   if (!await confirmTranslationNotice(context, ref, service)) return;
   settings.enableTranslation(service);
 }
 
-class _TranslationNoticeDialog extends StatelessWidget {
+class _TranslationNoticeDialog extends ConsumerWidget {
   const _TranslationNoticeDialog(this.service);
 
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final name = translationServiceName(service);
+    final plugins = ref.watch(translationPluginInfosProvider);
+    final name = translationServiceName(l10n, plugins, service);
+    // The hosts are always listed for a plugin: that is where the lyrics go.
+    final hosts = service.isPlugin
+        ? plugins[service.value]?.hosts ?? const <String>[]
+        : const <String>[];
     return AlertDialog(
-      title: Text(l10n.translationNoticeTitle(name)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.translationNoticeBody(name)),
-          if (service == LyricsTranslationService.google) ...[
-            const SizedBox(height: 12),
-            Text(l10n.translationNoticeGoogleUnofficial),
+      title: Text(
+        service.isPlugin
+            ? l10n.translationNoticePluginTitle(name)
+            : l10n.translationNoticeTitle(name),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (service.isPlugin) ...[
+              Text(l10n.translationNoticePluginBody),
+              const SizedBox(height: 8),
+              for (final host in hosts) SelectableText(host),
+            ] else
+              Text(l10n.translationNoticeBody(name)),
+            if (service.isGoogle) ...[
+              const SizedBox(height: 12),
+              Text(l10n.translationNoticeGoogleUnofficial),
+            ],
           ],
-        ],
+        ),
       ),
       actions: [
         TextButton(

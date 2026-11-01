@@ -80,7 +80,7 @@ class TranslationLoading extends LyricsTranslationState {
   const TranslationLoading(this.info, this.service);
 
   final TranslationTargetInfo info;
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   @override
   List<Object?> get _props => [info, service];
@@ -99,7 +99,7 @@ class TranslationReady extends LyricsTranslationState {
   );
 
   final TranslationTargetInfo info;
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
   final String? sourceLang;
   final List<String?> lines;
   final bool fromOtherService;
@@ -119,7 +119,7 @@ class TranslationSameLanguage extends LyricsTranslationState {
   const TranslationSameLanguage(this.info, this.service);
 
   final TranslationTargetInfo info;
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   @override
   List<Object?> get _props => [info, service];
@@ -130,7 +130,7 @@ class TranslationFailed extends LyricsTranslationState {
   const TranslationFailed(this.info, this.service, this.kind);
 
   final TranslationTargetInfo info;
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
   final TranslationFailureKind kind;
 
   @override
@@ -143,7 +143,7 @@ class TranslationNeedsNotice extends LyricsTranslationState {
   const TranslationNeedsNotice(this.info, this.service);
 
   final TranslationTargetInfo info;
-  final LyricsTranslationService service;
+  final TranslationServiceId service;
 
   @override
   List<Object?> get _props => [info, service];

@@ -5152,7 +5152,8 @@ class LyricTranslationRow extends DataClass
     implements Insertable<LyricTranslationRow> {
   final String contentHash;
 
-  /// 'google' or 'deepl'.
+  /// 'google' or a plugin install id; readers skip unknown values, old
+  /// `deepl` rows included.
   final String provider;
 
   /// Internal language code, for example 'vi' or 'zh-Hans'.
@@ -7364,6 +7365,16 @@ class $LyricsPluginsTable extends LyricsPlugins
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('lyrics'),
+  );
   static const VerificationMeta _removedAtMeta = const VerificationMeta(
     'removedAt',
   );
@@ -7392,6 +7403,7 @@ class $LyricsPluginsTable extends LyricsPlugins
     repoSlug,
     installedAt,
     updatedAt,
+    kind,
     removedAt,
   ];
   @override
@@ -7527,6 +7539,12 @@ class $LyricsPluginsTable extends LyricsPlugins
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
     if (data.containsKey('removed_at')) {
       context.handle(
         _removedAtMeta,
@@ -7602,6 +7620,10 @@ class $LyricsPluginsTable extends LyricsPlugins
         DriftSqlType.int,
         data['${effectivePrefix}updated_at'],
       )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
       removedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}removed_at'],
@@ -7642,6 +7664,10 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
   final int installedAt;
   final int updatedAt;
 
+  /// `lyrics` or `translate`; see invariant 11. Rows from before the column
+  /// existed read as `lyrics` through the SQL default.
+  final String kind;
+
   /// Set while the record is only a name for saved lyrics.
   final int? removedAt;
   const LyricsPluginRow({
@@ -7660,6 +7686,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     this.repoSlug,
     required this.installedAt,
     required this.updatedAt,
+    required this.kind,
     this.removedAt,
   });
   @override
@@ -7688,6 +7715,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     }
     map['installed_at'] = Variable<int>(installedAt);
     map['updated_at'] = Variable<int>(updatedAt);
+    map['kind'] = Variable<String>(kind);
     if (!nullToAbsent || removedAt != null) {
       map['removed_at'] = Variable<int>(removedAt);
     }
@@ -7719,6 +7747,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
           : Value(repoSlug),
       installedAt: Value(installedAt),
       updatedAt: Value(updatedAt),
+      kind: Value(kind),
       removedAt: removedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(removedAt),
@@ -7746,6 +7775,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
       repoSlug: serializer.fromJson<String?>(json['repoSlug']),
       installedAt: serializer.fromJson<int>(json['installedAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      kind: serializer.fromJson<String>(json['kind']),
       removedAt: serializer.fromJson<int?>(json['removedAt']),
     );
   }
@@ -7768,6 +7798,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
       'repoSlug': serializer.toJson<String?>(repoSlug),
       'installedAt': serializer.toJson<int>(installedAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
+      'kind': serializer.toJson<String>(kind),
       'removedAt': serializer.toJson<int?>(removedAt),
     };
   }
@@ -7788,6 +7819,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     Value<String?> repoSlug = const Value.absent(),
     int? installedAt,
     int? updatedAt,
+    String? kind,
     Value<int?> removedAt = const Value.absent(),
   }) => LyricsPluginRow(
     installId: installId ?? this.installId,
@@ -7805,6 +7837,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     repoSlug: repoSlug.present ? repoSlug.value : this.repoSlug,
     installedAt: installedAt ?? this.installedAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    kind: kind ?? this.kind,
     removedAt: removedAt.present ? removedAt.value : this.removedAt,
   );
   LyricsPluginRow copyWithCompanion(LyricsPluginsCompanion data) {
@@ -7838,6 +7871,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
           ? data.installedAt.value
           : this.installedAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      kind: data.kind.present ? data.kind.value : this.kind,
       removedAt: data.removedAt.present ? data.removedAt.value : this.removedAt,
     );
   }
@@ -7860,6 +7894,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
           ..write('repoSlug: $repoSlug, ')
           ..write('installedAt: $installedAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('kind: $kind, ')
           ..write('removedAt: $removedAt')
           ..write(')'))
         .toString();
@@ -7882,6 +7917,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     repoSlug,
     installedAt,
     updatedAt,
+    kind,
     removedAt,
   );
   @override
@@ -7903,6 +7939,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
           other.repoSlug == this.repoSlug &&
           other.installedAt == this.installedAt &&
           other.updatedAt == this.updatedAt &&
+          other.kind == this.kind &&
           other.removedAt == this.removedAt);
 }
 
@@ -7922,6 +7959,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
   final Value<String?> repoSlug;
   final Value<int> installedAt;
   final Value<int> updatedAt;
+  final Value<String> kind;
   final Value<int?> removedAt;
   final Value<int> rowid;
   const LyricsPluginsCompanion({
@@ -7940,6 +7978,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     this.repoSlug = const Value.absent(),
     this.installedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.kind = const Value.absent(),
     this.removedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -7959,6 +7998,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     this.repoSlug = const Value.absent(),
     required int installedAt,
     required int updatedAt,
+    this.kind = const Value.absent(),
     this.removedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : installId = Value(installId),
@@ -7988,6 +8028,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     Expression<String>? repoSlug,
     Expression<int>? installedAt,
     Expression<int>? updatedAt,
+    Expression<String>? kind,
     Expression<int>? removedAt,
     Expression<int>? rowid,
   }) {
@@ -8007,6 +8048,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
       if (repoSlug != null) 'repo_slug': repoSlug,
       if (installedAt != null) 'installed_at': installedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (kind != null) 'kind': kind,
       if (removedAt != null) 'removed_at': removedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -8028,6 +8070,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     Value<String?>? repoSlug,
     Value<int>? installedAt,
     Value<int>? updatedAt,
+    Value<String>? kind,
     Value<int?>? removedAt,
     Value<int>? rowid,
   }) {
@@ -8047,6 +8090,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
       repoSlug: repoSlug ?? this.repoSlug,
       installedAt: installedAt ?? this.installedAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      kind: kind ?? this.kind,
       removedAt: removedAt ?? this.removedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -8100,6 +8144,9 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<int>(updatedAt.value);
     }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
     if (removedAt.present) {
       map['removed_at'] = Variable<int>(removedAt.value);
     }
@@ -8127,6 +8174,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
           ..write('repoSlug: $repoSlug, ')
           ..write('installedAt: $installedAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('kind: $kind, ')
           ..write('removedAt: $removedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -13817,6 +13865,7 @@ typedef $$LyricsPluginsTableCreateCompanionBuilder =
       Value<String?> repoSlug,
       required int installedAt,
       required int updatedAt,
+      Value<String> kind,
       Value<int?> removedAt,
       Value<int> rowid,
     });
@@ -13837,6 +13886,7 @@ typedef $$LyricsPluginsTableUpdateCompanionBuilder =
       Value<String?> repoSlug,
       Value<int> installedAt,
       Value<int> updatedAt,
+      Value<String> kind,
       Value<int?> removedAt,
       Value<int> rowid,
     });
@@ -13922,6 +13972,11 @@ class $$LyricsPluginsTableFilterComposer
 
   ColumnFilters<int> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14015,6 +14070,11 @@ class $$LyricsPluginsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get removedAt => $composableBuilder(
     column: $table.removedAt,
     builder: (column) => ColumnOrderings(column),
@@ -14089,6 +14149,9 @@ class $$LyricsPluginsTableAnnotationComposer
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
   GeneratedColumn<int> get removedAt =>
       $composableBuilder(column: $table.removedAt, builder: (column) => column);
 }
@@ -14145,6 +14208,7 @@ class $$LyricsPluginsTableTableManager
                 Value<String?> repoSlug = const Value.absent(),
                 Value<int> installedAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
+                Value<String> kind = const Value.absent(),
                 Value<int?> removedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricsPluginsCompanion(
@@ -14163,6 +14227,7 @@ class $$LyricsPluginsTableTableManager
                 repoSlug: repoSlug,
                 installedAt: installedAt,
                 updatedAt: updatedAt,
+                kind: kind,
                 removedAt: removedAt,
                 rowid: rowid,
               ),
@@ -14183,6 +14248,7 @@ class $$LyricsPluginsTableTableManager
                 Value<String?> repoSlug = const Value.absent(),
                 required int installedAt,
                 required int updatedAt,
+                Value<String> kind = const Value.absent(),
                 Value<int?> removedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricsPluginsCompanion.insert(
@@ -14201,6 +14267,7 @@ class $$LyricsPluginsTableTableManager
                 repoSlug: repoSlug,
                 installedAt: installedAt,
                 updatedAt: updatedAt,
+                kind: kind,
                 removedAt: removedAt,
                 rowid: rowid,
               ),

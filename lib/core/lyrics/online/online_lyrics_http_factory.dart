@@ -9,10 +9,13 @@ import 'lyrics_http_pinned_connect.dart';
 import 'lyrics_http_retry.dart';
 import 'lyrics_provider_registry.dart';
 
-/// The single place a [LyricsHttp] is made for the app. It hands one out only
-/// when the user's recorded consent covers the request, so no host path
-/// (automatic lookup, Retry, Search again, the Choose lyrics dialog) can
-/// reach the network without it.
+/// The single place a [LyricsHttp] is made for online lyrics. It hands one
+/// out only when the user's recorded consent covers the request, so no host
+/// path (automatic lookup, Retry, Search again, the Choose lyrics dialog) can
+/// reach the network without it. The other maker is the translate plugin
+/// runner (`LyricsHttp.forPluginTranslate`): its requests go to a translation
+/// service the user chose, so it asks its own gate before every send, not the
+/// online-lyrics consent.
 ///
 /// Consent is read when asked for and again before every send of the
 /// [LyricsHttp] handed out (retries and a second request included), so

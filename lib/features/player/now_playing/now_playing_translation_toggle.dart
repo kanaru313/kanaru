@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../shared/translation_notice_dialog.dart';
 
@@ -15,9 +16,11 @@ void toggleLyricsTranslationByKey(
   required bool hasLyrics,
 }) {
   final prefs = ref.read(settingsProvider).translation;
-  if (prefs.show && !prefs.needsNotice) {
+  // The service a request would go to; null while the plugin list loads.
+  final effective = ref.read(effectiveTranslationServiceProvider);
+  if (prefs.show && (effective == null || !needsNoticeFor(prefs, effective))) {
     ref.read(settingsProvider.notifier).toggleLyricsTranslation();
-  } else if (hasLyrics) {
-    unawaited(enableTranslationWithNotice(context, ref, prefs.service));
+  } else if (hasLyrics && effective != null) {
+    unawaited(enableTranslationWithNotice(context, ref, effective));
   }
 }

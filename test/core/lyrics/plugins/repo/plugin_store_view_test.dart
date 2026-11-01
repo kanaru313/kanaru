@@ -18,7 +18,9 @@ PluginCatalogEntry entry(
   List<String> hosts = const ['host.example.com'],
   String author = '',
   Uri? icon,
+  PluginKind kind = PluginKind.lyrics,
 }) => PluginCatalogEntry(
+  kind: kind,
   slug: slug,
   name: name ?? slug,
   version: version,
@@ -54,7 +56,9 @@ LyricsPluginRecord record(
   bool removed = false,
   String? author,
   List<String> hosts = const ['host.example.com'],
+  PluginKind? kind = PluginKind.lyrics,
 }) => LyricsPluginRecord(
+  kind: kind,
   installId: id,
   name: name,
   author: author,
@@ -81,12 +85,14 @@ PluginStoreView view(
   List<PluginRepo> repos, {
   String search = '',
   StoreSourceFilter filter = const StoreSourceFilter.all(),
+  PluginKind kind = PluginKind.lyrics,
 }) => buildPluginStoreView(
   PluginStoreInput(
     records: records,
     repos: repos,
     search: search,
     filter: filter,
+    kind: kind,
   ),
 );
 
@@ -311,5 +317,53 @@ void main() {
     expect(empty.isEmpty && empty.available, isTrue);
     expect(unavailable.isEmpty, isTrue);
     expect(unavailable.available, isFalse);
+  });
+
+  group('kind filter', () {
+    final mixed = [
+      repo(urlA, 'Alpha Repo', [
+        entry('lyr', name: 'LyrNew'),
+        entry('tr', name: 'TrNew', kind: PluginKind.translate),
+        entry('lyr-up', name: 'LyrUp', version: 2),
+        entry('tr-up', name: 'TrUp', version: 2, kind: PluginKind.translate),
+      ]),
+    ];
+    final records = [
+      record('plugin-lyr-up', 'LyrUp', repoUrl: urlA, slug: 'lyr-up'),
+      record(
+        'plugin-tr-up',
+        'TrUp',
+        repoUrl: urlA,
+        slug: 'tr-up',
+        kind: PluginKind.translate,
+      ),
+      record('plugin-lyr-file', 'LyrFile'),
+      record('plugin-tr-file', 'TrFile', kind: PluginKind.translate),
+      record('plugin-odd', 'Odd', kind: null),
+    ];
+
+    test('lyrics lists only lyrics plugins in every section', () {
+      final v = view(records, mixed);
+      expect(names(v.updates), ['LyrUp']);
+      expect(names(v.installed), ['LyrFile']);
+      expect(names(v.notInstalled), ['LyrNew']);
+    });
+
+    test('translate lists only translate plugins in every section', () {
+      final v = view(records, mixed, kind: PluginKind.translate);
+      expect(names(v.updates), ['TrUp']);
+      expect(names(v.installed), ['TrFile']);
+      expect(names(v.notInstalled), ['TrNew']);
+    });
+
+    test('a record of an unknown kind shows under neither', () {
+      for (final kind in PluginKind.values) {
+        final v = view(records, mixed, kind: kind);
+        expect([
+          ...names(v.installed),
+          ...names(v.updates),
+        ], isNot(contains('Odd')));
+      }
+    });
   });
 }
