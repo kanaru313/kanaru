@@ -130,8 +130,13 @@ Future<void> _checkLayout(
     ),
     (
       l10n.settingsLanguage,
-      find.byType(SettingDropdown<String>),
+      inRow(l10n.settingsLanguage, find.byType(SettingDropdown<String>)),
       l10n.settingsLanguageHint,
+    ),
+    (
+      l10n.settingsFont,
+      inRow(l10n.settingsFont, find.byType(SettingDropdown<String>)),
+      l10n.settingsFontHint,
     ),
     (
       l10n.settingsOpenLogFolder,
@@ -220,9 +225,9 @@ Future<void> _checkLayout(
   ];
   expect(
     controls,
-    hasLength(28),
+    hasLength(29),
     reason:
-        'thirteen buttons (two open the separator dialogs, one withdraws the lyrics search permission), five choices and ten dropdowns: the output device, '
+        'thirteen buttons (two open the separator dialogs, one withdraws the lyrics search permission), five choices and eleven dropdowns: the output device, the font, '
         'ReplayGain mode, preamp, two scan filters and the translation language are wired, six options '
         'are not yet',
   );
@@ -302,7 +307,7 @@ Future<void> _checkLayout(
         .evaluate()
         .map((e) => tester.getRect(find.byWidget(e.widget)))
         .toList();
-    expect(dropdowns, hasLength(15));
+    expect(dropdowns, hasLength(16));
     // The listen threshold row splits the compact width between its time
     // and share dropdowns; every other row has one.
     bool shared(Rect r) => dropdowns.where((o) => o.top == r.top).length > 1;

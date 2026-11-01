@@ -1283,6 +1283,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Makes all text in Kanaru smaller or larger.';
 
   @override
+  String get settingsFont => 'Font';
+
+  @override
+  String get settingsFontHint =>
+      'Changes the font of all text. Chinese, Japanese, Korean and emoji use the system font.';
+
+  @override
+  String get settingsFontSystem => 'System';
+
+  @override
   String get settingsRespectNomedia => 'Skip folders with .nomedia';
 
   @override

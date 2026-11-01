@@ -121,7 +121,8 @@ void main() {
   testWidgets('choosing Tiếng Việt switches the UI language', (tester) async {
     await pumpSettings(tester);
 
-    await tester.tap(find.byType(DropdownMenu<String>));
+    // The language dropdown comes before the font dropdown on the page.
+    await tester.tap(find.byType(DropdownMenu<String>).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tiếng Việt').last);
     await tester.pumpAndSettle();

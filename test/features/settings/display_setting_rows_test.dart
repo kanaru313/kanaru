@@ -9,8 +9,18 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   late ProviderContainer container;
 
-  Future<void> pump(WidgetTester tester) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    Locale locale = const Locale('en'),
+    String? fontId,
+  }) async {
     container = ProviderContainer();
+    if (fontId != null) {
+      final s = container.read(settingsProvider);
+      container
+          .read(settingsProvider.notifier)
+          .setDisplay(s.display.copyWith(fontId: fontId));
+    }
     addTearDown(container.dispose);
     tester.view.physicalSize = const Size(1280, 1200);
     tester.view.devicePixelRatio = 1;
@@ -18,11 +28,14 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+        child: MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: Locale('en'),
-          home: Scaffold(
+          locale: locale,
+          home: const Scaffold(
             body: SingleChildScrollView(child: DisplaySettingRows()),
           ),
         ),
@@ -116,5 +129,72 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(settingsProvider).display.fontScale, 1.25);
+  });
+
+  group('font row', () {
+    Finder field() =>
+        find.descendant(of: row('Font'), matching: find.byType(TextField));
+
+    testWidgets('sits above the text size row and shows Inter', (tester) async {
+      await pump(tester);
+      final titles = tester
+          .widgetList<SettingRow>(find.byType(SettingRow))
+          .map((r) => r.title)
+          .toList();
+      expect(titles.indexOf('Font'), titles.indexOf('Text size') - 1);
+      expect(tester.widget<TextField>(field()).controller?.text, 'Inter');
+    });
+
+    testWidgets('options render in their own font; picking saves it', (
+      tester,
+    ) async {
+      await pump(tester);
+      await tester.tap(field());
+      await tester.pumpAndSettle();
+
+      String? family(String label) => tester
+          .widget<Text>(
+            find
+                .descendant(
+                  of: find.widgetWithText(MenuItemButton, label),
+                  matching: find.text(label),
+                )
+                .last,
+          )
+          .style
+          ?.fontFamily;
+      for (final label in ['System', 'Inter', 'Nunito']) {
+        expect(find.widgetWithText(MenuItemButton, label), findsWidgets);
+      }
+      expect(family('System'), 'sans-serif');
+      expect(family('Inter'), 'Inter');
+      expect(family('Nunito'), 'Nunito');
+
+      await tester.tap(find.widgetWithText(MenuItemButton, 'Nunito').last);
+      await tester.pumpAndSettle();
+      expect(container.read(settingsProvider).display.fontId, 'nunito');
+    });
+
+    testWidgets('an unknown stored id shows Inter', (tester) async {
+      await pump(tester, fontId: 'futurefont');
+      expect(tester.takeException(), isNull);
+      expect(tester.widget<TextField>(field()).controller?.text, 'Inter');
+    });
+
+    testWidgets('the System entry is localized', (tester) async {
+      await pump(tester, locale: const Locale('vi'), fontId: 'system');
+      expect(
+        tester
+            .widget<TextField>(
+              find.descendant(
+                of: row('Phông chữ'),
+                matching: find.byType(TextField),
+              ),
+            )
+            .controller
+            ?.text,
+        'Hệ thống',
+      );
+    });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/settings/app_font.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_choice.dart';
@@ -8,7 +9,7 @@ import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
 /// Appearance options: motion, colors from the cover, the seek bar style of
-/// Now Playing and the text size. All apply at once.
+/// Now Playing, the font and the text size. All apply at once.
 class DisplaySettingRows extends ConsumerWidget {
   const DisplaySettingRows({super.key});
 
@@ -47,6 +48,26 @@ class DisplaySettingRows extends ConsumerWidget {
             onChanged: (on) => notifier.setDisplay(
               settings.display.copyWith(waveformSeekBar: on),
             ),
+          ),
+        ),
+        SettingRow.single(
+          title: l10n.settingsFont,
+          subtitle: l10n.settingsFontHint,
+          control: SettingDropdown<String>(
+            options: [
+              for (final font in builtInAppFonts)
+                SettingOption(
+                  value: font.id,
+                  label: font.id == systemFontId
+                      ? l10n.settingsFontSystem
+                      : font.label,
+                  labelStyle: TextStyle(fontFamily: font.family),
+                ),
+            ],
+            // An unknown stored id shows the default font.
+            selected: appFontFor(settings.display.fontId).id,
+            onSelected: (id) =>
+                notifier.setDisplay(settings.display.copyWith(fontId: id)),
           ),
         ),
         SettingRow.single(

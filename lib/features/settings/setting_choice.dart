@@ -4,11 +4,20 @@ import 'setting_row.dart';
 
 /// One option of a [SettingChoice].
 class SettingOption<T> {
-  const SettingOption({required this.value, required this.label, this.icon});
+  const SettingOption({
+    required this.value,
+    required this.label,
+    this.icon,
+    this.labelStyle,
+  });
 
   final T value;
   final String label;
   final IconData? icon;
+
+  /// Draws the label in its own style (the font picker shows each font in
+  /// itself); `null` keeps the control's default.
+  final TextStyle? labelStyle;
 }
 
 /// Picks one of a few [options]: a segmented button when there is room, a
@@ -45,7 +54,7 @@ class SettingChoice<T> extends StatelessWidget {
           ButtonSegment(
             value: option.value,
             icon: option.icon == null ? null : Icon(option.icon),
-            label: Text(option.label),
+            label: Text(option.label, style: option.labelStyle),
           ),
       ],
       selected: {selected},
@@ -85,7 +94,13 @@ class SettingDropdown<T> extends StatelessWidget {
     final leading = leadingIcon == null ? null : Icon(leadingIcon, size: 18);
     final entries = [
       for (final option in options)
-        DropdownMenuEntry(value: option.value, label: option.label),
+        DropdownMenuEntry(
+          value: option.value,
+          label: option.label,
+          labelWidget: option.labelStyle == null
+              ? null
+              : Text(option.label, style: option.labelStyle),
+        ),
     ];
 
     return LayoutBuilder(

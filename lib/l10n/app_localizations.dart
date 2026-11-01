@@ -1940,6 +1940,24 @@ abstract class AppLocalizations {
   /// **'Makes all text in Kanaru smaller or larger.'**
   String get settingsFontScaleHint;
 
+  /// No description provided for @settingsFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get settingsFont;
+
+  /// No description provided for @settingsFontHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes the font of all text. Chinese, Japanese, Korean and emoji use the system font.'**
+  String get settingsFontHint;
+
+  /// No description provided for @settingsFontSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsFontSystem;
+
   /// No description provided for @settingsRespectNomedia.
   ///
   /// In en, this message translates to:

@@ -1229,6 +1229,16 @@ class AppLocalizationsVi extends AppLocalizations {
       'Làm mọi chữ trong Kanaru nhỏ hơn hoặc lớn hơn.';
 
   @override
+  String get settingsFont => 'Phông chữ';
+
+  @override
+  String get settingsFontHint =>
+      'Đổi phông của mọi chữ. Chữ Trung, Nhật, Hàn và emoji dùng phông hệ thống.';
+
+  @override
+  String get settingsFontSystem => 'Hệ thống';
+
+  @override
   String get settingsRespectNomedia => 'Bỏ qua thư mục có .nomedia';
 
   @override
