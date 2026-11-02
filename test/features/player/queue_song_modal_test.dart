@@ -51,7 +51,7 @@ void main() {
   testWidgets('a long press on the row opens the modal', (tester) async {
     await open(tester);
     await tester.longPress(queueRow('b').last);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(modal, findsOneWidget);
   });
@@ -61,7 +61,7 @@ void main() {
     Focus.of(tester.element(find.text('b').last)).requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(modal, findsOneWidget);
   });
@@ -71,7 +71,7 @@ void main() {
   ) async {
     await open(tester);
     await tester.longPress(find.byTooltip('Drag to reorder').last);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(modal, findsNothing);
     expect(queueTitles(h), ['a', 'b', 'c']);
@@ -109,7 +109,7 @@ void main() {
 
     // The second copy of the file is still queued, only the row opened goes.
     await tester.longPress(queueRow('a').last);
-    await settleSongModal(tester);
+    await settleModal(tester);
     await tapModalAction(tester, 'Remove from queue');
     expect(queueTitles(h), ['a']);
   });
@@ -302,7 +302,7 @@ void main() {
     await open(tester);
     await openQueueMenu(tester, 'b');
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(modal, findsNothing);
     expect(queueRow('b'), findsWidgets);

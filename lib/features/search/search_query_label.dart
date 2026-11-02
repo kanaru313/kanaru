@@ -36,7 +36,8 @@ class SearchQueryLabel extends StatelessWidget {
           if (parsed.termsFor(field).isNotEmpty)
             _Chip(
               icon: _fieldIcons[field]!,
-              text: '${_fieldLabel(l10n, field)}: ${parsed.termsFor(field).join(' ')}',
+              text:
+                  '${searchFieldLabel(l10n, field)}: ${parsed.termsFor(field).join(' ')}',
             ),
         if (parsed.years.isNotEmpty)
           _Chip(
@@ -44,19 +45,20 @@ class SearchQueryLabel extends StatelessWidget {
             text: parsed.years.map(yearFilterText).join(', '),
           ),
         if (parsed.formats.isNotEmpty)
-          _Chip(icon: AppIcons.musicNoteOutlined, text: parsed.formats.join(', ')),
+          _Chip(
+            icon: AppIcons.musicNoteOutlined,
+            text: parsed.formats.join(', '),
+          ),
         if (parsed.languages.isNotEmpty)
-          _Chip(icon: AppIcons.languageOutlined, text: parsed.languages.join(', ')),
-        if (freeText.isNotEmpty) Text('“$freeText”', style: theme.textTheme.bodyMedium),
+          _Chip(
+            icon: AppIcons.languageOutlined,
+            text: parsed.languages.join(', '),
+          ),
+        if (freeText.isNotEmpty)
+          Text('“$freeText”', style: theme.textTheme.bodyMedium),
       ],
     );
   }
-
-  String _fieldLabel(AppLocalizations l10n, QueryField field) => switch (field) {
-    QueryField.artist => l10n.searchFieldArtist,
-    QueryField.album => l10n.searchFieldAlbum,
-    QueryField.genre => l10n.searchFieldGenre,
-  };
 }
 
 class _Chip extends StatelessWidget {
@@ -80,7 +82,10 @@ class _Chip extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: onChip),
           const SizedBox(width: 4),
-          Text(text, style: theme.textTheme.bodyMedium?.copyWith(color: onChip)),
+          Text(
+            text,
+            style: theme.textTheme.bodyMedium?.copyWith(color: onChip),
+          ),
         ],
       ),
     );

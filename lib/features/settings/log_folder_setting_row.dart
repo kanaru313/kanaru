@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/logging/log_directory.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import 'open_external.dart';
+import '../../shared/open_external.dart';
 import 'setting_row.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 

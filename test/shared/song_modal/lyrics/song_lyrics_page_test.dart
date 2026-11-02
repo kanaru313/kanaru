@@ -16,7 +16,7 @@ List<String> _numbered(int n) => [for (var i = 1; i <= n; i++) 'line $i'];
 
 Future<void> _viewAll(WidgetTester tester) async {
   await tester.tap(find.byKey(const ValueKey('song-lyrics-view-all')));
-  await settleSongModal(tester);
+  await settleModal(tester);
 }
 
 void main() {
@@ -101,10 +101,10 @@ void main() {
     expect(before, greaterThan(0));
 
     await tester.tap(viewAll);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Lyrics · one'), findsOne);
     await tester.tap(find.byTooltip('Back'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Song info'), findsWidgets);
     expect(tester.widget<ListView>(list).controller!.offset, before);

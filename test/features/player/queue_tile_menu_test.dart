@@ -33,7 +33,7 @@ void main() {
   Future<void> openMenu(WidgetTester tester, String title) async {
     await tester.tap(row(title).last, buttons: kSecondaryButton);
     await settleDb(tester);
-    await settleSongModal(tester);
+    await settleModal(tester);
   }
 
   testWidgets('the heart adds a library song to Favorites and takes it out', (
@@ -101,7 +101,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.f10);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
     await settleDb(tester);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Remove from queue'), findsOneWidget);
     expect(find.byType(SongModalHeader), findsOneWidget);
   });

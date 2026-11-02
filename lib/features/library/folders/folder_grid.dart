@@ -5,7 +5,6 @@ import 'folder_grid_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
 import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
-import '../albums/album_grid.dart';
 
 /// A folder to show in [FolderGrid] or [SliverFolderGrid]: the node, the name
 /// to show for it, and in flat mode the line of folders above it and whether
@@ -73,14 +72,14 @@ class FolderGrid extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) => GridView.builder(
       padding: const EdgeInsets.fromLTRB(
-        albumGridPadding,
+        libraryGridPadding,
         0,
-        albumGridPadding,
+        libraryGridPadding,
         24,
       ),
       gridDelegate: libraryGridDelegate(
         context,
-        constraints.maxWidth - albumGridPadding * 2,
+        constraints.maxWidth - libraryGridPadding * 2,
         tileHeight: (context, width) => folderGridTileHeight(
           context,
           width,
@@ -113,7 +112,7 @@ class SliverFolderGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SliverPadding(
-    padding: const EdgeInsets.symmetric(horizontal: albumGridPadding),
+    padding: const EdgeInsets.symmetric(horizontal: libraryGridPadding),
     sliver: SliverLayoutBuilder(
       builder: (context, constraints) => SliverGrid.builder(
         gridDelegate: libraryGridDelegate(

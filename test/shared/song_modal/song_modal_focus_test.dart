@@ -74,7 +74,7 @@ void main() {
     await _pump(tester);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     expect(_focusInModal(), isTrue);
   });
@@ -84,7 +84,7 @@ void main() {
   ) async {
     await _pump(tester);
     await tester.tap(find.text('row'), buttons: kSecondaryButton);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     expect(_focusInModal(), isFalse);
   });
@@ -92,7 +92,7 @@ void main() {
   testWidgets('a mouse click into Advanced focuses no row', (tester) async {
     await _pump(tester);
     await tester.tap(find.text('row'), buttons: kSecondaryButton);
-    await settleSongModal(tester);
+    await settleModal(tester);
     await tapModalAction(tester, 'Advanced');
     expect(_focusInModal(), isFalse);
   });
@@ -102,7 +102,7 @@ void main() {
   ) async {
     await _pump(tester);
     await tester.tap(find.byTooltip('More options'));
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     expect(_focusInModal(), isFalse);
   });
@@ -122,7 +122,7 @@ void main() {
     ).requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     expect(_focusInModal(), isTrue);
   });

@@ -6,7 +6,6 @@ import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_browse_body.dart';
 import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
-import '../albums/album_grid.dart';
 
 /// [artists] as a scrolling grid, leaving room for the rescan button below.
 class ArtistGrid extends StatelessWidget {
@@ -28,14 +27,14 @@ class ArtistGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => GridView.builder(
         padding: const EdgeInsets.fromLTRB(
-          albumGridPadding,
+          libraryGridPadding,
           0,
-          albumGridPadding,
+          libraryGridPadding,
           libraryBottomInset,
         ),
         gridDelegate: libraryGridDelegate(
           context,
-          constraints.maxWidth - albumGridPadding * 2,
+          constraints.maxWidth - libraryGridPadding * 2,
           tileHeight: roundGridTileHeight,
         ),
         itemCount: artists.length,

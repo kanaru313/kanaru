@@ -32,7 +32,7 @@ Finder queueRow(String title) =>
 Future<void> openQueueMenu(WidgetTester tester, String title) async {
   await tester.tap(queueRow(title).last, buttons: kSecondaryButton);
   await settleDb(tester);
-  await settleSongModal(tester);
+  await settleModal(tester);
 }
 
 /// Titles of the queue in play order.

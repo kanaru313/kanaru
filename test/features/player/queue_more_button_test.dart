@@ -81,7 +81,7 @@ void main() {
       await open(tester);
       await focusMore(tester, 'b');
       await tester.sendKeyEvent(key);
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(modal, findsOneWidget);
       expect(_focusInModal(), isTrue);
@@ -93,7 +93,7 @@ void main() {
   ) async {
     await open(tester);
     await tester.tap(moreOf('b'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(modal, findsOneWidget);
     expect(_focusInModal(), isFalse);
@@ -105,7 +105,7 @@ void main() {
     await open(tester, const [Track(uri: '/nowhere/x.mp3', title: 'x')]);
     await tester.tap(moreOf('x'));
     await settleDb(tester);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(modal, findsNothing);
     expect(find.text('Remove from queue'), findsOneWidget);
@@ -134,7 +134,7 @@ void main() {
     final button = tester.getRect(moreOf('x'));
     await tester.tap(moreOf('x'));
     await settleDb(tester);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     final menu = tester.getRect(
       find
@@ -152,7 +152,7 @@ void main() {
     (tester) async {
       await open(tester);
       await tester.longPress(moreOf('b'));
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       // The button's tooltip wins the press over the row's long press.
       expect(modal, findsNothing);

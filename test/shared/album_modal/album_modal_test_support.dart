@@ -15,6 +15,9 @@ import 'package:kanaru/shared/widgets/library_grid/album_tile_data.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../support/settle_modal.dart';
+export '../../support/settle_modal.dart' show settleModal;
+
 const testAlbumKey = AlbumKey('ann', 'al');
 const testAlbum = AlbumTileData(
   key: testAlbumKey,
@@ -157,28 +160,16 @@ Future<AlbumHost> pumpAlbumHost(
   return host;
 }
 
-/// Lets the modal's reads finish and its animations end.
-Future<void> settleAlbumModal(WidgetTester tester) async {
-  for (var i = 0; i < 3; i++) {
-    await tester.pump();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-  }
-  await tester.pumpAndSettle();
-  await tester.pump(const Duration(milliseconds: 100));
-}
-
 /// Opens the album modal of the tile with a right click.
 Future<void> openAlbumModalOf(WidgetTester tester) async {
   await tester.tap(find.text('tile'), buttons: kSecondaryButton);
-  await settleAlbumModal(tester);
+  await settleModal(tester);
 }
 
 /// Taps the row labelled [label] and waits for what it starts.
 Future<void> tapAlbumRow(WidgetTester tester, String label) async {
   await tester.tap(find.text(label));
-  await settleAlbumModal(tester);
+  await settleModal(tester);
 }
 
 /// The row of the open modal with action [id].

@@ -35,7 +35,7 @@ void main() {
       await tester.tap(
         find.descendant(of: host, matching: find.byType(ArtistMoreButton)),
       );
-      await settleArtistModal(tester);
+      await settleModal(tester);
 
       expect(find.bySemanticsLabel('Artist options'), findsWidgets);
       expect(artistModalAction('play-all'), findsOneWidget);

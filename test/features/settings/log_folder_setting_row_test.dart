@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/settings/log_folder_setting_row.dart';
-import 'package:kanaru/features/settings/open_external.dart';
+import 'package:kanaru/shared/open_external.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 

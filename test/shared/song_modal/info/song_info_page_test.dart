@@ -68,7 +68,7 @@ Future<ProviderContainer> _openInfo(
     ),
   );
   await tester.tap(find.text('open'));
-  await settleSongModal(tester);
+  await settleModal(tester);
   await openSongInfoPage(tester);
   return container;
 }
@@ -145,7 +145,7 @@ void main() {
 
     expect(find.text('This song is no longer in the library'), findsOne);
     await tester.tap(find.text('Back'));
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOne);
   });
 

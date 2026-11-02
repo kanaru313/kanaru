@@ -12,7 +12,6 @@ import '../../../shared/widgets/song_tile_placeholder.dart';
 import 'songs_list_provider.dart';
 import '../../../shared/widgets/library_grid/song_grid_tile.dart';
 import '../../../shared/widgets/library_grid/library_grid_card.dart';
-import '../albums/album_grid.dart' show albumGridPadding;
 import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
 
 /// Row used to measure the list: every line and a duration, the tallest a
@@ -106,14 +105,14 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
           key: const ValueKey('songs-grid'),
           controller: widget.controller,
           padding: const EdgeInsets.fromLTRB(
-            albumGridPadding,
+            libraryGridPadding,
             0,
-            albumGridPadding,
+            libraryGridPadding,
             libraryBottomInset,
           ),
           gridDelegate: libraryGridDelegate(
             context,
-            constraints.maxWidth - albumGridPadding * 2,
+            constraints.maxWidth - libraryGridPadding * 2,
             tileHeight: SongGridTile.heightFor,
           ),
           itemCount: widget.songs.ids.length,

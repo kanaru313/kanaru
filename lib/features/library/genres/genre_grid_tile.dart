@@ -9,7 +9,6 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import 'genre_display_name.dart';
 import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
-import '../albums/album_grid.dart';
 
 /// One genre in a grid: cover collage, name, "N songs".
 class GenreGridTile extends StatelessWidget {
@@ -63,14 +62,14 @@ class GenreGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => GridView.builder(
         padding: const EdgeInsets.fromLTRB(
-          albumGridPadding,
+          libraryGridPadding,
           0,
-          albumGridPadding,
+          libraryGridPadding,
           24,
         ),
         gridDelegate: libraryGridDelegate(
           context,
-          constraints.maxWidth - albumGridPadding * 2,
+          constraints.maxWidth - libraryGridPadding * 2,
           tileHeight: roundGridTileHeight,
         ),
         itemCount: genres.length,

@@ -104,7 +104,7 @@ bool _itemEnabled(WidgetTester tester, Finder item) =>
 /// Opens the menu of a row the way a pointer does: a long press on it.
 Future<void> _rowMenu(WidgetTester tester, int index) async {
   await tester.longPress(find.byType(MostPlayedRowTile).at(index));
-  await settleSongModal(tester);
+  await settleModal(tester);
 }
 
 /// Picks the days [from] to [to] of October 2026 in the range dialog.
@@ -411,18 +411,18 @@ void main() {
       final row = find.byType(MostPlayedRowTile).first;
 
       await tester.tap(row, buttons: kSecondaryButton);
-      await settleSongModal(tester);
+      await settleModal(tester);
       expect(find.text('Song history'), findsOneWidget);
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       await tester.tap(
         find.descendant(of: row, matching: find.byTooltip('More options')),
       );
-      await settleSongModal(tester);
+      await settleModal(tester);
       expect(find.text('Song history'), findsOneWidget);
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       for (final shift in [false, true]) {
         final ink = find.descendant(of: row, matching: find.byType(InkWell));
@@ -443,11 +443,11 @@ void main() {
         if (shift) {
           await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
         }
-        await settleSongModal(tester);
+        await settleModal(tester);
         expect(find.text('Song history'), findsOneWidget, reason: '$shift');
         expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
         await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-        await settleSongModal(tester);
+        await settleModal(tester);
       }
     });
 
@@ -483,7 +483,7 @@ void main() {
       await _rowMenu(tester, 0);
 
       await tester.tap(find.text('Song history'));
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(location(h), mostPlayedTrackLocation('/m/B.flac'));
     });
@@ -495,7 +495,7 @@ void main() {
       await _rowMenu(tester, 0);
 
       await tester.tap(find.text('Add to queue'));
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(_queue(h), ['/m/B.flac']);
     });

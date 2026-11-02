@@ -85,7 +85,7 @@ void main() {
   testWidgets('a tap opens the album modal with Go to album', (tester) async {
     await pump(tester);
     await tester.tap(find.byTooltip('More options'));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(albumModalAction('album'), findsOneWidget);
   });
 
@@ -109,7 +109,7 @@ void main() {
       findsOneWidget,
     );
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     final ctx = FocusManager.instance.primaryFocus?.context;
     expect(
       find.descendant(

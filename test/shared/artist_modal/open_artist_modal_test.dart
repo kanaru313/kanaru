@@ -82,13 +82,13 @@ void main() {
     expect(host.location, artistLocation('ann'));
 
     host.router.go('/');
-    await settleArtistModal(tester);
+    await settleModal(tester);
     await openArtistModalOf(tester);
     await tapArtistRow(tester, 'Go to folder');
     expect(host.location, folderLocation('/m/Rock'));
 
     host.router.go('/');
-    await settleArtistModal(tester);
+    await settleModal(tester);
     await openArtistModalOf(tester);
     await tapArtistRow(tester, 'Go to album');
     expect(host.location, artistAlbumLocation('ann', ownAlbums(1).single.key));
@@ -98,7 +98,7 @@ void main() {
     final host = await pumpArtistHost(tester, links: linksOf());
     await openArtistModalOf(tester);
     await tester.tap(find.text('3 albums • 12 songs • 1 h 0 min'));
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(host.location, artistLocation('ann'));
     expect(find.text('Go to artist'), findsNothing);
   });
@@ -130,7 +130,7 @@ void main() {
     await openArtistModalOf(tester);
 
     await tester.tap(find.byTooltip('Show in file manager'));
-    await settleArtistModal(tester);
+    await settleModal(tester);
 
     expect(host.shownInFileManager, ['/m/Rock/1.flac']);
     expect(find.text('Go to folder'), findsNothing);
@@ -175,11 +175,11 @@ void main() {
     await tapArtistRow(tester, 'Advanced');
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsNothing);
   });
 
@@ -207,7 +207,7 @@ void main() {
     await openArtistModalOf(tester);
     expect(find.text('Go to album'), findsOneWidget);
     await tester.tap(find.text('Go to album'));
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
   });
 

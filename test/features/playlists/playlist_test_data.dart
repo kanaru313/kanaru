@@ -187,7 +187,7 @@ Future<void> removeRowViaModal(WidgetTester tester, int index) =>
 /// Same as [removeRowViaModal] for the row [row].
 Future<void> removeRowOf(WidgetTester tester, Finder row) async {
   await tester.tap(row, buttons: kSecondaryButton);
-  await settleSongModal(tester);
+  await settleModal(tester);
   await tester.tap(find.text('Remove from playlist'));
   await tester.pump();
 }
@@ -203,12 +203,12 @@ Future<void> expectRowModalRemove(
     find.byType(PlaylistEntryTile).at(index),
     buttons: kSecondaryButton,
   );
-  await settleSongModal(tester);
+  await settleModal(tester);
   expect(find.text('Go to artist'), findsOneWidget, reason: 'modal is open');
   expect(
     modalAction('remove-from-playlist'),
     present ? findsOneWidget : findsNothing,
   );
   await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-  await settleSongModal(tester);
+  await settleModal(tester);
 }

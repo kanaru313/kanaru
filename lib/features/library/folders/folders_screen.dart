@@ -7,6 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/settings/library_sort.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/view_mode_toggle.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
@@ -71,20 +72,7 @@ class FoldersScreen extends ConsumerWidget {
               icon: Icon(hierarchy ? AppIcons.folderTree : AppIcons.folderFlat),
               onPressed: () => notifier.setFoldersHierarchy(!hierarchy),
             ),
-            IconButton(
-              tooltip: switch (view) {
-                AlbumsView.grid => l10n.albumsGridView,
-                AlbumsView.list => l10n.albumsListView,
-              },
-              icon: Icon(switch (view) {
-                AlbumsView.grid => AppIcons.viewGrid,
-                AlbumsView.list => AppIcons.viewList,
-              }),
-              onPressed: () => notifier.setFoldersView(switch (view) {
-                AlbumsView.grid => AlbumsView.list,
-                AlbumsView.list => AlbumsView.grid,
-              }),
-            ),
+            ViewModeToggle(view: view, onChanged: notifier.setFoldersView),
           ],
         ],
         body: LibraryBrowseBody<FolderNode>(

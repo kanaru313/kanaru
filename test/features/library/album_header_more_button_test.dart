@@ -51,7 +51,7 @@ void main() {
       await tester.tap(
         find.descendant(of: host, matching: find.byType(AlbumMoreButton)),
       );
-      await settleAlbumModal(tester);
+      await settleModal(tester);
 
       expect(albumModalAction('play-all'), findsOneWidget);
       expect(albumModalAction('album'), findsNothing);
@@ -64,7 +64,7 @@ void main() {
       await tester.tap(
         find.descendant(of: host, matching: find.byType(AlbumMoreButton)),
       );
-      await settleAlbumModal(tester);
+      await settleModal(tester);
       await tapAlbumRow(tester, 'Play next');
 
       expect(_queueTitles(h), ['One', 'Two']);
@@ -88,7 +88,7 @@ void main() {
     Focus.of(tester.element(button)).requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     final focus = FocusManager.instance.primaryFocus;
     expect(focus, isNot(isA<FocusScopeNode>()));

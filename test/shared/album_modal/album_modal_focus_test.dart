@@ -40,11 +40,11 @@ void main() {
     final host = await pumpAlbumHost(tester, links: linksOf());
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(_focusInModal(within: albumModalAction('album')), isTrue);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(host.location, albumLocation(testAlbumKey));
   });
 
@@ -58,11 +58,11 @@ void main() {
     );
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(_focusInModal(within: albumModalAction('artist')), isTrue);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(host.location, artistLocation('ann'));
   });
 
@@ -81,11 +81,11 @@ void main() {
       await pumpAlbumHost(tester, container: container, showAlbum: false);
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-      await settleAlbumModal(tester);
+      await settleModal(tester);
       expect(_focusInModal(within: albumModalAction('play-all')), isTrue);
 
       gate.complete(null);
-      await settleAlbumModal(tester);
+      await settleModal(tester);
       expect(_focusInModal(within: albumModalAction('play-all')), isFalse);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
@@ -100,9 +100,9 @@ void main() {
     await pumpAlbumHost(tester, links: linksOf());
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Go to album'), findsNothing);
     final focus = FocusManager.instance.primaryFocus;
@@ -118,7 +118,7 @@ void main() {
   testWidgets('a right click opens with no focus in the modal', (tester) async {
     await pumpAlbumHost(tester, links: linksOf());
     await tester.tap(find.text('tile'), buttons: kSecondaryButton);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(_focusInModal(), isFalse);
   });
 
@@ -129,7 +129,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(_focusInModal(within: albumModalAction('album')), isTrue);
   });
 
@@ -138,7 +138,7 @@ void main() {
   ) async {
     await pumpAlbumHost(tester, links: linksOf(), withMoreButton: true);
     await tester.tap(find.byTooltip('More options'));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to album'), findsOneWidget);
     expect(_focusInModal(), isFalse);
   });

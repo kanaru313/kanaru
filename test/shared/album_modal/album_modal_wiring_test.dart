@@ -27,7 +27,7 @@ void main() {
     expect(find.byType(AlbumGridTile), findsOneWidget);
 
     await tester.tap(find.text('Alpha'), buttons: kSecondaryButton);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     expect(_album, findsOneWidget);
   });
@@ -40,7 +40,7 @@ void main() {
     expect(find.byType(AlbumListTile), findsOneWidget);
 
     await tester.tap(find.text('Alpha'), buttons: kSecondaryButton);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     expect(_album, findsOneWidget);
   });
@@ -62,7 +62,7 @@ void main() {
       ),
       buttons: kSecondaryButton,
     );
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     expect(_album, findsOneWidget);
   });

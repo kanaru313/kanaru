@@ -104,7 +104,7 @@ void main() {
         find.byType(PlaylistEntryTile),
         buttons: kSecondaryButton,
       );
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       final error = Theme.of(tester.element(find.byType(PlaylistEntryTile)))
           .colorScheme
@@ -140,7 +140,7 @@ void main() {
         find.byType(PlaylistEntryTile),
         buttons: kSecondaryButton,
       );
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       final action = modalAction('remove-from-playlist');
       expect(
@@ -162,7 +162,7 @@ void main() {
         find.byType(PlaylistEntryTile),
         buttons: kSecondaryButton,
       );
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(find.text('Go to artist'), findsOneWidget);
       expect(modalAction('remove-from-playlist'), findsNothing);
@@ -181,12 +181,12 @@ void main() {
       );
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
       await press.up();
-      await settleSongModal(tester);
+      await settleModal(tester);
       expect(find.text('Go to artist'), findsNothing);
 
       // The rest of the row still opens it.
       await tester.longPress(find.text('T1'));
-      await settleSongModal(tester);
+      await settleModal(tester);
       expect(find.text('Go to artist'), findsOneWidget);
     });
 

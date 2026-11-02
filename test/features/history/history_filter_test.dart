@@ -225,7 +225,7 @@ void main() {
       await _filterBy(tester, 'lal');
 
       await tester.longPress(find.byType(HistoryPlayRowTile).first);
-      await settleSongModal(tester);
+      await settleModal(tester);
       expect(find.text('Add to queue'), findsOneWidget);
       await tester.tap(find.text('Remove from history'));
       await settleHistory(tester);
@@ -282,7 +282,7 @@ void main() {
         await _filterBy(tester, 'lal');
 
         await tester.longPress(find.byType(HistoryPlayRowTile).first);
-        await settleSongModal(tester);
+        await settleModal(tester);
         await tester.tap(find.text('Remove from history'));
         await settleHistory(tester);
         expect(_shownAt(tester), [_at(20)]);
