@@ -133,7 +133,7 @@ Detailed feature list with IDs, priorities and acceptance criteria: **[docs/feat
 - [ ] Library database & browsing: albums, artists, genres, folders, songs done
 - [ ] Now Playing, mini player, queue, shuffle / repeat: shipped, with queue history on the History page; hero transition open
 - [x] Full-text search over songs, albums and artists: typo correction, search history, field syntax, field picker, shortcuts and in-page filters; search over lyrics still open
-- [x] Playlists (incl. M3U): create, rename, delete, add, remove and reorder, Favorites, M3U import and export, save the queue as a playlist
+- [x] Playlists (incl. M3U): create, edit name and description, delete, add, remove and reorder, Favorites, M3U import and export, save the queue as a playlist
 - [ ] Gapless, ReplayGain: gapless configured, not verified; ReplayGain done, with output device choice in Settings > Playback
 - [x] Dynamic color from album art
 - [ ] Packaging: AppImage done; Flatpak, `.deb` not started

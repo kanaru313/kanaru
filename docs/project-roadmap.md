@@ -11,7 +11,7 @@ Last updated: 2026-11-01.
 | Phase | Scope | Status |
 |---|---|---|
 | 0 Foundation | Scaffold, M3 theme, first playback, MPRIS | Done, except CI |
-| 1 Offline local player | Scan, library, Now Playing, queue, search, playlists, packaging | In progress: core library, playback (with ReplayGain), search, playlists (create, rename, delete, add, remove, reorder, Favorites, M3U), History, colors from the cover and the AppImage shipped; Flatpak, `.deb` and the schema collapse open |
+| 1 Offline local player | Scan, library, Now Playing, queue, search, playlists, packaging | In progress: core library, playback (with ReplayGain), search, playlists (create, edit name and description, delete, add, remove, reorder, Favorites, M3U), History, colors from the cover and the AppImage shipped; Flatpak, `.deb` and the schema collapse open |
 | 2 More platforms | Windows, macOS, Android, iOS | Open |
 | 3 Remote sources | `StorageProvider`, proxy, cache, Subsonic, WebDAV, S3, SFTP, Drive | Open |
 | 4 Juicy | Lyrics, waveform, EQ, stats, scrobbling, cross-device sync | In progress: lyrics (`.lrc`, embedded, online lookup, synced view), the lyrics plugin system, translation and the waveform seek bar shipped; EQ, stats, scrobbling and sync open |
