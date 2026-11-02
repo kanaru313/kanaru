@@ -259,10 +259,17 @@ void main() {
           artist: 'Alpha feat. Beta',
           album: 'X',
           albumArtist: 'Alpha',
+          durationMs: 100000,
         );
-        await track('/b', artist: 'Beta', album: 'Y', albumArtist: 'Beta');
+        await track(
+          '/b',
+          artist: 'Beta',
+          album: 'Y',
+          albumArtist: 'Beta',
+          durationMs: 50000,
+        );
         await track('/c', artist: 'Beta', album: 'Y', albumArtist: 'Beta');
-        await track('/d', artist: 'Gamma');
+        await track('/d', artist: 'Gamma', durationMs: 30000);
         await play('/a', 10);
         await play('/d', 20);
         await play('/gone', 30);
@@ -279,9 +286,34 @@ void main() {
           expect(c.name, expected.name);
           expect(c.trackCount, expected.trackCount);
           expect(c.albumCount, expected.albumCount);
+          expect(c.durationMs, isNotNull);
+          expect(c.durationMs, expected.durationMs);
         }
         final beta = recent.firstWhere((c) => c.name == 'Beta');
         expect(beta.trackCount, 3); // played once, counted over every credit
+      },
+    );
+
+    test('total length sums every credited track, played or not', () async {
+      await track('/a', artist: 'Ann', durationMs: 120000);
+      await track('/b', artist: 'Ann', durationMs: 60000);
+      await track('/c', artist: 'Ann');
+      await play('/a', 10);
+      final ann = (await db.homeRecentArtists(limit: 10)).single;
+      expect(ann.durationMs, 180000);
+    });
+
+    test(
+      'total length is null when no duration is known or all are 0',
+      () async {
+        await track('/a', artist: 'Ann');
+        await track('/b', artist: 'Bob', durationMs: 0);
+        await track('/c', artist: 'Bob');
+        await play('/a', 10);
+        await play('/b', 20);
+        final recent = await db.homeRecentArtists(limit: 10);
+        expect(recent.map((c) => c.name), ['Bob', 'Ann']);
+        expect(recent.map((c) => c.durationMs), [null, null]);
       },
     );
 

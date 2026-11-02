@@ -4,12 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/search/search_prefs_provider.dart';
-import 'package:kanaru/features/home/home_artist_card.dart';
 import 'package:kanaru/features/home/home_screen.dart';
-import 'package:kanaru/features/library/artists/artist_grid_tile.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/artist_modal/artist_more_button.dart';
 import 'package:kanaru/shared/widgets/artist_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/artist_grid_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../features/home/home_test_harness.dart';
@@ -92,9 +91,11 @@ void main() {
     );
   });
 
-  testWidgets('a Home artist card opens the artist modal', (tester) async {
+  testWidgets('a Home artist tile opens the artist modal with the length', (
+    tester,
+  ) async {
     final h = HomeHarness();
-    await h.addTrack('/a', artist: 'Ann', album: 'Alpha');
+    await h.addTrack('/a', artist: 'Ann', album: 'Alpha', durationMs: 180000);
     await h.db.insertLibraryPlay(
       path: '/a',
       playedAt: DateTime.now().millisecondsSinceEpoch,
@@ -104,7 +105,10 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: find.byType(HomeArtistCard),
+        of: find.descendant(
+          of: find.byType(HomeScreen),
+          matching: find.byType(ArtistGridTile),
+        ),
         matching: find.text('Ann'),
       ),
       buttons: kSecondaryButton,
@@ -112,6 +116,7 @@ void main() {
     await settleArtistModal(tester);
 
     expect(_modal, findsWidgets);
+    expect(find.text('1 album • 1 song • 3 min'), findsOneWidget);
   });
 
   testWidgets('a search artist row opens the modal and saves the history', (

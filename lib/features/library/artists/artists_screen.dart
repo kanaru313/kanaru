@@ -18,7 +18,7 @@ import '../library_browse_body.dart';
 import '../library_view_modes.dart';
 import '../widgets/library_sort_controls.dart';
 import '../widgets/page_material.dart';
-import 'artist_grid_tile.dart';
+import 'artist_grid.dart';
 import 'artists_provider.dart';
 import '../../../shared/artist_page/enqueue_artist.dart';
 

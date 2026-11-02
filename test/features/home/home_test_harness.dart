@@ -43,6 +43,7 @@ class HomeHarness {
     String? albumArtist,
     int? year,
     int? addedAt,
+    int? durationMs,
   }) async {
     if (_rootId == 0) {
       await db.addRoots(['/m'], now: 1);
@@ -59,6 +60,7 @@ class HomeHarness {
         album: Value(album),
         albumArtist: Value(albumArtist),
         year: Value(year),
+        durationMs: Value(durationMs),
         addedAt: addedAt ?? now.millisecondsSinceEpoch,
         updatedAt: 1,
       ),

@@ -4,18 +4,18 @@ import '../../shared/widgets/library_grid/album_grid_tile.dart';
 import '../../shared/widgets/library_grid/library_grid_card.dart';
 import '../../shared/widgets/library_grid/song_grid_tile.dart';
 
-/// Padding around the content of an artist card and the gap between the
-/// picture and the text.
+/// Padding around the content of an artist tile (`ArtistGridTile`) and the
+/// gap between the picture and the text.
 const homeCardPadding = 8.0;
 const homeCardGap = 8.0;
 
 /// Width of a cell on a shelf: 152 px of content plus the padding each side.
 const homeShelfTileWidth = 168.0;
 
-/// Width of the square picture of an artist card.
+/// Width of the square picture of an artist tile.
 const homeCardPictureSize = homeShelfTileWidth - homeCardPadding * 2;
 
-/// Height of an artist card: the square picture plus two text lines at the
+/// Height of an artist tile: the square picture plus two text lines at the
 /// current text scale, so large text never overflows.
 double homeShelfTileHeight(BuildContext context) {
   final theme = Theme.of(context).textTheme;

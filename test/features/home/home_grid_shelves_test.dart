@@ -5,16 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/features/home/home_album_card.dart';
 import 'package:kanaru/features/home/home_album_grid_screen.dart';
-import 'package:kanaru/features/home/home_artist_card.dart';
+import 'package:kanaru/features/home/home_artist_grid_screen.dart';
 import 'package:kanaru/features/home/home_providers.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumSummary;
 import 'package:kanaru/features/home/home_screen.dart';
 import 'package:kanaru/features/home/home_tile_metrics.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/widgets/artist_avatar.dart';
 import 'package:kanaru/shared/widgets/card_shelf.dart';
 import 'package:kanaru/shared/widgets/cover_art.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/library_grid/album_grid_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/artist_grid_tile.dart';
 import 'package:kanaru/shared/widgets/library_grid/library_grid_card.dart';
 import 'package:kanaru/shared/widgets/library_grid/song_grid_tile.dart';
 import 'package:material_ui/material_ui.dart';
@@ -120,7 +122,7 @@ void main() {
   });
 
   group('album shelf', () {
-    testWidgets('draws album grid cards, artists keep their own card', (
+    testWidgets('draws album grid cards, artists keep their round tile', (
       tester,
     ) async {
       final h = await played(3);
@@ -136,7 +138,7 @@ void main() {
       );
       expect(
         find.descendant(
-          of: find.byType(HomeArtistCard),
+          of: find.byType(ArtistGridTile),
           matching: find.byType(LibraryGridCard),
         ),
         findsNothing,
@@ -199,6 +201,52 @@ void main() {
       expect(
         tester.getSize(shelf).height,
         homeAlbumShelfHeight(tester.element(shelf)),
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+  group('artist shelf', () {
+    testWidgets('draws the library artist tile with a 152 px avatar', (
+      tester,
+    ) async {
+      final h = await played(3);
+      await open(tester, h);
+      final tile = find.byType(ArtistGridTile);
+      expect(tile, findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.ancestor(of: tile, matching: find.byType(CardShelf)),
+          matching: find.text('Ann'),
+        ),
+        findsOneWidget,
+      );
+      final avatar = find.descendant(
+        of: tile,
+        matching: find.byType(ArtistAvatar),
+      );
+      expect(tester.getSize(avatar), const Size.square(homeCardPictureSize));
+      expect(homeCardPictureSize, 152);
+    });
+
+    testWidgets('the full grid draws 168 px tiles with a 152 px avatar', (
+      tester,
+    ) async {
+      final h = await played(3);
+      await h.pump(
+        tester,
+        const HomeArtistGridScreen(),
+        width: 1280,
+        height: 2400,
+      );
+      final tile = find.byType(ArtistGridTile);
+      expect(tile, findsOneWidget);
+      expect(tester.getSize(tile).width, homeShelfTileWidth);
+      expect(homeShelfTileWidth, 168);
+      expect(
+        tester.getSize(
+          find.descendant(of: tile, matching: find.byType(ArtistAvatar)),
+        ),
+        const Size.square(152),
       );
       expect(tester.takeException(), isNull);
     });

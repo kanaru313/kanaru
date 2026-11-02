@@ -100,6 +100,7 @@ extension HomeQueries on LibraryDatabase {
               name: row.read<String>('name'),
               trackCount: row.read<int>('n'),
               albumCount: row.read<int>('albums'),
+              durationMs: row.readNullable<int>('ms'),
             ),
           )
           .get();
