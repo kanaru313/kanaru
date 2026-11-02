@@ -35,13 +35,14 @@ List<Widget> repeatMenuItems(
     VoidCallback onPressed, {
     bool counted = false,
     bool enabled = true,
+    Widget? trailingIcon,
   }) {
     final active = counted ? counting : !counting && base == mode;
     return Semantics(
       selected: active,
       child: MenuItemButton(
         style: menuRowStyle(
-          background: active && !counted ? scheme.secondaryContainer : null,
+          background: active ? scheme.secondaryContainer : null,
           foreground: active ? scheme.onSecondaryContainer : null,
         ),
         leadingIcon: RepeatModeIcon(
@@ -51,6 +52,7 @@ List<Widget> repeatMenuItems(
           size: 24,
           menu: true,
         ),
+        trailingIcon: trailingIcon,
         onPressed: enabled ? onPressed : null,
         child: Text(
           repeatModeLabel(l10n, mode, counted: counted, times: shown),
@@ -72,32 +74,26 @@ List<Widget> repeatMenuItems(
     menuRowSpaced(item(RepeatMode.off, () => player.setRepeat(RepeatMode.off))),
     menuRowSpaced(item(RepeatMode.one, () => player.setRepeat(RepeatMode.one))),
     menuRowSpaced(
-      DecoratedBox(
-        decoration: BoxDecoration(
-          color: counting ? scheme.secondaryContainer : null,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
+      item(
+        base,
+        () => player.setRepeatTimes(shown),
+        counted: true,
+        enabled: !stopped,
+        trailingIcon: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: item(
-                base,
-                () => player.setRepeatTimes(shown),
-                counted: true,
-                enabled: !stopped,
-              ),
-            ),
             IconButton(
               icon: const Icon(AppIcons.remove),
               color: counting ? scheme.onSecondaryContainer : null,
               tooltip: l10n.playerRepeatFewer,
+              visualDensity: VisualDensity.compact,
               onPressed: stopped || shown <= 1 ? null : () => step(-1),
             ),
             IconButton(
               icon: const Icon(AppIcons.add),
               color: counting ? scheme.onSecondaryContainer : null,
               tooltip: l10n.playerRepeatMore,
+              visualDensity: VisualDensity.compact,
               onPressed: stopped || shown >= maxRepeatTimes
                   ? null
                   : () => step(1),
