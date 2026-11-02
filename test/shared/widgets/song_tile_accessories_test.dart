@@ -21,7 +21,6 @@ const _song = TrackListItem(
 );
 
 const _handleKey = Key('handle');
-const _removeKey = Key('remove');
 
 Widget _host(Widget child, {String? playingPath}) => ProviderScope(
   overrides: [playingTrackPathProvider.overrideWithValue(playingPath)],
@@ -33,25 +32,41 @@ Widget _host(Widget child, {String? playingPath}) => ProviderScope(
 );
 
 void main() {
-  testWidgets('handle sits left of the cover, remove right of the heart', (
-    tester,
-  ) async {
+  testWidgets('handle sits left of the cover', (tester) async {
     await tester.pumpWidget(
       _host(
         SongTile(
           song: _song,
           onTap: () {},
           leadingAccessory: const SizedBox(key: _handleKey, width: 24),
-          trailingAccessory: const SizedBox(key: _removeKey, width: 24),
         ),
       ),
     );
     final handle = tester.getRect(find.byKey(_handleKey));
     final cover = tester.getRect(find.byType(SongTileCover));
-    final heart = tester.getRect(find.byType(FavoriteButton));
-    final remove = tester.getRect(find.byKey(_removeKey));
     expect(handle.right, lessThanOrEqualTo(cover.left));
-    expect(remove.left, greaterThanOrEqualTo(heart.right));
+  });
+
+  testWidgets('a row without onTap renders and ignores a tap', (tester) async {
+    await tester.pumpWidget(_host(const SongTile(song: _song)));
+    expect(find.text('Song A'), findsOneWidget);
+
+    await tester.tap(find.text('Song A'));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    // The row's own InkWell is the outermost one (the heart has another):
+    // without onTap it is disabled, so its ink is no focus stop either.
+    final rowInk = find
+        .descendant(of: find.byType(SongTile), matching: find.byType(InkWell))
+        .first;
+    expect(tester.widget<InkWell>(rowInk).onTap, isNull);
+    final inkFocus = tester.widget<Focus>(
+      find.descendant(of: rowInk, matching: find.byType(Focus)).first,
+    );
+    expect(inkFocus.canRequestFocus, isFalse);
+    // No ⋮ without onQueueAction, and the heart keeps its own tap.
+    expect(find.byTooltip('More options'), findsNothing);
+    expect(find.byType(FavoriteButton), findsOneWidget);
   });
 
   testWidgets('small accessories do not change the row height', (tester) async {
@@ -64,14 +79,13 @@ void main() {
           song: _song,
           onTap: () {},
           leadingAccessory: const SizedBox(width: 24, height: 24),
-          trailingAccessory: const SizedBox(width: 24, height: 24),
         ),
       ),
     );
     expect(tester.getSize(find.byType(SongTile)).height, plain);
   });
 
-  testWidgets('a tall accessory does not grow the row past its fixed height', (
+  testWidgets('an accessory as tall as the cover keeps the row height', (
     tester,
   ) async {
     await tester.pumpWidget(_host(SongTile(song: _song, onTap: () {})));
@@ -82,7 +96,10 @@ void main() {
         SongTile(
           song: _song,
           onTap: () {},
-          trailingAccessory: const SizedBox(width: 24, height: 48),
+          leadingAccessory: const SizedBox(
+            width: 24,
+            height: libraryRowCoverSize,
+          ),
         ),
       ),
     );

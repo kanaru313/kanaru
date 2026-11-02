@@ -11,7 +11,6 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../../../shared/widgets/song_tile.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
@@ -161,10 +160,9 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
                         itemCount: group.tracks.length,
                         itemBuilder: (context, i) {
                           final track = group.tracks[i];
-                          return SongTile(
-                            song: track,
-                            number: albumTrackNumber(track, numbers: numbers),
-                            showAlbum: false,
+                          return AlbumTrackRow(
+                            track: track,
+                            numbers: numbers,
                             onTap: () =>
                                 playTracks(ref, queueOf(tracks), starts[g] + i),
                             onQueueAction: (action) =>

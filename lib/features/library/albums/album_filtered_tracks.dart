@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
+import '../../../shared/song_modal/song_modal_extras.dart';
 import '../../../shared/widgets/in_page_no_match.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/song_tile.dart';
@@ -11,10 +12,38 @@ import '../../../shared/widgets/song_tile.dart';
 String? albumTrackNumber(BrowseTrack track, {required bool numbers}) =>
     numbers ? track.trackNo?.toString() ?? '' : null;
 
+/// One track row on an album page, in the disc groups or the filtered list:
+/// the number column follows [numbers] (see [albumTrackNumber]) and the song
+/// modal has no Go to album (the page is the album).
+class AlbumTrackRow extends StatelessWidget {
+  const AlbumTrackRow({
+    super.key,
+    required this.track,
+    required this.numbers,
+    required this.onTap,
+    required this.onQueueAction,
+  });
+
+  final BrowseTrack track;
+
+  /// Track numbers in albums is on (Settings).
+  final bool numbers;
+  final VoidCallback onTap;
+  final ValueChanged<QueueAction> onQueueAction;
+
+  @override
+  Widget build(BuildContext context) => SongTile(
+    song: track,
+    number: albumTrackNumber(track, numbers: numbers),
+    onTap: onTap,
+    onQueueAction: onQueueAction,
+    modalExtras: () => const SongModalExtras(showAlbum: false),
+  );
+}
+
 /// The tracks of an album that match the filter, best match first as one flat
-/// list (no disc groups). [onTap] gets the position in [tracks]. Rows are the
-/// album page's: [numbers] shows the track number column, and the menu has
-/// no Go to album (the page is the album).
+/// list (no disc groups). [onTap] gets the position in [tracks]. Rows are
+/// [AlbumTrackRow]s, the same as in the disc groups.
 class SliverAlbumFilteredTracks extends StatelessWidget {
   const SliverAlbumFilteredTracks({
     super.key,
@@ -44,10 +73,9 @@ class SliverAlbumFilteredTracks extends StatelessWidget {
       itemCount: tracks.length,
       itemBuilder: (context, i) {
         final track = tracks[i];
-        return SongTile(
-          song: track,
-          number: albumTrackNumber(track, numbers: numbers),
-          showAlbum: false,
+        return AlbumTrackRow(
+          track: track,
+          numbers: numbers,
           onTap: () => onTap(i),
           onQueueAction: (action) => onQueueAction(track, action),
         );

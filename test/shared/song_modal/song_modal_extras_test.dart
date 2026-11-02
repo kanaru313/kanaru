@@ -22,6 +22,7 @@ class _Probe {
   int ran = 0;
   String? note;
   bool destructive = false;
+  bool showAlbum = true;
 }
 
 Future<void> _pump(WidgetTester tester, _Probe probe) {
@@ -46,6 +47,7 @@ Future<void> _pump(WidgetTester tester, _Probe probe) {
                   probe.built++;
                   return SongModalExtras(
                     headerNote: probe.note,
+                    showAlbum: probe.showAlbum,
                     actions: [
                       ContextModalAction(
                         id: 'extra',
@@ -148,6 +150,23 @@ void main() {
       },
     );
   }
+
+  testWidgets('showAlbum false leaves Go to album out of the ⋮ and the '
+      'right click modal', (tester) async {
+    final probe = _Probe()..showAlbum = false;
+    await _pump(tester, probe);
+
+    await tester.tap(find.byTooltip('More options'));
+    await settleSongModal(tester);
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(find.text('Go to album'), findsNothing);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settleSongModal(tester);
+    await openSongModal(tester, find.byType(SongTile));
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(find.text('Go to album'), findsNothing);
+  });
 
   testWidgets('tapping an extra closes the modal, then runs it', (
     tester,

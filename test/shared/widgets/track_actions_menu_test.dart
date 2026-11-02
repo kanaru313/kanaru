@@ -11,6 +11,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/show_in_file_manager.dart';
+import 'package:kanaru/shared/song_modal/song_modal_extras.dart';
 import 'package:kanaru/shared/song_modal/song_modal_header.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
@@ -33,6 +34,7 @@ Future<void> _pumpRegion(
   WidgetTester tester, {
   required TrackListItem song,
   ValueChanged<QueueAction>? onQueueAction,
+  SongModalExtrasBuilder? modalExtras,
   List<Override> overrides = const [],
   bool withRouter = false,
 }) async {
@@ -43,6 +45,7 @@ Future<void> _pumpRegion(
   final region = TrackActionsRegion(
     song: song,
     onQueueAction: onQueueAction,
+    modalExtras: modalExtras,
     child: const Text('row'),
   );
   final delegates = AppLocalizations.localizationsDelegates;
@@ -208,6 +211,22 @@ void main() {
     expect(find.text('Go to artist'), findsOneWidget);
     expect(find.text('Go to album'), findsNothing);
     expect(find.text('Go to folder'), findsOneWidget);
+  });
+
+  testWidgets('the region takes showAlbum from its modal extras', (
+    tester,
+  ) async {
+    await _pumpRegion(
+      tester,
+      song: _song,
+      onQueueAction: (_) {},
+      modalExtras: () => const SongModalExtras(showAlbum: false),
+    );
+
+    await openSongModal(tester, find.text('row'));
+
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(find.text('Go to album'), findsNothing);
   });
 
   testWidgets('without onQueueAction there is no modal', (tester) async {

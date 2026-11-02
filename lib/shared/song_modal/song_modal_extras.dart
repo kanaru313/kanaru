@@ -2,7 +2,8 @@ import '../widgets/context_modal/context_modal_route.dart';
 
 /// What a screen adds to the song modal of one of its rows: [actions] shown
 /// before the links, a quiet [headerNote] line under the album, and which
-/// links point back at the page itself ([pageArtistKey], [showFolder]).
+/// links point back at the page itself ([showAlbum], [pageArtistKey],
+/// [showFolder]). This is the only way a screen shapes the song modal.
 ///
 /// A destructive action (Remove from playlist) sets
 /// `ContextModalAction.destructive`, which draws its label and icon in the
@@ -11,6 +12,7 @@ class SongModalExtras {
   const SongModalExtras({
     this.actions = const [],
     this.headerNote,
+    this.showAlbum = true,
     this.pageArtistKey,
     this.showFolder = true,
   });
@@ -20,6 +22,10 @@ class SongModalExtras {
   /// One short line under the album (for example the listen count); null
   /// leaves the header at three lines.
   final String? headerNote;
+
+  /// False on the page of the song's own album: Go to album (the page
+  /// itself) is left out.
+  final bool showAlbum;
 
   /// The artist whose page lists the row: Go to artist and Go to album
   /// artist leave that artist out. Null on every other screen.

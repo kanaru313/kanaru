@@ -193,7 +193,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       padding: libraryListBottomPadding,
-      prototypeItem: SongTile(song: prototypeSong, onTap: () {}),
+      prototypeItem: SongTile(song: prototypeSong),
       itemCount: rows.length,
       itemBuilder: (context, i) => SongTile(
         song: rows[i],
