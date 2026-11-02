@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:logging/logging.dart';
 
 import 'library_database.dart';
-import 'lyrics_plugin_spec.dart';
+import 'lyrics_plugin_queries.dart';
 
 export 'lyrics_choice_queries.dart';
 
@@ -148,11 +148,7 @@ extension OnlineLyricsQueries on LibraryDatabase {
       removed += await delete(onlineLyrics).go();
       removed += await delete(lyricsPins).go();
       removed += await delete(onlineLyricsRejects).go();
-      await customUpdate(
-        'DELETE FROM lyrics_plugins WHERE $removedAndUnreferencedPluginSql',
-        updates: {lyricsPlugins},
-        updateKind: UpdateKind.delete,
-      );
+      await deleteUnreferencedRemovedPlugins();
       return removed;
     });
   }

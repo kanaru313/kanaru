@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show listEquals;
+
 /// How albums are told apart. The album title always counts.
 class AlbumGrouping {
   const AlbumGrouping({this.byAlbumArtist = true, this.byYear = false});
@@ -66,8 +68,8 @@ class SplitPrefs {
   @override
   bool operator ==(Object other) =>
       other is SplitPrefs &&
-      _sameStrings(other.separators, separators) &&
-      _sameStrings(other.keepWhole, keepWhole);
+      listEquals(other.separators, separators) &&
+      listEquals(other.keepWhole, keepWhole);
 
   @override
   int get hashCode =>
@@ -76,14 +78,6 @@ class SplitPrefs {
   @override
   String toString() =>
       'SplitPrefs(separators: $separators, keepWhole: $keepWhole)';
-}
-
-bool _sameStrings(List<String> a, List<String> b) {
-  if (a.length != b.length) return false;
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
-  }
-  return true;
 }
 
 /// The usable entries of a [SplitPrefs] list: without control characters

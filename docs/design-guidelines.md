@@ -212,7 +212,7 @@ Feature code: `lib/features/lyrics_plugin_store/`. The pages take callbacks (`on
 
 - Decode sizes are bucketed to 64, 128, 256 and 512 px (`shared/widgets/cover_art.dart`). Images are never decoded at full size in lists.
 - `gaplessPlayback` is on for covers so they do not flash between tracks.
-- Missing artwork shows a placeholder: a solid color chosen from a stable FNV hash of the album or artist name (`shared/stable_hash.dart`, `shared/widgets/placeholder_colors.dart`). The same name always gets the same color.
+- Missing artwork shows a placeholder: a solid color chosen from a stable FNV hash of the album or artist name (`core/stable_hash.dart`, `shared/widgets/placeholder_colors.dart`). The same name always gets the same color.
 - Artist avatars (list, grid, Home, artist page header) show the cover of the artist's first album that has one, in artist page order: albums the artist owns before those it appears on, then year (unknown last), then title (`core/database/artist_cover_queries.dart`). Without any album cover they show the first letter on the same placeholder color.
 
 ## States

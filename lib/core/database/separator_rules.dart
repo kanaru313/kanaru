@@ -9,9 +9,8 @@
 /// the tag holds it, however the rules would otherwise cut it.
 library;
 
-import 'dart:convert';
-
 import '../settings/library_scan_prefs.dart';
+import '../stable_hash.dart';
 import 'text_keys.dart';
 
 /// Separators and keep-whole names, as typed. Equal when their [canonical]
@@ -84,18 +83,8 @@ int keysVersionFor(
   final groupingPart = defaultGrouping
       ? ''
       : '\u0003g:${grouping.byAlbumArtist ? 1 : 0},${grouping.byYear ? 1 : 0}';
-  final hash = _fnv1a32(
-    utf8.encode('$textKeysVersion|$canonical$groupingPart'),
-  );
+  final hash = fnv1a('$textKeysVersion|$canonical$groupingPart');
   return textKeysVersion + 1 + (hash & 0x3fffffff);
-}
-
-int _fnv1a32(List<int> bytes) {
-  var hash = 0x811c9dc5;
-  for (final byte in bytes) {
-    hash = ((hash ^ byte) * 0x01000193) & 0xffffffff;
-  }
-  return hash;
 }
 
 final _whitespaceRun = RegExp(r'\s+');
