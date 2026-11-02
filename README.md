@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="packaging/linux/icons/hicolor/scalable/apps/io.github.kanaru313.kanaru.svg" width="96" alt="Kanaru logo">
+
 # Kanaru
 
 **Plays & manages your music library — wherever it lives.**
