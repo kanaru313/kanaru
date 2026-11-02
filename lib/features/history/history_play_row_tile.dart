@@ -6,8 +6,8 @@ import '../../core/player/playing_track_path.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/context_menu_region.dart';
+import '../../shared/widgets/missing_song_row.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import '../../shared/widgets/song_row_view.dart';
 import '../../shared/widgets/song_tile.dart';
 
 /// One play of the timeline: the library song row with "date - time" as its
@@ -56,8 +56,9 @@ class HistoryPlayRowTile extends ConsumerWidget {
     final playedAt = l10n.historyPlayedAt(played, time);
     final nth = row.nth;
     final track = row.track;
-    // Same rule as SongTile's playing fill: only the newest play of the
-    // playing track, so the badge stays readable on the primaryContainer card.
+    // Only the newest play of the playing track is marked, not every listen
+    // of it in the journal. SongTile takes this value, so the fill and the
+    // badge colour (readable on the primaryContainer card) always agree.
     final playing =
         track != null &&
         row.latest &&
@@ -89,28 +90,16 @@ class HistoryPlayRowTile extends ConsumerWidget {
         onTap: onTap,
         detail: playedAt,
         badge: badge,
-        // Only the newest play of the playing track is marked, not every
-        // listen of it in the journal.
-        highlightPlaying: row.latest,
+        playing: playing,
         onQueueAction: onQueueAction,
         modalExtras: modalExtras,
       );
     }
-    // A missing play has no ink well to take focus, so it is a focus stop of
-    // its own: the Menu key needs focus inside the region.
-    return ContextMenuRegion(
-      onOpen: onMenu,
-      child: Focus(
-        child: Opacity(
-          opacity: 0.6,
-          child: SongRowView(
-            title: row.path.split('/').last,
-            artist: l10n.historyTrackMissing,
-            detail: playedAt,
-            badge: badge,
-          ),
-        ),
-      ),
+    return MissingSongRow(
+      path: row.path,
+      detail: playedAt,
+      badge: badge,
+      onMenu: onMenu,
     );
   }
 }

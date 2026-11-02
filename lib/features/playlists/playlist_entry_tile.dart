@@ -7,10 +7,11 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/song_modal/song_modal_data.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/context_modal/context_modal_route.dart';
+import '../../shared/widgets/hover_reveal_action.dart';
+import '../../shared/widgets/missing_song_row.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile.dart';
 import 'playlist_entry_handle.dart';
-import 'playlist_missing_entry_tile.dart';
 
 /// An entry used only to size the list's prototype row.
 const prototypePlaylistEntry = PlaylistEntryRow(
@@ -29,8 +30,9 @@ const prototypePlaylistEntry = PlaylistEntryRow(
 
 /// One playlist entry: the library song row with a drag handle before the
 /// cover. With [onRemove] its song modal has a red Remove from playlist. An
-/// entry whose file is not in the library shows its file name, is dimmed and
-/// does not play ([PlaylistMissingEntryTile]).
+/// entry whose file is not in the library is a [MissingSongRow]: no song
+/// modal, a remove button shown on hover or focus with [onRemove], else a
+/// heart on Favorites.
 class PlaylistEntryTile extends StatelessWidget {
   const PlaylistEntryTile({
     super.key,
@@ -71,21 +73,12 @@ class PlaylistEntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final track = entry.track;
-    if (track == null) {
-      return PlaylistMissingEntryTile(
-        entry: entry,
-        index: index,
-        reorderable: reorderable,
-        onRemove: onRemove,
-        showFavorite: favorites,
-        savedQueue: savedQueue,
-      );
-    }
+    if (track == null) return _missing(context);
     final remove = onRemove;
     return SongTile(
       song: track,
       // Only the first copy of the playing song is marked.
-      highlightPlaying: !entry.repeat,
+      playing: entry.repeat ? false : null,
       onTap: onTap ?? () {},
       onQueueAction: onQueueAction,
       leadingAccessory: reorderable ? PlaylistEntryHandle(index: index) : null,
@@ -106,6 +99,35 @@ class PlaylistEntryTile extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _missing(BuildContext context) {
+    final handle = reorderable ? PlaylistEntryHandle(index: index) : null;
+    final remove = onRemove;
+    if (remove == null) {
+      return MissingSongRow(
+        path: entry.path,
+        leading: handle,
+        // Favorites: the liked file can still be taken out.
+        showFavorite: favorites,
+      );
+    }
+    final l10n = context.l10n;
+    return HoverRevealAction(
+      builder: (_, revealed) => MissingSongRow(
+        path: entry.path,
+        leading: handle,
+        trailing: RevealableAction(
+          revealed: revealed,
+          child: IconButton(
+            icon: const Icon(AppIcons.closeRounded),
+            iconSize: 20,
+            tooltip: savedQueue ? l10n.queueRemove : l10n.playlistRemoveEntry,
+            onPressed: remove,
+          ),
+        ),
+      ),
     );
   }
 }

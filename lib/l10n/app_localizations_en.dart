@@ -1896,9 +1896,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get historyTrackMissing => 'Not in library';
-
-  @override
   String get historyDeletePlay => 'Remove from history';
 
   @override

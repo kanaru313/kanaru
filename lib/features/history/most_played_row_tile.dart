@@ -6,8 +6,8 @@ import '../../core/player/playing_track_path.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/context_menu_region.dart';
+import '../../shared/widgets/missing_song_row.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import '../../shared/widgets/song_row_view.dart';
 import '../../shared/widgets/song_tile.dart';
 
 /// One entry of the Most played list: the library song row, numbered by its
@@ -52,6 +52,8 @@ class MostPlayedRowTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final track = row.track;
+    // SongTile takes this value, so the fill and the rank and badge colours
+    // always agree.
     final playing =
         track != null &&
         ref.watch(playingTrackPathProvider.select((p) => p == track.path));
@@ -84,25 +86,16 @@ class MostPlayedRowTile extends ConsumerWidget {
         onTap: onTap,
         leadingAccessory: number,
         badge: badge,
+        playing: playing,
         onQueueAction: onQueueAction,
         modalExtras: modalExtras,
       );
     }
-    // A missing song has no ink well to take focus, so it is a focus stop of
-    // its own: the Menu key needs focus inside the region.
-    return ContextMenuRegion(
-      onOpen: onMenu,
-      child: Focus(
-        child: Opacity(
-          opacity: 0.6,
-          child: SongRowView(
-            leading: number,
-            title: row.path.split('/').last,
-            artist: l10n.historyTrackMissing,
-            badge: badge,
-          ),
-        ),
-      ),
+    return MissingSongRow(
+      path: row.path,
+      leading: number,
+      badge: badge,
+      onMenu: onMenu,
     );
   }
 }

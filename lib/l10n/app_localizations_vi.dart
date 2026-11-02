@@ -1806,9 +1806,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get historyTrackMissing => 'Không có trong thư viện';
-
-  @override
   String get historyDeletePlay => 'Xoá khỏi lịch sử';
 
   @override

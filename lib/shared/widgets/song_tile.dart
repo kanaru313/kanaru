@@ -39,7 +39,7 @@ class SongTile extends ConsumerWidget {
     this.trailingAccessory,
     this.detail,
     this.badge,
-    this.highlightPlaying = true,
+    this.playing,
     this.modalExtras,
   }) : assert(
          number == null || leadingAccessory == null,
@@ -78,17 +78,19 @@ class SongTile extends ConsumerWidget {
   /// and supplies its own semantics or tooltip.
   final Widget? badge;
 
-  /// False never marks this row as playing, e.g. an older play of the
-  /// playing track in a list where the same song repeats.
-  final bool highlightPlaying;
+  /// Whether the row is marked as playing. Null: the row of the playing
+  /// track is. Set by a list that already knows, e.g. one where the same song
+  /// repeats and only one copy is marked, or one that watches the playing
+  /// track itself for other parts of the row.
+  final bool? playing;
 
   /// Screen actions and note for the song modal, built when it opens.
   final SongModalExtrasBuilder? modalExtras;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playing =
-        highlightPlaying &&
+    final bool playing =
+        this.playing ??
         ref.watch(playingTrackPathProvider.select((p) => p == song.path));
     final durationMs = song.durationMs;
     final onQueue = onQueueAction;

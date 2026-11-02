@@ -1303,10 +1303,6 @@
       }
     }
   },
-  "historyTrackMissing": "Not in library",
-  "@historyTrackMissing": {
-    "description": "Note on a History row whose file is no longer in the library"
-  },
   "historyDeletePlay": "Remove from history",
   "@historyDeletePlay": {
     "description": "Menu item that removes one play from the History"

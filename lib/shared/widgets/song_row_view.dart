@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../format_duration.dart';
+import '../icons/app_icons.dart';
 import 'hover_reveal_action.dart';
 import 'library_row.dart';
 import 'song_card.dart';
@@ -26,6 +27,7 @@ class SongRowView extends StatelessWidget {
     this.artist,
     this.detail = '',
     this.coverPath,
+    this.coverPlaceholderIcon = AppIcons.musicNoteOutlined,
     this.duration,
     this.playing = false,
     this.onTap,
@@ -53,8 +55,11 @@ class SongRowView extends StatelessWidget {
   /// The third line, e.g. "album • year" (see [joinRowDetails]).
   final String detail;
 
-  /// Local image file of the cover; null shows a music note.
+  /// Local image file of the cover; null shows [coverPlaceholderIcon].
   final String? coverPath;
+
+  /// Icon shown when there is no cover (see [SongTileCover.placeholderIcon]).
+  final IconData coverPlaceholderIcon;
   final Duration? duration;
   final bool playing;
   final VoidCallback? onTap;
@@ -107,7 +112,11 @@ class SongRowView extends StatelessWidget {
     final leading = this.leading;
     final trailing = this.trailing;
     final duration = this.duration;
-    final cover = SongTileCover(path: coverPath, playing: playing);
+    final cover = SongTileCover(
+      path: coverPath,
+      playing: playing,
+      placeholderIcon: coverPlaceholderIcon,
+    );
 
     final trailingColumn = Column(
       mainAxisSize: MainAxisSize.min,

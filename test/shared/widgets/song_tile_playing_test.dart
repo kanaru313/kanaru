@@ -113,18 +113,40 @@ void main() {
     expect(_rowMaterial(tester, b).color, songCardColor(scheme));
   });
 
-  testWidgets('highlightPlaying false keeps the playing track plain', (
-    tester,
-  ) async {
+  testWidgets('playing false keeps the playing track plain', (tester) async {
     await tester.pumpWidget(
-      _bare(_a.path, [
-        SongTile(song: _a, onTap: () {}, highlightPlaying: false),
-      ]),
+      _bare(_a.path, [SongTile(song: _a, onTap: () {}, playing: false)]),
     );
     final scheme = Theme.of(tester.element(find.byType(Scaffold))).colorScheme;
     final a = _tile(_a);
     expect(_equalizer(a), findsNothing);
     expect(_rowMaterial(tester, a).color, songCardColor(scheme));
+  });
+
+  testWidgets('playing true marks a row that is not the playing track', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _bare(null, [SongTile(song: _a, onTap: () {}, playing: true)]),
+    );
+    final scheme = Theme.of(tester.element(find.byType(Scaffold))).colorScheme;
+    final a = _tile(_a);
+    expect(_equalizer(a), findsOneWidget);
+    expect(_rowMaterial(tester, a).color, scheme.primaryContainer);
+  });
+
+  testWidgets('playing null follows the playing track', (tester) async {
+    await tester.pumpWidget(
+      _bare(_b.path, [
+        SongTile(song: _a, onTap: () {}),
+        SongTile(song: _b, onTap: () {}),
+      ]),
+    );
+    final scheme = Theme.of(tester.element(find.byType(Scaffold))).colorScheme;
+    expect(_equalizer(_tile(_a)), findsNothing);
+    expect(_rowMaterial(tester, _tile(_a)).color, songCardColor(scheme));
+    expect(_equalizer(_tile(_b)), findsOneWidget);
+    expect(_rowMaterial(tester, _tile(_b)).color, scheme.primaryContainer);
   });
 
   testWidgets('a real cover gets a scrim and a white equalizer', (

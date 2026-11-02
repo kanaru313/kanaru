@@ -2828,12 +2828,6 @@ abstract class AppLocalizations {
   /// **'Listen number {n}'**
   String historyNthPlayLabel(int n);
 
-  /// Note on a History row whose file is no longer in the library
-  ///
-  /// In en, this message translates to:
-  /// **'Not in library'**
-  String get historyTrackMissing;
-
   /// Menu item that removes one play from the History
   ///
   /// In en, this message translates to:
