@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   Future<List<Object>> pump(
     WidgetTester tester, {
-    bool divider = true,
     bool enabled = true,
   }) async {
     final log = <Object>[];
@@ -25,7 +24,6 @@ void main() {
             ),
             onAction: log.add,
             keyPrefix: 'album-modal',
-            divider: divider,
             enabled: enabled,
           ),
         ),
@@ -60,12 +58,8 @@ void main() {
     },
   );
 
-  testWidgets('divider flag draws or drops the line above the buttons', (
-    tester,
-  ) async {
+  testWidgets('renders footer buttons without divider line', (tester) async {
     await pump(tester);
-    expect(find.byType(Divider), findsOneWidget);
-    await pump(tester, divider: false);
     expect(find.byType(Divider), findsNothing);
   });
 }

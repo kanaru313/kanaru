@@ -60,7 +60,6 @@ ContextModalPage playlistModalActionsPage(PlaylistModalSession session) {
                 data,
                 handlersOf(context, data),
               ),
-              dividers: false,
             ),
           );
         },
@@ -73,7 +72,6 @@ ContextModalPage playlistModalActionsPage(PlaylistModalSession session) {
           nav: nav,
           onAction: (action) => session.queue(action, data.playlist),
           keyPrefix: 'playlist-modal',
-          divider: false,
           enabled: data.hasPlayable,
         );
       },

@@ -64,7 +64,7 @@ ContextModalPage folderLinksPage({
               ],
             ),
         ],
-      ], dividers: false),
+      ]),
     ];
   },
 );

@@ -218,7 +218,7 @@ void main() {
     expect(find.byType(Wrap), findsOneWidget);
   });
 
-  testWidgets('contextModalSections puts dividers between non-empty groups', (
+  testWidgets('contextModalSections separates non-empty groups with 6 px gap', (
     tester,
   ) async {
     late List<Widget> out;
@@ -238,7 +238,8 @@ void main() {
       ),
     );
     expect(out.length, 3);
-    expect(out[1], isA<Divider>());
+    expect(out.whereType<Divider>(), isEmpty);
+    expect((out[1] as SizedBox).height, contextModalGroupGap);
   });
 
   testWidgets(
@@ -296,7 +297,7 @@ void main() {
     expect(_horizontalStrip, findsOneWidget);
   });
 
-  testWidgets('without dividers groups are 6 px apart', (tester) async {
+  testWidgets('ignores empty edge groups and maintains 6 px gap', (tester) async {
     late List<Widget> out;
     await tester.pumpWidget(
       Builder(
@@ -310,7 +311,6 @@ void main() {
               [ContextModalAction(id: 'b', icon: AppIcons.info, label: 'B')],
               [],
             ],
-            dividers: false,
           );
           return const SizedBox();
         },
@@ -318,6 +318,6 @@ void main() {
     );
     expect(out.length, 3);
     expect(out.whereType<Divider>(), isEmpty);
-    expect((out[1] as SizedBox).height, 6);
+    expect((out[1] as SizedBox).height, contextModalGroupGap);
   });
 }

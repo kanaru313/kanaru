@@ -68,7 +68,6 @@ ContextModalPage albumModalActionsPage(AlbumModalSession session) {
                       nav.push(albumModalAdvancedPage(session)),
                 ),
               ),
-              dividers: false,
             ),
           );
         },
@@ -80,7 +79,6 @@ ContextModalPage albumModalActionsPage(AlbumModalSession session) {
         nav: nav,
         onAction: session.queue,
         keyPrefix: 'album-modal',
-        divider: false,
         enabled: !AlbumModalData.goneOf(linksOf(ref)),
       ),
     ),

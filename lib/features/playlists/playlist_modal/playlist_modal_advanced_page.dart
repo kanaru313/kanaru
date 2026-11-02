@@ -42,7 +42,6 @@ ContextModalPage playlistModalAdvancedPage(PlaylistModalSession session) {
             children: contextModalSections(
               nav,
               playlistModalAdvancedSections(context.l10n, data, handlers),
-              dividers: false,
             ),
           );
         },

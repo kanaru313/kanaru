@@ -74,7 +74,7 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
                     comingSoon: true,
                   ),
                 ],
-              ], dividers: false),
+              ]),
             );
           },
         ),

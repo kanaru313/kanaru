@@ -125,7 +125,7 @@ ContextModalPage artistModalAlbumsPage(
                     ),
                   ),
               ],
-            ], dividers: false),
+            ]),
           ];
       return [
         if (own.isNotEmpty) ...group(l10n.artistsAlbums, own, 0),

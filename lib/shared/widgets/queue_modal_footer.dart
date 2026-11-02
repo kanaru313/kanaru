@@ -7,21 +7,19 @@ import 'queue_actions_menu.dart';
 
 /// Play next and Add to queue: each closes the modal, then hands its action
 /// to [onAction]. Keys are `<keyPrefix>-play-next` and
-/// `<keyPrefix>-add-to-queue`. [divider] draws a line above the buttons.
+/// `<keyPrefix>-add-to-queue`.
 class QueueModalFooter extends StatelessWidget {
   const QueueModalFooter({
     super.key,
     required this.nav,
     required this.onAction,
     required this.keyPrefix,
-    this.divider = true,
     this.enabled = true,
   });
 
   final ContextModalNav nav;
   final ValueChanged<QueueAction> onAction;
   final String keyPrefix;
-  final bool divider;
 
   /// False dims both buttons and ignores taps (nothing to queue yet).
   final bool enabled;
@@ -66,7 +64,6 @@ class QueueModalFooter extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (divider) const Divider(height: 1),
         Row(
           children: [
             button(

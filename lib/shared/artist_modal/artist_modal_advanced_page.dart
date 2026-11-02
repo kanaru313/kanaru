@@ -82,7 +82,7 @@ ContextModalPage artistModalAdvancedPage(ArtistModalSession session) =>
                       comingSoon: true,
                     ),
                   ],
-                ], dividers: false),
+                ]),
               );
             },
           ),

@@ -81,7 +81,6 @@ ContextModalPage artistModalActionsPage(ArtistModalSession session) {
                       nav.push(artistModalAdvancedPage(session)),
                 ),
               ),
-              dividers: false,
             ),
           );
         },
@@ -93,7 +92,6 @@ ContextModalPage artistModalActionsPage(ArtistModalSession session) {
         nav: nav,
         onAction: session.queue,
         keyPrefix: 'artist-modal',
-        divider: false,
         enabled: !ArtistModalData.goneOf(linksOf(ref)),
       ),
     ),

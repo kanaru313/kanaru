@@ -38,7 +38,7 @@ ContextModalPage albumModalArtistsPage(
               ),
             ),
         ],
-      ], dividers: false),
+      ]),
     ],
   );
 }
