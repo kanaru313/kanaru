@@ -27,9 +27,9 @@ Future<void> _remove(WidgetTester tester, String title) async {
     matching: find.byType(HistoryPlayRowTile),
   );
   await tester.tap(row, buttons: kSecondaryButton);
-  await settleSongModal(tester);
+  await settleModal(tester);
   await tester.tap(find.text('Remove from history'));
-  await settleSongModal(tester);
+  await settleModal(tester);
   await settleHistory(tester);
 }
 

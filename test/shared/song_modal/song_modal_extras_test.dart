@@ -100,7 +100,7 @@ void main() {
     await _pump(tester, probe);
 
     await tester.tap(find.byTooltip('More options'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(probe.built, 1);
     await _expectExtraFirst(tester);
@@ -111,7 +111,7 @@ void main() {
     await _pump(tester, probe);
 
     await tester.longPress(find.byType(SongTile));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(probe.built, 1);
     await _expectExtraFirst(tester);
@@ -143,7 +143,7 @@ void main() {
           shift ? LogicalKeyboardKey.f10 : LogicalKeyboardKey.contextMenu,
         );
         if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-        await settleSongModal(tester);
+        await settleModal(tester);
 
         expect(probe.built, 1);
         await _expectExtraFirst(tester);
@@ -157,12 +157,12 @@ void main() {
     await _pump(tester, probe);
 
     await tester.tap(find.byTooltip('More options'));
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     expect(find.text('Go to album'), findsNothing);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleSongModal(tester);
+    await settleModal(tester);
     await openSongModal(tester, find.byType(SongTile));
     expect(find.text('Go to artist'), findsOneWidget);
     expect(find.text('Go to album'), findsNothing);
@@ -188,7 +188,7 @@ void main() {
     expect(find.text('12 listens'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleSongModal(tester);
+    await settleModal(tester);
     probe.note = null;
     await openSongModal(tester, find.byType(SongTile));
     expect(find.text('12 listens'), findsNothing);

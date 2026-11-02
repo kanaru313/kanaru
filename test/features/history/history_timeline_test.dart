@@ -282,9 +282,9 @@ void main() {
         );
 
         await tester.tap(find.text('B'), buttons: kSecondaryButton);
-        await settleSongModal(tester);
+        await settleModal(tester);
         await tester.tap(find.text('Play next'));
-        await settleSongModal(tester);
+        await settleModal(tester);
 
         // B is the newest, the first row.
         expect(_queue(h), ['/m/B.flac']);
@@ -300,7 +300,7 @@ void main() {
       );
 
       await tester.tap(find.text('A'), buttons: kSecondaryButton);
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(find.bySemanticsLabel('Song options'), findsWidgets);
       expect(find.text('Remove from history'), findsOneWidget);
@@ -321,7 +321,7 @@ void main() {
       );
 
       await tester.longPress(find.text('A'));
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(find.text('Remove from history'), findsOneWidget);
       expect(find.bySemanticsLabel('Song options'), findsWidgets);
@@ -336,10 +336,10 @@ void main() {
         plays: [('A', _at(23, 9))],
       );
       await tester.tap(find.text('A'), buttons: kSecondaryButton);
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       await tester.tap(find.text('Song history'));
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(location(h), historyTrackLocation('/m/A.flac'));
       expect(find.text('Song history'), findsNothing);
@@ -359,7 +359,7 @@ void main() {
           matching: find.byTooltip('More options'),
         ),
       );
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(find.text('Remove from history'), findsOneWidget);
       expect(find.text('Song history'), findsOneWidget);
@@ -396,7 +396,7 @@ void main() {
             shift ? LogicalKeyboardKey.f10 : LogicalKeyboardKey.contextMenu,
           );
           if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-          await settleSongModal(tester);
+          await settleModal(tester);
 
           expect(find.text('Remove from history'), findsOneWidget);
           expect(
@@ -457,7 +457,7 @@ void main() {
         plays: [('A', _at(23, 9)), ('B', _at(23, 10))],
       );
       await tester.tap(find.text('B'), buttons: kSecondaryButton);
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       await tester.runAsync(() async {
         final paths = await h.db.select(h.db.tracks).get();
@@ -472,7 +472,7 @@ void main() {
             );
       });
       await tester.tap(find.text('Remove from history'));
-      await settleSongModal(tester);
+      await settleModal(tester);
       await settleHistory(tester);
 
       final plays = await tester.runAsync(() => h.db.select(h.db.plays).get());

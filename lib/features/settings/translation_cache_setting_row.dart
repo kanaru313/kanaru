@@ -10,7 +10,7 @@ import '../../shared/widgets/app_snack_bar.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 import 'settings_busy_tasks.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 
 final _log = Logger('settings');
 
@@ -41,7 +41,7 @@ class _TranslationCacheSettingRowState
     final messenger = ScaffoldMessenger.of(context);
     final busy = ref.read(settingsBusyTasksProvider.notifier);
     final l10n = context.l10n;
-    final confirmed = await confirmDestructive(
+    final confirmed = await confirmAction(
       context,
       title: l10n.translationCacheClearTitle,
       body: l10n.translationCacheClearBody,

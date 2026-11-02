@@ -13,6 +13,7 @@ import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../shared/widgets/app_snack_bar.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 
 final _log = Logger('queue_history');
@@ -52,16 +53,15 @@ Future<void> runQueueSnapshotAction(
   final l10n = context.l10n;
   final covers = ref.read(coverCacheDirectoryProvider);
   final name = queueSnapshotName(l10n, savedAt);
-  void say(AppSnackBarKind kind, String text) => messenger
-    ..clearSnackBars()
-    ..showSnackBar(appSnackBar(kind: kind, title: text));
-
   try {
     switch (action) {
       case QueueSnapshotAction.delete:
         if (!await _confirmDelete(navigator.context, l10n)) return;
         await db.deleteQueueSnapshot(id);
-        say(AppSnackBarKind.success, l10n.queueHistoryDeleted);
+        messenger.showAppSnackBar(
+          AppSnackBarKind.success,
+          l10n.queueHistoryDeleted,
+        );
       case QueueSnapshotAction.saveAsPlaylist:
         final paths = await db.queueSnapshotPaths(id);
         if (paths.isEmpty || !navigator.mounted) return;
@@ -74,7 +74,7 @@ Future<void> runQueueSnapshotAction(
           initialName: name,
         );
         if (created != null) {
-          say(
+          messenger.showAppSnackBar(
             AppSnackBarKind.success,
             l10n.queueHistorySavedAsPlaylist(created.name),
           );
@@ -90,7 +90,10 @@ Future<void> runQueueSnapshotAction(
           for (final p in playable) trackFromRow(p.track, covers),
         ];
         if (tracks.isEmpty) {
-          say(AppSnackBarKind.info, l10n.queueHistoryNothingToPlay);
+          messenger.showAppSnackBar(
+            AppSnackBarKind.info,
+            l10n.queueHistoryNothingToPlay,
+          );
           return;
         }
         switch (action) {
@@ -113,30 +116,21 @@ Future<void> runQueueSnapshotAction(
     }
   } catch (error, stack) {
     _log.severe('A saved queue action failed', error, stack);
-    say(AppSnackBarKind.error, l10n.libraryUnexpectedError);
+    messenger.showAppSnackBar(
+      AppSnackBarKind.error,
+      l10n.libraryUnexpectedError,
+    );
   }
 }
 
-Future<bool> _confirmDelete(BuildContext context, AppLocalizations l10n) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(l10n.queueHistoryDeleteTitle),
-      content: Text(l10n.queueHistoryDeleteMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(l10n.queueHistoryDelete),
-        ),
-      ],
-    ),
-  );
-  return confirmed ?? false;
-}
+Future<bool> _confirmDelete(BuildContext context, AppLocalizations l10n) =>
+    confirmAction(
+      context,
+      title: l10n.queueHistoryDeleteTitle,
+      body: l10n.queueHistoryDeleteMessage,
+      confirmLabel: l10n.queueHistoryDelete,
+      destructive: false,
+    );
 
 /// The rows of the saved queue menu.
 List<PopupMenuEntry<QueueSnapshotAction>> queueSnapshotMenuItems(

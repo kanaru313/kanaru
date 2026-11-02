@@ -28,7 +28,7 @@ bool _focusInModal({Finder? within}) {
 Future<void> _openWithMenuKey(WidgetTester tester) async {
   await tester.pump();
   await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-  await settleArtistModal(tester);
+  await settleModal(tester);
 }
 
 void main() {
@@ -48,7 +48,7 @@ void main() {
       expect(_focusInModal(within: artistModalAction('artist')), isTrue);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await settleArtistModal(tester);
+      await settleModal(tester);
       expect(host.location, artistLocation('ann'));
     },
   );
@@ -73,7 +73,7 @@ void main() {
       expect(_focusInModal(within: artistModalAction('play-all')), isTrue);
 
       gate.complete(null);
-      await settleArtistModal(tester);
+      await settleModal(tester);
       expect(_focusInModal(within: artistModalAction('play-all')), isFalse);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
@@ -95,7 +95,7 @@ void main() {
     expect(_focusInModal(within: artistModalAction('album')), isTrue);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(host.location, artistAlbumLocation('ann', ownAlbums(1).single.key));
   });
 
@@ -109,7 +109,7 @@ void main() {
     await _openWithMenuKey(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(artistModalAction('album-0'), findsOneWidget);
 
     // A new page starts without focus; the first Down lands on its first row.
@@ -124,7 +124,7 @@ void main() {
     }
     expect(_focusInModal(within: artistModalAction('album-39')), isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(host.location, artistAlbumLocation('ann', ownAlbums(40)[39].key));
   });
 
@@ -137,10 +137,10 @@ void main() {
     expect(find.text('Albums · Ann'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsNothing);
   });
 
@@ -150,7 +150,7 @@ void main() {
     await pumpArtistHost(tester, links: linksOf());
     await _openWithMenuKey(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleArtistModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Go to artist'), findsNothing);
     final focus = FocusManager.instance.primaryFocus;
@@ -166,7 +166,7 @@ void main() {
   testWidgets('a right click opens with no focus in the modal', (tester) async {
     await pumpArtistHost(tester, links: linksOf());
     await tester.tap(find.text('tile'), buttons: kSecondaryButton);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(_focusInModal(), isFalse);
   });
 
@@ -177,7 +177,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(_focusInModal(within: artistModalAction('artist')), isTrue);
   });
 
@@ -186,7 +186,7 @@ void main() {
   ) async {
     await pumpArtistHost(tester, links: linksOf(), withMoreButton: true);
     await tester.tap(find.byTooltip('More options'));
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     expect(_focusInModal(), isFalse);
   });

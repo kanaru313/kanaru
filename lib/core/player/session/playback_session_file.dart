@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 
+import '../../json_file_text.dart';
 import '../../settings/settings_file.dart';
 import 'playback_session.dart';
 import '../track.dart';
@@ -95,7 +96,7 @@ class PlaybackSessionFile {
       final bytes = File(path).readAsBytesSync();
       final Map<String, Object?> json;
       try {
-        final decoded = jsonDecode(_withoutBom(utf8.decode(bytes)));
+        final decoded = jsonDecode(withoutBom(utf8.decode(bytes)));
         if (decoded is! Map<String, Object?>) {
           throw const FormatException('not an object');
         }
@@ -126,7 +127,7 @@ class PlaybackSessionFile {
     } catch (error) {
       _readOnly = true;
       _log.warning(
-        'Could not read playback-session.json (${_describe(error)}): '
+        'Could not read playback-session.json (${describeFileError(error)}): '
         'starting empty, not saving the session this run',
       );
       return null;
@@ -201,7 +202,7 @@ class PlaybackSessionFile {
       return true;
     } catch (error) {
       _log.warning(
-        'Could not save playback-session.json (${_describe(error)})',
+        'Could not save playback-session.json (${describeFileError(error)})',
       );
       try {
         await File(playbackSessionTemporaryPath(path)).delete();
@@ -223,18 +224,8 @@ class PlaybackSessionFile {
       _readOnly = true;
       _log.warning(
         'playback-session.json is not a valid session and could not be moved '
-        'aside (${_describe(error)}): starting empty',
+        'aside (${describeFileError(error)}): starting empty',
       );
     }
   }
 }
-
-/// The error without the file's contents (a [FormatException] message
-/// quotes them) and without the full path.
-String _describe(Object error) => switch (error) {
-  FileSystemException(:final osError?) => osError.message,
-  _ => error.runtimeType.toString(),
-};
-
-String _withoutBom(String text) =>
-    text.startsWith('﻿') ? text.substring(1) : text;

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show listEquals, visibleForTesting;
 import 'package:logging/logging.dart';
 
 import 'audio_device_choice.dart';
@@ -95,7 +95,7 @@ class AudioOutputControl {
   Stream<List<AudioOutputDevice>> get devicesChanged => Stream.multi((out) {
     List<AudioOutputDevice>? last;
     void emit(List<AudioOutputDevice> list) {
-      if (last != null && _sameDevices(last!, list)) return;
+      if (last != null && listEquals(last!, list)) return;
       last = list;
       out.add(list);
     }
@@ -125,16 +125,5 @@ class AudioOutputControl {
     _disposed = true;
     await _pending;
     await _failed.close();
-  }
-
-  static bool _sameDevices(
-    List<AudioOutputDevice> a,
-    List<AudioOutputDevice> b,
-  ) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
   }
 }

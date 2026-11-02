@@ -44,7 +44,7 @@ void main() {
       await openWithTracks(tester, h, _tracks, location: '/songs');
 
       await tester.longPress(find.text('b'));
-      await settleSongModal(tester);
+      await settleModal(tester);
 
       expect(find.text('Go to artist'), findsOneWidget);
       expect(find.byType(PopupMenuItem<Object?>), findsNothing);

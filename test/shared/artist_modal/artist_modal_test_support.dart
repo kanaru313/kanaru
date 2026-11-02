@@ -18,6 +18,9 @@ import 'package:kanaru/shared/show_in_file_manager.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../support/settle_modal.dart';
+export '../../support/settle_modal.dart' show settleModal;
+
 const testArtist = ArtistSummary(
   key: 'ann',
   name: 'Ann',
@@ -184,28 +187,16 @@ Future<ArtistHost> pumpArtistHost(
   return host;
 }
 
-/// Lets the modal's reads finish and its animations end.
-Future<void> settleArtistModal(WidgetTester tester) async {
-  for (var i = 0; i < 3; i++) {
-    await tester.pump();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-  }
-  await tester.pumpAndSettle();
-  await tester.pump(const Duration(milliseconds: 100));
-}
-
 /// Opens the artist modal of the row with a right click.
 Future<void> openArtistModalOf(WidgetTester tester) async {
   await tester.tap(find.text('tile'), buttons: kSecondaryButton);
-  await settleArtistModal(tester);
+  await settleModal(tester);
 }
 
 /// Taps the row labelled [label] and waits for what it starts.
 Future<void> tapArtistRow(WidgetTester tester, String label) async {
   await tester.tap(find.text(label));
-  await settleArtistModal(tester);
+  await settleModal(tester);
 }
 
 /// The row of the open modal with action [id].

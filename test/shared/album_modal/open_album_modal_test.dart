@@ -83,13 +83,13 @@ void main() {
     expect(host.location, artistLocation('ann'));
 
     host.router.go('/');
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     await openAlbumModalOf(tester);
     await tapAlbumRow(tester, 'Go to folder');
     expect(host.location, folderLocation('/m/Rock'));
 
     host.router.go('/');
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     await openAlbumModalOf(tester);
     await tapAlbumRow(tester, 'Go to album');
     expect(host.location, albumLocation(testAlbumKey));
@@ -102,7 +102,7 @@ void main() {
     await openAlbumModalOf(tester);
 
     await tester.tap(find.byTooltip('Show in file manager'));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     expect(host.shownInFileManager, ['/m/Rock/1.flac']);
     expect(find.text('Go to folder'), findsNothing);
@@ -130,7 +130,7 @@ void main() {
     expect(find.textContaining("isn't available yet"), findsOneWidget);
 
     await tester.tap(find.byTooltip('Back'));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
   });
 
@@ -140,11 +140,11 @@ void main() {
     await tapAlbumRow(tester, 'Advanced');
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsNothing);
   });
 

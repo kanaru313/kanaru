@@ -5,7 +5,7 @@ import '../../core/app_identity.dart';
 import '../../core/logging/app_logging.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import 'open_external.dart';
+import '../../shared/open_external.dart';
 import 'settings_section.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 

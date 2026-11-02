@@ -50,9 +50,7 @@ Future<void> editPlaylistWith({
 
 void _report(ScaffoldMessengerState? messenger, String text) {
   try {
-    messenger
-      ?..clearSnackBars()
-      ..showSnackBar(appSnackBar(kind: AppSnackBarKind.error, title: text));
+    messenger?.showAppSnackBar(AppSnackBarKind.error, text);
   } catch (error, stack) {
     _log.warning('Showing the playlist message failed', error, stack);
   }

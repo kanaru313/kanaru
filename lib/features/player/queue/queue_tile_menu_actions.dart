@@ -67,10 +67,6 @@ class QueueRowMenuTarget {
   /// Global point the menu opened at, where an artist picker would go.
   final Offset position;
 
-  void say(AppSnackBarKind kind, String text) => messenger
-    ?..clearSnackBars()
-    ..showSnackBar(appSnackBar(kind: kind, title: text));
-
   /// The play position of the entry, or null when the queue no longer holds
   /// this very track at it. Entry numbers are reused after the queue is
   /// cleared or replaced, so a number alone could name another song.
@@ -91,7 +87,10 @@ class QueueRowMenuTarget {
   /// Never throws.
   Future<void> copyToPlayNext() async {
     if (livePosition() == null) {
-      say(AppSnackBarKind.info, l10n.queueMenuStale);
+      this.messenger?.showAppSnackBar(
+        AppSnackBarKind.info,
+        l10n.queueMenuStale,
+      );
       return;
     }
     final messenger = this.messenger;
@@ -114,7 +113,7 @@ class QueueRowMenuTarget {
       QueueAction.playNext,
       () async {
         if (livePosition() != null) return [track];
-        say(AppSnackBarKind.info, l10n.queueMenuStale);
+        messenger.showAppSnackBar(AppSnackBarKind.info, l10n.queueMenuStale);
         return const <Track>[];
       },
       track.title,
@@ -125,7 +124,7 @@ class QueueRowMenuTarget {
   Future<void> run(Object choice) async {
     final at = livePosition();
     if (at == null) {
-      say(AppSnackBarKind.info, l10n.queueMenuStale);
+      messenger?.showAppSnackBar(AppSnackBarKind.info, l10n.queueMenuStale);
       return;
     }
     try {
@@ -157,7 +156,10 @@ class QueueRowMenuTarget {
       }
     } catch (error, stack) {
       _log.severe('A queue row menu action failed', error, stack);
-      say(AppSnackBarKind.error, l10n.libraryUnexpectedError);
+      messenger?.showAppSnackBar(
+        AppSnackBarKind.error,
+        l10n.libraryUnexpectedError,
+      );
     }
   }
 
@@ -168,7 +170,7 @@ class QueueRowMenuTarget {
     // Only a song of the library is added, as everywhere else; any song in
     // Favorites can be taken out. Checked now: a rescan may have dropped it.
     if (favorite && !(await db.libraryPathsAmong([file])).contains(file)) {
-      say(AppSnackBarKind.error, l10n.libraryTrackGone);
+      messenger?.showAppSnackBar(AppSnackBarKind.error, l10n.libraryTrackGone);
       return;
     }
     await db.setFavorite(
@@ -176,7 +178,7 @@ class QueueRowMenuTarget {
       favorite: favorite,
       now: DateTime.now().millisecondsSinceEpoch,
     );
-    say(
+    messenger?.showAppSnackBar(
       AppSnackBarKind.success,
       favorite ? l10n.favoritesAdded : l10n.favoritesRemoved,
     );

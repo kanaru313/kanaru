@@ -6,7 +6,7 @@ import '../../core/stats/listen_recorder_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
 import 'settings_busy_tasks.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
 /// Listen history rows (STAT-10): whether listens are recorded, and a
@@ -36,7 +36,7 @@ class _ListenHistorySettingRowsState
     final messenger = ScaffoldMessenger.of(context);
     final busy = ref.read(settingsBusyTasksProvider.notifier);
     final l10n = context.l10n;
-    final confirmed = await confirmDestructive(
+    final confirmed = await confirmAction(
       context,
       title: l10n.listenHistoryClearTitle,
       body: l10n.listenHistoryClearBody,

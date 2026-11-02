@@ -24,15 +24,15 @@ const _openers = [
 
 /// How long to wait for an opener to hand the target over to an app. Both
 /// openers return right away once they have; a timeout counts as success.
-const _openerTimeout = Duration(seconds: 2);
+const openerTimeout = Duration(seconds: 2);
 
 /// Tries `gio open`, then `xdg-open`. Arguments are passed as a list, never
 /// through a shell, and targets start with `https://` or `/`, so they can't be
 /// read as options.
 Future<bool> openExternal(
   String target, {
-  ProcessStarter start = _start,
-  Duration timeout = _openerTimeout,
+  ProcessStarter start = startInheritingStdio,
+  Duration timeout = openerTimeout,
 }) async {
   for (final [executable, ...arguments] in _openers) {
     try {
@@ -46,5 +46,8 @@ Future<bool> openExternal(
   return false;
 }
 
-Future<Process> _start(String executable, List<String> arguments) =>
-    Process.start(executable, arguments, mode: ProcessStartMode.inheritStdio);
+/// The default [ProcessStarter]: inherited stdio, no pipes to drain.
+Future<Process> startInheritingStdio(
+  String executable,
+  List<String> arguments,
+) => Process.start(executable, arguments, mode: ProcessStartMode.inheritStdio);

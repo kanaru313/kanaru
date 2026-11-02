@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/features/settings/open_external.dart';
+import 'package:kanaru/shared/open_external.dart';
 
 class _FakeProcess implements Process {
   _FakeProcess(Future<int> exit) : exitCode = exit;

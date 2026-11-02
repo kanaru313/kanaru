@@ -34,7 +34,7 @@ void main() {
       find.byType(Scrollable).last,
       const Offset(0, -200),
     );
-    await settleAlbumModal(tester);
+    await settleModal(tester);
 
     await tester.tap(find.byTooltip('Back'));
     await tester.pump();
@@ -42,7 +42,7 @@ void main() {
     // The first frame after Back already has the enabled folder row.
     expect(albumModalAction('folders'), findsOneWidget);
     expect(find.text('30 songs in 30 folders'), findsOneWidget);
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(reads, 1);
     expect(find.text('30 songs in 30 folders'), findsOneWidget);
   });

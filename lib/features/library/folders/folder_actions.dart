@@ -150,14 +150,10 @@ Future<void> _createPlaylist(
       initialName: folder.name,
     );
     if (created == null) return;
-    messenger
-      ..clearSnackBars()
-      ..showSnackBar(
-        appSnackBar(
-          kind: AppSnackBarKind.success,
-          title: l10n.playlistAdded(folder.name, created.name),
-        ),
-      );
+    messenger.showAppSnackBar(
+      AppSnackBarKind.success,
+      l10n.playlistAdded(folder.name, created.name),
+    );
   } catch (error, stackTrace) {
     _log.severe('Creating a playlist from a folder failed', error, stackTrace);
     messenger.showSnackBar(

@@ -7,7 +7,7 @@ import 'package:kanaru/app/router.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/applied_appearance_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/settings/open_external.dart';
+import 'package:kanaru/shared/open_external.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';

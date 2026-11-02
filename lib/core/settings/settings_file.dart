@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 
+import '../json_file_text.dart';
 import '../paths/app_directories.dart';
 import 'app_settings.dart';
 import 'settings_codec.dart';
@@ -52,7 +53,7 @@ class SettingsFile {
       final Object? json;
       try {
         json = jsonDecode(
-          _withoutBom(utf8.decode(File(path).readAsBytesSync())),
+          withoutBom(utf8.decode(File(path).readAsBytesSync())),
         );
       } on FormatException {
         _quarantine(isLink: type == FileSystemEntityType.link);
@@ -78,7 +79,7 @@ class SettingsFile {
     } catch (error) {
       _readOnly = true;
       _log.warning(
-        'Could not read settings.json (${_describe(error)}): using defaults, '
+        'Could not read settings.json (${describeFileError(error)}): using defaults, '
         'not saving changes this session',
       );
       return const AppSettings();
@@ -113,7 +114,9 @@ class SettingsFile {
       await temporary.rename(target);
       return true;
     } catch (error) {
-      _log.warning('Could not save settings.json (${_describe(error)})');
+      _log.warning(
+        'Could not save settings.json (${describeFileError(error)})',
+      );
       try {
         await temporary?.delete();
       } on FileSystemException {
@@ -140,19 +143,8 @@ class SettingsFile {
       _readOnly = true;
       _log.warning(
         'settings.json is not valid JSON and could not be moved aside '
-        '(${_describe(error)}): using defaults',
+        '(${describeFileError(error)}): using defaults',
       );
     }
   }
 }
-
-/// The error without the file's contents (a [FormatException] message
-/// quotes them) and without the full path.
-String _describe(Object error) => switch (error) {
-  FileSystemException(:final osError?) => osError.message,
-  _ => error.runtimeType.toString(),
-};
-
-/// Editors on some systems prepend a byte order mark, which JSON rejects.
-String _withoutBom(String text) =>
-    text.startsWith('\uFEFF') ? text.substring(1) : text;

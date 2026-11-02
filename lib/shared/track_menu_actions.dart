@@ -58,10 +58,6 @@ class TrackMenuRunner {
   final LibraryDatabase? _db;
   final Future<bool> Function(String path) _showInFileManager;
 
-  void _say(AppSnackBarKind kind, String text) => _messenger
-    ?..clearSnackBars()
-    ..showSnackBar(appSnackBar(kind: kind, title: text));
-
   /// Follows [choice] for the song [trackId] stored at [path]. A song
   /// credited to several artists asks which one at [position] (global).
   /// Queue choices belong to the caller and are ignored. Finding lyrics needs
@@ -89,7 +85,10 @@ class TrackMenuRunner {
         case FavoriteChoice(:final favorite):
           final db = _db;
           if (db == null) {
-            _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+            _messenger?.showAppSnackBar(
+              AppSnackBarKind.error,
+              _l10n.libraryUnexpectedError,
+            );
             return;
           }
           // [path] is the song's `tracks.path`: a library row, so it may be
@@ -99,25 +98,34 @@ class TrackMenuRunner {
             favorite: favorite,
             now: DateTime.now().millisecondsSinceEpoch,
           );
-          _say(
+          _messenger?.showAppSnackBar(
             AppSnackBarKind.success,
             favorite ? _l10n.favoritesAdded : _l10n.favoritesRemoved,
           );
         case ShowInFileManagerChoice():
           if (!await _showInFileManager(path)) {
-            _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
+            _messenger?.showAppSnackBar(
+              AppSnackBarKind.error,
+              _l10n.libraryFileManagerFailed,
+            );
           }
         case ShowFolderChoice():
           final router = _router;
           if (router == null) return;
           final db = _db;
           if (db == null) {
-            _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+            _messenger?.showAppSnackBar(
+              AppSnackBarKind.error,
+              _l10n.libraryUnexpectedError,
+            );
             return;
           }
           // A stale row (rescan) may no longer be in the library.
           if (!(await db.libraryPathsAmong([path])).contains(path)) {
-            _say(AppSnackBarKind.warning, _l10n.libraryTrackGone);
+            _messenger?.showAppSnackBar(
+              AppSnackBarKind.warning,
+              _l10n.libraryTrackGone,
+            );
             return;
           }
           // The tree's folder key for a path below a root.
@@ -127,18 +135,27 @@ class TrackMenuRunner {
           if (router == null) return;
           final db = _db;
           if (db == null) {
-            _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+            _messenger?.showAppSnackBar(
+              AppSnackBarKind.error,
+              _l10n.libraryUnexpectedError,
+            );
             return;
           }
           final links = await db.trackLinks(trackId);
           if (links == null) {
-            _say(AppSnackBarKind.warning, _l10n.libraryTrackGone);
+            _messenger?.showAppSnackBar(
+              AppSnackBarKind.warning,
+              _l10n.libraryTrackGone,
+            );
             return;
           }
           if (choice is ShowAlbumChoice) {
             final album = links.album;
             if (album == null) {
-              _say(AppSnackBarKind.info, _l10n.libraryNoAlbumToShow);
+              _messenger?.showAppSnackBar(
+                AppSnackBarKind.info,
+                _l10n.libraryNoAlbumToShow,
+              );
             } else {
               router.go(albumLocation(album));
             }
@@ -148,7 +165,10 @@ class TrackMenuRunner {
       }
     } catch (error, stack) {
       _log.severe('A song menu action failed', error, stack);
-      _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+      _messenger?.showAppSnackBar(
+        AppSnackBarKind.error,
+        _l10n.libraryUnexpectedError,
+      );
     }
   }
 }

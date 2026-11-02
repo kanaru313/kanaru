@@ -88,7 +88,7 @@ Future<ProviderContainer> openLyricsInfo(
     ),
   );
   await tester.tap(find.text('open'));
-  await settleSongModal(tester);
+  await settleModal(tester);
   await openSongInfoPage(tester);
   return container;
 }

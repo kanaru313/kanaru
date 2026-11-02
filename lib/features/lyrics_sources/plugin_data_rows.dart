@@ -9,7 +9,7 @@ import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'plugin_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 import 'plugin_section_title.dart';
 
 final _log = Logger('lyrics_sources');
@@ -33,7 +33,7 @@ class PluginDataRows extends ConsumerWidget {
     final l10n = context.l10n;
     final controller = ref.read(lyricsPluginsControllerProvider);
     if (controller == null) return;
-    final confirmed = await confirmPluginAction(
+    final confirmed = await confirmAction(
       context,
       title: title,
       body: body,

@@ -32,16 +32,6 @@ class LibraryFoldersList extends ConsumerStatefulWidget {
 }
 
 class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
-  void _showMessage(
-    ScaffoldMessengerState messenger,
-    AppSnackBarKind kind,
-    String text,
-  ) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(appSnackBar(kind: kind, title: text));
-  }
-
   /// Runs [action] unless another one runs; a failure becomes a message.
   /// The busy flag and the messenger outlive this row, so leaving the page
   /// mid-action neither re-enables the buttons nor drops the message.
@@ -56,7 +46,7 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
       await action(messenger);
     } catch (error, stackTrace) {
       _log.severe('Changing a library folder failed', error, stackTrace);
-      _showMessage(messenger, AppSnackBarKind.error, unexpected);
+      messenger.showAppSnackBar(AppSnackBarKind.error, unexpected);
     } finally {
       busy.finish(SettingsTask.libraryFolders);
     }
@@ -72,8 +62,7 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
     if (path == null || !mounted) return;
     final result = await roots.addRoots([path]);
     if (result.added.isEmpty) {
-      _showMessage(
-        messenger,
+      messenger.showAppSnackBar(
         AppSnackBarKind.warning,
         rootRejectionsMessage(l10n, result.rejected),
       );
@@ -98,8 +87,7 @@ class _LibraryFoldersListState extends ConsumerState<LibraryFoldersList> {
     if (!confirmed || !mounted) return;
     final result = await controller.removeRoot(root.id);
     if (!result.ok) {
-      _showMessage(
-        messenger,
+      messenger.showAppSnackBar(
         AppSnackBarKind.error,
         l10n.settingsRemoveFolderFailed(root.path),
       );

@@ -108,7 +108,7 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await tester.longPress(find.text('b'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Go to album'), findsOneWidget);
   });
@@ -118,7 +118,7 @@ void main() {
     await openWithTracks(tester, h, _tracks, location: '/songs');
 
     await tester.tap(find.byTooltip('More options').first);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Go to album'), findsOneWidget);
   });
@@ -133,18 +133,18 @@ void main() {
     row.requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsNothing);
     expect(row.hasPrimaryFocus, isTrue);
 
     await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.f10);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
   });
 
@@ -159,7 +159,7 @@ void main() {
 
     expect(find.byType(SongModalHeader), findsOneWidget);
     expect(_enabled(tester, 'favorite'), isFalse);
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(_enabled(tester, 'favorite'), isTrue);
   });
 
@@ -365,7 +365,7 @@ void main() {
     testWidgets('is not on the first page', (tester) async {
       await openAdvanced(tester, titled);
       await tester.tap(find.byTooltip('Back'));
-      await settleSongModal(tester);
+      await settleModal(tester);
       expect(find.text('Find lyrics online…'), findsNothing);
       expect(find.text('Advanced'), findsOneWidget);
 

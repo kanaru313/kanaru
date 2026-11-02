@@ -21,7 +21,6 @@ import 'songs_list_provider.dart';
 import 'songs_windowed_list.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/library_grid/song_grid_tile.dart';
-import '../albums/album_grid.dart' show albumGridPadding;
 import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
 
 final _log = Logger('library');
@@ -172,14 +171,14 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
         builder: (context, constraints) => GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
-            albumGridPadding,
+            libraryGridPadding,
             0,
-            albumGridPadding,
+            libraryGridPadding,
             libraryBottomInset,
           ),
           gridDelegate: libraryGridDelegate(
             context,
-            constraints.maxWidth - albumGridPadding * 2,
+            constraints.maxWidth - libraryGridPadding * 2,
             tileHeight: SongGridTile.heightFor,
           ),
           itemCount: rows.length,

@@ -15,6 +15,15 @@ export 'lyrics_source_pref_queries.dart';
 /// keep `lyrics_plugin_data` in step; uninstall also clears the plugin's
 /// preference and not-found rows, all in one transaction.
 extension LyricsPluginQueries on LibraryDatabase {
+  /// Deletes the removed plugin records nothing names any more (see
+  /// [removedAndUnreferencedPluginSql]); run after lyrics, pins, rejects or
+  /// translations went away. Returns the rows deleted.
+  Future<int> deleteUnreferencedRemovedPlugins() => customUpdate(
+    'DELETE FROM lyrics_plugins WHERE $removedAndUnreferencedPluginSql',
+    updates: {lyricsPlugins},
+    updateKind: UpdateKind.delete,
+  );
+
   /// Every record, removed ones included, ordered by install time.
   Stream<List<LyricsPluginRow>> watchLyricsPluginRecords() =>
       (select(lyricsPlugins)..orderBy([

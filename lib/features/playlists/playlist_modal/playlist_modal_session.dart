@@ -81,9 +81,7 @@ class PlaylistModalSession {
   /// Shows [text] in the opener's messenger; never throws.
   void say(AppSnackBarKind kind, String text) {
     try {
-      openerMessenger
-        ?..clearSnackBars()
-        ..showSnackBar(appSnackBar(kind: kind, title: text));
+      openerMessenger?.showAppSnackBar(kind, text);
     } catch (error, stack) {
       _log.warning('Showing the playlist message failed', error, stack);
     }

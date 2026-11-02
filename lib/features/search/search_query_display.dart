@@ -10,7 +10,7 @@ String displaySearchQueryText(AppLocalizations l10n, String raw) {
   final parts = <String>[
     for (final field in QueryField.values)
       if (parsed.termsFor(field).isNotEmpty)
-        '${_fieldLabel(l10n, field)}: ${parsed.termsFor(field).join(' ')}',
+        '${searchFieldLabel(l10n, field)}: ${parsed.termsFor(field).join(' ')}',
     if (parsed.freeTerms.isNotEmpty) parsed.freeTerms.join(' '),
     if (parsed.years.isNotEmpty) parsed.years.map(yearFilterText).join(', '),
     if (parsed.formats.isNotEmpty) parsed.formats.join(', '),
@@ -19,11 +19,13 @@ String displaySearchQueryText(AppLocalizations l10n, String raw) {
   return parts.isEmpty ? raw : parts.join(' · ');
 }
 
-String _fieldLabel(AppLocalizations l10n, QueryField field) => switch (field) {
-  QueryField.artist => l10n.searchFieldArtist,
-  QueryField.album => l10n.searchFieldAlbum,
-  QueryField.genre => l10n.searchFieldGenre,
-};
+/// The translated name of [field], as a chip label or a `field:` prefix.
+String searchFieldLabel(AppLocalizations l10n, QueryField field) =>
+    switch (field) {
+      QueryField.artist => l10n.searchFieldArtist,
+      QueryField.album => l10n.searchFieldAlbum,
+      QueryField.genre => l10n.searchFieldGenre,
+    };
 
 /// [filter] as typed, e.g. a single year, `min-max`, or `>=min`/`<=max`.
 String yearFilterText(YearFilter filter) {

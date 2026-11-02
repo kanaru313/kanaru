@@ -42,12 +42,6 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   /// A folder is being picked or added; ignores a second click meanwhile.
   bool _choosing = false;
 
-  void _showMessage(AppSnackBarKind kind, String text) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(appSnackBar(kind: kind, title: text));
-  }
-
   /// Adds a folder picked right here (no detour through the welcome screen)
   /// and scans it.
   Future<void> _chooseFolder() async {
@@ -64,7 +58,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
       ]);
       if (!mounted) return;
       if (result.added.isEmpty) {
-        _showMessage(
+        ScaffoldMessenger.of(context).showAppSnackBar(
           AppSnackBarKind.warning,
           rootRejectionsMessage(l10n, result.rejected),
         );
@@ -75,7 +69,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     } catch (error, stackTrace) {
       _log.severe('Adding a folder failed', error, stackTrace);
       if (mounted) {
-        _showMessage(AppSnackBarKind.error, l10n.libraryUnexpectedError);
+        ScaffoldMessenger.of(
+          context,
+        ).showAppSnackBar(AppSnackBarKind.error, l10n.libraryUnexpectedError);
       }
     } finally {
       if (mounted) setState(() => _choosing = false);

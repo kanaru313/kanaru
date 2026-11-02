@@ -4,23 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/plugin_log_paths.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
-import '../../core/lyrics/plugins/store/lyrics_plugin_dirs.dart';
 import '../../shared/icons/app_icons.dart';
-
-/// The icon of the plugin installed as [record]: its package's `icon.png`, or
-/// null when the data folder is unknown or the folder name is not a legal one.
-String? installedIconPath(String? dataDirectory, LyricsPluginRecord record) {
-  if (dataDirectory == null) return null;
-  try {
-    final dir = LyricsPluginDirs(dataDirectory).resolve(record.packageDir);
-    return '${dir.path}/icon.png';
-  } on ArgumentError {
-    return null;
-  }
-}
+import '../../shared/lyrics_plugins/plugin_icon.dart' show pluginIconPath;
 
 /// The icon of a store row: the installed package's icon, else the catalog
 /// icon (fetched once through the icon cache), else a plain extension icon.
@@ -82,10 +69,7 @@ class _StoreRowIconState extends ConsumerState<StoreRowIcon> {
     final record = widget.row.record;
     final path = record == null
         ? null
-        : installedIconPath(
-            ref.watch(lyricsPluginDataDirectoryProvider),
-            record,
-          );
+        : pluginIconPath(ref.watch(lyricsPluginDataDirectoryProvider), record);
     final decode = (size * MediaQuery.devicePixelRatioOf(context)).round();
     Widget image(ImageProvider provider) => Image(
       image: ResizeImage(provider, width: decode, height: decode),

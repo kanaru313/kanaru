@@ -52,7 +52,7 @@ Future<void> _openAlbumModalOf(WidgetTester tester, String title) async {
   final tile = find.widgetWithText(AlbumGridTile, title);
   await _reveal(tester, tile);
   await tester.tap(tile, buttons: kSecondaryButton);
-  await settleSongModal(tester);
+  await settleModal(tester);
 }
 
 /// The subtitle under the Go to artist row of the open modal.

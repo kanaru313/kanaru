@@ -25,7 +25,7 @@ void main() {
     expect(find.text('Go to album'), findsNothing);
 
     await tester.tap(find.byTooltip('Back'));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to album'), findsOneWidget);
 
     await tapAlbumRow(tester, 'Go to artist');
@@ -96,7 +96,7 @@ void main() {
     expect(find.text('1 song • /n'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Show in file manager').at(1));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(host.shownInFileManager, ['/m/Pop/b.flac']);
 
     await openAlbumModalOf(tester);
@@ -117,7 +117,7 @@ void main() {
     await openAlbumModalOf(tester);
     expect(find.text('Go to artist'), findsOneWidget);
     await tester.tap(find.text('Go to artist'));
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to album'), findsOneWidget);
   });
 
@@ -164,7 +164,7 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 300)),
       );
       await tester.tap(find.byTooltip('Back'));
-      await settleAlbumModal(tester);
+      await settleModal(tester);
 
       expect(reads, 1);
       expect(find.text('4 artists'), findsOneWidget);

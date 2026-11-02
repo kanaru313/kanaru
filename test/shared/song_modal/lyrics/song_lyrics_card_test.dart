@@ -111,7 +111,7 @@ void main() {
     await tester.ensureVisible(find.byKey(const ValueKey('song-lyrics-find')));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('song-lyrics-find')));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Song info'), findsNothing);
     // The notice that asks before anything is sent.

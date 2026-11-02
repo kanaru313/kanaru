@@ -54,9 +54,9 @@ void main() {
 
     // Back on the first page, a tap on the footer neither closes nor queues.
     await tester.tap(find.byTooltip('Back'));
-    await settleArtistModal(tester);
+    await settleModal(tester);
     await tester.tap(find.byKey(const ValueKey('artist-modal-play-next')));
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(artistModalAction('play-all'), findsOneWidget);
     expect(host.queueActions, isEmpty);
   });
@@ -78,7 +78,7 @@ void main() {
     final host = await pumpArtistHost(tester, links: linksOf());
     await openArtistModalOf(tester);
     await tester.tap(find.byKey(const ValueKey('artist-modal-add-to-queue')));
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(host.queueActions, [QueueAction.addToQueue]);
 
     await openArtistModalOf(tester);

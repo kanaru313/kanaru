@@ -36,16 +36,15 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   final router = GoRouter.of(context);
   final l10n = context.l10n;
   final navigator = Navigator.of(context, rootNavigator: true);
-  void say(AppSnackBarKind kind, String text, {String? details}) => messenger
-    ..clearSnackBars()
-    ..showSnackBar(appSnackBar(kind: kind, title: text, details: details));
-
   final String? path;
   try {
     path = await pick(l10n.playlistM3uAllFiles);
   } catch (error, stack) {
     _log.severe('Opening the M3U file picker failed', error, stack);
-    say(AppSnackBarKind.error, l10n.playlistM3uImportFailed);
+    messenger.showAppSnackBar(
+      AppSnackBarKind.error,
+      l10n.playlistM3uImportFailed,
+    );
     return;
   }
   if (path == null || !navigator.mounted) return;
@@ -78,7 +77,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
     closeProgress();
     if (cancelled) return;
     _log.warning('Reading the M3U file failed: ${error.error.name}');
-    say(
+    messenger.showAppSnackBar(
       AppSnackBarKind.error,
       error.error == M3uReadError.tooLarge
           ? l10n.playlistM3uImportTooLarge
@@ -89,7 +88,10 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
     closeProgress();
     if (cancelled) return;
     _log.severe('Importing an M3U file failed', error, stack);
-    say(AppSnackBarKind.error, l10n.playlistM3uImportFailed);
+    messenger.showAppSnackBar(
+      AppSnackBarKind.error,
+      l10n.playlistM3uImportFailed,
+    );
     return;
   }
   if (cancelled) return;
@@ -123,7 +125,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
   } catch (error, stack) {
     _log.severe('Saving an imported playlist failed', error, stack);
     // No report: its counts would describe a playlist that was not saved.
-    say(AppSnackBarKind.error, l10n.playlistSaveFailed);
+    messenger.showAppSnackBar(AppSnackBarKind.error, l10n.playlistSaveFailed);
     return;
   }
   router.go(playlistLocation(id));
@@ -132,7 +134,7 @@ Future<void> importM3uInteractively(WidgetRef ref, BuildContext context) async {
     return;
   }
   final imported = l10n.playlistM3uImported(result.paths.length, name);
-  say(
+  messenger.showAppSnackBar(
     notInLibrary == 0 ? AppSnackBarKind.success : AppSnackBarKind.warning,
     imported,
     details: notInLibrary == 0

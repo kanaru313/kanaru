@@ -58,7 +58,7 @@ void main() {
     expect(find.byType(ArtistGridTile), findsOneWidget);
 
     await tester.tap(find.text('Ann'), buttons: kSecondaryButton);
-    await settleArtistModal(tester);
+    await settleModal(tester);
 
     expect(_modal, findsWidgets);
   });
@@ -78,7 +78,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await settleArtistModal(tester);
+    await settleModal(tester);
 
     expect(_modal, findsWidgets);
     final ctx = FocusManager.instance.primaryFocus?.context;
@@ -113,7 +113,7 @@ void main() {
       ),
       buttons: kSecondaryButton,
     );
-    await settleArtistModal(tester);
+    await settleModal(tester);
 
     expect(_modal, findsWidgets);
     expect(find.text('1 album • 1 song • 3 min'), findsOneWidget);
@@ -137,7 +137,7 @@ void main() {
     );
 
     await tester.tap(row, buttons: kSecondaryButton);
-    await settleArtistModal(tester);
+    await settleModal(tester);
     expect(_modal, findsWidgets);
 
     await tester.tap(find.byKey(const ValueKey('artist-modal-add-to-queue')));

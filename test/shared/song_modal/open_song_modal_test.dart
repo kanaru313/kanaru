@@ -62,14 +62,14 @@ void main() {
   ) async {
     await _pump(tester);
     await tester.tap(find.text('open'));
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to album'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleSongModal(tester);
+    await settleModal(tester);
     await _pump(tester, showAlbum: false);
     await tester.tap(find.text('open'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Go to artist'), findsOneWidget);
     expect(find.text('Go to album'), findsNothing);
@@ -95,7 +95,7 @@ void main() {
     );
 
     await tester.tap(find.text('open'));
-    await settleSongModal(tester);
+    await settleModal(tester);
     final dummy = tester.getTopLeft(modalAction('dummy')).dy;
     final firstLink = tester.getTopLeft(modalAction('artist')).dy;
     expect(dummy, lessThan(firstLink));
@@ -111,14 +111,14 @@ void main() {
   ) async {
     await _pump(tester);
     await tester.tap(find.text('open'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     await tapModalAction(tester, 'Advanced');
     expect(find.text('Delete file from disk'), findsOneWidget);
     expect(find.text('Go to artist'), findsNothing);
 
     await tester.tap(find.byTooltip('Back'));
-    await settleSongModal(tester);
+    await settleModal(tester);
     expect(find.text('Go to artist'), findsOneWidget);
   });
 
@@ -127,7 +127,7 @@ void main() {
   ) async {
     await _pump(tester);
     await tester.tap(find.text('open'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     await tapModalAction(tester, 'Edit tags');
 
@@ -138,10 +138,10 @@ void main() {
   testWidgets('Esc closes the modal', (tester) async {
     await _pump(tester);
     await tester.tap(find.text('open'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text('Go to artist'), findsNothing);
   });

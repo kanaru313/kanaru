@@ -12,6 +12,7 @@ import '../../core/m3u/m3u_export.dart';
 import '../../core/m3u/m3u_write.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 import 'm3u_file_pickers.dart';
 import 'm3u_import_flow.dart' show playlistNameFromM3uFile;
 import 'playlist_display_name.dart';
@@ -63,11 +64,7 @@ Future<void> exportPlaylistWith({
   try {
     void say(AppSnackBarKind kind, String text, {String? details}) {
       try {
-        messenger
-          ?..clearSnackBars()
-          ..showSnackBar(
-            appSnackBar(kind: kind, title: text, details: details),
-          );
+        messenger?.showAppSnackBar(kind, text, details: details);
       } catch (error, stack) {
         _log.warning('Showing the export message failed', error, stack);
       }
@@ -130,23 +127,12 @@ String m3uExportTarget(String picked) =>
     ? picked
     : '$picked.m3u8';
 
-Future<bool> _confirmOverwrite(BuildContext context, String file) async {
+Future<bool> _confirmOverwrite(BuildContext context, String file) {
   final l10n = context.l10n;
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(l10n.playlistM3uOverwriteTitle(file)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(l10n.playlistM3uOverwriteConfirm),
-        ),
-      ],
-    ),
+  return confirmAction(
+    context,
+    title: l10n.playlistM3uOverwriteTitle(file),
+    confirmLabel: l10n.playlistM3uOverwriteConfirm,
+    destructive: false,
   );
-  return confirmed ?? false;
 }

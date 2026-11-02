@@ -263,7 +263,7 @@ void main() {
       find.byType(PlaylistEntryTile).at(index),
       buttons: kSecondaryButton,
     );
-    await settleSongModal(tester);
+    await settleModal(tester);
     await tester.tap(find.text('Remove from queue'));
     await tester.pump();
   }

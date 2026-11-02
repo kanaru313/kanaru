@@ -129,7 +129,7 @@ void main() {
 
     await openMenu(tester, 'solo');
     await tester.tap(find.byTooltip('Show in file manager'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(shown, hasLength(1));
     expect(shown.single, startsWith('/m/'));
@@ -147,7 +147,7 @@ void main() {
 
     await openMenu(tester, 'solo');
     await tester.tap(find.byTooltip('Show in file manager'));
-    await settleSongModal(tester);
+    await settleModal(tester);
 
     expect(find.text("Couldn't open the file manager"), findsOneWidget);
   });

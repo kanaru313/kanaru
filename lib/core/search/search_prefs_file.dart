@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 
+import '../json_file_text.dart';
 import '../paths/app_directories.dart';
 import 'search_fields.dart';
 import 'search_prefs.dart';
@@ -49,7 +50,7 @@ class SearchPrefsFile {
       final Object? json;
       try {
         json = jsonDecode(
-          _withoutBom(utf8.decode(await File(path).readAsBytes())),
+          withoutBom(utf8.decode(await File(path).readAsBytes())),
         );
       } on FormatException {
         await _quarantine(isLink: type == FileSystemEntityType.link);
@@ -72,7 +73,7 @@ class SearchPrefsFile {
     } catch (error) {
       _readOnly = true;
       _log.warning(
-        'Could not read search_history.json (${_describe(error)}): using '
+        'Could not read search_history.json (${describeFileError(error)}): using '
         'defaults, not saving changes this session',
       );
       return const SearchPrefs();
@@ -101,7 +102,9 @@ class SearchPrefsFile {
       );
       await temporary.rename(target);
     } catch (error) {
-      _log.warning('Could not save search_history.json (${_describe(error)})');
+      _log.warning(
+        'Could not save search_history.json (${describeFileError(error)})',
+      );
       try {
         await temporary?.delete();
       } on FileSystemException {
@@ -127,7 +130,7 @@ class SearchPrefsFile {
       _readOnly = true;
       _log.warning(
         'search_history.json is not valid and could not be moved aside '
-        '(${_describe(error)}): using defaults',
+        '(${describeFileError(error)}): using defaults',
       );
     }
   }
@@ -173,12 +176,3 @@ Map<String, Object?> encodeSearchPrefs(SearchPrefs prefs) => {
       if (prefs.fields.contains(field)) field.name,
   ],
 };
-
-/// The error without the file's contents and without the full path.
-String _describe(Object error) => switch (error) {
-  FileSystemException(:final osError?) => osError.message,
-  _ => error.runtimeType.toString(),
-};
-
-String _withoutBom(String text) =>
-    text.startsWith('﻿') ? text.substring(1) : text;

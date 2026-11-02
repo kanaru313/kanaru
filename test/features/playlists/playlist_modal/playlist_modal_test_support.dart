@@ -11,6 +11,8 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../library/library_test_harness.dart';
+import '../../../support/settle_modal.dart';
+export '../../../support/settle_modal.dart' show settleModal;
 
 /// What a pumped host holds.
 class ModalHost {
@@ -103,18 +105,6 @@ Future<ModalHost> pumpModalHost(
   );
   await tester.pumpAndSettle();
   return host;
-}
-
-/// Lets the modal's reads finish and its animations end.
-Future<void> settleModal(WidgetTester tester) async {
-  for (var i = 0; i < 3; i++) {
-    await tester.pump();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 30)),
-    );
-  }
-  await tester.pumpAndSettle();
-  await tester.pump(const Duration(milliseconds: 100));
 }
 
 /// Opens the playlist modal of the row with a right click.

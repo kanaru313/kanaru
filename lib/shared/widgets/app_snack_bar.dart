@@ -90,3 +90,13 @@ SnackBar appSnackBar({
   persist: persist,
   onVisible: onVisible,
 );
+
+/// The one way to report an outcome: drops every queued snackbar, then shows
+/// [appSnackBar] for [title], so only the latest message is on screen.
+extension ShowAppSnackBar on ScaffoldMessengerState {
+  void showAppSnackBar(AppSnackBarKind kind, String title, {String? details}) {
+    this
+      ..clearSnackBars()
+      ..showSnackBar(appSnackBar(kind: kind, title: title, details: details));
+  }
+}

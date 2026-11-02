@@ -121,7 +121,7 @@ void main() {
         matching: find.byType(AlbumArtwork),
       ),
     );
-    await settleAlbumModal(tester);
+    await settleModal(tester);
     expect(find.byType(AlbumModalHeader), findsNothing);
     expect(host.location, albumLocation(testAlbumKey));
   });

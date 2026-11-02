@@ -7,6 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/settings/library_sort.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/view_mode_toggle.dart';
 import '../../../shared/language_summaries.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/widgets/page_scaffold.dart';
@@ -60,22 +61,11 @@ class LanguagesScreen extends ConsumerWidget {
         title: l10n.navLanguages,
         actions: [
           if (showActions)
-            // Shows the current view; a tap switches to the other one.
-            IconButton(
-              tooltip: switch (view) {
-                AlbumsView.grid => l10n.albumsGridView,
-                AlbumsView.list => l10n.albumsListView,
-              },
-              icon: Icon(switch (view) {
-                AlbumsView.grid => AppIcons.viewGrid,
-                AlbumsView.list => AppIcons.viewList,
-              }),
-              onPressed: () => ref
+            ViewModeToggle(
+              view: view,
+              onChanged: ref
                   .read(libraryViewModesProvider.notifier)
-                  .setLanguagesView(switch (view) {
-                    AlbumsView.grid => AlbumsView.list,
-                    AlbumsView.list => AlbumsView.grid,
-                  }),
+                  .setLanguagesView,
             ),
         ],
         body: LibraryBrowseBody<LanguageSummary>(

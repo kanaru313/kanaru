@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -81,7 +82,7 @@ class QueueHistoryRecorder {
     // The queue playing now is used only to leave out a copy of itself; it
     // may be a later replacement than the one of this event.
     final playing = _ref.read(playerServiceProvider).queue;
-    if (_samePaths(paths, queuePaths(playing))) return;
+    if (listEquals(paths, queuePaths(playing))) return;
     final now = _clock();
     _tail = _tail.then((_) async {
       if (_disposed) return;
@@ -107,11 +108,3 @@ class QueueHistoryRecorder {
 List<String> queuePaths(PlayQueue queue) => [
   for (final track in queue.tracks) ?localPathOf(track.uri),
 ];
-
-bool _samePaths(List<String> a, List<String> b) {
-  if (a.length != b.length) return false;
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
-  }
-  return true;
-}

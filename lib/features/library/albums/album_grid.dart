@@ -7,9 +7,6 @@ import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_browse_body.dart';
 
-/// Side padding of album grids.
-const albumGridPadding = 24.0;
-
 /// [libraryGridDelegate] for album tiles: artwork and two lines of text.
 SliverGridDelegate albumGridDelegate(BuildContext context, double width) =>
     libraryGridDelegate(context, width, tileHeight: AlbumGridTile.heightFor);
@@ -35,14 +32,14 @@ class AlbumGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => GridView.builder(
         padding: const EdgeInsets.fromLTRB(
-          albumGridPadding,
+          libraryGridPadding,
           0,
-          albumGridPadding,
+          libraryGridPadding,
           libraryBottomInset,
         ),
         gridDelegate: albumGridDelegate(
           context,
-          constraints.maxWidth - albumGridPadding * 2,
+          constraints.maxWidth - libraryGridPadding * 2,
         ),
         itemCount: albums.length,
         itemBuilder: (context, i) => AlbumGridTile(
@@ -75,7 +72,7 @@ class SliverAlbumGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: albumGridPadding),
+      padding: const EdgeInsets.symmetric(horizontal: libraryGridPadding),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) => SliverGrid.builder(
           gridDelegate: albumGridDelegate(context, constraints.crossAxisExtent),
