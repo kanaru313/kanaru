@@ -8,16 +8,16 @@ import '../../../shared/widgets/cover_art.dart';
 import '../../../shared/widgets/placeholder_colors.dart';
 import 'folder_tree.dart';
 
-// Geometry as fractions of the widget size.
-const _tabLeft = 0.07, _tabTop = 0.06, _tabWidth = 0.38, _tabHeight = 0.12;
-const _bodyLeft = 0.07, _bodyTop = 0.14, _bodyWidth = 0.86, _bodyHeight = 0.82;
-const _tabExtra = 0.04; // tab runs this far under the body's top edge
-const _cornerRadius = 0.08;
-const _coverFraction = 0.70;
+// Geometry as fractions of the widget size for the folder backplate.
+const _tabLeft = 0.0, _tabTop = 0.0, _tabWidth = 0.44, _tabHeight = 0.16;
+const _bodyLeft = 0.0, _bodyTop = 0.08, _bodyWidth = 0.90, _bodyHeight = 0.88;
+const _tabExtra = 0.04;
+const _cornerRadius = 0.09;
+const _coverFraction = 0.88;
 
-/// A folder drawn as a folder-shaped frame (primary outline, container fill)
-/// holding one square cover, or a seeded music-note placeholder when the
-/// folder has none. Reads only the node and the cover cache directory.
+/// A folder drawn as a layered card: a folder tab and backplate in the background,
+/// and an offset prominent square cover in the foreground with shadow.
+/// Reads only the node and the cover cache directory.
 class FolderArt extends ConsumerWidget {
   const FolderArt({
     super.key,
@@ -38,8 +38,20 @@ class FolderArt extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final (background, foreground) = placeholderColors(scheme, folder.path);
     final cover = size * _coverFraction;
-    final slot = size * (_bodyTop + _bodyHeight / 2) - cover / 2;
     final key = direct ? folder.directCoverKey : folder.coverKey;
+    final radius = size < 64 ? 6.0 : (cover * 0.10).clamp(8.0, 18.0);
+    final folderFill = scheme.brightness == Brightness.dark
+        ? Color.lerp(
+            scheme.surfaceContainerHigh,
+            scheme.primaryContainer,
+            0.45,
+          )!
+        : Color.lerp(
+            scheme.primaryContainer,
+            scheme.surfaceContainerHighest,
+            0.35,
+          )!;
+
     return ExcludeSemantics(
       child: SizedBox.square(
         dimension: size,
@@ -48,30 +60,49 @@ class FolderArt extends ConsumerWidget {
             Positioned.fill(
               child: CustomPaint(
                 painter: _FolderFramePainter(
-                  fill: scheme.primaryContainer,
+                  fill: folderFill,
                   stroke: scheme.primary,
-                  strokeWidth: (size * 0.02).clamp(1.5, 3.0),
+                  strokeWidth: (size * 0.015).clamp(1.0, 2.5),
+                  isDark: scheme.brightness == Brightness.dark,
                 ),
               ),
             ),
             Positioned(
-              left: (size - cover) / 2,
-              top: slot,
-              child: DecoratedBox(
-                position: DecorationPosition.foreground,
+              left: size - cover,
+              top: size - cover,
+              width: cover,
+              height: cover,
+              child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(coverArtRadius(cover)),
-                  border: Border.all(color: scheme.outlineVariant, width: 1),
+                  borderRadius: BorderRadius.circular(radius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.shadow.withValues(alpha: 0.28),
+                      blurRadius: (cover * 0.06).clamp(3.0, 14.0),
+                      offset: Offset(-cover * 0.01, cover * 0.02),
+                    ),
+                  ],
                 ),
-                child: CoverArt(
-                  path: coverPath(ref.watch(coverCacheDirectoryProvider), key),
-                  size: cover,
-                  placeholder: ColoredBox(
-                    color: background,
-                    child: Icon(
-                      AppIcons.musicNoteOutlined,
-                      size: cover * 0.4,
-                      color: foreground,
+                child: DecoratedBox(
+                  position: DecorationPosition.foreground,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(radius),
+                    border: Border.all(color: scheme.outlineVariant, width: 1),
+                  ),
+                  child: CoverArt(
+                    path: coverPath(
+                      ref.watch(coverCacheDirectoryProvider),
+                      key,
+                    ),
+                    size: cover,
+                    radius: radius,
+                    placeholder: ColoredBox(
+                      color: background,
+                      child: Icon(
+                        AppIcons.musicNoteOutlined,
+                        size: cover * 0.4,
+                        color: foreground,
+                      ),
                     ),
                   ),
                 ),
@@ -84,17 +115,19 @@ class FolderArt extends ConsumerWidget {
   }
 }
 
-/// The tab and body of a folder as one outline, filled then stroked.
+/// The tab and back body of the folder painted with subtle depth.
 class _FolderFramePainter extends CustomPainter {
   const _FolderFramePainter({
     required this.fill,
     required this.stroke,
     required this.strokeWidth,
+    required this.isDark,
   });
 
   final Color fill;
   final Color stroke;
   final double strokeWidth;
+  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -110,25 +143,36 @@ class _FolderFramePainter extends CustomPainter {
       topLeft: radius,
       topRight: radius,
     );
-    final body = RRect.fromRectAndRadius(
+    final body = RRect.fromRectAndCorners(
       Rect.fromLTWH(
         s * _bodyLeft,
         s * _bodyTop,
         s * _bodyWidth,
         s * _bodyHeight,
       ),
-      radius,
+      topLeft: radius,
+      topRight: radius,
+      bottomLeft: radius,
+      bottomRight: Radius.circular(s * 0.04),
     );
     final outline = Path.combine(
       PathOperation.union,
       Path()..addRRect(tab),
       Path()..addRRect(body),
     );
-    canvas.drawPath(outline, Paint()..color = fill);
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color.lerp(fill, Colors.white, isDark ? 0.09 : 0.05)!, fill],
+      ).createShader(Rect.fromLTWH(0, 0, s, s));
+
+    canvas.drawPath(outline, fillPaint);
     canvas.drawPath(
       outline,
       Paint()
-        ..color = stroke
+        ..color = stroke.withValues(alpha: isDark ? 0.22 : 0.32)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeJoin = StrokeJoin.round,
@@ -139,5 +183,6 @@ class _FolderFramePainter extends CustomPainter {
   bool shouldRepaint(_FolderFramePainter old) =>
       old.fill != fill ||
       old.stroke != stroke ||
-      old.strokeWidth != strokeWidth;
+      old.strokeWidth != strokeWidth ||
+      old.isDark != isDark;
 }

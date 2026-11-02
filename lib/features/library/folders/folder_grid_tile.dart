@@ -7,7 +7,7 @@ import 'folder_tree.dart';
 import '../../../shared/fixed_line_strut.dart';
 import '../../../shared/widgets/library_grid/library_grid_card.dart';
 
-/// One folder in a grid: a folder frame holding one cover, [title] and the counts line.
+/// One folder in a grid: layered folder art holding one cover, [title] and the counts line.
 class FolderGridTile extends StatelessWidget {
   const FolderGridTile({
     super.key,
