@@ -26,29 +26,6 @@ class PlaylistsUnavailable extends StatelessWidget {
   }
 }
 
-/// A playlist route whose id is malformed or whose playlist is gone; with
-/// [savedQueue], a saved queue route.
-class PlaylistNotFound extends StatelessWidget {
-  const PlaylistNotFound({super.key, this.savedQueue = false});
-
-  final bool savedQueue;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: savedQueue ? l10n.queueHistoryTitle : l10n.sidebarPlaylists,
-      body: EmptyState(
-        icon: AppIcons.playlist,
-        title: savedQueue ? l10n.queueHistoryNotFound : l10n.playlistNotFound,
-        message: savedQueue
-            ? l10n.queueHistoryNotFoundMessage
-            : l10n.playlistNotFoundMessage,
-      ),
-    );
-  }
-}
-
 /// An empty playlist or saved queue, or the Favorites playlist before any
 /// like.
 class PlaylistEmptyState extends StatelessWidget {

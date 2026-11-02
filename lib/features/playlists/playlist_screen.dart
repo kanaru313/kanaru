@@ -7,6 +7,9 @@ import '../../shared/widgets/library_loading.dart';
 import 'playlist_page_body.dart';
 import 'playlist_page_data.dart';
 import 'playlist_routes.dart';
+import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
+import '../../shared/widgets/not_found_page.dart';
 import 'playlist_screen_states.dart';
 
 final _log = Logger('playlists');
@@ -43,7 +46,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
         ModalRoute.of(context)?.isActive == false) {
       return PlaylistPageBody(lastHead, headSeq: last.seq);
     }
-    return const PlaylistNotFound();
+    return NotFoundPage(
+      pageTitle: context.l10n.sidebarPlaylists,
+      icon: AppIcons.playlist,
+      title: context.l10n.playlistNotFound,
+      message: context.l10n.playlistNotFoundMessage,
+    );
   }
 
   @override
@@ -53,7 +61,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     if (ref.watch(libraryDatabaseProvider) == null) {
       body = const PlaylistsUnavailable();
     } else if (id == null) {
-      body = const PlaylistNotFound();
+      body = NotFoundPage(
+        pageTitle: context.l10n.sidebarPlaylists,
+        icon: AppIcons.playlist,
+        title: context.l10n.playlistNotFound,
+        message: context.l10n.playlistNotFoundMessage,
+      );
     } else {
       ref.listen(playlistPageHeadProvider(id), (previous, next) {
         if (next.hasError && !(previous?.hasError ?? false)) {

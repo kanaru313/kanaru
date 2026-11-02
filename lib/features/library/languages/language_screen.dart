@@ -10,8 +10,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/language_display_name.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
-import '../../../shared/widgets/empty_state.dart';
-import '../../../shared/widgets/page_scaffold.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../../../shared/widgets/song_tile.dart';
 import '../library_detail_body.dart';
 import 'language_header.dart';
@@ -33,7 +32,12 @@ class LanguageScreen extends ConsumerWidget {
     return LibraryDetailBody<LanguagePageData>(
       page: languageKey == null ? null : languagePageProvider(languageKey),
       what: 'the language',
-      notFound: const _LanguageNotFound(),
+      notFound: NotFoundPage(
+        pageTitle: context.l10n.navLanguages,
+        icon: AppIcons.language,
+        title: context.l10n.languagesNotFound,
+        message: context.l10n.languagesNotFoundMessage,
+      ),
       builder: (data) => _LanguagePage(languageKey: languageKey!, data: data),
     );
   }
@@ -100,23 +104,6 @@ class _LanguagePage extends ConsumerWidget {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],
-    );
-  }
-}
-
-class _LanguageNotFound extends StatelessWidget {
-  const _LanguageNotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: l10n.navLanguages,
-      body: EmptyState(
-        icon: AppIcons.language,
-        title: l10n.languagesNotFound,
-        message: l10n.languagesNotFoundMessage,
-      ),
     );
   }
 }

@@ -224,6 +224,7 @@ Feature code: `lib/features/lyrics_plugin_store/`. The pages take callbacks (`on
 | Keys updating | `library_keys_updating.dart` | "Updating library" with progress after a sort-rule change. Playback is not affected. |
 | Loading | `library_loading.dart`, `MinBusyBuilder` | `MinBusyBuilder` keeps the busy state on for a minimum time, so a short task does not flash its indicator. |
 | Empty | `EmptyState` (`shared/widgets/empty_state.dart`) | Icon, one sentence, optional action. |
+| Not found | `NotFoundPage` (`shared/widgets/not_found_page.dart`) | A detail route whose item is gone or whose key is malformed: the section's page title over an `EmptyState` with the section icon, "<Item> not found" and one sentence on why. |
 | Scan finished | Snack bar | Result summary with counts; not a dialog. Every notice is a snackbar card with a status icon (see Snackbars). |
 | Playback unavailable | `PlaybackUnavailableBanner` | Library-only mode. Pressing play reports one error and stays paused. |
 | Track failed | Player error stream | Playback skips to the next track; a queue where every track fails stops (PLAY-13). |

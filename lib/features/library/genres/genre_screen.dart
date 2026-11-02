@@ -16,13 +16,14 @@ import '../../../shared/widgets/in_page_no_match.dart';
 import '../../../shared/widgets/section_heading.dart';
 import '../albums/album_row.dart';
 import '../browse_songs_sliver.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'genre_display_name.dart';
 import 'genre_header.dart';
-import 'genre_not_found.dart';
 import 'genre_page_data.dart';
 
 /// One genre: header, then its albums on one line scrolling sideways, then its
@@ -40,7 +41,12 @@ class GenreScreen extends ConsumerWidget {
     return LibraryDetailBody<GenrePageData>(
       page: genreKey == null ? null : genrePageProvider(genreKey),
       what: 'the genre',
-      notFound: const GenreNotFound(),
+      notFound: NotFoundPage(
+        pageTitle: context.l10n.genresTitle,
+        icon: AppIcons.genreOutlined,
+        title: context.l10n.genresNotFound,
+        message: context.l10n.genresNotFoundMessage,
+      ),
       builder: (data) => _GenrePage(genreKey: genreKey!, data: data),
     );
   }

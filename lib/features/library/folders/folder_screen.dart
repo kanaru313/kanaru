@@ -4,8 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart';
-import '../../../shared/widgets/empty_state.dart';
-import '../../../shared/widgets/page_scaffold.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../library_detail_body.dart';
 import 'folder_library_page.dart';
 import 'folders_provider.dart';
@@ -25,25 +24,13 @@ class FolderScreen extends ConsumerWidget {
     return LibraryDetailBody<FolderPageData>(
       page: path == null ? null : folderPageProvider(path),
       what: 'the folder',
-      notFound: const _FolderNotFound(),
-      builder: (data) => LibraryFolderPage(data: data),
-    );
-  }
-}
-
-class _FolderNotFound extends StatelessWidget {
-  const _FolderNotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: l10n.navFolders,
-      body: EmptyState(
+      notFound: NotFoundPage(
+        pageTitle: context.l10n.navFolders,
         icon: AppIcons.folderOutlined,
-        title: l10n.foldersNotFound,
-        message: l10n.foldersNotFoundMessage,
+        title: context.l10n.foldersNotFound,
+        message: context.l10n.foldersNotFoundMessage,
       ),
+      builder: (data) => LibraryFolderPage(data: data),
     );
   }
 }

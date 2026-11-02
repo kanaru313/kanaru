@@ -8,6 +8,8 @@ import '../../l10n/l10n.dart';
 import '../../shared/widgets/library_loading.dart';
 import 'playlist_page_body.dart';
 import 'playlist_page_data.dart';
+import '../../shared/icons/app_icons.dart';
+import '../../shared/widgets/not_found_page.dart';
 import 'playlist_screen_states.dart';
 import 'queue_history_actions.dart';
 import 'queue_history_providers.dart';
@@ -62,7 +64,12 @@ class _QueueHistorySnapshotScreenState
     if (ref.watch(libraryDatabaseProvider) == null) {
       body = PlaylistsUnavailable(title: context.l10n.queueHistoryTitle);
     } else if (id == null) {
-      body = const PlaylistNotFound(savedQueue: true);
+      body = NotFoundPage(
+        pageTitle: context.l10n.queueHistoryTitle,
+        icon: AppIcons.playlist,
+        title: context.l10n.queueHistoryNotFound,
+        message: context.l10n.queueHistoryNotFoundMessage,
+      );
     } else {
       body = _body(id);
     }
@@ -89,7 +96,12 @@ class _QueueHistorySnapshotScreenState
     final when = savedAt.value;
     final head = load.value!.head;
     if (when == null || head == null) {
-      return const PlaylistNotFound(savedQueue: true);
+      return NotFoundPage(
+        pageTitle: context.l10n.queueHistoryTitle,
+        icon: AppIcons.playlist,
+        title: context.l10n.queueHistoryNotFound,
+        message: context.l10n.queueHistoryNotFoundMessage,
+      );
     }
     // Play, queue, export and editing the entries as on a playlist page;
     // the playlist modal is not offered (see the class comment).

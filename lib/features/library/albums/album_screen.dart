@@ -8,8 +8,7 @@ import '../../../core/player/track.dart' as player;
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
-import '../../../shared/widgets/empty_state.dart';
-import '../../../shared/widgets/page_scaffold.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
@@ -41,7 +40,12 @@ class AlbumScreen extends ConsumerWidget {
     return LibraryDetailBody<AlbumPageData>(
       page: key == null ? null : albumPageProvider(key),
       what: 'the album',
-      notFound: const _AlbumNotFound(),
+      notFound: NotFoundPage(
+        pageTitle: context.l10n.navAlbums,
+        icon: AppIcons.albumOutlined,
+        title: context.l10n.albumsNotFound,
+        message: context.l10n.albumsNotFoundMessage,
+      ),
       builder: (data) => _AlbumPage(albumKey: key!, data: data),
     );
   }
@@ -192,23 +196,6 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _AlbumNotFound extends StatelessWidget {
-  const _AlbumNotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return PageScaffold(
-      title: l10n.navAlbums,
-      body: EmptyState(
-        icon: AppIcons.albumOutlined,
-        title: l10n.albumsNotFound,
-        message: l10n.albumsNotFoundMessage,
       ),
     );
   }
