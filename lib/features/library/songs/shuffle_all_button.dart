@@ -63,9 +63,7 @@ class _ShuffleAllButtonState extends ConsumerState<ShuffleAllButton> {
       if (player.userQueueChanges != changesBefore) return;
       // Not guarded by `mounted`: leaving the page does not cancel the tap.
       unawaited(
-        player.openShuffled([
-          for (final s in items) trackFromListItem(s, covers),
-        ]),
+        player.openShuffled([for (final s in items) trackFromRow(s, covers)]),
       );
     } catch (error, stackTrace) {
       _log.severe('Reading the play queue failed', error, stackTrace);

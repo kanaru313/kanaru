@@ -14,7 +14,7 @@ import '../../shared/play_tracks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_display_name.dart';
-import 'playlist_page_actions.dart' show playableStartIndex, playlistTrack;
+import 'playlist_page_actions.dart' show playableStartIndex;
 
 final _log = Logger('playlists');
 
@@ -27,7 +27,7 @@ Future<List<player.Track>> readPlaylistQueue(
   String? covers,
 ) async => [
   for (final p in await db.playlistPlayableTracks(id))
-    playlistTrack(p.track, covers),
+    trackFromRow(p.track, covers),
 ];
 
 /// Replaces the queue with the playable songs of playlist [id] and plays from
@@ -70,7 +70,7 @@ Future<void> playPlaylistFrom(
     final start = playableStartIndex(playable, entryId, indexHint);
     if (start == null) return;
     playTracks(ref, [
-      for (final p in playable) playlistTrack(p.track, covers),
+      for (final p in playable) trackFromRow(p.track, covers),
     ], start);
   } catch (error, stack) {
     _log.severe('Reading the play queue failed', error, stack);
@@ -102,7 +102,7 @@ Future<void> shufflePlaylist(
     final playable = await db.playlistPlayableTracks(id);
     if (!isMounted() || playable.isEmpty) return;
     shuffleTracks(ref, [
-      for (final p in playable) playlistTrack(p.track, covers),
+      for (final p in playable) trackFromRow(p.track, covers),
     ]);
   } catch (error, stack) {
     _log.severe('Reading the shuffle queue failed', error, stack);

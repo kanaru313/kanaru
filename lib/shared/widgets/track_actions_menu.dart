@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_rows.dart';
+import '../../core/database/song_row.dart';
 import '../song_modal/open_song_modal.dart';
 import '../song_modal/song_modal_extras.dart';
 import 'context_menu_region.dart';
@@ -21,7 +21,7 @@ class TrackActionsRegion extends ConsumerWidget {
     this.modalExtras,
   });
 
-  final TrackListItem song;
+  final SongRow song;
   final ValueChanged<QueueAction>? onQueueAction;
   final Widget child;
 

@@ -2,9 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_rows.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
@@ -56,8 +54,7 @@ class _LanguagePage extends ConsumerWidget {
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
     List<player.Track> queue() => [
-      for (final t in songs)
-        trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
+      for (final t in songs) trackFromRow(t, coverDirectory),
     ];
     Widget heading(String text) => SliverToBoxAdapter(
       child: Padding(
@@ -94,22 +91,10 @@ class _LanguagePage extends ConsumerWidget {
         SliverList.builder(
           itemCount: songs.length,
           itemBuilder: (context, i) => SongTile(
-            song: TrackListItem(
-              id: songs[i].id,
-              path: songs[i].path,
-              title: songs[i].title,
-              artist: songs[i].artist,
-              album: songs[i].album,
-              year: songs[i].year,
-              durationMs: songs[i].durationMs,
-              coverKey: songs[i].coverKey,
-            ),
+            song: songs[i],
             onTap: () => playTracks(ref, queue(), i),
             onQueueAction: (action) => enqueueLoaded(ref, context, action, [
-              trackFromBrowse(
-                songs[i],
-                artPath: coverPath(coverDirectory, songs[i].coverKey),
-              ),
+              trackFromRow(songs[i], coverDirectory),
             ], songs[i].title),
           ),
         ),

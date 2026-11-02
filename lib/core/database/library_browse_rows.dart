@@ -1,3 +1,5 @@
+import 'song_row.dart';
+
 /// Joins the artist keys in [AlbumKey.artistKey]. Never inside a key: `;`
 /// always separates artist names.
 const albumArtistKeySeparator = '; ';
@@ -109,7 +111,7 @@ class ArtistCredit {
 }
 
 /// A track row for the album and artist pages.
-class BrowseTrack {
+class BrowseTrack implements SongRow {
   const BrowseTrack({
     required this.id,
     required this.path,
@@ -125,21 +127,29 @@ class BrowseTrack {
     this.coverKey,
   });
 
+  @override
   final int id;
+  @override
   final String path;
+  @override
   final String title;
+  @override
   final String? artist;
+  @override
   final String? album;
   final String? albumArtist;
+  @override
   final int? year;
   final int? discNo;
   final int? trackNo;
+  @override
   final int? durationMs;
 
   /// The key of its album; null when it has no album.
   final AlbumKey? albumKey;
 
   /// Cover thumbnail key in the cover cache; null when there is no cover.
+  @override
   final String? coverKey;
 }
 

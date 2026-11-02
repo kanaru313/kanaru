@@ -1,10 +1,13 @@
 import '../../core/database/history_rows.dart';
 import '../../core/player/track.dart';
-import 'history_queue_track.dart';
+import '../../shared/play_tracks.dart';
 
-/// The queue entry for the library song of [row], which must have one.
+/// The queue entry for the library song of [row], which must have one. The
+/// player only gets the `tracks` row path (never the path the play
+/// remembers): a play outlives its file, and the library row is the one the
+/// indexer vetted.
 Track historyTrackOf(HistoryPlayRow row, String? covers) =>
-    historyQueueTrack(row.track!, covers);
+    trackFromRow(row.track!, covers);
 
 /// The songs of a day as the queue takes them: [dayRows] in the order shown,
 /// each song once at its first appearance, those no longer in the library

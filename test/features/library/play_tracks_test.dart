@@ -52,44 +52,61 @@ void main() {
     expect(track.year, 1999);
   });
 
-  test('trackFromListItem copies the row, album and year included', () {
-    final item = TrackListItem(
-      id: 1,
-      path: '/m/a.flac',
-      title: 'a',
-      artist: 'Amy',
-      album: 'Blue',
-      year: 1999,
-      durationMs: 1500,
-      coverKey: _red,
-    );
-    final track = trackFromListItem(item, _covers);
-    expect(track.uri, '/m/a.flac');
-    expect(track.artist, 'Amy');
-    expect(track.album, 'Blue');
-    expect(track.year, 1999);
-    expect(track.duration, const Duration(milliseconds: 1500));
-    expect(track.artUri, '$_covers/$_red');
-    expect(trackFromListItem(item, null).artUri, isNull);
-  });
+  group('trackFromRow', () {
+    test('copies a list row, album and year included', () {
+      final item = TrackListItem(
+        id: 1,
+        path: '/m/a.flac',
+        title: 'a',
+        artist: 'Amy',
+        album: 'Blue',
+        year: 1999,
+        durationMs: 1500,
+        coverKey: _red,
+      );
+      final track = trackFromRow(item, _covers);
+      expect(track.uri, '/m/a.flac');
+      expect(track.title, 'a');
+      expect(track.artist, 'Amy');
+      expect(track.album, 'Blue');
+      expect(track.year, 1999);
+      expect(track.duration, const Duration(milliseconds: 1500));
+      expect(track.artUri, '$_covers/$_red');
+    });
 
-  test('trackFromBrowse copies album and year', () {
-    const row = BrowseTrack(
-      id: 1,
-      path: '/m/a.flac',
-      title: 'a',
-      album: 'Blue',
-      year: 1999,
-    );
-    final track = trackFromBrowse(row);
-    expect(track.album, 'Blue');
-    expect(track.year, 1999);
-  });
+    test('copies a page row, album and year included', () {
+      final row = BrowseTrack(
+        id: 1,
+        path: '/m/a.flac',
+        title: 'a',
+        artist: 'Amy',
+        album: 'Blue',
+        year: 1999,
+        trackNo: 3,
+        durationMs: 1500,
+        coverKey: _red,
+      );
+      final track = trackFromRow(row, _covers);
+      expect(track.uri, '/m/a.flac');
+      expect(track.artist, 'Amy');
+      expect(track.album, 'Blue');
+      expect(track.year, 1999);
+      expect(track.duration, const Duration(milliseconds: 1500));
+      expect(track.artUri, '$_covers/$_red');
+    });
 
-  test('trackFromBrowse passes the art through', () {
-    const row = BrowseTrack(id: 1, path: '/m/a.flac', title: 'a');
-    expect(trackFromBrowse(row, artPath: '/c/x.jpg').artUri, '/c/x.jpg');
-    expect(trackFromBrowse(row).artUri, isNull);
+    test('has no art with covers off or without a cover', () {
+      final withCover = TrackListItem(
+        id: 1,
+        path: '/m/a.flac',
+        title: 'a',
+        coverKey: _red,
+      );
+      const withoutCover = BrowseTrack(id: 2, path: '/m/b.flac', title: 'b');
+      expect(trackFromRow(withCover, null).artUri, isNull);
+      expect(trackFromRow(withoutCover, _covers).artUri, isNull);
+      expect(trackFromRow(withoutCover, _covers).duration, isNull);
+    });
   });
 
   group('playing from the library queues the thumbnails', () {

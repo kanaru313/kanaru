@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart'
     show BrowseTrack, LibraryDatabase;
-import '../../core/indexer/cover_paths.dart';
 import '../../core/player/track.dart';
 import '../enqueue_tracks.dart';
 import '../play_tracks.dart';
@@ -17,7 +16,7 @@ Future<List<Track>> Function(LibraryDatabase db, String? covers) _artistTracks(
   final sections = await readArtistSections(db, artistKey);
   return [
     for (final t in sections?.songs ?? const <BrowseTrack>[])
-      trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+      trackFromRow(t, covers),
   ];
 };
 

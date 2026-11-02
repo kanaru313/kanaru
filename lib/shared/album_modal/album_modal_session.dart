@@ -21,6 +21,7 @@ class AlbumModalSession {
     required this.runner,
     required this.onQueueAction,
     this.showAlbum = true,
+    this.pageArtistKey,
   });
 
   final AlbumTileData album;
@@ -29,6 +30,10 @@ class AlbumModalSession {
 
   /// False on the page of the album itself.
   final bool showAlbum;
+
+  /// The artist of the page the album is listed on, left out of Go to
+  /// artist; null elsewhere.
+  final String? pageArtistKey;
 
   /// Runs a queue action of the footer or Add to playlist.
   void queue(QueueAction action) =>

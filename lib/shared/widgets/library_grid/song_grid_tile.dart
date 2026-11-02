@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/database/library_database.dart' show TrackListItem;
 import '../../../core/database/library_startup.dart';
+import '../../../core/database/song_row.dart';
 import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/playing_track_path.dart';
 import '../../fixed_line_strut.dart';
@@ -26,7 +26,7 @@ class SongGridTile extends ConsumerWidget {
     this.onQueueAction,
   });
 
-  final TrackListItem song;
+  final SongRow song;
   final VoidCallback onTap;
 
   /// Picked from the menu of a right click or long press; no menu without it.

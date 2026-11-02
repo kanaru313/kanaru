@@ -6,6 +6,7 @@ import 'package:kanaru/features/library/folders/folder_list_tile.dart';
 import 'package:kanaru/features/library/folders/folder_page_parts.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/show_in_file_manager.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -231,15 +232,39 @@ void main() {
     });
   });
 
-  testWidgets('a song on its own folder page offers Go to folder', (
-    tester,
-  ) async {
-    final h = LibraryHarness();
+  testWidgets('a song on its own folder page offers Show in file manager '
+      'instead of Go to folder', (tester) async {
+    final shown = <String>[];
+    final h = LibraryHarness(
+      overrides: [
+        showInFileManagerProvider.overrideWithValue((path) async {
+          shown.add(path);
+          return true;
+        }),
+      ],
+    );
     await openWithTracks(tester, h, _tracks, location: vn);
 
     await openSongModal(tester, find.text('a'));
 
+    expect(modalAction('folder'), findsNothing);
+    expect(modalAction('show-in-file-manager'), findsOneWidget);
+    await tapModalAction(tester, 'Show in file manager');
+    expect(shown, ['/m/VN/a.flac']);
+    expect(modalAction('show-in-file-manager'), findsNothing);
+    expect(location(h), vn);
+  });
+
+  testWidgets('a song listed elsewhere still offers Go to folder', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/songs');
+
+    await openSongModal(tester, find.text('a'));
+
     expect(modalAction('folder'), findsOneWidget);
+    expect(modalAction('show-in-file-manager'), findsNothing);
   });
 
   testWidgets('a subfolder and back start at All again', (tester) async {

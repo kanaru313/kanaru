@@ -5,20 +5,13 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_database.dart' show LibraryDatabase;
 import '../../core/database/library_startup.dart';
-import '../../core/database/library_rows.dart' show TrackListItem;
 import '../../core/database/playlist_rows.dart';
 import '../../core/database/playlist_writes.dart';
-import '../../core/player/track.dart' as player;
 import '../../l10n/l10n.dart';
-import '../../shared/play_tracks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'playlist_routes.dart';
 
 final _log = Logger('playlists');
-
-/// The queue entry of one library track of a playlist.
-player.Track playlistTrack(TrackListItem track, String? coverDir) =>
-    trackFromListItem(track, coverDir);
 
 /// Where a play queue built from [playable] starts: the entry [entryId]
 /// when it is still there, otherwise the first playable entry stored at

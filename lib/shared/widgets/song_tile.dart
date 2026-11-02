@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_database.dart';
 import '../../core/database/library_startup.dart';
+import '../../core/database/song_row.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../core/player/playing_track_path.dart';
 import '../song_modal/open_song_modal.dart';
@@ -46,7 +46,7 @@ class SongTile extends ConsumerWidget {
          'number and leadingAccessory both fill the slot before the cover',
        );
 
-  final TrackListItem song;
+  final SongRow song;
   final VoidCallback onTap;
 
   /// Picked from the song modal (right click, long press or the ⋮ button);

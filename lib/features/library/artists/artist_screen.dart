@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/artist_page/enqueue_artist.dart';
@@ -88,8 +87,7 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
     List<player.Track> queueOf(List<BrowseTrack> list) => [
-      for (final t in list)
-        trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
+      for (final t in list) trackFromRow(t, coverDirectory),
     ];
     void queueAlbum(AlbumSummary album, QueueAction action) =>
         enqueueAlbum(ref, context, action, album.key, album.title);
@@ -107,6 +105,7 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
       albums: albums,
       onTap: openAlbum,
       onQueueAction: queueAlbum,
+      pageArtistKey: artistKey,
     );
     // Play and Shuffle in the header always take every song.
     void onPlay() => playTracks(ref, queueOf(songs), 0);
@@ -172,6 +171,7 @@ class _ArtistPageState extends ConsumerState<_ArtistPage>
                   else
                     SliverBrowseSongs(
                       songs: shown,
+                      pageArtistKey: artistKey,
                       onTap: (i) => playTracks(ref, queueOf(shown), i),
                       onQueueAction: (song, action) => enqueueLoaded(
                         ref,

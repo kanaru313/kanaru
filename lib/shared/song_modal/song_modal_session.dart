@@ -4,9 +4,9 @@ import 'package:flutter/painting.dart' show Offset;
 import 'package:flutter/foundation.dart' show ValueChanged;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/database/library_rows.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_favorites.dart';
+import '../../core/database/song_row.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
 import '../queue_host.dart';
 import '../track_menu_actions.dart';
@@ -40,9 +40,11 @@ class SongModalSession {
     this.showAlbum = true,
     this.extraActions = const [],
     this.headerNote,
+    this.pageArtistKey,
+    this.showFolder = true,
   });
 
-  final TrackListItem song;
+  final SongRow song;
   final TrackMenuRunner runner;
   final ValueChanged<QueueAction> onQueueAction;
 
@@ -60,6 +62,13 @@ class SongModalSession {
 
   /// Quiet line the screen adds under the album in the header; null for none.
   final String? headerNote;
+
+  /// The artist of the page the row is on, left out of the artist links;
+  /// null elsewhere.
+  final String? pageArtistKey;
+
+  /// False on a folder page (see `SongModalExtras.showFolder`).
+  final bool showFolder;
 
   void _run(TrackMenuChoice choice) => unawaited(
     runner.run(

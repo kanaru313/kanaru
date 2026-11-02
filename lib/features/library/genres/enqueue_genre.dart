@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/genre_queries.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/genre_summaries.dart';
 import '../../../shared/play_tracks.dart';
@@ -27,7 +26,7 @@ void enqueueGenre(
         genre.raws,
         includeNull: genre.withoutGenre,
       ))
-        trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+        trackFromRow(t, covers),
     ];
   },
 );

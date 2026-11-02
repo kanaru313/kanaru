@@ -22,6 +22,7 @@ import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_entries_view.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/playlist_page_actions.dart';
+import 'package:kanaru/shared/play_tracks.dart';
 import 'package:kanaru/features/playlists/playlist_screen.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/library_browse_refresh.dart';
@@ -248,7 +249,7 @@ void main() {
           '[$size] tap to queue (read + start + Track list): ${_fmt(await _time(() async {
             final playable = await _db.playlistPlayableTracks(id);
             final start = playableStartIndex(playable, middle, size ~/ 4);
-            final tracks = [for (final p in playable) playlistTrack(p.track, '/covers')];
+            final tracks = [for (final p in playable) trackFromRow(p.track, '/covers')];
             expect(start, isNotNull);
             expect(tracks, isNotEmpty);
           }))}',

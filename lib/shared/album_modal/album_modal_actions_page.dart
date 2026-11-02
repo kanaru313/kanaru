@@ -43,6 +43,7 @@ ContextModalPage albumModalActionsPage(AlbumModalSession session) {
             links: links,
             showAlbum: session.showAlbum,
             gone: AlbumModalData.goneOf(async),
+            pageArtistKey: session.pageArtistKey,
           );
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -55,7 +56,10 @@ ContextModalPage albumModalActionsPage(AlbumModalSession session) {
                   // The pages get the loaded lists: this page is unmounted
                   // while they show, which would drop the provider.
                   openArtists: (nav) => nav.push(
-                    albumModalArtistsPage(session, links?.artists ?? const []),
+                    albumModalArtistsPage(
+                      session,
+                      data.linkedArtists ?? const [],
+                    ),
                   ),
                   openFolders: (nav) => nav.push(
                     albumModalFoldersPage(session, links?.folders ?? const []),

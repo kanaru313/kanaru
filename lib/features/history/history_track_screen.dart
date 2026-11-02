@@ -15,7 +15,6 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'history_delete_undo.dart';
 import 'history_play_menu.dart';
 import 'history_plays_version.dart';
-import 'history_queue_track.dart';
 import 'history_providers.dart';
 import 'history_screen_states.dart';
 import 'history_track_header.dart';
@@ -42,7 +41,7 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
     final track = summary.track;
     if (track == null) return;
     playTracks(ref, [
-      historyQueueTrack(track, ref.read(coverCacheDirectoryProvider)),
+      trackFromRow(track, ref.read(coverCacheDirectoryProvider)),
     ], 0);
   }
 
@@ -67,7 +66,7 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
     if (action != null) {
       if (item == null) return;
       enqueueLoaded(ref, context, action, [
-        historyQueueTrack(item, ref.read(coverCacheDirectoryProvider)),
+        trackFromRow(item, ref.read(coverCacheDirectoryProvider)),
       ], item.title);
       return;
     }

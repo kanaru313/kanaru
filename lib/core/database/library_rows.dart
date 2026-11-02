@@ -1,3 +1,5 @@
+import 'song_row.dart';
+
 /// Version of the rules that pick a track's cover: source order, accepted
 /// formats and thumbnail size. Tracks scanned under a lower version are read
 /// again on the next scan even when the file is unchanged. Bump it when those
@@ -60,7 +62,7 @@ class ExtraTagsUpdate {
 
 /// The few columns a track list row shows, so listing a big library does not
 /// load every tag.
-class TrackListItem {
+class TrackListItem implements SongRow {
   const TrackListItem({
     required this.id,
     required this.path,
@@ -72,14 +74,22 @@ class TrackListItem {
     this.coverKey,
   });
 
+  @override
   final int id;
+  @override
   final String path;
+  @override
   final String title;
+  @override
   final String? artist;
+  @override
   final String? album;
+  @override
   final int? year;
+  @override
   final int? durationMs;
 
   /// Cover thumbnail key in the cover cache; null when there is no cover.
+  @override
   final String? coverKey;
 }

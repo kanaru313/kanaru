@@ -70,9 +70,19 @@ List<List<ContextModalAction>> songModalSections(
 }) {
   final song = data.song;
   final links = data.links;
-  final artists = links?.artists ?? const [];
-  final albumArtists = links?.albumArtists ?? const [];
-  final artistKeys = {for (final a in artists) a.key};
+  final allArtists = links?.artists ?? const [];
+  final allAlbumArtists = links?.albumArtists ?? const [];
+  final artistKeys = {for (final a in allArtists) a.key};
+  // On an artist's page the links leave that artist out.
+  final page = data.pageArtistKey;
+  List<({String key, String name})> notPage(
+    List<({String key, String name})> list,
+  ) => page == null ? list : list.where((a) => a.key != page).toList();
+  final artists = notPage(allArtists);
+  final albumArtists = notPage(allAlbumArtists);
+  // The page's artist was the only one: nothing else to go to.
+  final onlyPageArtist =
+      links != null && artists.isEmpty && allArtists.isNotEmpty;
   final albumTitle = song.album?.isNotEmpty ?? false ? song.album : null;
   final isFavorite = data.isFavorite;
 
@@ -88,17 +98,7 @@ List<List<ContextModalAction>> songModalSections(
           enabled: links?.album != null,
           onTap: songModalCloseThen(h.goToAlbum),
         ),
-      if (artists.isEmpty)
-        ContextModalAction(
-          id: 'artist',
-          icon: AppIcons.artistOutline,
-          label: l10n.songModalGoToArtist,
-          subtitle: links == null && (song.artist?.isNotEmpty ?? false)
-              ? song.artist
-              : l10n.songModalNoArtist,
-          enabled: false,
-        )
-      else
+      if (artists.isNotEmpty)
         _artistsAction(
           l10n,
           id: 'artist',
@@ -108,10 +108,21 @@ List<List<ContextModalAction>> songModalSections(
           many: AppIcons.artists,
           artists: artists,
           open: h.goToArtist,
+        )
+      else if (!onlyPageArtist)
+        ContextModalAction(
+          id: 'artist',
+          icon: AppIcons.artistOutline,
+          label: l10n.songModalGoToArtist,
+          subtitle: links == null && (song.artist?.isNotEmpty ?? false)
+              ? song.artist
+              : l10n.songModalNoArtist,
+          enabled: false,
         ),
-      // Only when the album's artist is somebody else than the song's.
+      // Only when the album's artist is somebody else than the song's
+      // (judged before the page's artist is left out).
       if (albumArtists.isNotEmpty &&
-          !albumArtists.every((a) => artistKeys.contains(a.key)))
+          !allAlbumArtists.every((a) => artistKeys.contains(a.key)))
         _artistsAction(
           l10n,
           id: 'album-artist',
@@ -122,7 +133,16 @@ List<List<ContextModalAction>> songModalSections(
           artists: albumArtists,
           open: h.goToArtist,
         ),
-      if (data.hasLocalPath)
+      if (data.hasLocalPath && !data.showFolder)
+        // On the folder's own page: the page is the folder, the file
+        // manager is still a tap away.
+        ContextModalAction(
+          id: 'show-in-file-manager',
+          icon: AppIcons.folderOpen,
+          label: l10n.libraryShowInFileManager,
+          onTap: songModalCloseThen(h.showInFileManager),
+        )
+      else if (data.hasLocalPath)
         ContextModalAction(
           id: 'folder',
           icon: AppIcons.folderOutlined,

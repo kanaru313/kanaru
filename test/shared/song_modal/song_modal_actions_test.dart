@@ -48,6 +48,8 @@ SongModalData _data({
   bool hasLibrary = true,
   bool canFindLyrics = true,
   bool showAlbum = true,
+  String? pageArtistKey,
+  bool showFolder = true,
 }) => SongModalData(
   song: song,
   links: links,
@@ -55,6 +57,8 @@ SongModalData _data({
   hasLibrary: hasLibrary,
   canFindLyrics: canFindLyrics,
   showAlbum: showAlbum,
+  pageArtistKey: pageArtistKey,
+  showFolder: showFolder,
 );
 
 TrackLinks _links({
@@ -177,6 +181,149 @@ void main() {
         title: 'A',
       );
       expect(_byId(_data(song: remote)), isNot(contains('folder')));
+    });
+  });
+
+  group("on an artist's page", () {
+    test('a song by that artist alone has no Go to artist', () {
+      final all = _byId(_data(links: _links(), pageArtistKey: 'ann'));
+      expect(all.keys, isNot(contains('artist')));
+      expect(all.keys, isNot(contains('artists')));
+    });
+
+    test('Go to artist lists the other artists only', () {
+      final a = _byId(
+        _data(
+          links: _links(artists: _names(['Ann', 'Bob'])),
+          pageArtistKey: 'ann',
+        ),
+      )['artist']!;
+      expect(a.subtitle, 'Bob');
+      expect(a.chips, isNull);
+    });
+
+    test('a page of another artist keeps every artist', () {
+      final a = _byId(
+        _data(
+          links: _links(artists: _names(['Ann', 'Bob'])),
+          pageArtistKey: 'cy',
+        ),
+      )['artists']!;
+      expect([for (final c in a.chips!.items) c.label], ['Ann', 'Bob']);
+    });
+
+    test('Go to artist stays greyed out while the links load', () {
+      final a = _byId(_data(pageArtistKey: 'ann'))['artist']!;
+      expect(a.enabled, isFalse);
+      expect(a.subtitle, 'Ann');
+    });
+
+    test('a song without artists keeps the greyed No artist row', () {
+      final a = _byId(
+        _data(
+          links: _links(artists: []),
+          pageArtistKey: 'ann',
+        ),
+      )['artist']!;
+      expect(a.enabled, isFalse);
+      expect(a.subtitle, 'No artist');
+    });
+
+    test('Go to album artist leaves the page artist out', () {
+      final a = _byId(
+        _data(
+          links: _links(albumArtists: _names(['Ann', 'Bob'])),
+          pageArtistKey: 'ann',
+        ),
+      )['album-artist']!;
+      expect(a.subtitle, 'Bob');
+    });
+
+    test(
+      'Go to album artist is left out when only the page artist is left',
+      () {
+        final all = _byId(
+          _data(
+            links: _links(
+              artists: _names(['Bob']),
+              albumArtists: _names(['Ann']),
+            ),
+            pageArtistKey: 'ann',
+          ),
+        );
+        expect(all.keys, isNot(contains('album-artist')));
+        expect(all['artist']!.subtitle, 'Bob');
+      },
+    );
+
+    test('album artists that are all song artists still hide the row', () {
+      // Song by Ann and Bob, album by Ann and Bob, on Ann's page: Bob is
+      // already under Go to artist.
+      final all = _byId(
+        _data(
+          links: _links(
+            artists: _names(['Ann', 'Bob']),
+            albumArtists: _names(['Ann', 'Bob']),
+          ),
+          pageArtistKey: 'ann',
+        ),
+      );
+      expect(all.keys, isNot(contains('album-artist')));
+      expect(all.keys, isNot(contains('album-artists')));
+    });
+  });
+
+  group('on a folder page', () {
+    test('has no Go to folder but a Show in file manager row', () {
+      final calls = <String>[];
+      final handlers = SongModalHandlers(
+        goToAlbum: () {},
+        goToArtist: (_) {},
+        goToFolder: () {},
+        showInFileManager: () => calls.add('show'),
+        addToPlaylist: () {},
+        setFavorite: (_) {},
+        findLyrics: () {},
+      );
+      final all = {
+        for (final section in songModalSections(
+          _l10n,
+          _data(links: _links(), showFolder: false),
+          handlers,
+        ))
+          for (final action in section) action.id: action,
+      };
+      expect(all.keys, isNot(contains('folder')));
+      final row = all['show-in-file-manager']!;
+      expect(row.label, 'Show in file manager');
+      expect(row.icon, AppIcons.folderOpen);
+      expect(row.trailing, isEmpty);
+      row.onTap!(
+        ContextModalNav(
+          push: (_) {},
+          pop: () {},
+          close: ([_]) => calls.add('close'),
+        ),
+      );
+      expect(calls, ['close', 'show']);
+    });
+
+    test('a song with no local path has neither row', () {
+      const remote = TrackListItem(
+        id: 1,
+        path: 'https://example.org/a.mp3',
+        title: 'A',
+      );
+      final all = _byId(_data(song: remote, showFolder: false));
+      expect(all.keys, isNot(contains('folder')));
+      expect(all.keys, isNot(contains('show-in-file-manager')));
+    });
+
+    test('elsewhere there is no Show in file manager row', () {
+      expect(
+        _byId(_data(links: _links())),
+        isNot(contains('show-in-file-manager')),
+      );
     });
   });
 

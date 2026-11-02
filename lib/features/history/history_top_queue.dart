@@ -1,6 +1,6 @@
 import '../../core/database/history_rows.dart';
 import '../../core/player/track.dart';
-import 'history_queue_track.dart';
+import '../../shared/play_tracks.dart';
 
 /// The queue entry for a most-played row's library song, or null when the
 /// song is gone. The player only gets the `tracks` row path (never the path
@@ -8,7 +8,7 @@ import 'history_queue_track.dart';
 /// covers are off.
 Track? historyTopTrackOf(HistoryTopRow row, String? covers) {
   final track = row.track;
-  return track == null ? null : historyQueueTrack(track, covers);
+  return track == null ? null : trackFromRow(track, covers);
 }
 
 /// The songs of [rows] that can play, in rank order.

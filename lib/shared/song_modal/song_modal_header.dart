@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_rows.dart';
 import '../../core/database/library_startup.dart';
+import '../../core/database/song_row.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
@@ -16,7 +16,7 @@ const double _coverSize = 64;
 class SongModalHeader extends ConsumerWidget {
   const SongModalHeader({super.key, required this.song, this.onTap, this.note});
 
-  final TrackListItem song;
+  final SongRow song;
   final VoidCallback? onTap;
 
   /// Extra quiet fourth line (set by the screen); null leaves three lines.

@@ -41,6 +41,8 @@ ContextModalPage songModalActionsPage(SongModalSession session) {
             hasLibrary: hasLibrary,
             canFindLyrics: session.lyricsTarget != null,
             showAlbum: session.showAlbum,
+            pageArtistKey: session.pageArtistKey,
+            showFolder: session.showFolder,
           );
           return Column(
             mainAxisSize: MainAxisSize.min,

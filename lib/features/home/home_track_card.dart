@@ -25,10 +25,10 @@ class HomeTrackCard extends ConsumerWidget {
     return SongGridTile(
       song: song,
       onTap: () => playTracks(ref, [
-        for (final t in row) trackFromListItem(t, covers),
+        for (final t in row) trackFromRow(t, covers),
       ], index),
       onQueueAction: (action) => enqueueLoaded(ref, context, action, [
-        trackFromListItem(song, covers),
+        trackFromRow(song, covers),
       ], song.title),
     );
   }

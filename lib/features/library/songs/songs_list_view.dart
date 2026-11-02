@@ -83,9 +83,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
           );
         return;
       }
-      playTracks(ref, [
-        for (final s in items) trackFromListItem(s, covers),
-      ], start);
+      playTracks(ref, [for (final s in items) trackFromRow(s, covers)], start);
     } catch (error, stackTrace) {
       _log.severe('Reading the play queue failed', error, stackTrace);
       if (mounted) {
@@ -103,10 +101,7 @@ class _SongsListViewState extends ConsumerState<SongsListView> {
   void _enqueue(TrackListItem song, QueueAction action) {
     // The menu closes later than it opened: the list may be gone by then.
     if (!mounted) return;
-    final track = trackFromListItem(
-      song,
-      ref.read(coverCacheDirectoryProvider),
-    );
+    final track = trackFromRow(song, ref.read(coverCacheDirectoryProvider));
     enqueueLoaded(ref, context, action, [track], song.title);
   }
 

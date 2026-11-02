@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/database/library_database.dart' show BrowseTrack;
-import '../core/database/library_rows.dart' show TrackListItem;
+import '../core/database/song_row.dart';
 import '../core/indexer/cover_paths.dart';
 import '../core/player/player_service.dart';
 import '../core/player/track.dart';
@@ -29,28 +28,16 @@ Track trackFromItem({
   duration: durationMs == null ? null : Duration(milliseconds: durationMs),
 );
 
-/// A queue entry for a track of the album or artist pages, with [artPath]
-/// as in [trackFromItem].
-Track trackFromBrowse(BrowseTrack track, {String? artPath}) => trackFromItem(
-  path: track.path,
-  title: track.title,
-  artist: track.artist,
-  album: track.album,
-  year: track.year,
-  durationMs: track.durationMs,
-  artPath: artPath,
-);
-
 /// A queue entry for a library row, with the cover thumbnail from the cover
 /// folder [covers] (null when covers are off).
-Track trackFromListItem(TrackListItem item, String? covers) => trackFromItem(
-  path: item.path,
-  title: item.title,
-  artist: item.artist,
-  album: item.album,
-  year: item.year,
-  durationMs: item.durationMs,
-  artPath: coverPath(covers, item.coverKey),
+Track trackFromRow(SongRow row, String? covers) => trackFromItem(
+  path: row.path,
+  title: row.title,
+  artist: row.artist,
+  album: row.album,
+  year: row.year,
+  durationMs: row.durationMs,
+  artPath: coverPath(covers, row.coverKey),
 );
 
 /// Replaces the queue with [tracks] and plays from [start]: tapping a row

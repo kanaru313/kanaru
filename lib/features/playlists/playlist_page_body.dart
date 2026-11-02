@@ -65,7 +65,7 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
     final start = rows.take(index).where((r) => r.track != null).length;
     final tracks = [
       for (final row in rows)
-        if (row.track case final track?) playlistTrack(track, covers),
+        if (row.track case final track?) trackFromRow(track, covers),
     ];
     playTracks(ref, tracks, start);
   }
@@ -127,7 +127,7 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
           ref,
           context,
           action,
-          [playlistTrack(track, covers)],
+          [trackFromRow(track, covers)],
           track.title,
           excludePlaylistId: playlist.id,
         );

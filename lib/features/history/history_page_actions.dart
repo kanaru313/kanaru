@@ -9,7 +9,6 @@ import '../../shared/play_tracks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'history_error_log.dart';
-import 'history_queue_track.dart';
 
 /// Replaces the queue with every played song still in the library, the one
 /// played last first, and plays from the first. Read when the button is
@@ -18,8 +17,7 @@ Future<void> playAllHistory(WidgetRef ref) => playFromDatabase(
   ref,
   'Reading the played songs failed',
   (db, covers) async => [
-    for (final t in await db.historyPlayedTracks())
-      historyQueueTrack(t, covers),
+    for (final t in await db.historyPlayedTracks()) trackFromRow(t, covers),
   ],
 );
 
@@ -32,8 +30,7 @@ void queueAllHistory(WidgetRef ref, BuildContext context, QueueAction action) =>
       action,
       context.l10n.navHistory,
       (db, covers) async => [
-        for (final t in await db.historyPlayedTracks())
-          historyQueueTrack(t, covers),
+        for (final t in await db.historyPlayedTracks()) trackFromRow(t, covers),
       ],
     );
 
@@ -49,7 +46,7 @@ Future<void> shuffleAllHistory(WidgetRef ref, BuildContext context) async {
   try {
     final played = await db.historyPlayedTracks();
     if (!context.mounted || played.isEmpty) return;
-    shuffleTracks(ref, [for (final t in played) historyQueueTrack(t, covers)]);
+    shuffleTracks(ref, [for (final t in played) trackFromRow(t, covers)]);
   } on Object catch (error) {
     logHistoryError('Reading the shuffle queue failed', error);
     if (context.mounted) {

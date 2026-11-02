@@ -65,12 +65,14 @@ class AlbumHost {
 
 /// Mounts a tile (right click opens the album modal) on a router, with the
 /// links of the album answered by [links] and a fake file manager. Uses
-/// [container] when given (then [links] is ignored).
+/// [container] when given (then [links] is ignored). [pageArtistKey] is the
+/// artist whose page lists the tile.
 Future<AlbumHost> pumpAlbumHost(
   WidgetTester tester, {
   AlbumLinks? links,
   ProviderContainer? container,
   bool showAlbum = true,
+  String? pageArtistKey,
   bool withMoreButton = false,
   AlbumTileData album = testAlbum,
   bool enqueueForReal = false,
@@ -95,6 +97,7 @@ Future<AlbumHost> pumpAlbumHost(
                         builder: (context, ref, _) => AlbumActionsRegion(
                           album: album,
                           showAlbum: showAlbum,
+                          pageArtistKey: pageArtistKey,
                           onQueueAction: enqueueForReal
                               ? (a) => enqueueAlbum(
                                   ref,

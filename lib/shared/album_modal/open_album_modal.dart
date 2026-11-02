@@ -18,14 +18,16 @@ import 'album_modal_session.dart';
 /// Queue actions go to [onQueueAction], run with the `QueueHost` built from
 /// what the runner captured here so they work after the tile is gone; the
 /// rest is carried out after the modal has closed. [showAlbum] false leaves
-/// out Go to album, on the page of the album itself. [viaKeyboard] focuses
-/// the first row.
+/// out Go to album, on the page of the album itself. [pageArtistKey] is the
+/// artist whose page lists the album, left out of Go to artist (null
+/// elsewhere). [viaKeyboard] focuses the first row.
 void openAlbumModal(
   BuildContext context,
   WidgetRef ref, {
   required AlbumTileData album,
   required ValueChanged<QueueAction> onQueueAction,
   bool showAlbum = true,
+  String? pageArtistKey,
   bool viaKeyboard = false,
 }) {
   final session = AlbumModalSession(
@@ -33,6 +35,7 @@ void openAlbumModal(
     runner: TrackMenuRunner(ref, context),
     onQueueAction: onQueueAction,
     showAlbum: showAlbum,
+    pageArtistKey: pageArtistKey,
   );
   unawaited(
     showContextModal<void>(

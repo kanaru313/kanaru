@@ -65,7 +65,7 @@ void _enqueue(
       folder.path,
       recursive: recursive,
     ))
-      trackFromListItem(t, covers),
+      trackFromRow(t, covers),
   ];
 });
 
@@ -93,7 +93,7 @@ Future<void> _open(
     // A queue opened or filled meanwhile came from a newer action: that one
     // wins over a read started before it.
     if (songs.isEmpty || player.userQueueChanges != changesBefore) return;
-    final tracks = <Track>[for (final s in songs) trackFromListItem(s, covers)];
+    final tracks = <Track>[for (final s in songs) trackFromRow(s, covers)];
     // Not guarded by `mounted`: leaving the page does not cancel the tap.
     unawaited(
       shuffle ? player.openShuffled(tracks) : player.openTracks(tracks),
