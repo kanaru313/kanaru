@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/features/library/widgets/library_rescan_button.dart';
 import 'package:kanaru/features/settings/library_settings_page.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -13,8 +14,10 @@ void main() {
     of: find.byType(LibraryRescanButton),
     matching: find.byType(IconButton),
   );
-  Finder rescan() =>
-      find.descendant(of: rescanButton(), matching: find.byIcon(Icons.refresh));
+  Finder rescan() => find.descendant(
+    of: rescanButton(),
+    matching: find.byIcon(AppIcons.refresh),
+  );
   Finder ring() => find.byType(CircularProgressIndicator);
 
   testWidgets('the rescan button turns into a disabled ring while covers '

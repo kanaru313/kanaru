@@ -5,6 +5,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/sleep_timer/sleep_timer_button.dart';
 import 'package:kanaru/features/player/sleep_timer/sleep_timer_draft.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'sleep_timer_harness.dart';
@@ -34,7 +35,7 @@ void main() {
       tester.widget<IconButton>(
         find.widgetWithIcon(
           IconButton,
-          tooltip == '-' ? Icons.remove : Icons.add,
+          tooltip == '-' ? AppIcons.remove : AppIcons.add,
         ),
       );
 

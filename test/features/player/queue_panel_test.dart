@@ -71,7 +71,7 @@ void main() {
 
   Finder handle(int row) => find.descendant(
     of: find.byType(QueueTile).at(row),
-    matching: find.byIcon(Icons.drag_handle_rounded),
+    matching: find.byIcon(AppIcons.dragHandle),
   );
 
   Finder more(int row) => find.descendant(
@@ -121,7 +121,7 @@ void main() {
       expect(tester.getSize(find.byType(QueuePanel)).width, 440);
       // Every row has its ⋮ button; there is no hover remove.
       expect(find.byTooltip('More options'), findsNWidgets(4));
-      expect(find.byIcon(Icons.delete_rounded), findsNothing);
+      expect(find.byIcon(AppIcons.deleteRounded), findsNothing);
       // Clear and save sit in the header's overflow menu; the header has no
       // jump-to-current button (the floating one appears only when needed).
       expect(find.byTooltip('Clear queue'), findsNothing);
@@ -315,7 +315,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(QueueTile).at(2),
-          matching: find.byIcon(Icons.graphic_eq_rounded),
+          matching: find.byIcon(AppIcons.equalizerRounded),
         ),
         findsOneWidget,
       );
@@ -341,7 +341,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(QueueTile).at(3),
-          matching: find.byIcon(Icons.graphic_eq_rounded),
+          matching: find.byIcon(AppIcons.equalizerRounded),
         ),
         findsNothing,
       );
@@ -359,7 +359,7 @@ void main() {
       expect(
         find.descendant(
           of: row,
-          matching: find.byIcon(Icons.graphic_eq_rounded),
+          matching: find.byIcon(AppIcons.equalizerRounded),
         ),
         findsOneWidget,
       );
@@ -367,7 +367,7 @@ void main() {
       expect(
         find.descendant(
           of: find.descendant(of: row, matching: find.byType(SongTileCover)),
-          matching: find.byIcon(Icons.music_note_rounded),
+          matching: find.byIcon(AppIcons.musicNoteOutlined),
         ),
         findsNothing,
       );

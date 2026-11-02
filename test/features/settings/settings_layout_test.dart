@@ -11,6 +11,7 @@ import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:kanaru/features/settings/settings_category_tile.dart';
 import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -90,7 +91,7 @@ Future<void> _checkLayout(
     UncontrolledProviderScope(container: container, child: const KanaruApp()),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
+  await tester.tap(find.byIcon(AppIcons.settingsOutlined).hitTestable().first);
   await tester.pumpAndSettle();
   expect(tester.takeException(), isNull);
 

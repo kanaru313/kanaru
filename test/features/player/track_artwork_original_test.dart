@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/playing_track_original_cover.dart';
 import 'package:kanaru/features/player/original_cover_layer.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A 1x1 transparent PNG.
@@ -204,7 +205,7 @@ void main() {
         ),
       ),
     );
-    expect(find.byIcon(Icons.music_note_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.musicNoteRounded), findsOneWidget);
 
     await decode(tester);
 

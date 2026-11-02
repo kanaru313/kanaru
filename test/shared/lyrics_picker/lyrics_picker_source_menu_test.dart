@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_marquee_label.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_source_menu.dart';
 import 'package:material_ui/material_ui.dart';
@@ -100,10 +101,10 @@ void main() {
     expect(find.text('All sources (2)'), findsOneWidget);
     expect(tester.getSize(chip()).width, 200);
     expect(
-      find.descendant(of: chip(), matching: find.byIcon(Icons.check)),
+      find.descendant(of: chip(), matching: find.byIcon(AppIcons.check)),
       findsNothing,
     );
-    expect(find.byIcon(Icons.arrow_drop_down), findsOneWidget);
+    expect(find.byIcon(AppIcons.dropDown), findsOneWidget);
   });
 
   testWidgets('menu lists the total and the counts, check on current only', (
@@ -125,11 +126,11 @@ void main() {
       find.descendant(of: item('Beta'), matching: find.text('6')),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(AppIcons.check), findsOneWidget);
     expect(
       find.descendant(
         of: item('All sources'),
-        matching: find.byIcon(Icons.check),
+        matching: find.byIcon(AppIcons.check),
       ),
       findsOneWidget,
     );

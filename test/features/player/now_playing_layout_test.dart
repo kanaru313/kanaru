@@ -232,7 +232,7 @@ void main() {
       await pumpOpen(tester, const Size(600, 700));
 
       expect(inScreen(find.byTooltip('Mute')), findsNothing);
-      expect(inScreen(find.byIcon(Icons.volume_up_rounded)), findsNothing);
+      expect(inScreen(find.byIcon(AppIcons.volumeUp)), findsNothing);
       // Close and queue are in the header, close together at the left.
       final close = tester.getRect(
         inScreen(find.byTooltip('Close Now Playing')),

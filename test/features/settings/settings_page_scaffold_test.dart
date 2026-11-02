@@ -7,6 +7,7 @@ import 'package:kanaru/features/settings/settings_page_scaffold.dart';
 import 'package:kanaru/features/settings/settings_save_warning.dart';
 import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> _pump(
@@ -105,6 +106,6 @@ void main() {
   testWidgets('no warning when settings are writable', (tester) async {
     await _pump(tester);
 
-    expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
+    expect(find.byIcon(AppIcons.warningOutlined), findsNothing);
   });
 }

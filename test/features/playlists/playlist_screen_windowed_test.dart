@@ -3,6 +3,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/playlists/playlist_entries_view.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
@@ -95,7 +96,7 @@ void main() {
     position.jumpTo(150 * rowExtent(tester));
     await tester.pump();
     expect(find.byType(PlaylistEntryPlaceholder), findsWidgets);
-    expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
+    expect(find.byIcon(AppIcons.dragHandle), findsNothing);
 
     await settleDb(tester);
     expect(find.byType(PlaylistEntryPlaceholder), findsNothing);
@@ -112,7 +113,7 @@ void main() {
     // Row 101 (page 1) goes up to index 97 (page 0).
     final handle = find.descendant(
       of: find.widgetWithText(PlaylistEntryTile, 'S101'),
-      matching: find.byIcon(Icons.drag_handle_rounded),
+      matching: find.byIcon(AppIcons.dragHandle),
     );
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 50));

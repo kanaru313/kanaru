@@ -3,6 +3,7 @@ import 'package:kanaru/app/shell/app_destination.dart';
 import 'package:kanaru/app/shell/sidebar/sidebar_item.dart';
 import 'package:kanaru/app/shell/sidebar/sidebar_toggle.dart';
 import 'package:kanaru/core/settings/display_prefs.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../features/library/browse_test_data.dart' show goTo, location;
@@ -129,7 +130,7 @@ void main() {
     tester.view.physicalSize = const Size(600, 800);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.menu));
+    await tester.tap(find.byIcon(AppIcons.menu));
     await tester.pumpAndSettle();
     await tester.tap(item('Playlists'));
     await tester.pumpAndSettle();

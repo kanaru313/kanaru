@@ -6,6 +6,7 @@ import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
 import 'package:kanaru/shared/widgets/album_list_tile.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -49,7 +50,7 @@ void main() {
     expect(_coverPaths(tester, grid('Alpha')), ['$_covers/$_red']);
     expect(_coverPaths(tester, grid('Beta')), isEmpty);
     expect(
-      find.descendant(of: grid('Beta'), matching: find.byIcon(Icons.album)),
+      find.descendant(of: grid('Beta'), matching: find.byIcon(AppIcons.album)),
       findsOneWidget,
     );
 
@@ -62,7 +63,7 @@ void main() {
     expect(_coverPaths(tester, row('Alpha')), ['$_covers/$_red']);
     expect(_coverPaths(tester, row('Beta')), isEmpty);
     expect(
-      find.descendant(of: row('Beta'), matching: find.byIcon(Icons.album)),
+      find.descendant(of: row('Beta'), matching: find.byIcon(AppIcons.album)),
       findsOneWidget,
     );
   });
@@ -93,7 +94,7 @@ void main() {
     expect(
       find.descendant(
         of: song('two'),
-        matching: find.byIcon(Icons.music_note_outlined),
+        matching: find.byIcon(AppIcons.musicNoteOutlined),
       ),
       findsOneWidget,
     );
@@ -140,7 +141,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(AlbumGridTile),
-        matching: find.byIcon(Icons.album),
+        matching: find.byIcon(AppIcons.album),
       ),
       findsNWidgets(2),
     );

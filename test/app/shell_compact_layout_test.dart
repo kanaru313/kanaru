@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
@@ -50,7 +51,7 @@ void main() {
     expect(find.byTooltip('Forward'), findsNothing);
     final menu = tester.getRect(
       find.ancestor(
-        of: find.byIcon(Icons.menu),
+        of: find.byIcon(AppIcons.menu),
         matching: find.byType(IconButton),
       ),
     );

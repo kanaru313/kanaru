@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/playlist_side_pane.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart'
     show
@@ -9,7 +10,6 @@ import 'package:material_ui/material_ui.dart'
         BoxDecoration,
         CustomScrollView,
         DecoratedBox,
-        Icons,
         Scrollable,
         ScrollableState,
         SizedBox;
@@ -397,7 +397,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PlaylistEntryPlaceholder), findsWidgets);
-      expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
+      expect(find.byIcon(AppIcons.dragHandle), findsNothing);
 
       await tester.pumpAndSettle();
       expect(find.byType(PlaylistEntryPlaceholder), findsNothing);

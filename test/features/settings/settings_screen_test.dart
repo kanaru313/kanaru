@@ -10,6 +10,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/open_external.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:kanaru/features/settings/settings_section.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -71,7 +72,7 @@ void main() {
   testWidgets('the root has no save warning', (tester) async {
     await pumpSettings(tester);
 
-    expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
+    expect(find.byIcon(AppIcons.warningOutlined), findsNothing);
   });
 
   testWidgets('each page shows its groups in order, rows with a hint', (

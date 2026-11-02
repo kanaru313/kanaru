@@ -145,7 +145,7 @@ void main() {
 
       expect(find.byType(PlaylistEntryTile), findsNWidgets(2));
       expect(find.byTooltip('Remove from playlist'), findsNothing);
-      expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
+      expect(find.byIcon(AppIcons.dragHandle), findsNothing);
     });
 
     testWidgets('an empty playlist shows the empty state', (tester) async {

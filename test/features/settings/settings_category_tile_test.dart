@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/settings/settings_category_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> _pump(
@@ -39,7 +40,7 @@ void main() {
       find.text('Theme, font, language, sidebar and a long tail'),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+    expect(find.byIcon(AppIcons.chevronRight), findsOneWidget);
   });
 
   testWidgets('tapping calls onTap once', (tester) async {

@@ -212,7 +212,7 @@ void main() {
     final handle = find
         .descendant(
           of: find.byType(QueueTile),
-          matching: find.byIcon(Icons.drag_handle_rounded),
+          matching: find.byIcon(AppIcons.dragHandle),
         )
         .hitTestable()
         .first;

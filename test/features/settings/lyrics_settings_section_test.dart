@@ -10,6 +10,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -39,7 +40,9 @@ void main() {
       UncontrolledProviderScope(container: container, child: const KanaruApp()),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
+    await tester.tap(
+      find.byIcon(AppIcons.settingsOutlined).hitTestable().first,
+    );
     await tester.pumpAndSettle();
     await openSettingsPage(tester, page);
   }

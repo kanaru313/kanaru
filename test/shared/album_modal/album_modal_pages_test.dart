@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_browse_album_links.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
-import 'package:material_ui/material_ui.dart';
 
 import 'album_modal_test_support.dart';
 
@@ -15,7 +15,7 @@ void main() {
     );
     await openAlbumModalOf(tester);
     expect(find.text('5 artists'), findsOneWidget);
-    expect(find.byIcon(Icons.chevron_right), findsWidgets);
+    expect(find.byIcon(AppIcons.chevronRight), findsWidgets);
 
     await tapAlbumRow(tester, 'Go to artist');
     expect(find.text('Artists · Al'), findsOneWidget);

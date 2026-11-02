@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_tab_dot.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/player/fake_audio_backend.dart';
@@ -126,7 +127,7 @@ void main() {
     return point;
   }
 
-  final queueButton = find.byIcon(Icons.queue_music_rounded);
+  final queueButton = find.byIcon(AppIcons.queue);
 
   testWidgets('double clicking a header button leaves the window alone', (
     tester,

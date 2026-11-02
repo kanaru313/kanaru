@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A 1x1 transparent PNG.
@@ -30,7 +31,7 @@ void main() {
   testWidgets('shows a music note without art', (tester) async {
     await pump(tester, null);
 
-    expect(find.byIcon(Icons.music_note_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.musicNoteRounded), findsOneWidget);
     expect(find.byType(Image), findsNothing);
     expect(tester.getSize(find.byType(TrackArtwork)), const Size(100, 100));
   });
@@ -40,7 +41,7 @@ void main() {
   ) async {
     await pump(tester, 'https://example.com/cover.jpg');
 
-    expect(find.byIcon(Icons.music_note_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.musicNoteRounded), findsOneWidget);
     expect(find.byType(Image), findsNothing);
   });
 
@@ -104,6 +105,6 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byIcon(Icons.music_note_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.musicNoteRounded), findsOneWidget);
   });
 }

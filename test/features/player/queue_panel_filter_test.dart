@@ -10,6 +10,7 @@ import 'package:kanaru/shared/in_page_filter.dart';
 import 'package:kanaru/features/player/queue/queue_panel.dart';
 import 'package:kanaru/features/player/queue/queue_play_next_marker.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/in_page_filter_registry.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
@@ -121,14 +122,14 @@ void main() {
 
   testWidgets('filtered rows cannot be dragged or removed', (tester) async {
     await openSheet(tester);
-    expect(find.byIcon(Icons.drag_handle_rounded), findsNWidgets(4));
+    expect(find.byIcon(AppIcons.dragHandle), findsNWidgets(4));
 
     await filterBy(tester, 'one');
 
-    expect(find.byIcon(Icons.drag_handle_rounded), findsNothing);
+    expect(find.byIcon(AppIcons.dragHandle), findsNothing);
     expect(rows(tester), hasLength(3));
     expect(find.byTooltip('More options'), findsNWidgets(3));
-    expect(find.byIcon(Icons.delete_rounded), findsNothing);
+    expect(find.byIcon(AppIcons.deleteRounded), findsNothing);
     expect(find.byType(ReorderableListView), findsNothing);
   });
 

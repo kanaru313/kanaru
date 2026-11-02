@@ -9,6 +9,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_cover.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -115,7 +116,7 @@ void main() {
       await openSongs(tester);
       AnimatedOpacity iconOpacity() => tester.widget<AnimatedOpacity>(
         find.ancestor(
-          of: find.byIcon(Icons.open_in_full),
+          of: find.byIcon(AppIcons.openFull),
           matching: find.byType(AnimatedOpacity),
         ),
       );

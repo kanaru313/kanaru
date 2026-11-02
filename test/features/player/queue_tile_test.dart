@@ -10,6 +10,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/queue/queue_button.dart';
 import 'package:kanaru/features/player/queue/queue_play_next_marker.dart';
 import 'package:kanaru/features/player/queue/queue_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/song_card.dart';
 import 'package:material_ui/material_ui.dart';
@@ -132,7 +133,7 @@ void main() {
 
   Finder handle(int row) => find.descendant(
     of: tile(row),
-    matching: find.byIcon(Icons.drag_handle_rounded),
+    matching: find.byIcon(AppIcons.dragHandle),
   );
 
   group('layout', () {

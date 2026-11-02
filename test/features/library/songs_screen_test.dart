@@ -11,6 +11,7 @@ import 'package:kanaru/core/database/library_song_paging.dart';
 import 'package:kanaru/features/library/songs/songs_list_provider.dart';
 import 'package:kanaru/features/library/widgets/library_rescan_button.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/fake_tag_reader.dart';
@@ -83,7 +84,7 @@ void main() {
       findsOneWidget,
       reason: 'zero counts are left out',
     );
-    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.success), findsOneWidget);
 
     await tester.tap(find.text('B.MP3'));
     await tester.pump();
@@ -139,7 +140,7 @@ void main() {
       reason: 'the raw error stays in the log',
     );
     expect(find.textContaining('boom'), findsNothing);
-    expect(find.byIcon(Icons.error_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.errorRounded), findsOneWidget);
   });
 
   testWidgets('reports unreadable files and a root that was not found', (
@@ -156,7 +157,7 @@ void main() {
     expect(find.textContaining('1 file couldn\'t be read'), findsOneWidget);
     expect(find.textContaining('$gone was not found'), findsOneWidget);
     expect(find.text('Scan complete, with warnings'), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.warningRounded), findsOneWidget);
   });
 
   testWidgets('says so when the library is unavailable', (tester) async {

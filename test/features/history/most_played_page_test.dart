@@ -7,6 +7,7 @@ import 'package:kanaru/features/history/most_played_row_tile.dart';
 import 'package:kanaru/features/history/most_played_side_pane.dart';
 import 'package:kanaru/shared/widgets/detail_page/tracks_toolbar.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/in_page_filter_registry.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
@@ -163,7 +164,7 @@ void main() {
     ) async {
       await open(tester);
 
-      expect(inPane(find.byIcon(Icons.more_vert)), findsOneWidget);
+      expect(inPane(find.byIcon(AppIcons.more)), findsOneWidget);
       await tester.tap(find.byTooltip('More'));
       await tester.pumpAndSettle();
       expect(find.text('Create playlist'), findsOneWidget);

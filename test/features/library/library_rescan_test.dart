@@ -14,6 +14,7 @@ import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/indexer/indexer_providers.dart';
 import 'package:kanaru/core/indexer/indexer_state.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/scripted_indexer.dart';
@@ -127,7 +128,7 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 2));
     expect(ring, findsNothing, reason: 'at 301 ms');
-    expect(find.byIcon(Icons.refresh), findsOneWidget);
+    expect(find.byIcon(AppIcons.refresh), findsOneWidget);
     expect(fab().onPressed, isNotNull);
 
     indexer.emit(
@@ -273,7 +274,7 @@ void main() {
         );
         final icon = find.descendant(
           of: button,
-          matching: find.byIcon(Icons.refresh),
+          matching: find.byIcon(AppIcons.refresh),
         );
         expect(ring, findsNothing);
         expect(icon, findsOneWidget);

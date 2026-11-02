@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
@@ -198,7 +199,7 @@ void main() {
     expect(find.textContaining('plugin-'), findsNothing);
     // No settings form and no menu.
     expect(find.text(en.pluginConfigTitle), findsNothing);
-    expect(find.byIcon(Icons.more_vert), findsNothing);
+    expect(find.byIcon(AppIcons.more), findsNothing);
   });
 
   testWidgets('the trash button has a tooltip and a semantics label', (
