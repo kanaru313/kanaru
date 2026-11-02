@@ -95,7 +95,7 @@ class Playlists extends Table {
   TextColumn get kind => text().nullable()();
 
   /// User text, trimmed, at most `playlistDescriptionMaxLength` (2000)
-  /// characters; empty when none. Favorites and saved queues keep ''.
+  /// grapheme clusters; empty when none. Favorites and saved queues keep ''.
   TextColumn get description => text().withDefault(const Constant(''))();
 }
 

@@ -1,9 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/playlist_text_rules.dart';
 import '../../../l10n/l10n.dart';
 
-/// Longest playlist name the dialog accepts.
-const playlistNameMaxLength = 200;
+export '../../../core/database/playlist_text_rules.dart'
+    show playlistNameMaxLength;
 
 /// Asks for a playlist name, with an optional [message] above the field.
 /// Completes with the trimmed name, or null when

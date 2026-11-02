@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'library_database.dart';
 import 'playlist_favorites.dart';
+import 'playlist_text_rules.dart';
 
 /// Building blocks shared by the playlist write files. Callers own the
 /// transaction: none of these opens one.
@@ -55,11 +56,15 @@ WHERE e.id = r.id AND e.position != r.rn''',
 Expression<bool> userNamedPlaylist($PlaylistsTable p, int id) =>
     p.id.equals(id) & p.kind.isNotValue(favoritesKind);
 
-/// [name] trimmed; a blank name throws [ArgumentError].
+/// [name] cleaned (`cleanPlaylistName`); a blank name or one over
+/// [playlistNameMaxLength] graphemes throws [ArgumentError].
 String validPlaylistName(String name) {
-  final trimmed = name.trim();
-  if (trimmed.isEmpty) {
+  final cleaned = cleanPlaylistName(name);
+  if (cleaned.isEmpty) {
     throw ArgumentError.value(name, 'name', 'must not be blank');
   }
-  return trimmed;
+  if (graphemeLength(cleaned) > playlistNameMaxLength) {
+    throw ArgumentError.value(name, 'name', 'is too long');
+  }
+  return cleaned;
 }

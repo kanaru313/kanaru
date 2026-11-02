@@ -10,6 +10,7 @@ class PlaylistSummary {
     required this.createdAt,
     required this.entryCount,
     this.isFavorites = false,
+    this.description = '',
   });
 
   final int id;
@@ -23,6 +24,9 @@ class PlaylistSummary {
   /// with the localized name, never renamed or deleted.
   final bool isFavorites;
 
+  /// Free text the user wrote; empty when none.
+  final String description;
+
   @override
   bool operator ==(Object other) =>
       other is PlaylistSummary &&
@@ -30,10 +34,12 @@ class PlaylistSummary {
       other.name == name &&
       other.createdAt == createdAt &&
       other.entryCount == entryCount &&
-      other.isFavorites == isFavorites;
+      other.isFavorites == isFavorites &&
+      other.description == description;
 
   @override
-  int get hashCode => Object.hash(id, name, createdAt, entryCount, isFavorites);
+  int get hashCode =>
+      Object.hash(id, name, createdAt, entryCount, isFavorites, description);
 }
 
 /// Whether [a] and [b] hold equal summaries in the same order.

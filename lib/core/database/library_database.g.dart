@@ -798,7 +798,7 @@ class Playlist extends DataClass implements Insertable<Playlist> {
   final String? kind;
 
   /// User text, trimmed, at most `playlistDescriptionMaxLength` (2000)
-  /// characters; empty when none. Favorites and saved queues keep ''.
+  /// grapheme clusters; empty when none. Favorites and saved queues keep ''.
   final String description;
   const Playlist({
     required this.id,
