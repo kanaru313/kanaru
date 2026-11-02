@@ -55,11 +55,19 @@ class PlaylistPickerFooter extends StatelessWidget {
   final bool busy;
   final VoidCallback onAdd;
 
+  /// Key of the footer Row, for layout tests.
+  static const rowKey = ValueKey('playlistPickerFooterRow');
+
+  /// Widest the Add button grows. It stays a non-flex child so it sits flush
+  /// right; the cap lets a long label ellipsize instead of overflowing.
+  static const addMaxWidth = 180.0;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     return Row(
+      key: rowKey,
       children: [
         Expanded(
           child: Text(
@@ -76,21 +84,24 @@ class PlaylistPickerFooter extends StatelessWidget {
           child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
         const SizedBox(width: 8),
-        FilledButton(
-          onPressed: selected == 0 || busy ? null : onAdd,
-          child: busy
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(
-                  selected > 1
-                      ? l10n.playlistPickerAddMany(selected)
-                      : l10n.playlistPickerAdd,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: addMaxWidth),
+          child: FilledButton(
+            onPressed: selected == 0 || busy ? null : onAdd,
+            child: busy
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    selected > 1
+                        ? l10n.playlistPickerAddMany(selected)
+                        : l10n.playlistPickerAdd,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+          ),
         ),
       ],
     );
