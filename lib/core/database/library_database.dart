@@ -13,6 +13,7 @@ import 'extra_tags.dart';
 import 'library_migration_v11.dart';
 import 'library_migration_v12.dart';
 import 'library_migration_v13.dart';
+import 'library_migration_v14.dart';
 import 'library_migration_v9.dart';
 import 'library_rows.dart';
 import 'library_tables.dart';
@@ -60,7 +61,7 @@ class LibraryDatabase extends _$LibraryDatabase {
   LibraryDatabase(super.e);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -83,6 +84,7 @@ class LibraryDatabase extends _$LibraryDatabase {
       from10To11: (m, schema) => migrateLibraryToSchema11(this, m, schema),
       from11To12: (m, schema) => migrateLibraryToSchema12(this, m, schema),
       from12To13: (m, schema) => migrateLibraryToSchema13(this, m, schema),
+      from13To14: (m, schema) => migrateLibraryToSchema14(this, m, schema),
     ),
     // Also set in the file database's setup; this covers other connections
     // (for example in-memory ones in tests).

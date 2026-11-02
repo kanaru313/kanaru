@@ -77,6 +77,8 @@ The song page (`HistoryTrackScreen`, `/history/track?path=`) reads one song's to
 
 `playlists.kind` (invariant 8 in `user_data_tables.dart`): NULL is an ordinary playlist; `'favorites'` is the Favorites playlist, at most one row, enforced by the partial unique index `playlists_favorites_unique`; `'queue'` is a saved queue (constant `queueKind`), may repeat, and is never listed with the playlists. Writers store no other value; readers treat an unknown kind as ordinary. Favorites is created lazily, never seeded: in one transaction, `INSERT OR IGNORE` (drift `InsertMode.insertOrIgnore`) and then `SELECT id FROM playlists WHERE kind = 'favorites'`. `insertReturning` is not used (an ignored insert returns no row) and neither is `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects for a partial index). Favorites entries follow the same path, order and no-foreign-key rules as any playlist.
 
+`playlists.description` (schema 14): user text, trimmed, at most 2000 characters, `''` when none; Favorites and saved queues keep `''`. Invariant 9 in `user_data_tables.dart`: Favorites never holds a path twice; ordinary playlists and saved queues may.
+
 ### Scan-side tables
 
 | Table | Rule |

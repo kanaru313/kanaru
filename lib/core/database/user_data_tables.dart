@@ -45,6 +45,8 @@ import 'package:drift/drift.dart';
 //    `DoNothing(target: [kind])` (drift emits no `WHERE`, which SQLite rejects
 //    for a partial index). Favorites is still a playlist: invariants 1, 2 and
 //    5 apply to its entries.
+// 9. Repeats. Favorites never holds a path twice; ordinary playlists and
+//    saved queues may.
 
 /// One listen of a track. Append-mostly log; see invariants 1-4 above.
 @DataClassName('Play')
@@ -91,6 +93,10 @@ class Playlists extends Table {
 
   /// Null for an ordinary playlist, 'favorites' for the Favorites playlist.
   TextColumn get kind => text().nullable()();
+
+  /// User text, trimmed, at most `playlistDescriptionMaxLength` (2000)
+  /// characters; empty when none. Favorites and saved queues keep ''.
+  TextColumn get description => text().withDefault(const Constant(''))();
 }
 
 /// One entry of a playlist. The same path may appear several times; the row
