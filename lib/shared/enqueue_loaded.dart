@@ -18,18 +18,27 @@ import 'widgets/queue_actions_menu.dart';
 /// before the modal opened, so it still works after the row is gone. This function and
 /// `enqueueFromDatabase` honor the host; the other enqueue functions use their
 /// own [ref] and [context].
+///
+/// [excludePlaylistId] hides the playlist the tracks come from in the
+/// "Add to playlist" picker.
 void enqueueLoaded(
   WidgetRef ref,
   BuildContext context,
   QueueAction action,
   List<Track> tracks,
-  String label,
-) {
+  String label, {
+  int? excludePlaylistId,
+}) {
   // A song modal runs its queue actions with a host captured before it
   // opened, so the row that opened it may be gone by now.
   final host = QueueHost.current;
   if (host != null) {
-    host.enqueueLoaded(action, tracks, label);
+    host.enqueueLoaded(
+      action,
+      tracks,
+      label,
+      excludePlaylistId: excludePlaylistId,
+    );
     return;
   }
   // The menu closes later than it opened: its page may be gone by then.
@@ -42,6 +51,7 @@ void enqueueLoaded(
         context,
         () async => [for (final t in tracks) ?localPathOf(t.uri)],
         label,
+        excludePlaylistId: excludePlaylistId,
       ),
     );
     return;

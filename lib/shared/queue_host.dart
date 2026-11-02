@@ -92,7 +92,14 @@ class QueueHost {
   }
 
   /// [enqueueLoaded] without the row's `WidgetRef` and `BuildContext`.
-  void enqueueLoaded(QueueAction action, List<Track> tracks, String label) {
+  /// [excludePlaylistId] hides the playlist the tracks come from in the
+  /// "Add to playlist" picker.
+  void enqueueLoaded(
+    QueueAction action,
+    List<Track> tracks,
+    String label, {
+    int? excludePlaylistId,
+  }) {
     if (action == QueueAction.addToPlaylist) {
       final db = _db;
       if (db == null) return;
@@ -105,6 +112,7 @@ class QueueHost {
           // Library tracks carry their file path as uri.
           readPaths: () async => [for (final t in tracks) ?localPathOf(t.uri)],
           label: label,
+          excludePlaylistId: excludePlaylistId,
         ),
       );
       return;

@@ -4,11 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/playlists/playlist_filter_results.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/album_modal/album_more_button.dart';
 import 'package:kanaru/shared/artist_modal/artist_more_button.dart';
 import 'package:kanaru/shared/enqueue_tracks.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
+import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -100,6 +102,53 @@ void main() {
       await tester.pumpAndSettle();
       await openMenuOf(tester, find.text('a'));
       await expectItem(tester);
+    });
+  });
+
+  group('a playlist row', () {
+    Future<void> openMixAndTarget(WidgetTester tester) async {
+      await openApp(tester, h, ['a', 'b']);
+      final mix = await seedPlaylist(tester, h, 'Mix', ['a', 'b']);
+      await seedPlaylist(tester, h, 'Target', [], now: 2);
+      goTo(tester, h, '/playlists/$mix');
+      await settleDb(tester);
+    }
+
+    Future<void> expectOnlyTarget(WidgetTester tester) async {
+      await tester.tap(find.text(_item));
+      await tester.pumpAndSettle();
+      expect(picker, findsOneWidget);
+      expect(inPicker('Target'), findsOneWidget);
+      expect(inPicker('Mix'), findsNothing);
+    }
+
+    testWidgets('leaves its own playlist out of the picker', (tester) async {
+      await openMixAndTarget(tester);
+      await openMenuOf(tester, find.text('a'));
+      await expectOnlyTarget(tester);
+    });
+
+    testWidgets('a filter result row leaves it out too', (tester) async {
+      await openMixAndTarget(tester);
+      await tester.tap(find.byTooltip('Filter in this page'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(InPageSearchBox),
+          matching: find.byType(TextField),
+        ),
+        'a',
+      );
+      await tester.pump(const Duration(milliseconds: 150));
+      await settleDb(tester);
+      await openMenuOf(
+        tester,
+        find.descendant(
+          of: find.byType(PlaylistFilterResults),
+          matching: find.text('a'),
+        ),
+      );
+      await expectOnlyTarget(tester);
     });
   });
 

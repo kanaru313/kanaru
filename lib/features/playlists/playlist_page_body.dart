@@ -123,9 +123,14 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
       onEntryQueueAction: (entry, action) {
         final track = entry.track;
         if (track == null) return;
-        enqueueLoaded(ref, context, action, [
-          playlistTrack(track, covers),
-        ], track.title);
+        enqueueLoaded(
+          ref,
+          context,
+          action,
+          [playlistTrack(track, covers)],
+          track.title,
+          excludePlaylistId: playlist.id,
+        );
       },
       onExport: (style) =>
           exportPlaylistInteractively(ref, context, playlist, style),
