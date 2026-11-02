@@ -13,7 +13,7 @@ Dev setup (toolchain, distro packages, codegen) is in [development.md](./develop
 | Version injection | Works in `make appimage`; `make build` does not pass it | `KANARU_VERSION` read in `lib/core/logging/app_logging.dart` |
 | CI | **Not started** | No `.github/` directory |
 | Packages besides AppImage (Flatpak, deb, rpm, AUR, Nix) | **Not started** | No manifests or recipes; `flake.nix` has only `devShells.default` |
-| Desktop entry and icon | Works in the AppImage | `packaging/linux/` (`.desktop`, metainfo, icons). The plain bundle has none |
+| Desktop entry and icon | Works in the AppImage; dev: `make install-desktop` | `packaging/linux/` (`.desktop`, metainfo, icons). The plain bundle has none; the make target installs a "Kanaru (dev)" entry into `XDG_DATA_HOME` |
 | Tags and changelog | **Not started** | `git tag` is empty; no changelog file |
 
 ## Build a release bundle

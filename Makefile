@@ -108,6 +108,53 @@ reset-library: ## Forget scanned folders and tracks (keeps playlists and listen 
 reset-all: ## Like a fresh install: library, playlists, listen history, settings, session, covers, logs
 	command rm -rf "$(DATA_DIR)" "$(CONFIG_DIR)" "$(CACHE_DIR)"
 
+##@ Desktop
+
+# Dock/taskbar icon for dev builds: the compositor matches the window's app id
+# to this desktop entry (Wayland app_id, X11 WM_CLASS via StartupWMClass).
+APP_ID      := io.github.kanaru313.kanaru
+XDG_DATA    := $(or $(XDG_DATA_HOME),$(HOME)/.local/share)
+BUNDLE_ARCH := $(if $(filter aarch64 arm64,$(shell uname -m)),arm64,x64)
+DEV_EXEC    ?= $(CURDIR)/build/linux/$(BUNDLE_ARCH)/release/bundle/kanaru
+DESKTOP_SRC := packaging/linux/$(APP_ID).desktop
+DESKTOP_DST := $(XDG_DATA)/applications/$(APP_ID).desktop
+ICON_SRC    := packaging/linux/icons/hicolor
+ICON_DST    := $(XDG_DATA)/icons/hicolor
+
+# Shell snippet: refresh the icon cache if one exists, else touch the theme dir.
+REFRESH_ICONS = if [ -f "$(ICON_DST)/icon-theme.cache" ] && command -v gtk-update-icon-cache >/dev/null; then \
+	  gtk-update-icon-cache -f -t "$(ICON_DST)" >/dev/null; \
+	else touch "$(ICON_DST)"; fi
+
+.PHONY: install-desktop
+install-desktop: ## Install the "Kanaru (dev)" desktop entry + icons into XDG_DATA_HOME (FORCE=1 replaces a foreign entry)
+	@set -e; \
+	exec_path='$(DEV_EXEC)'; \
+	case "$$exec_path" in *[\"\`\$$\\%]*) \
+	  echo "Path contains \" \` \$$ \\ or % and cannot go in Exec=: $$exec_path" >&2; exit 1;; esac; \
+	if [ -e "$(DESKTOP_DST)" ] && ! grep -q '^X-Kanaru-Dev=true' "$(DESKTOP_DST)" && [ "$(FORCE)" != 1 ]; then \
+	  echo "$(DESKTOP_DST) was not installed by make install-desktop; rerun with FORCE=1 to replace it." >&2; exit 1; fi; \
+	( cd "$(ICON_SRC)" && find . -type f ) | while read -r f; do \
+	  install -Dm644 "$(ICON_SRC)/$$f" "$(ICON_DST)/$$f"; done; \
+	tmp="$$(mktemp)"; trap 'rm -f "$$tmp"' EXIT; \
+	awk -v exec_path="$$exec_path" \
+	  '/^Exec=/ {print "Exec=\"" exec_path "\" %U"; next} /^Name=/ {print "Name=Kanaru (dev)"; next} /^MimeType=/ {next} {print} END {print "X-Kanaru-Dev=true"}' \
+	  "$(DESKTOP_SRC)" > "$$tmp"; \
+	install -Dm644 "$$tmp" "$(DESKTOP_DST)"; \
+	$(REFRESH_ICONS); \
+	echo "Installed $(DESKTOP_DST) and icons under $(ICON_DST)."; \
+	[ -x "$$exec_path" ] || echo "No bundle at $$exec_path: run make build to launch from the menu (the icon works already)."
+
+.PHONY: uninstall-desktop
+uninstall-desktop: ## Remove what install-desktop wrote (only files it owns)
+	@set -e; \
+	if [ -e "$(DESKTOP_DST)" ] && grep -q '^X-Kanaru-Dev=true' "$(DESKTOP_DST)"; then command rm -f "$(DESKTOP_DST)"; \
+	elif [ -e "$(DESKTOP_DST)" ]; then echo "Keeping $(DESKTOP_DST): not installed by make install-desktop."; fi; \
+	( cd "$(ICON_SRC)" && find . -type f ) | while read -r f; do \
+	  if cmp -s "$(ICON_SRC)/$$f" "$(ICON_DST)/$$f"; then command rm -f "$(ICON_DST)/$$f"; fi; done; \
+	if [ -d "$(ICON_DST)" ]; then $(REFRESH_ICONS); fi; \
+	echo "Removed the dev desktop entry and icons."
+
 ##@ Package
 
 # Version for packages: pubspec `version:` without the `+build` suffix.
@@ -136,5 +183,5 @@ clean: ## Remove Flutter and Rust build outputs
 help: ## List the targets
 	@awk 'BEGIN {FS = ":.*## "} \
 	  /^##@/ {printf "\n\033[1m%s\033[0m\n", substr($$0, 5)} \
-	  /^[a-zA-Z_-]+:.*## / {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}' \
+	  /^[a-zA-Z_-]+:.*## / {printf "  \033[36m%-19s\033[0m %s\n", $$1, $$2}' \
 	  $(MAKEFILE_LIST)
