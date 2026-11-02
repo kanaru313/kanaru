@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/playlist_add_writes.dart';
 import '../../../l10n/l10n.dart';
 import '../../icons/app_icons.dart';
+import '../scroll_ink_surface.dart';
 
 /// A target playlist that already holds [held] of the songs being added.
 typedef AffectedPlaylist = ({String name, int held});
@@ -52,50 +53,53 @@ class _AlreadyInPlaylistDialogState extends State<_AlreadyInPlaylistDialog> {
       title: Text(l10n.alreadyInPlaylistTitle),
       content: SizedBox(
         width: 420,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                many
-                    ? l10n.alreadyInPlaylistMany(n, widget.affected.length)
-                    : l10n.alreadyInPlaylistOne(n),
-              ),
-              const SizedBox(height: 12),
-              _AffectedList(affected: widget.affected, songCount: n),
-              const SizedBox(height: 8),
-              RadioGroup<PlaylistAddMode>(
-                groupValue: _mode,
-                onChanged: (mode) => setState(() => _mode = mode),
-                child: Column(
-                  children: [
-                    _option(
-                      PlaylistAddMode.replaceOld,
-                      AppIcons.moveDown,
-                      l10n.alreadyInPlaylistReplace,
-                      l10n.alreadyInPlaylistReplaceHint,
-                    ),
-                    _option(
-                      PlaylistAddMode.missingOnly,
-                      AppIcons.playlistAddCheck,
-                      l10n.alreadyInPlaylistMissing,
-                      nothingNew
-                          ? (many
-                                ? l10n.alreadyInPlaylistMissingNothingMany
-                                : l10n.alreadyInPlaylistMissingNothingOne)
-                          : l10n.alreadyInPlaylistMissingHint(held),
-                    ),
-                    _option(
-                      PlaylistAddMode.appendAll,
-                      AppIcons.addToPlaylist,
-                      l10n.alreadyInPlaylistAll,
-                      l10n.alreadyInPlaylistAllHint(held),
-                    ),
-                  ],
+        // Rows scrolled under the title keep their ink in the content.
+        child: ScrollInkSurface(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  many
+                      ? l10n.alreadyInPlaylistMany(n, widget.affected.length)
+                      : l10n.alreadyInPlaylistOne(n),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                _AffectedList(affected: widget.affected, songCount: n),
+                const SizedBox(height: 8),
+                RadioGroup<PlaylistAddMode>(
+                  groupValue: _mode,
+                  onChanged: (mode) => setState(() => _mode = mode),
+                  child: Column(
+                    children: [
+                      _option(
+                        PlaylistAddMode.replaceOld,
+                        AppIcons.moveDown,
+                        l10n.alreadyInPlaylistReplace,
+                        l10n.alreadyInPlaylistReplaceHint,
+                      ),
+                      _option(
+                        PlaylistAddMode.missingOnly,
+                        AppIcons.playlistAddCheck,
+                        l10n.alreadyInPlaylistMissing,
+                        nothingNew
+                            ? (many
+                                  ? l10n.alreadyInPlaylistMissingNothingMany
+                                  : l10n.alreadyInPlaylistMissingNothingOne)
+                            : l10n.alreadyInPlaylistMissingHint(held),
+                      ),
+                      _option(
+                        PlaylistAddMode.appendAll,
+                        AppIcons.addToPlaylist,
+                        l10n.alreadyInPlaylistAll,
+                        l10n.alreadyInPlaylistAllHint(held),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
