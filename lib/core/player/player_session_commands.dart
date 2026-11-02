@@ -3,36 +3,12 @@ part of 'player_service.dart';
 /// Bringing the last playback session back on launch, paused, with the
 /// "play next" tracks still to come, and saving it while the app runs (see
 /// [PlaybackSessionSaver] for when it writes).
-mixin _PlayerSessionCommands on Notifier<PlayerState> {
-  AudioBackend get _backend;
-  StreamController<Duration> get _seeked;
-  bool get _wantsPlaying;
-  bool get _ended;
-  Set<int> get _upNext;
-  Future<void> _play(
-    int index, {
-    bool play = true,
-    Duration start = Duration.zero,
-  });
-
-  PlaybackSessionSaver? _saver;
-
-  /// Identifies the current build, so a restore scheduled by an older one
-  /// does nothing.
-  Object? _sessionBuild;
-
-  /// Whether a track was handed to the engine since this build. A track the
-  /// user opened before the restore ran wins over the restored one.
-  bool _openedSinceBuild = false;
-
+mixin _PlayerSessionCommands on _PlayerCore {
   /// Loads the saved session and sets up saving. Returns the state the
   /// player starts in: the restored queue and volume, paused. The engine is
   /// set up a microtask later, so the first frame and the first MPRIS reply
   /// already show the restored session.
   PlayerState _startSession() {
-    _sessionBuild = null;
-    _openedSinceBuild = false;
-    _saver = null;
     final file = ref.watch(playbackSessionFileProvider);
     if (file == null) return PlayerState();
     var session = file.load();
@@ -95,14 +71,18 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
       // A stop made before this ran stays: the track is loaded paused at the
       // start, the engine state `stop()` leaves. A queue that already ran out
       // loads nothing; play restarts it.
-      if (_ended) return;
+      if (_intent == _PlayIntent.ended) return;
       unawaited(_play(state.queue.index, play: false));
       // `_play` marks the player as not stopped before its first await.
       state = state.copyWith(stopped: true);
       return;
     }
     unawaited(
-      _play(state.queue.index, play: _wantsPlaying, start: state.position),
+      _play(
+        state.queue.index,
+        play: _intent == _PlayIntent.playing,
+        start: state.position,
+      ),
     );
   }
 
@@ -111,7 +91,4 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
 
   /// A track loaded: the restored session works, so saving can go on.
   void _sessionTrackLoaded() => _saver?.unfreeze();
-
-  /// The user (or an external controller) did something: saving goes on.
-  void _sessionUserActed() => _saver?.unfreeze();
 }

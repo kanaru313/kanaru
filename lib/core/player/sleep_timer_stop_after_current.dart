@@ -15,18 +15,7 @@ part of 'player_service.dart';
 ///
 /// Each stop clears the flag and is announced once on [sleepStops]. A
 /// provider rebuild turns the flag off and makes a new stream.
-mixin _PlayerSleepStop on Notifier<PlayerState> {
-  AudioBackend get _backend;
-  bool get _ended;
-  int get _failuresInRow;
-  set _wantsPlaying(bool wanted);
-  void _settleFade();
-  PlayPauseFader get _fades;
-  PlayPauseFader? get _fadesNow;
-  Future<void> _queueNext();
-  void _followEngine(String what, Future<void> Function() action);
-
-  bool _stopAfterCurrent = false;
+mixin _PlayerSleepStop on _PlayerCore {
   late StreamController<void> _sleepStops;
   late StreamController<void> _trackEnds;
 
@@ -52,7 +41,7 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
   void setStopAfterCurrent(bool stop) {
     if (stop == _stopAfterCurrent || !ref.mounted) return;
     _stopAfterCurrent = stop;
-    if (state.queue.isEmpty || _ended) return;
+    if (state.queue.isEmpty || _intent == _PlayIntent.ended) return;
     _followEngine(
       stop ? 'withdraw the next track' : 'queue the next track',
       _queueNext,
@@ -68,7 +57,7 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
     _stopAfterCurrent = false;
     scheduleMicrotask(() {
       if (!ref.mounted || _stopAfterCurrent) return;
-      if (state.queue.isEmpty || _ended) return;
+      if (state.queue.isEmpty || _intent == _PlayIntent.ended) return;
       _followEngine('queue the next track', _queueNext);
     });
   }
@@ -90,7 +79,6 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
 
   /// Call once per build, before the engine's events are listened to.
   void _startSleepStop() {
-    _stopAfterCurrent = false;
     final stops = _sleepStops = StreamController.broadcast(sync: true);
     ref.onDispose(stops.close);
     final ends = _trackEnds = StreamController.broadcast(sync: true);
@@ -131,7 +119,7 @@ mixin _PlayerSleepStop on Notifier<PlayerState> {
   /// first.
   void _restAtStart() {
     _settleFade();
-    _wantsPlaying = false;
+    _intendPause();
     state = state.copyWith(playing: false, position: Duration.zero);
     _followEngine('pause after the current track', () async {
       await _backend.pause();

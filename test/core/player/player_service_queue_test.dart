@@ -75,6 +75,20 @@ void main() {
 
       expect(backend.calls, isEmpty);
     });
+
+    test('after the queue ran out only reorders, loading nothing', () async {
+      await service().openTracks([a, b, c]);
+      await service().jump(2);
+      await service().removeTrack(2);
+      backend.calls.clear();
+
+      await service().moveTrack(0, 1);
+
+      expect(titles(), ['b', 'a']);
+      expect(state().queue.current, b);
+      expect(state().stopped, isTrue);
+      expect(backend.calls.where((call) => call.startsWith('open(')), isEmpty);
+    });
   });
 
   group('removeTrack', () {

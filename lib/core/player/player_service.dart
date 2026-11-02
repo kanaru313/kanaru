@@ -22,6 +22,7 @@ import 'session/playback_session_saver.dart';
 import 'track.dart';
 
 part 'player_audio_output.dart';
+part 'player_core.dart';
 part 'player_queue_commands.dart';
 part 'player_session_commands.dart';
 part 'player_settings_commands.dart';
@@ -45,7 +46,7 @@ final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
 /// Owns the play queue and drives the [AudioBackend] from it: the engine
 /// gets the current track plus the one that should follow, and reports back
 /// when it moved on to that one by itself.
-class PlayerService extends Notifier<PlayerState>
+class PlayerService extends _PlayerCore
     with
         _PlayerAudioOutput,
         _PlayerSettingsCommands,
@@ -53,63 +54,9 @@ class PlayerService extends Notifier<PlayerState>
         _PlayerQueueCommands,
         _PlayerSessionCommands,
         _PlayerSleepStop {
-  PlayerService({this._random});
+  PlayerService({Random? random}) : super(random);
 
-  @override
-  final Random? _random;
-  @override
-  late AudioBackend _backend;
   late StreamController<PlaybackError> _errors;
-
-  /// Entries (indexes into `PlayQueue.original`) handed to the engine as
-  /// "next" since it last started or advanced, oldest first. The engine can
-  /// still move on to an older one while a newer `setNext` is in flight.
-  @override
-  final _handedNext = <int>[];
-
-  /// Entries put in by "play next" that have not played yet. The next
-  /// "play next" goes behind those right after the current track.
-  @override
-  final _upNext = <int>{};
-
-  /// How many times the user opened a queue or put tracks into it (open, open
-  /// shuffled, play next, add to queue), as opposed to the engine moving on,
-  /// repeat or shuffle changing, or tracks being dragged, removed or cleared.
-  /// Lets a slow caller tell whether a newer pick landed while it worked.
-  @override
-  int _userQueueChanges = 0;
-  int get userQueueChanges => _userQueueChanges;
-
-  /// Counts the tracks that really started: every `_play` and every move of
-  /// the engine to the next track. Not bumped by repeat one loops or queue
-  /// edits, which keep the playing track; ReplayGain follows it.
-  @override
-  int _turn = 0;
-
-  /// Playback stopped after the last track; play starts the queue over.
-  @override
-  bool _ended = false;
-
-  /// Broken tracks in a row, so a queue of broken files is not retried
-  /// forever. Cleared by a track that loads and by anything the user plays.
-  @override
-  int _failuresInRow = 0;
-
-  /// What was last asked for: playing, or paused. A track that fails moves
-  /// on in that state, so a track loaded paused (or paused while it was
-  /// still loading) never starts playing on its own. Kept apart from
-  /// `state.playing`, which the engine may turn off on its own before it
-  /// reports that it stopped.
-  @override
-  bool _wantsPlaying = false;
-
-  /// Every track in the queue failed since the last one that played.
-  @override
-  bool get _allFailed => _failuresInRow >= state.queue.order.length;
-
-  @override
-  late StreamController<Duration> _seeked;
-  late StreamController<PlayQueue> _replacedQueues;
 
   /// Tracks the engine could not play, one event per track.
   Stream<PlaybackError> get errors => _errors.stream;
@@ -129,24 +76,9 @@ class PlayerService extends Notifier<PlayerState>
   /// stream when its provider rebuilds, so a listener must subscribe again.
   Stream<PlayQueue> get replacedQueues => _replacedQueues.stream;
 
-  /// Announces [previous] on [replacedQueues] unless it held no track. Every
-  /// command that swaps the whole queue out calls this.
-  @override
-  void _queueReplaced(PlayQueue previous) {
-    if (previous.order.isEmpty || _replacedQueues.isClosed) return;
-    _replacedQueues.add(previous);
-  }
-
   @override
   PlayerState build() {
-    // Riverpod keeps this object when the provider rebuilds: what the old
-    // build asked for must not leak into the new one, or the restored track
-    // would start playing on its own.
-    _wantsPlaying = false;
-    _ended = false;
-    _failuresInRow = 0;
-    _handedNext.clear();
-    _upNext.clear();
+    _resetForBuild();
     _backend = ref.watch(audioBackendProvider);
     _errors = StreamController.broadcast();
     _seeked = StreamController.broadcast();
@@ -246,7 +178,7 @@ class PlayerService extends Notifier<PlayerState>
       if (state.queue.endsShuffledPass) _startShuffledPass();
       _followEngine(
         'continue after the engine stopped',
-        () => _play(next, play: _wantsPlaying && !sleep),
+        () => _play(next, play: _intent == _PlayIntent.playing && !sleep),
       );
     } else {
       // Position and duration stay so the user can seek back into the track.
@@ -258,61 +190,5 @@ class PlayerService extends Notifier<PlayerState>
   void _onFailed(PlaybackError error) {
     _failuresInRow++;
     _errors.add(error);
-  }
-
-  @override
-  void _userActed() => _sessionUserActed();
-
-  /// Hands the engine the track that follows the current one; none while
-  /// playback stops after the current track.
-  @override
-  Future<void> _queueNext() {
-    final queue = state.queue;
-    final next = _stopAfterCurrent ? null : queue.engineNextIndex;
-    if (next != null) {
-      final entry = queue.order[next];
-      // Edits that keep the same next track would otherwise pile it up.
-      if (_handedNext.lastOrNull != entry) _handedNext.add(entry);
-    }
-    return _backend.setNext(next == null ? null : queue.trackAt(next));
-  }
-
-  /// Loads the track at [index], playing or paused, from [start].
-  @override
-  Future<void> _play(
-    int index, {
-    bool play = true,
-    Duration start = Duration.zero,
-  }) async {
-    final queue = state.queue.copyWith(index: index);
-    if (index < 0 || index >= queue.order.length) return;
-    _ended = false;
-    _upNext.remove(queue.order[index]);
-    _turn++;
-    _wantsPlaying = play;
-    _openedSinceBuild = true;
-    _handedNext.clear();
-    _dropRepeatTimes();
-    // A track loaded without playing is paused, not stopped.
-    state = state.copyWith(
-      queue: queue,
-      playing: play,
-      stopped: false,
-      position: start,
-      duration: Duration.zero,
-      playthrough: state.playthrough + 1,
-    );
-    // Read after the update: a listener may have turned the stop after the
-    // current track on or off (and handed the next track for it already).
-    final next = _stopAfterCurrent ? null : queue.engineNextIndex;
-    if (next != null && _handedNext.lastOrNull != queue.order[next]) {
-      _handedNext.add(queue.order[next]);
-    }
-    await _backend.open(
-      queue.trackAt(index),
-      next: next == null ? null : queue.trackAt(next),
-      play: play,
-      start: start,
-    );
   }
 }

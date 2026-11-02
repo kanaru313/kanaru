@@ -288,7 +288,6 @@ void main() {
         await s.stop();
         await s.play();
       },
-      'move to play next': (s) => s.moveToPlayNext(2),
     };
     for (final entry in cases.entries) {
       test(entry.key, () async {

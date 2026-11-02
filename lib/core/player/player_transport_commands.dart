@@ -3,21 +3,7 @@ part of 'player_service.dart';
 /// Opening, play, pause, stop, seek and track changes, with the play/pause
 /// fades. [play] and [pause] are absolute, for external controllers that
 /// must not flip the state by accident; [pause] never fades.
-mixin _PlayerTransportCommands on Notifier<PlayerState> {
-  AudioBackend get _backend;
-  bool get _ended;
-  set _ended(bool ended);
-  set _userQueueChanges(int count);
-  int get _userQueueChanges;
-  Set<int> get _upNext;
-  StreamController<Duration> get _seeked;
-  Random? get _random;
-  set _failuresInRow(int count);
-  set _wantsPlaying(bool wanted);
-  Future<void> _play(int index);
-  void _userActed();
-  void _queueReplaced(PlayQueue previous);
-
+mixin _PlayerTransportCommands on _PlayerCore {
   /// Toggles play and pause, fading the engine's volume in or out when the
   /// fade settings ask for it (PLAY-02). A pause with a fade shows paused at
   /// once and pauses the engine when the fade ends; pressing again before
@@ -26,9 +12,9 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   Future<void> playPause() async {
     if (state.queue.isEmpty) return;
     _userActed();
-    if (_ended) return jump(0);
+    if (_intent == _PlayIntent.ended) return jump(0);
     final play = !state.playing;
-    _wantsPlaying = play;
+    _intendToggle(play);
     state = state.copyWith(
       playing: play,
       stopped: play ? false : state.stopped,
@@ -50,11 +36,11 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   Future<void> pause() async {
     if (state.playing) {
       _userActed();
-      _wantsPlaying = false;
+      _intendPause();
       state = state.copyWith(playing: false);
       return _fades.pause(0);
     }
-    _wantsPlaying = false;
+    _intendPause();
     if (_fadesNow?.pausePending ?? false) _settleFade();
   }
 
@@ -65,7 +51,7 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     if (state.queue.isEmpty) return;
     _userActed();
     _settleFade();
-    _wantsPlaying = false;
+    _intendPause();
     state = state.copyWith(
       playing: false,
       stopped: true,
@@ -80,13 +66,13 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   /// loaded, such as after removing the last track.
   Future<void> seek(Duration position) async {
     if (state.queue.isEmpty) return;
-    if (_ended && state.duration <= Duration.zero) return;
+    if (_intent == _PlayIntent.ended && state.duration <= Duration.zero) return;
     _userActed();
     _settleFade();
     var target = position < Duration.zero ? Duration.zero : position;
     // Seeking back into a finished track resumes it rather than the queue.
     if (state.duration > Duration.zero) {
-      _ended = false;
+      _intendResumeFinished();
       if (target > state.duration) target = state.duration;
     }
     state = state.copyWith(position: target, stopped: false);
@@ -140,14 +126,6 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     await jump(queue.index);
   }
 
-  /// Plays the track at [index] in play order, as picked by the user.
-  Future<void> jump(int index) {
-    _userActed();
-    _settleFade();
-    _failuresInRow = 0;
-    return _play(index);
-  }
-
   /// Goes to the next track; on the last one does nothing unless the whole
   /// queue repeats or the endless queue setting is on (then to the first).
   Future<void> next() async {
@@ -156,16 +134,6 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
     // Next on the last track of a shuffled pass starts the next pass.
     if (state.queue.endsShuffledPass) _startShuffledPass();
     await jump(index);
-  }
-
-  /// Replaces the order with a fresh random one for the next pass (see
-  /// [PlayQueuePasses.nextShuffledPass]). Everything in the old queue has
-  /// played, so no "play next" mark is left to keep.
-  void _startShuffledPass() {
-    _upNext.clear();
-    state = state.copyWith(
-      queue: state.queue.nextShuffledPass(_random ?? Random()),
-    );
   }
 
   /// Goes to the previous track; on the first one does nothing unless the
@@ -177,34 +145,4 @@ mixin _PlayerTransportCommands on Notifier<PlayerState> {
   }
 
   bool get _endlessQueue => ref.read(settingsProvider).playback.infiniteQueue;
-
-  // Fades (PLAY-02). Mixin fields outlive a provider rebuild, so the fader is
-  // tied to the build that made it through `_seeked`, which every build
-  // makes anew; that build's disposal stops it without touching the engine.
-  PlayPauseFader? _fader;
-  StreamController<Duration>? _faderBuild;
-
-  /// The fader of this build, made on first use.
-  PlayPauseFader get _fades {
-    final existing = _fadesNow;
-    if (existing != null) return existing;
-    _fader?.dispose();
-    final fader = PlayPauseFader(
-      clock: ref.read(playbackFadeClockProvider),
-      backend: _backend,
-      state: () => state,
-    );
-    _fader = fader;
-    _faderBuild = _seeked;
-    ref.onDispose(fader.dispose);
-    return fader;
-  }
-
-  /// The fader of this build if it was made; never makes one.
-  PlayPauseFader? get _fadesNow =>
-      identical(_faderBuild, _seeked) ? _fader : null;
-
-  /// Ends a fade at once (see [PlayPauseFader.settle]) before a seek, a stop
-  /// or a track change.
-  void _settleFade() => _fadesNow?.settle();
 }
