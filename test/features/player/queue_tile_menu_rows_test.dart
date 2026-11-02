@@ -123,7 +123,7 @@ void main() {
     ]);
   });
 
-  testWidgets('the playing row and a play next row have no Play next', (
+  testWidgets('the playing row and a play next row offer Play next', (
     tester,
   ) async {
     await open(
@@ -135,14 +135,33 @@ void main() {
       ],
     );
     await openQueueMenu(tester, 'p');
-    expect(menuLabels(tester, allMenuLabels), isNot(contains('Play next')));
+    expect(menuLabels(tester, allMenuLabels), contains('Play next'));
     await tester.tapAt(const Offset(2, 2));
     await tester.pumpAndSettle();
 
     await h.container.read(playerServiceProvider.notifier).moveToPlayNext(2);
     await tester.pumpAndSettle();
     await openQueueMenu(tester, 'r');
-    expect(menuLabels(tester, allMenuLabels), isNot(contains('Play next')));
+    expect(menuLabels(tester, allMenuLabels), contains('Play next'));
+  });
+
+  testWidgets('Play next on the playing row queues a copy behind it', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      (p) => [
+        const Track(uri: '/elsewhere/p.mp3', title: 'p'),
+        const Track(uri: '/elsewhere/q.mp3', title: 'q'),
+      ],
+    );
+    await openQueueMenu(tester, 'p');
+    await tester.tap(find.text('Play next'));
+    await settleDb(tester);
+
+    expect(queueTitles(h), ['p', 'p', 'q']);
+    expect(h.container.read(playerServiceProvider).queue.index, 0);
+    expect(h.container.read(playerServiceProvider.notifier).upNextRun, 1);
   });
 
   testWidgets('a played row still offers Play next', (tester) async {

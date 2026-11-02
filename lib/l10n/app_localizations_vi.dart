@@ -1071,9 +1071,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueMenuStale => 'Hàng đợi đã thay đổi nên chưa thực hiện gì';
 
   @override
-  String get queueAlreadyUpNext => 'Bài này đang phát hoặc sắp phát';
-
-  @override
   String get queueReorder => 'Kéo để sắp xếp lại';
 
   @override

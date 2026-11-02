@@ -1,7 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/queue/queue_tile.dart';
+import 'package:kanaru/features/player/queue/queue_tile_menu_actions.dart';
+import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/enqueue_chain.dart';
+import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
+import 'package:kanaru/shared/track_menu_actions.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/song_modal/song_modal_header.dart';
 import 'package:material_ui/material_ui.dart';
@@ -116,35 +125,148 @@ void main() {
     expect(find.text('The queue changed, so nothing was done'), findsOneWidget);
   });
 
-  testWidgets('Play next in the footer moves the row, never copies it', (
+  testWidgets('Play next in the footer queues a copy, the row stays', (
     tester,
   ) async {
     await open(tester);
     await openQueueMenu(tester, 'c');
     await tapModalAction(tester, 'Play next');
 
-    expect(queueTitles(h), ['a', 'c', 'b']);
+    expect(queueTitles(h), ['a', 'c', 'b', 'c']);
     expect(
       h.container.read(playerServiceProvider).queue.original,
-      hasLength(3),
+      hasLength(4),
     );
+    expect(player().upNextRun, 1);
+    expect(find.text('Playing next: c'), findsOneWidget);
   });
 
-  testWidgets('Play next on the playing row or a play next row says so', (
+  testWidgets('Play next on the playing row queues a copy behind it', (
     tester,
   ) async {
     await open(tester);
     await openQueueMenu(tester, 'a');
     await tapModalAction(tester, 'Play next');
-    expect(find.text('Already playing or up next'), findsOneWidget);
-    expect(queueTitles(h), ['a', 'b', 'c']);
 
+    expect(queueTitles(h), ['a', 'a', 'b', 'c']);
+    expect(h.container.read(playerServiceProvider).queue.index, 0);
+    expect(player().upNextRun, 1);
+  });
+
+  testWidgets('Play next on a play next row queues a copy after the block', (
+    tester,
+  ) async {
+    await open(tester);
     await player().moveToPlayNext(2);
     await tester.pumpAndSettle();
+    expect(queueTitles(h), ['a', 'c', 'b']);
+
     await openQueueMenu(tester, 'c');
     await tapModalAction(tester, 'Play next');
-    expect(find.text('Already playing or up next'), findsOneWidget);
-    expect(queueTitles(h), ['a', 'c', 'b']);
+
+    expect(queueTitles(h), ['a', 'c', 'c', 'b']);
+    expect(player().upNextRun, 2);
+  });
+
+  /// The menu target of the row at play [position], as the menu captures it.
+  QueueRowMenuTarget targetAt(
+    WidgetTester tester,
+    int position, {
+    required bool withMessenger,
+  }) {
+    final row = tester.element(find.byType(QueueTile).at(position));
+    final queue = h.container.read(playerServiceProvider).queue;
+    final entry = queue.order[position];
+    return QueueRowMenuTarget(
+      container: h.container,
+      entry: entry,
+      track: queue.original[entry],
+      path: null,
+      trackId: null,
+      runner: TrackMenuRunner(row as WidgetRef, row),
+      messenger: withMessenger ? ScaffoldMessenger.of(row) : null,
+      l10n: row.l10n,
+      navigator: Navigator.of(row, rootNavigator: true),
+      position: Offset.zero,
+    );
+  }
+
+  testWidgets('Play next without a messenger still queues the copy', (
+    tester,
+  ) async {
+    await open(tester);
+    final target = targetAt(tester, 2, withMessenger: false);
+
+    await target.copyToPlayNext();
+    await tester.pumpAndSettle();
+
+    expect(queueTitles(h), ['a', 'c', 'b', 'c']);
+    expect(player().upNextRun, 1);
+  });
+
+  /// Starts a queue pick that reads until the returned completer completes,
+  /// so later picks wait behind it.
+  Completer<List<Track>> holdQueuePicks(WidgetTester tester) {
+    final row = tester.element(find.byType(QueueTile).first);
+    final held = Completer<List<Track>>();
+    unawaited(
+      enqueueTracksIn(
+        h.container,
+        ScaffoldMessenger.of(row),
+        row.l10n,
+        QueueAction.addToQueue,
+        () => held.future,
+        'held',
+      ),
+    );
+    return held;
+  }
+
+  testWidgets(
+    'Play next waiting behind an earlier pick leaves a replaced queue alone',
+    (tester) async {
+      final p = await open(tester);
+      final target = targetAt(tester, 2, withMessenger: true);
+      final held = holdQueuePicks(tester);
+
+      final copy = target.copyToPlayNext();
+      await tester.pump();
+      await player().openTracks([
+        Track(uri: p['c']!, title: 'c'),
+        Track(uri: p['b']!, title: 'b'),
+        Track(uri: p['a']!, title: 'a'),
+      ]);
+      held.complete(const []);
+      await copy;
+      await tester.pumpAndSettle();
+
+      expect(queueTitles(h), ['c', 'b', 'a']);
+      expect(
+        h.container.read(playerServiceProvider).queue.original,
+        hasLength(3),
+      );
+      expect(
+        find.text('The queue changed, so nothing was done'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('Play next without a messenger waits for an earlier pick', (
+    tester,
+  ) async {
+    await open(tester);
+    final target = targetAt(tester, 2, withMessenger: false);
+    final held = holdQueuePicks(tester);
+
+    final copy = target.copyToPlayNext();
+    await tester.pump();
+    expect(queueTitles(h), ['a', 'b', 'c'], reason: 'not before its turn');
+
+    held.complete(const []);
+    await copy;
+    await tester.pumpAndSettle();
+    expect(queueTitles(h), ['a', 'c', 'b', 'c']);
   });
 
   testWidgets('Play next after the queue was replaced is left alone', (
@@ -161,6 +283,10 @@ void main() {
     await tapModalAction(tester, 'Play next');
 
     expect(queueTitles(h), ['c', 'b', 'a']);
+    expect(
+      h.container.read(playerServiceProvider).queue.original,
+      hasLength(3),
+    );
     expect(find.text('The queue changed, so nothing was done'), findsOneWidget);
   });
 

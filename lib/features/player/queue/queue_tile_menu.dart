@@ -11,7 +11,6 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/track_link_menu_items.dart'
     show trackLinkMenuItems;
 import 'queue_song_modal.dart';
-import 'queue_tile.dart' show isUpNextRow;
 import 'queue_tile_menu_actions.dart';
 import 'queue_tile_menu_state.dart';
 
@@ -19,10 +18,11 @@ import 'queue_tile_menu_state.dart';
 /// long press, the menu key or the row's ⋮ button, anchored at [at] (global).
 /// A song of the library opens the song modal (see [openQueueSongModal]).
 /// Any other song (a stream, a file outside the library, no library open)
-/// gets a cut-down popup: Play next (a move, never a copy), the Favorites
-/// row (any song in Favorites can be taken out), Find lyrics online, Show in
-/// file manager and Remove from queue. Every action is checked against the
-/// queue when picked, so a queue replaced meanwhile is left alone.
+/// gets a cut-down popup: Play next (a copy behind the play next block, on
+/// every row), the Favorites row (any song in Favorites can be taken out),
+/// Find lyrics online, Show in file manager and Remove from queue. Every
+/// action is checked against the queue when picked, so a queue replaced
+/// meanwhile is left alone.
 Future<void> openQueueRowMenu(
   BuildContext context,
   WidgetRef ref, {
@@ -37,12 +37,6 @@ Future<void> openQueueRowMenu(
   if (position >= queue.order.length) return;
   final entry = queue.order[position];
   final trackAtOpen = queue.original[entry];
-  final current = position == queue.index;
-  final inRun = isUpNextRow(
-    queue,
-    position,
-    container.read(playerServiceProvider.notifier).upNextRun,
-  );
   final l10n = context.l10n;
   final path = localPathOf(trackAtOpen.uri);
   final runner = TrackMenuRunner(ref, context);
@@ -97,7 +91,7 @@ Future<void> openQueueRowMenu(
     items: tidyDividers<Object>([
       ...queueRowLeadingItems(
         l10n,
-        playNext: !current && !inRun,
+        playNext: true,
         addToPlaylist: state != null,
         favorite: favorite,
         inLibrary: state != null,

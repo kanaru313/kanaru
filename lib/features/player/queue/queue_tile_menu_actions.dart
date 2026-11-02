@@ -12,6 +12,7 @@ import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/enqueue_chain.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/track_menu_actions.dart';
@@ -81,6 +82,45 @@ class QueueRowMenuTarget {
     return at < 0 ? null : at;
   }
 
+  /// Puts a copy of the row's track behind the play next block, as Play next
+  /// does everywhere else; the row itself stays where it is, so this works
+  /// on the playing row and on a play next row too. A queue that no longer
+  /// holds the row is left alone, checked again when the copy's turn comes
+  /// after earlier picks still reading. Without a messenger (no Scaffold
+  /// above the row) the copy is still queued, only without the snackbar.
+  /// Never throws.
+  Future<void> copyToPlayNext() async {
+    if (livePosition() == null) {
+      say(AppSnackBarKind.info, l10n.queueMenuStale);
+      return;
+    }
+    final messenger = this.messenger;
+    if (messenger == null) {
+      try {
+        await pendingQueuePicksIn(container);
+        if (livePosition() == null) return;
+        await container.read(playerServiceProvider.notifier).playNext([track]);
+      } catch (error, stack) {
+        _log.severe('Play next from a queue row failed', error, stack);
+      }
+      return;
+    }
+    // Reports its own failure in the snackbar. An empty read queues nothing
+    // and says nothing, so the stale case says so itself.
+    await enqueueTracksIn(
+      container,
+      messenger,
+      l10n,
+      QueueAction.playNext,
+      () async {
+        if (livePosition() != null) return [track];
+        say(AppSnackBarKind.info, l10n.queueMenuStale);
+        return const <Track>[];
+      },
+      track.title,
+    );
+  }
+
   /// Carries out the picked [choice]. Never throws.
   Future<void> run(Object choice) async {
     final at = livePosition();
@@ -91,9 +131,7 @@ class QueueRowMenuTarget {
     try {
       switch (choice) {
         case QueueRowChoice.playNext:
-          await container
-              .read(playerServiceProvider.notifier)
-              .moveToPlayNext(at);
+          await copyToPlayNext();
         case QueueRowChoice.remove:
           await container.read(playerServiceProvider.notifier).removeTrack(at);
         case QueueRowChoice.like || QueueRowChoice.unlike:
