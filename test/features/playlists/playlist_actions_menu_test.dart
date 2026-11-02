@@ -22,7 +22,7 @@ Future<void> _open(
       ),
     ),
   );
-  await tester.tap(find.byTooltip('Playlist actions'));
+  await tester.tap(find.byTooltip('More options'));
   await tester.pumpAndSettle();
 }
 
@@ -85,7 +85,7 @@ void main() {
       await _open(tester, onExport: styles.add);
       await tester.tap(find.text('Export M3U (full paths)…'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Playlist actions'));
+      await tester.tap(find.byTooltip('More options'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Export M3U (relative paths)…'));
       await tester.pumpAndSettle();
@@ -98,7 +98,7 @@ void main() {
       for (final label in ['Play next', 'Add to queue', 'Add to playlist…']) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('Playlist actions'));
+        await tester.tap(find.byTooltip('More options'));
         await tester.pumpAndSettle();
       }
       expect(actions, QueueAction.values);

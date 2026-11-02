@@ -109,7 +109,7 @@ class CollageListRow<T> extends StatelessWidget {
           ),
         if (hasMenu)
           PopupMenuButton<T>(
-            tooltip: context.l10n.queueActionsTooltip,
+            tooltip: context.l10n.songModalMoreOptions,
             icon: const Icon(AppIcons.more),
             onSelected: onMenuSelected,
             itemBuilder: menuItems!,

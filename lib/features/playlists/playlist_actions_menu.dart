@@ -74,7 +74,7 @@ class PlaylistActionsMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<_Choice>(
-      tooltip: context.l10n.playlistActions,
+      tooltip: context.l10n.songModalMoreOptions,
       icon: const Icon(AppIcons.more),
       onSelected: _select,
       itemBuilder: _items,

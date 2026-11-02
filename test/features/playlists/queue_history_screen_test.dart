@@ -4,6 +4,7 @@ import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/database/queue_history_queries.dart';
 import 'package:kanaru/core/database/queue_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
 import 'package:kanaru/shared/widgets/page_scaffold.dart';
@@ -159,8 +160,13 @@ void main() {
     goTo(tester, h, '/queue-history/$id');
     await settleDb(tester);
 
-    expect(find.byTooltip('Playlist actions'), findsOneWidget);
-    await tester.tap(find.byTooltip('Playlist actions'));
+    final menuButton = find.descendant(
+      of: find.byType(PlaylistActionsMenu),
+      matching: find.byTooltip('More options'),
+    );
+    expect(menuButton, findsOneWidget);
+    expect(find.byTooltip('Playlist actions'), findsNothing);
+    await tester.tap(menuButton);
     await tester.pumpAndSettle();
     expect(find.text('Export M3U (full paths)…'), findsOneWidget);
     expect(find.text('Add to queue'), findsOneWidget);
@@ -169,6 +175,21 @@ void main() {
       find.byKey(const ValueKey('context-modal-action-edit')),
       findsNothing,
     );
+  });
+
+  testWidgets('a queue history row menu button says More options', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a', 'b']);
+    await seedQueue(tester, ['a', 'b']);
+    goTo(tester, h, '/queue-history');
+    await settleDb(tester);
+
+    expect(
+      find.descendant(of: row(), matching: find.byTooltip('More options')),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Queue actions'), findsNothing);
   });
 
   testWidgets('a saved queue row modal says Remove from queue', (tester) async {
