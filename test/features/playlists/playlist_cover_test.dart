@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/playlist_cover_keys.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/cover_art.dart';
 import 'package:kanaru/shared/widgets/placeholder_colors.dart';
 import 'package:kanaru/shared/widgets/playlist_cover.dart';
@@ -104,7 +105,7 @@ void main() {
     ) async {
       await pump(tester, const []);
 
-      expect(find.byIcon(Icons.queue_music), findsOneWidget);
+      expect(find.byIcon(AppIcons.playlist), findsOneWidget);
       expect(find.byType(Image), findsNothing);
       expect(tester.getSize(find.byType(PlaylistCover)), const Size(120, 120));
     });
@@ -171,7 +172,7 @@ void main() {
         ),
       );
       expect(fallbacks, findsOneWidget);
-      expect(find.byIcon(Icons.queue_music), findsNothing);
+      expect(find.byIcon(AppIcons.playlist), findsNothing);
     });
 
     testWidgets('covers off shows one placeholder with the icon', (
@@ -184,7 +185,7 @@ void main() {
         keyOf('dd'),
       ], coversOn: false);
 
-      expect(find.byIcon(Icons.queue_music), findsOneWidget);
+      expect(find.byIcon(AppIcons.playlist), findsOneWidget);
       expect(find.byType(Image), findsNothing);
     });
   });
