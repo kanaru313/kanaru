@@ -52,6 +52,27 @@ void main() {
     expect(opened?.id, 1);
   });
 
+  // 24 px grid padding on each side, cards at most 200 px wide.
+  for (final (width, columns) in [
+    (360.0, 2),
+    (600.0, 3),
+    (840.0, 4),
+    (1200.0, 6),
+  ]) {
+    testWidgets('lays out $columns columns at $width px', (tester) async {
+      await pump(tester, [
+        for (var i = 1; i <= 8; i++) card(i, 'List $i', i),
+      ], width: width);
+
+      final firstRowTop = tester.getTopLeft(find.byType(InkWell).first).dy;
+      final firstRow = tester
+          .widgetList<InkWell>(find.byType(InkWell))
+          .map((w) => tester.getTopLeft(find.byWidget(w)))
+          .where((p) => p.dy == firstRowTop);
+      expect(firstRow.length, columns);
+    });
+  }
+
   for (final width in [480.0, 720.0, 1280.0]) {
     testWidgets('a two-line name at large text fits at $width px', (
       tester,

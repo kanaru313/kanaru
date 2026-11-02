@@ -6,6 +6,7 @@ import '../../../shared/language_summaries.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import 'language_avatar.dart';
+import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
 import '../albums/album_grid.dart';
 
 /// One language in a grid: round avatar, name, "N songs".

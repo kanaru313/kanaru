@@ -4,6 +4,7 @@ import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import 'folder_grid_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';
+import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
 import '../albums/album_grid.dart';
 
 /// A folder to show in [FolderGrid] or [SliverFolderGrid]: the node, the name
