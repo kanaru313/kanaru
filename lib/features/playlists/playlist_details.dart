@@ -7,9 +7,11 @@ import '../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_actions_menu.dart';
 import 'playlist_display_name.dart';
+import 'playlist_modal/playlist_description_box.dart';
 import 'playlist_modal/playlist_more_button.dart';
 
-/// Name (bold, two lines at most), song count, then Play / Shuffle and one
+/// Name (bold, two lines at most), song count, the description (three lines,
+/// then it scrolls; left out when empty), then Play / Shuffle and one
 /// "more" button: the playlist modal, or on a saved queue the export and
 /// queue menu ([PlaylistActionsMenu]). Shared by the narrow header and the
 /// side pane of a playlist page.
@@ -95,6 +97,22 @@ class PlaylistDetails extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
+        // Hidden when empty; at most three lines tall, then it scrolls.
+        if (head.playlist.description.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: PlaylistDescriptionBox(
+                text: head.playlist.description,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.6,
+                ),
+                maxLines: 3,
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
