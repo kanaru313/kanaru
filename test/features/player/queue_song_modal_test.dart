@@ -156,8 +156,8 @@ void main() {
   testWidgets('Play next on a play next row queues a copy after the block', (
     tester,
   ) async {
-    await open(tester);
-    await player().moveToPlayNext(2);
+    final p = await open(tester, ['a', 'b']);
+    await player().playNext([Track(uri: p['c']!, title: 'c')]);
     await tester.pumpAndSettle();
     expect(queueTitles(h), ['a', 'c', 'b']);
 

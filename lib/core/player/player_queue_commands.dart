@@ -116,33 +116,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
     await _queueNext();
   }
 
-  /// Moves the track at play position [position] (also a played one) behind
-  /// the "play next" block and marks it, so it plays after the tracks already
-  /// waiting. Does nothing for the playing track, a track already in the
-  /// block or a position out of range; the queue may have changed while a
-  /// menu was open. Never interrupts the playing track.
-  Future<void> moveToPlayNext(int position) async {
-    final queue = state.queue;
-    final current = queue.index;
-    if (position < 0 || position >= queue.order.length) return;
-    if (position == current) return;
-    final run = _upNextRun(queue);
-    if (position > current && position <= current + run) return;
-    // A played track leaving shifts the current one back by one.
-    final target = position < current ? current + run : current + 1 + run;
-    _userActed();
-    _failuresInRow = 0;
-    _upNext.add(queue.order[position]);
-    // Already in place: only the mark changed. A new queue object still makes
-    // listeners rebuild and the session save the mark.
-    final moved = position == target
-        ? queue.copyWith()
-        : queue.move(position, target);
-    state = state.copyWith(queue: moved);
-    if (_ended) return _play(target, play: false);
-    if (position != target) await _queueNext();
-  }
-
   /// Removes the track at play position [at]. Removing the playing track
   /// plays whatever slides into its place (kept paused when paused); at the
   /// end of the queue playback stops like it does when the queue runs out.

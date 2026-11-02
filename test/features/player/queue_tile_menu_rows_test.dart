@@ -131,7 +131,6 @@ void main() {
       (p) => [
         const Track(uri: '/elsewhere/p.mp3', title: 'p'),
         const Track(uri: '/elsewhere/q.mp3', title: 'q'),
-        const Track(uri: '/elsewhere/r.mp3', title: 'r'),
       ],
     );
     await openQueueMenu(tester, 'p');
@@ -139,7 +138,9 @@ void main() {
     await tester.tapAt(const Offset(2, 2));
     await tester.pumpAndSettle();
 
-    await h.container.read(playerServiceProvider.notifier).moveToPlayNext(2);
+    await h.container.read(playerServiceProvider.notifier).playNext([
+      const Track(uri: '/elsewhere/r.mp3', title: 'r'),
+    ]);
     await tester.pumpAndSettle();
     await openQueueMenu(tester, 'r');
     expect(menuLabels(tester, allMenuLabels), contains('Play next'));
