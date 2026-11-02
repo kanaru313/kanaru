@@ -61,6 +61,7 @@ class _RepeatButtonState extends ConsumerState<RepeatButton> {
     final lit = counting || base != RepeatMode.off;
 
     return MenuAnchor(
+      alignmentOffset: const Offset(-100, 8),
       onOpen: () => _setOpen(true),
       onClose: () => _setOpen(false),
       menuChildren: repeatMenuItems(

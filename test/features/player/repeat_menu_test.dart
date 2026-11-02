@@ -326,4 +326,12 @@ void main() {
     }
     expect(seen.toSet(), RepeatMode.values.toSet());
   });
+
+  testWidgets('repeat button configures menu offset to center on icon', (
+    tester,
+  ) async {
+    await pump(tester);
+    final anchor = tester.widget<MenuAnchor>(find.byType(MenuAnchor));
+    expect(anchor.alignmentOffset, const Offset(-100, 8));
+  });
 }
