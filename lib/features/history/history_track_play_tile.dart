@@ -4,6 +4,7 @@ import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/format_duration.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/widgets/menu_keyboard_region.dart';
 
 /// Fixed height of a line of the song history list.
 const historyTrackRowExtent = 56.0;
@@ -12,10 +13,12 @@ const historyTrackRowExtent = 56.0;
 /// was listened to (left out when unknown), the "Nth listen" badge and a more
 /// button.
 ///
-/// The menu opens on a right click, a long press and the more button, always
-/// through [onMenu] with the pointer position. Removing a play is only in
-/// that menu, never one tap on the row: a play of the song now playing is
-/// added at the top and would move the rows under the pointer.
+/// The menu opens on a right click, a long press, the Menu key, Shift+F10 and
+/// the more button, always through [onMenu] with the pointer position (a
+/// point near the row start for a key). The keys work while focus is in the
+/// row, which today is its more button. Removing a play is only in that menu,
+/// never one tap on the row: a play of the song now playing is added at the
+/// top and would move the rows under the pointer.
 class HistoryTrackPlayTile extends StatelessWidget {
   const HistoryTrackPlayTile({
     super.key,
@@ -98,14 +101,17 @@ class HistoryTrackPlayTile extends StatelessWidget {
       height: historyTrackRowExtent,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onSecondaryTapUp: (d) => onMenu(d.globalPosition),
-          onLongPressStart: (d) => onMenu(d.globalPosition),
-          child: Material(
-            color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(8),
-            child: content,
+        child: MenuKeyboardRegion(
+          onOpen: onMenu,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onSecondaryTapUp: (d) => onMenu(d.globalPosition),
+            onLongPressStart: (d) => onMenu(d.globalPosition),
+            child: Material(
+              color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              child: content,
+            ),
           ),
         ),
       ),
