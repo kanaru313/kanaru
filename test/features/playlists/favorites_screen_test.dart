@@ -8,6 +8,7 @@ import 'package:kanaru/features/playlists/favorites_screen.dart';
 import 'package:kanaru/features/playlists/playlist_details.dart';
 import 'package:kanaru/features/playlists/playlist_routes.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:kanaru/shared/widgets/page_scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart' show goTo;
@@ -134,5 +135,22 @@ void main() {
 
     expect(modalAction('edit'), findsOneWidget);
     expect(modalAction('delete'), findsOneWidget);
+  });
+
+  testWidgets('without a library the page is still titled Favorites', (
+    tester,
+  ) async {
+    final h = LibraryHarness(hasDatabase: false);
+    await h.pump(tester);
+    goTo(tester, h, '/favorites');
+    await tester.pumpAndSettle();
+
+    expect(find.text("Couldn't open the library"), findsOneWidget);
+    Finder pageTitle(String title) => find.descendant(
+      of: find.byType(PageScaffold),
+      matching: find.text(title),
+    );
+    expect(pageTitle('Favorites'), findsOneWidget);
+    expect(pageTitle('Playlists'), findsNothing);
   });
 }

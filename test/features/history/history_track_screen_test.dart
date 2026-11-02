@@ -1,11 +1,13 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/gestures.dart' show kSecondaryButton;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_routes.dart';
 import 'package:kanaru/features/history/most_played_row_tile.dart';
 import 'package:kanaru/features/history/history_track_play_tile.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'history_test_harness.dart';
@@ -158,6 +160,46 @@ void main() {
       await settleHistory(tester);
       expect(find.text('Song not found'), findsOneWidget);
       expect(_play, findsNothing);
+    });
+  });
+
+  group('keyboard', () {
+    Future<void> focusFirstMore(WidgetTester tester) async {
+      await insertTracks(tester, h, [song('A')]);
+      await _insert(tester, h, '/m/A.flac', _at(22));
+      await h.pump(tester, hasRoots: true);
+      goTo(tester, h, historyTrackLocation('/m/A.flac'));
+      await settleHistory(tester);
+      Focus.of(tester.element(find.byIcon(AppIcons.more).first)).requestFocus();
+      await tester.pump();
+    }
+
+    historyTestWidgets('the Menu key opens the row menu; Esc closes it', (
+      tester,
+    ) async {
+      await focusFirstMore(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+      await tester.pumpAndSettle();
+      expect(find.text('Remove from history'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Remove from history'), findsNothing);
+    });
+
+    historyTestWidgets('Shift+F10 opens the row menu; Esc closes it', (
+      tester,
+    ) async {
+      await focusFirstMore(tester);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pumpAndSettle();
+      expect(find.text('Remove from history'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Remove from history'), findsNothing);
     });
   });
 

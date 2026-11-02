@@ -6,7 +6,10 @@ import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dar
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_track_column.dart';
 import 'package:kanaru/features/player/now_playing_summary.dart';
+import 'package:kanaru/features/player/queue/queue_sheet_host.dart';
+import 'package:kanaru/features/player/queue/queue_tile.dart';
 import 'package:kanaru/features/player/track_artwork.dart';
+import 'package:kanaru/shared/widgets/song_row_view.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/fake_tag_reader.dart';
@@ -48,11 +51,16 @@ void main() {
   }
 
   /// Writes the track's cover, as the cover pass does, then settles.
-  Future<void> writeCover(WidgetTester tester, String path) async {
+  /// [key] defaults to the cover key of track 'a'; pass `null` to remove it.
+  Future<void> writeCover(
+    WidgetTester tester,
+    String path, [
+    String? key = 'a',
+  ]) async {
     await tester.runAsync(() async {
       await h.db.customStatement(
         'UPDATE tracks SET cover_key = ? WHERE path = ?',
-        [fakeCoverKey('a'), path],
+        [key == null ? null : fakeCoverKey(key), path],
       );
       h.db.notifyUpdates({
         const TableUpdate('tracks', kind: UpdateKind.update),
@@ -120,5 +128,67 @@ void main() {
     ]);
     await settle(tester);
     expect(artIn(tester, footer), '/x.jpg');
+  });
+
+  /// The cover the queue row at [index] draws.
+  String? rowArt(WidgetTester tester, int index) => tester
+      .widget<SongRowView>(
+        find.descendant(
+          of: find.byType(QueueTile).at(index),
+          matching: find.byType(SongRowView),
+        ),
+      )
+      .coverPath;
+
+  Future<void> openQueue(WidgetTester tester) async {
+    QueueSheetHost.of(tester.element(footer)).open();
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a queue row shows a cover made while playing', (tester) async {
+    final path = await playUncovered(tester, const Size(1280, 800));
+    await openQueue(tester);
+    expect(rowArt(tester, 0), isNull);
+
+    await writeCover(tester, path);
+    expect(rowArt(tester, 0), _cover);
+  });
+
+  Future<String> playQueuedWithArt(WidgetTester tester) async {
+    final path = await playUncovered(tester, const Size(1280, 800));
+    await writeCover(tester, path);
+    await h.container.read(playerServiceProvider.notifier).openTracks([
+      Track(uri: path, title: 'a', artUri: _cover),
+    ]);
+    await settle(tester);
+    await openQueue(tester);
+    expect(rowArt(tester, 0), _cover);
+    return path;
+  }
+
+  testWidgets('a queue row follows a replaced cover', (tester) async {
+    final path = await playQueuedWithArt(tester);
+
+    await writeCover(tester, path, 'b');
+    expect(rowArt(tester, 0), '$_covers/${fakeCoverKey('b')}');
+  });
+
+  testWidgets('a queue row drops a removed cover', (tester) async {
+    final path = await playQueuedWithArt(tester);
+
+    await writeCover(tester, path, null);
+    expect(rowArt(tester, 0), isNull);
+  });
+
+  testWidgets('a queue row of a track outside the library keeps its own art', (
+    tester,
+  ) async {
+    await playUncovered(tester, const Size(1280, 800));
+    await h.container.read(playerServiceProvider.notifier).openTracks([
+      const Track(uri: '/elsewhere/x.mp3', title: 'x', artUri: '/art/x.jpg'),
+    ]);
+    await settle(tester);
+    await openQueue(tester);
+    expect(rowArt(tester, 0), '/art/x.jpg');
   });
 }

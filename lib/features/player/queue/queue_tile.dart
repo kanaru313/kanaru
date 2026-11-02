@@ -2,7 +2,9 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/library_startup.dart';
 import '../../../core/database/library_track_of_path.dart';
+import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/play_queue.dart';
 import '../../../core/player/player_service.dart';
 import '../../../core/player/playing_track_art.dart' show localPathOf;
@@ -72,12 +74,19 @@ class QueueTile extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     final player = ref.read(playerServiceProvider.notifier);
     final path = localPathOf(track.uri);
+    final row = path == null
+        ? null
+        : ref.watch(libraryTrackOfPathProvider(path)).value;
+    final covers = ref.watch(coverCacheDirectoryProvider);
     // The heart adds only songs of the library. While that is still being
     // read it stays off (an added favorite can always be taken out again), so
     // it never offers an add that the press would refuse.
-    final canAdd = path != null
-        ? (ref.watch(libraryTrackOfPathProvider(path)).value != null)
-        : false;
+    final canAdd = row != null;
+    // The cover follows the library row like Now Playing does (a rescan may
+    // have made or replaced it); the queued art is the fallback.
+    final art = row != null && covers != null
+        ? coverPath(covers, row.coverKey)
+        : track.artUri;
 
     // The row height is fixed, so its text stops growing at a cap instead of
     // overflowing at the largest font sizes.
@@ -98,7 +107,7 @@ class QueueTile extends ConsumerWidget {
               title: track.title,
               artist: track.artist,
               detail: joinRowDetails([track.album, rowYear(track.year)]),
-              coverPath: track.artUri,
+              coverPath: art,
               duration: track.duration,
               playing: current,
               // The playing row's tap does nothing, but it is not null: a

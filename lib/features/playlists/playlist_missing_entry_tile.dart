@@ -25,6 +25,7 @@ class PlaylistMissingEntryTile extends StatelessWidget {
     this.reorderable = true,
     this.onRemove,
     this.showFavorite = false,
+    this.savedQueue = false,
   });
 
   final PlaylistEntryRow entry;
@@ -40,6 +41,9 @@ class PlaylistMissingEntryTile extends StatelessWidget {
 
   /// Shows a heart for the entry's path when [onRemove] is null.
   final bool showFavorite;
+
+  /// A saved queue: removal reads Remove from queue.
+  final bool savedQueue;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +83,9 @@ class PlaylistMissingEntryTile extends StatelessWidget {
                 child: IconButton(
                   icon: const Icon(AppIcons.closeRounded),
                   iconSize: 20,
-                  tooltip: l10n.playlistRemoveEntry,
+                  tooltip: savedQueue
+                      ? l10n.queueRemove
+                      : l10n.playlistRemoveEntry,
                   onPressed: onRemove,
                 ),
               )

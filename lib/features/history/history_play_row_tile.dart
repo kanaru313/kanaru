@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
+import '../../core/player/playing_track_path.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/menu_keyboard_region.dart';
@@ -19,7 +21,7 @@ import '../../shared/widgets/song_tile.dart';
 /// (the row's start for the key). Removing a play is only in those menus,
 /// never one tap on the row: the list moves under the pointer when plays come
 /// and go.
-class HistoryPlayRowTile extends StatelessWidget {
+class HistoryPlayRowTile extends ConsumerWidget {
   const HistoryPlayRowTile({
     super.key,
     required this.row,
@@ -44,7 +46,7 @@ class HistoryPlayRowTile extends StatelessWidget {
   final SongModalExtrasBuilder modalExtras;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final played = DateTime.fromMillisecondsSinceEpoch(row.playedAt);
     final time = MaterialLocalizations.of(context).formatTimeOfDay(
@@ -54,6 +56,12 @@ class HistoryPlayRowTile extends StatelessWidget {
     final playedAt = l10n.historyPlayedAt(played, time);
     final nth = row.nth;
     final track = row.track;
+    // Same rule as SongTile's playing fill: only the newest play of the
+    // playing track, so the badge stays readable on the primaryContainer card.
+    final playing =
+        track != null &&
+        row.latest &&
+        ref.watch(playingTrackPathProvider.select((p) => p == track.path));
 
     Widget? badge;
     if (nth != null) {
@@ -66,7 +74,9 @@ class HistoryPlayRowTile extends StatelessWidget {
           child: Text(
             l10n.historyNthPlay(nth),
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: playing
+                  ? theme.colorScheme.onPrimaryContainer
+                  : theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ),

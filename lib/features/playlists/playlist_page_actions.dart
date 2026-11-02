@@ -46,8 +46,9 @@ Future<bool> movePlaylistEntryOrReport(
   BuildContext context,
   int playlistId,
   int entryId,
-  int to,
-) async {
+  int to, {
+  bool savedQueue = false,
+}) async {
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return false;
   final messenger = ScaffoldMessenger.of(context);
@@ -56,7 +57,13 @@ Future<bool> movePlaylistEntryOrReport(
     await db.movePlaylistEntry(playlistId, entryId, to);
     return true;
   } catch (error, stack) {
-    _reportFailure(messenger, l10n, 'Moving a playlist entry', error, stack);
+    _reportFailure(
+      messenger,
+      savedQueue ? l10n.queueHistorySaveFailed : l10n.playlistSaveFailed,
+      'Moving a playlist entry',
+      error,
+      stack,
+    );
     return false;
   }
 }
@@ -67,8 +74,9 @@ Future<bool> removePlaylistEntryOrReport(
   WidgetRef ref,
   BuildContext context,
   int playlistId,
-  int entryId,
-) async {
+  int entryId, {
+  bool savedQueue = false,
+}) async {
   final db = ref.read(libraryDatabaseProvider);
   if (db == null) return false;
   final messenger = ScaffoldMessenger.of(context);
@@ -77,7 +85,13 @@ Future<bool> removePlaylistEntryOrReport(
     await db.removePlaylistEntries(playlistId, {entryId});
     return true;
   } catch (error, stack) {
-    _reportFailure(messenger, l10n, 'Removing a playlist entry', error, stack);
+    _reportFailure(
+      messenger,
+      savedQueue ? l10n.queueHistorySaveFailed : l10n.playlistSaveFailed,
+      'Removing a playlist entry',
+      error,
+      stack,
+    );
     return false;
   }
 }
@@ -97,13 +111,19 @@ Future<void> deletePlaylistWith({
   try {
     await db.deletePlaylist(playlist.id);
   } catch (error, stack) {
-    _reportFailure(messenger, l10n, 'Deleting a playlist', error, stack);
+    _reportFailure(
+      messenger,
+      l10n.playlistSaveFailed,
+      'Deleting a playlist',
+      error,
+      stack,
+    );
   }
 }
 
 void _reportFailure(
   ScaffoldMessengerState? messenger,
-  AppLocalizations l10n,
+  String title,
   String what,
   Object error,
   StackTrace stack,
@@ -111,7 +131,7 @@ void _reportFailure(
   _log.severe('$what failed', error, stack);
   try {
     messenger?.showSnackBar(
-      appSnackBar(kind: AppSnackBarKind.error, title: l10n.playlistSaveFailed),
+      appSnackBar(kind: AppSnackBarKind.error, title: title),
     );
   } catch (snackError, snackStack) {
     _log.severe('Reporting the failure failed', snackError, snackStack);

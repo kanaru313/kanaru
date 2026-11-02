@@ -24,7 +24,7 @@ class FavoritesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (ref.watch(libraryDatabaseProvider) == null) {
-      return const PlaylistsUnavailable();
+      return PlaylistsUnavailable(title: context.l10n.navFavorites);
     }
     ref.listen(favoritesPlaylistIdProvider, (previous, next) {
       if (next.hasError && !(previous?.hasError ?? false)) {
@@ -38,7 +38,7 @@ class FavoritesScreen extends ConsumerWidget {
     final Widget body = switch (ref.watch(favoritesPlaylistIdProvider)) {
       AsyncData(value: final id?) => _FavoritesPage(id),
       AsyncData() => const _NoFavorites(),
-      AsyncError() => const PlaylistsUnavailable(),
+      AsyncError() => PlaylistsUnavailable(title: context.l10n.navFavorites),
       _ => const LibraryLoading(),
     };
     // A page in a branch needs its own Material for the ink of rows.
@@ -64,7 +64,8 @@ class _FavoritesPage extends ConsumerWidget {
           skipLoadingOnReload: true,
           skipError: true,
           loading: () => const LibraryLoading(),
-          error: (error, stack) => const PlaylistsUnavailable(),
+          error: (error, stack) =>
+              PlaylistsUnavailable(title: context.l10n.navFavorites),
           // Gone (deleted outside the app): the id stream catches up.
           data: (load) => switch (load.head) {
             final head? => PlaylistPageBody(head, headSeq: load.seq),

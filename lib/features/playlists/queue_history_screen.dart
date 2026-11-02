@@ -27,7 +27,7 @@ class QueueHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     if (ref.watch(libraryDatabaseProvider) == null) {
-      return const PlaylistsUnavailable();
+      return PlaylistsUnavailable(title: l10n.queueHistoryTitle);
     }
     ref.listen(queueSnapshotsProvider, (previous, next) {
       if (next.hasError && !(previous?.hasError ?? false)) {

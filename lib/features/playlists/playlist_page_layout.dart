@@ -141,7 +141,10 @@ class PlaylistPageLayout extends StatelessWidget {
             // EmptyState scrolls on its own and measures with a LayoutBuilder,
             // which a non-scrolling fill cannot size.
             SliverFillRemaining(
-              child: PlaylistEmptyState(favorites: head.playlist.isFavorites),
+              child: PlaylistEmptyState(
+                favorites: head.playlist.isFavorites,
+                savedQueue: savedQueue,
+              ),
             )
           else if (canFilter && filter.isFiltering)
             PlaylistFilterResults(

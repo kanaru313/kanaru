@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
+import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -124,6 +125,30 @@ void main() {
       );
     });
 
+    testWidgets('a saved queue row modal says Remove from queue', (
+      tester,
+    ) async {
+      view.rowModals = true;
+      await view.pump(tester, [available(1)], savedQueue: true);
+
+      await tester.tap(
+        find.byType(PlaylistEntryTile),
+        buttons: kSecondaryButton,
+      );
+      await settleSongModal(tester);
+
+      final action = modalAction('remove-from-playlist');
+      expect(
+        find.descendant(of: action, matching: find.text('Remove from queue')),
+        findsOneWidget,
+      );
+      expect(find.text('Remove from playlist'), findsNothing);
+
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      expect(view.removed, [1]);
+    });
+
     testWidgets('the modal of a read-only list has no Remove', (tester) async {
       view.rowModals = true;
       await view.pump(tester, [available(1)], readOnly: true);
@@ -215,7 +240,7 @@ void main() {
 
       expect(find.byIcon(AppIcons.more), findsOneWidget);
       expect(find.byTooltip('More options'), findsOneWidget);
-      expect(find.byTooltip('Playlist actions'), findsNothing);
+      expect(find.byType(PlaylistActionsMenu), findsNothing);
       await openPageModal(tester);
       expect(modalAction('play-all'), findsOneWidget);
       // The page is the playlist itself: no Go to playlist.
@@ -240,8 +265,15 @@ void main() {
         onQueueAction: (action) => received = action,
       );
 
-      expect(find.byTooltip('Playlist actions'), findsOneWidget);
-      await tester.tap(find.byTooltip('Playlist actions'));
+      expect(find.byType(PlaylistActionsMenu), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(PlaylistActionsMenu),
+          matching: find.byTooltip('More options'),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byType(PlaylistActionsMenu));
       await tester.pumpAndSettle();
       expect(find.text('Rename'), findsNothing);
       expect(find.text('Delete playlist'), findsNothing);

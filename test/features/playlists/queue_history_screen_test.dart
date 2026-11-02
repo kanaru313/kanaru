@@ -4,10 +4,13 @@ import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/database/queue_history_queries.dart';
 import 'package:kanaru/core/database/queue_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
+import 'package:kanaru/shared/widgets/page_scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
 import 'playlist_test_data.dart';
@@ -39,6 +42,12 @@ void main() {
     for (final t in h.container.read(playerServiceProvider).queue.tracks)
       t.title,
   ];
+
+  /// [title] as the page title, not as the sidebar label.
+  Finder pageTitle(String title) => find.descendant(
+    of: find.byType(PageScaffold),
+    matching: find.text(title),
+  );
 
   Finder row() => find.byType(QueueSnapshotRow);
 
@@ -151,8 +160,13 @@ void main() {
     goTo(tester, h, '/queue-history/$id');
     await settleDb(tester);
 
-    expect(find.byTooltip('Playlist actions'), findsOneWidget);
-    await tester.tap(find.byTooltip('Playlist actions'));
+    final menuButton = find.descendant(
+      of: find.byType(PlaylistActionsMenu),
+      matching: find.byTooltip('More options'),
+    );
+    expect(menuButton, findsOneWidget);
+    expect(find.byTooltip('Playlist actions'), findsNothing);
+    await tester.tap(menuButton);
     await tester.pumpAndSettle();
     expect(find.text('Export M3U (full paths)…'), findsOneWidget);
     expect(find.text('Add to queue'), findsOneWidget);
@@ -161,6 +175,37 @@ void main() {
       find.byKey(const ValueKey('context-modal-action-edit')),
       findsNothing,
     );
+  });
+
+  testWidgets('a queue history row menu button says More options', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a', 'b']);
+    await seedQueue(tester, ['a', 'b']);
+    goTo(tester, h, '/queue-history');
+    await settleDb(tester);
+
+    expect(
+      find.descendant(of: row(), matching: find.byTooltip('More options')),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Queue actions'), findsNothing);
+  });
+
+  testWidgets('a saved queue row modal says Remove from queue', (tester) async {
+    await openApp(tester, h, ['a', 'b']);
+    final id = await seedQueue(tester, ['a', 'b']);
+    goTo(tester, h, '/queue-history/$id');
+    await settleDb(tester);
+
+    await tester.tap(
+      find.byType(PlaylistEntryTile).first,
+      buttons: kSecondaryButton,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Remove from queue'), findsOneWidget);
+    expect(find.text('Remove from playlist'), findsNothing);
   });
 
   testWidgets('a row opens the saved queue, named by when it was saved', (
@@ -191,11 +236,67 @@ void main() {
     final id = await seedPlaylist(tester, h, 'Mine', ['a', 'b']);
     goTo(tester, h, '/queue-history/$id');
     await settleDb(tester);
-    expect(find.text('Playlist not found'), findsOneWidget);
+    expect(find.text('Queue not found'), findsOneWidget);
+    expect(find.text('It may have been deleted.'), findsOneWidget);
+    expect(find.text('Playlist not found'), findsNothing);
+    expect(pageTitle('Queues'), findsOneWidget);
 
     goTo(tester, h, '/queue-history/abc');
     await settleDb(tester);
-    expect(find.text('Playlist not found'), findsOneWidget);
+    expect(find.text('Queue not found'), findsOneWidget);
+  });
+
+  /// Removes row [index] of the open saved queue through its song modal.
+  Future<void> removeQueueRow(WidgetTester tester, int index) async {
+    await tester.tap(
+      find.byType(PlaylistEntryTile).at(index),
+      buttons: kSecondaryButton,
+    );
+    await settleSongModal(tester);
+    await tester.tap(find.text('Remove from queue'));
+    await tester.pump();
+  }
+
+  testWidgets('removing every song names the queue in the empty state', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a', 'b']);
+    final id = await seedQueue(tester, ['a', 'b']);
+    goTo(tester, h, '/queue-history/$id');
+    await settleDb(tester);
+
+    await removeQueueRow(tester, 0);
+    await settleDb(tester);
+    await removeQueueRow(tester, 0);
+    await settleDb(tester);
+
+    expect(find.text('This queue is empty'), findsOneWidget);
+    expect(
+      find.text('All its songs were removed. You can delete it from Queues.'),
+      findsOneWidget,
+    );
+    expect(find.text('This playlist is empty'), findsNothing);
+  });
+
+  testWidgets('a failed removal says the queue was not saved', (tester) async {
+    await openApp(tester, h, ['a', 'b']);
+    final id = await seedQueue(tester, ['a', 'b']);
+    goTo(tester, h, '/queue-history/$id');
+    await settleDb(tester);
+    await breakWrites(tester, h, 'playlist_entries', 'DELETE');
+
+    await removeQueueRow(tester, 0);
+    await settleDb(tester);
+
+    expect(
+      find.text("Couldn't save the queue. See the log for details."),
+      findsOneWidget,
+    );
+    expect(
+      find.text("Couldn't save the playlist. See the log for details."),
+      findsNothing,
+    );
+    expect(find.byType(PlaylistEntryTile), findsNWidgets(2));
   });
 
   testWidgets('without a library the page says so', (tester) async {
@@ -204,5 +305,7 @@ void main() {
     goTo(tester, h, '/queue-history');
     await tester.pumpAndSettle();
     expect(find.text("Couldn't open the library"), findsOneWidget);
+    expect(pageTitle('Queues'), findsOneWidget);
+    expect(pageTitle('Playlists'), findsNothing);
   });
 }

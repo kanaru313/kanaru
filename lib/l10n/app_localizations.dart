@@ -3368,6 +3368,36 @@ abstract class AppLocalizations {
   /// **'None of these songs are in your library'**
   String get queueHistoryNothingToPlay;
 
+  /// Empty state title of a saved queue whose songs were all removed
+  ///
+  /// In en, this message translates to:
+  /// **'This queue is empty'**
+  String get queueHistoryEntriesEmptyTitle;
+
+  /// Empty state message of a saved queue whose songs were all removed
+  ///
+  /// In en, this message translates to:
+  /// **'All its songs were removed. You can delete it from Queues.'**
+  String get queueHistoryEntriesEmptyMessage;
+
+  /// Snackbar when moving or removing a song of a saved queue fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the queue. See the log for details.'**
+  String get queueHistorySaveFailed;
+
+  /// Title when a saved queue route id matches no saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Queue not found'**
+  String get queueHistoryNotFound;
+
+  /// Message under the saved queue not-found title
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been deleted.'**
+  String get queueHistoryNotFoundMessage;
+
   /// Shown in the lyrics slot of Now Playing when the song has no lyrics
   ///
   /// In en, this message translates to:
