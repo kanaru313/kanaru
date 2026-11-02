@@ -6,7 +6,7 @@ import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart' show unknownGenreKey;
 import '../../../shared/widgets/playlist_cover.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../widgets/round_grid_tile.dart';
+import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import 'genre_display_name.dart';
 import '../albums/album_grid.dart';
 

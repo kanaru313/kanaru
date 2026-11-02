@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../widgets/round_grid_tile.dart';
+import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import 'folder_grid_tile.dart';
 import 'folder_menu.dart';
 import 'folder_tree.dart';

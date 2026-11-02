@@ -4,7 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/language_display_name.dart';
 import '../../../shared/language_summaries.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../widgets/round_grid_tile.dart';
+import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import 'language_avatar.dart';
 import '../albums/album_grid.dart';
 

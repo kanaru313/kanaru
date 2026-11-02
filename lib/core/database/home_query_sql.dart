@@ -68,9 +68,9 @@ FROM r JOIN tracks ON album_artist_key = r.rak AND album_title_key = r.rtk
 GROUP BY r.rak, r.rtk
 ORDER BY r.last DESC, r.rak, r.rtk''';
 
-/// `?1` limit, `?2` offset. Name, track and album counts use every
-/// `track_artists` row of the key, the same formula as `artistCreditsSql`, so
-/// the numbers match the Artists tab.
+/// `?1` limit, `?2` offset. Name, track and album counts and the total
+/// duration use every `track_artists` row of the key, the same formula as
+/// `artistCreditsSql`, so the numbers match the Artists tab.
 const homeRecentArtistsSql = '''
 WITH r(k, last) AS (
   SELECT ta.artist_key, max(s.last_played_at)
@@ -84,6 +84,9 @@ SELECT r.k AS artist_key,
   (SELECT count(*) FROM track_artists WHERE artist_key = r.k) AS n,
   (SELECT count(DISTINCT u.album_artist_key || char(31) || u.album_title_key)
    FROM track_artists AS ua JOIN tracks AS u ON u.id = ua.track_id
-   WHERE ua.artist_key = r.k) AS albums
+   WHERE ua.artist_key = r.k) AS albums,
+  (SELECT nullif(sum(u.duration_ms), 0)
+   FROM track_artists AS ua JOIN tracks AS u ON u.id = ua.track_id
+   WHERE ua.artist_key = r.k) AS ms
 FROM r
 ORDER BY r.last DESC, r.k''';

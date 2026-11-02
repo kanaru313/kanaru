@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/widgets/queue_actions_menu.dart';
-import '../../../shared/fixed_line_strut.dart';
-import '../../../shared/widgets/library_grid/library_grid_card.dart';
+import '../../fixed_line_strut.dart';
+import '../queue_actions_menu.dart';
+import 'library_grid_card.dart';
 
 /// Height of a [RoundGridTile] whose avatar is [width] wide, for
 /// `libraryGridDelegate`: the avatar (as wide as a square cover), the gap and

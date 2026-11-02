@@ -2,10 +2,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/home/home_artist_card.dart';
 import 'package:kanaru/features/home/home_screen.dart';
 import 'package:kanaru/shared/artist_summaries.dart';
 import 'package:kanaru/shared/widgets/artist_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/artist_grid_tile.dart';
 
 import '../../features/home/home_test_harness.dart';
 import '../../features/library/browse_test_data.dart';
@@ -65,7 +65,10 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: find.byType(HomeArtistCard),
+        of: find.descendant(
+          of: find.byType(HomeScreen),
+          matching: find.byType(ArtistGridTile),
+        ),
         matching: find.text('Ann'),
       ),
       buttons: kSecondaryButton,

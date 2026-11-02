@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/features/library/artists/artist_grid_tile.dart';
+import 'package:kanaru/shared/widgets/library_grid/artist_grid_tile.dart';
 import 'package:kanaru/features/library/folders/folder_grid_tile.dart';
 import 'package:kanaru/features/library/genres/genre_grid_tile.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';

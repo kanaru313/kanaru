@@ -9,7 +9,7 @@ import '../../shared/widgets/library_grid/library_grid_card.dart';
 import 'home_added_window_chips.dart';
 import 'home_data_version.dart';
 import 'home_album_card.dart';
-import 'home_artist_card.dart';
+import 'home_artist_grid_screen.dart' show homeArtistTile;
 import 'home_locations.dart';
 import 'home_providers.dart';
 import 'home_section.dart';
@@ -88,7 +88,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> {
               onSeeAll: () => context.go(homeRecentArtistsLocation),
               child: _row<ArtistCredit>(
                 ref.watch(homeRecentArtistsProvider),
-                (_, items, i) => HomeArtistCard(artist: items[i]),
+                (context, items, i) => homeArtistTile(context, ref, items[i]),
               ),
             ),
             const SizedBox(height: 24),

@@ -104,7 +104,7 @@ class ArtistCredit {
   final int albumCount;
 
   /// Sum of the known durations of those tracks; null when none is known,
-  /// they add up to 0, or for a row read without it (Home).
+  /// they add up to 0, or for a row read without it.
   final int? durationMs;
 }
 

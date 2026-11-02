@@ -1,43 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../l10n/l10n.dart';
 import '../../../shared/artist_summaries.dart';
-import '../../../shared/artist_modal/artist_actions_region.dart';
-import '../../../shared/widgets/artist_avatar.dart';
+import '../../../shared/widgets/library_grid/artist_grid_tile.dart';
+import '../../../shared/widgets/library_grid/round_grid_tile.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../library_browse_body.dart';
-import '../widgets/round_grid_tile.dart';
 import '../albums/album_grid.dart';
-
-/// One artist in a grid: round avatar, name, "N songs".
-class ArtistGridTile extends StatelessWidget {
-  const ArtistGridTile({
-    super.key,
-    required this.artist,
-    required this.onTap,
-    this.onQueueAction,
-  });
-
-  final ArtistSummary artist;
-  final VoidCallback onTap;
-
-  /// Picked in the artist modal; no modal without it.
-  final ValueChanged<QueueAction>? onQueueAction;
-
-  @override
-  Widget build(BuildContext context) => ArtistActionsRegion(
-    artist: artist,
-    onQueueAction: onQueueAction,
-    child: RoundGridTile(
-      avatarBuilder: (size) =>
-          ArtistAvatar(artistKey: artist.key, name: artist.name, size: size),
-      title: artist.name,
-      subtitle: context.l10n.albumsSongCount(artist.songCount),
-      onTap: onTap,
-      onQueueAction: null,
-    ),
-  );
-}
 
 /// [artists] as a scrolling grid, leaving room for the rescan button below.
 class ArtistGrid extends StatelessWidget {
