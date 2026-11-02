@@ -96,4 +96,61 @@ void main() {
     expect(find.text('No playlists yet'), findsOneWidget);
     expect(find.byType(CheckboxListTile), findsNothing);
   });
+
+  testWidgets(
+    'rows are keyed; inserting pending preserves playlist checkbox state',
+    (tester) async {
+      final rock = playlist(42, 'Rock', 5);
+
+      await pump(tester, [rock], ticked: const {});
+      final rockFinder = find.byKey(const ValueKey(42));
+      expect(rockFinder, findsOneWidget);
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.descendant(
+                of: rockFinder,
+                matching: find.byType(CheckboxListTile),
+              ),
+            )
+            .value,
+        isFalse,
+      );
+
+      await pump(
+        tester,
+        [rock],
+        ticked: const {},
+        pending: [(name: 'Chill', on: true)],
+      );
+
+      final pendingFinder = find.byKey(const ValueKey('pending-0'));
+      expect(pendingFinder, findsOneWidget);
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.descendant(
+                of: pendingFinder,
+                matching: find.byType(CheckboxListTile),
+              ),
+            )
+            .value,
+        isTrue,
+      );
+
+      expect(rockFinder, findsOneWidget);
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.descendant(
+                of: rockFinder,
+                matching: find.byType(CheckboxListTile),
+              ),
+            )
+            .value,
+        isFalse,
+      );
+    },
+  );
 }
+

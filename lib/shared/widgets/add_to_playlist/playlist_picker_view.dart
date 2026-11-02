@@ -47,6 +47,7 @@ class PlaylistPickerView extends StatelessWidget {
   final FocusNode? pendingFocus;
 
   Widget _row({
+    Key? key,
     required bool value,
     required IconData icon,
     required Widget title,
@@ -54,6 +55,7 @@ class PlaylistPickerView extends StatelessWidget {
     required VoidCallback onTap,
     FocusNode? focusNode,
   }) => CallbackShortcuts(
+    key: key,
     bindings: {
       const SingleActivator(LogicalKeyboardKey.enter): onSubmit,
       const SingleActivator(LogicalKeyboardKey.numpadEnter): onSubmit,
@@ -84,6 +86,7 @@ class PlaylistPickerView extends StatelessWidget {
         ),
         for (final (i, item) in pending.indexed)
           _row(
+            key: ValueKey('pending-$i'),
             value: item.on,
             icon: AppIcons.playlist,
             focusNode: i == 0 ? pendingFocus : null,
@@ -119,6 +122,7 @@ class PlaylistPickerView extends StatelessWidget {
           ),
         for (final playlist in playlists)
           _row(
+            key: ValueKey(playlist.id),
             value: ticked.contains(playlist.id),
             icon: AppIcons.playlist,
             title: Text(
