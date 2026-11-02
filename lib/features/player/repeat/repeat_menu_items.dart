@@ -5,6 +5,7 @@ import '../../../core/player/player_service.dart';
 import '../../../core/player/repeat_mode.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/menu_row.dart';
 import 'repeat_labels.dart';
 import 'repeat_mode_icon.dart';
 
@@ -39,12 +40,10 @@ List<Widget> repeatMenuItems(
     return Semantics(
       selected: active,
       child: MenuItemButton(
-        style: active
-            ? MenuItemButton.styleFrom(
-                backgroundColor: scheme.secondaryContainer,
-                foregroundColor: scheme.onSecondaryContainer,
-              )
-            : null,
+        style: menuRowStyle(
+          background: active && !counted ? scheme.secondaryContainer : null,
+          foreground: active ? scheme.onSecondaryContainer : null,
+        ),
         leadingIcon: RepeatModeIcon(
           mode: mode,
           counted: counted,
@@ -70,35 +69,49 @@ List<Widget> repeatMenuItems(
   }
 
   return [
-    item(RepeatMode.off, () => player.setRepeat(RepeatMode.off)),
-    item(RepeatMode.one, () => player.setRepeat(RepeatMode.one)),
-    Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-          child: item(
-            base,
-            () => player.setRepeatTimes(shown),
-            counted: true,
-            enabled: !stopped,
-          ),
+    menuRowSpaced(item(RepeatMode.off, () => player.setRepeat(RepeatMode.off))),
+    menuRowSpaced(item(RepeatMode.one, () => player.setRepeat(RepeatMode.one))),
+    menuRowSpaced(
+      DecoratedBox(
+        decoration: BoxDecoration(
+          color: counting ? scheme.secondaryContainer : null,
+          borderRadius: BorderRadius.circular(8),
         ),
-        IconButton(
-          icon: const Icon(AppIcons.remove),
-          tooltip: l10n.playerRepeatFewer,
-          onPressed: stopped || shown <= 1 ? null : () => step(-1),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: item(
+                base,
+                () => player.setRepeatTimes(shown),
+                counted: true,
+                enabled: !stopped,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(AppIcons.remove),
+              color: counting ? scheme.onSecondaryContainer : null,
+              tooltip: l10n.playerRepeatFewer,
+              onPressed: stopped || shown <= 1 ? null : () => step(-1),
+            ),
+            IconButton(
+              icon: const Icon(AppIcons.add),
+              color: counting ? scheme.onSecondaryContainer : null,
+              tooltip: l10n.playerRepeatMore,
+              onPressed: stopped || shown >= maxRepeatTimes
+                  ? null
+                  : () => step(1),
+            ),
+          ],
         ),
-        IconButton(
-          icon: const Icon(AppIcons.add),
-          tooltip: l10n.playerRepeatMore,
-          onPressed: stopped || shown >= maxRepeatTimes ? null : () => step(1),
-        ),
-      ],
+      ),
     ),
-    item(RepeatMode.all, () => player.setRepeat(RepeatMode.all)),
-    item(
-      RepeatMode.allShuffled,
-      () => player.setRepeat(RepeatMode.allShuffled),
+    menuRowSpaced(item(RepeatMode.all, () => player.setRepeat(RepeatMode.all))),
+    menuRowSpaced(
+      item(
+        RepeatMode.allShuffled,
+        () => player.setRepeat(RepeatMode.allShuffled),
+      ),
     ),
   ];
 }

@@ -7,8 +7,8 @@ import 'package:material_ui/material_ui.dart';
 const menuRowPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 9);
 
 /// Style of one menu row: [menuRowPadding], rounded corners and, for the row
-/// in effect, a [background] tint.
-ButtonStyle menuRowStyle({Color? background}) => ButtonStyle(
+/// in effect, a [background] tint and optional [foreground] color.
+ButtonStyle menuRowStyle({Color? background, Color? foreground}) => ButtonStyle(
   padding: const WidgetStatePropertyAll(menuRowPadding),
   shape: WidgetStatePropertyAll(
     RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -16,6 +16,9 @@ ButtonStyle menuRowStyle({Color? background}) => ButtonStyle(
   backgroundColor: background == null
       ? null
       : WidgetStatePropertyAll(background),
+  foregroundColor: foreground == null
+      ? null
+      : WidgetStatePropertyAll(foreground),
 );
 
 /// The tint of the row in effect, from the theme's primary colour.

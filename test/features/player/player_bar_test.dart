@@ -16,6 +16,7 @@ import 'package:kanaru/features/player/seek_strip.dart';
 import 'package:kanaru/features/player/volume_button.dart';
 import 'package:kanaru/features/player/seek_track_painter.dart';
 import 'package:kanaru/shared/format_duration.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/fake_audio_backend.dart';
@@ -111,7 +112,7 @@ void main() {
     await pick('Repeat the whole queue');
     await pick('Repeat the whole queue (shuffled)');
     await pick('Repeat the current song');
-    expect(find.byIcon(Icons.repeat_one_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.repeatOne), findsOneWidget);
     expect(backend.calls.where((c) => c.startsWith('setRepeat')), [
       'setRepeat(all)',
       'setRepeat(allShuffled)',
@@ -134,8 +135,7 @@ void main() {
       (tester) async {
         await pumpApp(tester);
         await openSongs(tester);
-        Focus.of(tester.element(find.byIcon(Icons.skip_next_rounded)))
-            .requestFocus();
+        Focus.of(tester.element(find.byIcon(AppIcons.skipNext))).requestFocus();
         await tester.pump();
 
         await tester.sendKeyEvent(LogicalKeyboardKey.space);
@@ -306,17 +306,17 @@ void main() {
     );
     await pumpApp(tester);
     await openSongs(tester);
-    expect(button(Icons.skip_previous_rounded).onPressed, isNull);
-    expect(button(Icons.skip_next_rounded).onPressed, isNotNull);
+    expect(button(AppIcons.skipPrevious).onPressed, isNull);
+    expect(button(AppIcons.skipNext).onPressed, isNotNull);
 
     await player().next();
     await tester.pump();
-    expect(button(Icons.skip_previous_rounded).onPressed, isNotNull);
-    expect(button(Icons.skip_next_rounded).onPressed, isNull);
+    expect(button(AppIcons.skipPrevious).onPressed, isNotNull);
+    expect(button(AppIcons.skipNext).onPressed, isNull);
 
     await player().cycleRepeat();
     await tester.pump();
-    expect(button(Icons.skip_next_rounded).onPressed, isNotNull);
+    expect(button(AppIcons.skipNext).onPressed, isNotNull);
   });
 
   testWidgets('narrow windows seek on a thin strip on the top edge', (

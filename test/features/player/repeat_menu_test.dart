@@ -7,6 +7,7 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/features/player/repeat/repeat_mode_icon.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
 import '../../core/player/fake_audio_backend.dart';
@@ -215,25 +216,25 @@ void main() {
 
     expect(find.byTooltip('Stop after the last song'), findsOneWidget);
     expect(button().isSelected, isFalse);
-    expect(icon(Icons.repeat_rounded), findsOneWidget);
+    expect(icon(AppIcons.repeat), findsOneWidget);
 
     await player().setRepeat(RepeatMode.one);
     await tester.pump();
     expect(find.byTooltip('Repeat the current song'), findsOneWidget);
-    expect(icon(Icons.repeat_one_rounded), findsOneWidget);
+    expect(icon(AppIcons.repeatOne), findsOneWidget);
     expect(button().isSelected, isTrue);
 
     await player().setRepeat(RepeatMode.all);
     await tester.pump();
     expect(find.byTooltip('Repeat the whole queue'), findsOneWidget);
-    expect(icon(Icons.repeat_rounded), findsOneWidget);
-    expect(icon(Icons.shuffle_rounded), findsNothing);
+    expect(icon(AppIcons.repeat), findsOneWidget);
+    expect(icon(AppIcons.shuffle), findsNothing);
 
     await player().setRepeat(RepeatMode.allShuffled);
     await tester.pump();
     expect(find.byTooltip('Repeat the whole queue (shuffled)'), findsOneWidget);
-    expect(icon(Icons.repeat_rounded), findsOneWidget);
-    expect(icon(Icons.shuffle_rounded), findsOneWidget);
+    expect(icon(AppIcons.repeat), findsOneWidget);
+    expect(icon(AppIcons.shuffle), findsOneWidget);
 
     await player().setRepeatTimes(4);
     await tester.pump();
@@ -266,12 +267,12 @@ void main() {
     expect(
       rowIcon(
         'Stop after the last song',
-        find.byIcon(Icons.playlist_play_rounded),
+        find.byIcon(AppIcons.repeatStopAtEnd),
       ),
       findsOneWidget,
     );
     expect(
-      rowIcon('Repeat the current song', find.byIcon(Icons.repeat_one_rounded)),
+      rowIcon('Repeat the current song', find.byIcon(AppIcons.repeatOne)),
       findsOneWidget,
     );
     expect(
@@ -279,14 +280,36 @@ void main() {
       findsOneWidget,
     );
     expect(
-      rowIcon('Repeat the whole queue', find.byIcon(Icons.repeat_rounded)),
+      rowIcon('Repeat the whole queue', find.byIcon(AppIcons.repeat)),
       findsOneWidget,
     );
     final shuffled = rowIcon(
       'Repeat the whole queue (shuffled)',
-      find.byIcon(Icons.shuffle_rounded),
+      find.byIcon(AppIcons.shuffle),
     );
     expect(shuffled, findsOneWidget);
+  });
+
+  testWidgets('menu rows are spaced with menuRowSpaced', (tester) async {
+    await pump(tester);
+    await openMenu(tester);
+    for (final label in [
+      'Stop after the last song',
+      'Repeat the current song',
+      'Repeat 1 more time',
+      'Repeat the whole queue',
+      'Repeat the whole queue (shuffled)',
+    ]) {
+      final button = item(label);
+      final padding = tester.widget<Padding>(
+        find.ancestor(of: button, matching: find.byType(Padding)).first,
+      );
+      expect(
+        padding.padding,
+        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        reason: label,
+      );
+    }
   });
 
   testWidgets('cycling repeat skips the counted item', (tester) async {
