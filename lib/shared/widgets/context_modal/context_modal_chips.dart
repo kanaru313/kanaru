@@ -105,7 +105,14 @@ class _Chip extends StatelessWidget {
             heightFactor: 1,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 36),
-              child: Center(child: Text(label, maxLines: 1)),
+              child: Center(
+                widthFactor: 1,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ),
         ),

@@ -240,24 +240,41 @@ void main() {
     expect(out[1], isA<Divider>());
   });
 
-  testWidgets('chips wrap in the dialog with the wrap option', (tester) async {
-    ContextModalAction artists({required bool wrap}) => ContextModalAction(
-      id: 'artists',
-      icon: Icons.person,
-      label: 'Artists',
-      chips: ContextModalChips(
-        initiallyExpanded: true,
-        wrap: wrap,
-        items: [
-          for (var i = 0; i < 3; i++)
-            ContextModalChip(label: 'Artist number $i', onTap: (_) {}),
-        ],
-      ),
-    );
-    await pumpModalApp(tester, extra: [artists(wrap: true)]);
-    expect(find.byType(Wrap), findsOneWidget);
-    expect(_horizontalStrip, findsNothing);
-  });
+  testWidgets(
+    'chips wrap in the dialog with wrap option and fit together without stretching',
+    (tester) async {
+      ContextModalAction artists({required bool wrap}) => ContextModalAction(
+        id: 'artists',
+        icon: Icons.person,
+        label: 'Artists',
+        chips: ContextModalChips(
+          initiallyExpanded: true,
+          wrap: wrap,
+          items: [
+            ContextModalChip(label: 'Alpha', onTap: (_) {}),
+            ContextModalChip(label: 'Beta', onTap: (_) {}),
+          ],
+        ),
+      );
+      await pumpModalApp(tester, extra: [artists(wrap: true)]);
+      expect(find.byType(Wrap), findsOneWidget);
+      expect(_horizontalStrip, findsNothing);
+
+      final alpha = find.text('Alpha');
+      final beta = find.text('Beta');
+      expect(alpha, findsOneWidget);
+      expect(beta, findsOneWidget);
+
+      // Both chips fit on the same line instead of stretching to full width.
+      expect(tester.getTopLeft(alpha).dy, equals(tester.getTopLeft(beta).dy));
+      final alphaWidth = tester
+          .getSize(
+            find.ancestor(of: alpha, matching: find.byType(Material)).first,
+          )
+          .width;
+      expect(alphaWidth, lessThan(200));
+    },
+  );
 
   testWidgets('chips stay one strip in the dialog by default', (tester) async {
     await pumpModalApp(
