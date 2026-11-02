@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart' as picker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/lyrics_plugin_spec.dart' show PluginKind;
+import '../../core/lyrics/plugins/repo/installed_plugin_languages_provider.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 
 /// The search text of the store page. Reset when the page closes.
@@ -19,68 +20,53 @@ final pluginStoreSearchProvider =
       PluginStoreSearch.new,
     );
 
-/// The source chip chosen on the store page. Reset when the page closes.
-class PluginStoreFilter extends Notifier<StoreSourceFilter> {
-  @override
-  StoreSourceFilter build() => const StoreSourceFilter.all();
+/// The values picked in the store's filter groups. The argument is the kind
+/// the page starts on (null = all kinds), which also keeps the picks of two
+/// mounts apart. Reset when the page closes.
+class PluginStoreFiltersNotifier extends Notifier<PluginStoreFilters> {
+  PluginStoreFiltersNotifier(this.initialKind);
 
-  void set(StoreSourceFilter value) => state = value;
+  final PluginKind? initialKind;
+
+  @override
+  PluginStoreFilters build() => PluginStoreFilters.initial(initialKind);
+
+  void toggle(StoreFacet facet, String key) =>
+      state = state.toggled(facet, key);
+
+  void clear(StoreFacet facet) => state = state.cleared(facet);
+
+  void clearAll() => state = const PluginStoreFilters();
 }
 
-final pluginStoreFilterProvider =
-    NotifierProvider.autoDispose<PluginStoreFilter, StoreSourceFilter>(
-      PluginStoreFilter.new,
+final pluginStoreFiltersProvider = NotifierProvider.autoDispose
+    .family<PluginStoreFiltersNotifier, PluginStoreFilters, PluginKind?>(
+      PluginStoreFiltersNotifier.new,
     );
 
-/// The kind chip (Lyrics or Translate) the user picked on the store page;
-/// null until then, when the kind the mount starts on applies. Reset when the
-/// page closes.
-class PluginStoreKind extends Notifier<PluginKind?> {
-  PluginStoreKind(this.initialKind);
-
-  /// The kind of the mount this pick belongs to; it keeps the picks of two
-  /// mounts apart.
-  final PluginKind initialKind;
-
-  @override
-  PluginKind? build() => null;
-
-  void set(PluginKind value) => state = value;
-}
-
-final pluginStoreKindProvider = NotifierProvider.autoDispose
-    .family<PluginStoreKind, PluginKind?, PluginKind>(PluginStoreKind.new);
-
 /// The store list: records and repositories with the search text and the
-/// chosen chip applied. A chip whose repository was removed (or whose
-/// plugins from files are gone) counts as "all".
-///
-/// The argument is the kind the page starts on, used until a chip is picked.
+/// picked filters applied. The argument is the kind the page starts on.
 final pluginStoreViewProvider = Provider.autoDispose
-    .family<AsyncValue<PluginStoreView>, PluginKind>((ref, initialKind) {
+    .family<AsyncValue<PluginStoreView>, PluginKind?>((ref, initialKind) {
       final raw = ref.watch(pluginStoreRawInputProvider);
       final search = ref.watch(pluginStoreSearchProvider);
-      final chosen = ref.watch(pluginStoreFilterProvider);
-      final kind =
-          ref.watch(pluginStoreKindProvider(initialKind)) ?? initialKind;
-      return raw.whenData((input) {
-        final known =
-            chosen.isAll ||
-            (chosen.repoUrl != null &&
-                input.repos.any((r) => r.url == chosen.repoUrl)) ||
-            (chosen.isFromFile &&
-                input.records.any((r) => !r.isRemoved && r.repoUrl == null));
-        return buildPluginStoreView(
+      final filters = ref.watch(pluginStoreFiltersProvider(initialKind));
+      // Never blocks the list: rows are global until the files are read.
+      final installedLanguages = ref.watch(
+        installedPluginLanguagesProvider.select((v) => v.value ?? const {}),
+      );
+      return raw.whenData(
+        (input) => buildPluginStoreView(
           PluginStoreInput(
             records: input.records,
             repos: input.repos,
             search: search,
-            kind: kind,
-            filter: known ? chosen : const StoreSourceFilter.all(),
+            filters: filters,
+            installedLanguages: installedLanguages,
             available: input.available,
           ),
-        );
-      });
+        ),
+      );
     });
 
 /// Install ids being updated right now, for the spinners on the rows. The

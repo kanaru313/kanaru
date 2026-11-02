@@ -19,6 +19,7 @@ PluginCatalogEntry entry(
   String author = '',
   Uri? icon,
   PluginKind kind = PluginKind.lyrics,
+  List<String> languages = const [],
 }) => PluginCatalogEntry(
   kind: kind,
   slug: slug,
@@ -29,6 +30,7 @@ PluginCatalogEntry entry(
   path: Uri.parse('https://a.example.com/$slug.zip'),
   author: author,
   icon: icon,
+  languages: languages,
 );
 
 PluginRepo repo(
@@ -78,21 +80,24 @@ LyricsPluginRecord record(
   removedAt: removed ? 5 : null,
 );
 
+PluginStoreFilters only(StoreFacet facet, String key) =>
+    const PluginStoreFilters().toggled(facet, key);
+
 List<String> names(List<StoreRow> rows) => [for (final r in rows) r.name];
 
 PluginStoreView view(
   List<LyricsPluginRecord> records,
   List<PluginRepo> repos, {
   String search = '',
-  StoreSourceFilter filter = const StoreSourceFilter.all(),
-  PluginKind kind = PluginKind.lyrics,
+  PluginStoreFilters filters = const PluginStoreFilters(),
+  Map<String, List<String>> installedLanguages = const {},
 }) => buildPluginStoreView(
   PluginStoreInput(
     records: records,
     repos: repos,
     search: search,
-    filter: filter,
-    kind: kind,
+    filters: filters,
+    installedLanguages: installedLanguages,
   ),
 );
 
@@ -124,7 +129,7 @@ void main() {
     expect(v.notInstalled.last.repoName, 'Beta Repo');
     expect(v.needsNewerApp, 1);
     expect(v.hasFileSource, isTrue);
-    expect(v.showSourceChips, isTrue);
+    expect(v.hasFilters, isTrue);
     expect(v.isEmpty, isFalse);
   });
 
@@ -221,30 +226,50 @@ void main() {
     expect(view([], repos, search: 'future').needsNewerApp, 1);
     expect(view([], repos, search: 'one').needsNewerApp, 0);
     expect(
-      view([], repos, filter: const StoreSourceFilter.repo(urlB)).needsNewerApp,
+      view([], repos, filters: only(StoreFacet.source, urlB)).needsNewerApp,
       0,
+    );
+    expect(
+      view([], repos, filters: only(StoreFacet.source, urlA)).needsNewerApp,
+      1,
     );
   });
 
-  test('source filter: one repo, from file, all', () {
+  test('source filter: repos and from file, OR within the group', () {
     final records = [
       record('p1', 'Two', repoUrl: urlA, slug: 'two'),
       record('p3', 'Mine'),
       record('p4', 'Gone', repoUrl: 'https://gone.example.com/x', slug: 'g'),
     ];
-    final a = view(records, repos, filter: const StoreSourceFilter.repo(urlA));
+    final a = view(records, repos, filters: only(StoreFacet.source, urlA));
     expect(names(a.installed), ['Two']);
     expect(names(a.notInstalled), ['One', 'Three']);
-    final b = view(records, repos, filter: const StoreSourceFilter.repo(urlB));
+    final b = view(records, repos, filters: only(StoreFacet.source, urlB));
     expect(b.installed, isEmpty);
     expect(names(b.notInstalled), ['One']);
     final file = view(
       records,
       repos,
-      filter: const StoreSourceFilter.fromFile(),
+      filters: only(StoreFacet.source, storeSourceFromFile),
     );
     expect(names(file.installed), ['Mine']);
     expect(file.notInstalled, isEmpty);
+    final both = view(
+      records,
+      repos,
+      filters: only(
+        StoreFacet.source,
+        urlB,
+      ).toggled(StoreFacet.source, storeSourceFromFile),
+    );
+    expect(names(both.installed), ['Mine']);
+    expect(names(both.notInstalled), ['One']);
+    final gone = view(
+      records,
+      repos,
+      filters: only(StoreFacet.source, 'https://gone.example.com/x'),
+    );
+    expect(names(gone.installed), ['Gone']);
     expect(names(view(records, repos).installed), ['Two', 'Mine', 'Gone']);
   });
 
@@ -260,7 +285,7 @@ void main() {
     expect(v.failingRepos.single.error, error);
     expect(names(v.notInstalled), ['one', 'two']);
     expect(
-      view([], r, filter: const StoreSourceFilter.repo(urlB)).failingRepos,
+      view([], r, filters: only(StoreFacet.source, urlB)).failingRepos,
       hasLength(1),
       reason: 'the banner does not depend on the filter',
     );
@@ -270,41 +295,16 @@ void main() {
     const never = PluginRepo(url: urlA, name: 'N', author: '', addedAt: 1);
     final v = view([], [never]);
     expect(v.isEmpty, isTrue);
-    expect(v.showSourceChips, isFalse);
+    expect(v.hasFilters, isFalse);
   });
 
-  test('catalog icon and chips', () {
+  test('catalog icon', () {
     final icon = Uri.parse('https://a.example.com/i.png');
     final v = view([], [
       repo(urlA, 'A', [entry('one', icon: icon)]),
     ]);
     expect(v.notInstalled.single.catalogIcon, icon);
-    expect(v.showSourceChips, isFalse);
     expect(v.sources.single.url, urlA);
-  });
-
-  test('source filters are values', () {
-    expect(const StoreSourceFilter.all(), const StoreSourceFilter.all());
-    expect(
-      const StoreSourceFilter.repo(urlA),
-      const StoreSourceFilter.repo(urlA),
-    );
-    expect(
-      const StoreSourceFilter.repo(urlA).hashCode,
-      const StoreSourceFilter.repo(urlA).hashCode,
-    );
-    expect(
-      const StoreSourceFilter.repo(urlA) == const StoreSourceFilter.repo(urlB),
-      isFalse,
-    );
-    expect(
-      const StoreSourceFilter.fromFile() == const StoreSourceFilter.all(),
-      isFalse,
-    );
-    expect(
-      const StoreSourceFilter.fromFile(),
-      const StoreSourceFilter.fromFile(),
-    );
   });
 
   test('an unavailable feature is told apart from an empty store', () {
@@ -342,28 +342,129 @@ void main() {
       record('plugin-odd', 'Odd', kind: null),
     ];
 
-    test('lyrics lists only lyrics plugins in every section', () {
+    test('no filter lists every known kind in every section', () {
       final v = view(records, mixed);
-      expect(names(v.updates), ['LyrUp']);
-      expect(names(v.installed), ['LyrFile']);
-      expect(names(v.notInstalled), ['LyrNew']);
+      expect(names(v.updates), ['LyrUp', 'TrUp']);
+      expect(names(v.installed), ['LyrFile', 'TrFile']);
+      expect(names(v.notInstalled), ['LyrNew', 'TrNew']);
+      expect(v.showKindTag, isTrue);
     });
 
-    test('translate lists only translate plugins in every section', () {
-      final v = view(records, mixed, kind: PluginKind.translate);
-      expect(names(v.updates), ['TrUp']);
-      expect(names(v.installed), ['TrFile']);
-      expect(names(v.notInstalled), ['TrNew']);
-    });
-
-    test('a record of an unknown kind shows under neither', () {
+    test('one kind lists only that kind in every section', () {
       for (final kind in PluginKind.values) {
-        final v = view(records, mixed, kind: kind);
-        expect([
-          ...names(v.installed),
-          ...names(v.updates),
-        ], isNot(contains('Odd')));
+        final v = view(
+          records,
+          mixed,
+          filters: PluginStoreFilters.initial(kind),
+        );
+        for (final row in [...v.updates, ...v.installed, ...v.notInstalled]) {
+          expect(row.kind, kind);
+        }
+        expect(v.shownCount, 3);
+        expect(v.showKindTag, isFalse);
       }
+      final tr = view(
+        records,
+        mixed,
+        filters: PluginStoreFilters.initial(PluginKind.translate),
+      );
+      expect(names(tr.updates), ['TrUp']);
+      expect(names(tr.installed), ['TrFile']);
+      expect(names(tr.notInstalled), ['TrNew']);
+    });
+
+    test('a record of an unknown kind is never listed', () {
+      final all = view(records, mixed);
+      expect([
+        ...names(all.installed),
+        ...names(all.updates),
+      ], isNot(contains('Odd')));
+      expect(all.shownCount, 6);
+    });
+  });
+
+  group('filters and languages', () {
+    final catalog = [
+      repo(urlA, 'Alpha Repo', [
+        entry('vi', name: 'Viet', author: 'Ann', languages: ['vie']),
+        entry('ja', name: 'Jap', author: 'ann', languages: ['jpn']),
+        entry('any', name: 'Any', author: 'Bob'),
+      ]),
+    ];
+
+    test('language filter keeps global plugins', () {
+      final v = view([], catalog, filters: only(StoreFacet.language, 'vie'));
+      expect(names(v.notInstalled), ['Viet', 'Any']);
+    });
+
+    test('author filter folds case and OR-s values', () {
+      final v = view([], catalog, filters: only(StoreFacet.author, 'ann'));
+      expect(names(v.notInstalled), ['Viet', 'Jap']);
+    });
+
+    test('groups are AND-ed', () {
+      final v = view(
+        [],
+        catalog,
+        filters: only(
+          StoreFacet.author,
+          'ann',
+        ).toggled(StoreFacet.language, 'jpn'),
+      );
+      expect(names(v.notInstalled), ['Jap']);
+    });
+
+    test('languages: entry wins, else installed map, else global', () {
+      final records = [
+        record('p1', 'Viet', repoUrl: urlA, slug: 'vi'),
+        record('p2', 'Mine'),
+        record('p3', 'Other'),
+      ];
+      final v = view(
+        records,
+        catalog,
+        installedLanguages: {
+          'p1': ['jpn'],
+          'p2': ['kor'],
+        },
+      );
+      final byName = {
+        for (final r in [...v.installed, ...v.notInstalled]) r.name: r,
+      };
+      expect(byName['Viet']!.languages, ['vie']);
+      expect(byName['Mine']!.languages, ['kor']);
+      expect(byName['Other']!.languages, isEmpty);
+    });
+
+    test('facets are built from the listed rows, needs-newer excluded', () {
+      final v = view([], [
+        repo(urlA, 'A', [
+          entry('x', author: 'Zed'),
+          entry('y', author: 'Yan'),
+          entry('z', author: 'Qua', apiVersion: 2),
+        ]),
+      ]);
+      final author = v.facets.firstWhere((g) => g.facet == StoreFacet.author);
+      expect(author.values.map((e) => e.key), ['yan', 'zed']);
+      expect(v.needsNewerApp, 1);
+    });
+
+    test('needs-newer entries and unknown kinds add no facet values', () {
+      final v = view(
+        [record('p9', 'Odd', kind: null, author: 'Nobody')],
+        [
+          repo(urlA, 'A', [
+            entry('x', author: 'Zed', languages: ['vie']),
+            entry('f', author: 'Future', apiVersion: 2, languages: ['jpn']),
+          ]),
+        ],
+      );
+      final keys = {
+        for (final g in v.facets) g.facet: g.values.map((e) => e.key).toList(),
+      };
+      expect(keys[StoreFacet.author], ['zed']);
+      expect(keys[StoreFacet.language], ['vie']);
+      expect(keys[StoreFacet.source], [urlA]);
     });
   });
 }

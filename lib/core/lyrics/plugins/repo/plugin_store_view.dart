@@ -3,9 +3,13 @@ import '../lyrics_plugin_record.dart';
 import '../package/plugin_manifest_parser.dart' show supportedPluginApiVersion;
 import 'plugin_catalog.dart';
 import 'plugin_repo.dart';
+import 'plugin_store_facets.dart';
+import 'plugin_store_filters.dart';
 import 'plugin_store_rows.dart';
 import 'plugin_update_check.dart';
 
+export 'plugin_store_facets.dart';
+export 'plugin_store_filters.dart';
 export 'plugin_store_rows.dart';
 
 /// What the store view is computed from.
@@ -14,8 +18,8 @@ class PluginStoreInput {
     required this.records,
     required this.repos,
     this.search = '',
-    this.filter = const StoreSourceFilter.all(),
-    this.kind = PluginKind.lyrics,
+    this.filters = const PluginStoreFilters(),
+    this.installedLanguages = const {},
     this.available = true,
   });
 
@@ -28,11 +32,14 @@ class PluginStoreInput {
   final List<LyricsPluginRecord> records;
   final List<PluginRepo> repos;
   final String search;
-  final StoreSourceFilter filter;
 
-  /// Only plugins of this kind are listed. A record of a kind this build does
-  /// not know is listed under neither.
-  final PluginKind kind;
+  /// The picked filter values; a record of a kind this build does not know is
+  /// never listed.
+  final PluginStoreFilters filters;
+
+  /// Language keys read from installed packages, by install id. Used for a
+  /// plugin whose catalog entry declares none (or has no entry).
+  final Map<String, List<String>> installedLanguages;
 }
 
 /// The store list, ready to show. Empty sections are empty lists; the UI
@@ -46,6 +53,8 @@ class PluginStoreView {
     required this.failingRepos,
     required this.sources,
     required this.hasFileSource,
+    required this.facets,
+    required this.filters,
     this.available = true,
   });
 
@@ -71,12 +80,24 @@ class PluginStoreView {
   /// still listed from the last good catalog.
   final List<FailingRepo> failingRepos;
 
-  /// The added repositories, for the source chips.
+  /// The added repositories, in the order the source filter lists them.
   final List<PluginRepo> sources;
   final bool hasFileSource;
 
-  /// The chips are worth showing from two sources on.
-  bool get showSourceChips => sources.length + (hasFileSource ? 1 : 0) >= 2;
+  /// The filter groups with their values and counts, in modal order.
+  final List<StoreFacetGroup> facets;
+
+  /// The picked filter values behind this view.
+  final PluginStoreFilters filters;
+
+  /// Rows listed, in all sections.
+  int get shownCount => updates.length + installed.length + notInstalled.length;
+
+  /// Rows show their kind unless exactly one kind is picked.
+  bool get showKindTag => filters.selected(StoreFacet.kind).length != 1;
+
+  /// At least one group is worth showing, so the filter button is too.
+  bool get hasFilters => facets.any((g) => g.visible);
 
   bool get isEmpty =>
       updates.isEmpty && installed.isEmpty && notInstalled.isEmpty;
@@ -87,42 +108,40 @@ PluginStoreView buildPluginStoreView(PluginStoreInput input) {
   final repos = {for (final r in input.repos) r.url: r};
   final live = [
     for (final r in input.records)
-      if (!r.isRemoved) r,
+      if (!r.isRemoved && r.kind != null) r,
   ];
   final installedKeys = {
-    for (final r in live)
-      if (r.repoUrl != null) _key(r.repoUrl!, r.repoSlug!),
+    for (final r in input.records)
+      if (!r.isRemoved && r.repoUrl != null) _key(r.repoUrl!, r.repoSlug!),
   };
   final query = input.search.trim().toLowerCase();
 
   final updates = <StoreRow>[];
   final installed = <StoreRow>[];
   for (final record in live) {
-    if (record.kind != input.kind) continue;
     final update = availableUpdate(record, repos);
     final repo = repos[record.repoUrl];
+    final entry = update ?? repo?.entry(record.repoSlug ?? '');
     final row = StoreRow(
       name: record.name,
       author: record.author ?? '',
       hosts: record.hosts,
       record: record,
-      entry: update ?? repo?.entry(record.repoSlug ?? ''),
+      entry: entry,
       repoUrl: record.repoUrl,
       repoName:
           repo?.name ?? (record.repoUrl == null ? null : record.sourceName),
+      languages: (entry?.languages.isNotEmpty ?? false)
+          ? entry!.languages
+          : input.installedLanguages[record.installId] ?? const [],
     );
-    if (!_inFilter(input.filter, record.repoUrl) || !_matches(row, query)) {
-      continue;
-    }
     (update != null ? updates : installed).add(row);
   }
 
   final notInstalled = <StoreRow>[];
-  var needsNewerApp = 0;
+  final needsNewer = <StoreRow>[];
   for (final repo in input.repos) {
-    if (!_inFilter(input.filter, repo.url)) continue;
     for (final entry in repo.catalog?.entries ?? const <PluginCatalogEntry>[]) {
-      if (entry.kind != input.kind) continue;
       if (installedKeys.contains(_key(repo.url, entry.slug))) continue;
       final row = StoreRow(
         name: entry.name,
@@ -131,39 +150,41 @@ PluginStoreView buildPluginStoreView(PluginStoreInput input) {
         entry: entry,
         repoUrl: repo.url,
         repoName: repo.name,
+        languages: entry.languages,
       );
-      if (!_matches(row, query)) continue;
-      if (entry.apiVersion > supportedPluginApiVersion) {
-        needsNewerApp++;
-      } else {
-        notInstalled.add(row);
-      }
+      (entry.apiVersion > supportedPluginApiVersion ? needsNewer : notInstalled)
+          .add(row);
     }
   }
 
+  bool searched(StoreRow row) => _matches(row, query);
+  bool shown(StoreRow row) =>
+      searched(row) && input.filters.matches(storeRowFacetKeys(row));
+  final facets = computeStoreFacets(
+    [...updates, ...installed, ...notInstalled],
+    input.filters,
+    searched,
+    repoOrder: [for (final r in input.repos) r.url],
+  );
+
   return PluginStoreView(
-    updates: List.unmodifiable(updates),
-    installed: List.unmodifiable(installed),
-    notInstalled: List.unmodifiable(notInstalled),
-    needsNewerApp: needsNewerApp,
+    updates: List.unmodifiable(updates.where(shown)),
+    installed: List.unmodifiable(installed.where(shown)),
+    notInstalled: List.unmodifiable(notInstalled.where(shown)),
+    needsNewerApp: needsNewer.where(shown).length,
     failingRepos: [
       for (final repo in input.repos)
         if (repo.error != null) FailingRepo(repo.url, repo.name, repo.error!),
     ],
     sources: List.unmodifiable(input.repos),
     hasFileSource: live.any((r) => r.sourceKind == LyricsPluginSourceKind.file),
+    facets: facets,
+    filters: input.filters,
     available: input.available,
   );
 }
 
 String _key(String url, String slug) => '$url\n$slug';
-
-/// [repoUrl] is the plugin's repository, null for a plugin from a file.
-bool _inFilter(StoreSourceFilter filter, String? repoUrl) {
-  if (filter.isAll) return true;
-  if (filter.isFromFile) return repoUrl == null;
-  return repoUrl == filter.repoUrl;
-}
 
 /// Name, author, repository name and host, case-insensitive.
 bool _matches(StoreRow row, String query) {

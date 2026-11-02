@@ -326,11 +326,11 @@ void main() {
       ],
     );
 
-    testWidgets('the lyrics mounts start on Lyrics', (tester) async {
+    testWidgets('the lyrics mounts start on all kinds', (tester) async {
       for (final base in [lyricsStoreRoute, lyricsSourcesStoreRoute]) {
         await pumpMixed(tester, base);
         expect(find.text('LyrNew'), findsOneWidget, reason: base);
-        expect(find.text('TrNew'), findsNothing, reason: base);
+        expect(find.text('TrNew'), findsOneWidget, reason: base);
       }
     });
 
@@ -396,26 +396,6 @@ void main() {
       await tester.tap(find.text(en.lyricsStoreItemOpenInstalled));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, translationPluginRoute(idB));
-    });
-
-    testWidgets('the chip picked in one mount does not leak into another', (
-      tester,
-    ) async {
-      final router = await pumpMixed(tester, lyricsSourcesStoreRoute);
-      await tester.tap(find.text(en.lyricsStoreKindTranslate));
-      await tester.pumpAndSettle();
-      expect(find.text('TrNew'), findsOneWidget);
-
-      router.go(translationPluginsRoute);
-      await tester.pumpAndSettle();
-      expect(find.text('TrNew'), findsOneWidget);
-      expect(find.text('LyrNew'), findsNothing);
-
-      await tester.tap(find.text(en.lyricsStoreKindLyrics));
-      await tester.pumpAndSettle();
-      router.go(lyricsSourcesStoreRoute);
-      await tester.pumpAndSettle();
-      expect(find.text('LyrNew'), findsOneWidget);
     });
 
     testWidgets('an item opened from the translation mount stays in it', (

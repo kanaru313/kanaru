@@ -13,7 +13,7 @@ class _Taps {
   final items = <(String, String)>[];
   int repositories = 0;
 
-  Widget page({PluginKind initialKind = PluginKind.lyrics}) => PluginStorePage(
+  Widget page({PluginKind? initialKind}) => PluginStorePage(
     initialKind: initialKind,
     onOpenInstalled: (id, kind) {
       installed.add(id);
@@ -79,7 +79,7 @@ void main() {
     expect(find.text('1 plugin needs a newer Kanaru'), findsOneWidget);
     expect(find.text('Plain'), findsOneWidget);
     // The repository name, or "From file", is the subtitle.
-    expect(find.textContaining('Kho A'), findsNWidgets(4)); // 3 rows + chip
+    expect(find.textContaining('Kho A'), findsNWidgets(3));
     // The update row adds the version change after the repository name.
     expect(find.text('Kho A · v3 → v5'), findsOneWidget);
     expect(find.text('From file'), findsWidgets);
@@ -105,32 +105,6 @@ void main() {
     expect(find.textContaining('Not installed ('), findsNothing);
     expect(find.textContaining('newer Kanaru'), findsNothing);
     expect(find.text('Installed (1)'), findsOneWidget);
-  });
-
-  testWidgets('source chips show only with two or more sources', (
-    tester,
-  ) async {
-    await pumpStore(tester, _Taps().page(), repos: [repo], records: records);
-    // One repository plus a file plugin: two sources, and the two kind chips.
-    expect(find.byType(ChoiceChip), findsNWidgets(5));
-  });
-
-  testWidgets('no source chips with a single source', (tester) async {
-    await pumpStore(tester, _Taps().page(), repos: [repo]);
-    expect(find.byType(ChoiceChip), findsNWidgets(2));
-  });
-
-  testWidgets('a chip narrows the list to its source', (tester) async {
-    final other = repoOf(repoB, 'Kho B', entries: [entryOf('b1', name: 'Bee')]);
-    await pumpStore(tester, _Taps().page(), repos: [repo, other]);
-    expect(find.text('Bee'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Kho A'));
-    await tester.pumpAndSettle();
-    expect(find.text('Bee'), findsNothing);
-    expect(find.text('Plain'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
-    await tester.pumpAndSettle();
-    expect(find.text('Bee'), findsOneWidget);
   });
 
   testWidgets('search narrows the list', (tester) async {
@@ -305,7 +279,7 @@ void main() {
     });
   });
 
-  group('kind chips', () {
+  group('initial kind', () {
     final mixedRepo = repoOf(
       repoA,
       'Kho A',
@@ -319,52 +293,29 @@ void main() {
       recordOf('plugin-tr-file', name: 'TrFile', kind: PluginKind.translate),
     ];
 
-    testWidgets('start on the kind of the mount and switch on tap', (
-      tester,
-    ) async {
+    testWidgets('no initial kind lists every kind', (tester) async {
+      await pumpStore(
+        tester,
+        _Taps().page(),
+        repos: [mixedRepo],
+        records: mixedRecords,
+      );
+      for (final name in ['LyrNew', 'TrNew', 'LyrFile', 'TrFile']) {
+        expect(find.text(name), findsOneWidget, reason: name);
+      }
+    });
+
+    testWidgets('an initial kind preselects it', (tester) async {
       await pumpStore(
         tester,
         _Taps().page(initialKind: PluginKind.translate),
         repos: [mixedRepo],
         records: mixedRecords,
       );
-      expect(find.text('Lyrics'), findsOneWidget);
-      expect(find.text('Translate'), findsOneWidget);
       expect(find.text('TrNew'), findsOneWidget);
       expect(find.text('TrFile'), findsOneWidget);
       expect(find.text('LyrNew'), findsNothing);
       expect(find.text('LyrFile'), findsNothing);
-
-      await tester.tap(find.text('Lyrics'));
-      await tester.pumpAndSettle();
-      expect(find.text('LyrNew'), findsOneWidget);
-      expect(find.text('LyrFile'), findsOneWidget);
-      expect(find.text('TrNew'), findsNothing);
-    });
-
-    testWidgets('lyrics is the default kind', (tester) async {
-      await pumpStore(
-        tester,
-        _Taps().page(),
-        repos: [mixedRepo],
-        records: mixedRecords,
-      );
-      expect(find.text('LyrNew'), findsOneWidget);
-      expect(find.text('TrNew'), findsNothing);
-    });
-
-    testWidgets('the chips are Vietnamese in the Vietnamese locale', (
-      tester,
-    ) async {
-      await pumpStore(
-        tester,
-        _Taps().page(),
-        locale: const Locale('vi'),
-        repos: [mixedRepo],
-        records: mixedRecords,
-      );
-      expect(find.text(vi.lyricsStoreKindLyrics), findsOneWidget);
-      expect(find.text(vi.lyricsStoreKindTranslate), findsOneWidget);
     });
   });
 }
