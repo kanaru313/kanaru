@@ -60,9 +60,9 @@ class _QueueHistorySnapshotScreenState
     final id = parseQueueHistoryRouteId(widget.routeId);
     final Widget body;
     if (ref.watch(libraryDatabaseProvider) == null) {
-      body = const PlaylistsUnavailable();
+      body = PlaylistsUnavailable(title: context.l10n.queueHistoryTitle);
     } else if (id == null) {
-      body = const PlaylistNotFound();
+      body = const PlaylistNotFound(savedQueue: true);
     } else {
       body = _body(id);
     }
@@ -82,11 +82,15 @@ class _QueueHistorySnapshotScreenState
     });
     final savedAt = ref.watch(queueSnapshotSavedAtProvider(id));
     final load = ref.watch(playlistPageHeadProvider(id));
-    if (savedAt.hasError || load.hasError) return const PlaylistsUnavailable();
+    if (savedAt.hasError || load.hasError) {
+      return PlaylistsUnavailable(title: context.l10n.queueHistoryTitle);
+    }
     if (!savedAt.hasValue || !load.hasValue) return const LibraryLoading();
     final when = savedAt.value;
     final head = load.value!.head;
-    if (when == null || head == null) return const PlaylistNotFound();
+    if (when == null || head == null) {
+      return const PlaylistNotFound(savedQueue: true);
+    }
     // Play, queue, export and editing the entries as on a playlist page;
     // the playlist modal is not offered (see the class comment).
     return PlaylistPageBody(

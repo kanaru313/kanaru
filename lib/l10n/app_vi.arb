@@ -1073,6 +1073,11 @@
   "queueHistoryDeleteMessage": "Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.",
   "queueHistoryDeleted": "Đã xoá hàng đợi",
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
+  "queueHistoryEntriesEmptyTitle": "Hàng đợi này trống",
+  "queueHistoryEntriesEmptyMessage": "Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở trang Các hàng đợi.",
+  "queueHistorySaveFailed": "Không lưu được hàng đợi. Xem log để biết chi tiết.",
+  "queueHistoryNotFound": "Không tìm thấy hàng đợi",
+  "queueHistoryNotFoundMessage": "Có thể hàng đợi đã bị xoá.",
   "lyricsNone": "Bài này chưa có lời",
   "@lyricsNone": {
     "description": "Shown in the lyrics slot of Now Playing when the song has no lyrics"

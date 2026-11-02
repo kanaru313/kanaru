@@ -1830,6 +1830,26 @@
   "@queueHistoryNothingToPlay": {
     "description": "Snackbar when a saved queue has no song that can play"
   },
+  "queueHistoryEntriesEmptyTitle": "This queue is empty",
+  "@queueHistoryEntriesEmptyTitle": {
+    "description": "Empty state title of a saved queue whose songs were all removed"
+  },
+  "queueHistoryEntriesEmptyMessage": "All its songs were removed. You can delete it from Queues.",
+  "@queueHistoryEntriesEmptyMessage": {
+    "description": "Empty state message of a saved queue whose songs were all removed"
+  },
+  "queueHistorySaveFailed": "Couldn't save the queue. See the log for details.",
+  "@queueHistorySaveFailed": {
+    "description": "Snackbar when moving or removing a song of a saved queue fails"
+  },
+  "queueHistoryNotFound": "Queue not found",
+  "@queueHistoryNotFound": {
+    "description": "Title when a saved queue route id matches no saved queue"
+  },
+  "queueHistoryNotFoundMessage": "It may have been deleted.",
+  "@queueHistoryNotFoundMessage": {
+    "description": "Message under the saved queue not-found title"
+  },
   "lyricsNone": "No lyrics for this song",
   "@lyricsNone": {
     "description": "Shown in the lyrics slot of Now Playing when the song has no lyrics"

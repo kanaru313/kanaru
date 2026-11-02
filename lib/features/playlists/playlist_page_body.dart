@@ -89,13 +89,24 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
       head: widget.head,
       headSeq: widget.headSeq,
       loadRows: _loadRows,
-      onMove: (entryId, to) =>
-          movePlaylistEntryOrReport(ref, context, playlist.id, entryId, to),
+      onMove: (entryId, to) => movePlaylistEntryOrReport(
+        ref,
+        context,
+        playlist.id,
+        entryId,
+        to,
+        savedQueue: widget.savedQueue,
+      ),
       // Favorites unlike through the row heart, not a remove button.
       onRemove: playlist.isFavorites
           ? null
-          : (entryId) =>
-                removePlaylistEntryOrReport(ref, context, playlist.id, entryId),
+          : (entryId) => removePlaylistEntryOrReport(
+              ref,
+              context,
+              playlist.id,
+              entryId,
+              savedQueue: widget.savedQueue,
+            ),
       onSettled: _settled,
       onPlayFrom: (entryId, indexHint) => playPlaylistFrom(
         ref,

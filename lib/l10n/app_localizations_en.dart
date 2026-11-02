@@ -2325,6 +2325,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'None of these songs are in your library';
 
   @override
+  String get queueHistoryEntriesEmptyTitle => 'This queue is empty';
+
+  @override
+  String get queueHistoryEntriesEmptyMessage =>
+      'All its songs were removed. You can delete it from Queues.';
+
+  @override
+  String get queueHistorySaveFailed =>
+      'Couldn\'t save the queue. See the log for details.';
+
+  @override
+  String get queueHistoryNotFound => 'Queue not found';
+
+  @override
+  String get queueHistoryNotFoundMessage => 'It may have been deleted.';
+
+  @override
   String get lyricsNone => 'No lyrics for this song';
 
   @override

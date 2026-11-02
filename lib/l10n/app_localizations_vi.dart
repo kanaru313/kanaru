@@ -2171,6 +2171,23 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không bài nào trong đây có trong thư viện';
 
   @override
+  String get queueHistoryEntriesEmptyTitle => 'Hàng đợi này trống';
+
+  @override
+  String get queueHistoryEntriesEmptyMessage =>
+      'Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở trang Các hàng đợi.';
+
+  @override
+  String get queueHistorySaveFailed =>
+      'Không lưu được hàng đợi. Xem log để biết chi tiết.';
+
+  @override
+  String get queueHistoryNotFound => 'Không tìm thấy hàng đợi';
+
+  @override
+  String get queueHistoryNotFoundMessage => 'Có thể hàng đợi đã bị xoá.';
+
+  @override
   String get lyricsNone => 'Bài này chưa có lời';
 
   @override
