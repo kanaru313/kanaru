@@ -102,16 +102,18 @@ List<Widget> lyricsTranslationMenuItems(
     required T groupValue,
     required VoidCallback? onChanged,
     required String label,
-  }) => RadioMenuButton<T>(
-    style: menuRowStyle(
-      background: value == groupValue ? menuRowSelectedTint(scheme) : null,
-    ),
-    value: value,
-    groupValue: groupValue,
-    onChanged: onChanged == null ? null : (_) => onChanged(),
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: _optionMinWidth),
-      child: Text(label),
+  }) => menuRowSpaced(
+    RadioMenuButton<T>(
+      style: menuRowStyle(
+        background: value == groupValue ? menuRowSelectedTint(scheme) : null,
+      ),
+      value: value,
+      groupValue: groupValue,
+      onChanged: onChanged == null ? null : (_) => onChanged(),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: _optionMinWidth),
+        child: Text(label),
+      ),
     ),
   );
 
@@ -211,11 +213,13 @@ List<Widget> lyricsTranslationMenuItems(
       serviceName,
     ),
     const Divider(height: 9),
-    MenuItemButton(
-      style: menuRowStyle(),
-      leadingIcon: const Icon(AppIcons.settingsOutlined),
-      onPressed: openSettings,
-      child: Text(l10n.lyricsTranslationMenuSettings),
+    menuRowSpaced(
+      MenuItemButton(
+        style: menuRowStyle(),
+        leadingIcon: const Icon(AppIcons.settingsOutlined),
+        onPressed: openSettings,
+        child: Text(l10n.lyricsTranslationMenuSettings),
+      ),
     ),
   ];
 }

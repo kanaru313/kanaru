@@ -560,4 +560,34 @@ void main() {
       expect(find.text(service), findsOneWidget);
     });
   }
+
+  testWidgets(
+    'settings button and radio options are spaced with menuRowSpaced',
+    (tester) async {
+      await pump(tester, TranslationOff(fakeTranslationInfo()));
+      final settingsBtn = find.widgetWithText(
+        MenuItemButton,
+        'Translation settings',
+      );
+      expect(settingsBtn, findsOneWidget);
+      final settingsPadding = tester.widget<Padding>(
+        find.ancestor(of: settingsBtn, matching: find.byType(Padding)).first,
+      );
+      expect(
+        settingsPadding.padding,
+        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      );
+
+      await openServiceSubmenu(tester);
+      final googleRadio = serviceRadio('Google');
+      expect(googleRadio, findsOneWidget);
+      final radioPadding = tester.widget<Padding>(
+        find.ancestor(of: googleRadio, matching: find.byType(Padding)).first,
+      );
+      expect(
+        radioPadding.padding,
+        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      );
+    },
+  );
 }
