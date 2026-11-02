@@ -12,7 +12,7 @@ import '../../../core/player/local_path_of.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import 'lyrics_action_runner.dart';
-import 'lyrics_provider_name.dart';
+import '../../../shared/lyrics_picker/lyrics_source_name_text.dart';
 import 'lyrics_error_banner.dart';
 import 'lyrics_empty_state.dart';
 import 'lyrics_pulse_host.dart';

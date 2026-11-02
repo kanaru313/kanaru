@@ -11,7 +11,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/format_duration.dart';
 import '../../../../shared/icons/app_icons.dart';
 import '../lyrics_action_runner.dart';
-import '../lyrics_provider_name.dart';
+import '../../../../shared/lyrics_picker/lyrics_source_name_text.dart';
 import 'lyrics_source_labels.dart';
 import 'lyrics_source_menu_item.dart';
 
