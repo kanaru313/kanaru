@@ -4,6 +4,7 @@ import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_fetch_exception.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 
 import 'store_test_harness.dart';
 
@@ -105,6 +106,22 @@ void main() {
     expect(find.textContaining('Not installed ('), findsNothing);
     expect(find.textContaining('newer Kanaru'), findsNothing);
     expect(find.text('Installed (1)'), findsOneWidget);
+  });
+
+  testWidgets('the filter button sits left of the menu', (tester) async {
+    final both = repoOf(
+      repoA,
+      'Kho A',
+      entries: [
+        entryOf('x', name: 'X'),
+        entryOf('y', name: 'Y', kind: PluginKind.translate),
+      ],
+    );
+    await pumpStore(tester, _Taps().page(), repos: [both]);
+    final filter = tester.getCenter(find.byTooltip('Filter'));
+    final menu = tester.getCenter(find.byIcon(AppIcons.more));
+    expect(filter.dx, lessThan(menu.dx));
+    expect(filter.dy, menu.dy);
   });
 
   testWidgets('search narrows the list', (tester) async {

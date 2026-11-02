@@ -3752,19 +3752,81 @@
   },
   "lyricsStoreChipAll": "All",
   "@lyricsStoreChipAll": {
-    "description": "Source chip that shows every plugin"
+    "description": "'All' chip of a filter group; picks nothing, so every value shows"
   },
   "lyricsStoreKindLyrics": "Lyrics",
   "@lyricsStoreKindLyrics": {
-    "description": "Store kind chip that lists lyrics plugins"
+    "description": "Lyrics plugin kind: Type filter value and tag on store rows"
   },
   "lyricsStoreKindTranslate": "Translate",
   "@lyricsStoreKindTranslate": {
-    "description": "Store kind chip that lists translation plugins"
+    "description": "Translation plugin kind: Type filter value and tag on store rows"
   },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {
-    "description": "Source chip and row subtitle of a plugin installed from a zip file"
+    "description": "Source filter value and row subtitle of a plugin installed from a zip file"
+  },
+  "lyricsStoreFilterTooltip": "Filter",
+  "@lyricsStoreFilterTooltip": {
+    "description": "Tooltip of the filter button in the plugin store app bar"
+  },
+  "lyricsStoreFilterActiveLabel": "Filter, {count} active",
+  "@lyricsStoreFilterActiveLabel": {
+    "description": "Screen reader label of the filter button while filter groups have a pick",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreFilterTitle": "Filters",
+  "@lyricsStoreFilterTitle": {
+    "description": "Title of the plugin store filter modal"
+  },
+  "lyricsStoreFilterGroupType": "Type",
+  "@lyricsStoreFilterGroupType": {
+    "description": "Filter group of the plugin kind (lyrics, translate)"
+  },
+  "lyricsStoreFilterGroupLanguage": "Language",
+  "@lyricsStoreFilterGroupLanguage": {
+    "description": "Filter group of the languages a plugin serves"
+  },
+  "lyricsStoreFilterGroupAuthor": "Author",
+  "@lyricsStoreFilterGroupAuthor": {
+    "description": "Filter group of the plugin authors"
+  },
+  "lyricsStoreFilterGroupSource": "Source",
+  "@lyricsStoreFilterGroupSource": {
+    "description": "Filter group of where a plugin comes from (repositories, file)"
+  },
+  "lyricsStoreFilterAuthorSearch": "Search authors",
+  "@lyricsStoreFilterAuthorSearch": {
+    "description": "Hint of the author search field in the filter modal"
+  },
+  "lyricsStoreFilterShowing": "{count, plural, =1{Showing 1 plugin} other{Showing {count} plugins}}",
+  "@lyricsStoreFilterShowing": {
+    "description": "Footer of the filter modal: how many plugins the list shows",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsStoreFilterClearAll": "Clear all",
+  "@lyricsStoreFilterClearAll": {
+    "description": "Filter modal button that removes every pick"
+  },
+  "lyricsStoreFilterDone": "Done",
+  "@lyricsStoreFilterDone": {
+    "description": "Filter modal button that closes it"
+  },
+  "lyricsStoreFilterClear": "Clear filters",
+  "@lyricsStoreFilterClear": {
+    "description": "Button of the empty store list that removes every filter pick"
+  },
+  "lyricsStoreLanguageGlobal": "Global",
+  "@lyricsStoreLanguageGlobal": {
+    "description": "Language filter value of plugins that work for every language"
   },
   "lyricsStoreSectionUpdates": "Updates ({count})",
   "@lyricsStoreSectionUpdates": {

@@ -106,6 +106,9 @@ abstract final class AppIcons {
   static const IconData search = FluentIcons.search_24_regular;
   static const IconData searchOff = FluentIcons.search_info_24_regular;
   static const IconData searchFields = FluentIcons.filter_24_regular;
+
+  /// Opens the filters of a list (same glyph as [searchFields]).
+  static const IconData filter = searchFields;
   static const IconData add = FluentIcons.add_24_regular;
   static const IconData remove = FluentIcons.subtract_24_regular;
   static const IconData close = FluentIcons.dismiss_24_regular;

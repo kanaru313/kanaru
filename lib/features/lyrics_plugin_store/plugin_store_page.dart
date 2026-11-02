@@ -12,12 +12,13 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_banner.dart';
 import 'plugin_store_empty.dart';
+import 'plugin_store_filter_button.dart';
 import 'plugin_store_menu.dart';
 import 'plugin_store_providers.dart';
 import 'plugin_store_sections.dart';
 
 /// The plugin store: what the added repositories offer next to the plugins
-/// already installed, with search, filters, and one-tap install,
+/// already installed, with search, the filter modal, and one-tap install,
 /// update and uninstall. Opening it fetches every repository once.
 ///
 /// The page navigates only through its callbacks, so the router decides where
@@ -74,11 +75,13 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
     return PageScaffold(
       title: l10n.lyricsStoreTitle,
       actions: [
-        if (data != null && data.available)
+        if (data != null && data.available) ...[
+          PluginStoreFilterButton(initialKind: widget.initialKind),
           PluginStoreMenu(
             repositoryCount: data.sources.length,
             onOpenRepositories: widget.onOpenRepositories,
           ),
+        ],
       ],
       body: view.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -113,6 +116,12 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
                   _SearchField(controller: _search),
                   PluginStoreSections(
                     view: view,
+                    onClearFilters: ref
+                        .read(
+                          pluginStoreFiltersProvider(widget.initialKind)
+                              .notifier,
+                        )
+                        .clearAll,
                     onOpenInstalled: widget.onOpenInstalled,
                     onOpenCatalogItem: widget.onOpenCatalogItem,
                   ),
