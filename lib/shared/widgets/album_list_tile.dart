@@ -27,6 +27,7 @@ class AlbumListTile extends ConsumerWidget {
     required this.onTap,
     this.onQueueAction,
     this.showTotals = true,
+    this.onPlay,
   });
 
   final AlbumSummary album;
@@ -38,6 +39,10 @@ class AlbumListTile extends ConsumerWidget {
   /// False leaves the "N songs • M min" line blank, for lists whose albums
   /// hold more songs than the list is about; the row keeps its height.
   final bool showTotals;
+
+  /// Runs the hover play button instead of playing the album, for a list
+  /// that has more to do first; null plays the album.
+  final VoidCallback? onPlay;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,7 +74,7 @@ class AlbumListTile extends ConsumerWidget {
           '',
       ],
       onTap: onTap,
-      onPlay: () => unawaited(playAlbum(ref, album.key)),
+      onPlay: onPlay ?? () => unawaited(playAlbum(ref, album.key)),
       playTooltip: l10n.albumsPlayAlbum,
       more: onQueueAction == null
           ? null

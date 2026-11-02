@@ -383,6 +383,38 @@ void main() {
       expect(history(h), ['son tung']);
     });
 
+    for (final (kind, tooltip, row) in [
+      ('an album', 'Play album', AlbumListTile),
+      ('an artist', 'Play artist', ArtistTile),
+    ]) {
+      testWidgets('the hover Play of $kind plays it and remembers the query', (
+        tester,
+      ) async {
+        final h = LibraryHarness();
+        await openSearch(tester, h, 'son tung');
+        expect(history(h), isEmpty);
+
+        final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+        addTearDown(mouse.removePointer);
+        await mouse.addPointer(location: Offset.zero);
+        await mouse.moveTo(tester.getCenter(find.byType(row)));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.descendant(
+            of: find.byType(row),
+            matching: find.byTooltip(tooltip),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          h.container.read(playerServiceProvider).queue.tracks,
+          isNotEmpty,
+        );
+        expect(history(h), ['son tung']);
+      });
+    }
+
     testWidgets('opening an album or an artist remembers the query', (
       tester,
     ) async {
