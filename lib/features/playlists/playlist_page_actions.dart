@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/library_database.dart' show LibraryDatabase;
 import '../../core/database/library_startup.dart';
 import '../../core/database/library_rows.dart' show TrackListItem;
 import '../../core/database/playlist_rows.dart';
@@ -109,9 +110,8 @@ Future<void> renamePlaylistInteractively(
 
 /// Asks to confirm, then leaves the page and deletes [playlist].
 ///
-/// The page is left first: deleting first would reload the open page to
-/// "not found" before the navigation. Everything the widget tree gives is
-/// captured before the dialog, because the page may be gone after it.
+/// Everything the widget tree gives is captured before the dialog, because
+/// the page may be gone after it.
 Future<void> deletePlaylistInteractively(
   WidgetRef ref,
   BuildContext context,
@@ -123,7 +123,27 @@ Future<void> deletePlaylistInteractively(
   final router = GoRouter.of(context);
   final l10n = context.l10n;
   if (!await confirmDeletePlaylist(context, playlist)) return;
-  router.go(playlistsPath);
+  await deletePlaylistWith(
+    db: db,
+    router: router,
+    messenger: messenger,
+    l10n: l10n,
+    playlist: playlist,
+  );
+}
+
+/// The part of the delete after the user confirmed: leaves the page, then
+/// deletes [playlist]. The page is left first: deleting first would reload
+/// the open page to "not found" before the navigation. A failure is logged
+/// and reported in [messenger].
+Future<void> deletePlaylistWith({
+  required LibraryDatabase db,
+  required GoRouter? router,
+  required ScaffoldMessengerState? messenger,
+  required AppLocalizations l10n,
+  required PlaylistSummary playlist,
+}) async {
+  router?.go(playlistsPath);
   try {
     await db.deletePlaylist(playlist.id);
   } catch (error, stack) {
@@ -132,7 +152,7 @@ Future<void> deletePlaylistInteractively(
 }
 
 void _reportFailure(
-  ScaffoldMessengerState messenger,
+  ScaffoldMessengerState? messenger,
   AppLocalizations l10n,
   String what,
   Object error,
@@ -140,7 +160,7 @@ void _reportFailure(
 ) {
   _log.severe('$what failed', error, stack);
   try {
-    messenger.showSnackBar(
+    messenger?.showSnackBar(
       appSnackBar(kind: AppSnackBarKind.error, title: l10n.playlistSaveFailed),
     );
   } catch (snackError, snackStack) {

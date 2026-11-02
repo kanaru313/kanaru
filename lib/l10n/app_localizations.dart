@@ -7261,6 +7261,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} / {max}'**
   String playlistEditCounter(int count, int max);
+
+  /// Semantic label of the playlist context modal
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist options'**
+  String get playlistModalLabel;
+
+  /// Playlist modal row that opens the playlist page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to playlist'**
+  String get playlistGoTo;
+
+  /// Second line of the Add to playlist row of the playlist modal
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Copy 1 song to another playlist} other{Copy {count} songs to another playlist}}'**
+  String playlistCopyHint(int count);
+
+  /// Part of the playlist modal header: the day the playlist was created
+  ///
+  /// In en, this message translates to:
+  /// **'Created {date}'**
+  String playlistCreatedOn(DateTime date);
+
+  /// Second line of the Delete playlist row of the playlist modal
+  ///
+  /// In en, this message translates to:
+  /// **'The song files stay'**
+  String get playlistDeleteHint;
+
+  /// Playlist modal row that copies the playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate playlist'**
+  String get playlistDuplicate;
+
+  /// Name given to a duplicated playlist
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (copy)'**
+  String playlistCopyName(String name);
+
+  /// Snackbar after a playlist was duplicated
+  ///
+  /// In en, this message translates to:
+  /// **'Created “{name}”'**
+  String playlistDuplicated(String name);
+
+  /// Label of the two M3U export rows of the playlist modal
+  ///
+  /// In en, this message translates to:
+  /// **'Export as M3U'**
+  String get playlistExportM3u;
+
+  /// Second line of the M3U export row that writes full paths
+  ///
+  /// In en, this message translates to:
+  /// **'Absolute paths'**
+  String get playlistExportAbsoluteHint;
+
+  /// Second line of the M3U export row that writes relative paths
+  ///
+  /// In en, this message translates to:
+  /// **'Relative paths (next to the music)'**
+  String get playlistExportRelativeHint;
+
+  /// Playlist modal row that removes repeated songs
+  ///
+  /// In en, this message translates to:
+  /// **'Remove duplicates'**
+  String get playlistRemoveDuplicates;
+
+  /// Second line of the Remove duplicates row
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 repeated song · keeps the first one} other{{count} repeated songs · keeps the first one}}'**
+  String playlistRemoveDuplicatesHint(int count);
+
+  /// Snackbar after repeated songs were removed from a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 duplicate removed} other{{count} duplicates removed}}'**
+  String playlistDuplicatesRemoved(int count);
+
+  /// Playlist modal row that removes songs whose file is not in the library
+  ///
+  /// In en, this message translates to:
+  /// **'Remove missing songs'**
+  String get playlistRemoveMissing;
+
+  /// Second line of the Remove missing songs row
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song not in your library} other{{count} songs not in your library}}'**
+  String playlistRemoveMissingHint(int count);
+
+  /// Snackbar after missing songs were removed from a playlist
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}'**
+  String playlistMissingRemoved(int count);
 }
 
 class _AppLocalizationsDelegate

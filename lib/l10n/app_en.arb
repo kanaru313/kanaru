@@ -4896,5 +4896,114 @@
       "count": {"type": "int"},
       "max": {"type": "int"}
     }
+  },
+  "playlistModalLabel": "Playlist options",
+  "@playlistModalLabel": {
+    "description": "Semantic label of the playlist context modal"
+  },
+  "playlistGoTo": "Go to playlist",
+  "@playlistGoTo": {
+    "description": "Playlist modal row that opens the playlist page"
+  },
+  "playlistCopyHint": "{count, plural, =1{Copy 1 song to another playlist} other{Copy {count} songs to another playlist}}",
+  "@playlistCopyHint": {
+    "description": "Second line of the Add to playlist row of the playlist modal",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistCreatedOn": "Created {date}",
+  "@playlistCreatedOn": {
+    "description": "Part of the playlist modal header: the day the playlist was created",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "playlistDeleteHint": "The song files stay",
+  "@playlistDeleteHint": {
+    "description": "Second line of the Delete playlist row of the playlist modal"
+  },
+  "playlistDuplicate": "Duplicate playlist",
+  "@playlistDuplicate": {
+    "description": "Playlist modal row that copies the playlist"
+  },
+  "playlistCopyName": "{name} (copy)",
+  "@playlistCopyName": {
+    "description": "Name given to a duplicated playlist",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistDuplicated": "Created “{name}”",
+  "@playlistDuplicated": {
+    "description": "Snackbar after a playlist was duplicated",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistExportM3u": "Export as M3U",
+  "@playlistExportM3u": {
+    "description": "Label of the two M3U export rows of the playlist modal"
+  },
+  "playlistExportAbsoluteHint": "Absolute paths",
+  "@playlistExportAbsoluteHint": {
+    "description": "Second line of the M3U export row that writes full paths"
+  },
+  "playlistExportRelativeHint": "Relative paths (next to the music)",
+  "@playlistExportRelativeHint": {
+    "description": "Second line of the M3U export row that writes relative paths"
+  },
+  "playlistRemoveDuplicates": "Remove duplicates",
+  "@playlistRemoveDuplicates": {
+    "description": "Playlist modal row that removes repeated songs"
+  },
+  "playlistRemoveDuplicatesHint": "{count, plural, =1{1 repeated song · keeps the first one} other{{count} repeated songs · keeps the first one}}",
+  "@playlistRemoveDuplicatesHint": {
+    "description": "Second line of the Remove duplicates row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistDuplicatesRemoved": "{count, plural, =1{1 duplicate removed} other{{count} duplicates removed}}",
+  "@playlistDuplicatesRemoved": {
+    "description": "Snackbar after repeated songs were removed from a playlist",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistRemoveMissing": "Remove missing songs",
+  "@playlistRemoveMissing": {
+    "description": "Playlist modal row that removes songs whose file is not in the library"
+  },
+  "playlistRemoveMissingHint": "{count, plural, =1{1 song not in your library} other{{count} songs not in your library}}",
+  "@playlistRemoveMissingHint": {
+    "description": "Second line of the Remove missing songs row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistMissingRemoved": "{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}",
+  "@playlistMissingRemoved": {
+    "description": "Snackbar after missing songs were removed from a playlist",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

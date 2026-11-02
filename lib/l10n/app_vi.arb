@@ -1869,5 +1869,22 @@
   "playlistNameEmptyError": "Tên không được để trống",
   "playlistChangeCover": "Đổi ảnh bìa",
   "playlistEditSave": "Lưu",
-  "playlistEditCounter": "{count} / {max}"
+  "playlistEditCounter": "{count} / {max}",
+  "playlistModalLabel": "Tùy chọn playlist",
+  "playlistGoTo": "Đến playlist",
+  "playlistCopyHint": "{count, plural, other{Sao chép {count} bài sang playlist khác}}",
+  "playlistCreatedOn": "Tạo ngày {date}",
+  "playlistDeleteHint": "Các tệp nhạc vẫn còn",
+  "playlistDuplicate": "Nhân bản playlist",
+  "playlistCopyName": "{name} (bản sao)",
+  "playlistDuplicated": "Đã tạo “{name}”",
+  "playlistExportM3u": "Xuất ra M3U",
+  "playlistExportAbsoluteHint": "Đường dẫn tuyệt đối",
+  "playlistExportRelativeHint": "Đường dẫn tương đối (cạnh nhạc)",
+  "playlistRemoveDuplicates": "Xoá bài trùng",
+  "playlistRemoveDuplicatesHint": "{count, plural, other{{count} bài lặp · giữ lại bài đầu}}",
+  "playlistDuplicatesRemoved": "{count, plural, other{Đã xoá {count} bài trùng}}",
+  "playlistRemoveMissing": "Xoá bài không còn",
+  "playlistRemoveMissingHint": "{count, plural, other{{count} bài không có trong thư viện}}",
+  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}"
 }
