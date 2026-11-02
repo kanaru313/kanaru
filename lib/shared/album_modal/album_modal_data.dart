@@ -1,4 +1,6 @@
 import 'package:flutter/widgets.dart' show ValueChanged, VoidCallback;
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show AsyncData, AsyncValue;
 
 import '../../core/database/library_browse_album_links.dart';
 import '../widgets/context_modal/context_modal_nav.dart';
@@ -11,6 +13,7 @@ class AlbumModalData {
     required this.album,
     required this.links,
     this.showAlbum = true,
+    this.gone = false,
   });
 
   final AlbumTileData album;
@@ -21,6 +24,14 @@ class AlbumModalData {
 
   /// False on the page of the album itself.
   final bool showAlbum;
+
+  /// The links were read and found no album (a rescan removed it): the rows
+  /// that play or copy it are greyed out. False while the links load.
+  final bool gone;
+
+  /// Whether [links] resolved to no album; loading and errors are not gone.
+  static bool goneOf(AsyncValue<AlbumLinks?> links) =>
+      links is AsyncData<AlbumLinks?> && links.value == null;
 }
 
 /// What the actions do. Each one runs after the modal has closed, except

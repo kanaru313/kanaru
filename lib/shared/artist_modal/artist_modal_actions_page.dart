@@ -14,22 +14,24 @@ import 'artist_modal_sub_pages.dart';
 
 /// The first page of the artist modal: header, the links and artist actions,
 /// and the queue buttons in the footer. The albums and folders load while it
-/// is open; until then their rows are greyed out. No dividers: the groups are
-/// told apart by a gap.
+/// is open; until then their rows are greyed out. Once read and gone (no song
+/// credits the artist any more) the play and copy rows and the footer are
+/// greyed out too. No dividers: the groups are told apart by a gap.
 ///
 /// The links are read with `.asData?.value`, like the album modal: while the
 /// library keys are rewritten the provider rebuilds and the rows grey out
-/// until it has read again.
+/// until it has read again. Only a resolved null counts as gone, so loading
+/// keeps Play all enabled (keyboard focus may land on it).
 ContextModalPage artistModalActionsPage(ArtistModalSession session) {
-  ArtistLinks? linksOf(WidgetRef ref) =>
-      ref.watch(artistModalLinksProvider(session.artist.key)).asData?.value;
+  AsyncValue<ArtistLinks?> linksOf(WidgetRef ref) =>
+      ref.watch(artistModalLinksProvider(session.artist.key));
   return ContextModalPage(
     key: 'artist-actions',
     headerBuilder: (context, nav) => Consumer(
       builder: (context, ref, _) {
         final data = ArtistModalData(
           artist: session.artist,
-          links: linksOf(ref),
+          links: linksOf(ref).asData?.value,
           showArtist: session.showArtist,
         );
         final goToArtist = contextModalCloseThen(session.handlers().goToArtist);
@@ -43,11 +45,13 @@ ContextModalPage artistModalActionsPage(ArtistModalSession session) {
     bodyBuilder: (context, nav) => [
       Consumer(
         builder: (context, ref, _) {
-          final links = linksOf(ref);
+          final async = linksOf(ref);
+          final links = async.asData?.value;
           final data = ArtistModalData(
             artist: session.artist,
             links: links,
             showArtist: session.showArtist,
+            gone: ArtistModalData.goneOf(async),
           );
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -83,11 +87,15 @@ ContextModalPage artistModalActionsPage(ArtistModalSession session) {
         },
       ),
     ],
-    footerBuilder: (context, nav) => QueueModalFooter(
-      nav: nav,
-      onAction: session.queue,
-      keyPrefix: 'artist-modal',
-      divider: false,
+    // The footer builder has no ref: a Consumer greys it out when gone.
+    footerBuilder: (context, nav) => Consumer(
+      builder: (context, ref, _) => QueueModalFooter(
+        nav: nav,
+        onAction: session.queue,
+        keyPrefix: 'artist-modal',
+        divider: false,
+        enabled: !ArtistModalData.goneOf(linksOf(ref)),
+      ),
     ),
   );
 }

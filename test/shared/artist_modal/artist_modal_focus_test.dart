@@ -63,6 +63,26 @@ void main() {
     gate.complete(linksOf());
   });
 
+  testWidgets(
+    'links found gone while Play all has focus: Down lands on the first '
+    'enabled row',
+    (tester) async {
+      final gate = Completer<ArtistLinks?>();
+      await pumpArtistHost(tester, showArtist: false, gate: gate);
+      await _openWithMenuKey(tester);
+      expect(_focusInModal(within: artistModalAction('play-all')), isTrue);
+
+      gate.complete(null);
+      await settleArtistModal(tester);
+      expect(_focusInModal(within: artistModalAction('play-all')), isFalse);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      // Album, folder, play rows are greyed out; Edit tags is coming soon.
+      expect(_focusInModal(within: artistModalAction('advanced')), isTrue);
+    },
+  );
+
   testWidgets('on the artist page, links loaded: Go to album is first', (
     tester,
   ) async {

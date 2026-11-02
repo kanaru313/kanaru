@@ -1,4 +1,6 @@
 import 'package:flutter/widgets.dart' show ValueChanged, VoidCallback;
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show AsyncData, AsyncValue;
 
 import '../artist_summaries.dart';
 import '../widgets/context_modal/context_modal_nav.dart';
@@ -12,6 +14,7 @@ class ArtistModalData {
     required this.artist,
     required this.links,
     this.showArtist = true,
+    this.gone = false,
   });
 
   /// The row the modal was opened from; counts in the header come from it.
@@ -23,6 +26,14 @@ class ArtistModalData {
 
   /// False on the page of the artist itself.
   final bool showArtist;
+
+  /// The links were read and no song credits the artist any more: the rows
+  /// that play or copy it are greyed out. False while the links load.
+  final bool gone;
+
+  /// Whether [links] resolved to no artist; loading and errors are not gone.
+  static bool goneOf(AsyncValue<ArtistLinks?> links) =>
+      links is AsyncData<ArtistLinks?> && links.value == null;
 
   /// The name shown: the one the page of the artist uses once loaded, else
   /// the one of the row.

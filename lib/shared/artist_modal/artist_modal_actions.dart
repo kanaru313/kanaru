@@ -118,18 +118,21 @@ List<List<ContextModalAction>> artistModalSections(
         id: 'play-all',
         icon: AppIcons.play,
         label: l10n.albumModalPlayAll,
+        enabled: !data.gone,
         onTap: contextModalCloseThen(h.playAll),
       ),
       ContextModalAction(
         id: 'shuffle',
         icon: AppIcons.shuffle,
         label: l10n.libraryShuffle,
+        enabled: !data.gone,
         onTap: contextModalCloseThen(h.shuffle),
       ),
       ContextModalAction(
         id: 'add-to-playlist',
         icon: AppIcons.addToPlaylist,
         label: l10n.playlistAddTo,
+        enabled: !data.gone,
         onTap: contextModalCloseThen(h.addToPlaylist),
       ),
       ContextModalAction(

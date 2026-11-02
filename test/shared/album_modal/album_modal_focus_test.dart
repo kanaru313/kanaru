@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/album_links_provider.dart';
+import 'package:kanaru/core/database/library_browse_album_links.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -60,6 +65,34 @@ void main() {
     await settleAlbumModal(tester);
     expect(host.location, artistLocation('ann'));
   });
+
+  testWidgets(
+    'links found gone while Play all has focus: Down lands on the first '
+    'enabled row',
+    (tester) async {
+      final gate = Completer<AlbumLinks?>();
+      final container = ProviderContainer(
+        overrides: [
+          albumModalLinksProvider(testAlbumKey)
+              .overrideWith((_) => gate.future),
+        ],
+      );
+      addTearDown(container.dispose);
+      await pumpAlbumHost(tester, container: container, showAlbum: false);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+      await settleAlbumModal(tester);
+      expect(_focusInModal(within: albumModalAction('play-all')), isTrue);
+
+      gate.complete(null);
+      await settleAlbumModal(tester);
+      expect(_focusInModal(within: albumModalAction('play-all')), isFalse);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(_focusInModal(within: albumModalAction('advanced')), isTrue);
+    },
+  );
 
   testWidgets('Esc closes the modal and focus returns to the tile', (
     tester,
