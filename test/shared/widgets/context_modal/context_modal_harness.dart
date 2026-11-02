@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
 import 'package:material_ui/material_ui.dart';
@@ -20,7 +21,13 @@ Future<void> pumpModalApp(
     headerBuilder: (_, nav) =>
         ContextModalTopBar(title: 'Sub page', onBack: nav.pop),
     bodyBuilder: (_, nav) => contextModalSections(nav, [
-      [ContextModalAction(id: 'leaf', icon: Icons.info, label: 'Leaf action')],
+      [
+        ContextModalAction(
+          id: 'leaf',
+          icon: AppIcons.info,
+          label: 'Leaf action',
+        ),
+      ],
     ]),
   );
   final root = ContextModalPage(
@@ -29,7 +36,7 @@ Future<void> pumpModalApp(
       [
         ContextModalAction(
           id: 'sub',
-          icon: Icons.info,
+          icon: AppIcons.info,
           label: 'Open sub',
           opensPage: true,
           onTap: (nav) => nav.push(sub),

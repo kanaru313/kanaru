@@ -18,7 +18,7 @@ Future<void> _pump(
     MaterialApp(
       home: Scaffold(
         body: SettingsCategoryTile(
-          icon: Icons.palette_outlined,
+          icon: AppIcons.settingsAppearance,
           title: 'Appearance',
           description: 'Theme, font, language, sidebar and a long tail',
           onTap: onTap ?? () {},
@@ -34,7 +34,7 @@ void main() {
   ) async {
     await _pump(tester);
 
-    expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
+    expect(find.byIcon(AppIcons.settingsAppearance), findsOneWidget);
     expect(find.text('Appearance'), findsOneWidget);
     expect(
       find.text('Theme, font, language, sidebar and a long tail'),

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/features/home/home_paged_list.dart';
 import 'package:kanaru/features/home/home_paged_view.dart';
@@ -93,7 +94,7 @@ void main() {
         ),
         onLoadMore: () {},
         onRetry: onRetry,
-        emptyIcon: Icons.music_note,
+        emptyIcon: AppIcons.musicNote,
         emptyText: 'empty',
         builder: (context, controller, rows) => ListView(
           controller: controller,

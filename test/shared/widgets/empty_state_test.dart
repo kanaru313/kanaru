@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/empty_state.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -17,7 +18,7 @@ Future<void> _pump(WidgetTester tester, Size size, double textScale) async {
           child: SizedBox.fromSize(
             size: size,
             child: const EmptyState(
-              icon: Icons.music_note_outlined,
+              icon: AppIcons.musicNoteOutlined,
               title: 'No music yet',
               message: _message,
             ),
@@ -63,7 +64,7 @@ void main() {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              EmptyState(icon: Icons.music_note_outlined, title: 'Empty'),
+              EmptyState(icon: AppIcons.musicNoteOutlined, title: 'Empty'),
             ],
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
 
 import 'context_modal_harness.dart';
@@ -19,13 +20,13 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'path',
-          icon: Icons.folder,
+          icon: AppIcons.folder,
           label: 'Folder',
           subtitle: '/music/a',
           onTap: (_) => row++,
           trailing: [
             ContextModalTrailing(
-              icon: Icons.open_in_new,
+              icon: AppIcons.openExternal,
               tooltip: 'Show',
               onTap: (_) => trail++,
             ),
@@ -50,7 +51,7 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'soon',
-          icon: Icons.delete,
+          icon: AppIcons.deleteOutline,
           label: 'Later',
           comingSoon: true,
           onTap: (_) => called++,
@@ -91,14 +92,14 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'off',
-          icon: Icons.delete,
+          icon: AppIcons.deleteOutline,
           label: 'Off',
           enabled: false,
           onTap: (_) => called++,
         ),
         ContextModalAction(
           id: 'danger',
-          icon: Icons.delete,
+          icon: AppIcons.deleteOutline,
           label: 'Danger',
           destructive: true,
           onTap: (_) {},
@@ -119,15 +120,15 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'cover',
-          icon: Icons.album,
+          icon: AppIcons.album,
           label: 'With cover',
-          leading: const Icon(Icons.audiotrack, key: Key('lead')),
+          leading: const Icon(AppIcons.musicNote, key: Key('lead')),
           onTap: (_) {},
         ),
       ],
     );
     expect(find.byKey(const Key('lead')), findsOneWidget);
-    expect(find.byIcon(Icons.album), findsNothing);
+    expect(find.byIcon(AppIcons.album), findsNothing);
     final colors = Theme.of(tester.element(find.text('With cover')))
         .colorScheme;
     expect(
@@ -144,10 +145,10 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'danger',
-          icon: Icons.delete,
+          icon: AppIcons.deleteOutline,
           label: 'Danger',
           destructive: true,
-          leading: const Icon(Icons.audiotrack, key: Key('lead')),
+          leading: const Icon(AppIcons.musicNote, key: Key('lead')),
           onTap: (_) {},
         ),
       ],
@@ -168,7 +169,7 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'artists',
-          icon: Icons.person,
+          icon: AppIcons.artist,
           label: 'Artists',
           chips: ContextModalChips(
             items: [
@@ -202,7 +203,7 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'artists',
-          icon: Icons.person,
+          icon: AppIcons.artist,
           label: 'Artists',
           chips: ContextModalChips(
             initiallyExpanded: true,
@@ -227,9 +228,9 @@ void main() {
           out = contextModalSections(
             ContextModalNav(push: (_) {}, pop: () {}, close: ([_]) {}),
             [
-              [ContextModalAction(id: 'a', icon: Icons.info, label: 'A')],
+              [ContextModalAction(id: 'a', icon: AppIcons.info, label: 'A')],
               [],
-              [ContextModalAction(id: 'b', icon: Icons.info, label: 'B')],
+              [ContextModalAction(id: 'b', icon: AppIcons.info, label: 'B')],
             ],
           );
           return const SizedBox();
@@ -245,7 +246,7 @@ void main() {
     (tester) async {
       ContextModalAction artists({required bool wrap}) => ContextModalAction(
         id: 'artists',
-        icon: Icons.person,
+        icon: AppIcons.artist,
         label: 'Artists',
         chips: ContextModalChips(
           initiallyExpanded: true,
@@ -282,7 +283,7 @@ void main() {
       extra: [
         ContextModalAction(
           id: 'artists',
-          icon: Icons.person,
+          icon: AppIcons.artist,
           label: 'Artists',
           chips: ContextModalChips(
             initiallyExpanded: true,
@@ -304,9 +305,9 @@ void main() {
             ContextModalNav(push: (_) {}, pop: () {}, close: ([_]) {}),
             [
               [],
-              [ContextModalAction(id: 'a', icon: Icons.info, label: 'A')],
+              [ContextModalAction(id: 'a', icon: AppIcons.info, label: 'A')],
               [],
-              [ContextModalAction(id: 'b', icon: Icons.info, label: 'B')],
+              [ContextModalAction(id: 'b', icon: AppIcons.info, label: 'B')],
               [],
             ],
             dividers: false,

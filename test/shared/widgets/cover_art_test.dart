@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/cover_art.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -13,7 +14,7 @@ void main() {
   });
   tearDown(() => dir.deleteSync(recursive: true));
 
-  const placeholder = Icon(Icons.album);
+  const placeholder = Icon(AppIcons.album);
 
   Future<void> pump(WidgetTester tester, String? path, {double size = 100}) =>
       tester.pumpWidget(
@@ -39,7 +40,7 @@ void main() {
   testWidgets('shows the placeholder without a path', (tester) async {
     await pump(tester, null);
 
-    expect(find.byIcon(Icons.album), findsOneWidget);
+    expect(find.byIcon(AppIcons.album), findsOneWidget);
     expect(find.byType(Image), findsNothing);
     expect(tester.getSize(find.byType(CoverArt)), const Size(100, 100));
   });
@@ -72,7 +73,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byIcon(Icons.album), findsOneWidget);
+    expect(find.byIcon(AppIcons.album), findsOneWidget);
   });
 
   testWidgets('falls back to the placeholder for an empty file', (
@@ -85,6 +86,6 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byIcon(Icons.album), findsOneWidget);
+    expect(find.byIcon(AppIcons.album), findsOneWidget);
   });
 }
