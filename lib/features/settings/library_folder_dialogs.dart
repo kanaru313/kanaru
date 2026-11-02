@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 
 /// Asks before a folder leaves the library. [songCount] songs go with it.
 /// Completes with `true` only when the user confirms.
@@ -11,7 +11,7 @@ Future<bool> confirmRemoveFolder(
   required int songCount,
 }) {
   final l10n = context.l10n;
-  return confirmDestructive(
+  return confirmAction(
     context,
     title: l10n.settingsRemoveFolderTitle,
     body: '$path\n\n${l10n.settingsRemoveFolderBody(songCount)}',

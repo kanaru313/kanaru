@@ -96,19 +96,15 @@ void _report(
     LrcWriteResult.nothingToWrite ||
     null => (AppSnackBarKind.error, l10n.lyricsSaveNothing),
   };
-  runner.messenger
-    ?..clearSnackBars()
-    ..showSnackBar(
-      appSnackBar(
-        kind: kind,
-        title: title,
-        details: switch (outcome.kept) {
-          LyricsChoiceKept.tagPreferred => l10n.lyricsSaveKeptTag,
-          LyricsChoiceKept.otherFile => l10n.lyricsSaveKeptOtherFile,
-          null => null,
-        },
-      ),
-    );
+  runner.messenger?.showAppSnackBar(
+    kind,
+    title,
+    details: switch (outcome.kept) {
+      LyricsChoiceKept.tagPreferred => l10n.lyricsSaveKeptTag,
+      LyricsChoiceKept.otherFile => l10n.lyricsSaveKeptOtherFile,
+      null => null,
+    },
+  );
 }
 
 class _SaveLyricsDialog extends StatelessWidget {

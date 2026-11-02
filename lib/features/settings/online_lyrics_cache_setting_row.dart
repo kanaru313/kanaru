@@ -10,7 +10,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'setting_row.dart';
 import 'settings_busy_tasks.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 import 'settings_number_presets.dart';
 
 final _log = Logger('settings');
@@ -45,7 +45,7 @@ class _OnlineLyricsCacheSettingRowState
     final lookups = ref.read(onlineLyricsLookupsProvider.notifier);
     final busy = ref.read(settingsBusyTasksProvider.notifier);
     final l10n = context.l10n;
-    final confirmed = await confirmDestructive(
+    final confirmed = await confirmAction(
       context,
       title: l10n.settingsSavedLyricsClearTitle,
       body: l10n.settingsSavedLyricsClearBody,

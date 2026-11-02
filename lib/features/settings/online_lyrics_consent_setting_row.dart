@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 
 /// What the user allowed for online lyrics (manual search, and automatic
 /// search on top), with a button that withdraws it after a confirmation.
@@ -33,7 +33,7 @@ class OnlineLyricsConsentSettingRow extends ConsumerWidget {
         onPressed: auto || manual
             ? () async {
                 final notifier = ref.read(settingsProvider.notifier);
-                final confirmed = await confirmDestructive(
+                final confirmed = await confirmAction(
                   context,
                   title: l10n.settingsLyricsConsentWithdrawTitle,
                   body: l10n.settingsLyricsConsentWithdrawBody,

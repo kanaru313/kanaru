@@ -45,10 +45,6 @@ Future<void> saveQueueAsPlaylist(WidgetRef ref, BuildContext context) async {
   final l10n = context.l10n;
   // The root navigator sits above the side sheet and Now Playing.
   final navigator = Navigator.of(context, rootNavigator: true);
-  void say(AppSnackBarKind kind, String text) => messenger
-    ..clearSnackBars()
-    ..showSnackBar(appSnackBar(kind: kind, title: text));
-
   final ({List<String> paths, int skipped}) picked;
   try {
     final candidates = [for (final track in tracks) ?localPathOf(track.uri)];
@@ -59,11 +55,11 @@ Future<void> saveQueueAsPlaylist(WidgetRef ref, BuildContext context) async {
       error,
       stack,
     );
-    say(AppSnackBarKind.error, l10n.playlistSaveFailed);
+    messenger.showAppSnackBar(AppSnackBarKind.error, l10n.playlistSaveFailed);
     return;
   }
   if (picked.paths.isEmpty) {
-    say(AppSnackBarKind.info, l10n.queueSaveNothing);
+    messenger.showAppSnackBar(AppSnackBarKind.info, l10n.queueSaveNothing);
     return;
   }
   if (!navigator.mounted) return;
@@ -76,7 +72,7 @@ Future<void> saveQueueAsPlaylist(WidgetRef ref, BuildContext context) async {
     initialName: l10n.queueSaveDefaultName(DateTime.now()),
   );
   if (created == null) return;
-  say(
+  messenger.showAppSnackBar(
     AppSnackBarKind.success,
     picked.skipped == 0
         ? l10n.queueSaved(picked.paths.length, created.name)

@@ -5,7 +5,7 @@ import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/motion_tab_controller.dart';
 import 'separator_entry_tab.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 
 /// Which tags a separator dialog edits.
 enum SeparatorKind { artist, genre }
@@ -75,7 +75,7 @@ class _SeparatorDialogState extends ConsumerState<SeparatorDialog>
 
   Future<void> _reset() async {
     final l10n = context.l10n;
-    final confirmed = await confirmDestructive(
+    final confirmed = await confirmAction(
       context,
       title: l10n.separatorsResetConfirmTitle,
       body: l10n.separatorsResetConfirmBody,

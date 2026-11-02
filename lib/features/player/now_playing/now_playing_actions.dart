@@ -15,14 +15,6 @@ import '../playback_controls.dart';
 
 final _log = Logger('playlists');
 
-void _say(
-  ScaffoldMessengerState messenger,
-  AppSnackBarKind kind,
-  String text,
-) => messenger
-  ..clearSnackBars()
-  ..showSnackBar(appSnackBar(kind: kind, title: text));
-
 /// The local path of the current song, or null (nothing playing, or a song
 /// that is not a local file).
 String? _currentPath(WidgetRef ref) {
@@ -66,8 +58,7 @@ class _NowPlayingPlaylistButtonState
     try {
       final inLibrary = await db.coverKeyOf(path) != null;
       if (!inLibrary) {
-        _say(
-          messenger,
+        messenger.showAppSnackBar(
           AppSnackBarKind.warning,
           l10n.playlistTrackNotInLibrary,
         );
@@ -77,7 +68,7 @@ class _NowPlayingPlaylistButtonState
       await addTracksToPlaylist(ref, context, () async => [path], title);
     } catch (error, stack) {
       _log.severe('Adding the current song to a playlist failed', error, stack);
-      _say(messenger, AppSnackBarKind.error, l10n.playlistSaveFailed);
+      messenger.showAppSnackBar(AppSnackBarKind.error, l10n.playlistSaveFailed);
     } finally {
       _busy = false;
     }

@@ -80,14 +80,10 @@ class _PlayerBarState extends ConsumerState<PlayerBar> {
     if (!mounted) return;
     // A folder of unreachable files fails one track after another; show
     // only the latest instead of queuing them all.
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(
-        appSnackBar(
-          kind: AppSnackBarKind.error,
-          title: context.l10n.playerPlaybackError(error.track.title),
-        ),
-      );
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      AppSnackBarKind.error,
+      context.l10n.playerPlaybackError(error.track.title),
+    );
   }
 
   @override

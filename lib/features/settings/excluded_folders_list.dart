@@ -31,16 +31,6 @@ class ExcludedFoldersList extends ConsumerStatefulWidget {
 }
 
 class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
-  void _showMessage(
-    ScaffoldMessengerState messenger,
-    AppSnackBarKind kind,
-    String text,
-  ) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(appSnackBar(kind: kind, title: text));
-  }
-
   /// Runs [action] unless another one runs; a failure becomes a message.
   /// The busy flag and the messenger outlive this row, so leaving the page
   /// mid-action neither re-enables the buttons nor drops the message.
@@ -55,7 +45,7 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
       await action(messenger);
     } catch (error, stackTrace) {
       _log.severe('Changing an excluded folder failed', error, stackTrace);
-      _showMessage(messenger, AppSnackBarKind.error, unexpected);
+      messenger.showAppSnackBar(AppSnackBarKind.error, unexpected);
     } finally {
       busy.finish(SettingsTask.excludedFolders);
     }
@@ -70,13 +60,12 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
     final rejection = result.rejection;
     final conflict = result.conflict;
     if (rejection != null) {
-      _showMessage(
-        messenger,
+      messenger.showAppSnackBar(
         AppSnackBarKind.warning,
         rootRejectionMessage(l10n, path, rejection),
       );
     } else if (conflict != null) {
-      _showMessage(messenger, AppSnackBarKind.warning, switch (conflict) {
+      messenger.showAppSnackBar(AppSnackBarKind.warning, switch (conflict) {
         ExclusionConflict.sameAsRoot => l10n.excludedFoldersSameAsRoot,
         ExclusionConflict.outsideLibrary => l10n.excludedFoldersOutsideLibrary,
         ExclusionConflict.alreadyExcluded =>
@@ -89,8 +78,7 @@ class _ExcludedFoldersListState extends ConsumerState<ExcludedFoldersList> {
     final l10n = context.l10n;
     final ok = await ref.read(excludedFoldersControllerProvider).remove(id);
     if (!ok) {
-      _showMessage(
-        messenger,
+      messenger.showAppSnackBar(
         AppSnackBarKind.error,
         l10n.settingsRemoveFolderFailed(path),
       );

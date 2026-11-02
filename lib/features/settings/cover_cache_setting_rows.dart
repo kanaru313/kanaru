@@ -9,7 +9,7 @@ import '../../core/indexer/indexer_state.dart';
 import '../../l10n/l10n.dart';
 import 'setting_row.dart';
 import 'settings_busy_tasks.dart';
-import 'settings_confirm_dialog.dart';
+import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('settings');
@@ -45,7 +45,7 @@ class _CoverCacheSettingRowsState extends ConsumerState<CoverCacheSettingRows> {
     final indexer = ref.read(libraryIndexerProvider.notifier);
     final busy = ref.read(settingsBusyTasksProvider.notifier);
     final directory = ref.read(coverCacheDirectoryProvider)!;
-    final confirmed = await confirmDestructive(
+    final confirmed = await confirmAction(
       context,
       title: l10n.coverCacheClearTitle,
       body: l10n.coverCacheClearBody,

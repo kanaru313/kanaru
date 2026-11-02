@@ -12,14 +12,6 @@ import 'app_snack_bar.dart';
 
 final _log = Logger('playlists');
 
-void _say(
-  ScaffoldMessengerState messenger,
-  AppSnackBarKind kind,
-  String text,
-) => messenger
-  ..clearSnackBars()
-  ..showSnackBar(appSnackBar(kind: kind, title: text));
-
 /// Heart: puts the song at [path] in Favorites or takes it out; disabled
 /// while [path] is null. Only a song that is a row of the library can be
 /// added (the playlist matches entries to library rows by path); any song
@@ -121,8 +113,7 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
         if (target == null || favorite == null) break;
         try {
           if (favorite && await db.coverKeyOf(target) == null) {
-            _say(
-              messenger,
+            messenger.showAppSnackBar(
               AppSnackBarKind.warning,
               l10n.playlistTrackNotInLibrary,
             );
@@ -136,7 +127,10 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
           }
         } catch (error, stack) {
           _log.severe('Changing the favorite of a song failed', error, stack);
-          _say(messenger, AppSnackBarKind.error, l10n.playlistSaveFailed);
+          messenger.showAppSnackBar(
+            AppSnackBarKind.error,
+            l10n.playlistSaveFailed,
+          );
           _forgetIfStill(target, favorite);
         }
         // Done unless the user pressed again meanwhile (maybe on another
@@ -194,7 +188,11 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
       isSelected: favorite,
       icon: ScaleTransition(
         scale: _scale,
-        child: Icon(AppIcons.favoriteBorderRounded, color: widget.color, fill: 0.0),
+        child: Icon(
+          AppIcons.favoriteBorderRounded,
+          color: widget.color,
+          fill: 0.0,
+        ),
       ),
       selectedIcon: ScaleTransition(
         scale: _scale,

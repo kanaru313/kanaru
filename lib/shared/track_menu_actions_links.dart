@@ -59,11 +59,17 @@ extension TrackMenuRunnerLinks on TrackMenuRunner {
   Future<void> showInFileManagerAt(String path) async {
     try {
       if (!await _showInFileManager(path)) {
-        _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
+        _messenger?.showAppSnackBar(
+          AppSnackBarKind.error,
+          _l10n.libraryFileManagerFailed,
+        );
       }
     } catch (error, stack) {
       _log.severe('A file manager action failed', error, stack);
-      _say(AppSnackBarKind.error, _l10n.libraryFileManagerFailed);
+      _messenger?.showAppSnackBar(
+        AppSnackBarKind.error,
+        _l10n.libraryFileManagerFailed,
+      );
     }
   }
 
@@ -76,17 +82,26 @@ extension TrackMenuRunnerLinks on TrackMenuRunner {
       if (router == null) return;
       final db = _db;
       if (db == null) {
-        _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+        _messenger?.showAppSnackBar(
+          AppSnackBarKind.error,
+          _l10n.libraryUnexpectedError,
+        );
         return;
       }
       if (await db.trackLinks(trackId) == null) {
-        _say(AppSnackBarKind.warning, _l10n.libraryTrackGone);
+        _messenger?.showAppSnackBar(
+          AppSnackBarKind.warning,
+          _l10n.libraryTrackGone,
+        );
         return;
       }
       router.go(artistLocation(key));
     } catch (error, stack) {
       _log.severe('A song menu action failed', error, stack);
-      _say(AppSnackBarKind.error, _l10n.libraryUnexpectedError);
+      _messenger?.showAppSnackBar(
+        AppSnackBarKind.error,
+        _l10n.libraryUnexpectedError,
+      );
     }
   }
 
@@ -96,7 +111,10 @@ extension TrackMenuRunnerLinks on TrackMenuRunner {
     Offset position,
   ) async {
     if (artists.isEmpty) {
-      _say(AppSnackBarKind.info, _l10n.libraryNoArtistToShow);
+      _messenger?.showAppSnackBar(
+        AppSnackBarKind.info,
+        _l10n.libraryNoArtistToShow,
+      );
       return;
     }
     if (artists.length == 1) {

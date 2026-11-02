@@ -144,9 +144,7 @@ void _showPlaylistMessage(
   String text,
 ) {
   try {
-    messenger
-      ?..clearSnackBars()
-      ..showSnackBar(appSnackBar(kind: kind, title: text));
+    messenger?.showAppSnackBar(kind, text);
   } catch (error, stack) {
     _log.warning('Showing the playlist message failed', error, stack);
   }

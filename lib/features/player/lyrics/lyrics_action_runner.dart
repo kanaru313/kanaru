@@ -108,14 +108,10 @@ class LyricsActionRunner {
       // The type only: a message or stack may name files.
       _log.warning('lyrics action failed: ${e.runtimeType}');
       if (!navigator.mounted) return;
-      messenger
-        ?..clearSnackBars()
-        ..showSnackBar(
-          appSnackBar(
-            kind: AppSnackBarKind.error,
-            title: navigator.context.l10n.libraryUnexpectedError,
-          ),
-        );
+      messenger?.showAppSnackBar(
+        AppSnackBarKind.error,
+        navigator.context.l10n.libraryUnexpectedError,
+      );
     }
   }
 
@@ -169,14 +165,10 @@ class LyricsActionRunner {
     final target = this.target;
     if (!on || target == null || target.isAutoSearchable) return;
     if (!navigator.mounted) return;
-    messenger
-      ?..clearSnackBars()
-      ..showSnackBar(
-        appSnackBar(
-          kind: AppSnackBarKind.info,
-          title: navigator.context.l10n.lyricsAutoNeedsTags,
-        ),
-      );
+    messenger?.showAppSnackBar(
+      AppSnackBarKind.info,
+      navigator.context.l10n.lyricsAutoNeedsTags,
+    );
   });
 
   Future<void> retry() => _run(_actions.retry);
