@@ -64,6 +64,8 @@ class PlaylistPickerFooter extends StatelessWidget {
         Expanded(
           child: Text(
             selected == 0 ? '' : l10n.playlistPickerSelected(selected),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -74,23 +76,21 @@ class PlaylistPickerFooter extends StatelessWidget {
           child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
         const SizedBox(width: 8),
-        Flexible(
-          child: FilledButton(
-            onPressed: selected == 0 || busy ? null : onAdd,
-            child: busy
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(
-                    selected > 1
-                        ? l10n.playlistPickerAddMany(selected)
-                        : l10n.playlistPickerAdd,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-          ),
+        FilledButton(
+          onPressed: selected == 0 || busy ? null : onAdd,
+          child: busy
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  selected > 1
+                      ? l10n.playlistPickerAddMany(selected)
+                      : l10n.playlistPickerAdd,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
         ),
       ],
     );
