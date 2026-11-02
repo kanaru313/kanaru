@@ -64,8 +64,7 @@ class RepeatCountIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final color =
         IconTheme.of(context).color ?? DefaultTextStyle.of(context).style.color;
-    // Same footprint as a glyph: the icon's live area is 20/24 of its box.
-    final circle = size * 20 / 24;
+    final circle = size * 21 / 24;
     return ExcludeSemantics(
       child: SizedBox.square(
         dimension: size,
@@ -74,12 +73,12 @@ class RepeatCountIcon extends StatelessWidget {
             width: circle,
             height: circle,
             alignment: Alignment.center,
-            padding: EdgeInsets.all(circle * 0.14),
+            padding: EdgeInsets.all(circle * 0.05),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
                 color: color ?? const Color(0xFF000000),
-                width: 1.6,
+                width: 1.5,
               ),
             ),
             child: FittedBox(
@@ -88,6 +87,7 @@ class RepeatCountIcon extends StatelessWidget {
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.w700,
+                  height: 1,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),

@@ -84,6 +84,8 @@ List<Widget> repeatMenuItems(
           children: [
             IconButton(
               icon: const Icon(AppIcons.remove),
+              iconSize: 18,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               color: counting ? scheme.onSecondaryContainer : null,
               tooltip: l10n.playerRepeatFewer,
               visualDensity: VisualDensity.compact,
@@ -91,6 +93,8 @@ List<Widget> repeatMenuItems(
             ),
             IconButton(
               icon: const Icon(AppIcons.add),
+              iconSize: 18,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               color: counting ? scheme.onSecondaryContainer : null,
               tooltip: l10n.playerRepeatMore,
               visualDensity: VisualDensity.compact,
