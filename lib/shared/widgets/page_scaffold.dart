@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'scroll_ink_surface.dart';
+
 /// Below this header width, [PageScaffold.compactActionsOf] is true and the
 /// actions drop their labels to stay on the title row.
 const pageHeaderCompactWidth = 640.0;
@@ -94,11 +96,8 @@ class PageScaffold extends StatelessWidget {
                   ),
                 ),
         ),
-        // Its own ink surface: hover and splash of rows that scroll under
-        // the title are clipped to the body instead of painting over it.
-        Expanded(
-          child: Material(type: MaterialType.transparency, child: body),
-        ),
+        // Rows that scroll under the title keep their ink inside the body.
+        Expanded(child: ScrollInkSurface(child: body)),
       ],
     );
   }

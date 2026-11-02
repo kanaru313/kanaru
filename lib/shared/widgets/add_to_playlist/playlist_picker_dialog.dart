@@ -6,6 +6,7 @@ import '../../../core/database/playlist_add_queries.dart';
 import '../../../core/database/playlist_providers.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../l10n/l10n.dart';
+import '../scroll_ink_surface.dart';
 import 'add_to_playlist_dialog.dart';
 import 'playlist_name_dialog.dart';
 import 'playlist_picker_add_step.dart';
@@ -161,30 +162,33 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
           height: 420,
           child: Column(
             children: [
+              // Rows scrolled under the title keep their ink in the list.
               Expanded(
-                child: ref
-                    .watch(playlistSummariesProvider)
-                    .when(
-                      data: (playlists) => PlaylistPickerView(
-                        playlists: [
-                          for (final p in playlists)
-                            if (p.id != widget.excludePlaylistId) p,
-                        ],
-                        ticked: _ticked,
-                        pending: _pending,
-                        overlaps: _overlaps,
-                        enabled: !_busy,
-                        pendingFocus: _pendingFocus,
-                        onCreate: _newPlaylist,
-                        onToggle: _toggle,
-                        onTogglePending: _togglePending,
-                        onSubmit: count == 0 || _busy ? () {} : _add,
+                child: ScrollInkSurface(
+                  child: ref
+                      .watch(playlistSummariesProvider)
+                      .when(
+                        data: (playlists) => PlaylistPickerView(
+                          playlists: [
+                            for (final p in playlists)
+                              if (p.id != widget.excludePlaylistId) p,
+                          ],
+                          ticked: _ticked,
+                          pending: _pending,
+                          overlaps: _overlaps,
+                          enabled: !_busy,
+                          pendingFocus: _pendingFocus,
+                          onCreate: _newPlaylist,
+                          onToggle: _toggle,
+                          onTogglePending: _togglePending,
+                          onSubmit: count == 0 || _busy ? () {} : _add,
+                        ),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (_, _) =>
+                            Center(child: Text(l10n.libraryUnexpectedError)),
                       ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (_, _) =>
-                          Center(child: Text(l10n.libraryUnexpectedError)),
-                    ),
+                ),
               ),
               const SizedBox(height: 12),
               PlaylistPickerFooter(selected: count, busy: _busy, onAdd: _add),

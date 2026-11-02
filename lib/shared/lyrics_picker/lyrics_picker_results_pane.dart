@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/online/lyrics_fetch_exception.dart';
 import '../../core/lyrics/online/lyrics_search_controller.dart';
 import '../../l10n/l10n.dart';
+import '../widgets/scroll_ink_surface.dart';
 import 'lyrics_failure_message.dart';
 import 'lyrics_picker_result_tile.dart';
 import 'lyrics_picker_result_sources.dart';
@@ -111,23 +112,20 @@ class LyricsPickerResultsPane extends StatelessWidget {
         // Ink and hover paint on the nearest Material, which would be the
         // dialog; this one inside the clip keeps them within the list.
         Expanded(
-          child: ClipRect(
-            child: Material(
-              type: MaterialType.transparency,
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: shown.length,
-                itemBuilder: (context, row) {
-                  final i = shown[row];
-                  final id = results[i].candidate.providerId;
-                  return LyricsPickerResultTile(
-                    result: results[i],
-                    selected: state.selected == i,
-                    sourceName: providerNames[id] ?? id,
-                    onTap: () => onSelect(i),
-                  );
-                },
-              ),
+          child: ScrollInkSurface(
+            child: ListView.builder(
+              controller: scrollController,
+              itemCount: shown.length,
+              itemBuilder: (context, row) {
+                final i = shown[row];
+                final id = results[i].candidate.providerId;
+                return LyricsPickerResultTile(
+                  result: results[i],
+                  selected: state.selected == i,
+                  sourceName: providerNames[id] ?? id,
+                  onTap: () => onSelect(i),
+                );
+              },
             ),
           ),
         ),

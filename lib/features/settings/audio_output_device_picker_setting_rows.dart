@@ -7,6 +7,7 @@ import '../../core/player/audio_output_devices_provider.dart';
 import '../../core/player/player_service.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/scroll_ink_surface.dart';
 
 Future<void> showAudioOutputDeviceDialog(BuildContext context) => showDialog(
   context: context,
@@ -120,49 +121,52 @@ class _AudioOutputDeviceDialogState
       title: Text(l10n.audioDeviceDialogTitle),
       content: SizedBox(
         width: 520,
-        child: SingleChildScrollView(
-          child: RadioGroup<String>(
-            groupValue: selected,
-            onChanged: _pick,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RadioListTile<String>(
-                  value: autoAudioDevice,
-                  toggleable: true,
-                  title: Text(l10n.audioDeviceAuto),
-                ),
-                if (missing)
+        // Rows scrolled under the title keep their ink in the list.
+        child: ScrollInkSurface(
+          child: SingleChildScrollView(
+            child: RadioGroup<String>(
+              groupValue: selected,
+              onChanged: _pick,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   RadioListTile<String>(
-                    value: saved,
-                    enabled: false,
-                    title: Text(
-                      l10n.audioDeviceMissing(savedDescription ?? saved),
+                    value: autoAudioDevice,
+                    toggleable: true,
+                    title: Text(l10n.audioDeviceAuto),
+                  ),
+                  if (missing)
+                    RadioListTile<String>(
+                      value: saved,
+                      enabled: false,
+                      title: Text(
+                        l10n.audioDeviceMissing(savedDescription ?? saved),
+                      ),
                     ),
-                  ),
-                for (final d in main) _tile(d),
-                if (choices.isEmpty)
-                  ListTile(title: Text(l10n.audioDeviceNoneFound)),
-                if (others.isNotEmpty)
-                  ExpansionTile(
-                    expansionAnimationStyle:
-                        MediaQuery.disableAnimationsOf(context)
-                        ? AnimationStyle.noAnimation
-                        : null,
-                    title: Text(l10n.audioDeviceOtherOutputs),
-                    initiallyExpanded: others.any((d) => d.name == saved),
-                    children: [
-                      for (final driver in {...others.map(_driverOf)}) ...[
-                        ListTile(
-                          dense: true,
-                          title: Text(_driverLabel(driver)),
-                        ),
-                        for (final d in others)
-                          if (_driverOf(d) == driver) _tile(d),
+                  for (final d in main) _tile(d),
+                  if (choices.isEmpty)
+                    ListTile(title: Text(l10n.audioDeviceNoneFound)),
+                  if (others.isNotEmpty)
+                    ExpansionTile(
+                      expansionAnimationStyle:
+                          MediaQuery.disableAnimationsOf(context)
+                          ? AnimationStyle.noAnimation
+                          : null,
+                      title: Text(l10n.audioDeviceOtherOutputs),
+                      initiallyExpanded: others.any((d) => d.name == saved),
+                      children: [
+                        for (final driver in {...others.map(_driverOf)}) ...[
+                          ListTile(
+                            dense: true,
+                            title: Text(_driverLabel(driver)),
+                          ),
+                          for (final d in others)
+                            if (_driverOf(d) == driver) _tile(d),
+                        ],
                       ],
-                    ],
-                  ),
-              ],
+                    ),
+                ],
+              ),
             ),
           ),
         ),
