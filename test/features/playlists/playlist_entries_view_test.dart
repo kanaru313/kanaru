@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../shared/song_modal/song_modal_test_support.dart';
 import 'playlist_entries_view_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart' show openPageModal;
 import 'playlist_test_data.dart' show removeRowViaModal;
 
 void main() {
@@ -209,57 +210,45 @@ void main() {
       expect(play.onPressed, isNull);
     });
 
-    testWidgets('one more button holds the playlist and queue actions', (
-      tester,
-    ) async {
+    testWidgets('one more button opens the playlist modal', (tester) async {
       await view.pump(tester, [available(1)], onQueueAction: (_) {});
 
-      expect(find.byIcon(Icons.more_vert), findsOneWidget);
-      expect(find.byTooltip('Playlist actions'), findsOneWidget);
+      expect(find.byIcon(AppIcons.more), findsOneWidget);
+      expect(find.byTooltip('More options'), findsOneWidget);
+      expect(find.byTooltip('Playlist actions'), findsNothing);
+      await openPageModal(tester);
+      expect(modalAction('play-all'), findsOneWidget);
+      // The page is the playlist itself: no Go to playlist.
+      expect(modalAction('go-to-playlist'), findsNothing);
+    });
+
+    testWidgets('the button stays when nothing can play', (tester) async {
+      await view.pump(tester, [missing(1)], onQueueAction: (_) {});
+
+      expect(find.byIcon(AppIcons.more), findsOneWidget);
       expect(find.byIcon(AppIcons.edit), findsNothing);
     });
 
-    testWidgets('the menu keeps Rename and Delete when nothing can play', (
+    testWidgets('a saved queue keeps the popup menu of queue rows', (
       tester,
     ) async {
-      await view.pump(tester, [missing(1)], onQueueAction: (_) {});
-
-      expect(find.byIcon(Icons.more_vert), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
-      expect(find.text('Rename'), findsOneWidget);
-      expect(find.text('Add to queue'), findsNothing);
-    });
-
-    testWidgets('the queue menu reports the action picked', (tester) async {
       QueueAction? received;
-      await view.pump(tester, [
-        available(1),
-        available(2),
-      ], onQueueAction: (action) => received = action);
+      await view.pump(
+        tester,
+        [available(1), available(2)],
+        savedQueue: true,
+        onQueueAction: (action) => received = action,
+      );
 
-      await tester.tap(find.byIcon(Icons.more_vert));
+      expect(find.byTooltip('Playlist actions'), findsOneWidget);
+      await tester.tap(find.byTooltip('Playlist actions'));
       await tester.pumpAndSettle();
+      expect(find.text('Rename'), findsNothing);
+      expect(find.text('Delete playlist'), findsNothing);
       await tester.tap(find.text('Add to queue'));
       await tester.pumpAndSettle();
 
       expect(received, QueueAction.addToQueue);
-    });
-
-    testWidgets('the menu renames and deletes', (tester) async {
-      await view.pump(tester, [available(1)]);
-
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Rename'));
-      await tester.pumpAndSettle();
-      expect(view.renamed, 1);
-
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Delete playlist'));
-      await tester.pumpAndSettle();
-      expect(view.deleted, 1);
     });
   });
 }

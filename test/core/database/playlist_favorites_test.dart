@@ -143,12 +143,12 @@ void main() {
     });
   });
 
-  group('rename and delete', () {
+  group('edit and delete', () {
     test('never touch the Favorites playlist', () async {
       final id = await db.ensureFavoritesPlaylist(now: 1);
       await db.setFavorite('/m/a', favorite: true, now: 1);
 
-      await db.renamePlaylist(id, 'Renamed');
+      await db.updatePlaylistDetails(id, name: 'Renamed', description: 'd');
       await db.deletePlaylist(id);
 
       final summary = (await db.playlistSummary(id))!;
@@ -161,7 +161,7 @@ void main() {
       await db.ensureFavoritesPlaylist(now: 1);
       final id = await db.createPlaylist('Mix', now: 1);
 
-      await db.renamePlaylist(id, 'Renamed');
+      await db.updatePlaylistDetails(id, name: 'Renamed', description: '');
       expect((await db.playlistSummary(id))!.name, 'Renamed');
 
       await db.deletePlaylist(id);

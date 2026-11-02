@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../library/browse_test_data.dart'
     show TestTrack, goTo, insertTracks, openWithTracks;
 import '../library/library_test_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart';
 import '../search/search_test_data.dart' show openSearch;
 import 'add_to_playlist_test_support.dart';
 import 'playlist_test_data.dart';
@@ -184,10 +185,7 @@ void main() {
       goTo(tester, h, '/playlists/$twice');
       await settleDb(tester);
 
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Add to playlist…'));
-      await tester.pumpAndSettle();
+      await pickFromPageModal(tester, 'add-to-playlist');
       await nameNewInPicker(tester, 'Copy');
       await tester.tap(pickerAdd);
       await settleDb(tester);

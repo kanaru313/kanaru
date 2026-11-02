@@ -19,9 +19,9 @@ class PlaylistSidePane extends StatelessWidget {
     this.onPlay,
     this.onShuffle,
     this.onQueueAction,
-    this.onRename,
-    this.onDelete,
     this.onExport,
+    this.savedQueue = false,
+    this.beforeRead,
   });
 
   final PlaylistPageHead head;
@@ -31,9 +31,11 @@ class PlaylistSidePane extends StatelessWidget {
   final VoidCallback? onPlay;
   final VoidCallback? onShuffle;
   final ValueChanged<QueueAction>? onQueueAction;
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
   final ValueChanged<M3uPathStyle>? onExport;
+
+  /// See `PlaylistDetails.savedQueue` and `PlaylistDetails.beforeRead`.
+  final bool savedQueue;
+  final Future<void> Function()? beforeRead;
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +51,9 @@ class PlaylistSidePane extends StatelessWidget {
         onPlay: onPlay,
         onShuffle: onShuffle,
         onQueueAction: onQueueAction,
-        onRename: onRename,
-        onDelete: onDelete,
         onExport: onExport,
+        savedQueue: savedQueue,
+        beforeRead: beforeRead,
       ),
     );
   }

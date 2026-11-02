@@ -17,6 +17,19 @@ void main() {
   tearDown(() => db.close());
 
   group('streams', () {
+    test('summaries re-emit when the description changes', () async {
+      final id = await db.createPlaylist('A', now: 1);
+      final events = <String>[];
+      final sub = db.watchPlaylistSummaries().listen(
+        (list) => events.add(list.single.description),
+      );
+      addTearDown(sub.cancel);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await db.updatePlaylistDetails(id, name: 'A', description: 'new');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(events, ['', 'new']);
+    });
+
     test('summaries re-emit on playlist writes', () async {
       final events = <List<String>>[];
       final sub = db.watchPlaylistSummaries().listen(
@@ -82,7 +95,7 @@ void main() {
           Future<void>.delayed(const Duration(milliseconds: 50));
       await settle();
 
-      await db.renamePlaylist(id, 'B');
+      await db.updatePlaylistDetails(id, name: 'B', description: '');
       await settle();
       expect(names, ['A', 'B']);
 

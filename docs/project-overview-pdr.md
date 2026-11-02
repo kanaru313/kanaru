@@ -80,7 +80,7 @@ Privacy and security constraints (PRIV-01 to PRIV-04) apply to every release: no
 | Rust | `1.89`+ | `rust/Cargo.toml` |
 | libmpv | `>= 0.36` | [development.md](./development.md#what-you-need) |
 | GTK | `>= 3.24` | same |
-| Database | SQLite via drift, `schemaVersion = 11` | [system-architecture.md](./system-architecture-database.md#7-library-database-schema) |
+| Database | SQLite via drift, `schemaVersion = 14` | [system-architecture.md](./system-architecture-database.md#7-library-database-schema) |
 | License | GPL-3.0-or-later | [LICENSE](../LICENSE) |
 
 ## Current status
@@ -97,7 +97,7 @@ Status on 2026-10-23. Commit and PR counts are from `ff93a6c`: 418 commits, PRs 
 | Library browse: Favorites, History | Shipped: Favorites playlist page; History with listen journal, most played by date range and per-song history |
 | Now Playing overlay and queue sheet | Shipped; hero transition not built |
 | Search | Shipped: songs, albums and artists, live from the top bar; typo correction, history, field syntax, field picker, shortcuts and in-page filters (SEARCH-04 to SEARCH-09); search over lyrics not done (SEARCH-08) |
-| Playlists | Done: create, rename, delete, add, remove, reorder (PL-01, PL-02), Favorites (PL-03), M3U import and export (PL-04, PL-05), save the queue (QUEUE-06) |
+| Playlists | Done: create, edit name and description, delete, add, remove, reorder (PL-01, PL-02), Favorites (PL-03), M3U import and export (PL-04, PL-05), save the queue (QUEUE-06) |
 | Settings | Shipped in part (library folders, excluded folders, scan filters, rescan and watching, appearance, playback with ReplayGain, output device, listen history, about); other options are shown as coming soon |
 | Packaging (AppImage, Flatpak, deb, rpm) | AppImage done (PKG-01, `make appimage`); Flatpak, deb and rpm not started |
 | CI | Not started (no `.github/` workflows) |

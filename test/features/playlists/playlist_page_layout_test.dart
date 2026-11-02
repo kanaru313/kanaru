@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/cover_colors/cover_palette.dart';
 import 'package:kanaru/core/cover_colors/cover_palette_of_provider.dart';
@@ -6,6 +8,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/playlists/playlist_details.dart';
 import 'package:kanaru/features/playlists/playlist_header.dart';
 import 'package:kanaru/features/playlists/playlist_side_pane.dart';
+import 'package:kanaru/features/playlists/playlist_modal/playlist_more_button.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/detail_page/collage_hero_cover.dart';
 import 'package:kanaru/shared/widgets/detail_page/cover_tint_page_background.dart';
@@ -219,6 +222,26 @@ void main() {
       expect(view.shuffled, 1);
     });
 
+    testWidgets('the modal button waits for the write under way', (
+      tester,
+    ) async {
+      final view = EntriesViewHarness()..reset();
+      await view.pump(tester, [for (var i = 0; i < 3; i++) available(i)]);
+      await view.dragHandle(tester, view.handle(0), 2 * rowExtent(tester));
+
+      final beforeRead = tester
+          .widget<PlaylistMoreButton>(find.byType(PlaylistMoreButton))
+          .beforeRead!;
+      var released = false;
+      unawaited(beforeRead().then((_) => released = true));
+      await tester.pump();
+      expect(released, isFalse, reason: 'the move is still saving');
+
+      await view.finishMove(tester, ok: true);
+
+      expect(released, isTrue);
+    });
+
     testWidgets('Play and Shuffle are disabled with nothing playable', (
       tester,
     ) async {
@@ -227,13 +250,8 @@ void main() {
 
       expect(_playButton(tester).onPressed, isNull);
       expect(_shuffleButton(tester).onPressed, isNull);
-      // Nothing to enqueue: the menu is left with Rename and Delete only.
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      expect(find.text('Rename'), findsOneWidget);
-      expect(find.text('Delete playlist'), findsOneWidget);
-      expect(find.text('Add to queue'), findsNothing);
-      expect(find.byIcon(AppIcons.edit), findsOneWidget);
+      // The playlist modal is still offered.
+      expect(find.byIcon(AppIcons.more), findsOneWidget);
     });
 
     testWidgets('they are enabled when a song can play', (tester) async {
@@ -244,9 +262,7 @@ void main() {
       ], onQueueAction: (_) {});
 
       expect(_shuffleButton(tester).onPressed, isNotNull);
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      expect(find.text('Add to queue'), findsOneWidget);
+      expect(find.byIcon(AppIcons.more), findsOneWidget);
     });
   });
 

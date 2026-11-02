@@ -25,15 +25,6 @@ extension PlaylistWrites on LibraryDatabase {
     });
   }
 
-  /// Renames playlist [id]; does nothing when it is gone or is the Favorites
-  /// playlist, which is never renamed. An empty name throws [ArgumentError].
-  Future<void> renamePlaylist(int id, String name) async {
-    final trimmed = validPlaylistName(name);
-    await (update(playlists)..where((p) => userNamedPlaylist(p, id))).write(
-      PlaylistsCompanion(name: Value(trimmed)),
-    );
-  }
-
   /// Deletes playlist [id]; its entries go with it (cascade). Never deletes
   /// the Favorites playlist (a no-op, like a playlist that is gone).
   Future<void> deletePlaylist(int id) =>
@@ -80,17 +71,19 @@ extension PlaylistWrites on LibraryDatabase {
     });
   }
 
-  /// Deletes the entries [entryIds] of playlist [id] and closes the gaps.
-  /// Ids that belong to another playlist are ignored.
-  Future<void> removePlaylistEntries(int id, Set<int> entryIds) {
-    if (entryIds.isEmpty) return Future.value();
+  /// Deletes the entries [entryIds] of playlist [id], closes the gaps and
+  /// returns how many were deleted. Ids that belong to another playlist, or
+  /// are gone, are ignored.
+  Future<int> removePlaylistEntries(int id, Set<int> entryIds) {
+    if (entryIds.isEmpty) return Future.value(0);
     return transaction(() async {
       final deleted = await (delete(
         playlistEntries,
       )..where((e) => e.playlistId.equals(id) & e.id.isIn(entryIds))).go();
       // Nothing deleted: no gap to close, and no reason to wake watchers.
-      if (deleted == 0) return;
+      if (deleted == 0) return 0;
       await renumberPlaylist(id);
+      return deleted;
     });
   }
 

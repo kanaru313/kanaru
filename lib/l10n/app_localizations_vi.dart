@@ -67,12 +67,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistCreateConfirm => 'Tạo';
 
   @override
-  String get playlistRename => 'Đổi tên';
-
-  @override
-  String get playlistRenameTitle => 'Đổi tên playlist';
-
-  @override
   String get playlistNameLabel => 'Tên';
 
   @override
@@ -4619,4 +4613,131 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsTranslationServicePluginHint =>
       'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
+
+  @override
+  String get playlistEditTitle => 'Sửa danh sách phát';
+
+  @override
+  String get playlistEditAction => 'Sửa';
+
+  @override
+  String get playlistEditActionHint => 'Tên, mô tả, ảnh bìa';
+
+  @override
+  String get playlistEditClose => 'Đóng';
+
+  @override
+  String get playlistDescriptionLabel => 'Mô tả';
+
+  @override
+  String get playlistDescriptionHint => 'Thêm mô tả (không bắt buộc)';
+
+  @override
+  String get playlistNameEmptyError => 'Tên không được để trống';
+
+  @override
+  String get playlistChangeCover => 'Đổi ảnh bìa';
+
+  @override
+  String get playlistEditSave => 'Lưu';
+
+  @override
+  String playlistEditCounter(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get playlistModalLabel => 'Tùy chọn playlist';
+
+  @override
+  String get playlistGoTo => 'Đến playlist';
+
+  @override
+  String playlistCopyHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sao chép $count bài sang playlist khác',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistCreatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Tạo ngày $dateString';
+  }
+
+  @override
+  String get playlistDeleteHint => 'Các tệp nhạc vẫn còn';
+
+  @override
+  String get playlistDuplicate => 'Nhân bản playlist';
+
+  @override
+  String playlistCopyName(String name) {
+    return '$name (bản sao)';
+  }
+
+  @override
+  String playlistDuplicated(String name) {
+    return 'Đã tạo “$name”';
+  }
+
+  @override
+  String get playlistExportM3u => 'Xuất ra M3U';
+
+  @override
+  String get playlistExportAbsoluteHint => 'Đường dẫn tuyệt đối';
+
+  @override
+  String get playlistExportRelativeHint => 'Đường dẫn tương đối (cạnh nhạc)';
+
+  @override
+  String get playlistRemoveDuplicates => 'Xoá bài trùng';
+
+  @override
+  String playlistRemoveDuplicatesHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài lặp · giữ lại bài đầu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistDuplicatesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count bài trùng',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistRemoveMissing => 'Xoá bài không còn';
+
+  @override
+  String playlistRemoveMissingHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài không có trong thư viện',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistMissingRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count bài không còn',
+    );
+    return '$_temp0';
+  }
 }

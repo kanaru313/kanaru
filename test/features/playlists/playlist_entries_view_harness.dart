@@ -8,6 +8,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/playlists/playlist_entries_view.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -64,8 +65,6 @@ class EntriesViewHarness {
   var loads = <(int, int)>[];
   var moves = <(int, int)>[];
   var removed = <int>[];
-  var renamed = 0;
-  var deleted = 0;
   var settled = 0;
 
   /// Shuffles started.
@@ -90,6 +89,7 @@ class EntriesViewHarness {
   bool rowModals = false;
 
   bool _readOnly = false;
+  bool _savedQueue = false;
   Locale? _locale;
   void Function(QueueAction)? _onQueueAction;
   void Function(PlaylistEntryRow, QueueAction)? _onEntryQueueAction;
@@ -100,7 +100,7 @@ class EntriesViewHarness {
     loads = [];
     moves = [];
     removed = [];
-    renamed = deleted = settled = shuffled = seqCounter = minSeq = 0;
+    settled = shuffled = seqCounter = minSeq = 0;
     played = [];
     moveResult = Completer<bool>();
     removeResult = Completer<bool>();
@@ -163,8 +163,8 @@ class EntriesViewHarness {
           onShuffle: () async => shuffled++,
           onQueueAction: _onQueueAction,
           onEntryQueueAction: _onEntryQueueAction,
-          onRename: () => renamed++,
-          onDelete: () => deleted++,
+          savedQueue: _savedQueue,
+          onExport: _savedQueue ? (_) {} : null,
         ),
       ),
     ),
@@ -177,6 +177,7 @@ class EntriesViewHarness {
     double width = 1280,
     bool readOnly = false,
     bool favorites = false,
+    bool savedQueue = false,
     String name = 'Mix',
     Locale? locale,
     void Function(QueueAction)? onQueueAction,
@@ -184,6 +185,7 @@ class EntriesViewHarness {
   }) async {
     store = [...entries];
     _readOnly = readOnly;
+    _savedQueue = savedQueue;
     _locale = locale;
     _onQueueAction = onQueueAction;
     // A row opens its song modal only with a queue handler; the real screens
@@ -242,7 +244,7 @@ class EntriesViewHarness {
 
   Finder handle(int row) => find.descendant(
     of: find.byType(PlaylistEntryTile).at(row),
-    matching: find.byIcon(Icons.drag_handle_rounded),
+    matching: find.byIcon(AppIcons.dragHandle),
   );
 
   /// Drags a handle by [dy] in small steps so the list sees every row.

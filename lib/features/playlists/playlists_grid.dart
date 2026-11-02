@@ -4,6 +4,7 @@ import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/fixed_line_strut.dart';
+import 'playlist_modal/playlist_actions_region.dart';
 
 /// Space around the whole grid.
 const _gridPadding = 24.0;
@@ -78,38 +79,42 @@ class _PlaylistCardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final playlist = card.playlist;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(_cardPadding),
-        child: LayoutBuilder(
-          builder: (context, constraints) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PlaylistCover(
-                coverKeys: card.coverKeys,
-                size: constraints.maxWidth,
-                seed: 'playlist:${playlist.id}',
-              ),
-              const SizedBox(height: _gap),
-              Text(
-                playlist.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall,
-                strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
-              ),
-              Text(
-                context.l10n.playlistTrackCount(playlist.entryCount),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+    return PlaylistActionsRegion(
+      playlist: playlist,
+      coverKeys: card.coverKeys,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(_cardPadding),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                PlaylistCover(
+                  coverKeys: card.coverKeys,
+                  size: constraints.maxWidth,
+                  seed: 'playlist:${playlist.id}',
                 ),
-                strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
-              ),
-            ],
+                const SizedBox(height: _gap),
+                Text(
+                  playlist.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall,
+                  strutStyle: fixedLineStrut(theme.textTheme.titleSmall),
+                ),
+                Text(
+                  context.l10n.playlistTrackCount(playlist.entryCount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  strutStyle: fixedLineStrut(theme.textTheme.bodySmall),
+                ),
+              ],
+            ),
           ),
         ),
       ),

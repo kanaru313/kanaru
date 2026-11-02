@@ -17,9 +17,9 @@ class PlaylistHeader extends StatelessWidget {
     this.onPlay,
     this.onShuffle,
     this.onQueueAction,
-    this.onRename,
-    this.onDelete,
     this.onExport,
+    this.savedQueue = false,
+    this.beforeRead,
   });
 
   final PlaylistPageHead head;
@@ -37,12 +37,12 @@ class PlaylistHeader extends StatelessWidget {
   /// Null hides the queue menu (nothing to enqueue).
   final ValueChanged<QueueAction>? onQueueAction;
 
-  /// Null leaves the item out of the menu (the Favorites playlist).
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
-
   /// Null leaves the two export items out.
   final ValueChanged<M3uPathStyle>? onExport;
+
+  /// See `PlaylistDetails.savedQueue` and `PlaylistDetails.beforeRead`.
+  final bool savedQueue;
+  final Future<void> Function()? beforeRead;
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +64,9 @@ class PlaylistHeader extends StatelessWidget {
               onPlay: onPlay,
               onShuffle: onShuffle,
               onQueueAction: onQueueAction,
-              onRename: onRename,
-              onDelete: onDelete,
               onExport: onExport,
+              savedQueue: savedQueue,
+              beforeRead: beforeRead,
             ),
           ),
         ],

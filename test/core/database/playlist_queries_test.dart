@@ -51,13 +51,16 @@ void main() {
       expect(await db.select(db.playlistEntries).get(), isEmpty);
     });
 
-    test('rename trims; a blank name is rejected', () async {
+    test('editing the name trims; a blank name is rejected', () async {
       final id = await db.createPlaylist('Mix', now: 1);
 
-      await db.renamePlaylist(id, '  Road trip ');
+      await db.updatePlaylistDetails(id, name: '  Road trip ', description: '');
       expect((await db.playlistSummary(id))!.name, 'Road trip');
 
-      await expectLater(db.renamePlaylist(id, ' '), throwsArgumentError);
+      await expectLater(
+        db.updatePlaylistDetails(id, name: ' ', description: ''),
+        throwsArgumentError,
+      );
       expect((await db.playlistSummary(id))!.name, 'Road trip');
     });
 

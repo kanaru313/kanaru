@@ -67,12 +67,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistCreateConfirm => 'Create';
 
   @override
-  String get playlistRename => 'Rename';
-
-  @override
-  String get playlistRenameTitle => 'Rename playlist';
-
-  @override
   String get playlistNameLabel => 'Name';
 
   @override
@@ -4908,4 +4902,136 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsTranslationServicePluginHint =>
       'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
+
+  @override
+  String get playlistEditTitle => 'Edit playlist';
+
+  @override
+  String get playlistEditAction => 'Edit';
+
+  @override
+  String get playlistEditActionHint => 'Name, description, cover';
+
+  @override
+  String get playlistEditClose => 'Close';
+
+  @override
+  String get playlistDescriptionLabel => 'Description';
+
+  @override
+  String get playlistDescriptionHint => 'Add a description (optional)';
+
+  @override
+  String get playlistNameEmptyError => 'Name can\'t be empty';
+
+  @override
+  String get playlistChangeCover => 'Change cover';
+
+  @override
+  String get playlistEditSave => 'Save';
+
+  @override
+  String playlistEditCounter(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get playlistModalLabel => 'Playlist options';
+
+  @override
+  String get playlistGoTo => 'Go to playlist';
+
+  @override
+  String playlistCopyHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Copy $count songs to another playlist',
+      one: 'Copy 1 song to another playlist',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistCreatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Created $dateString';
+  }
+
+  @override
+  String get playlistDeleteHint => 'The song files stay';
+
+  @override
+  String get playlistDuplicate => 'Duplicate playlist';
+
+  @override
+  String playlistCopyName(String name) {
+    return '$name (copy)';
+  }
+
+  @override
+  String playlistDuplicated(String name) {
+    return 'Created “$name”';
+  }
+
+  @override
+  String get playlistExportM3u => 'Export as M3U';
+
+  @override
+  String get playlistExportAbsoluteHint => 'Absolute paths';
+
+  @override
+  String get playlistExportRelativeHint => 'Relative paths (next to the music)';
+
+  @override
+  String get playlistRemoveDuplicates => 'Remove duplicates';
+
+  @override
+  String playlistRemoveDuplicatesHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repeated songs · keeps the first one',
+      one: '1 repeated song · keeps the first one',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistDuplicatesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count duplicates removed',
+      one: '1 duplicate removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get playlistRemoveMissing => 'Remove missing songs';
+
+  @override
+  String playlistRemoveMissingHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs not in your library',
+      one: '1 song not in your library',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String playlistMissingRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count missing songs removed',
+      one: '1 missing song removed',
+    );
+    return '$_temp0';
+  }
 }

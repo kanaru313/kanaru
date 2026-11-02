@@ -15,6 +15,7 @@ class QueueModalFooter extends StatelessWidget {
     required this.onAction,
     required this.keyPrefix,
     this.divider = true,
+    this.enabled = true,
   });
 
   final ContextModalNav nav;
@@ -22,21 +23,27 @@ class QueueModalFooter extends StatelessWidget {
   final String keyPrefix;
   final bool divider;
 
+  /// False dims both buttons and ignores taps (nothing to queue yet).
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final style = Theme.of(context).textTheme.bodyLarge;
-    final color = Theme.of(context).colorScheme.primary;
+    final primary = Theme.of(context).colorScheme.primary;
+    final color = enabled ? primary : primary.withValues(alpha: 0.38);
     // The InkWell fills its whole half of the footer, so hover and ink cover
     // it all rather than a blob around the label.
     Widget button(Key key, IconData icon, String label, QueueAction action) =>
         Expanded(
           child: InkWell(
             key: key,
-            onTap: () {
-              nav.close();
-              onAction(action);
-            },
+            onTap: enabled
+                ? () {
+                    nav.close();
+                    onAction(action);
+                  }
+                : null,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               child: Row(

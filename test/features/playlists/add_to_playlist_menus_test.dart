@@ -15,6 +15,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/player/fake_audio_backend.dart';
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart';
 import '../search/search_test_data.dart';
 import 'add_to_playlist_test_support.dart';
 import 'playlist_test_data.dart';
@@ -37,14 +38,6 @@ void main() {
     expect(find.text('Add to queue'), findsOneWidget);
     // Close the menu again.
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> headerMenu(
-    WidgetTester tester, {
-    String tooltip = 'Queue actions',
-  }) async {
-    await tester.tap(find.byTooltip(tooltip));
     await tester.pumpAndSettle();
   }
 
@@ -95,14 +88,16 @@ void main() {
       await expectItem(tester);
     });
 
-    testWidgets('playlist header and row', (tester) async {
+    testWidgets('playlist modal and row', (tester) async {
       await openApp(tester, h, ['a']);
       final id = await seedPlaylist(tester, h, 'Mix', ['a']);
       goTo(tester, h, '/playlists/$id');
       await settleDb(tester);
 
-      await headerMenu(tester, tooltip: 'Playlist actions');
-      await expectItem(tester);
+      await openPageModal(tester);
+      expect(modalAction('add-to-playlist'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
       await openMenuOf(tester, find.text('a'));
       await expectItem(tester);
     });

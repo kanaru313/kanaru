@@ -8,8 +8,6 @@ import 'package:material_ui/material_ui.dart';
 Future<void> _open(
   WidgetTester tester, {
   ValueChanged<QueueAction>? onQueueAction,
-  VoidCallback? onRename,
-  VoidCallback? onDelete,
   ValueChanged<M3uPathStyle>? onExport,
 }) async {
   await tester.pumpWidget(
@@ -19,8 +17,6 @@ Future<void> _open(
       home: Scaffold(
         body: PlaylistActionsMenu(
           onQueueAction: onQueueAction,
-          onRename: onRename,
-          onDelete: onDelete,
           onExport: onExport,
         ),
       ),
@@ -34,13 +30,11 @@ Future<void> _open(
 List<String> _layout(WidgetTester tester) {
   final entries = <(double, String)>[
     for (final label in [
-      'Rename',
       'Export M3U (full paths)…',
       'Export M3U (relative paths)…',
       'Play next',
       'Add to queue',
       'Add to playlist…',
-      'Delete playlist',
     ])
       for (final e in find.text(label).evaluate())
         (tester.getTopLeft(find.byWidget(e.widget)).dy, label),
@@ -51,35 +45,7 @@ List<String> _layout(WidgetTester tester) {
 }
 
 void main() {
-  void noop() {}
-
-  testWidgets('a normal playlist: edit, queue, delete, split by dividers', (
-    tester,
-  ) async {
-    await _open(
-      tester,
-      onQueueAction: (_) {},
-      onRename: noop,
-      onDelete: noop,
-      onExport: (_) {},
-    );
-
-    expect(_layout(tester), [
-      'Rename',
-      'Export M3U (full paths)…',
-      'Export M3U (relative paths)…',
-      '-',
-      'Play next',
-      'Add to queue',
-      'Add to playlist…',
-      '-',
-      'Delete playlist',
-    ]);
-  });
-
-  testWidgets('Favorites has no Rename or Delete and no stray divider', (
-    tester,
-  ) async {
+  testWidgets('export rows, a divider, then the queue rows', (tester) async {
     await _open(tester, onQueueAction: (_) {}, onExport: (_) {});
 
     expect(_layout(tester), [
@@ -92,17 +58,12 @@ void main() {
     ]);
   });
 
-  testWidgets('nothing playable leaves the edit rows and Delete', (
-    tester,
-  ) async {
-    await _open(tester, onRename: noop, onDelete: noop, onExport: (_) {});
+  testWidgets('nothing playable leaves the export rows only', (tester) async {
+    await _open(tester, onExport: (_) {});
 
     expect(_layout(tester), [
-      'Rename',
       'Export M3U (full paths)…',
       'Export M3U (relative paths)…',
-      '-',
-      'Delete playlist',
     ]);
   });
 
@@ -119,22 +80,6 @@ void main() {
   });
 
   group('each row calls its callback', () {
-    testWidgets('Rename', (tester) async {
-      var n = 0;
-      await _open(tester, onRename: () => n++);
-      await tester.tap(find.text('Rename'));
-      await tester.pumpAndSettle();
-      expect(n, 1);
-    });
-
-    testWidgets('Delete', (tester) async {
-      var n = 0;
-      await _open(tester, onDelete: () => n++);
-      await tester.tap(find.text('Delete playlist'));
-      await tester.pumpAndSettle();
-      expect(n, 1);
-    });
-
     testWidgets('both exports', (tester) async {
       final styles = <M3uPathStyle>[];
       await _open(tester, onExport: styles.add);

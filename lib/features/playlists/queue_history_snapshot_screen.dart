@@ -88,11 +88,11 @@ class _QueueHistorySnapshotScreenState
     final head = load.value!.head;
     if (when == null || head == null) return const PlaylistNotFound();
     // Play, queue, export and editing the entries as on a playlist page;
-    // rename and delete are not offered (see the class comment).
+    // the playlist modal is not offered (see the class comment).
     return PlaylistPageBody(
       _named(head, queueSnapshotName(context.l10n, when)),
       headSeq: load.value!.seq,
-      canRenameAndDelete: false,
+      savedQueue: true,
     );
   }
 }

@@ -7,10 +7,13 @@ import 'playlist_rows.dart';
 
 export 'playlist_add_queries.dart';
 export 'playlist_add_writes.dart';
+export 'playlist_edit_writes.dart';
+export 'playlist_modal_queries.dart';
+export 'playlist_text_rules.dart';
 export 'playlist_writes.dart';
 
 const _summarySql = '''
-SELECT p.id, p.name, p.created_at, p.kind,
+SELECT p.id, p.name, p.created_at, p.kind, p.description,
   (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n
 FROM playlists p''';
 
@@ -84,4 +87,5 @@ PlaylistSummary _summary(QueryRow row) => PlaylistSummary(
   createdAt: row.read<int>('created_at'),
   entryCount: row.read<int>('n'),
   isFavorites: row.readNullable<String>('kind') == favoritesKind,
+  description: row.read<String>('description'),
 );

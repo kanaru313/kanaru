@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/database/library_database.dart' show LibraryDatabase;
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_queries.dart';
 import '../../core/database/playlist_rows.dart';
@@ -34,18 +35,43 @@ Future<void> exportPlaylistInteractively(
   BuildContext context,
   PlaylistSummary playlist,
   M3uPathStyle style,
-) async {
+) => exportPlaylistWith(
+  save: ref.read(m3uSavePickerProvider),
+  db: ref.read(libraryDatabaseProvider),
+  messenger: ScaffoldMessenger.of(context),
+  l10n: context.l10n,
+  navigator: Navigator.of(context, rootNavigator: true),
+  playlist: playlist,
+  style: style,
+);
+
+/// [exportPlaylistInteractively] with everything it needs from the widget
+/// tree already captured, for a caller whose widget may be gone by the time
+/// the file is chosen (the playlist modal). [navigator] is the root
+/// navigator, which hosts the overwrite question.
+Future<void> exportPlaylistWith({
+  required Future<String?> Function(String suggestedName) save,
+  required LibraryDatabase? db,
+  required ScaffoldMessengerState? messenger,
+  required AppLocalizations l10n,
+  required NavigatorState? navigator,
+  required PlaylistSummary playlist,
+  required M3uPathStyle style,
+}) async {
   if (_exporting) return;
   _exporting = true;
   try {
-    final save = ref.read(m3uSavePickerProvider);
-    final db = ref.read(libraryDatabaseProvider);
-    final messenger = ScaffoldMessenger.of(context);
-    final l10n = context.l10n;
-    final navigator = Navigator.of(context, rootNavigator: true);
-    void say(AppSnackBarKind kind, String text, {String? details}) => messenger
-      ..clearSnackBars()
-      ..showSnackBar(appSnackBar(kind: kind, title: text, details: details));
+    void say(AppSnackBarKind kind, String text, {String? details}) {
+      try {
+        messenger
+          ?..clearSnackBars()
+          ..showSnackBar(
+            appSnackBar(kind: kind, title: text, details: details),
+          );
+      } catch (error, stack) {
+        _log.warning('Showing the export message failed', error, stack);
+      }
+    }
 
     final name = playlistNameFromM3uFile(
       playlistDisplayName(playlist, l10n),
@@ -59,7 +85,7 @@ Future<void> exportPlaylistInteractively(
           await FileSystemEntity.type(target, followLinks: false) !=
           FileSystemEntityType.notFound;
       if (exists) {
-        if (!navigator.mounted) return;
+        if (navigator == null || !navigator.mounted) return;
         final file = target.substring(target.lastIndexOf('/') + 1);
         if (!await _confirmOverwrite(navigator.context, file)) return;
       }

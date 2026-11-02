@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/widgets/context_modal_region.dart';
 import '../../shared/widgets/menu_keyboard_region.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/widgets/queue_actions_menu.dart' show menuPositionAt;
@@ -12,7 +13,9 @@ const collageListRowExtent = 80.0;
 /// One list row: collage, title and subtitle. Tapping opens it. With [onPlay]
 /// it shows a play button; with [menuItems] and [onMenuSelected] it shows a
 /// menu button that also opens on a right click, a long press or the menu
-/// key. Without them the row is tap-only.
+/// key. With [onOpenModal] (instead of a menu) a right click, a long press or
+/// the menu key opens a context modal, and [trailing] ends the row. Without
+/// them the row is tap-only.
 class CollageListRow<T> extends StatelessWidget {
   const CollageListRow({
     super.key,
@@ -25,9 +28,15 @@ class CollageListRow<T> extends StatelessWidget {
     this.playTooltip,
     this.menuItems,
     this.onMenuSelected,
+    this.trailing,
+    this.onOpenModal,
   }) : assert(
          (menuItems == null) == (onMenuSelected == null),
          'menuItems and onMenuSelected go together',
+       ),
+       assert(
+         onOpenModal == null || menuItems == null,
+         'a row opens a modal or a popup menu, not both',
        );
 
   final List<String> coverKeys;
@@ -41,6 +50,12 @@ class CollageListRow<T> extends StatelessWidget {
   final String? playTooltip;
   final List<PopupMenuEntry<T>> Function(BuildContext context)? menuItems;
   final ValueChanged<T>? onMenuSelected;
+
+  /// Widget at the end of the row, such as a more button.
+  final Widget? trailing;
+
+  /// Opens the row's context modal; see [ContextModalRegion].
+  final void Function({required bool viaKeyboard})? onOpenModal;
 
   Future<void> _openMenu(BuildContext context, Offset position) async {
     final builder = menuItems;
@@ -99,6 +114,7 @@ class CollageListRow<T> extends StatelessWidget {
             onSelected: onMenuSelected,
             itemBuilder: menuItems!,
           ),
+        ?trailing,
       ],
     );
 
@@ -127,7 +143,7 @@ class CollageListRow<T> extends StatelessWidget {
                 child: card,
               ),
             )
-          : card,
+          : ContextModalRegion(onOpen: onOpenModal, child: card),
     );
   }
 }

@@ -40,6 +40,17 @@ void main() {
       expect((await db.watchPlaylistSummaries().first).single.entryCount, 3);
     });
 
+    test('summary carries the description, empty by default', () async {
+      final id = await db.createPlaylist('A', now: 1);
+      expect((await db.playlistSummary(id))!.description, '');
+      await db.updatePlaylistDetails(id, name: 'A', description: 'about');
+      expect((await db.playlistSummary(id))!.description, 'about');
+      expect(
+        (await db.watchPlaylistSummaries().first).single.description,
+        'about',
+      );
+    });
+
     test('a missing playlist has no summary and no page', () async {
       expect(await db.playlistSummary(99), isNull);
       expect(await db.playlistPage(99), isNull);

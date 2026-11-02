@@ -6,52 +6,33 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 
 /// What the menu of a playlist page can do besides the queue actions.
-enum _EditAction { rename, delete, exportAbsolute, exportRelative }
+enum _EditAction { exportAbsolute, exportRelative }
 
 /// The value of a menu row: an edit action or a queue action.
 typedef _Choice = Object;
 
-/// The "more" button of a playlist page. Rows, in sections split by a
-/// divider: Rename and the two M3U exports; the queue actions; Delete. A
+/// The "more" button of a saved-queue page (other playlist pages open the
+/// playlist modal). Rows, in sections split by a divider: the two M3U
+/// exports; the queue actions. A
 /// section shows only when its callbacks are given, and a divider only
 /// between two shown sections. Check [hasItems] before showing it.
 class PlaylistActionsMenu extends StatelessWidget {
-  const PlaylistActionsMenu({
-    super.key,
-    this.onQueueAction,
-    this.onRename,
-    this.onDelete,
-    this.onExport,
-  });
+  const PlaylistActionsMenu({super.key, this.onQueueAction, this.onExport});
 
   /// Null leaves the queue rows out (nothing to enqueue).
   final ValueChanged<QueueAction>? onQueueAction;
-
-  /// Null leaves the row out (the Favorites playlist, a saved queue).
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
 
   /// Saves the playlist as an M3U file with paths of the given style; null
   /// leaves the two export rows out.
   final ValueChanged<M3uPathStyle>? onExport;
 
   /// Whether any row would show; without one the caller leaves the button out.
-  bool get hasItems =>
-      onQueueAction != null ||
-      onRename != null ||
-      onDelete != null ||
-      onExport != null;
+  bool get hasItems => onQueueAction != null || onExport != null;
 
   List<PopupMenuEntry<_Choice>> _items(BuildContext context) {
     final l10n = context.l10n;
     final sections = <List<PopupMenuEntry<_Choice>>>[
       [
-        if (onRename != null)
-          menuRow<_Choice>(
-            _EditAction.rename,
-            AppIcons.edit,
-            l10n.playlistRename,
-          ),
         if (onExport != null) ...[
           menuRow<_Choice>(
             _EditAction.exportAbsolute,
@@ -67,14 +48,6 @@ class PlaylistActionsMenu extends StatelessWidget {
       ],
       if (onQueueAction != null)
         queueActionItems<_Choice>(context, (action) => action),
-      [
-        if (onDelete != null)
-          menuRow<_Choice>(
-            _EditAction.delete,
-            AppIcons.deleteOutline,
-            l10n.playlistDelete,
-          ),
-      ],
     ].where((section) => section.isNotEmpty).toList();
 
     return [
@@ -89,10 +62,6 @@ class PlaylistActionsMenu extends StatelessWidget {
     switch (choice) {
       case QueueAction():
         onQueueAction?.call(choice);
-      case _EditAction.rename:
-        onRename?.call();
-      case _EditAction.delete:
-        onDelete?.call();
       case _EditAction.exportAbsolute:
         onExport?.call(M3uPathStyle.absolute);
       case _EditAction.exportRelative:
