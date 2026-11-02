@@ -84,7 +84,13 @@ void main() {
 
     await tester.tap(find.byType(QueueActionsButton));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(AppIcons.addToQueue));
+    // By its label: Add to queue and Add to playlist share one icon.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(PopupMenuItem<QueueAction>),
+        matching: find.text('Add to queue'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(actions, [QueueAction.addToQueue]);
   });
