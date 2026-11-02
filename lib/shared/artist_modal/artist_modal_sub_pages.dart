@@ -9,18 +9,21 @@ import '../icons/app_icons.dart';
 import '../widgets/album_artwork.dart';
 import '../widgets/context_modal/context_modal_route.dart';
 import '../widgets/library_row.dart';
+import 'artist_modal_data.dart';
 import 'artist_modal_links.dart';
 import 'artist_modal_session.dart';
 
 /// Watches the artist's links so they stay alive while a sub page covers the
 /// first page; draws [child]. Sits in the page header, which (unlike a body
 /// child) is not disposed when the body scrolls. Also gives [builder] the
-/// loaded links, for the pages that show them.
+/// loaded links, for the pages that show them, and whether the artist is
+/// gone (read and found no song; false while loading).
 class ArtistLinksKeepAlive extends ConsumerWidget {
   const ArtistLinksKeepAlive(this.session, {super.key, required this.builder});
 
   final ArtistModalSession session;
-  final Widget Function(BuildContext context, ArtistLinks? links) builder;
+  final Widget Function(BuildContext context, ArtistLinks? links, bool gone)
+  builder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +31,7 @@ class ArtistLinksKeepAlive extends ConsumerWidget {
     // value while the keys are rewritten, but the album modal reads links
     // the same way, so both modals grey rows out alike.
     final links = ref.watch(artistModalLinksProvider(session.artist.key));
-    return builder(context, links.asData?.value);
+    return builder(context, links.asData?.value, ArtistModalData.goneOf(links));
   }
 }
 
@@ -48,7 +51,7 @@ ContextModalPage artistModalFoldersPage(
     goToFolder: handlers.goToFolder,
     showInFileManager: handlers.showInFileManager,
     keepAlive: (bar) =>
-        ArtistLinksKeepAlive(session, builder: (context, links) => bar),
+        ArtistLinksKeepAlive(session, builder: (context, links, _) => bar),
   );
 }
 
@@ -89,7 +92,7 @@ ContextModalPage artistModalAlbumsPage(
     key: 'artist-albums',
     headerBuilder: (context, nav) => ArtistLinksKeepAlive(
       session,
-      builder: (context, links) => ContextModalTopBar(
+      builder: (context, links, _) => ContextModalTopBar(
         title: context.l10n.artistModalAlbumsTitle(
           links?.sections.name ?? session.artist.name,
         ),

@@ -14,12 +14,22 @@ const double _coverSize = 64;
 /// Top of the album modal: the cover, then the artist line, the title and
 /// "year • N songs • length", and the Edit album art button (not available
 /// yet). [summary] is null until the album is read; the year shows at once.
-/// The header itself is not tappable.
+///
+/// With [onTap] (Go to album, which closes the modal first) the cover and the
+/// text are one button that does not take keyboard focus: the first row does.
+/// It is null on the page of the album itself. The Edit album art button
+/// keeps its own tap.
 class AlbumModalHeader extends StatelessWidget {
-  const AlbumModalHeader({super.key, required this.album, this.summary});
+  const AlbumModalHeader({
+    super.key,
+    required this.album,
+    this.summary,
+    this.onTap,
+  });
 
   final AlbumTileData album;
   final AlbumSummary? summary;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,33 +47,53 @@ class AlbumModalHeader extends StatelessWidget {
     ]);
     Widget line(String text, TextStyle? style) =>
         Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
+    final identity = Row(
+      spacing: 16,
+      children: [
+        AlbumArtwork(
+          albumKey: album.key,
+          coverKey: album.coverKey,
+          size: _coverSize,
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              line(
+                albumArtistLabel(
+                  l10n,
+                  artist: album.artist,
+                  variousArtists: album.variousArtists,
+                ),
+                quiet,
+              ),
+              line(album.title, theme.textTheme.titleMedium),
+              if (details.isNotEmpty) line(details, quiet),
+            ],
+          ),
+        ),
+      ],
+    );
+    final tap = onTap;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 10, 12),
       child: Row(
-        spacing: 16,
+        spacing: 8,
         children: [
-          AlbumArtwork(
-            albumKey: album.key,
-            coverKey: album.coverKey,
-            size: _coverSize,
-          ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                line(
-                  albumArtistLabel(
-                    l10n,
-                    artist: album.artist,
-                    variousArtists: album.variousArtists,
+            child: tap == null
+                ? identity
+                : Semantics(
+                    button: true,
+                    hint: l10n.songModalGoToAlbum,
+                    child: InkWell(
+                      canRequestFocus: false,
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: tap,
+                      child: identity,
+                    ),
                   ),
-                  quiet,
-                ),
-                line(album.title, theme.textTheme.titleMedium),
-                if (details.isNotEmpty) line(details, quiet),
-              ],
-            ),
           ),
           // Coming soon: no keyboard focus, like the coming-soon rows; the
           // hint reaches the button's own semantics node.

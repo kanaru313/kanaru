@@ -8,13 +8,14 @@ import 'artist_modal_sub_pages.dart';
 
 /// The Advanced page: Add all to Favorites, Show in file manager, and the
 /// actions not available yet. It watches the artist's links itself, which
-/// keeps them alive while this page covers the first one.
+/// keeps them alive while this page covers the first one; a gone artist greys
+/// out Add all to Favorites.
 ContextModalPage artistModalAdvancedPage(ArtistModalSession session) =>
     ContextModalPage(
       key: 'artist-advanced',
       headerBuilder: (context, nav) => ArtistLinksKeepAlive(
         session,
-        builder: (context, links) => ContextModalTopBar(
+        builder: (context, links, _) => ContextModalTopBar(
           title: context.l10n.songModalAdvanced,
           onBack: nav.pop,
         ),
@@ -26,7 +27,7 @@ ContextModalPage artistModalAdvancedPage(ArtistModalSession session) =>
         return [
           ArtistLinksKeepAlive(
             session,
-            builder: (context, links) {
+            builder: (context, links, gone) {
               final main = links?.folders.firstOrNull;
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -36,6 +37,7 @@ ContextModalPage artistModalAdvancedPage(ArtistModalSession session) =>
                       id: 'add-all-to-favorites',
                       icon: AppIcons.favoriteOutline,
                       label: l10n.albumModalAddAllToFavorites,
+                      enabled: !gone,
                       onTap: contextModalCloseThen(handlers.addAllToFavorites),
                     ),
                   ],

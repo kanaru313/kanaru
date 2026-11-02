@@ -5,11 +5,13 @@ import '../../core/database/album_links_provider.dart';
 import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
 import '../widgets/context_modal/context_modal_route.dart';
+import 'album_modal_data.dart';
 import 'album_modal_session.dart';
 
 /// The Advanced page: Add all to Favorites, Show in file manager, and the
 /// actions not available yet. It watches the album's links itself, which keeps
-/// them alive while this page covers the first one.
+/// them alive while this page covers the first one; a gone album greys out
+/// Add all to Favorites.
 ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
     ContextModalPage(
       key: 'album-advanced',
@@ -21,10 +23,8 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
         Consumer(
           builder: (context, ref, _) {
             final l10n = context.l10n;
-            final links = ref
-                .watch(albumModalLinksProvider(session.album.key))
-                .asData
-                ?.value;
+            final async = ref.watch(albumModalLinksProvider(session.album.key));
+            final links = async.asData?.value;
             final main = links?.folders.firstOrNull;
             final handlers = session.handlers();
             return Column(
@@ -35,6 +35,7 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
                     id: 'add-all-to-favorites',
                     icon: AppIcons.favoriteOutline,
                     label: l10n.albumModalAddAllToFavorites,
+                    enabled: !AlbumModalData.goneOf(async),
                     onTap: contextModalCloseThen(handlers.addAllToFavorites),
                   ),
                 ],
@@ -45,6 +46,7 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
                       id: 'show-in-file-manager',
                       icon: AppIcons.folderOpen,
                       label: l10n.libraryShowInFileManager,
+                      subtitle: main?.path,
                       enabled: main != null,
                       onTap: main == null
                           ? null

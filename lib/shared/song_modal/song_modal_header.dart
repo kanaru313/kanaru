@@ -8,7 +8,7 @@ import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
 import '../widgets/cover_art.dart';
 
-const double _coverSize = 56;
+const double _coverSize = 64;
 
 /// Top of the song modal: the cover, then the artists line, the title and
 /// the album, and the screen's [note] when it has one. With [onTap] the

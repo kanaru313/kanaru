@@ -264,6 +264,20 @@ void main() {
     test('keeps the actions not available yet', () {
       expect(ids(false), ['remove-from-library', 'delete-file']);
     });
+
+    test('Delete file is destructive; Remove from library keeps the files', () {
+      final rows = {
+        for (final s in songModalAdvancedSections(
+          _l10n,
+          _data(canFindLyrics: false),
+          _handlers,
+        ))
+          for (final a in s) a.id: a,
+      };
+      expect(rows['delete-file']!.destructive, isTrue);
+      expect(rows['remove-from-library']!.destructive, isFalse);
+      expect(rows['remove-from-library']!.subtitle, 'Keeps the files');
+    });
   });
 
   test('folder name is the last part of the directory', () {

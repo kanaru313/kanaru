@@ -9,6 +9,7 @@ import 'package:kanaru/core/database/album_links_provider.dart';
 import 'package:kanaru/core/database/library_browse_album_links.dart';
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/library_browse_queries.dart';
+import 'package:kanaru/core/database/library_keys_provider.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/settings/library_scan_prefs.dart';
 
@@ -216,7 +217,10 @@ void main() {
       await broken.customStatement('PRAGMA foreign_keys = OFF');
       await broken.customStatement('DROP TABLE tracks');
       final c = ProviderContainer(
-        overrides: [libraryDatabaseProvider.overrideWithValue(broken)],
+        overrides: [
+          libraryDatabaseProvider.overrideWithValue(broken),
+          keysReadyProvider.overrideWithValue(true),
+        ],
       );
       addTearDown(c.dispose);
       final provider = albumModalLinksProvider(const AlbumKey('a', 'b'));

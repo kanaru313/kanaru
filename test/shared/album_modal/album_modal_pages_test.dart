@@ -102,6 +102,24 @@ void main() {
     expect(find.text('Go to album'), findsOneWidget);
   });
 
+  testWidgets('Advanced: Show in file manager names the main folder', (
+    tester,
+  ) async {
+    final host = await pumpAlbumHost(tester, links: linksOf());
+    await openAlbumModalOf(tester);
+    await tapAlbumRow(tester, 'Advanced');
+    expect(
+      find.descendant(
+        of: albumModalAction('show-in-file-manager'),
+        matching: find.text('/m/Rock'),
+      ),
+      findsOneWidget,
+    );
+
+    await tapAlbumRow(tester, 'Show in file manager');
+    expect(host.shownInFileManager, ['/m/Rock/1.flac']);
+  });
+
   for (final page in ['artists', 'folders']) {
     testWidgets('Back from the $page page reads the links only once', (
       tester,

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/album_links_provider.dart';
+import '../../core/database/library_browse_album_links.dart';
 import '../../l10n/l10n.dart';
 import '../widgets/context_modal/context_modal_route.dart';
 import '../widgets/queue_modal_footer.dart';
@@ -14,33 +15,34 @@ import 'album_modal_sub_pages.dart';
 
 /// The first page of the album modal: header, the links and album actions,
 /// and the queue buttons in the footer. The artists and folders load while it
-/// is open; until then their rows are greyed out. No dividers: the groups are
-/// told apart by a gap.
+/// is open; until then their rows are greyed out. Once read and gone (a
+/// rescan removed the album) the play and copy rows and the footer are greyed
+/// out too. No dividers: the groups are told apart by a gap.
 ContextModalPage albumModalActionsPage(AlbumModalSession session) {
-  Widget header(AlbumModalSession s) => Consumer(
-    builder: (context, ref, _) => AlbumModalHeader(
-      album: s.album,
-      summary: ref
-          .watch(albumModalLinksProvider(s.album.key))
-          .asData
-          ?.value
-          ?.summary,
-    ),
-  );
+  AsyncValue<AlbumLinks?> linksOf(WidgetRef ref) =>
+      ref.watch(albumModalLinksProvider(session.album.key));
   return ContextModalPage(
     key: 'album-actions',
-    headerBuilder: (context, nav) => header(session),
+    headerBuilder: (context, nav) => Consumer(
+      builder: (context, ref, _) {
+        final goToAlbum = contextModalCloseThen(session.handlers().goToAlbum);
+        return AlbumModalHeader(
+          album: session.album,
+          summary: linksOf(ref).asData?.value?.summary,
+          onTap: session.showAlbum ? () => goToAlbum(nav) : null,
+        );
+      },
+    ),
     bodyBuilder: (context, nav) => [
       Consumer(
         builder: (context, ref, _) {
-          final links = ref
-              .watch(albumModalLinksProvider(session.album.key))
-              .asData
-              ?.value;
+          final async = linksOf(ref);
+          final links = async.asData?.value;
           final data = AlbumModalData(
             album: session.album,
             links: links,
             showAlbum: session.showAlbum,
+            gone: AlbumModalData.goneOf(async),
           );
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -68,11 +70,15 @@ ContextModalPage albumModalActionsPage(AlbumModalSession session) {
         },
       ),
     ],
-    footerBuilder: (context, nav) => QueueModalFooter(
-      nav: nav,
-      onAction: session.queue,
-      keyPrefix: 'album-modal',
-      divider: false,
+    // The footer builder has no ref: a Consumer greys it out when gone.
+    footerBuilder: (context, nav) => Consumer(
+      builder: (context, ref, _) => QueueModalFooter(
+        nav: nav,
+        onAction: session.queue,
+        keyPrefix: 'album-modal',
+        divider: false,
+        enabled: !AlbumModalData.goneOf(linksOf(ref)),
+      ),
     ),
   );
 }
